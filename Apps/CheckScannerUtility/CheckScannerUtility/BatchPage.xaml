@@ -41,19 +41,27 @@
         <WindowsFormsHost Name="MagTekHost"
                           Visibility="Hidden">
             <ax2:AxMicrImage x:Name="micrImage"
-                             MicrDataReceived="micrImage_MicrDataReceived"    />
+                             MicrDataReceived="micrImage_MicrDataReceived" />
         </WindowsFormsHost>
-        
-        <Menu Name="mainMenu" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="3">
+
+        <Menu Name="mainMenu"
+              VerticalAlignment="Bottom"
+              Grid.Row="0"
+              Grid.Column="1"
+              Grid.ColumnSpan="1">
             <MenuItem Header="_File">
-                <MenuItem Name="mnuConnect" Header="_Connect" ToolTip="Connect to Scanner" Click="btnConnect_Click"></MenuItem>
+                <MenuItem Name="mnuConnect"
+                          Header="_Connect"
+                          ToolTip="Connect to Scanner"
+                          Click="btnConnect_Click"></MenuItem>
             </MenuItem>
             <MenuItem Header="_Tools">
                 <MenuItem Name="mnuOptions"
-                          Header="_Options" Click="btnOptions_Click" />
+                          Header="_Options"
+                          Click="btnOptions_Click" />
             </MenuItem>
         </Menu>
-        
+
         <Ellipse Name="shapeStatus"
                  Grid.Column="2"
                  Grid.Row="0"
@@ -65,8 +73,8 @@
         </Ellipse>
         <Canvas Name="pnlMid"
                 Background="#efefef"
-                Grid.Column="0"
-                Grid.ColumnSpan="3"
+                Grid.Column="1"
+                Grid.ColumnSpan="1"
                 Margin="0"
                 Grid.Row="1"
                 Grid.RowSpan="1" />
@@ -81,7 +89,7 @@
             </Grid.ColumnDefinitions>
             <Grid.RowDefinitions>
                 <RowDefinition />
-                <RowDefinition Height="30" />
+                <RowDefinition Height="40" />
             </Grid.RowDefinitions>
             <Grid.Resources>
                 <DataTemplate x:Key="BatchItemTemplate">
@@ -127,13 +135,15 @@
                 <DataGrid.Columns>
                     <DataGridTemplateColumn Header="AVAILABLE BATCHES "
                                             CellTemplate="{StaticResource BatchItemTemplate}"
-                                            HeaderStyle="{StaticResource headerStyle}"
+                                            HeaderStyle="{StaticResource headerStyleWide}"
                                             CanUserResize="False"
-                                            CanUserSort="False" />
+                                            CanUserSort="False">
+                    </DataGridTemplateColumn>
                 </DataGrid.Columns>
             </DataGrid>
             <Button Grid.Row="1"
                     Grid.Column="0"
+                    Margin="4,4,4,4"
                     Style="{StaticResource buttonStyleMini}"
                     HorizontalAlignment="Left"
                     Name="btnAddBatch">
@@ -145,7 +155,37 @@
             <StackPanel Grid.Column="1"
                         Grid.Row="0"
                         Margin="16">
-                <Border Style="{StaticResource borderStyleWell}" >
+                <Border Name="bdrBatchDetailReadOnly"
+                        Style="{StaticResource borderStyleWell}">
+                    <StackPanel>
+                        <Label Style="{StaticResource dtTextStyle}">Batch Name</Label>
+                        <Label Name="lblBatchNameReadOnly"
+                               Style="{StaticResource ddTextStyle}">Sample Batch Name</Label>
+                        <Label Style="{StaticResource dtTextStyle}">Created by</Label>
+                        <Label Name="lblBatchCreatedByReadOnly"
+                               Style="{StaticResource ddTextStyle}">Veruca Volunteer</Label>
+                        <Label Style="{StaticResource dtTextStyle}">Verify Amount</Label>
+                        <Label Name="lblBatchVerifyAmountReadOnly"
+                               Style="{StaticResource ddTextStyle}">$123.45</Label>
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Right">
+                            <Button Name="btnScan"
+                                    Style="{StaticResource buttonStylePrimaryMini}"
+                                    Margin="4,4,0,0"
+                                    Content="Scan"
+                                    Click="btnScan_Click" />
+                            <Button Style="{StaticResource buttonStyleMini}"
+                                    Name="btnEdit"
+                                    Margin="4,4,0,0"
+                                    Content="Edit"
+                                    Click="btnEdit_Click" />
+                        </StackPanel>
+
+                    </StackPanel>
+                </Border>
+                <Border Name="bdrBatchDetailEdit"
+                        Style="{StaticResource borderStyleWell}"
+                        Visibility="Collapsed">
                     <StackPanel>
                         <Label Style="{StaticResource labelTextStyle}">Batch Name</Label>
                         <TextBox Name="txtBatchName"
@@ -159,40 +199,76 @@
                         <TextBox Name="txtVerifyAmount"
                                  Style="{StaticResource textboxStyle}"
                                  Text="$123.45" />
-                        <Button Grid.Column="3"
-                                Style="{StaticResource buttonStylePrimaryMini}"
-                                Name="btnEdit"
-                                Margin="4,4,0,0"
-                                Content="Edit"
-                                HorizontalAlignment="Left" />
+                        <StackPanel Orientation="Horizontal">
+                            <Button Style="{StaticResource buttonStylePrimary}"
+                                    Name="btnSave"
+                                    Margin="4,4,0,0"
+                                    Content="Save"
+                                    HorizontalAlignment="Left"
+                                    Click="btnSave_Click" />
+                            <Button Style="{StaticResource buttonStyle}"
+                                    Name="btnCancel"
+                                    Margin="4,4,0,0"
+                                    Content="Cancel"
+                                    HorizontalAlignment="Left"
+                                    Click="btnCancel_Click" />
+
+                        </StackPanel>
                     </StackPanel>
                 </Border>
-                <Grid Height="30">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="4" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition />
-                    </Grid.RowDefinitions>
-                    <Button Grid.Column="1"
-                            Style="{StaticResource buttonStylePrimaryMini}"
-                            Name="btnScan"
-                            Content="Scan"
-                            Click="btnScan_Click" />
-                    <Button Grid.Column="0"
+                <StackPanel Name="pnlUploadProgress">
+                    <Button Name="btnUpload"
                             HorizontalAlignment="Right"
-                            Style="{StaticResource buttonStylePrimaryMini}"
-                            Name="btnUpload"
+                            Margin="4,4,4,5"
+                            Style="{StaticResource buttonStyleMini}"
+                            Grid.Column="1"
                             Content="Upload"
                             Click="btnUpload_Click" />
-
-                </Grid>
-                <StackPanel Name="pnlUploadProgress" Background="YellowGreen" Height="100">
-                    <ProgressBar Name="pbUploadProgress" Height="5" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Value="50" Maximum="100"/>
+                    <ProgressBar Name="pbUploadProgress"
+                                 Height="4"
+                                 VerticalAlignment="Bottom"
+                                 HorizontalAlignment="Stretch"
+                                 Foreground="Blue"
+                                 Value="75"
+                                 Maximum="100" />
                 </StackPanel>
+                <Label Content="Scanned Checks"
+                       Style="{StaticResource gridTitleTextStyle}" />
+                <DataGrid Name="grdBatchItems"
+                          Grid.Row="0"
+                          Grid.Column="0"
+                          AutoGenerateColumns="False"
+                          ItemsSource="{Binding}"
+                          GridLinesVisibility="Horizontal"
+                          HeadersVisibility="Column"
+                          BorderThickness="1"
+                          BorderBrush="#d8d8d8"
+                          CellStyle="{StaticResource gridCellStyle}"
+                          CanUserAddRows="False"
+                          CanUserDeleteRows="False">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="COLUMN 1"
+                                            HeaderStyle="{StaticResource headerStyle}"
+                                            Width="Auto"
+                                            CanUserResize="False"
+                                            CanUserSort="False" />
+                        <DataGridTextColumn Header="COLUMN 2"
+                                            HeaderStyle="{StaticResource headerStyle}"
+                                            Width="Auto"
+                                            CanUserResize="False"
+                                            CanUserSort="False" />
+                        <DataGridTextColumn Header="COLUMN 3"
+                                            HeaderStyle="{StaticResource headerStyle}"
+                                            Width="Auto"
+                                            CanUserResize="False"
+                                            CanUserSort="False" />
+                        <DataGridTextColumn Header="COLUMN 4"
+                                            HeaderStyle="{StaticResource headerStyle}"
+                                            Width="Auto"
+                                            CanUserResize="False"
+                                            CanUserSort="False" />
+                    </DataGrid.Columns>
+                </DataGrid>
 
             </StackPanel>
 

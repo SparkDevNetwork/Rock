@@ -38,7 +38,14 @@
                     Value="#515151"></Setter>
         </Style>
 
-        <!-- Label text style -->
+        <Style x:Key="gridTitleTextStyle"
+               TargetType="{x:Type Label}"
+               BasedOn="{StaticResource legendTextStyle}">
+            <Setter Property="Label.FontSize"
+                    Value="14"></Setter>
+        </Style>
+
+            <!-- Label text style -->
         <Style x:Key="labelTextStyle"
                TargetType="{x:Type Label}">
             <Setter Property="Padding"
@@ -52,7 +59,6 @@
             <Setter Property="Label.Foreground"
                     Value="#515151"></Setter>
         </Style>
-        
 
         <!-- Label text style Alert-->
         <Style x:Key="labelTextStyleAlert"
@@ -61,6 +67,22 @@
                     Value="#FCF8E3"></Setter>
             <Setter Property="Label.Foreground"
                     Value="#c09853"></Setter>
+        </Style>
+
+        <!-- dt (Bootstrap Definition Title)-->
+        <Style x:Key="dtTextStyle"
+               BasedOn="{StaticResource labelTextStyle}"
+               TargetType="{x:Type Label}">
+            <Setter Property="Label.FontWeight"
+                    Value="Bold" />
+        </Style>
+
+        <!-- dd (Bootstrap Definition definition)-->
+        <Style x:Key="ddTextStyle"
+               BasedOn="{StaticResource labelTextStyle}"
+               TargetType="{x:Type Label}">
+            <Setter Property="Label.Margin"
+                    Value="10,0,0,0" />
         </Style>
 
         <!-- Label text style Icon-->
@@ -100,8 +122,6 @@
                TargetType="{x:Type DataGridColumnHeader}">
             <Setter Property="Padding"
                     Value="8" />
-            <Setter Property="MinWidth"
-                    Value="225" />
             <Setter Property="HorizontalAlignment"
                     Value="Left"></Setter>
             <Setter Property="VerticalAlignment"
@@ -114,6 +134,13 @@
                     Value="#444444"></Setter>
             <Setter Property="Background"
                     Value="#e9e9e9"></Setter>
+        </Style>
+
+        <Style x:Key="headerStyleWide"
+               TargetType="{x:Type DataGridColumnHeader}"
+               BasedOn="{StaticResource headerStyle}">
+            <Setter Property="MinWidth"
+                    Value="240" />
         </Style>
 
         <!-- Grid Cell Style -->
@@ -175,7 +202,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
-                        <Border Name="ButtonBorder"
+                        <Border Name="buttonBorder"
                                 CornerRadius="4,4,4,4"
                                 BorderThickness="1"
                                 BorderBrush="#26000000"
@@ -201,27 +228,12 @@
                             </Trigger>
                             <Trigger Property="IsPressed"
                                      Value="True">
-                                <Setter Property="Effect">
-                                    <Setter.Value>
-                                        <DropShadowEffect Color="#000000"
-                                                          BlurRadius="0"
-                                                          Direction="0"
-                                                          ShadowDepth="0"
-                                                          Opacity="0.5" />
-                                    </Setter.Value>
+                                <Setter TargetName="buttonBorder"
+                                        Property="Background" Value="Transparent">
                                 </Setter>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect Color="#000000"
-                                      BlurRadius="4"
-                                      Direction="320"
-                                      ShadowDepth="2"
-                                      Opacity="0.5" />
                 </Setter.Value>
             </Setter>
         </Style>
@@ -246,7 +258,7 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
-                        <Border Name="ButtonBorder"
+                        <Border Name="buttonBorder"
                                 CornerRadius="4,4,4,4"
                                 BorderThickness="0"
                                 BorderBrush="#515151"
@@ -262,6 +274,13 @@
                                      Value="True">
                                 <Setter Property="Cursor"
                                         Value="Hand" />
+                            </Trigger>
+                            <Trigger Property="IsPressed"
+                                     Value="True">
+                                <Setter TargetName="buttonBorder"
+                                        Property="Background"
+                                        Value="#383838">
+                                </Setter>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -317,16 +336,6 @@
                     Value="1" />
             <Setter Property="Margin"
                     Value="0,0,0,20" />
-            <Setter Property="Effect">
-                <Setter.Value>
-                    <DropShadowEffect Color="#000000"
-                                      BlurRadius="3"
-                                      Direction="320"
-                                      ShadowDepth="2"
-                                      Opacity="0.5" />
-                </Setter.Value>
-            </Setter>
-
         </Style>
 
     </Application.Resources>

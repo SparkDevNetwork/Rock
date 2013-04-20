@@ -310,7 +310,9 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="rockBaseUrl">The rock base URL.</param>
         private void UploadScannedChecks()
         {
+            pbUploadProgress.Visibility = Visibility.Visible;
             pbUploadProgress.Maximum = 100;
+
 
             // use a backgroundworker to do the work so that we can have an updatable progressbar in the UI
             BackgroundWorker bw = new BackgroundWorker();
@@ -328,6 +330,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RunWorkerCompletedEventArgs"/> instance containing the event data.</param>
         private void bw_RunWorkerCompleted( object sender, RunWorkerCompletedEventArgs e )
         {
+            pbUploadProgress.Visibility = Visibility.Hidden;
             if ( e.Error == null )
             {
                 MessageBox.Show( "Upload Complete" );
@@ -398,15 +401,27 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void Page_Loaded( object sender, RoutedEventArgs e )
         {
+            bdrBatchDetailReadOnly.Visibility = Visibility.Visible;
+            bdrBatchDetailEdit.Visibility = Visibility.Collapsed;
+            pbUploadProgress.Visibility = Visibility.Hidden;
             ConnectToScanner();
+            LoadFinancialBatchesGrid();
+        }
 
-            List<FinancialBatch> sampleData = new List<FinancialBatch>();
-            sampleData.Add( new FinancialBatch { Name = "Sample Batch Name 1", BatchDate = DateTime.Now } );
-            sampleData.Add( new FinancialBatch { Name = "Sample Batch Lonnnnng Name 2", BatchDate = DateTime.Now } );
-            sampleData.Add( new FinancialBatch { Name = "Sample Batch Name 3", BatchDate = DateTime.Now } );
+        /// <summary>
+        /// Loads the financial batches grid.
+        /// </summary>
+        private void LoadFinancialBatchesGrid()
+        {
+            RockConfig config = RockConfig.Load();
+            RockRestClient client = new RockRestClient( config.RockBaseUrl );
+            client.Login( config.Username, config.Password );
+            List<FinancialBatch> financialBatches = client.GetData<List<FinancialBatch>>( "api/FinancialBatches" );
 
-            grdBatches.DataContext = sampleData;
-            if ( sampleData.Count > 0 )
+            List<FinancialBatch> pendingBatches = financialBatches.Where( a => a.Status == BatchStatus.Pending ).ToList();
+
+            grdBatches.DataContext = pendingBatches.OrderByDescending( a => a.BatchDate );
+            if ( pendingBatches.Count > 0 )
             {
                 grdBatches.SelectedIndex = 0;
             }
@@ -539,5 +554,39 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         #endregion
+
+        /// <summary>
+        /// Handles the Click event of the btnEdit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnEdit_Click( object sender, RoutedEventArgs e )
+        {
+            bdrBatchDetailEdit.Visibility = Visibility.Visible;
+            bdrBatchDetailReadOnly.Visibility = Visibility.Collapsed;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnSave_Click( object sender, RoutedEventArgs e )
+        {
+            //#TODO# Save data
+            bdrBatchDetailEdit.Visibility = Visibility.Collapsed;
+            bdrBatchDetailReadOnly.Visibility = Visibility.Visible;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnCancel_Click( object sender, RoutedEventArgs e )
+        {
+            bdrBatchDetailEdit.Visibility = Visibility.Collapsed;
+            bdrBatchDetailReadOnly.Visibility = Visibility.Visible;
+        }
     }
 }
