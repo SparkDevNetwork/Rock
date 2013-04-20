@@ -95,21 +95,13 @@ namespace RockWeb.Blocks.CheckIn.Attended
             CurrentCheckInState.CheckIn.Families = new List<CheckInFamily>();
 
             SaveState();
-
-            if ( CurrentCheckInState.CheckIn.UserEnteredSearch )
-            {
-                GoToSearchPage( true );
-            }
-            else
-            {
-                GoToWelcomePage();
-            }
+            NavigateToPreviousPage();
         }
 
         private void GoNext()
         {
             SaveState();
-            GoToSearchPage();
+            NavigateToNextPage();
         }
 
         #endregion
