@@ -49,6 +49,8 @@ namespace RockWeb.Blocks.Administration
                 grdFinancialBatch.GridRebind += grdFinancialBatch_GridRebind;
                 grdFinancialBatch.GridReorder += grdFinancialBatch_GridReorder;
 
+
+                ddlStatus.BindToEnum( typeof( BatchStatus ) );
             }
             else
             {
