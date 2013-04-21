@@ -14,11 +14,9 @@
 
     <div class="row-fluid checkin-header">
         <div class="span3"></div>
-
         <div class="span6">
-            <legend>Checkin Configuration</legend>
+            <legend>Admin</legend>
         </div>
-        
         <div class="span3"></div>
     </div>
 
