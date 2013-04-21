@@ -3,7 +3,6 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -11,7 +10,11 @@ using System.ComponentModel;
 using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
+using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
+
+
 
 namespace RockWeb.Blocks.CheckIn.Attended
 {
@@ -33,11 +36,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             if ( KioskCurrentlyActive )
             {
-                //// TODO: Validate text entered
+                // TODO: Validate text entered
 
                 CurrentCheckInState.CheckIn.UserEnteredSearch = true;
                 CurrentCheckInState.CheckIn.ConfirmSingleFamily = true;
-                CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME );
+                CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER );
                 CurrentCheckInState.CheckIn.SearchValue = tbSearchBox.Text;
 
                 // move this to next page
@@ -64,5 +67,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             NavigateToPreviousPage();
         }
+
     }
 }
