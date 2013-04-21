@@ -6,8 +6,8 @@
         <asp:HiddenField ID="hfInitialItemId" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfInitialCategoryParentIds" runat="server" ClientIDMode="Static" />
         <asp:HiddenField ID="hfSelectedCategoryId" runat="server" ClientIDMode="Static" />
-        <div class="tree-view tree-view-group">
-            <div class="tree-view-actions pull-right">
+        <div class="treeview treeview-group">
+            <div class="treeview-actions pull-right">
                 <asp:LinkButton ID="lbAddCategory" runat="server" CssClass="add btn btn-mini" ToolTip="Add Category" CausesValidation="false" OnClick="lbAddCategory_Click">
                         <i class="icon-plus-sign"></i> Add Category
                 </asp:LinkButton>
@@ -15,7 +15,7 @@
                         <i class="icon-plus-sign"></i> <asp:Literal ID="lAddItem" runat="server" Text="Add Group" />
                 </asp:LinkButton>
             </div>
-            <div id="tree-view-content">
+            <div id="treeview-content">
             </div>
             <script>
                 function onSelect(e) {
@@ -80,7 +80,7 @@
 
                 function onDataBound(e) {
                     // select the item specified in the page param in the treeview if there isn't one currently selected
-                    var treeViewData = $('#tree-view-content').data("kendoTreeView");
+                    var treeViewData = $('#treeview-content').data("kendoTreeView");
                     var selectedNode = treeViewData.select();
                     var nodeData = this.dataItem(selectedNode);
                     if (!nodeData) {
@@ -126,7 +126,7 @@
                     }
                 });
 
-                    $('#tree-view-content').kendoTreeView({
+                    $('#treeview-content').kendoTreeView({
                         template: "<i class='#= item.IconCssClass #'></i> #= item.Name #",
                         dataSource: dataList,
                         dataTextField: 'Name',

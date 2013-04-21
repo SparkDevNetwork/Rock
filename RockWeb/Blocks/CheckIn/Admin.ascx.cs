@@ -101,7 +101,7 @@ namespace RockWeb.Blocks.CheckIn
             CurrentWorkflow = null;
             SaveState();
 
-            GoToWelcomePage();
+            NavigateToNextPage();
         }
 
         private void BindGroupTypes()

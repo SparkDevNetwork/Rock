@@ -89,16 +89,22 @@
                              Style="{StaticResource textboxUrlStyle}" />
                     <Label Style="{StaticResource labelTextStyle}">Username</Label>
                     <TextBox Name="txtUsername"
-                             Style="{StaticResource textboxStyle}" />
+                             Style="{StaticResource textboxStyle}"
+                             KeyDown="HideLoginWarning" />
                     <Label Style="{StaticResource labelTextStyle}">Password</Label>
                     <PasswordBox Name="txtPassword"
-                                 Style="{StaticResource textboxStyle}" />
+                                 Style="{StaticResource textboxStyle}"
+                                 KeyDown="HideLoginWarning" />
+                    <Label Name="lblLoginWarning"
+                           Style="{StaticResource labelTextStyleAlert}"
+                           Content="Invalid Login" >
+                    </Label>
                 </StackPanel>
                 <Border Grid.Row="2"
                         Grid.Column="0"
                         BorderThickness="0,1,0,0"
                         BorderBrush="#e5e5e5">
-                    
+
                     <Button Name="btnLogin"
                             Click="btnLogin_Click"
                             HorizontalAlignment="Right"

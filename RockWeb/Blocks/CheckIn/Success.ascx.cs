@@ -12,16 +12,24 @@ using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
-
 using Rock;
+using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.CheckIn
 {
+    /// <summary>
+    /// 
+    /// </summary>
     [Description( "Check-In Success block" )]
+    [LinkedPage("Person Select Page")]
     public partial class Success : CheckInBlock
     {
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit(EventArgs e)
         {
             base.OnInit(e);
@@ -29,14 +37,18 @@ namespace RockWeb.Blocks.CheckIn
             RockPage.AddScriptLink(this.Page, "http://www.sparkdevnetwork.org/public/js/cordova-2.4.0.js");
             RockPage.AddScriptLink(this.Page, "http://www.sparkdevnetwork.org/public/js/ZebraPrint.js");
         }
-        
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
 
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
             {
-                GoToWelcomePage();
+                NavigateToHomePage();
             }
             else
             {
@@ -128,11 +140,21 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbDone control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbDone_Click( object sender, EventArgs e )
         {
-            GoToWelcomePage();
+            NavigateToHomePage();
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbAnother control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbAnother_Click( object sender, EventArgs e )
         {
             if ( KioskCurrentlyActive )
@@ -152,15 +174,19 @@ namespace RockWeb.Blocks.CheckIn
                 }
 
                 SaveState();
-                GoToPersonSelectPage();
+                NavigateToLinkedPage( "PersonSelectPage" );
 
             }
             else
             {
-                GoToWelcomePage();
+                NavigateToHomePage();
             }
         }
 
+        /// <summary>
+        /// Adds the label script.
+        /// </summary>
+        /// <param name="jsonObject">The json object.</param>
         private void AddLabelScript( string jsonObject )
         {
             string script = string.Format( @"

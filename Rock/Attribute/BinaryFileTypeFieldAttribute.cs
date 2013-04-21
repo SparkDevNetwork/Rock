@@ -13,6 +13,7 @@ namespace Rock.Attribute
     /// <summary>
     /// Field Attribute to select a binary file type
     /// </summary>
+    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class BinaryFileTypeFieldAttribute : FieldAttribute
     {
         /// <summary>

@@ -12,11 +12,11 @@ using System.Web;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// 
+    /// Field Attribute for selecting an item from a checkbox list.
     /// </summary>
+    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class CustomCheckboxListFieldAttribute : FieldAttribute
     {
-        [Description("This si a test")]
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomCheckboxListFieldAttribute" /> class.
         /// </summary>
