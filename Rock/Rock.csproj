@@ -85,6 +85,11 @@
     <Reference Include="System.DirectoryServices" />
     <Reference Include="System.DirectoryServices.AccountManagement" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Net.Http.Formatting, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Program Files (x86)\Microsoft ASP.NET\ASP.NET MVC 4\Assemblies\System.Net.Http.Formatting.dll</HintPath>
+    </Reference>
     <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
@@ -106,6 +111,7 @@
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
     <Compile Include="Attribute\CampusFieldAttribute.cs" />
     <Compile Include="Attribute\BinaryFileTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\DecimalFieldAttribute.cs" />
     <Compile Include="Attribute\DateFieldAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypeFieldAttribute.cs" />
@@ -124,6 +130,18 @@
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
+    <Compile Include="Migrations\201304190037528_BinaryFileTypeContributionImage.cs" />
+    <Compile Include="Migrations\201304190037528_BinaryFileTypeContributionImage.Designer.cs">
+      <DependentUpon>201304190037528_BinaryFileTypeContributionImage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201304191252561_UpdateCheckinAttributes.cs" />
+    <Compile Include="Migrations\201304191252561_UpdateCheckinAttributes.Designer.cs">
+      <DependentUpon>201304191252561_UpdateCheckinAttributes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Net\RockRestClient.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Security\LoginParameters.cs" />
     <Compile Include="CheckIn\CheckInBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -156,6 +174,23 @@
     </Compile>
     <Compile Include="Model\BatchSearchValue.cs" />
     <Compile Include="Model\FinancialBatchService.Partial.cs" />
+    <Compile Include="Migrations\201304181644325_AttendanceFields.cs" />
+    <Compile Include="Migrations\201304181644325_AttendanceFields.Designer.cs">
+      <DependentUpon>201304181644325_AttendanceFields.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201304181732376_FinancialPersonAccount.cs" />
+    <Compile Include="Migrations\201304181732376_FinancialPersonAccount.Designer.cs">
+      <DependentUpon>201304181732376_FinancialPersonAccount.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201304181823389_TransactionRefund.cs" />
+    <Compile Include="Migrations\201304181823389_TransactionRefund.Designer.cs">
+      <DependentUpon>201304181823389_TransactionRefund.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Model\FinancialTransactionRefund.cs" />
+    <Compile Include="Model\FinancialPersonSavedAccount.cs" />
+    <Compile Include="Model\FinancialPersonBankAccount.cs" />
+    <Compile Include="Model\FinancialScheduledTransactionDetail.cs" />
+>>>>>>> refs/remotes/upstream/develop
     <Compile Include="Reporting\DataTransformComponent.cs" />
     <Compile Include="Reporting\DataTransformContainer.cs" />
     <Compile Include="Reporting\DataTransform\Person\ParentTransform.cs" />
@@ -844,7 +879,6 @@
     <Compile Include="Jobs\RockCleanup.cs" />
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Migrations\RockCSharpMigrationCodeGenerator.cs" />
-    <Compile Include="Net\WebRequest.cs" />
     <Compile Include="Search\Person\Address.cs" />
     <Compile Include="Search\Person\Email.cs" />
     <Compile Include="Search\Person\Name.cs" />
@@ -1035,6 +1069,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
+    <None Include="CheckInStateClassDiagram.cd" />
     <None Include="Service References\MelissaData.AddressCheck\Rock.MelissaData.AddressCheck.ResponseArray.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
     </None>
@@ -1405,8 +1440,25 @@
     <EmbeddedResource Include="Migrations\201304180054257_FinancialBatchNewFields.resx">
       <DependentUpon>201304180054257_FinancialBatchNewFields.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304181644325_AttendanceFields.resx">
+      <DependentUpon>201304181644325_AttendanceFields.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304181732376_FinancialPersonAccount.resx">
+      <DependentUpon>201304181732376_FinancialPersonAccount.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304181823389_TransactionRefund.resx">
+      <DependentUpon>201304181823389_TransactionRefund.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304190037528_BinaryFileTypeContributionImage.resx">
+      <DependentUpon>201304190037528_BinaryFileTypeContributionImage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304191252561_UpdateCheckinAttributes.resx">
+      <DependentUpon>201304191252561_UpdateCheckinAttributes.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Auth\" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

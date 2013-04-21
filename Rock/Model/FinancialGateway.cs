@@ -28,8 +28,9 @@ namespace Rock.Model
         /// <value>
         /// The name.
         /// </value>
+        [Required]
         [MaxLength( 50 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
         /// <summary>
@@ -42,34 +43,27 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the API URL.
+        /// Gets or sets the entity type id for the associated Gateway MEF component
         /// </summary>
         /// <value>
-        /// The API URL.
+        /// The entity type id.
         /// </value>
-        [MaxLength( 100 )]
-        [DataMember]
-        public string ApiUrl { get; set; }
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int EntityTypeId { get; set; }
+
+        #endregion
+
+        #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the API key.
+        /// Gets or sets the type of the entity.
         /// </summary>
         /// <value>
-        /// The API key.
+        /// The type of the entity.
         /// </value>
-        [MaxLength( 100 )]
         [DataMember]
-        public string ApiKey { get; set; }
-
-        /// <summary>
-        /// Gets or sets the API secret.
-        /// </summary>
-        /// <value>
-        /// The API secret.
-        /// </value>
-        [MaxLength( 100 )]
-        [DataMember]
-        public string ApiSecret { get; set; }
+        public virtual EntityType EntityType { get; set; }
 
         #endregion
 
@@ -102,6 +96,7 @@ namespace Rock.Model
         /// </summary>
         public FinancialGatewayConfiguration()
         {
+            this.HasRequired( g => g.EntityType ).WithMany().HasForeignKey( g => g.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 
