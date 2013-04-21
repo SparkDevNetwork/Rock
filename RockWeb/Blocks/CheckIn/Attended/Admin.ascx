@@ -13,17 +13,13 @@
 
 
     <div class="row-fluid checkin-header">
-        <div class="span3">
-            <asp:LinkButton ID="lbCancel" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" runat="server" OnClick="lbCancel_Click" Text="Back"/>
-        </div>
+        <div class="span3"></div>
 
         <div class="span6">
-            <legend>Admin</legend>
+            <legend>Checkin Configuration</legend>
         </div>
-
-        <div class="span3">
-            <asp:LinkButton ID="lbSave" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" runat="server" OnClick="lbSave_Click" Text="Done"/>
-        </div>
+        
+        <div class="span3"></div>
     </div>
 
 

@@ -137,14 +137,16 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             SaveState();
 
-            if ( CurrentCheckInState.CheckIn.UserEnteredSearch )
-            {
-                GoToSearchPage( true );
-            }
-            else
-            {
-                GoToWelcomePage();
-            }
+            //if ( CurrentCheckInState.CheckIn.UserEnteredSearch )
+            //{
+            //    GoToSearchPage( true );
+                
+            //}
+            //else
+            //{
+            //    GoToWelcomePage();
+            //}
+            NavigateToPreviousPage();
         }
 
         //private void ProcessFamily()
@@ -190,7 +192,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
         private void GoNext()
         {
             SaveState();
-            GoToSuccessPage();
+            //GoToSuccessPage();
+            NavigateToNextPage();
         }
 
         #endregion
