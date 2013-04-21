@@ -96,20 +96,22 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             SaveState();
 
-            if ( CurrentCheckInState.CheckIn.UserEnteredSearch )
-            {
-                GoToSearchPage( true );
-            }
-            else
-            {
-                GoToWelcomePage();
-            }
+        //    if ( CurrentCheckInState.CheckIn.UserEnteredSearch )
+        //    {
+        //        GoToSearchPage( true );
+        //    }
+        //    else
+        //    {
+        //        GoToWelcomePage();
+        //    }
+            NavigateToPreviousPage();
         }
 
         private void GoNext()
         {
             SaveState();
-            GoToSearchPage();
+            //GoToSearchPage();
+            NavigateToNextPage();
         }
 
         #endregion

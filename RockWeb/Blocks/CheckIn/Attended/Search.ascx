@@ -2,36 +2,36 @@
 <asp:UpdatePanel ID="upContent" runat="server">
 <ContentTemplate>
 
-<%--    <script>
+    <script>
         
-        Sys.Application.add_load(function () 
-            $('.tenkey a.digit').click(function () {
-                $phoneNumber = $("input[id$='tbPhone']");
-                $phoneNumber.val($phoneNumber.val() + $(this).html());
+        Sys.Application.add_load(function () {
+            $('.keyboard a.digit').click(function () {
+                $name = $("input[id$='tbSearchBox']");
+                $name.val($name.val() + $(this).html());
             });
-            $('.tenkey a.back').click(function () {
-                $phoneNumber = $("input[id$='tbPhone']");
-                $phoneNumber.val($phoneNumber.val().slice(0,-1));
+            $('.keyboard a.back').click(function () {
+                $name = $("input[id$='tbSearchBox']");
+                $name.val($name.val().slice(0,-1));
             });
-            $('.tenkey a.clear').click(function () {
-                $phoneNumber = $("input[id$='tbPhone']");
-                $phoneNumber.val('');
+            $('.keyboard a.clear').click(function () {
+                $name = $("input[id$='tbSearchBox']");
+                $name.val('');
             });
         });
 
-    </script>--%>
+    </script>
 
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
-    <div class="row-fluid checkin-header">
-        <div class="span3">
-            <asp:LinkButton ID="lbAdmin" runat="server" CssClass="btn btn-large" OnClick="lbAdmin_Click" Text="ADMIN"></asp:LinkButton>
+    <div class="row-fluid attended-checkin-header">
+        <div class="span3 attended-checkin-actions">
+            <asp:LinkButton ID="lbAdmin" runat="server" CssClass="btn btn-large btn-primary" OnClick="lbAdmin_Click" Text="ADMIN"></asp:LinkButton>
         </div>
         <div class="span6">
-            <h1>Check In</h1>
+            <h1>CHECK IN</h1>
         </div>
-        <div class="span3">
-            <asp:LinkButton ID="lbSearch" runat="server" CssClass="btn btn-large" OnClick="lbSearch_Click" Text="SEARCH"></asp:LinkButton>
+        <div class="span3 attended-checkin-actions">
+            <asp:LinkButton ID="lbSearch" runat="server" CssClass="btn btn-large last btn-primary" OnClick="lbSearch_Click" Text="SEARCH"></asp:LinkButton>
         </div>
     </div>
                 
@@ -40,7 +40,7 @@
             <div class="attended-checkin-search-body">
                 <Rock:LabeledTextBox ID="tbSearchBox" MaxLength="50" CssClass="attended-checkin-keyboard-entry" runat="server" LabelText="" />
 
-                <div class="attended-checkin-keyboard">
+                <div class="keyboard attended-checkin-keyboard">
                     <div>
                         <a href="#" class="btn btn-large digit">1</a>
                         <a href="#" class="btn btn-large digit">2</a>
@@ -75,7 +75,7 @@
                         <a href="#" class="btn btn-large digit">J</a>
                         <a href="#" class="btn btn-large digit">K</a>
                         <a href="#" class="btn btn-large digit">L</a>
-                        <a href="#" class="btn btn-large digit"></a>
+                        <a href="#" class=""></a>
                     </div>
                     <div>
                         <a href="#" class="btn btn-large digit">Z</a>
@@ -85,9 +85,10 @@
                         <a href="#" class="btn btn-large digit">B</a>
                         <a href="#" class="btn btn-large digit">N</a>
                         <a href="#" class="btn btn-large digit">M</a>
-                        <a href="#" class="btn btn-large digit"></a>
-                        <a href="#" class="btn btn-large digit"></a>
-                        <a href="#" class="btn btn-large digit"><i class='icon-arrow-left'></i></a>
+                        <a href="#" class=""></a>
+                        <a href="#" class=""></a>
+                        <a href="#" class="btn btn-large back"><i class='icon-arrow-left'></i></a>
+                        <!--<a href="#" class="btn btn-large back">BACK</a>-->
                     </div>
                 </div>
 

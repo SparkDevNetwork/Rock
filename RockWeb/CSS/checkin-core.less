@@ -333,10 +333,28 @@ input.checkin-phone-entry
 // <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 // --------------------------------------
 
+.attended-checkin-header
+{
+	margin: 0 auto !important;
+	width: 90%;
+	padding-bottom: 20px;
+}
+
+.attended-checkin-header h1 {
+	text-align: center;
+	font-size: 48px;
+    color: @checkinHeaderColor;
+}
+
+.attended-checkin-header .last {
+	float: right;
+}
+
 .attended-checkin-search-body
 {
 	margin: 0 auto !important;
-	width: 640px;
+	width: 90%;
+	text-align: center;
 }
 
 input.attended-checkin-keyboard-entry
@@ -345,13 +363,54 @@ input.attended-checkin-keyboard-entry
     font-family: @checkinButtonFontFamily;
     font-size: 36px;
     padding: 6px 24px;
-    width: 392px; // keyboard is 640 - padding (24px x 2)
-    float: left;
-    margin-right: 36px;	
+    width: 1032px; // keyboard is 1080 - padding (24px x 2)
+    /*float: left;*/
+    /*margin-right: 36px;*/
 }
 
 .attended-checkin-keyboard
 {
-	float: left;
+	/*float: left;*/
 	margin-bottom: 12px;
+	text-align: center;
+}
+
+.attended-checkin-search-body .attended-checkin-actions .btn {
+	font-size: 48px;
+    height: 43px;
+    padding: 28px 26px 10px;
+}
+
+.attended-checkin-actions a
+{
+    font-size: 22px;
+    font-family: @checkinButtonFontFamily;
+    padding: 12px 24px;
+}
+
+.attended-checkin-actions a.btn-primary
+{
+    font-size: 28px;
+    padding: 14px 26px;
+}
+
+@media screen and (max-width:1024px)
+{
+	input.attended-checkin-keyboard-entry
+	{
+		width: 90%;
+	}
+
+	.attended-checkin-keyboard
+	{
+		width: 90%;
+		padding-left: 36px;
+	}
+
+	.keyboard a.btn {
+		margin: 2px;
+		font-size: 16px;
+		width: 30px;
+		height: 28px;
+		padding-top: 18px;
 }
