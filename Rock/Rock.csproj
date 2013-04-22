@@ -168,12 +168,6 @@
     <Compile Include="Migrations\201304162319340_AddNewFields.Designer.cs">
       <DependentUpon>201304162319340_AddNewFields.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201304180054257_FinancialBatchNewFields.cs" />
-    <Compile Include="Migrations\201304180054257_FinancialBatchNewFields.Designer.cs">
-      <DependentUpon>201304180054257_FinancialBatchNewFields.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Model\BatchSearchValue.cs" />
-    <Compile Include="Model\FinancialBatchService.Partial.cs" />
     <Compile Include="Migrations\201304181644325_AttendanceFields.cs" />
     <Compile Include="Migrations\201304181644325_AttendanceFields.Designer.cs">
       <DependentUpon>201304181644325_AttendanceFields.cs</DependentUpon>
@@ -190,7 +184,10 @@
     <Compile Include="Model\FinancialPersonSavedAccount.cs" />
     <Compile Include="Model\FinancialPersonBankAccount.cs" />
     <Compile Include="Model\FinancialScheduledTransactionDetail.cs" />
->>>>>>> refs/remotes/upstream/develop
+    <Compile Include="Migrations\201304221822201_FinancialBatch.cs" />
+    <Compile Include="Migrations\201304221822201_FinancialBatch.Designer.cs">
+      <DependentUpon>201304221822201_FinancialBatch.cs</DependentUpon>
+    </Compile>
     <Compile Include="Reporting\DataTransformComponent.cs" />
     <Compile Include="Reporting\DataTransformContainer.cs" />
     <Compile Include="Reporting\DataTransform\Person\ParentTransform.cs" />
@@ -1437,9 +1434,6 @@
     <EmbeddedResource Include="Migrations\201304162319340_AddNewFields.resx">
       <DependentUpon>201304162319340_AddNewFields.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201304180054257_FinancialBatchNewFields.resx">
-      <DependentUpon>201304180054257_FinancialBatchNewFields.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304181644325_AttendanceFields.resx">
       <DependentUpon>201304181644325_AttendanceFields.cs</DependentUpon>
     </EmbeddedResource>
@@ -1454,6 +1448,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304191252561_UpdateCheckinAttributes.resx">
       <DependentUpon>201304191252561_UpdateCheckinAttributes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304221822201_FinancialBatch.resx">
+      <DependentUpon>201304221822201_FinancialBatch.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
