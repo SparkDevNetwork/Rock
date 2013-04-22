@@ -1,17 +1,20 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="FinancialBatch.ascx.cs" Inherits="RockWeb.Blocks.Administration.FinancialBatch" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="BatchList.ascx.cs" Inherits="RockWeb.Blocks.Finance.Administration.BatchList" %>
 
 <asp:UpdatePanel ID="upFinancialBatch" runat="server">
     <ContentTemplate>
-        <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-error block-message error" />
+
+        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error alert" />
+        <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
         <Rock:GridFilter ID="rFBFilter" runat="server">
             <Rock:DateTimePicker ID="dtBatchDate" runat="server" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDate" LabelText="Date" />
             <Rock:LabeledTextBox ID="txtTitle" runat="server" LabelText="Title"></Rock:LabeledTextBox>
             <Rock:LabeledDropDownList ID="ddlStatus" runat="server" LabelText="Status" />
+            <Rock:LabeledDropDownList ID="ddlCampus" runat="server" LabelText="Campus" />
         </Rock:GridFilter>
 
-        <Rock:Grid ID="grdFinancialBatch" runat="server" EmptyDataText="No Batches Found" OnRowDataBound="grdFinancialBatch_RowDataBound"
-             ShowConfirmDeleteDialog="true">
+        <Rock:Grid ID="rGridBatch" runat="server" EmptyDataText="No Batches Found" OnRowDataBound="rGridBatch_RowDataBound"
+             ShowConfirmDeleteDialog="true"  OnRowSelected="rGridBatch_Edit">
             <Columns>
                 <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
                 <asp:BoundField DataField="Name" HeaderText="Title" SortExpression="Name" />
@@ -22,8 +25,7 @@
                     </ItemTemplate>
                 </asp:TemplateField>
                 <Rock:EnumField DataField="Status" HeaderText="Status" SortExpression="Status" />
-                <Rock:BoolField DataField="IsClosed" HeaderText="Is Closed" SortExpression="IsClosed" />
-
+               
                 <asp:BoundField DataField="ControlAmount" HeaderText="Control Amount" />
                 <asp:TemplateField HeaderText="Transaction Total">
                     <ItemTemplate>
@@ -40,16 +42,14 @@
                         <asp:Literal ID="TransactionCount" runat="server" />
                     </ItemTemplate>
                 </asp:TemplateField>
-                <asp:BoundField DataField="BatchType.Name" HeaderText="Batch Type" />
+                <asp:BoundField DataField="Status" HeaderText="Status" />
+                <asp:BoundField DataField="Campus" HeaderText="Campus" />
 
-                <Rock:EditValueField OnClick="rGrid_EditValue" />
-                <Rock:DeleteField OnClick="grdFinancialBatch_Delete" />
-
+                <Rock:DeleteField OnClick="rGridBatch_Delete" />
 
             </Columns>
+
         </Rock:Grid>
-
-
     </ContentTemplate>
 </asp:UpdatePanel>
 

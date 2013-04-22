@@ -32,7 +32,7 @@ namespace Rock.SystemGuid
 		/// <summary>
         /// Guid for the types of Batches (ACH, Visa, MasterCard, Discover, Amex, and PayPal)
         /// </summary>
-        public const string FINANCIAL_BATCH_TYPE = "9e358fbe-2321-4c54-895f-c888e29298ae";
+       // public const string FINANCIAL_BATCH_TYPE = "9e358fbe-2321-4c54-895f-c888e29298ae";
 		
         /// <summary>
         /// Guid for Financial Currency Type
@@ -67,7 +67,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Guid for Financial transaction image type
         /// </summary>
-        public const string FINANCIAL_TRANSACTION_IMAGE_TYPE = "0745D5DE-2D09-44B3-9017-40C1DA83CB39";
+        public const string FINANCIAL_TRANSACTION_IMAGE_TYPE = "0745D5DE-2D09-44B3-9017-40C1DA83CB39"; 
 
         /// <summary>
         /// Guid for Financial Transaction Type
