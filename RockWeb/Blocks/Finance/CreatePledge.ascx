@@ -7,7 +7,14 @@
                 <legend><asp:Literal ID="lLegendText" runat="server"/></legend>
                 <Rock:DataTextBox ID="tbFirstName" runat="server" LabelText="First Name" SourceTypeName="Rock.Model.Person, Rock" PropertyName="NickName"/>
                 <Rock:DataTextBox ID="tbLastName" runat="server" LabelText="Last Name" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName"/>
-                <Rock:DataTextBox ID="tbAmount" runat="server" PrependText="$" LabelText="Total Amount" SourceTypeName="Rock.Model.Pledge, Rock" PropertyName="Amount"/>
+                <%--<Rock:DataTextBox ID="tbAmount" runat="server" PrependText="$" LabelText="Total Amount" SourceTypeName="Rock.Model.Pledge, Rock" PropertyName="Amount"/>--%>
+                
+                <asp:Repeater ID="rptAccounts" runat="server" OnItemDataBound="rptAccounts_ItemDataBound">
+                    <ItemTemplate>
+                        <Rock:LabeledTextBox ID="tbAmount" runat="server" PrependText="$"/>
+                    </ItemTemplate>
+                </asp:Repeater>
+
                 <Rock:DataTextBox ID="tbEmail" runat="server" LabelText="Email" TextMode="Email" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email"/>
                 <Rock:DateTimePicker ID="dtpStartDate" runat="server" LabelText="Start Date" SourceTypeName="Rock.Model.Pledge, Rock" PropertyName="StartDate" Visible="False"/>
                 <Rock:DateTimePicker ID="dtpEndDate" runat="server" LabelText="End Date" SourceTypeName="Rock.Model.Pledge, Rock" PropertyName="EndDate" Visible="False"/>
@@ -25,6 +32,7 @@
             </div>
         </asp:Panel>
         <asp:Panel runat="server" ID="pnlReceipt" Visible="False">
+            <h1></h1>
             <asp:Hyperlink runat="server" CssClass="btn" ID="btnGivingProfile">
                 <i class="icon-user"></i> Go to your giving profile
             </asp:Hyperlink>

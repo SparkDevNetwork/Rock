@@ -24,7 +24,7 @@
     <script src="<%# ResolveUrl("~/Scripts/bootbox.min.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/Kendo/kendo.web.min.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/jquery.tinyscrollbar.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/Rock/grid.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/Rock/Rock.controls.js") %>" ></script>
 
     <style>
         html, body 
