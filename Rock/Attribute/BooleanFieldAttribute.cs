@@ -11,8 +11,9 @@ using System.Web;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// 
+    /// Field Attribute for selecting either true or false.
     /// </summary>
+    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class BooleanFieldAttribute : FieldAttribute
     {
         /// <summary>

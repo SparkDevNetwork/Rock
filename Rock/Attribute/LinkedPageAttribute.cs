@@ -8,9 +8,9 @@ using System;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// 
+    /// Field Attribute for selecting a "linked" page.
     /// </summary>
-    [AttributeUsage( AttributeTargets.Class )]
+    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class LinkedPageAttribute : FieldAttribute
     {
         /// <summary>
