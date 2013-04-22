@@ -146,6 +146,10 @@
     <Compile Include="CheckIn\KioskSchedule.cs" />
     <Compile Include="CheckIn\KioskStatus.cs" />
     <Compile Include="CheckIn\KioskCache.cs" />
+    <Compile Include="Communication\ChannelComponent.cs" />
+    <Compile Include="Communication\Channel\Sms.cs" />
+    <Compile Include="Communication\Channel\Email.cs" />
+    <Compile Include="Communication\ChannelContainer.cs" />
     <Compile Include="Communication\TransportComponent.cs" />
     <Compile Include="Communication\TransportContainer.cs" />
     <Compile Include="Communication\Transport\SMTP.cs" />
@@ -165,9 +169,9 @@
     <Compile Include="Migrations\201304181823389_TransactionRefund.Designer.cs">
       <DependentUpon>201304181823389_TransactionRefund.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201304182147089_CommunicationTransport.cs" />
-    <Compile Include="Migrations\201304182147089_CommunicationTransport.Designer.cs">
-      <DependentUpon>201304182147089_CommunicationTransport.cs</DependentUpon>
+    <Compile Include="Migrations\201304222234173_CommunicationMEF.cs" />
+    <Compile Include="Migrations\201304222234173_CommunicationMEF.Designer.cs">
+      <DependentUpon>201304222234173_CommunicationMEF.cs</DependentUpon>
     </Compile>
     <Compile Include="Model\FinancialTransactionRefund.cs" />
     <Compile Include="Model\FinancialPersonSavedAccount.cs" />
@@ -651,6 +655,7 @@
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\DropDownListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
+    <Compile Include="Web\UI\Controls\LabeledHtmlEditor.cs" />
     <Compile Include="Web\UI\Controls\RockDropDownList.cs" />
     <Compile Include="Web\UI\Controls\NumberBox.cs" />
     <Compile Include="Web\UI\Controls\PageBreadCrumbs.cs" />
@@ -1428,8 +1433,8 @@
     <EmbeddedResource Include="Migrations\201304181823389_TransactionRefund.resx">
       <DependentUpon>201304181823389_TransactionRefund.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201304182147089_CommunicationTransport.resx">
-      <DependentUpon>201304182147089_CommunicationTransport.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201304222234173_CommunicationMEF.resx">
+      <DependentUpon>201304222234173_CommunicationMEF.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />

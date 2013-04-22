@@ -6,8 +6,8 @@
         <ul class="nav nav-pills" >
             <asp:Repeater ID="rptChannels" runat="server" >
                 <ItemTemplate >
-                    <li class='<%# (int)Eval("Id") == CurrentChannelId ? "active" : "" %>'>
-                        <asp:LinkButton ID="lbChannel" runat="server" Text='<%# Eval("Name") %>' CommandArgument='<%# Eval("Id") %>' OnClick="lbChannel_Click">
+                    <li class='<%# ChannelId.HasValue && (int)Eval("Key") == ChannelId.Value ? "active" : "" %>'>
+                        <asp:LinkButton ID="lbChannel" runat="server" Text='<%# Eval("Value") %>' CommandArgument='<%# Eval("Key") %>' OnClick="lbChannel_Click">
                         </asp:LinkButton> 
                     </li>
                 </ItemTemplate>
