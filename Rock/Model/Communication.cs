@@ -11,8 +11,11 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+
 using Newtonsoft.Json;
+
 using Rock.Data;
+using Rock.Communication;
 
 namespace Rock.Model
 {
@@ -58,13 +61,13 @@ namespace Rock.Model
         public string Subject { get; set; }
 
         /// <summary>
-        /// Gets or sets the communication channel value id.
+        /// Gets or sets the communication channel entity type id.
         /// </summary>
         /// <value>
-        /// The communication channel value id.
+        /// The communication channel entity type id.
         /// </value>
         [DataMember]
-        public int CommunicationChannelValueId { get; set; }
+        public int CommunicationChannelEntityTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets any additional merge fields.  
@@ -106,13 +109,39 @@ namespace Rock.Model
         public virtual Person Sender { get; set; }
 
         /// <summary>
-        /// Gets or sets the communication channel value.
+        /// Gets or sets the communication channel.
         /// </summary>
         /// <value>
-        /// The communication channel value.
+        /// The communication channel.
         /// </value>
         [DataMember]
-        public virtual DefinedValue CommunicationChannelValue { get; set; }
+        public virtual EntityType CommunicationChannelEntityType { get; set; }
+
+        /// <summary>
+        /// Gets the channel component.
+        /// </summary>
+        /// <value>
+        /// The channel component.
+        /// </value>
+        public virtual ChannelComponent CommunicationChannel
+        {
+            get
+            {
+                if ( this.CommunicationChannelEntityType != null )
+                {
+                    foreach ( var serviceEntry in ChannelContainer.Instance.Components )
+                    {
+                        var component = serviceEntry.Value.Value;
+                        string componentName = component.GetType().FullName;
+                        if ( componentName == this.CommunicationChannelEntityType.Name )
+                        {
+                            return component;
+                        }
+                    }
+                }
+                return null;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the recipients.
@@ -183,7 +212,7 @@ namespace Rock.Model
         /// </summary>
         public CommunicationConfiguration()
         {
-            this.HasRequired( c => c.CommunicationChannelValue ).WithMany().HasForeignKey( c => c.CommunicationChannelValueId ).WillCascadeOnDelete( false );
+            this.HasRequired( c => c.CommunicationChannelEntityType ).WithMany().HasForeignKey( c => c.CommunicationChannelEntityTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( c => c.Sender ).WithMany().HasForeignKey( c => c.SenderPersonId ).WillCascadeOnDelete( false );
         }
     }
