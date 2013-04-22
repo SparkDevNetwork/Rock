@@ -168,8 +168,6 @@
     <Compile Include="Migrations\201304162319340_AddNewFields.Designer.cs">
       <DependentUpon>201304162319340_AddNewFields.cs</DependentUpon>
     </Compile>
-    <Compile Include="Model\BatchSearchValue.cs" />
-    <Compile Include="Model\FinancialBatchService.Partial.cs" />
     <Compile Include="Migrations\201304181644325_AttendanceFields.cs" />
     <Compile Include="Migrations\201304181644325_AttendanceFields.Designer.cs">
       <DependentUpon>201304181644325_AttendanceFields.cs</DependentUpon>
@@ -186,7 +184,7 @@
     <Compile Include="Model\FinancialPersonSavedAccount.cs" />
     <Compile Include="Model\FinancialPersonBankAccount.cs" />
     <Compile Include="Model\FinancialScheduledTransactionDetail.cs" />
-	<Compile Include="Migrations\201304221822201_FinancialBatch.cs" />
+    <Compile Include="Migrations\201304221822201_FinancialBatch.cs" />
     <Compile Include="Migrations\201304221822201_FinancialBatch.Designer.cs">
       <DependentUpon>201304221822201_FinancialBatch.cs</DependentUpon>
     </Compile>
@@ -1454,7 +1452,6 @@
     <EmbeddedResource Include="Migrations\201304221822201_FinancialBatch.resx">
       <DependentUpon>201304221822201_FinancialBatch.cs</DependentUpon>
     </EmbeddedResource>
-    
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Auth\" />
