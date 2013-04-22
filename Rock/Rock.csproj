@@ -184,6 +184,10 @@
     <Compile Include="Migrations\201304181823389_TransactionRefund.Designer.cs">
       <DependentUpon>201304181823389_TransactionRefund.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201304221822201_FinancialBatch.cs" />
+    <Compile Include="Migrations\201304221822201_FinancialBatch.Designer.cs">
+      <DependentUpon>201304221822201_FinancialBatch.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\FinancialTransactionRefund.cs" />
     <Compile Include="Model\FinancialPersonSavedAccount.cs" />
     <Compile Include="Model\FinancialPersonBankAccount.cs" />
@@ -1451,6 +1455,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304222141330_AccountNumberSecuredGroupTypeDisplayOrder.resx">
       <DependentUpon>201304222141330_AccountNumberSecuredGroupTypeDisplayOrder.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304221822201_FinancialBatch.resx">
+      <DependentUpon>201304221822201_FinancialBatch.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
