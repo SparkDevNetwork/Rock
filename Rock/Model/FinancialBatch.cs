@@ -147,16 +147,19 @@ namespace Rock.Model
     {
         /// <summary>
         /// Pending
+        /// In the process of scanning the checks to it
         /// </summary>
         Pending = 0,
 
         /// <summary>
         /// Open
+        /// Transactions are all entered and are ready to be matched
         /// </summary>
         Open = 1,
 
         /// <summary>
         /// Closed
+        /// All is well and good
         /// </summary>
         Closed = 2
     }
