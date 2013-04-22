@@ -138,6 +138,10 @@
     <Compile Include="Migrations\201304191252561_UpdateCheckinAttributes.Designer.cs">
       <DependentUpon>201304191252561_UpdateCheckinAttributes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201304222141330_AccountNumberSecuredGroupTypeDisplayOrder.cs" />
+    <Compile Include="Migrations\201304222141330_AccountNumberSecuredGroupTypeDisplayOrder.Designer.cs">
+      <DependentUpon>201304222141330_AccountNumberSecuredGroupTypeDisplayOrder.cs</DependentUpon>
+    </Compile>
     <Compile Include="Net\RockRestClient.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -1444,6 +1448,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304191252561_UpdateCheckinAttributes.resx">
       <DependentUpon>201304191252561_UpdateCheckinAttributes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304222141330_AccountNumberSecuredGroupTypeDisplayOrder.resx">
+      <DependentUpon>201304222141330_AccountNumberSecuredGroupTypeDisplayOrder.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
