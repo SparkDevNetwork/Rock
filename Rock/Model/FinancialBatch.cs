@@ -9,7 +9,6 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-using System.Collections;
 
 using Rock.Data;
 
@@ -18,10 +17,11 @@ namespace Rock.Model
     /// <summary>
     /// Batch POCO class.
     /// </summary>
-    [Table("FinancialBatch")]
+    [Table( "FinancialBatch" )]
     [DataContract]
     public partial class FinancialBatch : Model<FinancialBatch>
-    {        
+    {
+
         #region Entity Properties
 
         /// <summary>
@@ -30,8 +30,9 @@ namespace Rock.Model
         /// <value>
         /// The name.
         /// </value>
-        [MaxLength(50)]
-        [DataMember]
+        [Required]
+        [MaxLength( 50 )]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
         /// <summary>
@@ -52,7 +53,7 @@ namespace Rock.Model
         [DataMember]
         public BatchStatus Status { get; set; }
 
-                /// <summary>
+        /// <summary>
         /// Gets or sets the campus id.
         /// </summary>
         /// <value>
@@ -119,7 +120,7 @@ namespace Rock.Model
         #endregion
     }
 
-   #region EntityConfiguration
+    #region EntityConfiguration
 
     /// <summary>
     /// Batch Configuration class.
@@ -161,4 +162,6 @@ namespace Rock.Model
     }
 
     #endregion
+
+
 }

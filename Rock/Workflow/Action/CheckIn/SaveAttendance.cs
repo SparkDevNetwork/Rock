@@ -85,6 +85,8 @@ namespace Rock.Workflow.Action.CheckIn
                                                 attendance.ScheduleId = schedule.Schedule.Id;
                                                 attendance.GroupId = group.Group.Id;
                                                 attendance.PersonId = person.Person.Id;
+                                                attendance.DeviceId = checkInState.Kiosk.Device.Id;
+                                                attendance.SearchTypeValueId = checkInState.CheckIn.SearchType.Id;
                                                 attendanceService.Add( attendance, null );
                                             }
 
