@@ -106,6 +106,7 @@
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
     <Compile Include="Attribute\CampusFieldAttribute.cs" />
     <Compile Include="Attribute\BinaryFileTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\ComponentFieldAttribute.cs" />
     <Compile Include="Attribute\DateFieldAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypeFieldAttribute.cs" />
@@ -153,6 +154,7 @@
     <Compile Include="Communication\TransportComponent.cs" />
     <Compile Include="Communication\TransportContainer.cs" />
     <Compile Include="Communication\Transport\SMTP.cs" />
+    <Compile Include="Field\Types\ComponentFieldType.cs" />
     <Compile Include="Migrations\201304162319340_AddNewFields.cs" />
     <Compile Include="Migrations\201304162319340_AddNewFields.Designer.cs">
       <DependentUpon>201304162319340_AddNewFields.cs</DependentUpon>

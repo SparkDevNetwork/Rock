@@ -21,7 +21,6 @@ namespace Rock.Communication
     /// <summary>
     /// Base class for components that perform actions for a workflow
     /// </summary>
-    [DefinedValueField( SystemGuid.DefinedType.COMMUNICATION_CHANNEL, "Channels", "The communication channels supported by this transport" )]
     public abstract class TransportComponent : Component
     {
         /// <summary>

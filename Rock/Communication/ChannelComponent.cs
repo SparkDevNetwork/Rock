@@ -21,6 +21,7 @@ namespace Rock.Communication
     /// <summary>
     /// Base class for components communication channels (i.e. email, sms, twitter, etc) 
     /// </summary>
+    [ComponentField( "Rock.Communication.TransportContainer, Rock" )]
     public abstract class ChannelComponent : Component
     {
         public abstract string ControlPath { get; }
