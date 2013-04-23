@@ -333,9 +333,36 @@ input.checkin-phone-entry
 // <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 // --------------------------------------
 
+.keyboard
+{
+    width: 1080px;
+	width: 100%;
+}
+
+.keyboard a.btn {
+    margin: 5px;
+    font-size: 20px;
+    width: 60px;
+    height: 38px;
+    padding-top: 33px;
+}
+
+.keyboard a.back
+{
+	font-size: 36px;
+	height: 43px;
+	width: 150px;
+}
+
+.keyboard a.digit {
+    font-size: 48px;
+    height: 43px;
+    font-family: 'OpenSansBold', 'Helvetica Neue',Helvetica,Arial,sans-serif; //  @rockSansFontFamilyBold;
+}
+
 .attended-checkin-header
 {
-	margin: 0 auto !important;
+	margin: 45px auto 0 !important;
 	width: 90%;
 	padding-bottom: 20px;
 }
@@ -344,6 +371,7 @@ input.checkin-phone-entry
 	text-align: center;
 	font-size: 48px;
     color: @checkinHeaderColor;
+	margin-top: 20px;
 }
 
 .attended-checkin-header .last {
@@ -363,7 +391,7 @@ input.attended-checkin-keyboard-entry
     font-family: @checkinButtonFontFamily;
     font-size: 36px;
     padding: 6px 24px;
-    width: 1032px; // keyboard is 1080 - padding (24px x 2)
+    width: 1082px; // keyboard is 1130 - padding (24px x 2)
     /*float: left;*/
     /*margin-right: 36px;*/
 }
@@ -390,8 +418,8 @@ input.attended-checkin-keyboard-entry
 
 .attended-checkin-actions a.btn-primary
 {
-    font-size: 28px;
-    padding: 14px 26px;
+    font-size: 48px;
+    padding: 28px 26px;
 }
 
 @media screen and (max-width:1024px)
@@ -401,16 +429,23 @@ input.attended-checkin-keyboard-entry
 		width: 90%;
 	}
 
-	.attended-checkin-keyboard
+	/*.attended-checkin-keyboard
 	{
 		width: 90%;
 		padding-left: 36px;
+	}*/
+
+	.keyboard a.btn 
+	{
+		margin: 3px;
+		font-size: 36px;
+		width: 35px;
+		height: 35px;
+		padding-top: 24px;
 	}
 
-	.keyboard a.btn {
-		margin: 2px;
-		font-size: 16px;
-		width: 30px;
-		height: 28px;
-		padding-top: 18px;
+	.keyboard a.back
+	{
+		width: 88px;
+	}
 }

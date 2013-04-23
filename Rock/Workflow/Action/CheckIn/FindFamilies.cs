@@ -35,26 +35,58 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( action, out errorMessages );
             if (checkInState != null)
             {
-                if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER ) ) )
+                var phoneNumberSearch = false;
+                var nameSearch = false;
+                if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER ) ) ) 
+                { 
+                    phoneNumberSearch = true; 
+                }
+                else if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME ) ) )
+                {
+                    nameSearch = true;
+                }
+                //if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER ) ) )
+                if ( phoneNumberSearch || nameSearch )
                 {
                     using ( new Rock.Data.UnitOfWorkScope() )
                     {
                         var personService = new PersonService();
                         var memberService = new GroupMemberService();
 
-                        foreach ( var person in personService.GetByPhonePartial( checkInState.CheckIn.SearchValue ) )
+                        if ( phoneNumberSearch )
                         {
-                            foreach ( var group in person.Members.Where( m => m.Group.GroupType.Guid == new Guid( SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Select( m => m.Group ) )
+                            foreach ( var person in personService.GetByPhonePartial( checkInState.CheckIn.SearchValue ) )
                             {
-                                var family = checkInState.CheckIn.Families.Where( f => f.Group.Id == group.Id ).FirstOrDefault();
-                                if ( family == null )
+                                foreach ( var group in person.Members.Where( m => m.Group.GroupType.Guid == new Guid( SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Select( m => m.Group ) )
                                 {
-                                    family = new CheckInFamily();
-                                    family.Group = group.Clone( false );
-                                    family.Group.LoadAttributes();
-                                    family.Caption = group.ToString();
-                                    family.SubCaption = memberService.GetFirstNames( group.Id ).ToList().AsDelimited( ", " );
-                                    checkInState.CheckIn.Families.Add( family );
+                                    var family = checkInState.CheckIn.Families.Where( f => f.Group.Id == group.Id ).FirstOrDefault();
+                                    if ( family == null )
+                                    {
+                                        family = new CheckInFamily();
+                                        family.Group = group.Clone( false );
+                                        family.Group.LoadAttributes();
+                                        family.Caption = group.ToString();
+                                        family.SubCaption = memberService.GetFirstNames( group.Id ).ToList().AsDelimited( ", " );
+                                        checkInState.CheckIn.Families.Add( family );
+                                    }
+                                }
+                            }
+                        } else if ( nameSearch )
+                        {
+                            foreach ( var person in personService.GetByPartialName( checkInState.CheckIn.SearchValue ) )
+                            {
+                                foreach ( var group in person.Members.Where( m => m.Group.GroupType.Guid == new Guid( SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Select( m => m.Group ) )
+                                {
+                                    var family = checkInState.CheckIn.Families.Where( f => f.Group.Id == group.Id ).FirstOrDefault();
+                                    if ( family == null )
+                                    {
+                                        family = new CheckInFamily();
+                                        family.Group = group.Clone( false );
+                                        family.Group.LoadAttributes();
+                                        family.Caption = group.ToString();
+                                        family.SubCaption = memberService.GetFirstNames( group.Id ).ToList().AsDelimited( ", " );
+                                        checkInState.CheckIn.Families.Add( family );
+                                    }
                                 }
                             }
                         }
@@ -67,7 +99,14 @@ namespace Rock.Workflow.Action.CheckIn
                     }
                     else
                     {
-                        errorMessages.Add( "There are not any families with the selected phone number" );
+                        if ( phoneNumberSearch )
+                        {
+                            errorMessages.Add( "There are not any families with the selected phone number" );
+                        }
+                        else if ( nameSearch )
+                        {
+                            errorMessages.Add( "There are not any families with the selected name" );
+                        }
                     }
 
                 }
