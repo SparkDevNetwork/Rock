@@ -88,48 +88,11 @@
                         <a href="#" class=""></a>
                         <a href="#" class=""></a>
                         <a href="#" class="btn btn-large back"><i class='icon-arrow-left'></i></a>
-                        <!--<a href="#" class="btn btn-large back">BACK</a>-->
                     </div>
                 </div>
-
-<%--                <div class="tenkey checkin-phone-keypad">
-                    <div>
-                        <a href="#" class="btn btn-large digit">1</a>
-                        <a href="#" class="btn btn-large digit">2</a>
-                        <a href="#" class="btn btn-large digit">3</a>
-                    </div>
-                    <div>
-                        <a href="#" class="btn btn-large digit">4</a>
-                        <a href="#" class="btn btn-large digit">5</a>
-                        <a href="#" class="btn btn-large digit">6</a>
-                    </div>
-                    <div>
-                        <a href="#" class="btn btn-large digit">7</a>
-                        <a href="#" class="btn btn-large digit">8</a>
-                        <a href="#" class="btn btn-large digit">9</a>
-                    </div>
-                    <div>
-                        <a href="#" class="btn btn-large back">Del</a>
-                        <a href="#" class="btn btn-large digit">0</a>
-                        <a href="#" class="btn btn-large clear">Clear</a>
-                    </div>
-                </div>--%>
-
-<%--                <div class="checkin-actions">
-                    <asp:LinkButton CssClass="btn btn-primary" ID="lbSearch" runat="server" OnClick="lbSearch_Click" Text="Search" />
-                </div>--%>
-
             </div>
-            
         </div>
     </div>
-
-
-<%--    <div class="row-fluid checkin-footer">   
-        <div class="checkin-actions">
-            <asp:LinkButton CssClass="btn btn-secondary" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
-        </div>
-    </div>--%>
 
 </ContentTemplate>
 </asp:UpdatePanel>

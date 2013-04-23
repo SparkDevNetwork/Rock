@@ -37,14 +37,27 @@ namespace Rock.Workflow.Action.CheckIn
             {
                 var phoneNumberSearch = false;
                 var nameSearch = false;
-                if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER ) ) ) 
-                { 
-                    phoneNumberSearch = true; 
-                }
-                else if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME ) ) )
+                switch ( checkInState.CheckIn.SearchType.Guid.ToString().ToUpper() )
                 {
-                    nameSearch = true;
+                    case SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER:
+                        {
+                            phoneNumberSearch = true;
+                            break;
+                        }
+                    case SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME:
+                        {
+                            nameSearch = true;
+                            break;
+                        }
                 }
+                //if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER ) ) ) 
+                //{ 
+                //    phoneNumberSearch = true; 
+                //}
+                //else if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME ) ) )
+                //{
+                //    nameSearch = true;
+                //}
                 //if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER ) ) )
                 if ( phoneNumberSearch || nameSearch )
                 {
