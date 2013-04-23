@@ -1,7 +1,10 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Transactions.ascx.cs" Inherits="RockWeb.Blocks.Administration.Financials" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="TransactionList.ascx.cs" Inherits="RockWeb.Blocks.Finance.TransactionList" %>
 
-<asp:UpdatePanel ID="upFinancial" runat="server">
+<asp:UpdatePanel ID="upTransactions" runat="server">
     <ContentTemplate>
+
+        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error alert" />
+        <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
         <Rock:GridFilter ID="rFilter" runat="server">
             <Rock:DateTimePicker ID="dtStartDate" runat="server" SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionDateTime" LabelText="From Date" />
@@ -16,7 +19,7 @@
             <Rock:LabeledDropDownList ID="ddlSourceType" runat="server" LabelText="Source Type" />
         </Rock:GridFilter>
 
-        <Rock:Grid ID="grdTransactions" runat="server" EmptyDataText="No Transactions Found">
+        <Rock:Grid ID="rGridTransactions" runat="server" EmptyDataText="No Transactions Found" OnRowSelected="rGridTransactions_Edit">
             <Columns>
                 <asp:BoundField DataField="TransactionDate" HeaderText="Date" />
                 <asp:BoundField DataField="Description" HeaderText="Description" />
