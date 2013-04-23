@@ -226,6 +226,22 @@ namespace Rock.Model
             );
         }
 
+        /// <summary>
+        /// Gets a list of people with a name that contains the specified partial name.
+        /// </summary>
+        /// <param name="partialName">The partial name.</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <returns></returns>
+        public IEnumerable<Person> GetByPartialName( string partialName, bool includeDeceased = false )
+        {
+            //string numericPhone = partialPhoneNumber.AsNumeric();
+
+            return Repository.Find( p =>
+                ( includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value ) &&
+                p.FullName.ToLower().Contains( partialName )
+            );
+        }
+
         #endregion
 
         #region Get Person
