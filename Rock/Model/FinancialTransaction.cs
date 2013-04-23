@@ -24,7 +24,7 @@ namespace Rock.Model
     {
 
         #region Entity Properties
-
+       
         /// <summary>
         /// Gets or sets the authorized person id.
         /// </summary>
@@ -32,7 +32,7 @@ namespace Rock.Model
         /// The authorized person id.
         /// </value>
         [DataMember]
-        public int AuthorizedPersonId { get; set; }
+        public int? AuthorizedPersonId { get; set; }
 
         /// <summary>
         /// Gets or sets the batch id.
@@ -128,6 +128,15 @@ namespace Rock.Model
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE )]
         public int? SourceTypeValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets hash of the Checking Account AccountNumber.  Stored as a SHA1 hash (always 40 chars) so that it can be matched without being known
+        /// </summary>
+        /// <value>
+        /// AccountNumberSecured.
+        /// </value>
+        [MaxLength( 40 )]
+        public string AccountNumberSecured { get; set; }
 
         #endregion
 

@@ -11,9 +11,10 @@ using System.Web;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Attribute used to specify an EntityType
+    /// Field Attribute used to specify an EntityType
     /// Value returns EntityType.Name
     /// </summary>
+    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class EntityTypeAttribute : FieldAttribute
     {
         /// <summary>

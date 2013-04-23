@@ -16,6 +16,7 @@ namespace Rock.Attribute
     /// <remarks>
     /// If using a custom <see cref="Rock.Field.IFieldType"/> make sure that the fieldtype has been added to Rock.
     /// </remarks>
+    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class TextFieldAttribute : FieldAttribute
     {
         /// <summary>
