@@ -11,8 +11,9 @@ using System.Web;
 namespace Rock.Attribute
 {
     /// <summary>
-    /// Field Attribute to select 0 or more Audiences
+    /// Field Attribute to select 0 or more DefinedValues for the given DefinedType id.
     /// </summary>
+    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class DefinedValueFieldAttribute : FieldAttribute
     {
         /// <summary>

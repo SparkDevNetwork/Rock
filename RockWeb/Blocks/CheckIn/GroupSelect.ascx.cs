@@ -25,7 +25,7 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
             {
-                GoToWelcomePage();
+                NavigateToHomePage();
             }
             else
             {
@@ -149,7 +149,7 @@ namespace RockWeb.Blocks.CheckIn
 
             SaveState();
 
-            GoToLocationSelectPage( true );
+            NavigateToPreviousPage();
         }
 
         private void ProcessSelection()
@@ -158,7 +158,7 @@ namespace RockWeb.Blocks.CheckIn
             if ( ProcessActivity( "Schedule Search", out errors ) )
             {
                 SaveState();
-                GoToTimeSelectPage();
+                NavigateToNextPage();
             }
             else
             {
