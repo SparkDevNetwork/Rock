@@ -69,16 +69,16 @@ namespace Rock.Field.Types
 
             if ( picker != null )
             {
-                var guid = Guid.Empty;
-                var id = picker.ItemId.AsInteger();
-                var account = new FinancialAccountService().Get( id ?? 0 );
+                var guids = new List<Guid>();
+                var ids = picker.SelectedValuesAsInt();
+                var accounts = new FinancialAccountService().Queryable().Where( a => ids.Contains( a.Id ) );
 
-                if ( account != null )
+                if ( accounts.Any() )
                 {
-                    guid = account.Guid;
+                    guids = accounts.Select( a => a.Guid ).ToList();
                 }
 
-                result = guid.ToString();
+                result = string.Join( ",", guids );
             }
 
             return result;
@@ -95,13 +95,24 @@ namespace Rock.Field.Types
             if ( value != null )
             {
                 var picker = control as AccountPicker;
+                var guids = new List<Guid>();
 
                 if ( picker != null )
                 {
-                    Guid guid;
-                    Guid.TryParse( value, out guid );
-                    var account = new FinancialAccountService().Get( guid );
-                    picker.SetValue( account );
+                    var ids = value.Split( new[] { ',' } );
+
+                    foreach ( var id in ids )
+                    {
+                        Guid guid;
+
+                        if ( Guid.TryParse( id, out guid ) )
+                        {
+                            guids.Add( guid );
+                        }
+                    }
+
+                    var accounts = new FinancialAccountService().Queryable().Where( a => guids.Contains( a.Guid ) );
+                    picker.SetValues( accounts );
                 }
             }
         }

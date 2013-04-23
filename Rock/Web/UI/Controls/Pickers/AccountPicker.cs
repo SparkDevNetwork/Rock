@@ -4,6 +4,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System.Collections.Generic;
+using System.Linq;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -42,12 +44,63 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Sets the values.
+        /// </summary>
+        /// <param name="accounts">The accounts.</param>
+        public void SetValues( IEnumerable<FinancialAccount> accounts )
+        {
+            var financialAccounts = accounts.ToList();
+
+            if ( financialAccounts.Any() )
+            {
+                var ids = new List<string>();
+                var names = new List<string>();
+                var parentAccountIds = string.Empty;
+
+                foreach ( var account in financialAccounts )
+                {
+                    if ( account != null )
+                    {
+                        ids.Add( account.Id.ToString() );
+                        names.Add( account.PublicName );
+                        var parentAccount = account.ParentAccount;
+
+                        while ( parentAccount != null )
+                        {
+                            parentAccountIds += parentAccount.Id.ToString() + ",";
+                            parentAccount = parentAccount.ParentAccount;
+                        }
+                    }
+                }
+
+                InitialItemParentIds = parentAccountIds.TrimEnd( new[] { ',' } );
+                ItemIds = ids;
+                ItemNames = names;
+            }
+            else
+            {
+                ItemId = Constants.None.IdValue;
+                ItemName = Constants.None.TextHtml;
+            }
+        }
+
+        /// <summary>
         /// Sets the value on select.
         /// </summary>
         protected override void SetValueOnSelect()
         {
             var item = new FinancialAccountService().Get( int.Parse( ItemId ) );
             this.SetValue( item );
+        }
+
+        /// <summary>
+        /// Sets the values on select.
+        /// </summary>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected override void SetValuesOnSelect()
+        {
+            var items = new FinancialAccountService().Queryable().Where( i => ItemIds.Contains( i.ToString() ) );
+            this.SetValues( items );
         }
 
         /// <summary>

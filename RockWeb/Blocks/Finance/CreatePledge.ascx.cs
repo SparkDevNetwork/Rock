@@ -30,6 +30,46 @@ namespace RockWeb.Blocks.Finance
     public partial class CreatePledge : RockBlock
     {
         /// <summary>
+        /// Gets the accounts.
+        /// </summary>
+        /// <value>
+        /// The accounts.
+        /// </value>
+        private List<FinancialAccount> Accounts
+        {
+            get
+            {
+                var cacheKey = string.Format( "FinancialAccountsForPage_{0}", CurrentPage.Id );
+                var accounts = GetCacheItem( cacheKey ) as List<FinancialAccount>;
+
+                if ( accounts == null )
+                {
+                    int cacheDuration;
+                    int.TryParse( GetAttributeValue( "CacheDuration" ), out cacheDuration );
+                    var accountService = new FinancialAccountService();
+                    accounts = accountService.Queryable().Where( a => AccountGuids.Contains( a.Guid ) ).ToList();
+                    AddCacheItem( cacheKey, accounts, cacheDuration );
+                }
+
+                return accounts;
+            }
+        }
+
+        /// <summary>
+        /// Gets the account guids.
+        /// </summary>
+        /// <value>
+        /// The account guids.
+        /// </value>
+        private List<Guid> AccountGuids
+        {
+            get
+            {
+                return GetAttributeValue( "DefaultAccounts" ).Split( new[] { ',' } ).Select( Guid.Parse ).ToList();
+            }
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -58,17 +98,12 @@ namespace RockWeb.Blocks.Finance
                 RockTransactionScope.WrapTransaction( () =>
                     {
                         var pledgeService = new FinancialPledgeService();
-                        //var defaultAccountIds = int.Parse( GetAttributeValue( "DefaultAccounts" ) );
-                        var defaultAccountIds = GetAttributeValue( "DefaultAccounts" )
-                            .Split( new[] { ',' } )
-                            .Select( s => new int?( int.Parse( s ) ) )
-                            .ToList();
                         var person = FindPerson();
-                        var pledges = FindAndUpdatePledge( person, defaultAccountIds );
+                        var pledges = FindAndUpdatePledge( person );
 
                         // Does this person already have a pledge for these accounts?
                         // If so, give them the option to create a new one?
-                        if ( pledgeService.Queryable().Any( p => p.PersonId == person.Id && defaultAccountIds.Contains( p.AccountId ) ) )
+                        if ( pledgeService.Queryable().Any( p => p.PersonId == person.Id && AccountGuids.Contains( p.Guid ) ) )
                         {
                             pnlConfirm.Visible = true;
                             Session.Add( "CachedPledges", pledges );
@@ -80,8 +115,8 @@ namespace RockWeb.Blocks.Finance
                             if ( !pledge.IsValid ) 
                                 continue;
 
-                            //pledgeService.Add( pledge, person.Id );
-                            //pledgeService.Save( pledge, person.Id );
+                            pledgeService.Add( pledge, person.Id );
+                            pledgeService.Save( pledge, person.Id );
                         }
 
                         // TODO: Queue up email copy of receipt to send to user
@@ -117,20 +152,11 @@ namespace RockWeb.Blocks.Finance
             var frequencyTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_PLEDGE_FREQUENCY );
             ddlFrequencyType.BindToDefinedType( DefinedTypeCache.Read( frequencyTypeGuid ) );
 
-            // For some reason, this is Guid.Empty, even after setting it. There appears to be something
-            // preventing the itemPicker from working in BlockSettings.
-            var idString = GetAttributeValue( "DefaultAccounts" );
-
-            //var accountIds = !string.IsNullOrWhiteSpace( idString ) 
-            //    ? idString.Split( new[] { ',' } ).Select( int.Parse ).ToList()
-            //    : new List<int>();
-
-            //if ( accountIds.Any() )
-            //{
-            //    var accounts = new FinancialAccountService().Queryable().Where( a => accountIds.Contains( a.Id ) );
-            //    rptAccounts.DataSource = accounts;
-            //    rptAccounts.DataBind();
-            //}
+            if ( AccountGuids.Any() )
+            {
+                rptAccounts.DataSource = Accounts;
+                rptAccounts.DataBind();
+            }
 
             if ( CurrentPerson != null )
             {
@@ -143,21 +169,15 @@ namespace RockWeb.Blocks.Finance
             var end = GetAttributeValue( "DefaultEndDate" );
 
             if ( string.IsNullOrWhiteSpace( start ) )
-            {
                 dtpStartDate.Visible = true;
-            }
 
             if ( string.IsNullOrWhiteSpace( end ) )
-            {
                 dtpEndDate.Visible = true;
-            }
 
             var pledge = Session["CachedPledge"] as FinancialPledge;
 
             if ( pledge != null )
-            {
                 pnlConfirm.Visible = true;
-            }
         }
 
         private void ShowReceipt()
@@ -208,27 +228,33 @@ namespace RockWeb.Blocks.Finance
         /// Finds the pledge.
         /// </summary>
         /// <param name="person">The Person.</param>
-        /// <param name="accountIds">The list of Account Ids</param>
         /// <returns></returns>
-        private IEnumerable<FinancialPledge> FindAndUpdatePledge( Person person, IEnumerable<int?> accountIds )
+        private IEnumerable<FinancialPledge> FindAndUpdatePledge( Person person )
         {
             var pledges = Session["CachedPledges"] as List<FinancialPledge> ?? new List<FinancialPledge>();
-            //var amount = decimal.Parse( tbAmount.Text );
+            
+            if ( pledges.Any() )
+                return pledges;
+
             var startSetting = GetAttributeValue( "DefaultStartDate" );
             var startDate = !string.IsNullOrWhiteSpace( startSetting ) ? DateTime.Parse( startSetting ) : DateTime.Parse( dtpStartDate.Text );
             var endSetting = GetAttributeValue( "DefaultEndDate" );
             var endDate = !string.IsNullOrWhiteSpace( endSetting ) ? DateTime.Parse( endSetting ) : DateTime.Parse( dtpEndDate.Text );
             var frequencyId = int.Parse( ddlFrequencyType.SelectedValue );
 
-            pledges.AddRange( from accountId in accountIds
-                              where accountId.HasValue
+            // For some reason, this approach is not working. Account is not being found from the repeater data items...
+            pledges.AddRange( from RepeaterItem item in rptAccounts.Items
+                              where item.ItemType == ListItemType.Item || item.ItemType == ListItemType.AlternatingItem
+                              let textBox = item.FindControl( "tbAmount" ) as LabeledTextBox
+                              let hiddenField = item.FindControl( "hfId" ) as HiddenField
+                              where !string.IsNullOrWhiteSpace( hiddenField.Value ) && !string.IsNullOrWhiteSpace( textBox.Text )
                               select new FinancialPledge
                                   {
-                                      PersonId = person.Id, 
-                                      AccountId = accountId, 
-                                      //TotalAmount = amount,
-                                      StartDate = startDate, 
-                                      EndDate = endDate, 
+                                      PersonId = person.Id,
+                                      AccountId = int.Parse( hiddenField.Value ),
+                                      TotalAmount = decimal.Parse( textBox.Text ),
+                                      StartDate = startDate,
+                                      EndDate = endDate,
                                       PledgeFrequencyValueId = frequencyId
                                   } );
 
@@ -244,11 +270,13 @@ namespace RockWeb.Blocks.Finance
         {
             var account = e.Item.DataItem as FinancialAccount;
             var textbox = e.Item.FindControl( "tbAmount" ) as LabeledTextBox;
+            var hiddenField = e.Item.FindControl( "hfId" ) as HiddenField;
 
-            if ( textbox == null || account == null )
+            if ( textbox == null || hiddenField == null || account == null )
                 return;
 
             textbox.LabelText = account.PublicName;
+            hiddenField.Value = account.Id.ToString();
         }
     }
 }

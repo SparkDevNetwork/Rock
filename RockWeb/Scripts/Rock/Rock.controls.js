@@ -13,9 +13,8 @@
         ItemPicker.prototype.updateScrollbar = function (e) {
             var findControl = Rock.controls.itemPicker.findControl,
                 controlId = typeof e === 'string' ? e : e.sender.element[0].id,
-                control = findControl(controlId);
-
-            var $container = $('#treeview-scroll-container_' + control.controlId),
+                control = findControl(controlId),
+                $container = $('#treeview-scroll-container_' + control.controlId),
                 $dialog = $('#modal-scroll-container');
 
             if ($container.is(':visible')) {
