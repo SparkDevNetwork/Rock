@@ -4,9 +4,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.ComponentModel;
-using System.Web.UI;
-using System.Web.UI.WebControls;
+using System.Collections.Generic;
+using System.Linq;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -55,6 +54,47 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Sets the values.
+        /// </summary>
+        /// <param name="pages">The pages.</param>
+        public void SetValues( IEnumerable<Rock.Model.Page> pages )
+        {
+            var thePages = pages.ToList();
+
+            if ( thePages.Any() )
+            {
+                var ids = new List<string>();
+                var names = new List<string>();
+                var parentPageIds = string.Empty;
+
+                foreach ( var page in thePages )
+                {
+                    if ( page != null )
+                    {
+                        ids.Add( page.Id.ToString() );
+                        names.Add( page.Name );
+                        var parentPage = page.ParentPage;
+
+                        while ( parentPage != null )
+                        {
+                            parentPageIds += parentPage.Id.ToString() + ",";
+                            parentPage = parentPage.ParentPage;
+                        }
+                    }
+                }
+
+                InitialItemParentIds = parentPageIds.TrimEnd( new[] { ',' } );
+                ItemIds = ids;
+                ItemNames = names;
+            }
+            else
+            {
+                ItemId = Constants.None.IdValue;
+                ItemName = Constants.None.TextHtml;
+            }
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnSelect control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -64,6 +104,15 @@ namespace Rock.Web.UI.Controls
         {
             var page = new PageService().Get( int.Parse( ItemId ) );
             this.SetValue( page );
+        }
+
+        /// <summary>
+        /// Sets the values on select.
+        /// </summary>
+        protected override void SetValuesOnSelect()
+        {
+            var pages = new PageService().Queryable().Where( p => ItemIds.Contains( p.Id.ToString() ) );
+            this.SetValues( pages );
         }
 
         /// <summary>

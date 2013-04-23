@@ -4,9 +4,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.ComponentModel;
-using System.Web.UI;
-using System.Web.UI.WebControls;
+using System.Collections.Generic;
+using System.Linq;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -30,7 +29,7 @@ namespace Rock.Web.UI.Controls
         /// Sets the value.
         /// </summary>
         /// <param name="group">The group.</param>
-        public void SetValue( Rock.Model.Group group )
+        public void SetValue( Group group )
         {
             if ( group != null )
             {
@@ -44,13 +43,54 @@ namespace Rock.Web.UI.Controls
                     parentGroup = parentGroup.ParentGroup;
                 }
 
-                InitialItemParentIds = parentGroupIds.TrimEnd( new char[] { ',' } );
+                InitialItemParentIds = parentGroupIds.TrimEnd( new[] { ',' } );
                 ItemName = group.Name;
             }
             else
             {
-                ItemId = Rock.Constants.None.IdValue;
-                ItemName = Rock.Constants.None.TextHtml;
+                ItemId = Constants.None.IdValue;
+                ItemName = Constants.None.TextHtml;
+            }
+        }
+
+        /// <summary>
+        /// Sets the values.
+        /// </summary>
+        /// <param name="groups">The groups.</param>
+        public void SetValues( IEnumerable<Group> groups )
+        {
+            var theGroups = groups.ToList();
+
+            if ( theGroups.Any() )
+            {
+                var ids = new List<string>();
+                var names = new List<string>();
+                var parentGroupIds = string.Empty;
+
+                foreach ( var group in theGroups )
+                {
+                    if ( group != null )
+                    {
+                        ids.Add( group.Id.ToString() );
+                        names.Add( group.Name );
+                        var parentGroup = group.ParentGroup;
+
+                        while ( parentGroup != null )
+                        {
+                            parentGroupIds += parentGroup.Id.ToString() + ",";
+                            parentGroup = parentGroup.ParentGroup;
+                        }
+                    }
+                }
+
+                InitialItemParentIds = parentGroupIds.TrimEnd( new[] { ',' } );
+                ItemIds = ids;
+                ItemNames = names;
+            }
+            else
+            {
+                ItemId = Constants.None.IdValue;
+                ItemName = Constants.None.TextHtml;
             }
         }
 
@@ -61,6 +101,15 @@ namespace Rock.Web.UI.Controls
         {
             var group = new GroupService().Get( int.Parse( ItemId ) );
             SetValue( group );
+        }
+
+        /// <summary>
+        /// Sets the values on select.
+        /// </summary>
+        protected override void SetValuesOnSelect()
+        {
+            var groups = new GroupService().Queryable().Where( g => ItemIds.Contains( g.Id.ToString() ) );
+            this.SetValues( groups );
         }
 
         /// <summary>
