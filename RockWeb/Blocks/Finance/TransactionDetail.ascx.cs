@@ -62,10 +62,10 @@ namespace RockWeb.Blocks.Finance.Administration
         /// </summary>
         /// <param name="transactionId">The transactionId id.</param>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        protected void ShowTransactionEditValue( int transactionId, int batchid )
+        protected void ShowTransactionEditValue( int transactionId, string batchId )
         {
             hfIdTransValue.Value = transactionId.ToString();
-            hfBatchId.Value = batchid.ToString();
+            hfBatchId.Value = batchId;
 
             var transactionValue = new Rock.Model.FinancialTransactionService().Get( transactionId );
 
@@ -102,15 +102,16 @@ namespace RockWeb.Blocks.Finance.Administration
             {
                 var financialTransactionService = new Rock.Model.FinancialTransactionService();
                 Rock.Model.FinancialTransaction financialTransaction = null;
-                int financialTransactionId = string.IsNullOrEmpty( hfIdTransValue.Value ) ? 0 : Int32.Parse( hfIdTransValue.Value );
+                int financialTransactionId = !string.IsNullOrEmpty( hfIdTransValue.Value ) ? Int32.Parse( hfIdTransValue.Value ) : 0;
 
-                int batchid = string.IsNullOrEmpty( hfBatchId.Value ) ? 0 : Int32.Parse( hfBatchId.Value );
+                // null if not associated with a batch
+                int? batchId = hfBatchId.Value.AsInteger();
 
                 if ( financialTransactionId == 0 )
                 {
                     financialTransaction = new Rock.Model.FinancialTransaction();
                     financialTransactionService.Add( financialTransaction, CurrentPersonId );
-                    financialTransaction.BatchId = batchid;
+                    financialTransaction.BatchId = batchId;
                 }
                 else
                 {
@@ -148,7 +149,16 @@ namespace RockWeb.Blocks.Finance.Administration
                 financialTransaction.TransactionDateTime = dtTransactionDateTime.SelectedDate;
 
                 financialTransactionService.Save( financialTransaction, CurrentPersonId );
-                NavigateToDetailPage( "financialBatchId", (int)financialTransaction.BatchId );
+
+                // is this 
+                if ( batchId != null )
+                {
+                    NavigateToDetailPage( "financialBatchId", (int)financialTransaction.BatchId );
+                }
+                else
+                {
+                    NavigateToParentPage();
+                }
             }
         }
 
@@ -174,17 +184,18 @@ namespace RockWeb.Blocks.Finance.Administration
         {
             try
             {
-                var vid = PageParameter( "transactionId" );
-                var vbatch = PageParameter( "batchId" );
-                if ( vbatch == null )
-                    return;
+                string batchId = PageParameter( "batchId" );
+                string transactionId = PageParameter( "transactionId" );
 
-                int id = 0;
-                int.TryParse( vid.ToString(), out id );
-                int batch = 0;
-                int.TryParse( vbatch.ToString(), out batch );
-                ShowTransactionEditValue( id, batch );
-
+                if ( !string.IsNullOrEmpty( transactionId ) )
+                {
+                    ShowTransactionEditValue( Convert.ToInt32( transactionId ), batchId );
+                }
+                else
+                {
+                    ShowTransactionEditValue( 0, batchId );
+                }
+                
             }
             catch ( Exception exp )
             {

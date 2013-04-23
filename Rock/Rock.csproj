@@ -142,6 +142,10 @@
     <Compile Include="Migrations\201304222141330_AccountNumberSecuredGroupTypeDisplayOrder.Designer.cs">
       <DependentUpon>201304222141330_AccountNumberSecuredGroupTypeDisplayOrder.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201304230018433_TransactionsPageUpdate.cs" />
+    <Compile Include="Migrations\201304230018433_TransactionsPageUpdate.Designer.cs">
+      <DependentUpon>201304230018433_TransactionsPageUpdate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Net\RockRestClient.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -1458,6 +1462,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304221822201_FinancialBatch.resx">
       <DependentUpon>201304221822201_FinancialBatch.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304230018433_TransactionsPageUpdate.resx">
+      <DependentUpon>201304230018433_TransactionsPageUpdate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
