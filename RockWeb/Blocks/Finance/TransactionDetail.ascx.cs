@@ -22,7 +22,7 @@ namespace RockWeb.Blocks.Finance.Administration
     /// <summary>
     /// 
     /// </summary>
-    [DetailPage]
+    //[DetailPage]
     public partial class TransactionDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         # region Fields
@@ -67,23 +67,23 @@ namespace RockWeb.Blocks.Finance.Administration
             hfIdTransValue.Value = transactionId.ToString();
             hfBatchId.Value = batchId;
 
-            var transactionValue = new Rock.Model.FinancialTransactionService().Get( transactionId );
+            var transaction = new Rock.Model.FinancialTransactionService().Get( transactionId );
 
-            if ( transactionValue != null )
+            if ( transaction != null )
             {
                 lValue.Text = "Edit";
 
-                hfIdTransValue.Value = transactionValue.Id.ToString();
-                tbAmount.Text = transactionValue.Amount.ToString();
-                hfBatchId.Value = transactionValue.BatchId.ToString();
-                ddlCreditCardType.SetValue( transactionValue.CreditCardTypeValueId );
-                ddlCurrencyType.SetValue( transactionValue.CurrencyTypeValueId );
-                ddlPaymentGateway.SetValue( transactionValue.GatewayId );
-                ddlSourceType.SetValue( transactionValue.SourceTypeValueId );
-                ddlTransactionType.SetValue( transactionValue.TransactionTypeValueId );
-                tbSummary.Text = transactionValue.Summary;
-                tbTransactionCode.Text = transactionValue.TransactionCode;
-                dtTransactionDateTime.Text = transactionValue.TransactionDateTime.ToString();
+                hfIdTransValue.Value = transaction.Id.ToString();
+                tbAmount.Text = transaction.Amount.ToString();
+                hfBatchId.Value = transaction.BatchId.ToString();
+                ddlCreditCardType.SetValue( transaction.CreditCardTypeValueId );
+                ddlCurrencyType.SetValue( transaction.CurrencyTypeValueId );
+                ddlPaymentGateway.SetValue( transaction.GatewayId );
+                ddlSourceType.SetValue( transaction.SourceTypeValueId );
+                ddlTransactionType.SetValue( transaction.TransactionTypeValueId );
+                tbSummary.Text = transaction.Summary;
+                tbTransactionCode.Text = transaction.TransactionCode;
+                dtTransactionDateTime.Text = transaction.TransactionDateTime.ToString();
             }
             else
             {
@@ -119,41 +119,44 @@ namespace RockWeb.Blocks.Finance.Administration
                 }
 
                 financialTransaction.AuthorizedPersonId = CurrentPerson.Id;
+
                 decimal Amount = 0M;
                 decimal.TryParse( tbAmount.Text.Replace( "$", string.Empty ), out Amount );
                 financialTransaction.Amount = Amount;
 
-                if ( ddlCreditCardType.SelectedValue != "-1" )
+                if ( ddlCreditCardType.SelectedValue != Rock.Constants.All.IdValue )
                 {
                     financialTransaction.CreditCardTypeValueId = int.Parse( ddlCreditCardType.SelectedValue );
                 }
-                if ( ddlCurrencyType.SelectedValue != "-1" )
+                if ( ddlCurrencyType.SelectedValue != Rock.Constants.All.IdValue )
                 {
                     financialTransaction.CurrencyTypeValueId = int.Parse( ddlCurrencyType.SelectedValue );
                 }
 
-                if ( !string.IsNullOrEmpty( ddlPaymentGateway.SelectedValue ) && ddlPaymentGateway.SelectedValue != "-1" )
+                if ( !string.IsNullOrEmpty( ddlPaymentGateway.SelectedValue ) && ddlPaymentGateway.SelectedValue != Rock.Constants.All.IdValue )
                 {
                     financialTransaction.GatewayId = int.Parse( ddlPaymentGateway.SelectedValue );
                 }
-                if ( ddlSourceType.SelectedValue != "-1" )
+                if ( ddlSourceType.SelectedValue != Rock.Constants.All.IdValue )
                 {
                     financialTransaction.SourceTypeValueId = int.Parse( ddlSourceType.SelectedValue );
                 }
-                if ( ddlTransactionType.SelectedValue != "-1" )
+                if ( ddlTransactionType.SelectedValue != Rock.Constants.All.IdValue )
                 {
                     financialTransaction.TransactionTypeValueId = int.Parse( ddlTransactionType.SelectedValue );
                 }
+
                 financialTransaction.Summary = tbSummary.Text;
                 financialTransaction.TransactionCode = tbTransactionCode.Text;
-                financialTransaction.TransactionDateTime = dtTransactionDateTime.SelectedDate;
+                financialTransaction.TransactionDateTime = dtTransactionDateTime.SelectedDateTime;
 
                 financialTransactionService.Save( financialTransaction, CurrentPersonId );
 
-                // is this 
                 if ( batchId != null )
                 {
-                    NavigateToDetailPage( "financialBatchId", (int)financialTransaction.BatchId );
+                    Dictionary<string, string> qryString = new Dictionary<string, string>();
+                    qryString["financialBatchid"] = hfBatchId.Value;
+                    NavigateToParentPage( qryString );                    
                 }
                 else
                 {
@@ -170,7 +173,17 @@ namespace RockWeb.Blocks.Finance.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCancelTransaction_Click( object sender, EventArgs e )
         {
-            NavigateToDetailPage( "financialBatchId", !string.IsNullOrEmpty( hfBatchId.Value ) ? Int32.Parse( hfBatchId.Value ) : 0 );
+            if ( !string.IsNullOrEmpty( hfBatchId.Value ) )
+            {
+                Dictionary<string, string> qryString = new Dictionary<string, string>();
+                qryString["financialBatchid"] = hfBatchId.Value;
+                NavigateToParentPage( qryString );
+            }
+            else
+            {
+                NavigateToParentPage();
+            }
+            
         }
 
         #endregion
@@ -184,7 +197,7 @@ namespace RockWeb.Blocks.Finance.Administration
         {
             try
             {
-                string batchId = PageParameter( "batchId" );
+                string batchId = PageParameter( "financialBatchId" );
                 string transactionId = PageParameter( "transactionId" );
 
                 if ( !string.IsNullOrEmpty( transactionId ) )

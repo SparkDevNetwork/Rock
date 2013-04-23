@@ -19,11 +19,16 @@
             <Rock:LabeledDropDownList ID="ddlSourceType" runat="server" LabelText="Source Type" />
         </Rock:GridFilter>
 
-        <Rock:Grid ID="rGridTransactions" runat="server" EmptyDataText="No Transactions Found" OnRowSelected="rGridTransactions_Edit">
+        <Rock:Grid ID="rGridTransactions" runat="server" EmptyDataText="No Transactions Found" OnRowSelected="rGridTransactions_Edit" AllowSorting="true">
             <Columns>
-                <asp:BoundField DataField="TransactionDate" HeaderText="Date" />
-                <asp:BoundField DataField="Description" HeaderText="Description" />
-                <asp:BoundField DataField="Amount" HeaderText="Amount" DataFormatString="{0:C}" />
+                <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />
+                <asp:BoundField DataField="TransactionDateTime" HeaderText="Date" SortExpression="TransactionDateTime" />                
+                <asp:BoundField DataField="Summary" HeaderText="Description" SortExpression="Summary" />
+                <asp:BoundField DataField="Amount" HeaderText="Amount" DataFormatString="{0:C}" SortExpression="Amount" />
+                <asp:BoundField DataField="CurrencyTypeValue" HeaderText="Currency Type" SortExpression="CurrencyTypeValue" />
+                <asp:BoundField DataField="CreditCardTypeValue" HeaderText="Credit Card Type" SortExpression="CreditCardTypeValue" />
+                <asp:BoundField DataField="SourceTypeValue" HeaderText="Source Type" SortExpression="SourceTypeValue" />
+                <Rock:DeleteField OnClick="rGridTransactions_Delete" Visible="false"/>
             </Columns>
         </Rock:Grid>
 
