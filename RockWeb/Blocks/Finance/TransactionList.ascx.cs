@@ -14,6 +14,7 @@ using Rock.Constants;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -48,9 +49,11 @@ namespace RockWeb.Blocks.Finance
             {
                 rGridTransactions.DataKeyNames = new string[] { "id" };
                 rGridTransactions.Actions.ShowAdd = true;
-
                 rGridTransactions.Actions.AddClick += rGridTransactions_Add;
                 rGridTransactions.GridRebind += rGridTransactions_GridRebind;                
+
+                // enable delete transaction
+                rGridTransactions.Columns[rGridTransactions.Columns.Count-1].Visible = true;
             }
             else
             {
@@ -149,6 +152,16 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Handles the Add event of the rGridTransactions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void rGridTransactions_Add( object sender, EventArgs e )
+        {
+            ShowDetailForm( 0 );
+        }
+
+        /// <summary>
         /// Handles the Edit event of the rGridTransactions control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -159,15 +172,24 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Handles the Add event of the rGridTransactions control.
+        /// Handles the Delete event of the rGridTransactions control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void rGridTransactions_Add( object sender, EventArgs e )
+        /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
+        protected void rGridTransactions_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            ShowDetailForm( 0 );
-        }
+            var financialTransactionService = new Rock.Model.FinancialTransactionService();
 
+            FinancialTransaction financialTransaction = financialTransactionService.Get( (int)e.RowKeyValue );
+            if ( financialTransaction != null )
+            {
+                financialTransactionService.Delete( financialTransaction, CurrentPersonId );
+                financialTransactionService.Save( financialTransaction, CurrentPersonId );
+            }
+
+            BindGrid();
+        }
+        
         #endregion
 
         #region Internal Methods
@@ -177,18 +199,17 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void BindFilter()
         {
-            DateTime fromDate;
-            if ( !DateTime.TryParse( rFilter.GetUserPreference( "From Date" ), out fromDate ) )
-            {
-                fromDate = DateTime.Today;
-            }
-            dtStartDate.Text = fromDate.ToShortDateString();
+            //DateTime fromDate;
+            //if ( !DateTime.TryParse( rFilter.GetUserPreference( "From Date" ), out fromDate ) )
+            //{
+            //    fromDate = DateTime.Today;
+            //}
+            //dtStartDate.Text = fromDate.ToShortDateString();
+            dtStartDate.Text = rFilter.GetUserPreference( "From Date" );
             dtEndDate.Text = rFilter.GetUserPreference( "To Date" );
             txtFromAmount.Text = rFilter.GetUserPreference( "From Amount" );
             txtToAmount.Text = rFilter.GetUserPreference( "To Amount" );
             txtTransactionCode.Text = rFilter.GetUserPreference( "Transaction Code" );
-
-            ddlAccount.Items.Add( new ListItem( All.Text, All.Id.ToString() ) );
 
             var accountService = new FinancialAccountService();
             foreach ( FinancialAccount account in accountService.Queryable() )
@@ -197,6 +218,7 @@ namespace RockWeb.Blocks.Finance
                 li.Selected = account.Id.ToString() == rFilter.GetUserPreference( "Account" );
                 ddlAccount.Items.Add( li );
             }
+            ddlAccount.Items.Insert( 0, Rock.Constants.All.ListItem );
 
             BindDefinedTypeDropdown( ddlTransactionType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_TYPE ), "Transaction Type" );
             BindDefinedTypeDropdown( ddlCurrencyType, new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE ), "Currency Type" );
@@ -213,7 +235,7 @@ namespace RockWeb.Blocks.Finance
         private void BindDefinedTypeDropdown( ListControl ListControl, Guid definedTypeGuid, string userPreferenceKey )
         {
             ListControl.BindToDefinedType( DefinedTypeCache.Read( definedTypeGuid ) );
-            ListControl.Items.Insert( 0, new ListItem( All.Text, All.Id.ToString() ) );
+            ListControl.Items.Insert( 0, Rock.Constants.All.ListItem );
 
             if ( !string.IsNullOrWhiteSpace( rFilter.GetUserPreference( userPreferenceKey ) ) )
             {
@@ -227,9 +249,21 @@ namespace RockWeb.Blocks.Finance
         private void BindGrid()
         {
             TransactionSearchValue searchValue = GetSearchValue();
-
+            SortProperty sortProperty = rGridTransactions.SortProperty;
+            
             var transactionService = new FinancialTransactionService();
-            rGridTransactions.DataSource = transactionService.Get( searchValue ).ToList();
+            var queryable = transactionService.Get( searchValue );
+
+            if ( sortProperty != null )
+            {
+                queryable = queryable.Sort( sortProperty );
+            }
+            else
+            {
+                queryable = queryable.OrderBy( t => t.TransactionDateTime );
+            }
+
+            rGridTransactions.DataSource = queryable.ToList();
             rGridTransactions.DataBind();
         }
 
@@ -250,6 +284,7 @@ namespace RockWeb.Blocks.Finance
         {
             TransactionSearchValue searchValue = new TransactionSearchValue();
 
+
             decimal? fromAmountRange = null;
             if ( !String.IsNullOrEmpty( txtFromAmount.Text ) )
             {
@@ -261,40 +296,40 @@ namespace RockWeb.Blocks.Finance
                 toAmountRange = Decimal.Parse( txtToAmount.Text );
             }
             searchValue.AmountRange = new RangeValue<decimal?>( fromAmountRange, toAmountRange );
-                        
+
             DateTime? fromTransactionDate = dtStartDate.SelectedDate;
             DateTime? toTransactionDate = dtEndDate.SelectedDate;
-            searchValue.DateRange = new RangeValue<DateTime?>( fromTransactionDate, toTransactionDate );
-
+            searchValue.DateRange = new RangeValue<DateTime?>( dtStartDate.SelectedDate, dtEndDate.SelectedDate );
+            
             if ( !string.IsNullOrEmpty( txtTransactionCode.Text )  )
             {
                 searchValue.TransactionCode = txtTransactionCode.Text;
             }
             
-            if ( ddlAccount.SelectedIndex > -1 )
+            if ( ddlAccount.SelectedValue != Rock.Constants.All.IdValue )
             {
                 searchValue.AccountId = ddlAccount.SelectedValueAsInt();
             }
 
-            if ( ddlTransactionType.SelectedIndex > -1 )
+            if ( ddlTransactionType.SelectedValue != Rock.Constants.All.IdValue )
             {
                 searchValue.TransactionTypeValueId = ddlTransactionType.SelectedValueAsInt();
             }
 
-            if ( ddlCurrencyType.SelectedIndex > -1 )
+            if ( ddlCurrencyType.SelectedValue != Rock.Constants.All.IdValue )
             {
                 searchValue.CurrencyTypeValueId = ddlCurrencyType.SelectedValueAsInt();
             }
 
-            if ( ddlCreditCardType.SelectedIndex > -1 )
+            if ( ddlCreditCardType.SelectedValue != Rock.Constants.All.IdValue )
             {
                 searchValue.CreditCardTypeValueId = ddlCreditCardType.SelectedValueAsInt();
             }
 
-            if ( ddlSourceType.SelectedIndex > -1 )
+            if ( ddlSourceType.SelectedValue != Rock.Constants.All.IdValue )
             {
                 searchValue.SourceTypeValueId = ddlSourceType.SelectedValueAsInt();
-            }            
+            }
 
             return searchValue;
         }

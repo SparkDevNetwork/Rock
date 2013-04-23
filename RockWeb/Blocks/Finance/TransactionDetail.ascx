@@ -39,14 +39,9 @@
             
             <div class="span4">
                 <Rock:LabeledDropDownList ID="ddlCurrencyType" runat="server" LabelText="Currency Type" TabIndex="9" />
-                <!-- CurrencyTypeValueId -->
                 <Rock:LabeledDropDownList ID="ddlCreditCardType" runat="server" LabelText="Credit Card Type" TabIndex="10" />
-                <!-- CreditCardTypeValueId -->
                 <Rock:LabeledDropDownList ID="ddlPaymentGateway" runat="server" LabelText="Payment Gateway" TabIndex="11" />
-                <!-- PaymentGatewayId -->
-                      
                 <%--  <Rock:LabeledDropDownList ID="ddlEntityType" runat="server" LabelText="Entity Type" />--%>
-                <!-- EntityTypeId -->
             </div>
 
         </fieldset>
