@@ -315,20 +315,20 @@ namespace Rock.Apps.CheckScannerUtility
 
 
             // use a backgroundworker to do the work so that we can have an updatable progressbar in the UI
-            BackgroundWorker bw = new BackgroundWorker();
-            bw.DoWork += bw_DoWork;
-            bw.ProgressChanged += bw_ProgressChanged;
-            bw.RunWorkerCompleted += bw_RunWorkerCompleted;
-            bw.WorkerReportsProgress = true;
-            bw.RunWorkerAsync();
+            BackgroundWorker bwUploadScannedChecks = new BackgroundWorker();
+            bwUploadScannedChecks.DoWork += bwUploadScannedChecks_DoWork;
+            bwUploadScannedChecks.ProgressChanged += bwUploadScannedChecks_ProgressChanged;
+            bwUploadScannedChecks.RunWorkerCompleted += bwUploadScannedChecks_RunWorkerCompleted;
+            bwUploadScannedChecks.WorkerReportsProgress = true;
+            bwUploadScannedChecks.RunWorkerAsync();
         }
 
         /// <summary>
-        /// Handles the RunWorkerCompleted event of the bw control.
+        /// Handles the RunWorkerCompleted event of the bwUploadScannedChecks control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RunWorkerCompletedEventArgs"/> instance containing the event data.</param>
-        private void bw_RunWorkerCompleted( object sender, RunWorkerCompletedEventArgs e )
+        private void bwUploadScannedChecks_RunWorkerCompleted( object sender, RunWorkerCompletedEventArgs e )
         {
             pbUploadProgress.Visibility = Visibility.Hidden;
             if ( e.Error == null )
@@ -342,21 +342,21 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         /// <summary>
-        /// Handles the ProgressChanged event of the bw control.
+        /// Handles the ProgressChanged event of the bwUploadScannedChecks control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="ProgressChangedEventArgs"/> instance containing the event data.</param>
-        private void bw_ProgressChanged( object sender, ProgressChangedEventArgs e )
+        private void bwUploadScannedChecks_ProgressChanged( object sender, ProgressChangedEventArgs e )
         {
             pbUploadProgress.Value = e.ProgressPercentage;
         }
 
         /// <summary>
-        /// Handles the DoWork event of the bw control.
+        /// Handles the DoWork event of the bwUploadScannedChecks control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="DoWorkEventArgs"/> instance containing the event data.</param>
-        private void bw_DoWork( object sender, DoWorkEventArgs e )
+        private void bwUploadScannedChecks_DoWork( object sender, DoWorkEventArgs e )
         {
             BackgroundWorker bw = sender as BackgroundWorker;
             

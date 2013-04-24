@@ -138,6 +138,14 @@
     <Compile Include="Migrations\201304191252561_UpdateCheckinAttributes.Designer.cs">
       <DependentUpon>201304191252561_UpdateCheckinAttributes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201304222141330_AccountNumberSecuredGroupTypeDisplayOrder.cs" />
+    <Compile Include="Migrations\201304222141330_AccountNumberSecuredGroupTypeDisplayOrder.Designer.cs">
+      <DependentUpon>201304222141330_AccountNumberSecuredGroupTypeDisplayOrder.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201304230018433_TransactionsPageUpdate.cs" />
+    <Compile Include="Migrations\201304230018433_TransactionsPageUpdate.Designer.cs">
+      <DependentUpon>201304230018433_TransactionsPageUpdate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Net\RockRestClient.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -180,14 +188,14 @@
     <Compile Include="Migrations\201304181823389_TransactionRefund.Designer.cs">
       <DependentUpon>201304181823389_TransactionRefund.cs</DependentUpon>
     </Compile>
-    <Compile Include="Model\FinancialTransactionRefund.cs" />
-    <Compile Include="Model\FinancialPersonSavedAccount.cs" />
-    <Compile Include="Model\FinancialPersonBankAccount.cs" />
-    <Compile Include="Model\FinancialScheduledTransactionDetail.cs" />
     <Compile Include="Migrations\201304221822201_FinancialBatch.cs" />
     <Compile Include="Migrations\201304221822201_FinancialBatch.Designer.cs">
       <DependentUpon>201304221822201_FinancialBatch.cs</DependentUpon>
     </Compile>
+    <Compile Include="Model\FinancialTransactionRefund.cs" />
+    <Compile Include="Model\FinancialPersonSavedAccount.cs" />
+    <Compile Include="Model\FinancialPersonBankAccount.cs" />
+    <Compile Include="Model\FinancialScheduledTransactionDetail.cs" />
     <Compile Include="Reporting\DataTransformComponent.cs" />
     <Compile Include="Reporting\DataTransformContainer.cs" />
     <Compile Include="Reporting\DataTransform\Person\ParentTransform.cs" />
@@ -1449,8 +1457,14 @@
     <EmbeddedResource Include="Migrations\201304191252561_UpdateCheckinAttributes.resx">
       <DependentUpon>201304191252561_UpdateCheckinAttributes.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304222141330_AccountNumberSecuredGroupTypeDisplayOrder.resx">
+      <DependentUpon>201304222141330_AccountNumberSecuredGroupTypeDisplayOrder.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304221822201_FinancialBatch.resx">
       <DependentUpon>201304221822201_FinancialBatch.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304230018433_TransactionsPageUpdate.resx">
+      <DependentUpon>201304230018433_TransactionsPageUpdate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
