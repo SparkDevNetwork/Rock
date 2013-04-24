@@ -146,6 +146,10 @@
     <Compile Include="Migrations\201304230018433_TransactionsPageUpdate.Designer.cs">
       <DependentUpon>201304230018433_TransactionsPageUpdate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201304240025206_CheckMicrEncrypted.cs" />
+    <Compile Include="Migrations\201304240025206_CheckMicrEncrypted.Designer.cs">
+      <DependentUpon>201304240025206_CheckMicrEncrypted.cs</DependentUpon>
+    </Compile>
     <Compile Include="Net\RockRestClient.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -1465,6 +1469,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304230018433_TransactionsPageUpdate.resx">
       <DependentUpon>201304230018433_TransactionsPageUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304240025206_CheckMicrEncrypted.resx">
+      <DependentUpon>201304240025206_CheckMicrEncrypted.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

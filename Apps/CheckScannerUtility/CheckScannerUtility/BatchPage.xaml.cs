@@ -44,6 +44,14 @@ namespace Rock.Apps.CheckScannerUtility
         public static List<BinaryFileType> BinaryFileTypes { get; set; }
 
         /// <summary>
+        /// Gets or sets the financial transactions.
+        /// </summary>
+        /// <value>
+        /// The financial transactions.
+        /// </value>
+        public static List<FinancialTransaction> FinancialTransactions { get; set; }
+
+        /// <summary>
         /// Gets or sets the type of the feeder.
         /// </summary>
         /// <value>
@@ -366,18 +374,21 @@ namespace Rock.Apps.CheckScannerUtility
 
             DirectoryInfo scannerOutputDirectory = new DirectoryInfo( GetScannerOutputDirectory() );
             List<FileInfo> scannedFiles = scannerOutputDirectory.GetFiles( "*.jpg" ).ToList();
-            //todo int binaryFileTypeId = BinaryFileTypes.First( a => a.Guid.Equals(Rock.SystemGuid.BinaryFiletype.
+            int binaryFileTypeId = BinaryFileTypes.First( a => a.Guid.Equals( new Guid(Rock.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE) ) ).Id;
 
             int totalCount = scannedFiles.Count();
             int position = 1;
 
             foreach ( FileInfo scannedFile in scannedFiles )
             {
+                
+                
+                
                 BinaryFile binaryFile = new BinaryFile();
                 binaryFile.Id = 0;
                 binaryFile.FileName = scannedFile.Name;
                 binaryFile.Data = File.ReadAllBytes( scannedFile.FullName );
-                //binaryFile.BinaryFileTypeId = binaryFileTypeId;
+                binaryFile.BinaryFileTypeId = binaryFileTypeId;
 
                 binaryFile.IsSystem = false;
                 binaryFile.MimeType = "image/jpeg";
@@ -386,7 +397,26 @@ namespace Rock.Apps.CheckScannerUtility
                 int percentComplete = position++ * 100 / totalCount;
                 bw.ReportProgress( percentComplete );
 
-                //todo FinancialTransactionImage financialTransactionImage = new FinancialTransactionImage();
+
+                FinancialTransaction financialTransaction = new FinancialTransaction();
+                financialTransaction.Amount = 0.00M;
+                //financialTransaction.BatchId = 
+                //financialTransaction.CurrencyTypeValueId
+                financialTransaction.TransactionDateTime = DateTime.Now;
+                //financialTransaction.TransactionTypeValueId
+                financialTransaction.Summary = "Scanned Check";
+                //financialTransaction.SourceTypeValueId
+                financialTransaction.Guid = Guid.NewGuid();
+
+                string checkMicr = "12345678901234567_123456789_1234";
+                //financialTransaction.CheckMicrEncrypted = checkMicr;
+                var value = new List<AttributeValue>();
+                value.Add(new AttributeValue { Value = checkMicr });
+                financialTransaction.AttributeValues = new Dictionary<string, List<AttributeValue>>();
+                financialTransaction.AttributeValues.Add( "checkMicrPlainText", value );
+                client.PostData<FinancialTransaction>( "api/FinancialTransactions/PostScanned", financialTransaction);
+
+                //FinancialTransactionImage financialTransactionImage = new FinancialTransactionImage();
             }
         }
 
