@@ -130,13 +130,14 @@ namespace Rock.Model
         public int? SourceTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets hash of the Checking Account AccountNumber.  Stored as a SHA1 hash (always 40 chars) so that it can be matched without being known
+        /// Gets or sets the check micr encrypted.
         /// </summary>
         /// <value>
-        /// AccountNumberSecured.
+        /// The check micr encrypted.
+        /// Plain Text format is {accountnumber}_{routingnumber}_{checknumber}
         /// </value>
-        [MaxLength( 40 )]
-        public string AccountNumberSecured { get; set; }
+        [DataMember]
+        public string CheckMicrEncrypted { get; set; }
 
         #endregion
 
@@ -231,6 +232,15 @@ namespace Rock.Model
             set { _images = value; }
         }
         private ICollection<FinancialTransactionImage> _images;
+
+        /// <summary>
+        /// Gets or sets the check micr plain text.
+        /// </summary>
+        /// <value>
+        /// The check micr plain text.
+        /// </value>
+        //[DataMember]
+        //public virtual string CheckMicrPlainText { get; set; }
 
         #endregion
 
