@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using Rock.Security;
@@ -133,19 +134,35 @@ namespace Rock.Net
         /// Gets the data.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="getPath">The get path, for example "api/BinaryFileTypes</param>
+        /// <param name="getPath">The get path, for example "api/BinaryFileTypes"</param>
+        /// <param name="odataFilter">The odata filter.</param>
         /// <returns></returns>
-        public T GetData<T>( string getPath )
+        public T GetData<T>( string getPath, string odataFilter = null )
         {
             HttpClient httpClient = new HttpClient( new HttpClientHandler { CookieContainer = this.CookieContainer } );
 
-            Uri requestUri = new Uri( rockBaseUri, getPath );
+            Uri requestUri;
+
+            if ( !string.IsNullOrWhiteSpace( odataFilter ) )
+            {
+                string queryParam = "?$filter=" + odataFilter;
+                requestUri = new Uri( rockBaseUri, getPath + queryParam);
+            }
+            else
+            {
+                requestUri = new Uri( rockBaseUri, getPath );
+            }
             HttpContent resultContent;
             T result = default( T );
+            string resultString;
 
             httpClient.GetAsync( requestUri ).ContinueWith( ( postTask ) =>
                 {
                     resultContent = postTask.Result.Content;
+                    resultContent.ReadAsStringAsync().ContinueWith( p =>
+                        {
+                            resultString = p.Result;
+                        } ).Wait();
                     resultContent.ReadAsAsync<T>().ContinueWith( ( readResult ) =>
                         {
                             result = readResult.Result;

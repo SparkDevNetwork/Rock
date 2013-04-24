@@ -40,9 +40,10 @@ namespace Rock.Rest.Controllers
         /// <returns></returns>
         [Authenticate]
 		[HttpPost]
-        public HttpResponseMessage PostScanned( [FromBody]FinancialTransaction financialTransaction)
+        public HttpResponseMessage PostScanned( [FromBody]FinancialTransactionScannedCheck financialTransactionScannedCheck )
         {
-            financialTransaction.CheckMicrEncrypted = Encryption.EncryptString( financialTransaction.AttributeValues["checkMicrPlainText"][0].Value );
+            financialTransactionScannedCheck.CheckMicrEncrypted = Encryption.EncryptString( financialTransactionScannedCheck.ScannedCheckMicr );
+            FinancialTransaction financialTransaction = FinancialTransaction.FromJson( financialTransactionScannedCheck.ToJson() );
             return this.Post( financialTransaction );
         }
     }
