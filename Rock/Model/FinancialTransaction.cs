@@ -131,10 +131,10 @@ namespace Rock.Model
 
         /// <summary>
         /// Gets or sets the check micr encrypted.
+        /// Plain Text format is {routingnumber}_{accountnumber}_{checknumber}
         /// </summary>
         /// <value>
         /// The check micr encrypted.
-        /// Plain Text format is {accountnumber}_{routingnumber}_{checknumber}
         /// </value>
         [DataMember]
         public string CheckMicrEncrypted { get; set; }
@@ -259,6 +259,26 @@ namespace Rock.Model
 
         #endregion
 
+    }
+
+
+    /// <summary>
+    /// Special Class to use when uploading a FinancialTransaction from a Scanned Check thru the Rest API.
+    /// The Rest Client can't be given access to the DataEncryptionKey, so they'll upload it (using SSL) 
+    /// with the plaintext CheckMicr and the Rock server will encrypt prior to saving to database
+    /// </summary>
+    [DataContract]
+    [NotMapped]
+    public class FinancialTransactionScannedCheck : FinancialTransaction
+    {
+        /// <summary>
+        /// Gets or sets the scanned check micr.
+        /// </summary>
+        /// <value>
+        /// The scanned check micr.
+        /// </value>
+        [DataMember]
+        public string ScannedCheckMicr { get; set; }
     }
 
     #region Entity Configuration
