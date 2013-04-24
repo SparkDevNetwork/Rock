@@ -143,6 +143,10 @@
     <Compile Include="Migrations\201304222141330_AccountNumberSecuredGroupTypeDisplayOrder.Designer.cs">
       <DependentUpon>201304222141330_AccountNumberSecuredGroupTypeDisplayOrder.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201304231807081_CommunicationMEF.cs" />
+    <Compile Include="Migrations\201304231807081_CommunicationMEF.Designer.cs">
+      <DependentUpon>201304231807081_CommunicationMEF.cs</DependentUpon>
+    </Compile>
     <Compile Include="Net\RockRestClient.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -1468,6 +1472,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304221822201_FinancialBatch.resx">
       <DependentUpon>201304221822201_FinancialBatch.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304231807081_CommunicationMEF.resx">
+      <DependentUpon>201304231807081_CommunicationMEF.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
