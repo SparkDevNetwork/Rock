@@ -1,7 +1,12 @@
+#NOTE: RockWeb\bin repository should only include files that don't get copied into RockWeb\Bin as a result of building the application
+
 #file types
 *.resources.dll
 
 #specific files
+/AjaxControlToolkit.dll
+/AjaxControlToolkit.pdb
+/EntityFramework.dll
 /EntityFramework.xml
 /Facebook.dll
 /Facebook.xml
@@ -14,7 +19,6 @@
 /Newtonsoft.Json.xml
 /Quartz.dll
 /Quartz.pdb
-/Rock.DataTransferObjects.dll
 /Rock.Rest.dll
 /Rock.Rest.pdb
 /Rock.dll
@@ -22,5 +26,6 @@
 /System.Spatial.dll
 /System.Spatial.xml
 /System.Web.Http.OData.dll
-/Rock.DataTransferObjects.pdb
 /System.Web.Http.OData.xml
+
+
