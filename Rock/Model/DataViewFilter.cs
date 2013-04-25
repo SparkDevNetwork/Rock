@@ -14,7 +14,7 @@ using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Data;
-using Rock.DataFilters;
+using Rock.Reporting;
 
 namespace Rock.Model
 {
@@ -131,7 +131,7 @@ namespace Rock.Model
             {
                 if ( EntityType != null )
                 {
-                    var filterComponent = Rock.DataFilters.DataFilterContainer.GetComponent( EntityType.Name );
+                    var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( EntityType.Name );
                     if ( filterComponent != null )
                     {
                         authorized = filterComponent.IsAuthorized( action, person );
@@ -173,7 +173,7 @@ namespace Rock.Model
                         var entityType = Rock.Web.Cache.EntityTypeCache.Read( this.EntityTypeId.Value );
                         if ( entityType != null )
                         {
-                            var component = Rock.DataFilters.DataFilterContainer.GetComponent( entityType.Name );
+                            var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
                             if ( component != null )
                             {
                                 try
@@ -249,7 +249,7 @@ namespace Rock.Model
             {
                 if ( EntityType != null )
                 {
-                    var component = Rock.DataFilters.DataFilterContainer.GetComponent( EntityType.Name );
+                    var component = Rock.Reporting.DataFilterContainer.GetComponent( EntityType.Name );
                     if ( component != null )
                     {
                         return component.FormatSelection( filteredEntityType, this.Selection );

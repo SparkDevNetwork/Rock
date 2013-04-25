@@ -25,20 +25,20 @@ namespace RockWeb.Blocks.CheckIn
             if ( !Page.IsPostBack )
             {
                 string script = string.Format( @"
-    <script>
-        $(document).ready(function (e) {{
-            if (localStorage) {{
-                if (localStorage.checkInKiosk) {{
-                    $('[id$=""hfKiosk""]').val(localStorage.checkInKiosk);
-                    if (localStorage.checkInGroupTypes) {{
-                        $('[id$=""hfGroupTypes""]').val(localStorage.checkInGroupTypes);
-                    }}
-                    {0};
-                }}
-            }}
-        }});
-    </script>
-", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
+                    <script>
+                        $(document).ready(function (e) {{
+                            if (localStorage) {{
+                                if (localStorage.checkInKiosk) {{
+                                    $('[id$=""hfKiosk""]').val(localStorage.checkInKiosk);
+                                    if (localStorage.checkInGroupTypes) {{
+                                        $('[id$=""hfGroupTypes""]').val(localStorage.checkInGroupTypes);
+                                    }}
+                                    {0};
+                                }}
+                            }}
+                        }});
+                    </script>
+                ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
                 phScript.Controls.Add( new LiteralControl( script ) );
 
                 ddlKiosk.Items.Clear();
@@ -101,7 +101,7 @@ namespace RockWeb.Blocks.CheckIn
             CurrentWorkflow = null;
             SaveState();
 
-            GoToWelcomePage();
+            NavigateToNextPage();
         }
 
         private void BindGroupTypes()

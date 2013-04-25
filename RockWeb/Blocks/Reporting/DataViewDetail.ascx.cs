@@ -13,7 +13,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Constants;
 using Rock.Data;
-using Rock.DataFilters;
+using Rock.Reporting;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
