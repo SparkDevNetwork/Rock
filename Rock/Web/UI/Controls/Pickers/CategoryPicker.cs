@@ -3,10 +3,9 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
-using System.ComponentModel;
-using System.Web.UI;
-using System.Web.UI.WebControls;
+
+using System.Collections.Generic;
+using System.Linq;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -39,8 +38,49 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                ItemId = Rock.Constants.None.IdValue;
-                ItemName = Rock.Constants.None.TextHtml;
+                ItemId = Constants.None.IdValue;
+                ItemName = Constants.None.TextHtml;
+            }
+        }
+
+        /// <summary>
+        /// Sets the values.
+        /// </summary>
+        /// <param name="categories">The categories.</param>
+        public void SetValues( IEnumerable<Category> categories )
+        {
+            var theCategories = categories.ToList();
+
+            if ( theCategories.Any() )
+            {
+                var ids = new List<string>();
+                var names = new List<string>();
+                var parentCategoryIds = string.Empty;
+
+                foreach ( var category in theCategories )
+                {
+                    if ( category != null )
+                    {
+                        ids.Add( category.Id.ToString() );
+                        names.Add( category.Name );
+                        var parentCategory = category.ParentCategory;
+
+                        while ( parentCategory != null )
+                        {
+                            parentCategoryIds += parentCategory.Id.ToString() + ",";
+                            parentCategory = parentCategory.ParentCategory;
+                        }
+                    }
+                }
+
+                InitialItemParentIds = parentCategoryIds.TrimEnd( new[] { ',' } );
+                ItemIds = ids;
+                ItemNames = names;
+            }
+            else
+            {
+                ItemId = Constants.None.IdValue;
+                ItemName = Constants.None.TextHtml;
             }
         }
 
@@ -51,6 +91,15 @@ namespace Rock.Web.UI.Controls
         {
             var item = new CategoryService().Get( int.Parse( ItemId ) );
             this.SetValue( item );
+        }
+
+        /// <summary>
+        /// Sets the values on select.
+        /// </summary>
+        protected override void SetValuesOnSelect()
+        {
+            var items = new CategoryService().Queryable().Where( i => ItemIds.Contains( i.Id.ToString() ) );
+            this.SetValues( items );
         }
 
         /// <summary>

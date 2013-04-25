@@ -11,10 +11,10 @@ namespace Rock.Attribute
     /// <summary>
     /// 
     /// </summary>
-    public class AccountsFieldAttribute : FieldAttribute
+    public class AccountFieldAttribute : FieldAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AccountsFieldAttribute"/> class.
+        /// Initializes a new instance of the <see cref="AccountFieldAttribute"/> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
@@ -23,8 +23,8 @@ namespace Rock.Attribute
         /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
-        public AccountsFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null ) : 
-            base( name, description, required, defaultValue, category, order, key, typeof( AccountsFieldType ).FullName )
+        public AccountFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null ) : 
+            base( name, description, required, defaultValue, category, order, key, typeof( AccountFieldType ).FullName )
         {
         }
     }
