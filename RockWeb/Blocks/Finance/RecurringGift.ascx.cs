@@ -22,13 +22,16 @@ namespace RockWeb.Blocks.Finance
 {
     /// <summary>
     /// 
-    /// </summary>    
+    /// </summary>   
+    
+    // TODO: Should this be an attribute on the site, rather than a block attribute? 
     [CustomCheckboxListField( "Credit Card Provider", "Which payment processor should be used for credit cards?",
         "SELECT [Name] AS [Text], [Id] AS [Value] FROM [FinancialGateway]", true, "", "Payments", 1 )]
+
+    // TODO: Should this be an attribute on the site, rather than a block attribute?
     [CustomCheckboxListField( "Checking/ACH Provider", "Which payment processor should be used for checking/ACH?",
         "SELECT [Name] AS [Text], [Id] AS [Value] FROM [FinancialGateway]", true, "", "Payments", 2 )]
-    [CustomCheckboxListField( "Default Accounts to display", "Which accounts should be displayed by default?",
-        "SELECT [Name] AS [Text], [Id] AS [Value] FROM [FinancialAccount] WHERE [IsActive] = 1 ORDER BY [Order]", true, "", "Payments", 3 )]
+    [AccountsField( "Default Accounts to display", "Which accounts should be displayed by default?", true, "", "Payments", 3, "DefaultAccounts" )]
     [BooleanField( "Stack layout vertically", "Should giving UI be stacked vertically or horizontally?", true, "UI Options", 2 )]
     [BooleanField( "Show Campus selection", "Should giving be associated with a specific campus?", false, "UI Options", 3 )]
     [BooleanField( "Show Credit Card giving", "Allow users to give using a credit card?", true, "UI Options", 4 )]
@@ -327,17 +330,27 @@ namespace RockWeb.Blocks.Finance
             _transaction = new FinancialTransaction();            
             _transactionService.Save( _transaction, CurrentPersonId );
 
-            var queryable = accountService.Queryable().Where( f => f.IsActive )
-                .Distinct().OrderBy( f => f.Order );
+            string guids = GetAttributeValue( "DefaultAccounts" );
+            var defaultAccountGuids = !string.IsNullOrWhiteSpace( guids )
+                ? guids.Split( new[] { ',' } ).Select( Guid.Parse ).ToList()
+                : new List<Guid>();
 
-            List<int> defaultAccounts = GetAttributeValue( "DefaultAccountstodisplay" ).Any()
-                ? GetAttributeValue( "DefaultAccountstodisplay" ).Split( ',' ).ToList().Select( s => int.Parse( s ) ).ToList()
-                : new List<int>( ( queryable.Select( f => f.Id ).ToList().FirstOrDefault() ) );
-
-            if ( ( queryable.Count() - defaultAccounts.Count ) > 0 )
+            if ( !defaultAccountGuids.Any() )
             {
-                btnAddAccount.DataSource = queryable.Where( f => !defaultAccounts.Contains( f.Id ) )
-                   .Select( f => f.PublicName ).ToList();
+                pnlEmptyDataSet.Visible = true;
+                return;
+            }
+            else
+            {
+                pnlEmptyDataSet.Visible = false;
+            }
+
+            var accounts = accountService.Queryable().Where( f => f.IsActive ).OrderBy( f => f.Order );
+            var optionalAccounts = accounts.Where( a => !defaultAccountGuids.Contains( a.Guid ) );
+
+            if ( optionalAccounts.Any() )
+            {
+                btnAddAccount.DataSource = optionalAccounts.Select( a => a.PublicName ).ToList();
                 btnAddAccount.DataBind();
                 btnAddAccount.Title = "Add Another Gift";
                 divAddAccount.Visible = true;
@@ -347,9 +360,8 @@ namespace RockWeb.Blocks.Finance
                 divAddAccount.Visible = false;
             }
 
-            ViewState["CachedTransaction"] = _transaction;
-
-            rptAccountList.DataSource = queryable.Where( f => defaultAccounts.Contains( f.Id ) )
+            Session.Add( "CurrentTransaction", _transaction );
+            rptAccountList.DataSource = accounts.Where( f => defaultAccountGuids.Contains( f.Guid ) )
                 .ToDictionary( f => f.PublicName, f => Convert.ToDecimal( !f.IsActive ) );
             rptAccountList.DataBind();
         }
@@ -378,7 +390,7 @@ namespace RockWeb.Blocks.Finance
                 txtLastName.Value = CurrentPerson.LastName.ToString();
                 txtAddress.Value = personLocation.Street1.ToString();
                 txtCity.Value = personLocation.City.ToString();
-                ddlState.Value = personLocation.State.ToString();
+                ddlState.SelectedValue = personLocation.State.ToString();
                 txtZipcode.Value = personLocation.Zip.ToString();
                 txtEmail.Value = CurrentPerson.Email.ToString();
             }
