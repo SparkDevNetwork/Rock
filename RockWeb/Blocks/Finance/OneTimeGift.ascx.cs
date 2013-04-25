@@ -5,29 +5,28 @@
 //
 
 using System;
-using System.Globalization;
 using System.Linq;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using System.Collections.Generic;
-
-using Rock;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Finance
 {
     /// <summary>
     /// 
-    /// </summary>    
+    /// </summary>
+
+    // TODO: Should this be an attribute on the site, rather than a block attribute?
     [CustomCheckboxListField( "Credit Card Provider", "Which payment processor should be used for credit cards?",
         "SELECT [Name] AS [Text], [Id] AS [Value] FROM [FinancialGateway]", true, "", "Payments", 1 )]
+
+    // TODO: Should this be an attribute on the site, rather than a block attribute?
     [CustomCheckboxListField( "Checking/ACH Provider", "Which payment processor should be used for checking/ACH?",
         "SELECT [Name] AS [Text], [Id] AS [Value] FROM [FinancialGateway]", true, "", "Payments", 2 )]
-    [CustomCheckboxListField( "Default Accounts to display", "Which accounts should be displayed by default?",
-        "SELECT [Name] AS [Text], [Id] AS [Value] FROM [FinancialAccount] WHERE [IsActive] = 1 ORDER BY [Order]", true, "", "Payments", 3 )]
+    [AccountsField( "Default Accounts to display", "Which accounts should be displayed by default?", true, "", "Payments", 3, "DefaultAccounts" )]
     [BooleanField( "Stack layout vertically", "Should giving UI be stacked vertically or horizontally?", true, "UI Options", 2 )]
     [BooleanField( "Show Campus selection", "Should giving be associated with a specific campus?", false, "UI Options", 3 )]
     [BooleanField( "Show Credit Card giving", "Allow users to give using a credit card?", true, "UI Options", 4 )]
@@ -36,12 +35,12 @@ namespace RockWeb.Blocks.Finance
     {
         #region Fields
 
-        protected bool _UseStackedLayout = false;
-        protected bool _ShowCampusSelect = false;
-        protected bool _ShowSaveDetails = false;
-        protected bool _ShowCreditCard = false;
-        protected bool _ShowChecking = false;
-        protected string spanClass = "";
+        protected bool _useStackedLayout = false;
+        protected bool _showCampusSelect = false;
+        protected bool _showSaveDetails = false;
+        protected bool _showCreditCard = false;
+        protected bool _showChecking = false;
+        protected string _spanClass = "";
 
         protected List<FinancialTransactionDetail> _detailList = new List<FinancialTransactionDetail>();
         protected FinancialTransactionService _transactionService = new FinancialTransactionService();
@@ -59,17 +58,17 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnInit( e );
 
-            _UseStackedLayout = Convert.ToBoolean( GetAttributeValue( "Stacklayoutvertically" ) );
-            _ShowCampusSelect = Convert.ToBoolean( GetAttributeValue( "ShowCampusselection" ) );
-            _ShowCreditCard = Convert.ToBoolean( GetAttributeValue( "ShowCreditCardgiving" ) );
-            _ShowChecking = Convert.ToBoolean( GetAttributeValue( "ShowChecking/ACHgiving" ) );
+            _useStackedLayout = Convert.ToBoolean( GetAttributeValue( "Stacklayoutvertically" ) );
+            _showCampusSelect = Convert.ToBoolean( GetAttributeValue( "ShowCampusselection" ) );
+            _showCreditCard = Convert.ToBoolean( GetAttributeValue( "ShowCreditCardgiving" ) );
+            _showChecking = Convert.ToBoolean( GetAttributeValue( "ShowChecking/ACHgiving" ) );
                         
             if ( CurrentPerson != null )
             {
-                _ShowSaveDetails = true;
+                _showSaveDetails = true;
             }
 
-            if ( _ShowCampusSelect )
+            if ( _showCampusSelect )
             {
                 BindCampuses();
             }
@@ -117,17 +116,20 @@ namespace RockWeb.Blocks.Finance
 
                 // TODO rewrite account lookup to use ID instead of name
                 string accountName = ( (HtmlGenericControl)item.FindControl("lblAccountName") ).InnerText;
-                account.Account = lookupAccounts.Where(f => f.PublicName == accountName).FirstOrDefault();
-                decimal amount = Decimal.Parse(( (HtmlInputControl)item.FindControl("inputAccountAmount") ).Value);
+                account.Account = lookupAccounts.FirstOrDefault(f => f.PublicName == accountName);
+                decimal amount = Decimal.Parse( ( (HtmlInputControl) item.FindControl( "inputAccountAmount" ) ).Value );
                 account.Amount = amount;
                 account.TransactionId = _transaction.Id;
 
                 _detailList.Add(account);
             }
 
-            account = new FinancialTransactionDetail();
-            account.Account = lookupAccounts.Where(f => f.PublicName == btnAddAccount.SelectedValue).FirstOrDefault();
-            account.Amount = 0M;
+            account = new FinancialTransactionDetail
+                {
+                    Account = lookupAccounts.FirstOrDefault( f => f.PublicName == btnAddAccount.SelectedValue ),
+                    Amount = 0M
+                };
+
             _detailList.Add(account);
 
             if ( btnAddAccount.Items.Count > 1 )
@@ -140,7 +142,7 @@ namespace RockWeb.Blocks.Finance
                 divAddAccount.Visible = false;
             }
 
-            rptAccountList.DataSource = _detailList.ToDictionary(f => (string)f.Account.PublicName, f => (decimal)f.Amount);
+            rptAccountList.DataSource = _detailList.ToDictionary(f => f.Account.PublicName, f => f.Amount);
             rptAccountList.DataBind();
         }
         
@@ -170,12 +172,12 @@ namespace RockWeb.Blocks.Finance
             Person person;
 
             // process person details          
-            var personGroup = personService.GetByEmail(Request.Form["txtEmail"]);
+            var personGroup = personService.GetByEmail( txtEmail.Value ).ToList();
 
-            if ( personGroup.Count() > 0 )
+            if ( personGroup.Any() )
             {
-                person = personGroup.Where(p => p.FirstName == Request.Form["txtFirstName"]
-                    && p.LastName == Request.Form["txtLastName"]).Distinct().FirstOrDefault();
+                person = personGroup.FirstOrDefault( p => p.FirstName == txtFirstName.Value && p.LastName == txtLastName.Value )
+                    ?? new Person();
                 // TODO duplicate person handling?  ex NewAccount.ascx DisplayDuplicates()
             }
             else
@@ -195,7 +197,7 @@ namespace RockWeb.Blocks.Finance
             var lookupAccounts = accountService.Queryable().Where(f => f.IsActive)
                 .Distinct().OrderBy(f => f.Order).ToList();
 
-            _transaction = (FinancialTransaction)ViewState["CachedTransaction"];
+            _transaction = (FinancialTransaction) Session["CurrentTransaction"];
             if ( _transaction == null )
             {
                 _transaction = new FinancialTransaction();
@@ -210,8 +212,8 @@ namespace RockWeb.Blocks.Finance
 
                 // TODO rewrite account lookup to use ID instead of name
                 string accountName = ( (HtmlGenericControl)item.FindControl("lblAccountName") ).InnerText;
-                account.Account = lookupAccounts.Where(f => f.PublicName == accountName).FirstOrDefault();
-                decimal amount = Decimal.Parse(( (HtmlInputControl)item.FindControl("inputAccountAmount") ).Value);
+                account.Account = lookupAccounts.FirstOrDefault( f => f.PublicName == accountName );
+                decimal amount = Decimal.Parse( ( (HtmlInputControl) item.FindControl( "inputAccountAmount" ) ).Value );
                 detail.Amount = amount;
                 account.Amount = amount;
                 detail.TransactionId = _transaction.Id;
@@ -223,14 +225,14 @@ namespace RockWeb.Blocks.Finance
             }
 
             _transaction.AuthorizedPersonId = person.Id;
-            _transaction.Amount = _detailList.Sum(g => (decimal)g.Amount);
-            ViewState["CachedTransaction"] = _transaction;
+            _transaction.Amount = _detailList.Sum( g => g.Amount );
+            Session.Add( "CurrentTransaction", _transaction );
             _transactionService.Save(_transaction, CurrentPersonId);
 
             // process payment type
             if ( !string.IsNullOrEmpty(hfCardType.Value) )
             {
-                litPaymentType.Text = hfCardType.Value.Split(' ').Reverse().FirstOrDefault().Substring(3);
+                litPaymentType.Text = hfCardType.Value.Split(' ').Reverse().First().Substring(3);
                 litPaymentType.Text = char.ToUpper(litPaymentType.Text[0]) + litPaymentType.Text.Substring(1);
                 litAccountType.Text = " credit card ";
             }
@@ -262,7 +264,7 @@ namespace RockWeb.Blocks.Finance
                 litGiftTotal.Visible = false;
             }
 
-            rptGiftConfirmation.DataSource = _detailList.ToDictionary(f => (string)f.Account.PublicName, f => (decimal)f.Amount);
+            rptGiftConfirmation.DataSource = _detailList.ToDictionary(f => f.Account.PublicName, f => f.Amount);
             rptGiftConfirmation.DataBind();
 
             pnlDetails.Visible = false;
@@ -279,15 +281,15 @@ namespace RockWeb.Blocks.Finance
             // give through payment gateway
 
             // update and save transaction
-            _transaction = (FinancialTransaction)ViewState["transaction"];
+            _transaction = Session["CurrentTransaction"] as FinancialTransaction;
             _transactionService = new FinancialTransactionService();
             _transactionService.Save( _transaction, CurrentPersonId );
+            Session.Remove( "CurrentTransaction" );
 
             litDateGift.Text = DateTime.Now.ToString( "f" );
             litGiftTotal2.Text = litGiftTotal.Text;
             litPaymentType2.Text = litPaymentType.Text;
             
-
             pnlConfirm.Visible = false;
             pnlComplete.Visible = true;
         }
@@ -322,30 +324,38 @@ namespace RockWeb.Blocks.Finance
             FinancialAccountService accountService = new FinancialAccountService();
             _transaction = new FinancialTransaction();
             _transactionService.Save( _transaction, CurrentPersonId );
+            string guids = GetAttributeValue( "DefaultAccounts" );
+            var defaultAccountGuids = !string.IsNullOrWhiteSpace( guids ) 
+                ? guids.Split( new[] { ',' } ).Select( Guid.Parse ).ToList()
+                : new List<Guid>();
 
-            var queryable = accountService.Queryable().Where(f => f.IsActive)
-                .Distinct().OrderBy( f => f.Order );
-
-            List<int> defaultAccounts = GetAttributeValue( "DefaultAccountstodisplay" ).Any()
-                ? GetAttributeValue( "DefaultAccountstodisplay" ).Split( ',' ).ToList().Select( s => int.Parse( s ) ).ToList()
-                : new List<int>( ( queryable.Select( f => f.Id ).ToList().FirstOrDefault() ) );
-                                    
-            if ( ( queryable.Count() - defaultAccounts.Count ) > 0 )
+            if ( !defaultAccountGuids.Any() )
             {
-                btnAddAccount.DataSource = queryable.Where( f => !defaultAccounts.Contains( f.Id ) )
-                   .Select( f => f.PublicName ).ToList();
+                pnlEmptyDataSet.Visible = true;
+                return;
+            }
+            else
+            {
+                pnlEmptyDataSet.Visible = false;
+            }
+
+            var accounts = accountService.Queryable().Where( f => f.IsActive ).OrderBy( f => f.Order );
+            var optionalAccounts = accounts.Where( a => !defaultAccountGuids.Contains( a.Guid ) );
+
+            if ( optionalAccounts.Any() )
+            {
+                btnAddAccount.DataSource = optionalAccounts.Select( a => a.PublicName ).ToList();
                 btnAddAccount.DataBind();
                 btnAddAccount.Title = "Add Another Gift";
-                divAddAccount.Visible = true;             
+                divAddAccount.Visible = true;
             }
             else
             {
                 divAddAccount.Visible = false;
             }
 
-            ViewState["transaction"] = _transaction;
-
-            rptAccountList.DataSource = queryable.Where( f => defaultAccounts.Contains( f.Id ) )
+            Session.Add( "CurrentTransaction", _transaction );
+            rptAccountList.DataSource = accounts.Where( f => defaultAccountGuids.Contains( f.Guid ) )
                 .ToDictionary( f => f.PublicName, f => Convert.ToDecimal( !f.IsActive ) );
             rptAccountList.DataBind();
         }
@@ -369,13 +379,13 @@ namespace RockWeb.Blocks.Finance
 
             if ( personLocation != null )
             {
-                txtFirstName.Value = CurrentPerson.FirstName.ToString();
-                txtLastName.Value = CurrentPerson.LastName.ToString();
-                txtAddress.Value = personLocation.Street1.ToString();
-                txtCity.Value = personLocation.City.ToString();
-                ddlState.Value = personLocation.State.ToString();
-                txtZipcode.Value = personLocation.Zip.ToString();
-                txtEmail.Value = CurrentPerson.Email.ToString();
+                txtFirstName.Value = CurrentPerson.FirstName;
+                txtLastName.Value = CurrentPerson.LastName;
+                txtAddress.Value = personLocation.Street1;
+                txtCity.Value = personLocation.City;
+                ddlState.SelectedValue = personLocation.State;
+                txtZipcode.Value = personLocation.Zip;
+                txtEmail.Value = CurrentPerson.Email;
             }           
         }
 

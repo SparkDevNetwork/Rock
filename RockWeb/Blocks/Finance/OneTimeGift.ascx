@@ -1,9 +1,8 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="OneTimeGift.ascx.cs" Inherits="RockWeb.Blocks.Finance.OneTimeGift" %>
 
+<%-- TODO: Refactor this JS out into Rock.controls.js, and turn it into a server control --%>
 <script type="text/javascript" src="../../Scripts/jquery.creditCardTypeDetector.js"></script>
-
 <script type="text/javascript">
-
     function pageLoad(sender, args) {
 
         // payment totals script
@@ -43,13 +42,13 @@
 
     <asp:Panel ID="pnlDetails" runat="server">
 
-        <% spanClass = ( _UseStackedLayout ) ? "span12" : "span6"; %>
+        <% _spanClass = ( _useStackedLayout ) ? "span12" : "span6"; %>
         
         <div class="container-fluid">     
                                 
             <div class="row-fluid">
                                 
-                <div class="<%= spanClass %> well">
+                <div class="<%= _spanClass %> well">
 
                     <fieldset>
                             
@@ -57,7 +56,7 @@
 
                         <div class="form-horizontal">
 
-                            <% if ( _ShowCampusSelect ) { %>
+                            <% if ( _showCampusSelect ) { %>
                                 
                                 <div class="row-fluid">
                                     <div class="control-group">
@@ -83,11 +82,12 @@
                                             </div>
                                         </div>
                                     </div>                                        
-                                </ItemTemplate> 
-                                <FooterTemplate>
-                                    <label id="lblEmptyDataSet" Visible='<%#bool.Parse((rptAccountList.Items.Count==0).ToString())%>' class="alert alert-error block-message error" >No default accounts enabled.  Please enable a account in the block settings.</label>
-                                </FooterTemplate>                          
-                            </asp:Repeater>                        
+                                </ItemTemplate>                          
+                            </asp:Repeater>
+
+                            <asp:Panel ID="pnlEmptyDataSet" runat="server" Visible="False" CssClass="alert alert-error block-message error">
+                                <p>No default accounts enabled.  Please enable an account in the block settings.</p>
+                            </asp:Panel>
 
                             <div ID="divAddAccount" class="row-fluid" runat="server" visible="false">
                                 <div class="control-group controls">
@@ -126,7 +126,7 @@
                                         
                 </div>
             
-                <% if ( _UseStackedLayout ) { %>
+                <% if ( _useStackedLayout ) { %>
                     
                 </div>
 
@@ -134,7 +134,7 @@
 
                 <% } %>
 
-                <div class="<%= spanClass %> well">
+                <div class="<%= _spanClass %> well">
 
                     <asp:ValidationSummary ID="valSummaryAddress" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error"/>
 
@@ -174,66 +174,12 @@
                             </div>
   
                             <div class="span4">
-                                <label for="ddlState">State</label>
-                                <select class="state-select" id="ddlState" name="ddlState"  title="Select State" runat="server">
-	                                <option value="AL">Alabama</option>
-	                                <option value="AK">Alaska</option>
-	                                <option value="AZ">Arizona</option>
-	                                <option value="AR">Arkansas</option>
-	                                <option value="CA">California</option>
-	                                <option value="CO">Colorado</option>
-	                                <option value="CT">Connecticut</option>
-	                                <option value="DE">Delaware</option>
-	                                <option value="DC">District of Columbia</option>
-	                                <option value="FL">Florida</option>
-	                                <option value="GA">Georgia</option>
-	                                <option value="HI">Hawaii</option>
-	                                <option value="ID">Idaho</option>
-	                                <option value="IL">Illinois</option>
-	                                <option value="IN">Indiana</option>
-	                                <option value="IA">Iowa</option>
-	                                <option value="KS">Kansas</option>
-	                                <option value="KY">Kentucky</option>
-	                                <option value="LA">Louisiana</option>
-	                                <option value="ME">Maine</option>
-	                                <option value="MD">Maryland</option>
-	                                <option value="MA">Massachusetts</option>
-	                                <option value="MI">Michigan</option>
-	                                <option value="MN">Minnesota</option>
-	                                <option value="MS">Mississippi</option>
-	                                <option value="MO">Missouri</option>
-	                                <option value="MT">Montana</option>
-	                                <option value="NE">Nebraska</option>
-	                                <option value="NV">Nevada</option>
-	                                <option value="NH">New Hampshire</option>
-	                                <option value="NJ">New Jersey</option>
-	                                <option value="NM">New Mexico</option>
-	                                <option value="NY">New York</option>
-	                                <option value="NC">North Carolina</option>
-	                                <option value="ND">North Dakota</option>
-	                                <option value="OH">Ohio</option>
-	                                <option value="OK">Oklahoma</option>
-	                                <option value="OR">Oregon</option>
-	                                <option value="PA">Pennsylvania</option>
-	                                <option value="RI">Rhode Island</option>
-	                                <option value="SC">South Carolina</option>
-	                                <option value="SD">South Dakota</option>
-	                                <option value="TN">Tennessee</option>
-	                                <option value="TX">Texas</option>
-	                                <option value="UT">Utah</option>
-	                                <option value="VT">Vermont</option>
-	                                <option value="VA">Virginia</option>
-	                                <option value="WA">Washington</option>
-	                                <option value="WV">West Virginia</option>
-	                                <option value="WI">Wisconsin</option>
-	                                <option value="WY">Wyoming</option>
-                                </select>
-                            
+                                <Rock:StateDropDownList ID="ddlState" runat="server" LabelText="State" CssClass="state-select"/>
                             </div>
 
                             <div class="span3">
                                 <label for="txtZipcode" >Zipcode</label>
-                                <input id="txtZipcode" type="text" class="span12" runat="server" required />                        
+                                <input id="txtZipcode" type="text" class="span12" runat="server" required />
                             </div>
 
                         </div>                    
@@ -242,7 +188,7 @@
                             
                             <div class="span12">
                                 <label for="txtEmail" >Email</label>
-                                <input id="txtEmail" type="text" class="span12" runat="server" required />                                                      
+                                <input id="txtEmail" type="text" class="span12" runat="server" required />
                             </div>
                         
                         </div>
@@ -255,7 +201,7 @@
             
             <div class="row-fluid">
               
-                <div class="<%= spanClass %> well">
+                <div class="<%= _spanClass %> well">
 
                     <asp:ValidationSummary ID="valSummaryPayment" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error"/>
 
@@ -267,17 +213,17 @@
 
                             <ul class="nav nav-tabs">
 
-                                <li <% if ( !_ShowCreditCard ) { %> style="display:none" <% } %> class="active">
+                                <li <% if ( !_showCreditCard ) { %> style="display:none" <% } %> class="active">
                                     <a href="#tab1" data-toggle="tab">Credit Card</a></li>
 
-                                <li <% if ( !_ShowChecking ) { %> style="display:none" <% } %>>
+                                <li <% if ( !_showChecking ) { %> style="display:none" <% } %>>
                                     <a href="#tab2" data-toggle="tab">Checking/ACH</a></li>
 
                             </ul>
 
                             <div class="tab-content payment-details">
 
-                                <div class="tab-pane active" id="tab1" <% if ( !_ShowCreditCard ) { %> style="display:none" <% } %> >
+                                <div class="tab-pane active" id="tab1" <% if ( !_showCreditCard ) { %> style="display:none" <% } %> >
                                     
                                     <div class="row-fluid"></div>
 
@@ -322,7 +268,7 @@
                                         
                                     </div>
 
-                                    <% if ( _ShowSaveDetails ) { %>
+                                    <% if ( _showSaveDetails ) { %>
 
                                     <div class="row-fluid">
 
@@ -345,7 +291,7 @@
                             
                                 </div>
 
-                                <div class="tab-pane" id="tab2" <% if ( !_ShowChecking ) { %> style="display:none" <% } %> >
+                                <div class="tab-pane" id="tab2" <% if ( !_showChecking ) { %> style="display:none" <% } %> >
                                     
                                     <div class="row-fluid span6">
                                 
@@ -373,7 +319,7 @@
 
                                     </div>                                
                                     
-                                    <% if ( _ShowSaveDetails ) { %>
+                                    <% if ( _showSaveDetails ) { %>
 
                                     <div class="row-fluid">
 
@@ -417,11 +363,11 @@
 
     <asp:Panel ID="pnlConfirm" runat="server" Visible="false">
         
-        <% spanClass = ( _UseStackedLayout ) ? "span12" : "span6"; %>
+        <% _spanClass = ( _useStackedLayout ) ? "span12" : "span6"; %>
 
         <div class="row-fluid">     
                                 
-            <div class="<%= spanClass %> well">
+            <div class="<%= _spanClass %> well">
 
                 <div id="divPaymentConfirmation" runat="server">
 
@@ -465,11 +411,11 @@
 
     <asp:Panel ID="pnlComplete" runat="server" Visible="false">
         
-        <% spanClass = ( _UseStackedLayout ) ? "span12" : "span6"; %>
+        <% _spanClass = ( _useStackedLayout ) ? "span12" : "span6"; %>
 
         <div class="row-fluid">     
                                 
-            <div class="<%= spanClass %> well">
+            <div class="<%= _spanClass %> well">
 
                 <h3 class="header-text" >Contribution Complete! </h3>
                 

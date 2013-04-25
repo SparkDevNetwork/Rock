@@ -712,6 +712,7 @@
     <Compile Include="Web\UI\Controls\ButtonDropDownList.cs" />
     <Compile Include="Web\UI\Controls\AttributeEditor.cs" />
     <Compile Include="Web\UI\Controls\SecurityButton.cs" />
+    <Compile Include="Web\UI\Controls\StateDropDownList.cs" />
     <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowActionTypeEditor.cs" />
     <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowActivityTypeEditor.cs" />
     <Compile Include="Web\UI\Controls\Grid\BadgeField.cs" />

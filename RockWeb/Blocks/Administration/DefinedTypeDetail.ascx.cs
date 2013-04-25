@@ -39,6 +39,7 @@ namespace RockWeb.Blocks.Administration
             gDefinedValues.Actions.ShowAdd = true;
             gDefinedValues.Actions.AddClick += gDefinedValues_Add;
             gDefinedValues.GridRebind += gDefinedValues_GridRebind;
+            gDefinedValues.GridReorder += gDefinedValues_GridReorder;
 
             // assign attributes grid actions
             gDefinedTypeAttributes.DataKeyNames = new string[] { "Guid" };
@@ -554,6 +555,23 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
+        /// Handles the GridReorder event of the gDefinedValues control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        private void gDefinedValues_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            using ( new UnitOfWorkScope() )
+            {
+                var definedValueService = new DefinedValueService();
+                int definedTypeId = hfDefinedTypeId.ValueAsInt();
+                var definedValues = definedValueService.Queryable().Where( a => a.DefinedTypeId == definedTypeId ).OrderBy( a => a.Order );
+                definedValueService.Reorder( definedValues.ToList(), e.OldIndex, e.NewIndex, CurrentPersonId );
+                BindDefinedValuesGrid();
+            }
+        }
+
+        /// <summary>
         /// Binds the defined values grid.
         /// </summary>
         protected void BindDefinedValuesGrid()
@@ -591,17 +609,17 @@ namespace RockWeb.Blocks.Administration
                 }
             }
 
-            var queryable = new DefinedValueService().Queryable().Where( a => a.DefinedTypeId == definedTypeId );
+            var queryable = new DefinedValueService().Queryable().Where( a => a.DefinedTypeId == definedTypeId ).OrderBy( a => a.Order );
 
-            SortProperty sortProperty = gDefinedValues.SortProperty;
-            if ( sortProperty != null )
-            {
-                queryable = queryable.Sort( sortProperty );
-            }
-            else
-            {
-                queryable = queryable.OrderBy( a => a.Id );
-            }
+            //SortProperty sortProperty = gDefinedValues.SortProperty;
+            //if ( sortProperty != null )
+            //{
+            //    queryable = queryable.Sort( sortProperty );
+            //}
+            //else
+            //{
+            //    queryable = queryable.OrderBy( a => a.Id );
+            //}
 
             var result = queryable.ToList();
 
