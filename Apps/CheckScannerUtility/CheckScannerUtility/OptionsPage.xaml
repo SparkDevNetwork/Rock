@@ -6,7 +6,7 @@
       mc:Ignorable="d"
       d:DesignHeight="680"
       d:DesignWidth="700"
-      Title="OptionsPage">
+      Title="Check Scanner - Options">
     <Grid>
 
     <Grid.Background>
