@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -152,17 +153,13 @@ namespace Rock.Net
             {
                 requestUri = new Uri( rockBaseUri, getPath );
             }
+
             HttpContent resultContent;
             T result = default( T );
-            string resultString;
 
             httpClient.GetAsync( requestUri ).ContinueWith( ( postTask ) =>
                 {
                     resultContent = postTask.Result.Content;
-                    resultContent.ReadAsStringAsync().ContinueWith( p =>
-                        {
-                            resultString = p.Result;
-                        } ).Wait();
                     resultContent.ReadAsAsync<T>().ContinueWith( ( readResult ) =>
                         {
                             result = readResult.Result;
@@ -170,6 +167,31 @@ namespace Rock.Net
                 } ).Wait();
 
             return result;
+        }
+
+        /// <summary>
+        /// Gets the data by GUID.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="getPath">The get path.</param>
+        /// <param name="guid">The GUID.</param>
+        /// <returns></returns>
+        public T GetDataByGuid<T>( string getPath, Guid guid ) where T:Rock.Data.IEntity
+        {
+            return GetData<List<T>>( getPath, string.Format( "Guid eq guid'{0}'", guid ) ).FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets the data by enum.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="getPath">The get path.</param>
+        /// <param name="enumFieldName">Name of the enum field.</param>
+        /// <param name="enumVal">The enum val.</param>
+        /// <returns></returns>
+        public T GetDataByEnum<T>( string getPath, string enumFieldName, Enum enumVal )
+        {
+            return GetData<T>( getPath, string.Format( "{0} eq '{1}'", enumFieldName, enumVal ) );
         }
 
         /// <summary>
