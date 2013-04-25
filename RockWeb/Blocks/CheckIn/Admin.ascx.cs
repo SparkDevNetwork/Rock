@@ -93,6 +93,7 @@ namespace RockWeb.Blocks.CheckIn
             var kioskStatus = KioskCache.GetKiosk( Request.ServerVariables["REMOTE_ADDR"], skipReverseLookup: false );
             if ( kioskStatus != null )
             {
+                ClearMobileCookie();
                 CurrentKioskId = kioskStatus.Device.Id;
                 CurrentGroupTypeIds = GetAllKiosksGroupTypes( kioskStatus.Device ); ;
                 CurrentCheckInState = null;
@@ -217,10 +218,20 @@ namespace RockWeb.Blocks.CheckIn
             }
 
             deviceCookie.Expires = ( timeCacheMinutes == 0 ) ? DateTime.MaxValue : DateTime.Now.AddMinutes( timeCacheMinutes );
-            HttpContext.Current.Response.Cookies.Set( deviceCookie );
+            Response.Cookies.Set( deviceCookie );
 
             HttpCookie isMobileCookie = new HttpCookie( CheckInCookie.ISMOBILE, "true" );
-            HttpContext.Current.Response.Cookies.Set( isMobileCookie );
+            Response.Cookies.Set( isMobileCookie );
+        }
+
+        /// <summary>
+        /// Clears the flag cookie that indicates this is a "mobile" device kiosk.
+        /// </summary>
+        private void ClearMobileCookie()
+        {
+            HttpCookie isMobileCookie = new HttpCookie( CheckInCookie.ISMOBILE );
+            isMobileCookie.Expires = DateTime.Now.AddDays( -1d );
+            Response.Cookies.Set( isMobileCookie );
         }
 
         /// <summary>
@@ -285,6 +296,7 @@ namespace RockWeb.Blocks.CheckIn
                 }
             }
 
+            ClearMobileCookie();
             CurrentKioskId = Int32.Parse( ddlKiosk.SelectedValue );
             CurrentGroupTypeIds = groupTypeIds;
             CurrentCheckInState = null;
