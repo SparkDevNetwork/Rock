@@ -153,6 +153,10 @@
     <Compile Include="Migrations\201304240025206_CheckMicrEncrypted.Designer.cs">
       <DependentUpon>201304240025206_CheckMicrEncrypted.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201304250012126_PublicPledgeBlocks.cs" />
+    <Compile Include="Migrations\201304250012126_PublicPledgeBlocks.Designer.cs">
+      <DependentUpon>201304250012126_PublicPledgeBlocks.cs</DependentUpon>
+    </Compile>
     <Compile Include="Net\RockRestClient.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -1477,6 +1481,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304240025206_CheckMicrEncrypted.resx">
       <DependentUpon>201304240025206_CheckMicrEncrypted.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304250012126_PublicPledgeBlocks.resx">
+      <DependentUpon>201304250012126_PublicPledgeBlocks.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
