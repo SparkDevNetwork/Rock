@@ -6,7 +6,7 @@
       mc:Ignorable="d"
       d:DesignHeight="520"
       d:DesignWidth="780"
-      Title="CheckScanner - Login"
+      Title="Check Scanner - Login"
       Loaded="Page_Loaded">
 
     <Grid Margin="0,0,0,0">

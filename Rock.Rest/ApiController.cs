@@ -10,6 +10,7 @@ using System.Net;
 using System.Net.Http;
 using System.ServiceModel.Channels;
 using System.Web.Http;
+using System.Web.Http.OData.Query;
 using Rock.Data;
 using Rock.Model;
 using Rock.Rest.Filters;
@@ -28,7 +29,7 @@ namespace Rock.Rest
         }
 
         // GET api/<controller>
-        [Queryable]
+        [Queryable( AllowedQueryOptions = AllowedQueryOptions.All)]
         public virtual IQueryable<T> Get()
         {
             var result = _service.Queryable();

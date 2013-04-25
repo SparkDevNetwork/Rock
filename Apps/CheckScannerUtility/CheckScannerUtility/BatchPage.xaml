@@ -10,7 +10,7 @@
       mc:Ignorable="d"
       d:DesignHeight="900"
       d:DesignWidth="800"
-      Title="CheckScanner - Edit Batch"
+      Title="Check Scanner - Edit Batch"
       Loaded="Page_Loaded">
     <Grid>
         <Grid.Background>
@@ -30,16 +30,18 @@
             <RowDefinition Height="30" />
         </Grid.RowDefinitions>
 
-        <WindowsFormsHost Name="RangerHost"
-                          Visibility="Hidden">
-            <ax:AxRanger x:Name="RangerScanner"
-                         TransportNewState="RangerScanner_TransportNewState"
-                         TransportChangeOptionsState="RangerScanner_TransportChangeOptionsState"
-                         TransportItemInPocket="RangerScanner_TransportItemInPocket" />
+        <WindowsFormsHost Name="rangerHost"
+                          Visibility="Hidden"
+                          IsEnabled="False">
+            <ax:AxRanger x:Name="rangerScanner"
+                         TransportNewState="rangerScanner_TransportNewState"
+                         TransportChangeOptionsState="rangerScanner_TransportChangeOptionsState"
+                         TransportItemInPocket="rangerScanner_TransportItemInPocket" />
         </WindowsFormsHost>
 
-        <WindowsFormsHost Name="MagTekHost"
-                          Visibility="Hidden">
+        <WindowsFormsHost Name="micrImageHost"
+                          Visibility="Hidden"
+                          IsEnabled="False">
             <ax2:AxMicrImage x:Name="micrImage"
                              MicrDataReceived="micrImage_MicrDataReceived" />
         </WindowsFormsHost>
