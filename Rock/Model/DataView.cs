@@ -260,7 +260,7 @@ namespace Rock.Model
                 var entityType = Rock.Web.Cache.EntityTypeCache.Read( this.TransformEntityTypeId.Value );
                 if ( entityType != null )
                 {
-                    var component = Rock.DataFilters.DataTransformContainer.GetComponent( entityType.Name );
+                    var component = Rock.Reporting.DataTransformContainer.GetComponent( entityType.Name );
                     if ( component != null )
                     {
                         try

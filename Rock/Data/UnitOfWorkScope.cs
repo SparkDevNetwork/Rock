@@ -24,14 +24,6 @@ namespace Rock.Data
         public readonly RockContext DbContext;
 
         /// <summary>
-        /// Gets or sets a value indicating whether all changes should be saved when scope ends.
-        /// </summary>
-        /// <value>
-        ///     <c>true</c> if changes should be saved; otherwise, <c>false</c>.
-        /// </value>
-        public bool SaveAllChangesAtScopeEnd { get; set; }
-
-        /// <summary>
         /// Gets the current object context.
         /// </summary>
         internal static RockContext CurrentObjectContext
@@ -42,22 +34,14 @@ namespace Rock.Data
         /// <summary>
         /// Initializes a new instance of the <see cref="UnitOfWorkScope"/> class.
         /// </summary>
-        public UnitOfWorkScope() : this( false ) { }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UnitOfWorkScope"/> class.
-        /// </summary>
-        /// <param name="saveAllChangesAtScopeEnd">if set to <c>true</c> changes should be saved at scope end.</param>
-        public UnitOfWorkScope( bool saveAllChangesAtScopeEnd )
+        public UnitOfWorkScope() 
         {
-            if ( currentScope != null && !currentScope.isDisposed )
-                throw new InvalidOperationException( "RockContextScope instances can not be nested" );
-
-            SaveAllChangesAtScopeEnd = saveAllChangesAtScopeEnd;
-            DbContext = new RockContext();
-            isDisposed = false;
-            //Thread.BeginThreadAffinity();  --Not supported with Medium Trust
-            currentScope = this;
+            if ( currentScope == null )
+            {
+                DbContext = new RockContext();
+                isDisposed = false;
+                currentScope = this;
+            }
         }
 
         /// <summary>
@@ -79,15 +63,11 @@ namespace Rock.Data
             {
                 if ( disposing )
                 {
-                    currentScope = null;
-                    //Thread.EndThreadAffinity();  -- Not supported with Medium Trust
-
-                    if ( SaveAllChangesAtScopeEnd )
+                    if ( DbContext != null )
                     {
-                        DbContext.SaveChanges();
+                        DbContext.Dispose();
+                        currentScope = null;
                     }
-
-                    DbContext.Dispose();
                 }
 
                 isDisposed = true;

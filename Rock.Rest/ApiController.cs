@@ -31,7 +31,8 @@ namespace Rock.Rest
         [Queryable]
         public virtual IQueryable<T> Get()
         {
-            return _service.Queryable();
+            var result = _service.Queryable();
+            return result;
         }
 
         // GET api/<controller>/5
