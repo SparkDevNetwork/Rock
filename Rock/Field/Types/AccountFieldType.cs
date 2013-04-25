@@ -15,7 +15,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// 
     /// </summary>
-    public class AccountsType : FieldType
+    public class AccountFieldType : FieldType
     {
         /// <summary>
         /// Returns the field's current value(s)
@@ -96,7 +96,7 @@ namespace Rock.Field.Types
 
                 if ( picker != null )
                 {
-                    var guid = Guid.Empty;
+                    Guid guid;
                     Guid.TryParse( value, out guid );
                     var account = new FinancialAccountService().Get( guid );
                     picker.SetValue( account );

@@ -3,11 +3,13 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Rock.Model;
 
 namespace Rock.Web.UI.Controls
 {
@@ -16,19 +18,19 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public abstract class ItemPicker : CompositeControl, ILabeledControl
     {
-        private Label label;
-        private Literal literal;
-        private HiddenField hfItemId;
-        private HiddenField hfInitialItemParentIds;
-        private HiddenField hfItemName;
-        private HiddenField hfItemRestUrlExtraParams;
-        private LinkButton btnSelect;
-        private LinkButton btnSelectNone;
+        private Label _label;
+        private Literal _literal;
+        private HiddenField _hfItemId;
+        private HiddenField _hfInitialItemParentIds;
+        private HiddenField _hfItemName;
+        private HiddenField _hfItemRestUrlExtraParams;
+        private LinkButton _btnSelect;
+        private LinkButton _btnSelectNone;
 
         /// <summary>
         /// The required validator
         /// </summary>
-        protected HiddenFieldValidator requiredValidator;
+        protected HiddenFieldValidator RequiredValidator;
 
         public abstract string ItemRestUrl { get; }
 
@@ -43,34 +45,34 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return hfItemRestUrlExtraParams.Value;
+                return _hfItemRestUrlExtraParams.Value;
             }
 
             set
             {
                 EnsureChildControls();
-                hfItemRestUrlExtraParams.Value = value;
+                _hfItemRestUrlExtraParams.Value = value;
             }
         }
 
         /// <summary>
-        /// Gets or sets the label text.
+        /// Gets or sets the _label text.
         /// </summary>
         /// <value>
-        /// The label text.
+        /// The _label text.
         /// </value>
         public string LabelText
         {
             get
             {
                 EnsureChildControls();
-                return label.Text;
+                return _label.Text;
             }
 
             set
             {
                 EnsureChildControls();
-                label.Text = value;
+                _label.Text = value;
             }
         }
 
@@ -85,18 +87,46 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                if ( string.IsNullOrWhiteSpace( hfItemId.Value ) )
+                if ( string.IsNullOrWhiteSpace( _hfItemId.Value ) )
                 {
-                    hfItemId.Value = Rock.Constants.None.IdValue;
+                    _hfItemId.Value = Constants.None.IdValue;
                 }
 
-                return hfItemId.Value;
+                return _hfItemId.Value;
             }
 
             set
             {
                 EnsureChildControls();
-                hfItemId.Value = value;
+                _hfItemId.Value = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the item ids.
+        /// </summary>
+        /// <value>
+        /// The item ids.
+        /// </value>
+        public IEnumerable<string> ItemIds
+        {
+            get
+            {
+                EnsureChildControls();
+                var ids = new List<string>();
+
+                if ( !string.IsNullOrWhiteSpace( _hfItemId.Value ) )
+                {
+                    ids.AddRange( _hfItemId.Value.Split( ',' ) );
+                }
+
+                return ids;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _hfItemId.Value = string.Join( ",", value );
             }
         }
 
@@ -111,18 +141,18 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                if ( string.IsNullOrWhiteSpace( hfInitialItemParentIds.Value ) )
+                if ( string.IsNullOrWhiteSpace( _hfInitialItemParentIds.Value ) )
                 {
-                    hfInitialItemParentIds.Value = Rock.Constants.None.IdValue;
+                    _hfInitialItemParentIds.Value = Constants.None.IdValue;
                 }
 
-                return hfInitialItemParentIds.Value;
+                return _hfInitialItemParentIds.Value;
             }
 
             set
             {
                 EnsureChildControls();
-                hfInitialItemParentIds.Value = value;
+                _hfInitialItemParentIds.Value = value;
             }
         }
 
@@ -146,31 +176,65 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the selected values.
+        /// </summary>
+        /// <value>
+        /// The selected values.
+        /// </value>
+        public IEnumerable<string> SelectedValues
+        {
+            get { return ItemIds; }
+            private set { ItemIds = value; }
+        }
+
+        /// <summary>
         /// Gets the selected value as int.
         /// </summary>
-        /// <param name="NoneAsNull">if set to <c>true</c> [none as null].</param>
+        /// <param name="noneAsNull">if set to <c>true</c> [none as null].</param>
         /// <returns></returns>
         /// <value>
         /// The selected value as int.
         ///   </value>
-        public int? SelectedValueAsInt( bool NoneAsNull = true )
+        public int? SelectedValueAsInt( bool noneAsNull = true )
         {
             if ( string.IsNullOrWhiteSpace( ItemId ) )
             {
                 return null;
             }
-            else
+            
+            int result = int.Parse( ItemId );
+            if ( noneAsNull )
             {
-                int result = int.Parse( ItemId );
-                if ( NoneAsNull )
+                if ( result == Constants.None.Id )
                 {
-                    if ( result == Rock.Constants.None.Id )
-                    {
-                        return null;
-                    }
+                    return null;
                 }
-                return result;
             }
+            return result;
+        }
+
+        /// <summary>
+        /// Selecteds the values as int.
+        /// </summary>
+        /// <param name="noneAsNull">if set to <c>true</c> [none as null].</param>
+        /// <returns></returns>
+        public IEnumerable<int?> SelectedValuesAsInt( bool noneAsNull = true )
+        {
+            var ids = new List<int?>();
+
+            if ( ItemIds == null || !ItemIds.Any() )
+            {
+                return ids;
+            }
+
+            ids.AddRange( ItemIds.Select( s => new int?( int.Parse( s ) ) ) );
+
+            if ( noneAsNull && !ids.Any() )
+            {
+                return null;
+            }
+
+            return ids;
         }
 
         /// <summary>
@@ -184,18 +248,46 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                if ( string.IsNullOrWhiteSpace( hfItemName.Value ) )
+                if ( string.IsNullOrWhiteSpace( _hfItemName.Value ) )
                 {
-                    hfItemName.Value = Rock.Constants.None.Text;
+                    _hfItemName.Value = Constants.None.Text;
                 }
 
-                return hfItemName.Value;
+                return _hfItemName.Value;
             }
 
             set
             {
                 EnsureChildControls();
-                hfItemName.Value = value;
+                _hfItemName.Value = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the item names.
+        /// </summary>
+        /// <value>
+        /// The item names.
+        /// </value>
+        public IEnumerable<string> ItemNames
+        {
+            get
+            {
+                EnsureChildControls();
+                var names = new List<string>();
+
+                if ( !string.IsNullOrWhiteSpace( _hfItemName.Value ) )
+                {
+                    names.AddRange( _hfItemName.Value.Split( ',' ) );
+                }
+
+                return names;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _hfItemName.Value = string.Join( ",", value );
             }
         }
 
@@ -217,8 +309,8 @@ namespace Rock.Web.UI.Controls
             {
                 if ( ViewState["Required"] != null )
                     return (bool)ViewState["Required"];
-                else
-                    return false;
+                
+                return false;
             }
             set
             {
@@ -227,184 +319,29 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [allow multi select].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow multi select]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowMultiSelect { get; set; }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
-            string scriptFormat = @"
-        $('#{0} a.rock-picker').click(function (e) {{
-            e.preventDefault();
-            $(this).parent().siblings('.rock-picker').first().toggle();
-            updateScrollbar{0}(e);
-        }});
-
-        $('#{0} .rock-picker-select').mouseover(function (e) {{
-            if ( $('#hfItemId_{0}').val() != '0' ) {{
-                $('#btnSelectNone_{0}').stop().show();
-            }}
-        }});
-
-        $('#{0} .rock-picker-select').mouseout(function (e) {{
-            $('#btnSelectNone_{0}').fadeOut(500);
-        }});
-
-        $('#btnCancel_{0}').click(function (e) {{
-            $(this).parent().slideUp();
-        }});
-
-        $('#btnSelectNone_{0}').click(function (e) {{
-            $('#btnSelectNone_{0}').stop().hide();
-            e.stopImmediatePropagation();
-
-            var selectedValue = '0';
-            var selectedText = '<none>';
-
-            var selectedItemLabel = $('#selectedItemLabel_{0}');
-            var hiddenItemId = $('#hfItemId_{0}');
-            var hiddenItemName = $('#hfItemName_{0}');
-
-            hiddenItemId.val(selectedValue);
-            hiddenItemName.val(selectedText);
-            selectedItemLabel.val(selectedValue);
-            selectedItemLabel.text(selectedText);
-            return false;
-        }});
-
-        $('#btnSelect_{0}').click(function (e) {{
-            var treeViewData = $('#treeviewItems_{0}').data('kendoTreeView');
-            var selectedNode = treeViewData.select();
-            var nodeData = treeViewData.dataItem(selectedNode);
-            var selectedValue = '0';
-            var selectedText = '<none>';
-
-            if (nodeData) {{
-                selectedValue = nodeData.Id;
-                selectedText = nodeData.Name;
-            }}
-
-            var selectedItemLabel = $('#selectedItemLabel_{0}');
-            var hiddenItemId = $('#hfItemId_{0}');
-            var hiddenItemName = $('#hfItemName_{0}');
-
-            hiddenItemId.val(selectedValue);
-            hiddenItemName.val(selectedText);
-            selectedItemLabel.val(selectedValue);
-            selectedItemLabel.text(selectedText);
-
-            $(this).parent().slideUp();
-        }});
-";
-
-            string script = string.Format( scriptFormat, this.ID );
-
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "item_picker-" + this.ID.ToString(), script, true );
-
-            string treeViewScriptFormat = @"
-
-    function findChildItemInTree{0}(treeViewData, itemId, itemParentIds) {{
-        if (itemParentIds != '') {{
-            var itemParentList = itemParentIds.split(',');
-            for (var i = 0; i < itemParentList.length; i++) {{
-                var parentItemId = itemParentList[i];
-                var parentItem = treeViewData.dataSource.get(parentItemId);
-                var parentNodeItem = treeViewData.findByUid(parentItem.uid);
-                if (!parentItem.expanded && parentItem.hasChildren) {{
-                    // if not yet expand, expand and return null (which will fetch more data and fire the databound event)
-                    treeViewData.expand(parentNodeItem);
-                    return null;
-                }}
-            }}
-        }}
-
-        var initialItemItem = treeViewData.dataSource.get(itemId);
-
-        return initialItemItem;
-    }}
-
-    function updateScrollbar{0}(e) {{
-        var treeviewContainer = $('#treeview-scroll-container_{0}');
-        if (treeviewContainer.is(':visible')) {{
-            treeviewContainer.tinyscrollbar_update('relative');
-            var modalDialog = $('#modal-scroll-container');
-            if (modalDialog) {{
-                if (modalDialog.is(':visible')) {{
-                    modalDialog.tinyscrollbar_update('bottom');
-                }}
-            }}
-        }}
-    }}
-
-    function onDataBound{0}(e) {{
-        // select the item specified in the item param in the treeview if there isn't one currently selected
-        var treeViewData = $('#treeviewItems_{0}').data('kendoTreeView');
-        var selectedNode = treeViewData.select();
-        var nodeData = this.dataItem(selectedNode);
-
-        if (!nodeData) {{
-            var initialItemId = $('#hfItemId_{0}').val();
-            var initialItemParentIds = $('#hfInitialItemParentIds_{0}').val();
-            var initialItemItem = findChildItemInTree{0}(treeViewData, initialItemId, initialItemParentIds);
-            if (initialItemId) {{
-                if (initialItemItem) {{
-                    var firstItem = treeViewData.findByUid(initialItemItem.uid);
-                    var firstDataItem = this.dataItem(firstItem);
-                    if (firstDataItem) {{
-                        treeViewData.select(firstItem);
-                    }}
-                }}
-            }}
-        }}
-
-        updateScrollbar{0}(e);        
-    }}
-
-    var itemList{0} = new kendo.data.HierarchicalDataSource({{
-        transport: {{
-            read: {{
-                url: function (options) {{
-                    var extraParams = $('#hfItemRestUrlExtraParams_{0}').val(); 
-                    var requestUrl = '{1}' + (options.Id || 0) + '' + extraParams + '';
-                    return requestUrl;
-                }},
-                error: function (xhr, status, error) {{
-                    {{
-                        alert(status + ' [' + error + ']: ' + xhr.responseText);
-                    }}
-                }}
-            }}
-        }},
-        schema: {{
-            model: {{
-                id: 'Id',
-                hasChildren: 'HasChildren'
-            }}
-        }}
-    }});
-
-    $('#treeviewItems_{0}').kendoTreeView({{
-        template: ""<i class='#= item.IconCssClass #'></i> #= item.Name #"",
-        dataSource: itemList{0},
-        dataTextField: 'Name',
-        dataImageUrlField: 'IconSmallUrl',
-        dataBound: onDataBound{0},
-        select: updateScrollbar{0}
-    }});
-
-    $('#treeview-scroll-container_{0}').tinyscrollbar({{ size: 120 }});
-";
-
-            string treeViewScript = string.Format( treeViewScriptFormat, this.ID.ToString(), this.ResolveUrl( ItemRestUrl ) );
-
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "item_picker-treeviewscript_" + this.ID.ToString(), treeViewScript, true );
-
+            RegisterJavaScript();
             var sm = ScriptManager.GetCurrent( this.Page );
-
             EnsureChildControls();
-            sm.RegisterAsyncPostBackControl( btnSelect );
-            sm.RegisterAsyncPostBackControl( btnSelectNone );
+
+            if ( sm != null )
+            {
+                sm.RegisterAsyncPostBackControl( _btnSelect );
+                sm.RegisterAsyncPostBackControl( _btnSelectNone );
+            }
         }
 
         /// <summary>
@@ -417,12 +354,22 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return !Required || requiredValidator.IsValid;
+                return !Required || RequiredValidator.IsValid;
             }
         }
 
         /// <summary>
-        /// Handles the Click event of the btnSelect control.
+        /// Registers the java script.
+        /// </summary>
+        protected virtual void RegisterJavaScript()
+        {
+            const string treeViewScriptFormat = "Rock.controls.itemPicker.initialize({{ controlId: '{0}', restUrl: '{1}', allowMultiSelect: {2} }});";
+            string treeViewScript = string.Format( treeViewScriptFormat, this.ID, this.ResolveUrl( ItemRestUrl ), this.AllowMultiSelect.ToString().ToLower() );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "item_picker-treeviewscript_" + this.ID, treeViewScript, true );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the _btnSelect control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
@@ -441,14 +388,29 @@ namespace Rock.Web.UI.Controls
         /// <param name="id">The id.</param>
         public void SetValue( int? id )
         {
-            ItemId = id.HasValue ? id.Value.ToString() : Rock.Constants.None.IdValue;
+            ItemId = id.HasValue ? id.Value.ToString() : Constants.None.IdValue;
             SetValueOnSelect();
+        }
+
+        /// <summary>
+        /// Sets the values.
+        /// </summary>
+        /// <param name="ids">The ids.</param>
+        public void SetValues( IEnumerable<int?> ids )
+        {
+            ItemIds = ids.Select( i => i.HasValue ? i.ToString() : Constants.None.IdValue );
+            SetValuesOnSelect();
         }
 
         /// <summary>
         /// Sets the value on select.
         /// </summary>
         protected abstract void SetValueOnSelect();
+
+        /// <summary>
+        /// Sets the values on select.
+        /// </summary>
+        protected abstract void SetValuesOnSelect();
 
         /// <summary>
         /// Occurs when [select item].
@@ -461,8 +423,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="errorMessage">The error message.</param>
         public void ShowErrorMessage( string errorMessage )
         {
-            requiredValidator.ErrorMessage = errorMessage;
-            requiredValidator.IsValid = false;
+            RequiredValidator.ErrorMessage = errorMessage;
+            RequiredValidator.IsValid = false;
         }
 
         /// <summary>
@@ -474,57 +436,57 @@ namespace Rock.Web.UI.Controls
 
             Controls.Clear();
 
-            label = new Label();
-            literal = new Literal();
-            hfItemId = new HiddenField();
-            hfItemId.ClientIDMode = ClientIDMode.Static;
-            hfItemId.ID = string.Format( "hfItemId_{0}", this.ID );
-            hfInitialItemParentIds = new HiddenField();
-            hfInitialItemParentIds.ClientIDMode = ClientIDMode.Static;
-            hfInitialItemParentIds.ID = string.Format( "hfInitialItemParentIds_{0}", this.ID );
-            hfItemName = new HiddenField();
-            hfItemName.ClientIDMode = ClientIDMode.Static;
-            hfItemName.ID = string.Format( "hfItemName_{0}", this.ID );
-            hfItemRestUrlExtraParams = new HiddenField();
-            hfItemRestUrlExtraParams.ClientIDMode = ClientIDMode.Static;
-            hfItemRestUrlExtraParams.ID = string.Format( "hfItemRestUrlExtraParams_{0}", this.ID );
+            _label = new Label();
+            _literal = new Literal();
+            _hfItemId = new HiddenField();
+            _hfItemId.ClientIDMode = ClientIDMode.Static;
+            _hfItemId.ID = string.Format( "hfItemId_{0}", this.ID );
+            _hfInitialItemParentIds = new HiddenField();
+            _hfInitialItemParentIds.ClientIDMode = ClientIDMode.Static;
+            _hfInitialItemParentIds.ID = string.Format( "hfInitialItemParentIds_{0}", this.ID );
+            _hfItemName = new HiddenField();
+            _hfItemName.ClientIDMode = ClientIDMode.Static;
+            _hfItemName.ID = string.Format( "hfItemName_{0}", this.ID );
+            _hfItemRestUrlExtraParams = new HiddenField();
+            _hfItemRestUrlExtraParams.ClientIDMode = ClientIDMode.Static;
+            _hfItemRestUrlExtraParams.ID = string.Format( "hfItemRestUrlExtraParams_{0}", this.ID );
 
-            btnSelect = new LinkButton();
-            btnSelect.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-            btnSelect.CssClass = "btn btn-mini btn-primary";
-            btnSelect.ID = string.Format( "btnSelect_{0}", this.ID );
-            btnSelect.Text = "Select Item";
-            btnSelect.CausesValidation = false;
-            btnSelect.Click += btnSelect_Click;
+            _btnSelect = new LinkButton();
+            _btnSelect.ClientIDMode = ClientIDMode.Static;
+            _btnSelect.CssClass = "btn btn-mini btn-primary";
+            _btnSelect.ID = string.Format( "btnSelect_{0}", this.ID );
+            _btnSelect.Text = "Select Item";
+            _btnSelect.CausesValidation = false;
+            _btnSelect.Click += btnSelect_Click;
 
-            btnSelectNone = new LinkButton();
-            btnSelectNone.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-            btnSelectNone.CssClass = "rock-picker-select-none";
-            btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ID );
-            btnSelectNone.Text = "<i class='icon-remove'></i>";
-            btnSelectNone.CausesValidation = false;
-            btnSelectNone.Visible = false;
-            btnSelectNone.Click += btnSelect_Click;
+            _btnSelectNone = new LinkButton();
+            _btnSelectNone.ClientIDMode = ClientIDMode.Static;
+            _btnSelectNone.CssClass = "rock-picker-select-none";
+            _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ID );
+            _btnSelectNone.Text = "<i class='icon-remove'></i>";
+            _btnSelectNone.CausesValidation = false;
+            _btnSelectNone.Visible = false;
+            _btnSelectNone.Click += btnSelect_Click;
 
 
-            Controls.Add( label );
-            Controls.Add( literal );
-            Controls.Add( hfItemId );
-            Controls.Add( hfInitialItemParentIds );
-            Controls.Add( hfItemName );
-            Controls.Add( hfItemRestUrlExtraParams );
-            Controls.Add( btnSelect );
-            Controls.Add( btnSelectNone );
+            Controls.Add( _label );
+            Controls.Add( _literal );
+            Controls.Add( _hfItemId );
+            Controls.Add( _hfInitialItemParentIds );
+            Controls.Add( _hfItemName );
+            Controls.Add( _hfItemRestUrlExtraParams );
+            Controls.Add( _btnSelect );
+            Controls.Add( _btnSelectNone );
 
-            requiredValidator = new HiddenFieldValidator();
-            requiredValidator.ID = this.ID + "_rfv";
-            requiredValidator.InitialValue = "0";
-            requiredValidator.ControlToValidate = hfItemId.ID;
-            requiredValidator.Display = ValidatorDisplay.Dynamic;
-            requiredValidator.CssClass = "validation-error help-inline";
-            requiredValidator.Enabled = false;
+            RequiredValidator = new HiddenFieldValidator();
+            RequiredValidator.ID = this.ID + "_rfv";
+            RequiredValidator.InitialValue = "0";
+            RequiredValidator.ControlToValidate = _hfItemId.ID;
+            RequiredValidator.Display = ValidatorDisplay.Dynamic;
+            RequiredValidator.CssClass = "validation-error help-inline";
+            RequiredValidator.Enabled = false;
 
-            Controls.Add( requiredValidator );
+            Controls.Add( RequiredValidator );
         }
 
         /// <summary>
@@ -536,9 +498,9 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( "class", "control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            label.AddCssClass( "control-label" );
+            _label.AddCssClass( "control-_label" );
 
-            label.RenderControl( writer );
+            _label.RenderControl( writer );
 
             writer.AddAttribute( "class", "controls" );
 
@@ -546,15 +508,15 @@ namespace Rock.Web.UI.Controls
 
             if ( Required )
             {
-                requiredValidator.Enabled = true;
-                requiredValidator.ErrorMessage = LabelText + " is Required.";
-                requiredValidator.RenderControl( writer );
+                RequiredValidator.Enabled = true;
+                RequiredValidator.ErrorMessage = LabelText + " is Required.";
+                RequiredValidator.RenderControl( writer );
             }
 
-            hfItemId.RenderControl( writer );
-            hfInitialItemParentIds.RenderControl( writer );
-            hfItemName.RenderControl( writer );
-            hfItemRestUrlExtraParams.RenderControl( writer );
+            _hfItemId.RenderControl( writer );
+            _hfInitialItemParentIds.RenderControl( writer );
+            _hfItemName.RenderControl( writer );
+            _hfItemRestUrlExtraParams.RenderControl( writer );
 
             if ( this.Enabled )
             {
@@ -568,16 +530,16 @@ namespace Rock.Web.UI.Controls
                 <b class='caret'></b>
             </a>
 ";
-                writer.Write( string.Format( controlHtmlFormatStart, this.ID, this.ItemName ) );
+                writer.Write( controlHtmlFormatStart, this.ID, this.ItemName );
 
                 // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
                 if ( SelectItem != null )
                 {
-                    btnSelectNone.RenderControl( writer );
+                    _btnSelectNone.RenderControl( writer );
                 }
                 else
                 {
-                    writer.Write( string.Format( "<a class='rock-picker-select-none' id='btnSelectNone_{0}' href='#' style='display:none'><i class='icon-remove'></i></a>", this.ID ) );
+                    writer.Write( "<a class='rock-picker-select-none' id='btnSelectNone_{0}' href='#' style='display:none'><i class='icon-remove'></i></a>", this.ID );
                 }
 
                 string controlHtmlFormatMiddle = @"
@@ -601,16 +563,16 @@ namespace Rock.Web.UI.Controls
 
             <hr />
 ";
-                writer.Write( string.Format( controlHtmlFormatMiddle, this.ID, this.ItemName ) );
+                writer.Write( controlHtmlFormatMiddle, this.ID, this.ItemName );
 
                 // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
                 if ( SelectItem != null )
                 {
-                    btnSelect.RenderControl( writer );
+                    _btnSelect.RenderControl( writer );
                 }
                 else
                 {
-                    writer.Write( string.Format( "<a class='btn btn-mini btn-primary' id='btnSelect_{0}'>Select</a>", this.ID ) );
+                    writer.Write( "<a class='btn btn-mini btn-primary' id='btnSelect_{0}'>Select</a>", this.ID );
                 }
 
                 string controlHtmlFormatEnd = @"
@@ -620,7 +582,7 @@ namespace Rock.Web.UI.Controls
     </div>
 </div>
 ";
-                writer.Write( string.Format( controlHtmlFormatEnd, this.ID, this.ItemName ) );
+                writer.Write( controlHtmlFormatEnd, this.ID, this.ItemName );
             }
             else
             {
@@ -634,7 +596,7 @@ namespace Rock.Web.UI.Controls
     </div>
 </div>
 "; 
-                writer.Write( string.Format( controlHtmlFormatDisabled, this.ID, this.ItemName ) );
+                writer.Write( controlHtmlFormatDisabled, this.ID, this.ItemName );
             }
 
             writer.RenderEndTag();

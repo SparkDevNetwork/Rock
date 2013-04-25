@@ -109,12 +109,13 @@
     <Compile Include="Address\GeocodeContainer.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Attribute\AccountsFieldAttribute.cs" />
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
     <Compile Include="Attribute\CampusFieldAttribute.cs" />
     <Compile Include="Attribute\BinaryFileTypeFieldAttribute.cs" />
     <Compile Include="Attribute\DecimalFieldAttribute.cs" />
     <Compile Include="Attribute\DateFieldAttribute.cs" />
-    <Compile Include="Attribute\AccountsFieldAttribute.cs" />
+    <Compile Include="Attribute\AccountFieldAttribute.cs" />
     <Compile Include="Attribute\WorkflowTypeFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypeFieldAttribute.cs" />
     <Compile Include="Attribute\EmailTemplateFieldAttribute.cs" />
@@ -151,6 +152,10 @@
     <Compile Include="Migrations\201304240025206_CheckMicrEncrypted.cs" />
     <Compile Include="Migrations\201304240025206_CheckMicrEncrypted.Designer.cs">
       <DependentUpon>201304240025206_CheckMicrEncrypted.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201304250012126_PublicPledgeBlocks.cs" />
+    <Compile Include="Migrations\201304250012126_PublicPledgeBlocks.Designer.cs">
+      <DependentUpon>201304250012126_PublicPledgeBlocks.cs</DependentUpon>
     </Compile>
     <Compile Include="Net\RockRestClient.cs">
       <SubType>Component</SubType>
@@ -213,13 +218,14 @@
     <Compile Include="Data\NotExportable.cs" />
     <Compile Include="Extension\SafeDirectoryCatalog.cs" />
     <Compile Include="Field\SelectFromListFieldType.cs" />
+    <Compile Include="Field\Types\AccountsFieldType.cs" />
     <Compile Include="Field\Types\BinaryFileFieldType.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Field\Types\CampusesFieldType.cs" />
     <Compile Include="Field\Types\CampusFieldType.cs" />
     <Compile Include="Field\Types\BinaryFileTypeFieldType.cs" />
-    <Compile Include="Field\Types\AccountsType.cs" />
+    <Compile Include="Field\Types\AccountFieldType.cs" />
     <Compile Include="Field\Types\WorkflowTypeFieldType.cs" />
     <Compile Include="Field\Types\GroupTypeFieldType.cs" />
     <Compile Include="Field\Types\FileFieldType.cs">
@@ -1475,6 +1481,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304240025206_CheckMicrEncrypted.resx">
       <DependentUpon>201304240025206_CheckMicrEncrypted.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304250012126_PublicPledgeBlocks.resx">
+      <DependentUpon>201304250012126_PublicPledgeBlocks.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
