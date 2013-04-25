@@ -213,7 +213,8 @@ namespace RockWeb.Blocks.Finance
                 return;
 
             amount.Text = pledge.TotalAmount.ToString( "C" );
-            frequency.Text = pledge.PledgeFrequencyValue.ToString();
+            var pledgeFrequency = DefinedValueCache.Read( pledge.PledgeFrequencyValueId ?? 0 );
+            frequency.Text = pledgeFrequency.ToString();
             accountName.Text = pledge.Account.PublicName;
         }
 
@@ -259,12 +260,12 @@ namespace RockWeb.Blocks.Finance
             // be attached to a context and be fully hydrated with data.
             var pledgeService = new FinancialPledgeService();
             var pledges = pledgeService.Queryable().Where( p => ids.Contains( p.Id ) );
+            var person = pledges.Select( p => p.Person ).FirstOrDefault();
             rptCompletedPledges.DataSource = pledges.ToList();
             rptCompletedPledges.DataBind();
-            var pledge = pledges.FirstOrDefault();
 
-            if ( pledge != null )
-                lPersonFullName.Text = pledge.Person.FullName;
+            if ( person != null )
+                lPersonFullName.Text = person.FullName;
 
             pnlForm.Visible = false;
             pnlReceipt.Visible = true;
