@@ -625,7 +625,6 @@ function populateAttributeKey(nameControlId, keyControlId ) {{
 }}
 
 function validateKey(sender, args) {{
-    alert('Validating: ' + $('#{1}').val());
     args.IsValid = ( $.inArray( $('#{1}').val(), reservedKeyNames ) < 0 );
 }}
 ",

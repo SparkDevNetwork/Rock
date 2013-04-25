@@ -25,7 +25,7 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
             {
-                GoToWelcomePage();
+                NavigateToHomePage();
             }
             else
             {
@@ -183,7 +183,7 @@ namespace RockWeb.Blocks.CheckIn
 
             SaveState();
 
-            GoToGroupSelectPage( true );
+            NavigateToPreviousPage();
         }
 
         private void ProcessSelection()
@@ -192,7 +192,7 @@ namespace RockWeb.Blocks.CheckIn
             if ( ProcessActivity( "Save Attendance", out errors ) )
             {
                 SaveState();
-                GoToSuccessPage();
+                NavigateToNextPage();
             }
             else
             {

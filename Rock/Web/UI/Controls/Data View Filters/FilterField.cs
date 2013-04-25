@@ -12,7 +12,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.DataFilters;
+using Rock.Reporting;
 using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
@@ -192,7 +192,7 @@ $('.filter-item-select').click(function (event) {
             {
                 EnsureChildControls();
 
-                var component = Rock.DataFilters.DataFilterContainer.GetComponent( FilterEntityTypeName );
+                var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
                 if ( component != null )
                 {
                     return component.GetSelection( FilteredEntityType, filterControls );
@@ -205,7 +205,7 @@ $('.filter-item-select').click(function (event) {
             {
                 EnsureChildControls();
 
-                var component = Rock.DataFilters.DataFilterContainer.GetComponent( FilterEntityTypeName );
+                var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
                 if ( component != null )
                 {
                     component.SetSelection( FilteredEntityType, filterControls, value );
@@ -224,7 +224,7 @@ $('.filter-item-select').click(function (event) {
             Controls.Add( ddlFilterType );
             ddlFilterType.ID = this.ID + "_ddlFilter";
 
-            var component = Rock.DataFilters.DataFilterContainer.GetComponent( FilterEntityTypeName );
+            var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
             if ( component != null )
             {
                 RockPage page = this.Page as RockPage;
@@ -282,7 +282,7 @@ $('.filter-item-select').click(function (event) {
             string clientFormatString = string.Empty;
             if ( !string.IsNullOrWhiteSpace( FilterEntityTypeName ) )
             {
-                component = Rock.DataFilters.DataFilterContainer.GetComponent( FilterEntityTypeName );
+                component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
                 if ( component != null )
                 {
                     clientFormatString =

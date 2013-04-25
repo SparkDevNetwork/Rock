@@ -500,7 +500,7 @@ namespace Rock.Web.UI
                             FindZone( block.Zone ).Controls.Add( blockWrapper );
                             blockWrapper.Attributes.Add( "class", "block-instance " +
                                 ( canAdministrate || canEdit ? "can-configure " : "" ) +
-                                HtmlHelper.CssClassFormat( block.BlockType.Name ) );
+                                block.BlockType.Name.ToLower().Replace( ' ', '-' ) );
 
                             // Check to see if block is configured to use a "Cache Duration'
                             string blockCacheKey = string.Format( "Rock:BlockInstanceOutput:{0}", block.Id );
