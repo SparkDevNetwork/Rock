@@ -5,6 +5,7 @@
 //
 
 using System;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
@@ -36,6 +37,21 @@ namespace Rock.Field.Types
             }
 
             return base.IsValid( value, required, out message );
+        }
+
+        /// <summary>
+        /// Creates the control(s) neccessary for prompting user for a new value
+        /// </summary>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <returns>
+        /// The control
+        /// </returns>
+        public override System.Web.UI.Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            var numberBox = new NumberBox();
+            numberBox.MinimumValue = decimal.MinValue.ToString();
+            numberBox.MaximumValue = decimal.MaxValue.ToString();
+            return numberBox;
         }
     }
 }

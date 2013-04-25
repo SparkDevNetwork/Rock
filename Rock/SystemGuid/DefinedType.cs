@@ -13,6 +13,12 @@ namespace Rock.SystemGuid
     /// </summary>
     public class DefinedType
     {
+
+        /// <summary>
+        /// Guid for checkin search type
+        /// </summary>
+        public const string CHECKIN_SEARCH_TYPE = "1EBCDB30-A89A-4C14-8580-8289EC2C7742";
+
         /// <summary>
         /// Guid for Device Type
         /// </summary>
@@ -22,7 +28,12 @@ namespace Rock.SystemGuid
         /// Guid for Financial Currency Type
         /// </summary>
         public const string FINANCIAL_ACCOUNT_TYPE = "752DA126-471F-4221-8503-5297593C99FF";
-
+		
+		/// <summary>
+        /// Guid for the types of Batches (ACH, Visa, MasterCard, Discover, Amex, and PayPal)
+        /// </summary>
+       // public const string FINANCIAL_BATCH_TYPE = "9e358fbe-2321-4c54-895f-c888e29298ae";
+		
         /// <summary>
         /// Guid for Financial Currency Type
         /// </summary>
@@ -49,9 +60,14 @@ namespace Rock.SystemGuid
         public const string FINANCIAL_TRANSACTION_FREQUENCY = "1F645CFB-5BBD-4465-B9CA-0D2104A1479B";
 
         /// <summary>
+        /// Guid for Financial Transaction Type
+        /// </summary>
+        public const string FINANCIAL_TRANSACTION_REFUND_REASON = "61FE3A58-9F4F-472F-A4E0-5116EB90A323";
+
+        /// <summary>
         /// Guid for Financial transaction image type
         /// </summary>
-        public const string FINANCIAL_TRANSACTION_IMAGE_TYPE = "0745D5DE-2D09-44B3-9017-40C1DA83CB39";
+        public const string FINANCIAL_TRANSACTION_IMAGE_TYPE = "0745D5DE-2D09-44B3-9017-40C1DA83CB39"; 
 
         /// <summary>
         /// Guid for Financial Transaction Type
@@ -112,6 +128,11 @@ namespace Rock.SystemGuid
         /// Guid for the types of Person phone numbers (such as Primary, Secondary, etc.)
         /// </summary>
         public const string PERSON_PHONE_TYPE =  "8345DD45-73C6-4F5E-BEBD-B77FC83F18FD";
+
+        /// <summary>
+        /// Guid for the types of Batches (ACH, Visa, MasterCard, Discover, Amex, and PayPal)
+        /// </summary>
+        public static Guid FINANCIAL_BATCH_TYPE { get { return new Guid( "9e358fbe-2321-4c54-895f-c888e29298ae" ); } }
 
     }
 }

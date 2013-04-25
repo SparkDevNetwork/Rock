@@ -51,23 +51,23 @@
                     Margin="0"
                     VerticalAlignment="Bottom">
             <Label Name="lblAccountNumber"
-                   Style="{StaticResource labelTextStyle}">Account: 123456789012</Label>
+                   Style="{StaticResource labelStyle}">Account: 123456789012</Label>
             <Label Name="lblCheckNumber"
-                   Style="{StaticResource labelTextStyle}">Check Number: 0123</Label>
+                   Style="{StaticResource labelStyle}">Check Number: 0123</Label>
         </StackPanel>
         <Label Name="lblRoutingNumber"
                Grid.Row="1"
                Grid.Column="2"
                VerticalAlignment="Bottom"
-               Style="{StaticResource labelTextStyle}">Routing Number: 012345678</Label>
+               Style="{StaticResource labelStyle}">Routing Number: 012345678</Label>
         <Label Grid.Row="2"
                Grid.Column="1"
                VerticalAlignment="Bottom"
-               Style="{StaticResource labelTextStyle}">Front</Label>
+               Style="{StaticResource labelStyle}">Front</Label>
         <Label Grid.Row="2"
                Grid.Column="2"
                VerticalAlignment="Bottom"
-               Style="{StaticResource labelTextStyle}">Back</Label>
+               Style="{StaticResource labelStyle}">Back</Label>
 
         <Image Grid.Column="1"
                Grid.Row="3"

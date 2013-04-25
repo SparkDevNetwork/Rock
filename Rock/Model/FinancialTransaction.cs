@@ -24,7 +24,7 @@ namespace Rock.Model
     {
 
         #region Entity Properties
-
+       
         /// <summary>
         /// Gets or sets the authorized person id.
         /// </summary>
@@ -32,7 +32,7 @@ namespace Rock.Model
         /// The authorized person id.
         /// </value>
         [DataMember]
-        public int AuthorizedPersonId { get; set; }
+        public int? AuthorizedPersonId { get; set; }
 
         /// <summary>
         /// Gets or sets the batch id.
@@ -129,6 +129,16 @@ namespace Rock.Model
         [DefinedValue( SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE )]
         public int? SourceTypeValueId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the check micr encrypted.
+        /// Plain Text format is {routingnumber}_{accountnumber}_{checknumber}
+        /// </summary>
+        /// <value>
+        /// The check micr encrypted.
+        /// </value>
+        [DataMember]
+        public string CheckMicrEncrypted { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -223,6 +233,15 @@ namespace Rock.Model
         }
         private ICollection<FinancialTransactionImage> _images;
 
+        /// <summary>
+        /// Gets or sets the check micr plain text.
+        /// </summary>
+        /// <value>
+        /// The check micr plain text.
+        /// </value>
+        //[DataMember]
+        //public virtual string CheckMicrPlainText { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -240,6 +259,26 @@ namespace Rock.Model
 
         #endregion
 
+    }
+
+
+    /// <summary>
+    /// Special Class to use when uploading a FinancialTransaction from a Scanned Check thru the Rest API.
+    /// The Rest Client can't be given access to the DataEncryptionKey, so they'll upload it (using SSL) 
+    /// with the plaintext CheckMicr and the Rock server will encrypt prior to saving to database
+    /// </summary>
+    [DataContract]
+    [NotMapped]
+    public class FinancialTransactionScannedCheck : FinancialTransaction
+    {
+        /// <summary>
+        /// Gets or sets the scanned check micr.
+        /// </summary>
+        /// <value>
+        /// The scanned check micr.
+        /// </value>
+        [DataMember]
+        public string ScannedCheckMicr { get; set; }
     }
 
     #region Entity Configuration

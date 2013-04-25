@@ -12,7 +12,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Data.Spatial;
 using System.Linq;
 using System.Runtime.Serialization;
-
+using Newtonsoft.Json;
 using Rock.Data;
 
 namespace Rock.Model
@@ -54,6 +54,7 @@ namespace Rock.Model
         /// The geo point.
         /// </value>
         [DataMember]
+        [JsonIgnore]
         public DbGeography GeoPoint { get; set; }
 
         /// <summary>
@@ -63,6 +64,7 @@ namespace Rock.Model
         /// The geo fence.
         /// </value>
         [DataMember]
+        [JsonIgnore]
         public DbGeography GeoFence { get; set; }
 
         /// <summary>
@@ -248,6 +250,5 @@ namespace Rock.Model
     }
 
     #endregion
-
 
 }

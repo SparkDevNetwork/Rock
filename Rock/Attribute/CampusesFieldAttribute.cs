@@ -13,6 +13,7 @@ namespace Rock.Attribute
     /// <summary>
     /// Field Attribute to select 0 or more Campuses
     /// </summary>
+    [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
     public class CampusesFieldAttribute : FieldAttribute
     {
         /// <summary>
