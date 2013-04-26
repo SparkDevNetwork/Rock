@@ -16,7 +16,7 @@
                         <asp:Label ID="lblType" runat="server" /></div>
                 </fieldset>
             </div>
-            <Rock:Grid ID="gExceptionOccurrences" runat="server">
+            <Rock:Grid ID="gExceptionOccurrences" runat="server" AllowSorting="true">
                 <Columns>
                     <Rock:DateTimeField DataField="ExceptionDateTime" HeaderText="Date" SortExpression="ExceptionDateTime" />
                     <asp:BoundField DataField="FullName" HeaderText="Logged In User" SortExpression="FullName" />
