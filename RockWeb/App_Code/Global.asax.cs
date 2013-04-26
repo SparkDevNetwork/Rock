@@ -553,7 +553,10 @@ namespace RockWeb
         {
             //filters.Add( new System.Web.Http.AuthorizeAttribute() );
             //filters.Add( new Rock.Rest.Filters.AuthenticateAttribute() );
-            filters.Add( new Rock.Rest.Filters.ValidateAttribute() );
+            
+            
+            // ValidateAttribute doesn't work for PUT's
+            //filters.Add( new Rock.Rest.Filters.ValidateAttribute() );
         }
 
         /// <summary>

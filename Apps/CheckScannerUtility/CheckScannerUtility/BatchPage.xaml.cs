@@ -16,6 +16,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Rock.Constants;
 using Rock.Model;
 using Rock.Net;
 
@@ -34,6 +35,14 @@ namespace Rock.Apps.CheckScannerUtility
             InitializeComponent();
             ScanningPage = new ScanningPage( this );
         }
+
+        /// <summary>
+        /// Gets or sets the selected financial batch id.
+        /// </summary>
+        /// <value>
+        /// The selected financial batch id.
+        /// </value>
+        public int SelectedFinancialBatchId { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the feeder.
@@ -328,7 +337,7 @@ namespace Rock.Apps.CheckScannerUtility
             }
             else
             {
-                MessageBox.Show( string.Format("Upload Error: {0}", e.Error.Message) );
+                MessageBox.Show( string.Format( "Upload Error: {0}", e.Error.Message ) );
             }
         }
 
@@ -350,7 +359,7 @@ namespace Rock.Apps.CheckScannerUtility
         private void bwUploadScannedChecks_DoWork( object sender, DoWorkEventArgs e )
         {
             BackgroundWorker bw = sender as BackgroundWorker;
-            
+
             RockConfig rockConfig = RockConfig.Load();
             RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
             client.Login( rockConfig.Username, rockConfig.Password );
@@ -360,8 +369,8 @@ namespace Rock.Apps.CheckScannerUtility
             AssemblyName assemblyName = Assembly.GetExecutingAssembly().GetName();
             string appInfo = string.Format( "{0}, version: {1}", assemblyName.FullName, assemblyName.Version );
 
-            BinaryFileType binaryFileTypeContribution = client.GetDataByGuid<BinaryFileType>( "api/BinaryFileTypes", new Guid(Rock.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE) );
-            DefinedValue currencyTypeValueCheck = client.GetDataByGuid<DefinedValue>( "api/DefinedValues", new Guid(Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK) );
+            BinaryFileType binaryFileTypeContribution = client.GetDataByGuid<BinaryFileType>( "api/BinaryFileTypes", new Guid( Rock.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE ) );
+            DefinedValue currencyTypeValueCheck = client.GetDataByGuid<DefinedValue>( "api/DefinedValues", new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK ) );
             DefinedValue transactionTypeValueContribution = client.GetDataByGuid<DefinedValue>( "api/DefinedValues", new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
             DefinedValue transactionImageTypeValueFront = client.GetDataByGuid<DefinedValue>( "api/DefinedValues", new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_IMAGE_TYPE_CHECK_FRONT ) );
             DefinedValue transactionImageTypeValueBack = client.GetDataByGuid<DefinedValue>( "api/DefinedValues", new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_IMAGE_TYPE_CHECK_BACK ) );
@@ -384,7 +393,7 @@ namespace Rock.Apps.CheckScannerUtility
 
                 // upload image of back of check (if it exists)
                 BinaryFile binaryFileBack = null;
-                string backFileName = Path.Combine(scannedFrontFile.DirectoryName, scannedFrontFile.Name.Replace("check_front_", "check_back_"));
+                string backFileName = Path.Combine( scannedFrontFile.DirectoryName, scannedFrontFile.Name.Replace( "check_front_", "check_back_" ) );
                 if ( File.Exists( backFileName ) )
                 {
                     FileInfo scannedBackFile = new FileInfo( backFileName );
@@ -415,23 +424,23 @@ namespace Rock.Apps.CheckScannerUtility
                 financialTransactionScannedCheck.AuthorizedPersonId = null;
                 financialTransactionScannedCheck.GatewayId = null;
                 financialTransactionScannedCheck.TransactionTypeValueId = transactionTypeValueContribution.Id;
-                
+
                 // Rock server will encrypt CheckMicrPlainText to this since we can't have the DataEncryptionKey in a RestClient
-                financialTransactionScannedCheck.CheckMicrEncrypted = null; 
-                string[] parts = scannedFrontFile.Name.ToLower().Replace(".tif", string.Empty).Split( new char[] { '_' } );
+                financialTransactionScannedCheck.CheckMicrEncrypted = null;
+                string[] parts = scannedFrontFile.Name.ToLower().Replace( ".tif", string.Empty ).Split( new char[] { '_' } );
                 if ( parts.Length == 5 )
                 {
                     string checkMicr = string.Format( "{2}_{3}_{4}", parts );
                     financialTransactionScannedCheck.ScannedCheckMicr = checkMicr;
                 }
-                
-                client.PostData<FinancialTransactionScannedCheck>( "api/FinancialTransactions/PostScanned", financialTransactionScannedCheck);
+
+                client.PostData<FinancialTransactionScannedCheck>( "api/FinancialTransactions/PostScanned", financialTransactionScannedCheck );
 
                 // get the FinancialTransaction back from server so that we can get it's Id
                 financialTransactionScannedCheck.Id = client.GetDataByGuid<FinancialTransaction>( "api/FinancialTransactions", financialTransactionScannedCheck.Guid ).Id;
 
                 // get the BinaryFiles back so that we can get their Ids
-                
+
                 // odata select doesn't work yet
                 // binaryFileFront.Id = client.GetData<int>( string.Format( "api/BinaryFiles?$filter=Guid eq guid'{0}'&$select=Id", binaryFileFront.Guid ) );
                 binaryFileFront.Id = client.GetDataByGuid<BinaryFile>( "api/BinaryFiles", binaryFileFront.Guid ).Id;
@@ -472,7 +481,29 @@ namespace Rock.Apps.CheckScannerUtility
             bdrBatchDetailEdit.Visibility = Visibility.Collapsed;
             pbUploadProgress.Visibility = Visibility.Hidden;
             ConnectToScanner();
+            LoadComboBoxes();
             LoadFinancialBatchesGrid();
+        }
+
+        /// <summary>
+        /// Loads the combo boxes.
+        /// </summary>
+        private void LoadComboBoxes()
+        {
+            RockConfig rockConfig = RockConfig.Load();
+            RockRestClient client = new RockRestClient(rockConfig.RockBaseUrl);
+            client.Login( rockConfig.Username, rockConfig.Password );
+            List<Campus> campusList = client.GetData<List<Campus>>("api/Campus");
+
+            cbCampus.SelectedValuePath="Id";
+            cbCampus.DisplayMemberPath="Name";
+            cbCampus.Items.Clear();
+            cbCampus.Items.Add( new Campus { Id = None.Id, Name = None.Text } );
+            foreach (var campus in campusList.OrderBy(a => a.Name))
+            {
+                cbCampus.Items.Add( campus );
+            }
+            cbCampus.SelectedIndex = 0;
         }
 
         /// <summary>
@@ -488,8 +519,17 @@ namespace Rock.Apps.CheckScannerUtility
             grdBatches.DataContext = pendingBatches.OrderByDescending( a => a.BatchDate );
             if ( pendingBatches.Count > 0 )
             {
-                grdBatches.SelectedIndex = 0;
+                if ( SelectedFinancialBatchId > 0 )
+                {
+                    grdBatches.SelectedValue = pendingBatches.FirstOrDefault( a => a.Id.Equals( SelectedFinancialBatchId ) );
+                }
+                else
+                {
+                    grdBatches.SelectedIndex = 0;
+                }
             }
+            
+            UpdateBatchUI( grdBatches.SelectedValue as FinancialBatch );
         }
 
         /// <summary>
@@ -628,8 +668,36 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnEdit_Click( object sender, RoutedEventArgs e )
         {
-            bdrBatchDetailEdit.Visibility = Visibility.Visible;
+            ShowBatch( true );
+        }
+
+        /// <summary>
+        /// Shows the batch edit.
+        /// </summary>
+        private void ShowBatch(bool showInEditMode)
+        {
+            if ( showInEditMode )
+            {
+                bdrBatchDetailEdit.Visibility = Visibility.Visible;
+                bdrBatchDetailReadOnly.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                bdrBatchDetailEdit.Visibility = Visibility.Collapsed;
+                bdrBatchDetailReadOnly.Visibility = Visibility.Visible;
+            }
+
+            grdBatches.IsEnabled = !showInEditMode;
+            btnAddBatch.IsEnabled = !showInEditMode;
+        }
+
+        /// <summary>
+        /// Hides the batch.
+        /// </summary>
+        private void HideBatch()
+        {
             bdrBatchDetailReadOnly.Visibility = Visibility.Collapsed;
+            bdrBatchDetailEdit.Visibility = Visibility.Collapsed;
         }
 
         /// <summary>
@@ -639,9 +707,64 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnSave_Click( object sender, RoutedEventArgs e )
         {
-            //#TODO# Save data
-            bdrBatchDetailEdit.Visibility = Visibility.Collapsed;
-            bdrBatchDetailReadOnly.Visibility = Visibility.Visible;
+            try
+            {
+                RockConfig rockConfig = RockConfig.Load();
+                RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
+                client.Login( rockConfig.Username, rockConfig.Password );
+
+                FinancialBatch financialBatch = null;
+                if ( SelectedFinancialBatchId.Equals( 0 ) )
+                {
+                    financialBatch = new FinancialBatch { Id = 0, Guid = Guid.NewGuid(), Status = BatchStatus.Pending };
+                }
+                else
+                {
+                    financialBatch = client.GetData<FinancialBatch>( string.Format( "api/FinancialBatches/{0}", SelectedFinancialBatchId ) );
+                }
+
+                financialBatch.Name = txtBatchName.Text;
+                Campus selectedCampus = cbCampus.SelectedItem as Campus;
+                if ( selectedCampus.Id > 0 )
+                {
+                    financialBatch.CampusId = selectedCampus.Id;
+                }
+                else
+                {
+                    financialBatch.CampusId = null;
+                }
+
+                financialBatch.BatchDate = dpBatchDate.SelectedDate;
+
+                //#TODO# Save CreatedByPersonId
+
+                if ( !string.IsNullOrWhiteSpace( txtControlAmount.Text ) )
+                {
+                    financialBatch.ControlAmount = Decimal.Parse( txtControlAmount.Text.Replace( "$", string.Empty ) );
+                }
+                else
+                {
+                    financialBatch.ControlAmount = 0.00M;
+                }
+
+                client.PostData<FinancialBatch>( "api/FinancialBatches/", financialBatch );
+
+                if ( SelectedFinancialBatchId.Equals( 0 ) )
+                {
+                    // refetch the batch to get the Id if it was just Inserted
+                    financialBatch = client.GetDataByGuid<FinancialBatch>( "api/FinancialBatches", financialBatch.Guid );
+
+                    SelectedFinancialBatchId = financialBatch.Id;
+                }
+
+                LoadFinancialBatchesGrid();
+
+                ShowBatch( false );
+            }
+            catch ( Exception ex )
+            {
+                MessageBox.Show( ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
+            }
         }
 
         /// <summary>
@@ -651,8 +774,69 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnCancel_Click( object sender, RoutedEventArgs e )
         {
-            bdrBatchDetailEdit.Visibility = Visibility.Collapsed;
-            bdrBatchDetailReadOnly.Visibility = Visibility.Visible;
+            UpdateBatchUI( grdBatches.SelectedValue as FinancialBatch );
+            ShowBatch( false );
+        }
+
+        /// <summary>
+        /// Handles the SelectionChanged event of the grdBatches control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="SelectionChangedEventArgs"/> instance containing the event data.</param>
+        private void grdBatches_SelectionChanged( object sender, SelectionChangedEventArgs e )
+        {
+            FinancialBatch selectedBatch = grdBatches.SelectedValue as FinancialBatch;
+
+            UpdateBatchUI( selectedBatch );
+        }
+
+        /// <summary>
+        /// Updates the batch UI.
+        /// </summary>
+        /// <param name="selectedBatch">The selected batch.</param>
+        private void UpdateBatchUI( FinancialBatch selectedBatch )
+        {
+            if ( selectedBatch == null )
+            {
+                HideBatch();
+                return;
+            }
+            
+            RockConfig rockConfig = RockConfig.Load();
+            RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
+            client.Login( rockConfig.Username, rockConfig.Password );
+            SelectedFinancialBatchId = selectedBatch.Id;
+            lblBatchNameReadOnly.Content = selectedBatch.Name;
+
+            lblBatchCampusReadOnly.Content = selectedBatch.CampusId.HasValue ? client.GetData<Campus>( string.Format( "api/Campus/{0}", selectedBatch.CampusId ) ).Name : string.Empty;
+            lblBatchDateReadOnly.Content = selectedBatch.BatchDate.ToString();
+            lblBatchCreatedByReadOnly.Content = "##OPEN_QUESTION##";
+            lblBatchControlAmountReadOnly.Content = selectedBatch.ControlAmount.ToString( "c" );
+
+            txtBatchName.Text = selectedBatch.Name;
+            if ( selectedBatch.CampusId.HasValue )
+            {
+                cbCampus.SelectedValue = selectedBatch.CampusId;
+            }
+            else
+            {
+                cbCampus.SelectedValue = 0;
+            }
+
+            dpBatchDate.SelectedDate = selectedBatch.BatchDate;
+            txtCreatedBy.Text = "##OPEN_QUESTION##";
+            txtControlAmount.Text = selectedBatch.ControlAmount.ToString( "c" );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnAddBatch control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnAddBatch_Click( object sender, RoutedEventArgs e )
+        {
+            UpdateBatchUI( new FinancialBatch { Id = 0, BatchDate = DateTime.Now.Date } );
+            ShowBatch( true );
         }
     }
 }

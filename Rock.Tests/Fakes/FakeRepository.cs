@@ -121,7 +121,12 @@ namespace Rock.Tests.Fakes
 
         public virtual void Attach( T entity )
         {
-            
+            //
+        }
+
+        public virtual void SetValues( T sourceItem, T targetTtem )
+        {
+            //
         }
 
         public virtual void Delete( T entity )
