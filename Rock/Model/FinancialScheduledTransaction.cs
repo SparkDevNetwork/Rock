@@ -98,6 +98,24 @@ namespace Rock.Model
         [DataMember]
         public string TransactionCode { get; set; }
 
+        /// <summary>
+        /// Gets or sets the date to remind user to update scheduled transaction.
+        /// </summary>
+        /// <value>
+        /// The card reminder date.
+        /// </value>
+        [DataMember]
+        public DateTime? CardReminderDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date that user was last reminded to update scheduled transaction.
+        /// </summary>
+        /// <value>
+        /// The last reminded date.
+        /// </value>
+        [DataMember]
+        public DateTime? LastRemindedDate { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -127,6 +145,20 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual DefinedValue TransactionFrequencyValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the scheduled transaction details.
+        /// </summary>
+        /// <value>
+        /// The scheduled transaction details.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<FinancialScheduledTransactionDetail> ScheduledTransactionDetails
+        {
+            get { return _scheduledTransactionDetails ?? ( _scheduledTransactionDetails = new Collection<FinancialScheduledTransactionDetail>() ); }
+            set { _scheduledTransactionDetails = value; }
+        }
+        private ICollection<FinancialScheduledTransactionDetail> _scheduledTransactionDetails;
 
         #endregion
 

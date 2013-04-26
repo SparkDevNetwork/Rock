@@ -247,12 +247,36 @@ namespace Rock.Data
         public DbSet<FinancialPledge> FinancialPledges { get; set; }
 
         /// <summary>
+        /// Gets or sets the financial person bank account.
+        /// </summary>
+        /// <value>
+        /// The financial person bank account.
+        /// </value>
+        public DbSet<FinancialPersonBankAccount> FinancialPersonBankAccounts { get; set; }
+
+        /// <summary>
+        /// Gets or sets the financial person saved account.
+        /// </summary>
+        /// <value>
+        /// The financial person saved account.
+        /// </value>
+        public DbSet<FinancialPersonSavedAccount> FinancialPersonSavedAccounts { get; set; }
+
+        /// <summary>
         /// Gets or sets the financial scheduled transactions.
         /// </summary>
         /// <value>
         /// The financial scheduled transactions.
         /// </value>
         public DbSet<FinancialScheduledTransaction> FinancialScheduledTransactions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the financial scheduled transaction details.
+        /// </summary>
+        /// <value>
+        /// The financial scheduled transaction details.
+        /// </value>
+        public DbSet<FinancialScheduledTransactionDetail> FinancialScheduledTransactionDetails { get; set; }
 
         /// <summary>
         /// Gets or sets the transactions.
@@ -277,6 +301,14 @@ namespace Rock.Data
         /// The transaction details.
         /// </value>
         public DbSet<FinancialTransactionImage> FinancialTransactionImages { get; set; }
+
+        /// <summary>
+        /// Gets or sets the financial transaction refunds.
+        /// </summary>
+        /// <value>
+        /// The financial transaction refunds.
+        /// </value>
+        public DbSet<FinancialTransactionRefund> FinancialTransactionRefunds { get; set; }
 
         /// <summary>
         /// Gets or sets the Groups.
@@ -690,10 +722,14 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new FinancialBatchConfiguration() );
             modelBuilder.Configurations.Add( new FinancialGatewayConfiguration() );
             modelBuilder.Configurations.Add( new FinancialPledgeConfiguration() );
+            modelBuilder.Configurations.Add( new FinancialPersonBankAccountConfiguration() );
+            modelBuilder.Configurations.Add( new FinancialPersonSavedAccountConfiguration() );
             modelBuilder.Configurations.Add( new FinancialScheduledTransactionConfiguration() );
+            modelBuilder.Configurations.Add( new FinancialScheduledTransactionDetailConfiguration() );
             modelBuilder.Configurations.Add( new FinancialTransactionConfiguration() );
             modelBuilder.Configurations.Add( new FinancialTransactionDetailConfiguration() );
             modelBuilder.Configurations.Add( new FinancialTransactionImageConfiguration() );
+            modelBuilder.Configurations.Add( new FinancialTransactionRefundConfiguration() );
             modelBuilder.Configurations.Add( new GroupConfiguration() );
             modelBuilder.Configurations.Add( new GroupLocationConfiguration() );
             modelBuilder.Configurations.Add( new GroupMemberConfiguration() );

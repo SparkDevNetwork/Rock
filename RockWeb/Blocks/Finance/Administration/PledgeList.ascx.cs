@@ -132,16 +132,17 @@ namespace RockWeb.Blocks.Finance.Administration
             var sortProperty = gPledges.SortProperty;
             var pledges = pledgeService.Queryable();
             int personId;
-            int accountId;
 
             if ( ppFilterPerson.SelectedValue != "0" && int.TryParse( ppFilterPerson.PersonId, out personId ) )
             {
                 pledges = pledges.Where( p => p.PersonId == personId );
             }
 
-            if ( fpFilterAccount.SelectedValue != "0" && int.TryParse( fpFilterAccount.SelectedValue, out accountId ) )
+            var accountIds = fpFilterAccount.SelectedValuesAsInt().Where( i => i.HasValue && i.Value != 0 ).ToList();
+
+            if ( accountIds.Any() )
             {
-                pledges = pledges.Where( p => p.AccountId == accountId );
+                pledges = pledges.Where( p => accountIds.Contains( p.AccountId ) );
             }
 
             gPledges.DataSource = sortProperty != null ? pledges.Sort( sortProperty ).ToList() : pledges.OrderBy( p => p.AccountId ).ToList();
