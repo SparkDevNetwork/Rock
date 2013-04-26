@@ -476,10 +476,6 @@
     <Compile Include="Migrations\201304151305475_ScheduledTransaction.Designer.cs">
       <DependentUpon>201304151305475_ScheduledTransaction.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201304162354549_ExceptionLog_Page_SiteFKs.cs" />
-    <Compile Include="Migrations\201304162354549_ExceptionLog_Page_SiteFKs.Designer.cs">
-      <DependentUpon>201304162354549_ExceptionLog_Page_SiteFKs.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -1393,9 +1389,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304151305475_ScheduledTransaction.resx">
       <DependentUpon>201304151305475_ScheduledTransaction.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201304162354549_ExceptionLog_Page_SiteFKs.resx">
-      <DependentUpon>201304162354549_ExceptionLog_Page_SiteFKs.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup />
