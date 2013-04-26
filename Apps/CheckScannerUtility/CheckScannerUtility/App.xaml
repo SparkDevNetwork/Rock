@@ -171,7 +171,7 @@
         </Style>
 
         <!--
-            TextBlock/TextBox styles
+            TextBlock
         -->
 
         <!-- TextBlock text style -->
@@ -186,27 +186,7 @@
             <Setter Property="Label.FontSize"
                     Value="14"></Setter>
         </Style>
-
-        <!-- Textbox styles -->
-        <Style x:Key="textboxStyle"
-               TargetType="{x:Type Control}">
-            <Setter Property="Margin"
-                    Value="4,1,0,4" />
-            <Setter Property="Width"
-                    Value="210" />
-            <Setter Property="Height"
-                    Value="24" />
-            <Setter Property="HorizontalAlignment"
-                    Value="Left"></Setter>
-        </Style>
-
-        <!-- Textbox Style: url -->
-        <Style x:Key="textboxStyleUrl"
-               BasedOn="{StaticResource ResourceKey=textboxStyle}"
-               TargetType="{x:Type Control}">
-            <Setter Property="Width"
-                    Value="420" />
-        </Style>
+       
 
         <!-- 
         Button styles 
@@ -344,17 +324,44 @@
                     Value="0,0,0,20" />
         </Style>
 
-        <!--
-            Date Picker Styles
+        <!-- 
+           Input Styles
         -->
-        <Style x:Key="datePickerStyle"
-               TargetType="{x:Type DatePicker}">
+        <Style x:Key="inputStyleBase"
+               TargetType="{x:Type Control}">
             <Setter Property="Margin"
                     Value="4,4,0,0" />
             <Setter Property="Width"
                     Value="210" />
+            <Setter Property="Height"
+                    Value="24" />
             <Setter Property="HorizontalAlignment"
-                    Value="Left" />
+                    Value="Left"></Setter>
+        </Style>
+
+        <!-- Textbox Style -->
+        <Style x:Key="textboxStyle"
+               TargetType="{x:Type Control}" BasedOn="{StaticResource ResourceKey=inputStyleBase}">
+        </Style>
+
+        <!-- Textbox Style: url -->
+        <Style x:Key="textboxStyleUrl"
+               BasedOn="{StaticResource ResourceKey=textboxStyle}"
+               TargetType="{x:Type Control}">
+            <Setter Property="Width"
+                    Value="420" />
+        </Style>
+
+        <!-- Date Picker Style -->
+        <Style x:Key="datePickerStyle"
+               TargetType="{x:Type DatePicker}"
+               BasedOn="{StaticResource ResourceKey=inputStyleBase}">
+        </Style>
+        
+        <!-- ComboBox Style -->
+        <Style x:Key="comboBoxStyle"
+               TargetType="ComboBox"
+               BasedOn="{StaticResource ResourceKey=inputStyleBase}">
         </Style>
 
     </Application.Resources>
