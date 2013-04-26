@@ -7,14 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-using Rock;
-using Rock.Model;
-
-using Rock.Attribute;
-using Rock.Data;
 using Rock.Extension;
-using Rock.Model;
-using Rock.Web.Cache;
 
 namespace Rock.Communication
 {
@@ -27,9 +20,13 @@ namespace Rock.Communication
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
-        /// <returns></returns>
-        public abstract bool Send( Rock.Model.Communication communication );
+        /// <param name="CurrentPersonId">The current person id.</param>
+        public abstract void Send( Rock.Model.Communication communication, int? CurrentPersonId );
 
+        /// <summary>
+        /// Gets the global config values.
+        /// </summary>
+        /// <returns></returns>
         public Dictionary<string, object> GetGlobalConfigValues()
         {
             var configValues = new Dictionary<string, object>();
