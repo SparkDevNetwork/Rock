@@ -131,6 +131,9 @@
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
+    <Compile Include="Communication\CommunicationChannelControl.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
     <Compile Include="Migrations\201304190037528_BinaryFileTypeContributionImage.cs" />
     <Compile Include="Migrations\201304190037528_BinaryFileTypeContributionImage.Designer.cs">
       <DependentUpon>201304190037528_BinaryFileTypeContributionImage.cs</DependentUpon>
@@ -143,10 +146,11 @@
     <Compile Include="Migrations\201304222141330_AccountNumberSecuredGroupTypeDisplayOrder.Designer.cs">
       <DependentUpon>201304222141330_AccountNumberSecuredGroupTypeDisplayOrder.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201304231807081_CommunicationMEF.cs" />
-    <Compile Include="Migrations\201304231807081_CommunicationMEF.Designer.cs">
-      <DependentUpon>201304231807081_CommunicationMEF.cs</DependentUpon>
+    <Compile Include="Migrations\201304241330175_CommunicationMEF.cs" />
+    <Compile Include="Migrations\201304241330175_CommunicationMEF.Designer.cs">
+      <DependentUpon>201304241330175_CommunicationMEF.cs</DependentUpon>
     </Compile>
+    <Compile Include="Model\CommunicationRecipientService.Partial.cs" />
     <Compile Include="Net\RockRestClient.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -1473,8 +1477,8 @@
     <EmbeddedResource Include="Migrations\201304221822201_FinancialBatch.resx">
       <DependentUpon>201304221822201_FinancialBatch.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201304231807081_CommunicationMEF.resx">
-      <DependentUpon>201304231807081_CommunicationMEF.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201304241330175_CommunicationMEF.resx">
+      <DependentUpon>201304241330175_CommunicationMEF.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

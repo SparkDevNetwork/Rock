@@ -355,7 +355,7 @@ namespace Rock.Web.UI.Controls
                 if ( rockPage != null )
                 {
                     var communication = new Rock.Model.Communication();
-                    communication.IsTemporary = true;
+                    communication.Status = Model.CommunicationStatus.Transient;
 
                     if ( rockPage.CurrentPersonId.HasValue )
                     {
