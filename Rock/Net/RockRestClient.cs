@@ -10,6 +10,8 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.ModelBinding;
+using Newtonsoft.Json.Linq;
 using Rock.Data;
 using Rock.Security;
 
@@ -241,19 +243,49 @@ namespace Rock.Net
 
             if ( httpError != null )
             {
-                if ( httpError.ContainsKey( "ModelState" ) )
-                {
-                    var modelState = httpError["ModelState"];
-                    if ( modelState != null )
-                    {
-                        throw new Exception( modelState.ToString() );
-                    }
-                }
+                throw new HttpErrorException( httpError );
             }
 
             if ( httpMessage != null )
             {
                 httpMessage.EnsureSuccessStatusCode();
+            }
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class HttpErrorException : Exception
+    {
+        /// <summary>
+        /// Gets or sets the _message.
+        /// </summary>
+        /// <value>
+        /// The _message.
+        /// </value>
+        private string _message { get; set; }
+
+        public HttpErrorException( HttpError httpError )
+            : base()
+        {
+            _message = string.Empty;
+
+            foreach ( var error in httpError )
+            {
+                _message += error.Value.ToString() + Environment.NewLine;
+            }
+        }
+
+        /// <summary>
+        /// Gets a message that describes the current exception.
+        /// </summary>
+        /// <returns>The error message that explains the reason for the exception, or an empty string("").</returns>
+        public override string Message
+        {
+            get
+            {
+                return _message;
             }
         }
     }

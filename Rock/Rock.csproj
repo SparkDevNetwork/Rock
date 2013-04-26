@@ -137,6 +137,7 @@
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
+    <Compile Include="Data\IgnoreModelErrorsAttribute.cs" />
     <Compile Include="Migrations\201304190037528_BinaryFileTypeContributionImage.cs" />
     <Compile Include="Migrations\201304190037528_BinaryFileTypeContributionImage.Designer.cs">
       <DependentUpon>201304190037528_BinaryFileTypeContributionImage.cs</DependentUpon>
