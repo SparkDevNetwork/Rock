@@ -6,21 +6,51 @@
       mc:Ignorable="d"
       d:DesignHeight="680"
       d:DesignWidth="700"
-      Title="OptionsPage">
+      Title="Check Scanner - Options">
+    <Grid>
 
-    <StackPanel>
-        <Label Name="lblMakeModel"
-               Style="{StaticResource labelTextStyle}">Scanner Type:</Label>
-        <Label Name="lblInterfaceVersion"
-               Style="{StaticResource labelTextStyle}">Interface Version:</Label>
-        <Label Name="lblFeederType"
-               Style="{StaticResource labelTextStyle}">FeederType:</Label>
-        <Label Name="lblImageOption"
-               Style="{StaticResource labelTextStyle}">Scan Image Color Type</Label>
-        <ComboBox Name="cboImageOption"
-                  Style="{StaticResource textboxStyle}"
-                  SelectionChanged="cboImageOption_SelectionChanged" />
-        <Button Name="btnBack"
-                Click="btnBack_Click_1" Style="{StaticResource buttonStyle}" HorizontalAlignment="Left">Back</Button>
-    </StackPanel>
+    <Grid.Background>
+        <ImageBrush ImageSource="images\header-texture.png"
+                    TileMode="Tile"
+                    Viewport="0,0,420,326"
+                    ViewportUnits="Absolute" />
+    </Grid.Background>
+    <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="30" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="30" />
+    </Grid.ColumnDefinitions>
+    <Grid.RowDefinitions>
+        <RowDefinition Height="50" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="30" />
+    </Grid.RowDefinitions>
+        <Canvas Name="pnlMid"
+                Background="#efefef"
+                Grid.Column="1"
+                Grid.ColumnSpan="1"
+                Margin="0"
+                Grid.Row="1"
+                Grid.RowSpan="1" />
+        <StackPanel Grid.Column="1" Grid.Row="1" >
+            <Label Name="lblMakeModel"
+                   Style="{StaticResource labelStyle}">Scanner Type:</Label>
+            <Label Name="lblInterfaceVersion"
+                   Style="{StaticResource labelStyle}">Interface Version:</Label>
+            <Label Name="lblFeederType"
+                   Style="{StaticResource labelStyle}">FeederType:</Label>
+            <Label Name="lblImageOption"
+                   Style="{StaticResource labelStyle}">Scan Image Color Type</Label>
+            <ComboBox Name="cboImageOption"
+                      Style="{StaticResource textboxStyle}"
+                      SelectionChanged="cboImageOption_SelectionChanged" />
+            <Button Name="btnBack"
+                    Click="btnBack_Click_1"
+                    Style="{StaticResource buttonStyle}"
+                    HorizontalAlignment="Left">Back</Button>
+        </StackPanel>
+
+    </Grid>
+
+    
 </Page>
