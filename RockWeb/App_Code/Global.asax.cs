@@ -551,12 +551,8 @@ namespace RockWeb
         /// <param name="filters">The filters.</param>
         private void RegisterFilters( System.Web.Http.Filters.HttpFilterCollection filters )
         {
-            //filters.Add( new System.Web.Http.AuthorizeAttribute() );
-            //filters.Add( new Rock.Rest.Filters.AuthenticateAttribute() );
-            
-            
-            // ValidateAttribute doesn't work for PUT's
-            //filters.Add( new Rock.Rest.Filters.ValidateAttribute() );
+            // does validation on IEntity's coming in thru REST
+            filters.Add( new Rock.Rest.Filters.ValidateAttribute() );
         }
 
         /// <summary>
