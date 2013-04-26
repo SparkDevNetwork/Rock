@@ -25,19 +25,12 @@
         </Rock:GridFilter>
         <Rock:Grid ID="gExceptionList" runat="server" AllowSorting="true" OnRowSelected="gExceptionList_RowSelected" EmptyDataText="No Exceptions Found">
             <Columns>
-                <asp:BoundField DataField="LastExceptionDate" HeaderText="Last Date" DataFormatString="{0:d}" SortExpression="LastExceptionDate" />
+                <Rock:DateField DataField="LastExceptionDate" HeaderText="Last Date" SortExpression="LastExceptionDate" />
                 <asp:BoundField DataField="SiteName" HeaderText="Site Name" SortExpression="SiteName" />
                 <asp:BoundField DataField="PageName" HeaderText="Page" SortExpression="PageName" />
                 <asp:BoundField DataField="Description" HeaderText="Exception" SortExpression="Description" />
-                <asp:BoundField DataField="TotalCount" HeaderText="Total Count" SortExpression="TotalCount" />
-                <asp:TemplateField SortExpression="SubsetCount">
-                    <HeaderTemplate>
-                        <asp:Label ID="lblSubsetHeader" runat="server" />
-                    </HeaderTemplate>
-                    <ItemTemplate>
-                        <%# Eval("SubsetCount") %>
-                    </ItemTemplate>
-                </asp:TemplateField>
+                <asp:BoundField DataField="TotalCount" HeaderText="Total Count" SortExpression="TotalCount" ItemStyle-HorizontalAlign="Right" />
+                <asp:BoundField DataField="SubsetCount" SortExpression="SubsetCount" ItemStyle-HorizontalAlign="Right" />
             </Columns>
         </Rock:Grid>
     </ContentTemplate>

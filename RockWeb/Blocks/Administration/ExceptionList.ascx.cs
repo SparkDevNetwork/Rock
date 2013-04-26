@@ -28,7 +28,6 @@ namespace RockWeb.Blocks.Administraton
 
             gExceptionList.DataKeyNames = new string[] { "Id" };
             gExceptionList.GridRebind += gExceptionList_GridRebind;
-            gExceptionList.RowDataBound += gExceptionList_RowDataBound;
             gExceptionList.RowItemText = "Exception";
 
             fExceptionList.ApplyFilterClick += fExceptionList_ApplyFilterClick;
@@ -153,18 +152,6 @@ namespace RockWeb.Blocks.Administraton
             BindGrid();
         }
 
-        void gExceptionList_RowDataBound( object sender, GridViewRowEventArgs e )
-        {
-            if ( e.Row.RowType == DataControlRowType.Header )
-            {
-                Label headerLbl = (Label)e.Row.FindControl( "lblSubsetHeader" );
-                int subsetDays = Convert.ToInt32( GetAttributeValue( "SummaryCountDays" ) );
-
-                headerLbl.Text = string.Format( "Last {0} days", subsetDays );
-
-            }
-        }
-
         protected void gExceptionList_RowSelected( object sender, RowEventArgs e )
         {
             NavigateToDetailPage( "ExceptionLogID", (int)e.RowKeyValue );
@@ -228,7 +215,7 @@ namespace RockWeb.Blocks.Administraton
 
         private void BindGrid()
         {
-            DateTime sevenDaysAgo = DateTime.Now.Date.AddDays(-7);
+            gExceptionList.Columns[5].HeaderText = string.Format( "Last {0} days", GetAttributeValue( "SummaryCountDays" ) );
 
             var exceptionQuery = BuildExceptionListQuery();
 
