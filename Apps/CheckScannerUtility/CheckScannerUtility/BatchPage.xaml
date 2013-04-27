@@ -134,6 +134,7 @@
                       CellStyle="{StaticResource gridCellStyle}"
                       CanUserAddRows="False"
                       CanUserDeleteRows="False"
+                      SelectionMode="Single"
                       ScrollViewer.HorizontalScrollBarVisibility="Hidden"
                       ScrollViewer.VerticalScrollBarVisibility="Visible"
                       SelectionChanged="grdBatches_SelectionChanged">
@@ -159,6 +160,17 @@
                     <Label Style="{StaticResource labelStyleButtonText}">Add Batch</Label>
                 </StackPanel>
             </Button>
+            <Button Grid.Row="1"
+                    Grid.Column="0"
+                    Style="{StaticResource buttonStyleMini}"
+                    HorizontalAlignment="Right"
+                    Name="btnRefreshBatchList"
+                    Click="btnRefreshBatchList_Click">
+                <StackPanel Orientation="Horizontal">
+                    <Label Style="{StaticResource labelStyleIcon}">&#xf021;</Label>
+                    <Label Style="{StaticResource labelStyleButtonText}">Reload</Label>
+                </StackPanel>
+            </Button>
             <StackPanel Grid.Column="1"
                         Grid.Row="0"
                         Margin="16">
@@ -168,15 +180,15 @@
                         <Label Style="{StaticResource labelStyleDt}">Batch Name</Label>
                         <Label Name="lblBatchNameReadOnly"
                                Style="{StaticResource labelStyleDd}">Sample Batch Name</Label>
+                        <Label Style="{StaticResource labelStyleDt}">Created by</Label>
+                        <Label Name="lblBatchCreatedByReadOnly"
+                               Style="{StaticResource labelStyleDd}">Veruca Volunteer</Label>
                         <Label Style="{StaticResource labelStyleDt}">Campus</Label>
                         <Label Name="lblBatchCampusReadOnly"
                                Style="{StaticResource labelStyleDd}">Home Campus</Label>
                         <Label Style="{StaticResource labelStyleDt}">Batch Date</Label>
                         <Label Name="lblBatchDateReadOnly"
                                Style="{StaticResource labelStyleDd}">01/01/1900</Label>
-                        <Label Style="{StaticResource labelStyleDt}">Created by</Label>
-                        <Label Name="lblBatchCreatedByReadOnly"
-                               Style="{StaticResource labelStyleDd}">Veruca Volunteer</Label>
                         <Label Style="{StaticResource labelStyleDt}"
                                Content="Control Amount" />
                         <Label Name="lblBatchControlAmountReadOnly"
@@ -205,21 +217,23 @@
                         <TextBox Name="txtBatchName"
                                  Style="{StaticResource textboxStyle}"
                                  Text="Sample Batch Name" />
+                        <Label Style="{StaticResource labelStyle}">Created by</Label>
+                        <Label Name="lblCreatedBy"
+                               Style="{StaticResource labelStyleDd}"
+                               Content="Veruca Volunteer" />
                         <Label Style="{StaticResource labelStyle}">Campus</Label>
                         <ComboBox Name="cbCampus"
                                   Style="{StaticResource comboBoxStyle}" />
                         <Label Style="{StaticResource labelStyle}">Batch Date</Label>
                         <DatePicker Name="dpBatchDate"
                                     Style="{StaticResource datePickerStyle}" />
-                        <Label Style="{StaticResource labelStyle}">Created by</Label>
-                        <TextBox Name="txtCreatedBy"
-                                 Style="{StaticResource textboxStyle}"
-                                 Text="Veruca Volunteer" />
+
                         <Label Style="{StaticResource labelStyle}"
                                Content="Control Amount" />
                         <TextBox Name="txtControlAmount"
                                  Style="{StaticResource textboxStyle}"
                                  Text="$123.45" />
+
                         <StackPanel Orientation="Horizontal">
                             <Button Style="{StaticResource buttonStylePrimary}"
                                     Name="btnSave"
@@ -266,25 +280,31 @@
                           BorderBrush="#d8d8d8"
                           CellStyle="{StaticResource gridCellStyle}"
                           CanUserAddRows="False"
-                          CanUserDeleteRows="False">
+                          CanUserDeleteRows="False"
+                          Style="{StaticResource gridStyle}"
+                          ScrollViewer.VerticalScrollBarVisibility="Visible">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="SCANNED DATE/TIME"
-                                            HeaderStyle="{StaticResource gridHeaderStyle}"
-                                            Width="Auto"
+                                            Binding="{Binding TransactionDateTime}"
+                                            HeaderStyle="{StaticResource gridHeaderStyleWide}"
+                                            Width="160"
                                             CanUserResize="False"
                                             CanUserSort="False" />
                         <DataGridCheckBoxColumn Header="UPLOADED"
                                                 HeaderStyle="{StaticResource gridHeaderStyle}"
+                                                Binding="{Binding Id}"
                                                 Width="Auto"
                                                 CanUserResize="False"
                                                 CanUserSort="False" />
-                        <DataGridTextColumn Header="IMAGE"
+                        <DataGridTextColumn Header="#TODO#"
                                             HeaderStyle="{StaticResource gridHeaderStyle}"
                                             Width="Auto"
                                             CanUserResize="False"
                                             CanUserSort="False" />
                         <DataGridTextColumn Header="AMOUNT"
-                                            HeaderStyle="{StaticResource gridHeaderStyle}"
+                                            HeaderStyle="{StaticResource gridHeaderStyleNumber}"
+                                            CellStyle="{StaticResource gridCellStyleNumber}"
+                                            Binding="{Binding Amount}"
                                             Width="Auto"
                                             CanUserResize="False"
                                             CanUserSort="False" />

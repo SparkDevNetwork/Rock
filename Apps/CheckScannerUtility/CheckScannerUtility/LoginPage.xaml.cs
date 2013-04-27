@@ -7,6 +7,7 @@
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
+using Rock.Model;
 using Rock.Net;
 
 namespace Rock.Apps.CheckScannerUtility
@@ -14,7 +15,7 @@ namespace Rock.Apps.CheckScannerUtility
     /// <summary>
     /// Interaction logic for LoginPage.xaml
     /// </summary>
-    public partial class LoginPage : Page
+    public partial class LoginPage : System.Windows.Controls.Page
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LoginPage"/> class.
@@ -31,10 +32,13 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnLogin_Click( object sender, RoutedEventArgs e )
         {
+            BatchPage batchPage = new BatchPage();
             try
             {
                 RockRestClient rockRestClient = new RockRestClient(txtRockUrl.Text);
                 rockRestClient.Login( txtUsername.Text, txtPassword.Password);
+                Person person = rockRestClient.GetData<Person>( string.Format( "api/People/GetByUserName/{0}", txtUsername.Text ) );
+                batchPage.LoggedInPerson = person;
             }
             catch ( WebException wex )
             {
@@ -60,7 +64,6 @@ namespace Rock.Apps.CheckScannerUtility
             rockConfig.Password = txtPassword.Password;
             rockConfig.Save();
             
-            BatchPage batchPage = new BatchPage();
             this.NavigationService.Navigate( batchPage);
         }
 
