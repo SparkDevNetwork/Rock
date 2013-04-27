@@ -125,8 +125,21 @@
         <!--
             Grid related Styles
         -->
+        
+        <!-- Grid Style -->
+        <Style x:Key="gridStyle"
+               TargetType="{x:Type DataGrid}">
+            <Setter Property="ColumnHeaderStyle">
+                <Setter.Value>
+                    <Style TargetType="{x:Type DataGridColumnHeader}">
+                        <Setter Property="Background"
+                                Value="#e9e9e9" />
+                    </Style>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
-        <!-- Grid Column Header style -->
+            <!-- Grid Column Header style -->
         <Style x:Key="gridHeaderStyle"
                TargetType="{x:Type DataGridColumnHeader}">
             <Setter Property="Padding"
@@ -156,6 +169,15 @@
                     Value="240" />
         </Style>
 
+        <Style x:Key="gridHeaderStyleNumber"
+               TargetType="{x:Type DataGridColumnHeader}"
+               BasedOn="{StaticResource gridHeaderStyle}">
+            <Setter Property="Width"
+                    Value="120" />
+            <Setter Property="HorizontalContentAlignment"
+                    Value="Right" />
+        </Style>
+
         <!-- Grid Cell Style -->
         <Style x:Key="gridCellStyle"
                TargetType="{x:Type DataGridCell}">
@@ -168,6 +190,12 @@
                             Value="White" />
                 </Trigger>
             </Style.Triggers>
+        </Style>
+        <Style x:Key="gridCellStyleNumber"
+               TargetType="{x:Type DataGridCell}"
+               BasedOn="{StaticResource gridCellStyle}">
+            <Setter Property="HorizontalAlignment"
+                    Value="Right" />
         </Style>
 
         <!--

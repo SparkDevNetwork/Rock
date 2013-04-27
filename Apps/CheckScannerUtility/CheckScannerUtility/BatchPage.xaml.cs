@@ -45,6 +45,14 @@ namespace Rock.Apps.CheckScannerUtility
         public int SelectedFinancialBatchId { get; set; }
 
         /// <summary>
+        /// Gets or sets the logged in person id.
+        /// </summary>
+        /// <value>
+        /// The logged in person id.
+        /// </value>
+        public Person LoggedInPerson { get; set; }
+
+        /// <summary>
         /// Gets or sets the type of the feeder.
         /// </summary>
         /// <value>
@@ -412,7 +420,7 @@ namespace Rock.Apps.CheckScannerUtility
                 bw.ReportProgress( percentComplete );
 
                 FinancialTransactionScannedCheck financialTransactionScannedCheck = new FinancialTransactionScannedCheck();
-                //financialTransaction.BatchId = #todo#
+                financialTransactionScannedCheck.BatchId = SelectedFinancialBatchId;
                 financialTransactionScannedCheck.Amount = 0.00M;
                 financialTransactionScannedCheck.TransactionCode = string.Empty;
                 financialTransactionScannedCheck.Summary = string.Format( "Scanned Check from {0}", appInfo );
@@ -456,7 +464,7 @@ namespace Rock.Apps.CheckScannerUtility
                 {
                     // odata $select doesn't work yet
                     // binaryFileBack.Id = client.GetData<int>( string.Format( "api/BinaryFiles?$select=Id&$filter=Guid eq guid'{0}'", binaryFileBack.Guid ) );
-                    binaryFileFront.Id = client.GetDataByGuid<BinaryFile>( "api/BinaryFiles", binaryFileBack.Guid ).Id;
+                    binaryFileBack.Id = client.GetDataByGuid<BinaryFile>( "api/BinaryFiles", binaryFileBack.Guid ).Id;
                     FinancialTransactionImage financialTransactionImageBack = new FinancialTransactionImage();
                     financialTransactionImageBack.BinaryFileId = binaryFileBack.Id;
                     financialTransactionImageBack.TransactionId = financialTransactionScannedCheck.Id;
@@ -716,7 +724,7 @@ namespace Rock.Apps.CheckScannerUtility
                 FinancialBatch financialBatch = null;
                 if ( SelectedFinancialBatchId.Equals( 0 ) )
                 {
-                    financialBatch = new FinancialBatch { Id = 0, Guid = Guid.NewGuid(), Status = BatchStatus.Pending };
+                    financialBatch = new FinancialBatch { Id = 0, Guid = Guid.NewGuid(), Status = BatchStatus.Pending, CreatedByPersonId = LoggedInPerson.Id };
                 }
                 else
                 {
@@ -735,8 +743,6 @@ namespace Rock.Apps.CheckScannerUtility
                 }
 
                 financialBatch.BatchDate = dpBatchDate.SelectedDate;
-
-                //#TODO# Save CreatedByPersonId
 
                 if ( !string.IsNullOrWhiteSpace( txtControlAmount.Text ) )
                 {
@@ -794,12 +800,16 @@ namespace Rock.Apps.CheckScannerUtility
         /// Updates the batch UI.
         /// </summary>
         /// <param name="selectedBatch">The selected batch.</param>
-        private void UpdateBatchUI( FinancialBatch selectedBatch )
+        private void UpdateBatchUI( FinancialBatch selectedBatch)
         {
             if ( selectedBatch == null )
             {
                 HideBatch();
                 return;
+            }
+            else
+            {
+                ShowBatch( false );
             }
             
             RockConfig rockConfig = RockConfig.Load();
@@ -808,9 +818,9 @@ namespace Rock.Apps.CheckScannerUtility
             SelectedFinancialBatchId = selectedBatch.Id;
             lblBatchNameReadOnly.Content = selectedBatch.Name;
 
-            lblBatchCampusReadOnly.Content = selectedBatch.CampusId.HasValue ? client.GetData<Campus>( string.Format( "api/Campus/{0}", selectedBatch.CampusId ) ).Name : string.Empty;
+            lblBatchCampusReadOnly.Content = selectedBatch.CampusId.HasValue ? client.GetData<Campus>( string.Format( "api/Campus/{0}", selectedBatch.CampusId ) ).Name : None.Text;
             lblBatchDateReadOnly.Content = selectedBatch.BatchDate.ToString();
-            lblBatchCreatedByReadOnly.Content = "##OPEN_QUESTION##";
+            lblBatchCreatedByReadOnly.Content = client.GetData<Person>( string.Format( "api/People/{0}", selectedBatch.CreatedByPersonId ) ).FullName;
             lblBatchControlAmountReadOnly.Content = selectedBatch.ControlAmount.ToString( "c" );
 
             txtBatchName.Text = selectedBatch.Name;
@@ -824,8 +834,11 @@ namespace Rock.Apps.CheckScannerUtility
             }
 
             dpBatchDate.SelectedDate = selectedBatch.BatchDate;
-            txtCreatedBy.Text = "##OPEN_QUESTION##";
+            lblCreatedBy.Content = lblBatchCreatedByReadOnly.Content as string;
             txtControlAmount.Text = selectedBatch.ControlAmount.ToString( "c" );
+
+            List<FinancialTransaction> transactions = client.GetData<List<FinancialTransaction>>( "api/FinancialTransactions/", string.Format( "BatchId eq {0}", selectedBatch.Id ) );
+            grdBatchItems.DataContext = transactions;
         }
 
         /// <summary>
@@ -835,8 +848,18 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnAddBatch_Click( object sender, RoutedEventArgs e )
         {
-            UpdateBatchUI( new FinancialBatch { Id = 0, BatchDate = DateTime.Now.Date } );
+            UpdateBatchUI( new FinancialBatch { Id = 0, BatchDate = DateTime.Now.Date, CreatedByPersonId = LoggedInPerson.Id } );
             ShowBatch( true );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnRefreshBatchList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnRefreshBatchList_Click( object sender, RoutedEventArgs e )
+        {
+            LoadFinancialBatchesGrid();
         }
     }
 }
