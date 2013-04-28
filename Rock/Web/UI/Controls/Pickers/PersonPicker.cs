@@ -13,13 +13,23 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class PersonPicker : CompositeControl, ILabeledControl
+    public class PersonPicker : CompositeControl
     {
-        private Label label;
-        private Literal literal;
         private HiddenField hfPersonId;
         private HiddenField hfPersonName;
         private LinkButton btnSelect;
+
+        /// <summary>
+        /// Gets or sets the name of the field.
+        /// </summary>
+        /// <value>
+        /// The name of the field.
+        /// </value>
+        public string FieldName
+        {
+            get { return ViewState["FieldName"] as string ?? string.Empty; }
+            set { ViewState["FieldName"] = value; }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonPicker" /> class.
@@ -33,27 +43,6 @@ namespace Rock.Web.UI.Controls
         /// The required validator
         /// </summary>
         protected HiddenFieldValidator requiredValidator;
-
-        /// <summary>
-        /// Gets or sets the label text.
-        /// </summary>
-        /// <value>
-        /// The label text.
-        /// </value>
-        public string LabelText
-        {
-            get
-            {
-                EnsureChildControls();
-                return label.Text;
-            }
-
-            set
-            {
-                EnsureChildControls();
-                label.Text = value;
-            }
-        }
 
         /// <summary>
         /// Gets or sets the person id.
@@ -241,7 +230,7 @@ namespace Rock.Web.UI.Controls
         }});
 
         $('#btnSelect_{0}').click(function (e) {{
-            var radInput = $('#{0}').find('input:checked');
+            var radInput = $('#personPickerItems_{0}').find('input:checked');
 
             var selectedValue = radInput.val();
             var selectedText = radInput.parent().text();
@@ -292,8 +281,6 @@ namespace Rock.Web.UI.Controls
 
             Controls.Clear();
 
-            label = new Label();
-            literal = new Literal();
             hfPersonId = new HiddenField();
             hfPersonId.ClientIDMode = System.Web.UI.ClientIDMode.Static;
             hfPersonId.ID = string.Format( "hfPersonId_{0}", this.ID );
@@ -308,8 +295,6 @@ namespace Rock.Web.UI.Controls
             btnSelect.CausesValidation = false;
             btnSelect.Click += btnSelect_Click;
 
-            Controls.Add( label );
-            Controls.Add( literal );
             Controls.Add( hfPersonId );
             Controls.Add( hfPersonName );
             Controls.Add( btnSelect );
@@ -346,8 +331,6 @@ namespace Rock.Web.UI.Controls
         protected override void Render( HtmlTextWriter writer )
         {
             string controlHtmlFormatStart = @"
-<div class='control-group' id='{0}'>
-    <div class='controls'>
         <a class='rock-picker' href='#'>
             <i class='icon-user'></i>
             <span id='selectedPersonLabel_{0}'>{1}</span>
@@ -366,25 +349,12 @@ namespace Rock.Web.UI.Controls
             string controlHtmlFormatEnd = @"
             <a class='btn btn-mini' id='btnCancel_{0}'>Cancel</a>
         </div>
-    </div>
-</div>
 ";
-
-            writer.AddAttribute( "class", "control-group" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            label.AddCssClass( "control-label" );
-
-            label.RenderControl( writer );
-
-            writer.AddAttribute( "class", "controls" );
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             if ( Required )
             {
                 requiredValidator.Enabled = true;
-                requiredValidator.ErrorMessage = LabelText + " is Required.";
+                requiredValidator.ErrorMessage = FieldName + " is Required.";
                 requiredValidator.RenderControl( writer );
             }
 
@@ -404,10 +374,6 @@ namespace Rock.Web.UI.Controls
             }
 
             writer.Write( string.Format( controlHtmlFormatEnd, this.ID, this.PersonName ) );
-
-            writer.RenderEndTag();
-
-            writer.RenderEndTag();
         }
     }
 }

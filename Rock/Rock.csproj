@@ -687,7 +687,9 @@
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\DropDownListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
+    <Compile Include="Web\UI\Controls\LabeledFileUploader.cs" />
     <Compile Include="Web\UI\Controls\LabeledHtmlEditor.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\PersonPicker.cs" />
     <Compile Include="Web\UI\Controls\RockDropDownList.cs" />
     <Compile Include="Web\UI\Controls\NumberBox.cs" />
     <Compile Include="Web\UI\Controls\PageBreadCrumbs.cs" />
@@ -720,7 +722,7 @@
     <Compile Include="Web\UI\Controls\LabeledToggle.cs" />
     <Compile Include="Web\UI\Controls\Toggle.cs" />
     <Compile Include="Web\UI\Controls\HelpBlock.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\PersonPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\LabeledPersonPicker.cs" />
     <Compile Include="Reporting\DataFilterComponent.cs" />
     <Compile Include="Reporting\DataFilterContainer.cs" />
     <Compile Include="Reporting\DataFilter\Person\GroupTypeAttendanceFilter.cs" />

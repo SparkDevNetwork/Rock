@@ -140,6 +140,27 @@ namespace Rock.Model
 
         #endregion
 
+        #region StaticMethods
+
+        /// <summary>
+        /// Makes a comma delimited list of the permanent.
+        /// </summary>
+        /// <param name="commaDelimitedIds">The comma delimited ids.</param>
+        public static void MakePermanent( string commaDelimitedIds )
+        {
+            string query = string.Format( "UPDATE BinaryFile SET IsTemporary = 0 WHERE Id IN ({0})", commaDelimitedIds );
+            var service = new Service();
+            service.ExecuteCommand( query );
+        }
+
+        public static void MakePermanent( int id)
+        {
+            string query = string.Format("UPDATE BinaryFile SET IsTemporary = 0 WHERE Id = {0}", id);
+            var service = new Service();
+            service.ExecuteCommand( query );
+        }
+
+        #endregion
     }
 
     #region Entity Configuration

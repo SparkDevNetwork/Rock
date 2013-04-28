@@ -19,12 +19,11 @@ namespace Rock.Web.UI.Controls
     /// A control to select a file and set any attributes
     /// </summary>
     [ToolboxData( "<{0}:FileUploader runat=server></{0}:FileUploader>" )]
-    public class FileUploader : CompositeControl, ILabeledControl, IPostBackEventHandler
+    public class FileUploader : CompositeControl, IPostBackEventHandler
     {
 
         #region UI Controls
 
-        private Label lblTitle;
         private HiddenField hfBinaryFileId;
         private HtmlAnchor aFileName;
         private HtmlAnchor aRemove;
@@ -35,11 +34,10 @@ namespace Rock.Web.UI.Controls
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FileUploader" /> class.
+        /// Initializes a new instance of the <see cref="LabeledFileUploader" /> class.
         /// </summary>
         public FileUploader()
         {
-            lblTitle = new Label();
             hfBinaryFileId = new HiddenField();
         }
 
@@ -59,18 +57,6 @@ namespace Rock.Web.UI.Controls
             set { hfBinaryFileId.Value = value.ToString(); }
         }
 
-        /// <summary>
-        /// Gets or sets the label text.
-        /// </summary>
-        /// <value>
-        /// The label text.
-        /// </value>
-        public string LabelText
-        {
-            get { return lblTitle.Text; }
-            set { lblTitle.Text = value; }
-        }
-
         #endregion
 
         #region Control Methods
@@ -85,9 +71,6 @@ namespace Rock.Web.UI.Controls
             base.CreateChildControls();
             Controls.Clear();
 
-            Controls.Add( lblTitle );
-            lblTitle.ID = "lblTitle";
-
             Controls.Add( hfBinaryFileId );
             hfBinaryFileId.ID = "hfBinaryFileId";
 
@@ -95,7 +78,6 @@ namespace Rock.Web.UI.Controls
             Controls.Add( aFileName );
             aFileName.ID = "fn";
             aFileName.Target = "_blank";
-            lblTitle.AssociatedControlID = aFileName.ID;
 
             aRemove = new HtmlAnchor();
             Controls.Add( aRemove );
@@ -115,17 +97,6 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-group" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            lblTitle.RenderControl( writer );
-            writer.RenderEndTag();
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "controls" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
             if ( BinaryFileId != 0 )
             {
                 aFileName.HRef = string.Format( "{0}file.ashx?id={1}", ResolveUrl( "~" ), BinaryFileId );
@@ -151,10 +122,6 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             fileUpload.Attributes["name"] = string.Format( "{0}[]", base.ID );
             fileUpload.RenderControl( writer );
-            writer.RenderEndTag();
-
-            writer.RenderEndTag();
-
             writer.RenderEndTag();
 
             RegisterStartupScript();

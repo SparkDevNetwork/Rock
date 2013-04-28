@@ -19,14 +19,13 @@
 
         <div class="control-group">
             <div class="control-label">
-                To: <asp:Literal ID="lNumRecipients" runat="server" />
-                <Rock:PersonPicker ID="ppAddPerson" runat="server" />
+                To: <asp:Literal ID="lNumRecipients" runat="server" /> <Rock:PersonPicker ID="ppAddPerson" runat="server" PersonName="Add Person" OnSelectPerson="ppAddPerson_SelectPerson" />
             </div>
             <div class="recipient">
                 <ul class="recipient-content">
-                    <asp:Repeater ID="rptRecipients" runat="server">
+                    <asp:Repeater ID="rptRecipients" runat="server" OnItemCommand="rptRecipients_ItemCommand" OnItemDataBound="rptRecipients_ItemDataBound">
                         <ItemTemplate>
-                            <li><%# Eval("Person.FullName") %></li>
+                            <li class='<%# Eval("Status").ToString().ToLower() %>'><%# Eval("Person.FullName") %> <asp:LinkButton ID="lbRemoveRecipient" runat="server" CommandArgument='<%# Eval("Id") %>'><i class="icon-remove"></i></asp:LinkButton></li>
                         </ItemTemplate>
                     </asp:Repeater>
                 </ul>
