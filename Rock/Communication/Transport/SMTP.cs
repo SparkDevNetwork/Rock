@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
 using System.Linq;
 using System.Net.Mail;
 using System.Text;
@@ -79,6 +80,7 @@ namespace Rock.Communication.Transport
                 message.IsBodyHtml = true;
                 message.Priority = MailPriority.Normal;
 
+                // Create SMTP Client
                 SmtpClient smtpClient = new SmtpClient( GetAttributeValue( "Server" ) );
 
                 int port = int.MinValue;
@@ -98,6 +100,27 @@ namespace Rock.Communication.Transport
                 {
                     smtpClient.UseDefaultCredentials = false;
                     smtpClient.Credentials = new System.Net.NetworkCredential( userName, password );
+                }
+
+                // Add Attachments
+                string attachmentIds = communication.GetChannelDataValue( "Attachments" );
+                if ( !string.IsNullOrWhiteSpace( attachmentIds ) )
+                {
+                    var binaryFileService = new BinaryFileService();
+
+                    foreach(string idVal in attachmentIds.SplitDelimitedValues())
+                    {
+                        int binaryFileId = int.MinValue;
+                        if (int.TryParse(idVal, out binaryFileId))
+                        {
+                            var binaryFile = binaryFileService.Get(binaryFileId);
+                            if ( binaryFile != null )
+                            {
+                                Stream stream = new MemoryStream( binaryFile.Data );
+                                message.Attachments.Add( new Attachment( stream, binaryFile.FileName ) );
+                            }
+                        }
+                    }
                 }
 
                 var recipientService = new CommunicationRecipientService();
