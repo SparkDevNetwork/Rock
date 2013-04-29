@@ -17,6 +17,10 @@
                 $name = $("input[id$='tbSearchBox']");
                 $name.val('');
             });
+            $('.keyboard a.spacebar').click(function () {
+                $name = $("input[id$='tbSearchBox']");
+                $name.val($name.val() + ' ');
+            });
         });
 
     </script>
@@ -25,13 +29,13 @@
 
     <div class="row-fluid attended-checkin-header">
         <div class="span3 attended-checkin-actions">
-            <asp:LinkButton ID="lbAdmin" runat="server" CssClass="btn btn-large btn-primary" OnClick="lbAdmin_Click" Text="ADMIN"></asp:LinkButton>
+            <asp:LinkButton ID="lbAdmin" runat="server" CssClass="btn btn-large btn-primary" OnClick="lbAdmin_Click" Text="Admin"></asp:LinkButton>
         </div>
         <div class="span6">
-            <h1>CHECK IN</h1>
+            <h1>Check In</h1>
         </div>
         <div class="span3 attended-checkin-actions">
-            <asp:LinkButton ID="lbSearch" runat="server" CssClass="btn btn-large last btn-primary" OnClick="lbSearch_Click" Text="SEARCH"></asp:LinkButton>
+            <asp:LinkButton ID="lbSearch" runat="server" CssClass="btn btn-large last btn-primary" OnClick="lbSearch_Click" Text="Search"></asp:LinkButton>
         </div>
     </div>
                 
@@ -88,6 +92,9 @@
                         <a href="#" class=""></a>
                         <a href="#" class=""></a>
                         <a href="#" class="btn btn-large back"><i class='icon-arrow-left'></i></a>
+                    </div>
+                    <div>
+                        <a href="#" class="btn btn-large spacebar">SPACE</a>
                     </div>
                 </div>
             </div>
