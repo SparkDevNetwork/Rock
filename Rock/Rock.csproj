@@ -131,9 +131,7 @@
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
-    <Compile Include="Communication\CommunicationChannelControl.cs">
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
+    <Compile Include="Web\UI\Controls\Communication\ChannelControl.cs" />
     <Compile Include="Migrations\201304190037528_BinaryFileTypeContributionImage.cs" />
     <Compile Include="Migrations\201304190037528_BinaryFileTypeContributionImage.Designer.cs">
       <DependentUpon>201304190037528_BinaryFileTypeContributionImage.cs</DependentUpon>
@@ -687,6 +685,8 @@
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\DropDownListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
+    <Compile Include="Web\UI\Controls\Communication\Sms.cs" />
+    <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\LabeledFileUploader.cs" />
     <Compile Include="Web\UI\Controls\LabeledHtmlEditor.cs" />
     <Compile Include="Web\UI\Controls\Pickers\PersonPicker.cs" />

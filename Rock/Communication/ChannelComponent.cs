@@ -3,9 +3,12 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.Web.UI;
+
 using Rock.Attribute;
 using Rock.Extension;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls.Communication;
 
 namespace Rock.Communication
 {
@@ -21,7 +24,7 @@ namespace Rock.Communication
         /// <value>
         /// The control path.
         /// </value>
-        public abstract string ControlPath { get; }
+        public abstract ChannelControl Control { get; }
 
         /// <summary>
         /// Gets the type of the entity.

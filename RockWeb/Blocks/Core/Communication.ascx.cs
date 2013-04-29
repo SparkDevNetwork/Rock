@@ -20,6 +20,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls.Communication;
 
 namespace RockWeb.Blocks.Core
 {
@@ -494,12 +495,17 @@ namespace RockWeb.Blocks.Core
 
             if (component != null)
             {
-                var control = phContent.LoadControl( component.ControlPath );
-                phContent.Controls.Add( control );
+                phContent.Controls.Clear();
+                var channelControl = component.Control;
+                channelControl.ID = "commControl";
+                phContent.Controls.Add( channelControl );
 
-                if ( control is CommunicationChannelControl && communication != null )
+                // When not being created during reload from postback
+                if ( communication != null )
                 {
-                    ( (CommunicationChannelControl)control ).SetControlProperties( communication );
+                    var channelData = communication.ChannelData;
+                    channelData.Add( "Subject", communication.Subject );
+                    channelControl.ChannelData = channelData;
                 }
 
                 // Set the channel in case it wasn't already set or the previous component type was not found
@@ -622,9 +628,14 @@ namespace RockWeb.Blocks.Core
                 {
                     communication.ChannelEntityTypeId = channelId;
 
-                    if ( phContent.Controls.Count == 1 && phContent.Controls[0] is CommunicationChannelControl )
+                    if ( phContent.Controls.Count == 1 && phContent.Controls[0] is ChannelControl )
                     {
-                        ( (CommunicationChannelControl)phContent.Controls[0] ).GetControlProperties( communication );
+                        communication.ChannelData = ( (ChannelControl)phContent.Controls[0] ).ChannelData;
+                        if ( communication.ChannelData.ContainsKey( "Subject" ) )
+                        {
+                            communication.Subject = communication.ChannelData["Subject"];
+                            communication.ChannelData.Remove( "Subject" );
+                        }
                     }
 
                     return communication;
