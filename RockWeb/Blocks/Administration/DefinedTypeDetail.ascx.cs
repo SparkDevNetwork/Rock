@@ -13,6 +13,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -561,10 +562,12 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         private void gDefinedValues_GridReorder( object sender, GridReorderEventArgs e )
         {
+            int definedTypeId = hfDefinedTypeId.ValueAsInt();
+            DefinedTypeCache.Flush( definedTypeId );
+
             using ( new UnitOfWorkScope() )
             {
-                var definedValueService = new DefinedValueService();
-                int definedTypeId = hfDefinedTypeId.ValueAsInt();
+                var definedValueService = new DefinedValueService();               
                 var definedValues = definedValueService.Queryable().Where( a => a.DefinedTypeId == definedTypeId ).OrderBy( a => a.Order );
                 definedValueService.Reorder( definedValues.ToList(), e.OldIndex, e.NewIndex, CurrentPersonId );
                 BindDefinedValuesGrid();

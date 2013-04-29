@@ -77,8 +77,8 @@ namespace Rock.Migrations
             AddDefinedValue( "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB", "WY", "Wyoming", "EE33C331-00FD-4225-8579-8020C4093774" );
 
             // Updating Public-Facing Giving block attributes to use new AccountsField attribute
-            AddBlockTypeAttribute( "4A2AA794-A968-4CCD-973A-C90FD589996F", "ADDF95AC-6EF2-42AB-9639-360F3C1449BA", "Default Accounts to display", "DefaultAccounts", "Payments", "Which accounts should be displayed by default?", 3, "", "DFA69848-2AE0-4308-A350-7BB4CAF12BD1" );
-            AddBlockTypeAttribute( "F679692F-133E-4F57-9072-D87C675C3283", "ADDF95AC-6EF2-42AB-9639-360F3C1449BA", "Default Accounts to display", "DefaultAccounts", "Payments", "Which accounts should be displayed by default?", 3, "", "C6910E1C-CF53-4BAD-9389-F6AC975AC5AD" );
+            AddBlockTypeAttribute( "4A2AA794-A968-4CCD-973A-C90FD589996F", "17033CDD-EF97-4413-A483-7B85A787A87F", "Default Accounts to display", "DefaultAccounts", "Payments", "Which accounts should be displayed by default?", 3, "", "DFA69848-2AE0-4308-A350-7BB4CAF12BD1" );
+            AddBlockTypeAttribute( "F679692F-133E-4F57-9072-D87C675C3283", "17033CDD-EF97-4413-A483-7B85A787A87F", "Default Accounts to display", "DefaultAccounts", "Payments", "Which accounts should be displayed by default?", 3, "", "C6910E1C-CF53-4BAD-9389-F6AC975AC5AD" );
             // Attrib Value for One Time Gift:Default Accounts to display
             AddBlockAttributeValue("3BFFEDFD-2198-4A13-827A-4FD1A774949E","DFA69848-2AE0-4308-A350-7BB4CAF12BD1","67c6181c-1d8c-44d7-b262-b81e746f06d8,bab250ee-cae6-4a41-9756-ad9327408be0");  
             // Attrib Value for Recurring Gift:Default Accounts to display
