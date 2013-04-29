@@ -13,6 +13,7 @@ using System.Data.Spatial;
 using System.Linq;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Rock.Data;
 
 namespace Rock.Model
@@ -54,7 +55,7 @@ namespace Rock.Model
         /// The geo point.
         /// </value>
         [DataMember]
-        [JsonIgnore]
+        [JsonConverter( typeof( DbGeographyConverter ) )]
         public DbGeography GeoPoint { get; set; }
 
         /// <summary>
@@ -249,6 +250,85 @@ namespace Rock.Model
         Server = 1
     }
 
+    #endregion
+
+    # region Custom JSON Converter
+    /// The JSON serializer normally would create the following...
+    /// 
+    /// {
+    ///  ...
+    ///  "GeoPoint": {
+    ///    "Geography": {
+    ///      "CoordinateSystemId": 4326,
+    ///      "WellKnownText": "POINT (-112.20884 33.7106)"
+    ///    }
+    ///  },
+    ///  "GeoFence": null,
+    ///  ...
+    ///}
+    ///
+    /// Which almost works except for the null GeoFence output, however the 
+    /// JsonConvert.DerserializeObject() fails with:
+    /// 
+    ///    Unable to find a constructor to use for type System.Data.Spatial.DbGeography. 
+    ///    A class should either have a default constructor, one constructor with arguments
+    ///    or a constructor marked with the JsonConstructor attribute. Path 'GeoPoint.Geography',
+    ///    line 5, position 17.
+    /// 
+    public class DbGeographyConverter : JsonConverter
+    {
+        private const string LATITUDE_KEY = "latitude";
+        private const string LONGITUDE_KEY = "longitude";
+
+        public override bool CanConvert( Type objectType )
+        {
+            return objectType.Equals( typeof( DbGeography ) );
+        }
+
+        public override object ReadJson( JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer )
+        {
+            if ( reader.TokenType == JsonToken.Null )
+            {
+                return default( DbGeography );
+            }
+
+            var jObject = JObject.Load( reader );
+
+            if ( !jObject.HasValues || ( jObject.Property( LATITUDE_KEY ) == null || jObject.Property( LONGITUDE_KEY ) == null ) )
+            {
+                return default( DbGeography );
+            }
+
+            string wkt = string.Format( "POINT({0} {1})", jObject[LONGITUDE_KEY], jObject[LATITUDE_KEY] );  // note: long, lat
+            return DbGeography.FromText( wkt, DbGeography.DefaultCoordinateSystemId );
+        }
+
+        /// <summary>
+        /// This serializer produces the following (which is slightly different than the default one):
+        /// 
+        ///{
+        /// ...
+        ///  "GeoPoint": {
+        ///    "latitude": 33.7106,
+        ///    "longitude": -112.20884
+        ///  },
+        ///  "GeoFence": null,
+        ///  ...
+        ///}
+        /// 
+        /// </summary>
+        /// <param name="writer"></param>
+        /// <param name="value"></param>
+        /// <param name="serializer"></param>
+        public override void WriteJson( JsonWriter writer, object value, JsonSerializer serializer )
+        {
+            var dbGeography = value as DbGeography;
+
+            serializer.Serialize( writer, dbGeography == null
+                || dbGeography.IsEmpty ? null 
+                : new { latitude = dbGeography.Latitude.Value, longitude = dbGeography.Longitude.Value } );
+        }
+    }
     #endregion
 
 }

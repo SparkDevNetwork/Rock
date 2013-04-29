@@ -8,6 +8,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
+using System.Web.Http;
+using System.Web.Http.ModelBinding;
+using Newtonsoft.Json.Linq;
+using Rock.Data;
 using Rock.Security;
 
 namespace Rock.Net
@@ -24,7 +29,7 @@ namespace Rock.Net
         /// </summary>
         public RockRestClient( string rockBaseUrl )
             : this( rockBaseUrl, new CookieContainer() )
-        { 
+        {
             // intentionally blank
         }
 
@@ -147,7 +152,7 @@ namespace Rock.Net
             if ( !string.IsNullOrWhiteSpace( odataFilter ) )
             {
                 string queryParam = "?$filter=" + odataFilter;
-                requestUri = new Uri( rockBaseUri, getPath + queryParam);
+                requestUri = new Uri( rockBaseUri, getPath + queryParam );
             }
             else
             {
@@ -176,7 +181,7 @@ namespace Rock.Net
         /// <param name="getPath">The get path.</param>
         /// <param name="guid">The GUID.</param>
         /// <returns></returns>
-        public T GetDataByGuid<T>( string getPath, Guid guid ) where T:Rock.Data.IEntity
+        public T GetDataByGuid<T>( string getPath, Guid guid ) where T : Rock.Data.IEntity
         {
             return GetData<List<T>>( getPath, string.Format( "Guid eq guid'{0}'", guid ) ).FirstOrDefault();
         }
@@ -195,20 +200,93 @@ namespace Rock.Net
         }
 
         /// <summary>
-        /// Posts the data.
+        /// Posts the data 
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="postPath">The post path.</param>
         /// <param name="data">The data.</param>
-        public void PostData<T>( string postPath, T data )
+        public void PostData<T>( string postPath, T data ) where T : IEntity
         {
             Uri requestUri = new Uri( rockBaseUri, postPath );
 
             HttpClient httpClient = new HttpClient( new HttpClientHandler { CookieContainer = this.CookieContainer } );
-            httpClient.PostAsJsonAsync<T>( requestUri.ToString(), data ).ContinueWith( p =>
+            HttpError httpError = null;
+            HttpResponseMessage httpMessage = null;
+
+            Action<Task<HttpResponseMessage>> handleContinue = new Action<Task<HttpResponseMessage>>( p =>
             {
-                p.Result.EnsureSuccessStatusCode();
-            } ).Wait();
+                p.Result.Content.ReadAsAsync<HttpError>().ContinueWith( c =>
+                {
+                    httpError = c.Result;
+                } ).Wait();
+
+                p.Result.Content.ReadAsStringAsync().ContinueWith( c =>
+                {
+                    var contentResult = c.Result;
+                } ).Wait();
+
+                httpMessage = p.Result;
+            } );
+
+            if ( data.Id.Equals( 0 ) )
+            {
+                // POST is for INSERTs
+                httpClient.PostAsJsonAsync<T>( requestUri.ToString(), data ).ContinueWith( handleContinue ).Wait();
+            }
+            else
+            {
+                // PUT is for UPDATEs
+                Uri putRequestUri = new Uri( requestUri, string.Format( "{0}", data.Id ) );
+
+                httpClient.PutAsJsonAsync<T>( putRequestUri.ToString(), data ).ContinueWith( handleContinue ).Wait();
+            }
+
+            if ( httpError != null )
+            {
+                throw new HttpErrorException( httpError );
+            }
+
+            if ( httpMessage != null )
+            {
+                httpMessage.EnsureSuccessStatusCode();
+            }
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class HttpErrorException : Exception
+    {
+        /// <summary>
+        /// Gets or sets the _message.
+        /// </summary>
+        /// <value>
+        /// The _message.
+        /// </value>
+        private string _message { get; set; }
+
+        public HttpErrorException( HttpError httpError )
+            : base()
+        {
+            _message = string.Empty;
+
+            foreach ( var error in httpError )
+            {
+                _message += error.Value.ToString() + Environment.NewLine;
+            }
+        }
+
+        /// <summary>
+        /// Gets a message that describes the current exception.
+        /// </summary>
+        /// <returns>The error message that explains the reason for the exception, or an empty string("").</returns>
+        public override string Message
+        {
+            get
+            {
+                return _message;
+            }
         }
     }
 }
