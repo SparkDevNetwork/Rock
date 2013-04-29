@@ -24,11 +24,8 @@ namespace RockWeb.Blocks.Finance
     /// 
     /// </summary>   
     
-    // TODO: Should this be an attribute on the site, rather than a block attribute? 
     [CustomCheckboxListField( "Credit Card Provider", "Which payment processor should be used for credit cards?",
         "SELECT [Name] AS [Text], [Id] AS [Value] FROM [FinancialGateway]", true, "", "Payments", 1 )]
-
-    // TODO: Should this be an attribute on the site, rather than a block attribute?
     [CustomCheckboxListField( "Checking/ACH Provider", "Which payment processor should be used for checking/ACH?",
         "SELECT [Name] AS [Text], [Id] AS [Value] FROM [FinancialGateway]", true, "", "Payments", 2 )]
     [AccountsField( "Default Accounts to display", "Which accounts should be displayed by default?", true, "", "Payments", 3, "DefaultAccounts" )]
