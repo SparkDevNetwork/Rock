@@ -4,12 +4,12 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using System.Collections.Generic;
 using System.Data.Spatial;
-using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NUnit.Framework;
 using Newtonsoft.Json;
 using Rock.Model;
+using Assert = NUnit.Framework.Assert;
 
 namespace Rock.Tests.Model
 {
@@ -20,12 +20,12 @@ namespace Rock.Tests.Model
         /// Note: Using these Microsoft.VisualStudio.TestTools.UnitTesting Attribute markup
         /// allows the tests to be grouped by "trait" (ie, the TestCategory defined below).
         /// </summary>
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestClass]
+        [TestClass]
         public class TheGeoFenceProperty
         {
             [Test]
-            [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethod]
-            [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategory( "Device" )]
+            [TestMethod]
+            [TestCategory( "Rock.Model.Device" )]
             public void ShouldFallWithinGeoFence()
             {
                 var deviceWithGeoFence = BufferedDeviceAtCCV();
@@ -39,8 +39,8 @@ namespace Rock.Tests.Model
             }
 
             [Test]
-            [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethod]
-            [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategory( "Device" )]
+            [TestMethod]
+            [TestCategory( "Rock.Model.Device" )]
             public void ShouldFallOutsideGeoFence()
             {
                 var deviceWithGeoFence = BufferedDeviceAtCCV();
@@ -55,12 +55,12 @@ namespace Rock.Tests.Model
             }
         }
 
-        [Microsoft.VisualStudio.TestTools.UnitTesting.TestClass]
+        [TestClass]
         public class TheToJsonMethod
         {
             [Test]
-            [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethod]
-            [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategory( "Device" )]
+            [TestMethod]
+            [TestCategory( "Rock.Model.Device" )]
             public void ShouldNotBeEmpty()
             {
                 var device = DeviceAtCCV();
@@ -69,8 +69,8 @@ namespace Rock.Tests.Model
             }
 
             [Test]
-            [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethod]
-            [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategory( "Device" )]
+            [TestMethod]
+            [TestCategory( "Rock.Model.Device" )]
             public void ShouldSerializeAsJsonViaCustomConverter()
             {
                 var device = DeviceAtCCV();
@@ -83,8 +83,8 @@ namespace Rock.Tests.Model
             }
 
             [Test]
-            [Microsoft.VisualStudio.TestTools.UnitTesting.TestMethod]
-            [Microsoft.VisualStudio.TestTools.UnitTesting.TestCategory( "Device" )]
+            [TestMethod]
+            [TestCategory( "Rock.Model.Device" )]
             public void ShouldDeserializeFromJsonViaCustomConverter()
             {
                 var device = DeviceAtCCV();
