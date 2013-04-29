@@ -9,7 +9,7 @@
         <ul class="nav nav-pills">
             <asp:Repeater ID="rptChannels" runat="server">
                 <ItemTemplate>
-                    <li class='<%# Eval("Key").ToString() == hfChannelId.Value ? "active" : "" %>'>
+                    <li class='<%# (int)Eval("Key") == ChannelEntityTypeId ? "active" : "" %>'>
                         <asp:LinkButton ID="lbChannel" runat="server" Text='<%# Eval("Value") %>' CommandArgument='<%# Eval("Key") %>' OnClick="lbChannel_Click">
                         </asp:LinkButton>
                     </li>
@@ -23,9 +23,9 @@
             </div>
             <div class="recipient">
                 <ul class="recipient-content">
-                    <asp:Repeater ID="rptRecipients" runat="server" OnItemCommand="rptRecipients_ItemCommand" OnItemDataBound="rptRecipients_ItemDataBound">
+                    <asp:Repeater ID="rptRecipients" runat="server" OnItemCommand="rptRecipients_ItemCommand">
                         <ItemTemplate>
-                            <li class='<%# Eval("Status").ToString().ToLower() %>'><%# Eval("Person.FullName") %> <asp:LinkButton ID="lbRemoveRecipient" runat="server" CommandArgument='<%# Eval("Id") %>'><i class="icon-remove"></i></asp:LinkButton></li>
+                            <li><%# Eval("Value") %> <asp:LinkButton ID="lbRemoveRecipient" runat="server" CommandArgument='<%# Eval("Key") %>'><i class="icon-remove"></i></asp:LinkButton></li>
                         </ItemTemplate>
                     </asp:Repeater>
                 </ul>

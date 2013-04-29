@@ -125,7 +125,7 @@ namespace Rock.Communication.Transport
 
                 var recipientService = new CommunicationRecipientService();
 
-                var globalConfigValues = GetGlobalConfigValues().ToList();
+                var globalConfigValues = GetGlobalConfigValues();
 
                 bool recipientFound = true;
                 while ( recipientFound )
@@ -145,10 +145,8 @@ namespace Rock.Communication.Transport
                                 message.To.Clear();
                                 message.To.Add( new MailAddress( recipient.Person.Email, recipient.Person.FullName ) );
 
-                                var mergeObjects = new Dictionary<string, object>();
-                                mergeObjects.Add( "Person", recipient.Person );
-                                globalConfigValues.ForEach( c => mergeObjects.Add( c.Key, c.Value ) );
-                                recipient.AdditionalMergeValues.ToList().ForEach( v => mergeObjects.Add( v.Key, v.Value ) );
+                                // Create merge field dictionary
+                                var mergeObjects = MergeValues( globalConfigValues, recipient );
 
                                 message.Subject = communication.Subject.ResolveMergeFields( mergeObjects );
                                 message.Body = communication.GetChannelDataValue( "HtmlMessage" ).ResolveMergeFields( mergeObjects );
