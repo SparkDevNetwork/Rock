@@ -1,28 +1,29 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="OneTimeGift.ascx.cs" Inherits="RockWeb.Blocks.Finance.OneTimeGift" %>
 
-<%-- TODO: Refactor this JS out into Rock.controls.js, and turn it into a server control --%>
 <script type="text/javascript" src="../../Scripts/jquery.creditCardTypeDetector.js"></script>
+
 <script type="text/javascript">
+
     function pageLoad(sender, args) {
 
         // payment totals script
         $('.calc').on('change', function () {
             var total = 0.00;
-            
+
             $('.calc').each(function () {
                 if ($(this).val() != '') {
                     total += parseFloat($(this).val());
                     console.log(total);
-                }                
+                }
             });
-            
+
             this.value = parseFloat($(this).val()).toFixed(2);
             $('#spnTotal').html(total.toFixed(2));
             $('.total-label').css('width', $(this).parent().width());
             return false;
         });
-                
-        $('.calc').trigger('change');        
+
+        $('.calc').trigger('change');
 
         // payment types script
         $('.credit-card').creditCardTypeDetector({ 'credit_card_logos': '.card-logos' });
@@ -30,7 +31,7 @@
         $('.credit-card').on('change', function () {
             $('#hfCardType').val(ulCardType.className);
         });
-                
+
     };
 
 </script>
@@ -42,13 +43,13 @@
 
     <asp:Panel ID="pnlDetails" runat="server">
 
-        <% _spanClass = ( _useStackedLayout ) ? "span12" : "span6"; %>
+        <% spanClass = ( _UseStackedLayout ) ? "span12" : "span6"; %>
         
         <div class="container-fluid">     
                                 
             <div class="row-fluid">
                                 
-                <div class="<%= _spanClass %> well">
+                <div class="<%= spanClass %> well">
 
                     <fieldset>
                             
@@ -56,7 +57,7 @@
 
                         <div class="form-horizontal">
 
-                            <% if ( _showCampusSelect ) { %>
+                            <% if ( _ShowCampusSelect ) { %>
                                 
                                 <div class="row-fluid">
                                     <div class="control-group">
@@ -82,12 +83,12 @@
                                             </div>
                                         </div>
                                     </div>                                        
-                                </ItemTemplate>                          
-                            </asp:Repeater>
-
+                                </ItemTemplate>                         
+                            </asp:Repeater>  
+                            
                             <asp:Panel ID="pnlEmptyDataSet" runat="server" Visible="False" CssClass="alert alert-error block-message error">
                                 <p>No default accounts enabled.  Please enable an account in the block settings.</p>
-                            </asp:Panel>
+                            </asp:Panel>                       
 
                             <div ID="divAddAccount" class="row-fluid" runat="server" visible="false">
                                 <div class="control-group controls">
@@ -126,7 +127,7 @@
                                         
                 </div>
             
-                <% if ( _useStackedLayout ) { %>
+                <% if ( _UseStackedLayout ) { %>
                     
                 </div>
 
@@ -134,7 +135,7 @@
 
                 <% } %>
 
-                <div class="<%= _spanClass %> well">
+                <div class="<%= spanClass %> well">
 
                     <asp:ValidationSummary ID="valSummaryAddress" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error"/>
 
@@ -174,12 +175,12 @@
                             </div>
   
                             <div class="span4">
-                                <Rock:StateDropDownList ID="ddlState" runat="server" LabelText="State" CssClass="state-select"/>
+                                <Rock:StateDropDownList ID="ddlState" runat="server" LabelText="State" CssClass="state-select"/>                            
                             </div>
 
                             <div class="span3">
                                 <label for="txtZipcode" >Zipcode</label>
-                                <input id="txtZipcode" type="text" class="span12" runat="server" required />
+                                <input id="txtZipcode" type="text" class="span12" runat="server" required />                        
                             </div>
 
                         </div>                    
@@ -188,7 +189,7 @@
                             
                             <div class="span12">
                                 <label for="txtEmail" >Email</label>
-                                <input id="txtEmail" type="text" class="span12" runat="server" required />
+                                <input id="txtEmail" type="text" class="span12" runat="server" required />                                                      
                             </div>
                         
                         </div>
@@ -201,7 +202,7 @@
             
             <div class="row-fluid">
               
-                <div class="<%= _spanClass %> well">
+                <div class="<%= spanClass %> well">
 
                     <asp:ValidationSummary ID="valSummaryPayment" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error"/>
 
@@ -213,17 +214,17 @@
 
                             <ul class="nav nav-tabs">
 
-                                <li <% if ( !_showCreditCard ) { %> style="display:none" <% } %> class="active">
+                                <li <% if ( !_ShowCreditCard ) { %> style="display:none" <% } %> class="active">
                                     <a href="#tab1" data-toggle="tab">Credit Card</a></li>
 
-                                <li <% if ( !_showChecking ) { %> style="display:none" <% } %>>
+                                <li <% if ( !_ShowChecking ) { %> style="display:none" <% } %>>
                                     <a href="#tab2" data-toggle="tab">Checking/ACH</a></li>
 
                             </ul>
 
                             <div class="tab-content payment-details">
 
-                                <div class="tab-pane active" id="tab1" <% if ( !_showCreditCard ) { %> style="display:none" <% } %> >
+                                <div class="tab-pane active" id="tab1" <% if ( !_ShowCreditCard ) { %> style="display:none" <% } %> >
                                     
                                     <div class="row-fluid"></div>
 
@@ -255,7 +256,7 @@
 
                                         <div>
                                             <label class="control-label" for="numCVV" >CVV #</label>
-                                            <input name="numCVV" title="CVV" class="input-mini" size="3" type="text" pattern="\d+" runat="server">
+                                            <input id="Text1" name="numCVV" title="CVV" class="input-mini" size="3" type="text" pattern="\d+" runat="server">
 
                                         </div> 
 
@@ -264,11 +265,11 @@
                                     <div class="row-fluid">
 
                                         <label for="txtCardName" >Name on Card</label>
-                                        <input name="txtCardName" class="input-medium" type="text" size="30" runat="server"/>
+                                        <input id="Text2" name="txtCardName" class="input-medium" type="text" size="30" runat="server"/>
                                         
                                     </div>
 
-                                    <% if ( _showSaveDetails ) { %>
+                                    <% if ( _ShowSaveDetails ) { %>
 
                                     <div class="row-fluid">
 
@@ -291,7 +292,7 @@
                             
                                 </div>
 
-                                <div class="tab-pane" id="tab2" <% if ( !_showChecking ) { %> style="display:none" <% } %> >
+                                <div class="tab-pane" id="tab2" <% if ( !_ShowChecking ) { %> style="display:none" <% } %> >
                                     
                                     <div class="row-fluid span6">
                                 
@@ -319,7 +320,7 @@
 
                                     </div>                                
                                     
-                                    <% if ( _showSaveDetails ) { %>
+                                    <% if ( _ShowSaveDetails ) { %>
 
                                     <div class="row-fluid">
 
@@ -363,11 +364,11 @@
 
     <asp:Panel ID="pnlConfirm" runat="server" Visible="false">
         
-        <% _spanClass = ( _useStackedLayout ) ? "span12" : "span6"; %>
+        <% spanClass = ( _UseStackedLayout ) ? "span12" : "span6"; %>
 
         <div class="row-fluid">     
                                 
-            <div class="<%= _spanClass %> well">
+            <div class="<%= spanClass %> well">
 
                 <div id="divPaymentConfirmation" runat="server">
 
@@ -411,11 +412,11 @@
 
     <asp:Panel ID="pnlComplete" runat="server" Visible="false">
         
-        <% _spanClass = ( _useStackedLayout ) ? "span12" : "span6"; %>
+        <% spanClass = ( _UseStackedLayout ) ? "span12" : "span6"; %>
 
         <div class="row-fluid">     
                                 
-            <div class="<%= _spanClass %> well">
+            <div class="<%= spanClass %> well">
 
                 <h3 class="header-text" >Contribution Complete! </h3>
                 
@@ -435,13 +436,13 @@
                 </label>
 
                 <div id="grpCreateAcct" style="display: none" >
-							
+
 	                <label for="txtUserName">Enter a Username</label>
-							
+
 	                <input id="txtUserName" name="txtUserName" class="input-medium"  type="text" size="30" />
 
 	                <label for="txtPassword">Enter a Password</label>
-							
+
 	                <input id="txtPassword" name="txtPassword" class="input-medium"  type="password" size="30" />
 
                 </div>                           
