@@ -6,6 +6,8 @@
 using System;
 using System.IO;
 using System.Runtime.Serialization;
+using System.Security.Cryptography;
+using System.Text;
 using System.Xml.Serialization;
 
 namespace Rock.Apps.CheckScannerUtility
@@ -23,14 +25,14 @@ namespace Rock.Apps.CheckScannerUtility
         private static string fileName = "rockConfig.xml";
 
         /// <summary>
-        /// Gets or sets the rock URL.
+        /// Gets or sets the rock base URL.
         /// </summary>
         /// <value>
-        /// The rock URL.
+        /// The rock base URL.
         /// </value>
         [XmlElement]
         [DataMember]
-        public string RockURL { get; set; }
+        public string RockBaseUrl { get; set; }
 
         /// <summary>
         /// Gets or sets the username.
@@ -50,7 +52,43 @@ namespace Rock.Apps.CheckScannerUtility
         /// </value>
         [XmlElement]
         [DataMember]
-        public string Password { get; set; }
+        private byte[] PasswordEncrypted { get; set; }
+
+        /// <summary>
+        /// Gets or sets the password.
+        /// </summary>
+        /// <value>
+        /// The password.
+        /// </value>
+        public string Password
+        {
+            get
+            {
+                try
+                {
+                    byte[] clearTextPasswordBytes = ProtectedData.Unprotect( PasswordEncrypted ?? new byte[] { 0 }, null, DataProtectionScope.CurrentUser );
+                    return Encoding.Unicode.GetString( clearTextPasswordBytes );
+                }
+                catch ( CryptographicException )
+                {
+                    return string.Empty;
+                }
+            }
+            set
+            {
+
+                try
+                {
+                    byte[] clearTextPasswordBytes = Encoding.Unicode.GetBytes( value );
+                    PasswordEncrypted = ProtectedData.Protect( clearTextPasswordBytes, null, DataProtectionScope.CurrentUser );
+                }
+                catch ( CryptographicException )
+                {
+                    PasswordEncrypted = new byte[] { 0 };
+                }
+            }
+
+        }
 
         /// <summary>
         /// Gets or sets the type of the image color.

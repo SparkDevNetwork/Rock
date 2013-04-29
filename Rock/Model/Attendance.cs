@@ -60,6 +60,25 @@ namespace Rock.Model
         public int? PersonId { get; set; }
 
         /// <summary>
+        /// Gets or sets the device id that was used. (i.e. where user "checked-in" from
+        /// </summary>
+        /// <value>
+        /// The device id.
+        /// </value>
+        [DataMember]
+        public int? DeviceId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the search type value id.
+        /// </summary>
+        /// <value>
+        /// The search type value id.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.CHECKIN_SEARCH_TYPE )]
+        public int? SearchTypeValueId { get; set; }
+
+        /// <summary>
         /// Gets or sets the attendance code id.
         /// </summary>
         /// <value>
@@ -69,7 +88,9 @@ namespace Rock.Model
         public int? AttendanceCodeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the qualifier value id.
+        /// Gets or sets the qualifier value id.  Qualifier can be used to 
+        /// "qualify" attendance records.  There are not any system values
+        /// for this particular defined type
         /// </summary>
         /// <value>
         /// The qualifier value id.
@@ -102,7 +123,7 @@ namespace Rock.Model
         ///   <c>true</c> if [did attend]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool DidAttend 
+        public bool DidAttend
         {
             get { return _didAttend; }
             set { _didAttend = value; }
@@ -117,7 +138,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Note { get; set; }
-        
+
         #endregion
 
         #region Virtual Properties
@@ -159,6 +180,24 @@ namespace Rock.Model
         public virtual Person Person { get; set; }
 
         /// <summary>
+        /// Gets or sets the device that was used. (i.e. where user "checked-in" from
+        /// </summary>
+        /// <value>
+        /// The device.
+        /// </value>
+        [DataMember]
+        public virtual Device Device { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of search used during checkin
+        /// </summary>
+        /// <value>
+        /// The search type value.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue SearchTypeValue { get; set; }
+
+        /// <summary>
         /// Gets or sets the attendance code.
         /// </summary>
         /// <value>
@@ -190,15 +229,15 @@ namespace Rock.Model
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.Append(Person != null ? Person.ToString() + " " : "");
-            sb.Append(DidAttend ? "attended " : "did not attend ");
-            sb.Append(Group != null ? Group.ToString()+ " " : "");
-            sb.AppendFormat("on {0} at {1} ", StartDateTime.ToShortDateString(), StartDateTime.ToShortTimeString());
-            if (EndDateTime.HasValue)
+            sb.Append( Person != null ? Person.ToString() + " " : "" );
+            sb.Append( DidAttend ? "attended " : "did not attend " );
+            sb.Append( Group != null ? Group.ToString() + " " : "" );
+            sb.AppendFormat( "on {0} at {1} ", StartDateTime.ToShortDateString(), StartDateTime.ToShortTimeString() );
+            if ( EndDateTime.HasValue )
             {
-                sb.AppendFormat("until {0} at {1} ", EndDateTime.Value.ToShortDateString(), EndDateTime.Value.ToShortTimeString());
+                sb.AppendFormat( "until {0} at {1} ", EndDateTime.Value.ToShortDateString(), EndDateTime.Value.ToShortTimeString() );
             }
-            sb.Append(Location != null ? "in " + Location.ToString() : "");
+            sb.Append( Location != null ? "in " + Location.ToString() : "" );
 
             return sb.ToString().Trim();
 
@@ -209,7 +248,7 @@ namespace Rock.Model
     }
 
     #region Entity Configuration
-    
+
     /// <summary>
     /// File Configuration class.
     /// </summary>
@@ -220,10 +259,12 @@ namespace Rock.Model
         /// </summary>
         public AttendanceConfiguration()
         {
-            this.HasOptional( a => a.Location).WithMany().HasForeignKey( p => p.LocationId ).WillCascadeOnDelete( true );
+            this.HasOptional( a => a.Location ).WithMany().HasForeignKey( p => p.LocationId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Schedule ).WithMany().HasForeignKey( p => p.ScheduleId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Group ).WithMany().HasForeignKey( p => p.GroupId ).WillCascadeOnDelete( true );
             this.HasOptional( a => a.Person ).WithMany( p => p.Attendances ).HasForeignKey( p => p.PersonId ).WillCascadeOnDelete( true );
+            this.HasOptional( a => a.Device ).WithMany().HasForeignKey( d => d.DeviceId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.SearchTypeValue ).WithMany().HasForeignKey( v => v.SearchTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.Qualifier ).WithMany().HasForeignKey( p => p.QualifierValueId ).WillCascadeOnDelete( false );
             this.HasOptional( a => a.AttendanceCode ).WithMany( c => c.Attendances ).HasForeignKey( a => a.AttendanceCodeId ).WillCascadeOnDelete( false );
         }

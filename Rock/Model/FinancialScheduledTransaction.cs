@@ -146,6 +146,20 @@ namespace Rock.Model
         [DataMember]
         public virtual DefinedValue TransactionFrequencyValue { get; set; }
 
+        /// <summary>
+        /// Gets or sets the scheduled transaction details.
+        /// </summary>
+        /// <value>
+        /// The scheduled transaction details.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<FinancialScheduledTransactionDetail> ScheduledTransactionDetails
+        {
+            get { return _scheduledTransactionDetails ?? ( _scheduledTransactionDetails = new Collection<FinancialScheduledTransactionDetail>() ); }
+            set { _scheduledTransactionDetails = value; }
+        }
+        private ICollection<FinancialScheduledTransactionDetail> _scheduledTransactionDetails;
+
         #endregion
 
         #region Public Methods

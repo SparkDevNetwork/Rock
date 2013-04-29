@@ -6,9 +6,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Rock.Attribute;
 using Rock.Model;
+using Rock.Web;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 
 namespace Rock.CheckIn
@@ -16,16 +17,9 @@ namespace Rock.CheckIn
     /// <summary>
     /// A RockBlock specific to check-in
     /// </summary>
-    [TextField( "Admin Page Url", "The url of the Check-In admin page", false, "~/checkin", "Page Routes", 0 )]
-    [TextField( "Welcome Page Url", "The url of the Check-In welcome page", false, "~/checkin/welcome", "Page Routes", 1 )]
-    [TextField( "Search Page Url", "The url of the Check-In search page", false, "~/checkin/search", "Page Routes", 2 )]
-    [TextField( "Family Select Page Url", "The url of the Check-In family select page", false, "~/checkin/family", "Page Routes", 3 )]
-    [TextField( "Person Select Page Url", "The url of the Check-In person select page", false, "~/checkin/person", "Page Routes", 4 )]
-    [TextField( "Group Type Select Page Url", "The url of the Check-In group type select page", false, "~/checkin/grouptype", "Page Routes", 5 )]
-    [TextField( "Location Select Page Url", "The url of the Check-In location select page", false, "~/checkin/location", "Page Routes", 6 )]
-    [TextField( "Group Select Page Url", "The url of the Check-In group select page", false, "~/checkin/group", "Page Routes", 7 )]
-    [TextField( "Time Select Page Url", "The url of the Check-In group select page", false, "~/checkin/time", "Page Routes", 8 )]
-    [TextField( "Success Page Url", "The url of the Check-In success page", false, "~/checkin/success", "Page Routes", 9 )]
+    [LinkedPage("Home Page")]
+    [LinkedPage("Next Page")]
+    [LinkedPage("Previous Page")]
     [IntegerField( "Workflow Type Id", "The Id of the workflow type to activate for check-in", false, 0)]
     public abstract class CheckInBlock : RockBlock
     {
@@ -48,6 +42,23 @@ namespace Rock.CheckIn
         /// The current workflow
         /// </summary>
         protected Rock.Model.Workflow CurrentWorkflow;
+
+        /// <summary>
+        /// Holds cookie names shared across certain checkin blocks.
+        /// </summary>
+        public struct CheckInCookie
+        {
+            /// <summary>
+            /// The name of the cookie that holds the DeviceId. Setters of this cookie should
+            /// be sure to set the expiration to a time when the device is no longer valid.
+            /// </summary>
+            public static readonly string DEVICEID = "Checkin.DeviceId";
+
+            /// <summary>
+            /// The name of the cookie that holds whether or not the device was a mobile device.
+            /// </summary>
+            public static readonly string ISMOBILE = "Checkin.IsMobile";
+        }
 
         /// <summary>
         /// Gets a value indicating whether the kiosk has active group types and locations that 
@@ -201,87 +212,33 @@ namespace Rock.CheckIn
             CurrentWorkflow = null;
             CurrentCheckInState = null;
             SaveState();
-            GoToWelcomePage();
+            NavigateToHomePage();
         }
 
         /// <summary>
-        /// Redirects to the admin page.
+        /// Navigates to the checkin home page.
         /// </summary>
-        protected void GoToAdminPage()
+        protected void NavigateToHomePage()
         {
-            Response.Redirect( GetAttributeValue( "AdminPageUrl" ), false );
+            NavigateToLinkedPage( "HomePage" );
         }
 
         /// <summary>
-        /// Redirects to the welcome page.
+        /// Navigates to next page.
         /// </summary>
-        protected void GoToWelcomePage()
+        protected void NavigateToNextPage()
         {
-            Response.Redirect( GetAttributeValue( "WelcomePageUrl" ), false );
+            NavigateToLinkedPage( "NextPage" );
         }
 
         /// <summary>
-        /// Redirects to the search page.
+        /// Navigates to previous page.
         /// </summary>
-        protected void GoToSearchPage( bool goingBack = false )
+        protected void NavigateToPreviousPage()
         {
-            Response.Redirect( GetAttributeValue( "SearchPageUrl" ) + ( goingBack ? "?back=true" : "" ), false );
-        }
-
-        /// <summary>
-        /// Redirects to family select page.
-        /// </summary>
-        protected void GoToFamilySelectPage( bool goingBack = false )
-        {
-            Response.Redirect( GetAttributeValue( "FamilySelectPageUrl" ) + ( goingBack ? "?back=true" : "" ), false );
-        }
-
-        /// <summary>
-        /// Redirects to person select page.
-        /// </summary>
-        protected void GoToPersonSelectPage( bool goingBack = false )
-        {
-            Response.Redirect( GetAttributeValue( "PersonSelectPageUrl" ) + ( goingBack ? "?back=true" : "" ), false );
-        }
-
-        /// <summary>
-        /// Redirects to group type select page.
-        /// </summary>
-        protected void GoToGroupTypeSelectPage( bool goingBack = false )
-        {
-            Response.Redirect( GetAttributeValue( "GroupTypeSelectPageUrl" ) + ( goingBack ? "?back=true" : "" ), false );
-        }
-
-        /// <summary>
-        /// Redirects to location select page.
-        /// </summary>
-        protected void GoToLocationSelectPage( bool goingBack = false )
-        {
-            Response.Redirect( GetAttributeValue( "LocationSelectPageUrl" ) + ( goingBack ? "?back=true" : "" ), false );
-        }
-
-        /// <summary>
-        /// Redirects to group select page.
-        /// </summary>
-        protected void GoToGroupSelectPage( bool goingBack = false )
-        {
-            Response.Redirect( GetAttributeValue( "GroupSelectPageUrl" ) + ( goingBack ? "?back=true" : "" ), false );
-        }
-
-        /// <summary>
-        /// Redirects to time select page.
-        /// </summary>
-        protected void GoToTimeSelectPage()
-        {
-            Response.Redirect( GetAttributeValue( "TimeSelectPageUrl" ), false );
-        }
-
-        /// <summary>
-        /// Redirects to success page.
-        /// </summary>
-        protected void GoToSuccessPage()
-        {
-            Response.Redirect( GetAttributeValue( "SuccessPageUrl" ), false );
+            var queryParams = new Dictionary<string, string>();
+            queryParams.Add( "back", "true" );
+            NavigateToLinkedPage( "PreviousPage", queryParams );
         }
 
         private void GetState()
@@ -312,17 +269,19 @@ namespace Rock.CheckIn
             if (CurrentCheckInState == null && CurrentKioskId.HasValue && CurrentGroupTypeIds != null )
             {
                 var kioskStatus = KioskCache.GetKiosk( CurrentKioskId.Value );
-
-                // Remove any group types that were not selected in the admin configuration
-                foreach ( var kioskGroupType in kioskStatus.KioskGroupTypes.ToList() )
+                if ( kioskStatus != null )
                 {
-                    if ( !CurrentGroupTypeIds.Contains( kioskGroupType.GroupType.Id ) )
+                    // Remove any group types that were not selected in the admin configuration
+                    foreach ( var kioskGroupType in kioskStatus.KioskGroupTypes.ToList() )
                     {
-                        kioskStatus.KioskGroupTypes.Remove( kioskGroupType );
+                        if ( !CurrentGroupTypeIds.Contains( kioskGroupType.GroupType.Id ) )
+                        {
+                            kioskStatus.KioskGroupTypes.Remove( kioskGroupType );
+                        }
                     }
-                }
 
-                CurrentCheckInState = new CheckInState( kioskStatus );
+                    CurrentCheckInState = new CheckInState( kioskStatus );
+                }
             }
         }
     }

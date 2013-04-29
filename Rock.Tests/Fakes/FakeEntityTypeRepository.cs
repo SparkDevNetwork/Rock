@@ -139,6 +139,11 @@ namespace Rock.Tests.Fakes
         {
         }
 
+        public virtual void SetValues( EntityType sourceItem, EntityType targetTtem )
+        {
+            throw new NotImplementedException();
+        }
+
         public void Delete( EntityType entity )
         {
             db.ToList().Remove( entity );

@@ -30,8 +30,9 @@ namespace Rock.Model
         /// <value>
         /// The name.
         /// </value>
+        [Required]
         [MaxLength( 50 )]
-        [DataMember]
+        [DataMember( IsRequired = true )]
         public string Name { get; set; }
 
         /// <summary>
@@ -42,6 +43,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? BatchDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the created by person id.
+        /// </summary>
+        /// <value>
+        /// The created by person id.
+        /// </value>
+        [DataMember]
+        public int CreatedByPersonId { get; set; }
 
         /// <summary>
         /// Gets or sets the status.
@@ -93,6 +103,14 @@ namespace Rock.Model
         public virtual Campus Campus { get; set; }
 
         /// <summary>
+        /// Gets or sets the create by person.
+        /// </summary>
+        /// <value>
+        /// The create by person.
+        /// </value>
+        public virtual Person CreateByPerson { get; set; }
+
+        /// <summary>
         /// Gets or sets the transactions.
         /// </summary>
         /// <value>
@@ -132,6 +150,7 @@ namespace Rock.Model
         public FinancialBatchConfiguration()
         {
             this.HasOptional( b => b.Campus ).WithMany().HasForeignKey( b => b.CampusId ).WillCascadeOnDelete( false );
+            this.HasRequired( b => b.CreateByPerson ).WithMany().HasForeignKey( b => b.CreatedByPersonId ).WillCascadeOnDelete( false );
         }
     }
 
@@ -146,16 +165,19 @@ namespace Rock.Model
     {
         /// <summary>
         /// Pending
+        /// In the process of scanning the checks to it
         /// </summary>
         Pending = 0,
 
         /// <summary>
         /// Open
+        /// Transactions are all entered and are ready to be matched
         /// </summary>
         Open = 1,
 
         /// <summary>
         /// Closed
+        /// All is well and good
         /// </summary>
         Closed = 2
     }
