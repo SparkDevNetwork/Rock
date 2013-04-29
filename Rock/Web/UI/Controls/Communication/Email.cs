@@ -68,6 +68,7 @@ namespace Rock.Web.UI.Controls.Communication
                 data.Add( "FromName", tbFromName.Text );
                 data.Add( "FromAddress", tbFromAddress.Text );
                 data.Add( "ReplyTo", tbReplyToAddress.Text );
+                data.Add( "Subject", tbSubject.Text );
                 data.Add( "HtmlMessage", htmlMessage.Text );
                 data.Add( "TextMessage", tbTextMessage.Text );
                 data.Add( "Attachments", hfAttachments.Value );
@@ -144,6 +145,7 @@ namespace Rock.Web.UI.Controls.Communication
             tbTextMessage.LabelText = "Message (Text Version)";
             tbTextMessage.TextMode = TextBoxMode.MultiLine;
             tbTextMessage.Rows = 5;
+            tbTextMessage.CssClass = "span12";
             Controls.Add( tbTextMessage );
 
             hfAttachments.ID = string.Format( "hfAttachments_{0}", this.ID );
@@ -163,6 +165,17 @@ namespace Rock.Web.UI.Controls.Communication
                 Controls.Add( lbRemove );
                 removeButtons.Add( attachment.Key, lbRemove );
             }
+        }
+
+        /// <summary>
+        /// On new communicaiton, initializes controls from sender values
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public override void InitializeFromSender( Person sender )
+        {
+            tbFromName.Text = sender.FullName;
+            tbFromAddress.Text = sender.Email;
         }
 
         /// <summary>

@@ -6,6 +6,8 @@
 using System.Collections.Generic;
 using System.Web.UI.WebControls;
 
+using Rock.Model;
+
 namespace Rock.Web.UI.Controls.Communication
 {
     /// <summary>
@@ -13,7 +15,19 @@ namespace Rock.Web.UI.Controls.Communication
     /// </summary>
     public abstract class ChannelControl : CompositeControl
     {
+        /// <summary>
+        /// Gets or sets the channel data.
+        /// </summary>
+        /// <value>
+        /// The channel data.
+        /// </value>
         public abstract Dictionary<string, string> ChannelData { get; set; }
+
+        /// <summary>
+        /// On new communicaiton, initializes controls from sender values
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        public abstract void InitializeFromSender( Person sender );
 
         /// <summary>
         /// Gets the data value.

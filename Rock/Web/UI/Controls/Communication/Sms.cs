@@ -84,6 +84,15 @@ namespace Rock.Web.UI.Controls.Communication
         }
 
         /// <summary>
+        /// On new communicaiton, initializes controls from sender values
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        public override void InitializeFromSender( Person sender )
+        {
+        }
+
+        /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>

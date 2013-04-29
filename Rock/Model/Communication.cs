@@ -199,13 +199,21 @@ namespace Rock.Model
         {
             get
             {
-                if ( this.ChannelEntityType != null )
+                if ( this.ChannelEntityType != null || this.ChannelEntityTypeId.HasValue )
                 {
                     foreach ( var serviceEntry in ChannelContainer.Instance.Components )
                     {
                         var component = serviceEntry.Value.Value;
+
+                        if ( this.ChannelEntityTypeId.HasValue &&
+                            this.ChannelEntityTypeId == component.EntityType.Id )
+                        {
+                            return component;
+                        }
+
                         string componentName = component.GetType().FullName;
-                        if ( componentName == this.ChannelEntityType.Name )
+                        if ( this.ChannelEntityType != null &&
+                            this.ChannelEntityType.Name == componentName)
                         {
                             return component;
                         }
