@@ -10,8 +10,10 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.UI;
 
 using Rock.Attribute;
+using Rock.Web.UI.Controls.Communication;
 
 namespace Rock.Communication.Channel
 {
@@ -29,9 +31,9 @@ namespace Rock.Communication.Channel
         /// <value>
         /// The control path.
         /// </value>
-        public override string ControlPath
+        public override ChannelControl Control
         {
-            get { return "~/Blocks/Communication/Sms.ascx"; }
+            get { return new Rock.Web.UI.Controls.Communication.Sms(); }
         }
  
     }
