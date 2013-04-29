@@ -19,6 +19,7 @@ using Rock.Web.Cache;
 namespace RockWeb.Blocks.CheckIn
 {
     [Description( "Check-In Welcome block" )]
+    [LinkedPage("Family Select Page")]
     [IntegerField( "Refresh Interval", "How often (seconds) should page automatically query server for new check-in data", false, 10 )]
     public partial class Welcome : CheckInBlock
     {
@@ -28,7 +29,7 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( CurrentCheckInState == null)
             {
-                GoToAdminPage();
+                NavigateToPreviousPage();
                 return;
             }
 
@@ -66,7 +67,7 @@ namespace RockWeb.Blocks.CheckIn
 
         protected void lbSearch_Click( object sender, EventArgs e )
         {
-            GoToSearchPage();
+            NavigateToNextPage();
         }
 
         private void RegisterScript()
@@ -121,7 +122,7 @@ if ($ActiveWhen.text() != '')
             if (ProcessActivity("Family Search", out errors))
             {
                 SaveState();
-                GoToFamilySelectPage();
+                NavigateToLinkedPage("FamilySelectPage");
             }
             else
             {
@@ -139,9 +140,9 @@ if ($ActiveWhen.text() != '')
 
             lblActiveWhen.Text = string.Empty;
 
-            if ( CurrentCheckInState == null )
+            if ( CurrentCheckInState == null || IsMobileAndExpiredDevice() )
             {
-                GoToAdminPage();
+                NavigateToPreviousPage();
                 return;
             }
 
@@ -210,6 +211,24 @@ if ($ActiveWhen.text() != '')
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines if the device is "mobile" and if it is no longer valid.
+        /// </summary>
+        /// <returns>true if the mobile device has expired; false otherwise.</returns>
+        private bool IsMobileAndExpiredDevice()
+        {
+            if ( Request.Cookies[ CheckInCookie.ISMOBILE] != null
+                && Request.Cookies[ CheckInCookie.DEVICEID ] == null )
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
         }
     }
 }

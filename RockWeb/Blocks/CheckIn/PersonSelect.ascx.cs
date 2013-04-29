@@ -24,7 +24,7 @@ namespace RockWeb.Blocks.CheckIn
 
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
             {
-                GoToWelcomePage();
+                NavigateToHomePage();
             }
             else
             {
@@ -103,13 +103,13 @@ namespace RockWeb.Blocks.CheckIn
 
             SaveState();
 
-            GoToFamilySelectPage( true );
+            NavigateToPreviousPage();
         }
 
         private void ProcessSelection()
         {
             SaveState();
-            GoToGroupTypeSelectPage();
+            NavigateToNextPage();
         }
 
 

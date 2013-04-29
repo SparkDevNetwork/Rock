@@ -21,3 +21,7 @@
 /Rock.dll
 /Rock.pdb
 /SanitizerProviders.dll
+/System.Net.Http.Formatting.dll
+/System.Net.Http.Formatting.xml
+/System.Web.Http.dll
+/System.Web.Http.xml

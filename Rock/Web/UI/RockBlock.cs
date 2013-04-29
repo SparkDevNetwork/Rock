@@ -502,6 +502,20 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Navigates to a linked page attribute.
+        /// </summary>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="queryParams">The query params.</param>
+        public void NavigateToLinkedPage( string attributeKey, Dictionary<string, string> queryParams = null )
+        {
+            Guid pageGuid = Guid.Empty;
+            if ( Guid.TryParse( GetAttributeValue( attributeKey ), out pageGuid ) )
+            {
+                NavigateToPage( pageGuid, queryParams );
+            }
+        }
+
+        /// <summary>
         /// Navigates to parent page.
         /// </summary>
         public void NavigateToParentPage( Dictionary<string, string> queryString = null )
@@ -545,7 +559,12 @@ namespace Rock.Web.UI
             var pageCache = PageCache.Read( pageGuid );
             if (pageCache != null)
             {
-                var pageReference = new PageReference(pageCache.Id, 0, queryString, null);
+                int routeId = 0;
+                {
+                    routeId = pageCache.PageRoutes.FirstOrDefault().Key;
+                }
+
+                var pageReference = new PageReference(pageCache.Id, routeId, queryString, null);
                 string pageUrl = pageReference.BuildUrl();
                 Response.Redirect( pageUrl, false );
                 Context.ApplicationInstance.CompleteRequest();
