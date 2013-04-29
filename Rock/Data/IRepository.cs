@@ -158,6 +158,13 @@ namespace Rock.Data
         void Attach( T entity );
 
         /// <summary>
+        /// Sets the values.
+        /// </summary>
+        /// <param name="sourceItem">The source item.</param>
+        /// <param name="targetItem">The target item.</param>
+        void SetValues( T sourceItem, T targetItem );
+
+        /// <summary>
         /// Deletes the specified entity.
         /// </summary>
         /// <param name="entity">The entity.</param>

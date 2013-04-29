@@ -17,7 +17,7 @@ using Rock.Rest.Filters;
 
 namespace Rock.Rest
 {
-    public abstract class ApiController<T> : ApiController 
+    public abstract class ApiController<T> : ApiController
         where T : Rock.Data.Entity<T>, new()
     {
         private Service<T> _service;
@@ -29,7 +29,7 @@ namespace Rock.Rest
         }
 
         // GET api/<controller>
-        [Queryable( AllowedQueryOptions = AllowedQueryOptions.All)]
+        [Queryable( AllowedQueryOptions = AllowedQueryOptions.All )]
         public virtual IQueryable<T> Get()
         {
             var result = _service.Queryable();
@@ -77,19 +77,28 @@ namespace Rock.Rest
             var user = CurrentUser();
             if ( user != null )
             {
-                T existingModel;
-                if ( !_service.TryGet( id, out existingModel ) )
+                T targetModel;
+
+                if ( !_service.TryGet( id, out targetModel ) )
+                {
                     throw new HttpResponseException( HttpStatusCode.NotFound );
+                }
 
-                _service.Attach( value );
-                if ( value.IsValid )
-                    _service.Save( value, user.PersonId );
+                _service.SetValues( value, targetModel );
+
+                if ( targetModel.IsValid )
+                {
+                    _service.Save( targetModel, user.PersonId );
+                }
                 else
-
+                {
                     throw new HttpResponseException( HttpStatusCode.BadRequest );
+                }
             }
             else
+            {
                 throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
         }
 
         // DELETE api/<controller>/5
@@ -117,11 +126,11 @@ namespace Rock.Rest
         /// <param name="id">The id.</param>
         /// <returns></returns>
         [Authenticate]
-        [ActionName("DataView")]
+        [ActionName( "DataView" )]
         public IQueryable<T> GetDataView( int id )
         {
             var dataView = new DataViewService().Get( id );
-            if ( dataView != null && dataView.EntityType.Name == typeof(T).FullName )
+            if ( dataView != null && dataView.EntityType.Name == typeof( T ).FullName )
             {
                 var errorMessages = new List<string>();
 

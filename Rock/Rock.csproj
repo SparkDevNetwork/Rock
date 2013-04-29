@@ -102,6 +102,10 @@
     <Reference Include="System.Web.Entity" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.Http, Version=4.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\RockWeb\Bin\System.Web.Http.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
@@ -133,6 +137,7 @@
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
+    <Compile Include="Data\IgnoreModelErrorsAttribute.cs" />
     <Compile Include="Migrations\201304190037528_BinaryFileTypeContributionImage.cs" />
     <Compile Include="Migrations\201304190037528_BinaryFileTypeContributionImage.Designer.cs">
       <DependentUpon>201304190037528_BinaryFileTypeContributionImage.cs</DependentUpon>
@@ -156,6 +161,10 @@
     <Compile Include="Migrations\201304250012126_PublicPledgeBlocks.cs" />
     <Compile Include="Migrations\201304250012126_PublicPledgeBlocks.Designer.cs">
       <DependentUpon>201304250012126_PublicPledgeBlocks.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201304262200031_FinancialBatchPerson.cs" />
+    <Compile Include="Migrations\201304262200031_FinancialBatchPerson.Designer.cs">
+      <DependentUpon>201304262200031_FinancialBatchPerson.cs</DependentUpon>
     </Compile>
     <Compile Include="Net\RockRestClient.cs">
       <SubType>Component</SubType>
@@ -1485,6 +1494,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304250012126_PublicPledgeBlocks.resx">
       <DependentUpon>201304250012126_PublicPledgeBlocks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304262200031_FinancialBatchPerson.resx">
+      <DependentUpon>201304262200031_FinancialBatchPerson.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
