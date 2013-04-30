@@ -6,6 +6,7 @@
         <asp:HiddenField ID="hfCommunicationId" runat="server" />
         <asp:HiddenField ID="hfChannelId" runat="server" />
 
+
         <ul class="nav nav-pills">
             <asp:Repeater ID="rptChannels" runat="server">
                 <ItemTemplate>
@@ -23,9 +24,9 @@
             </div>
             <div class="recipient">
                 <ul class="recipient-content">
-                    <asp:Repeater ID="rptRecipients" runat="server" OnItemCommand="rptRecipients_ItemCommand">
+                    <asp:Repeater ID="rptRecipients" runat="server" OnItemCommand="rptRecipients_ItemCommand" OnItemDataBound="rptRecipients_ItemDataBound">
                         <ItemTemplate>
-                            <li><%# Eval("Value") %> <asp:LinkButton ID="lbRemoveRecipient" runat="server" CommandArgument='<%# Eval("Key") %>'><i class="icon-remove"></i></asp:LinkButton></li>
+                            <li class='<%# Eval("Status").ToString() %>'><%# Eval("PersonName") %> <asp:LinkButton ID="lbRemoveRecipient" runat="server" CommandArgument='<%# Eval("PersonId") %>'><i class="icon-remove"></i></asp:LinkButton></li>
                         </ItemTemplate>
                     </asp:Repeater>
                 </ul>
@@ -34,7 +35,7 @@
 
         <div class="pull-right">
             <asp:LinkButton ID="lbShowAllRecipients" runat="server" Text="Show All" OnClick="lbShowAllRecipients_Click" />
-            <asp:LinkButton ID="lbRemoveAllRecipients" runat="server" Text="Remove All" CssClass="remove-all-recipients" OnClick="lbRemoveAllRecipients_Click" />
+            <asp:LinkButton ID="lbRemoveAllRecipients" runat="server" Text="Remove All Pending Recipients" CssClass="remove-all-recipients" OnClick="lbRemoveAllRecipients_Click" />
         </div>
 
         <asp:PlaceHolder ID="phContent" runat="server" />
