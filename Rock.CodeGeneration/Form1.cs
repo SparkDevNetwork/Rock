@@ -61,7 +61,7 @@ namespace Rock.CodeGeneration
                         {
                             foreach ( Type interfaceType in type.GetInterfaces() )
                             {
-                                if ( interfaceType == entityInterface )
+                               // if ( interfaceType == entityInterface )
                                 {
                                     cblModels.Items.Add( type );
                                 }
