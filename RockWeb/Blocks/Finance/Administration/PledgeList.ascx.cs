@@ -36,7 +36,6 @@ namespace RockWeb.Blocks.Finance.Administration
             bool canAddEditDelete = IsUserAuthorized( "Edit" );
             gPledges.Actions.ShowAdd = canAddEditDelete;
             gPledges.IsDeleteEnabled = canAddEditDelete;
-            CurrentPage.AddScriptLink( Page, "~/Scripts/jquery.js" );
         }
 
         /// <summary>
