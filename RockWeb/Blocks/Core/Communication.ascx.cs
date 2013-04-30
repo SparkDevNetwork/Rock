@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.Core
     {
         #region Properties
 
-        public int? CommunicationId
+        protected int? CommunicationId
         {
             get { return ViewState["CommunicationId"] as int?; }
             set { ViewState["CommunicationId"] = value; }
@@ -48,26 +48,26 @@ namespace RockWeb.Blocks.Core
         /// <value>
         /// The channel entity type id.
         /// </value>
-        public int? ChannelEntityTypeId
+        protected int? ChannelEntityTypeId
         {
             get { return ViewState["ChannelEntityTypeId"] as int?; }
             set { ViewState["ChannelEntityTypeId"] = value; }
         }
 
         /// <summary>
-        /// Gets or sets the recipient ids.
+        /// Gets or sets the recipients.
         /// </summary>
         /// <value>
         /// The recipient ids.
         /// </value>
-        public Dictionary<int, string> Recipients
+        protected List<Recipient> Recipients
         {
             get 
             { 
-                var recipients = ViewState["Recipients"] as Dictionary<int, string>;
+                var recipients = ViewState["Recipients"] as List<Recipient>;
                 if ( recipients == null )
                 {
-                    recipients = new Dictionary<int, string>();
+                    recipients = new List<Recipient>();
                     ViewState["Recipients"] = recipients;
                 }
                 return recipients;
@@ -82,7 +82,7 @@ namespace RockWeb.Blocks.Core
         /// <value>
         ///   <c>true</c> if [show all recipients]; otherwise, <c>false</c>.
         /// </value>
-        public bool ShowAllRecipients
+        protected bool ShowAllRecipients
         {
             get { return ViewState["ShowAllRecipients"] as bool? ?? false; }
             set { ViewState["ShowAllRecipients"] = value; }
@@ -94,7 +94,7 @@ namespace RockWeb.Blocks.Core
         /// <value>
         /// The channel data.
         /// </value>
-        public Dictionary<string, string> ChannelData
+        protected Dictionary<string, string> ChannelData
         {
             get 
             {
@@ -189,14 +189,36 @@ namespace RockWeb.Blocks.Core
             int personId = int.MinValue;
             if ( int.TryParse( ppAddPerson.PersonId, out personId ) && personId != 0 )
             {
-                if ( !Recipients.ContainsKey( personId ) )
+                if ( !Recipients.Any( r => r.PersonId == personId ) )
                 {
                     var Person = new PersonService().Get( personId );
                     if ( Person != null )
                     {
-                        Recipients.Add( Person.Id, Person.FullName );
+                        Recipients.Add( new Recipient( Person.Id, Person.FullName, CommunicationRecipientStatus.Pending ) );
                         ShowAllRecipients = true;
                         BindRecipients();
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptRecipients control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs" /> instance containing the event data.</param>
+        protected void rptRecipients_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            // Hide the remove button for any recipient that is not pending.
+            if ( e.Item.ItemType == ListItemType.Item )
+            {
+                var recipient = e.Item.DataItem as Recipient;
+                if ( recipient != null && recipient.Status != CommunicationRecipientStatus.Pending )
+                {
+                    var lbRemove = e.Item.FindControl( "lbRemoveRecipient" ) as LinkButton;
+                    if ( lbRemove != null )
+                    {
+                        lbRemove.Visible = false;
                     }
                 }
             }
@@ -212,7 +234,7 @@ namespace RockWeb.Blocks.Core
             int personId = int.MinValue;
             if ( int.TryParse( e.CommandArgument.ToString(), out personId ) )
             {
-                Recipients.Remove(personId);
+                Recipients = Recipients.Where( r => r.PersonId != personId ).ToList();
                 BindRecipients();
             }
         }
@@ -235,7 +257,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void lbRemoveAllRecipients_Click( object sender, EventArgs e )
         {
-            Recipients.Clear();
+            Recipients = Recipients.Where( r => r.Status != CommunicationRecipientStatus.Pending).ToList();
             BindRecipients();
         }
 
@@ -500,7 +522,7 @@ namespace RockWeb.Blocks.Core
             BindChannels();
 
             Recipients.Clear();
-            communication.Recipients.ToList().ForEach( r => Recipients.Add( r.Person.Id, r.Person.FullName));
+            communication.Recipients.ToList().ForEach( r => Recipients.Add( new Recipient( r.Person.Id, r.Person.FullName, r.Status ) ) );
             BindRecipients();
 
             ChannelData = communication.ChannelData;
@@ -569,7 +591,7 @@ namespace RockWeb.Blocks.Core
                 lbShowAllRecipients.Visible = false;
             }
 
-            lbRemoveAllRecipients.Visible = Recipients.Count > 0;
+            lbRemoveAllRecipients.Visible = Recipients.Where( r => r.Status == CommunicationRecipientStatus.Pending).Any();
 
             rptRecipients.DataBind();
 
@@ -784,10 +806,10 @@ namespace RockWeb.Blocks.Core
 
             foreach(var recipient in Recipients)
             {
-                if ( !communication.Recipients.Where( r => r.PersonId == recipient.Key ).Any() )
+                if ( !communication.Recipients.Where( r => r.PersonId == recipient.PersonId ).Any() )
                 {
                     var communicationRecipient = new CommunicationRecipient();
-                    communicationRecipient.Person = new PersonService().Get( recipient.Key );
+                    communicationRecipient.Person = new PersonService().Get( recipient.PersonId );
                     communicationRecipient.Status = CommunicationRecipientStatus.Pending;
                     communication.Recipients.Add( communicationRecipient );
                 }
@@ -853,6 +875,54 @@ namespace RockWeb.Blocks.Core
         }
 
         #endregion
-    
+
+        #region Helper Classes
+
+        /// <summary>
+        /// Helper class used to maintain state of recipients
+        /// </summary>
+        [Serializable]
+        protected class Recipient
+        {
+            /// <summary>
+            /// Gets or sets the person id.
+            /// </summary>
+            /// <value>
+            /// The person id.
+            /// </value>
+            public int PersonId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name of the person.
+            /// </summary>
+            /// <value>
+            /// The name of the person.
+            /// </value>
+            public string PersonName { get; set; }
+
+            /// <summary>
+            /// Gets or sets the status.
+            /// </summary>
+            /// <value>
+            /// The status.
+            /// </value>
+            public CommunicationRecipientStatus Status { get; set; }
+
+            /// <summary>
+            /// Initializes a new instance of the <see cref="Recipient" /> class.
+            /// </summary>
+            /// <param name="personId">The person id.</param>
+            /// <param name="personName">Name of the person.</param>
+            /// <param name="status">The status.</param>
+            public Recipient( int personId, string personName, CommunicationRecipientStatus status )
+            {
+                PersonId = personId;
+                PersonName = personName;
+                Status = status;
+            }
+        }
+
+        #endregion
+
     }
 }
