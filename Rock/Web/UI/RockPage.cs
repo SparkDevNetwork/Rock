@@ -559,7 +559,18 @@ namespace Rock.Web.UI
                                         blockControl.GetBreadCrumbs( CurrentPageReference ).ForEach( c => CurrentPageReference.BreadCrumbs.Add( c ) );
                                     }
 
-                                    blockControl.ReadAdditionalActions();
+                                    // If the blocktype's additional actions have not yet been loaded, load them now
+                                    if ( !block.BlockType.CheckedAdditionalSecurityActions )
+                                    {
+                                        foreach ( string action in blockControl.GetAdditionalActions() )
+                                        {
+                                            if ( !block.BlockType.SupportedActions.Contains( action ) )
+                                            {
+                                                block.BlockType.SupportedActions.Add( action );
+                                            }
+                                        }
+                                        block.BlockType.CheckedAdditionalSecurityActions = true;
+                                    }
 
                                     // If the block's AttributeProperty values have not yet been verified verify them.
                                     // (This provides a mechanism for block developers to define the needed block
