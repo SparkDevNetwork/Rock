@@ -127,6 +127,7 @@ namespace Rock.Web.UI.Controls.Communication
 
             tbFromAddress.ID = string.Format( "tbFromAddress_{0}", this.ID );
             tbFromAddress.LabelText = "From Address";
+            tbFromAddress.Required = true;
             Controls.Add( tbFromAddress );
 
             tbReplyToAddress.ID = string.Format( "tbReplyToAddress_{0}", this.ID );
@@ -174,8 +175,15 @@ namespace Rock.Web.UI.Controls.Communication
         /// <exception cref="System.NotImplementedException"></exception>
         public override void InitializeFromSender( Person sender )
         {
-            tbFromName.Text = sender.FullName;
-            tbFromAddress.Text = sender.Email;
+            if ( string.IsNullOrEmpty( tbFromName.Text ) )
+            {
+                tbFromName.Text = sender.FullName;
+            }
+
+            if ( string.IsNullOrEmpty( tbFromAddress.Text ) )
+            {
+                tbFromAddress.Text = sender.Email;
+            }
         }
 
         /// <summary>
