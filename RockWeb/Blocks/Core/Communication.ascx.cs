@@ -77,6 +77,18 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [show all recipients].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show all recipients]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowAllRecipients
+        {
+            get { return ViewState["ShowAllRecipients"] as bool? ?? false; }
+            set { ViewState["ShowAllRecipients"] = value; }
+        }
+            
+        /// <summary>
         /// Gets or sets the channel data.
         /// </summary>
         /// <value>
@@ -102,6 +114,17 @@ namespace RockWeb.Blocks.Core
 
         #region Control Methods
 
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            string script = @"
+    $('a.remove-all-recipients').click(function(){
+        return confirm('Are you sure you want to remove all of the recipients from this communication?');
+    });
+";
+            ScriptManager.RegisterStartupScript(lbRemoveAllRecipients, lbRemoveAllRecipients.GetType(), "ConfirmRemoveAll", script, true );
+        }
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -116,6 +139,8 @@ namespace RockWeb.Blocks.Core
             }
             else
             {
+                ShowAllRecipients = false;
+
                 string itemId = PageParameter( "Id" );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
@@ -170,6 +195,7 @@ namespace RockWeb.Blocks.Core
                     if ( Person != null )
                     {
                         Recipients.Add( Person.Id, Person.FullName );
+                        ShowAllRecipients = true;
                         BindRecipients();
                     }
                 }
@@ -189,6 +215,28 @@ namespace RockWeb.Blocks.Core
                 Recipients.Remove(personId);
                 BindRecipients();
             }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbShowAllRecipients control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void lbShowAllRecipients_Click( object sender, EventArgs e )
+        {
+            ShowAllRecipients = true;
+            BindRecipients();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbRemoveAllRecipients control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void lbRemoveAllRecipients_Click( object sender, EventArgs e )
+        {
+            Recipients.Clear();
+            BindRecipients();
         }
 
         /// <summary>
@@ -424,10 +472,12 @@ namespace RockWeb.Blocks.Core
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 communication = new CommunicationService().Get( itemKeyValue );
+                this.Page.Title = string.Format( "Communication #{0}", communication.Id );
             }
             else
             {
                 communication = new Rock.Model.Communication() { Status = CommunicationStatus.Transient };
+                this.Page.Title = "New Communication";
             }
 
             if ( communication == null )
@@ -502,15 +552,24 @@ namespace RockWeb.Blocks.Core
             ppAddPerson.PersonName = "Add Person";
 
             int displayCount = int.MaxValue;
-            int.TryParse(GetAttributeValue("DisplayCount"), out displayCount);
-            if ( displayCount < int.MaxValue && displayCount > 0 )
+
+            if ( !ShowAllRecipients )
+            {
+                int.TryParse( GetAttributeValue( "DisplayCount" ), out displayCount );
+            }
+
+            if ( displayCount > 0 && displayCount < Recipients.Count )
             {
                 rptRecipients.DataSource = Recipients.Take( displayCount ).ToList();
+                lbShowAllRecipients.Visible = true;
             }
             else
             {
                 rptRecipients.DataSource = Recipients.ToList();
+                lbShowAllRecipients.Visible = false;
             }
+
+            lbRemoveAllRecipients.Visible = Recipients.Count > 0;
 
             rptRecipients.DataBind();
 
@@ -794,5 +853,6 @@ namespace RockWeb.Blocks.Core
         }
 
         #endregion
+    
     }
 }

@@ -16,7 +16,7 @@
                 </ItemTemplate>
             </asp:Repeater>
         </ul>
-
+        
         <div class="control-group">
             <div class="control-label">
                 To: <asp:Literal ID="lNumRecipients" runat="server" /> <Rock:PersonPicker ID="ppAddPerson" runat="server" PersonName="Add Person" OnSelectPerson="ppAddPerson_SelectPerson" />
@@ -30,6 +30,11 @@
                     </asp:Repeater>
                 </ul>
             </div>
+        </div>
+
+        <div class="pull-right">
+            <asp:LinkButton ID="lbShowAllRecipients" runat="server" Text="Show All" OnClick="lbShowAllRecipients_Click" />
+            <asp:LinkButton ID="lbRemoveAllRecipients" runat="server" Text="Remove All" CssClass="remove-all-recipients" OnClick="lbRemoveAllRecipients_Click" />
         </div>
 
         <asp:PlaceHolder ID="phContent" runat="server" />
