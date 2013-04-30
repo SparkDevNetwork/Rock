@@ -748,19 +748,20 @@ namespace Rock.Web.UI
         /// <summary>
         /// Reads the additional actions.
         /// </summary>
-        internal void ReadAdditionalActions()
+        internal List<string> GetAdditionalActions()
         {
+            var additionalActions = new List<string>();
+
             object[] customAttributes = this.GetType().GetCustomAttributes( typeof( AdditionalActionsAttribute ), true );
             if ( customAttributes.Length > 0 )
             {
                 foreach ( string action in ( (AdditionalActionsAttribute)customAttributes[0] ).AdditionalActions )
                 {
-                    if ( !this.CurrentBlock.SupportedActions.Contains( action ) )
-                    {
-                        this.CurrentBlock.SupportedActions.Add( action );
-                    }
+                    additionalActions.Add( action );
                 }
             }
+
+            return additionalActions;
         }
 
         #endregion

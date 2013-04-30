@@ -51,8 +51,10 @@ namespace Rock.Data
         [NotMapped]
         public virtual List<string> SupportedActions
         {
-            get { return new List<string>() { "View", "Edit", "Administrate" }; }
+            get { return _supportedActions; }
         }
+        private List<string> _supportedActions = new List<string>() { "View", "Edit", "Administrate" };
+
 
         /// <summary>
         /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
