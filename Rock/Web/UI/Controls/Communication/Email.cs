@@ -219,8 +219,12 @@ namespace Rock.Web.UI.Controls.Communication
 
                 writer.Write( " " );
 
-                removeButtons[attachment.Key].RenderControl( writer );
-
+                removeButtons[attachment.Key].RenderBeginTag(writer);
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "icon-remove" );
+                writer.RenderBeginTag( HtmlTextWriterTag.I );
+                writer.RenderEndTag();
+                removeButtons[attachment.Key].RenderEndTag( writer );
+                            
                 writer.RenderEndTag();  // li
             }
 
