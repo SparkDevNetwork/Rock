@@ -33,6 +33,7 @@ namespace Rock.Web.UI
         #region Private Variables
 
         private PlaceHolder phLoadTime;
+        private ScriptManager _scriptManager;
 
         #endregion
 
@@ -307,13 +308,8 @@ namespace Rock.Web.UI
         protected override void OnInit( EventArgs e )
         {
             // Add the ScriptManager to each page
-            ScriptManager sm = ScriptManager.GetCurrent( this.Page );
-            if ( sm == null )
-            {
-                sm = new ScriptManager();
-                sm.ID = "sManager";
-                Page.Form.Controls.AddAt( 0, sm );
-            }
+            _scriptManager = ScriptManager.GetCurrent( this.Page ) ?? new ScriptManager { ID = "sManager" };
+            Page.Form.Controls.AddAt( 0, _scriptManager );
 
             // Recurse the page controls to find the rock page title and zone controls
             Zones = new Dictionary<string, KeyValuePair<string, Zone>>();
@@ -1275,42 +1271,11 @@ namespace Rock.Web.UI
         /// <param name="path">Path to script file.  Should be relative to layout template.  Will be resolved at runtime</param>
         public static void AddScriptLink( Page page, string path )
         {
-            string relativePath = page.ResolveUrl( path );
+            var scriptManager = page.Form.Controls.OfType<Control>().FirstOrDefault( c => c.ID == "sManager" ) as ScriptManager;
 
-            bool existsAlready = false;
-
-            if ( page != null && page.Header != null )
-                foreach ( Control control in page.Header.Controls )
-                {
-                    if ( control is LiteralControl )
-                        if ( ( (LiteralControl)control ).Text.ToLower().Contains( "src=" + relativePath.ToLower() ) )
-                        {
-                            existsAlready = true;
-                            break;
-                        }
-
-                    if ( control is HtmlGenericControl )
-                    {
-                        HtmlGenericControl genericControl = (HtmlGenericControl)control;
-                        if ( genericControl.TagName.ToLower() == "script" &&
-                           genericControl.Attributes["src"] != null &&
-                                genericControl.Attributes["src"].ToLower() == relativePath.ToLower() )
-                        {
-                            existsAlready = true;
-                            break;
-                        }
-                    }
-                }
-
-            if ( !existsAlready )
+            if ( scriptManager != null )
             {
-                HtmlGenericControl genericControl = new HtmlGenericControl();
-                genericControl.TagName = "script";
-                genericControl.Attributes.Add( "src", relativePath );
-                genericControl.Attributes.Add( "type", "text/javascript" );
-
-                page.Header.Controls.Add( new LiteralControl( "\n\t" ) );
-                page.Header.Controls.Add( genericControl );
+                scriptManager.Scripts.Add( new ScriptReference( path ) );
             }
         }
 
