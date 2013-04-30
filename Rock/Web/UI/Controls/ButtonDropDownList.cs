@@ -23,40 +23,12 @@ namespace Rock.Web.UI.Controls
         private HiddenField _hfSelectedItemId;
         private HiddenField _hfSelectedItemText;
         private HtmlGenericControl _listControl;
-        protected String btnTitle = string.Empty;
-        protected RequiredFieldValidator requiredValidator;
-
+        protected String _btnTitle = string.Empty;
+        
         public string FieldName
         {
             get { return ViewState["FieldName"] as string ?? string.Empty; }
             set { ViewState["FieldName"] = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="ButtonDropDownList"/> is required.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if required; otherwise, <c>false</c>.
-        /// </value>
-        [
-        Bindable( true ),
-        Category( "Behavior" ),
-        DefaultValue( "false" ),
-        Description( "Is the value required?" )
-        ]
-        public bool Required
-        {
-            get
-            {
-                if ( ViewState["Required"] != null )
-                    return (bool)ViewState["Required"];
-                else
-                    return false;
-            }
-            set
-            {
-                ViewState["Required"] = value;
-            }
         }
 
         /// <summary>
@@ -109,17 +81,17 @@ namespace Rock.Web.UI.Controls
             // <a> click event to prevent the browser from appending '#' to the URL and 
             // causing the window to jump to the top of the.
             const string scriptFormat = @"
-$('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
-    e.preventDefault();
-    var $el = $(this);
-    var text =  $el.html();
-    var textHtml = $el.html() + "" <span class='caret'></span>"";
-    var idvalue = $el.attr('data-id');
-    $('#ButtonDropDown_btn_{0}').html(textHtml);
-    $('#hfSelectedItemId_{0}').val(idvalue);
-    $('#hfSelectedItemText_{0}').val(text);
-    {1}
-}});";
+            $('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
+                e.preventDefault();
+                var $el = $(this);
+                var text =  $el.html();
+                var textHtml = $el.html() + "" <span class='caret'></span>"";
+                var idvalue = $el.attr('data-id');
+                $('#ButtonDropDown_btn_{0}').html(textHtml);
+                $('#hfSelectedItemId_{0}').val(idvalue);
+                $('#hfSelectedItemText_{0}').val(text);
+                {1}
+            }});";
 
             string postbackScript = string.Empty;
             if ( SelectionChanged != null )
@@ -185,25 +157,11 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
         {
             get
             {
-                return btnTitle;
+                return _btnTitle;
             }
             set
             {
-                btnTitle = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is valid.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
-        /// </value>
-        public virtual bool IsValid
-        {
-            get
-            {
-                return !Required || requiredValidator.IsValid;
+                _btnTitle = value;
             }
         }
 
@@ -216,14 +174,6 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
 
 			Controls.Clear();
 			
-            requiredValidator = new RequiredFieldValidator();
-            requiredValidator.ID = this.ID + "_rfv";
-            requiredValidator.ControlToValidate = this.ID;
-            requiredValidator.Display = ValidatorDisplay.Dynamic;
-            requiredValidator.CssClass = "validation-error help-inline";
-            requiredValidator.Enabled = false;
-            Controls.Add( requiredValidator );
-
             _divControl = new HtmlGenericControl( "div" );
             _divControl.Attributes["class"] = "btn-group";
             _divControl.ClientIDMode = ClientIDMode.Static;
@@ -259,20 +209,6 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            writer.AddAttribute( "class", "control-group" +
-                ( IsValid ? "" : " error" ) +
-                ( Required ? " required" : "" ) );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            if ( Required )
-            {
-                requiredValidator.Enabled = true;
-                requiredValidator.ErrorMessage = string.Format( "'{0}' is required.", FieldName );
-                requiredValidator.RenderControl( writer );
-            }
-
-            RenderDataValidator( writer );
-
             foreach ( var item in this.Items.OfType<ListItem>() )
             {
                 string controlHtmlFormat = "<li><a href='#' data-id='{0}'>{1}</a></li>";
@@ -281,7 +217,7 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
 
             _divControl.Controls.Add( _listControl );
 
-            string selectedText = SelectedItem != null ? SelectedItem.Text : btnTitle;
+            string selectedText = SelectedItem != null ? SelectedItem.Text : _btnTitle;
             _btnSelect.Controls.Clear();
             _btnSelect.Controls.Add( new LiteralControl { Text = string.Format( "{0} <span class='caret'></span>", selectedText ) } );
 
@@ -289,14 +225,6 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
 
             _hfSelectedItemId.RenderControl( writer );
             _hfSelectedItemText.RenderControl( writer );
-        }
-
-        /// <summary>
-        /// Renders any data validator.
-        /// </summary>
-        /// <param name="writer">The writer.</param>
-        protected virtual void RenderDataValidator( HtmlTextWriter writer )
-        {
         }
 
         /// <summary>

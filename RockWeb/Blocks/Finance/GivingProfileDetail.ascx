@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="RecurringGift.ascx.cs" Inherits="RockWeb.Blocks.Finance.RecurringGift" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GivingProfileDetail.ascx.cs" Inherits="RockWeb.Blocks.Finance.GivingProfileDetail" %>
 
 <script type="text/javascript" src="../../Scripts/jquery.creditCardTypeDetector.js"></script>
 
@@ -39,11 +39,9 @@
 <asp:UpdatePanel ID="upRecurringGift" runat="server" >
 <ContentTemplate>
 
-    <asp:Panel ID="pnlMessage" runat="server" Visible="false" CssClass="alert alert-error block-message error"/>
-
     <asp:Panel ID="pnlDetails" runat="server">
 
-        <% spanClass = ( _UseStackedLayout ) ? "span12" : "span6"; %>
+        <% spanClass = ( _VerticalLayout ) ? "span12" : "span6"; %>
         
         <div class="container-fluid">     
                                 
@@ -57,36 +55,22 @@
 
                         <div class="form-horizontal">
 
-                            <% if ( _ShowCampusSelect ) { %>
-                                
+                            <div id="divCampus" runat="server" visible="false">                                                            
                                 <div class="row-fluid">
-                                    <div class="control-group">
-                                        <label id="lblCampus" class="control-label" for="btnCampusList" visible="true" runat="server">Campus </label>
-                                        <div class="controls">
-                                            <Rock:ButtonDropDownList ID="btnCampusList" runat="server" CssClass="btn btn-primary" Title="Select Campus"></Rock:ButtonDropDownList>
-                                        </div>
-                                    </div>
+                                    <Rock:LabeledButtonDropDownList ID="btnCampusList" runat="server" CssClass="btn btn-primary" Title="Select Campus" LabelText="Campus" />
                                 </div>
-
-                            <% } %>
+                            </div>
                         
                             <asp:Repeater ID="rptAccountList" runat="server" ClientIdMode="Predictable">
-                                <ItemTemplate>                                          
-                                    <div class="row-fluid">                                    
-                                        <div class="control-group">                                        
-                                            <label id="lblAccountName" class="control-label" name="lblAccountName" tabindex="-1" runat="server"><%# ((KeyValuePair<string,decimal>)Container.DataItem).Key %></label> 
-                                            <div class="controls">
-                                                <div class="input-prepend">
-                                                <span class="add-on">$</span>
-                                                <input id="inputAccountAmount" name="inputAccountAmount" class="input-small calc" title="Enter a number" type="text" value="<%# ((KeyValuePair<string,decimal>)Container.DataItem).Value %>" runat="server" pattern="\d+(\.\d*)?" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>                                        
-                                </ItemTemplate>
-                                <FooterTemplate>
-                                    <label id="lblEmptyDataSet" Visible='<%#bool.Parse((rptAccountList.Items.Count==0).ToString())%>' class="alert alert-error block-message error" >No default accounts enabled.  Please enable a account in the block settings.</label>
-                                </FooterTemplate>                                                     
+                            <ItemTemplate>
+                                
+                                <div class="row-fluid">
+                                    <Rock:LabeledTextBox ID="inputAccountAmount" runat="server" CssClass="input-small calc" LabelText="<%# ((KeyValuePair<string,decimal>)Container.DataItem).Key %>"  
+                                        Text="<%# ((KeyValuePair<string,decimal>)Container.DataItem).Value %>" PrependText="$">                                            
+                                    </Rock:LabeledTextBox>                                    
+                                </div>
+
+                            </ItemTemplate>                                
                             </asp:Repeater>                        
 
                             <div ID="divAddAccount" class="row-fluid" runat="server" visible="false">
@@ -95,7 +79,7 @@
                                 </div>
                             </div>
 
-                            <% if ( bool.Parse((rptAccountList.Items.Count!=0).ToString()) ) { %>
+                            <% if ( rptAccountList.Items.Count != 0 ) { %>
 
                                 <div class="row-fluid" >
                                     <div class="control-group">     
@@ -160,7 +144,7 @@
                                         
                 </div>
             
-                <% if ( _UseStackedLayout ) { %>
+                <% if ( _VerticalLayout ) { %>
                     
                 </div>
 
@@ -451,7 +435,7 @@
 
     <asp:Panel ID="pnlConfirm" runat="server" Visible="false">
         
-        <% spanClass = ( _UseStackedLayout ) ? "span12" : "span6"; %>
+        <% spanClass = ( _VerticalLayout ) ? "span12" : "span6"; %>
 
         <div class="row-fluid">     
                                 
@@ -499,7 +483,7 @@
 
     <asp:Panel ID="pnlComplete" runat="server" Visible="false">
         
-        <% spanClass = ( _UseStackedLayout ) ? "span12" : "span6"; %>
+        <% spanClass = ( _VerticalLayout ) ? "span12" : "span6"; %>
 
         <div class="row-fluid">     
                                 
