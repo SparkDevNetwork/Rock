@@ -120,7 +120,7 @@ namespace RockWeb.Blocks.Core
 
             string script = @"
     $('a.remove-all-recipients').click(function(){
-        return confirm('Are you sure you want to remove all of the recipients from this communication?');
+        return confirm('Are you sure you want to remove all of the pending recipients from this communication?');
     });
 ";
             ScriptManager.RegisterStartupScript(lbRemoveAllRecipients, lbRemoveAllRecipients.GetType(), "ConfirmRemoveAll", script, true );
