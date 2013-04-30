@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Xml.Linq;
@@ -210,7 +211,7 @@ namespace RockWeb.Blocks.Core
         protected void rptRecipients_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             // Hide the remove button for any recipient that is not pending.
-            if ( e.Item.ItemType == ListItemType.Item )
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
             {
                 var recipient = e.Item.DataItem as Recipient;
                 if ( recipient != null && recipient.Status != CommunicationRecipientStatus.Pending )
@@ -262,45 +263,58 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Handles the ServerValidate event of the valRecipients control.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="args">The <see cref="ServerValidateEventArgs" /> instance containing the event data.</param>
+        protected void valRecipients_ServerValidate( object source, ServerValidateEventArgs args )
+        {
+            args.IsValid = Recipients.Any();
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnSubmit control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSubmit_Click( object sender, EventArgs e )
         {
-            using ( new UnitOfWorkScope() )
+            if ( Page.IsValid )
             {
-                var service = new CommunicationService();
-                var communication = UpdateCommunication( service );
-
-                if ( communication != null )
+                using ( new UnitOfWorkScope() )
                 {
-                    var prevStatus = communication.Status;
-                    if ( CheckApprovalRequired( communication.Recipients.Count ) && !IsUserAuthorized( "Approve" ) )
-                    {
-                        communication.Status = CommunicationStatus.Submitted;
-                    }
-                    else
-                    {
-                        communication.Status = CommunicationStatus.Approved;
-                        communication.ReviewedDateTime = DateTime.Now;
-                        communication.ReviewerPersonId = CurrentPersonId;
-                    }
+                    var service = new CommunicationService();
+                    var communication = UpdateCommunication( service );
 
-                    communication.Recipients
-                        .Where( r =>
-                            r.Status == CommunicationRecipientStatus.Cancelled ||
-                            r.Status == CommunicationRecipientStatus.Failed )
-                        .ToList()
-                        .ForEach( r =>
+                    if ( communication != null )
+                    {
+                        var prevStatus = communication.Status;
+                        if ( CheckApprovalRequired( communication.Recipients.Count ) && !IsUserAuthorized( "Approve" ) )
                         {
-                            r.Status = CommunicationRecipientStatus.Pending;
-                            r.StatusNote = string.Empty;
+                            communication.Status = CommunicationStatus.Submitted;
                         }
-                    );
+                        else
+                        {
+                            communication.Status = CommunicationStatus.Approved;
+                            communication.ReviewedDateTime = DateTime.Now;
+                            communication.ReviewerPersonId = CurrentPersonId;
+                        }
 
-                    service.Save( communication, CurrentPersonId );
-                    ProcessStatusChange( prevStatus, communication );
+                        communication.Recipients
+                            .Where( r =>
+                                r.Status == CommunicationRecipientStatus.Cancelled ||
+                                r.Status == CommunicationRecipientStatus.Failed )
+                            .ToList()
+                            .ForEach( r =>
+                            {
+                                r.Status = CommunicationRecipientStatus.Pending;
+                                r.StatusNote = string.Empty;
+                            }
+                        );
+
+                        service.Save( communication, CurrentPersonId );
+                        ProcessStatusChange( prevStatus, communication );
+                    }
                 }
             }
         }
@@ -312,23 +326,26 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnApprove_Click( object sender, EventArgs e )
         {
-            using ( new UnitOfWorkScope() )
+            if ( Page.IsValid )
             {
-                var service = new CommunicationService();
-                var communication = UpdateCommunication( service );
-
-                if ( communication != null )
+                using ( new UnitOfWorkScope() )
                 {
-                    var prevStatus = communication.Status;
-                    if ( IsUserAuthorized( "Approve" ) )
-                    {
-                        communication.Status = CommunicationStatus.Approved;
-                        communication.ReviewedDateTime = DateTime.Now;
-                        communication.ReviewerPersonId = CurrentPersonId;
-                    }
+                    var service = new CommunicationService();
+                    var communication = UpdateCommunication( service );
 
-                    service.Save( communication, CurrentPersonId );
-                    ProcessStatusChange( prevStatus, communication );
+                    if ( communication != null )
+                    {
+                        var prevStatus = communication.Status;
+                        if ( IsUserAuthorized( "Approve" ) )
+                        {
+                            communication.Status = CommunicationStatus.Approved;
+                            communication.ReviewedDateTime = DateTime.Now;
+                            communication.ReviewerPersonId = CurrentPersonId;
+                        }
+
+                        service.Save( communication, CurrentPersonId );
+                        ProcessStatusChange( prevStatus, communication );
+                    }
                 }
             }
         }
@@ -340,23 +357,26 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnDeny_Click( object sender, EventArgs e )
         {
-            using ( new UnitOfWorkScope() )
+            if ( Page.IsValid )
             {
-                var service = new CommunicationService();
-                var communication = UpdateCommunication( service );
-
-                if ( communication != null )
+                using ( new UnitOfWorkScope() )
                 {
-                    var prevStatus = communication.Status;
-                    if ( IsUserAuthorized( "Approve" ) )
-                    {
-                        communication.Status = CommunicationStatus.Denied;
-                        communication.ReviewedDateTime = DateTime.Now;
-                        communication.ReviewerPersonId = CurrentPersonId;
-                    }
+                    var service = new CommunicationService();
+                    var communication = UpdateCommunication( service );
 
-                    service.Save( communication, CurrentPersonId );
-                    ProcessStatusChange( prevStatus, communication );
+                    if ( communication != null )
+                    {
+                        var prevStatus = communication.Status;
+                        if ( IsUserAuthorized( "Approve" ) )
+                        {
+                            communication.Status = CommunicationStatus.Denied;
+                            communication.ReviewedDateTime = DateTime.Now;
+                            communication.ReviewerPersonId = CurrentPersonId;
+                        }
+
+                        service.Save( communication, CurrentPersonId );
+                        ProcessStatusChange( prevStatus, communication );
+                    }
                 }
             }
         }
@@ -368,21 +388,24 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            using ( new UnitOfWorkScope() )
+            if ( Page.IsValid )
             {
-                var service = new CommunicationService();
-                var communication = UpdateCommunication( service );
-
-                if ( communication != null )
+                using ( new UnitOfWorkScope() )
                 {
-                    var prevStatus = communication.Status;
-                    if ( communication.Status == CommunicationStatus.Transient )
-                    {
-                        communication.Status = CommunicationStatus.Draft;
-                    }
+                    var service = new CommunicationService();
+                    var communication = UpdateCommunication( service );
 
-                    service.Save( communication, CurrentPersonId );
-                    ProcessStatusChange( prevStatus, communication );
+                    if ( communication != null )
+                    {
+                        var prevStatus = communication.Status;
+                        if ( communication.Status == CommunicationStatus.Transient )
+                        {
+                            communication.Status = CommunicationStatus.Draft;
+                        }
+
+                        service.Save( communication, CurrentPersonId );
+                        ProcessStatusChange( prevStatus, communication );
+                    }
                 }
             }
         }
@@ -394,32 +417,35 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            if ( CommunicationId.HasValue )
+            if ( Page.IsValid )
             {
-                var service = new CommunicationService();
-                var communication = service.Get( CommunicationId.Value );
-                if ( communication != null )
+                if ( CommunicationId.HasValue )
                 {
-                    var prevStatus = communication.Status;
-
-                    communication.Recipients
-                        .Where( r => r.Status == CommunicationRecipientStatus.Pending )
-                        .ToList()
-                        .ForEach( r => r.Status = CommunicationRecipientStatus.Cancelled );
-
-                    // Save and re-read communication to reload recipient statuses
-                    service.Save( communication, CurrentPersonId );
-                    communication = service.Get( communication.Id );
-
-                    if ( !communication.Recipients
-                        .Where( r => r.Status == CommunicationRecipientStatus.Success )
-                        .Any() )
+                    var service = new CommunicationService();
+                    var communication = service.Get( CommunicationId.Value );
+                    if ( communication != null )
                     {
-                        communication.Status = CommunicationStatus.Draft;
-                    }
+                        var prevStatus = communication.Status;
 
-                    service.Save( communication, CurrentPersonId );
-                    ProcessStatusChange( prevStatus, communication );
+                        communication.Recipients
+                            .Where( r => r.Status == CommunicationRecipientStatus.Pending )
+                            .ToList()
+                            .ForEach( r => r.Status = CommunicationRecipientStatus.Cancelled );
+
+                        // Save and re-read communication to reload recipient statuses
+                        service.Save( communication, CurrentPersonId );
+                        communication = service.Get( communication.Id );
+
+                        if ( !communication.Recipients
+                            .Where( r => r.Status == CommunicationRecipientStatus.Success )
+                            .Any() )
+                        {
+                            communication.Status = CommunicationStatus.Draft;
+                        }
+
+                        service.Save( communication, CurrentPersonId );
+                        ProcessStatusChange( prevStatus, communication );
+                    }
                 }
             }
         }
@@ -433,7 +459,6 @@ namespace RockWeb.Blocks.Core
         {
             using ( new UnitOfWorkScope() )
             {
-
                 var service = new CommunicationService();
                 var communication = UpdateCommunication( service );
                 if ( communication != null )
@@ -518,6 +543,9 @@ namespace RockWeb.Blocks.Core
         {
             CommunicationId = communication.Id;
 
+            pnlStatus.Visible = communication.Status != CommunicationStatus.Transient;
+            lStatus.Text = string.Format("Communication Status: {0}", communication.Status.ConvertToString());
+
             ChannelEntityTypeId = communication.ChannelEntityTypeId;
             BindChannels();
 
@@ -529,7 +557,7 @@ namespace RockWeb.Blocks.Core
             ChannelData.Add( "Subject", communication.Subject );
 
             ChannelControl control = LoadChannelControl( true );
-            if ( communication.Id == 0 && control != null && CurrentPerson != null )
+            if ( control != null && CurrentPerson != null )
             {
                 control.InitializeFromSender( CurrentPerson );
             }
@@ -595,6 +623,14 @@ namespace RockWeb.Blocks.Core
 
             rptRecipients.DataBind();
 
+            StringBuilder rStatus = new StringBuilder();
+
+            lRecipientStatus.Text = "Recipient Status: " + Recipients
+                .GroupBy( r => r.Status )
+                .Where( g => g.Count() > 0 )
+                .Select( g => g.Key.ToString() + " (" + g.Count().ToString( "N0" ) + ")" )
+                .ToList().AsDelimited( ", " );
+                        
             CheckApprovalRequired( Recipients.Count );
         }
 
