@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Web.UI.HtmlControls;
@@ -21,27 +22,33 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Finance
 {
     /// <summary>
-    /// 
+    /// Front end block for giving: gift detail, user detail, and payment detail
     /// </summary>    
+    [Description("Giving profile details UI")]
     [CustomCheckboxListField( "Credit Card Provider", "Which payment processor should be used for credit cards?",
-        "SELECT [Name] AS [Text], [Id] AS [Value] FROM [FinancialGateway]", true, "", "Payments", 1 )]
+        "SELECT [Name] AS [Text], [Id] AS [Value] FROM [FinancialGateway]", true, "", "Payments", 0 )]
     [CustomCheckboxListField( "Checking/ACH Provider", "Which payment processor should be used for checking/ACH?",
-        "SELECT [Name] AS [Text], [Id] AS [Value] FROM [FinancialGateway]", true, "", "Payments", 2 )]
-    [CustomCheckboxListField( "Default Accounts to display", "Which accounts should be displayed by default?",
-        "SELECT [Name] AS [Text], [Id] AS [Value] FROM [FinancialAccount] WHERE [IsActive] = 1 ORDER BY [Order]", true, "", "Payments", 3 )]
-    [BooleanField( "Stack layout vertically", "Should giving UI be stacked vertically or horizontally?", true, "UI Options", 2 )]
-    [BooleanField( "Show Campus selection", "Should giving be associated with a specific campus?", false, "UI Options", 3 )]
-    [BooleanField( "Show Credit Card giving", "Allow users to give using a credit card?", true, "UI Options", 4 )]
-    [BooleanField( "Show Checking/ACH giving", "Allow users to give using a checking account?", true, "UI Options", 5 )]
-    public partial class RecurringGift : RockBlock
+        "SELECT [Name] AS [Text], [Id] AS [Value] FROM [FinancialGateway]", true, "", "Payments", 1 )]
+    //[CustomCheckboxListField( "Default Accounts to display", "Which accounts should be displayed by default?",
+    //    "SELECT [Name] AS [Text], [Id] AS [Value] FROM [FinancialAccount] WHERE [IsActive] = 1 ORDER BY [Order]", true, "", "Payments", 2 )]
+    [AccountsField("Default Accounts", "Which accounts should be displayed by default?", true, "", "Payments", 2)]
+    [BooleanField( "Show Vertical Layout", "Should the giving page display vertically or horizontally?", true, "UI Options", 0 )]
+    [BooleanField( "Show Campuses", "Should giving be associated with a specific campus?", false, "UI Options", 1 )]
+    [BooleanField( "Show Credit Card", "Allow users to give using a credit card?", true, "UI Options", 2 )]
+    [BooleanField( "Show Checking/ACH", "Allow users to give using a checking account?", true, "UI Options", 3 )]
+    [BooleanField( "Show Recurrence", "Allow users to give recurring gifts?", true, "UI Options", 4 )]
+
+    [BooleanField( "Request Phone", "Should financial contributions require a user's phone number?", true, "Data Requirements", 0 )]    
+    public partial class GivingProfileDetail : RockBlock
     {
         #region Fields
 
-        protected bool _UseStackedLayout = false;
-        protected bool _ShowCampusSelect = false;
+        protected bool _VerticalLayout = false;
+        protected bool _ShowCampuses = false;
         protected bool _ShowSaveDetails = false;
         protected bool _ShowCreditCard = false;
         protected bool _ShowChecking = false;
+        protected bool _RequestPhone = false;
         protected string spanClass = "";
 
         protected List<FinancialTransactionDetail> _detailList = new List<FinancialTransactionDetail>();
@@ -60,17 +67,18 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnInit( e );
 
-            _UseStackedLayout = Convert.ToBoolean( GetAttributeValue( "Stacklayoutvertically" ) );
-            _ShowCampusSelect = Convert.ToBoolean( GetAttributeValue( "ShowCampusselection" ) );
-            _ShowCreditCard = Convert.ToBoolean( GetAttributeValue( "ShowCreditCardgiving" ) );
-            _ShowChecking = Convert.ToBoolean( GetAttributeValue( "ShowChecking/ACHgiving" ) );
+            _VerticalLayout = Convert.ToBoolean( GetAttributeValue( "ShowVerticalLayout" ) );
+            _ShowCampuses = Convert.ToBoolean( GetAttributeValue( "ShowCampuses" ) );
+            _ShowCreditCard = Convert.ToBoolean( GetAttributeValue( "ShowCreditCard" ) );
+            _ShowChecking = Convert.ToBoolean( GetAttributeValue( "ShowChecking/ACH" ) );
+            _RequestPhone = Convert.ToBoolean( GetAttributeValue( "RequestPhone" ) );
 
             if ( CurrentPerson != null )
             {
                 _ShowSaveDetails = true;
             }
 
-            if ( _ShowCampusSelect )
+            if ( _ShowCampuses )
             {
                 BindCampuses();
             }
@@ -117,9 +125,9 @@ namespace RockWeb.Blocks.Finance
                 account = new FinancialTransactionDetail();                
                 
                 // TODO rewrite account lookup to use ID instead of name
-                string accountName = ( (HtmlGenericControl)item.FindControl("lblAccountName") ).InnerText;
+                string accountName = ( (LabeledTextBox)item.FindControl("lblAccountName") ).LabelText;
                 account.Account = lookupAccounts.Where(f => f.PublicName == accountName).FirstOrDefault();
-                decimal amount = Decimal.Parse(( (HtmlInputControl)item.FindControl("inputAccountAmount") ).Value);                
+                decimal amount = Decimal.Parse( ( (LabeledTextBox)item.FindControl( "inputAccountAmount" ) ).Text );                
                 account.Amount = amount;                
                 account.TransactionId = _transaction.Id;
                 
@@ -308,7 +316,8 @@ namespace RockWeb.Blocks.Finance
         {
             btnCampusList.Items.Clear();
             CampusService campusService = new CampusService();
-            var items = campusService.Queryable().OrderBy( a => a.Name ).Select( a => a.Name ).Distinct().ToList();
+            var items = campusService.Queryable().OrderBy( a => a.Name )
+                .Select( a => a.Name ).Distinct().ToList();
 
             foreach ( string item in items )
             {
@@ -316,6 +325,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             btnCampusList.Title = "Select Campus";
+            divCampus.Visible = items.Any();
         }
 
         /// <summary>
@@ -330,9 +340,14 @@ namespace RockWeb.Blocks.Finance
             var queryable = accountService.Queryable().Where( f => f.IsActive )
                 .Distinct().OrderBy( f => f.Order );
 
-            List<int> defaultAccounts = GetAttributeValue( "DefaultAccountstodisplay" ).Any()
-                ? GetAttributeValue( "DefaultAccountstodisplay" ).Split( ',' ).ToList().Select( s => int.Parse( s ) ).ToList()
+            var test = GetAttributeValue( "DefaultAccounts" );
+            // returns Guid's for the selected accounts
+
+
+            List<int> defaultAccounts = GetAttributeValue( "DefaultAccounts" ).Any()
+                ? GetAttributeValue( "DefaultAccounts" ).Split( ',' ).ToList().Select( s => int.Parse( s ) ).ToList()
                 : new List<int>( ( queryable.Select( f => f.Id ).ToList().FirstOrDefault() ) );
+
 
             if ( ( queryable.Count() - defaultAccounts.Count ) > 0 )
             {
