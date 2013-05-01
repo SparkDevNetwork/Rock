@@ -146,6 +146,8 @@
     <Compile Include="Migrations\201304230018433_TransactionsPageUpdate.Designer.cs">
       <DependentUpon>201304230018433_TransactionsPageUpdate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Model\CodeGenerated\FinancialScheduledTransactionDetailService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialScheduledTransactionService.cs" />
     <Compile Include="Net\RockRestClient.cs">
       <SubType>Component</SubType>
     </Compile>
