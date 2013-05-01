@@ -74,7 +74,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <value>
         /// The batch item detail page.
         /// </value>
-        public BatchItemDetailPage BatchItemDetailPage {get; set;}
+        public BatchItemDetailPage BatchItemDetailPage { get; set; }
 
         /// <summary>
         /// Gets or sets the scanned check list.
@@ -106,11 +106,11 @@ namespace Rock.Apps.CheckScannerUtility
                     btnScan.Content = "Scan";
                     if ( ScannerFeederType.Equals( FeederType.MultipleItems ) )
                     {
-                        ScanningPage.btnStartStop.Content = "Start";
+                        ScanningPage.btnStartStop.Content = ScanButtonText.Scan;
                     }
                     else
                     {
-                        ScanningPage.btnStartStop.Content = "Scan Check";
+                        ScanningPage.btnStartStop.Content = ScanButtonText.ScanCheck;
                     }
 
                     btnScan.Visibility = Visibility.Visible;
@@ -122,7 +122,7 @@ namespace Rock.Apps.CheckScannerUtility
                 case XportStates.TransportFeeding:
                     shapeStatus.Fill = new SolidColorBrush( Colors.Blue );
                     btnScan.Content = "Stop";
-                    ScanningPage.btnStartStop.Content = "Stop";
+                    ScanningPage.btnStartStop.Content = ScanButtonText.Stop;
                     ScanningPage.btnDone.Visibility = Visibility.Hidden;
                     btnScan.Visibility = Visibility.Visible;
                     break;
@@ -193,9 +193,6 @@ namespace Rock.Apps.CheckScannerUtility
             BitmapImage bitImageFront = GetCheckImage( Sides.TransportFront );
             BitmapImage bitImageBack = GetCheckImage( Sides.TransportRear );
 
-            ScanningPage.imgFront.Source = bitImageFront;
-            ScanningPage.imgBack.Source = bitImageBack;
-
             string checkMicr = rangerScanner.GetMicrText( 1 ).Replace( "-", string.Empty ).Replace( "!", string.Empty ).Trim();
             string fileName = checkMicr.Replace( " ", "_" );
 
@@ -204,10 +201,6 @@ namespace Rock.Apps.CheckScannerUtility
             string accountNumber = micrParts.Length > 1 ? micrParts[1] : "<not found>";
             string checkNumber = micrParts.Length > 2 ? micrParts[2] : "<not found>";
 
-            ScanningPage.lblRoutingNumber.Content = string.Format( "Routing Number: {0}", routingNumber );
-            ScanningPage.lblAccountNumber.Content = string.Format( "Account Number: {0}", accountNumber );
-            ScanningPage.lblCheckNumber.Content = string.Format( "Check Number: {0}", checkNumber );
-
             ScannedCheckInfo scannedCheck = new ScannedCheckInfo();
             scannedCheck.FrontImageData = ( bitImageFront.StreamSource as MemoryStream ).ToArray();
             scannedCheck.BackImageData = ( bitImageBack.StreamSource as MemoryStream ).ToArray();
@@ -215,7 +208,18 @@ namespace Rock.Apps.CheckScannerUtility
             scannedCheck.AccountNumber = accountNumber;
             scannedCheck.CheckNumber = checkNumber;
 
-            ScannedCheckList.Enqueue( scannedCheck );
+            ScanningPage.ShowCheckInformation( scannedCheck );
+
+            if ( ( micrParts.Length < 3 ) || routingNumber.Length != 9 )
+            {
+                ScanningPage.lblScanWarning.Visibility = Visibility.Visible;
+                rangerScanner.StopFeeding();
+            }
+            else
+            {
+                ScanningPage.lblScanWarning.Visibility = Visibility.Collapsed;
+                ScannedCheckList.Enqueue( scannedCheck );
+            }
         }
 
         #endregion
@@ -310,8 +314,7 @@ namespace Rock.Apps.CheckScannerUtility
         {
             if ( ScannedCheckList.Where( a => !a.Uploaded ).Count() > 0 )
             {
-                pbUploadProgress.Visibility = Visibility.Visible;
-                pbUploadProgress.Maximum = 100;
+                lblUploadProgress.Visibility = Visibility.Visible;
 
                 // use a backgroundworker to do the work so that we can have an updatable progressbar in the UI
                 BackgroundWorker bwUploadScannedChecks = new BackgroundWorker();
@@ -330,10 +333,13 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RunWorkerCompletedEventArgs"/> instance containing the event data.</param>
         private void bwUploadScannedChecks_RunWorkerCompleted( object sender, RunWorkerCompletedEventArgs e )
         {
-            pbUploadProgress.Visibility = Visibility.Hidden;
+            lblUploadProgress.Visibility = Visibility.Hidden;
             if ( e.Error == null )
             {
                 MessageBox.Show( "Upload Complete" );
+
+                UpdateBatchUI( grdBatches.SelectedValue as FinancialBatch );
+                
             }
             else
             {
@@ -348,7 +354,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="ProgressChangedEventArgs"/> instance containing the event data.</param>
         private void bwUploadScannedChecks_ProgressChanged( object sender, ProgressChangedEventArgs e )
         {
-            pbUploadProgress.Value = e.ProgressPercentage;
+            lblUploadProgress.Content = string.Format( "Uploading Scanned Checks {0}%", e.ProgressPercentage );
         }
 
         /// <summary>
@@ -468,7 +474,7 @@ namespace Rock.Apps.CheckScannerUtility
         {
             bdrBatchDetailReadOnly.Visibility = Visibility.Visible;
             bdrBatchDetailEdit.Visibility = Visibility.Collapsed;
-            pbUploadProgress.Visibility = Visibility.Hidden;
+            lblUploadProgress.Visibility = Visibility.Hidden;
             ConnectToScanner();
             LoadComboBoxes();
             LoadFinancialBatchesGrid();
@@ -647,6 +653,7 @@ namespace Rock.Apps.CheckScannerUtility
         private void btnOptions_Click( object sender, RoutedEventArgs e )
         {
             var optionsPage = new OptionsPage();
+            optionsPage.BatchPage = this;
             this.NavigationService.Navigate( optionsPage );
         }
 
@@ -877,7 +884,6 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 MessageBox.Show( ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
             }
-
         }
     }
 }

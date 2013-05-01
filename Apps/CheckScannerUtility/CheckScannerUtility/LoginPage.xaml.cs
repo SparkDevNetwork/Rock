@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System;
 using System.Net;
 using System.Windows;
 using System.Windows.Controls;
@@ -35,25 +36,31 @@ namespace Rock.Apps.CheckScannerUtility
             BatchPage batchPage = new BatchPage();
             try
             {
-                RockRestClient rockRestClient = new RockRestClient(txtRockUrl.Text);
-                rockRestClient.Login( txtUsername.Text, txtPassword.Password);
+                RockRestClient rockRestClient = new RockRestClient( txtRockUrl.Text );
+                rockRestClient.Login( txtUsername.Text, txtPassword.Password );
                 Person person = rockRestClient.GetData<Person>( string.Format( "api/People/GetByUserName/{0}", txtUsername.Text ) );
                 batchPage.LoggedInPerson = person;
             }
-            catch ( WebException wex )
+            catch ( Exception ex )
             {
-                HttpWebResponse response = wex.Response as HttpWebResponse;
-                if ( response != null )
+                if ( ex is WebException )
                 {
-                    if ( response.StatusCode.Equals( HttpStatusCode.Unauthorized ) )
+                    WebException wex = ex as WebException;
+                    HttpWebResponse response = wex.Response as HttpWebResponse;
+                    if ( response != null )
                     {
-                        lblLoginWarning.Content = "Invalid Login";
-                        lblLoginWarning.Visibility = Visibility.Visible;
-                        return;
+                        if ( response.StatusCode.Equals( HttpStatusCode.Unauthorized ) )
+                        {
+                            lblLoginWarning.Content = "Invalid Login";
+                            lblLoginWarning.Visibility = Visibility.Visible;
+                            return;
+                        }
                     }
                 }
 
-                lblLoginWarning.Content = wex.Message;
+                lblRockUrl.Visibility = Visibility.Visible;
+                txtRockUrl.Visibility = Visibility.Visible;
+                lblLoginWarning.Content = ex.Message;
                 lblLoginWarning.Visibility = Visibility.Visible;
                 return;
             }
@@ -76,6 +83,12 @@ namespace Rock.Apps.CheckScannerUtility
         {
             HideLoginWarning( null, null );
             RockConfig rockConfig = RockConfig.Load();
+
+            bool promptForUrl = ( string.IsNullOrWhiteSpace( rockConfig.RockBaseUrl ) );
+
+            lblRockUrl.Visibility = promptForUrl ? Visibility.Visible : Visibility.Collapsed;
+            txtRockUrl.Visibility = promptForUrl ? Visibility.Visible : Visibility.Collapsed;
+            
             txtRockUrl.Text = rockConfig.RockBaseUrl;
             txtUsername.Text = rockConfig.Username;
             txtPassword.Password = rockConfig.Password;
