@@ -308,8 +308,13 @@ namespace Rock.Web.UI
         protected override void OnInit( EventArgs e )
         {
             // Add the ScriptManager to each page
-            _scriptManager = ScriptManager.GetCurrent( this.Page ) ?? new ScriptManager { ID = "sManager" };
-            Page.Form.Controls.AddAt( 0, _scriptManager );
+            _scriptManager = ScriptManager.GetCurrent( this.Page );
+            
+            if ( _scriptManager == null )
+            {
+                _scriptManager = new ScriptManager { ID = "sManager" };
+                Page.Form.Controls.AddAt( 0, _scriptManager );
+            }
 
             // Recurse the page controls to find the rock page title and zone controls
             Zones = new Dictionary<string, KeyValuePair<string, Zone>>();
@@ -1271,7 +1276,7 @@ namespace Rock.Web.UI
         /// <param name="path">Path to script file.  Should be relative to layout template.  Will be resolved at runtime</param>
         public static void AddScriptLink( Page page, string path )
         {
-            var scriptManager = page.Form.Controls.OfType<Control>().FirstOrDefault( c => c.ID == "sManager" ) as ScriptManager;
+            var scriptManager = ScriptManager.GetCurrent( page );
 
             if ( scriptManager != null )
             {

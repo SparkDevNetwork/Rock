@@ -2,78 +2,19 @@
 <%@ Register TagPrefix="asp" Namespace="AjaxControlToolkit" Assembly="AjaxControlToolkit"%>
 
 <script type="text/javascript">
-
     Sys.Application.add_load(function () {
-        var modalPopup = $find('<%=mpeContent.BehaviorID%>');
-        //modalPopup.add_hidden(modalHidden_<%=CurrentBlock.Id %>);
-    
-        $('#<%=tbStartDate.ClientID %>').kendoDatePicker({ open:function(e){
-            window.setTimeout(function(){ $('.k-calendar-container').parent('.k-animation-container').css('zIndex', '200000'); }, 1);
-        } });
-
-        $('#<%=tbExpireDate.ClientID %>').kendoDatePicker({ open:function(e){
-            window.setTimeout(function(){ $('.k-calendar-container').parent('.k-animation-container').css('zIndex', '200000'); }, 1);
-        } });
-
-        $('#html-content-version-<%=CurrentBlock.Id %>').click(function () {
-            $('#html-content-versions-<%=CurrentBlock.Id %>').show();
-            $(this).hide();
-            $('#html-content-edit-<%=CurrentBlock.Id %>').hide();
-            $find('<%=mpeContent.BehaviorID%>')._layout(); 
-            return false;
+        Rock.controls.htmlEditor.initialize({
+            blockId: <%= CurrentBlock.Id %>,
+            behaviorId: '<%= mpeContent.BehaviorID %>',
+            hasBeenModified: <%= HtmlContentModified.ToString().ToLower() %>,
+            versionId: '<%= hfVersion.ClientID %>',
+            startDateId: '<%= tbStartDate.ClientID %>',
+            expireDateId: '<%= tbExpireDate.ClientID %>',
+            ckEditorId: '<%= edtHtmlContent.ClientID %>',
+            approvalId: '<%= cbApprove.ClientID %>'
         });
-
-        $('#html-content-versions-cancel-<%=CurrentBlock.Id %>').click(function () {
-            $('#html-content-edit-<%=CurrentBlock.Id %>').show();
-            $('#html-content-version-<%=CurrentBlock.Id %>').show();
-            $('#html-content-versions-<%=CurrentBlock.Id %>').hide();
-            $find('<%=mpeContent.BehaviorID%>')._layout(); 
-            return false;
-        });
-
-        $('a.html-content-show-version-<%=CurrentBlock.Id %>').click(function () {
-            if ( ('<%=HtmlContentModified%>' == 'True')  ||
-                confirm('Loading a previous version will cause any changes you\'ve made to the existing text to be lost.  Are you sure you want to continue?'))
-            {
-                $.ajax({
-                    type: 'GET',
-                    contentType: 'application/json',
-                    dataType: 'json',
-                    url: rock.baseUrl + 'REST/Cms/HtmlContent/' + $(this).attr('html-id'),
-                    success: function (getData, status, xhr) {
-
-                        htmlContent = getData;
-                        
-                        $('#html-content-version-<%=CurrentBlock.Id %>').text('Version ' + htmlContent.Version);
-                        $('#<%=hfVersion.ClientID %>').val(htmlContent.Version);
-                        $('#<%=tbStartDate.ClientID %>').val(htmlContent.StartDateTime);
-                        $('#<%=tbExpireDate.ClientID %>').val(htmlContent.ExpireDateTime);
-                        $('#<%=cbApprove.ClientID %>').attr('checked', htmlContent.Approved);
-
-                        CKEDITOR.instances['<%=edtHtmlContent.ClientID %>'].setData(htmlContent.Content, function() {
-                            CKEDITOR.instances['<%=edtHtmlContent.ClientID %>'].resetDirty();
-                            $('#html-content-edit-<%=CurrentBlock.Id %>').show();
-                            $('#html-content-version-<%=CurrentBlock.Id %>').show();
-                            $('#html-content-versions-<%=CurrentBlock.Id %>').hide();
-                            $find('<%=mpeContent.BehaviorID%>')._layout(); 
-                        });
-
-                    },
-                    error: function (xhr, status, error) {
-                        alert(status + ' [' + error + ']: ' + xhr.responseText);
-                    }
-                });
-            }
-        });
-
     });
-
-    function saveHtmlContent_<%=CurrentBlock.Id %>(){
-        $('#<%=btnSave.ClientID %>').click();
-    }
-
 </script>
-
 <asp:UpdatePanel runat="server" class="html-content-block">
 <ContentTemplate>
 
@@ -96,7 +37,7 @@
                     <Columns>
                         <asp:TemplateField SortExpression="Version" HeaderText="Version">
                             <ItemTemplate>
-                                <a html-id='<%# Eval("Id") %>' class="html-content-show-version-<%=CurrentBlock.Id %>" href="#">Version <%# Eval("Version") %></a>
+                                <a data-html-id='<%# Eval("Id") %>' class="html-content-show-version-<%=CurrentBlock.Id %>" href="#">Version <%# Eval("Version") %></a>
                             </ItemTemplate>
                         </asp:TemplateField>
                         <asp:BoundField DataField="ModifiedDateTime" HeaderText="Modified" SortExpression="ModifiedDateTime" />
@@ -116,8 +57,8 @@
         <div id="html-content-edit-<%=CurrentBlock.Id %>">
             <asp:panel ID="pnlVersioningHeader" runat="server" class="html-content-edit-header">
                 <asp:HiddenField ID="hfVersion" runat="server" />
-                Start: <asp:TextBox ID="tbStartDate" runat="server"></asp:TextBox>
-                Expire: <asp:TextBox ID="tbExpireDate" runat="server"></asp:TextBox>
+                Start: <asp:TextBox ID="tbStartDate" runat="server" CssClass="date-picker"></asp:TextBox>
+                Expire: <asp:TextBox ID="tbExpireDate" runat="server" CssClass="date-picker"></asp:TextBox>
                 <div class="html-content-approve inline-form"><asp:CheckBox ID="cbApprove" runat="server" TextAlign="Right" Text="Approve" /></div>
             </asp:panel>
             <div class="modal-body">
@@ -132,7 +73,7 @@
             </div>
         </div>
 
-        <asp:Button ID="btnSave" runat="server" OnClick="btnSave_Click" Text="Save" style="display:none" />
+        <asp:Button ID="btnSave" runat="server" OnClick="btnSave_Click" Text="Save" style="display: none;" CssClass="save-button" />
 
     </asp:Panel>
     
