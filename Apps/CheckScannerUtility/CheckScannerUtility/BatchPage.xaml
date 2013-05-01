@@ -8,8 +8,8 @@
       x:Class="Rock.Apps.CheckScannerUtility.BatchPage"
       Name="batchPage"
       mc:Ignorable="d"
-      d:DesignHeight="700"
-      d:DesignWidth="1100"
+      d:DesignHeight="500"
+      d:DesignWidth="800"
       Title="Check Scanner - Edit Batch"
       Loaded="Page_Loaded">
     <Grid>
@@ -108,7 +108,7 @@
                         <TextBlock Grid.Row="0"
                                    Grid.Column="0"
                                    Style="{StaticResource textblockStyle}"
-                                   Text="{Binding BatchDate}" />
+                                   Text="{Binding BatchDate, StringFormat=d}" />
                         <TextBlock Grid.Row="0"
                                    Grid.Column="1"
                                    Style="{StaticResource textblockStyle}"
@@ -238,6 +238,11 @@
                                Grid.Column="0"
                                Name="lblBatchControlAmountReadOnly"
                                Style="{StaticResource labelStyleDd}">$123.45</Label>
+                        <Label Name="lblUploadProgress"
+                               Grid.Row="6"
+                               Style="{StaticResource labelStyleAlert}"
+                               Content="Uploading Check Images">
+                        </Label>
                         <StackPanel Grid.Row="6"
                                     Grid.Column="1"
                                     Orientation="Horizontal"
@@ -254,11 +259,10 @@
                                     Click="btnEdit_Click" />
                         </StackPanel>
                     </Grid>
-
                 </Border>
                 <Border Name="bdrBatchDetailEdit"
                         Style="{StaticResource borderStyleWell}"
-                        Visibility="Visible"
+                        Visibility="Collapsed"
                         Grid.Row="0"
                         Grid.Column="0">
                     <Grid>
@@ -331,7 +335,6 @@
                                     Content="Cancel"
                                     HorizontalAlignment="Left"
                                     Click="btnCancel_Click" />
-
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -381,16 +384,6 @@
                     </DataGrid.Columns>
                 </DataGrid>
             </Grid>
-            <ProgressBar Name="pbUploadProgress"
-                         Height="4"
-                         VerticalAlignment="Top"
-                         HorizontalAlignment="Stretch"
-                         Foreground="Blue"
-                         Value="75"
-                         Maximum="100"
-                         Grid.Column="1"
-                         Grid.Row="1" />
         </Grid>
-
     </Grid>
 </Page>

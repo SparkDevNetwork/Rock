@@ -87,6 +87,10 @@ namespace Rock.Apps.CheckScannerUtility
                 bitmapImage.EndInit();
                 imgFront.Source = bitmapImage;
             }
+            else
+            {
+                imgFront.Source = null;
+            }
 
             if ( backTranImage != null )
             {
@@ -95,6 +99,10 @@ namespace Rock.Apps.CheckScannerUtility
                 bitmapImage.StreamSource = new MemoryStream( backTranImage.BinaryFile.Data );
                 bitmapImage.EndInit();
                 imgBack.Source = bitmapImage;
+            }
+            else
+            {
+                imgBack.Source = null;
             }
         }
     }
