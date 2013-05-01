@@ -4,10 +4,10 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using System.Data.Spatial;
+using System.Data.Entity.Spatial;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using NUnit.Framework;
 using Newtonsoft.Json;
+using NUnit.Framework;
 using Rock.Model;
 using Assert = NUnit.Framework.Assert;
 
