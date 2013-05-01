@@ -53,13 +53,13 @@ namespace RockWeb.Blocks.Finance.Administration
         /// <exception cref="System.NotImplementedException"></exception>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            Pledge pledge;
-            var pledgeService = new PledgeService();
+            FinancialPledge pledge;
+            var pledgeService = new FinancialPledgeService();
             var pledgeId = int.Parse( hfPledgeId.Value );
 
             if ( pledgeId == 0 )
             {
-                pledge = new Pledge();
+                pledge = new FinancialPledge();
                 pledgeService.Add( pledge, CurrentPersonId );
             }
             else
@@ -68,12 +68,11 @@ namespace RockWeb.Blocks.Finance.Administration
             }
 
             pledge.PersonId = int.Parse( ppPerson.SelectedValue );
-            pledge.FundId = int.Parse( fpFund.SelectedValue );
-            pledge.Amount = decimal.Parse( tbAmount.Text );
+            pledge.AccountId = int.Parse( fpFund.SelectedValue );
+            pledge.TotalAmount = decimal.Parse( tbAmount.Text );
             pledge.StartDate = DateTime.Parse( dtpStartDate.Text );
             pledge.EndDate = DateTime.Parse( dtpEndDate.Text );
-            pledge.FrequencyAmount = decimal.Parse( tbFrequencyAmount.Text );
-            pledge.FrequencyTypeValueId = int.Parse( ddlFrequencyType.SelectedValue );
+            pledge.PledgeFrequencyValueId = int.Parse( ddlFrequencyType.SelectedValue );
 
             if ( !pledge.IsValid )
             {
@@ -103,19 +102,19 @@ namespace RockWeb.Blocks.Finance.Administration
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
             pnlDetails.Visible = true;
-            var frequencyTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_PLEDGE_FREQUENCY_TYPE );
+            var frequencyTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_PLEDGE_FREQUENCY );
             ddlFrequencyType.BindToDefinedType( DefinedTypeCache.Read( frequencyTypeGuid ) );
-            Pledge pledge;
+            FinancialPledge pledge;
 
             if ( itemKeyValue > 0 )
             {
-                pledge = new PledgeService().Get( itemKeyValue );
-                lActionTitle.Text = ActionTitle.Edit( Pledge.FriendlyTypeName );
+                pledge = new FinancialPledgeService().Get( itemKeyValue );
+                lActionTitle.Text = ActionTitle.Edit( FinancialPledge.FriendlyTypeName );
             }
             else
             {
-                pledge = new Pledge();
-                lActionTitle.Text = ActionTitle.Add( Pledge.FriendlyTypeName );
+                pledge = new FinancialPledge();
+                lActionTitle.Text = ActionTitle.Add( FinancialPledge.FriendlyTypeName );
             }
 
             var isReadOnly = !IsUserAuthorized( "Edit" );
@@ -124,22 +123,20 @@ namespace RockWeb.Blocks.Finance.Administration
             hfPledgeId.Value = pledge.Id.ToString();
             ppPerson.SetValue( pledge.Person );
             ppPerson.Enabled = !isReadOnly;
-            fpFund.SetValue( pledge.Fund );
+            fpFund.SetValue( pledge.Account );
             fpFund.Enabled = !isReadOnly;
-            tbAmount.Text = !isNewPledge ? pledge.Amount.ToString() : string.Empty;
+            tbAmount.Text = !isNewPledge ? pledge.TotalAmount.ToString() : string.Empty;
             tbAmount.ReadOnly = isReadOnly;
             dtpStartDate.Text = !isNewPledge ? pledge.StartDate.ToShortDateString() : string.Empty;
             dtpStartDate.ReadOnly = isReadOnly;
             dtpEndDate.Text = !isNewPledge ? pledge.EndDate.ToShortDateString() : string.Empty;
             dtpEndDate.ReadOnly = isReadOnly;
-            tbFrequencyAmount.Text = !isNewPledge ? pledge.FrequencyAmount.ToString() : string.Empty;
-            tbFrequencyAmount.ReadOnly = isReadOnly;
-            ddlFrequencyType.SelectedValue = !isNewPledge ? pledge.FrequencyTypeValueId.ToString() : string.Empty;
+            ddlFrequencyType.SelectedValue = !isNewPledge ? pledge.PledgeFrequencyValueId.ToString() : string.Empty;
             ddlFrequencyType.Enabled = !isReadOnly;
 
             if ( isReadOnly )
             {
-                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Pledge.FriendlyTypeName );
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( FinancialPledge.FriendlyTypeName );
                 lActionTitle.Text = ActionTitle.View( BlockType.FriendlyTypeName );
                 btnCancel.Text = "Close";
             }

@@ -371,6 +371,8 @@ namespace Rock.Web.Cache
         }
         private Dictionary<string, Data.KeyEntity> _context;
 
+        public Dictionary<int, string> PageRoutes { get; set; }
+
         /// <summary>
         /// Gets the parent authority.
         /// </summary>
@@ -460,11 +462,15 @@ namespace Rock.Web.Cache
                 this.PageContexts = new Dictionary<string, string>();
                 if ( page.PageContexts != null )
                 {
-                    foreach ( var pageContext in page.PageContexts )
-                    {
-                        this.PageContexts.Add( pageContext.Entity, pageContext.IdParameter );
-                    }
+                    page.PageContexts.ToList().ForEach( c => this.PageContexts.Add( c.Entity, c.IdParameter));
                 }
+
+                this.PageRoutes = new Dictionary<int, string>();
+                if ( page.PageRoutes != null )
+                {
+                    page.PageRoutes.ToList().ForEach( r => this.PageRoutes.Add( r.Id, r.Route ) );
+                }
+
             }
         }
 

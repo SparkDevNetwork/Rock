@@ -413,7 +413,7 @@ namespace RockWeb
                 ExceptionLog exceptionLog = new ExceptionLog(); ;
 
                 exceptionLog.ParentId = parentException;
-                exceptionLog.ExceptionDate = DateTime.Now;
+                exceptionLog.ExceptionDateTime = DateTime.Now;
 
                 if ( ex.InnerException != null )
                     exceptionLog.HasInnerException = true;
@@ -456,7 +456,7 @@ namespace RockWeb
 
                 // write server vars
                 StringBuilder serverVars = new StringBuilder();
-                cookies.Append( "<table class=\"server-variables\">" );
+                serverVars.Append("<table class=\"server-variables\">");
 
                 foreach ( string serverVar in context.Request.ServerVariables )
                     serverVars.Append( "<tr><td><b>" + serverVar + "</b></td><td>" + context.Request.ServerVariables[serverVar].ToString() + "</td></tr>" );
@@ -551,8 +551,7 @@ namespace RockWeb
         /// <param name="filters">The filters.</param>
         private void RegisterFilters( System.Web.Http.Filters.HttpFilterCollection filters )
         {
-            //filters.Add( new System.Web.Http.AuthorizeAttribute() );
-            //filters.Add( new Rock.Rest.Filters.AuthenticateAttribute() );
+            // does validation on IEntity's coming in thru REST
             filters.Add( new Rock.Rest.Filters.ValidateAttribute() );
         }
 

@@ -75,7 +75,7 @@ namespace Rock.Model
                 target.ParentId = source.ParentId;
                 target.SiteId = source.SiteId;
                 target.PageId = source.PageId;
-                target.ExceptionDate = source.ExceptionDate;
+                target.ExceptionDateTime = source.ExceptionDateTime;
                 target.CreatedByPersonId = source.CreatedByPersonId;
                 target.HasInnerException = source.HasInnerException;
                 target.StatusCode = source.StatusCode;

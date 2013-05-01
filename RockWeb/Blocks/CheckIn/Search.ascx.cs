@@ -8,12 +8,15 @@ using System.Collections.Generic;
 using System.ComponentModel;
 
 using Rock;
+using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.CheckIn
 {
     [Description( "Check-In Family Search block" )]
+    [IntegerField( "Minimum Phone Number Length", "Minimum length for phone number searches (defaults to 4).", false, 4 )]
+    [IntegerField( "Maximum Phone Number Length", "Maximum length for phone number searches (defaults to 10).", false, 10 )]
     public partial class Search : CheckInBlock
     {
         protected override void OnInit( EventArgs e )
@@ -22,7 +25,7 @@ namespace RockWeb.Blocks.CheckIn
 
             if (!KioskCurrentlyActive)
             {
-                GoToWelcomePage();
+                NavigateToHomePage();
             }
         }
 
@@ -31,21 +34,33 @@ namespace RockWeb.Blocks.CheckIn
             if ( KioskCurrentlyActive )
             {
                 // TODO: Validate text entered
-
-                CurrentCheckInState.CheckIn.UserEnteredSearch = true;
-                CurrentCheckInState.CheckIn.ConfirmSingleFamily = true;
-                CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER );
-                CurrentCheckInState.CheckIn.SearchValue = tbPhone.Text;
-
-                var errors = new List<string>();
-                if (ProcessActivity("Family Search", out errors))
+                int minLength = int.Parse( GetAttributeValue( "MinimumPhoneNumberLength" ) );
+                int maxLength = int.Parse( GetAttributeValue( "MaximumPhoneNumberLength" ) );
+                if ( tbPhone.Text.Length >= minLength && tbPhone.Text.Length <= maxLength )
                 {
-                    SaveState();
-                    GoToFamilySelectPage();
+                    CurrentCheckInState.CheckIn.UserEnteredSearch = true;
+                    CurrentCheckInState.CheckIn.ConfirmSingleFamily = true;
+                    CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER );
+                    CurrentCheckInState.CheckIn.SearchValue = tbPhone.Text;
+
+                    var errors = new List<string>();
+                    if ( ProcessActivity( "Family Search", out errors ) )
+                    {
+                        SaveState();
+                        NavigateToNextPage();
+                    }
+                    else
+                    {
+                        string errorMsg = "<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
+                        maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
+                    }
                 }
                 else
                 {
-                    string errorMsg = "<ul><li>" + errors.AsDelimited("</li><li>") + "</li></ul>";
+                    string errorMsg = ( tbPhone.Text.Length > maxLength )
+                        ? string.Format( "<ul><li>Please enter no more than {0} numbers</li></ul>", maxLength )
+                        : string.Format( "<ul><li>Please enter at least {0} numbers</li></ul>", minLength );
+
                     maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
                 }
             }
@@ -60,6 +75,5 @@ namespace RockWeb.Blocks.CheckIn
         {
             CancelCheckin();
         }
-
     }
 }

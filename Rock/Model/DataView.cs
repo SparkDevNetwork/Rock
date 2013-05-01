@@ -224,15 +224,26 @@ namespace Rock.Model
         {
             errorMessages = new List<string>();
 
-            Expression filterExpression = DataViewFilter != null ? DataViewFilter.GetExpression( serviceInstance, paramExpression, errorMessages ) : null;
-
-            Expression transformedExpression = GetTransformExpression( serviceInstance, paramExpression, filterExpression, errorMessages );
-            if ( transformedExpression != null )
+            var cachedEntityType = EntityTypeCache.Read( EntityTypeId.Value );
+            if ( cachedEntityType != null && cachedEntityType.AssemblyName != null )
             {
-                return transformedExpression;
+                Type filteredEntityType = cachedEntityType.GetEntityType();
+
+                if ( filteredEntityType != null )
+                {
+                    Expression filterExpression = DataViewFilter != null ? DataViewFilter.GetExpression( filteredEntityType, serviceInstance, paramExpression, errorMessages ) : null;
+
+                    Expression transformedExpression = GetTransformExpression( serviceInstance, paramExpression, filterExpression, errorMessages );
+                    if ( transformedExpression != null )
+                    {
+                        return transformedExpression;
+                    }
+
+                    return filterExpression;
+                }
             }
 
-            return filterExpression;
+            return null;
         }
 
         /// <summary>
@@ -249,7 +260,7 @@ namespace Rock.Model
                 var entityType = Rock.Web.Cache.EntityTypeCache.Read( this.TransformEntityTypeId.Value );
                 if ( entityType != null )
                 {
-                    var component = Rock.DataFilters.DataTransformContainer.GetComponent( entityType.Name );
+                    var component = Rock.Reporting.DataTransformContainer.GetComponent( entityType.Name );
                     if ( component != null )
                     {
                         try

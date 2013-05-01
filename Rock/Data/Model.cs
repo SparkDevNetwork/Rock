@@ -18,6 +18,7 @@ namespace Rock.Data
     /// Represents an entity that can be secured and have attributes. 
     /// </summary>
     [IgnoreProperties( new[] { "ParentAuthority", "SupportedActions", "AuthEntity", "AttributeValues" } )]
+    [IgnoreModelErrors( new[] { "ParentAuthority" } )]
     [DataContract]
     public abstract class Model<T> : Entity<T>, ISecured, IHasAttributes
         where T : Model<T>, ISecured, new()
@@ -31,8 +32,8 @@ namespace Rock.Data
         /// </summary>
         [NotMapped]
         public virtual Security.ISecured ParentAuthority
-        { 
-            get 
+        {
+            get
             {
                 if ( this.Id == 0 )
                 {
@@ -40,7 +41,7 @@ namespace Rock.Data
                 }
                 else
                 {
-                    return new T() ;
+                    return new T();
                 }
             }
         }
@@ -179,12 +180,12 @@ namespace Rock.Data
             {
                 if ( this.AttributeValues[key].Count == 0 )
                 {
-                    this.AttributeValues[key].Add(new AttributeValue());
+                    this.AttributeValues[key].Add( new AttributeValue() );
                 }
                 this.AttributeValues[key][0].Value = value;
             }
         }
-        
+
         #endregion
-   }
+    }
 }

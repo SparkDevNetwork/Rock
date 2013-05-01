@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web.UI.HtmlControls;
 using Rock.Model;
 using Rock.Web;
 using Rock.Web.UI;
@@ -57,7 +58,8 @@ public partial class SiteMap : RockBlock
                     var lastBlock = childPage.Blocks.OrderBy( b => b.Order ).Last();
                     foreach ( var block in childPage.Blocks.OrderBy( b => b.Order ) )
                     {
-                        childNodeHtml += string.Format( "<i class=\"icon-th-large\"></i>{1}:{0}", block.Name, block.BlockType.Name );
+                        childNodeHtml += CreateConfigIcon( block );
+                        childNodeHtml += string.Format( "{1}:{0}", block.Name, block.BlockType.Name );
                         if ( !block.Equals( lastBlock ) )
                         {
                             childNodeHtml += "</li>" + Environment.NewLine + "<li data-expanded='true'>";
@@ -77,5 +79,13 @@ public partial class SiteMap : RockBlock
 
             nodeHtml += "</ul>" + Environment.NewLine;
         }
+    }
+
+    protected string CreateConfigIcon( Block block )
+    {
+        var blockPropertyUrl = ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", block.Id ) );
+
+        return string.Format( "<i class=\"icon-th-large\"></i> <a href=\"javascript: showModalPopup($(this), '{0}')\" title=\"Block Properties\"><i class=\"icon-cog\"></i></a>",
+            blockPropertyUrl );
     }
 }

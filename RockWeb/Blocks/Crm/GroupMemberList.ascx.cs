@@ -161,7 +161,7 @@ namespace RockWeb.Blocks.Crm
             }
             else
             {
-                gGroupMembers.DataSource = qry.OrderBy( a => a.Person.LastName ).ThenBy( a => a.Person.NickName ).ThenBy( a => a.Person.GivenName ).ToList();
+                gGroupMembers.DataSource = qry.OrderBy( a => a.Person.LastName ).ThenBy( a => a.Person.FirstName ).ToList();
             }
 
             gGroupMembers.DataBind();

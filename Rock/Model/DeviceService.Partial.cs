@@ -5,8 +5,8 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Spatial;
 using System.Linq;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -16,7 +16,6 @@ namespace Rock.Model
     /// </summary>
     public partial class DeviceService 
     {
-
         /// <summary>
         /// Gets the by device type GUID.
         /// </summary>
@@ -26,6 +25,26 @@ namespace Rock.Model
         {
             return Repository.AsQueryable().Where( d => d.DeviceType.Guid == guid );
         }
-        
+
+        /// <summary>
+        /// Finds the matching device for the given lat/long coordinates. The given coordinates
+        /// must intersect one of the stored GeoFence values to be a match.  Use the deviceTypeValueId
+        /// to constrain matching to only certain device types.
+        /// </summary>
+        /// <param name="latitude">Latitude of the mobile phone/kiosk.</param>
+        /// <param name="longitude">Longitude of the mobile phone/kiosk.</param>
+        /// <param name="deviceTypeValueId">Longitude of the mobile phone/kiosk.</param>
+        /// <returns>a single matching Device kiosk or null if nothing was matched</returns>
+        public Device GetByGeocode( double latitude, double longitude, int deviceTypeValueId )
+        {
+            Device kiosk = null;
+            DbGeography aLocation = DbGeography.FromText( string.Format("POINT({0} {1})", longitude, latitude) );
+
+            kiosk = Repository.AsQueryable()
+                .Where( d => d.DeviceTypeValueId == deviceTypeValueId &&
+                    aLocation.Intersects( d.GeoFence ) ).FirstOrDefault();
+
+            return kiosk;
+        }
     }
 }

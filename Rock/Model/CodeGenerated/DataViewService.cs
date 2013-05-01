@@ -82,6 +82,7 @@ namespace Rock.Model
                 target.Description = source.Description;
                 target.EntityTypeId = source.EntityTypeId;
                 target.DataViewFilterId = source.DataViewFilterId;
+                target.TransformEntityTypeId = source.TransformEntityTypeId;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

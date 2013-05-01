@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.Windows;
+using System.Linq;
 using System.Windows.Navigation;
 
 namespace Rock.Apps.CheckScannerUtility
@@ -40,7 +41,13 @@ namespace Rock.Apps.CheckScannerUtility
 
             if ( batchPage != null )
             {
-                batchPage.RangerScanner.ShutDown();
+                if ( batchPage.ScannedCheckList.Where( a => !a.Uploaded ).Count() > 0 )
+                {
+                    e.Cancel = true;
+                    return;
+                }
+                
+                batchPage.rangerScanner.ShutDown();
             }
 
             Application.Current.Shutdown();

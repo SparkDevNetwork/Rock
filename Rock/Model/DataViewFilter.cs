@@ -14,7 +14,7 @@ using System.Runtime.Serialization;
 using System.Text;
 
 using Rock.Data;
-using Rock.DataFilters;
+using Rock.Reporting;
 
 namespace Rock.Model
 {
@@ -131,7 +131,7 @@ namespace Rock.Model
             {
                 if ( EntityType != null )
                 {
-                    var filterComponent = Rock.DataFilters.DataFilterContainer.GetComponent( EntityType.Name );
+                    var filterComponent = Rock.Reporting.DataFilterContainer.GetComponent( EntityType.Name );
                     if ( filterComponent != null )
                     {
                         authorized = filterComponent.IsAuthorized( action, person );
@@ -162,7 +162,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="parameter">The parameter.</param>
         /// <returns></returns>
-        public virtual Expression GetExpression( object serviceInstance, ParameterExpression parameter, List<string> errorMessages )
+        public virtual Expression GetExpression( Type filteredEntityType, object serviceInstance, ParameterExpression parameter, List<string> errorMessages )
         {
             switch ( ExpressionType )
             {
@@ -173,16 +173,16 @@ namespace Rock.Model
                         var entityType = Rock.Web.Cache.EntityTypeCache.Read( this.EntityTypeId.Value );
                         if ( entityType != null )
                         {
-                            var component = Rock.DataFilters.DataFilterContainer.GetComponent( entityType.Name );
+                            var component = Rock.Reporting.DataFilterContainer.GetComponent( entityType.Name );
                             if ( component != null )
                             {
                                 try
                                 {
-                                    return component.GetExpression( serviceInstance, parameter, this.Selection );
+                                    return component.GetExpression( filteredEntityType, serviceInstance, parameter, this.Selection );
                                 }
                                 catch (SystemException ex)
                                 {
-                                    errorMessages.Add( string.Format( "{0}: {1}", component.FormatSelection( this.Selection ), ex.Message ) );
+                                    errorMessages.Add( string.Format( "{0}: {1}", component.FormatSelection( filteredEntityType, this.Selection ), ex.Message ) );
                                 }
                             }
                         }
@@ -194,7 +194,7 @@ namespace Rock.Model
                     Expression andExp = null;
                     foreach ( var filter in this.ChildFilters )
                     {
-                        Expression exp = filter.GetExpression( serviceInstance, parameter, errorMessages );
+                        Expression exp = filter.GetExpression( filteredEntityType, serviceInstance, parameter, errorMessages );
                         if ( exp != null )
                         {
                             if ( andExp == null )
@@ -216,7 +216,7 @@ namespace Rock.Model
                     Expression orExp = null;
                     foreach ( var filter in this.ChildFilters )
                     {
-                        Expression exp = filter.GetExpression( serviceInstance, parameter, errorMessages );
+                        Expression exp = filter.GetExpression( filteredEntityType, serviceInstance, parameter, errorMessages );
                         if ( exp != null )
                         {
                             if ( orExp == null )
@@ -243,16 +243,16 @@ namespace Rock.Model
         /// <returns>
         /// A <see cref="System.String"/> that represents this instance.
         /// </returns>
-        public override string ToString()
+        public string ToString(Type filteredEntityType)
         {
             if ( this.ExpressionType == FilterExpressionType.Filter )
             {
                 if ( EntityType != null )
                 {
-                    var component = Rock.DataFilters.DataFilterContainer.GetComponent( EntityType.Name );
+                    var component = Rock.Reporting.DataFilterContainer.GetComponent( EntityType.Name );
                     if ( component != null )
                     {
-                        return component.FormatSelection( this.Selection );
+                        return component.FormatSelection( filteredEntityType, this.Selection );
                     }
                 }
             }
@@ -265,7 +265,7 @@ namespace Rock.Model
                 var children = this.ChildFilters.OrderBy( f => f.ExpressionType).ToList();
                 for(int i = 0; i < children.Count; i++)
                 {
-                    string childString = children[i].ToString();
+                    string childString = children[i].ToString( filteredEntityType );
                     if ( !string.IsNullOrWhiteSpace( childString ) )
                     {
                         sb.AppendFormat( "{0}{1}", i > 0 ? conjuction : string.Empty, childString );

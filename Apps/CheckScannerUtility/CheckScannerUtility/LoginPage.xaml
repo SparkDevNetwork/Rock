@@ -4,9 +4,9 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       mc:Ignorable="d"
-      d:DesignHeight="520"
-      d:DesignWidth="780"
-      Title="CheckScanner - Login"
+      d:DesignHeight="500"
+      d:DesignWidth="800"
+      Title="Check Scanner - Login"
       Loaded="Page_Loaded">
 
     <Grid Margin="0,0,0,0">
@@ -46,7 +46,7 @@
                    Margin="0,0,0,20" />
             <Label Grid.Column="1"
                    Grid.Row="0"
-                   Style="{StaticResource titleTextStyle}">
+                   Style="{StaticResource labelStyleTitle}">
                 Check Scanner
             </Label>
         </Grid>
@@ -77,28 +77,34 @@
                         Grid.Column="0"
                         BorderThickness="0,0,0,1"
                         BorderBrush="#e5e5e5">
-                    <Label Style="{StaticResource legendTextStyle}">
+                    <Label Style="{StaticResource labelStyleLegend}">
                         Login
                     </Label>
                 </Border>
                 <StackPanel Grid.Row="1"
                             Grid.Column="0"
                             VerticalAlignment="Center">
-                    <Label Style="{StaticResource labelTextStyle}">Rock URL</Label>
+                    <Label Name="lblRockUrl" Style="{StaticResource labelStyle}">Rock URL</Label>
                     <TextBox Name="txtRockUrl"
-                             Style="{StaticResource textboxUrlStyle}" />
-                    <Label Style="{StaticResource labelTextStyle}">Username</Label>
+                             Style="{StaticResource textboxStyleUrl}" />
+                    <Label Style="{StaticResource labelStyle}">Username</Label>
                     <TextBox Name="txtUsername"
-                             Style="{StaticResource textboxStyle}" />
-                    <Label Style="{StaticResource labelTextStyle}">Password</Label>
+                             Style="{StaticResource textboxStyle}"
+                             KeyDown="HideLoginWarning" />
+                    <Label Style="{StaticResource labelStyle}">Password</Label>
                     <PasswordBox Name="txtPassword"
-                                 Style="{StaticResource textboxStyle}" />
+                                 Style="{StaticResource textboxStyle}"
+                                 KeyDown="HideLoginWarning" />
+                    <Label Name="lblLoginWarning"
+                           Style="{StaticResource labelStyleAlert}"
+                           Content="Invalid Login" >
+                    </Label>
                 </StackPanel>
                 <Border Grid.Row="2"
                         Grid.Column="0"
                         BorderThickness="0,1,0,0"
                         BorderBrush="#e5e5e5">
-                    
+
                     <Button Name="btnLogin"
                             Click="btnLogin_Click"
                             HorizontalAlignment="Right"

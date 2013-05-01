@@ -121,7 +121,7 @@ namespace Rock.Model
         /// LastCollected Date Time.
         /// </value>
         [DataMember]
-        public DateTime? LastCollected { get; set; }
+        public DateTime? LastCollectedDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the Source.

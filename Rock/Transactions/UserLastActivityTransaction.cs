@@ -40,7 +40,7 @@ namespace Rock.Transactions
 
             if ( user != null )
             {
-                user.LastActivityDate = LastActivityDate;
+                user.LastActivityDateTime = LastActivityDate;
                 userLoginService.Save( user, null );
             }
         }

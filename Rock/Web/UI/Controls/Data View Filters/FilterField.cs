@@ -12,7 +12,8 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.DataFilters;
+using Rock.Reporting;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -24,7 +25,7 @@ namespace Rock.Web.UI.Controls
     {
         Dictionary<string, Dictionary<string, string>> AuthorizedComponents;
 
-        protected DropDownList ddlFilterType;
+        protected RockDropDownList ddlFilterType;
         protected LinkButton lbDelete;
         protected HiddenField hfExpanded;
         protected Control[] filterControls;
@@ -100,7 +101,7 @@ $('.filter-item-select').click(function (event) {
                                         AuthorizedComponents.Add( component.Section, new Dictionary<string, string>() );
                                     }
 
-                                    AuthorizedComponents[component.Section].Add( component.TypeName, component.Title );
+                                    AuthorizedComponents[component.Section].Add( component.TypeName, component.GetTitle(FilteredEntityType) );
                                 }
                             }
 
@@ -111,6 +112,26 @@ $('.filter-item-select').click(function (event) {
                 }
 
                 RecreateChildControls();
+            }
+        }
+
+        /// <summary>
+        /// Gets the type of the filtered entity.
+        /// </summary>
+        /// <value>
+        /// The type of the filtered entity.
+        /// </value>
+        public Type FilteredEntityType
+        {
+            get
+            {
+                var entityTypeCache = EntityTypeCache.Read( FilteredEntityTypeName );
+                if ( entityTypeCache != null )
+                {
+                    return entityTypeCache.GetEntityType();
+                }
+
+                return null;
             }
         }
 
@@ -171,10 +192,10 @@ $('.filter-item-select').click(function (event) {
             {
                 EnsureChildControls();
 
-                var component = Rock.DataFilters.DataFilterContainer.GetComponent( FilterEntityTypeName );
+                var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
                 if ( component != null )
                 {
-                    return component.GetSelection( filterControls );
+                    return component.GetSelection( FilteredEntityType, filterControls );
                 }
 
                 return string.Empty;
@@ -184,10 +205,10 @@ $('.filter-item-select').click(function (event) {
             {
                 EnsureChildControls();
 
-                var component = Rock.DataFilters.DataFilterContainer.GetComponent( FilterEntityTypeName );
+                var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
                 if ( component != null )
                 {
-                    component.SetSelection( filterControls, value );
+                    component.SetSelection( FilteredEntityType, filterControls, value );
                 }
             }
         }
@@ -199,15 +220,15 @@ $('.filter-item-select').click(function (event) {
         {
             Controls.Clear();
 
-            ddlFilterType = new DropDownList();
+            ddlFilterType = new RockDropDownList();
             Controls.Add( ddlFilterType );
             ddlFilterType.ID = this.ID + "_ddlFilter";
 
-            var component = Rock.DataFilters.DataFilterContainer.GetComponent( FilterEntityTypeName );
+            var component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
             if ( component != null )
             {
                 RockPage page = this.Page as RockPage;
-                filterControls = component.CreateChildControls( this );
+                filterControls = component.CreateChildControls( FilteredEntityType, this );
             }
             else
             {
@@ -261,11 +282,11 @@ $('.filter-item-select').click(function (event) {
             string clientFormatString = string.Empty;
             if ( !string.IsNullOrWhiteSpace( FilterEntityTypeName ) )
             {
-                component = Rock.DataFilters.DataFilterContainer.GetComponent( FilterEntityTypeName );
+                component = Rock.Reporting.DataFilterContainer.GetComponent( FilterEntityTypeName );
                 if ( component != null )
                 {
                     clientFormatString =
-                       string.Format( "if ($(this).children('i').attr('class') == 'icon-chevron-up') {{ var $article = $(this).parents('article:first'); var $content = $article.children('div.widget-content'); $article.find('div.filter-item-description:first').html({0}); }}", component.ClientFormatSelection );
+                       string.Format( "if ($(this).children('i').attr('class') == 'icon-chevron-up') {{ var $article = $(this).parents('article:first'); var $content = $article.children('div.widget-content'); $article.find('div.filter-item-description:first').html({0}); }}", component.GetClientFormatSelection( FilteredEntityType ) );
                 }
             }
 
@@ -292,7 +313,7 @@ $('.filter-item-select').click(function (event) {
                 writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
             }
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.Write( component != null ? component.FormatSelection( Selection ) : "Select Filter" );
+            writer.Write( component != null ? component.FormatSelection( FilteredEntityType, Selection ) : "Select Filter" );
             writer.RenderEndTag();
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-item-select" );
@@ -334,7 +355,7 @@ $('.filter-item-select').click(function (event) {
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             if ( component != null )
             {
-                component.RenderControls( this, writer, filterControls );
+                component.RenderControls( FilteredEntityType, this, writer, filterControls );
             }
             writer.RenderEndTag();
 
