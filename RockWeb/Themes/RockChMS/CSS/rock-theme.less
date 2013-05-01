@@ -25,7 +25,6 @@
 @import "../../../Css/rock-core.less";
 @import "../../../Css/grid.less";
 
-
 //
 // 1. Bootstrap Overides
 //
@@ -45,7 +44,7 @@ h1 {
 
 .pageheader
 {
-    background-image: url('../Assets/Images/header-texture.png');  /* todo add retina*/
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4=");
 }
 
 .pageheader.navbar .nav a {
@@ -75,6 +74,16 @@ h1 {
     padding: 0 6px;
 }
 
+// add 40px padding if in desktop size so tooltips have a bit more space if they are close to the edge
+@media (min-width: 992px)
+{
+    .container-fluid
+    {
+        padding-left: 40px;
+        padding-right: 40px;
+    }
+}
+
 //
 // 2. Global Page Settings
 //
@@ -84,26 +93,13 @@ h1 {
 html
 {
  background-color: #3a3a3a;  
- background-image: url('../Assets/Images/header-texture.png'); 
+ background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4="); 
 }
 
-// set page background
-body {  
-	background-image: url('../Assets/Images/light-texture.png');
-}
 
-@media all and (-webkit-min-device-pixel-ratio: 1.5) {
-  body {
-    background-image: url('../Assets/Images/light-texture@2x.png');
-    background-size: 256px 256px;
-  }
-
-  html
-  {
-    background-color: #3a3a3a;  
-    background-image: url('../Assets/Images/header-texture.png'); /*todo add retina image*/
-  }
-
+// get rid of that dotted box around anchors with focus
+a {
+   outline: 0;
 }
 
 
@@ -180,8 +176,9 @@ body {
 }
 
 .pagenav-header {
-	font-family: @rockSansFontFamilyBold;
+	font-family: @rockFontFamilyBold;
 }
+
 
 /* Smart Search 
    Used in the header to allow people to search for people, groups, etc
@@ -245,18 +242,18 @@ body {
 
 /* Treeviews */
 
-.tree-view {
+.treeview {
 	margin-bottom: 20px;
 }
 
-.tree-view-actions {
+.treeview-actions {
 	width: 100%;
 	text-align: right;
 	padding-right: 12px;
 	margin-bottom: 12px;
 }
 
-#tree-view-content {
+#treeview-content {
 	clear: both;
 	overflow: hidden;
 }
@@ -331,17 +328,11 @@ body {
 
 // background for header
 .pageheader .navbar-inner {  
-	background-image: url('../Assets/Images/header-texture.png');
 	border-bottom: 1px solid #121212;
 	padding: 4px 0;
     filter: initial;
-}
-
-@media all and (-webkit-min-device-pixel-ratio: 1.5) {
-  .pageheader .navbar-inner {
-    background-image: url('../Assets/Images/header-texture.png');
-    background-size: 210px 163px;
-  }
+	background-image: none;
+	background-color: transparent;
 }
 
 .pageheader .brand {
@@ -354,9 +345,8 @@ body {
 }
 
 .pagetitle .navbar-inner,
-.personheader .navbar-inner {
+.persondetails-header .navbar-inner {
 	background-color: @rockPageTitleBackground;
-	padding-bottom: 12px;
 	border-bottom: 1px solid darken(@rockPageTitleBackground, 10%);
 	background-image: none;
     filter: initial;

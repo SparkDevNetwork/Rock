@@ -32,6 +32,15 @@ namespace Rock.Rest.Controllers
                     controller = "People",
                     action = "Search"
                 } );
+
+            routes.MapHttpRoute(
+                name: "PeopleGetByUserName",
+                routeTemplate: "api/People/GetByUserName/{username}",
+                defaults: new
+                {
+                    controller = "People",
+                    action = "GetByUserName"
+                } );
         }
 
         /// <summary>
@@ -150,6 +159,23 @@ namespace Rock.Rest.Controllers
             }
 
             return searchResult.AsQueryable();
+        }
+
+        /// <summary>
+        /// Gets the name of the by user.
+        /// </summary>
+        /// <param name="username">The username.</param>
+        /// <returns></returns>
+        [HttpGet]
+        public Person GetByUserName( string username )
+        {
+            int? personId = new UserLoginService().Queryable().Where( u => u.UserName.Equals( username ) ).Select( a => a.Id ).FirstOrDefault();
+            if ( personId != null )
+            {
+                return this.Get(personId.Value);
+            }
+
+            throw new HttpResponseException( System.Net.HttpStatusCode.NotFound );
         }
     }
 

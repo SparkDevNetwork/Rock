@@ -22,6 +22,7 @@ namespace Rock.Web.UI.Controls
         private HiddenField _hfSelectedItemId;
         private HiddenField _hfSelectedItemText;
         private HtmlGenericControl _listControl;
+        protected String btnTitle = string.Empty;
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -140,6 +141,24 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
         }
 
         /// <summary>
+        /// Gets or sets the title.
+        /// </summary>
+        /// <value>
+        /// The title.
+        /// </value>
+        public string Title
+        {
+            get
+            {
+                return btnTitle;
+            }
+            set
+            {
+                btnTitle = value;
+            }
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -191,7 +210,7 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
 
             _divControl.Controls.Add( _listControl );
 
-            string selectedText = SelectedItem != null ? SelectedItem.Text : string.Empty;
+            string selectedText = SelectedItem != null ? SelectedItem.Text : btnTitle;
             _btnSelect.Controls.Clear();
             _btnSelect.Controls.Add( new LiteralControl { Text = string.Format( "{0} <span class='caret'></span>", selectedText ) } );
 

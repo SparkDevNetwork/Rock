@@ -110,7 +110,7 @@ namespace Rock.Security.ExternalAuthentication
                             string email = me.email.ToString();
 
                             var personService = new PersonService();
-                            var person = personService.Queryable().FirstOrDefault( u => u.LastName == lastName && ( u.GivenName == firstName || u.NickName == firstName ) && u.Email == email );
+                            var person = personService.Queryable().FirstOrDefault( u => u.LastName == lastName && u.FirstName == firstName && u.Email == email );
 
                             if ( person != null )
                             {

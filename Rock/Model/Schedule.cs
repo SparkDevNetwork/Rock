@@ -120,6 +120,15 @@ namespace Rock.Model
         [DataMember]
         public DateTimeOffset? EffectiveEndDate { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is a shared schedule
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is shared; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsShared { get; set; }
+
         #endregion
 
         #region Virtual Properties

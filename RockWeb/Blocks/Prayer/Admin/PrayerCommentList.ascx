@@ -15,7 +15,7 @@
             <Rock:ModalAlert ID="mdGridWarning" runat="server" />
             <Rock:Grid ID="gPrayerComments" runat="server" AllowSorting="true" OnRowSelected="gPrayerComments_Edit" ExcelExportEnabled="false">
                 <Columns>
-                    <Rock:DateField DataField="Date" HeaderText="Date" SortExpression="Date"/>
+                    <Rock:DateTimeField DataField="CreationDateTime" HeaderText="Time" SortExpression="CreationDateTime"/>
                     <asp:BoundField DataField="Caption" HeaderText="From" SortExpression="Text" />
                     <asp:BoundField DataField="Text" HeaderText="Comment" SortExpression="Text" />
                     <%--<Rock:ToggleField DataField="IsApproved" HeaderText="Approval Status" CssClass="switch-mini" Enabled="True" OnText="yes" OffText="no" SortExpression="IsApproved" OnCheckedChanged="gPrayerComments_CheckChanged" />--%>

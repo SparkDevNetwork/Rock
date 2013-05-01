@@ -4,18 +4,22 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Drawing;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Rock.Constants;
 using Rock.Model;
+using Rock.Net;
 
 namespace Rock.Apps.CheckScannerUtility
 {
@@ -31,12 +35,25 @@ namespace Rock.Apps.CheckScannerUtility
         {
             InitializeComponent();
             ScanningPage = new ScanningPage( this );
+            ScannedCheckList = new ConcurrentQueue<ScannedCheckInfo>();
+            BatchItemDetailPage = new BatchItemDetailPage();
         }
 
         /// <summary>
-        /// The binary file types
+        /// Gets or sets the selected financial batch id.
         /// </summary>
-        public static List<BinaryFileType> BinaryFileTypes { get; set; }
+        /// <value>
+        /// The selected financial batch id.
+        /// </value>
+        public int SelectedFinancialBatchId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the logged in person id.
+        /// </summary>
+        /// <value>
+        /// The logged in person id.
+        /// </value>
+        public Person LoggedInPerson { get; set; }
 
         /// <summary>
         /// Gets or sets the type of the feeder.
@@ -51,6 +68,22 @@ namespace Rock.Apps.CheckScannerUtility
         /// </summary>
         public ScanningPage ScanningPage { get; set; }
 
+        /// <summary>
+        /// Gets or sets the batch item detail page.
+        /// </summary>
+        /// <value>
+        /// The batch item detail page.
+        /// </value>
+        public BatchItemDetailPage BatchItemDetailPage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the scanned check list.
+        /// </summary>
+        /// <value>
+        /// The scanned check list.
+        /// </value>
+        public ConcurrentQueue<ScannedCheckInfo> ScannedCheckList { get; set; }
+
         #region Ranger (Canon CR50/80) Scanner Events
 
         /// <summary>
@@ -58,12 +91,12 @@ namespace Rock.Apps.CheckScannerUtility
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        private void RangerScanner_TransportNewState( object sender, AxRANGERLib._DRangerEvents_TransportNewStateEvent e )
+        private void rangerScanner_TransportNewState( object sender, AxRANGERLib._DRangerEvents_TransportNewStateEvent e )
         {
             mnuConnect.IsEnabled = false;
             btnScan.Visibility = Visibility.Hidden;
             ScanningPage.btnDone.Visibility = Visibility.Visible;
-            string status = RangerScanner.GetTransportStateString().Replace( "Transport", string.Empty ).SplitCase();
+            string status = rangerScanner.GetTransportStateString().Replace( "Transport", string.Empty ).SplitCase();
             shapeStatus.ToolTip = status;
 
             switch ( (XportStates)e.currentState )
@@ -73,11 +106,11 @@ namespace Rock.Apps.CheckScannerUtility
                     btnScan.Content = "Scan";
                     if ( ScannerFeederType.Equals( FeederType.MultipleItems ) )
                     {
-                        ScanningPage.btnStartStop.Content = "Start";
+                        ScanningPage.btnStartStop.Content = ScanButtonText.Scan;
                     }
                     else
                     {
-                        ScanningPage.btnStartStop.Content = "Scan Check";
+                        ScanningPage.btnStartStop.Content = ScanButtonText.ScanCheck;
                     }
 
                     btnScan.Visibility = Visibility.Visible;
@@ -89,7 +122,7 @@ namespace Rock.Apps.CheckScannerUtility
                 case XportStates.TransportFeeding:
                     shapeStatus.Fill = new SolidColorBrush( Colors.Blue );
                     btnScan.Content = "Stop";
-                    ScanningPage.btnStartStop.Content = "Stop";
+                    ScanningPage.btnStartStop.Content = ScanButtonText.Stop;
                     ScanningPage.btnDone.Visibility = Visibility.Hidden;
                     btnScan.Visibility = Visibility.Visible;
                     break;
@@ -110,43 +143,43 @@ namespace Rock.Apps.CheckScannerUtility
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        private void RangerScanner_TransportChangeOptionsState( object sender, AxRANGERLib._DRangerEvents_TransportChangeOptionsStateEvent e )
+        private void rangerScanner_TransportChangeOptionsState( object sender, AxRANGERLib._DRangerEvents_TransportChangeOptionsStateEvent e )
         {
             if ( e.previousState == (int)XportStates.TransportStartingUp )
             {
                 // enable imaging
-                RangerScanner.SetGenericOption( "OptionalDevices", "NeedImaging", "True" );
+                rangerScanner.SetGenericOption( "OptionalDevices", "NeedImaging", "True" );
 
                 // limit splash screen
-                RangerScanner.SetGenericOption( "Ranger GUI", "DisplaySplashOncePerDay", "true" );
+                rangerScanner.SetGenericOption( "Ranger GUI", "DisplaySplashOncePerDay", "true" );
 
                 // turn on either color, grayscale, or bitonal options depending on selected option
-                RangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage1", "False" );
-                RangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage1", "False" );
-                RangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage2", "False" );
-                RangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage2", "False" );
-                RangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage3", "False" );
-                RangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage3", "False" );
-                RangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage4", "False" );
-                RangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage4", "False" );
+                rangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage1", "False" );
+                rangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage1", "False" );
+                rangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage2", "False" );
+                rangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage2", "False" );
+                rangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage3", "False" );
+                rangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage3", "False" );
+                rangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage4", "False" );
+                rangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage4", "False" );
 
                 switch ( RockConfig.Load().ImageColorType )
                 {
                     case ImageColorType.ImageColorTypeColor:
-                        RangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage3", "True" );
-                        RangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage3", "True" );
+                        rangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage3", "True" );
+                        rangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage3", "True" );
                         break;
                     case ImageColorType.ImageColorTypeGrayscale:
-                        RangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage2", "True" );
-                        RangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage2", "True" );
+                        rangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage2", "True" );
+                        rangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage2", "True" );
                         break;
                     default:
-                        RangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage1", "True" );
-                        RangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage1", "True" );
+                        rangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage1", "True" );
+                        rangerScanner.SetGenericOption( "OptionalDevices", "NeedRearImage1", "True" );
                         break;
                 }
 
-                RangerScanner.EnableOptions();
+                rangerScanner.EnableOptions();
             }
         }
 
@@ -155,56 +188,43 @@ namespace Rock.Apps.CheckScannerUtility
         /// </summary>
         /// <param name="sender">The sender.</param>
         /// <param name="e">The e.</param>
-        private void RangerScanner_TransportItemInPocket( object sender, AxRANGERLib._DRangerEvents_TransportItemInPocketEvent e )
+        private void rangerScanner_TransportItemInPocket( object sender, AxRANGERLib._DRangerEvents_TransportItemInPocketEvent e )
         {
-            string fileDirectory = GetScannerOutputDirectory();
-
             BitmapImage bitImageFront = GetCheckImage( Sides.TransportFront );
             BitmapImage bitImageBack = GetCheckImage( Sides.TransportRear );
 
-            ScanningPage.imgFront.Source = bitImageFront;
-            ScanningPage.imgBack.Source = bitImageBack;
-
-            string checkMicr = RangerScanner.GetMicrText( 1 ).Replace( "-", string.Empty ).Replace( "!", string.Empty ).Trim();
+            string checkMicr = rangerScanner.GetMicrText( 1 ).Replace( "-", string.Empty ).Replace( "!", string.Empty ).Trim();
             string fileName = checkMicr.Replace( " ", "_" );
 
             string[] micrParts = checkMicr.Split( new char[] { 'c', 'd', ' ' }, StringSplitOptions.RemoveEmptyEntries );
-            string accountNumber = micrParts.Length > 0 ? micrParts[0] : "<not found>";
-            string routingNumber = micrParts.Length > 1 ? micrParts[1] : "<not found>";
+            string routingNumber = micrParts.Length > 0 ? micrParts[0] : "<not found>";
+            string accountNumber = micrParts.Length > 1 ? micrParts[1] : "<not found>";
             string checkNumber = micrParts.Length > 2 ? micrParts[2] : "<not found>";
 
-            ScanningPage.lblAccountNumber.Content = string.Format( "Account Number: {0}", accountNumber );
-            ScanningPage.lblRoutingNumber.Content = string.Format( "Routing Number: {0}", routingNumber );
-            ScanningPage.lblCheckNumber.Content = string.Format( "Check Number: {0}", checkNumber );
+            ScannedCheckInfo scannedCheck = new ScannedCheckInfo();
+            scannedCheck.FrontImageData = ( bitImageFront.StreamSource as MemoryStream ).ToArray();
+            scannedCheck.BackImageData = ( bitImageBack.StreamSource as MemoryStream ).ToArray();
+            scannedCheck.RoutingNumber = routingNumber;
+            scannedCheck.AccountNumber = accountNumber;
+            scannedCheck.CheckNumber = checkNumber;
 
-            string frontFilePath = System.IO.Path.Combine( fileDirectory, fileName + "_front.jpg" );
-            File.Delete( frontFilePath );
+            ScanningPage.ShowCheckInformation( scannedCheck );
 
-            Bitmap bmpFront = new Bitmap( bitImageFront.StreamSource );
-            bmpFront.Save( frontFilePath, System.Drawing.Imaging.ImageFormat.Jpeg );
-
-            string backFilePath = System.IO.Path.Combine( fileDirectory, fileName + "_back.jpg" );
-            File.Delete( backFilePath );
-            Bitmap bmpBack = new Bitmap( bitImageBack.StreamSource );
-            bmpBack.Save( backFilePath, System.Drawing.Imaging.ImageFormat.Jpeg );
+            if ( ( micrParts.Length < 3 ) || routingNumber.Length != 9 )
+            {
+                ScanningPage.lblScanWarning.Visibility = Visibility.Visible;
+                rangerScanner.StopFeeding();
+            }
+            else
+            {
+                ScanningPage.lblScanWarning.Visibility = Visibility.Collapsed;
+                ScannedCheckList.Enqueue( scannedCheck );
+            }
         }
 
         #endregion
 
         #region Scanner (MagTek MICRImage RS232) Events
-
-        /// <summary>
-        /// Determines whether the specified value is integer.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns>
-        ///   <c>true</c> if the specified value is integer; otherwise, <c>false</c>.
-        /// </returns>
-        private bool IsInteger( string value )
-        {
-            int temp;
-            return int.TryParse( value, out temp );
-        }
 
         /// <summary>
         /// Handles the MicrDataReceived event of the micrImage control.
@@ -219,43 +239,44 @@ namespace Rock.Apps.CheckScannerUtility
             string imageIndex = string.Empty;
             string statusMsg = string.Empty;
 
+            ScannedCheckInfo scannedCheck = new ScannedCheckInfo();
+
             // from MagTek Sample Code
-            string accountNumber = micrImage.FindElement( 0, "TT", 0, "A", ref dummy );
-            string routingNumber = micrImage.FindElement( 0, "T", 0, "TT", ref dummy );
-            string checkNumber = micrImage.FindElement( 0, "A", 0, "12", ref dummy );
+            scannedCheck.RoutingNumber = micrImage.FindElement( 0, "T", 0, "TT", ref dummy );
+            scannedCheck.AccountNumber = micrImage.FindElement( 0, "TT", 0, "A", ref dummy );
+            scannedCheck.CheckNumber = micrImage.FindElement( 0, "A", 0, "12", ref dummy );
 
-            // MagTek OCX only likes short paths
             imagePath = Path.GetTempPath();
-            string checkImageFileName = Path.Combine( imagePath, string.Format( "check_front_{0}_{1}_{2}.tif", accountNumber, routingNumber, checkNumber ) );
+            string checkImageFileName = Path.Combine( imagePath, string.Format( "check_front_{0}_{1}_{2}.tif", scannedCheck.RoutingNumber, scannedCheck.AccountNumber, scannedCheck.CheckNumber ) );
 
-            micrImage.TransmitCurrentImage( checkImageFileName, ref statusMsg );
-            if ( !File.Exists( checkImageFileName ) )
+            if ( File.Exists( checkImageFileName ) )
             {
-                throw new Exception( "Unable to retrieve image" );
+                File.Delete( checkImageFileName );
             }
 
-            micrImage.ClearBuffer();
+            try
+            {
+                micrImage.TransmitCurrentImage( checkImageFileName, ref statusMsg );
+                if ( !File.Exists( checkImageFileName ) )
+                {
+                    throw new Exception( "Unable to retrieve image" );
+                }
+                else
+                {
+                    scannedCheck.FrontImageData = File.ReadAllBytes( checkImageFileName );
+                    ScannedCheckList.Enqueue( scannedCheck );
+                    File.Delete( checkImageFileName );
+                }
+            }
+            finally
+            {
+                micrImage.ClearBuffer();
+            }
         }
 
         #endregion
 
         #region Image Upload related
-
-        /// <summary>
-        /// Gets the scanner output directory.
-        /// </summary>
-        /// <returns></returns>
-        private static string GetScannerOutputDirectory()
-        {
-            string fileDirectory = System.IO.Path.Combine( new FileInfo( System.Reflection.Assembly.GetExecutingAssembly().Location ).DirectoryName, "ScannerOutput" );
-
-            if ( !Directory.Exists( fileDirectory ) )
-            {
-                Directory.CreateDirectory( fileDirectory );
-            }
-
-            return fileDirectory;
-        }
 
         /// <summary>
         /// Gets the check image.
@@ -267,144 +288,182 @@ namespace Rock.Apps.CheckScannerUtility
             ImageColorType colorType = RockConfig.Load().ImageColorType;
 
             int imageByteCount;
-            imageByteCount = RangerScanner.GetImageByteCount( (int)side, (int)colorType );
+            imageByteCount = rangerScanner.GetImageByteCount( (int)side, (int)colorType );
             byte[] imageBytes = new byte[imageByteCount];
 
             // create the pointer and assign the Ranger image address to it
-            IntPtr imgAddress = new IntPtr( RangerScanner.GetImageAddress( (int)side, (int)colorType ) );
+            IntPtr imgAddress = new IntPtr( rangerScanner.GetImageAddress( (int)side, (int)colorType ) );
 
             // Copy the bytes from unmanaged memory to managed memory
             Marshal.Copy( imgAddress, imageBytes, 0, imageByteCount );
 
-            BitmapImage bitImageFront = new BitmapImage();
+            BitmapImage bitImage = new BitmapImage();
 
-            bitImageFront.BeginInit();
-            bitImageFront.StreamSource = new MemoryStream( imageBytes );
-            bitImageFront.EndInit();
+            bitImage.BeginInit();
+            bitImage.StreamSource = new MemoryStream( imageBytes );
+            bitImage.EndInit();
 
-            return bitImageFront;
+            return bitImage;
         }
-
-        /// <summary>
-        /// Handles the Click event of the btnUpload control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        private void btnUpload_Click( object sender, EventArgs e )
-        {
-            string rockUrl = RockConfig.Load().RockURL;
-
-            getBinaryFileTypes( rockUrl ).ContinueWith( a =>
-            {
-                BinaryFileTypes = a.Result;
-                UploadScannedChecks( rockUrl, ShowProgress );
-            } );
-        }
-
-        /// <summary>
-        /// Shows the progress.
-        /// </summary>
-        /// <param name="current">The current.</param>
-        /// <param name="max">The max.</param>
-        /// <param name="name">The name.</param>
-        private void ShowProgress( int current, int max, string name )
-        {
-            //progressBar.Maximum = max;
-            //progressBar.Value = current;
-        }
-
-        /// <summary>
-        /// Gets the binary file types.
-        /// </summary>
-        /// <param name="rockBaseUrl">The rock base URL.</param>
-        private static async System.Threading.Tasks.Task<List<BinaryFileType>> getBinaryFileTypes( string rockBaseUrl )
-        {
-            HttpClient client = new HttpClient();
-            HttpContent resultContent;
-            string restURL = rockBaseUrl.TrimEnd( new char[] { '/' } ) + "/api/BinaryFileTypes/";
-            await client.GetAsync( restURL ).ContinueWith( ( postTask ) =>
-                {
-                    resultContent = postTask.Result.Content;
-                    resultContent.ReadAsAsync<List<BinaryFileType>>().ContinueWith(
-                        ( readResult ) =>
-                        {
-                            BinaryFileTypes = readResult.Result;
-                        } ).Wait();
-                } );
-
-            return BinaryFileTypes;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="position">The position.</param>
-        /// <param name="max">The max.</param>
-        /// <param name="name">The name.</param>
-        private delegate void ProgressUpdate( int position, int max, string name );
 
         /// <summary>
         /// Uploads the scanned checks.
         /// </summary>
         /// <param name="rockBaseUrl">The rock base URL.</param>
-        private static async void UploadScannedChecks( string rockBaseUrl, ProgressUpdate progressFeedback )
+        private void UploadScannedChecks()
         {
-            string restURL = rockBaseUrl.TrimEnd( new char[] { '/' } ) + "/api/BinaryFiles/";
-            var qryParams = new System.Collections.Generic.Dictionary<string, string>();
-            restURL += "0?apikey=CcvRockApiKey";
-            Guid fileTypeCheckFront = new Guid( "EF9B78C1-57A0-4D18-8275-51EECE0C8A6D" );
-            Guid fileTypeCheckBack = new Guid( "DAC10DF2-D57F-45F6-94AD-8E27E3BC4682" );
+            if ( ScannedCheckList.Where( a => !a.Uploaded ).Count() > 0 )
+            {
+                lblUploadProgress.Visibility = Visibility.Visible;
 
-            DirectoryInfo scannerOutputDirectory = new DirectoryInfo( GetScannerOutputDirectory() );
-            var scannedFiles = scannerOutputDirectory.GetFiles( "*.jpg" ).ToList();
+                // use a backgroundworker to do the work so that we can have an updatable progressbar in the UI
+                BackgroundWorker bwUploadScannedChecks = new BackgroundWorker();
+                bwUploadScannedChecks.DoWork += bwUploadScannedChecks_DoWork;
+                bwUploadScannedChecks.ProgressChanged += bwUploadScannedChecks_ProgressChanged;
+                bwUploadScannedChecks.RunWorkerCompleted += bwUploadScannedChecks_RunWorkerCompleted;
+                bwUploadScannedChecks.WorkerReportsProgress = true;
+                bwUploadScannedChecks.RunWorkerAsync();
+            }
+        }
 
-            int totalCount = scannedFiles.Count();
+        /// <summary>
+        /// Handles the RunWorkerCompleted event of the bwUploadScannedChecks control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RunWorkerCompletedEventArgs"/> instance containing the event data.</param>
+        private void bwUploadScannedChecks_RunWorkerCompleted( object sender, RunWorkerCompletedEventArgs e )
+        {
+            lblUploadProgress.Visibility = Visibility.Hidden;
+            if ( e.Error == null )
+            {
+                MessageBox.Show( "Upload Complete" );
+
+                UpdateBatchUI( grdBatches.SelectedValue as FinancialBatch );
+                
+            }
+            else
+            {
+                MessageBox.Show( string.Format( "Upload Error: {0}", e.Error.Message ) );
+            }
+        }
+
+        /// <summary>
+        /// Handles the ProgressChanged event of the bwUploadScannedChecks control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="ProgressChangedEventArgs"/> instance containing the event data.</param>
+        private void bwUploadScannedChecks_ProgressChanged( object sender, ProgressChangedEventArgs e )
+        {
+            lblUploadProgress.Content = string.Format( "Uploading Scanned Checks {0}%", e.ProgressPercentage );
+        }
+
+        /// <summary>
+        /// Handles the DoWork event of the bwUploadScannedChecks control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="DoWorkEventArgs"/> instance containing the event data.</param>
+        private void bwUploadScannedChecks_DoWork( object sender, DoWorkEventArgs e )
+        {
+            BackgroundWorker bw = sender as BackgroundWorker;
+
+            RockConfig rockConfig = RockConfig.Load();
+            RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
+            client.Login( rockConfig.Username, rockConfig.Password );
+
+            AssemblyName assemblyName = Assembly.GetExecutingAssembly().GetName();
+            string appInfo = string.Format( "{0}, version: {1}", assemblyName.FullName, assemblyName.Version );
+
+            BinaryFileType binaryFileTypeContribution = client.GetDataByGuid<BinaryFileType>( "api/BinaryFileTypes", new Guid( Rock.SystemGuid.BinaryFiletype.CONTRIBUTION_IMAGE ) );
+            DefinedValue currencyTypeValueCheck = client.GetDataByGuid<DefinedValue>( "api/DefinedValues", new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CHECK ) );
+            DefinedValue transactionTypeValueContribution = client.GetDataByGuid<DefinedValue>( "api/DefinedValues", new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ) );
+            DefinedValue transactionImageTypeValueFront = client.GetDataByGuid<DefinedValue>( "api/DefinedValues", new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_IMAGE_TYPE_CHECK_FRONT ) );
+            DefinedValue transactionImageTypeValueBack = client.GetDataByGuid<DefinedValue>( "api/DefinedValues", new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_IMAGE_TYPE_CHECK_BACK ) );
+
+            int totalCount = ScannedCheckList.Where( a => !a.Uploaded ).Count();
             int position = 1;
 
-            foreach ( FileInfo scannedFile in scannedFiles )
+            foreach ( ScannedCheckInfo scannedCheckInfo in ScannedCheckList.Where( a => !a.Uploaded ) )
             {
-                var binaryFile = new BinaryFile();
-                binaryFile.Id = 0;
-                binaryFile.FileName = scannedFile.Name;
-                binaryFile.Data = File.ReadAllBytes( scannedFile.FullName );
-                if ( scannedFile.Name.EndsWith( "_front.jpg" ) )
+                // upload image of front of check
+                BinaryFile binaryFileFront = new BinaryFile();
+                binaryFileFront.Guid = Guid.NewGuid();
+                binaryFileFront.FileName = string.Format( "{0}_{1}_{2}_front.png", scannedCheckInfo.RoutingNumber, scannedCheckInfo.MaskedAccountNumber, scannedCheckInfo.CheckNumber );
+                binaryFileFront.Data = scannedCheckInfo.FrontImagePngBytes;
+                binaryFileFront.BinaryFileTypeId = binaryFileTypeContribution.Id;
+                binaryFileFront.IsSystem = false;
+                binaryFileFront.MimeType = "image/png";
+                client.PostData<BinaryFile>( "api/BinaryFiles/", binaryFileFront );
+
+                // upload image of back of check (if it exists)
+                BinaryFile binaryFileBack = null;
+
+                if ( scannedCheckInfo.BackImageData != null )
                 {
-                    binaryFile.BinaryFileTypeId = BinaryFileTypes.First( a => a.Guid.Equals( fileTypeCheckFront ) ).Id;
-                }
-                else if ( scannedFile.Name.EndsWith( "_back.jpg" ) )
-                {
-                    binaryFile.BinaryFileTypeId = BinaryFileTypes.First( a => a.Guid.Equals( fileTypeCheckBack ) ).Id;
-                }
-                else
-                {
-                    continue;
+                    binaryFileBack = new BinaryFile();
+                    binaryFileBack.Guid = Guid.NewGuid();
+                    binaryFileBack.FileName = string.Format( "{0}_{1}_{2}_back.png", scannedCheckInfo.RoutingNumber, scannedCheckInfo.MaskedAccountNumber, scannedCheckInfo.CheckNumber );
+                    binaryFileBack.Data = scannedCheckInfo.BackImagePngBytes;
+                    binaryFileBack.BinaryFileTypeId = binaryFileTypeContribution.Id;
+                    binaryFileBack.IsSystem = false;
+                    binaryFileBack.MimeType = "image/png";
+                    client.PostData<BinaryFile>( "api/BinaryFiles/", binaryFileBack );
                 }
 
-                binaryFile.IsSystem = false;
-                binaryFile.MimeType = "image/jpeg";
+                int percentComplete = position++ * 100 / totalCount;
+                bw.ReportProgress( percentComplete );
 
-                HttpClient client = new HttpClient();
-                try
+                FinancialTransactionScannedCheck financialTransactionScannedCheck = new FinancialTransactionScannedCheck();
+                financialTransactionScannedCheck.BatchId = SelectedFinancialBatchId;
+                financialTransactionScannedCheck.Amount = 0.00M;
+                financialTransactionScannedCheck.TransactionCode = string.Empty;
+                financialTransactionScannedCheck.Summary = string.Format( "Scanned Check from {0}", appInfo );
+                financialTransactionScannedCheck.Guid = Guid.NewGuid();
+                financialTransactionScannedCheck.TransactionDateTime = DateTime.Now;
+                financialTransactionScannedCheck.CurrencyTypeValueId = currencyTypeValueCheck.Id;
+                financialTransactionScannedCheck.CreditCardTypeValueId = null;
+                financialTransactionScannedCheck.SourceTypeValueId = null;
+                financialTransactionScannedCheck.AuthorizedPersonId = null;
+                financialTransactionScannedCheck.GatewayId = null;
+                financialTransactionScannedCheck.TransactionTypeValueId = transactionTypeValueContribution.Id;
+
+                // Rock server will encrypt CheckMicrPlainText to this since we can't have the DataEncryptionKey in a RestClient
+                financialTransactionScannedCheck.CheckMicrEncrypted = null;
+
+                financialTransactionScannedCheck.ScannedCheckMicr = string.Format( "{0}_{1}_{2}", scannedCheckInfo.RoutingNumber, scannedCheckInfo.AccountNumber, scannedCheckInfo.CheckNumber );
+
+                client.PostData<FinancialTransactionScannedCheck>( "api/FinancialTransactions/PostScanned", financialTransactionScannedCheck );
+
+                // get the FinancialTransaction back from server so that we can get it's Id
+                financialTransactionScannedCheck.Id = client.GetDataByGuid<FinancialTransaction>( "api/FinancialTransactions", financialTransactionScannedCheck.Guid ).Id;
+
+                // get the BinaryFiles back so that we can get their Ids
+                binaryFileFront.Id = client.GetDataByGuid<BinaryFile>( "api/BinaryFiles", binaryFileFront.Guid ).Id;
+
+                // upload FinancialTransactionImage records for front/back
+                FinancialTransactionImage financialTransactionImageFront = new FinancialTransactionImage();
+                financialTransactionImageFront.BinaryFileId = binaryFileFront.Id;
+                financialTransactionImageFront.TransactionId = financialTransactionScannedCheck.Id;
+                financialTransactionImageFront.TransactionImageTypeValueId = transactionImageTypeValueFront.Id;
+                client.PostData<FinancialTransactionImage>( "api/FinancialTransactionImages", financialTransactionImageFront );
+
+                if ( binaryFileBack != null )
                 {
-                    await client.PostAsJsonAsync<BinaryFile>( restURL, binaryFile ).ContinueWith(
-                        ( postTask ) =>
-                        {
-                            progressFeedback( position++, totalCount, scannedFile.Name );
-                            postTask.Result.EnsureSuccessStatusCode();
-                            scannedFile.Delete();
-                        } );
+                    // get the BinaryFiles back so that we can get their Ids
+                    binaryFileBack.Id = client.GetDataByGuid<BinaryFile>( "api/BinaryFiles", binaryFileBack.Guid ).Id;
+                    FinancialTransactionImage financialTransactionImageBack = new FinancialTransactionImage();
+                    financialTransactionImageBack.BinaryFileId = binaryFileBack.Id;
+                    financialTransactionImageBack.TransactionId = financialTransactionScannedCheck.Id;
+                    financialTransactionImageBack.TransactionImageTypeValueId = transactionImageTypeValueBack.Id;
+                    client.PostData<FinancialTransactionImage>( "api/FinancialTransactionImages", financialTransactionImageBack );
                 }
-                catch ( Exception ex )
-                {
-                    MessageBox.Show( ex.Message );
-                    break;
-                }
+
+                scannedCheckInfo.Uploaded = true;
             }
-
-            progressFeedback( 0, 0, "Done" );
         }
 
         #endregion
+
+        #region internal methods
 
         /// <summary>
         /// Handles the Loaded event of the Page control.
@@ -413,18 +472,61 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void Page_Loaded( object sender, RoutedEventArgs e )
         {
+            bdrBatchDetailReadOnly.Visibility = Visibility.Visible;
+            bdrBatchDetailEdit.Visibility = Visibility.Collapsed;
+            lblUploadProgress.Visibility = Visibility.Hidden;
             ConnectToScanner();
+            LoadComboBoxes();
+            LoadFinancialBatchesGrid();
+            UploadScannedChecks();
+        }
 
-            List<FinancialBatch> sampleData = new List<FinancialBatch>();
-            sampleData.Add( new FinancialBatch { Name = "Sample Batch Name 1", IsClosed = false, BatchDate = DateTime.Now } );
-            sampleData.Add( new FinancialBatch { Name = "Sample Batch Lonnnnng Name 2", IsClosed = false, BatchDate = DateTime.Now } );
-            sampleData.Add( new FinancialBatch { Name = "Sample Batch Name 3", IsClosed = false, BatchDate = DateTime.Now } );
+        /// <summary>
+        /// Loads the combo boxes.
+        /// </summary>
+        private void LoadComboBoxes()
+        {
+            RockConfig rockConfig = RockConfig.Load();
+            RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
+            client.Login( rockConfig.Username, rockConfig.Password );
+            List<Campus> campusList = client.GetData<List<Campus>>( "api/Campus" );
 
-            grdBatches.DataContext = sampleData;
-            if ( sampleData.Count > 0 )
+            cbCampus.SelectedValuePath = "Id";
+            cbCampus.DisplayMemberPath = "Name";
+            cbCampus.Items.Clear();
+            cbCampus.Items.Add( new Campus { Id = None.Id, Name = None.Text } );
+            foreach ( var campus in campusList.OrderBy( a => a.Name ) )
             {
-                grdBatches.SelectedIndex = 0;
+                cbCampus.Items.Add( campus );
             }
+
+            cbCampus.SelectedIndex = 0;
+        }
+
+        /// <summary>
+        /// Loads the financial batches grid.
+        /// </summary>
+        private void LoadFinancialBatchesGrid()
+        {
+            RockConfig config = RockConfig.Load();
+            RockRestClient client = new RockRestClient( config.RockBaseUrl );
+            client.Login( config.Username, config.Password );
+            List<FinancialBatch> pendingBatches = client.GetDataByEnum<List<FinancialBatch>>( "api/FinancialBatches", "Status", BatchStatus.Pending );
+
+            grdBatches.DataContext = pendingBatches.OrderByDescending( a => a.BatchDate );
+            if ( pendingBatches.Count > 0 )
+            {
+                if ( SelectedFinancialBatchId > 0 )
+                {
+                    grdBatches.SelectedValue = pendingBatches.FirstOrDefault( a => a.Id.Equals( SelectedFinancialBatchId ) );
+                }
+                else
+                {
+                    grdBatches.SelectedIndex = 0;
+                }
+            }
+
+            UpdateBatchUI( grdBatches.SelectedValue as FinancialBatch );
         }
 
         /// <summary>
@@ -436,6 +538,7 @@ namespace Rock.Apps.CheckScannerUtility
 
             if ( rockConfig.ScannerInterfaceType == RockConfig.InterfaceType.MICRImageRS232 )
             {
+                micrImageHost.IsEnabled = true;
                 micrImage.CommPort = rockConfig.MICRImageComPort;
 
                 object dummy = null;
@@ -473,8 +576,8 @@ namespace Rock.Apps.CheckScannerUtility
             }
             else
             {
-                RangerScanner.StartUp();
-                string feederTypeName = RangerScanner.GetTransportInfo( "MainHopper", "FeederType" );
+                rangerScanner.StartUp();
+                string feederTypeName = rangerScanner.GetTransportInfo( "MainHopper", "FeederType" );
                 if ( feederTypeName.Equals( "MultipleItems" ) )
                 {
                     ScannerFeederType = FeederType.MultipleItems;
@@ -520,11 +623,11 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 if ( ScannerFeederType.Equals( FeederType.SingleItem ) )
                 {
-                    RangerScanner.StartFeeding( FeedSource.FeedSourceManualDrop, FeedItemCount.FeedOne );
+                    rangerScanner.StartFeeding( FeedSource.FeedSourceManualDrop, FeedItemCount.FeedOne );
                 }
                 else
                 {
-                    RangerScanner.StartFeeding( FeedSource.FeedSourceMainHopper, FeedItemCount.FeedContinuously );
+                    rangerScanner.StartFeeding( FeedSource.FeedSourceMainHopper, FeedItemCount.FeedContinuously );
                 }
 
                 if ( navigate )
@@ -534,7 +637,7 @@ namespace Rock.Apps.CheckScannerUtility
             }
             else
             {
-                RangerScanner.StopFeeding();
+                rangerScanner.StopFeeding();
                 if ( navigate )
                 {
                     this.NavigationService.Navigate( this );
@@ -550,19 +653,237 @@ namespace Rock.Apps.CheckScannerUtility
         private void btnOptions_Click( object sender, RoutedEventArgs e )
         {
             var optionsPage = new OptionsPage();
+            optionsPage.BatchPage = this;
             this.NavigationService.Navigate( optionsPage );
-
-            
         }
 
-        private void MenuItem_Click_1( object sender, RoutedEventArgs e )
-        {
+        #endregion
 
+        /// <summary>
+        /// Handles the Click event of the btnEdit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnEdit_Click( object sender, RoutedEventArgs e )
+        {
+            ShowBatch( true );
         }
 
-        private void mnuConnect_Click_1( object sender, RoutedEventArgs e )
+        /// <summary>
+        /// Shows the batch edit.
+        /// </summary>
+        private void ShowBatch( bool showInEditMode )
         {
+            if ( showInEditMode )
+            {
+                bdrBatchDetailEdit.Visibility = Visibility.Visible;
+                bdrBatchDetailReadOnly.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                bdrBatchDetailEdit.Visibility = Visibility.Collapsed;
+                bdrBatchDetailReadOnly.Visibility = Visibility.Visible;
+            }
 
+            grdBatches.IsEnabled = !showInEditMode;
+            btnAddBatch.IsEnabled = !showInEditMode;
+        }
+
+        /// <summary>
+        /// Hides the batch.
+        /// </summary>
+        private void HideBatch()
+        {
+            bdrBatchDetailReadOnly.Visibility = Visibility.Collapsed;
+            bdrBatchDetailEdit.Visibility = Visibility.Collapsed;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnSave_Click( object sender, RoutedEventArgs e )
+        {
+            try
+            {
+                RockConfig rockConfig = RockConfig.Load();
+                RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
+                client.Login( rockConfig.Username, rockConfig.Password );
+
+                FinancialBatch financialBatch = null;
+                if ( SelectedFinancialBatchId.Equals( 0 ) )
+                {
+                    financialBatch = new FinancialBatch { Id = 0, Guid = Guid.NewGuid(), Status = BatchStatus.Pending, CreatedByPersonId = LoggedInPerson.Id };
+                }
+                else
+                {
+                    financialBatch = client.GetData<FinancialBatch>( string.Format( "api/FinancialBatches/{0}", SelectedFinancialBatchId ) );
+                }
+
+                financialBatch.Name = txtBatchName.Text;
+                Campus selectedCampus = cbCampus.SelectedItem as Campus;
+                if ( selectedCampus.Id > 0 )
+                {
+                    financialBatch.CampusId = selectedCampus.Id;
+                }
+                else
+                {
+                    financialBatch.CampusId = null;
+                }
+
+                financialBatch.BatchDate = dpBatchDate.SelectedDate;
+
+                if ( !string.IsNullOrWhiteSpace( txtControlAmount.Text ) )
+                {
+                    financialBatch.ControlAmount = decimal.Parse( txtControlAmount.Text.Replace( "$", string.Empty ) );
+                }
+                else
+                {
+                    financialBatch.ControlAmount = 0.00M;
+                }
+
+                client.PostData<FinancialBatch>( "api/FinancialBatches/", financialBatch );
+
+                if ( SelectedFinancialBatchId.Equals( 0 ) )
+                {
+                    // refetch the batch to get the Id if it was just Inserted
+                    financialBatch = client.GetDataByGuid<FinancialBatch>( "api/FinancialBatches", financialBatch.Guid );
+
+                    SelectedFinancialBatchId = financialBatch.Id;
+                }
+
+                LoadFinancialBatchesGrid();
+
+                ShowBatch( false );
+            }
+            catch ( Exception ex )
+            {
+                MessageBox.Show( ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnCancel_Click( object sender, RoutedEventArgs e )
+        {
+            UpdateBatchUI( grdBatches.SelectedValue as FinancialBatch );
+            ShowBatch( false );
+        }
+
+        /// <summary>
+        /// Handles the SelectionChanged event of the grdBatches control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="SelectionChangedEventArgs"/> instance containing the event data.</param>
+        private void grdBatches_SelectionChanged( object sender, SelectionChangedEventArgs e )
+        {
+            FinancialBatch selectedBatch = grdBatches.SelectedValue as FinancialBatch;
+
+            UpdateBatchUI( selectedBatch );
+        }
+
+        /// <summary>
+        /// Updates the batch UI.
+        /// </summary>
+        /// <param name="selectedBatch">The selected batch.</param>
+        private void UpdateBatchUI( FinancialBatch selectedBatch )
+        {
+            if ( selectedBatch == null )
+            {
+                HideBatch();
+                return;
+            }
+            else
+            {
+                ShowBatch( false );
+            }
+
+            RockConfig rockConfig = RockConfig.Load();
+            RockRestClient client = new RockRestClient( rockConfig.RockBaseUrl );
+            client.Login( rockConfig.Username, rockConfig.Password );
+            SelectedFinancialBatchId = selectedBatch.Id;
+            lblBatchNameReadOnly.Content = selectedBatch.Name;
+
+            lblBatchCampusReadOnly.Content = selectedBatch.CampusId.HasValue ? client.GetData<Campus>( string.Format( "api/Campus/{0}", selectedBatch.CampusId ) ).Name : None.Text;
+            lblBatchDateReadOnly.Content = selectedBatch.BatchDate.ToString();
+            lblBatchCreatedByReadOnly.Content = client.GetData<Person>( string.Format( "api/People/{0}", selectedBatch.CreatedByPersonId ) ).FullName;
+            lblBatchControlAmountReadOnly.Content = selectedBatch.ControlAmount.ToString( "c" );
+
+            txtBatchName.Text = selectedBatch.Name;
+            if ( selectedBatch.CampusId.HasValue )
+            {
+                cbCampus.SelectedValue = selectedBatch.CampusId;
+            }
+            else
+            {
+                cbCampus.SelectedValue = 0;
+            }
+
+            dpBatchDate.SelectedDate = selectedBatch.BatchDate;
+            lblCreatedBy.Content = lblBatchCreatedByReadOnly.Content as string;
+            txtControlAmount.Text = selectedBatch.ControlAmount.ToString( "c" );
+
+            List<FinancialTransaction> transactions = client.GetData<List<FinancialTransaction>>( "api/FinancialTransactions/", string.Format( "BatchId eq {0}", selectedBatch.Id ) );
+            grdBatchItems.DataContext = transactions;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnAddBatch control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnAddBatch_Click( object sender, RoutedEventArgs e )
+        {
+            UpdateBatchUI( new FinancialBatch { Id = 0, BatchDate = DateTime.Now.Date, CreatedByPersonId = LoggedInPerson.Id } );
+            ShowBatch( true );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnRefreshBatchList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnRefreshBatchList_Click( object sender, RoutedEventArgs e )
+        {
+            LoadFinancialBatchesGrid();
+        }
+
+        /// <summary>
+        /// Handles the RowEdit event of the grdBatchItems control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="MouseButtonEventArgs"/> instance containing the event data.</param>
+        protected void grdBatchItems_RowEdit( object sender, MouseButtonEventArgs e )
+        {
+            try
+            {
+                FinancialTransaction financialTransaction = grdBatchItems.SelectedValue as FinancialTransaction;
+
+                if ( financialTransaction != null )
+                {
+                    RockConfig config = RockConfig.Load();
+                    RockRestClient client = new RockRestClient( config.RockBaseUrl );
+                    client.Login( config.Username, config.Password );
+                    financialTransaction.Images = client.GetData<List<FinancialTransactionImage>>( "api/FinancialTransactionImages", string.Format( "TransactionId eq {0}", financialTransaction.Id ) );
+                    foreach ( var image in financialTransaction.Images )
+                    {
+                        image.BinaryFile = client.GetData<BinaryFile>( string.Format( "api/BinaryFiles/{0}", image.BinaryFileId ) );
+                    }
+
+                    BatchItemDetailPage.TransactionImageTypeValueFront = client.GetDataByGuid<DefinedValue>( "api/DefinedValues", new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_IMAGE_TYPE_CHECK_FRONT ) );
+                    BatchItemDetailPage.TransactionImageTypeValueBack = client.GetDataByGuid<DefinedValue>( "api/DefinedValues", new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_IMAGE_TYPE_CHECK_BACK ) );
+                    BatchItemDetailPage.FinancialTransaction = financialTransaction;
+                    this.NavigationService.Navigate( BatchItemDetailPage );
+                }
+            }
+            catch ( Exception ex )
+            {
+                MessageBox.Show( ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
+            }
         }
     }
 }

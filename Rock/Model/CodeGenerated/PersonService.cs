@@ -61,6 +61,18 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<FinancialPledge>().Queryable().Any( a => a.PersonId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, FinancialPledge.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialTransaction>().Queryable().Any( a => a.AuthorizedPersonId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<HtmlContent>().Queryable().Any( a => a.ApprovedByPersonId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, HtmlContent.FriendlyTypeName );
@@ -86,12 +98,6 @@ namespace Rock.Model
             if ( new Service<PhoneNumber>().Queryable().Any( a => a.PersonId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, PhoneNumber.FriendlyTypeName );
-                return false;
-            }  
- 
-            if ( new Service<Pledge>().Queryable().Any( a => a.PersonId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, Pledge.FriendlyTypeName );
                 return false;
             }  
             

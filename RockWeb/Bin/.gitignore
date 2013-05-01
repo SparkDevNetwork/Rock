@@ -1,24 +1,31 @@
+#NOTE: RockWeb\bin repository should only include files that don't get copied into RockWeb\Bin as a result of building the application
+#  except for these files:
+#    Microsoft.Data.Edm.dll
+#    Microsoft.Data.OData.dll
+#    System.Spatial.dll
+
+#file types
+*.resources.dll
+
+#specific files
+/AjaxControlToolkit.dll
+/AjaxControlToolkit.pdb
+/EntityFramework.dll
 /EntityFramework.xml
 /Facebook.dll
 /Facebook.xml
-/Microsoft.Data.Edm.dll
 /Microsoft.Data.Edm.xml
 /Microsoft.Data.OData.Contrib.dll
-/Microsoft.Data.OData.dll
 /Microsoft.Data.OData.xml
 /Newtonsoft.Json.dll
 /Newtonsoft.Json.xml
 /Quartz.dll
 /Quartz.pdb
-/Rock.DataTransferObjects.dll
 /Rock.Rest.dll
 /Rock.Rest.pdb
 /Rock.dll
 /Rock.pdb
-/System.Spatial.dll
 /System.Spatial.xml
 /System.Web.Http.OData.dll
-/Rock.DataTransferObjects.pdb
 /EntityFramework.SqlServer.dll
 /EntityFramework.SqlServer.xml
-/EntityFramework.dll

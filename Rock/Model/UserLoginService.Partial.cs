@@ -85,8 +85,8 @@ namespace Rock.Model
             user.ServiceName = serviceName;
             user.UserName = username;
             user.IsConfirmed = isConfirmed;
-            user.CreationDate = createDate;
-            user.LastPasswordChangedDate = createDate;
+            user.CreationDateTime = createDate;
+            user.LastPasswordChangedDateTime = createDate;
             if ( person != null )
                 user.PersonId = person.Id;
 
@@ -125,7 +125,7 @@ namespace Rock.Model
                 return false;
 
             user.Password = authenticationComponent.EncodePassword( user, newPassword );
-            user.LastPasswordChangedDate = DateTime.Now;
+            user.LastPasswordChangedDateTime = DateTime.Now;
 
             return true;
         }
@@ -145,7 +145,7 @@ namespace Rock.Model
                 throw new Exception( string.Format( "'{0}' service does not exist, or is not active", user.ServiceName ) );
 
             user.Password = authenticationComponent.EncodePassword( user, password );
-            user.LastPasswordChangedDate = DateTime.Now;
+            user.LastPasswordChangedDateTime = DateTime.Now;
         }
 
         /// <summary>
@@ -169,7 +169,7 @@ namespace Rock.Model
             if ( !Int32.TryParse( globalAttributes.GetValue( "MaxInvalidPasswordAttempts" ), out maxInvalidPasswordAttempts ) )
                 maxInvalidPasswordAttempts = int.MaxValue;
 
-            DateTime firstAttempt = user.FailedPasswordAttemptWindowStart ?? DateTime.MinValue;
+            DateTime firstAttempt = user.FailedPasswordAttemptWindowStartDateTime ?? DateTime.MinValue;
             int attempts = user.FailedPasswordAttemptCount ?? 0;
 
             TimeSpan window = new TimeSpan( 0, passwordAttemptWindow, 0 );
@@ -179,7 +179,7 @@ namespace Rock.Model
                 if ( attempts >= maxInvalidPasswordAttempts )
                 {
                     user.IsLockedOut = true;
-                    user.LastLockedOutDate = DateTime.Now;
+                    user.LastLockedOutDateTime = DateTime.Now;
                 }
 
                 user.FailedPasswordAttemptCount = attempts;
@@ -187,7 +187,7 @@ namespace Rock.Model
             else
             {
                 user.FailedPasswordAttemptCount = 1;
-                user.FailedPasswordAttemptWindowStart = DateTime.Now;
+                user.FailedPasswordAttemptWindowStartDateTime = DateTime.Now;
             }
         }
 

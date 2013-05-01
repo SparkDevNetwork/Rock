@@ -24,7 +24,7 @@ namespace Rock.Model
         /// <returns></returns>
         public override bool Save( BinaryFile item, int? personId )
         {
-            item.LastModifiedTime = DateTime.Now;
+            item.LastModifiedDateTime = DateTime.Now;
             return base.Save( item, personId );
         }
     }

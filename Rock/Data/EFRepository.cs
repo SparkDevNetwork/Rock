@@ -329,6 +329,16 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Sets the values.
+        /// </summary>
+        /// <param name="targetItem">The target item.</param>
+        /// <param name="sourceItem">The source item.</param>
+        public virtual void SetValues( T sourceItem, T targetItem )
+        {
+            _context.Entry( targetItem ).CurrentValues.SetValues( sourceItem );
+        }
+
+        /// <summary>
         /// Deletes the specified entity.
         /// </summary>
         /// <param name="entity">The entity.</param>

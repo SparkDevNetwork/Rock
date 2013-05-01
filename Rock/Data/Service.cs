@@ -392,6 +392,16 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Copies the Values from a Source Entity into a Target Entity
+        /// </summary>
+        /// <param name="sourceItem">The source item.</param>
+        /// <param name="targetItem">The target item.</param>
+        public virtual void SetValues( T sourceItem, T targetItem )
+        {
+            _repository.SetValues( sourceItem, targetItem );
+        }
+
+        /// <summary>
         /// Triggers the workflows.
         /// </summary>
         /// <param name="entity">The entity.</param>
