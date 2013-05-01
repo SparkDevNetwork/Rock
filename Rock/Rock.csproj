@@ -574,12 +574,14 @@
     <Compile Include="Model\CodeGenerated\CommunicationRecipientService.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationService.cs" />
     <Compile Include="Model\CodeGenerated\DataViewFilterService.cs" />
-    <Compile Include="Model\CodeGenerated\DataViewService.cs" />
+    <Compile Include="Model\CodeGenerated\DataViewService.cs" />    
     <Compile Include="Model\CodeGenerated\DeviceService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialBatchService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialGatewayService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPledgeService.cs" />
+	<Compile Include="Model\CodeGenerated\FinancialScheduledTransactionDetailService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialScheduledTransactionService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionDetailService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionImageService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionService.cs" />
