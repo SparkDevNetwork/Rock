@@ -84,8 +84,11 @@ namespace Rock.Apps.CheckScannerUtility
                     break;
             }
 
-            lblImageOption.Visibility = Visibility.Visible;
-            cboImageOption.Visibility = Visibility.Visible;
+
+            if ( cboMagTekCommPort.Items.Count > 0 )
+            {
+                cboMagTekCommPort.SelectedItem = string.Format( "COM{0}", rockConfig.MICRImageComPort );
+            }
         }
 
         /// <summary>
@@ -101,6 +104,8 @@ namespace Rock.Apps.CheckScannerUtility
             cboScannerInterfaceType.Items.Clear();
             cboScannerInterfaceType.Items.Add( "Ranger" );
             cboScannerInterfaceType.Items.Add( "MagTek" );
+
+            cboMagTekCommPort.ItemsSource = System.IO.Ports.SerialPort.GetPortNames();
         }
 
         /// <summary>
@@ -150,6 +155,14 @@ namespace Rock.Apps.CheckScannerUtility
                     break;
             }
 
+
+            string comPortName = cboMagTekCommPort.SelectedItem as string;
+            
+            if (!string.IsNullOrWhiteSpace(comPortName))
+            {
+                rockConfig.MICRImageComPort = short.Parse( comPortName.Replace( "COM", string.Empty ) );
+            }
+
             rockConfig.Save();
 
             this.NavigationService.GoBack();
@@ -173,6 +186,18 @@ namespace Rock.Apps.CheckScannerUtility
         private void Page_Loaded( object sender, RoutedEventArgs e )
         {
             ShowDetail();
+        }
+
+        /// <summary>
+        /// Handles the SelectionChanged event of the cboScannerInterfaceType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="SelectionChangedEventArgs"/> instance containing the event data.</param>
+        private void cboScannerInterfaceType_SelectionChanged( object sender, SelectionChangedEventArgs e )
+        {
+            bool magTekSelected = cboScannerInterfaceType.SelectedItem.Equals( "MagTek" );
+            lblMagTekCommPort.Visibility = magTekSelected ? Visibility.Visible : Visibility.Collapsed;
+            cboMagTekCommPort.Visibility = magTekSelected ? Visibility.Visible : Visibility.Collapsed;
         }
     }
 }

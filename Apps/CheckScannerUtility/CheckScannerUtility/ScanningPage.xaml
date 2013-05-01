@@ -50,13 +50,17 @@
                 Margin="0"
                 Grid.Row="1"
                 Grid.RowSpan="7" />
-        <Label Name="lblScanWarning"
-               Grid.Column="1"
-               Grid.Row="2"
-               Grid.ColumnSpan="2"
-               Style="{StaticResource labelStyleAlert}"
-               Content="WARNING: Check account Information not found. Try scanning again with the check facing the other direction.">
-        </Label>
+        <StackPanel Grid.Column="1" Grid.Row="2" Grid.ColumnSpan="2">
+            <Label Name="lblScanWarning"
+                   Style="{StaticResource labelStyleAlert}"
+                   Content="WARNING: Check account Information not found. Try scanning again with the check facing the other direction.">
+            </Label>
+            <Label Name="lblScanInstructions"
+                   Style="{StaticResource labelStyleAlertInfo}"
+                   Content="INFO:  ---">
+            </Label>
+        </StackPanel>
+        
         <Label Name="lblRoutingNumber"
                Grid.Row="3"
                Grid.Column="1"
@@ -70,7 +74,7 @@
                Grid.Row="4"
                Grid.Column="2"
                Style="{StaticResource labelStyle}">Check Number: 0123</Label>
-        
+
         <Label Grid.Row="5"
                Grid.Column="1"
                VerticalAlignment="Bottom"
