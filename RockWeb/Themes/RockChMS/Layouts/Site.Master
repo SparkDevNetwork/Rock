@@ -42,8 +42,6 @@
                 <asp:ScriptReference Path="~/Scripts/bootstrap.min.js"/>
                 <asp:ScriptReference Path="~/Scripts/bootbox.min.js"/>
                 <asp:ScriptReference Path="~/Scripts/jquery.tinyscrollbar.js"/>
-                <asp:ScriptReference Path="~/scripts/ckeditor/ckeditor.js"/>
-                <asp:ScriptReference Path="~/scripts/ckeditor/adapters/jquery.js"/>
                 <asp:ScriptReference Path="~/Scripts/Rock/Rock.controls.js"/>
                 <asp:ScriptReference Path="~/Scripts/Rock/ajax-client-error-handler.js"/>
             </Scripts>

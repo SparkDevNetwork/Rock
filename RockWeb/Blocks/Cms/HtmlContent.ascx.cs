@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Cms
             _supportVersioning = bool.Parse( GetAttributeValue( "SupportVersions" ) ?? "false" );
             _requireApproval = bool.Parse( GetAttributeValue( "RequireApproval" ) ?? "false" );
 
-            mpeContent.OnOkScript = string.Format( "saveHtmlContent_{0}();", CurrentBlock.Id );
+            mpeContent.OnOkScript = string.Format( "Rock.controls.htmlEditor.saveHtmlContent({0});", CurrentBlock.Id );
 
             rGrid.DataKeyNames = new string[] { "id" };
             rGrid.ShowActionRow = false;
@@ -59,6 +59,8 @@ namespace RockWeb.Blocks.Cms
             base.OnLoad( e );
 
             hfAction.Value = string.Empty;
+            CurrentPage.AddScriptLink( Page, "~/Scripts/ckeditor/ckeditor.js" );
+            CurrentPage.AddScriptLink( Page, "~/Scripts/ckeditor/adapters/jquery.js" );
         }
 
         protected void lbEdit_Click( object sender, EventArgs e )

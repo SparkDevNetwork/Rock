@@ -151,7 +151,7 @@
                 isMultiSelect = this.isMultiSelect,
                 updateScrollbar = this.updateScrollbar;
 
-            $('#' + controlId + ' a.rock-picker').click(function (e) {
+            $('#' + controlId + ' a.rock-picker').click(function () {
                 $(this).parent().siblings('.rock-picker').first().toggle();
                 updateScrollbar(controlId);
             });
@@ -166,7 +166,7 @@
                     $('#btnSelectNone_' + controlId).fadeOut(500);
                 });
 
-            $('#btnCancel_' + controlId).click(function (e) {
+            $('#btnCancel_' + controlId).click(function () {
                 $(this).parent().slideUp();
             });
 
@@ -186,7 +186,7 @@
                 return false;
             });
 
-            $('#btnSelect_' + controlId).click(function (e) {
+            $('#btnSelect_' + controlId).click(function () {
                 var treeViewData = $('#treeviewItems_' + controlId).data('kendoTreeView'),
                     selectedNode = treeViewData.select(),
                     nodeData = treeViewData.dataItem(selectedNode),
@@ -331,7 +331,7 @@
                         dataType: 'json'
                     });
 
-                    promise.done(function (data, status, xhr) {
+                    promise.done(function (data) {
                         $('#personPickerItems_' + controlId).first().html('');
                         response($.map(data, function (item) {
                             return item;
@@ -359,11 +359,11 @@
                 $(this).next('.rock-picker').toggle();
             });
 
-            $('.rock-picker-select').on('click', '.rock-picker-select-item', function (e) {
+            $('.rock-picker-select').on('click', '.rock-picker-select-item', function () {
                 var $selectedItem = $(this).attr('data-person-id');
 
                 // hide other open details
-                $('.rock-picker-select-item-details').each(function (index) {
+                $('.rock-picker-select-item-details').each(function () {
                     var $el = $(this),
                         $currentItem = $el.parent().attr('data-person-id');
 
@@ -375,11 +375,11 @@
                 $(this).find('.rock-picker-select-item-details:hidden').slideDown();
             });
 
-            $('#btnCancel_' + controlId).click(function (e) {
+            $('#btnCancel_' + controlId).click(function () {
                 $(this).parent().slideUp();
             });
 
-            $('#btnSelect_' + controlId).click(function (e) {
+            $('#btnSelect_' + controlId).click(function () {
                 var radInput = $('#' + controlId).find('input:checked'),
 
                     selectedValue = radInput.val(),
@@ -453,6 +453,114 @@
                 var personPicker = new PersonPicker(options);
                 exports.personPickers[options.controlId] = personPicker;
                 personPicker.initialize();
+            }
+        };
+
+        return exports;
+    }());
+
+    Rock.controls.htmlEditor = (function () {
+        var HtmlEditor = function (options) {
+            this.blockId = options.blockId;
+            this.behaviorId = options.behaviorId;
+            this.hasBeenModified = options.hasBeenModified || false;
+            this.versionId = options.versionId;
+            this.startDateId = options.startDateId;
+            this.expireDateId = options.expireDateId;
+            this.cdEditorId = options.ckEditorId;
+            this.approvalId = options.approvalId;
+        };
+
+        HtmlEditor.prototype.initializeEventHandlers = function () {
+            var blockId = this.blockId,
+                behaviorId = this.behaviorId,
+                hasBeenModified = this.hasBeenModified,
+                versionId = this.versionId,
+                startDateId = this.startDateId,
+                expireDateId = this.expireDateId,
+                ckEditorId = this.ckEditorId,
+                approvalId = this.approvalId;
+
+            $('#html-content-edit-' + blockId + ' .date-picker').kendoDatePicker({
+                open: function () {
+                    setTimeout(function () {
+                        $('.k-calendar-container').parent('.k-animation-container').css({ zindex: 200000 });
+                    }, 1);
+                }
+            });
+
+            $('#html-content-version-' + blockId).click(function () {
+                $('#html-content-versions-' + blockId).show();
+                $(this).hide();
+                $('#html-content-edit-' + blockId).hide();
+                $find(behaviorId)._layout();
+                return false;
+            });
+
+            $('#html-content-versions-cancel-' + blockId).click(function () {
+                $('#html-content-edit-' + blockId).show();
+                $('#html-content-version-' + blockId).show();
+                $('#html-content-versions-' + blockId).hide();
+                $find(behaviorId)._layout();
+                return false;
+            });
+
+            $('a.html-content-show-version-' + blockId).click(function () {
+                var confirmMessage = 'Loading a previous version will cause any changes you\'ve made to the existing text to be lost. Are you sure you want to continue?',
+                    request;
+
+                if (hasBeenModified  || confirm(confirmMessage)) {
+
+                    // TODO: Update this endpoint URL. It doesn't appear to work anymore.
+                    request = $.ajax({
+                        type: 'GET',
+                        contentType: 'application/json',
+                        dataType: 'json',
+                        url: '/REST/Cms/HtmlContent/' + $(this).attr('data-html-id')
+                    });
+
+                    request.done(function (data) {
+                        var ckInstance = CKEDITOR.instances[ckEditorId];
+
+                        $('#html-content-version-' + blockId).text('Version ' + data.Version);
+                        $('#' + versionId).val(data.Version);
+                        $('#' + startDateId).val(data.StartDateTime);
+                        $('#' + expireDateId).val(data.ExpireDateTime);
+                        $('#' + approvalId).attr('checked', data.Approved);
+
+                        ckInstance.setData(data.Content, function() {
+                            ckInstance.resetDirty();
+                            $('#html-content-edit-' + blockId).show();
+                            $('#html-content-version-' + blockId).show();
+                            $('#html-content-versions-' + blockId).hide();
+                            $find(behaviorId)._layout();
+                        });
+
+                    });
+
+                    request.fail(function (xhr, status, error) {
+                        console.log(status + ' [' + error + ']: ' + xhr.responseText);
+                    });
+                }
+            });
+        };
+
+        HtmlEditor.prototype.initialize = function () {
+            this.initializeEventHandlers();
+        };
+
+        var exports = {
+            htmlEditors: {},
+            initialize: function (options) {
+                var htmlEditor = new HtmlEditor(options);
+                exports.htmlEditors[options.blockId] = htmlEditor;
+                htmlEditor.initialize();
+            },
+            saveHtmlContent: function (blockId) {
+                $('#html-content-edit-' + blockId)
+                    .parent()
+                    .find('.save-button')
+                    .click();
             }
         };
 
