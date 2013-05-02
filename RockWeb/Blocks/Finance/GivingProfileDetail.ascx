@@ -41,8 +41,6 @@
 
     <asp:Panel ID="pnlDetails" runat="server">
 
-        <% spanClass = ( _VerticalLayout ) ? "span12" : "span6"; %>
-        
         <div class="container-fluid">     
                                 
             <div class="row-fluid">
@@ -55,25 +53,28 @@
 
                         <div class="form-horizontal">
 
-                            <div id="divCampus" runat="server" visible="false">                                                            
-                                <div class="row-fluid">
-                                    <Rock:LabeledButtonDropDownList ID="btnCampusList" runat="server" CssClass="btn btn-primary" Title="Select Campus" LabelText="Campus" />
-                                </div>
-                            </div>
-                        
-                            <asp:Repeater ID="rptAccountList" runat="server" ClientIdMode="Predictable">
-                            <ItemTemplate>
+                            <div id="divCampus" class="row-fluid" runat="server" visible="false">                                                            
                                 
-                                <div class="row-fluid">
-                                    <Rock:LabeledTextBox ID="inputAccountAmount" runat="server" CssClass="input-small calc" LabelText="<%# ((KeyValuePair<string,decimal>)Container.DataItem).Key %>"  
-                                        Text="<%# ((KeyValuePair<string,decimal>)Container.DataItem).Value %>" PrependText="$">                                            
-                                    </Rock:LabeledTextBox>                                    
-                                </div>
+                                <Rock:LabeledButtonDropDownList ID="btnCampusList" runat="server" CssClass="btn btn-primary" Title="Select Campus" LabelText="Campus" />
+                                
+                            </div>
+                            
+                            <div id="divAccountList">
 
-                            </ItemTemplate>                                
-                            </asp:Repeater>                        
+                                <asp:Repeater ID="rptAccountList" runat="server" >
+                                <ItemTemplate>                                
 
-                            <div ID="divAddAccount" class="row-fluid" runat="server" visible="false">
+                                    <div class="row-fluid">
+	                                    <Rock:LabeledTextBox ID="inputAccountAmount" runat="server" CssClass="input-small calc" LabelText="<%# DataBinder.Eval(Container.DataItem, "Account.PublicName") %>"  
+		                                    Text="<%# DataBinder.Eval(Container.DataItem, "Amount") %>" PrependText="$" >                                            
+	                                    </Rock:LabeledTextBox>                                    
+                                    </div>
+
+                                </ItemTemplate>                                
+                                </asp:Repeater>
+                            </div>                     
+
+                            <div ID="divAddAccount" class="row-fluid" runat="server" >
                                 <div class="control-group controls">
                                     <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnAddAccount_SelectionChanged" Title="Add Another Gift" ></Rock:ButtonDropDownList>                                 
                                 </div>
@@ -81,48 +82,46 @@
 
                             <% if ( rptAccountList.Items.Count != 0 ) { %>
 
-                                <div class="row-fluid" >
-                                    <div class="control-group">     
+                            <div id="divRecurrence" runat="server" visible="false">
+                                
+                                <div class="row-fluid">
+                                    <div class="control-group">
+                                    <%--<Rock:LabeledText ID="lblTotalAmount" CssClass="control-label"  LabelText="Total Amount" />--%>
+                                    
                                         <label id="lblTotalAmount" class="control-label" for="spnTotal"><b>Total Amount</b></label>
                                         <div class="controls amount-right">
                                             <b>$ <span id="spnTotal">0.00</span></b>
-                                        </div>                                                        
-                                    </div>
+                                        </div>                     
+                                    </div>                                   
+                                    
                                 </div>
 
                                 <div class="row-fluid">
-
-			                        <div class="control-group">
-
-                                        <label id="lblRecurrence" class="control-label" for="btnRecurrence">Recurs </label>
-                                        <div class="controls">
-                                            <Rock:ButtonDropDownList ID="btnRecurrence" runat="server" CssClass="btn btn-primary" Title="Select Recurrence" OnSelectionChanged="btnRecurrence_SelectionChanged"></Rock:ButtonDropDownList>
-                                        </div>				                    
-
-			                        </div>
-
-                                    <div id="divRecurrence" visible="false" runat="server">
+                                    <Rock:LabeledButtonDropDownList ID="btnRecurrence" runat="server" CssClass="btn btn-primary" Title="Select Recurrence" OnSelectionChanged="btnRecurrence_SelectionChanged"  LabelText="Recurs" />			                        
+                                </div>                                    
                                     
-                                        <div class="row-fluid">                                        
-                                            <Rock:DateTimePicker ID="dtStartingDate" runat="server" LabelText="Starting On" data-date-format="dd-mm-yyyy" DatePickerType="Date" />                                        
+                                <div class="row-fluid">                                        
+                                    <Rock:DateTimePicker ID="dtStartingDate" runat="server" LabelText="Starting On" data-date-format="dd-mm-yyyy" DatePickerType="Date" />                                        
+                                </div>
+
+                                <div class="row-fluid">
+                                    <Rock:LabeledCheckBox id="cbLimitGifts" runat="server" LabelText="Limit number of gifts" />
+                                    <Rock:DataTextBox ID="tbLimitGifts" runat="server" Text="0" />
+
+                                    <%--<div class="control-group controls">
+                                        <label class="checkbox">                                            
+                                            <input id="cboxLimitGifts" class="togglePanel" type="checkbox" onclick="javascript: $('#grpLimitGifts').toggle()"> Limit number of gifts
+                                        </label>                                      
+
+                                        <div id="grpLimitGifts" style="display: none">                                                                                                                                        
+                                            <input class="input-mini" size="4" type="text" placeholder="0">
                                         </div>
 
-                                        <div class="row-fluid">
-                                            <div class="control-group controls">
-                                                <label class="checkbox">                                            
-                                                    <input id="cboxLimitGifts" class="togglePanel" type="checkbox" onclick="javascript: $('#grpLimitGifts').toggle()"> Limit number of gifts
-                                                </label>                                      
-
-                                                <div id="grpLimitGifts" style="display: none">                                                                                                                                        
-                                                    <input class="input-mini" size="4" type="text" placeholder="0">
-                                                </div>
-
-                                            </div>
-		                                </div>                                            
-
-                                    </div>    
+                                    </div>--%>
 
                                 </div>
+
+                            </div>
 
                             <% } %>
                         
@@ -320,8 +319,8 @@
                                         <div class="expiration-group">
 
                                             <label>Expiration Date</label>
-                                            <Rock:ButtonDropDownList ID="btnMonthExpiration" runat="server" CssClass="btn btn-primary" Title="Month" OnClick=""></Rock:ButtonDropDownList>                                             
-                                            <Rock:ButtonDropDownList ID="btnYearExpiration" runat="server" CssClass="btn btn-primary" Title="Year" OnClick=""></Rock:ButtonDropDownList> 
+                                            <Rock:ButtonDropDownList ID="btnMonthExpiration" runat="server" CssClass="btn btn-primary" Title="Month"></Rock:ButtonDropDownList>
+                                            <Rock:ButtonDropDownList ID="btnYearExpiration" runat="server" CssClass="btn btn-primary" Title="Year"></Rock:ButtonDropDownList>
                                         
                                         </div>
 
@@ -350,7 +349,7 @@
 
                                         </label>                                         
                                         
-                                        <div id="grpCardNick" style="display: none">
+                                        &nbsp;&nbsp;&nbsp;&nbsp;<div id="grpCardNick" style="display: none">
                                             
                                             <label for="txtCardNick">Enter a card nickname </label>
                                             
@@ -402,7 +401,7 @@
 
                                         </label>                                         
                                         
-                                        <div id="grpCheckNick" style="display: none">
+                                        &nbsp;&nbsp;&nbsp;&nbsp;<div id="grpCheckNick" style="display: none">
                                             
                                             <label for="txtCheckNick">Enter an account nickname </label>
                                             

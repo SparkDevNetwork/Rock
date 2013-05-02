@@ -29,15 +29,12 @@ namespace RockWeb.Blocks.Finance
         "SELECT [Name] AS [Text], [Id] AS [Value] FROM [FinancialGateway]", true, "", "Payments", 0 )]
     [CustomCheckboxListField( "Checking/ACH Provider", "Which payment processor should be used for checking/ACH?",
         "SELECT [Name] AS [Text], [Id] AS [Value] FROM [FinancialGateway]", true, "", "Payments", 1 )]
-    //[CustomCheckboxListField( "Default Accounts to display", "Which accounts should be displayed by default?",
-    //    "SELECT [Name] AS [Text], [Id] AS [Value] FROM [FinancialAccount] WHERE [IsActive] = 1 ORDER BY [Order]", true, "", "Payments", 2 )]
     [AccountsField("Default Accounts", "Which accounts should be displayed by default?", true, "", "Payments", 2)]
     [BooleanField( "Show Vertical Layout", "Should the giving page display vertically or horizontally?", true, "UI Options", 0 )]
     [BooleanField( "Show Campuses", "Should giving be associated with a specific campus?", false, "UI Options", 1 )]
     [BooleanField( "Show Credit Card", "Allow users to give using a credit card?", true, "UI Options", 2 )]
     [BooleanField( "Show Checking/ACH", "Allow users to give using a checking account?", true, "UI Options", 3 )]
     [BooleanField( "Show Recurrence", "Allow users to give recurring gifts?", true, "UI Options", 4 )]
-
     [BooleanField( "Request Phone", "Should financial contributions require a user's phone number?", true, "Data Requirements", 0 )]    
     public partial class GivingProfileDetail : RockBlock
     {
@@ -68,6 +65,9 @@ namespace RockWeb.Blocks.Finance
             base.OnInit( e );
 
             _VerticalLayout = Convert.ToBoolean( GetAttributeValue( "ShowVerticalLayout" ) );
+            
+            spanClass = ( _VerticalLayout ) ? "span12" : "span6";
+
             _ShowCampuses = Convert.ToBoolean( GetAttributeValue( "ShowCampuses" ) );
             _ShowCreditCard = Convert.ToBoolean( GetAttributeValue( "ShowCreditCard" ) );
             _ShowChecking = Convert.ToBoolean( GetAttributeValue( "ShowChecking/ACH" ) );
@@ -337,35 +337,35 @@ namespace RockWeb.Blocks.Finance
             _transaction = new FinancialTransaction();            
             _transactionService.Save( _transaction, CurrentPersonId );
 
-            var queryable = accountService.Queryable().Where( f => f.IsActive )
-                .Distinct().OrderBy( f => f.Order );
+            var selectedAccounts = accountService.Queryable().Where( f => f.IsActive );
 
-            var test = GetAttributeValue( "DefaultAccounts" );
-            // returns Guid's for the selected accounts
-
-
-            List<int> defaultAccounts = GetAttributeValue( "DefaultAccounts" ).Any()
-                ? GetAttributeValue( "DefaultAccounts" ).Split( ',' ).ToList().Select( s => int.Parse( s ) ).ToList()
-                : new List<int>( ( queryable.Select( f => f.Id ).ToList().FirstOrDefault() ) );
-
-
-            if ( ( queryable.Count() - defaultAccounts.Count ) > 0 )
+            if ( GetAttributeValue( "DefaultAccounts" ).Any() )
             {
-                btnAddAccount.DataSource = queryable.Where( f => !defaultAccounts.Contains( f.Id ) )
-                   .Select( f => f.PublicName ).ToList();
+                var accountGuids = GetAttributeValue( "DefaultAccounts" ).Split( ',' ).Select( a => new Guid(a) );
+
+                btnAddAccount.DataSource = selectedAccounts.Where( a => !accountGuids.Contains( a.Guid ) ).ToList();
                 btnAddAccount.DataBind();
-                btnAddAccount.Title = "Add Another Gift";
-                divAddAccount.Visible = true;
+
+                selectedAccounts = selectedAccounts.Where( a => accountGuids.Contains( a.Guid ) );
             }
             else
             {
                 divAddAccount.Visible = false;
             }
+            
+            //ViewState["CachedTransaction"] = _transaction;
+            List<FinancialTransactionDetail> transactionList = new List<FinancialTransactionDetail>();
+                        
+            foreach ( var account in selectedAccounts )
+            {
+                FinancialTransactionDetail detail = new FinancialTransactionDetail();
+                detail.AccountId = account.Id;
+                detail.Account = account;
+                detail.Amount = 0M;
+                transactionList.Add( detail );                
+            }
 
-            ViewState["CachedTransaction"] = _transaction;
-
-            rptAccountList.DataSource = queryable.Where( f => defaultAccounts.Contains( f.Id ) )
-                .ToDictionary( f => f.PublicName, f => Convert.ToDecimal( !f.IsActive ) );
+            rptAccountList.DataSource = transactionList;
             rptAccountList.DataBind();
         }
 
