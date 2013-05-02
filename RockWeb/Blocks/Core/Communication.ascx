@@ -47,6 +47,8 @@
 
         <asp:PlaceHolder ID="phContent" runat="server" />
 
+        <Rock:DateTimePicker ID="dtpFutureSend" runat="server" LabelText="Don't Send Until" DatePickerType="Date" SourceTypeName="Rock.Model.Communication" PropertyName="FutureSendDateTime" />
+
         <div class="actions">
             <asp:LinkButton ID="btnSubmit" runat="server" Text="Submit" CssClass="btn btn-primary" OnClick="btnSubmit_Click" />
             <asp:LinkButton ID="btnApprove" runat="server" Text="Approve" CssClass="btn btn-primary" OnClick="btnApprove_Click" />

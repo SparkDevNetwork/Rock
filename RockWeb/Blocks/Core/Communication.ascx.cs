@@ -582,6 +582,7 @@ namespace RockWeb.Blocks.Core
                 control.InitializeFromSender( CurrentPerson );
             }
 
+            dtpFutureSend.SelectedDateTime = communication.FutureSendDateTime;
 
             ShowActions( communication );
         }
@@ -715,6 +716,9 @@ namespace RockWeb.Blocks.Core
             return null;
         }
 
+        /// <summary>
+        /// Gets the channel data.
+        /// </summary>
         private void GetChannelData()
         {
             if ( phContent.Controls.Count == 1 && phContent.Controls[0] is ChannelControl )
@@ -734,6 +738,10 @@ namespace RockWeb.Blocks.Core
             }
         }
 
+        /// <summary>
+        /// Shows the actions.
+        /// </summary>
+        /// <param name="communication">The communication.</param>
         private void ShowActions(Rock.Model.Communication communication)
         {
             bool canApprove = IsUserAuthorized( "Approve" );
@@ -879,6 +887,8 @@ namespace RockWeb.Blocks.Core
                 communication.Subject = communication.ChannelData["Subject"];
                 communication.ChannelData.Remove( "Subject" );
             }
+
+            communication.FutureSendDateTime = dtpFutureSend.SelectedDateTime;
 
             return communication;
         }

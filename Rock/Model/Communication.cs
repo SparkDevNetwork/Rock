@@ -39,6 +39,24 @@ namespace Rock.Model
         public int? SenderPersonId { get; set; }
 
         /// <summary>
+        /// Gets or sets the subject.
+        /// </summary>
+        /// <value>
+        /// The subject.
+        /// </value>
+        [MaxLength( 100 )]
+        public string Subject { get; set; }
+
+        /// <summary>
+        /// Gets or sets the future send date time.
+        /// </summary>
+        /// <value>
+        /// The future send date time.
+        /// </value>
+        [DataMember]
+        public DateTime? FutureSendDateTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the status.
         /// </summary>
         /// <value>
@@ -73,15 +91,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string ReviewerNote { get; set; }
-
-        /// <summary>
-        /// Gets or sets the subject.
-        /// </summary>
-        /// <value>
-        /// The subject.
-        /// </value>
-        [MaxLength( 100 )]
-        public string Subject { get; set; }
 
         /// <summary>
         /// Gets or sets the channel entity type id.
