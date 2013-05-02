@@ -8,6 +8,9 @@
         base.OnInit( e );
         AddCSSLink( Page, ResolveUrl( "~/CSS/jquery.tagsinput.css" ) );
         AddScriptLink( Page, ResolveUrl( "~/Scripts/jquery.tagsinput.js" ) );
+        
+        AddScriptLink(Page, ResolveUrl("~/Scripts/jquery.tooltipster.min.js"));
+        AddCSSLink(Page, ResolveUrl("~/CSS/tooltipster.css"));
     }
     
 </script>
@@ -142,26 +145,26 @@
 				    <div class="container-fluid">
 					    <div class="row-fluid">
                                 <div class="badge-group span3">
-                                    <div class="badge" data-toggle="tooltip" title="eRA as of 2/12/2011">
+                                    <div class="badge" title="eRA as of 2/12/2011">
                                         <img src="../../../Assets/Mockup/era.jpg" />
                                     </div>
-                                    <div class="badge" data-toggle="tooltip" title="Family has attended 14 times in the last 16 weeks">
+                                    <div class="badge" title="Family has attended 14 times in the last 16 weeks">
                                         <img src="../../../Assets/Mockup/attendence-16.jpg" />
                                     </div>
-                                    <div class="badge" data-toggle="tooltip" title="Currently serves in <br/>Neighborhood Group Leaders <br/> Children's Volunteers">
+                                    <div class="badge" title="Currently serves in <br/>Neighborhood Group Leaders <br/> Children's Volunteers">
                                         <img src="../../../Assets/Mockup/volunteer.jpg" />
                                     </div>
-                                    <div class="badge" data-toggle="tooltip" title="DISC Summary: S/C">
+                                    <div class="badge" title="DISC Summary: S/C">
                                         <img src="../../../Assets/Mockup/disc.jpg" />
                                     </div>
                                 </div>
                                 <div class="badge-group span3">
-                                    <div class="badge" data-toggle="tooltip" title="Family Attendance Summary for the last 12 months">
+                                    <div class="badge" title="Family Attendance Summary for the last 12 months">
                                         <img src="../../../Assets/Mockup/attendence-bars.jpg" />
                                     </div>
                                 </div>
                                 <div class="badge-group span6">
-                                    <div class="badge" data-toggle="tooltip" title="all of the next steps smashed together for mockup">
+                                    <div class="badge" title="all of the next steps smashed together for mockup">
                                         <img src="../../../Assets/Mockup/next-steps.jpg" />
                                     </div>
                                 </div>
@@ -476,15 +479,13 @@
                                 <ul class="personlist">
                                     <li>
                                         <a 
-                                            href="http://www.google.com" 
-                                            rel="popover" 
-                                            class="popover-person" 
-                                            data-container="body" 
-                                            data-original-title="<img src='../../../Assets/Mockup/alex.jpg' /> <div>Bill Long<small>Member</small></div>" 
-                                            data-content="<strong>Spouse</strong> Jasmin
+                                            href="http://www.google.com"  
+                                            class="popover-person tooltip" 
+                                            title=" <header><img src='../../../Assets/Mockup/alex.jpg' /> <div>Bill Long<small>Member</small></div></header>
+                                                    <strong>Spouse</strong> Jasmin
                                                             <br /><strong>Age</strong> 44
                                                             <br /><strong>Area</strong> Westwing
-                                                            <br /><strong>Email</strong> bill.long@phoenixpd.gov
+                                                            <br /><strong>Email</strong> <a href='mailto:jonedmiston@ccvonline.com'>bill.long@phoenixpd.gov</a> <!-- mailto link is just a test should use communications -->
                                                             <p /><strong>Home Phone</strong> (623) 555-2426
                                                             <br /><strong>Cell Phone</strong> (623) 532-2252">
                                                 <i class="icon-circle"></i>
@@ -512,8 +513,10 @@
 
         <script>
             $(function () {
-                $(".popover-person").popover({ trigger: 'hover', html: 'true', delay: 200 });
-                $(".badge").tooltip({html: 'true', delay: 200 });
+                
+                //$(".popover-person").popover({ trigger: 'hover', html: 'true', delay: 200 });
+                $(".popover-person").tooltipster({position: 'right', interactive: true, interactiveTolerance: 350 });
+                $(".badge").tooltipster({ position: 'top', interactive: true, interactiveTolerance: 350 });
                 
             });
         </script> 
@@ -951,10 +954,6 @@
         }
 
 
-
-
-
-
         /* generic */
         small
         {
@@ -963,31 +962,7 @@
             margin-top: 2px;
         }
 
-        .popover-title img,
-        .popover-title div
-        {
-            float: left;
-        }
-
-        .popover-title div
-        {
-            margin: 4px 0 0 8px;
-        }
-
-        .popover-title small
-        {
-            display: block;
-            font-weight: normal;
-        }
-
-        .popover-title:after
-        {
-            content: ".";
-            display: block;
-            height: 0;
-            clear: both;
-            visibility: hidden;
-        }
+        
 
         .widget header .actions 
         {
