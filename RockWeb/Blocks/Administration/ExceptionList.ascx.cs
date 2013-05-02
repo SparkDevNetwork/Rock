@@ -15,42 +15,68 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administraton
 {
+    /// <summary>
+    /// Exception List Block
+    /// </summary>
     [IntegerField( "Summary Count Days", "Summary field for exceptions that have occurred within the last x days. Default value is 7.", false, 7 )]
     [DetailPage]
     public partial class ExceptionList : RockBlock
     {
         #region Control Methods
+
+
+        /// <summary>
+        /// Initialzes the control/Rock Block
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
 
+            //Only show clear exceptions button if user has edit rights
             btnClearExceptions.Visible = IsUserAuthorized( "Edit" );
 
+            //Set Exception List filter properties
+            fExceptionList.ApplyFilterClick += fExceptionList_ApplyFilterClick;
+            fExceptionList.DisplayFilterValue += fExceptionList_DisplayFilterValue;
+
+            //Set properties and events for exception list
             gExceptionList.DataKeyNames = new string[] { "Id" };
             gExceptionList.GridRebind += gExceptionList_GridRebind;
             gExceptionList.RowItemText = "Exception";
 
+            //Set properties and events for Exception Occurrences
             gExceptionOccurrences.DataKeyNames = new string[] { "Id" };
             gExceptionOccurrences.GridRebind += gExceptionOccurrences_GridRebind;
             gExceptionOccurrences.RowItemText = "Exception";
 
-            fExceptionList.ApplyFilterClick += fExceptionList_ApplyFilterClick;
-            fExceptionList.DisplayFilterValue += fExceptionList_DisplayFilterValue;
         }
 
+        /// <summary>
+        /// Loads the control.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
 
             if ( !Page.IsPostBack )
             {
-                SetExceptionVisibility( 0 );
+                //Set Exception Panel visibility to show Exception List
+                SetExceptionPanelVisibility( None.Id );
             }
         }
 
         #endregion
 
         #region Exception List Grid Events
+
+
+        /// <summary>
+        /// Handles the ApplyFilterClick event of the fExceptionList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void fExceptionList_ApplyFilterClick( object sender, EventArgs e )
         {
             if ( ddlSite.SelectedValue != All.IdValue )
@@ -105,6 +131,11 @@ namespace RockWeb.Blocks.Administraton
             BindExceptionListGrid();
         }
 
+        /// <summary>
+        /// Build filter values/summary with user friendly data from filters
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
         protected void fExceptionList_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
         {
             switch ( e.Key )
@@ -148,19 +179,35 @@ namespace RockWeb.Blocks.Administraton
             }
         }
 
+        /// <summary>
+        /// Handles the GridRebind event of the gExceptionList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gExceptionList_GridRebind( object sender, EventArgs e )
         {
             BindExceptionListGrid();
         }
 
+        /// <summary>
+        /// Handles the RowSelected event of the gExceptionList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gExceptionList_RowSelected( object sender, RowEventArgs e )
         {
-            SetExceptionVisibility( (int)e.RowKeyValue );
+            SetExceptionPanelVisibility( (int)e.RowKeyValue );
         }
 
         #endregion
 
         #region Exception Occurrece Grid Events
+
+        /// <summary>
+        /// Handles the GridRebind event of the gExceptionOccurrences control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void gExceptionOccurrences_GridRebind( object sender, EventArgs e )
         {
             int exceptionID = 0;
@@ -176,23 +223,38 @@ namespace RockWeb.Blocks.Administraton
         #endregion
 
         #region Page Events
+
+        /// <summary>
+        /// Handles the Click event of the btnClearExceptions control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnClearExceptions_Click( object sender, EventArgs e )
         {
-            ClearExceptions();
+            ClearExceptionLog();
             BindExceptionListGrid();
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnReturnToExceptionList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnReturnToExceptionList_Click( object sender, EventArgs e )
         {
             hfBaseExceptionID.Value = String.Empty;
-            SetExceptionVisibility( None.Id );
+            SetExceptionPanelVisibility( None.Id );
         }
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Binds the exception list filter.
+        /// </summary>
         private void BindExceptionListFilter()
         {
-            BindSites();
+            BindSitesFilter();
 
             int siteId;
 
@@ -235,11 +297,18 @@ namespace RockWeb.Blocks.Administraton
 
         }
 
+        /// <summary>
+        /// Binds the exception list grid.
+        /// </summary>
         private void BindExceptionListGrid()
         {
-            gExceptionList.Columns[5].HeaderText = string.Format( "Last {0} days", GetAttributeValue( "SummaryCountDays" ) );
-
+            //get the summary count attribute
             int summaryCountDays = Convert.ToInt32( GetAttributeValue( "SummaryCountDays" ) );
+
+            //set the header text for the subset/summary field
+            gExceptionList.Columns[5].HeaderText = string.Format( "Last {0} days", summaryCountDays );
+
+            //get the subset/summary date
             DateTime minSummaryCountDate = DateTime.Now.Date.AddDays( -( summaryCountDays ) );
 
             var exceptionQuery = BuildBaseExceptionListQuery()
@@ -273,6 +342,10 @@ namespace RockWeb.Blocks.Administraton
 
         }
 
+        /// <summary>
+        /// Binds the exception occurrence grid.
+        /// </summary>
+        /// <param name="baseException">Exception to base the occurrence grid off of.</param>
         private void BindExceptionOccurrenceGrid( ExceptionLog baseException )
         {
             ExceptionLogService exceptionService = new ExceptionLogService();
@@ -302,7 +375,10 @@ namespace RockWeb.Blocks.Administraton
             gExceptionOccurrences.DataBind();
         }
 
-        private void BindSites()
+        /// <summary>
+        /// Binds the sites filter.
+        /// </summary>
+        private void BindSitesFilter()
         {
             SiteService siteService = new SiteService();
             ddlSite.DataTextField = "Name";
@@ -313,6 +389,10 @@ namespace RockWeb.Blocks.Administraton
             ddlSite.Items.Insert( 0, new ListItem( All.Text, All.IdValue ) );
         }
 
+        /// <summary>
+        /// Bulds the base query for the Exception List grid data
+        /// </summary>
+        /// <returns>IQueryable containing filtered ExceptionLog records</returns>
         private IQueryable<ExceptionLog> BuildBaseExceptionListQuery()
         {
             ExceptionLogService exceptionLogService = new ExceptionLogService();
@@ -362,43 +442,64 @@ namespace RockWeb.Blocks.Administraton
             return query;
         }
 
-        private void ClearExceptions()
+
+        /// <summary>
+        /// Clears the exception log.
+        /// </summary>
+        private void ClearExceptionLog()
         {
             Service service = new Service();
-            service.ExecuteCommand( "DELETE FROM ExceptionLog", new object[] { } );
+            service.ExecuteCommand( "TRUNCATE TABLE ExceptionLog", new object[] { } );
         }
 
+        /// <summary>
+        /// Loads the exception list.
+        /// </summary>
         private void LoadExceptionList()
         {
             BindExceptionListFilter();
             BindExceptionListGrid();
         }
 
+        /// <summary>
+        /// Loads the exception occurrences panel
+        /// </summary>
+        /// <param name="exceptionId">The Id of the base exception for the grid</param>
         private void LoadExceptionOccurrences( int exceptionId )
         {
+            //get the base exception
             ExceptionLogService exceptionService = new ExceptionLogService();
             ExceptionLog exception = exceptionService.Get( exceptionId );
 
+            //set the summary fields for the base exception
             hfBaseExceptionID.Value = exceptionId.ToString();
             lblSite.Text = exception.Site.Name;
             lblPage.Text = exception.Page.Name;
             lblType.Text = exception.ExceptionType;
 
+            //Load the occurrences for the selected exception
             BindExceptionOccurrenceGrid( exception );
         }
 
-        private void SetExceptionVisibility( int baseExceptionId )
+        /// <summary>
+        /// Sets the visibility of the exception panels
+        /// </summary>
+        /// <param name="baseExceptionId">The base exception id.</param>
+        private void SetExceptionPanelVisibility( int baseExceptionId )
         {
+            //initially hide both panels
             pnlExceptionGroups.Visible = false;
             pnlExceptionOccurrences.Visible = false;
 
             if ( baseExceptionId == None.Id )
             {
+                //Load exception List if no base ExceptionId
                 LoadExceptionList();
                 pnlExceptionGroups.Visible = true;
             }
             else
             {
+                //If an exception id is passed in load related exception occurrences.
                 LoadExceptionOccurrences( baseExceptionId );
                 pnlExceptionOccurrences.Visible = true;
             }
