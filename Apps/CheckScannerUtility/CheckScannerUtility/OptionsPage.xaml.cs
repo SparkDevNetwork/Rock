@@ -4,19 +4,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Rock.Net;
 
 namespace Rock.Apps.CheckScannerUtility
@@ -119,6 +108,7 @@ namespace Rock.Apps.CheckScannerUtility
 
             try
             {
+                txtRockUrl.Text = txtRockUrl.Text.Trim();
                 RockRestClient client = new RockRestClient( txtRockUrl.Text );
                 client.Login( rockConfig.Username, rockConfig.Password );
             }
@@ -154,7 +144,6 @@ namespace Rock.Apps.CheckScannerUtility
                     rockConfig.ImageColorType = ImageColorType.ImageColorTypeBitonal;
                     break;
             }
-
 
             string comPortName = cboMagTekCommPort.SelectedItem as string;
             
@@ -196,8 +185,14 @@ namespace Rock.Apps.CheckScannerUtility
         private void cboScannerInterfaceType_SelectionChanged( object sender, SelectionChangedEventArgs e )
         {
             bool magTekSelected = cboScannerInterfaceType.SelectedItem.Equals( "MagTek" );
+            
+            // show COM port option only for Mag Tek
             lblMagTekCommPort.Visibility = magTekSelected ? Visibility.Visible : Visibility.Collapsed;
             cboMagTekCommPort.Visibility = magTekSelected ? Visibility.Visible : Visibility.Collapsed;
+
+            // show Image Option only for Ranger
+            lblImageOption.Visibility = magTekSelected ? Visibility.Collapsed : Visibility.Visible;
+            cboImageOption.Visibility = magTekSelected ? Visibility.Collapsed : Visibility.Visible;
         }
     }
 }

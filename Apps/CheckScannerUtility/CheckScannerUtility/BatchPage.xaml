@@ -245,7 +245,7 @@
                         <Label Name="lblUploadProgress"
                                Grid.Row="6"
                                Style="{StaticResource labelStyleAlert}"
-                               Content="Uploading Check Images a d d d d d d "
+                               Content="Upload Status"
                                >
                         </Label>
                         <StackPanel Grid.Row="6"

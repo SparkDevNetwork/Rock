@@ -16,6 +16,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using Rock.Constants;
 using Rock.Model;
@@ -341,7 +342,7 @@ namespace Rock.Apps.CheckScannerUtility
         {
             if ( ScannedCheckList.Where( a => !a.Uploaded ).Count() > 0 )
             {
-                lblUploadProgress.Visibility = Visibility.Visible;
+                FadeIn( lblUploadProgress );
 
                 // use a backgroundworker to do the work so that we can have an updatable progressbar in the UI
                 BackgroundWorker bwUploadScannedChecks = new BackgroundWorker();
@@ -354,22 +355,67 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         /// <summary>
+        /// Toggles the fade.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="speed">The speed.</param>
+        public void FadeIn( Control control, int speed = 0 )
+        {
+            control.Opacity = 0;
+            control.Visibility = Visibility.Visible;
+            Storyboard storyboard = new Storyboard();
+            TimeSpan duration = new TimeSpan( 0, 0, 0, 0, (int)speed ); //
+
+            DoubleAnimation fadeInAnimation = new DoubleAnimation { From = 0.0, To = 1.0, Duration = new Duration( duration ) };
+            Storyboard.SetTargetName( fadeInAnimation, control.Name );
+            Storyboard.SetTargetProperty( fadeInAnimation, new PropertyPath( "Opacity", 1 ) );
+            storyboard.Children.Add( fadeInAnimation );
+            storyboard.Begin( control );
+        }
+
+        /// <summary>
+        /// Fades the out.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="speed">The speed.</param>
+        public void FadeOut( Control control, int speed = 2000 )
+        {
+            Storyboard storyboard = new Storyboard();
+            TimeSpan duration = new TimeSpan( 0, 0, 0, 0, (int)speed ); //
+
+            DoubleAnimation fadeOutAnimation = new DoubleAnimation { From = 1.0, To = 0.0, Duration = new Duration( duration ) };
+
+            Storyboard.SetTargetName( fadeOutAnimation, control.Name );
+            Storyboard.SetTargetProperty( fadeOutAnimation, new PropertyPath( "Opacity", 0 ) );
+            storyboard.Children.Add( fadeOutAnimation );
+
+            EventHandler onCompleted = new EventHandler( (sender, e) => 
+            {
+                control.Visibility = Visibility.Collapsed;
+            } );
+
+            storyboard.Completed += onCompleted;
+
+            storyboard.Begin( control );
+        }
+        
+        /// <summary>
         /// Handles the RunWorkerCompleted event of the bwUploadScannedChecks control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RunWorkerCompletedEventArgs"/> instance containing the event data.</param>
         private void bwUploadScannedChecks_RunWorkerCompleted( object sender, RunWorkerCompletedEventArgs e )
         {
-            lblUploadProgress.Visibility = Visibility.Hidden;
             if ( e.Error == null )
             {
-                MessageBox.Show( "Upload Complete" );
-
+                lblUploadProgress.Content = "Uploading Scanned Checks: Complete";
+                FadeOut( lblUploadProgress );
                 UpdateBatchUI( grdBatches.SelectedValue as FinancialBatch );
                 
             }
             else
             {
+                FadeOut( lblUploadProgress );
                 MessageBox.Show( string.Format( "Upload Error: {0}", e.Error.Message ) );
             }
         }
@@ -501,7 +547,7 @@ namespace Rock.Apps.CheckScannerUtility
         {
             bdrBatchDetailReadOnly.Visibility = Visibility.Visible;
             bdrBatchDetailEdit.Visibility = Visibility.Collapsed;
-            lblUploadProgress.Visibility = Visibility.Hidden;
+            FadeOut( lblUploadProgress, 0 );
             ConnectToScanner();
             LoadComboBoxes();
             LoadFinancialBatchesGrid();
@@ -748,6 +794,8 @@ namespace Rock.Apps.CheckScannerUtility
                 {
                     financialBatch = client.GetData<FinancialBatch>( string.Format( "api/FinancialBatches/{0}", SelectedFinancialBatchId ) );
                 }
+
+                txtBatchName.Text = txtBatchName.Text.Trim();
 
                 financialBatch.Name = txtBatchName.Text;
                 Campus selectedCampus = cbCampus.SelectedItem as Campus;
