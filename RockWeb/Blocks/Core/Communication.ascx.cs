@@ -111,6 +111,25 @@ namespace RockWeb.Blocks.Core
             set { ViewState["ChannelData"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets any additional merge fields.
+        /// </summary>
+        public List<string> AdditionalMergeFields
+        {
+            get
+            {
+                var mergeFields = ViewState["AdditionalMergeFields"] as List<string>;
+                if ( mergeFields == null )
+                {
+                    mergeFields = new List<string>();
+                    ViewState["AdditionalMergeFields"] = mergeFields;
+                }
+                return mergeFields;
+            }
+
+            set { ViewState["AdditionalMergeFields"] = value; }
+        }
+
         #endregion
 
         #region Control Methods
@@ -520,6 +539,7 @@ namespace RockWeb.Blocks.Core
             {
                 communication = new CommunicationService().Get( itemKeyValue );
                 this.Page.Title = string.Format( "Communication #{0}", communication.Id );
+                this.AdditionalMergeFields = communication.AdditionalMergeFields.ToList();
             }
             else
             {
@@ -678,6 +698,7 @@ namespace RockWeb.Blocks.Core
                 phContent.Controls.Clear();
                 var channelControl = component.Control;
                 channelControl.ID = "commControl";
+                channelControl.AdditionalMergeFields = this.AdditionalMergeFields.ToList();
                 phContent.Controls.Add( channelControl );
 
                 if ( setData  )

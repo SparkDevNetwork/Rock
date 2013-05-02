@@ -139,6 +139,10 @@ namespace Rock.Web.UI.Controls.Communication
             Controls.Add( tbSubject );
 
             htmlMessage.ID = string.Format( "htmlMessage_{0}", this.ID );
+            htmlMessage.MergeFields.Clear();
+            htmlMessage.MergeFields.Add( "GlobalAttribute" );
+            htmlMessage.MergeFields.Add( "Rock.Model.Person" );
+            this.AdditionalMergeFields.ForEach( m => htmlMessage.MergeFields.Add( m ) );
             htmlMessage.LabelText = "Message";
             Controls.Add( htmlMessage );
 

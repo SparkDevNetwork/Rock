@@ -15,7 +15,7 @@
 
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
-                <Rock:PagePicker ID="ppPage" runat="server" LabelText="Page" />
+                <Rock:LabeledPagePicker ID="ppPage" runat="server" LabelText="Page" />
                 <Rock:DataTextBox ID="tbRoute" runat="server" SourceTypeName="Rock.Model.PageRoute, Rock" PropertyName="Route" />
             </fieldset>
 

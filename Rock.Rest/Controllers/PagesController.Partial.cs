@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Web.Http;
 using Rock.Model;
+using Rock.Web.UI.Controls.Pickers;
 
 namespace Rock.Rest.Controllers
 {
@@ -37,7 +38,7 @@ namespace Rock.Rest.Controllers
         /// </summary>
         /// <param name="id">The id.</param>
         /// <returns></returns>
-        public IQueryable<PageItem> GetChildren( int id)
+        public IQueryable<TreeViewItem> GetChildren( int id)
         {
             IQueryable<Page> qry;
             if ( id == 0 )
@@ -50,18 +51,18 @@ namespace Rock.Rest.Controllers
             }
 
             List<Page> pageList = qry.OrderBy( a => a.Order ).ThenBy( a => a.Name ).ToList();
-            List<PageItem> pageItemList = new List<PageItem>();
+            List<TreeViewItem> pageItemList = new List<TreeViewItem>();
             foreach ( var page in pageList )
             {
-                var pageItem = new PageItem();
-                pageItem.Id = page.Id;
+                var pageItem = new TreeViewItem();
+                pageItem.Id = page.Id.ToString();
                 pageItem.Name = page.Name;
 
                 pageItemList.Add( pageItem );
             }
 
             // try to quickly figure out which items have Children
-            List<int> resultIds = pageItemList.Select( a => a.Id ).ToList();
+            List<int> resultIds = pageList.Select( a => a.Id ).ToList();
 
             var qryHasChildren = from x in Get().Select( a => a.ParentPageId )
                                  where resultIds.Contains( x.Value )
@@ -71,49 +72,12 @@ namespace Rock.Rest.Controllers
 
             foreach ( var g in pageItemList )
             {
-                g.HasChildren = qryHasChildrenList.Any( a => a == g.Id );
+                int pageId = int.Parse( g.Id );
+                g.HasChildren = qryHasChildrenList.Any( a => a == pageId );
                 g.IconCssClass = "icon-file-alt";
             }
 
             return pageItemList.AsQueryable();
         }
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public class PageItem
-    {
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>
-        /// The id.
-        /// </value>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>
-        /// The name.
-        /// </value>
-        public string Name { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance has children.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if this instance has children; otherwise, <c>false</c>.
-        /// </value>
-        public bool HasChildren { get; set; }
-
-        /// <summary>
-        /// Gets or sets the icon CSS class.
-        /// </summary>
-        /// <value>
-        /// The icon CSS class.
-        /// </value>
-        public string IconCssClass { get; set; }
     }
 }
