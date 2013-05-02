@@ -30,11 +30,13 @@ namespace RockWeb.Blocks.Administraton
             gExceptionList.GridRebind += gExceptionList_GridRebind;
             gExceptionList.RowItemText = "Exception";
 
+            gExceptionOccurrences.DataKeyNames = new string[] { "Id" };
+            gExceptionOccurrences.GridRebind += gExceptionOccurrences_GridRebind;
+            gExceptionOccurrences.RowItemText = "Exception";
+
             fExceptionList.ApplyFilterClick += fExceptionList_ApplyFilterClick;
             fExceptionList.DisplayFilterValue += fExceptionList_DisplayFilterValue;
         }
-
-
 
         protected override void OnLoad( EventArgs e )
         {
@@ -42,14 +44,13 @@ namespace RockWeb.Blocks.Administraton
 
             if ( !Page.IsPostBack )
             {
-                BindFilter();
-                BindGrid();
+                SetExceptionVisibility( 0 );
             }
         }
 
         #endregion
 
-        #region Grid Events
+        #region Exception List Grid Events
         protected void fExceptionList_ApplyFilterClick( object sender, EventArgs e )
         {
             if ( ddlSite.SelectedValue != All.IdValue )
@@ -101,7 +102,7 @@ namespace RockWeb.Blocks.Administraton
             {
                 fExceptionList.SaveUserPreference( "End Date", String.Empty );
             }
-            BindGrid();
+            BindExceptionListGrid();
         }
 
         protected void fExceptionList_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
@@ -149,26 +150,47 @@ namespace RockWeb.Blocks.Administraton
 
         protected void gExceptionList_GridRebind( object sender, EventArgs e )
         {
-            BindGrid();
+            BindExceptionListGrid();
         }
 
         protected void gExceptionList_RowSelected( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "ExceptionLogID", (int)e.RowKeyValue );
+            SetExceptionVisibility( ( int ) e.RowKeyValue );
         }
 
+        #endregion
+
+        #region Exception Occurrece Grid Events
+        protected void gExceptionOccurrences_GridRebind( object sender, EventArgs e )
+        {
+            int exceptionID = 0;
+            if ( int.TryParse( hfBaseExceptionID.Value, out exceptionID ) )
+            {
+                ExceptionLogService exceptionService = new ExceptionLogService();
+                ExceptionLog baseException = exceptionService.Get( exceptionID );
+
+                BindExceptionOccurrenceGrid( baseException );
+            }
+
+        }
         #endregion
 
         #region Page Events
         protected void btnClearExceptions_Click( object sender, EventArgs e )
         {
             ClearExceptions();
-            BindGrid();
+            BindExceptionListGrid();
+        }
+
+        protected void btnReturnToExceptionList_Click( object sender, EventArgs e )
+        {
+            hfBaseExceptionID.Value = String.Empty;
+            SetExceptionVisibility( None.Id );
         }
         #endregion
 
         #region Internal Methods
-        private void BindFilter()
+        private void BindExceptionListFilter()
         {
             BindSites();
 
@@ -213,7 +235,7 @@ namespace RockWeb.Blocks.Administraton
 
         }
 
-        private void BindGrid()
+        private void BindExceptionListGrid()
         {
             gExceptionList.Columns[5].HeaderText = string.Format( "Last {0} days", GetAttributeValue( "SummaryCountDays" ) );
 
@@ -230,6 +252,35 @@ namespace RockWeb.Blocks.Administraton
 
             gExceptionList.DataBind();
         
+        }
+
+        private void BindExceptionOccurrenceGrid(ExceptionLog baseException)
+        {
+            ExceptionLogService exceptionService = new ExceptionLogService();
+
+            var query = exceptionService.Queryable()
+                .Where( e => e.HasInnerException == null || e.HasInnerException == false )
+                .Where( e => e.SiteId == baseException.SiteId )
+                .Where( e => e.PageId == baseException.PageId )
+                .Where( e => e.Description == baseException.Description )
+                .Select( e => new
+                    {
+                        Id = e.Id,
+                        ExceptionDateTime = e.ExceptionDateTime,
+                        FullName = e.CreatedByPerson.FullNameLastFirst,
+                        Description = e.Description
+                    } );
+
+            if ( gExceptionOccurrences.SortProperty == null )
+            {
+                gExceptionOccurrences.DataSource = query.OrderByDescending( e => e.ExceptionDateTime ).ToList();
+            }
+            else
+            {
+                gExceptionOccurrences.DataSource = query.Sort( gExceptionOccurrences.SortProperty ).ToList();
+            }
+
+            gExceptionOccurrences.DataBind();
         }
 
         private void BindSites()
@@ -325,9 +376,45 @@ namespace RockWeb.Blocks.Administraton
             service.ExecuteCommand( "DELETE FROM ExceptionLog", new object[] { } );
         }
 
+        private void LoadExceptionList()
+        {
+            BindExceptionListFilter();
+            BindExceptionListGrid();
+        }
+
+        private void LoadExceptionOccurrences( int exceptionId )
+        {
+            ExceptionLogService exceptionService = new ExceptionLogService();
+            ExceptionLog exception = exceptionService.Get( exceptionId );
+
+            hfBaseExceptionID.Value = exceptionId.ToString();
+            lblSite.Text = exception.Site.Name;
+            lblPage.Text = exception.Page.Name;
+            lblType.Text = exception.ExceptionType;
+
+            BindExceptionOccurrenceGrid( exception );
+        }
+
+        private void SetExceptionVisibility( int baseExceptionId )
+        {
+            pnlExceptionGroups.Visible = false;
+            pnlExceptionOccurrences.Visible = false;
+
+            if ( baseExceptionId == None.Id )
+            {
+                LoadExceptionList();
+                pnlExceptionGroups.Visible = true;
+            }
+            else
+            {
+                LoadExceptionOccurrences( baseExceptionId );
+                pnlExceptionOccurrences.Visible = true;
+            }
+        }
+
         #endregion
 
-    }
+}
 
     public class ExceptionListSummaryResults
     {
