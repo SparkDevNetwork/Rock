@@ -3,6 +3,7 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -32,10 +33,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }
             else
             {
-                // check for families that match the search criteria 
-                                
                 if ( !Page.IsPostBack )
                 {
+                    rFamily.DataSource = CurrentCheckInState.CheckIn.Families;
+                    rFamily.DataBind();
                     if ( CurrentCheckInState.CheckIn.Families.Count == 1 &&
                         !CurrentCheckInState.CheckIn.ConfirmSingleFamily )
                     {
@@ -48,17 +49,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
                             foreach ( var family in CurrentCheckInState.CheckIn.Families )
                             {
                                 family.Selected = true;
-                                // set button selected 
                             }
 
                             ProcessFamily();
                         }
-                    }
-                    else
-                    {
-                        rFamily.DataSource = CurrentCheckInState.CheckIn.Families;
-                        rFamily.DataBind();
-                        // if 1 family, set button selected
                     }
                 }
             }
@@ -72,14 +66,38 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             if ( KioskCurrentlyActive )
             {
-                int id = Int32.Parse( e.CommandArgument.ToString() );
+                int id = int.Parse( e.CommandArgument.ToString() );
                 var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Group.Id == id ).FirstOrDefault();
                 if ( family != null )
                 {
-                    family.Selected = true;
-                    ( (HtmlControl)e.Item.FindControl( "lbSelectFamily" ) ).Attributes.Add( "class", "active" );
-                    ProcessPerson();
-                    // set button selected 
+                    if ( family.Selected )
+                    {
+                        family.Selected = false;
+                        var control = (LinkButton)e.Item.FindControl( "lbSelectFamily" );
+                        control.RemoveCss( "active" );
+                        rPerson.DataSource = null;
+                        rPerson.DataBind();
+                        SaveState();
+                    }
+                    else
+                    {
+                        // make sure there are no other families selected
+                        foreach ( var f in CurrentCheckInState.CheckIn.Families )
+                        {
+                            f.Selected = false;
+                        }
+                        
+                        // make sure no other families look like they're selected
+                        foreach ( RepeaterItem ri in rFamily.Items )
+                        {
+                            ( (LinkButton)ri.FindControl("lbSelectFamily") ).RemoveCss( "active" );
+                        }
+
+                        // select the clicked on family
+                        family.Selected = true;
+                        ( (LinkButton)e.Item.FindControl( "lbSelectFamily" ) ).AddCssClass( "active" );
+                        ProcessFamily();
+                    }
                 }
             }
         }
@@ -91,13 +109,23 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                 if ( family != null )
                 {
-                    int id = Int32.Parse( e.CommandArgument.ToString() );
+                    int id = int.Parse( e.CommandArgument.ToString() );
                     var familyMember = family.People.Where( m => m.Person.Id == id ).FirstOrDefault();
                     if ( familyMember != null )
                     {
-                        familyMember.Selected = true;
-                        // set button selected 
-                        
+                        if ( familyMember.Selected )
+                        {
+                            familyMember.Selected = false;
+                            var control = (LinkButton)e.Item.FindControl( "lbSelectPerson" );
+                            control.RemoveCss( "active" );
+                            SaveState();
+                        }
+                        else
+                        {
+                            familyMember.Selected = true;
+                            ( (LinkButton)e.Item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
+                            SaveState();
+                        }
                     }
                 }
             }
@@ -115,22 +143,19 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
         protected void lbAddFamily_Click( object sender, EventArgs e)
         {
-
         }
 
         protected void lbAddPerson_Click( object sender, EventArgs e)
         {
-
         }
 
         protected void lbAddVisitor_Click( object sender, EventArgs e)
         {
-            
         }
 
         #endregion
 
-        # region Internal Methods 
+        #region Internal Methods 
 
         private void GoBack()
         {
@@ -146,7 +171,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             var errors = new List<string>();
             if ( ProcessActivity( "Person Search", out errors ) )
-            {   
+            {
                 ProcessPerson();
             }
             else
@@ -172,7 +197,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         foreach ( var familyMember in family.People )
                         {
                             familyMember.Selected = true;
-                            // set button selected 
                         }
                     }
                 }
@@ -189,6 +213,5 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         #endregion
-
     }
 }
