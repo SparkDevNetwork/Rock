@@ -15,7 +15,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administraton
 {
-    [IntegerField("Summary Count Days", "Summary field for exceptions that have occurred within the last x days. Default value is 7.", false, 7)]
+    [IntegerField( "Summary Count Days", "Summary field for exceptions that have occurred within the last x days. Default value is 7.", false, 7 )]
     [DetailPage]
     public partial class ExceptionList : RockBlock
     {
@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Administraton
             }
 
             int userPersonId;
-            if ( int.TryParse( ppUser.SelectedValue, out userPersonId ) && userPersonId != None.Id && ppUser.PersonName != None.TextHtml)
+            if ( int.TryParse( ppUser.SelectedValue, out userPersonId ) && userPersonId != None.Id && ppUser.PersonName != None.TextHtml )
             {
                 fExceptionList.SaveUserPreference( "User", userPersonId.ToString() );
             }
@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Administraton
             {
                 fExceptionList.SaveUserPreference( "Page", String.Empty );
             }
-                
+
             fExceptionList.SaveUserPreference( "Status Code", txtStatusCode.Text );
 
             DateTime startDate;
@@ -155,7 +155,7 @@ namespace RockWeb.Blocks.Administraton
 
         protected void gExceptionList_RowSelected( object sender, RowEventArgs e )
         {
-            SetExceptionVisibility( ( int ) e.RowKeyValue );
+            SetExceptionVisibility( (int)e.RowKeyValue );
         }
 
         #endregion
@@ -196,8 +196,8 @@ namespace RockWeb.Blocks.Administraton
 
             int siteId;
 
-            if ( int.TryParse( fExceptionList.GetUserPreference( "Site" ), out siteId ) 
-                    && ddlSite.Items.FindByValue(siteId.ToString()) != null)
+            if ( int.TryParse( fExceptionList.GetUserPreference( "Site" ), out siteId )
+                    && ddlSite.Items.FindByValue( siteId.ToString() ) != null )
             {
                 ddlSite.SelectedValue = siteId.ToString();
             }
@@ -239,7 +239,26 @@ namespace RockWeb.Blocks.Administraton
         {
             gExceptionList.Columns[5].HeaderText = string.Format( "Last {0} days", GetAttributeValue( "SummaryCountDays" ) );
 
-            var exceptionQuery = BuildExceptionListQuery();
+            int summaryCountDays = Convert.ToInt32( GetAttributeValue( "SummaryCountDays" ) );
+            DateTime minSummaryCountDate = DateTime.Now.Date.AddDays( -( summaryCountDays ) );
+
+            var exceptionQuery = BuildBaseExceptionListQuery()
+                                    .GroupBy( e => new
+                                        {
+                                            SiteName = e.Site.Name,
+                                            PageName = e.Page.Name,
+                                            Description = e.Description
+                                        } )
+                                    .Select( eg => new
+                                        {
+                                            Id = eg.Max( e => e.Id ),
+                                            SiteName = eg.Key.SiteName,
+                                            PageName = eg.Key.PageName,
+                                            Description = eg.Key.Description,
+                                            LastExceptionDate = eg.Max( e => e.ExceptionDateTime ),
+                                            TotalCount = eg.Count(),
+                                            SubsetCount = eg.Count( e => e.ExceptionDateTime >= minSummaryCountDate )
+                                        } );
 
             if ( gExceptionList.SortProperty != null )
             {
@@ -251,10 +270,10 @@ namespace RockWeb.Blocks.Administraton
             }
 
             gExceptionList.DataBind();
-        
+
         }
 
-        private void BindExceptionOccurrenceGrid(ExceptionLog baseException)
+        private void BindExceptionOccurrenceGrid( ExceptionLog baseException )
         {
             ExceptionLogService exceptionService = new ExceptionLogService();
 
@@ -294,7 +313,7 @@ namespace RockWeb.Blocks.Administraton
             ddlSite.Items.Insert( 0, new ListItem( All.Text, All.IdValue ) );
         }
 
-        private IQueryable<ExceptionListSummaryResults> BuildExceptionListQuery()
+        private IQueryable<ExceptionLog> BuildBaseExceptionListQuery()
         {
             ExceptionLogService exceptionLogService = new ExceptionLogService();
             IQueryable<ExceptionLog> query = exceptionLogService.Queryable();
@@ -324,10 +343,10 @@ namespace RockWeb.Blocks.Administraton
             }
 
             DateTime startDate;
-            if( DateTime.TryParse( fExceptionList.GetUserPreference( "Start Date" ), out startDate ) )
+            if ( DateTime.TryParse( fExceptionList.GetUserPreference( "Start Date" ), out startDate ) )
             {
                 startDate = startDate.Date;
-                query = query.Where(e => e.ExceptionDateTime >= startDate);
+                query = query.Where( e => e.ExceptionDateTime >= startDate );
             }
 
             DateTime endDate;
@@ -336,38 +355,11 @@ namespace RockWeb.Blocks.Administraton
                 endDate = endDate.Date.AddDays( 1 );
                 query = query.Where( e => e.ExceptionDateTime < endDate );
             }
-            
+
             //Only look for inner exceptions
             query = query.Where( e => e.HasInnerException == null || e.HasInnerException == false );
 
-            int summaryCountDays = Convert.ToInt32( GetAttributeValue( "SummaryCountDays" ) );
-            DateTime minSummaryCountDate = DateTime.Now.Date.AddDays( - ( summaryCountDays ) );
-            
-            var exceptionGroups = query.GroupBy( e => new
-                                                {
-                                                    SiteName = e.Site.Name,
-                                                    PageName = e.Page.Name,
-                                                    Description = e.Description
-                                                } )
-                                        .Select( eg => new
-                                                {
-                                                    Id = eg.Max(e => e.Id),
-                                                    SiteName = eg.Key.SiteName,
-                                                    PageName = eg.Key.PageName,
-                                                    Description = eg.Key.Description,
-                                                    LastExceptionDate = eg.Max( e => e.ExceptionDateTime ), 
-                                                    TotalCount = eg.Count(),
-                                                    SubsetCount = eg.Count( e => e.ExceptionDateTime >= minSummaryCountDate) 
-                                                } ).ToList();
-
-            List<ExceptionListSummaryResults> exceptionListResults = new List<ExceptionListSummaryResults>();
-            foreach ( var exceptionGroup in exceptionGroups )
-            {
-                exceptionListResults.Add( new ExceptionListSummaryResults( exceptionGroup.Id, exceptionGroup.SiteName, exceptionGroup.PageName, exceptionGroup.Description, 
-                    exceptionGroup.LastExceptionDate, exceptionGroup.TotalCount, exceptionGroup.SubsetCount ) );
-            }
-
-            return exceptionListResults.AsQueryable();
+            return query;
         }
 
         private void ClearExceptions()
@@ -414,30 +406,6 @@ namespace RockWeb.Blocks.Administraton
 
         #endregion
 
-}
-
-    public class ExceptionListSummaryResults
-    {
-        public int Id { get; set; }
-        public string SiteName { get; set; }
-        public string PageName { get; set; }
-        public string Description { get; set; }
-        public DateTime LastExceptionDate { get; set; }
-        public int TotalCount { get; set; }
-        public int SubsetCount { get; set; }
-
-        public ExceptionListSummaryResults() { }
-
-        public ExceptionListSummaryResults( int id, string siteName, string pageName, string description, DateTime lastExceptionDate, int totalCount, int subsetCount )
-        {
-            Id = id;
-            SiteName = siteName;
-            PageName = pageName;
-            Description = description;
-            LastExceptionDate = lastExceptionDate;
-            TotalCount = totalCount;
-            SubsetCount = subsetCount;
-        }
     }
 
 }
