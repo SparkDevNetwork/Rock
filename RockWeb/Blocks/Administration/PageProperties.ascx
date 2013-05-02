@@ -30,7 +30,7 @@
                 <div class="row">
                     <div class="span6">
                         <fieldset>
-                            <Rock:PagePicker ID="ppParentPage" runat="server" LabelText="Parent Page" Required="false" />
+                            <Rock:LabeledPagePicker ID="ppParentPage" runat="server" LabelText="Parent Page" Required="false" />
                             <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Name" Required="true" />
                             <Rock:DataTextBox ID="tbPageTitle" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Title" Help="The text to be displayed in menus and page headings"/>
                             <Rock:DataDropDownList ID="ddlLayout" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Layout"/>

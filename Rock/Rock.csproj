@@ -687,9 +687,16 @@
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
     <Compile Include="Web\UI\Controls\Communication\Sms.cs" />
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
+    <Compile Include="Web\UI\Controls\HtmlEditor.cs" />
     <Compile Include="Web\UI\Controls\LabeledFileUploader.cs" />
     <Compile Include="Web\UI\Controls\LabeledHtmlEditor.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\LabeledPagePicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\LabeledCategoryPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\LabeledAccountPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\LabeledGroupPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\MergeFieldPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\PersonPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\TreeViewItem.cs" />
     <Compile Include="Web\UI\Controls\RockDropDownList.cs" />
     <Compile Include="Web\UI\Controls\NumberBox.cs" />
     <Compile Include="Web\UI\Controls\PageBreadCrumbs.cs" />

@@ -224,6 +224,17 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public static EntityTypeCache Read( string name )
         {
+            return Read( name, true );
+        }
+
+        /// <summary>
+        /// Reads the specified name.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="createNew">if set to <c>true</c> [create new].</param>
+        /// <returns></returns>
+        public static EntityTypeCache Read( string name, bool createNew )
+        {
             int? entityTypeId = null;
 
             lock ( obj )
@@ -240,8 +251,15 @@ namespace Rock.Web.Cache
             }
 
             var entityTypeService = new EntityTypeService();
-            var entityTypeModel = entityTypeService.Get( name, true, null );
-            return Read( entityTypeModel );
+            var entityTypeModel = entityTypeService.Get( name, createNew, null );
+            if ( entityTypeModel != null )
+            {
+                return Read( entityTypeModel );
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>

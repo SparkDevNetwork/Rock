@@ -24,6 +24,25 @@ namespace Rock.Web.UI.Controls.Communication
         public abstract Dictionary<string, string> ChannelData { get; set; }
 
         /// <summary>
+        /// Gets or sets any additional merge fields.
+        /// </summary>
+        public List<string> AdditionalMergeFields
+        {
+            get
+            {
+                var mergeFields = ViewState["AdditionalMergeFields"] as List<string>;
+                if ( mergeFields == null )
+                {
+                    mergeFields = new List<string>();
+                    ViewState["AdditionalMergeFields"] = mergeFields;
+                }
+                return mergeFields;
+            }
+
+            set { ViewState["AdditionalMergeFields"] = value; }
+        }
+
+        /// <summary>
         /// On new communicaiton, initializes controls from sender values
         /// </summary>
         /// <param name="sender">The sender.</param>
