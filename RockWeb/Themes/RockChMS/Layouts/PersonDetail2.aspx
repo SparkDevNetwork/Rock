@@ -81,7 +81,7 @@
 
                                 <ul class="nav pull-right">
                                     <li class="dropdown">
-                                        <a data-toggle="dropdown" href="#" class="dropdown-toggle" tabindex="0">
+                                        <a class="persondetails-actions" data-toggle="dropdown" href="#" class="dropdown-toggle" tabindex="0">
                                             <i class="icon-cog"></i>
                                             <span>Actions</span>
                                             <b class="caret"></b>
@@ -90,6 +90,7 @@
                                             <li>
                                                 <a href="/MyAccount" tabindex="0">Add to Starting Point</a>
                                                 <a href="/MyAccount" tabindex="0">Add to Foundations</a>
+                                                <a href="/MyAccount" tabindex="0">Email Individual</a>
                                             </li>
                                             <li class="divider"></li>
                                             <li><a href="">Report Data Error</a></li>
@@ -119,11 +120,13 @@
 
                             <div class="span6">
                                 <div class="personcontact">
-                                    <div class="phonenumbers">
-                                        Unlisted <small>Home</small> <br />
-                                        (555) 867-5309 <small>Cell</small> <br />
-                                        (555) 847-5329 <small>Work</small> <br />
-                                    </div>
+
+                                    <ul class="unstyled phonenumbers">
+                                        <li data-value="(555)555-5555">Unlisted <small>Home</small></li>
+                                        <li data-value="(555)555-5555">(555) 867-5309 <small>Cell</small></li>
+                                        <li data-value="(555)555-5555">(555) 847-5329 <small>Work</small></li>
+                                    </ul>
+
                                     <div class="email">
                                         jonedmiston@ccvonline.com
                                     </div>
@@ -546,6 +549,10 @@
         }
 
         /* persondetails-header */
+        .persondetails-header .navbar-inner
+        {
+            padding-bottom: 24px;
+        }
 
         .persondetails-header .actions
         {
@@ -560,9 +567,26 @@
             margin-top: 12px;
         }
 
-        .persondetails-header .labels .label
+        .persondetails-header .label
         {
             margin-top: 11px;
+        }
+
+        .persondetails .navbar .nav > li > a:hover,
+        .persondetails .navbar .nav > li > a:focus
+        {
+            color: inherit;
+        }
+
+        .persondetails .navbar .nav > li > a .caret
+        {
+            border-top: 4px solid #bbb;
+        }
+
+        .persondetails .navbar .nav > li > a:hover .caret,
+        .persondetails .navbar .nav > li > a:focus .caret
+        {
+            border-top: 4px solid #515151;
         }
 
         .persondetails-header .photo
@@ -572,6 +596,7 @@
             border: 1px solid #bdbdbd;
             display: table;
             width: 100%;
+            max-width: 300px;
         }
 
         .persondetails-header .photo img
@@ -993,6 +1018,43 @@
             margin-left: -16px;
             margin-right: 3px;
             vertical-align: middle;
+        }
+
+        @media (max-width: 767px) {
+	        /* center the person image */
+            .persondetails-header .photo
+            {
+                margin: 0 auto;
+            }
+
+            /* make widgets extend to the edges */
+            .persondetails .widget
+            {
+                margin-right: -20px;
+                margin-left: -20px;
+                border-radius: 0;
+            }
+
+            /* make person notes full width */
+            .persontimeline .widget-content
+            {
+                padding-left: 0;
+                padding-right: 0;
+            }
+
+            /* remove border radius on widget header */
+            .persondetails .widget header
+            {
+                border-radius: 0;
+            }
+
+            /* remove border radius on person notes */
+            .persontimeline article
+            {
+                border-radius: 0;
+            }
+
+
         }
 
     </style>
