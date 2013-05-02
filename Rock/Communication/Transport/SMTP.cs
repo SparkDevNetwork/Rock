@@ -42,7 +42,8 @@ namespace Rock.Communication.Transport
         {
             if ( communication != null &&
                 communication.Status == Model.CommunicationStatus.Approved &&
-                communication.Recipients.Where( r => r.Status == Model.CommunicationRecipientStatus.Pending ).Any() )
+                communication.Recipients.Where( r => r.Status == Model.CommunicationRecipientStatus.Pending ).Any() &&
+                (!communication.FutureSendDateTime.HasValue || communication.FutureSendDateTime.Value.CompareTo(DateTime.Now) > 0))
             {
                 // From
                 MailMessage message = new MailMessage();

@@ -131,6 +131,10 @@
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
+    <Compile Include="Migrations\201305021128283_CommunicationMEF.cs" />
+    <Compile Include="Migrations\201305021128283_CommunicationMEF.Designer.cs">
+      <DependentUpon>201305021128283_CommunicationMEF.cs</DependentUpon>
+    </Compile>
     <Compile Include="Web\UI\Controls\Communication\ChannelControl.cs" />
     <Compile Include="Migrations\201304190037528_BinaryFileTypeContributionImage.cs" />
     <Compile Include="Migrations\201304190037528_BinaryFileTypeContributionImage.Designer.cs">
@@ -143,10 +147,6 @@
     <Compile Include="Migrations\201304222141330_AccountNumberSecuredGroupTypeDisplayOrder.cs" />
     <Compile Include="Migrations\201304222141330_AccountNumberSecuredGroupTypeDisplayOrder.Designer.cs">
       <DependentUpon>201304222141330_AccountNumberSecuredGroupTypeDisplayOrder.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201304241330175_CommunicationMEF.cs" />
-    <Compile Include="Migrations\201304241330175_CommunicationMEF.Designer.cs">
-      <DependentUpon>201304241330175_CommunicationMEF.cs</DependentUpon>
     </Compile>
     <Compile Include="Model\CommunicationRecipientService.Partial.cs" />
     <Compile Include="Net\RockRestClient.cs">
@@ -687,7 +687,6 @@
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
     <Compile Include="Web\UI\Controls\Communication\Sms.cs" />
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
-    <Compile Include="Web\UI\Controls\HtmlEditor.cs" />
     <Compile Include="Web\UI\Controls\LabeledFileUploader.cs" />
     <Compile Include="Web\UI\Controls\LabeledHtmlEditor.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LabeledPagePicker.cs" />
@@ -1486,8 +1485,8 @@
     <EmbeddedResource Include="Migrations\201304221822201_FinancialBatch.resx">
       <DependentUpon>201304221822201_FinancialBatch.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201304241330175_CommunicationMEF.resx">
-      <DependentUpon>201304241330175_CommunicationMEF.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201305021128283_CommunicationMEF.resx">
+      <DependentUpon>201305021128283_CommunicationMEF.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
