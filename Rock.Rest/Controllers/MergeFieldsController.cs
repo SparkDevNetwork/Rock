@@ -47,10 +47,46 @@ namespace Rock.Rest.Controllers
                 if ( entityType != null )
                 {
                     idParts[0] = entityType.FriendlyName.Replace( " ", string.Empty );
+
+                    Type type = entityType.GetEntityType();
+
+                    var workingParts = idParts.Take( 1 ).ToList();
+                    var formatString = "{0}";
+
+                    // Traverse the Property path
+                    int pathPointer = 1;
+                    while ( idParts.Count > pathPointer )
+                    {
+                        string propertyName =  idParts[pathPointer];
+                        workingParts.Add(propertyName);
+
+                        var childProperty = type.GetProperty( propertyName );
+                        if ( childProperty != null )
+                        {
+                            type = childProperty.PropertyType;
+
+                            if ( type.IsGenericType &&
+                                type.GetGenericTypeDefinition() == typeof( ICollection<> ) &&
+                                type.GetGenericArguments().Length == 1 )
+                            {
+                                string propertyNameSingularized = propertyName.Singularize();
+                                string forString = string.Format( "<% for {0} in {1} %> {{0}} <% endfor %>", propertyNameSingularized, workingParts.AsDelimited( "." ) );
+                                workingParts.Clear();
+                                workingParts.Add( propertyNameSingularized );
+                                formatString = string.Format( formatString, forString );
+
+                                type = type.GetGenericArguments()[0];
+                            }
+                        }
+                        pathPointer++;
+                    }
+
+                    string itemString = string.Format( "<< {0} >>", workingParts.AsDelimited( "." ) );
+                    return string.Format( formatString, itemString ).Replace( "<", "{" ).Replace( ">", "}" );
                 }
             }
 
-            return string.Format( "{{{{ {0} }}}}", idParts.AsDelimited( "." ) );
+            return string.Empty;
         }
 
         public IQueryable<TreeViewItem> GetChildren( string id, string additionalFields )
@@ -127,6 +163,13 @@ namespace Rock.Rest.Controllers
                                 if ( childProperty != null )
                                 {
                                     type = childProperty.PropertyType;
+
+                                    if ( type.IsGenericType &&
+                                        type.GetGenericTypeDefinition() == typeof( ICollection<> ) &&
+                                        type.GetGenericArguments().Length == 1 )
+                                    {
+                                        type = type.GetGenericArguments()[0];
+                                    }
                                 }
                                 pathPointer++;
                             }
@@ -134,13 +177,28 @@ namespace Rock.Rest.Controllers
                             // Add the tree view items
                             foreach ( var propInfo in type.GetProperties() )
                             {
-                                var childEntityType = EntityTypeCache.Read( propInfo.PropertyType.FullName, false );
-                                items.Add( new TreeViewItem
+                                var treeViewItem = new TreeViewItem
                                 {
                                     Id = id + "," + propInfo.Name,
-                                    Name = propInfo.Name.SplitCase(),
-                                    HasChildren = childEntityType != null
-                                } );
+                                    Name = propInfo.Name.SplitCase()
+                                };
+
+                                Type propertyType = propInfo.PropertyType;
+
+                                if ( propertyType.IsGenericType &&
+                                    propertyType.GetGenericTypeDefinition() == typeof( ICollection<> ) &&
+                                    propertyType.GetGenericArguments().Length == 1 )
+                                {
+                                    treeViewItem.Name += " (Collection)";
+                                    treeViewItem.HasChildren = EntityTypeCache.Read( propertyType.GetGenericArguments()[0].FullName, false ) != null;
+                                }
+                                else
+                                {
+                                    treeViewItem.HasChildren = EntityTypeCache.Read( propertyType.FullName, false ) != null;
+                                }
+
+                                items.Add( treeViewItem);
+
                             }
                         }
                     }
