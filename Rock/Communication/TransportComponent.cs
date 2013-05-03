@@ -9,6 +9,7 @@ using System.Linq;
 
 using Rock.Extension;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Communication
 {
@@ -28,21 +29,20 @@ namespace Rock.Communication
         /// Gets the global config values.
         /// </summary>
         /// <returns></returns>
-        public Dictionary<string, object> GetGlobalConfigValues()
+        public Dictionary<string, object> GetGlobalMergeFields()
         {
             var configValues = new Dictionary<string, object>();
 
-            // Get all the global attribute values that begin with "Organization" or "Email"
-            // TODO: We don't want to allow access to all global attribute values, as that would be a security
-            // hole, but not sure limiting to those that start with "Organization" or "Email" is the best
-            // solution either.
             var globalAttributeValues = new Dictionary<string, object>();
-            Rock.Web.Cache.GlobalAttributesCache.Read().AttributeValues
-                .Where( v =>
-                    v.Key.StartsWith( "Organization", StringComparison.CurrentCultureIgnoreCase ) ||
-                    v.Key.StartsWith( "Email", StringComparison.CurrentCultureIgnoreCase ) )
-                .ToList()
-                .ForEach( v => globalAttributeValues.Add( v.Key, v.Value.Value ) );
+            var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+            foreach ( var attribute in globalAttributes.AttributeKeys.OrderBy( a => a.Value ) )
+            {
+                var attributeCache = AttributeCache.Read( attribute.Key );
+                if ( attributeCache.IsAuthorized( "View", null ) )
+                {
+                    globalAttributeValues.Add(attributeCache.Key, globalAttributes.AttributeValues[attributeCache.Key].Value);
+                }
+            }
 
             configValues.Add( "GlobalAttribute", globalAttributeValues );
 

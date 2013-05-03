@@ -3,6 +3,8 @@
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
 
+        <asp:Panel ID="pnlEdit" runat="server">
+
         <asp:HiddenField ID="hfCommunicationId" runat="server" />
         <asp:HiddenField ID="hfChannelId" runat="server" />
 
@@ -53,11 +55,18 @@
             <asp:LinkButton ID="btnSubmit" runat="server" Text="Submit" CssClass="btn btn-primary" OnClick="btnSubmit_Click" />
             <asp:LinkButton ID="btnApprove" runat="server" Text="Approve" CssClass="btn btn-primary" OnClick="btnApprove_Click" />
             <asp:LinkButton ID="btnDeny" runat="server" Text="Deny" CssClass="btn" OnClick="btnDeny_Click" />
-            <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn" OnClick="btnSave_Click" />
+            <asp:LinkButton ID="btnSave" runat="server" Text="Save as Draft" CssClass="btn" OnClick="btnSave_Click" />
             <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel Send" CssClass="btn" OnClick="btnCancel_Click" />
             <asp:LinkButton ID="btnCopy" runat="server" Text="Copy Communication" CssClass="btn" OnClick="btnCopy_Click" CausesValidation="false" />
         </div>
 
+        </asp:Panel>
+
+        <asp:Panel ID="pnlResult" runat="server" Visible="false">
+            <Rock:NotificationBox ID="nbResult" runat="server" NotificationBoxType="Success" />
+            <br />
+            <asp:HyperLink ID="hlViewCommunication" runat="server" Text="View Communication" />
+        </asp:Panel>
 
     </ContentTemplate>
 </asp:UpdatePanel>
