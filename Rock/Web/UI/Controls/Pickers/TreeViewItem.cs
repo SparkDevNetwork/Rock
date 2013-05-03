@@ -4,7 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-namespace Rock.Web.UI.Controls.Pickers
+namespace Rock.Web.UI.Controls
 {
     /// <summary>
     /// 

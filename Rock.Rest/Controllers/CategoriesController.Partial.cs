@@ -203,7 +203,7 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// 
     /// </summary>
-    public class CategoryItem : Rock.Web.UI.Controls.Pickers.TreeViewItem
+    public class CategoryItem : Rock.Web.UI.Controls.TreeViewItem
     {
         /// <summary>
         /// Gets or sets a value indicating whether this instance is category.

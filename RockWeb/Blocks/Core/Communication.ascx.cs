@@ -167,14 +167,14 @@ namespace RockWeb.Blocks.Core
             {
                 ShowAllRecipients = false;
 
-                string itemId = PageParameter( "Id" );
+                string itemId = PageParameter( "CommunicationId" );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
-                    ShowDetail( "communicationId", int.Parse( itemId ) );
+                    ShowDetail( "CommunicationId", int.Parse( itemId ) );
                 }
                 else
                 {
-                    ShowDetail( "communicationId", 0 );
+                    ShowDetail( "CommunicationId", 0 );
                 }
             }
 
@@ -534,13 +534,13 @@ namespace RockWeb.Blocks.Core
                     service.Save( newCommunication, CurrentPersonId );
 
                     // Redirect to new communication
-                    if ( CurrentPageReference.Parameters.ContainsKey( "Id" ) )
+                    if ( CurrentPageReference.Parameters.ContainsKey( "CommunicationId" ) )
                     {
-                        CurrentPageReference.Parameters["Id"] = newCommunication.Id.ToString();
+                        CurrentPageReference.Parameters["CommunicationId"] = newCommunication.Id.ToString();
                     }
                     else
                     {
-                        CurrentPageReference.Parameters.Add( "Id", newCommunication.Id.ToString() );
+                        CurrentPageReference.Parameters.Add( "CommunicationId", newCommunication.Id.ToString() );
                     }
                     Response.Redirect( CurrentPageReference.BuildUrl() );
                     Context.ApplicationInstance.CompleteRequest();
@@ -559,7 +559,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="itemKeyValue">The item key value.</param>
         private void ShowDetail( string itemKey, int itemKeyValue )
         {
-            if ( !itemKey.Equals( "communicationId" ) )
+            if ( !itemKey.Equals( "CommunicationId" ) )
             {
                 return;
             }
@@ -937,13 +937,13 @@ namespace RockWeb.Blocks.Core
 
             nbResult.Text = message;
 
-            if ( CurrentPageReference.Parameters.ContainsKey( "Id" ) )
+            if ( CurrentPageReference.Parameters.ContainsKey( "CommunicationId" ) )
             {
-                CurrentPageReference.Parameters["Id"] = communication.Id.ToString();
+                CurrentPageReference.Parameters["CommunicationId"] = communication.Id.ToString();
             }
             else
             {
-                CurrentPageReference.Parameters.Add( "Id", communication.Id.ToString() );
+                CurrentPageReference.Parameters.Add( "CommunicationId", communication.Id.ToString() );
             }
             hlViewCommunication.NavigateUrl = CurrentPageReference.BuildUrl();
 

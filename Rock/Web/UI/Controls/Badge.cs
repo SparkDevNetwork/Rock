@@ -18,6 +18,18 @@ namespace Rock.Web.UI.Controls
     public class Badge : PlaceHolder
     {
         /// <summary>
+        /// Gets or sets the tool tip.
+        /// </summary>
+        /// <value>
+        /// The tool tip.
+        /// </value>
+        public string ToolTip 
+        {
+            get { return ViewState["ToolTip"] as string ?? string.Empty; }
+            set { ViewState["ToolTip"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the type of the badge.
         /// </summary>
         /// <value>
@@ -51,6 +63,11 @@ namespace Rock.Web.UI.Controls
                 }
 
                 writer.AddAttribute( "class", css );
+                if ( !string.IsNullOrWhiteSpace( ToolTip ) )
+                {
+                    writer.AddAttribute( "title", ToolTip );
+                    writer.AddAttribute( "data-toggle", "tooltip" );
+                }
                 writer.RenderBeginTag( HtmlTextWriterTag.Span );
 
                 base.RenderControl( writer );
