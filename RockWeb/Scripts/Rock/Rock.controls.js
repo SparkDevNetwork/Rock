@@ -356,7 +356,33 @@
 
             $('a.rock-picker').click(function (e) {
                 e.preventDefault();
-                $(this).next('.rock-picker').toggle();
+                $(this).parent().siblings('.rock-picker').first().toggle();
+            });
+
+            $('#' + controlId + ' .rock-picker-select').hover(
+                function () {
+                    if ($('#hfPersonId_' + controlId).val() !== '0') {
+                        $('#btnSelectNone_' + controlId).stop().show();
+                    }
+                },
+                function () {
+                    $('#btnSelectNone_' + controlId).fadeOut(500);
+                });
+
+            $('#btnSelectNone_' + controlId).click(function (e) {
+                e.stopImmediatePropagation();
+
+                var selectedValue = '0',
+                    selectedText = '<none>',
+                    $selectedItemLabel = $('#selectedPersonLabel_' + controlId),
+                    $hiddenItemId = $('#hfPersonId_' + controlId),
+                    $hiddenItemName = $('#hfPersonName_' + controlId);
+
+                $hiddenItemId.val(selectedValue);
+                $hiddenItemName.val(selectedText);
+                $selectedItemLabel.val(selectedValue);
+                $selectedItemLabel.text(selectedText);
+                return false;
             });
 
             $('.rock-picker-select').on('click', '.rock-picker-select-item', function (e) {
