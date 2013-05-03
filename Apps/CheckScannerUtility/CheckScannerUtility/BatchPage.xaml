@@ -47,7 +47,8 @@
                           Visibility="Hidden"
                           IsEnabled="False">
             <ax2:AxMicrImage x:Name="micrImage"
-                             MicrDataReceived="micrImage_MicrDataReceived" />
+                             MicrDataReceived="micrImage_MicrDataReceived"
+                             />
         </WindowsFormsHost>
 
         <Menu Name="mainMenu"
