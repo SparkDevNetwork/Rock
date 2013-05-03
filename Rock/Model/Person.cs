@@ -279,6 +279,7 @@ namespace Rock.Model
         /// Anniversary Date.
         /// </value>
         [DataMember]
+        [Column( TypeName = "Date" )]
         public DateTime? AnniversaryDate { get; set; }
         
         /// <summary>
@@ -288,6 +289,7 @@ namespace Rock.Model
         /// Graduation Date.
         /// </value>
         [DataMember]
+        [Column( TypeName = "Date" )]
         public DateTime? GraduationDate { get; set; }
         
         /// <summary>

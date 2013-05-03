@@ -170,6 +170,10 @@
     <Compile Include="Migrations\201304291727480_StateDropDownList.Designer.cs">
       <DependentUpon>201304291727480_StateDropDownList.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201305032019044_DateTimeDataTypesSweep.cs" />
+    <Compile Include="Migrations\201305032019044_DateTimeDataTypesSweep.Designer.cs">
+      <DependentUpon>201305032019044_DateTimeDataTypesSweep.cs</DependentUpon>
+    </Compile>
     <Compile Include="Net\RockRestClient.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -1504,6 +1508,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304291727480_StateDropDownList.resx">
       <DependentUpon>201304291727480_StateDropDownList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305032019044_DateTimeDataTypesSweep.resx">
+      <DependentUpon>201305032019044_DateTimeDataTypesSweep.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
