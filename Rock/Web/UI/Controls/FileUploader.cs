@@ -24,6 +24,7 @@ namespace Rock.Web.UI.Controls
 
         #region UI Controls
 
+        private Label lblTitle;
         private HiddenField hfBinaryFileId;
         private HtmlAnchor aFileName;
         private HtmlAnchor aRemove;
@@ -38,12 +39,25 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public FileUploader()
         {
+            lblTitle = new Label();
             hfBinaryFileId = new HiddenField();
         }
 
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Gets or sets the label text.
+        /// </summary>
+        /// <value>
+        /// The label text.
+        /// </value>
+        public string LabelText
+        {
+            get { return lblTitle.Text; }
+            set { lblTitle.Text = value; }
+        }
 
         /// <summary>
         /// Gets or sets the binary file id.
@@ -71,6 +85,9 @@ namespace Rock.Web.UI.Controls
             base.CreateChildControls();
             Controls.Clear();
 
+            Controls.Add( lblTitle );
+            lblTitle.ID = "lblTitle";
+
             Controls.Add( hfBinaryFileId );
             hfBinaryFileId.ID = "hfBinaryFileId";
 
@@ -97,6 +114,22 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
+            bool renderWithLabel = !string.IsNullOrEmpty( LabelText );
+
+            if ( renderWithLabel )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-group" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                lblTitle.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "controls" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            }
+
             if ( BinaryFileId != 0 )
             {
                 aFileName.HRef = string.Format( "{0}file.ashx?id={1}", ResolveUrl( "~" ), BinaryFileId );
@@ -123,6 +156,13 @@ namespace Rock.Web.UI.Controls
             fileUpload.Attributes["name"] = string.Format( "{0}[]", base.ID );
             fileUpload.RenderControl( writer );
             writer.RenderEndTag();
+
+            if ( renderWithLabel )
+            {
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();
+            }
 
             RegisterStartupScript();
         }

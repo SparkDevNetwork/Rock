@@ -689,13 +689,8 @@
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
     <Compile Include="Web\UI\Controls\Communication\Sms.cs" />
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
-    <Compile Include="Web\UI\Controls\LabeledFileUploader.cs" />
-    <Compile Include="Web\UI\Controls\LabeledHtmlEditor.cs" />
+    <Compile Include="Web\UI\Controls\HtmlEditor.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ComponentPicker.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\LabeledPagePicker.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\LabeledCategoryPicker.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\LabeledAccountPicker.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\LabeledGroupPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MergeFieldPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\PersonPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\TreeViewItem.cs" />
@@ -728,10 +723,8 @@
     <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowActivityTypeEditor.cs" />
     <Compile Include="Web\UI\Controls\Grid\BadgeField.cs" />
     <Compile Include="Web\UI\Controls\Grid\INotRowSelectedField.cs" />
-    <Compile Include="Web\UI\Controls\LabeledToggle.cs" />
     <Compile Include="Web\UI\Controls\Toggle.cs" />
     <Compile Include="Web\UI\Controls\HelpBlock.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\LabeledPersonPicker.cs" />
     <Compile Include="Reporting\DataFilterComponent.cs" />
     <Compile Include="Reporting\DataFilterContainer.cs" />
     <Compile Include="Reporting\DataFilter\Person\GroupTypeAttendanceFilter.cs" />

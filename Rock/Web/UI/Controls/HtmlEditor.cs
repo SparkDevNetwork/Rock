@@ -14,7 +14,7 @@ using CKEditor.NET;
 namespace Rock.Web.UI.Controls
 {
     [ToolboxData( "<{0}:LabeledHtmlEditor runat=server></{0}:LabeledHtmlEditor>" )]
-    public class LabeledHtmlEditor : CKEditorControl, ILabeledControl
+    public class HtmlEditor : CKEditorControl, ILabeledControl
     {
         /// <summary>
         /// The label
@@ -45,16 +45,8 @@ namespace Rock.Web.UI.Controls
         ]
         public string Help
         {
-            get
-            {
-                EnsureChildControls();
-                return helpBlock.Text;
-            }
-            set
-            {
-                EnsureChildControls();
-                helpBlock.Text = value;
-            }
+            get { return helpBlock.Text; }
+            set { helpBlock.Text = value; }
         }
 
         /// <summary>
@@ -71,16 +63,8 @@ namespace Rock.Web.UI.Controls
         ]
         public string LabelText
         {
-            get
-            {
-                EnsureChildControls();
-                return label.Text;
-            }
-            set
-            {
-                EnsureChildControls();
-                label.Text = value;
-            }
+            get { return label.Text; }
+            set { label.Text = value; }
         }
 
         /// <summary>
@@ -106,6 +90,13 @@ namespace Rock.Web.UI.Controls
             set { ViewState["MergeFields"] = value; }
         }
 
+        public HtmlEditor()
+            : base()
+        {
+            label = new Literal();
+            helpBlock = new HelpBlock();
+        }
+
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
@@ -115,7 +106,6 @@ namespace Rock.Web.UI.Controls
             
             Controls.Clear();
 
-            label = new Literal();
             label.ID = string.Format( "{0}_lbl", this.ID );
             Controls.Add( label );
 
@@ -135,22 +125,28 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( "class", "control-group" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            bool renderWithLabel = ( !string.IsNullOrEmpty( LabelText ) ) || 
+                (!string.IsNullOrEmpty(Help)) ||
+                MergeFields.Any();
 
-            writer.AddAttribute( "class", "control-label" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            label.Visible = this.Visible;
-            label.RenderControl( writer );
-            writer.Write( " " );
-
-            if ( MergeFields.Any() )
+            if ( renderWithLabel )
             {
-                mergeFieldPicker.MergeFields = this.MergeFields;
-                mergeFieldPicker.RenderControl( writer );
+                writer.AddAttribute( "class", "control-group" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( "class", "control-label" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                label.Visible = this.Visible;
+                label.RenderControl( writer );
                 writer.Write( " " );
 
-                string scriptFormat = @"
+                if ( MergeFields.Any() )
+                {
+                    mergeFieldPicker.MergeFields = this.MergeFields;
+                    mergeFieldPicker.RenderControl( writer );
+                    writer.Write( " " );
+
+                    string scriptFormat = @"
         $('#btnSelectNone_{0}').click(function (e) {{
 
             var selectedText = 'Add Merge Field';
@@ -188,24 +184,26 @@ namespace Rock.Web.UI.Controls
             }});
         }});
 ";
-                string script = string.Format( scriptFormat, mergeFieldPicker.ID, this.ClientID );
-                ScriptManager.RegisterStartupScript( mergeFieldPicker, mergeFieldPicker.GetType(), "merge_field_extension-" + mergeFieldPicker.ID.ToString(), script, true );
+                    string script = string.Format( scriptFormat, mergeFieldPicker.ID, this.ClientID );
+                    ScriptManager.RegisterStartupScript( mergeFieldPicker, mergeFieldPicker.GetType(), "merge_field_extension-" + mergeFieldPicker.ID.ToString(), script, true );
+                }
+
+                helpBlock.RenderControl( writer );
+
+                writer.RenderEndTag();
+
+                writer.AddAttribute( "class", "controls" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
             }
-
-            helpBlock.RenderControl( writer );
-
-            writer.RenderEndTag();
-
-            var wrapperClassName = "controls";
-
-            writer.AddAttribute( "class", wrapperClassName );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             base.RenderControl( writer );
 
-            writer.RenderEndTag();
+            if ( renderWithLabel )
+            {
+                writer.RenderEndTag();
 
-            writer.RenderEndTag();
+                writer.RenderEndTag();
+            }
         }
     }
 }

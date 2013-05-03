@@ -12,8 +12,8 @@
                 <legend><asp:Literal ID="lActionTitle" runat="server"/></legend>
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
             
-                <Rock:LabeledPersonPicker ID="ppPerson" runat="server" LabelText="Person" Required="True"/>
-                <Rock:LabeledAccountPicker ID="fpFund" runat="server" LabelText="Fund" Required="True"/>
+                <Rock:PersonPicker ID="ppPerson" runat="server" LabelText="Person" Required="True"/>
+                <Rock:AccountPicker ID="fpFund" runat="server" LabelText="Fund" Required="True"/>
             
                 <Rock:DataTextBox ID="tbAmount" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="TotalAmount" LabelText="Total Amount" PrependText="$" Required="True" />
                 <Rock:DateTimePicker ID="dtpStartDate" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="StartDate" LabelText="Start Date" Required="True"/>

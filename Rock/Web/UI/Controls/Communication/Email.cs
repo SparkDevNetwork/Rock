@@ -25,10 +25,10 @@ namespace Rock.Web.UI.Controls.Communication
         private LabeledTextBox tbFromAddress;
         private LabeledTextBox tbReplyToAddress;
         private LabeledTextBox tbSubject;
-        private LabeledHtmlEditor htmlMessage;
+        private HtmlEditor htmlMessage;
         private LabeledTextBox tbTextMessage;
         private HiddenField hfAttachments;
-        private LabeledFileUploader fuAttachments;
+        private FileUploader fuAttachments;
         private Dictionary<int, LinkButton> removeButtons;
 
         #endregion
@@ -44,10 +44,10 @@ namespace Rock.Web.UI.Controls.Communication
             tbFromAddress = new LabeledTextBox();
             tbReplyToAddress = new LabeledTextBox();
             tbSubject = new LabeledTextBox();
-            htmlMessage = new LabeledHtmlEditor();
+            htmlMessage = new HtmlEditor();
             tbTextMessage = new LabeledTextBox();
             hfAttachments = new HiddenField();
-            fuAttachments = new LabeledFileUploader();
+            fuAttachments = new FileUploader();
         }
 
         #endregion
