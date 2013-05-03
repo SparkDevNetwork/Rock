@@ -130,6 +130,12 @@ namespace RockWeb.Blocks.Core
             set { ViewState["AdditionalMergeFields"] = value; }
         }
 
+        private string PageTitle
+        {
+            get { return ViewState["PageTitle"] as string ?? "a New Communication"; }
+            set { ViewState["PageTitle"] = value; }
+        }
+
         #endregion
 
         #region Control Methods
@@ -171,6 +177,8 @@ namespace RockWeb.Blocks.Core
                     ShowDetail( "communicationId", 0 );
                 }
             }
+
+            BreadCrumbs.Add( new BreadCrumb( PageTitle, true ) );
         }
 
         #endregion
@@ -339,21 +347,15 @@ namespace RockWeb.Blocks.Core
 
                         service.Save( communication, CurrentPersonId );
 
-                        // TODO: Convert to use transactions for out-of-process sending
                         if ( communication.Status == CommunicationStatus.Approved )
                         {
                             bool sendNow = false;
                             if ( bool.TryParse( GetAttributeValue( "SendWhenApproved" ), out sendNow ) && sendNow )
                             {
-                                var channel = communication.Channel;
-                                if ( channel != null )
-                                {
-                                    var transport = channel.Transport;
-                                    if ( transport != null )
-                                    {
-                                        transport.Send( communication, CurrentPersonId );
-                                    }
-                                }
+                                var transaction = new Rock.Transactions.SendCommunicationTransaction();
+                                transaction.Communication = communication;
+                                transaction.PersonId = CurrentPersonId;
+                                Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                             }
                         }
 
@@ -575,6 +577,8 @@ namespace RockWeb.Blocks.Core
                 communication = new Rock.Model.Communication() { Status = CommunicationStatus.Transient };
                 this.Page.Title = "New Communication";
             }
+
+            PageTitle = this.Page.Title;
 
             if ( communication == null )
             {

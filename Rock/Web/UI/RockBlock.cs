@@ -86,6 +86,23 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Gets the bread crumbs that were created during the page's oninit.  A block
+        /// can add additional breadcrumbs to this list to be rendered.  Crumb's added 
+        /// this way will not be saved to the current page reference's collection of 
+        /// breadcrumbs, so wil not be available when user navigates to another child
+        /// page.  Because of this only last-level crumbs should be added this way.  To
+        /// persist breadcrumbs in the session state, override the GetBreadCrumbs 
+        /// method instead.
+        /// </summary>
+        /// <value>
+        /// The bread crumbs.
+        /// </value>
+        public List<BreadCrumb> BreadCrumbs
+        {
+            get { return ( (RockPage)this.Page ).BreadCrumbs; }
+        }
+
+        /// <summary>
         /// Gets the root URL Path.
         /// </summary>
         public string RootPath
@@ -557,14 +574,14 @@ namespace Rock.Web.UI
         public void NavigateToPage( Guid pageGuid, Dictionary<string, string> queryString )
         {
             var pageCache = PageCache.Read( pageGuid );
-            if (pageCache != null)
+            if ( pageCache != null )
             {
                 int routeId = 0;
                 {
                     routeId = pageCache.PageRoutes.FirstOrDefault().Key;
                 }
 
-                var pageReference = new PageReference(pageCache.Id, routeId, queryString, null);
+                var pageReference = new PageReference( pageCache.Id, routeId, queryString, null );
                 string pageUrl = pageReference.BuildUrl();
                 Response.Redirect( pageUrl, false );
                 Context.ApplicationInstance.CompleteRequest();
@@ -708,6 +725,8 @@ namespace Rock.Web.UI
 
         /// <summary>
         /// Returns breadcrumbs specific to the block that should be added to navigation
+        /// based on the current page reference.  This function is called during the page's
+        /// oninit to load any initial breadcrumbs
         /// </summary>
         /// <param name="pageReference">The page reference.</param>
         /// <returns></returns>
@@ -733,7 +752,7 @@ namespace Rock.Web.UI
         /// </summary>
         internal void CreateAttributes()
         {
-            int? blockEntityTypeId = EntityTypeCache.Read( typeof(Block) ).Id;
+            int? blockEntityTypeId = EntityTypeCache.Read( typeof( Block ) ).Id;
 
             using ( new Rock.Data.UnitOfWorkScope() )
             {

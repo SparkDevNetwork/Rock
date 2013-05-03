@@ -468,8 +468,6 @@ namespace Rock.Web.UI
                         }
                     }
 
-
-
                     // Initialize the list of breadcrumbs for the current page (and blocks on the page)
                     CurrentPageReference.BreadCrumbs = new List<BreadCrumb>();
 
