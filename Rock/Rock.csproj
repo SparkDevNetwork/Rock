@@ -132,10 +132,6 @@
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
     <Compile Include="Data\MergeFieldAttribute.cs" />
-    <Compile Include="Migrations\201305021128283_CommunicationMEF.cs" />
-    <Compile Include="Migrations\201305021128283_CommunicationMEF.Designer.cs">
-      <DependentUpon>201305021128283_CommunicationMEF.cs</DependentUpon>
-    </Compile>
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
     <Compile Include="Web\UI\Controls\Communication\ChannelControl.cs" />
     <Compile Include="Migrations\201304190037528_BinaryFileTypeContributionImage.cs" />
@@ -1480,9 +1476,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304221822201_FinancialBatch.resx">
       <DependentUpon>201304221822201_FinancialBatch.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201305021128283_CommunicationMEF.resx">
-      <DependentUpon>201305021128283_CommunicationMEF.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
