@@ -20,6 +20,7 @@ namespace Rock.Web.UI.Controls
         private HiddenField _hfPersonId;
         private HiddenField _hfPersonName;
         private LinkButton _btnSelect;
+        private LinkButton _btnSelectNone;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonPicker" /> class.
@@ -188,7 +189,12 @@ namespace Rock.Web.UI.Controls
             base.OnInit( e );
             RegisterJavaScript();
             var sm = ScriptManager.GetCurrent( this.Page );
-            sm.RegisterAsyncPostBackControl( _btnSelect );
+
+            if ( sm != null )
+            {
+                sm.RegisterAsyncPostBackControl( _btnSelect );
+                sm.RegisterAsyncPostBackControl( _btnSelectNone );
+            }
         }
 
         /// <summary>
@@ -241,11 +247,21 @@ namespace Rock.Web.UI.Controls
             _btnSelect.CausesValidation = false;
             _btnSelect.Click += btnSelect_Click;
 
+            _btnSelectNone = new LinkButton();
+            _btnSelectNone.ClientIDMode = ClientIDMode.Static;
+            _btnSelectNone.CssClass = "rock-picker-select-none";
+            _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ID );
+            _btnSelectNone.Text = "<i class='icon-remove'></i>";
+            _btnSelectNone.CausesValidation = false;
+            _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
+            _btnSelectNone.Click += btnSelect_Click;
+
             Controls.Add( _label );
             Controls.Add( _literal );
             Controls.Add( _hfPersonId );
             Controls.Add( _hfPersonName );
             Controls.Add( _btnSelect );
+            Controls.Add( _btnSelectNone );
 
             RequiredValidator = new HiddenFieldValidator();
             RequiredValidator.ID = this.ID + "_rfv";
@@ -278,31 +294,6 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            string controlHtmlFormatStart = @"
-<div class='control-group' id='{0}'>
-    <div class='controls'>
-        <a class='rock-picker' href='#'>
-            <i class='icon-user'></i>
-            <span id='selectedPersonLabel_{0}'>{1}</span>
-            <b class='caret'></b>
-        </a>
-        <div class='dropdown-menu rock-picker rock-picker-person'>
-
-            <h4>Search</h4>
-            <input id='personPicker_{0}' type='text' class='rock-picker-search' />
-            <h4>Results</h4>
-            <hr />
-            <ul class='rock-picker-select' id='personPickerItems_{0}'>
-            </ul>
-            <hr />
-";
-            string controlHtmlFormatEnd = @"
-            <a class='btn btn-mini' id='btnCancel_{0}'>Cancel</a>
-        </div>
-    </div>
-</div>
-";
-
             writer.AddAttribute( "class", "control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
@@ -324,19 +315,80 @@ namespace Rock.Web.UI.Controls
             _hfPersonId.RenderControl( writer );
             _hfPersonName.RenderControl( writer );
 
-            writer.Write( string.Format( controlHtmlFormatStart, this.ID, this.PersonName ) );
-
-            // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
-            if ( SelectPerson != null )
+            if ( this.Enabled )
             {
-                _btnSelect.RenderControl( writer );
+
+                string controlHtmlFormatStart = @"
+<div class='control-group' id='{0}'>
+    <div class='controls'>
+        <div class='rock-picker rock-picker-select'> 
+            <a class='rock-picker' href='#'>
+                <i class='icon-user'></i>
+                <span id='selectedPersonLabel_{0}'>{1}</span>
+                <b class='caret'></b>
+            </a>
+";
+
+                writer.Write( string.Format( controlHtmlFormatStart, this.ID, this.PersonName ) );
+
+                // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
+                if ( SelectPerson != null )
+                {
+                    _btnSelectNone.RenderControl( writer );
+                }
+                else
+                {
+                    writer.Write( "<a class='rock-picker-select-none' id='btnSelectNone_{0}' href='#' style='display:none'><i class='icon-remove'></i></a>", this.ID );
+                }
+
+                string controlHtmlFormatMiddle = @"
+        </div>
+        <div class='dropdown-menu rock-picker rock-picker-person'>
+
+            <h4>Search</h4>
+            <input id='personPicker_{0}' type='text' class='rock-picker-search' />
+            <h4>Results</h4>
+            <hr />
+            <ul class='rock-picker-select' id='personPickerItems_{0}'>
+            </ul>
+            <hr />
+";
+
+                writer.Write( controlHtmlFormatMiddle, this.ID, this.PersonName );
+
+                // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
+                if ( SelectPerson != null )
+                {
+                    _btnSelect.RenderControl( writer );
+                }
+                else
+                {
+                    writer.Write( string.Format( "<a class='btn btn-mini btn-primary' id='btnSelect_{0}'>Select</a>", this.ID ) );
+                }
+
+                string controlHtmlFormatEnd = @"
+            <a class='btn btn-mini' id='btnCancel_{0}'>Cancel</a>
+        </div>
+    </div>
+</div>
+";
+
+                writer.Write( string.Format( controlHtmlFormatEnd, this.ID, this.PersonName ) );
             }
             else
             {
-                writer.Write( string.Format( "<a class='btn btn-mini btn-primary' id='btnSelect_{0}'>Select</a>", this.ID ) );
-            }
+                string controlHtmlFormatDisabled = @"
+<div class='control-group' id='{0}'>
+    <div class='controls'>
 
-            writer.Write( string.Format( controlHtmlFormatEnd, this.ID, this.PersonName ) );
+        <i class='icon-file-alt'></i>
+        <span id='selectedItemLabel_{0}'>{1}</span>
+
+    </div>
+</div>
+";
+                writer.Write( controlHtmlFormatDisabled, this.ID, this.PersonName );
+            }
 
             writer.RenderEndTag();
 
