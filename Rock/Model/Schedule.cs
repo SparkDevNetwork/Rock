@@ -19,7 +19,7 @@ namespace Rock.Model
     /// <summary>
     /// CheckInSchedule EF Model.
     /// </summary>
-    [Table("Schedule")]
+    [Table( "Schedule" )]
     [DataContract]
     public partial class Schedule : Model<Schedule>
     {
@@ -62,7 +62,7 @@ namespace Rock.Model
         /// <value>
         /// The frequency qualifier.
         /// </value>
-        [MaxLength(100)]
+        [MaxLength( 100 )]
         [DataMember]
         public string FrequencyQualifier { get; set; }
 
@@ -73,7 +73,7 @@ namespace Rock.Model
         /// The start time.
         /// </value>
         [DataMember]
-        public DateTime StartTime { get; set; }
+        public TimeSpan StartTime { get; set; }
 
         /// <summary>
         /// Gets or sets the end time.
@@ -82,7 +82,7 @@ namespace Rock.Model
         /// The end time.
         /// </value>
         [DataMember]
-        public DateTime EndTime { get; set; }
+        public TimeSpan EndTime { get; set; }
 
         /// <summary>
         /// Gets or sets the check in start time.
@@ -91,7 +91,7 @@ namespace Rock.Model
         /// The check in start time.
         /// </value>
         [DataMember]
-        public DateTime? CheckInStartTime { get; set; }
+        public TimeSpan? CheckInStartTime { get; set; }
 
         /// <summary>
         /// Gets or sets the check in end time.
@@ -100,7 +100,7 @@ namespace Rock.Model
         /// The check in end time.
         /// </value>
         [DataMember]
-        public DateTime? CheckInEndTime { get; set; }
+        public TimeSpan? CheckInEndTime { get; set; }
 
         /// <summary>
         /// Gets or sets the effective start date.
@@ -109,7 +109,8 @@ namespace Rock.Model
         /// The effective start date.
         /// </value>
         [DataMember]
-        public DateTimeOffset? EffectiveStartDate { get; set; }
+        [Column( TypeName = "Date" )]
+        public DateTime? EffectiveStartDate { get; set; }
 
         /// <summary>
         /// Gets or sets the effective end date.
@@ -118,7 +119,8 @@ namespace Rock.Model
         /// The effective end date.
         /// </value>
         [DataMember]
-        public DateTimeOffset? EffectiveEndDate { get; set; }
+        [Column( TypeName = "Date" )]
+        public DateTime? EffectiveEndDate { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is a shared schedule
@@ -180,8 +182,8 @@ namespace Rock.Model
                     return false;
                 }
 
-                if ( CheckInStartTime.Value.TimeOfDay.TotalSeconds > DateTimeOffset.Now.TimeOfDay.TotalSeconds ||
-                    CheckInEndTime.Value.TimeOfDay.TotalSeconds <= DateTimeOffset.Now.TimeOfDay.TotalSeconds )
+                if ( CheckInStartTime.Value.TotalSeconds > DateTimeOffset.Now.TimeOfDay.TotalSeconds ||
+                    CheckInEndTime.Value.TotalSeconds <= DateTimeOffset.Now.TimeOfDay.TotalSeconds )
                 {
                     return false;
                 }
@@ -190,7 +192,7 @@ namespace Rock.Model
                 {
                     case ScheduleFrequency.Monthly:
 
-                        if ( DateTimeOffset.Now.Day.ToString() == FrequencyQualifier)
+                        if ( DateTimeOffset.Now.Day.ToString() == FrequencyQualifier )
                         {
                             return true;
                         }
@@ -227,7 +229,7 @@ namespace Rock.Model
                 }
 
                 return false;
-   
+
             }
         }
 
@@ -370,9 +372,9 @@ namespace Rock.Model
 
         #region Private Methods
 
-        private DateTime CombineDateTime(DateTime date, DateTime time)
+        private DateTime CombineDateTime( DateTime date, TimeSpan time )
         {
-            return date.Date.Add(time.TimeOfDay);
+            return date.Date.Add( time );
         }
 
         #endregion
@@ -380,7 +382,7 @@ namespace Rock.Model
     }
 
     #region Entity Configuration
-    
+
     /// <summary>
     /// File Configuration class.
     /// </summary>
