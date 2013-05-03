@@ -14,7 +14,7 @@
                     <div class="row-fluid">
                         <div class="span6">
                             <Rock:DataTextBox ID="tbTitle" runat="server" SourceTypeName="Rock.Model.MarketingCampaign, Rock" PropertyName="Title" />
-                            <Rock:LabeledPersonPicker ID="ppContactPerson" runat="server" LabelText="Contact" OnSelectPerson="ppContactPerson_SelectPerson" />
+                            <Rock:PersonPicker ID="ppContactPerson" runat="server" LabelText="Contact" OnSelectPerson="ppContactPerson_SelectPerson" />
                             <Rock:DataTextBox ID="tbContactEmail" runat="server" SourceTypeName="Rock.Model.MarketingCampaign, Rock" PropertyName="ContactEmail" LabelText="Contact Email" />
                             <Rock:DataTextBox ID="tbContactPhoneNumber" runat="server" SourceTypeName="Rock.Model.MarketingCampaign, Rock" PropertyName="ContactPhoneNumber" LabelText="Contact Phone" />
                             <Rock:DataTextBox ID="tbContactFullName" runat="server" SourceTypeName="Rock.Model.MarketingCampaign, Rock" PropertyName="ContactFullName" LabelText="Contact Name" />

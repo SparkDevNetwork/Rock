@@ -23,7 +23,7 @@
                         <div class="span6">
                             <Rock:DataDropDownList ID="ddlEntityType" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="EntityTypeId"
                                 LabelText="Applies To" DataTextField="FriendlyName" DataValueField="Id" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
-                            <Rock:LabeledCategoryPicker ID="cpCategory" runat="server" CategoryEntityTypeName="Rock.Model.DataView" LabelText="Category" Required="true" />
+                            <Rock:CategoryPicker ID="cpCategory" runat="server" CategoryEntityTypeName="Rock.Model.DataView" LabelText="Category" Required="true" />
                         </div>
                     </div>
                 </fieldset>

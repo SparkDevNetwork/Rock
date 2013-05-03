@@ -15,7 +15,7 @@
                     </legend>
 
                     <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="Name" />
-                    <Rock:LabeledCategoryPicker ID="cpParentCategory" runat="server" LabelText="Parent Category" />
+                    <Rock:CategoryPicker ID="cpParentCategory" runat="server" LabelText="Parent Category" />
                     <Rock:LabeledText ID="lblEntityTypeName" runat="server" LabelText="Entity Type" />
                     <asp:HiddenField ID="hfEntityTypeId" runat="server" />
                     <Rock:LabeledText ID="lblEntityTypeQualifierColumn" runat="server" LabelText="Entity Type Qualifier Column" />

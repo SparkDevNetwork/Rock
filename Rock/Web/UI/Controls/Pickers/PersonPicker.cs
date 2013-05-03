@@ -15,12 +15,28 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class PersonPicker : CompositeControl
     {
+        private Label label;
         private HiddenField hfPersonId;
         private HiddenField hfPersonName;
         private LinkButton btnSelect;
 
         /// <summary>
-        /// Gets or sets the name of the field.
+        /// Gets or sets the label text.
+        /// </summary>
+        /// <value>
+        /// The label text.
+        /// </value>
+        public string LabelText
+        {
+            get { return label.Text; }
+            set
+            {
+                label.Text = value;
+                FieldName = label.Text;
+            }
+        }
+        /// <summary>
+        /// Gets or sets the name of the field.  Used when labeltext is empty
         /// </summary>
         /// <value>
         /// The name of the field.
@@ -36,6 +52,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public PersonPicker()
         {
+            label = new Label();
             btnSelect = new LinkButton();
         }
 
@@ -281,6 +298,8 @@ namespace Rock.Web.UI.Controls
 
             Controls.Clear();
 
+            Controls.Add( label );
+
             hfPersonId = new HiddenField();
             hfPersonId.ClientIDMode = System.Web.UI.ClientIDMode.Static;
             hfPersonId.ID = string.Format( "hfPersonId_{0}", this.ID );
@@ -330,6 +349,22 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
         {
+            bool renderLabel = !string.IsNullOrEmpty( LabelText );
+
+            if ( renderLabel )
+            {
+                writer.AddAttribute( "class", "control-group" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                label.AddCssClass( "control-label" );
+
+                label.RenderControl( writer );
+
+                writer.AddAttribute( "class", "controls" );
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            }
+
             string controlHtmlFormatStart = @"
         <a class='rock-picker' href='#'>
             <i class='icon-user'></i>
@@ -374,6 +409,13 @@ namespace Rock.Web.UI.Controls
             }
 
             writer.Write( string.Format( controlHtmlFormatEnd, this.ID, this.PersonName ) );
+
+            if ( renderLabel )
+            {
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();
+            }
         }
     }
 }
