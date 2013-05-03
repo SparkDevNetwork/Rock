@@ -7,17 +7,31 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NUnit.Framework;
 using Rock.Model;
+using Assert = NUnit.Framework.Assert;
 
 namespace Rock.Tests.Model
 {
+    /// <summary>
+    /// Unit tests for the Rock.Model.Page class
+    /// </summary>
     [TestFixture]
     public class PageTests
     {
+        /// <summary>
+        /// Tests for the CopyPropertiesFrom method
+        /// </summary>
+        [TestClass]
         public class TheCopyPropertiesFromMethod
         {
+            /// <summary>
+            /// Should perform a shallow copy of a Page object, resulting in a new Page.
+            /// </summary>
             [Test]
+            [TestMethod]
+            [TestCategory( "Rock.Model.Page" )]
             public void ShouldCopyEntity()
             {
                 var page = new Page { Name = "SomePage" };
@@ -26,9 +40,18 @@ namespace Rock.Tests.Model
             }
         }
 
+        /// <summary>
+        /// Tests for the Clone method
+        /// </summary>
+        [TestClass]
         public class TheCloneMethod
         {
+            /// <summary>
+            /// Should perform a shallow copy of a Page, including its collection of child Pages.
+            /// </summary>
             [Test]
+            [TestMethod]
+            [TestCategory( "Rock.Model.Page" )]
             public void ShouldCopyPages()
             {
                 var children = new List<Page> { new Page() };
@@ -37,7 +60,12 @@ namespace Rock.Tests.Model
                 Assert.IsNotEmpty( result.Pages );
             }
 
+            /// <summary>
+            /// Should perform a shallow copy of a Page, including any child Pages, recursively.
+            /// </summary>
             [Test]
+            [TestMethod]
+            [TestCategory( "Rock.Model.Page" )]
             public void ShouldCopyPagesRecursively()
             {
                 var parent = new Page();
@@ -50,7 +78,12 @@ namespace Rock.Tests.Model
                 Assert.IsNotEmpty( result.Pages.FirstOrDefault().Pages );
             }
 
+            /// <summary>
+            /// Should perform a shallow copy of a Page, including its collection of Blocks.
+            /// </summary>
             [Test]
+            [TestMethod]
+            [TestCategory( "Rock.Model.Page" )]
             public void ShouldCopyBlocks()
             {
                 var page = new Page { Blocks = new List<Block>() };
@@ -60,7 +93,12 @@ namespace Rock.Tests.Model
                 Assert.IsNotEmpty( result.Blocks );
             }
 
+            /// <summary>
+            /// Should perform a shallow copy of a Page, including its collection of PageRoutes.
+            /// </summary>
             [Test]
+            [TestMethod]
+            [TestCategory( "Rock.Model.Page" )]
             public void ShouldCopyPageRoutes()
             {
                 var page = new Page { PageRoutes = new List<PageRoute>() };
@@ -70,7 +108,12 @@ namespace Rock.Tests.Model
                 Assert.IsNotEmpty( result.PageRoutes );
             }
 
+            /// <summary>
+            /// Should perform a shallow copy of a Page, including its collection of PageContexts.
+            /// </summary>
             [Test]
+            [TestMethod]
+            [TestCategory( "Rock.Model.Page" )]
             public void ShouldCopyPageContexts()
             {
                 var page = new Page { PageContexts = new List<PageContext>() };
@@ -81,9 +124,18 @@ namespace Rock.Tests.Model
             }
         }
 
+        /// <summary>
+        /// Tests for the ToJson method
+        /// </summary>
+        [TestClass]
         public class TheToJsonMethod
         {
+            /// <summary>
+            /// Should serialize a Page into a non-empty string.
+            /// </summary>
             [Test]
+            [TestMethod]
+            [TestCategory( "Rock.Model.Page" )]
             public void ShouldNotBeEmpty()
             {
                 var page = new Page();
@@ -91,33 +143,50 @@ namespace Rock.Tests.Model
                 Assert.IsNotEmpty( result );
             }
 
+            /// <summary>
+            /// Shoulds serialize a Page into a JSON string.
+            /// </summary>
             [Test]
+            [TestMethod]
+            [TestCategory( "Rock.Model.Page" )]
             public void ShouldExportAsJson()
             {
                 var page = new Page
-                {
-                    Title = "FooPage"
-                };
+                    {
+                        Title = "FooPage"
+                    };
+
                 var result = page.ToJson();
                 const string key = "\"Title\": \"FooPage\"";
                 Assert.Greater( result.IndexOf( key ), -1, string.Format( "'{0}' was not found in '{1}'.", key, result ) );
             }
 
+            /// <summary>
+            /// Should serialize a Pages collection of child Pages in the JSON string.
+            /// </summary>
             [Test]
+            [TestMethod]
+            [TestCategory( "Rock.Model.Page" )]
             public void ShouldExportChildPages()
             {
                 var page = new Page
-                {
-                    Title = "FooPage",
-                    Pages = new List<Page> { new Page { Title = "BarPage" } }
-                };
+                    {
+                        Title = "FooPage",
+                        Pages = new List<Page> { new Page { Title = "BarPage" } }
+                    };
+
                 var result = page.ToJson();
                 result = result.Substring( result.IndexOf( "\"Pages\":" ) + 7 );
                 const string key = "\"Title\": \"BarPage\"";
                 Assert.Greater( result.IndexOf( key ), -1 );
             }
 
+            /// <summary>
+            /// Should recursively serialize a Pages collection of child Pages in the JSON string.
+            /// </summary>
             [Test]
+            [TestMethod]
+            [TestCategory( "Rock.Model.Page" )]
             public void ShouldExportChildPagesRecursively()
             {
                 var parent = new Page { Title = "Parent" };
@@ -135,9 +204,18 @@ namespace Rock.Tests.Model
             }
         }
 
+        /// <summary>
+        /// Tests for the FromJson method
+        /// </summary>
+        [TestClass]
         public class TheFromJsonMethod
         {
+            /// <summary>
+            /// Should take a JSON string and copy its contents to a Rock.Model.Page instance
+            /// </summary>
             [Test]
+            [TestMethod]
+            [TestCategory( "Rock.Model.Page" )]
             public void ShouldCopyPropertiesToEntity()
             {
                 var obj = new Page
@@ -152,7 +230,12 @@ namespace Rock.Tests.Model
                 Assert.AreEqual( obj.IsSystem, page.IsSystem );
             }
 
+            /// <summary>
+            /// Should deserialize a JSON string and restore a Page's collection of child Pages.
+            /// </summary>
             [Test]
+            [TestMethod]
+            [TestCategory( "Rock.Model.Page" )]
             public void ShouldImportChildPages()
             {
                 var obj = new Page { Name = "Parent" };
@@ -165,7 +248,12 @@ namespace Rock.Tests.Model
                 Assert.AreEqual( page.Pages.First().Name, obj.Pages.First().Name );
             }
 
+            /// <summary>
+            /// Should deserialize a JSON string and restore a Page's collection of child Pages, recursively.
+            /// </summary>
             [Test]
+            [TestMethod]
+            [TestCategory( "Rock.Model.Page" )]
             public void ShouldImportPagesRecursively()
             {
                 const string PAGE_NAME = "Child Page";
@@ -185,7 +273,12 @@ namespace Rock.Tests.Model
                 Assert.AreEqual( childPages.First().Name, PAGE_NAME );
             }
 
+            /// <summary>
+            /// Should deserialize a JSON string and restore a Page's collection of child Blocks.
+            /// </summary>
             [Test]
+            [TestMethod]
+            [TestCategory( "Rock.Model.Page" )]
             public void ShouldImportBlocks()
             {
                 var obj = new Page { Name = "Some Page" };
@@ -197,7 +290,12 @@ namespace Rock.Tests.Model
                 Assert.AreEqual( page.Blocks.First().Name, obj.Blocks.First().Name );
             }
 
+            /// <summary>
+            /// Should deserialize a JSON string and restore a Page's collection of child PageRoutes.
+            /// </summary>
             [Test]
+            [TestMethod]
+            [TestCategory( "Rock.Model.Page" )]
             public void ShouldImportPageRoutes()
             {
                 var obj = new Page { Name = "Some Page" };
@@ -209,7 +307,12 @@ namespace Rock.Tests.Model
                 Assert.AreEqual( page.PageRoutes.First().Route, obj.PageRoutes.First().Route );
             }
 
+            /// <summary>
+            /// Should deserialize a JSON string and restore a Page's collection of child PageContexts.
+            /// </summary>
             [Test]
+            [TestMethod]
+            [TestCategory( "Rock.Model.Page" )]
             public void ShouldImportPageContexts()
             {
                 Random random = new Random();
@@ -223,14 +326,19 @@ namespace Rock.Tests.Model
                 Assert.AreEqual( page.PageContexts.First().PageId, id );
             }
 
+            /// <summary>
+            /// Should deserialize a JSON string and restore a Page's collection of Attributes.
+            /// </summary>
             [Test]
+            [TestMethod]
+            [TestCategory( "Rock.Model.Page" )]
             public void ShouldImportAttributes()
             {
                 var obj = new Page
-                {
-                    Name = "Some Page",
-                    Attributes = new Dictionary<string, Web.Cache.AttributeCache> { { "foobar", null } }
-                };
+                    {
+                        Name = "Some Page",
+                        Attributes = new Dictionary<string, Web.Cache.AttributeCache> { { "foobar", null } }
+                    };
 
                 var json = obj.ToJson();
                 var page = Page.FromJson( json );
@@ -239,17 +347,22 @@ namespace Rock.Tests.Model
                 Assert.IsNull( page.Attributes.First().Value );
             }
 
+            /// <summary>
+            /// Should deserialize a JSON string and restore a Page's collection of AttributeValues.
+            /// </summary>
             [Test]
+            [TestMethod]
+            [TestCategory( "Rock.Model.Page" )]
             public void ShouldImportAttributeValues()
             {
                 var obj = new Page
-                {
-                    Name = "Some Page",
-                    AttributeValues = new Dictionary<string, List<AttributeValue>>
                     {
-                        { "foobar", new List<AttributeValue> { new AttributeValue { Value = "baz" } } }
-                    }
-                };
+                        Name = "Some Page",
+                        AttributeValues = new Dictionary<string, List<AttributeValue>>
+                            {
+                                { "foobar", new List<AttributeValue> { new AttributeValue { Value = "baz" } } }
+                            }
+                    };
 
                 var json = obj.ToJson();
                 var page = Page.FromJson( json );

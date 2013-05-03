@@ -84,6 +84,11 @@ namespace Rock.SystemGuid
         public const string LOCATION_LOCATION_TYPE =  "2e68d37c-fb7b-4aa5-9e09-3785d52156cb";
 
         /// <summary>
+        /// Guid for the types of States that can be tied to a Location's address.
+        /// </summary>
+        public const string LOCATION_ADDRESS_STATE = "C3A20D2D-AEAF-4E2B-A1D9-2E072CEFC2BB";
+
+        /// <summary>
         /// Guid for Marketing Campaign Audience Type
         /// </summary>
         public const string MARKETING_CAMPAIGN_AUDIENCE_TYPE =  "799301A3-2026-4977-994E-45DC68502559";
@@ -137,6 +142,5 @@ namespace Rock.SystemGuid
         /// Guid for the types of Batches (ACH, Visa, MasterCard, Discover, Amex, and PayPal)
         /// </summary>
         public static Guid FINANCIAL_BATCH_TYPE { get { return new Guid( "9e358fbe-2321-4c54-895f-c888e29298ae" ); } }
-
     }
 }

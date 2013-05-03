@@ -291,6 +291,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MergeField]
+        [Column( TypeName = "Date" )]
         public DateTime? AnniversaryDate { get; set; }
         
         /// <summary>
@@ -301,6 +302,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MergeField]
+        [Column( TypeName = "Date" )]
         public DateTime? GraduationDate { get; set; }
         
         /// <summary>

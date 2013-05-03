@@ -2,32 +2,58 @@
 
 <asp:UpdatePanel ID="upCreatePledge" runat="server">
     <ContentTemplate>
-        <asp:Panel runat="server" ID="pnlForm">
-            <fieldset>
-                <legend><asp:Literal ID="lLegendText" runat="server"/></legend>
-                <Rock:DataTextBox ID="tbFirstName" runat="server" LabelText="First Name" SourceTypeName="Rock.Model.Person, Rock" PropertyName="NickName"/>
-                <Rock:DataTextBox ID="tbLastName" runat="server" LabelText="Last Name" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName"/>
-                <Rock:DataTextBox ID="tbAmount" runat="server" PrependText="$" LabelText="Total Amount" SourceTypeName="Rock.Model.Pledge, Rock" PropertyName="Amount"/>
-                <Rock:DataTextBox ID="tbEmail" runat="server" LabelText="Email" TextMode="Email" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email"/>
-                <Rock:DateTimePicker ID="dtpStartDate" runat="server" LabelText="Start Date" SourceTypeName="Rock.Model.Pledge, Rock" PropertyName="StartDate" Visible="False"/>
-                <Rock:DateTimePicker ID="dtpEndDate" runat="server" LabelText="End Date" SourceTypeName="Rock.Model.Pledge, Rock" PropertyName="EndDate" Visible="False"/>
-                <Rock:DataDropDownList ID="ddlFrequencyType" runat="server" SourceTypeName="Rock.Model.Pledge, Rock" PropertyName="FrequencyTypeValue"/>
-                <asp:Panel ID="pnlConfirm" runat="server" CssClass="alert alert-info" Visible="False">
-                    <p><strong>Hey!</strong> You currently have a pledge in the system. Do you want to replace it with this one?</p>
-                    <div class="actions">
-                        <asp:LinkButton ID="btnConfirmYes" runat="server" CssClass="btn btn-success" OnClick="btnConfirmYes_Click" CausesValidation="True"><i class="icon-ok"></i> Yes</asp:LinkButton>
-                        <asp:LinkButton ID="btnConfirmNo" runat="server" CssClass="btn" OnClick="btnConfirmNo_Click"><i class="icon-remove"></i> No</asp:LinkButton>
-                    </div>
-                </asp:Panel>
-            </fieldset>
-            <div class="actions">
-                <asp:Button ID="btnSave" runat="server" Text="Save Pledge" OnClick="btnSave_Click" CssClass="btn" CausesValidation="True"/>
+        <asp:Panel runat="server" ID="pnlForm" CssClass="row-fluid">
+            <div class="span12">
+                <fieldset>
+                    <legend><asp:Literal ID="lLegendText" runat="server"/></legend>
+                    <Rock:DataTextBox ID="tbFirstName" runat="server" LabelText="First Name" SourceTypeName="Rock.Model.Person, Rock" PropertyName="NickName"/>
+                    <Rock:DataTextBox ID="tbLastName" runat="server" LabelText="Last Name" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName"/>
+                    <asp:Repeater ID="rptAccounts" runat="server" OnItemDataBound="rptAccounts_ItemDataBound">
+                        <ItemTemplate>
+                            <asp:HiddenField ID="hfId" runat="server"/>
+                            <Rock:LabeledTextBox ID="tbAmount" runat="server" PrependText="$"/>
+                        </ItemTemplate>
+                    </asp:Repeater>
+                    <Rock:DataTextBox ID="tbEmail" runat="server" LabelText="Email" TextMode="Email" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email"/>
+                    <Rock:DateTimePicker ID="dtpStartDate" runat="server" LabelText="Start Date" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="StartDate" Visible="False"/>
+                    <Rock:DateTimePicker ID="dtpEndDate" runat="server" LabelText="End Date" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="EndDate" Visible="False"/>
+                    <Rock:DataDropDownList ID="ddlFrequencyType" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="PledgeFrequencyValueId"/>
+                    <asp:Panel ID="pnlConfirm" runat="server" CssClass="alert alert-info" Visible="False">
+                        <p><strong>Hey!</strong> It looks like you've already made a pledge. Do you want to pledge again?</p>
+                        <div>
+                            <asp:LinkButton ID="btnConfirmYes" runat="server" CssClass="btn btn-success" OnClick="btnConfirmYes_Click" CausesValidation="True"><i class="icon-ok"></i> Yes</asp:LinkButton>
+                            <asp:LinkButton ID="btnConfirmNo" runat="server" CssClass="btn" OnClick="btnConfirmNo_Click"><i class="icon-remove"></i> No</asp:LinkButton>
+                        </div>
+                    </asp:Panel>
+                </fieldset>
+                <div class="form-actions">
+                    <asp:Button ID="btnSave" runat="server" Text="Save Pledge" OnClick="btnSave_Click" CssClass="btn" CausesValidation="True"/>
+                </div>
             </div>
         </asp:Panel>
-        <asp:Panel runat="server" ID="pnlReceipt" Visible="False">
-            <asp:Hyperlink runat="server" CssClass="btn" ID="btnGivingProfile">
-                <i class="icon-user"></i> Go to your giving profile
-            </asp:Hyperlink>
+        <asp:Panel runat="server" ID="pnlReceipt" Visible="False" CssClass="row-fluid">
+            <div class="span12">
+                <h3>Pledge complete!</h3>
+                <p><strong><asp:Literal ID="lPersonFullName" runat="server"/></strong>, you pledged to give:</p>
+                <asp:Repeater ID="rptCompletedPledges" runat="server" OnItemDataBound="rptCompletedPledges_ItemDataBound">
+                    <ItemTemplate>
+                        <div class="well">
+                            <p>
+                                <strong>
+                                    <asp:Literal ID="lAmount" runat="server"/> 
+                                    <asp:Literal ID="lFrequency" runat="server"/>
+                                </strong> to the
+                                <strong><asp:Literal ID="lAccountName" runat="server"/></strong>
+                            </p>
+                        </div>
+                    </ItemTemplate>
+                </asp:Repeater>
+            </div>
+            <div class="form-actions">
+                <asp:LinkButton runat="server" CssClass="btn" ID="btnGivingProfile" OnClick="btnGivingProfile_Click">
+                    <i class="icon-user"></i> Go to your giving profile
+                </asp:LinkButton>
+            </div>
         </asp:Panel>
     </ContentTemplate>
 </asp:UpdatePanel>

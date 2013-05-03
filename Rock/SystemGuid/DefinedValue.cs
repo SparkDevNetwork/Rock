@@ -61,6 +61,20 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Financial Currency Type
+
+        /// <summary>
+        /// Cash
+        /// </summary>
+        public const string CURRENCY_TYPE_CASH =	"F3ADC889-1EE8-4EB6-B3FD-8C10F3C8AF93";
+
+        /// <summary>
+        /// Check
+        /// </summary>
+        public const string CURRENCY_TYPE_CHECK =	"8B086A19-405A-451F-8D44-174E92D6B402";
+
+        #endregion
+
         #region Financial Transaction Type
 
         /// <summary>

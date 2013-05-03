@@ -72,7 +72,7 @@ namespace Rock.Model
             else
             {
                 var target = new ServiceLog();
-                target.Time = source.Time;
+                target.LogDateTime = source.LogDateTime;
                 target.Input = source.Input;
                 target.Type = source.Type;
                 target.Name = source.Name;

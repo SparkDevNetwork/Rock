@@ -4,19 +4,10 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using Rock.Net;
 
 namespace Rock.Apps.CheckScannerUtility
 {
@@ -25,56 +16,71 @@ namespace Rock.Apps.CheckScannerUtility
     /// </summary>
     public partial class OptionsPage : Page
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OptionsPage"/> class.
+        /// </summary>
         public OptionsPage()
         {
             InitializeComponent();
         }
 
         /// <summary>
-        /// Handles the SelectionChanged event of the cboImageOption control.
+        /// Gets or sets the batch page.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="SelectionChangedEventArgs"/> instance containing the event data.</param>
-        private void cboImageOption_SelectionChanged( object sender, SelectionChangedEventArgs e )
-        {
-            RockConfig config = RockConfig.Load();
-            string imageOption = cboImageOption.SelectedValue as string;
-
-            switch ( imageOption )
-            {
-                case "Grayscale":
-                    config.ImageColorType = ImageColorType.ImageColorTypeGrayscale;
-                    break;
-                case "Color":
-                    config.ImageColorType = ImageColorType.ImageColorTypeColor;
-                    break;
-                default:
-                    config.ImageColorType = ImageColorType.ImageColorTypeBitonal;
-                    break;
-            }
-
-            config.Save();
-
-            // restart to get Options to load
-            //RangerScanner.ShutDown();
-            //RangerScanner.StartUp();
-        }
+        /// <value>
+        /// The batch page.
+        /// </value>
+        public BatchPage BatchPage { get; set; }
 
         /// <summary>
-        /// Loads the image options.
+        /// Shows the detail.
         /// </summary>
-        private void LoadImageOptions()
+        private void ShowDetail()
         {
-            RockConfig config = RockConfig.Load();
-            ImageColorType colorType = (ImageColorType)config.ImageColorType;
+            LoadDropDowns();
+            
+            lblAlert.Visibility = Visibility.Collapsed;
+            
+            var rockConfig = RockConfig.Load();
 
-            cboImageOption.Items.Clear();
-            cboImageOption.Items.Add( "Bitonal" );
-            cboImageOption.Items.Add( "Grayscale" );
-            cboImageOption.Items.Add( "Color" );
-            cboImageOption.SelectedIndex = 0;
+            txtRockUrl.Text = rockConfig.RockBaseUrl;
 
-            switch ( colorType )
+            if ( rockConfig.ScannerInterfaceType == RockConfig.InterfaceType.MICRImageRS232 )
+            {
+                cboScannerInterfaceType.SelectedItem = "MagTek";
+                lblMakeModel.Content = "MagTek";
+
+                string version = null;
+                try
+                {
+                    this.Cursor = Cursors.Wait;
+                    version = BatchPage.micrImage.Version();
+                }
+                finally
+                {
+                    this.Cursor = null;
+                }
+
+                if ( !version.Equals( "-1" ) )
+                {
+                    lblInterfaceVersion.Content = version;
+                }
+                else
+                {
+                    lblInterfaceVersion.Content = "error";
+                }
+            }
+            else
+            {
+                cboScannerInterfaceType.SelectedItem = "Ranger";
+                lblMakeModel.Content = string.Format( "Scanner Type: {0} {1}", BatchPage.rangerScanner.GetTransportInfo( "General", "Make" ), BatchPage.rangerScanner.GetTransportInfo( "General", "Model" ) );
+                lblInterfaceVersion.Content = string.Format( "Interface Version: {0}", BatchPage.rangerScanner.GetVersion() );
+            }
+
+            string feederFriendlyNameType = BatchPage.ScannerFeederType.Equals( FeederType.MultipleItems ) ? "Multiple Items" : "Single Item";
+            lblFeederType.Content = string.Format( "Feeder Type: {0}", feederFriendlyNameType );
+
+            switch ( (ImageColorType)rockConfig.ImageColorType )
             {
                 case ImageColorType.ImageColorTypeGrayscale:
                     cboImageOption.SelectedValue = "Grayscale";
@@ -86,35 +92,127 @@ namespace Rock.Apps.CheckScannerUtility
                     cboImageOption.SelectedIndex = 0;
                     break;
             }
+
+
+            if ( cboMagTekCommPort.Items.Count > 0 )
+            {
+                cboMagTekCommPort.SelectedItem = string.Format( "COM{0}", rockConfig.MICRImageComPort );
+            }
         }
 
-        private void ShowDetail()
+        /// <summary>
+        /// Loads the drop downs.
+        /// </summary>
+        private void LoadDropDowns()
         {
-            lblMakeModel.Content = "MagTek";
-            //lblInterfaceVersion.Content = micrImage.Version();
+            cboImageOption.Items.Clear();
+            cboImageOption.Items.Add( "Bitonal" );
+            cboImageOption.Items.Add( "Grayscale" );
+            cboImageOption.Items.Add( "Color" );
 
-            string feederFriendlyNameType = "Single";
-            lblFeederType.Content = string.Format( "Feeder Type: {0}", feederFriendlyNameType );
+            cboScannerInterfaceType.Items.Clear();
+            cboScannerInterfaceType.Items.Add( "Ranger" );
+            cboScannerInterfaceType.Items.Add( "MagTek" );
 
-
-            //lblMakeModel.Content = string.Format( "Scanner Type: {0} {1}", RangerScanner.GetTransportInfo( "General", "Make" ), RangerScanner.GetTransportInfo( "General", "Model" ) );
-            //lblInterfaceVersion.Content = string.Format( "Interface Version: {0}", RangerScanner.GetVersion() );
-
-            lblFeederType.Content = string.Format( "Feeder Type: {0}", feederFriendlyNameType );
-
-            lblImageOption.Visibility = Visibility.Visible;
-            cboImageOption.Visibility = Visibility.Visible;
-            LoadImageOptions();
+            cboMagTekCommPort.ItemsSource = System.IO.Ports.SerialPort.GetPortNames();
         }
 
-        private void Something()
+        /// <summary>
+        /// Handles the Click event of the btnSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnSave_Click( object sender, RoutedEventArgs e )
         {
+            RockConfig rockConfig = RockConfig.Load();
+
+            try
+            {
+                txtRockUrl.Text = txtRockUrl.Text.Trim();
+                RockRestClient client = new RockRestClient( txtRockUrl.Text );
+                client.Login( rockConfig.Username, rockConfig.Password );
+            }
+            catch ( Exception ex )
+            {
+                lblAlert.Content = ex.Message;
+                lblAlert.Visibility = Visibility.Visible;
+                return;
+            }
+
+            rockConfig.RockBaseUrl = txtRockUrl.Text;
+
+            if ( cboScannerInterfaceType.SelectedItem.Equals( "MagTek" ) )
+            {
+                rockConfig.ScannerInterfaceType = RockConfig.InterfaceType.MICRImageRS232;
+            }
+            else
+            {
+                rockConfig.ScannerInterfaceType = RockConfig.InterfaceType.RangerApi;
+            }
             
+            string imageOption = cboImageOption.SelectedValue as string;
+
+            switch ( imageOption )
+            {
+                case "Grayscale":
+                    rockConfig.ImageColorType = ImageColorType.ImageColorTypeGrayscale;
+                    break;
+                case "Color":
+                    rockConfig.ImageColorType = ImageColorType.ImageColorTypeColor;
+                    break;
+                default:
+                    rockConfig.ImageColorType = ImageColorType.ImageColorTypeBitonal;
+                    break;
+            }
+
+            string comPortName = cboMagTekCommPort.SelectedItem as string;
+            
+            if (!string.IsNullOrWhiteSpace(comPortName))
+            {
+                rockConfig.MICRImageComPort = short.Parse( comPortName.Replace( "COM", string.Empty ) );
+            }
+
+            rockConfig.Save();
+
+            this.NavigationService.GoBack();
         }
 
-        private void btnBack_Click_1( object sender, RoutedEventArgs e )
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void btnCancel_Click( object sender, RoutedEventArgs e )
         {
             this.NavigationService.GoBack();
+        }
+
+        /// <summary>
+        /// Handles the Loaded event of the Page control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
+        private void Page_Loaded( object sender, RoutedEventArgs e )
+        {
+            ShowDetail();
+        }
+
+        /// <summary>
+        /// Handles the SelectionChanged event of the cboScannerInterfaceType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="SelectionChangedEventArgs"/> instance containing the event data.</param>
+        private void cboScannerInterfaceType_SelectionChanged( object sender, SelectionChangedEventArgs e )
+        {
+            bool magTekSelected = cboScannerInterfaceType.SelectedItem.Equals( "MagTek" );
+            
+            // show COM port option only for Mag Tek
+            lblMagTekCommPort.Visibility = magTekSelected ? Visibility.Visible : Visibility.Collapsed;
+            cboMagTekCommPort.Visibility = magTekSelected ? Visibility.Visible : Visibility.Collapsed;
+
+            // show Image Option only for Ranger
+            lblImageOption.Visibility = magTekSelected ? Visibility.Collapsed : Visibility.Visible;
+            cboImageOption.Visibility = magTekSelected ? Visibility.Collapsed : Visibility.Visible;
         }
     }
 }

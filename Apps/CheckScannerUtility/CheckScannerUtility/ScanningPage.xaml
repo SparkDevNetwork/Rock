@@ -4,9 +4,10 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       mc:Ignorable="d"
-      d:DesignHeight="400"
-      d:DesignWidth="700"
-      Title="ScanningPage">
+      d:DesignHeight="600"
+      d:DesignWidth="960"
+      Title="ScanningPage"
+      Loaded="Page_Loaded">
 
     <!-- Scan Progress Grid -->
     <Grid Name="grdScanProgress">
@@ -25,8 +26,11 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="30" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="30" />
-            <RowDefinition Height="116" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="30" />
         </Grid.RowDefinitions>
@@ -45,49 +49,62 @@
                 Grid.ColumnSpan="2"
                 Margin="0"
                 Grid.Row="1"
-                Grid.RowSpan="4" />
-        <StackPanel Grid.Row="1"
-                    Grid.Column="1"
-                    Margin="0"
-                    VerticalAlignment="Bottom">
-            <Label Name="lblAccountNumber"
-                   Style="{StaticResource labelStyle}">Account: 123456789012</Label>
-            <Label Name="lblCheckNumber"
-                   Style="{StaticResource labelStyle}">Check Number: 0123</Label>
+                Grid.RowSpan="7" />
+        <StackPanel Grid.Column="1" Grid.Row="2" Grid.ColumnSpan="2">
+            <Label Name="lblScanWarning"
+                   Style="{StaticResource labelStyleAlert}"
+                   Content="WARNING: Check account Information not found. Try scanning again with the check facing the other direction.">
+            </Label>
+            <Label Name="lblScanInstructions"
+                   Style="{StaticResource labelStyleAlertInfo}"
+                   Content="INFO:  ---">
+            </Label>
         </StackPanel>
+        
         <Label Name="lblRoutingNumber"
-               Grid.Row="1"
-               Grid.Column="2"
+               Grid.Row="3"
+               Grid.Column="1"
                VerticalAlignment="Bottom"
                Style="{StaticResource labelStyle}">Routing Number: 012345678</Label>
-        <Label Grid.Row="2"
+        <Label Name="lblAccountNumber"
+               Grid.Row="4"
+               Grid.Column="1"
+               Style="{StaticResource labelStyle}">Account: 123456789012</Label>
+        <Label Name="lblCheckNumber"
+               Grid.Row="4"
+               Grid.Column="2"
+               Style="{StaticResource labelStyle}">Check Number: 0123</Label>
+
+        <Label Grid.Row="5"
                Grid.Column="1"
                VerticalAlignment="Bottom"
                Style="{StaticResource labelStyle}">Front</Label>
-        <Label Grid.Row="2"
+        <Label Grid.Row="5"
                Grid.Column="2"
                VerticalAlignment="Bottom"
                Style="{StaticResource labelStyle}">Back</Label>
 
         <Image Grid.Column="1"
-               Grid.Row="3"
+               Grid.Row="6"
                Name="imgFront"
-               Height="100"
-               Width="300"
+               Height="140"
+               Width="420"
                Stretch="Fill"
                HorizontalAlignment="Left"
                Margin="6,0,0,0"
-               VerticalAlignment="Top" />
+               VerticalAlignment="Top"
+               Source="images/check-image.png" />
         <Image Grid.Column="2"
-               Grid.Row="3"
+               Grid.Row="6"
                Name="imgBack"
-               Height="100"
-               Width="300"
+               Height="140"
+               Width="420"
                Stretch="Fill"
                HorizontalAlignment="Left"
                Margin="6,0,0,0"
-               VerticalAlignment="Top" />
-        <Button Grid.Row="4"
+               VerticalAlignment="Top"
+               Source="images/check-image.png" />
+        <Button Grid.Row="7"
                 Grid.Column="1"
                 Margin="4"
                 Name="btnStartStop"
@@ -96,7 +113,7 @@
                 HorizontalAlignment="Left"
                 VerticalAlignment="Bottom"
                 Click="btnStartStop_Click" />
-        <Button Grid.Row="4"
+        <Button Grid.Row="7"
                 Grid.Column="2"
                 Margin="4"
                 Name="btnDone"

@@ -20,8 +20,7 @@
                 <div class="span4">
                     <Rock:DataTextBox ID="tbName" runat="server" LabelText="Title" TabIndex="1" 
                         SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="Name" />
-                    <Rock:LabeledDropDownList ID="ddlCampus" runat="server" LabelText="Campus" TabIndex="2" 
-                        SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" />                    
+                    <Rock:LabeledDropDownList ID="ddlCampus" runat="server" LabelText="Campus" TabIndex="2" />                    
                 </div>
 
                 <div class="span4">
@@ -50,17 +49,14 @@
         <Rock:Grid ID="rGridTransactions" runat="server" EmptyDataText="No Transactions Found" 
             ShowConfirmDeleteDialog="true"  OnRowSelected="rGridTransactions_Edit">
             <Columns>
-                <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
-                <asp:BoundField DataField="BatchId" HeaderText="BatchId" SortExpression="BatchId" />
-                <asp:BoundField DataField="TransactionCode" HeaderText="Transaction Code" SortExpression="TransactionCode" />
-                <asp:BoundField DataField="TransactionDateTime" HeaderText="Transaction Date" SortExpression="TransactionDate" />
-                <asp:BoundField DataField="Summary" HeaderText="Description" SortExpression="Description" />
-                <asp:BoundField DataField="Amount" HeaderText="Amount" SortExpression="Amount" />
-                       
-                <asp:BoundField DataField="Summary" HeaderText="Summary" SortExpression="Summary" />
-                <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
-                                
-                <Rock:DeleteField OnClick="rGridTransactions_Delete" />
+                <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />
+                <asp:BoundField DataField="TransactionDateTime" HeaderText="Date" SortExpression="TransactionDateTime" />                
+                <asp:BoundField DataField="Summary" HeaderText="Description" SortExpression="Summary" />
+                <asp:BoundField DataField="Amount" HeaderText="Amount" DataFormatString="{0:C}" SortExpression="Amount" />
+                <asp:BoundField DataField="CurrencyTypeValue" HeaderText="Currency Type" SortExpression="CurrencyTypeValue" />
+                <asp:BoundField DataField="CreditCardTypeValue" HeaderText="Credit Card Type" SortExpression="CreditCardTypeValue" />
+                <asp:BoundField DataField="SourceTypeValue" HeaderText="Source Type" SortExpression="SourceTypeValue" />
+                <Rock:DeleteField OnClick="rGridTransactions_Delete" Visible="false"/>
             </Columns>
         </Rock:Grid>
 
