@@ -32,6 +32,14 @@ namespace Rock.Web.Cache
         #region Properties
 
         /// <summary>
+        /// Gets or sets the attribute keys.
+        /// </summary>
+        /// <value>
+        /// The attribute keys.
+        /// </value>
+        public Dictionary<int, string> AttributeKeys { get; set; }
+
+        /// <summary>
         /// Gets or sets the attribute values.
         /// </summary>
         /// <value>
@@ -126,6 +134,7 @@ namespace Rock.Web.Cache
             else
             {
                 globalAttributes = new GlobalAttributesCache();
+                globalAttributes.AttributeKeys = new Dictionary<int, string>();
                 globalAttributes.AttributeValues = new Dictionary<string, KeyValuePair<string, string>>();
 
                 var attributeService = new Rock.Model.AttributeService();
@@ -133,9 +142,12 @@ namespace Rock.Web.Cache
 
                 foreach ( Rock.Model.Attribute attribute in attributeService.GetGlobalAttributes() )
                 {
+                    globalAttributes.AttributeKeys.Add( attribute.Id, attribute.Key );
+
                     // TODO: Need to add support for multiple values
                     var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, null ).FirstOrDefault();
                     globalAttributes.AttributeValues.Add( attribute.Key, new KeyValuePair<string, string>( attribute.Name, ( attributeValue != null && !string.IsNullOrEmpty( attributeValue.Value ) ) ? attributeValue.Value : attribute.DefaultValue ) );
+
                 }
 
                 cache.Set( cacheKey, globalAttributes, new CacheItemPolicy() );

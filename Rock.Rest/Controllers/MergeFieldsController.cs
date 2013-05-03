@@ -6,9 +6,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Web;
 using System.Web.Http;
 using System.Web.Routing;
+
 using Rock.Model;
 using Rock.Rest.Filters;
 using Rock.Web.Cache;
@@ -84,6 +86,8 @@ namespace Rock.Rest.Controllers
                     string itemString = string.Format( "<< {0} >>", workingParts.AsDelimited( "." ) );
                     return string.Format( formatString, itemString ).Replace( "<", "{" ).Replace( ">", "}" );
                 }
+
+                return string.Format( "{{{{ {0} }}}}", idParts.AsDelimited(".") );
             }
 
             return string.Empty;
@@ -127,18 +131,21 @@ namespace Rock.Rest.Controllers
                     
                 case "GlobalAttribute":
 
-                    Rock.Web.Cache.GlobalAttributesCache.Read().AttributeValues
-                        .Where( v =>
-                            v.Key.StartsWith( "Organization", StringComparison.CurrentCultureIgnoreCase ) ||
-                            v.Key.StartsWith( "Email", StringComparison.CurrentCultureIgnoreCase ) )
-                        .OrderBy( v => v.Key )
-                        .ToList()
-                        .ForEach( v => items.Add( new TreeViewItem
+                    var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+
+                    foreach ( var attribute in globalAttributes.AttributeKeys.OrderBy( a => a.Value ) )
+                    {
+                        var attributeCache = AttributeCache.Read( attribute.Key );
+                        if ( attributeCache.IsAuthorized( "View", null ) )
                         {
-                            Id = "GlobalAttribute," + v.Key,
-                            Name = v.Value.Key,
-                            HasChildren = false
-                        } ) );
+                            items.Add( new TreeViewItem
+                            {
+                                Id = "GlobalAttribute," + attributeCache.Key,
+                                Name = attributeCache.Name,
+                                HasChildren = false
+                            } );
+                        }
+                    }
 
                     break;
 
@@ -177,35 +184,55 @@ namespace Rock.Rest.Controllers
                             // Add the tree view items
                             foreach ( var propInfo in type.GetProperties() )
                             {
-                                var treeViewItem = new TreeViewItem
+                                if ( propInfo.GetCustomAttributes( typeof( Rock.Data.MergeFieldAttribute ) ).Count() > 0 )
                                 {
-                                    Id = id + "," + propInfo.Name,
-                                    Name = propInfo.Name.SplitCase()
-                                };
+                                    var treeViewItem = new TreeViewItem
+                                    {
+                                        Id = id + "," + propInfo.Name,
+                                        Name = propInfo.Name.SplitCase()
+                                    };
 
-                                Type propertyType = propInfo.PropertyType;
+                                    Type propertyType = propInfo.PropertyType;
 
-                                if ( propertyType.IsGenericType &&
-                                    propertyType.GetGenericTypeDefinition() == typeof( ICollection<> ) &&
-                                    propertyType.GetGenericArguments().Length == 1 )
-                                {
-                                    treeViewItem.Name += " (Collection)";
-                                    treeViewItem.HasChildren = EntityTypeCache.Read( propertyType.GetGenericArguments()[0].FullName, false ) != null;
+                                    if ( propertyType.IsGenericType &&
+                                        propertyType.GetGenericTypeDefinition() == typeof( ICollection<> ) &&
+                                        propertyType.GetGenericArguments().Length == 1 )
+                                    {
+                                        treeViewItem.Name += " (Collection)";
+                                        treeViewItem.HasChildren = EntityTypeCache.Read( propertyType.GetGenericArguments()[0].FullName, false ) != null;
+                                    }
+                                    else
+                                    {
+                                        treeViewItem.HasChildren = EntityTypeCache.Read( propertyType.FullName, false ) != null;
+                                    }
+
+                                    items.Add( treeViewItem );
                                 }
-                                else
+                            }
+
+                            if ( entityType.IsEntity )
+                            {
+                                foreach ( Rock.Model.Attribute attribute in new AttributeService().GetByEntityTypeId( entityType.Id ) )
                                 {
-                                    treeViewItem.HasChildren = EntityTypeCache.Read( propertyType.FullName, false ) != null;
+                                    // Only include attributes without a qualifier (since we don't have a specific instance of this entity type)
+                                    if ( string.IsNullOrEmpty( attribute.EntityTypeQualifierColumn ) &&
+                                        string.IsNullOrEmpty( attribute.EntityTypeQualifierValue ) &&
+                                        attribute.IsAuthorized("View", null))
+                                    {
+                                        items.Add( new TreeViewItem
+                                        {
+                                            Id = attribute.Key,
+                                            Name = attribute.Name
+                                        } );
+                                    }
                                 }
-
-                                items.Add( treeViewItem);
-
                             }
                         }
                     }
                     break;
             }
 
-            return items.AsQueryable();
+            return items.OrderBy( i => i.Name).AsQueryable();
 
         }
     }

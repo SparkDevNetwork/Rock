@@ -126,7 +126,7 @@ namespace Rock.Communication.Transport
 
                 var recipientService = new CommunicationRecipientService();
 
-                var globalConfigValues = GetGlobalConfigValues();
+                var globalConfigValues = GetGlobalMergeFields();
 
                 bool recipientFound = true;
                 while ( recipientFound )

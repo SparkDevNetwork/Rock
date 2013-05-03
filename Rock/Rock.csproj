@@ -131,6 +131,7 @@
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
+    <Compile Include="Data\MergeFieldAttribute.cs" />
     <Compile Include="Migrations\201305021128283_CommunicationMEF.cs" />
     <Compile Include="Migrations\201305021128283_CommunicationMEF.Designer.cs">
       <DependentUpon>201305021128283_CommunicationMEF.cs</DependentUpon>

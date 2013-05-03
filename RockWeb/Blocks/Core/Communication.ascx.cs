@@ -307,16 +307,22 @@ namespace RockWeb.Blocks.Core
 
                     if ( communication != null )
                     {
+                        string message = string.Empty;
+
                         var prevStatus = communication.Status;
                         if ( CheckApprovalRequired( communication.Recipients.Count ) && !IsUserAuthorized( "Approve" ) )
                         {
                             communication.Status = CommunicationStatus.Submitted;
+                            message = "Communication has been submitted for approval.";
                         }
                         else
                         {
                             communication.Status = CommunicationStatus.Approved;
                             communication.ReviewedDateTime = DateTime.Now;
                             communication.ReviewerPersonId = CurrentPersonId;
+                            message = "Communication has been queued for sending.";
+
+                            // TODO: Send notice to sender that communication was approved
                         }
 
                         communication.Recipients
@@ -332,7 +338,26 @@ namespace RockWeb.Blocks.Core
                         );
 
                         service.Save( communication, CurrentPersonId );
-                        ProcessStatusChange( prevStatus, communication );
+
+                        // TODO: Convert to use transactions for out-of-process sending
+                        if ( communication.Status == CommunicationStatus.Approved )
+                        {
+                            bool sendNow = false;
+                            if ( bool.TryParse( GetAttributeValue( "SendWhenApproved" ), out sendNow ) && sendNow )
+                            {
+                                var channel = communication.Channel;
+                                if ( channel != null )
+                                {
+                                    var transport = channel.Transport;
+                                    if ( transport != null )
+                                    {
+                                        transport.Send( communication, CurrentPersonId );
+                                    }
+                                }
+                            }
+                        }
+
+                        ShowResult( message, communication );
                     }
                 }
             }
@@ -363,7 +388,8 @@ namespace RockWeb.Blocks.Core
                         }
 
                         service.Save( communication, CurrentPersonId );
-                        ProcessStatusChange( prevStatus, communication );
+
+                        ShowResult( "The communication has been approved", communication );
                     }
                 }
             }
@@ -394,7 +420,10 @@ namespace RockWeb.Blocks.Core
                         }
 
                         service.Save( communication, CurrentPersonId );
-                        ProcessStatusChange( prevStatus, communication );
+
+                        // TODO: Send notice to sneder that communication was denied
+                        
+                        ShowResult( "The communicaiton has been denied", communication );
                     }
                 }
             }
@@ -423,7 +452,8 @@ namespace RockWeb.Blocks.Core
                         }
 
                         service.Save( communication, CurrentPersonId );
-                        ProcessStatusChange( prevStatus, communication );
+
+                        ShowResult( "The communication has been saved", communication );
                     }
                 }
             }
@@ -462,8 +492,7 @@ namespace RockWeb.Blocks.Core
                             communication.Status = CommunicationStatus.Draft;
                         }
 
-                        service.Save( communication, CurrentPersonId );
-                        ProcessStatusChange( prevStatus, communication );
+                        ShowResult( "The communication has been cancelled", communication );
                     }
                 }
             }
@@ -894,51 +923,28 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
-        /// Processes the status change.
+        /// Shows the result.
         /// </summary>
-        /// <param name="previousStatus">The previous status.</param>
+        /// <param name="message">The message.</param>
         /// <param name="communication">The communication.</param>
-        private void ProcessStatusChange( CommunicationStatus previousStatus, Rock.Model.Communication communication )
+        private void ShowResult( string message, Rock.Model.Communication communication )
         {
-            if ( communication != null && communication.Status != previousStatus )
+            pnlEdit.Visible = false;
+
+            nbResult.Text = message;
+
+            if ( CurrentPageReference.Parameters.ContainsKey( "Id" ) )
             {
-                switch ( communication.Status )
-                {
-                    case CommunicationStatus.Submitted:
-
-                        // TODO: Send Notifiction to approvers...
-
-                        break;
-
-                    case CommunicationStatus.Approved:
-
-                        // TODO: Send notice to sender that communication was approved
-
-                        bool sendNow = false;
-                        if ( bool.TryParse( GetAttributeValue( "SendWhenApproved" ), out sendNow ) && sendNow )
-                        {
-                            var channel = communication.Channel;
-                            if ( channel != null )
-                            {
-                                var transport = channel.Transport;
-                                if ( transport != null )
-                                {
-                                    transport.Send( communication, CurrentPersonId );
-                                }
-                            }
-                        }
-
-                        break;
-
-                    case CommunicationStatus.Denied:
-
-                        // TODO: Send notice to sender that communication was denied
-
-                        break;
-                }
+                CurrentPageReference.Parameters["Id"] = communication.Id.ToString();
             }
+            else
+            {
+                CurrentPageReference.Parameters.Add( "Id", communication.Id.ToString() );
+            }
+            hlViewCommunication.NavigateUrl = CurrentPageReference.BuildUrl();
 
-            ShowDetail( "communicationId", communication.Id );
+            pnlResult.Visible = true;
+
         }
 
         #endregion

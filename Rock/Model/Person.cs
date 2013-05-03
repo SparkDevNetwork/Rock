@@ -92,6 +92,7 @@ namespace Rock.Model
         /// deceased.
         /// </value>
         [DataMember]
+        [MergeField]
         public bool? IsDeceased 
         {
             get 
@@ -131,6 +132,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         [Previewable]
+        [MergeField]
         public string GivenName { get; set; }
 
         /// <summary>
@@ -141,6 +143,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
+        [MergeField]
         public string NickName { get; set; }
 
         /// <summary>
@@ -152,6 +155,7 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         [Previewable]
+        [MergeField]
         public string LastName { get; set; }
 
         /// <summary>
@@ -162,6 +166,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [MergeField]
         public string FullName
         {
             get
@@ -178,6 +183,7 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [MergeField]
         public string FirstName
         {
             get
@@ -194,6 +200,7 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [MergeField]
         public string FullNameLastFirst
         {
             get
@@ -231,6 +238,7 @@ namespace Rock.Model
         /// Birth Day.
         /// </value>
         [DataMember]
+        [MergeField]
         public int? BirthDay { get; set; }
         
         /// <summary>
@@ -240,6 +248,7 @@ namespace Rock.Model
         /// Birth Month.
         /// </value>
         [DataMember]
+        [MergeField]
         public int? BirthMonth { get; set; }
         
         /// <summary>
@@ -249,6 +258,7 @@ namespace Rock.Model
         /// Birth Year.
         /// </value>
         [DataMember]
+        [MergeField]
         public int? BirthYear { get; set; }
         
         /// <summary>
@@ -260,6 +270,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [Previewable]
+        [MergeField]
         public Gender Gender { get; set; }
 
         /// <summary>
@@ -279,6 +290,7 @@ namespace Rock.Model
         /// Anniversary Date.
         /// </value>
         [DataMember]
+        [MergeField]
         public DateTime? AnniversaryDate { get; set; }
         
         /// <summary>
@@ -288,6 +300,7 @@ namespace Rock.Model
         /// Graduation Date.
         /// </value>
         [DataMember]
+        [MergeField]
         public DateTime? GraduationDate { get; set; }
         
         /// <summary>
@@ -299,6 +312,7 @@ namespace Rock.Model
         [MaxLength( 75 )]
         [DataMember]
         [Previewable]
+        [MergeField]
         public string Email { get; set; }
         
         /// <summary>
@@ -318,6 +332,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 250 )]
         [DataMember]
+        [MergeField]
         public string EmailNote { get; set; }
         
         /// <summary>
@@ -328,6 +343,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [MergeField]
         public bool DoNotEmail { get; set; }
         
         /// <summary>
@@ -338,6 +354,7 @@ namespace Rock.Model
         /// </value>
         [MaxLength( 1000 )]
         [DataMember]
+        [MergeField]
         public string SystemNote { get; set; }
         
         /// <summary>
@@ -360,6 +377,7 @@ namespace Rock.Model
         /// Collection of Users.
         /// </value>
         [DataMember]
+        [MergeField]
         public virtual ICollection<UserLogin> Users { get; set; }
         
         /// <summary>
@@ -378,6 +396,7 @@ namespace Rock.Model
         /// Collection of Phone Numbers.
         /// </value>
         [DataMember]
+        [MergeField]
         public virtual ICollection<PhoneNumber> PhoneNumbers { get; set; }
         
         /// <summary>
@@ -387,6 +406,7 @@ namespace Rock.Model
         /// Collection of Members.
         /// </value>
         [DataMember]
+        [MergeField]
         public virtual ICollection<GroupMember> Members { get; set; }
 
         /// <summary>
@@ -396,6 +416,7 @@ namespace Rock.Model
         /// The attendances.
         /// </value>
         [DataMember]
+        [MergeField]
         public virtual ICollection<Attendance> Attendances
         {
             get { return _attendances ?? ( _attendances = new Collection<Attendance>() ); }
@@ -419,6 +440,7 @@ namespace Rock.Model
         /// A <see cref="DefinedValue"/> object.
         /// </value>
         [DataMember]
+        [MergeField]
         public virtual DefinedValue MaritalStatusValue { get; set; }
         
         /// <summary>
@@ -428,6 +450,7 @@ namespace Rock.Model
         /// A <see cref="DefinedValue"/> object.
         /// </value>
         [DataMember]
+        [MergeField]
         public virtual DefinedValue PersonStatusValue { get; set; }
         
         /// <summary>
@@ -437,6 +460,7 @@ namespace Rock.Model
         /// A <see cref="DefinedValue"/> object.
         /// </value>
         [DataMember]
+        [MergeField]
         public virtual DefinedValue RecordStatusValue { get; set; }
         
         /// <summary>
@@ -446,6 +470,7 @@ namespace Rock.Model
         /// A <see cref="DefinedValue"/> object.
         /// </value>
         [DataMember]
+        [MergeField]
         public virtual DefinedValue RecordStatusReasonValue { get; set; }
         
         /// <summary>
@@ -455,6 +480,7 @@ namespace Rock.Model
         /// A <see cref="DefinedValue"/> object.
         /// </value>
         [DataMember]
+        [MergeField]
         public virtual DefinedValue RecordTypeValue { get; set; }
         
         /// <summary>
@@ -464,6 +490,7 @@ namespace Rock.Model
         /// A <see cref="DefinedValue"/> object.
         /// </value>
         [DataMember]
+        [MergeField]
         public virtual DefinedValue SuffixValue { get; set; }
         
         /// <summary>
@@ -473,12 +500,14 @@ namespace Rock.Model
         /// A <see cref="DefinedValue"/> object.
         /// </value>
         [DataMember]
+        [MergeField]
         public virtual DefinedValue TitleValue { get; set; }
 
         /// <summary>
         /// Gets or sets the Photo
         /// </summary>
         [DataMember]
+        [MergeField]
         public virtual BinaryFile Photo { get; set; }
 
         /// <summary>
@@ -489,6 +518,7 @@ namespace Rock.Model
         /// </value>
         [NotMapped]
         [DataMember]
+        [MergeField]
         public virtual DateTime? BirthDate
         {
             // notes
@@ -530,6 +560,7 @@ namespace Rock.Model
         /// <value>
         /// The age.
         /// </value>
+        [MergeField]
         public virtual int? Age
         {
             get
@@ -546,6 +577,7 @@ namespace Rock.Model
             }
         }
 
+        [MergeField]
         public virtual int DaysToBirthday
         {
             get

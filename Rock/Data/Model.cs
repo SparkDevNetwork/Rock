@@ -5,6 +5,7 @@
 //
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using System.Data.Services;
 using System.Runtime.Serialization;
 
@@ -102,6 +103,26 @@ namespace Rock.Data
         public virtual void MakePrivate( string action, Person person, int? personId )
         {
             Security.Authorization.MakePrivate( this, action, person, personId );
+        }
+
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <returns></returns>
+        public override object ToLiquid()
+        {
+            Dictionary<string, object> dictionary = base.ToLiquid() as Dictionary<string, object>;
+
+            this.LoadAttributes();
+            foreach ( var attribute in this.Attributes )
+            {
+                if (attribute.Value.IsAuthorized("View", null))
+                {
+                    dictionary.Add(attribute.Key, GetAttributeValue(attribute.Key));
+                }
+            }
+
+            return dictionary;
         }
 
         #endregion
