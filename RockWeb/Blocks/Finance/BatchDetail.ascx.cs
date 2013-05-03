@@ -53,6 +53,9 @@ namespace RockWeb.Blocks.Finance.Administration
                 rGridTransactions.GridRebind += rGridTransactions_GridRebind;
                 rGridTransactions.GridReorder += rGridTransactions_GridReorder;
 
+                // enable delete transaction
+                rGridTransactions.Columns[rGridTransactions.Columns.Count - 1].Visible = true;
+
             }
             else
             {
@@ -140,8 +143,7 @@ namespace RockWeb.Blocks.Finance.Administration
         /// <param name="attributeId">The attribute id.</param>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         protected void ShowEditValue( Rock.Model.FinancialBatch batchValue )
-        {
-            
+        {            
             hfIdValue.Value = batchValue.Id.ToString();
             
             lValue.Text = "Edit";
@@ -287,7 +289,7 @@ namespace RockWeb.Blocks.Finance.Administration
         {
             if ( id == 0 )
             {
-                NavigateToDetailPage( "batchId", Int32.Parse( hfIdValue.Value ) );
+                NavigateToDetailPage( "financialBatchId", Int32.Parse( hfIdValue.Value ) );
             }
             else
             {

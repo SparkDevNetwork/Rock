@@ -44,6 +44,23 @@ namespace Rock.CheckIn
         protected Rock.Model.Workflow CurrentWorkflow;
 
         /// <summary>
+        /// Holds cookie names shared across certain checkin blocks.
+        /// </summary>
+        public struct CheckInCookie
+        {
+            /// <summary>
+            /// The name of the cookie that holds the DeviceId. Setters of this cookie should
+            /// be sure to set the expiration to a time when the device is no longer valid.
+            /// </summary>
+            public static readonly string DEVICEID = "Checkin.DeviceId";
+
+            /// <summary>
+            /// The name of the cookie that holds whether or not the device was a mobile device.
+            /// </summary>
+            public static readonly string ISMOBILE = "Checkin.IsMobile";
+        }
+
+        /// <summary>
         /// Gets a value indicating whether the kiosk has active group types and locations that 
         /// are open for check-in.
         /// </summary>
@@ -252,17 +269,19 @@ namespace Rock.CheckIn
             if (CurrentCheckInState == null && CurrentKioskId.HasValue && CurrentGroupTypeIds != null )
             {
                 var kioskStatus = KioskCache.GetKiosk( CurrentKioskId.Value );
-
-                // Remove any group types that were not selected in the admin configuration
-                foreach ( var kioskGroupType in kioskStatus.KioskGroupTypes.ToList() )
+                if ( kioskStatus != null )
                 {
-                    if ( !CurrentGroupTypeIds.Contains( kioskGroupType.GroupType.Id ) )
+                    // Remove any group types that were not selected in the admin configuration
+                    foreach ( var kioskGroupType in kioskStatus.KioskGroupTypes.ToList() )
                     {
-                        kioskStatus.KioskGroupTypes.Remove( kioskGroupType );
+                        if ( !CurrentGroupTypeIds.Contains( kioskGroupType.GroupType.Id ) )
+                        {
+                            kioskStatus.KioskGroupTypes.Remove( kioskGroupType );
+                        }
                     }
-                }
 
-                CurrentCheckInState = new CheckInState( kioskStatus );
+                    CurrentCheckInState = new CheckInState( kioskStatus );
+                }
             }
         }
     }

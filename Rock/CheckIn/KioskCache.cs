@@ -5,10 +5,11 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Spatial;
 using System.Linq;
-
+using System.Net.Sockets;
+using System.Text.RegularExpressions;
 using Newtonsoft.Json;
-
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -70,7 +71,6 @@ namespace Rock.CheckIn
                     }
                 }
 
-
                 if ( _kiosks.ContainsKey( kioskId ) )
                 {
                     // Clone the object so that a reference to the static object is not maintaned (or updated)
@@ -81,6 +81,94 @@ namespace Rock.CheckIn
             return null;
         }
 
+        /// <summary>
+        /// Finds a  matching device kiosk by it's latitude and longitude.
+        /// </summary>
+        /// <param name="latitude">the latitude of the device</param>
+        /// <param name="longitude">the longitude of the device</param>
+        /// <returns></returns>
+        public static KioskStatus GetKiosk( double latitude, double longitude )
+        {
+            DbGeography aLocation = DbGeography.FromText( string.Format( "POINT({0} {1})", longitude, latitude ) );
+
+            var kioskStatus = _kiosks
+                .Where( d => aLocation.Intersects( d.Value.Device.GeoFence ) )
+                .Select( k => k.Value ).FirstOrDefault();
+
+            if ( kioskStatus != null )
+            {
+                // Now call the other GetKiosk method which will lock and refresh the cache as needed.
+                return GetKiosk( kioskStatus.Device.Id );
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the kiosk based on it's name (if the given IP can be reverse looked up into a fully qualified name)
+        /// or by the given IP.
+        /// </summary>
+        /// <param name="ipAddress">The IP address (from Request server variable "REMOTE_ADDR")</param>
+        /// <param name="skipReverseLookup">Flag to indicate whether or not the ipAddress should attempt to be looked up (converted to a FQHN).</param>
+        /// <returns></returns>
+        public static KioskStatus GetKiosk( string ipAddress, bool skipReverseLookup = true )
+        {
+            string hostValue = ipAddress;
+            KioskStatus kioskStatus;
+
+            if ( !skipReverseLookup )
+            {
+                // Lookup the system's "name" (as seen in the DNS) using the given IP
+                // address because when using DHCP the kiosk may have a different IP from time to time
+                // -- however the fully qualified name should always be the same.
+
+                // Try with all our might to find the name based on the IP.
+                try
+                {
+                    hostValue = System.Net.Dns.GetHostEntry( ipAddress ).HostName;
+                }
+                catch ( SocketException )
+                {
+                    try
+                    {
+                        // NOTE: GetHostEntry() doesn't always work perfectly. See comments
+                        // in "Community Content" section of the link below:
+                        // http://msdn.microsoft.com/en-us/library/ms143998(v=vs.90).aspx
+                        hostValue = System.Net.Dns.GetHostByAddress( ipAddress ).HostName;
+                    }
+                    catch ( SocketException )
+                    {
+                        hostValue = ipAddress;
+                    }
+                }
+            }
+
+            // If we still have the IP then try to find it based on IP
+            if ( Regex.IsMatch( hostValue, @"\d+\.\d+\.\d+\.\d+" ) )
+            {
+                // find by IP
+                kioskStatus = _kiosks.Where( k => k.Value.Device.IPAddress == hostValue ).Select( k => k.Value ).FirstOrDefault();
+            }
+            else
+            {
+                // find by name
+                kioskStatus = _kiosks.Where( k => k.Value.Device.Name == hostValue ).Select( k => k.Value ).FirstOrDefault();
+            }
+
+            if ( kioskStatus != null )
+            {
+                // Now call the other GetKiosk method which will lock and refresh the cache as needed.
+                return GetKiosk( kioskStatus.Device.Id );
+            }
+            else
+            {
+                return null;
+            }
+
+        }
+ 
         /// <summary>
         /// Gets the location attendance.
         /// </summary>
@@ -140,6 +228,7 @@ namespace Rock.CheckIn
             }
         }
 
+        # region Private Methods
         /// <summary>
         /// Refreshes the cache.
         /// </summary>
@@ -207,7 +296,6 @@ namespace Rock.CheckIn
                 }
 
                 _labels.Add( file.Id, label );
-
             }
 
             _lastCached = DateTimeOffset.Now;
@@ -321,5 +409,6 @@ namespace Rock.CheckIn
                 scheduleAttendance.PersonIds.Add( attendance.PersonId.Value );
             }
         }
+        # endregion
     }
 }

@@ -4,9 +4,10 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System;
 using System.Net;
 using System.Windows;
-using System.Windows.Controls;
+using Rock.Model;
 using Rock.Net;
 
 namespace Rock.Apps.CheckScannerUtility
@@ -14,7 +15,7 @@ namespace Rock.Apps.CheckScannerUtility
     /// <summary>
     /// Interaction logic for LoginPage.xaml
     /// </summary>
-    public partial class LoginPage : Page
+    public partial class LoginPage : System.Windows.Controls.Page
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="LoginPage"/> class.
@@ -31,25 +32,36 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnLogin_Click( object sender, RoutedEventArgs e )
         {
+            BatchPage batchPage = new BatchPage();
             try
             {
-                RockRestClient rockRestClient = new RockRestClient(txtRockUrl.Text);
-                rockRestClient.Login( txtUsername.Text, txtPassword.Password);
+                txtUsername.Text = txtUsername.Text.Trim();
+                txtRockUrl.Text = txtRockUrl.Text.Trim();
+                RockRestClient rockRestClient = new RockRestClient( txtRockUrl.Text );
+                rockRestClient.Login( txtUsername.Text, txtPassword.Password );
+                Person person = rockRestClient.GetData<Person>( string.Format( "api/People/GetByUserName/{0}", txtUsername.Text ) );
+                batchPage.LoggedInPerson = person;
             }
-            catch ( WebException wex )
+            catch ( Exception ex )
             {
-                HttpWebResponse response = wex.Response as HttpWebResponse;
-                if ( response != null )
+                if ( ex is WebException )
                 {
-                    if ( response.StatusCode.Equals( HttpStatusCode.Unauthorized ) )
+                    WebException wex = ex as WebException;
+                    HttpWebResponse response = wex.Response as HttpWebResponse;
+                    if ( response != null )
                     {
-                        lblLoginWarning.Content = "Invalid Login";
-                        lblLoginWarning.Visibility = Visibility.Visible;
-                        return;
+                        if ( response.StatusCode.Equals( HttpStatusCode.Unauthorized ) )
+                        {
+                            lblLoginWarning.Content = "Invalid Login";
+                            lblLoginWarning.Visibility = Visibility.Visible;
+                            return;
+                        }
                     }
                 }
 
-                lblLoginWarning.Content = wex.Message;
+                lblRockUrl.Visibility = Visibility.Visible;
+                txtRockUrl.Visibility = Visibility.Visible;
+                lblLoginWarning.Content = ex.Message;
                 lblLoginWarning.Visibility = Visibility.Visible;
                 return;
             }
@@ -60,7 +72,6 @@ namespace Rock.Apps.CheckScannerUtility
             rockConfig.Password = txtPassword.Password;
             rockConfig.Save();
             
-            BatchPage batchPage = new BatchPage();
             this.NavigationService.Navigate( batchPage);
         }
 
@@ -73,6 +84,12 @@ namespace Rock.Apps.CheckScannerUtility
         {
             HideLoginWarning( null, null );
             RockConfig rockConfig = RockConfig.Load();
+
+            bool promptForUrl = ( string.IsNullOrWhiteSpace( rockConfig.RockBaseUrl ) );
+
+            lblRockUrl.Visibility = promptForUrl ? Visibility.Visible : Visibility.Collapsed;
+            txtRockUrl.Visibility = promptForUrl ? Visibility.Visible : Visibility.Collapsed;
+            
             txtRockUrl.Text = rockConfig.RockBaseUrl;
             txtUsername.Text = rockConfig.Username;
             txtPassword.Password = rockConfig.Password;
