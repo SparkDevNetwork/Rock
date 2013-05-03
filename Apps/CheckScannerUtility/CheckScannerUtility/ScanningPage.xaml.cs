@@ -1,9 +1,9 @@
-﻿using System.IO;
-//
+﻿//
 // THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Imaging;
@@ -22,6 +22,14 @@ namespace Rock.Apps.CheckScannerUtility
         /// The batch page.
         /// </value>
         public BatchPage batchPage { get; private set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [expecting mag tek back scan].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [expecting mag tek back scan]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ExpectingMagTekBackScan { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ScanningPage"/> class.
@@ -73,6 +81,29 @@ namespace Rock.Apps.CheckScannerUtility
             else
             {
                 imgBack.Source = null;
+            }
+
+
+            lblScanInstructions.Visibility = Visibility.Collapsed;
+            ExpectingMagTekBackScan = false;
+            if ((imgFront.Source == null) && (imgBack.Source == null))
+            {
+                lblScanInstructions.Content = "INFO: Insert the check into the scanner to begin.";
+                lblScanInstructions.Visibility = Visibility.Visible;
+            }
+
+            // If we have the front image and valid routing number, but not the back (and it's a MagTek).  Inform them to scan the back;
+            if ( RockConfig.Load().ScannerInterfaceType == RockConfig.InterfaceType.MICRImageRS232 )
+            {
+                if ( ( imgFront.Source != null ) && ( imgBack.Source == null ) )
+                {
+                    if ( scannedCheckInfo.RoutingNumber.Length.Equals(9) )
+                    {
+                        ExpectingMagTekBackScan = true;
+                        lblScanInstructions.Content = "INFO: Insert the check again facing the other direction to get an image of the back of the check.";
+                        lblScanInstructions.Visibility = Visibility.Visible;
+                    }
+                }
             }
 
             lblRoutingNumber.Content = string.Format( "Routing Number: {0}", scannedCheckInfo.RoutingNumber );

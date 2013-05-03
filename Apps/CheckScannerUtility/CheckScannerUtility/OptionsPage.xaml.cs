@@ -4,19 +4,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using Rock.Net;
 
 namespace Rock.Apps.CheckScannerUtility
@@ -84,8 +73,11 @@ namespace Rock.Apps.CheckScannerUtility
                     break;
             }
 
-            lblImageOption.Visibility = Visibility.Visible;
-            cboImageOption.Visibility = Visibility.Visible;
+
+            if ( cboMagTekCommPort.Items.Count > 0 )
+            {
+                cboMagTekCommPort.SelectedItem = string.Format( "COM{0}", rockConfig.MICRImageComPort );
+            }
         }
 
         /// <summary>
@@ -101,6 +93,8 @@ namespace Rock.Apps.CheckScannerUtility
             cboScannerInterfaceType.Items.Clear();
             cboScannerInterfaceType.Items.Add( "Ranger" );
             cboScannerInterfaceType.Items.Add( "MagTek" );
+
+            cboMagTekCommPort.ItemsSource = System.IO.Ports.SerialPort.GetPortNames();
         }
 
         /// <summary>
@@ -114,6 +108,7 @@ namespace Rock.Apps.CheckScannerUtility
 
             try
             {
+                txtRockUrl.Text = txtRockUrl.Text.Trim();
                 RockRestClient client = new RockRestClient( txtRockUrl.Text );
                 client.Login( rockConfig.Username, rockConfig.Password );
             }
@@ -150,6 +145,13 @@ namespace Rock.Apps.CheckScannerUtility
                     break;
             }
 
+            string comPortName = cboMagTekCommPort.SelectedItem as string;
+            
+            if (!string.IsNullOrWhiteSpace(comPortName))
+            {
+                rockConfig.MICRImageComPort = short.Parse( comPortName.Replace( "COM", string.Empty ) );
+            }
+
             rockConfig.Save();
 
             this.NavigationService.GoBack();
@@ -173,6 +175,24 @@ namespace Rock.Apps.CheckScannerUtility
         private void Page_Loaded( object sender, RoutedEventArgs e )
         {
             ShowDetail();
+        }
+
+        /// <summary>
+        /// Handles the SelectionChanged event of the cboScannerInterfaceType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="SelectionChangedEventArgs"/> instance containing the event data.</param>
+        private void cboScannerInterfaceType_SelectionChanged( object sender, SelectionChangedEventArgs e )
+        {
+            bool magTekSelected = cboScannerInterfaceType.SelectedItem.Equals( "MagTek" );
+            
+            // show COM port option only for Mag Tek
+            lblMagTekCommPort.Visibility = magTekSelected ? Visibility.Visible : Visibility.Collapsed;
+            cboMagTekCommPort.Visibility = magTekSelected ? Visibility.Visible : Visibility.Collapsed;
+
+            // show Image Option only for Ranger
+            lblImageOption.Visibility = magTekSelected ? Visibility.Collapsed : Visibility.Visible;
+            cboImageOption.Visibility = magTekSelected ? Visibility.Collapsed : Visibility.Visible;
         }
     }
 }

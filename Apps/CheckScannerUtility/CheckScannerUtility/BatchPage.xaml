@@ -5,6 +5,7 @@
       xmlns:Forms="clr-namespace:System.Windows.Forms;assembly=System.Windows.Forms"
       xmlns:ax="clr-namespace:AxRANGERLib;assembly=AxInterop.RANGERLib"
       xmlns:ax2="clr-namespace:AxMTMicrImage;assembly=AxMTMicrImage"
+      xmlns:rock="clr-namespace:Rock.Apps.CheckScannerUtility"
       x:Class="Rock.Apps.CheckScannerUtility.BatchPage"
       Name="batchPage"
       mc:Ignorable="d"
@@ -13,6 +14,9 @@
       Title="Check Scanner - Edit Batch"
       Loaded="Page_Loaded">
     <Grid>
+        <Grid.Resources>
+            <rock:ZeroCurrencyConverter x:Key="zeroCurrencyConverter" />
+        </Grid.Resources>
         <Grid.Background>
             <ImageBrush ImageSource="images\header-texture.png"
                         TileMode="Tile"
@@ -241,7 +245,8 @@
                         <Label Name="lblUploadProgress"
                                Grid.Row="6"
                                Style="{StaticResource labelStyleAlert}"
-                               Content="Uploading Check Images">
+                               Content="Upload Status"
+                               >
                         </Label>
                         <StackPanel Grid.Row="6"
                                     Grid.Column="1"
@@ -357,15 +362,14 @@
                           ColumnWidth="SizeToHeader"
                           Style="{StaticResource gridStyle}"
                           ScrollViewer.VerticalScrollBarVisibility="Visible"
-                          ScrollViewer.HorizontalScrollBarVisibility="Hidden"
-                          >
+                          ScrollViewer.HorizontalScrollBarVisibility="Hidden">
                     <DataGrid.ItemContainerStyle>
                         <Style TargetType="DataGridRow">
                             <EventSetter Event="MouseDoubleClick"
-                                         Handler="grdBatchItems_RowEdit"/>
+                                         Handler="grdBatchItems_RowEdit" />
                         </Style>
-                    </DataGrid.ItemContainerStyle>    
-                    
+                    </DataGrid.ItemContainerStyle>
+
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="SCANNED DATE/TIME"
                                             Binding="{Binding TransactionDateTime}"
@@ -373,12 +377,13 @@
                                             CellStyle="{StaticResource gridCellStyleNumber}"
                                             CanUserResize="False"
                                             CanUserSort="False">
-                            
+
                         </DataGridTextColumn>
+
                         <DataGridTextColumn Header="AMOUNT"
                                             HeaderStyle="{StaticResource gridHeaderStyleCurrency}"
                                             CellStyle="{StaticResource gridCellStyleNumber}"
-                                            Binding="{Binding Amount}"
+                                            Binding="{Binding Amount, Converter={StaticResource zeroCurrencyConverter}}"
                                             CanUserResize="False"
                                             CanUserSort="False" />
                     </DataGrid.Columns>
