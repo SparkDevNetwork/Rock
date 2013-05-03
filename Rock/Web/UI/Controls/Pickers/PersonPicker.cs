@@ -28,6 +28,7 @@ namespace Rock.Web.UI.Controls
         {
             _label = new Label();
             _btnSelect = new LinkButton();
+            _btnSelectNone = new LinkButton();
         }
 
 
@@ -250,7 +251,6 @@ namespace Rock.Web.UI.Controls
             _btnSelect.CausesValidation = false;
             _btnSelect.Click += btnSelect_Click;
 
-            _btnSelectNone = new LinkButton();
             _btnSelectNone.ClientIDMode = ClientIDMode.Static;
             _btnSelectNone.CssClass = "rock-picker-select-none";
             _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ID );
