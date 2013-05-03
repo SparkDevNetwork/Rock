@@ -6,6 +6,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using Rock.Net;
 
 namespace Rock.Apps.CheckScannerUtility
@@ -48,7 +49,26 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 cboScannerInterfaceType.SelectedItem = "MagTek";
                 lblMakeModel.Content = "MagTek";
-                lblInterfaceVersion.Content = BatchPage.micrImage.Version();
+
+                string version = null;
+                try
+                {
+                    this.Cursor = Cursors.Wait;
+                    version = BatchPage.micrImage.Version();
+                }
+                finally
+                {
+                    this.Cursor = null;
+                }
+
+                if ( !version.Equals( "-1" ) )
+                {
+                    lblInterfaceVersion.Content = version;
+                }
+                else
+                {
+                    lblInterfaceVersion.Content = "error";
+                }
             }
             else
             {
