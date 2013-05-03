@@ -16,7 +16,6 @@ namespace Rock.Web.UI.Controls
     public class PersonPicker : CompositeControl, ILabeledControl
     {
         private Label _label;
-        private Literal _literal;
         private HiddenField _hfPersonId;
         private HiddenField _hfPersonName;
         private LinkButton _btnSelect;
@@ -27,13 +26,10 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public PersonPicker()
         {
+            _label = new Label();
             _btnSelect = new LinkButton();
         }
 
-        /// <summary>
-        /// The required validator
-        /// </summary>
-        protected HiddenFieldValidator RequiredValidator;
 
         /// <summary>
         /// Gets or sets the label text.
@@ -43,18 +39,27 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string LabelText
         {
-            get
-            {
-                EnsureChildControls();
-                return _label.Text;
-            }
-
-            set
-            {
-                EnsureChildControls();
-                _label.Text = value;
-            }
+            get { return _label.Text; }
+            set { _label.Text = value; }
         }
+
+        /// <summary>
+        /// Gets or sets the name of the field to display in validation messages
+        /// when a LabelText is not entered
+        /// </summary>
+        /// <value>
+        /// The name of the field.
+        /// </value>
+        public string FieldName
+        {
+            get { return _label.Text; }
+            set { _label.Text = value; }
+        }
+
+        /// <summary>
+        /// The required validator
+        /// </summary>
+        protected HiddenFieldValidator RequiredValidator;
 
         /// <summary>
         /// Gets or sets the person id.
@@ -231,8 +236,6 @@ namespace Rock.Web.UI.Controls
 
             Controls.Clear();
 
-            _label = new Label();
-            _literal = new Literal();
             _hfPersonId = new HiddenField();
             _hfPersonId.ClientIDMode = System.Web.UI.ClientIDMode.Static;
             _hfPersonId.ID = string.Format( "hfPersonId_{0}", this.ID );
@@ -257,7 +260,6 @@ namespace Rock.Web.UI.Controls
             _btnSelectNone.Click += btnSelect_Click;
 
             Controls.Add( _label );
-            Controls.Add( _literal );
             Controls.Add( _hfPersonId );
             Controls.Add( _hfPersonName );
             Controls.Add( _btnSelect );
@@ -294,16 +296,21 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            writer.AddAttribute( "class", "control-group" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            bool renderLabel = !string.IsNullOrEmpty( LabelText );
 
-            _label.AddCssClass( "control-label" );
+            if ( renderLabel )
+            {
+                writer.AddAttribute( "class", "control-group" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            _label.RenderControl( writer );
+                _label.AddCssClass( "control-label" );
 
-            writer.AddAttribute( "class", "controls" );
+                _label.RenderControl( writer );
 
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.AddAttribute( "class", "controls" );
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            }
 
             if ( Required )
             {
@@ -317,11 +324,9 @@ namespace Rock.Web.UI.Controls
 
             if ( this.Enabled )
             {
-
                 string controlHtmlFormatStart = @"
-<div class='control-group' id='{0}'>
-    <div class='controls'>
-        <div class='rock-picker rock-picker-select'> 
+    <span id='{0}'>
+        <span class='rock-picker rock-picker-select' id='{0}'> 
             <a class='rock-picker' href='#'>
                 <i class='icon-user'></i>
                 <span id='selectedPersonLabel_{0}'>{1}</span>
@@ -342,7 +347,7 @@ namespace Rock.Web.UI.Controls
                 }
 
                 string controlHtmlFormatMiddle = @"
-        </div>
+        </span>
         <div class='dropdown-menu rock-picker rock-picker-person'>
 
             <h4>Search</h4>
@@ -369,8 +374,7 @@ namespace Rock.Web.UI.Controls
                 string controlHtmlFormatEnd = @"
             <a class='btn btn-mini' id='btnCancel_{0}'>Cancel</a>
         </div>
-    </div>
-</div>
+    </span>
 ";
 
                 writer.Write( string.Format( controlHtmlFormatEnd, this.ID, this.PersonName ) );
@@ -378,21 +382,18 @@ namespace Rock.Web.UI.Controls
             else
             {
                 string controlHtmlFormatDisabled = @"
-<div class='control-group' id='{0}'>
-    <div class='controls'>
-
         <i class='icon-file-alt'></i>
         <span id='selectedItemLabel_{0}'>{1}</span>
-
-    </div>
-</div>
 ";
                 writer.Write( controlHtmlFormatDisabled, this.ID, this.PersonName );
             }
 
-            writer.RenderEndTag();
+            if ( renderLabel )
+            {
+                writer.RenderEndTag();
 
-            writer.RenderEndTag();
+                writer.RenderEndTag();
+            }
         }
     }
 }

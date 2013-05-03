@@ -67,11 +67,61 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Sets the values.
+        /// </summary>
+        /// <param name="nodePaths">The node paths.</param>
+        public void SetValues( IEnumerable<string> nodePaths )
+        {
+            var nodePathsList = nodePaths.ToList();
+
+            if ( nodePathsList.Any() )
+            {
+                var ids = new List<string>();
+                var names = new List<string>();
+                InitialItemParentIds = string.Empty;
+
+                foreach ( string nodePath in nodePathsList )
+                {
+                    var nodes = nodePath.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+
+                    if ( nodes.Count > 0 )
+                    {
+                        ItemId = nodePath;
+                        ItemName = nodes[nodes.Count - 1];
+
+                        if ( InitialItemParentIds == string.Empty && nodes.Count > 1 )
+                        {
+                            InitialItemParentIds = nodes.Take( nodes.Count - 1 ).ToList().AsDelimited( "," );
+                        }
+                    }
+                }
+
+                ItemIds = ids;
+                ItemNames = names;
+
+            }
+            else
+            {
+                ItemId = "0";
+                ItemName = "Add Merge Field";
+            }
+        }
+
+        /// <summary>
         /// Sets the value on select.
         /// </summary>
         protected override void SetValueOnSelect()
         {
             this.SetValue( ItemId );
+        }
+
+        /// <summary>
+        /// Sets the values on select.
+        /// </summary>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected override void SetValuesOnSelect()
+        {
+            this.SetValues( ItemIds );
         }
 
         /// <summary>

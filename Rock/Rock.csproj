@@ -139,6 +139,10 @@
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
     <Compile Include="Data\MergeFieldAttribute.cs" />
+    <Compile Include="Migrations\201305032320163_Communications.cs" />
+    <Compile Include="Migrations\201305032320163_Communications.Designer.cs">
+      <DependentUpon>201305032320163_Communications.cs</DependentUpon>
+    </Compile>
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
     <Compile Include="Web\UI\Controls\Communication\ChannelControl.cs" />
     <Compile Include="Data\IgnoreModelErrorsAttribute.cs" />
@@ -1529,6 +1533,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201305032019044_DateTimeDataTypesSweep.resx">
       <DependentUpon>201305032019044_DateTimeDataTypesSweep.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305032320163_Communications.resx">
+      <DependentUpon>201305032320163_Communications.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
