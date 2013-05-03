@@ -8,6 +8,9 @@
         base.OnInit( e );
         AddCSSLink( Page, ResolveUrl( "~/CSS/jquery.tagsinput.css" ) );
         AddScriptLink( Page, ResolveUrl( "~/Scripts/jquery.tagsinput.js" ) );
+        
+        AddScriptLink(Page, ResolveUrl("~/Scripts/jquery.tooltipster.min.js"));
+        AddCSSLink(Page, ResolveUrl("~/CSS/tooltipster.css"));
     }
     
 </script>
@@ -81,7 +84,7 @@
 
                                 <ul class="nav pull-right">
                                     <li class="dropdown">
-                                        <a data-toggle="dropdown" href="#" class="dropdown-toggle" tabindex="0">
+                                        <a class="persondetails-actions" data-toggle="dropdown" href="#" class="dropdown-toggle" tabindex="0">
                                             <i class="icon-cog"></i>
                                             <span>Actions</span>
                                             <b class="caret"></b>
@@ -90,6 +93,7 @@
                                             <li>
                                                 <a href="/MyAccount" tabindex="0">Add to Starting Point</a>
                                                 <a href="/MyAccount" tabindex="0">Add to Foundations</a>
+                                                <a href="/MyAccount" tabindex="0">Email Individual</a>
                                             </li>
                                             <li class="divider"></li>
                                             <li><a href="">Report Data Error</a></li>
@@ -119,11 +123,13 @@
 
                             <div class="span6">
                                 <div class="personcontact">
-                                    <div class="phonenumbers">
-                                        Unlisted <small>Home</small> <br />
-                                        (555) 867-5309 <small>Cell</small> <br />
-                                        (555) 847-5329 <small>Work</small> <br />
-                                    </div>
+
+                                    <ul class="unstyled phonenumbers">
+                                        <li data-value="(555)555-5555">Unlisted <small>Home</small></li>
+                                        <li data-value="(555)555-5555">(555) 867-5309 <small>Cell</small></li>
+                                        <li data-value="(555)555-5555">(555) 847-5329 <small>Work</small></li>
+                                    </ul>
+
                                     <div class="email">
                                         jonedmiston@ccvonline.com
                                     </div>
@@ -139,26 +145,26 @@
 				    <div class="container-fluid">
 					    <div class="row-fluid">
                                 <div class="badge-group span3">
-                                    <div class="badge" data-toggle="tooltip" title="eRA as of 2/12/2011">
+                                    <div class="badge" title="eRA as of 2/12/2011">
                                         <img src="../../../Assets/Mockup/era.jpg" />
                                     </div>
-                                    <div class="badge" data-toggle="tooltip" title="Family has attended 14 times in the last 16 weeks">
+                                    <div class="badge" title="Family has attended 14 times in the last 16 weeks">
                                         <img src="../../../Assets/Mockup/attendence-16.jpg" />
                                     </div>
-                                    <div class="badge" data-toggle="tooltip" title="Currently serves in <br/>Neighborhood Group Leaders <br/> Children's Volunteers">
+                                    <div class="badge" title="Currently serves in <br/>Neighborhood Group Leaders <br/> Children's Volunteers">
                                         <img src="../../../Assets/Mockup/volunteer.jpg" />
                                     </div>
-                                    <div class="badge" data-toggle="tooltip" title="DISC Summary: S/C">
+                                    <div class="badge" title="DISC Summary: S/C">
                                         <img src="../../../Assets/Mockup/disc.jpg" />
                                     </div>
                                 </div>
                                 <div class="badge-group span3">
-                                    <div class="badge" data-toggle="tooltip" title="Family Attendance Summary for the last 12 months">
+                                    <div class="badge" title="Family Attendance Summary for the last 12 months">
                                         <img src="../../../Assets/Mockup/attendence-bars.jpg" />
                                     </div>
                                 </div>
                                 <div class="badge-group span6">
-                                    <div class="badge" data-toggle="tooltip" title="all of the next steps smashed together for mockup">
+                                    <div class="badge" title="all of the next steps smashed together for mockup">
                                         <img src="../../../Assets/Mockup/next-steps.jpg" />
                                     </div>
                                 </div>
@@ -473,15 +479,13 @@
                                 <ul class="personlist">
                                     <li>
                                         <a 
-                                            href="http://www.google.com" 
-                                            rel="popover" 
-                                            class="popover-person" 
-                                            data-container="body" 
-                                            data-original-title="<img src='../../../Assets/Mockup/alex.jpg' /> <div>Bill Long<small>Member</small></div>" 
-                                            data-content="<strong>Spouse</strong> Jasmin
+                                            href="http://www.google.com"  
+                                            class="popover-person tooltip" 
+                                            title=" <header><img src='../../../Assets/Mockup/alex.jpg' /> <div>Bill Long<small>Member</small></div></header>
+                                                    <strong>Spouse</strong> Jasmin
                                                             <br /><strong>Age</strong> 44
                                                             <br /><strong>Area</strong> Westwing
-                                                            <br /><strong>Email</strong> bill.long@phoenixpd.gov
+                                                            <br /><strong>Email</strong> <a href='mailto:jonedmiston@ccvonline.com'>bill.long@phoenixpd.gov</a> <!-- mailto link is just a test should use communications -->
                                                             <p /><strong>Home Phone</strong> (623) 555-2426
                                                             <br /><strong>Cell Phone</strong> (623) 532-2252">
                                                 <i class="icon-circle"></i>
@@ -509,8 +513,10 @@
 
         <script>
             $(function () {
-                $(".popover-person").popover({ trigger: 'hover', html: 'true', delay: 200 });
-                $(".badge").tooltip({html: 'true', delay: 200 });
+                
+                //$(".popover-person").popover({ trigger: 'hover', html: 'true', delay: 200 });
+                $(".popover-person").tooltipster({position: 'right', interactive: true, interactiveTolerance: 350 });
+                $(".badge").tooltipster({ position: 'top', interactive: true, interactiveTolerance: 350 });
                 
             });
         </script> 
@@ -546,6 +552,10 @@
         }
 
         /* persondetails-header */
+        .persondetails-header .navbar-inner
+        {
+            padding-bottom: 24px;
+        }
 
         .persondetails-header .actions
         {
@@ -560,9 +570,26 @@
             margin-top: 12px;
         }
 
-        .persondetails-header .labels .label
+        .persondetails-header .label
         {
             margin-top: 11px;
+        }
+
+        .persondetails .navbar .nav > li > a:hover,
+        .persondetails .navbar .nav > li > a:focus
+        {
+            color: inherit;
+        }
+
+        .persondetails .navbar .nav > li > a .caret
+        {
+            border-top: 4px solid #bbb;
+        }
+
+        .persondetails .navbar .nav > li > a:hover .caret,
+        .persondetails .navbar .nav > li > a:focus .caret
+        {
+            border-top: 4px solid #515151;
         }
 
         .persondetails-header .photo
@@ -572,6 +599,7 @@
             border: 1px solid #bdbdbd;
             display: table;
             width: 100%;
+            max-width: 300px;
         }
 
         .persondetails-header .photo img
@@ -926,10 +954,6 @@
         }
 
 
-
-
-
-
         /* generic */
         small
         {
@@ -938,31 +962,7 @@
             margin-top: 2px;
         }
 
-        .popover-title img,
-        .popover-title div
-        {
-            float: left;
-        }
-
-        .popover-title div
-        {
-            margin: 4px 0 0 8px;
-        }
-
-        .popover-title small
-        {
-            display: block;
-            font-weight: normal;
-        }
-
-        .popover-title:after
-        {
-            content: ".";
-            display: block;
-            height: 0;
-            clear: both;
-            visibility: hidden;
-        }
+        
 
         .widget header .actions 
         {
@@ -993,6 +993,43 @@
             margin-left: -16px;
             margin-right: 3px;
             vertical-align: middle;
+        }
+
+        @media (max-width: 767px) {
+	        /* center the person image */
+            .persondetails-header .photo
+            {
+                margin: 0 auto;
+            }
+
+            /* make widgets extend to the edges */
+            .persondetails .widget
+            {
+                margin-right: -20px;
+                margin-left: -20px;
+                border-radius: 0;
+            }
+
+            /* make person notes full width */
+            .persontimeline .widget-content
+            {
+                padding-left: 0;
+                padding-right: 0;
+            }
+
+            /* remove border radius on widget header */
+            .persondetails .widget header
+            {
+                border-radius: 0;
+            }
+
+            /* remove border radius on person notes */
+            .persontimeline article
+            {
+                border-radius: 0;
+            }
+
+
         }
 
     </style>

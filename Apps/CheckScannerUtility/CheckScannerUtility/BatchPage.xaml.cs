@@ -16,6 +16,7 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using Rock.Constants;
 using Rock.Model;
@@ -151,7 +152,7 @@ namespace Rock.Apps.CheckScannerUtility
                 rangerScanner.SetGenericOption( "OptionalDevices", "NeedImaging", "True" );
 
                 // limit splash screen
-                rangerScanner.SetGenericOption( "Ranger GUI", "DisplaySplashOncePerDay", "true" );
+                rangerScanner.SetGenericOption( "Ranger GUI", "DisplaySplashOncePerDay", "True" );
 
                 // turn on either color, grayscale, or bitonal options depending on selected option
                 rangerScanner.SetGenericOption( "OptionalDevices", "NeedFrontImage1", "False" );
@@ -197,9 +198,9 @@ namespace Rock.Apps.CheckScannerUtility
             string fileName = checkMicr.Replace( " ", "_" );
 
             string[] micrParts = checkMicr.Split( new char[] { 'c', 'd', ' ' }, StringSplitOptions.RemoveEmptyEntries );
-            string routingNumber = micrParts.Length > 0 ? micrParts[0] : "<not found>";
-            string accountNumber = micrParts.Length > 1 ? micrParts[1] : "<not found>";
-            string checkNumber = micrParts.Length > 2 ? micrParts[2] : "<not found>";
+            string routingNumber = micrParts.Length > 0 ? micrParts[0] : "??";
+            string accountNumber = micrParts.Length > 1 ? micrParts[1] : "??";
+            string checkNumber = micrParts.Length > 2 ? micrParts[2] : "??";
 
             ScannedCheckInfo scannedCheck = new ScannedCheckInfo();
             scannedCheck.FrontImageData = ( bitImageFront.StreamSource as MemoryStream ).ToArray();
@@ -239,15 +240,23 @@ namespace Rock.Apps.CheckScannerUtility
             string imageIndex = string.Empty;
             string statusMsg = string.Empty;
 
-            ScannedCheckInfo scannedCheck = new ScannedCheckInfo();
+            ScannedCheckInfo scannedCheck = null;
+            if ( ScanningPage.ExpectingMagTekBackScan )
+            {
+                scannedCheck = ScannedCheckList.Last();
+            }
+            else
+            {
+                scannedCheck = new ScannedCheckInfo();
 
-            // from MagTek Sample Code
-            scannedCheck.RoutingNumber = micrImage.FindElement( 0, "T", 0, "TT", ref dummy );
-            scannedCheck.AccountNumber = micrImage.FindElement( 0, "TT", 0, "A", ref dummy );
-            scannedCheck.CheckNumber = micrImage.FindElement( 0, "A", 0, "12", ref dummy );
+                // from MagTek Sample Code
+                scannedCheck.RoutingNumber = micrImage.FindElement( 0, "T", 0, "TT", ref dummy );
+                scannedCheck.AccountNumber = micrImage.FindElement( 0, "TT", 0, "A", ref dummy );
+                scannedCheck.CheckNumber = micrImage.FindElement( 0, "A", 0, "12", ref dummy );
+            }
 
             imagePath = Path.GetTempPath();
-            string checkImageFileName = Path.Combine( imagePath, string.Format( "check_front_{0}_{1}_{2}.tif", scannedCheck.RoutingNumber, scannedCheck.AccountNumber, scannedCheck.CheckNumber ) );
+            string checkImageFileName = Path.Combine( imagePath, string.Format( "check_{0}_{1}_{2}.tif", scannedCheck.RoutingNumber, scannedCheck.AccountNumber, scannedCheck.CheckNumber ) );
 
             if ( File.Exists( checkImageFileName ) )
             {
@@ -263,8 +272,27 @@ namespace Rock.Apps.CheckScannerUtility
                 }
                 else
                 {
-                    scannedCheck.FrontImageData = File.ReadAllBytes( checkImageFileName );
-                    ScannedCheckList.Enqueue( scannedCheck );
+                    if ( ScanningPage.ExpectingMagTekBackScan )
+                    {
+                        scannedCheck.BackImageData = File.ReadAllBytes( checkImageFileName );
+                    }
+                    else
+                    {
+                        scannedCheck.FrontImageData = File.ReadAllBytes( checkImageFileName );
+                    }
+
+                    ScanningPage.ShowCheckInformation( scannedCheck );
+
+                    if ( scannedCheck.RoutingNumber.Length != 9 )
+                    {
+                        ScanningPage.lblScanWarning.Visibility = Visibility.Visible;
+                    }
+                    else
+                    {
+                        ScanningPage.lblScanWarning.Visibility = Visibility.Collapsed;
+                        ScannedCheckList.Enqueue( scannedCheck );
+                    }
+
                     File.Delete( checkImageFileName );
                 }
             }
@@ -310,11 +338,11 @@ namespace Rock.Apps.CheckScannerUtility
         /// Uploads the scanned checks.
         /// </summary>
         /// <param name="rockBaseUrl">The rock base URL.</param>
-        private void UploadScannedChecks()
+        private void UploadScannedChecksAsync()
         {
             if ( ScannedCheckList.Where( a => !a.Uploaded ).Count() > 0 )
             {
-                lblUploadProgress.Visibility = Visibility.Visible;
+                FadeIn( lblUploadProgress );
 
                 // use a backgroundworker to do the work so that we can have an updatable progressbar in the UI
                 BackgroundWorker bwUploadScannedChecks = new BackgroundWorker();
@@ -327,22 +355,67 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         /// <summary>
+        /// Toggles the fade.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="speed">The speed.</param>
+        public void FadeIn( Control control, int speed = 0 )
+        {
+            control.Opacity = 0;
+            control.Visibility = Visibility.Visible;
+            Storyboard storyboard = new Storyboard();
+            TimeSpan duration = new TimeSpan( 0, 0, 0, 0, (int)speed ); //
+
+            DoubleAnimation fadeInAnimation = new DoubleAnimation { From = 0.0, To = 1.0, Duration = new Duration( duration ) };
+            Storyboard.SetTargetName( fadeInAnimation, control.Name );
+            Storyboard.SetTargetProperty( fadeInAnimation, new PropertyPath( "Opacity", 1 ) );
+            storyboard.Children.Add( fadeInAnimation );
+            storyboard.Begin( control );
+        }
+
+        /// <summary>
+        /// Fades the out.
+        /// </summary>
+        /// <param name="control">The control.</param>
+        /// <param name="speed">The speed.</param>
+        public void FadeOut( Control control, int speed = 2000 )
+        {
+            Storyboard storyboard = new Storyboard();
+            TimeSpan duration = new TimeSpan( 0, 0, 0, 0, (int)speed ); //
+
+            DoubleAnimation fadeOutAnimation = new DoubleAnimation { From = 1.0, To = 0.0, Duration = new Duration( duration ) };
+
+            Storyboard.SetTargetName( fadeOutAnimation, control.Name );
+            Storyboard.SetTargetProperty( fadeOutAnimation, new PropertyPath( "Opacity", 0 ) );
+            storyboard.Children.Add( fadeOutAnimation );
+
+            EventHandler onCompleted = new EventHandler( (sender, e) => 
+            {
+                control.Visibility = Visibility.Collapsed;
+            } );
+
+            storyboard.Completed += onCompleted;
+
+            storyboard.Begin( control );
+        }
+        
+        /// <summary>
         /// Handles the RunWorkerCompleted event of the bwUploadScannedChecks control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RunWorkerCompletedEventArgs"/> instance containing the event data.</param>
         private void bwUploadScannedChecks_RunWorkerCompleted( object sender, RunWorkerCompletedEventArgs e )
         {
-            lblUploadProgress.Visibility = Visibility.Hidden;
             if ( e.Error == null )
             {
-                MessageBox.Show( "Upload Complete" );
-
+                lblUploadProgress.Content = "Uploading Scanned Checks: Complete";
+                FadeOut( lblUploadProgress );
                 UpdateBatchUI( grdBatches.SelectedValue as FinancialBatch );
                 
             }
             else
             {
+                FadeOut( lblUploadProgress );
                 MessageBox.Show( string.Format( "Upload Error: {0}", e.Error.Message ) );
             }
         }
@@ -474,11 +547,11 @@ namespace Rock.Apps.CheckScannerUtility
         {
             bdrBatchDetailReadOnly.Visibility = Visibility.Visible;
             bdrBatchDetailEdit.Visibility = Visibility.Collapsed;
-            lblUploadProgress.Visibility = Visibility.Hidden;
+            FadeOut( lblUploadProgress, 0 );
             ConnectToScanner();
             LoadComboBoxes();
             LoadFinancialBatchesGrid();
-            UploadScannedChecks();
+            UploadScannedChecksAsync();
         }
 
         /// <summary>
@@ -513,7 +586,7 @@ namespace Rock.Apps.CheckScannerUtility
             client.Login( config.Username, config.Password );
             List<FinancialBatch> pendingBatches = client.GetDataByEnum<List<FinancialBatch>>( "api/FinancialBatches", "Status", BatchStatus.Pending );
 
-            grdBatches.DataContext = pendingBatches.OrderByDescending( a => a.BatchDate );
+            grdBatches.DataContext = pendingBatches.OrderByDescending( a => a.BatchDate ).ThenBy( a => a.Name);
             if ( pendingBatches.Count > 0 )
             {
                 if ( SelectedFinancialBatchId > 0 )
@@ -540,6 +613,7 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 micrImageHost.IsEnabled = true;
                 micrImage.CommPort = rockConfig.MICRImageComPort;
+                micrImage.PortOpen = false;
 
                 object dummy = null;
 
@@ -564,10 +638,12 @@ namespace Rock.Apps.CheckScannerUtility
                         // format is being used to parse it using the FindElement Method
                         micrImage.FormatChange( "6200" );
                         micrImage.MicrTimeOut = 5;
+
+                        ScanningPage.btnStartStop.Content = ScanButtonText.ScanCheck;
                     }
                     else
                     {
-                        MessageBox.Show( "A Check Scanner Device is not attached.", "Missing Scanner" );
+                        MessageBox.Show( string.Format("MagTek Device is not attached to COM{0}.", micrImage.CommPort), "Missing Scanner" );
                         return;
                     }
                 }
@@ -657,8 +733,6 @@ namespace Rock.Apps.CheckScannerUtility
             this.NavigationService.Navigate( optionsPage );
         }
 
-        #endregion
-
         /// <summary>
         /// Handles the Click event of the btnEdit control.
         /// </summary>
@@ -720,6 +794,8 @@ namespace Rock.Apps.CheckScannerUtility
                 {
                     financialBatch = client.GetData<FinancialBatch>( string.Format( "api/FinancialBatches/{0}", SelectedFinancialBatchId ) );
                 }
+
+                txtBatchName.Text = txtBatchName.Text.Trim();
 
                 financialBatch.Name = txtBatchName.Text;
                 Campus selectedCampus = cbCampus.SelectedItem as Campus;
@@ -811,7 +887,7 @@ namespace Rock.Apps.CheckScannerUtility
             lblBatchCampusReadOnly.Content = selectedBatch.CampusId.HasValue ? client.GetData<Campus>( string.Format( "api/Campus/{0}", selectedBatch.CampusId ) ).Name : None.Text;
             lblBatchDateReadOnly.Content = selectedBatch.BatchDate.ToString();
             lblBatchCreatedByReadOnly.Content = client.GetData<Person>( string.Format( "api/People/{0}", selectedBatch.CreatedByPersonId ) ).FullName;
-            lblBatchControlAmountReadOnly.Content = selectedBatch.ControlAmount.ToString( "c" );
+            lblBatchControlAmountReadOnly.Content = selectedBatch.ControlAmount.ToString( "F" );
 
             txtBatchName.Text = selectedBatch.Name;
             if ( selectedBatch.CampusId.HasValue )
@@ -825,10 +901,10 @@ namespace Rock.Apps.CheckScannerUtility
 
             dpBatchDate.SelectedDate = selectedBatch.BatchDate;
             lblCreatedBy.Content = lblBatchCreatedByReadOnly.Content as string;
-            txtControlAmount.Text = selectedBatch.ControlAmount.ToString( "c" );
+            txtControlAmount.Text = selectedBatch.ControlAmount.ToString( "F" );
 
             List<FinancialTransaction> transactions = client.GetData<List<FinancialTransaction>>( "api/FinancialTransactions/", string.Format( "BatchId eq {0}", selectedBatch.Id ) );
-            grdBatchItems.DataContext = transactions;
+            grdBatchItems.DataContext = transactions.OrderByDescending( a => a.TransactionDateTime );
         }
 
         /// <summary>
@@ -885,5 +961,7 @@ namespace Rock.Apps.CheckScannerUtility
                 MessageBox.Show( ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Exclamation );
             }
         }
+
+        #endregion
     }
 }

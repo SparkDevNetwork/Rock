@@ -60,10 +60,45 @@
         <!-- Label style: Alert-->
         <Style x:Key="labelStyleAlert"
                TargetType="{x:Type Label}">
-            <Setter Property="Label.Background"
-                    Value="#FCF8E3"></Setter>
             <Setter Property="Label.Foreground"
                     Value="#c09853"></Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Label}">
+                        <Border CornerRadius="4,4,4,4"
+                                BorderThickness="1"
+                                BorderBrush="#fbeed5"
+                                Padding="14,8,35,8"
+                                Background="#FCF8E3"
+                                Margin="5">
+                            <TextBlock Text="{TemplateBinding Content}"
+                                       TextWrapping="Wrap" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Label style: Information-->
+        <Style x:Key="labelStyleAlertInfo"
+               TargetType="{x:Type Label}">
+            <Setter Property="Label.Foreground"
+                    Value="#3a87ad"></Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Label}">
+                        <Border CornerRadius="4,4,4,4"
+                                BorderThickness="1"
+                                BorderBrush="#bce8f1"
+                                Padding="14,8,35,8"
+                                Background="#D9EDF7"
+                                Margin="5">
+                            <TextBlock Text="{TemplateBinding Content}"
+                                       TextWrapping="Wrap" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <!-- Label style: Grid Title-->

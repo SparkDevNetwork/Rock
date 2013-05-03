@@ -161,7 +161,6 @@ namespace Rock.Net
             HttpContent resultContent;
             HttpError httpError = null;
             T result = default( T );
-            
 
             httpClient.GetAsync( requestUri ).ContinueWith( ( postTask ) =>
                 {

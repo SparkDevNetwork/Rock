@@ -7,7 +7,6 @@
 using System;
 using System.Net;
 using System.Windows;
-using System.Windows.Controls;
 using Rock.Model;
 using Rock.Net;
 
@@ -36,6 +35,8 @@ namespace Rock.Apps.CheckScannerUtility
             BatchPage batchPage = new BatchPage();
             try
             {
+                txtUsername.Text = txtUsername.Text.Trim();
+                txtRockUrl.Text = txtRockUrl.Text.Trim();
                 RockRestClient rockRestClient = new RockRestClient( txtRockUrl.Text );
                 rockRestClient.Login( txtUsername.Text, txtPassword.Password );
                 Person person = rockRestClient.GetData<Person>( string.Format( "api/People/GetByUserName/{0}", txtUsername.Text ) );

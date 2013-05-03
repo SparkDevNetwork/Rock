@@ -64,8 +64,13 @@
                     <Label Name="lblScannerInterfaceType"
                            Style="{StaticResource labelStyle}">Scanner Interface</Label>
                     <ComboBox Name="cboScannerInterfaceType"
+                              Style="{StaticResource textboxStyle}"
+                              SelectionChanged="cboScannerInterfaceType_SelectionChanged" />
+                    <Label Name="lblMagTekCommPort"
+                           Style="{StaticResource labelStyle}">COM Port</Label>
+                    <ComboBox Name="cboMagTekCommPort"
                               Style="{StaticResource textboxStyle}" />
-                    <Label Name="lblImageOption"
+                        <Label Name="lblImageOption"
                            Style="{StaticResource labelStyle}">Scan Image Color Type</Label>
                     <ComboBox Name="cboImageOption"
                               Style="{StaticResource textboxStyle}" />
