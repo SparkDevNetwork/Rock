@@ -691,6 +691,7 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\LabeledFileUploader.cs" />
     <Compile Include="Web\UI\Controls\LabeledHtmlEditor.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\ComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LabeledPagePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LabeledCategoryPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LabeledAccountPicker.cs" />

@@ -27,7 +27,7 @@ public partial class SiteMap : RockBlock
         string treeHtml = "<ul id=\"treeview\">" + Environment.NewLine;
         foreach ( var page in pageService.Queryable().Where( a => a.ParentPageId == null ).OrderBy( a => a.Order ).ThenBy( a => a.Name) )
         {
-            treeHtml += string.Format( "<li data-expanded='true'><i class=\"icon-file-alt\"></i><a href='{0}' >" + page.Name + "</a>" + Environment.NewLine, new PageReference(page.Id).BuildUrl() );
+            treeHtml += string.Format( "<li data-expanded='false'><i class=\"icon-file-alt\"></i><a href='{0}' >" + page.Name + "</a>" + Environment.NewLine, new PageReference(page.Id).BuildUrl() );
             AddChildNodes( ref treeHtml, page, pageList);
             treeHtml += "</li>" + Environment.NewLine;
         }
@@ -51,10 +51,10 @@ public partial class SiteMap : RockBlock
 
             foreach ( var childPage in childPages.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
-                string childNodeHtml = string.Format( "<li data-expanded='true'><i class=\"icon-file-alt\"></i><a href='{0}' >" + childPage.Name + "</a>" + Environment.NewLine, new PageReference( childPage.Id ).BuildUrl() );
+                string childNodeHtml = string.Format( "<li data-expanded='false'><i class=\"icon-file-alt\"></i><a href='{0}' >" + childPage.Name + "</a>" + Environment.NewLine, new PageReference( childPage.Id ).BuildUrl() );
                 if ( childPage.Blocks.Count > 0 )
                 {
-                    childNodeHtml += "<ul><li data-expanded='true'>";
+                    childNodeHtml += "<ul><li data-expanded='false'>";
                     var lastBlock = childPage.Blocks.OrderBy( b => b.Order ).Last();
                     foreach ( var block in childPage.Blocks.OrderBy( b => b.Order ) )
                     {
@@ -62,7 +62,7 @@ public partial class SiteMap : RockBlock
                         childNodeHtml += string.Format( "{1}:{0}", block.Name, block.BlockType.Name );
                         if ( !block.Equals( lastBlock ) )
                         {
-                            childNodeHtml += "</li>" + Environment.NewLine + "<li data-expanded='true'>";
+                            childNodeHtml += "</li>" + Environment.NewLine + "<li data-expanded='false'>";
                         }
                     }
                     AddChildNodes( ref childNodeHtml, childPage, pageList);

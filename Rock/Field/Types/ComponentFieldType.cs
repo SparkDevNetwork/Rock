@@ -12,6 +12,7 @@ using System.Web.UI.WebControls;
 
 using Rock.Extension;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
@@ -116,33 +117,11 @@ namespace Rock.Field.Types
         {
             try
             {
-                ListControl editControl = new DropDownList();
+                ComponentPicker editControl = new ComponentPicker();
+
                 if ( configurationValues != null && configurationValues.ContainsKey( "container" ) )
                 {
-
-                    Type containerType = Type.GetType( configurationValues["container"].Value );
-                    if ( containerType != null )
-                    {
-                        PropertyInfo instanceProperty = containerType.GetProperty( "Instance" );
-                        if ( instanceProperty != null )
-                        {
-                            IContainer container = instanceProperty.GetValue( null, null ) as IContainer;
-                            if ( container != null )
-                            {
-                                foreach ( var component in container.Dictionary )
-                                {
-                                    if ( component.Value.Value.IsActive )
-                                    {
-                                        var entityType = EntityTypeCache.Read( component.Value.Value.GetType() );
-                                        if ( entityType != null )
-                                        {
-                                            editControl.Items.Add( new ListItem( entityType.FriendlyName, entityType.Id.ToString() ) );
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    editControl.ContainerType = configurationValues["container"].Value;
                 }
 
                 return editControl;

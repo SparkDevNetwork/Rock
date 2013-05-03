@@ -11,7 +11,7 @@ using System.Web.Routing;
 
 using Rock.Model;
 using Rock.Rest.Filters;
-using Rock.Web.UI.Controls.Pickers;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Rest.Controllers
 {
