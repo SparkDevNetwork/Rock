@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Core
             gCommunication.GridRebind += gCommunication_GridRebind;
 
             // The created by column/filter should only be displayed if user is allowed to approve
-            bool canApprove = this.IsUserAuthorized( "Approve" );
+            canApprove = this.IsUserAuthorized( "Approve" );
             ppSender.Visible = canApprove;
             gCommunication.Columns[2].Visible = canApprove;
         }
