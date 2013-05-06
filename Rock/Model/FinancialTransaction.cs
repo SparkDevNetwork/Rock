@@ -130,13 +130,14 @@ namespace Rock.Model
         public int? SourceTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets hash of the Checking Account AccountNumber.  Stored as a SHA1 hash (always 40 chars) so that it can be matched without being known
+        /// Gets or sets the check micr encrypted.
+        /// Plain Text format is {routingnumber}_{accountnumber}_{checknumber}
         /// </summary>
         /// <value>
-        /// AccountNumberSecured.
+        /// The check micr encrypted.
         /// </value>
-        [MaxLength( 40 )]
-        public string AccountNumberSecured { get; set; }
+        [DataMember]
+        public string CheckMicrEncrypted { get; set; }
 
         #endregion
 
@@ -232,6 +233,15 @@ namespace Rock.Model
         }
         private ICollection<FinancialTransactionImage> _images;
 
+        /// <summary>
+        /// Gets or sets the check micr plain text.
+        /// </summary>
+        /// <value>
+        /// The check micr plain text.
+        /// </value>
+        //[DataMember]
+        //public virtual string CheckMicrPlainText { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -249,6 +259,26 @@ namespace Rock.Model
 
         #endregion
 
+    }
+
+
+    /// <summary>
+    /// Special Class to use when uploading a FinancialTransaction from a Scanned Check thru the Rest API.
+    /// The Rest Client can't be given access to the DataEncryptionKey, so they'll upload it (using SSL) 
+    /// with the plaintext CheckMicr and the Rock server will encrypt prior to saving to database
+    /// </summary>
+    [DataContract]
+    [NotMapped]
+    public class FinancialTransactionScannedCheck : FinancialTransaction
+    {
+        /// <summary>
+        /// Gets or sets the scanned check micr.
+        /// </summary>
+        /// <value>
+        /// The scanned check micr.
+        /// </value>
+        [DataMember]
+        public string ScannedCheckMicr { get; set; }
     }
 
     #region Entity Configuration

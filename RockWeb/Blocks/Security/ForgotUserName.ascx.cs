@@ -57,9 +57,7 @@ namespace RockWeb.Blocks.Security
                 {
                     if ( user.ServiceType == AuthenticationServiceType.Internal )
                     {
-                        var userDictionary = user.ToDictionary();
-                        userDictionary.Add("ConfirmationCodeEncoded", user.ConfirmationCodeEncoded);
-                        users.Add(userDictionary);
+                        users.Add( user.ToDictionary() );
                     }
                 }
 

@@ -7,6 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
@@ -214,7 +216,15 @@ namespace Rock.Data
         /// <returns></returns>
         public virtual object ToLiquid()
         {
-            return this.ToDictionary();
+            var dictionary = new Dictionary<string, object>();
+
+            foreach ( var propInfo in this.GetType().GetProperties() )
+            {
+                if ( propInfo.GetCustomAttributes( typeof( Rock.Data.MergeFieldAttribute ) ).Count() > 0 )
+                    dictionary.Add( propInfo.Name, propInfo.GetValue( this, null ) );
+            }
+
+            return dictionary;
         }
 
         #endregion
@@ -481,4 +491,4 @@ namespace Rock.Data
     #endregion
 
 
-}
+} 

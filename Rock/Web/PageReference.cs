@@ -303,7 +303,7 @@ namespace Rock.Web
 
                             if ( parentPageReference == null )
                             {
-                                parentPageReference = new PageReference( currentPageReference );
+                                parentPageReference = new PageReference( );
                                 parentPageReference.PageId = page.Id;
 
                                 parentPageReference.BreadCrumbs = new List<BreadCrumb>();

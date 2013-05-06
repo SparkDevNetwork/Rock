@@ -28,8 +28,7 @@
     <script src="<%# ResolveUrl("~/Scripts/jquery.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/jquery-ui-1.10.0.custom.min.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/Kendo/kendo.web.min.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/Rock/grid.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/Rock/person-picker.js") %>" ></script>
+    <script src="<%# ResolveUrl("~/Scripts/Rock/Rock.controls.js") %>"></script>
     <script src="<%# ResolveUrl("~/Scripts/bootstrap.min.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/bootbox.min.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/jquery.tinyscrollbar.js") %>" ></script>

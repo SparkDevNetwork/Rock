@@ -3,12 +3,6 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 
 namespace Rock.Apps.CheckScannerUtility
@@ -18,5 +12,23 @@ namespace Rock.Apps.CheckScannerUtility
     /// </summary>
     public partial class App : Application
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="App"/> class.
+        /// </summary>
+        public App()
+        {
+            this.DispatcherUnhandledException += App_DispatcherUnhandledException;
+        }
+
+        /// <summary>
+        /// Handles the DispatcherUnhandledException event of the App control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Windows.Threading.DispatcherUnhandledExceptionEventArgs"/> instance containing the event data.</param>
+        void App_DispatcherUnhandledException( object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e )
+        {
+            MessageBox.Show( e.Exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error );
+            e.Handled = true;
+        }
     }
 }

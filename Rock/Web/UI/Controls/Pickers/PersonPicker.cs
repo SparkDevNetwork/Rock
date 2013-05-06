@@ -15,24 +15,22 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class PersonPicker : CompositeControl, ILabeledControl
     {
-        private Label label;
-        private Literal literal;
-        private HiddenField hfPersonId;
-        private HiddenField hfPersonName;
-        private LinkButton btnSelect;
+        private Label _label;
+        private HiddenField _hfPersonId;
+        private HiddenField _hfPersonName;
+        private LinkButton _btnSelect;
+        private LinkButton _btnSelectNone;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonPicker" /> class.
         /// </summary>
         public PersonPicker()
         {
-            btnSelect = new LinkButton();
+            _label = new Label();
+            _btnSelect = new LinkButton();
+            _btnSelectNone = new LinkButton();
         }
 
-        /// <summary>
-        /// The required validator
-        /// </summary>
-        protected HiddenFieldValidator requiredValidator;
 
         /// <summary>
         /// Gets or sets the label text.
@@ -42,18 +40,27 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string LabelText
         {
-            get
-            {
-                EnsureChildControls();
-                return label.Text;
-            }
-
-            set
-            {
-                EnsureChildControls();
-                label.Text = value;
-            }
+            get { return _label.Text; }
+            set { _label.Text = value; }
         }
+
+        /// <summary>
+        /// Gets or sets the name of the field to display in validation messages
+        /// when a LabelText is not entered
+        /// </summary>
+        /// <value>
+        /// The name of the field.
+        /// </value>
+        public string FieldName
+        {
+            get { return _label.Text; }
+            set { _label.Text = value; }
+        }
+
+        /// <summary>
+        /// The required validator
+        /// </summary>
+        protected HiddenFieldValidator RequiredValidator;
 
         /// <summary>
         /// Gets or sets the person id.
@@ -66,18 +73,18 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                if ( string.IsNullOrWhiteSpace( hfPersonId.Value ) )
+                if ( string.IsNullOrWhiteSpace( _hfPersonId.Value ) )
                 {
-                    hfPersonId.Value = Rock.Constants.None.IdValue;
+                    _hfPersonId.Value = Rock.Constants.None.IdValue;
                 }
 
-                return hfPersonId.Value;
+                return _hfPersonId.Value;
             }
 
             set
             {
                 EnsureChildControls();
-                hfPersonId.Value = value;
+                _hfPersonId.Value = value;
             }
         }
 
@@ -129,18 +136,18 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                if ( string.IsNullOrWhiteSpace( hfPersonName.Value ) )
+                if ( string.IsNullOrWhiteSpace( _hfPersonName.Value ) )
                 {
-                    hfPersonName.Value = Rock.Constants.None.TextHtml;
+                    _hfPersonName.Value = Rock.Constants.None.TextHtml;
                 }
 
-                return hfPersonName.Value;
+                return _hfPersonName.Value;
             }
 
             set
             {
                 EnsureChildControls();
-                hfPersonName.Value = value;
+                _hfPersonName.Value = value;
             }
         }
 
@@ -186,87 +193,25 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
-            string restUrl = this.ResolveUrl( "~/api/People/Search/" );
-
-            string scriptFormat = @"
-        $('#personPicker_{0}').autocomplete({{
-            source: function (request, response) {{
-                $.ajax({{
-                    url: '{1}' + request.term,
-                    dataType: 'json',
-                    success: function (data, status, xhr) {{
-                        $('#personPickerItems_{0}')[0].innerHTML = '';
-                        response($.map(data, function (item) {{
-                            return item;
-                        }}
-                        ))
-                    }},
-                    error: function (xhr, status, error) {{
-                        alert(status + ' [' + error + ']: ' + xhr.responseText);
-                    }}
-                }});
-            }},
-            minLength: 3,
-            html: true,
-            appendTo: 'personPickerItems_{0}',
-            messages: {{
-                noResults: function () {{ }},
-                results: function () {{ }}
-            }}
-        }});
-
-        $('a.rock-picker').click(function (e) {{
-            e.preventDefault();
-            $(this).next('.rock-picker').toggle();
-        }});
-
-        $('.rock-picker-select').on('click', '.rock-picker-select-item', function (e) {{
-            var selectedItem = $(this).attr('data-person-id');
-
-            // hide other open details
-            $('.rock-picker-select-item-details').each(function (index) {{
-                var currentItem = $(this).parent().attr('data-person-id');
-
-                if (currentItem != selectedItem) {{
-                    $(this).slideUp();
-                }}
-            }});
-
-            $(this).find('.rock-picker-select-item-details:hidden').slideDown();
-        }});
-
-        $('#btnCancel_{0}').click(function (e) {{
-            $(this).parent().slideUp();
-        }});
-
-        $('#btnSelect_{0}').click(function (e) {{
-            var radInput = $('#{0}').find('input:checked');
-
-            var selectedValue = radInput.val();
-            var selectedText = radInput.parent().text();
-
-            var selectedPersonLabel = $('#selectedPersonLabel_{0}');
-
-            var hiddenPersonId = $('#hfPersonId_{0}');
-            var hiddenPersonName = $('#hfPersonName_{0}');
-
-            hiddenPersonId.val(selectedValue);
-            hiddenPersonName.val(selectedText);
-
-            selectedPersonLabel.val(selectedValue);
-            selectedPersonLabel.text(selectedText);
-
-            $(this).parent().slideUp();
-        }});
-";
-
-            string script = string.Format( scriptFormat, this.ID, restUrl );
-
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "person_picker-" + this.ID.ToString(), script, true );
-
+            RegisterJavaScript();
             var sm = ScriptManager.GetCurrent( this.Page );
-            sm.RegisterAsyncPostBackControl( btnSelect );
+
+            if ( sm != null )
+            {
+                sm.RegisterAsyncPostBackControl( _btnSelect );
+                sm.RegisterAsyncPostBackControl( _btnSelectNone );
+            }
+        }
+
+        /// <summary>
+        /// Registers the java script.
+        /// </summary>
+        protected virtual void RegisterJavaScript()
+        {
+            string restUrl = this.ResolveUrl( "~/api/People/Search/" );
+            const string scriptFormat = "Rock.controls.personPicker.initialize({{ controlId: '{0}', restUrl: '{1}' }});";
+            string script = string.Format( scriptFormat, this.ID, restUrl );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "person_picker-" + this.ID, script, true );
         }
 
         /// <summary>
@@ -279,7 +224,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return !Required || requiredValidator.IsValid;
+                return !Required || RequiredValidator.IsValid;
             }
         }
 
@@ -292,37 +237,43 @@ namespace Rock.Web.UI.Controls
 
             Controls.Clear();
 
-            label = new Label();
-            literal = new Literal();
-            hfPersonId = new HiddenField();
-            hfPersonId.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-            hfPersonId.ID = string.Format( "hfPersonId_{0}", this.ID );
-            hfPersonName = new HiddenField();
-            hfPersonName.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-            hfPersonName.ID = string.Format( "hfPersonName_{0}", this.ID );
+            _hfPersonId = new HiddenField();
+            _hfPersonId.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+            _hfPersonId.ID = string.Format( "hfPersonId_{0}", this.ID );
+            _hfPersonName = new HiddenField();
+            _hfPersonName.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+            _hfPersonName.ID = string.Format( "hfPersonName_{0}", this.ID );
 
-            btnSelect.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-            btnSelect.CssClass = "btn btn-mini btn-primary";
-            btnSelect.ID = string.Format( "btnSelect_{0}", this.ID );
-            btnSelect.Text = "Select";
-            btnSelect.CausesValidation = false;
-            btnSelect.Click += btnSelect_Click;
+            _btnSelect.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+            _btnSelect.CssClass = "btn btn-mini btn-primary";
+            _btnSelect.ID = string.Format( "btnSelect_{0}", this.ID );
+            _btnSelect.Text = "Select";
+            _btnSelect.CausesValidation = false;
+            _btnSelect.Click += btnSelect_Click;
 
-            Controls.Add( label );
-            Controls.Add( literal );
-            Controls.Add( hfPersonId );
-            Controls.Add( hfPersonName );
-            Controls.Add( btnSelect );
+            _btnSelectNone.ClientIDMode = ClientIDMode.Static;
+            _btnSelectNone.CssClass = "rock-picker-select-none";
+            _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ID );
+            _btnSelectNone.Text = "<i class='icon-remove'></i>";
+            _btnSelectNone.CausesValidation = false;
+            _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
+            _btnSelectNone.Click += btnSelect_Click;
 
-            requiredValidator = new HiddenFieldValidator();
-            requiredValidator.ID = this.ID + "_rfv";
-            requiredValidator.InitialValue = "0";
-            requiredValidator.ControlToValidate = hfPersonId.ID;
-            requiredValidator.Display = ValidatorDisplay.Dynamic;
-            requiredValidator.CssClass = "validation-error help-inline";
-            requiredValidator.Enabled = false;
+            Controls.Add( _label );
+            Controls.Add( _hfPersonId );
+            Controls.Add( _hfPersonName );
+            Controls.Add( _btnSelect );
+            Controls.Add( _btnSelectNone );
 
-            Controls.Add( requiredValidator );
+            RequiredValidator = new HiddenFieldValidator();
+            RequiredValidator.ID = this.ID + "_rfv";
+            RequiredValidator.InitialValue = "0";
+            RequiredValidator.ControlToValidate = _hfPersonId.ID;
+            RequiredValidator.Display = ValidatorDisplay.Dynamic;
+            RequiredValidator.CssClass = "validation-error help-inline";
+            RequiredValidator.Enabled = false;
+
+            Controls.Add( RequiredValidator );
         }
 
         /// <summary>
@@ -345,14 +296,58 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            string controlHtmlFormatStart = @"
-<div class='control-group' id='{0}'>
-    <div class='controls'>
-        <a class='rock-picker' href='#'>
-            <i class='icon-user'></i>
-            <span id='selectedPersonLabel_{0}'>{1}</span>
-            <b class='caret'></b>
-        </a>
+            bool renderLabel = !string.IsNullOrEmpty( LabelText );
+
+            if ( renderLabel )
+            {
+                writer.AddAttribute( "class", "control-group" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                _label.AddCssClass( "control-label" );
+
+                _label.RenderControl( writer );
+
+                writer.AddAttribute( "class", "controls" );
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            }
+
+            if ( Required )
+            {
+                RequiredValidator.Enabled = true;
+                RequiredValidator.ErrorMessage = LabelText + " is Required.";
+                RequiredValidator.RenderControl( writer );
+            }
+
+            _hfPersonId.RenderControl( writer );
+            _hfPersonName.RenderControl( writer );
+
+            if ( this.Enabled )
+            {
+                string controlHtmlFormatStart = @"
+    <span id='{0}'>
+        <span class='rock-picker rock-picker-select' id='{0}'> 
+            <a class='rock-picker' href='#'>
+                <i class='icon-user'></i>
+                <span id='selectedPersonLabel_{0}'>{1}</span>
+                <b class='caret'></b>
+            </a>
+";
+
+                writer.Write( string.Format( controlHtmlFormatStart, this.ID, this.PersonName ) );
+
+                // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
+                if ( SelectPerson != null )
+                {
+                    _btnSelectNone.RenderControl( writer );
+                }
+                else
+                {
+                    writer.Write( "<a class='rock-picker-select-none' id='btnSelectNone_{0}' href='#' style='display:none'><i class='icon-remove'></i></a>", this.ID );
+                }
+
+                string controlHtmlFormatMiddle = @"
+        </span>
         <div class='dropdown-menu rock-picker rock-picker-person'>
 
             <h4>Search</h4>
@@ -363,51 +358,42 @@ namespace Rock.Web.UI.Controls
             </ul>
             <hr />
 ";
-            string controlHtmlFormatEnd = @"
+
+                writer.Write( controlHtmlFormatMiddle, this.ID, this.PersonName );
+
+                // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
+                if ( SelectPerson != null )
+                {
+                    _btnSelect.RenderControl( writer );
+                }
+                else
+                {
+                    writer.Write( string.Format( "<a class='btn btn-mini btn-primary' id='btnSelect_{0}'>Select</a>", this.ID ) );
+                }
+
+                string controlHtmlFormatEnd = @"
             <a class='btn btn-mini' id='btnCancel_{0}'>Cancel</a>
         </div>
-    </div>
-</div>
+    </span>
 ";
 
-            writer.AddAttribute( "class", "control-group" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            label.AddCssClass( "control-label" );
-
-            label.RenderControl( writer );
-
-            writer.AddAttribute( "class", "controls" );
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            if ( Required )
-            {
-                requiredValidator.Enabled = true;
-                requiredValidator.ErrorMessage = LabelText + " is Required.";
-                requiredValidator.RenderControl( writer );
-            }
-
-            hfPersonId.RenderControl( writer );
-            hfPersonName.RenderControl( writer );
-
-            writer.Write( string.Format( controlHtmlFormatStart, this.ID, this.PersonName ) );
-
-            // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
-            if ( SelectPerson != null )
-            {
-                btnSelect.RenderControl( writer );
+                writer.Write( string.Format( controlHtmlFormatEnd, this.ID, this.PersonName ) );
             }
             else
             {
-                writer.Write( string.Format( "<a class='btn btn-mini btn-primary' id='btnSelect_{0}'>Select</a>", this.ID ) );
+                string controlHtmlFormatDisabled = @"
+        <i class='icon-file-alt'></i>
+        <span id='selectedItemLabel_{0}'>{1}</span>
+";
+                writer.Write( controlHtmlFormatDisabled, this.ID, this.PersonName );
             }
 
-            writer.Write( string.Format( controlHtmlFormatEnd, this.ID, this.PersonName ) );
+            if ( renderLabel )
+            {
+                writer.RenderEndTag();
 
-            writer.RenderEndTag();
-
-            writer.RenderEndTag();
+                writer.RenderEndTag();
+            }
         }
     }
 }

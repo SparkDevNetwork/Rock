@@ -9,21 +9,21 @@
         // payment totals script
         $('.calc').on('change', function () {
             var total = 0.00;
-            
+
             $('.calc').each(function () {
                 if ($(this).val() != '') {
                     total += parseFloat($(this).val());
                     console.log(total);
-                }                
+                }
             });
-            
+
             this.value = parseFloat($(this).val()).toFixed(2);
             $('#spnTotal').html(total.toFixed(2));
             $('.total-label').css('width', $(this).parent().width());
             return false;
         });
-                
-        $('.calc').trigger('change');        
+
+        $('.calc').trigger('change');
 
         // payment types script
         $('.credit-card').creditCardTypeDetector({ 'credit_card_logos': '.card-logos' });
@@ -31,7 +31,7 @@
         $('.credit-card').on('change', function () {
             $('#hfCardType').val(ulCardType.className);
         });
-                
+
     };
 
 </script>
@@ -83,11 +83,12 @@
                                             </div>
                                         </div>
                                     </div>                                        
-                                </ItemTemplate> 
-                                <FooterTemplate>
-                                    <label id="lblEmptyDataSet" Visible='<%#bool.Parse((rptAccountList.Items.Count==0).ToString())%>' class="alert alert-error block-message error" >No default accounts enabled.  Please enable a account in the block settings.</label>
-                                </FooterTemplate>                          
-                            </asp:Repeater>                        
+                                </ItemTemplate>                         
+                            </asp:Repeater>  
+                            
+                            <asp:Panel ID="pnlEmptyDataSet" runat="server" Visible="False" CssClass="alert alert-error block-message error">
+                                <p>No default accounts enabled.  Please enable an account in the block settings.</p>
+                            </asp:Panel>                       
 
                             <div ID="divAddAccount" class="row-fluid" runat="server" visible="false">
                                 <div class="control-group controls">
@@ -174,61 +175,7 @@
                             </div>
   
                             <div class="span4">
-                                <label for="ddlState">State</label>
-                                <select class="state-select" id="ddlState" name="ddlState"  title="Select State" runat="server">
-	                                <option value="AL">Alabama</option>
-	                                <option value="AK">Alaska</option>
-	                                <option value="AZ">Arizona</option>
-	                                <option value="AR">Arkansas</option>
-	                                <option value="CA">California</option>
-	                                <option value="CO">Colorado</option>
-	                                <option value="CT">Connecticut</option>
-	                                <option value="DE">Delaware</option>
-	                                <option value="DC">District of Columbia</option>
-	                                <option value="FL">Florida</option>
-	                                <option value="GA">Georgia</option>
-	                                <option value="HI">Hawaii</option>
-	                                <option value="ID">Idaho</option>
-	                                <option value="IL">Illinois</option>
-	                                <option value="IN">Indiana</option>
-	                                <option value="IA">Iowa</option>
-	                                <option value="KS">Kansas</option>
-	                                <option value="KY">Kentucky</option>
-	                                <option value="LA">Louisiana</option>
-	                                <option value="ME">Maine</option>
-	                                <option value="MD">Maryland</option>
-	                                <option value="MA">Massachusetts</option>
-	                                <option value="MI">Michigan</option>
-	                                <option value="MN">Minnesota</option>
-	                                <option value="MS">Mississippi</option>
-	                                <option value="MO">Missouri</option>
-	                                <option value="MT">Montana</option>
-	                                <option value="NE">Nebraska</option>
-	                                <option value="NV">Nevada</option>
-	                                <option value="NH">New Hampshire</option>
-	                                <option value="NJ">New Jersey</option>
-	                                <option value="NM">New Mexico</option>
-	                                <option value="NY">New York</option>
-	                                <option value="NC">North Carolina</option>
-	                                <option value="ND">North Dakota</option>
-	                                <option value="OH">Ohio</option>
-	                                <option value="OK">Oklahoma</option>
-	                                <option value="OR">Oregon</option>
-	                                <option value="PA">Pennsylvania</option>
-	                                <option value="RI">Rhode Island</option>
-	                                <option value="SC">South Carolina</option>
-	                                <option value="SD">South Dakota</option>
-	                                <option value="TN">Tennessee</option>
-	                                <option value="TX">Texas</option>
-	                                <option value="UT">Utah</option>
-	                                <option value="VT">Vermont</option>
-	                                <option value="VA">Virginia</option>
-	                                <option value="WA">Washington</option>
-	                                <option value="WV">West Virginia</option>
-	                                <option value="WI">Wisconsin</option>
-	                                <option value="WY">Wyoming</option>
-                                </select>
-                            
+                                <Rock:StateDropDownList ID="ddlState" runat="server" LabelText="State" CssClass="state-select"/>                            
                             </div>
 
                             <div class="span3">
@@ -309,7 +256,7 @@
 
                                         <div>
                                             <label class="control-label" for="numCVV" >CVV #</label>
-                                            <input name="numCVV" title="CVV" class="input-mini" size="3" type="text" pattern="\d+" runat="server">
+                                            <input id="Text1" name="numCVV" title="CVV" class="input-mini" size="3" type="text" pattern="\d+" runat="server">
 
                                         </div> 
 
@@ -318,7 +265,7 @@
                                     <div class="row-fluid">
 
                                         <label for="txtCardName" >Name on Card</label>
-                                        <input name="txtCardName" class="input-medium" type="text" size="30" runat="server"/>
+                                        <input id="Text2" name="txtCardName" class="input-medium" type="text" size="30" runat="server"/>
                                         
                                     </div>
 
@@ -489,13 +436,13 @@
                 </label>
 
                 <div id="grpCreateAcct" style="display: none" >
-							
+
 	                <label for="txtUserName">Enter a Username</label>
-							
+
 	                <input id="txtUserName" name="txtUserName" class="input-medium"  type="text" size="30" />
 
 	                <label for="txtPassword">Enter a Password</label>
-							
+
 	                <input id="txtPassword" name="txtPassword" class="input-medium"  type="password" size="30" />
 
                 </div>                           

@@ -5,6 +5,7 @@
 //
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using System.Data.Services;
 using System.Runtime.Serialization;
 
@@ -18,6 +19,7 @@ namespace Rock.Data
     /// Represents an entity that can be secured and have attributes. 
     /// </summary>
     [IgnoreProperties( new[] { "ParentAuthority", "SupportedActions", "AuthEntity", "AttributeValues" } )]
+    [IgnoreModelErrors( new[] { "ParentAuthority" } )]
     [DataContract]
     public abstract class Model<T> : Entity<T>, ISecured, IHasAttributes
         where T : Model<T>, ISecured, new()
@@ -31,8 +33,8 @@ namespace Rock.Data
         /// </summary>
         [NotMapped]
         public virtual Security.ISecured ParentAuthority
-        { 
-            get 
+        {
+            get
             {
                 if ( this.Id == 0 )
                 {
@@ -40,7 +42,7 @@ namespace Rock.Data
                 }
                 else
                 {
-                    return new T() ;
+                    return new T();
                 }
             }
         }
@@ -51,8 +53,10 @@ namespace Rock.Data
         [NotMapped]
         public virtual List<string> SupportedActions
         {
-            get { return new List<string>() { "View", "Edit", "Administrate" }; }
+            get { return _supportedActions; }
         }
+        private List<string> _supportedActions = new List<string>() { "View", "Edit", "Administrate" };
+
 
         /// <summary>
         /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
@@ -100,6 +104,26 @@ namespace Rock.Data
         public virtual void MakePrivate( string action, Person person, int? personId )
         {
             Security.Authorization.MakePrivate( this, action, person, personId );
+        }
+
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <returns></returns>
+        public override object ToLiquid()
+        {
+            Dictionary<string, object> dictionary = base.ToLiquid() as Dictionary<string, object>;
+
+            this.LoadAttributes();
+            foreach ( var attribute in this.Attributes )
+            {
+                if (attribute.Value.IsAuthorized("View", null))
+                {
+                    dictionary.Add(attribute.Key, GetAttributeValue(attribute.Key));
+                }
+            }
+
+            return dictionary;
         }
 
         #endregion
@@ -179,12 +203,12 @@ namespace Rock.Data
             {
                 if ( this.AttributeValues[key].Count == 0 )
                 {
-                    this.AttributeValues[key].Add(new AttributeValue());
+                    this.AttributeValues[key].Add( new AttributeValue() );
                 }
                 this.AttributeValues[key][0].Value = value;
             }
         }
-        
+
         #endregion
-   }
+    }
 }
