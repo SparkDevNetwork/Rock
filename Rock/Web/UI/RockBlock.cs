@@ -437,8 +437,8 @@ namespace Rock.Web.UI
         /// Returns the current block value for the selected attribute
         /// If the attribute doesn't exist a null value is returned  
         /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
+        /// <param name="key">the block attribute key</param>
+        /// <returns>the stored value as a string or null if none exists</returns>
         public string GetAttributeValue( string key )
         {
             if ( CurrentBlock != null )
@@ -446,6 +446,22 @@ namespace Rock.Web.UI
                 return CurrentBlock.GetAttributeValue( key );
             }
             return null;
+        }
+
+        /// <summary>
+        /// Returns the current block values for the selected attribute.
+        /// If the attribute doesn't exist an empty list is returned.
+        /// </summary>
+        /// <param name="key">the block attribute key</param>
+        /// <returns>a list of strings or an empty list if none exists</string></returns>
+        public List<string> GetAttributeValues( string key )
+        {
+            if ( CurrentBlock != null )
+            {
+                return CurrentBlock.GetAttributeValues( key );
+            }
+
+            return new List<string>();
         }
 
         /// <summary>

@@ -3,10 +3,12 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Data.Services;
+using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Attribute;
@@ -189,6 +191,23 @@ namespace Rock.Data
                 return this.AttributeValues[key][0].Value;
             }
             return null;
+        }
+
+        /// <summary>
+        /// Gets the first value of an attribute key - splitting that delimited value into a list of strings.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns>A list of strings or an empty list if none exists.</string></returns>
+        public List<string> GetAttributeValues( string key )
+        {
+            if ( this.AttributeValues != null &&
+                this.AttributeValues.ContainsKey( key ) &&
+                this.AttributeValues[key].Count > 0 )
+            {
+                return this.AttributeValues[key][0].Value.SplitDelimitedValues().ToList();
+            }
+
+            return new List<string>();
         }
 
         /// <summary>
