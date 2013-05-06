@@ -61,7 +61,7 @@ namespace Rock.Model
 
                     // Log the results of the service
                     Model.ServiceLog log = new Model.ServiceLog();
-                    log.Time = DateTime.Now;
+                    log.LogDateTime = DateTime.Now;
                     log.Type = "Location Standardize";
                     log.Name = service.Value.Metadata.ComponentName;
                     log.Input = inputLocation;
@@ -103,7 +103,7 @@ namespace Rock.Model
 
                     // Log the results of the service
                     Model.ServiceLog log = new Model.ServiceLog();
-                    log.Time = DateTime.Now;
+                    log.LogDateTime = DateTime.Now;
                     log.Type = "Location Geocode";
                     log.Name = service.Value.Metadata.ComponentName;
                     log.Input = inputLocation;

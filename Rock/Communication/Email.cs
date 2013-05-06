@@ -304,7 +304,7 @@ namespace Rock.Communication
                     foreach ( string e in bcc )
                         if ( !string.IsNullOrWhiteSpace( e ) )
                             message.Bcc.Add( new MailAddress( e ) );
-
+ 
                     message.Subject = subject;
                     message.Body = body;
                     message.IsBodyHtml = true;

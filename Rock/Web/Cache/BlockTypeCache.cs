@@ -76,6 +76,14 @@ namespace Rock.Web.Cache
         /// </value>
         public bool IsInstancePropertiesVerified { get; internal set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [checked additional security actions].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [checked additional security actions]; otherwise, <c>false</c>.
+        /// </value>
+        public bool CheckedAdditionalSecurityActions { get; set; }
+
         #endregion
 
         #region Public Methods

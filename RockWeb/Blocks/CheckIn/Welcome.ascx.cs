@@ -140,7 +140,7 @@ if ($ActiveWhen.text() != '')
 
             lblActiveWhen.Text = string.Empty;
 
-            if ( CurrentCheckInState == null )
+            if ( CurrentCheckInState == null || IsMobileAndExpiredDevice() )
             {
                 NavigateToPreviousPage();
                 return;
@@ -211,6 +211,24 @@ if ($ActiveWhen.text() != '')
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines if the device is "mobile" and if it is no longer valid.
+        /// </summary>
+        /// <returns>true if the mobile device has expired; false otherwise.</returns>
+        private bool IsMobileAndExpiredDevice()
+        {
+            if ( Request.Cookies[ CheckInCookie.ISMOBILE] != null
+                && Request.Cookies[ CheckInCookie.DEVICEID ] == null )
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
         }
     }
 }

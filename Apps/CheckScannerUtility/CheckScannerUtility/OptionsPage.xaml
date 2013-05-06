@@ -1,30 +1,31 @@
 ﻿<Page x:Class="Rock.Apps.CheckScannerUtility.OptionsPage"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       mc:Ignorable="d"
       d:DesignHeight="680"
       d:DesignWidth="700"
-      Title="OptionsPage">
+      Title="Check Scanner - Options"
+      Loaded="Page_Loaded">
     <Grid>
 
-    <Grid.Background>
-        <ImageBrush ImageSource="images\header-texture.png"
-                    TileMode="Tile"
-                    Viewport="0,0,420,326"
-                    ViewportUnits="Absolute" />
-    </Grid.Background>
-    <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="30" />
-        <ColumnDefinition Width="*" />
-        <ColumnDefinition Width="30" />
-    </Grid.ColumnDefinitions>
-    <Grid.RowDefinitions>
-        <RowDefinition Height="50" />
-        <RowDefinition Height="*" />
-        <RowDefinition Height="30" />
-    </Grid.RowDefinitions>
+        <Grid.Background>
+            <ImageBrush ImageSource="images\header-texture.png"
+                        TileMode="Tile"
+                        Viewport="0,0,420,326"
+                        ViewportUnits="Absolute" />
+        </Grid.Background>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="30" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="30" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="30" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="30" />
+        </Grid.RowDefinitions>
         <Canvas Name="pnlMid"
                 Background="#efefef"
                 Grid.Column="1"
@@ -32,25 +33,73 @@
                 Margin="0"
                 Grid.Row="1"
                 Grid.RowSpan="1" />
-        <StackPanel Grid.Column="1" Grid.Row="1" >
-            <Label Name="lblMakeModel"
-                   Style="{StaticResource labelStyle}">Scanner Type:</Label>
-            <Label Name="lblInterfaceVersion"
-                   Style="{StaticResource labelStyle}">Interface Version:</Label>
-            <Label Name="lblFeederType"
-                   Style="{StaticResource labelStyle}">FeederType:</Label>
-            <Label Name="lblImageOption"
-                   Style="{StaticResource labelStyle}">Scan Image Color Type</Label>
-            <ComboBox Name="cboImageOption"
-                      Style="{StaticResource textboxStyle}"
-                      SelectionChanged="cboImageOption_SelectionChanged" />
-            <Button Name="btnBack"
-                    Click="btnBack_Click_1"
-                    Style="{StaticResource buttonStyle}"
-                    HorizontalAlignment="Left">Back</Button>
+        <StackPanel Grid.Column="1"
+                    Grid.Row="1">
+            <Label Style="{StaticResource labelStyleLegend}">Options</Label>
+            <Border Name="brdScannerInfo"
+                    Style="{StaticResource borderStyleWell}"
+                    Visibility="Visible"
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Margin="12,12,12,0">
+                <StackPanel>
+                    <Label Name="lblMakeModel"
+                           Style="{StaticResource labelStyle}">Scanner Type:</Label>
+                    <Label Name="lblInterfaceVersion"
+                           Style="{StaticResource labelStyle}">Interface Version:</Label>
+                    <Label Name="lblFeederType"
+                           Style="{StaticResource labelStyle}">FeederType:</Label>
+                </StackPanel>
+            </Border>
+            <Border Name="brdOptions"
+                    Style="{StaticResource borderStyleWell}"
+                    Visibility="Visible"
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Margin="12">
+                <StackPanel>
+                    <Label Style="{StaticResource labelStyle}">Rock URL</Label>
+                    <TextBox Name="txtRockUrl"
+                             Style="{StaticResource textboxStyleUrl}" />
+                    <Label Name="lblScannerInterfaceType"
+                           Style="{StaticResource labelStyle}">Scanner Interface</Label>
+                    <ComboBox Name="cboScannerInterfaceType"
+                              Style="{StaticResource textboxStyle}"
+                              SelectionChanged="cboScannerInterfaceType_SelectionChanged" />
+                    <Label Name="lblMagTekCommPort"
+                           Style="{StaticResource labelStyle}">COM Port</Label>
+                    <ComboBox Name="cboMagTekCommPort"
+                              Style="{StaticResource textboxStyle}" />
+                        <Label Name="lblImageOption"
+                           Style="{StaticResource labelStyle}">Scan Image Color Type</Label>
+                    <ComboBox Name="cboImageOption"
+                              Style="{StaticResource textboxStyle}" />
+                    <Label Name="lblAlert"
+                           Style="{StaticResource labelStyleAlert}"
+                           Content="ERROR: ">
+                    </Label>
+                    <StackPanel Grid.Row="6"
+                                Grid.Column="0"
+                                Orientation="Horizontal"
+                                Margin="0, 8">
+                        <Button Style="{StaticResource buttonStylePrimary}"
+                                Name="btnSave"
+                                Margin="4,4,0,0"
+                                Content="Save"
+                                HorizontalAlignment="Left"
+                                Click="btnSave_Click" />
+                        <Button Style="{StaticResource buttonStyle}"
+                                Name="btnCancel"
+                                Margin="4,4,0,0"
+                                Content="Cancel"
+                                HorizontalAlignment="Left"
+                                Click="btnCancel_Click" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+            
         </StackPanel>
 
     </Grid>
 
-    
 </Page>
