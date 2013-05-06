@@ -687,6 +687,27 @@ namespace Rock.Migrations
         }
 
         /// <summary>
+        /// Updates the type of the entity.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="guid">The GUID.</param>
+        public void UpdateEntityType(string name, string guid)
+        {
+            Sql( string.Format( @"
+                IF EXISTS ( SELECT [Id] FROM [EntityType] WHERE [Name] = '{0}' )
+                BEGIN
+                    UPDATE [EntityType] SET [Guid] = '{1}' WHERE [Name] = '{0}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [EntityType] ([Name], [FriendlyName], [Guid])
+                    VALUES ('{0}', null, '{1}')
+                END
+", 
+                name, guid ) );
+        }
+
+        /// <summary>
         /// Ensures the entity type exists.
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
