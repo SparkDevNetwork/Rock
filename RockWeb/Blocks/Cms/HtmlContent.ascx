@@ -3,7 +3,7 @@
 
 <script type="text/javascript">
     Sys.Application.add_load(function () {
-        Rock.controls.htmlEditor.initialize({
+        Rock.controls.htmlContentEditor.initialize({
             blockId: <%= CurrentBlock.Id %>,
             behaviorId: '<%= mpeContent.BehaviorID %>',
             hasBeenModified: <%= HtmlContentModified.ToString().ToLower() %>,

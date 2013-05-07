@@ -17,6 +17,7 @@ using System.Text;
 using System.Web;
 using System.Web.Caching;
 using System.Web.Http;
+using System.Web.Optimization;
 using System.Web.Routing;
 using DotLiquid;
 using Quartz;
@@ -131,6 +132,8 @@ namespace RockWeb
 
             new EntityTypeService().RegisterEntityTypes( Server.MapPath( "~" ) );
             new FieldTypeService().RegisterFieldTypes( Server.MapPath( "~" ) );
+
+            BundleConfig.RegisterBundles( BundleTable.Bundles );
         }
 
         /// <summary>

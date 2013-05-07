@@ -316,6 +316,12 @@ namespace Rock.Web.UI
                 Page.Form.Controls.AddAt( 0, _scriptManager );
             }
 
+            // Add library and UI bundles during init, that way theme developers will only
+            // need to worry about registering any custom scripts or script bundles they need
+            _scriptManager.Scripts.Add( new ScriptReference { Name = "WebFormsBundle" } );
+            _scriptManager.Scripts.Add( new ScriptReference( "~/bundles/RockLibs" ) );
+            _scriptManager.Scripts.Add( new ScriptReference( "~/bundles/RockUi" ) );
+
             // Recurse the page controls to find the rock page title and zone controls
             Zones = new Dictionary<string, KeyValuePair<string, Zone>>();
             FindRockControls( this.Controls );

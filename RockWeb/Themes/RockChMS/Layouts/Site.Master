@@ -1,4 +1,5 @@
 ﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Site.master.cs" Inherits="RockWeb.Themes.RockChMS.Layouts.Site" %>
+<%@ Import Namespace="System.Web.Optimization" %>
 <!DOCTYPE html>
 
 <html>
@@ -29,23 +30,9 @@
 
 </head>
 <body>
-
     <form id="form1" runat="server">
-           
         <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
-  
-        <asp:ScriptManager ID="sManager" runat="server">
-            <Scripts>
-                <asp:ScriptReference Path="~/Scripts/jquery.js" />
-                <asp:ScriptReference Path="~/Scripts/jquery-ui-1.10.0.custom.min.js"/>
-                <asp:ScriptReference Path="~/Scripts/Kendo/kendo.web.min.js"/>
-                <asp:ScriptReference Path="~/Scripts/bootstrap.min.js"/>
-                <asp:ScriptReference Path="~/Scripts/bootbox.min.js"/>
-                <asp:ScriptReference Path="~/Scripts/jquery.tinyscrollbar.js"/>
-                <asp:ScriptReference Path="~/Scripts/Rock/Rock.controls.js"/>
-                <asp:ScriptReference Path="~/Scripts/Rock/ajax-client-error-handler.js"/>
-            </Scripts>
-        </asp:ScriptManager>
+        <asp:ScriptManager ID="sManager" runat="server"/>
     </form>
 
     
