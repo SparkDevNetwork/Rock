@@ -123,29 +123,22 @@ namespace Rock.CheckIn
                 // Lookup the system's "name" (as seen in the DNS) using the given IP
                 // address because when using DHCP the kiosk may have a different IP from time to time
                 // -- however the fully qualified name should always be the same.
-
-                // Try with all our might to find the name based on the IP.
                 try
                 {
                     hostValue = System.Net.Dns.GetHostEntry( ipAddress ).HostName;
                 }
                 catch ( SocketException )
                 {
-                    try
-                    {
-                        // NOTE: GetHostEntry() doesn't always work perfectly. See comments
-                        // in "Community Content" section of the link below:
-                        // http://msdn.microsoft.com/en-us/library/ms143998(v=vs.90).aspx
-                        hostValue = System.Net.Dns.GetHostByAddress( ipAddress ).HostName;
-                    }
-                    catch ( SocketException )
-                    {
-                        hostValue = ipAddress;
-                    }
+                    // TODO: consider whether we want to log the IP address that caused this error.
+                    // As per http://msdn.microsoft.com/en-us/library/ms143998.aspx it *may* mean 
+                    // a stale DNS record for an IPv4 address that actually belongs to a
+                    // different host was going to be returned (there is a DNS PTR record for
+                    // the IPv4 address, but no DNS A record for the IPv4 address).
+                    hostValue = ipAddress;
                 }
             }
 
-            // If we still have the IP then try to find it based on IP
+            // If we still have an IPv4 address then try to find it based on IP
             if ( Regex.IsMatch( hostValue, @"\d+\.\d+\.\d+\.\d+" ) )
             {
                 // find by IP
@@ -166,7 +159,6 @@ namespace Rock.CheckIn
             {
                 return null;
             }
-
         }
  
         /// <summary>

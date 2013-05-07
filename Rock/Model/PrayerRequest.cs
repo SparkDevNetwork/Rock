@@ -99,6 +99,7 @@ namespace Rock.Model
         /// The date the request was entered.
         /// </value>
         [DataMember]
+        [Column( TypeName = "Date" )]
         public DateTime EnteredDate { get; set; }
 
         /// <summary>
@@ -108,6 +109,7 @@ namespace Rock.Model
         /// The expiration date.
         /// </value>
         [DataMember]
+        [Column( TypeName = "Date" )]
         public DateTime? ExpirationDate { get; set; }
 
         /// <summary>
@@ -198,6 +200,7 @@ namespace Rock.Model
         /// The date the request was approved.
         /// </value>
         [DataMember]
+        [Column( TypeName = "Date" )]
         public DateTime? ApprovedOnDate { get; set; }
 
         #region Virtual Properties

@@ -87,6 +87,7 @@
     <Compile Include="Controllers\CodeGenerated\NoteTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PrayerRequestsController.cs" />
     <Compile Include="Controllers\CodeGenerated\ReportsController.cs" />
+    <Compile Include="Controllers\MergeFieldsController.cs" />
     <Compile Include="Controllers\FinancialAccountsController.Partial.cs" />
     <Compile Include="Controllers\GroupsController.Partial.cs" />
     <Compile Include="Controllers\KiosksController.cs" />

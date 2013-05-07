@@ -42,6 +42,7 @@ namespace Rock.Model
         /// The batch date.
         /// </value>
         [DataMember]
+        [Column( TypeName = "Date" )]
         public DateTime? BatchDate { get; set; }
 
         /// <summary>

@@ -3,8 +3,10 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using System.Data.Services;
 using System.Runtime.Serialization;
 
@@ -52,8 +54,10 @@ namespace Rock.Data
         [NotMapped]
         public virtual List<string> SupportedActions
         {
-            get { return new List<string>() { "View", "Edit", "Administrate" }; }
+            get { return _supportedActions; }
         }
+        private List<string> _supportedActions = new List<string>() { "View", "Edit", "Administrate" };
+
 
         /// <summary>
         /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
@@ -101,6 +105,26 @@ namespace Rock.Data
         public virtual void MakePrivate( string action, Person person, int? personId )
         {
             Security.Authorization.MakePrivate( this, action, person, personId );
+        }
+
+        /// <summary>
+        /// To the liquid.
+        /// </summary>
+        /// <returns></returns>
+        public override object ToLiquid()
+        {
+            Dictionary<string, object> dictionary = base.ToLiquid() as Dictionary<string, object>;
+
+            this.LoadAttributes();
+            foreach ( var attribute in this.Attributes )
+            {
+                if (attribute.Value.IsAuthorized("View", null))
+                {
+                    dictionary.Add(attribute.Key, GetAttributeValue(attribute.Key));
+                }
+            }
+
+            return dictionary;
         }
 
         #endregion
@@ -166,6 +190,23 @@ namespace Rock.Data
                 return this.AttributeValues[key][0].Value;
             }
             return null;
+        }
+
+        /// <summary>
+        /// Gets the first value of an attribute key - splitting that delimited value into a list of strings.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns>A list of strings or an empty list if none exists.</string></returns>
+        public List<string> GetAttributeValues( string key )
+        {
+            if ( this.AttributeValues != null &&
+                this.AttributeValues.ContainsKey( key ) &&
+                this.AttributeValues[key].Count > 0 )
+            {
+                return this.AttributeValues[key][0].Value.SplitDelimitedValues().ToList();
+            }
+
+            return new List<string>();
         }
 
         /// <summary>
