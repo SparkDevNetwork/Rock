@@ -322,6 +322,7 @@
       </Rules>
       <AnalyzerSettings>
         <CollectionProperty Name="Hungarian">
+		  <Value>bw</Value>
           <Value>cb</Value>
           <Value>lb</Value>
           <Value>tb</Value>

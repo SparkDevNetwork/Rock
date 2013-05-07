@@ -9,7 +9,7 @@
                 <fieldset>
                     <Rock:LabeledTextBox ID="tbQuery" runat="server" LabelText="SQL Text" TextMode="MultiLine" Rows="5" CssClass="span12" 
                         Help="The SQL query or stored procedure name to execute." />
-                    <Rock:LabeledToggle ID="tQuery" runat="server" LabelText="Selection Query?" OnText="Yes" OffText="No" Checked="true"
+                    <Rock:Toggle ID="tQuery" runat="server" LabelText="Selection Query?" OnText="Yes" OffText="No" Checked="true"
                         Help="Will the SQL Text above return rows? If so, a grid will be displayed containing the results of the query." />
                 </fieldset>
             </div>

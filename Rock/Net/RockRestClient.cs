@@ -10,6 +10,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+
 using Rock.Data;
 using Rock.Security;
 
@@ -158,16 +159,39 @@ namespace Rock.Net
             }
 
             HttpContent resultContent;
+            HttpError httpError = null;
             T result = default( T );
 
             httpClient.GetAsync( requestUri ).ContinueWith( ( postTask ) =>
                 {
                     resultContent = postTask.Result.Content;
-                    resultContent.ReadAsAsync<T>().ContinueWith( ( readResult ) =>
+
+                    if ( postTask.Result.IsSuccessStatusCode )
+                    {
+                        resultContent.ReadAsAsync<T>().ContinueWith( ( readResult ) =>
+                            {
+                                result = readResult.Result;
+                            } ).Wait();
+                    }
+                    else
+                    {
+                        resultContent.ReadAsStringAsync().ContinueWith( s =>
                         {
-                            result = readResult.Result;
+#if DEBUG
+                            string debugResult = s.Result;
+                            httpError = new HttpError( debugResult );
+#else                            
+                            // just get the simple error message, don't expose exception details to user
+                            httpError = new HttpError( postTask.Result.ReasonPhrase );
+#endif
                         } ).Wait();
+                    }
                 } ).Wait();
+
+            if ( httpError != null )
+            {
+                throw new HttpErrorException( httpError );
+            }
 
             return result;
         }
@@ -241,19 +265,53 @@ namespace Rock.Net
 
             if ( httpError != null )
             {
-                if ( httpError.ContainsKey( "ModelState" ) )
-                {
-                    var modelState = httpError["ModelState"];
-                    if ( modelState != null )
-                    {
-                        throw new Exception( modelState.ToString() );
-                    }
-                }
+                throw new HttpErrorException( httpError );
             }
 
             if ( httpMessage != null )
             {
                 httpMessage.EnsureSuccessStatusCode();
+            }
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class HttpErrorException : Exception
+    {
+        /// <summary>
+        /// Gets or sets the _message.
+        /// </summary>
+        /// <value>
+        /// The _message.
+        /// </value>
+        private string _message { get; set; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpErrorException"/> class.
+        /// </summary>
+        /// <param name="httpError">The HTTP error.</param>
+        public HttpErrorException( HttpError httpError )
+            : base()
+        {
+            _message = string.Empty;
+
+            foreach ( var error in httpError )
+            {
+                _message += error.Value.ToString() + Environment.NewLine;
+            }
+        }
+
+        /// <summary>
+        /// Gets a message that describes the current exception.
+        /// </summary>
+        /// <returns>The error message that explains the reason for the exception, or an empty string("").</returns>
+        public override string Message
+        {
+            get
+            {
+                return _message;
             }
         }
     }

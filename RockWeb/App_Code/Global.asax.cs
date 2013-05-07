@@ -141,8 +141,8 @@ namespace RockWeb
         /// <param name="r">The r.</param>
         public void CacheItemRemoved( string k, object v, CacheItemRemovedReason r )
         {
-            try
-            {
+            //try
+            //{
                 if ( r == CacheItemRemovedReason.Expired )
                 {
                     // call a page on the site to keep IIS alive 
@@ -156,11 +156,11 @@ namespace RockWeb
                     // process the transaction queue
                     DrainTransactionQueue();
                 }
-            }
-            catch ( Exception ex )
-            {
-                WriteToEventLog( string.Format( "Exception in Global.CacheItemRemoved(): {0}", ex.Message ), EventLogEntryType.Error );
-            }
+            //}
+            //catch ( Exception ex )
+            //{
+            //    WriteToEventLog( string.Format( "Exception in Global.CacheItemRemoved(): {0}", ex.Message ), EventLogEntryType.Error );
+            //}
         }
 
         /// <summary>
@@ -551,12 +551,8 @@ namespace RockWeb
         /// <param name="filters">The filters.</param>
         private void RegisterFilters( System.Web.Http.Filters.HttpFilterCollection filters )
         {
-            //filters.Add( new System.Web.Http.AuthorizeAttribute() );
-            //filters.Add( new Rock.Rest.Filters.AuthenticateAttribute() );
-            
-            
-            // ValidateAttribute doesn't work for PUT's
-            //filters.Add( new Rock.Rest.Filters.ValidateAttribute() );
+            // does validation on IEntity's coming in thru REST
+            filters.Add( new Rock.Rest.Filters.ValidateAttribute() );
         }
 
         /// <summary>
