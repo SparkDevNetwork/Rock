@@ -7,14 +7,41 @@
       d:DesignHeight="500"
       d:DesignWidth="800"
       Title="Check Scanner - Login"
-      Loaded="Page_Loaded">
+      Loaded="Page_Loaded"
+      Background="#FF373737">
 
     <Grid Margin="0,0,0,0">
         <Grid.Background>
-            <ImageBrush ImageSource="images\header-texture.png"
-                        TileMode="Tile"
-                        Viewport="0,0,420,326"
-                        ViewportUnits="Absolute" />
+            <DrawingBrush TileMode="Tile"
+                          AlignmentX="Left"
+                          AlignmentY="Top"
+                          Viewport="5,5,5,5"
+                          ViewboxUnits="Absolute"
+                          ViewportUnits="Absolute">
+                <DrawingBrush.Viewbox>
+                    <Rect Width="5"
+                          Height="5" />
+                </DrawingBrush.Viewbox>
+                <DrawingBrush.Drawing>
+                    <GeometryDrawing>
+                        <GeometryDrawing.Pen>
+                            <Pen Thickness="1"
+                                 Brush="#FF404040">
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                        <GeometryDrawing.Brush>
+                            <SolidColorBrush Color="Beige" />
+                        </GeometryDrawing.Brush>
+                        <GeometryDrawing.Geometry>
+                            <GeometryGroup FillRule="Nonzero">
+                                <PathGeometry FillRule="Nonzero"
+                                              Figures="M0,5L5,0z M6,4L4,6z M-1,1L1,-1z">
+                                </PathGeometry>
+                            </GeometryGroup>
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                </DrawingBrush.Drawing>
+            </DrawingBrush>
         </Grid.Background>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -84,7 +111,8 @@
                 <StackPanel Grid.Row="1"
                             Grid.Column="0"
                             VerticalAlignment="Center">
-                    <Label Name="lblRockUrl" Style="{StaticResource labelStyle}">Rock URL</Label>
+                    <Label Name="lblRockUrl"
+                           Style="{StaticResource labelStyle}">Rock URL</Label>
                     <TextBox Name="txtRockUrl"
                              Style="{StaticResource textboxStyleUrl}" />
                     <Label Style="{StaticResource labelStyle}">Username</Label>
@@ -97,7 +125,7 @@
                                  KeyDown="HideLoginWarning" />
                     <Label Name="lblLoginWarning"
                            Style="{StaticResource labelStyleAlert}"
-                           Content="Invalid Login" >
+                           Content="Invalid Login">
                     </Label>
                 </StackPanel>
                 <Border Grid.Row="2"

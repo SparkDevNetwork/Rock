@@ -635,6 +635,33 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the grade; -1 pre-kindergarten, 0 Kindergarten, 1 for 1st grade, etc.; and null if person has no graduation date
+        /// </summary>
+        /// <value>
+        /// The grade.
+        /// </value>
+        public virtual int? Grade
+        {
+            get
+            {
+                if ( GraduationDate == null )
+                {
+                    return null;
+                }
+
+                if ( DateTime.Now <= GraduationDate )
+                {
+
+                }
+                else
+                {
+
+                }
+                return 1;
+            }
+        }
+
+        /// <summary>
         /// Gets the impersonation parameter.
         /// </summary>
         public virtual string ImpersonationParameter
