@@ -16,16 +16,26 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public abstract class ItemPicker : CompositeControl, ILabeledControl
+    public abstract class ItemPicker : CompositeControl
     {
-        private Label _label;
-        private Literal _literal;
         private HiddenField _hfItemId;
         private HiddenField _hfInitialItemParentIds;
         private HiddenField _hfItemName;
         private HiddenField _hfItemRestUrlExtraParams;
         private LinkButton _btnSelect;
         private LinkButton _btnSelectNone;
+
+        /// <summary>
+        /// Gets or sets the name of the field (for validation messages)
+        /// </summary>
+        /// <value>
+        /// The name of the field.
+        /// </value>
+        public string FieldName
+        {
+            get { return ViewState["FieldName"] as string ?? string.Empty; }
+            set { ViewState["FieldName"] = value; }
+        }
 
         /// <summary>
         /// The required validator
@@ -52,27 +62,6 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _hfItemRestUrlExtraParams.Value = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the _label text.
-        /// </summary>
-        /// <value>
-        /// The _label text.
-        /// </value>
-        public string LabelText
-        {
-            get
-            {
-                EnsureChildControls();
-                return _label.Text;
-            }
-
-            set
-            {
-                EnsureChildControls();
-                _label.Text = value;
             }
         }
 
@@ -436,8 +425,6 @@ namespace Rock.Web.UI.Controls
 
             Controls.Clear();
 
-            _label = new Label();
-            _literal = new Literal();
             _hfItemId = new HiddenField();
             _hfItemId.ClientIDMode = ClientIDMode.Static;
             _hfItemId.ID = string.Format( "hfItemId_{0}", this.ID );
@@ -468,9 +455,6 @@ namespace Rock.Web.UI.Controls
             _btnSelectNone.Visible = false;
             _btnSelectNone.Click += btnSelect_Click;
 
-
-            Controls.Add( _label );
-            Controls.Add( _literal );
             Controls.Add( _hfItemId );
             Controls.Add( _hfInitialItemParentIds );
             Controls.Add( _hfItemName );
@@ -495,21 +479,10 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            writer.AddAttribute( "class", "control-group" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            _label.AddCssClass( "control-_label" );
-
-            _label.RenderControl( writer );
-
-            writer.AddAttribute( "class", "controls" );
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
             if ( Required )
             {
                 RequiredValidator.Enabled = true;
-                RequiredValidator.ErrorMessage = LabelText + " is Required.";
+                RequiredValidator.ErrorMessage = FieldName + " is Required.";
                 RequiredValidator.RenderControl( writer );
             }
 
@@ -521,9 +494,8 @@ namespace Rock.Web.UI.Controls
             if ( this.Enabled )
             {
                 string controlHtmlFormatStart = @"
-<div class='control-group' id='{0}'>
-    <div class='controls'>
-        <div class='rock-picker rock-picker-select'> 
+    <span id='{0}'>
+        <span class='rock-picker rock-picker-select'> 
             <a class='rock-picker' href='#'>
                 <i class='icon-folder-open'></i>
                 <span id='selectedItemLabel_{0}'>{1}</span>
@@ -543,7 +515,7 @@ namespace Rock.Web.UI.Controls
                 }
 
                 string controlHtmlFormatMiddle = @"
-        </div>
+        </span>
         <div class='dropdown-menu rock-picker rock-picker-item'>
 
             <div id='treeview-scroll-container_{0}' class='scroll-container scroll-container-picker'>
@@ -579,29 +551,18 @@ namespace Rock.Web.UI.Controls
             <a class='btn btn-mini' id='btnCancel_{0}'>Cancel</a>
             
         </div>
-    </div>
-</div>
+    </span>
 ";
                 writer.Write( controlHtmlFormatEnd, this.ID, this.ItemName );
             }
             else
             {
                 string controlHtmlFormatDisabled = @"
-<div class='control-group' id='{0}'>
-    <div class='controls'>
-
         <i class='icon-file-alt'></i>
         <span id='selectedItemLabel_{0}'>{1}</span>
-
-    </div>
-</div>
 "; 
                 writer.Write( controlHtmlFormatDisabled, this.ID, this.ItemName );
             }
-
-            writer.RenderEndTag();
-
-            writer.RenderEndTag();
         }
     }
 }

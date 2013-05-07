@@ -27,7 +27,8 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="System.Windows.Threading.DispatcherUnhandledExceptionEventArgs"/> instance containing the event data.</param>
         void App_DispatcherUnhandledException( object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e )
         {
-            MessageBox.Show( e.Exception.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error );
+            ErrorMessageWindow errorMessageWindow = new ErrorMessageWindow(e.Exception.Message);
+            errorMessageWindow.ShowDialog();
             e.Handled = true;
         }
     }

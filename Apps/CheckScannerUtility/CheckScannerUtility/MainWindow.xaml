@@ -12,5 +12,6 @@
                   FontFamily="./resources/#Open Sans"
                   ShowsNavigationUI="False"
                   FontSize="14"
+                  WindowStartupLocation="CenterScreen"
                   Closing="mainWindow_Closing">
 </NavigationWindow>

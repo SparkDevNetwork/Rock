@@ -256,7 +256,7 @@ namespace Rock.Apps.CheckScannerUtility
             }
 
             imagePath = Path.GetTempPath();
-            string checkImageFileName = Path.Combine( imagePath, string.Format( "check_{0}_{1}_{2}.tif", scannedCheck.RoutingNumber, scannedCheck.AccountNumber, scannedCheck.CheckNumber ) );
+            string checkImageFileName = Path.Combine( imagePath, string.Format( "check_{0}_{1}_{2}.tif", scannedCheck.RoutingNumber, scannedCheck.AccountNumber, scannedCheck.CheckNumber ).Replace('?', 'X'));
 
             if ( File.Exists( checkImageFileName ) )
             {
@@ -364,8 +364,7 @@ namespace Rock.Apps.CheckScannerUtility
             control.Opacity = 0;
             control.Visibility = Visibility.Visible;
             Storyboard storyboard = new Storyboard();
-            TimeSpan duration = new TimeSpan( 0, 0, 0, 0, (int)speed ); //
-
+            TimeSpan duration = new TimeSpan( 0, 0, 0, 0, (int)speed );
             DoubleAnimation fadeInAnimation = new DoubleAnimation { From = 0.0, To = 1.0, Duration = new Duration( duration ) };
             Storyboard.SetTargetName( fadeInAnimation, control.Name );
             Storyboard.SetTargetProperty( fadeInAnimation, new PropertyPath( "Opacity", 1 ) );
@@ -381,21 +380,18 @@ namespace Rock.Apps.CheckScannerUtility
         public void FadeOut( Control control, int speed = 2000 )
         {
             Storyboard storyboard = new Storyboard();
-            TimeSpan duration = new TimeSpan( 0, 0, 0, 0, (int)speed ); //
-
+            TimeSpan duration = new TimeSpan( 0, 0, 0, 0, (int)speed );
             DoubleAnimation fadeOutAnimation = new DoubleAnimation { From = 1.0, To = 0.0, Duration = new Duration( duration ) };
-
             Storyboard.SetTargetName( fadeOutAnimation, control.Name );
             Storyboard.SetTargetProperty( fadeOutAnimation, new PropertyPath( "Opacity", 0 ) );
             storyboard.Children.Add( fadeOutAnimation );
 
-            EventHandler onCompleted = new EventHandler( (sender, e) => 
+            EventHandler handleCompleted = new EventHandler( (sender, e) => 
             {
                 control.Visibility = Visibility.Collapsed;
             } );
 
-            storyboard.Completed += onCompleted;
-
+            storyboard.Completed += handleCompleted;
             storyboard.Begin( control );
         }
         
@@ -411,7 +407,6 @@ namespace Rock.Apps.CheckScannerUtility
                 lblUploadProgress.Content = "Uploading Scanned Checks: Complete";
                 FadeOut( lblUploadProgress );
                 UpdateBatchUI( grdBatches.SelectedValue as FinancialBatch );
-                
             }
             else
             {
@@ -603,6 +598,27 @@ namespace Rock.Apps.CheckScannerUtility
         }
 
         /// <summary>
+        /// Updates the scanner status for magtek.
+        /// </summary>
+        /// <param name="connected">if set to <c>true</c> [connected].</param>
+        private void UpdateScannerStatusForMagtek( bool connected )
+        {
+            if ( connected )
+            {
+                shapeStatus.Fill = new SolidColorBrush( Colors.LimeGreen );
+                shapeStatus.ToolTip = "Connected";
+            }
+            else
+            {
+                shapeStatus.Fill = new SolidColorBrush( Colors.Red );
+                shapeStatus.ToolTip = "Disconnected";
+            }
+            
+            ScanningPage.shapeStatus.ToolTip = this.shapeStatus.ToolTip;
+            ScanningPage.shapeStatus.Fill = this.shapeStatus.Fill;
+        }
+
+        /// <summary>
         /// Connects to scanner.
         /// </summary>
         private void ConnectToScanner()
@@ -614,6 +630,8 @@ namespace Rock.Apps.CheckScannerUtility
                 micrImageHost.IsEnabled = true;
                 micrImage.CommPort = rockConfig.MICRImageComPort;
                 micrImage.PortOpen = false;
+
+                UpdateScannerStatusForMagtek( false );
 
                 object dummy = null;
 
@@ -640,6 +658,27 @@ namespace Rock.Apps.CheckScannerUtility
                         micrImage.MicrTimeOut = 5;
 
                         ScanningPage.btnStartStop.Content = ScanButtonText.ScanCheck;
+
+                        string version = null;
+                        try
+                        {
+                            this.Cursor = Cursors.Wait;
+                            version = micrImage.Version();
+                        }
+                        finally
+                        {
+                            this.Cursor = null;
+                        }
+
+                        if ( !version.Equals( "-1" ) )
+                        {
+                            UpdateScannerStatusForMagtek( true );
+                        }
+                        else
+                        {
+                            MessageBox.Show( string.Format( "MagTek Device is not responding on COM{0}.", micrImage.CommPort ), "Scanner Error" );
+                            return;
+                        }
                     }
                     else
                     {
@@ -885,7 +924,7 @@ namespace Rock.Apps.CheckScannerUtility
             lblBatchNameReadOnly.Content = selectedBatch.Name;
 
             lblBatchCampusReadOnly.Content = selectedBatch.CampusId.HasValue ? client.GetData<Campus>( string.Format( "api/Campus/{0}", selectedBatch.CampusId ) ).Name : None.Text;
-            lblBatchDateReadOnly.Content = selectedBatch.BatchDate.ToString();
+            lblBatchDateReadOnly.Content = selectedBatch.BatchDate.Value.ToString("d");
             lblBatchCreatedByReadOnly.Content = client.GetData<Person>( string.Format( "api/People/{0}", selectedBatch.CreatedByPersonId ) ).FullName;
             lblBatchControlAmountReadOnly.Content = selectedBatch.ControlAmount.ToString( "F" );
 
