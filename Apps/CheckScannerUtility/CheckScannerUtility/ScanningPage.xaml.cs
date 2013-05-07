@@ -106,9 +106,9 @@ namespace Rock.Apps.CheckScannerUtility
                 }
             }
 
-            lblRoutingNumber.Content = string.Format( "Routing Number: {0}", scannedCheckInfo.RoutingNumber );
-            lblAccountNumber.Content = string.Format( "Account Number: {0}", scannedCheckInfo.AccountNumber );
-            lblCheckNumber.Content = string.Format( "Check Number: {0}", scannedCheckInfo.CheckNumber );
+            lblRoutingNumber.Content = scannedCheckInfo.RoutingNumber ?? "--";
+            lblAccountNumber.Content = scannedCheckInfo.AccountNumber ?? "--";
+            lblCheckNumber.Content = scannedCheckInfo.CheckNumber ?? "--";
         }
 
         /// <summary>

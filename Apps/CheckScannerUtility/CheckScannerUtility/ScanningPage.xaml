@@ -7,24 +7,16 @@
       d:DesignHeight="600"
       d:DesignWidth="960"
       Title="ScanningPage"
-      Loaded="Page_Loaded">
+      Loaded="Page_Loaded"
+      Background="#efefef">
 
     <!-- Scan Progress Grid -->
     <Grid Name="grdScanProgress">
-        <Grid.Background>
-            <ImageBrush ImageSource="images\header-texture.png"
-                        TileMode="Tile"
-                        Viewport="0,0,420,326"
-                        ViewportUnits="Absolute" />
-        </Grid.Background>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="30" />
             <ColumnDefinition />
             <ColumnDefinition />
-            <ColumnDefinition Width="30" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="30" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -32,96 +24,109 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="30" />
         </Grid.RowDefinitions>
         <Ellipse Name="shapeStatus"
-                 Grid.Column="3"
+                 Grid.Column="2"
                  Grid.Row="0"
                  Height="14"
                  Margin="8"
                  VerticalAlignment="Top"
+                 HorizontalAlignment="Right"
                  Width="14"
                  Fill="Red">
         </Ellipse>
-        <Canvas Name="pnlMid"
-                Background="#efefef"
-                Grid.Column="1"
-                Grid.ColumnSpan="2"
-                Margin="0"
-                Grid.Row="1"
-                Grid.RowSpan="7" />
-        <StackPanel Grid.Column="1" Grid.Row="2" Grid.ColumnSpan="2">
-            <Label Name="lblScanWarning"
-                   Style="{StaticResource labelStyleAlert}"
-                   Content="WARNING: Check account Information not found. Try scanning again with the check facing the other direction.">
-            </Label>
-            <Label Name="lblScanInstructions"
-                   Style="{StaticResource labelStyleAlertInfo}"
-                   Content="INFO:  ---">
-            </Label>
+        <Label Name="lblScanWarning"
+               Style="{StaticResource labelStyleAlert}"
+               Content="WARNING: Check account Information not found. Try scanning again with the check facing the other direction."
+               Grid.Column="0"
+               Grid.ColumnSpan="2"
+               Grid.Row="1">
+        </Label>
+        <StackPanel Orientation="Horizontal"
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    Margin="8,4">
+            <Label Name="lblRoutingNumberCaption"
+                   Style="{StaticResource labelStyleBold}">
+                Routing Number:</Label>
+            <Label Name="lblRoutingNumber"
+                   Style="{StaticResource labelStyle}">
+                123456789</Label>
         </StackPanel>
-        
-        <Label Name="lblRoutingNumber"
-               Grid.Row="3"
-               Grid.Column="1"
+        <StackPanel Orientation="Horizontal"
+                    Grid.Row="3"
+                    Grid.Column="0"
+                    Margin="8,4">
+            <Label Name="lblAccountNumberBold"
+                   Style="{StaticResource labelStyleBold}">Account:</Label>
+            <Label Name="lblAccountNumber"
+                   Style="{StaticResource labelStyle}">123456789012</Label>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal"
+                    Grid.Row="3"
+                    Grid.Column="1"
+                    Margin="8,4">
+            <Label Name="lblCheckNumberCaption"
+                   Style="{StaticResource labelStyleBold}">Check Number:</Label>
+            <Label Name="lblCheckNumber"
+                   Style="{StaticResource labelStyle}">0123</Label>
+        </StackPanel>
+        <Label Grid.Row="4"
+               Grid.Column="0"
                VerticalAlignment="Bottom"
-               Style="{StaticResource labelStyle}">Routing Number: 012345678</Label>
-        <Label Name="lblAccountNumber"
-               Grid.Row="4"
+               Margin="8"
+               Style="{StaticResource labelStyleCaption}">Front</Label>
+        <Label Grid.Row="4"
                Grid.Column="1"
-               Style="{StaticResource labelStyle}">Account: 123456789012</Label>
-        <Label Name="lblCheckNumber"
-               Grid.Row="4"
-               Grid.Column="2"
-               Style="{StaticResource labelStyle}">Check Number: 0123</Label>
-
-        <Label Grid.Row="5"
-               Grid.Column="1"
+               Margin="8"
                VerticalAlignment="Bottom"
-               Style="{StaticResource labelStyle}">Front</Label>
-        <Label Grid.Row="5"
-               Grid.Column="2"
-               VerticalAlignment="Bottom"
-               Style="{StaticResource labelStyle}">Back</Label>
-
-        <Image Grid.Column="1"
-               Grid.Row="6"
+               Style="{StaticResource labelStyleCaption}">Back</Label>
+        <Image Grid.Column="0"
+               Grid.Row="5"
                Name="imgFront"
                Height="140"
                Width="420"
                Stretch="Fill"
                HorizontalAlignment="Left"
-               Margin="6,0,0,0"
+               Margin="8,0"
                VerticalAlignment="Top"
                Source="images/check-image.png" />
-        <Image Grid.Column="2"
-               Grid.Row="6"
+        <Image Grid.Column="11"
+               Grid.Row="5"
                Name="imgBack"
                Height="140"
                Width="420"
                Stretch="Fill"
                HorizontalAlignment="Left"
-               Margin="6,0,0,0"
+               Margin="8,0"
                VerticalAlignment="Top"
                Source="images/check-image.png" />
-        <Button Grid.Row="7"
-                Grid.Column="1"
-                Margin="4"
-                Name="btnStartStop"
-                Style="{StaticResource buttonStyle}"
-                Content="Start/Stop/Scan Check"
-                HorizontalAlignment="Left"
-                VerticalAlignment="Bottom"
-                Click="btnStartStop_Click" />
-        <Button Grid.Row="7"
-                Grid.Column="2"
-                Margin="4"
-                Name="btnDone"
-                Style="{StaticResource buttonStyle}"
-                Content="Done"
-                HorizontalAlignment="Right"
-                VerticalAlignment="Bottom"
-                Click="btnDone_Click" />
 
+        <StackPanel Grid.Row="6"
+                    Grid.Column="0"
+                    Grid.ColumnSpan="2"
+                    VerticalAlignment="Bottom">
+            <Label Name="lblScanInstructions"
+                   Style="{StaticResource labelStyleAlertInfo}"
+                   Content="INFO:  ---"
+                   Grid.Row="6"
+                   Grid.Column="0"
+                   Grid.ColumnSpan="2">
+            </Label>
+            <Grid>
+                <Button Margin="8"
+                        x:Name="btnStartStop"
+                        Style="{StaticResource buttonStyle}"
+                        Content="Start/Stop/Scan Check"
+                        HorizontalAlignment="Left"
+                        Click="btnStartStop_Click" />
+                <Button Margin="8"
+                        x:Name="btnDone"
+                        Style="{StaticResource buttonStyle}"
+                        Content="Done"
+                        HorizontalAlignment="Right"
+                        Click="btnDone_Click" />
+            </Grid>
+        </StackPanel>
     </Grid>
 </Page>
