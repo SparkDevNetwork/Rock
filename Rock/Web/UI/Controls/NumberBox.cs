@@ -18,6 +18,12 @@ namespace Rock.Web.UI.Controls
     {
         private RangeValidator rangeValidator;
 
+        /// <summary>
+        /// Gets or sets the name of the field (for validation messages)
+        /// </summary>
+        /// <value>
+        /// The name of the field.
+        /// </value>
         public string FieldName
         {
             get { return ViewState["FieldName"] as string ?? string.Empty; }

@@ -222,7 +222,7 @@ namespace Rock
         }
 
         /// <summary>
-        /// Pluralizes the specified tring.
+        /// Pluralizes the specified string.
         /// </summary>
         /// <param name="str">The string to pluralize.</param>
         /// <returns></returns>
@@ -230,6 +230,17 @@ namespace Rock
         {
             var pluralizationService = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService( new System.Globalization.CultureInfo( "en-US" ) );
             return pluralizationService.Pluralize( str );
+        }
+
+        /// <summary>
+        /// Singularizes the specified string.
+        /// </summary>
+        /// <param name="str">The string to singularize.</param>
+        /// <returns></returns>
+        public static string Singularize( this string str )
+        {
+            var pluralizationService = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService( new System.Globalization.CultureInfo( "en-US" ) );
+            return pluralizationService.Singularize( str );
         }
 
         /// <summary>

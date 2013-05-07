@@ -65,7 +65,7 @@ namespace RockWeb.Blocks.Finance
         {
             get
             {
-                return GetAttributeValue( "DefaultAccounts" ).Split( new[] { ',' } ).Select( Guid.Parse ).ToList();
+                return GetAttributeValues( "DefaultAccounts" ).Select( Guid.Parse ).ToList();
             }
         }
 
