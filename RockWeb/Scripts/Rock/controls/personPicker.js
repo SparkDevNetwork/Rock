@@ -45,9 +45,10 @@
                 }
             });
 
-            $('a.rock-picker').click(function (e) {
+            $('#' + controlId + ' a.rock-picker').click(function (e) {
                 e.preventDefault();
-                $(this).next('.rock-picker').toggle();
+                //$(this).next('.rock-picker').toggle();
+                $(this).parent().siblings('.rock-picker').first().toggle();
             });
 
             $('.rock-picker-select').on('click', '.rock-picker-select-item', function () {

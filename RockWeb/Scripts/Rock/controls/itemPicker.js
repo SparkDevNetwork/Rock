@@ -151,7 +151,8 @@
                 isMultiSelect = this.isMultiSelect,
                 updateScrollbar = this.updateScrollbar;
 
-            $('#' + controlId + ' a.rock-picker').click(function () {
+            $('#' + controlId + ' a.rock-picker').click(function (e) {
+                e.preventDefault();
                 $(this).parent().siblings('.rock-picker').first().toggle();
                 updateScrollbar(controlId);
             });
