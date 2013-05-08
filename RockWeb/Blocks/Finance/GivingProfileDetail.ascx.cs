@@ -127,7 +127,7 @@ namespace RockWeb.Blocks.Finance
                 // TODO rewrite account lookup to use ID instead of name
                 string accountName = ( (LabeledTextBox)item.FindControl("lblAccountName") ).LabelText;
                 account.Account = lookupAccounts.Where(f => f.PublicName == accountName).FirstOrDefault();
-                decimal amount = Decimal.Parse( ( (LabeledTextBox)item.FindControl( "inputAccountAmount" ) ).Text );                
+                decimal amount = Decimal.Parse( ( (LabeledTextBox)item.FindControl( "txtAccountAmount" ) ).Text );
                 account.Amount = amount;                
                 account.TransactionId = _transaction.Id;
                 
