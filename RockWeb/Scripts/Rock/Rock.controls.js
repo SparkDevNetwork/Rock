@@ -355,7 +355,7 @@
                 }
             });
 
-            $('#' + controlId + 'a.rock-picker').click(function (e) {
+            $('#' + controlId + ' a.rock-picker').click(function (e) {
                 e.preventDefault();
                 $(this).parent().siblings('.rock-picker').first().toggle();
             });
