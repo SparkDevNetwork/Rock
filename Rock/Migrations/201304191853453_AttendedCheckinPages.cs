@@ -29,11 +29,13 @@ namespace Rock.Migrations
             AddBlockType( "Attended Check In - Admin", "Admin screen for Attended Checkin", "~/Blocks/CheckIn/Attended/Admin.ascx", "2C51230E-BA2E-4646-BB10-817B26C16218" );
             AddBlockType( "Attended Check In - Search", "Search screen for Attended Checkin", "~/Blocks/CheckIn/Attended/Search.ascx", "645D3F2F-0901-44FE-93E9-446DBC8A1680" );
             AddBlockType( "Attended Check In - Family Select", "Family select for Attended Checkin", "~/Blocks/CheckIn/Attended/FamilySelect.ascx", "4D48B5F0-F0B2-4C10-8498-DAF690761A80" );
+            AddBlockType( "Attended Check In - Activity Select", "Activity select for Attended Checkin", "~/Blocks/CheckIn/Attended/ActivitySelect.ascx", "78E2AB4A-FDF7-4864-92F7-F052050BC4BB" );
 
             AddBlock( "771E3CF1-63BD-4880-BC43-AC29B4CCE963", "2C51230E-BA2E-4646-BB10-817B26C16218", "Admin", "", "Content", 0, "9F8731AB-07DB-406F-A344-45E31D0DE301" );
             AddBlock( "8F618315-F554-4751-AB7F-00CC5658120A", "645D3F2F-0901-44FE-93E9-446DBC8A1680", "Search", "", "Content", 0, "182C9AA0-E76F-4AAF-9F61-5418EE5A0CDB" );
             AddBlock( "AF83D0B2-2995-4E46-B0DF-1A4763637A68", "4D48B5F0-F0B2-4C10-8498-DAF690761A80", "Family Select", "", "Content", 0, "82929409-8551-413C-972A-98EDBC23F420" );
             AddBlock( "AF83D0B2-2995-4E46-B0DF-1A4763637A68", "0DF27F26-691D-41F8-B0F7-987E4FEC375C", "Idle Redirect", "", "Content", 1, "BDD502FF-40D2-42E6-845E-95C49C3505B3" );
+            AddBlock( "C87916FE-417E-4A11-8831-5CFA7678A228", "78E2AB4A-FDF7-4864-92F7-F052050BC4BB", "Activity Select", "", "Content", 0, "8C8CBBE9-2502-4FEC-804D-C0DA13C07FA4" );
 
             // Page Routes for Attended Checkin
             AddPageRoute( "771E3CF1-63BD-4880-BC43-AC29B4CCE963", "attendedcheckin" );
@@ -60,6 +62,10 @@ namespace Rock.Migrations
             AddBlockTypeAttribute( "4D48B5F0-F0B2-4C10-8498-DAF690761A80", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Next Page", "NextPage", "", "", 0, "", "81A02B6F-F760-4110-839C-4507CF285A7E" );
             AddBlockTypeAttribute( "4D48B5F0-F0B2-4C10-8498-DAF690761A80", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Workflow Type Id", "WorkflowTypeId", "", "The Id of the workflow type to activate for check-in", 0, "0", "338CAD91-3272-465B-B768-0AC2F07A0B40" );
             AddBlockTypeAttribute( "4D48B5F0-F0B2-4C10-8498-DAF690761A80", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Home Page", "HomePage", "", "", 0, "", "2DF1D39B-DFC7-4FB2-B638-3D99C3C4F4DF" );
+            AddBlockTypeAttribute( "78E2AB4A-FDF7-4864-92F7-F052050BC4BB", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Previous Page", "PreviousPage", "", "", 0, "", "6048A23D-6544-441A-A8B3-5782CAF5B468" );
+            AddBlockTypeAttribute( "78E2AB4A-FDF7-4864-92F7-F052050BC4BB", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Next Page", "NextPage", "", "", 0, "", "39008E18-48C9-445F-B9D7-78334B76A7EE" );
+            AddBlockTypeAttribute( "78E2AB4A-FDF7-4864-92F7-F052050BC4BB", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Workflow Type Id", "WorkflowTypeId", "", "The Id of the workflow type to activate for check-in", 0, "0", "BEC10B87-4B19-4CD5-8952-A4D59DDA3E9C" );
+            AddBlockTypeAttribute( "78E2AB4A-FDF7-4864-92F7-F052050BC4BB", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Home Page", "HomePage", "", "", 0, "", "5046A353-D901-45BB-9981-9CC1B33550C6" );
 
             // Attrib Value for Admin:Previous Page
             AddBlockAttributeValue( "9F8731AB-07DB-406F-A344-45E31D0DE301", "B196160E-4397-4C6F-8C5A-317CAD3C118F", "00000000-0000-0000-0000-000000000000" );
@@ -106,8 +112,20 @@ namespace Rock.Migrations
             // Attrib Value for Family Select:Timeout Value
             AddBlockAttributeValue( "BDD502FF-40D2-42E6-845E-95C49C3505B3", "A7F99980-BED4-4A80-AB83-DDAB5C7D7AAD", "30" );
 
+            // Attrib Value for Activity Select:Previous Page
+            AddBlockAttributeValue( "8C8CBBE9-2502-4FEC-804D-C0DA13C07FA4", "6048A23D-6544-441A-A8B3-5782CAF5B468", "8f618315-f554-4751-ab7f-00cc5658120a" );
+
+            // Attrib Value for Activity Select:Next Page
+            AddBlockAttributeValue( "8C8CBBE9-2502-4FEC-804D-C0DA13C07FA4", "39008E18-48C9-445F-B9D7-78334B76A7EE", "BE996C9B-3DFE-407F-BD53-D6F58D85A035" );
+
+            // Attrib Value for Activity Select:Workflow Type Id
+            AddBlockAttributeValue( "8C8CBBE9-2502-4FEC-804D-C0DA13C07FA4", "BEC10B87-4B19-4CD5-8952-A4D59DDA3E9C", "0" );
+
+            // Attrib Value for Acticity Select:Home Page
+            AddBlockAttributeValue( "8C8CBBE9-2502-4FEC-804D-C0DA13C07FA4", "5046A353-D901-45BB-9981-9CC1B33550C6", "8f618315-f554-4751-ab7f-00cc5658120a" );
+
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
@@ -120,7 +138,7 @@ namespace Rock.Migrations
             DeleteBlockAttributeValue( "82929409-8551-413C-972A-98EDBC23F420", "338CAD91-3272-465B-B768-0AC2F07A0B40" );
             DeleteBlockAttributeValue( "82929409-8551-413C-972A-98EDBC23F420", "81A02B6F-F760-4110-839C-4507CF285A7E" );
             DeleteBlockAttributeValue( "82929409-8551-413C-972A-98EDBC23F420", "DD9F93C9-009B-4FA5-8FF9-B186E4969ACB" );
-            DeleteBlockAttributeValue( "182C9AA0-E76F-4AAF-9F61-5418EE5A0CDB", "EBE397EF-07FF-4B97-BFF3-152D139F9B80" );
+            DeleteBlockAttributeValue( "182C9AA0-E76F-4AAF-9F61-5418EE5A0CDB", "BEC10B87-4B19-4CD5-8952-A4D59DDA3E9C" );
             DeleteBlockAttributeValue( "182C9AA0-E76F-4AAF-9F61-5418EE5A0CDB", "C4E992EA-62AE-4211-BE5A-9EEF5131235C" );
             DeleteBlockAttributeValue( "182C9AA0-E76F-4AAF-9F61-5418EE5A0CDB", "BF8AAB12-57A2-4F50-992C-428C5DDCB89B" );
             DeleteBlockAttributeValue( "182C9AA0-E76F-4AAF-9F61-5418EE5A0CDB", "72E40960-2072-4F08-8EA8-5A766B49A2E0" );
@@ -129,6 +147,10 @@ namespace Rock.Migrations
             DeleteBlockAttributeValue( "9F8731AB-07DB-406F-A344-45E31D0DE301", "18864DE7-F075-437D-BA72-A6054C209FA5" );
             DeleteBlockAttributeValue( "9F8731AB-07DB-406F-A344-45E31D0DE301", "7332D1F1-A1A5-48AE-BAB9-91C3AF085DB0" );
             DeleteBlockAttributeValue( "9F8731AB-07DB-406F-A344-45E31D0DE301", "B196160E-4397-4C6F-8C5A-317CAD3C118F" );
+            DeleteBlockAttributeValue( "8C8CBBE9-2502-4FEC-804D-C0DA13C07FA4", "5046A353-D901-45BB-9981-9CC1B33550C6" );
+            DeleteBlockAttributeValue( "8C8CBBE9-2502-4FEC-804D-C0DA13C07FA4", "BEC10B87-4B19-4CD5-8952-A4D59DDA3E9C" );
+            DeleteBlockAttributeValue( "8C8CBBE9-2502-4FEC-804D-C0DA13C07FA4", "39008E18-48C9-445F-B9D7-78334B76A7EE" );
+            DeleteBlockAttributeValue( "8C8CBBE9-2502-4FEC-804D-C0DA13C07FA4", "6048A23D-6544-441A-A8B3-5782CAF5B468" );
  
             DeleteAttribute( "B196160E-4397-4C6F-8C5A-317CAD3C118F" ); // Previous Page
             DeleteAttribute( "7332D1F1-A1A5-48AE-BAB9-91C3AF085DB0" ); // Next Page
@@ -143,6 +165,10 @@ namespace Rock.Migrations
             DeleteAttribute( "81A02B6F-F760-4110-839C-4507CF285A7E" ); // Next Page
             DeleteAttribute( "338CAD91-3272-465B-B768-0AC2F07A0B40" ); // Workflow Type Id
             DeleteAttribute( "2DF1D39B-DFC7-4FB2-B638-3D99C3C4F4DF" ); // Home Page
+            DeleteAttribute( "6048A23D-6544-441A-A8B3-5782CAF5B468" ); // Previous Page
+            DeleteAttribute( "39008E18-48C9-445F-B9D7-78334B76A7EE" ); // Next Page
+            DeleteAttribute( "BEC10B87-4B19-4CD5-8952-A4D59DDA3E9C" ); // Workflow Type Id
+            DeleteAttribute( "5046A353-D901-45BB-9981-9CC1B33550C6" ); // Home Page
 		    
             DeleteDefinedValue( "071D6DAA-3063-463A-B8A1-7D9A1BE1BB31" ); // DefinedValue search by name
 
@@ -150,9 +176,11 @@ namespace Rock.Migrations
             DeleteBlock( "182C9AA0-E76F-4AAF-9F61-5418EE5A0CDB" ); // Attended Search
             DeleteBlock( "82929409-8551-413C-972A-98EDBC23F420" ); // Attended Family Select
             DeleteBlock( "BDD502FF-40D2-42E6-845E-95C49C3505B3" ); // Idle Redirect
+            DeleteBlock( "8C8CBBE9-2502-4FEC-804D-C0DA13C07FA4" ); // Attended Activity Select
             DeleteBlockType( "2C51230E-BA2E-4646-BB10-817B26C16218" ); // Attended Check In - Admin
             DeleteBlockType( "645D3F2F-0901-44FE-93E9-446DBC8A1680" ); // Attended Check In - Search
             DeleteBlockType( "4D48B5F0-F0B2-4C10-8498-DAF690761A80" ); // Attended Check In - Family Select
+            DeleteBlockType( "78E2AB4A-FDF7-4864-92F7-F052050BC4BB" ); // Attended Check In - Activity Select
             DeletePage( "771E3CF1-63BD-4880-BC43-AC29B4CCE963" ); // Admin
             DeletePage( "8F618315-F554-4751-AB7F-00CC5658120A" ); // Search
             DeletePage( "AF83D0B2-2995-4E46-B0DF-1A4763637A68" ); // Family Select
