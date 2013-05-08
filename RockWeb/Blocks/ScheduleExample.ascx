@@ -8,7 +8,20 @@
             Schedule
         </a>
 
-        <div id="myModal" class="modal hide fade" style="left:25%;" >
+        <style>
+            .modal-control {
+                /* modal is left:50%, but might be getting ignored since most of our modals are in iframe's */
+                left:25%;
+
+                /* override modal's background-color of grey, which always gets overridden in all our other modals by the iframe's body to be white again */
+                background-color:white;
+
+                /* override modal's z-index to be bigger than modal backdrop, but less than datepicker, so that datepicker is on top  */
+                z-index:1041;
+            }
+        </style>
+
+        <div id="myModal" class="modal hide fade modal-control" >
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                 <h3>Schedule Builder</h3>
@@ -18,13 +31,7 @@
                 <!-- modal body -->
                 <div class="form-horizontal">
 
-                    <div class="control-group">
-                        <label class="control-label" for="inputEmail">Start Date / Time</label>
-                        <div class="controls">
-                            <input type="text" class="input-small" id="inputEmail" placeholder="">
-                            <input type="text" class="input-small" id="Text1" placeholder="">
-                        </div>
-                    </div>
+                    <Rock:DateTimePicker runat="server" ID="dpStartDateTime" LabelText="Start Date / Time" />
 
                     <div class="control-group">
                         <label class="control-label" for="inputEmail">Duration</label>
@@ -262,9 +269,8 @@
 
             </div>
             <div class="modal-footer">
+                <a href="#" class="btn" data-dismiss="modal">Cancel</a>
                 <a href="#" class="btn btn-primary">Save Schedule</a>
-                <a href="#" class="btn">Cancel</a>
-
             </div>
         </div>
 
