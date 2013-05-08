@@ -4,17 +4,44 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
       mc:Ignorable="d"
-      d:DesignHeight="520"
-      d:DesignWidth="780"
-      Title="CheckScanner - Login"
-      Loaded="Page_Loaded">
+      d:DesignHeight="500"
+      d:DesignWidth="800"
+      Title="Check Scanner - Login"
+      Loaded="Page_Loaded"
+      Background="#FF373737">
 
     <Grid Margin="0,0,0,0">
         <Grid.Background>
-            <ImageBrush ImageSource="images\header-texture.png"
-                        TileMode="Tile"
-                        Viewport="0,0,420,326"
-                        ViewportUnits="Absolute" />
+            <DrawingBrush TileMode="Tile"
+                          AlignmentX="Left"
+                          AlignmentY="Top"
+                          Viewport="5,5,5,5"
+                          ViewboxUnits="Absolute"
+                          ViewportUnits="Absolute">
+                <DrawingBrush.Viewbox>
+                    <Rect Width="5"
+                          Height="5" />
+                </DrawingBrush.Viewbox>
+                <DrawingBrush.Drawing>
+                    <GeometryDrawing>
+                        <GeometryDrawing.Pen>
+                            <Pen Thickness="1"
+                                 Brush="#FF404040">
+                            </Pen>
+                        </GeometryDrawing.Pen>
+                        <GeometryDrawing.Brush>
+                            <SolidColorBrush Color="Beige" />
+                        </GeometryDrawing.Brush>
+                        <GeometryDrawing.Geometry>
+                            <GeometryGroup FillRule="Nonzero">
+                                <PathGeometry FillRule="Nonzero"
+                                              Figures="M0,5L5,0z M6,4L4,6z M-1,1L1,-1z">
+                                </PathGeometry>
+                            </GeometryGroup>
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                </DrawingBrush.Drawing>
+            </DrawingBrush>
         </Grid.Background>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
@@ -46,7 +73,7 @@
                    Margin="0,0,0,20" />
             <Label Grid.Column="1"
                    Grid.Row="0"
-                   Style="{StaticResource titleTextStyle}">
+                   Style="{StaticResource labelStyleTitle}">
                 Check Scanner
             </Label>
         </Grid>
@@ -77,27 +104,28 @@
                         Grid.Column="0"
                         BorderThickness="0,0,0,1"
                         BorderBrush="#e5e5e5">
-                    <Label Style="{StaticResource legendTextStyle}">
+                    <Label Style="{StaticResource labelStyleLegend}">
                         Login
                     </Label>
                 </Border>
                 <StackPanel Grid.Row="1"
                             Grid.Column="0"
                             VerticalAlignment="Center">
-                    <Label Style="{StaticResource labelTextStyle}">Rock URL</Label>
+                    <Label Name="lblRockUrl"
+                           Style="{StaticResource labelStyle}">Rock URL</Label>
                     <TextBox Name="txtRockUrl"
-                             Style="{StaticResource textboxUrlStyle}" />
-                    <Label Style="{StaticResource labelTextStyle}">Username</Label>
+                             Style="{StaticResource textboxStyleUrl}" />
+                    <Label Style="{StaticResource labelStyle}">Username</Label>
                     <TextBox Name="txtUsername"
                              Style="{StaticResource textboxStyle}"
                              KeyDown="HideLoginWarning" />
-                    <Label Style="{StaticResource labelTextStyle}">Password</Label>
+                    <Label Style="{StaticResource labelStyle}">Password</Label>
                     <PasswordBox Name="txtPassword"
                                  Style="{StaticResource textboxStyle}"
                                  KeyDown="HideLoginWarning" />
                     <Label Name="lblLoginWarning"
-                           Style="{StaticResource labelTextStyleAlert}"
-                           Content="Invalid Login" >
+                           Style="{StaticResource labelStyleAlert}"
+                           Content="Invalid Login">
                     </Label>
                 </StackPanel>
                 <Border Grid.Row="2"

@@ -34,16 +34,18 @@ namespace Rock.Model
         [DataMember]
         public int PersonId { get; set; }
 
+
         /// <summary>
-        /// Gets or sets the account number.
+        /// Gets or sets hash of the Checking Account AccountNumber.  Stored as a SHA1 hash (always 40 chars) so that it can be matched without being known
+        /// Must be Unique (AlternateKey) so that a match of a Check Account to a Person can be made
         /// </summary>
         /// <value>
-        /// The account number.
+        /// AccountNumberSecured.
         /// </value>
         [Required]
-        [MaxLength( 100 )]
-        [DataMember( IsRequired = true )]
-        public string AccountNumber { get; set; }
+        [MaxLength( 40 )]
+        [AlternateKey]
+        public string AccountNumberSecured { get; set; }
 
         #endregion
 
@@ -69,7 +71,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.AccountNumber.ToString();
+            return this.AccountNumberSecured.ToString();
         }
 
         #endregion

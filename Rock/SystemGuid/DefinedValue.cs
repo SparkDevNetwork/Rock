@@ -13,8 +13,17 @@ namespace Rock.SystemGuid
     /// </summary>
     public static class DefinedValue
     {
-        #region CheckIn Search Type
+        #region Communication Channel Type
 
+        /// <summary>
+        /// Email communication
+        /// </summary>
+        public const string COMMUNICATION_CHANNEL_EMAIL = "FC51461D-0C31-4C6B-A7C8-B3E8482C1055";
+
+        #endregion
+
+        #region CheckIn Search Type
+         
         /// <summary>
         /// Phone number search type
         /// 
@@ -53,6 +62,20 @@ namespace Rock.SystemGuid
         /// Digital signage device type
         /// </summary>
         public const string DEVICE_TYPE_DIGITAL_SIGNAGE = "01B585B1-389D-4C86-A9DA-267A8564699D";
+
+        #endregion
+
+        #region Financial Currency Type
+
+        /// <summary>
+        /// Cash
+        /// </summary>
+        public const string CURRENCY_TYPE_CASH =	"F3ADC889-1EE8-4EB6-B3FD-8C10F3C8AF93";
+
+        /// <summary>
+        /// Check
+        /// </summary>
+        public const string CURRENCY_TYPE_CHECK =	"8B086A19-405A-451F-8D44-174E92D6B402";
 
         #endregion
 

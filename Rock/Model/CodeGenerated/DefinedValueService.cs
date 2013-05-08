@@ -80,7 +80,9 @@ namespace Rock.Model
             // ignoring FinancialTransaction,SourceTypeValueId 
             
             // ignoring FinancialTransaction,TransactionTypeValueId 
- 
+			
+			// ignoring FinancialBatch,BatchTypeValueId
+			
             if ( new Service<FinancialTransactionImage>().Queryable().Any( a => a.TransactionImageTypeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialTransactionImage.FriendlyTypeName );

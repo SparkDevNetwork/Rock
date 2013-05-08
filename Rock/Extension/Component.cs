@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Rock.Attribute;
 using Rock.Web.UI;
 
@@ -95,6 +96,23 @@ namespace Rock.Extension
                 return this.AttributeValues[key][0].Value;
             }
             return null;
+        }
+
+        /// <summary>
+        /// Gets the first value of an attribute key - splitting that delimited value into a list of strings.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns>A list of values or an empty list if none exists.</string></returns>
+        public List<string> GetAttributeValues( string key )
+        {
+            if ( this.AttributeValues != null &&
+                this.AttributeValues.ContainsKey( key ) &&
+                this.AttributeValues[key].Count > 0 )
+            {
+                return this.AttributeValues[key][0].Value.SplitDelimitedValues().ToList();
+            }
+
+            return new List<string>();
         }
 
         /// <summary>
