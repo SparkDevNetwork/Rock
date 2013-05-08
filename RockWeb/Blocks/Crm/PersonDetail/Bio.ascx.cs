@@ -73,8 +73,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             lEmail.Text = Person.Email;
 
-            tpPersonTags.EntityTypeId = Person.TypeId;
-            tpPersonTags.EntityId = Person.Id;
+            tlPersonTags.EntityTypeId = Person.TypeId;
+            tlPersonTags.EntityId = Person.Id;
         }
     }
 }

@@ -43,7 +43,7 @@
     <div class="span4">
         <div class="summary">
             <div class="tags">
-                <Rock:TagPicker ID="tpPersonTags" runat="server" />
+                <Rock:TagList ID="tlPersonTags" runat="server" />
             </div>
             <div class="demographics">
                 <asp:Literal ID="lAge" runat="server" />
