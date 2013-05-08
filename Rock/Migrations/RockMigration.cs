@@ -187,7 +187,7 @@ namespace Rock.Migrations
         /// <param name="description">The description.</param>
         /// <param name="layout">The layout.</param>
         /// <param name="guid">The GUID.</param>
-        public void AddPage( string parentPageGuid, string name, string description, string layout, string guid )
+        public void AddPage( string parentPageGuid, string name, string description, string layout, string guid, string iconCssClass = ""  )
         {
             Sql( string.Format( @"
                 
@@ -204,20 +204,22 @@ namespace Rock.Migrations
                     [MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],
                     [BreadCrumbDisplayName],[BreadCrumbDisplayIcon],
                     [Order],[OutputCacheDuration],[Description],[IncludeAdminFooter],
-                    [IconFileId],[Guid])
+                    [IconFileId],[IconCssClass],[Guid])
                 VALUES(
                     '{1}','{1}',1,@ParentPageId,1,'{3}',
-                    0,1,1,1,
-                    0,1,1,0,1,0,
+                    0,1,
+                    1,1,1,1,
+                    0,0,1,0,
                     1,0,
                     @Order,0,'{2}',1,
-                    null,'{4}')
+                    null,'{5}','{4}')
 ",
                     parentPageGuid,
                     name,
                     description.Replace( "'", "''" ),
                     layout,
-                    guid
+                    guid,
+                    iconCssClass
                     ) );
         }
 
@@ -325,9 +327,9 @@ namespace Rock.Migrations
         /// <summary>
         /// Adds the page route.
         /// </summary>
-        /// <param name="parentPageGuid">The parent page GUID.</param>
+        /// <param name="pageGuid">The page GUID.</param>
         /// <param name="route">The route.</param>
-        public void AddPageRoute( string parentPageGuid, string route )
+        public void AddPageRoute( string pageGuid, string route )
         {
             Sql( string.Format( @"
 
@@ -338,7 +340,7 @@ namespace Rock.Migrations
                     [IsSystem],[PageId],[Route],[Guid])
                 VALUES(
                     1, @PageId, '{1}', newid())
-", parentPageGuid, route ) );
+", pageGuid, route ) );
 
         }
         /// <summary>
@@ -685,6 +687,27 @@ namespace Rock.Migrations
         }
 
         /// <summary>
+        /// Updates the type of the entity.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="guid">The GUID.</param>
+        public void UpdateEntityType(string name, string guid)
+        {
+            Sql( string.Format( @"
+                IF EXISTS ( SELECT [Id] FROM [EntityType] WHERE [Name] = '{0}' )
+                BEGIN
+                    UPDATE [EntityType] SET [Guid] = '{1}' WHERE [Name] = '{0}'
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO [EntityType] ([Name], [FriendlyName], [Guid])
+                    VALUES ('{0}', null, '{1}')
+                END
+", 
+                name, guid ) );
+        }
+
+        /// <summary>
         /// Ensures the entity type exists.
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
@@ -708,6 +731,32 @@ namespace Rock.Migrations
             );
         }
 
+        /// <summary>
+        /// Adds the attribute value.
+        /// </summary>
+        /// <param name="attributeGuid">The attribute GUID.</param>
+        /// <param name="entityId">The entity id.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="guid">The GUID.</param>
+        public void AddAttributeValue( string attributeGuid, int entityId, string value, string guid )
+        {
+            Sql( string.Format( @"
+                
+                DECLARE @AttributeId int
+                SET @AttributeId = (SELECT [Id] FROM [Attribute] WHERE [Guid] = '{0}')
+
+                IF NOT EXISTS(Select * FROM [AttributeValue] WHERE [Guid] = '{3}')
+                    INSERT INTO [AttributeValue] (
+                        [IsSystem],[AttributeId],[EntityId],[Order],[Value],[Guid])
+                    VALUES(
+                        1,@AttributeId,{1},0,'{2}','{3}')
+",
+                    attributeGuid,
+                    entityId,
+                    value,
+                    guid )
+            );
+        }
         /// <summary>
         /// Deletes the attribute.
         /// </summary>

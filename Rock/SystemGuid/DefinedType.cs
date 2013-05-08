@@ -13,6 +13,10 @@ namespace Rock.SystemGuid
     /// </summary>
     public class DefinedType
     {
+        /// <summary>
+        /// The types of communication supported (i.e. email, sms, twitter, app-push, etc)
+        /// </summary>
+        public const string COMMUNICATION_CHANNEL = "DC8A841C-E91D-4BD4-A6A7-0DE765308E8F";
 
         /// <summary>
         /// Guid for checkin search type

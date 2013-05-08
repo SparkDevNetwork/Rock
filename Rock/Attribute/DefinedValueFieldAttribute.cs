@@ -38,6 +38,11 @@ namespace Rock.Attribute
             {
                 Name = definedType.Name;
             }
+
+            if ( string.IsNullOrWhiteSpace( Key ) )
+            {
+                Key = Name.Replace( " ", string.Empty );
+            }
         }
     }
 }

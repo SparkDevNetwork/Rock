@@ -80,12 +80,26 @@ namespace RockWeb.Blocks.Administration
                     iSecured = getMethod.Invoke( serviceInstance, new object[] { entityId } ) as ISecured;
                 }
 
-                // Special handling is required when the entity is a block associated with a layout to set 
-                // the site used by it's parent authority property
                 var block = iSecured as Rock.Model.Block;
-                if (block != null && block.BlockLocation == Rock.Model.BlockLocation.Layout)
+                if ( block != null )
                 {
-                    block.SiteCache = CurrentPage.Site;
+                    // If the entity is a block, get the cachedblock's supported action, as the RockPage may have
+                    // added additional actions when the cache was created.
+                    foreach ( var action in BlockCache.Read( block.Id, CurrentPage.SiteId ).SupportedActions )
+                    {
+                        if ( !block.SupportedActions.Contains( action ) )
+                        {
+                            block.SupportedActions.Add( action );
+                        }
+                    }
+
+                    // Special handling is required when the entity is a block associated with a layout to set 
+                    // the site used by it's parent authority property
+                    if ( block.BlockLocation == Rock.Model.BlockLocation.Layout )
+                    {
+                        block.SiteCache = CurrentPage.Site;
+                    }
+
                     iSecured = block;
                 }
 
@@ -116,6 +130,7 @@ namespace RockWeb.Blocks.Administration
                 ", iSecured.ToString() );
 
                     this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "set-html-{0}", this.ClientID ), script, true );
+
                 }
             }
             else

@@ -11,6 +11,7 @@ using System.Web.Routing;
 
 using Rock.Model;
 using Rock.Rest.Filters;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Rest.Controllers
 {
@@ -36,7 +37,7 @@ namespace Rock.Rest.Controllers
         }
 
         [Authenticate]
-        public IQueryable<AccountItem> GetChildren( int id )
+        public IQueryable<TreeViewItem> GetChildren( int id )
         {
             IQueryable<FinancialAccount> qry;
 
@@ -50,62 +51,26 @@ namespace Rock.Rest.Controllers
             }
 
             var accountList = qry.OrderBy( f => f.Order ).ThenBy( f => f.Name ).ToList();
-            var accountItemList = accountList.Select( fund => new AccountItem
+            var accountItemList = accountList.Select( fund => new TreeViewItem
                 {
-                    Id = fund.Id,
+                    Id = fund.Id.ToString(),
                     Name = HttpUtility.HtmlEncode( fund.PublicName )
                 } ).ToList();
 
-            var resultIds = accountItemList.Select( f => f.Id );
+            var resultIds = accountList.Select( f => f.Id );
             var qryHasChildren = from f in Get().Select( f => f.ParentAccountId )
-                                 where resultIds.Contains( f.Value )
+                                 where  resultIds.Contains( f.Value )
                                  select f.Value;
 
             foreach ( var accountItem in accountItemList )
             {
-                accountItem.HasChildren = qryHasChildren.Any( f => f == accountItem.Id );
+                int accountId = int.Parse( accountItem.Id );
+
+                accountItem.HasChildren = qryHasChildren.Any( f => f == accountId );
                 accountItem.IconCssClass = "icon-file-alt";
             }
 
             return accountItemList.AsQueryable();
         }
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public class AccountItem
-    {
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>
-        /// The id.
-        /// </value>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>
-        /// The name.
-        /// </value>
-        public string Name { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance has children.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if this instance has children; otherwise, <c>false</c>.
-        /// </value>
-        public bool HasChildren { get; set; }
-
-        /// <summary>
-        /// Gets or sets the icon CSS class.
-        /// </summary>
-        /// <value>
-        /// The icon CSS class.
-        /// </value>
-        public string IconCssClass { get; set; }
     }
 }

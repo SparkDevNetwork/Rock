@@ -27,7 +27,7 @@ namespace Rock.Model
         /// Time.
         /// </value>
         [DataMember]
-        public DateTime? Time { get; set; }
+        public DateTime? LogDateTime { get; set; }
         
         /// <summary>
         /// Gets or sets the Input.

@@ -17,7 +17,7 @@
             <div class="control-group checkin-body-container">
                 <label class="control-label">Select Person</label>
                 <div class="controls">
-                    <asp:Repeater ID="rSelection" runat="server" OnItemCommand="rSelection_ItemCommand">
+                    <asp:Repeater ID="rSelection" runat="server" OnItemCommand="rSelection_ItemCommand" OnItemDataBound="rSelection_ItemDataBound">
                         <ItemTemplate>
                             <asp:LinkButton ID="lbSelect" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Person.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" />
                         </ItemTemplate>
