@@ -863,7 +863,7 @@ namespace Rock.Web.UI
 
             ModalIFrameDialog modalPopup = new ModalIFrameDialog();
             modalPopup.ID = "modal-popup";
-            modalPopup.OnCancelScript = "Rock.controls.modal.close();";
+            modalPopup.OnCancelScript = "window.parent.Rock.controls.modal.close();";
             this.Form.Controls.Add( modalPopup );
         }
 
@@ -874,7 +874,7 @@ namespace Rock.Web.UI
         private void AddConfigElements()
         {
             // Add the page admin script
-            AddScriptLink( Page, "~/Scripts/Rock/admin/pageAdmin.js" );
+            AddScriptLink( Page, "~/bundles/RockAdmin" );
 
             AddBlockMove();
             // Add Zone Wrappers

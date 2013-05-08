@@ -17,7 +17,7 @@ namespace RockWeb.Themes.RockChMS.Layouts
 
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            string script = @"Rock.controls.modal.close();";
+            string script = @"window.parent.Rock.controls.modal.close();";
             ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
         }
 

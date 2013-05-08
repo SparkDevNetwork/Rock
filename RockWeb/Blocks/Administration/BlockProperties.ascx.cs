@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Administration
                     Rock.Web.Cache.BlockCache.Flush( _block.Id );
                 }
 
-                string script = @"Rock.controls.modal.close();";
+                string script = @"window.parent.Rock.controls.modal.close();";
                 ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
             }
             else
