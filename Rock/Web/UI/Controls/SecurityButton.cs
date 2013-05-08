@@ -73,7 +73,7 @@ namespace Rock.Web.UI.Controls
         public override void RenderControl( HtmlTextWriter writer )
         {
             string url = this.Page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done", EntityTypeId, EntityId, Title ) );
-            this.HRef = "javascript: showModalPopup($(this), '" + url + "')";
+            this.HRef = "javascript: Rock.controls.modal.show($(this), '" + url + "')";
 
             base.RenderControl( writer );
         }

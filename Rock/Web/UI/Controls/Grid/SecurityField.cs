@@ -140,7 +140,7 @@ namespace Rock.Web.UI.Controls
             {
                 string url = page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done",
                     EntityTypeId, dataValue.ToString(), title ) );
-                lnk.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + url + "')");
+                lnk.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + url + "')" );
             }
         }
     }
