@@ -59,24 +59,22 @@
                                 
                             </div>
                             
-                            <div id="divAccountList">
-
+                            <div id="divAccountList">                                
                                 <asp:Repeater ID="rptAccountList" runat="server" >
-                                <ItemTemplate>                                
-
+                                <ItemTemplate>       
                                     <div class="row-fluid">
-	                                    <Rock:LabeledTextBox ID="inputAccountAmount" runat="server" CssClass="input-small calc" LabelText="<%# DataBinder.Eval(Container.DataItem, "Account.PublicName") %>"  
-		                                    Text="<%# DataBinder.Eval(Container.DataItem, "Amount") %>" PrependText="$" >                                            
-	                                    </Rock:LabeledTextBox>                                    
+	                                    <Rock:LabeledTextBox ID="txtAccountNumber" runat="server" CssClass="input-small calc" PrependText="$" 
+                                            LabelText='<%# DataBinder.Eval(Container.DataItem, "Account.PublicName") %>' 
+                                            Text='<%# DataBinder.Eval(Container.DataItem, "Amount") %>'>
+	                                    </Rock:LabeledTextBox>
                                     </div>
-
                                 </ItemTemplate>                                
                                 </asp:Repeater>
                             </div>                     
 
-                            <div ID="divAddAccount" class="row-fluid" runat="server" >
+                            <div ID="divAddAccount" class="row-fluid" runat="server">
                                 <div class="control-group controls">
-                                    <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnAddAccount_SelectionChanged" Title="Add Another Gift" ></Rock:ButtonDropDownList>                                 
+                                    <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnAddAccount_SelectionChanged" Title="Add Another Gift" />
                                 </div>
                             </div>
 
@@ -86,14 +84,13 @@
                                 
                                 <div class="row-fluid">
                                     <div class="control-group">
-                                    <%--<Rock:LabeledText ID="lblTotalAmount" CssClass="control-label"  LabelText="Total Amount" />--%>
+                                        <%-- <Rock:LabeledText ID="lblTotalAmount" CssClass="control-label" LabelText="Total Amount" /> --%>
                                     
                                         <label id="lblTotalAmount" class="control-label" for="spnTotal"><b>Total Amount</b></label>
                                         <div class="controls amount-right">
                                             <b>$ <span id="spnTotal">0.00</span></b>
                                         </div>                     
-                                    </div>                                   
-                                    
+                                    </div>
                                 </div>
 
                                 <div class="row-fluid">
@@ -118,7 +115,6 @@
                                         </div>
 
                                     </div>--%>
-
                                 </div>
 
                             </div>
@@ -127,19 +123,7 @@
                         
                         </div>
 
-                    </fieldset>
-
-                    <asp:ValidationSummary ID="valSummaryDetails" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error"/>
-                        
-                    <div class="row-fluid">
-            
-                        <div id="alertContribution" class="alert alert-error" style="display: none;">
-
-                            Please enter a contribution amount in at least one account.
-
-                        </div>
-
-                    </div>
+                    </fieldset>                                     
                                         
                 </div>
             
@@ -162,13 +146,11 @@
                         <div class="row-fluid">
                             
                             <div class="span6">
-                                <label for="txtFirstName">First Name</label>
-                                <input id="txtFirstName" type="text" class="span12" runat="server" required />
+                                <Rock:LabeledTextBox ID="txtFirstName" LabelText="First Name" runat="server" Required="true"></Rock:LabeledTextBox>                                
                             </div>             
 
                             <div class="span6">
-                                <label for="txtLastName">Last Name</label>
-                                <input id="txtLastName" type="text" class="span12" runat="server" required />
+                                <Rock:LabeledTextBox ID="txtLastName" LabelText="Last Name" runat="server" Required="true"></Rock:LabeledTextBox>                                                                
                             </div>        
                             
                         </div>
@@ -176,8 +158,7 @@
                         <div class="row-fluid">
                                 
                             <div class="span12">
-                                <label for="txtAddress">Address</label>
-                                <input id="txtAddress" type="text" class="span12" runat="server" required /> 
+                                <Rock:LabeledTextBox ID="txtAddress" LabelText="Address" runat="server" Required="true"></Rock:LabeledTextBox>                                                                
                             </div>
                                 
                         </div>
@@ -185,12 +166,12 @@
                         <div class="row-fluid">
 
                             <div class="span5">
-                                <label for="txtCity" >City</label>
-                                <input id="txtCity" type="text" class="span12" runat="server" required />                        
+                                <Rock:LabeledTextBox ID="txtCity" LabelText="City" runat="server" Required="true"></Rock:LabeledTextBox>                                
 
                             </div>
   
                             <div class="span4">
+                                <Rock:
                                 <label for="ddlState">State</label>
                                 <select class="state-select" id="ddlState" name="ddlState"  title="Select State" runat="server">
 	                                <option value="AL">Alabama</option>
