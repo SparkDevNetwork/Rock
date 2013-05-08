@@ -143,6 +143,14 @@
     <Compile Include="Migrations\201305032320163_Communications.Designer.cs">
       <DependentUpon>201305032320163_Communications.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201305071858522_ExceptionLog_FKUpdates.cs" />
+    <Compile Include="Migrations\201305071858522_ExceptionLog_FKUpdates.Designer.cs">
+      <DependentUpon>201305071858522_ExceptionLog_FKUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201305071959060_ExceptionList_PageCreate.cs" />
+    <Compile Include="Migrations\201305071959060_ExceptionList_PageCreate.Designer.cs">
+      <DependentUpon>201305071959060_ExceptionList_PageCreate.cs</DependentUpon>
+    </Compile>
     <Compile Include="SystemGuid\EntityType.cs" />
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
     <Compile Include="Web\UI\Controls\Communication\ChannelControl.cs" />
@@ -1537,6 +1545,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201305032320163_Communications.resx">
       <DependentUpon>201305032320163_Communications.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305071858522_ExceptionLog_FKUpdates.resx">
+      <DependentUpon>201305071858522_ExceptionLog_FKUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305071959060_ExceptionList_PageCreate.resx">
+      <DependentUpon>201305071959060_ExceptionList_PageCreate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
