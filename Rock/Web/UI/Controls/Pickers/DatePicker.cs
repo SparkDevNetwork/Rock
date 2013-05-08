@@ -11,7 +11,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class DateTimePicker : DataTextBox
+    public class DatePicker : DataTextBox
     {
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -21,7 +21,7 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
 
-            string kendoFunction = "kendoDateTimePicker"; 
+            string kendoFunction = "kendoDatePicker";
 
             string script = string.Format( 
                 @"$(document).ready(function() {{
@@ -30,7 +30,7 @@ namespace Rock.Web.UI.Controls
                 this.ClientID,
                 kendoFunction);
 
-            ScriptManager.RegisterClientScriptBlock( this.Page, typeof( Page ), "KendoDateTimePickerScript_" + this.ID, script, true );
+            ScriptManager.RegisterClientScriptBlock( this.Page, typeof( Page ), "KendoDatePickerScript_" + this.ID, script, true );
         }
 
         /// <summary>
@@ -39,7 +39,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The selected date.
         /// </value>
-        public DateTime? SelectedDateTime
+        public DateTime? SelectedDate
         {
             get
             {
@@ -48,7 +48,7 @@ namespace Rock.Web.UI.Controls
                     DateTime result;
                     if ( DateTime.TryParse( this.Text, out result ) )
                     {
-                        return result;
+                        return result.Date;
                     }
                     else
                     {
@@ -63,7 +63,7 @@ namespace Rock.Web.UI.Controls
             {
                 if ( value != null )
                 {
-                    this.Text = value.Value.ToString("g");
+                    this.Text = value.Value.ToShortDateString();
                 }
                 else
                 {
