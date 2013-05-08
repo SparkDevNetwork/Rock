@@ -7,10 +7,11 @@
                   Icon="./resources/favicon.ico"
                   MinHeight="350"
                   MinWidth="550"
-                  Height="700"
-                  Width="1100"
+                  Height="600"
+                  Width="960"
                   FontFamily="./resources/#Open Sans"
                   ShowsNavigationUI="False"
                   FontSize="14"
+                  WindowStartupLocation="CenterScreen"
                   Closing="mainWindow_Closing">
 </NavigationWindow>

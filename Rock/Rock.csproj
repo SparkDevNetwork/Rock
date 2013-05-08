@@ -117,6 +117,7 @@
     <Compile Include="Attribute\BooleanFieldAttribute.cs" />
     <Compile Include="Attribute\CampusFieldAttribute.cs" />
     <Compile Include="Attribute\BinaryFileTypeFieldAttribute.cs" />
+    <Compile Include="Attribute\ComponentFieldAttribute.cs" />
     <Compile Include="Attribute\DecimalFieldAttribute.cs" />
     <Compile Include="Attribute\DateFieldAttribute.cs" />
     <Compile Include="Attribute\AccountFieldAttribute.cs" />
@@ -137,6 +138,14 @@
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
+    <Compile Include="Data\MergeFieldAttribute.cs" />
+    <Compile Include="Migrations\201305032320163_Communications.cs" />
+    <Compile Include="Migrations\201305032320163_Communications.Designer.cs">
+      <DependentUpon>201305032320163_Communications.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SystemGuid\EntityType.cs" />
+    <Compile Include="Transactions\SendCommunicationTransaction.cs" />
+    <Compile Include="Web\UI\Controls\Communication\ChannelControl.cs" />
     <Compile Include="Data\IgnoreModelErrorsAttribute.cs" />
     <Compile Include="Migrations\201304190037528_BinaryFileTypeContributionImage.cs" />
     <Compile Include="Migrations\201304190037528_BinaryFileTypeContributionImage.Designer.cs">
@@ -150,6 +159,7 @@
     <Compile Include="Migrations\201304222141330_AccountNumberSecuredGroupTypeDisplayOrder.Designer.cs">
       <DependentUpon>201304222141330_AccountNumberSecuredGroupTypeDisplayOrder.cs</DependentUpon>
     </Compile>
+    <Compile Include="Model\CommunicationRecipientService.Partial.cs" />
     <Compile Include="Migrations\201304230018433_TransactionsPageUpdate.cs" />
     <Compile Include="Migrations\201304230018433_TransactionsPageUpdate.Designer.cs">
       <DependentUpon>201304230018433_TransactionsPageUpdate.cs</DependentUpon>
@@ -165,6 +175,14 @@
     <Compile Include="Migrations\201304262200031_FinancialBatchPerson.cs" />
     <Compile Include="Migrations\201304262200031_FinancialBatchPerson.Designer.cs">
       <DependentUpon>201304262200031_FinancialBatchPerson.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201304291727480_StateDropDownList.cs" />
+    <Compile Include="Migrations\201304291727480_StateDropDownList.Designer.cs">
+      <DependentUpon>201304291727480_StateDropDownList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201305032019044_DateTimeDataTypesSweep.cs" />
+    <Compile Include="Migrations\201305032019044_DateTimeDataTypesSweep.Designer.cs">
+      <DependentUpon>201305032019044_DateTimeDataTypesSweep.cs</DependentUpon>
     </Compile>
     <Compile Include="Net\RockRestClient.cs">
       <SubType>Component</SubType>
@@ -192,6 +210,14 @@
     <Compile Include="CheckIn\KioskSchedule.cs" />
     <Compile Include="CheckIn\KioskStatus.cs" />
     <Compile Include="CheckIn\KioskCache.cs" />
+    <Compile Include="Communication\ChannelComponent.cs" />
+    <Compile Include="Communication\Channel\Sms.cs" />
+    <Compile Include="Communication\Channel\Email.cs" />
+    <Compile Include="Communication\ChannelContainer.cs" />
+    <Compile Include="Communication\TransportComponent.cs" />
+    <Compile Include="Communication\TransportContainer.cs" />
+    <Compile Include="Communication\Transport\SMTP.cs" />
+    <Compile Include="Field\Types\ComponentFieldType.cs" />
     <Compile Include="Migrations\201304162319340_AddNewFields.cs" />
     <Compile Include="Migrations\201304162319340_AddNewFields.Designer.cs">
       <DependentUpon>201304162319340_AddNewFields.cs</DependentUpon>
@@ -699,6 +725,13 @@
     <Compile Include="Web\UI\Adapters\DropDownListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
     <Compile Include="Web\UI\Controls\LabeledButtonDropDownList.cs" />
+    <Compile Include="Web\UI\Controls\Communication\Sms.cs" />
+    <Compile Include="Web\UI\Controls\Communication\Email.cs" />
+    <Compile Include="Web\UI\Controls\HtmlEditor.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\ComponentPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\MergeFieldPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\PersonPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\TreeViewItem.cs" />
     <Compile Include="Web\UI\Controls\RockDropDownList.cs" />
     <Compile Include="Web\UI\Controls\NumberBox.cs" />
     <Compile Include="Web\UI\Controls\PageBreadCrumbs.cs" />
@@ -724,14 +757,13 @@
     <Compile Include="Web\UI\Controls\ButtonDropDownList.cs" />
     <Compile Include="Web\UI\Controls\AttributeEditor.cs" />
     <Compile Include="Web\UI\Controls\SecurityButton.cs" />
+    <Compile Include="Web\UI\Controls\StateDropDownList.cs" />
     <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowActionTypeEditor.cs" />
     <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowActivityTypeEditor.cs" />
     <Compile Include="Web\UI\Controls\Grid\BadgeField.cs" />
     <Compile Include="Web\UI\Controls\Grid\INotRowSelectedField.cs" />
-    <Compile Include="Web\UI\Controls\LabeledToggle.cs" />
     <Compile Include="Web\UI\Controls\Toggle.cs" />
     <Compile Include="Web\UI\Controls\HelpBlock.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\PersonPicker.cs" />
     <Compile Include="Reporting\DataFilterComponent.cs" />
     <Compile Include="Reporting\DataFilterContainer.cs" />
     <Compile Include="Reporting\DataFilter\Person\GroupTypeAttendanceFilter.cs" />
@@ -1499,6 +1531,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201304262200031_FinancialBatchPerson.resx">
       <DependentUpon>201304262200031_FinancialBatchPerson.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201304291727480_StateDropDownList.resx">
+      <DependentUpon>201304291727480_StateDropDownList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305032019044_DateTimeDataTypesSweep.resx">
+      <DependentUpon>201305032019044_DateTimeDataTypesSweep.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305032320163_Communications.resx">
+      <DependentUpon>201305032320163_Communications.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

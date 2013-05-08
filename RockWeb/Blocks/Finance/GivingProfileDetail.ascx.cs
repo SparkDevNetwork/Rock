@@ -204,8 +204,9 @@ namespace RockWeb.Blocks.Finance
             }
 
             person.Email = txtEmail.Value;
-            person.GivenName = txtFirstName.Value;
-            person.LastName = txtLastName.Value;
+            person.GivenName = txtFirstName.Text;
+            person.LastName = txtLastName.Text;
+            // TODO get address
 
             personService.Save(person, CurrentPersonId);
             cfrmName.Text = person.FullName;
@@ -389,11 +390,11 @@ namespace RockWeb.Blocks.Finance
             
             if ( personLocation != null )
             {
-                txtFirstName.Value = CurrentPerson.FirstName.ToString();
-                txtLastName.Value = CurrentPerson.LastName.ToString();
-                txtAddress.Value = personLocation.Street1.ToString();
-                txtCity.Value = personLocation.City.ToString();
-                ddlState.Value = personLocation.State.ToString();
+                txtFirstName.Text = CurrentPerson.FirstName.ToString();
+                txtLastName.Text = CurrentPerson.LastName.ToString();
+                txtAddress.Text = personLocation.Street1.ToString();
+                txtCity.Text = personLocation.City.ToString();
+                ddlState.Text = personLocation.State.ToString();
                 txtZipcode.Value = personLocation.Zip.ToString();
                 txtEmail.Value = CurrentPerson.Email.ToString();
             }
