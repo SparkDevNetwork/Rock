@@ -781,6 +781,7 @@
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
     <Compile Include="Workflow\Action\CheckIn\CreateLabels.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterByGrade.cs" />
     <Compile Include="Workflow\Action\CheckIn\RemoveEmptyPeople.cs" />
     <Compile Include="Workflow\Action\CheckIn\RemoveEmptyGroupTypes.cs" />
     <Compile Include="Workflow\Action\CheckIn\RemoveEmptyLocations.cs" />
