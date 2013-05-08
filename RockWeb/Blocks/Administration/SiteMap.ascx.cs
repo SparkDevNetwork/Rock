@@ -85,7 +85,7 @@ public partial class SiteMap : RockBlock
     {
         var blockPropertyUrl = ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", block.Id ) );
 
-        return string.Format( "<i class=\"icon-th-large\"></i> <a href=\"javascript: showModalPopup($(this), '{0}')\" title=\"Block Properties\"><i class=\"icon-cog\"></i></a>",
+        return string.Format( "<i class=\"icon-th-large\"></i> <a href=\"javascript: Rock.controls.modal.show($(this), '{0}')\" title=\"Block Properties\"><i class=\"icon-cog\"></i></a>",
             blockPropertyUrl );
     }
 }

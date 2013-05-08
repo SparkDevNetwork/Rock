@@ -17,12 +17,7 @@ namespace RockWeb.Themes.RockChMS.Layouts
 
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            string script = @"
-if ( window.parent.closeModal != null)
-{
-    window.parent.closeModal();
-}
-";
+            string script = @"Rock.controls.modal.close();";
             ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
         }
 
@@ -34,8 +29,8 @@ if ( window.parent.closeModal != null)
         {
             base.OnInit( e );
 
-            string validationScript = string.Format( "<script src=\"{0}\"></script>", ResolveUrl( "~/Scripts/Rock/validation.js" ) );
-            System.Web.UI.ScriptManager.RegisterStartupScript( Page, Page.GetType(), "validationScript", validationScript, false );
+            //string validationScript = string.Format( "<script src=\"{0}\"></script>", ResolveUrl( "~/Scripts/Rock/validation.js" ) );
+            //System.Web.UI.ScriptManager.RegisterStartupScript( Page, Page.GetType(), "validationScript", validationScript, false );
 
             lTitle.Text = Request.QueryString["t"] ?? "Title";
 

@@ -333,7 +333,7 @@ namespace RockWeb.Blocks.Administration
                     Rock.Web.Cache.PageCache.Flush( _page.Id );
                 }
 
-                string script = "if ( typeof window.parent.closeModal === 'function' ) window.parent.closeModal();";
+                string script = "if (typeof window.parent.Rock.controls.modal.close === 'function') window.parent.Rock.controls.modal.close();";
                 ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
             }
         }
