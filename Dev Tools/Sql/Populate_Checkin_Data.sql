@@ -64,13 +64,14 @@ INSERT INTO [Group] ( [IsSystem],[ParentGroupId],[GroupTypeId],[Name],[IsSecurit
 
 -- Create Schedules
 DELETE [Schedule]
-INSERT INTO [Schedule] ([Name],[Frequency],[FrequencyQualifier],[StartTime],[EndTime],[CheckInStartTime],[CheckInEndTime],[Guid],[IsShared])	VALUES ('4:30', 1, 'Saturday', '1/1/1900 4:30pm', '1/1/1900 5:30pm', '1/1/1900 4:00pm', '1/1/1900 5:00pm', NEWID(),1)
-INSERT INTO [Schedule] ([Name],[Frequency],[FrequencyQualifier],[StartTime],[EndTime],[CheckInStartTime],[CheckInEndTime],[Guid],[IsShared])	VALUES ('6:00', 1, 'Saturday', '1/1/1900 6:00pm', '1/1/1900 7:00pm', '1/1/1900 5:30pm', '1/1/1900 6:30pm', NEWID(),1)
-INSERT INTO [Schedule] ([Name],[Frequency],[FrequencyQualifier],[StartTime],[EndTime],[CheckInStartTime],[CheckInEndTime],[Guid],[IsShared])	VALUES ('9:00', 1, 'Sunday', '1/1/1900 9:00am', '1/1/1900 10:00am', '1/1/1900 8:30am', '1/1/1900 9:30am', NEWID(),1)
-INSERT INTO [Schedule] ([Name],[Frequency],[FrequencyQualifier],[StartTime],[EndTime],[CheckInStartTime],[CheckInEndTime],[Guid],[IsShared])	VALUES ('10:30', 1, 'Sunday', '1/1/1900 10:30am', '1/1/1900 11:30am', '1/1/1900 10:00am', '1/1/1900 11:00am', NEWID(),1)
-INSERT INTO [Schedule] ([Name],[Frequency],[FrequencyQualifier],[StartTime],[EndTime],[CheckInStartTime],[CheckInEndTime],[Guid],[IsShared])	VALUES ('12:00', 1, 'Sunday', '1/1/1900 12:00pm', '1/1/1900 1:00pm', '1/1/1900 11:30am', '1/1/1900 12:30pm', NEWID(),1)
-INSERT INTO [Schedule] ([Name],[Frequency],[FrequencyQualifier],[StartTime],[EndTime],[CheckInStartTime],[CheckInEndTime],[Guid],[IsShared])	VALUES ('4:30 (test)', 0, '', '1/1/1900 12:01am', '1/1/1900 11:59pm', '1/1/1900 12:01am', '1/1/1900 11:59pm', NEWID(),1)
-INSERT INTO [Schedule] ([Name],[Frequency],[FrequencyQualifier],[StartTime],[EndTime],[CheckInStartTime],[CheckInEndTime],[Guid],[IsShared])	VALUES ('6:00 (test)', 0, '', '1/1/1900 12:01am', '1/1/1900 11:59pm', '1/1/1900 12:01am', '1/1/1900 11:59pm', NEWID(),1)
+INSERT INTO [Schedule] ([Name],[iCalendarContent],[StartTime],[EndTime],[CheckInStartTime],[CheckInEndTime],[Guid],[IsShared]) VALUES 
+    ('4:30',        'VCALENDAR:BEGIN\n' '1/1/1900 4:30pm', '1/1/1900 5:30pm', '1/1/1900 4:00pm', '1/1/1900 5:00pm', NEWID(),1),
+    ('6:00',        1, 'Saturday', '1/1/1900 6:00pm', '1/1/1900 7:00pm', '1/1/1900 5:30pm', '1/1/1900 6:30pm', NEWID(),1),
+    ('9:00',        1, 'Sunday', '1/1/1900 9:00am', '1/1/1900 10:00am', '1/1/1900 8:30am', '1/1/1900 9:30am', NEWID(),1),
+    ('10:30',       1, 'Sunday', '1/1/1900 10:30am', '1/1/1900 11:30am', '1/1/1900 10:00am', '1/1/1900 11:00am', NEWID(),1),
+    ('12:00',       1, 'Sunday', '1/1/1900 12:00pm', '1/1/1900 1:00pm', '1/1/1900 11:30am', '1/1/1900 12:30pm', NEWID(),1),
+    ('4:30 (test)', 0, '', '1/1/1900 12:01am', '1/1/1900 11:59pm', '1/1/1900 12:01am', '1/1/1900 11:59pm', NEWID(),1),
+    ('6:00 (test)', 0, '', '1/1/1900 12:01am', '1/1/1900 11:59pm', '1/1/1900 12:01am', '1/1/1900 11:59pm', NEWID(),1),
 
 -- Create Locations
 DELETE [Location]

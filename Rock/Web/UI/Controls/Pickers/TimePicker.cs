@@ -5,13 +5,14 @@
 //
 using System;
 using System.Web.UI;
+using Rock;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
     /// 
     /// </summary>
-    public class DateTimePicker : DataTextBox
+    public class TimePicker : DataTextBox
     {
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -21,25 +22,25 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
 
-            string kendoFunction = "kendoDateTimePicker"; 
+            string kendoFunction = "kendoTimePicker";
 
-            string script = string.Format( 
+            string script = string.Format(
                 @"$(document).ready(function() {{
                     $('#{0}').{1}();
                 }});",
                 this.ClientID,
-                kendoFunction);
+                kendoFunction );
 
-            ScriptManager.RegisterClientScriptBlock( this.Page, typeof( Page ), "KendoDateTimePickerScript_" + this.ID, script, true );
+            ScriptManager.RegisterClientScriptBlock( this.Page, typeof( Page ), "KendoTimePickerScript_" + this.ID, script, true );
         }
 
         /// <summary>
-        /// Gets the selected date.
+        /// Gets or sets the selected time.
         /// </summary>
         /// <value>
-        /// The selected date.
+        /// The selected time.
         /// </value>
-        public DateTime? SelectedDateTime
+        public TimeSpan? SelectedTime
         {
             get
             {
@@ -48,7 +49,7 @@ namespace Rock.Web.UI.Controls
                     DateTime result;
                     if ( DateTime.TryParse( this.Text, out result ) )
                     {
-                        return result;
+                        return result.TimeOfDay;
                     }
                     else
                     {
@@ -63,7 +64,7 @@ namespace Rock.Web.UI.Controls
             {
                 if ( value != null )
                 {
-                    this.Text = value.Value.ToString("g");
+                    this.Text = value.Value.ToTimeString();
                 }
                 else
                 {
