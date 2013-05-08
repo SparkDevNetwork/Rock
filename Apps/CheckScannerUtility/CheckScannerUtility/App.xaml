@@ -23,6 +23,24 @@
                     Value="#515151"></Setter>
         </Style>
 
+        <!-- Label style: Bold -->
+        <Style x:Key="labelStyleBold"
+               BasedOn="{StaticResource labelStyle}"
+               TargetType="{x:Type Label}">
+            <Setter Property="Label.FontWeight"
+                    Value="Bold"></Setter>
+        </Style>
+
+        <!-- Label style: Caption -->
+        <Style x:Key="labelStyleCaption"
+               BasedOn="{StaticResource labelStyle}"
+               TargetType="{x:Type Label}">
+            <Setter Property="Label.FontWeight"
+                    Value="Bold"></Setter>
+            <Setter Property="Label.FontSize"
+                    Value="16"></Setter>
+        </Style>
+
         <!-- Label style: Title -->
         <Style x:Key="labelStyleTitle"
                TargetType="{x:Type Label}">
@@ -60,10 +78,68 @@
         <!-- Label style: Alert-->
         <Style x:Key="labelStyleAlert"
                TargetType="{x:Type Label}">
-            <Setter Property="Label.Background"
-                    Value="#FCF8E3"></Setter>
             <Setter Property="Label.Foreground"
                     Value="#c09853"></Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Label}">
+                        <Border CornerRadius="4,4,4,4"
+                                BorderThickness="1"
+                                BorderBrush="#fbeed5"
+                                Padding="14,8,35,8"
+                                Background="#FCF8E3"
+                                Margin="10">
+                            <TextBlock Text="{TemplateBinding Content}"
+                                       TextWrapping="Wrap" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Label style: Information-->
+        <Style x:Key="labelStyleAlertInfo"
+               TargetType="{x:Type Label}">
+            <Setter Property="Label.Foreground"
+                    Value="#3a87ad"></Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Label}">
+                        <Border CornerRadius="4,4,4,4"
+                                BorderThickness="1"
+                                BorderBrush="#bce8f1"
+                                Padding="14,8,35,8"
+                                Background="#D9EDF7"
+                                Margin="10">
+                            <TextBlock Text="{TemplateBinding Content}"
+                                       TextWrapping="Wrap" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Label style: Error-->
+        <Style x:Key="labelStyleAlertError"
+               TargetType="{x:Type Label}">
+            <Setter Property="Label.Foreground"
+                    Value="#b94a48"></Setter>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Label}">
+                        <Border CornerRadius="4,4,4,4"
+                                BorderThickness="1"
+                                BorderBrush="#eed3d7"
+                                Padding="14,8,35,8"
+                                Background="#F2DEDE"
+                                Margin="5">
+                            <TextBlock Text="{TemplateBinding Content}"
+                                       TextWrapping="Wrap"
+                                       TextTrimming="CharacterEllipsis"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <!-- Label style: Grid Title-->
@@ -120,6 +196,30 @@
                     Value="Normal"></Setter>
             <Setter Property="Label.Foreground"
                     Value="#515151"></Setter>
+        </Style>
+
+        <!-- Textblock Style: Grid Data  -->
+        <Style x:Key="textBlockStyleGridDataTitle"
+               TargetType="{x:Type TextBlock}">
+            <Setter Property="Padding"
+                    Value="6,0,0,0" />
+            <Setter Property="HorizontalAlignment"
+                    Value="Left"></Setter>
+            <Setter Property="FontWeight"
+                    Value="SemiBold"></Setter>
+            <Setter Property="FontSize"
+                    Value="15"></Setter>
+        </Style>
+        <Style x:Key="textBlockStyleGridData"
+               TargetType="{x:Type TextBlock}">
+            <Setter Property="Padding"
+                    Value="6,0,0,0" />
+            <Setter Property="HorizontalAlignment"
+                    Value="Left"></Setter>
+            <Setter Property="FontWeight"
+                    Value="Normal"></Setter>
+            <Setter Property="FontSize"
+                    Value="14"></Setter>
         </Style>
 
         <!--
@@ -214,23 +314,6 @@
                BasedOn="{StaticResource gridCellStyle}">
             <Setter Property="HorizontalAlignment"
                     Value="Right" />
-        </Style>
-
-        <!--
-            TextBlock
-        -->
-
-        <!-- TextBlock text style -->
-        <Style x:Key="textblockStyle"
-               TargetType="{x:Type TextBlock}">
-            <Setter Property="Padding"
-                    Value="8,4,8,4" />
-            <Setter Property="Label.HorizontalAlignment"
-                    Value="Left"></Setter>
-            <Setter Property="Label.FontWeight"
-                    Value="Normal"></Setter>
-            <Setter Property="Label.FontSize"
-                    Value="14"></Setter>
         </Style>
 
         <!-- 
@@ -366,7 +449,7 @@
             <Setter Property="BorderThickness"
                     Value="1" />
             <Setter Property="Margin"
-                    Value="0,0,0,20" />
+                    Value="0,0,0,10" />
         </Style>
 
         <!-- 

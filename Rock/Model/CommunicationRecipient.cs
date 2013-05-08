@@ -45,6 +45,18 @@ namespace Rock.Model
         public int CommunicationId { get; set; }
 
         /// <summary>
+        /// Gets or sets the status.
+        /// </summary>
+        /// <value>
+        /// The status.
+        /// </value>
+        [DataMember]
+        public CommunicationRecipientStatus Status { get; set; }
+
+        [DataMember]
+        public string StatusNote { get; set; }
+
+        /// <summary>
         /// Gets or sets the additional merge values json.
         /// </summary>
         /// <value>
@@ -154,5 +166,30 @@ namespace Rock.Model
 
     #endregion
 
+    /// <summary>
+    /// The status of communication being sent to recipient
+    /// </summary>
+    public enum CommunicationRecipientStatus
+    {
+        /// <summary>
+        /// Communication has not yet been sent to recipient
+        /// </summary>
+        Pending = 0,
+
+        /// <summary>
+        /// Communication was successfully sent to recipient
+        /// </summary>
+        Success = 1,
+
+        /// <summary>
+        /// Communication failed to be sent to recipient
+        /// </summary>
+        Failed = 2,
+
+        /// <summary>
+        /// Communication was cancelled prior to sending to the recipient
+        /// </summary>
+        Cancelled = 3
+    }
 }
 

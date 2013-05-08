@@ -54,6 +54,7 @@ namespace Rock.Model
         [Required]
         [MaxLength( 255 )]
         [DataMember( IsRequired = true )]
+        [MergeField]
         public string UserName { get; set; }
         
         /// <summary>
@@ -82,6 +83,7 @@ namespace Rock.Model
         /// </value>
         [NotAudited]
         [DataMember]
+        [MergeField]
         public DateTime? LastActivityDateTime { get; set; }
 
         /// <summary>
@@ -91,6 +93,7 @@ namespace Rock.Model
         /// The last login date time.
         /// </value>
         [DataMember]
+        [MergeField]
         public DateTime? LastLoginDateTime { get; set; }
 
         /// <summary>
@@ -100,6 +103,7 @@ namespace Rock.Model
         /// The last password changed date time.
         /// </value>
         [DataMember]
+        [MergeField]
         public DateTime? LastPasswordChangedDateTime { get; set; }
 
         /// <summary>
@@ -202,6 +206,7 @@ namespace Rock.Model
         /// The person.
         /// </value>
         [DataMember]
+        [MergeField]
         public virtual Model.Person Person { get; set; }
         
         /// <summary>
@@ -217,6 +222,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets the encrypted confirmation code.
         /// </summary>
+        [MergeField]
         public virtual string ConfirmationCode
         {
             get
@@ -230,6 +236,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets a urlencoded and encrypted confirmation code.
         /// </summary>
+        [MergeField]
         public virtual string ConfirmationCodeEncoded
         {
 

@@ -7,40 +7,23 @@
       d:DesignHeight="600"
       d:DesignWidth="800"
       Title="BatchItemDetailPage"
-      Loaded="Page_Loaded">
-
-    <Grid>
-        <Grid.Background>
-            <ImageBrush ImageSource="images\header-texture.png"
-                        TileMode="Tile"
-                        Viewport="0,0,420,326"
-                        ViewportUnits="Absolute" />
-        </Grid.Background>
+      Loaded="Page_Loaded"
+      Background="#efefef">
+    <Grid Margin="8">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="30" />
             <ColumnDefinition />
-            <ColumnDefinition Width="30" />
         </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="30" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="30" />
         </Grid.RowDefinitions>
-        <Canvas Name="pnlMid"
-                Background="#efefef"
-                Grid.Column="1"
-                Grid.ColumnSpan="1"
-                Margin="0"
-                Grid.Row="1"
-                Grid.RowSpan="4" />
-        <Label Grid.Row="1"
+        <Label Grid.Row="0"
                Grid.Column="1"
                VerticalAlignment="Bottom"
-               Style="{StaticResource labelStyle}">Front</Label>
-        <Image Grid.Row="2"
+               Style="{StaticResource labelStyleCaption}">Front</Label>
+        <Image Grid.Row="1"
                Grid.Column="1"
                Name="imgFront"
                Height="200"
@@ -48,21 +31,23 @@
                Stretch="Fill"
                HorizontalAlignment="Left"
                Margin="6,0,0,0"
-               VerticalAlignment="Top" />
-        <Label Grid.Row="3"
+               VerticalAlignment="Top"
+               Source="images/check-image.png" />
+        <Label Grid.Row="2"
                Grid.Column="1"
                VerticalAlignment="Bottom"
-               Style="{StaticResource labelStyle}">Back</Label>
+               Style="{StaticResource labelStyleCaption}">Back</Label>
         <Image Grid.Column="1"
-               Grid.Row="4"
+               Grid.Row="3"
                Name="imgBack"
                Height="200"
                Width="600"
                Stretch="Fill"
                HorizontalAlignment="Left"
                Margin="6,0,0,0"
-               VerticalAlignment="Top" />
-        <Button Grid.Row="4"
+               VerticalAlignment="Top"
+               Source="images/check-image.png" />
+        <Button Grid.Row="5"
                 Grid.Column="1"
                 Margin="4"
                 Name="btnClose"

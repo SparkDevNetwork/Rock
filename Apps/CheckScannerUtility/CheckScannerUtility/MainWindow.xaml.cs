@@ -3,8 +3,8 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
-using System.Windows;
 using System.Linq;
+using System.Windows;
 using System.Windows.Navigation;
 
 namespace Rock.Apps.CheckScannerUtility

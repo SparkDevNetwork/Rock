@@ -144,8 +144,8 @@ namespace RockWeb
         /// <param name="r">The r.</param>
         public void CacheItemRemoved( string k, object v, CacheItemRemovedReason r )
         {
-            try
-            {
+            //try
+            //{
                 if ( r == CacheItemRemovedReason.Expired )
                 {
                     // call a page on the site to keep IIS alive 
@@ -159,11 +159,11 @@ namespace RockWeb
                     // process the transaction queue
                     DrainTransactionQueue();
                 }
-            }
-            catch ( Exception ex )
-            {
-                WriteToEventLog( string.Format( "Exception in Global.CacheItemRemoved(): {0}", ex.Message ), EventLogEntryType.Error );
-            }
+            //}
+            //catch ( Exception ex )
+            //{
+            //    WriteToEventLog( string.Format( "Exception in Global.CacheItemRemoved(): {0}", ex.Message ), EventLogEntryType.Error );
+            //}
         }
 
         /// <summary>

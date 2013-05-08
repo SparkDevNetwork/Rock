@@ -476,8 +476,6 @@ namespace Rock.Web.UI
                         }
                     }
 
-
-
                     // Initialize the list of breadcrumbs for the current page (and blocks on the page)
                     CurrentPageReference.BreadCrumbs = new List<BreadCrumb>();
 
@@ -567,7 +565,18 @@ namespace Rock.Web.UI
                                         blockControl.GetBreadCrumbs( CurrentPageReference ).ForEach( c => CurrentPageReference.BreadCrumbs.Add( c ) );
                                     }
 
-                                    blockControl.ReadAdditionalActions();
+                                    // If the blocktype's additional actions have not yet been loaded, load them now
+                                    if ( !block.BlockType.CheckedAdditionalSecurityActions )
+                                    {
+                                        foreach ( string action in blockControl.GetAdditionalActions() )
+                                        {
+                                            if ( !block.BlockType.SupportedActions.Contains( action ) )
+                                            {
+                                                block.BlockType.SupportedActions.Add( action );
+                                            }
+                                        }
+                                        block.BlockType.CheckedAdditionalSecurityActions = true;
+                                    }
 
                                     // If the block's AttributeProperty values have not yet been verified verify them.
                                     // (This provides a mechanism for block developers to define the needed block
@@ -795,6 +804,22 @@ namespace Rock.Web.UI
                 return CurrentPage.GetAttributeValue( key );
             }
             return null;
+        }
+
+        /// <summary>
+        /// Returns the current page's values for the selected attribute.
+        /// If the attribute doesn't exist an empty list is returned.
+        /// </summary>
+        /// <param name="key">the block attribute key</param>
+        /// <returns>a list of strings or an empty list if none exists</string></returns>
+        public List<string> GetAttributeValues( string key )
+        {
+            if ( CurrentPage != null )
+            {
+                return CurrentPage.GetAttributeValues( key );
+            }
+
+            return new List<string>();
         }
 
         /// <summary>

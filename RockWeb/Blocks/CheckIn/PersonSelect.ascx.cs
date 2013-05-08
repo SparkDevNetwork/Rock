@@ -112,6 +112,16 @@ namespace RockWeb.Blocks.CheckIn
             NavigateToNextPage();
         }
 
+        protected void rSelection_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            var person = e.Item.DataItem as CheckInPerson;
 
-    }
+            if ( ! string.IsNullOrEmpty( person.SecurityCode ) )
+            {
+                var linkButton = e.Item.FindControl( "lbSelect" ) as LinkButton;
+                //linkButton.Attributes.Add( "class", "btn-checked-in" ); // nope, doesn't work
+                linkButton.CssClass = string.Format( "{0} {1}", linkButton.CssClass, "btn-checked-in" );
+            }
+        }
+}
 }

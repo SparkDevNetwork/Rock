@@ -67,11 +67,6 @@ namespace RockWeb.Blocks.Administration
                         if ( containerType.BaseType.GenericTypeArguments.Length > 0 )
                         {
                             rGrid.RowItemText = containerType.BaseType.GenericTypeArguments[0].Name.SplitCase();
-                            lTitle.Text = rGrid.RowItemText.Pluralize();
-                        }
-                        else
-                        {
-                            lTitle.Text = "Components";
                         }
                     }
                     else
