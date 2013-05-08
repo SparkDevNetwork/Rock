@@ -46,11 +46,7 @@ public class BundleConfig
             "~/Scripts/jquery.tinyscrollbar.js" ) );
 
         bundles.Add( new ScriptBundle( "~/bundles/RockUi" ).Include( 
-            "~/Scripts/Rock/controls/grid.js",
-            "~/Scripts/Rock/controls/htmlContentEditor.js",
-            "~/Scripts/Rock/controls/itemPicker.js",
-            "~/Scripts/Rock/controls/modal.js",
-            "~/Scripts/Rock/controls/personPicker.js" ) );
+            "~/Scripts/Rock/controls/*.js" ) );
 
         bundles.Add( new ScriptBundle( "~/bundles/RockValidation" ).Include(
             "~/Scripts/Rock/validate/*.js" ) );
