@@ -55,6 +55,11 @@ public class BundleConfig
         bundles.Add( new ScriptBundle( "~/bundles/RockValidation" ).Include(
             "~/Scripts/Rock/validate/*.js" ) );
 
+        // Creating a separate "Admin" bundle specifically for JS functionality that needs
+        // to be included for administrative users
+        bundles.Add( new ScriptBundle( "~/bundles/RockAdmin" ).Include( 
+            "~/Scripts/Rock/admin/*.js" ) );
+
         // TODO: Consider adding a MEF component to dynamically load external bundle configurations
 	}
 }
