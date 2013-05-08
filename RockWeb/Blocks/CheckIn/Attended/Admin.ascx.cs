@@ -151,10 +151,50 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
             }
         }
-
-        protected void cblGroupTypes_SelectedIndexChanged( object sender, EventArgs e )
+        protected void lbSelectMinistry_Click( object sender, EventArgs e )
         {
-            var blah = e.GetType();
+            //foreach (var groupType in cblGroupTypes.SelectedValues)
+            //{
+            //    var 
+            //}
+            var kiosk = new DeviceService().Get( Int32.Parse( ddlKiosk.SelectedValue ) );
+            if ( kiosk != null )
+            {
+                var groupTypes = new Dictionary<int, GroupType>();
+                foreach (var groupLocations in kiosk.Locations.Select(l => l.GroupLocations))
+                {
+                    foreach(var groupType in groupLocations.Select(gl => gl.Group.GroupType))
+                    {
+                        if (!groupTypes.ContainsKey(groupType.Id))
+                        {
+                            groupTypes.Add(groupType.Id, groupType);
+                        }
+                    }
+                }
+                groupTypes.Select( g => g.Value );
+                cblRoomTypes.DataSource = groupTypes;
+                cblRoomTypes.DataBind();
+            }
+            
+            
+        //    public virtual IEnumerable<GroupType> GetLocationGroupTypes()
+        //{
+        //    var groupTypes = new Dictionary<int, GroupType>();
+        //    foreach ( var groupLocations in this.Locations
+        //        .Select( l => l.GroupLocations ) )
+        //    {
+        //        foreach(var groupType in groupLocations.Select( gl => gl.Group.GroupType))
+        //        {
+        //            if (!groupTypes.ContainsKey(groupType.Id))
+        //            {
+        //                groupTypes.Add(groupType.Id, groupType);
+        //            }
+        //        }
+        //    }
+
+        //    return groupTypes.Select( g => g.Value );
+        //}
+            
         }
-}
+    }
 }
