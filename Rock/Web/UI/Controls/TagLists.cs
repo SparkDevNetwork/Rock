@@ -18,8 +18,8 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    [ToolboxData( "<{0}:TagPicker runat=server></{0}:TagPicker>" )]
-    public class TagPicker : CompositeControl
+    [ToolboxData( "<{0}:TagList runat=server></{0}:TagList>" )]
+    public class TagList : CompositeControl
     {
         public int EntityTypeId
         {
