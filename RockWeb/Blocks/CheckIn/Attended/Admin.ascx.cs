@@ -151,5 +151,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
             }
         }
-    }
+
+        protected void cblGroupTypes_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var blah = e.GetType();
+        }
+}
 }

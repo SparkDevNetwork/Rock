@@ -15,7 +15,7 @@
     <div class="row-fluid checkin-header">
         <div class="span3"></div>
         <div class="span6">
-            <legend>Admin</legend>
+            <h1>Admin</h1>
         </div>
         <div class="span3"></div>
     </div>
@@ -25,7 +25,9 @@
         <div class="span12">
 
             <Rock:LabeledDropDownList ID="ddlKiosk" runat="server" CssClass="input-xlarge" LabelText="Kiosk Device" OnSelectedIndexChanged="ddlKiosk_SelectedIndexChanged" AutoPostBack="true" DataTextField="Name" DataValueField="Id" ></Rock:LabeledDropDownList>
-            <Rock:LabeledCheckBoxList ID="cblGroupTypes" runat="server" LabelText="Group Type(s)" DataTextField="Name" DataValueField="Id" ></Rock:LabeledCheckBoxList>
+            <Rock:LabeledCheckBoxList ID="cblGroupTypes" runat="server" LabelText="Ministry Type(s)" OnSelectedIndexChanged="cblGroupTypes_SelectedIndexChanged" DataTextField="Name" DataValueField="Id" ></Rock:LabeledCheckBoxList>
+            <Rock:LabeledCheckBoxList ID="cblRoomTypes" runat="server" LabelText="Room Type(s)" DataTextField="Name" DataValueField="Id" ></Rock:LabeledCheckBoxList>
+            
 
         </div>
     </div>

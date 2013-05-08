@@ -74,7 +74,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     {
                         family.Selected = false;
                         var control = (LinkButton)e.Item.FindControl( "lbSelectFamily" );
-                        control.RemoveCss( "active" );
+                        control.RemoveCssClass( "active" );
                         rPerson.DataSource = null;
                         rPerson.DataBind();
                         SaveState();
@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         // make sure no other families look like they're selected
                         foreach ( RepeaterItem ri in rFamily.Items )
                         {
-                            ( (LinkButton)ri.FindControl("lbSelectFamily") ).RemoveCss( "active" );
+                            ( (LinkButton)ri.FindControl("lbSelectFamily") ).RemoveCssClass( "active" );
                         }
 
                         // select the clicked on family
@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         {
                             familyMember.Selected = false;
                             var control = (LinkButton)e.Item.FindControl( "lbSelectPerson" );
-                            control.RemoveCss( "active" );
+                            control.RemoveCssClass( "active" );
                             SaveState();
                         }
                         else

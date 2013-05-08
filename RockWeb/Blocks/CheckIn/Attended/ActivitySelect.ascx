@@ -46,7 +46,7 @@
             <div class="checkin-body-container">
                 <asp:Repeater ID="rActivity" runat="server" OnItemCommand="rActivity_ItemCommand">
                     <ItemTemplate>
-                        <asp:LinkButton ID="lbSelectActivity" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Activity.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" />
+                        <asp:LinkButton ID="lbSelectActivity" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Group.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" />
                     </ItemTemplate>
                 </asp:Repeater>
             </div>

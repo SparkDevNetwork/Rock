@@ -42,7 +42,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         if ( person != null )
                         {
                             lblPersonName.Text = person.Person.FullName;
-                            rMinistry.DataSource = person.GroupTypes;
+                            List<Group> blah = new List<Group>();
+                            var gs = new GroupService();
+                            blah = gs.GetByGroupTypeId( 19 ).ToList();      // this needs to be more generic. we can't just use a certain id.
+                            rMinistry.DataSource = blah;
                             rMinistry.DataBind();
 
                             if ( person.GroupTypes.Count == 1 )
@@ -90,12 +93,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     if ( person != null )
                     {
                         int id = Int32.Parse( e.CommandArgument.ToString() );
-                        var groupType = person.GroupTypes.Where( g => g.GroupType.Id == id ).FirstOrDefault();
-                        if ( groupType != null )
-                        {
-                            groupType.Selected = true;
-                            ProcessMinistry();
-                        }
+                        LoadGroups();
                     }
                 }
             }
@@ -158,7 +156,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }
         }
 
-        private void LoadTimes()
+        private void LoadGroups()
         {
             var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
             if ( family != null )
@@ -166,52 +164,78 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 var person = family.People.Where( p => p.Selected ).FirstOrDefault();
                 if ( person != null )
                 {
-                    var groupType = person.GroupTypes.Where( g => g.Selected ).FirstOrDefault();
-                    if ( groupType != null )
-                    {
-                        var location = groupType.Locations.Where( l => l.Selected ).FirstOrDefault();
-                        if ( location != null )
-                        {
-                            var group = location.Groups.Where( g => g.Selected ).FirstOrDefault();
-                            if ( group != null )
-                            {
-                                if ( group.Schedules.Count == 1 )
-                                {
-                                    foreach ( var schedule in group.Schedules )
-                                    {
-                                        schedule.Selected = true;
-                                    }
-
-                                    //ProcessSelection();
-                                }
-                                string script = string.Format( @"
-                                    <script>
-                                        function GetTimeSelection() {{
-                                            var ids = '';
-                                            $('div.checkin-timelist button.active').each( function() {{
-                                                ids += $(this).attr('schedule-id') + ',';
-                                            }});
-                                            if (ids == '') {{
-                                                alert('Please select at least one time');
-                                                return false;
-                                            }}
-                                            else
-                                            {{
-                                                $('#{0}').val(ids);
-                                                return true;    
-                                            }}
-                                        }}
-                                    </script>
-                                ", hfTimes.ClientID );
-                                Page.ClientScript.RegisterClientScriptBlock( this.GetType(), "SelectTime", script );
-
-                                rTime.DataSource = group.Schedules.OrderBy( s => s.Schedule.StartTime );
-                                rTime.DataBind();
-                            }
-                        }
-                    }
+                    //foreach ( var kioskGroupType in CurrentCheckInState.Kiosk.KioskGroupTypes.Where( g => g.KioskLocations.Any( l => l.Location.IsActive ) ) )
+                    //{
+                    //    if ( !person.GroupTypes.Any( g => g.GroupType.Id == kioskGroupType.GroupType.Id ) )
+                    //    {
+                    //        var checkinGroupType = new CheckInGroupType();
+                    //        checkinGroupType.GroupType = kioskGroupType.GroupType.Clone( false );
+                    //        checkinGroupType.GroupType.CopyAttributesFrom( kioskGroupType.GroupType );
+                    //        person.GroupTypes.Add( checkinGroupType );
+                    //    }
+                    //}
+                    var kioskGroupTypes = CurrentCheckInState.Kiosk.KioskGroupTypes.Where( g => g.KioskLocations.Any( l => l.Location.IsActive ) );
+                    
+                    rActivity.DataSource = kioskGroupTypes;
+                    rActivity.DataBind();
                 }
             }
+        }
+
+        private void LoadTimes()
+        {
+//            var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
+//            if ( family != null )
+//            {
+//                var person = family.People.Where( p => p.Selected ).FirstOrDefault();
+//                if ( person != null )
+//                {
+//                    var groupType = person.GroupTypes.Where( g => g.Selected ).FirstOrDefault();
+//                    if ( groupType != null )
+//                    {
+//                        var location = groupType.Locations.Where( l => l.Selected ).FirstOrDefault();
+//                        if ( location != null )
+//                        {
+//                            var group = location.Groups.Where( g => g.Selected ).FirstOrDefault();
+//                            if ( group != null )
+//                            {
+//                                if ( group.Schedules.Count == 1 )
+//                                {
+//                                    foreach ( var schedule in group.Schedules )
+//                                    {
+//                                        schedule.Selected = true;
+//                                    }
+
+//                                    //ProcessSelection();
+//                                }
+//                                string script = string.Format( @"
+//                                    <script>
+//                                        function GetTimeSelection() {{
+//                                            var ids = '';
+//                                            $('div.checkin-timelist button.active').each( function() {{
+//                                                ids += $(this).attr('schedule-id') + ',';
+//                                            }});
+//                                            if (ids == '') {{
+//                                                alert('Please select at least one time');
+//                                                return false;
+//                                            }}
+//                                            else
+//                                            {{
+//                                                $('#{0}').val(ids);
+//                                                return true;    
+//                                            }}
+//                                        }}
+//                                    </script>
+//                                ", hfTimes.ClientID );
+//                                Page.ClientScript.RegisterClientScriptBlock( this.GetType(), "SelectTime", script );
+
+//                                rTime.DataSource = group.Schedules.OrderBy( s => s.Schedule.StartTime );
+//                                rTime.DataBind();
+//                            }
+//                        }
+//                    }
+//                }
+//            }
         }
 
         #endregion
