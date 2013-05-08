@@ -10,8 +10,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
-using System.Web.Http.ModelBinding;
-using Newtonsoft.Json.Linq;
+
 using Rock.Data;
 using Rock.Security;
 
@@ -160,16 +159,39 @@ namespace Rock.Net
             }
 
             HttpContent resultContent;
+            HttpError httpError = null;
             T result = default( T );
 
             httpClient.GetAsync( requestUri ).ContinueWith( ( postTask ) =>
                 {
                     resultContent = postTask.Result.Content;
-                    resultContent.ReadAsAsync<T>().ContinueWith( ( readResult ) =>
+
+                    if ( postTask.Result.IsSuccessStatusCode )
+                    {
+                        resultContent.ReadAsAsync<T>().ContinueWith( ( readResult ) =>
+                            {
+                                result = readResult.Result;
+                            } ).Wait();
+                    }
+                    else
+                    {
+                        resultContent.ReadAsStringAsync().ContinueWith( s =>
                         {
-                            result = readResult.Result;
+#if DEBUG
+                            string debugResult = s.Result;
+                            httpError = new HttpError( debugResult );
+#else                            
+                            // just get the simple error message, don't expose exception details to user
+                            httpError = new HttpError( postTask.Result.ReasonPhrase );
+#endif
                         } ).Wait();
+                    }
                 } ).Wait();
+
+            if ( httpError != null )
+            {
+                throw new HttpErrorException( httpError );
+            }
 
             return result;
         }
@@ -266,6 +288,10 @@ namespace Rock.Net
         /// </value>
         private string _message { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpErrorException"/> class.
+        /// </summary>
+        /// <param name="httpError">The HTTP error.</param>
         public HttpErrorException( HttpError httpError )
             : base()
         {

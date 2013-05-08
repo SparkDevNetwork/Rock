@@ -132,7 +132,17 @@ namespace Rock.Apps.CheckScannerUtility
             FileStream fs = new FileStream( fileName, FileMode.Create );
             s.WriteObject( fs, this );
             fs.Close();
+
+            _rockConfig = null;
         }
+
+        /// <summary>
+        /// Gets or sets the _rock config.
+        /// </summary>
+        /// <value>
+        /// The _rock config.
+        /// </value>
+        private static RockConfig _rockConfig { get; set; }
 
         /// <summary>
         /// Loads this instance.
@@ -142,14 +152,19 @@ namespace Rock.Apps.CheckScannerUtility
         {
             try
             {
+                if ( _rockConfig != null )
+                {
+                    return _rockConfig;
+                }
+
                 if ( File.Exists( fileName ) )
                 {
                     FileStream fs = new FileStream( fileName, FileMode.OpenOrCreate );
                     try
                     {
                         DataContractSerializer s = new DataContractSerializer( typeof( RockConfig ) );
-                        var result = s.ReadObject( fs ) as RockConfig;
-                        return result;
+                        _rockConfig = s.ReadObject( fs ) as RockConfig;
+                        return _rockConfig;
                     }
                     finally
                     {

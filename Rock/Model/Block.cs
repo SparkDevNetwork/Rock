@@ -152,14 +152,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the supported actions.
-        /// </summary>
-        public override List<string> SupportedActions
-        {
-            get { return new List<string>() { "View", "Edit", "Administrate" }; }
-        }
-
-        /// <summary>
         /// Gets the parent authority.
         /// </summary>
         /// <value>

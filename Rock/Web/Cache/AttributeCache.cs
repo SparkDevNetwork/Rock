@@ -11,6 +11,8 @@ using System.Runtime.Serialization;
 using System.Web.UI;
 
 using Rock.Field;
+using Rock.Model;
+using Rock.Security;
 
 namespace Rock.Web.Cache
 {
@@ -24,7 +26,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
-    public class AttributeCache 
+    public class AttributeCache : ISecured
     {
         #region constructors
 
@@ -255,6 +257,10 @@ namespace Rock.Web.Cache
             this.IsMultiValue = attribute.IsMultiValue;
             this.IsRequired = attribute.IsRequired;
 
+            this.TypeId = attribute.TypeId;
+            this.TypeName = attribute.TypeName;
+            this.SupportedActions = attribute.SupportedActions;
+
             this.QualifierValues = new Dictionary<string, ConfigurationValue>();
             foreach ( var qualifier in qualifiers )
                 this.QualifierValues.Add( qualifier.Key, new ConfigurationValue( qualifier.Value ) );
@@ -302,6 +308,99 @@ namespace Rock.Web.Cache
         public override string ToString()
         {
             return this.Name;
+        }
+
+        #endregion
+
+        #region ISecured implementation
+
+        /// <summary>
+        /// Gets the Entity Type ID for this entity.
+        /// </summary>
+        /// <value>
+        /// The type id.
+        /// </value>
+        [DataMember]
+        public virtual int TypeId { get; private set; }
+
+        /// <summary>
+        /// The auth entity. Classes that implement the <see cref="ISecured" /> interface should return
+        /// a value that is unique across all <see cref="ISecured" /> classes.  Typically this is the
+        /// qualified name of the class.
+        /// </summary>
+        [DataMember]
+        public virtual string TypeName { get; private set; }
+
+        /// <summary>
+        /// A parent authority.  If a user is not specifically allowed or denied access to
+        /// this object, Rock will check access to the parent authority specified by this property.
+        /// </summary>
+        public virtual ISecured ParentAuthority
+        {
+            get
+            {
+                if ( this.Id == 0 )
+                {
+                    return new GlobalDefault();
+                }
+                else
+                {
+                    return new AttributeCache();
+                }
+            }
+        }
+
+        /// <summary>
+        /// A list of actions that this class supports.
+        /// </summary>
+        public virtual List<string> SupportedActions { get; private set; }
+
+        /// <summary>
+        /// Return <c>true</c> if the user is authorized to perform the selected action on this object.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified action is authorized; otherwise, <c>false</c>.
+        /// </returns>
+        public virtual bool IsAuthorized( string action, Person person )
+        {
+            return Security.Authorization.Authorized( this, action, person );
+        }
+
+        /// <summary>
+        /// If a user or role is not specifically allowed or denied to perform the selected action,
+        /// return <c>true</c> if they should be allowed anyway or <c>false</c> if not.
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <returns></returns>
+        public virtual bool IsAllowedByDefault( string action )
+        {
+            return action == "View";
+        }
+
+        /// <summary>
+        /// Determines whether the specified action is private (Only the current user has access).
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <returns>
+        ///   <c>true</c> if the specified action is private; otherwise, <c>false</c>.
+        /// </returns>
+        public virtual bool IsPrivate( string action, Person person )
+        {
+            return Security.Authorization.IsPrivate( this, action, person );
+        }
+
+        /// <summary>
+        /// Makes the action on the current entity private (Only the current user will have access).
+        /// </summary>
+        /// <param name="action">The action.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="personId">The current person id.</param>
+        public virtual void MakePrivate( string action, Person person, int? personId )
+        {
+            Security.Authorization.MakePrivate( this, action, person, personId );
         }
 
         #endregion
@@ -400,5 +499,7 @@ namespace Rock.Web.Cache
         }
 
         #endregion
+
+
     }
 }

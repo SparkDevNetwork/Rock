@@ -7,8 +7,6 @@
 
     <asp:Panel ID="pnlList" runat="server" Visible="true" >
         
-        <h4><asp:Literal ID="lTitle" runat="server" /></h4>
-
         <Rock:GridFilter ID="rFilter" runat="server">
             <Rock:LabeledTextBox ID="tbName" runat="server" LabelText="Name" />
             <Rock:LabeledTextBox ID="tbDescription" runat="server" LabelText="Description" />

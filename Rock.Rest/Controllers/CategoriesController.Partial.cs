@@ -44,7 +44,7 @@ namespace Rock.Rest.Controllers
         /// <param name="getCategorizedItems">if set to <c>true</c> [get categorized items].</param>
         /// <returns></returns>
         [Authenticate]
-        public IQueryable<CategoryItem> GetChildren( int id, string entityTypeName, bool getCategorizedItems)
+        public IQueryable<CategoryItem> GetChildren( int id, string entityTypeName, bool getCategorizedItems )
         {
             var user = CurrentUser();
             Person currentPerson = user != null ? user.Person : null;
@@ -91,7 +91,7 @@ namespace Rock.Rest.Controllers
                 if ( category.IsAuthorized( "View", currentPerson ) )
                 {
                     var categoryItem = new CategoryItem();
-                    categoryItem.Id = category.Id;
+                    categoryItem.Id = category.Id.ToString();
                     categoryItem.Name = System.Web.HttpUtility.HtmlEncode( category.Name );
                     categoryItem.IsCategory = true;
 
@@ -120,7 +120,7 @@ namespace Rock.Rest.Controllers
                         if ( categorizedItem != null && categorizedItem.IsAuthorized( "View", currentPerson ) )
                         {
                             var categoryItem = new CategoryItem();
-                            categoryItem.Id = categorizedItem.Id;
+                            categoryItem.Id = categorizedItem.Id.ToString();
                             categoryItem.Name = categorizedItem.Name;
                             categoryItem.IsCategory = false;
                             categoryItem.IconCssClass = "icon-list-ol";
@@ -136,7 +136,9 @@ namespace Rock.Rest.Controllers
             {
                 if ( g.IsCategory )
                 {
-                    foreach ( var childCategory in Get().Where( c => c.ParentCategoryId == g.Id ) )
+                    int parentId = int.Parse( g.Id );
+
+                    foreach ( var childCategory in Get().Where( c => c.ParentCategoryId == parentId ) )
                     {
                         if ( childCategory.IsAuthorized( "View", currentPerson ) )
                         {
@@ -149,7 +151,7 @@ namespace Rock.Rest.Controllers
                     {
                         if ( getCategorizedItems )
                         {
-                            IQueryable childItems = GetCategorizedItems( serviceInstance, g.Id ) as IQueryable;
+                            IQueryable childItems = GetCategorizedItems( serviceInstance, parentId ) as IQueryable;
                             if ( childItems != null )
                             {
                                 foreach ( var item in childItems )
@@ -201,24 +203,8 @@ namespace Rock.Rest.Controllers
     /// <summary>
     /// 
     /// </summary>
-    public class CategoryItem
+    public class CategoryItem : Rock.Web.UI.Controls.TreeViewItem
     {
-        /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>
-        /// The id.
-        /// </value>
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name.
-        /// </summary>
-        /// <value>
-        /// The name.
-        /// </value>
-        public string Name { get; set; }
-
         /// <summary>
         /// Gets or sets a value indicating whether this instance is category.
         /// </summary>
@@ -226,29 +212,5 @@ namespace Rock.Rest.Controllers
         /// <c>true</c> if this instance is category; otherwise, <c>false</c>.
         /// </value>
         public bool IsCategory { get; set; }
-
-        /// <summary>
-        /// Gets or sets the group type icon CSS class.
-        /// </summary>
-        /// <value>
-        /// The group type icon CSS class.
-        /// </value>
-        public string IconCssClass { get; set; }
-
-        /// <summary>
-        /// Gets or sets the group type icon small id.
-        /// </summary>
-        /// <value>
-        /// The group type icon small id.
-        /// </value>
-        public string IconSmallUrl { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance has children.
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if this instance has children; otherwise, <c>false</c>.
-        /// </value>
-        public bool HasChildren { get; set; }
     }
 }
