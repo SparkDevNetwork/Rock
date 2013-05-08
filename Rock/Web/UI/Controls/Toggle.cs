@@ -20,6 +20,70 @@ namespace Rock.Web.UI.Controls
     public class Toggle : CheckBox
     {
         /// <summary>
+        /// The label
+        /// </summary>
+        protected Literal label;
+
+        /// <summary>
+        /// The help block
+        /// </summary>
+        protected HelpBlock helpBlock;
+
+        /// <summary>
+        /// Gets or sets the help tip.
+        /// </summary>
+        /// <value>
+        /// The help tip.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The help tip." )
+        ]
+        public string Tip
+        {
+            get { return ViewState["Tip"] as string ?? string.Empty; }
+            set { ViewState["Tip"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the help block.
+        /// </summary>
+        /// <value>
+        /// The help block.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The help block." )
+        ]
+        public string Help
+        {
+            get { return helpBlock.Text; }
+            set { helpBlock.Text = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the label text.
+        /// </summary>
+        /// <value>
+        /// The label text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text for the label." )
+        ]
+        public string LabelText
+        {
+            get { return label.Text; }
+            set { label.Text = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the on text.
         /// </summary>
         /// <value>
@@ -33,15 +97,8 @@ namespace Rock.Web.UI.Controls
         ]
         public string OnText
         {
-            get
-            {
-                string s = ViewState["OnText"] as string;
-                return s == null ? string.Empty : s;
-            }
-            set
-            {
-                ViewState["OnText"] = value;
-            }
+            get { return ViewState["OnText"] as string ?? string.Empty; }
+            set { ViewState["OnText"] = value; }
         }
 
         /// <summary>
@@ -58,15 +115,18 @@ namespace Rock.Web.UI.Controls
         ]
         public string OffText
         {
-            get
-            {
-                string s = ViewState["OffText"] as string;
-                return s == null ? string.Empty : s;
-            }
-            set
-            {
-                ViewState["OffText"] = value;
-            }
+            get { return ViewState["OffText"] as string ?? string.Empty; }
+            set { ViewState["OffText"] = value; }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="Toggle" /> class.
+        /// </summary>
+        public Toggle()
+            : base()
+        {
+            label = new Literal();
+            helpBlock = new HelpBlock();
         }
 
         /// <summary>
@@ -94,11 +154,44 @@ $(document).ready(function() {
         }
 
         /// <summary>
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+        /// </summary>
+        protected override void CreateChildControls()
+        {
+            base.CreateChildControls();
+            Controls.Clear();
+
+            Controls.Add( label );
+            Controls.Add( helpBlock );
+        }
+
+        /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
+            bool renderWithLabel = ( !string.IsNullOrEmpty( LabelText ) ) ||
+                ( !string.IsNullOrEmpty( Help ) );
+
+            if ( renderWithLabel )
+            {
+                writer.AddAttribute( "class", "control-group" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                if ( label.Text.Trim() != string.Empty )
+                {
+                    writer.AddAttribute( "class", "control-label" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    label.RenderControl( writer );
+                    helpBlock.RenderControl( writer );
+                    writer.RenderEndTag();
+                }
+
+                writer.AddAttribute( "class", "controls" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            }
+
             writer.AddAttribute( "class", "switch " + this.CssClass );
             if (!string.IsNullOrWhiteSpace(OnText))
             {
@@ -158,6 +251,29 @@ $(document).ready(function() {
             writer.RenderEndTag();
 
             writer.RenderEndTag();
+
+            if ( renderWithLabel )
+            {
+                if ( label.Text.Trim() == string.Empty )
+                {
+                    helpBlock.RenderControl( writer );
+                }
+
+                if ( Tip.Trim() != string.Empty )
+                {
+                    writer.AddAttribute( "class", "help-tip" );
+                    writer.AddAttribute( "href", "#" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.A );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                    writer.Write( Tip.Trim() );
+                    writer.RenderEndTag();
+                    writer.RenderEndTag();
+                }
+
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();
+            }
         }
     }
 }

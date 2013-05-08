@@ -51,6 +51,7 @@ namespace Rock.Model
         /// The start date.
         /// </value>
         [DataMember]
+        [Column( TypeName = "Date" )]
         public DateTime StartDate { get; set; }
 
         /// <summary>
@@ -60,6 +61,7 @@ namespace Rock.Model
         /// The end date.
         /// </value>
         [DataMember]
+        [Column( TypeName = "Date" )]
         public DateTime? EndDate { get; set; }
 
         /// <summary>
@@ -105,6 +107,7 @@ namespace Rock.Model
         /// The card reminder date.
         /// </value>
         [DataMember]
+        [Column( TypeName = "Date" )]
         public DateTime? CardReminderDate { get; set; }
 
         /// <summary>
@@ -114,6 +117,7 @@ namespace Rock.Model
         /// The last reminded date.
         /// </value>
         [DataMember]
+        [Column( TypeName = "Date" )]
         public DateTime? LastRemindedDate { get; set; }
 
         #endregion

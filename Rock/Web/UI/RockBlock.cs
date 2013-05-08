@@ -86,6 +86,23 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Gets the bread crumbs that were created during the page's oninit.  A block
+        /// can add additional breadcrumbs to this list to be rendered.  Crumb's added 
+        /// this way will not be saved to the current page reference's collection of 
+        /// breadcrumbs, so wil not be available when user navigates to another child
+        /// page.  Because of this only last-level crumbs should be added this way.  To
+        /// persist breadcrumbs in the session state, override the GetBreadCrumbs 
+        /// method instead.
+        /// </summary>
+        /// <value>
+        /// The bread crumbs.
+        /// </value>
+        public List<BreadCrumb> BreadCrumbs
+        {
+            get { return ( (RockPage)this.Page ).BreadCrumbs; }
+        }
+
+        /// <summary>
         /// Gets the root URL Path.
         /// </summary>
         public string RootPath
@@ -420,8 +437,8 @@ namespace Rock.Web.UI
         /// Returns the current block value for the selected attribute
         /// If the attribute doesn't exist a null value is returned  
         /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
+        /// <param name="key">the block attribute key</param>
+        /// <returns>the stored value as a string or null if none exists</returns>
         public string GetAttributeValue( string key )
         {
             if ( CurrentBlock != null )
@@ -429,6 +446,22 @@ namespace Rock.Web.UI
                 return CurrentBlock.GetAttributeValue( key );
             }
             return null;
+        }
+
+        /// <summary>
+        /// Returns the current block values for the selected attribute.
+        /// If the attribute doesn't exist an empty list is returned.
+        /// </summary>
+        /// <param name="key">the block attribute key</param>
+        /// <returns>a list of strings or an empty list if none exists</string></returns>
+        public List<string> GetAttributeValues( string key )
+        {
+            if ( CurrentBlock != null )
+            {
+                return CurrentBlock.GetAttributeValues( key );
+            }
+
+            return new List<string>();
         }
 
         /// <summary>
@@ -557,14 +590,14 @@ namespace Rock.Web.UI
         public void NavigateToPage( Guid pageGuid, Dictionary<string, string> queryString )
         {
             var pageCache = PageCache.Read( pageGuid );
-            if (pageCache != null)
+            if ( pageCache != null )
             {
                 int routeId = 0;
                 {
                     routeId = pageCache.PageRoutes.FirstOrDefault().Key;
                 }
 
-                var pageReference = new PageReference(pageCache.Id, routeId, queryString, null);
+                var pageReference = new PageReference( pageCache.Id, routeId, queryString, null );
                 string pageUrl = pageReference.BuildUrl();
                 Response.Redirect( pageUrl, false );
                 Context.ApplicationInstance.CompleteRequest();
@@ -708,6 +741,8 @@ namespace Rock.Web.UI
 
         /// <summary>
         /// Returns breadcrumbs specific to the block that should be added to navigation
+        /// based on the current page reference.  This function is called during the page's
+        /// oninit to load any initial breadcrumbs
         /// </summary>
         /// <param name="pageReference">The page reference.</param>
         /// <returns></returns>
@@ -733,7 +768,7 @@ namespace Rock.Web.UI
         /// </summary>
         internal void CreateAttributes()
         {
-            int? blockEntityTypeId = EntityTypeCache.Read( typeof(Block) ).Id;
+            int? blockEntityTypeId = EntityTypeCache.Read( typeof( Block ) ).Id;
 
             using ( new Rock.Data.UnitOfWorkScope() )
             {
@@ -748,19 +783,20 @@ namespace Rock.Web.UI
         /// <summary>
         /// Reads the additional actions.
         /// </summary>
-        internal void ReadAdditionalActions()
+        internal List<string> GetAdditionalActions()
         {
+            var additionalActions = new List<string>();
+
             object[] customAttributes = this.GetType().GetCustomAttributes( typeof( AdditionalActionsAttribute ), true );
             if ( customAttributes.Length > 0 )
             {
                 foreach ( string action in ( (AdditionalActionsAttribute)customAttributes[0] ).AdditionalActions )
                 {
-                    if ( !this.CurrentBlock.SupportedActions.Contains( action ) )
-                    {
-                        this.CurrentBlock.SupportedActions.Add( action );
-                    }
+                    additionalActions.Add( action );
                 }
             }
+
+            return additionalActions;
         }
 
         #endregion

@@ -439,6 +439,55 @@ span.cke_skin_kama {
     padding: 20px 15px 15px;
 }
 
+/* tooltip */
+.tooltipster-base {
+	border-radius: @baseBorderRadius; 
+	border: 1px solid #cccccc;
+	background: @rockTooltipBackground;
+	color:  @rockTextColor;
+}
+
+.tooltipster-content header img,
+.tooltipster-content header div
+{
+    float: left;
+}
+
+.tooltipster-content header div
+{
+    margin: 4px 0 0 8px;
+    font-family: @rockFontFamilyBold;
+}
+
+.tooltipster-content header small
+{
+    display: block;
+    font-weight: normal;
+    font-family: @rockFontFamilyLight;
+}
+
+.tooltipster-content header:after
+{
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+
+.tooltipster-content header
+{
+    background-color: @rockHeaderBackground;
+    margin: -8px -10px 8px -10px;
+    padding: 8px 10px;
+    border-radius: @baseBorderRadius; 
+}
+
+.tooltipster-content strong
+{
+    font-family: @rockFontFamilySemiBold;
+    font-weight: normal;
+}
 
 /* page list as blocks */
 

@@ -62,6 +62,13 @@ namespace Rock.Attribute
         string GetAttributeValue( string key );
 
         /// <summary>
+        /// Gets the first value of an attribute key - splitting that delimited value into a list of strings.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns>A list of string values or an empty list if none exist.</returns>
+        List<string> GetAttributeValues( string key );
+
+        /// <summary>
         /// Sets the first value of an attribute key.
         /// </summary>
         /// <param name="key">The key.</param>
