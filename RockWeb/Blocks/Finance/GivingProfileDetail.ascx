@@ -39,6 +39,10 @@
 <asp:UpdatePanel ID="upRecurringGift" runat="server" >
 <ContentTemplate>
 
+    <% spanClass = ( _VerticalLayout ) ? "span12" : "span6"; %>
+
+    <asp:HiddenField ID="hfCampusId" runat="server" />
+
     <asp:Panel ID="pnlDetails" runat="server">
 
         <div class="container-fluid">     
@@ -55,7 +59,7 @@
 
                             <div id="divCampus" class="row-fluid" runat="server" visible="false">                                                            
                                 
-                                <Rock:LabeledButtonDropDownList ID="btnCampusList" runat="server" CssClass="btn btn-primary" Title="Select Campus" LabelText="Campus" />
+                                <Rock:ButtonDropDownList ID="btnCampusList" runat="server" CssClass="btn btn-primary" Title="Select Campus" LabelText="Campus" />
                                 
                             </div>
                             
@@ -63,28 +67,25 @@
                                 <asp:Repeater ID="rptAccountList" runat="server" >
                                 <ItemTemplate>       
                                     <div class="row-fluid">
-	                                    <Rock:LabeledTextBox ID="txtAccountNumber" runat="server" CssClass="input-small calc" PrependText="$" 
+	                                    <Rock:NumberBox ID="txtAccountAmount" runat="server" CssClass="input-small calc" PrependText="$" 
                                             LabelText='<%# DataBinder.Eval(Container.DataItem, "Account.PublicName") %>' 
                                             Text='<%# DataBinder.Eval(Container.DataItem, "Amount") %>'>
-	                                    </Rock:LabeledTextBox>
+	                                    </Rock:NumberBox>
                                     </div>
                                 </ItemTemplate>                                
                                 </asp:Repeater>
                             </div>                     
 
                             <div ID="divAddAccount" class="row-fluid" runat="server">
-                                <div class="control-group controls">
-                                    <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnAddAccount_SelectionChanged" Title="Add Another Gift" />
-                                </div>
+                                
+                                <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnAddAccount_SelectionChanged" Title="Add Another Gift" />
+                                
                             </div>
-
-                            <% if ( rptAccountList.Items.Count != 0 ) { %>
 
                             <div id="divRecurrence" runat="server" visible="false">
                                 
                                 <div class="row-fluid">
                                     <div class="control-group">
-                                        <%-- <Rock:LabeledText ID="lblTotalAmount" CssClass="control-label" LabelText="Total Amount" /> --%>
                                     
                                         <label id="lblTotalAmount" class="control-label" for="spnTotal"><b>Total Amount</b></label>
                                         <div class="controls amount-right">
@@ -94,32 +95,23 @@
                                 </div>
 
                                 <div class="row-fluid">
-                                    <Rock:LabeledButtonDropDownList ID="btnRecurrence" runat="server" CssClass="btn btn-primary" Title="Select Recurrence" OnSelectionChanged="btnRecurrence_SelectionChanged"  LabelText="Recurs" />			                        
+                                    <Rock:ButtonDropDownList ID="btnRecurrence" runat="server" CssClass="btn btn-primary" Title="Select Recurrence" OnSelectionChanged="btnRecurrence_SelectionChanged" LabelText="Recurs" />			                        
                                 </div>                                    
                                     
                                 <div class="row-fluid">                                        
-                                    <Rock:DateTimePicker ID="dtStartingDate" runat="server" LabelText="Starting On" data-date-format="dd-mm-yyyy" DatePickerType="Date" />                                        
+                                    <Rock:DateTimePicker ID="dtpStartingDate" runat="server" LabelText="Starting On" data-date-format="dd-mm-yyyy" DatePickerType="Date" />                                        
                                 </div>
 
                                 <div class="row-fluid">
-                                    <Rock:LabeledCheckBox id="cbLimitGifts" runat="server" LabelText="Limit number of gifts" />
-                                    <Rock:DataTextBox ID="tbLimitGifts" runat="server" Text="0" />
-
-                                    <%--<div class="control-group controls">
-                                        <label class="checkbox">                                            
-                                            <input id="cboxLimitGifts" class="togglePanel" type="checkbox" onclick="javascript: $('#grpLimitGifts').toggle()"> Limit number of gifts
-                                        </label>                                      
-
-                                        <div id="grpLimitGifts" style="display: none">                                                                                                                                        
-                                            <input class="input-mini" size="4" type="text" placeholder="0">
-                                        </div>
-
-                                    </div>--%>
+                                    <Rock:LabeledCheckBox id="chkLimitGifts" runat="server" Text="Limit number of gifts"  OnCheckedChanged="chkLimitGifts_CheckedChanged" />
+                                    
+                                    <div id="divLimitGifts" runat="server" Visible="false">
+                                        <Rock:NumberBox ID="txtLimitGifts" runat="server" Text="0" />
+                                    </div>
+                                    
                                 </div>
 
                             </div>
-
-                            <% } %>
                         
                         </div>
 
@@ -127,17 +119,15 @@
                                         
                 </div>
             
-                <% if ( _VerticalLayout ) { %>
+            <% if ( _VerticalLayout ) { %>
                     
-                </div>
+            </div>
 
-                <div class="row-fluid">
+            <div class="row-fluid">
 
-                <% } %>
+            <% } %>
 
                 <div class="<%= spanClass %> well">
-
-                    <asp:ValidationSummary ID="valSummaryAddress" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error"/>
 
                     <fieldset>
 
@@ -145,50 +135,44 @@
                         
                         <div class="row-fluid">
                             
-                            <div class="span6">
-                                <Rock:LabeledTextBox ID="txtFirstName" LabelText="First Name" runat="server" Required="true"></Rock:LabeledTextBox>                                
+                            <div class="<%= spanClass %>" >
+                                <Rock:LabeledTextBox ID="txtFirstName" LabelText="First Name" runat="server" Required="true" />
                             </div>             
 
-                            <div class="span6">
-                                <Rock:LabeledTextBox ID="txtLastName" LabelText="Last Name" runat="server" Required="true"></Rock:LabeledTextBox>                                                                
+                            <div class="<%= spanClass %>" >
+                                <Rock:LabeledTextBox ID="txtLastName" LabelText="Last Name" runat="server" Required="true" />
                             </div>        
                             
                         </div>
 
                         <div class="row-fluid">
-                                
-                            <div class="span12">
-                                <Rock:LabeledTextBox ID="txtAddress" LabelText="Address" runat="server" Required="true"></Rock:LabeledTextBox>                                                                
+                            <div class="span12" >
+                                <Rock:LabeledTextBox ID="txtAddress" LabelText="Address" runat="server" Required="true" CssClass="input-xlarge" />
                             </div>
-                                
+                            
                         </div>
 
                         <div class="row-fluid">
 
-                            <div class="span5">
-                                <Rock:LabeledTextBox ID="txtCity" LabelText="City" runat="server" Required="true"></Rock:LabeledTextBox>                                
-
+                            <div class="span6">
+                                <Rock:LabeledTextBox ID="txtCity" LabelText="City" runat="server" Required="true" CssClass="input-large" />
                             </div>
   
-                            <div class="span4">
-                                <Rock:StateDropDownList ID="ddlState" runat="server" LabelText="State" CssClass="state-select" />
+                            <div class="span3">
+                                <Rock:StateDropDownList ID="ddlState" runat="server" LabelText="State" CssClass="state-select" Required="true" />
                             
                             </div>
 
                             <div class="span3">
-                                <label for="txtZipcode" >Zipcode</label>
-                                <input id="txtZipcode" type="text" class="span12" runat="server" required />                        
+                                <Rock:LabeledTextBox ID="txtZipcode" LabelText="Zip" runat="server" Required="true" CssClass="input-small" />
                             </div>
 
                         </div>                    
 
-                        <div class="row-fluid">
-                            
-                            <div class="span12">
-                                <label for="txtEmail" >Email</label>
-                                <input id="txtEmail" type="text" class="span12" runat="server" required />                                                      
+                        <div class="row-fluid">   
+                            <div class="span12" >
+                                <Rock:LabeledTextBox ID="txtEmail" LabelText="Email" runat="server" Required="true" CssClass="input-xlarge" />
                             </div>
-                        
                         </div>
 
                     </fieldset>
@@ -200,8 +184,6 @@
             <div class="row-fluid">
               
                 <div class="<%= spanClass %> well">
-
-                    <asp:ValidationSummary ID="valSummaryPayment" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error"/>
 
                     <fieldset>
 
@@ -227,8 +209,7 @@
 
                                     <div class="row-fluid">
                                               
-                                        <label for="numCreditCard" >Credit Card #</label>
-                                        <input id="numCreditCard" class="input-large credit-card" type="text" title="Credit Card Number" pattern="\d+" size="20" style="float: left" runat="server">
+                                        <Rock:NumberBox ID="txtCreditCard" runat="server" LabelText="Credit Card #" CssClass="credit-card" MaxLength="20" />
 
                                         <ul id="ulCardType" class="card-logos">
 	                                        <li class="card-visa"></li>
@@ -244,44 +225,32 @@
                                     <div class="row-fluid">
                         
                                         <div class="expiration-group">
-
-                                            <label>Expiration Date</label>
-                                            <Rock:ButtonDropDownList ID="btnMonthExpiration" runat="server" CssClass="btn btn-primary" Title="Month"></Rock:ButtonDropDownList>
-                                            <Rock:ButtonDropDownList ID="btnYearExpiration" runat="server" CssClass="btn btn-primary" Title="Year"></Rock:ButtonDropDownList>
+                                                                                        
+                                            <label class="credit-label">Expiration Date</label>
+                                            <Rock:ButtonDropDownList ID="btnMonthExpiration" runat="server" CssClass="btn btn-primary" Title="Month" />
+                                            <Rock:ButtonDropDownList ID="btnYearExpiration" runat="server" CssClass="btn btn-primary" Title="Year" />
                                         
                                         </div>
 
-                                        <div>
-                                            <label class="control-label" for="numCVV" >CVV #</label>
-                                            <input id="Text1" name="numCVV" title="CVV" class="input-mini" size="3" type="text" pattern="\d+" runat="server">
-
+                                        <div>                                            
+                                            <Rock:NumberBox ID="txtCVV" LabelText="CVV #" runat="server" MaxLength="3" CssClass="input-small" />
                                         </div> 
 
                                     </div>
 
                                     <div class="row-fluid">
-
-                                        <label for="txtCardName" >Name on Card</label>
-                                        <input id="Text2" name="txtCardName" class="input-medium" type="text" size="30" runat="server"/>
-                                        
+                                        <Rock:LabeledTextBox ID="txtCardName" runat="server" LabelText="Name on Card" />
                                     </div>
 
                                     <% if ( _ShowSaveDetails ) { %>
 
                                     <div class="row-fluid">
 
-                                        <label class="checkbox">
-                                            
-                                            <input id="cbxSaveCard" class="togglePanel" type="checkbox" onclick="javascript: $('#grpCardNick').toggle()" value="option1" runat="server"> Save My Card
-
-                                        </label>                                         
-                                        
-                                        &nbsp;&nbsp;&nbsp;&nbsp;<div id="grpCardNick" style="display: none">
-                                            
-                                            <label for="txtCardNick">Enter a card nickname </label>
-                                            
-                                            <input id="txtCardNick" name="txtCardNick" class="input-medium"  type="text" size="30" runat="server"/>
-                                        </div>                                        
+                                        <Rock:LabeledCheckBox ID="chkSaveCard" runat="server" Text="Save My Card" OnCheckedChanged="chkSaveCard_CheckedChanged" />
+                                                                                
+                                        <div id="divCardNick" runat="server" visible="false" >
+                                            <Rock:LabeledTextBox ID="txtCardNick" runat="server" LabelText="Enter a card nickname" />
+                                        </div>
                                         
                                     </div>
 
@@ -292,28 +261,23 @@
                                 <div class="tab-pane" id="tab2" <% if ( !_ShowChecking ) { %> style="display:none" <% } %> >
                                     
                                     <div class="row-fluid span6">
-                                
-                                        <label for="txtBankName" >Bank Name</label>
-                                        <input id="txtBankName" type="text" class="input-medium" runat="server"/>                                        
-
-                                        <label for="numRouting" >Routing #</label>
-                                        <input id="numRouting" type="text" class="input-medium" runat="server"/>
-
-                                        <label for="numAccount" >Account #</label>
-                                        <input id="numAccount" type="text" class="input-medium" runat="server"/>
+                                        
+                                        <Rock:LabeledTextBox ID="txtBankName" runat="server" LabelText="Bank Name" />
+                                        <Rock:NumberBox ID="txtRouting" runat="server" LabelText="Routing #" />
+                                        <Rock:NumberBox ID="txtAccount" runat="server" LabelText="Account #" />
 
                                     </div>
 
                                     <div class="row-fluid span6">                                        
-                                        <img class="check-image" src="../../Assets/Images/check-image.png" data-at2x="../../Assets/Images/check-image@2x.png" />
+                                        <img class="check-image" src="../../Assets/Images/check-image.png" />
                                     </div>
                                         
                                     <div class="row-fluid btn-group">
 
-                                        <asp:RadioButtonList ID="radioAccountType" RepeatDirection="Horizontal" runat="server">
-                                            <asp:ListItem text="Checking" Selected="true"></asp:ListItem>
-                                            <asp:ListItem text="Savings"></asp:ListItem>
-                                        </asp:RadioButtonList>                                       
+                                        <Rock:LabeledRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" LabelText="Account Type">
+                                            <asp:ListItem text="Checking" Selected="true" />
+                                            <asp:ListItem text="Savings" />
+                                        </Rock:LabeledRadioButtonList>                                        
 
                                     </div>  
 
@@ -321,18 +285,10 @@
 
                                     <div class="row-fluid">
 
-                                        <label class="checkbox">
-                                            
-                                            <br />
-                                            <input id="cbxSaveCheck" class="togglePanel" type="checkbox" onclick="javascript: $('#grpCheckNick').toggle()" value="option1"> Save My Account #
-
-                                        </label>                                         
-                                        
-                                        &nbsp;&nbsp;&nbsp;&nbsp;<div id="grpCheckNick" style="display: none">
-                                            
-                                            <label for="txtCheckNick">Enter an account nickname </label>
-                                            
-                                            <input id="txtCheckNick" name="txtCheckNick" class="input-medium"  type="text" size="30" />
+                                        <Rock:LabeledCheckBox ID="chkSaveCheck" runat="server" Text="Save My Account #"  OnCheckedChanged="chkSaveCheck_CheckedChanged" />
+                                                                                
+                                        <div id="divCheckNick" runat="server" visible="false">
+                                            <Rock:LabeledTextBox ID="txtCheckNick" runat="server" LabelText="Enter an account nickname" />
                                         </div>                                        
                                         
                                     </div>
@@ -361,8 +317,6 @@
 
     <asp:Panel ID="pnlConfirm" runat="server" Visible="false">
         
-        <% spanClass = ( _VerticalLayout ) ? "span12" : "span6"; %>
-
         <div class="row-fluid">     
                                 
             <div class="<%= spanClass %> well">
@@ -390,12 +344,6 @@
 
                 </div>
 
-                <div id="divPaymentIncomplete" runat="server" visible="false" CssClass="alert alert-error block-message error" >
-                    <p><b><asp:Literal ID="payeeName" runat="server" /></b>, your payment details were not complete.                         
-                        The <% Eval(litPaymentType.Text); %> number was blank or non-numeric.
-                        <b><asp:Literal ID="litError" runat="server"/></b></p>                    
-                </div>
-
             </div>
 
         </div>
@@ -409,8 +357,6 @@
 
     <asp:Panel ID="pnlComplete" runat="server" Visible="false">
         
-        <% spanClass = ( _VerticalLayout ) ? "span12" : "span6"; %>
-
         <div class="row-fluid">     
                                 
             <div class="<%= spanClass %> well">
@@ -426,22 +372,13 @@
                     to NewSpring Church using your <asp:Literal ID="litPaymentType2" runat="server"/>.                                       
                 </p>  
                  
-                <label class="checkbox">
-                                            
-	                <p><input type="checkbox" id="cbxCreateAcct" onclick="javascript: $('#grpCreateAcct').toggle()" /> Save My Information</p> 
-
-                </label>
-
-                <div id="grpCreateAcct" style="display: none" >
+                <Rock:LabeledCheckBox ID="chkCreateAcct" runat="server" LabelText="Save My Information" OnCheckedChanged="chkCreateAcct_CheckedChanged"  />
+                
+                <div id="divCreateAcct" runat="server" visible="false" >
 							
-	                <label for="txtUserName">Enter a Username</label>
-							
-	                <input id="txtUserName" name="txtUserName" class="input-medium"  type="text" size="30" />
-
-	                <label for="txtPassword">Enter a Password</label>
-							
-	                <input id="txtPassword" name="txtPassword" class="input-medium"  type="password" size="30" />
-
+                    <Rock:LabeledTextBox ID="txtUserName" runat="server" LabelText="Enter a username" />
+                    <Rock:LabeledTextBox ID="txtPassword" runat="server" TextMode="Password" LabelText="Enter a password" />
+	                
                 </div>                             
                 
             </div>            
@@ -449,14 +386,10 @@
         </div>
         
         <div class="actions">
-            <asp:LinkButton ID="btnPrint" runat="server" Text="Print" CssClass="btn btn-primary" OnClientClick="javascript:window.print();" />
+            <asp:LinkButton ID="btnPrint" runat="server" Text="Print" CssClass="btn btn-primary" OnClientClick="javascript: window.print();" />
         </div>
 
     </asp:Panel>
-
-    <asp:HiddenField ID="hfCampusId" runat="server" />
-
-    <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Error" Visible="false" />
-
+    
 </ContentTemplate>
 </asp:UpdatePanel>
