@@ -734,6 +734,10 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\HtmlEditor.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ComponentPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\DateTimePicker.cs" />
+    <Compile Include="Web\UI\Controls\TagLists.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\DatePicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\TimePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MergeFieldPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\PersonPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\TreeViewItem.cs" />
@@ -761,6 +765,7 @@
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ButtonDropDownList.cs" />
     <Compile Include="Web\UI\Controls\AttributeEditor.cs" />
+    <Compile Include="Web\UI\Controls\ScheduleBuilder.cs" />
     <Compile Include="Web\UI\Controls\SecurityButton.cs" />
     <Compile Include="Web\UI\Controls\StateDropDownList.cs" />
     <Compile Include="Web\UI\Controls\Workflow Controls\WorkflowActionTypeEditor.cs" />
@@ -784,6 +789,7 @@
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
     <Compile Include="Workflow\Action\CheckIn\CreateLabels.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterByGrade.cs" />
     <Compile Include="Workflow\Action\CheckIn\RemoveEmptyPeople.cs" />
     <Compile Include="Workflow\Action\CheckIn\RemoveEmptyGroupTypes.cs" />
     <Compile Include="Workflow\Action\CheckIn\RemoveEmptyLocations.cs" />
@@ -1027,7 +1033,6 @@
     <Compile Include="Web\UI\Controls\ModalAlert.cs" />
     <Compile Include="Web\UI\Controls\ModalDialog.cs" />
     <Compile Include="Web\UI\Controls\LabeledRadioButtonList.cs" />
-    <Compile Include="Web\UI\Controls\Pickers\DateTimePicker.cs" />
     <Compile Include="Web\UI\Controls\Grid\EnumField.cs" />
     <Compile Include="Web\UI\Controls\Grid\DateTimeField.cs" />
     <Compile Include="Web\UI\Controls\Grid\DateField.cs" />

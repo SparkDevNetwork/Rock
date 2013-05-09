@@ -121,7 +121,7 @@
                                     <div id="divRecurrence" visible="false" runat="server">
                                     
                                         <div class="row-fluid">                                        
-                                            <Rock:DateTimePicker ID="dtStartingDate" runat="server" LabelText="Starting On" data-date-format="dd-mm-yyyy" DatePickerType="Date" />                                        
+                                            <Rock:DatePicker ID="dtStartingDate" runat="server" LabelText="Starting On" data-date-format="dd-mm-yyyy" />                                        
                                         </div>
 
                                         <div class="row-fluid">
