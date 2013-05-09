@@ -97,8 +97,6 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            nbMessage.Visible = false;
-
             base.OnLoad( e );
         }
 
@@ -175,6 +173,46 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Handles the CheckedChanged event of the chkLimitGifts control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void chkLimitGifts_CheckedChanged( object sender, EventArgs e )
+        {
+            divLimitGifts.Visible = !divLimitGifts.Visible;
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the chkSaveCard control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void chkSaveCard_CheckedChanged( object sender, EventArgs e )
+        {
+            divCardNick.Visible = !divCardNick.Visible;
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the chkSaveCheck control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void chkSaveCheck_CheckedChanged( object sender, EventArgs e )
+        {
+            divCheckNick.Visible = !divCheckNick.Visible;
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the chkCreateAcct control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void chkCreateAcct_CheckedChanged( object sender, EventArgs e )
+        {
+            divCreateAcct.Visible = !divCreateAcct.Visible;
+        }
+
+        /// <summary>
         /// Handles the Click event of the btnNext control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -203,7 +241,7 @@ namespace RockWeb.Blocks.Finance
                 personService.Add(person, CurrentPersonId);
             }
 
-            person.Email = txtEmail.Value;
+            person.Email = txtEmail.Text;
             person.GivenName = txtFirstName.Text;
             person.LastName = txtLastName.Text;
             // TODO get address
@@ -229,9 +267,9 @@ namespace RockWeb.Blocks.Finance
                 FinancialTransactionDetail detail = new FinancialTransactionDetail();
 
                 // TODO rewrite account lookup to use ID instead of name
-                string accountName = ( (HtmlGenericControl)item.FindControl("lblAccountName") ).InnerText;
-                account.Account = lookupAccounts.Where(f => f.PublicName == accountName).FirstOrDefault();
-                decimal amount = Decimal.Parse(( (HtmlInputControl)item.FindControl("inputAccountAmount") ).Value);
+                var accountItem = ( (NumberBox)item.FindControl("txtAccountAmount") );
+                string accountName = accountItem.LabelText;
+                decimal amount = Decimal.Parse( accountItem.Text );
                 detail.Amount = amount;
                 account.Amount = amount;
                 detail.TransactionId = _transaction.Id;
@@ -256,13 +294,13 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                litPaymentType.Text = radioAccountType.SelectedValue;
+                litPaymentType.Text = rblAccountType.SelectedValue;
                 litAccountType.Text = " account ";
             }
 
-            string lastFour = !string.IsNullOrEmpty(numCreditCard.Value)
-                ? numCreditCard.Value
-                : numAccount.Value;
+            string lastFour = !string.IsNullOrEmpty(txtCreditCard.Text)
+                ? txtCreditCard.Text
+                : txtAccount.Text;
 
             if ( !string.IsNullOrEmpty(lastFour) )
             {
@@ -270,8 +308,7 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                divPaymentConfirmation.Visible = false;
-                divPaymentIncomplete.Visible = true;
+                divPaymentConfirmation.Visible = false;                
             }
 
             litGiftTotal.Text = _transaction.Amount.ToString();
@@ -395,8 +432,8 @@ namespace RockWeb.Blocks.Finance
                 txtAddress.Text = personLocation.Street1.ToString();
                 txtCity.Text = personLocation.City.ToString();
                 ddlState.Text = personLocation.State.ToString();
-                txtZipcode.Value = personLocation.Zip.ToString();
-                txtEmail.Value = CurrentPerson.Email.ToString();
+                txtZipcode.Text = personLocation.Zip.ToString();
+                txtEmail.Text = CurrentPerson.Email.ToString();
             }
         }
 

@@ -18,17 +18,54 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:ButtonDropDownList runat=server></{0}:ButtonDropDownList>" )]
     public class ButtonDropDownList : ListControl
     {
+        private Label _label;
+        private String _btnTitle = string.Empty;
         private HtmlGenericControl _divControl;
         private HtmlGenericControl _btnSelect;
         private HiddenField _hfSelectedItemId;
         private HiddenField _hfSelectedItemText;
         private HtmlGenericControl _listControl;
-        protected String _btnTitle = string.Empty;
-        
+
+        /// <summary>
+        /// Gets or sets the label text.
+        /// </summary>
+        /// <value>
+        /// The label text.
+        /// </value>
+        public string LabelText
+        {
+            get { return _label.Text; }
+            set { _label.Text = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the title.
+        /// </summary>
+        /// <value>
+        /// The title.
+        /// </value>
+        public string Title
+        {
+            get
+            {
+                return _btnTitle;
+            }
+            set
+            {
+                _btnTitle = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the field.
+        /// </summary>
+        /// <value>
+        /// The name of the field.
+        /// </value>
         public string FieldName
         {
-            get { return ViewState["FieldName"] as string ?? string.Empty; }
-            set { ViewState["FieldName"] = value; }
+            get { return _label.Text; }
+            set { _label.Text = value; }
         }
 
         /// <summary>
@@ -148,21 +185,11 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the title.
+        /// Initializes a new instance of the <see cref="ButtonDropDownList" /> class.
         /// </summary>
-        /// <value>
-        /// The title.
-        /// </value>
-        public string Title
+        public ButtonDropDownList()
         {
-            get
-            {
-                return _btnTitle;
-            }
-            set
-            {
-                _btnTitle = value;
-            }
+            _label = new Label();            
         }
 
         /// <summary>
@@ -173,7 +200,10 @@ namespace Rock.Web.UI.Controls
             base.CreateChildControls();
 
 			Controls.Clear();
-			
+            
+            _label = new Label();
+            Controls.Add( _label );
+
             _divControl = new HtmlGenericControl( "div" );
             _divControl.Attributes["class"] = "btn-group";
             _divControl.ClientIDMode = ClientIDMode.Static;
@@ -209,6 +239,22 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         protected override void Render( HtmlTextWriter writer )
         {
+            bool renderLabel = !string.IsNullOrEmpty( LabelText );
+
+            if ( renderLabel )
+            {
+                writer.AddAttribute( "class", "control-group" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                _label.AddCssClass( "control-label" );
+
+                _label.RenderControl( writer );
+
+                writer.AddAttribute( "class", "controls" );
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            }
+
             foreach ( var item in this.Items.OfType<ListItem>() )
             {
                 string controlHtmlFormat = "<li><a href='#' data-id='{0}'>{1}</a></li>";
@@ -225,6 +271,13 @@ namespace Rock.Web.UI.Controls
 
             _hfSelectedItemId.RenderControl( writer );
             _hfSelectedItemText.RenderControl( writer );
+
+            if ( renderLabel )
+            {
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();
+            }
         }
 
         /// <summary>

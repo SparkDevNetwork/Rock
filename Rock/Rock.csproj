@@ -143,6 +143,10 @@
     <Compile Include="Migrations\201305032320163_Communications.Designer.cs">
       <DependentUpon>201305032320163_Communications.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201305091350409_UpdateGivingBlocks.cs" />
+    <Compile Include="Migrations\201305091350409_UpdateGivingBlocks.Designer.cs">
+      <DependentUpon>201305091350409_UpdateGivingBlocks.cs</DependentUpon>
+    </Compile>
     <Compile Include="SystemGuid\EntityType.cs" />
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
     <Compile Include="Web\UI\Controls\Communication\ChannelControl.cs" />
@@ -600,13 +604,13 @@
     <Compile Include="Model\CodeGenerated\CommunicationRecipientService.cs" />
     <Compile Include="Model\CodeGenerated\CommunicationService.cs" />
     <Compile Include="Model\CodeGenerated\DataViewFilterService.cs" />
-    <Compile Include="Model\CodeGenerated\DataViewService.cs" />    
+    <Compile Include="Model\CodeGenerated\DataViewService.cs" />
     <Compile Include="Model\CodeGenerated\DeviceService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialBatchService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialGatewayService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPledgeService.cs" />
-	<Compile Include="Model\CodeGenerated\FinancialScheduledTransactionDetailService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialScheduledTransactionDetailService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialScheduledTransactionService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionDetailService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionImageService.cs" />
@@ -724,7 +728,6 @@
     <Compile Include="Web\UI\Adapters\CheckBoxListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\DropDownListAdapter.cs" />
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
-    <Compile Include="Web\UI\Controls\LabeledButtonDropDownList.cs" />
     <Compile Include="Web\UI\Controls\Communication\Sms.cs" />
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\HtmlEditor.cs" />
@@ -1540,6 +1543,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201305032320163_Communications.resx">
       <DependentUpon>201305032320163_Communications.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305091350409_UpdateGivingBlocks.resx">
+      <DependentUpon>201305091350409_UpdateGivingBlocks.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
