@@ -36,7 +36,7 @@
 
 </script>
 
-<asp:UpdatePanel ID="upRecurringGift" runat="server" >
+<asp:UpdatePanel ID="pnlContribution" runat="server" >
 <ContentTemplate>
         
     <asp:HiddenField ID="hfCampusId" runat="server" />
@@ -80,7 +80,7 @@
                                 </div>                                
                             </div>
 
-                            <div id="divRecurrence" runat="server" visible="false">
+                            <div id="divFrequency" runat="server" visible="false">
                                 
                                 <div class="row-fluid">
                                     <div class="control-group">                                    
@@ -92,7 +92,7 @@
                                 </div>
 
                                 <div class="row-fluid">
-                                    <Rock:ButtonDropDownList ID="btnRecurrence" runat="server" CssClass="btn btn-primary" Title="Select Recurrence" OnSelectionChanged="btnRecurrence_SelectionChanged" LabelText="Recurs" />			                        
+                                    <Rock:ButtonDropDownList ID="btnFrequency" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnFrequency_SelectionChanged" LabelText="Frequency" />			                        
                                 </div>                                    
                                     
                                 <div class="row-fluid">                                        
@@ -100,7 +100,7 @@
                                 </div>
 
                                 <div class="row-fluid">
-                                    <Rock:LabeledCheckBox id="chkLimitGifts" runat="server" Text="Limit number of gifts"  OnCheckedChanged="chkLimitGifts_CheckedChanged" />
+                                    <Rock:LabeledCheckBox id="chkLimitGifts" runat="server" Text="Limit number of gifts" OnCheckedChanged="chkLimitGifts_CheckedChanged" />
                                     
                                     <div id="divLimitGifts" runat="server" Visible="false">
                                         <Rock:NumberBox ID="txtLimitGifts" runat="server" Text="0" />
@@ -188,109 +188,119 @@
                 <div class="<%= spanClass %> well">
 
                     <fieldset>
-
+                    
                         <legend>Payment Information</legend>
 
-                        <div class="tabbable">
+                        <asp:Panel ID="pnlPayment" runat="server">
 
-                            <ul class="nav nav-tabs">
+                            <asp:PlaceHolder ID="phContent" runat="server">
 
-                                <li <% if ( !_ShowCreditCard ) { %> style="display:none" <% } %> class="active">
-                                    <a href="#tab1" data-toggle="tab">Credit Card</a></li>
+                                <ul class="nav nav-pills">
+                                    <asp:Repeater ID="rptPaymentType" runat="server" >
+                                    <ItemTemplate >
+                                        <li class='<%# GetTabClass(Container.DataItem) %>'>
+                                            <asp:LinkButton ID="lbPaymentType" runat="server" Text='<%# Container.DataItem %>' OnClick="lbPaymentType_Click" />
+                                        </li>
+                                    </ItemTemplate>
+                                    </asp:Repeater>
+                                </ul>
 
-                                <li <% if ( !_ShowChecking ) { %> style="display:none" <% } %>>
-                                    <a href="#tab2" data-toggle="tab">Checking/ACH</a></li>
+                                <div class="tabContent" >
+                                
+                                    <asp:Panel ID="pnlCreditCard" runat="server" Visible="true" > 
 
-                            </ul>
-
-                            <div class="tab-content payment-details">
-
-                                <div class="tab-pane active" id="tab1" <% if ( !_ShowCreditCard ) { %> style="display:none" <% } %> >
-                                    
-                                    <div class="row-fluid"></div>
-
-                                    <div class="row-fluid">
-                                              
-                                        <Rock:NumberBox ID="txtCreditCard" runat="server" LabelText="Credit Card #" CssClass="credit-card" MaxLength="20" />
-
-                                        <ul id="ulCardType" class="card-logos">
-	                                        <li class="card-visa"></li>
-	                                        <li class="card-mastercard"></li>
-	                                        <li class="card-amex"></li>
-	                                        <li class="card-discover"></li>
-                                        </ul>
-
-                                        <asp:HiddenField id="hfCardType" runat="server" ClientIDMode="Static" />
-                                    
-                                    </div>
-                           
-                                    <div class="row-fluid">
-                        
-                                        <div class="expiration-group">
-                                                                                        
-                                            <label class="credit-label">Expiration Date</label>
-                                            <Rock:ButtonDropDownList ID="btnMonthExpiration" runat="server" CssClass="btn btn-primary" Title="Month" />
-                                            <Rock:ButtonDropDownList ID="btnYearExpiration" runat="server" CssClass="btn btn-primary" Title="Year" />
+                                        <div class="row-fluid">
                                         
+                                            <fieldset>      
+
+                                                <Rock:NumberBox ID="txtCreditCard" runat="server" LabelText="Credit Card #" CssClass="credit-card" MaxLength="20" />
+
+                                                <ul id="ulCardType" class="card-logos">
+	                                                <li class="card-visa"></li>
+	                                                <li class="card-mastercard"></li>
+	                                                <li class="card-amex"></li>
+	                                                <li class="card-discover"></li>
+                                                </ul>
+
+                                                <asp:HiddenField id="hfCardType" runat="server" ClientIDMode="Static" />
+
+                                            </fieldset>
+                                    
+                                        </div>
+                           
+                                        <div class="row-fluid">
+                                        
+                                            <div class="expiration-group">                                                                                        
+                                                <label class="credit-label">Expiration Date</label>
+                                                <Rock:ButtonDropDownList ID="btnMonthExpiration" runat="server" CssClass="btn btn-primary" Title="Month" />
+                                                <Rock:ButtonDropDownList ID="btnYearExpiration" runat="server" CssClass="btn btn-primary" Title="Year" />                                        
+                                            </div>
+
+                                            <div>
+                                                <Rock:NumberBox ID="txtCVV" LabelText="CVV #" runat="server" MaxLength="3" CssClass="input-mini" />
+                                            </div> 
+
                                         </div>
 
-                                        <div>                                            
-                                            <Rock:NumberBox ID="txtCVV" LabelText="CVV #" runat="server" MaxLength="3" CssClass="input-small" />
-                                        </div> 
+                                        <div class="row-fluid">
+                                            <Rock:LabeledTextBox ID="txtCardName" runat="server" LabelText="Name on Card" />
+                                        </div>
 
-                                    </div>
+                                    </asp:Panel>
+
+                                    <asp:Panel ID="pnlChecking" runat="server" Visible="false">
+                                    
+                                        <div class="row-fluid">
+                                            <div class="span6">
+                                                <fieldset>
+                                                    <Rock:LabeledTextBox ID="txtBankName" runat="server" LabelText="Bank Name" />
+                                                    <Rock:NumberBox ID="txtRouting" runat="server" LabelText="Routing #" />
+                                                    <Rock:NumberBox ID="txtAccount" runat="server" LabelText="Account #" />
+                                                </fieldset>
+                                            </div>
+                                        </div>
+
+                                        <div class="row-fluid">
+                                            <div class="span6">
+                                                <fieldset>
+                                                    <img class="check-image" src="../../Assets/Images/check-image.png" />
+                                                </fieldset>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="row-fluid">
+                                            <fieldset>
+                                                <Rock:LabeledRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" LabelText="Account Type">
+                                                    <asp:ListItem text="Checking" Selected="true" />
+                                                    <asp:ListItem text="Savings" />
+                                                </Rock:LabeledRadioButtonList>
+                                            </fieldset>
+                                        </div>
+
+                                    </asp:Panel>
+                                
+                                </div>
+
+                                <div id="divConfirmAddress" runat="server">
 
                                     <div class="row-fluid">
-                                        <Rock:LabeledTextBox ID="txtCardName" runat="server" LabelText="Name on Card" />
-                                    </div>
-                                                                
-                                </div>
+                                        <Rock:LabeledCheckBox ID="chkDefaultAddress" runat="server" Text="Use address from above" Checked="true"  OnCheckedChanged="chkDefaultAddress_CheckedChanged"/>
 
-                                <div class="tab-pane" id="tab2" <% if ( !_ShowChecking ) { %> style="display:none" <% } %> >
-                                    
-                                    <div class="row-fluid span6">
-                                        
-                                        <Rock:LabeledTextBox ID="txtBankName" runat="server" LabelText="Bank Name" />
-                                        <Rock:NumberBox ID="txtRouting" runat="server" LabelText="Routing #" />
-                                        <Rock:NumberBox ID="txtAccount" runat="server" LabelText="Account #" />
+                                        <div ID="divNewAddress" runat="server" visible="false">
+
+                                            <!-- insert new address panel here -->
+
+                                        </div>
 
                                     </div>
 
-                                    <div class="row-fluid span6">                                        
-                                        <img class="check-image" src="../../Assets/Images/check-image.png" />
-                                    </div>
-                                        
-                                    <div class="row-fluid btn-group">
-
-                                        <Rock:LabeledRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" LabelText="Account Type">
-                                            <asp:ListItem text="Checking" Selected="true" />
-                                            <asp:ListItem text="Savings" />
-                                        </Rock:LabeledRadioButtonList>                                        
-
-                                    </div>                                     
-
                                 </div>
 
-                            </div>
+                            </asp:PlaceHolder>
 
-                        </div>
+                        </asp:Panel>
 
-                        <div id="divConfirmAddress">
-
-                            <div class="row-fluid">
-                                <Rock:LabeledCheckBox ID="chkDefaultAddress" runat="server" Text="Use address from above" Checked="true"  OnCheckedChanged="chkDefaultAddress_CheckedChanged"/>
-
-                                <div ID="divNewAddress" runat="server" visible="false">
-
-                                    <!-- insert new address panel here -->
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </fieldset>
+                    </fieldset>                    
 
                 </div>
                 

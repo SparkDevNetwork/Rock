@@ -10,7 +10,7 @@
             <Rock:DateTimePicker ID="dtGivingProfileDate" runat="server" SourceTypeName="Rock.Model.FinancialGivingProfile, Rock" PropertyName="StartDate" LabelText="Date" />
         </Rock:GridFilter>
 
-        <Rock:Grid ID="rGridGivingProfile" runat="server" EmptyDataText="No GivingProfilees Found" OnRowDataBound="rGridGivingProfile_RowDataBound"
+        <Rock:Grid ID="rGridGivingProfile" runat="server" EmptyDataText="No Scheduled Contributions Found" OnRowDataBound="rGridGivingProfile_RowDataBound"
              ShowConfirmDeleteDialog="true"  OnRowSelected="rGridGivingProfile_Edit">
             <Columns>
                 

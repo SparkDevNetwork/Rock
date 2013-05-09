@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Show Credit Card", "Allow users to give using a credit card?", true, "UI Options", 2 )]
     [BooleanField( "Show Checking/ACH", "Allow users to give using a checking account?", true, "UI Options", 3 )]
     [BooleanField( "Show Recurrence", "Allow users to give recurring gifts?", true, "UI Options", 4 )]
-    [BooleanField( "Request Phone", "Should financial contributions require a user's phone number?", true, "Data Requirements", 0 )]    
+    [BooleanField( "Require Phone", "Should financial contributions require a user's phone number?", true, "Data Requirements", 0 )]    
     public partial class GivingProfileDetail : RockBlock
     {
         #region Fields
@@ -45,7 +45,27 @@ namespace RockWeb.Blocks.Finance
         protected bool _ShowChecking = false;
         protected bool _RequirePhone = false;
         protected string spanClass = "";
-                        
+
+        /// <summary>
+        /// Gets or sets the current property.
+        /// </summary>
+        /// <value>
+        /// The current property.
+        /// </value>
+        protected string CurrentProperty
+        {
+            get
+            {
+                object currentProperty = ViewState["CurrentProperty"];
+                return currentProperty != null ? currentProperty.ToString() : "Credit Card";
+            }
+
+            set
+            {
+                ViewState["CurrentProperty"] = value;
+            }
+        }
+
         #endregion
 
         #region Control Methods
@@ -87,7 +107,6 @@ namespace RockWeb.Blocks.Finance
                 {
                     txtPhone.Required = true;
                 }
-
             
                 BindAccounts();
                 BindOptions();                
@@ -116,7 +135,6 @@ namespace RockWeb.Blocks.Finance
         {
             FinancialAccountService accountService = new FinancialAccountService(); 
             FinancialTransactionDetail account;
-            _detailList.Clear();
             
             var lookupAccounts = accountService.Queryable().Where(f => f.IsActive)
                 .Distinct().OrderBy(f => f.Order).ToList();
@@ -132,13 +150,13 @@ namespace RockWeb.Blocks.Finance
                 account.Amount = amount;                
                 //account.TransactionId = _transaction.Id;
                 
-                _detailList.Add(account);
+                //detailList.Add(account);
             }
             
             account = new FinancialTransactionDetail();
             account.Account = lookupAccounts.Where( f => f.PublicName == btnAddAccount.SelectedValue ).FirstOrDefault();
             account.Amount = 0M;
-            _detailList.Add( account );
+            //detailList.Add( account );
 
             if ( btnAddAccount.Items.Count > 1 )
             {
@@ -150,18 +168,18 @@ namespace RockWeb.Blocks.Finance
                 divAddAccount.Visible = false;
             }
 
-            rptAccountList.DataSource = _detailList.ToDictionary(f => (string)f.Account.PublicName, f => (decimal)f.Amount);
-            rptAccountList.DataBind();
+            //rptAccountList.DataSource = detailList.ToDictionary(f => (string)f.Account.PublicName, f => (decimal)f.Amount);
+            //rptAccountList.DataBind();
         }
 
         /// <summary>
-        /// Handles the SelectionChanged event of the btnRecurrence control.
+        /// Handles the SelectionChanged event of the btnFrequency control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnRecurrence_SelectionChanged( object sender, EventArgs e )
+        protected void btnFrequency_SelectionChanged( object sender, EventArgs e )
         {
-            divRecurrence.Visible = true;
+            divFrequency.Visible = true;
         }
 
         /// <summary>
@@ -190,7 +208,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void chkSaveCheck_CheckedChanged( object sender, EventArgs e )
+        protected void chkSavePayment_CheckedChanged( object sender, EventArgs e )
         {
             divPaymentNick.Visible = !divPaymentNick.Visible;
         }
@@ -213,6 +231,26 @@ namespace RockWeb.Blocks.Finance
         protected void chkDefaultAddress_CheckedChanged( object sender, EventArgs e )
         {
             divNewAddress.Visible = !divNewAddress.Visible;
+        }
+
+        /// <summary>
+        /// Handles the Click1 event of the lbPaymentType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbPaymentType_Click( object sender, EventArgs e )
+        {
+            LinkButton lb = sender as LinkButton;
+            if ( lb != null )
+            {
+                CurrentProperty = lb.Text;
+
+                var paymentTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_PAYMENT_TYPE );
+                rptPaymentType.DataSource = DefinedTypeCache.Read( paymentTypeGuid ).DefinedValues;
+                rptPaymentType.DataBind();
+            }
+
+            ShowSelectedTab();
         }
 
         /// <summary>
@@ -280,13 +318,12 @@ namespace RockWeb.Blocks.Finance
                 detail.Summary = "$" + amount + " contribution to " + account.Account + " by " + person.FullName;
 
                 detailService.Add(detail, person.Id);
-                detailList.Add(account);
+                //detailList.Add(account);
             }
 
-            _transaction.AuthorizedPersonId = person.Id;
-            _transaction.Amount = _detailList.Sum(g => (decimal)g.Amount);
-            ViewState["CachedTransaction"] = _transaction;
-            _transactionService.Save(_transaction, CurrentPersonId);
+            transaction.AuthorizedPersonId = person.Id;
+            //transaction.Amount = detailList.Sum(g => (decimal)g.Amount);
+            transactionService.Save( transaction, CurrentPersonId );
 
             // process payment type
             if ( !string.IsNullOrEmpty(hfCardType.Value) )
@@ -314,16 +351,16 @@ namespace RockWeb.Blocks.Finance
                 divPaymentConfirmation.Visible = false;                
             }
 
-            litGiftTotal.Text = _transaction.Amount.ToString();
+            litGiftTotal.Text = transaction.Amount.ToString();
 
-            if ( _detailList.Count == 1 )
-            {
-                litMultiGift.Visible = false;
-                litGiftTotal.Visible = false;
-            }
+            //if ( detailList.Count == 1 )
+            //{
+            //    litMultiGift.Visible = false;
+            //    litGiftTotal.Visible = false;
+            //}
             
-            rptGiftConfirmation.DataSource = _detailList.ToDictionary(f => (string)f.Account.PublicName, f => (decimal)f.Amount);
-            rptGiftConfirmation.DataBind();
+            //rptGiftConfirmation.DataSource = detailList.ToDictionary(f => (string)f.Account.PublicName, f => (decimal)f.Amount);
+            //rptGiftConfirmation.DataBind();
 
             pnlDetails.Visible = false;
             pnlConfirm.Visible = true;
@@ -331,17 +368,20 @@ namespace RockWeb.Blocks.Finance
 
         protected void btnGive_Click( object sender, EventArgs e )
         {
-            // TODO give through payment gateway
+            FinancialTransactionService transactionService = new FinancialTransactionService();
+            FinancialTransaction transaction = new FinancialTransaction();
 
-            _transaction = (FinancialTransaction)ViewState["CachedTransaction"];
-            _transactionService = new FinancialTransactionService();
-            _transactionService.Save( _transaction, CurrentPersonId );
+            //foreach ( transaction detail) 
+            //{
+
+            //}
+
+            transactionService.Save( transaction, CurrentPersonId );
 
             litDateGift.Text = DateTime.Now.ToString( "f" );
             litGiftTotal2.Text = litGiftTotal.Text;
             litPaymentType2.Text = litPaymentType.Text;
-
-
+            
             pnlConfirm.Visible = false;
             pnlComplete.Visible = true;
         }
@@ -436,14 +476,34 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Gets the tab class.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns></returns>
+        protected string GetTabClass( object property )
+        {
+            if ( property.ToString() == CurrentProperty )
+            {
+                return "active";
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
         /// Binds the page control options.
         /// </summary>
         protected void BindOptions()
         {
             // bind frequency options
             var frequencyTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_FREQUENCY );
-            btnRecurrence.BindToDefinedType( DefinedTypeCache.Read( frequencyTypeGuid ) );
+            btnFrequency.BindToDefinedType( DefinedTypeCache.Read( frequencyTypeGuid ) );
             
+            // bind payment types
+            var paymentTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_PAYMENT_TYPE );
+            rptPaymentType.DataSource = DefinedTypeCache.Read( paymentTypeGuid ).DefinedValues;
+            rptPaymentType.DataBind();
+
             // bind credit card options
             btnMonthExpiration.Items.Clear();
             btnYearExpiration.Items.Clear();
@@ -453,6 +513,27 @@ namespace RockWeb.Blocks.Finance
             
             btnMonthExpiration.DataBind();
             btnYearExpiration.DataBind();
+        }
+
+        /// <summary>
+        /// Shows the selected pane.
+        /// </summary>
+        private void ShowSelectedTab()
+        {
+            if ( CurrentProperty.Equals( "Credit Card" ) )
+            {
+                pnlCreditCard.Visible = true;
+                pnlChecking.Visible = false;
+                pnlCreditCard.DataBind();
+            }
+            else if ( CurrentProperty.Equals( "Checking/ACH" ) )
+            {
+                pnlCreditCard.Visible = false;
+                pnlChecking.Visible = true;
+                pnlChecking.DataBind();
+            }
+
+            pnlPayment.DataBind();
         }
 
         #endregion
