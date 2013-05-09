@@ -585,6 +585,21 @@ namespace Rock
         }
         #endregion
 
+        #region TimeSpan Extensions
+
+        /// <summary>
+        /// Returns a TimeSpan to HH:MM AM/PM.
+        /// Examples: 1:45 PM, 12:01 AM
+        /// </summary>
+        /// <param name="timespan">The timespan.</param>
+        /// <returns></returns>
+        public static string ToTimeString( this TimeSpan timespan )
+        {
+            return DateTime.Today.Add( timespan ).ToShortTimeString();
+        }
+
+        #endregion
+
         #region Control Extensions
 
         /// <summary>

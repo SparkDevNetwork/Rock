@@ -97,12 +97,12 @@ namespace RockWeb.Blocks.Core
             switch ( e.Key )
             {
                 case "Channel":
-                    
+
                     int entityTypeId = 0;
-                    if (int.TryParse(e.Value, out entityTypeId))
+                    if ( int.TryParse( e.Value, out entityTypeId ) )
                     {
-                        var entity = EntityTypeCache.Read(entityTypeId);
-                        if (entity != null)
+                        var entity = EntityTypeCache.Read( entityTypeId );
+                        if ( entity != null )
                         {
                             e.Value = entity.FriendlyName;
                         }
@@ -112,7 +112,7 @@ namespace RockWeb.Blocks.Core
 
                 case "Status":
 
-                    if ( !string.IsNullOrWhiteSpace(e.Value) )
+                    if ( !string.IsNullOrWhiteSpace( e.Value ) )
                     {
                         e.Value = ( (CommunicationStatus)System.Enum.Parse( typeof( CommunicationStatus ), e.Value ) ).ConvertToString();
                     }
@@ -195,7 +195,7 @@ namespace RockWeb.Blocks.Core
                 cpChannel.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
             }
 
-            ddlStatus.BindToEnum(typeof(CommunicationStatus));
+            ddlStatus.BindToEnum( typeof( CommunicationStatus ) );
             // Replace the Transient status with an emtyp value (need an empty one, and don't need transient value)
             ddlStatus.Items[0].Text = string.Empty;
             ddlStatus.Items[0].Value = string.Empty;
@@ -212,7 +212,7 @@ namespace RockWeb.Blocks.Core
                 ddlStatus.SelectedValue = rFilter.GetUserPreference( "Status" );
 
                 int personId = 0;
-                if ( int.TryParse( rFilter.GetUserPreference("Created By"), out personId ) )
+                if ( int.TryParse( rFilter.GetUserPreference( "Created By" ), out personId ) )
                 {
                     var personService = new PersonService();
                     var person = personService.Get( personId );
@@ -247,13 +247,10 @@ namespace RockWeb.Blocks.Core
                 }
 
                 string status = rFilter.GetUserPreference( "Status" );
-                if ( !string.IsNullOrWhiteSpace(status) )
+                if ( !string.IsNullOrWhiteSpace( status ) )
                 {
-                    CommunicationStatus communicationStatus = (CommunicationStatus)System.Enum.Parse( typeof( CommunicationStatus ), status );
-                    if ( communicationStatus != null )
-                    {
-                        communications = communications.Where( c => c.Status == communicationStatus );
-                    }
+                    var communicationStatus = (CommunicationStatus)System.Enum.Parse( typeof( CommunicationStatus ), status );
+                    communications = communications.Where( c => c.Status == communicationStatus );
                 }
 
                 if ( canApprove )
@@ -324,5 +321,5 @@ namespace RockWeb.Blocks.Core
             public int CancelledRecipients { get; set; }
         }
 
-}
+    }
 }

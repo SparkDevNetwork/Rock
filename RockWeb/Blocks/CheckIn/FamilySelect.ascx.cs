@@ -104,8 +104,16 @@ namespace RockWeb.Blocks.CheckIn
             var errors = new List<string>();
             if ( ProcessActivity( "Person Search", out errors ) )
             {
-                SaveState();
-                NavigateToNextPage();
+                if ( CurrentCheckInState.CheckIn.Families.All( f => f.People.Count == 0 ) )
+                {
+                    string errorMsg = "<ul><li>No one in that family is eligible to check-in.</li></ul>";
+                    maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
+                }
+                else
+                {
+                    SaveState();
+                    NavigateToNextPage();
+                }
             }
             else
             {

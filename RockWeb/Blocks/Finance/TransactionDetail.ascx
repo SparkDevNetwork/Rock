@@ -21,7 +21,7 @@
                 <Rock:DataTextBox ID="tbSummary" TabIndex="2" runat="server" LabelText="Summary" TextMode="MultiLine" Rows="4"
                     SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="Summary" />
 
-                <Rock:DateTimePicker ID="dtTransactionDateTime" TabIndex="3" runat="server" SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionDateTime" LabelText="Transaction Date" />
+                <Rock:DateTimePicker ID="dtTransactionDateTime" TabIndex="3" runat="server" SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionDateTime" LabelText="Transaction Date/Time" />
 
                 <Rock:DataTextBox ID="tbAmount" runat="server" LabelText="Amount" TabIndex="4"
                     SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="Amount" />

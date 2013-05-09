@@ -7,7 +7,7 @@
         <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
         <Rock:GridFilter ID="rFBFilter" runat="server">
-            <Rock:DateTimePicker ID="dtBatchDate" runat="server" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDate" LabelText="Date" />
+            <Rock:DatePicker ID="dtBatchDate" runat="server" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDate" LabelText="Date" />
             <Rock:LabeledTextBox ID="txtTitle" runat="server" LabelText="Title"></Rock:LabeledTextBox>
             <Rock:LabeledDropDownList ID="ddlStatus" runat="server" LabelText="Status" />
             <Rock:LabeledDropDownList ID="ddlCampus" runat="server" LabelText="Campus" />
