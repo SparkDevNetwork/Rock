@@ -41,17 +41,11 @@ namespace RockWeb.Blocks.Finance
         #region Fields
 
         protected bool _VerticalLayout = false;
-        protected bool _ShowCampuses = false;
-        protected bool _ShowSaveDetails = false;
         protected bool _ShowCreditCard = false;
         protected bool _ShowChecking = false;
-        protected bool _RequestPhone = false;
+        protected bool _RequirePhone = false;
         protected string spanClass = "";
-
-        protected List<FinancialTransactionDetail> _detailList = new List<FinancialTransactionDetail>();
-        protected FinancialTransactionService _transactionService = new FinancialTransactionService();
-        protected FinancialTransaction _transaction = new FinancialTransaction();
-
+                        
         #endregion
 
         #region Control Methods
@@ -65,29 +59,38 @@ namespace RockWeb.Blocks.Finance
             base.OnInit( e );
 
             _VerticalLayout = Convert.ToBoolean( GetAttributeValue( "ShowVerticalLayout" ) );
-            
+
             spanClass = ( _VerticalLayout ) ? "span12" : "span6";
 
-            _ShowCampuses = Convert.ToBoolean( GetAttributeValue( "ShowCampuses" ) );
+            
             _ShowCreditCard = Convert.ToBoolean( GetAttributeValue( "ShowCreditCard" ) );
             _ShowChecking = Convert.ToBoolean( GetAttributeValue( "ShowChecking/ACH" ) );
-            _RequestPhone = Convert.ToBoolean( GetAttributeValue( "RequestPhone" ) );
-
-            if ( CurrentPerson != null )
-            {
-                _ShowSaveDetails = true;
-            }
-
-            if ( _ShowCampuses )
-            {
-                BindCampuses();
-            }
-
+            
             if ( !IsPostBack )
             {
+                // Load account information
+                if ( CurrentPerson != null )
+                {
+                    BindPersonDetails();
+                    divSavePayment.Visible = true;
+                    divCreateAccount.Visible = false;
+                }
+
+                // Show Campus?
+                if ( Convert.ToBoolean( GetAttributeValue( "ShowCampuses" ) ) )
+                {
+                    BindCampuses();
+                }
+
+                // Request phone number?
+                if ( Convert.ToBoolean( GetAttributeValue( "RequirePhone" ) ) )
+                {
+                    txtPhone.Required = true;
+                }
+
+            
                 BindAccounts();
-                BindOptions();
-                BindPersonDetails();
+                BindOptions();                
             }
         }
 
@@ -127,7 +130,7 @@ namespace RockWeb.Blocks.Finance
                 account.Account = lookupAccounts.Where(f => f.PublicName == accountName).FirstOrDefault();
                 decimal amount = Decimal.Parse( ( (LabeledTextBox)item.FindControl( "txtAccountAmount" ) ).Text );
                 account.Amount = amount;                
-                account.TransactionId = _transaction.Id;
+                //account.TransactionId = _transaction.Id;
                 
                 _detailList.Add(account);
             }
@@ -183,23 +186,13 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Handles the CheckedChanged event of the chkSaveCard control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void chkSaveCard_CheckedChanged( object sender, EventArgs e )
-        {
-            divCardNick.Visible = !divCardNick.Visible;
-        }
-
-        /// <summary>
         /// Handles the CheckedChanged event of the chkSaveCheck control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void chkSaveCheck_CheckedChanged( object sender, EventArgs e )
         {
-            divCheckNick.Visible = !divCheckNick.Visible;
+            divPaymentNick.Visible = !divPaymentNick.Visible;
         }
 
         /// <summary>
@@ -207,9 +200,19 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void chkCreateAcct_CheckedChanged( object sender, EventArgs e )
+        protected void chkCreateAccount_CheckedChanged( object sender, EventArgs e )
         {
-            divCreateAcct.Visible = !divCreateAcct.Visible;
+            divCreateAccount.Visible = !divCreateAccount.Visible;
+        }
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the chkDefaultAddress control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void chkDefaultAddress_CheckedChanged( object sender, EventArgs e )
+        {
+            divNewAddress.Visible = !divNewAddress.Visible;
         }
 
         /// <summary>
@@ -220,10 +223,10 @@ namespace RockWeb.Blocks.Finance
         protected void btnNext_Click( object sender, EventArgs e )
         {
             FinancialTransactionDetailService detailService = new FinancialTransactionDetailService();
-            PersonService personService = new PersonService();
+            FinancialTransactionService transactionService = new FinancialTransactionService();
             FinancialAccountService accountService = new FinancialAccountService();            
-            _transactionService = new FinancialTransactionService();            
-            
+            PersonService personService = new PersonService();
+            FinancialTransaction transaction = new FinancialTransaction();
             Person person;
 
             // process person details          
@@ -253,12 +256,12 @@ namespace RockWeb.Blocks.Finance
             var lookupAccounts = accountService.Queryable().Where(f => f.IsActive)
                 .Distinct().OrderBy(f => f.Order).ToList();
 
-            _transaction = (FinancialTransaction)ViewState["CachedTransaction"];
-            if ( _transaction == null )
+            //transaction = transactionService.Get
+            if ( transaction == null )
             {
-                _transaction = new FinancialTransaction();
-                _transaction.TransactionTypeValueId = Rock.Web.Cache.DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ).Id;
-                _transactionService.Add( _transaction, person.Id );
+                transaction = new FinancialTransaction();
+                transaction.TransactionTypeValueId = Rock.Web.Cache.DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ).Id;
+                transactionService.Add( transaction, person.Id );
             }
 
             foreach ( RepeaterItem item in rptAccountList.Items )
@@ -272,12 +275,12 @@ namespace RockWeb.Blocks.Finance
                 decimal amount = Decimal.Parse( accountItem.Text );
                 detail.Amount = amount;
                 account.Amount = amount;
-                detail.TransactionId = _transaction.Id;
-                account.TransactionId = _transaction.Id;
+                detail.TransactionId = transaction.Id;
+                account.TransactionId = transaction.Id;
                 detail.Summary = "$" + amount + " contribution to " + account.Account + " by " + person.FullName;
 
                 detailService.Add(detail, person.Id);
-                _detailList.Add(account);
+                detailList.Add(account);
             }
 
             _transaction.AuthorizedPersonId = person.Id;
@@ -355,15 +358,14 @@ namespace RockWeb.Blocks.Finance
             btnCampusList.Items.Clear();
             CampusService campusService = new CampusService();
             var items = campusService.Queryable().OrderBy( a => a.Name )
-                .Select( a => a.Name ).Distinct().ToList();
+                .Select( a => a.Name ).Distinct();
 
-            foreach ( string item in items )
+            if ( items.Any() )
             {
-                btnCampusList.Items.Add( item );
+                btnCampusList.DataSource = items.ToList();
+                divCampus.Visible = true;
+                btnCampusList.Title = "Select Campus";
             }
-
-            btnCampusList.Title = "Select Campus";
-            divCampus.Visible = items.Any();
         }
 
         /// <summary>
@@ -371,10 +373,9 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         protected void BindAccounts()
         {
-            FinancialAccountService accountService = new FinancialAccountService();
-            _transaction = new FinancialTransaction();            
-            _transactionService.Save( _transaction, CurrentPersonId );
-
+            List<FinancialTransactionDetail> transactionList = new List<FinancialTransactionDetail>();
+            FinancialAccountService accountService = new FinancialAccountService();            
+            
             var selectedAccounts = accountService.Queryable().Where( f => f.IsActive );
 
             if ( GetAttributeValue( "DefaultAccounts" ).Any() )
@@ -390,17 +391,14 @@ namespace RockWeb.Blocks.Finance
             {
                 divAddAccount.Visible = false;
             }
-            
-            //ViewState["CachedTransaction"] = _transaction;
-            List<FinancialTransactionDetail> transactionList = new List<FinancialTransactionDetail>();
                         
             foreach ( var account in selectedAccounts )
             {
                 FinancialTransactionDetail detail = new FinancialTransactionDetail();
                 detail.AccountId = account.Id;
                 detail.Account = account;
-                detail.Amount = 0M;
-                transactionList.Add( detail );                
+                detail.Amount = 0;
+                transactionList.Add( detail );
             }
 
             rptAccountList.DataSource = transactionList;

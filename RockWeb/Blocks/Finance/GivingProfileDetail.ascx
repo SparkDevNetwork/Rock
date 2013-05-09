@@ -38,9 +38,7 @@
 
 <asp:UpdatePanel ID="upRecurringGift" runat="server" >
 <ContentTemplate>
-
-    <% spanClass = ( _VerticalLayout ) ? "span12" : "span6"; %>
-
+        
     <asp:HiddenField ID="hfCampusId" runat="server" />
 
     <asp:Panel ID="pnlDetails" runat="server">
@@ -57,10 +55,10 @@
 
                         <div class="form-horizontal">
 
-                            <div id="divCampus" class="row-fluid" runat="server" visible="false">                                                            
-                                
-                                <Rock:ButtonDropDownList ID="btnCampusList" runat="server" CssClass="btn btn-primary" Title="Select Campus" LabelText="Campus" />
-                                
+                            <div id="divCampus" runat="server" visible="false">                                                            
+                                <div class="row-fluid">
+                                    <Rock:ButtonDropDownList ID="btnCampusList" runat="server" CssClass="btn btn-primary" Title="Select Campus" LabelText="Campus" />
+                                </div>                                
                             </div>
                             
                             <div id="divAccountList">                                
@@ -76,17 +74,16 @@
                                 </asp:Repeater>
                             </div>                     
 
-                            <div ID="divAddAccount" class="row-fluid" runat="server">
-                                
-                                <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnAddAccount_SelectionChanged" Title="Add Another Gift" />
-                                
+                            <div ID="divAddAccount" runat="server">
+                                <div class="row-fluid">
+                                    <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnAddAccount_SelectionChanged" Title="Add Another Gift" />
+                                </div>                                
                             </div>
 
                             <div id="divRecurrence" runat="server" visible="false">
                                 
                                 <div class="row-fluid">
-                                    <div class="control-group">
-                                    
+                                    <div class="control-group">                                    
                                         <label id="lblTotalAmount" class="control-label" for="spnTotal"><b>Total Amount</b></label>
                                         <div class="controls amount-right">
                                             <b>$ <span id="spnTotal">0.00</span></b>
@@ -107,8 +104,7 @@
                                     
                                     <div id="divLimitGifts" runat="server" Visible="false">
                                         <Rock:NumberBox ID="txtLimitGifts" runat="server" Text="0" />
-                                    </div>
-                                    
+                                    </div>                                    
                                 </div>
 
                             </div>
@@ -158,12 +154,12 @@
                                 <Rock:LabeledTextBox ID="txtCity" LabelText="City" runat="server" Required="true" CssClass="input-large" />
                             </div>
   
-                            <div class="span3">
+                            <div class="span4">
                                 <Rock:StateDropDownList ID="ddlState" runat="server" LabelText="State" CssClass="state-select" Required="true" />
                             
                             </div>
 
-                            <div class="span3">
+                            <div class="span2">
                                 <Rock:LabeledTextBox ID="txtZipcode" LabelText="Zip" runat="server" Required="true" CssClass="input-small" />
                             </div>
 
@@ -172,6 +168,12 @@
                         <div class="row-fluid">   
                             <div class="span12" >
                                 <Rock:LabeledTextBox ID="txtEmail" LabelText="Email" runat="server" Required="true" CssClass="input-xlarge" />
+                            </div>
+                        </div>
+
+                        <div class="row-fluid" >   
+                            <div class="span12" >
+                                <Rock:LabeledTextBox ID="txtPhone" LabelText="Phone" runat="server" />
                             </div>
                         </div>
 
@@ -241,21 +243,7 @@
                                     <div class="row-fluid">
                                         <Rock:LabeledTextBox ID="txtCardName" runat="server" LabelText="Name on Card" />
                                     </div>
-
-                                    <% if ( _ShowSaveDetails ) { %>
-
-                                    <div class="row-fluid">
-
-                                        <Rock:LabeledCheckBox ID="chkSaveCard" runat="server" Text="Save My Card" OnCheckedChanged="chkSaveCard_CheckedChanged" />
-                                                                                
-                                        <div id="divCardNick" runat="server" visible="false" >
-                                            <Rock:LabeledTextBox ID="txtCardNick" runat="server" LabelText="Enter a card nickname" />
-                                        </div>
-                                        
-                                    </div>
-
-                                    <% } %>
-                            
+                                                                
                                 </div>
 
                                 <div class="tab-pane" id="tab2" <% if ( !_ShowChecking ) { %> style="display:none" <% } %> >
@@ -279,21 +267,22 @@
                                             <asp:ListItem text="Savings" />
                                         </Rock:LabeledRadioButtonList>                                        
 
-                                    </div>  
+                                    </div>                                     
 
-                                    <% if ( _ShowSaveDetails ) { %>
+                                </div>
 
-                                    <div class="row-fluid">
+                            </div>
 
-                                        <Rock:LabeledCheckBox ID="chkSaveCheck" runat="server" Text="Save My Account #"  OnCheckedChanged="chkSaveCheck_CheckedChanged" />
-                                                                                
-                                        <div id="divCheckNick" runat="server" visible="false">
-                                            <Rock:LabeledTextBox ID="txtCheckNick" runat="server" LabelText="Enter an account nickname" />
-                                        </div>                                        
-                                        
-                                    </div>
+                        </div>
 
-                                    <% } %>
+                        <div id="divConfirmAddress">
+
+                            <div class="row-fluid">
+                                <Rock:LabeledCheckBox ID="chkDefaultAddress" runat="server" Text="Use address from above" Checked="true"  OnCheckedChanged="chkDefaultAddress_CheckedChanged"/>
+
+                                <div ID="divNewAddress" runat="server" visible="false">
+
+                                    <!-- insert new address panel here -->
 
                                 </div>
 
@@ -372,14 +361,34 @@
                     to NewSpring Church using your <asp:Literal ID="litPaymentType2" runat="server"/>.                                       
                 </p>  
                  
-                <Rock:LabeledCheckBox ID="chkCreateAcct" runat="server" LabelText="Save My Information" OnCheckedChanged="chkCreateAcct_CheckedChanged"  />
+                 <div id="divSavePayment" runat="server" visible="false">
+
+                    <div class="row-fluid">
+
+                        <Rock:LabeledCheckBox ID="chkSavePayment" runat="server" Text="Save my payment information"  OnCheckedChanged="chkSavePayment_CheckedChanged" />
+                                                                                
+                        <div id="divPaymentNick" runat="server" visible="false">
+                            <Rock:LabeledTextBox ID="txtPaymentNick" runat="server" LabelText="Enter a nickname for your payment account" />
+                        </div>                                        
+                                        
+                    </div>
+
+                </div>
+
+                <div id="divSaveInformation" runat="server" visible="true">
+
+                    <Rock:LabeledCheckBox ID="chkCreateAccount" runat="server" LabelText="Save My Information" OnCheckedChanged="chkCreateAccount_CheckedChanged"  />
                 
-                <div id="divCreateAcct" runat="server" visible="false" >
-							
-                    <Rock:LabeledTextBox ID="txtUserName" runat="server" LabelText="Enter a username" />
-                    <Rock:LabeledTextBox ID="txtPassword" runat="server" TextMode="Password" LabelText="Enter a password" />
-	                
-                </div>                             
+                    <div id="divCreateAccount" runat="server" visible="false" >
+
+				        <div class="row-fluid">
+                            <Rock:LabeledTextBox ID="txtUserName" runat="server" LabelText="Enter a username" />
+                            <Rock:LabeledTextBox ID="txtPassword" runat="server" TextMode="Password" LabelText="Enter a password" />	                
+                        </div>                             
+
+                    </div>
+
+                </div>
                 
             </div>            
 
