@@ -698,13 +698,13 @@ namespace Rock.Web.Cache
         /// <param name="levelsDeep">The page levels deep.</param>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public XDocument MenuXml( int levelsDeep, Person person )
+        public XDocument MenuXml( int levelsDeep, Person person, PageCache currentPage = null, Dictionary<string, string> parameters = null )
         {
-            XElement menuElement = MenuXmlElement( levelsDeep, person );
+            XElement menuElement = MenuXmlElement( levelsDeep, person, currentPage, parameters );
             return new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), menuElement );
         }
 
-        private XElement MenuXmlElement( int levelsDeep, Person person )
+        private XElement MenuXmlElement( int levelsDeep, Person person, PageCache currentPage = null, Dictionary<string, string> parameters = null )
         {
             if ( levelsDeep >= 0 && this.DisplayInNav( person ) )
             {
@@ -716,10 +716,13 @@ namespace Rock.Web.Cache
                         this.IconFileId.Value );
                 }
 
+                bool isCurrentPage = currentPage != null && currentPage.Id == this.Id;
+
                 XElement pageElement = new XElement( "page",
                     new XAttribute( "id", this.Id ),
                     new XAttribute( "title", this.Title ?? this.Name ),
-                    new XAttribute( "url", new PageReference(this.Id).BuildUrl() ),
+                    new XAttribute( "current", isCurrentPage.ToString() ),
+                    new XAttribute( "url", new PageReference( this.Id, 0, parameters ).BuildUrl() ),
                     new XAttribute( "display-description", this.MenuDisplayDescription.ToString().ToLower() ),
                     new XAttribute( "display-icon", this.MenuDisplayIcon.ToString().ToLower() ),
                     new XAttribute( "display-child-pages", this.MenuDisplayChildPages.ToString().ToLower() ),
@@ -736,7 +739,7 @@ namespace Rock.Web.Cache
                     {
                         if ( page != null )
                         {
-                            XElement childPageElement = page.MenuXmlElement( levelsDeep - 1, person );
+                            XElement childPageElement = page.MenuXmlElement( levelsDeep - 1, person, currentPage, parameters );
                             if ( childPageElement != null )
                                 childPagesElement.Add( childPageElement );
                         }
