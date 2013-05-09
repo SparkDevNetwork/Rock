@@ -45,10 +45,17 @@ namespace Rock.Web.UI.Adapters
 
                 writer.AddAttribute( "id", rb.ClientID );
                 writer.AddAttribute( "type", "radio" );
-                writer.AddAttribute( "name", rb.UniqueID );
+                writer.AddAttribute( "name", rb.GroupName );
+                writer.AddAttribute( "class", rb.CssClass );
                 if ( rb.Checked )
                 {
                     writer.AddAttribute( "checked", "checked" );
+                }
+
+                foreach ( var attributeKey in rb.Attributes.Keys )
+                {
+                    var key = attributeKey as string;
+                    writer.AddAttribute( key, rb.Attributes[key] );
                 }
 
                 foreach ( var inputAttributeKey in rb.InputAttributes.Keys )
