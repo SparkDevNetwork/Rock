@@ -11,17 +11,15 @@
         <style>
             .modal-control {
                 /* modal is left:50%, but might be getting ignored since most of our modals are in iframe's */
-                left:25%;
-
+                left: 25%;
                 /* override modal's background-color of grey, which always gets overridden in all our other modals by the iframe's body to be white again */
-                background-color:white;
-
+                background-color: white;
                 /* override modal's z-index to be bigger than modal backdrop, but less than datepicker, so that datepicker is on top  */
-                z-index:1041;
+                z-index: 1041;
             }
         </style>
 
-        <div id="myModal" class="modal hide fade modal-control" >
+        <div id="myModal" class="modal hide fade modal-control">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
                 <h3>Schedule Builder</h3>
@@ -31,63 +29,45 @@
                 <!-- modal body -->
                 <div class="form-horizontal">
 
+                    <asp:ValidationSummary runat="server" />
+
                     <Rock:DateTimePicker runat="server" ID="dpStartDateTime" LabelText="Start Date / Time" />
 
                     <div class="control-group">
-                        <label class="control-label" for="inputEmail">Duration</label>
+                        <asp:Label ID="lblDuration" runat="server" CssClass="control-label" Text="Duration" />
                         <div class="controls">
-                            <input type="text" class="input-mini" id="Text2" placeholder="">
-                            hrs
-											<input type="text" class="input-mini" id="Text3" placeholder="">
-                            mins
+                            <Rock:NumberBox runat="server" ID="tbDurationHours" CssClass="input-mini" MinimumValue="0" MaximumValue="24" />
+                            <asp:Label ID="lblDurationHours" runat="server" Text=" hrs " />
+                            <Rock:NumberBox runat="server" ID="tbDurationMinutes" CssClass="input-mini" MinimumValue="0" MaximumValue="59" />
+                            <asp:Label ID="lblDurationMinutes" runat="server" Text=" mins" />
                         </div>
                     </div>
 
                     <div class="control-group">
                         <div class="controls">
-                            <label class="radio inline">
-                                <input type="radio" name="type" class="schedule-type" id="schedule-onetime" value="schedule-onetime" checked>
-                                One Time
-                            </label>
-                            <label class="radio inline">
-                                <input type="radio" name="type" class="schedule-type" id="schedule-reoccurring" value="schedule-reoccurring">
-                                Reoccurring
-                            </label>
+                            <asp:RadioButton runat="server" GroupName="ScheduleTypeGroup" CssClass="schedule-type" ID="radOneTime" Text="One Time" value="schedule-onetime" Checked="true" />
+                            <asp:RadioButton runat="server" GroupName="ScheduleTypeGroup" CssClass="schedule-type" ID="radReoccurring" Text="Reoccurring" value="schedule-reoccurring" />
                         </div>
                     </div>
-
 
                     <!-- reoccurrence panel -->
                     <div id="schedule-reoccurrence-panel" style="display: none;">
 
                         <legend class="legend-small">Reoccurrence </legend>
 
-
-
                         <div class="control-group">
-                            <label class="control-label" for="inputEmail">Occurrence Pattern</label>
+                            <asp:Label ID="lblOccurrencePattern" runat="server" CssClass="control-label" Text="Occurrence Pattern" />
                             <div class="controls">
-                                <label class="radio inline">
-                                    <input type="radio" name="reoccurrence-pattern-radio" class="reoccurrence-pattern-radio" id="reoccurrence-pattern-specific-radio" value="reoccurrence-pattern-specific-date" checked>
-                                    Specific Dates
-                                </label>
-                                <label class="radio inline">
-                                    <input type="radio" name="reoccurrence-pattern-radio" class="reoccurrence-pattern-radio" id="reoccurrence-pattern-daily-radio" value="reoccurrence-pattern-daily">
-                                    Daily
-                                </label>
-                                <label class="radio inline">
-                                    <input type="radio" name="reoccurrence-pattern-radio" class="reoccurrence-pattern-radio" id="reoccurrence-pattern-weekly-radio" value="reoccurrence-pattern-weekly">
-                                    Weekly
-                                </label>
-                                <label class="radio inline">
-                                    <input type="radio" name="reoccurrence-pattern-radio" class="reoccurrence-pattern-radio" id="reoccurrence-pattern-monthly-radio" value="reoccurrence-pattern-monthly">
-                                    Monthly
-                                </label>
+                                <asp:RadioButton runat="server" GroupName="reoccurrence-pattern-radio" CssClass="reoccurrence-pattern-radio" ID="radSpecificDates" Text="Specific Dates" value="reoccurrence-pattern-specific-date" Checked="true" />
+                                <asp:RadioButton runat="server" GroupName="reoccurrence-pattern-radio" CssClass="reoccurrence-pattern-radio" ID="radDaily" Text="Daily" value="reoccurrence-pattern-daily" />
+                                <asp:RadioButton runat="server" GroupName="reoccurrence-pattern-radio" CssClass="reoccurrence-pattern-radio" ID="radWeekly" Text="Weekly" value="reoccurrence-pattern-weekly" />
+                                <asp:RadioButton runat="server" GroupName="reoccurrence-pattern-radio" CssClass="reoccurrence-pattern-radio" ID="radMonthly" Text="Monthly" value="reoccurrence-pattern-monthly" />
                             </div>
                         </div>
 
                         <!-- specific date panel -->
                         <div id="reoccurrence-pattern-specific-date" class="reoccurrence-pattern-type">
+                            <Rock:DatePicker runat="server" ID="dpAddSpecificDate" />
 
                             <div class="controls">
                                 <ul>
