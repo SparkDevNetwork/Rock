@@ -270,6 +270,10 @@ namespace RockWeb.Blocks.Administraton
                 PageService pageService = new PageService();
                 ppPage.SetValue( pageService.Get( pageId ) );
             }
+            else
+            {
+                ppPage.SetValue( None.Id );
+            }
 
             int userPersonId;
             if ( int.TryParse( fExceptionList.GetUserPreference( "User" ), out userPersonId ) )
