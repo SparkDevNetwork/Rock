@@ -89,31 +89,33 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 return;
             }
 
-            var IsMinistryChosen = false;
+            var ministryChosen = false;
             foreach ( RepeaterItem item in rMinistries.Items )
             {
                 var linky = (LinkButton)item.FindControl( "lbSelectMinistries" );
                 if ( HasActiveClass( linky ) )
                 {
-                    IsMinistryChosen = true;
+                    ministryChosen = true;
                 }
             }
-            if (!IsMinistryChosen)
+
+            if (!ministryChosen)
             {
                 maWarning.Show( "At least one ministry must be selected!", ModalAlertType.Warning );
                 return;
             }
 
-            var IsRoomChosen = false;
+            var roomChosen = false;
             foreach ( RepeaterItem item in rRooms.Items )
             {
                 var linky = (LinkButton)item.FindControl( "lbSelectRooms" );
                 if ( HasActiveClass( linky ) )
                 {
-                    IsRoomChosen = true;
+                    roomChosen = true;
                 }
             }
-            if (!IsRoomChosen)
+
+            if (!roomChosen)
             {
                 maWarning.Show( "At least one room must be selected!", ModalAlertType.Warning );
                 return;
@@ -129,8 +131,19 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
             }
 
-            CurrentKioskId = Int32.Parse( ddlKiosk.SelectedValue );
+            var roomGroupTypeIds = new List<int>();
+            foreach ( RepeaterItem item in rRooms.Items )
+            {
+                var linky = (LinkButton)item.FindControl( "lbSelectRooms" );
+                if ( HasActiveClass( linky ) )
+                {
+                    roomGroupTypeIds.Add( int.Parse( linky.CommandArgument ) );
+                }
+            }
+
+            CurrentKioskId = int.Parse( ddlKiosk.SelectedValue );
             CurrentGroupTypeIds = groupTypeIds;
+            CurrentRoomGroupTypeIds = roomGroupTypeIds;
             CurrentCheckInState = null;
             CurrentWorkflow = null;
             SaveState();
@@ -147,36 +160,29 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             var selectedItems = selectedValues.Split( ',' );
 
-            //cblGroupTypes.Items.Clear();
-
             if ( ddlKiosk.SelectedValue != None.IdValue )
             {
-                var kiosk = new DeviceService().Get( Int32.Parse( ddlKiosk.SelectedValue ) );
+                var kiosk = new DeviceService().Get( int.Parse( ddlKiosk.SelectedValue ) );
                 if ( kiosk != null )
                 {
-                    //cblGroupTypes.DataSource = kiosk.GetLocationGroupTypes();
-                    //cblGroupTypes.DataBind();
                     rMinistries.DataSource = kiosk.GetLocationGroupTypes();
                     rMinistries.DataBind();
+                    rRooms.DataSource = null;
+                    rRooms.DataBind();
                 }
 
                 if ( selectedValues != string.Empty )
                 {
                     foreach ( string id in selectedValues.Split(',') )
                     {
-                        
-                        //RepeaterItem rItem = rMinistryTypes.Items[int.Parse(id)];
-                        //if ( rItem != null )
-                        //{
-                        //    CheckBox check = (CheckBox)rItem.FindControl( "lcbMinistry" );
-                        //    check.Checked = true;
-                        //}
-                        
-                        //ListItem item = cblGroupTypes.Items.FindByValue( id );
-                        //if ( item != null )
-                        //{
-                        //    item.Selected = true;
-                        //}
+                        foreach ( RepeaterItem item in rMinistries.Items )
+                        {
+                            var linky = (LinkButton)item.FindControl( "lbSelectMinistries" );
+                            if ( linky.CommandArgument == id )
+                            {
+                                linky.AddCssClass( "active" );
+                            }
+                        }
                     }
                 }
                 else
@@ -185,30 +191,18 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     {
                         foreach ( int id in CurrentGroupTypeIds )
                         {
-                            //RepeaterItem rItem = rMinistryTypes.Items[id];
-                            //if ( rItem != null )
-                            //{
-                            //    CheckBox check = (CheckBox)rItem.FindControl( "lcbMinistry" );
-                            //    check.Checked = true;
-                            //}
-                            //ListItem item = cblGroupTypes.Items.FindByValue( id.ToString() );
-                            //if ( item != null )
-                            //{
-                            //    item.Selected = true;
-                            //}
+                            foreach ( RepeaterItem item in rMinistries.Items )
+                            {
+                                var linky = (LinkButton)item.FindControl( "lbSelectMinistries" );
+                                if ( int.Parse(linky.CommandArgument) == id )
+                                {
+                                    linky.AddCssClass( "active" );
+                                }
+                            }
                         }
                     }
                 }
-
             }
-
-            //Load all the possible rooms up front
-            //GroupTypeService groupTypeService = new GroupTypeService();
-            //var groupTypeQry = groupTypeService.Queryable();
-            //groupTypeQry = groupTypeQry.Where( a => a.TakesAttendance == true);
-            //List<GroupType> groupTypes = groupTypeQry.ToList();
-            //rRooms.DataSource = groupTypes;
-            //rRooms.DataBind();
         }
 
         protected void rMinistries_ItemCommand( object source, RepeaterCommandEventArgs e )
@@ -228,39 +222,38 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }
 
             // step 2: go through the buttons and load the appropriate rooms for the selected ministries.
-            List<GroupType> RoomList = new List<GroupType>();
-            List<GroupType> TotalRoomList = new List<GroupType>();
+            List<GroupType> roomList = new List<GroupType>();
             foreach ( RepeaterItem item in rMinistries.Items )
             {
                 var linky = (LinkButton)item.FindControl( "lbSelectMinistries" );
                 if ( HasActiveClass( linky ) )
                 {
-                    GetRooms( int.Parse(linky.CommandArgument), RoomList );
+                    GetRooms( int.Parse(linky.CommandArgument), roomList );
                 }
             }
-            rRooms.DataSource = RoomList;
+
+            rRooms.DataSource = roomList;
             rRooms.DataBind();
-
-
         }
 
         protected List<GroupType> GetRooms( int parentGroupTypeId, List<GroupType> returnGroupType )
         {
-            GroupType pGroupType = new GroupTypeService().Get( parentGroupTypeId );
-            List<int> cGroupTypes = pGroupType.ChildGroupTypes.Select( a => a.Id ).ToList();
-            foreach ( var cGT in cGroupTypes )
+            GroupType parentGroupType = new GroupTypeService().Get( parentGroupTypeId );
+            List<int> childGroupTypes = parentGroupType.ChildGroupTypes.Select( a => a.Id ).ToList();
+            foreach ( var childGroupType in childGroupTypes )
             {
-                GroupType pG = new GroupTypeService().Get( cGT );
-                if ( pG.ChildGroupTypes.Count > 0 )
+                GroupType theParentGroupType = new GroupTypeService().Get( childGroupType );
+                if ( theParentGroupType.ChildGroupTypes.Count > 0 )
                 {
-                    GetRooms( pG.Id, returnGroupType );
+                    GetRooms( theParentGroupType.Id, returnGroupType );
                 }
                 else
                 {
-                    GroupType gt = new GroupTypeService().Get( pG.Id );
-                    returnGroupType.Add( gt );
+                    GroupType groupType = new GroupTypeService().Get( theParentGroupType.Id );
+                    returnGroupType.Add( groupType );
                 }
             }
+
             return returnGroupType;
         }
 
@@ -282,7 +275,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             int id = int.Parse( e.CommandArgument.ToString() );
 
-            // step 1: if the button isn't already selected, then show the button as selected. otherwise unselect it.
+            // if the button isn't already selected, then show the button as selected. otherwise unselect it.
             if ( HasActiveClass( (LinkButton)e.Item.FindControl( "lbSelectRooms" ) ) )
             {
                 // the button is already selected, so unselect it.

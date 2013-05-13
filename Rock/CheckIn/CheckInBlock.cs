@@ -34,6 +34,11 @@ namespace Rock.CheckIn
         protected List<int> CurrentGroupTypeIds;
 
         /// <summary>
+        /// The current ministry group type ids
+        /// </summary>
+        protected List<int> CurrentRoomGroupTypeIds;
+
+        /// <summary>
         /// The current check in state
         /// </summary>
         protected CheckInState CurrentCheckInState;
@@ -189,6 +194,15 @@ namespace Rock.CheckIn
                 Session.Remove( "CheckInGroupTypeIds" );
             }
 
+            if ( CurrentRoomGroupTypeIds != null )
+            {
+                Session["CheckInRoomGroupTypeIds"] = CurrentRoomGroupTypeIds;
+            }
+            else
+            {
+                Session.Remove( "CheckInRoomGroupTypeIds" );
+            }
+
             if ( CurrentWorkflow != null )
             {
                 if ( CurrentCheckInState != null )
@@ -251,6 +265,11 @@ namespace Rock.CheckIn
             if ( Session["CheckInGroupTypeIds"] != null )
             {
                 CurrentGroupTypeIds = Session["CheckInGroupTypeIds"] as List<int>;
+            }
+
+            if ( Session["CheckInRoomGroupTypeIds"] != null )
+            {
+                CurrentRoomGroupTypeIds = Session["CheckInRoomGroupTypeIds"] as List<int>;
             }
 
             if ( Session["CheckInWorkflow"] != null )
