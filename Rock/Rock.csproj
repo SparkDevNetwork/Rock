@@ -151,7 +151,7 @@
     <Compile Include="Migrations\201305071959060_ExceptionList_PageCreate.Designer.cs">
       <DependentUpon>201305071959060_ExceptionList_PageCreate.cs</DependentUpon>
     </Compile>
-	<Compile Include="Migrations\201305091350409_UpdateGivingBlocks.cs" />
+    <Compile Include="Migrations\201305091350409_UpdateGivingBlocks.cs" />
     <Compile Include="Migrations\201305091350409_UpdateGivingBlocks.Designer.cs">
       <DependentUpon>201305091350409_UpdateGivingBlocks.cs</DependentUpon>
     </Compile>

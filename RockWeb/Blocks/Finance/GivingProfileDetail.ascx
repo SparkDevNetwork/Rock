@@ -47,7 +47,7 @@
                                 
             <div class="row-fluid">
                                 
-                <div class="<%= spanClass %> well">
+                <div class="<%= _spanClass %> well">
 
                     <fieldset>
                             
@@ -115,7 +115,7 @@
                                         
                 </div>
             
-            <% if ( _VerticalLayout ) { %>
+            <% if ( _spanClass == "span12" ) { %>
                     
             </div>
 
@@ -123,7 +123,7 @@
 
             <% } %>
 
-                <div class="<%= spanClass %> well">
+                <div class="<%= _spanClass %> well">
 
                     <fieldset>
 
@@ -131,11 +131,11 @@
                         
                         <div class="row-fluid">
                             
-                            <div class="<%= spanClass %>" >
+                            <div class="<%= _spanClass %>" >
                                 <Rock:LabeledTextBox ID="txtFirstName" LabelText="First Name" runat="server" Required="true" />
                             </div>             
 
-                            <div class="<%= spanClass %>" >
+                            <div class="<%= _spanClass %>" >
                                 <Rock:LabeledTextBox ID="txtLastName" LabelText="Last Name" runat="server" Required="true" />
                             </div>        
                             
@@ -185,7 +185,7 @@
             
             <div class="row-fluid">
               
-                <div class="<%= spanClass %> well">
+                <div class="<%= _spanClass %> well">
 
                     <fieldset>
                     
@@ -318,7 +318,7 @@
         
         <div class="row-fluid">     
                                 
-            <div class="<%= spanClass %> well">
+            <div class="<%= _spanClass %> well">
 
                 <h3 class="header-text" >Confirm your Contribution: </h3>
                 
@@ -358,7 +358,7 @@
         
         <div class="row-fluid">     
                                 
-            <div class="<%= spanClass %> well">
+            <div class="<%= _spanClass %> well">
 
                 <h3 class="header-text" >Contribution Complete! </h3>
                 
