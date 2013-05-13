@@ -12,20 +12,22 @@
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
 
-    <div class="row-fluid checkin-header">
-        <div class="span3"></div>
+    <div class="row-fluid attended-checkin-header">
+        <div class="span3 attended-checkin-actions"></div>
         <div class="span6">
             <h1>Admin</h1>
         </div>
-        <div class="span3"></div>
+        <div class="span3 attended-checkin-actions">
+            <asp:LinkButton ID="lbOk" runat="server" CssClass="btn btn-large last btn-primary" OnClick="lbOk_Click" Text="OK"></asp:LinkButton>
+        </div>
     </div>
 
-
-    <div class="row-fluid checkin-body">
-        <div class="span6">
-
-            <Rock:LabeledDropDownList ID="ddlKiosk" runat="server" CssClass="input-xlarge" LabelText="Kiosk Device" OnSelectedIndexChanged="ddlKiosk_SelectedIndexChanged" AutoPostBack="true" DataTextField="Name" DataValueField="Id" ></Rock:LabeledDropDownList>
-            <%--<Rock:LabeledCheckBoxList ID="cblGroupTypes" runat="server" LabelText="Ministry Type(s)" DataTextField="Name" DataValueField="Id" OnSelectedIndexChanged="cblGroupTypes_SelectedIndexChanged" ></Rock:LabeledCheckBoxList>--%>
+    <div class="row-fluid attended-checkin-admin-body">
+        <div class="span3">
+            <h3>Kiosk Device</h3>
+            <Rock:LabeledDropDownList ID="ddlKiosk" runat="server" CssClass="input-xlarge" OnSelectedIndexChanged="ddlKiosk_SelectedIndexChanged" AutoPostBack="true" DataTextField="Name" DataValueField="Id" ></Rock:LabeledDropDownList>
+        </div>
+        <div class="span3">
             <h3>Ministry Types</h3>
             <asp:Repeater ID="rMinistries" runat="server" OnItemCommand="rMinistries_ItemCommand">
                 <ItemTemplate>
@@ -33,7 +35,7 @@
                 </ItemTemplate>
             </asp:Repeater>
         </div>
-        <div class="span6">
+        <div class="span3">
             <h3>Rooms</h3>
             <asp:Repeater ID="rRooms" runat="server" OnItemCommand="rRooms_ItemCommand">
                 <ItemTemplate>
@@ -41,14 +43,7 @@
                 </ItemTemplate>
             </asp:Repeater>
         </div>
-    </div>
-
-
-
-   <div class="row-fluid checkin-footer">   
-        <div class="checkin-actions">
-            <asp:LinkButton CssClass="btn btn-primary" ID="lbOk" runat="server" OnClick="lbOk_Click" Text="OK" />
-        </div>
+        <div class="span3"></div>
     </div>
 
 </ContentTemplate>
