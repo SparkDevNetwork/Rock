@@ -40,29 +40,27 @@ namespace RockWeb.Blocks.Finance
     {
         #region Fields
 
-        protected bool _VerticalLayout = false;
         protected bool _ShowCreditCard = false;
         protected bool _ShowChecking = false;
-        protected bool _RequirePhone = false;
-        protected string spanClass = "";
+        protected string _spanClass = "";
 
         /// <summary>
-        /// Gets or sets the current property.
+        /// Gets or sets the current tab.
         /// </summary>
         /// <value>
-        /// The current property.
+        /// The current tab.
         /// </value>
-        protected string CurrentProperty
+        protected string CurrentTab
         {
             get
             {
-                object currentProperty = ViewState["CurrentProperty"];
-                return currentProperty != null ? currentProperty.ToString() : "Credit Card";
+                object currentTab = ViewState["CurrentTab"];
+                return currentTab != null ? currentTab.ToString() : "Credit Card";
             }
 
             set
             {
-                ViewState["CurrentProperty"] = value;
+                ViewState["CurrentTab"] = value;
             }
         }
 
@@ -78,9 +76,8 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnInit( e );
 
-            _VerticalLayout = Convert.ToBoolean( GetAttributeValue( "ShowVerticalLayout" ) );
-
-            spanClass = ( _VerticalLayout ) ? "span12" : "span6";
+            // Set vertical layout
+            _spanClass = ( Convert.ToBoolean( GetAttributeValue( "ShowVerticalLayout" ) ) ) ? "span12" : "span6";
 
             
             _ShowCreditCard = Convert.ToBoolean( GetAttributeValue( "ShowCreditCard" ) );
@@ -102,7 +99,7 @@ namespace RockWeb.Blocks.Finance
                     BindCampuses();
                 }
 
-                // Request phone number?
+                // Require phone number?
                 if ( Convert.ToBoolean( GetAttributeValue( "RequirePhone" ) ) )
                 {
                     txtPhone.Required = true;
@@ -243,7 +240,7 @@ namespace RockWeb.Blocks.Finance
             LinkButton lb = sender as LinkButton;
             if ( lb != null )
             {
-                CurrentProperty = lb.Text;
+                CurrentTab = lb.Text;
 
                 var paymentTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_PAYMENT_TYPE );
                 rptPaymentType.DataSource = DefinedTypeCache.Read( paymentTypeGuid ).DefinedValues;
@@ -482,7 +479,7 @@ namespace RockWeb.Blocks.Finance
         /// <returns></returns>
         protected string GetTabClass( object property )
         {
-            if ( property.ToString() == CurrentProperty )
+            if ( property.ToString() == CurrentTab )
             {
                 return "active";
             }
@@ -520,13 +517,13 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void ShowSelectedTab()
         {
-            if ( CurrentProperty.Equals( "Credit Card" ) )
+            if ( CurrentTab.Equals( "Credit Card" ) )
             {
                 pnlCreditCard.Visible = true;
                 pnlChecking.Visible = false;
                 pnlCreditCard.DataBind();
             }
-            else if ( CurrentProperty.Equals( "Checking/ACH" ) )
+            else if ( CurrentTab.Equals( "Checking/ACH" ) )
             {
                 pnlCreditCard.Visible = false;
                 pnlChecking.Visible = true;
