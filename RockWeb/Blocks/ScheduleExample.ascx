@@ -93,10 +93,10 @@
                                 <Rock:DatePicker runat="server" ID="dpSpecificDate" ClientIDMode="Static" SelectedDate="12/25/2013" />
 
                                 <a class="btn btn-primary btn-mini" id="add-specific-date-ok"></i>
-                                                <asp:Label ID="Label1" runat="server" Text="OK" />
+                                   <span>OK</span>
                                 </a>
                                 <a class="btn btn-mini" id="add-specific-date-cancel"></i>
-                                                <asp:Label ID="Label2" runat="server" Text="Cancel" />
+                                   <span>Cancel</span>
                                 </a>
                             </div>
 
@@ -291,7 +291,6 @@
 
                         </div>
 
-
                         <div>
 
                             <div class="controls">
@@ -329,16 +328,120 @@
                             </div>
                         </div>
 
-                        <div class="control-group">
-                            <label class="control-label" for="inputEmail">Exclusions</label>
-                            <div class="controls">
-                                <ul>
-                                    <li>2/13/2013 - 2/27/2013</li>
-                                    <li>3/13/2013 - 3/13/2013</li>
-                                </ul>
+                        <label class="control-label">Exclusions</label>
 
-                                <a class="btn btn-small"><i class="icon-plus"></i>Add Date Range</a>
+                        <div id="reoccurrence-pattern-exclusions" class="reoccurrence-pattern-type control-group controls">
+
+                            <input id="exclusion-daterange-list-values" type="hidden" value="4/23/2013 - 5/23/2014,8/23/2013 - 9/23/2014,11/23/2013 - 5/23/2015,3/23/2013 - 3/24/2014" />
+                            <ul id="exclusion-daterange-list">
+                                <li>
+                                    <span>4/23/2013 - 5/23/2014</span>
+                                    <a id='A12' href='#' style="display: none"><i class='icon-remove'></i></a>
+                                </li>
+                                <li>
+                                    <span>8/23/2013 - 9/23/2014</span>
+                                    <a id='A13' href='#' style="display: none"><i class='icon-remove'></i></a>
+                                </li>
+                                <li>
+                                    <span>11/23/2013 - 5/23/2015</span>
+                                    <a id='A14' href='#' style="display: none"><i class='icon-remove'></i></a>
+                                </li>
+                                <li>
+                                    <span>3/23/2013 - 3/24/2014</span>
+                                    <a id='A15' href='#' style="display: none"><i class='icon-remove'></i></a>
+                                </li>
+                            </ul>
+                            <a class="btn btn-small" id="add-exclusion-daterange"><i class="icon-plus"></i>
+                                <asp:Label ID="Label6" runat="server" Text=" Add Date Range" />
+                            </a>
+                            <div id="add-exclusion-daterange-group" style="display: none">
+                                <Rock:DatePicker runat="server" ID="dpExclusionDateStart" ClientIDMode="Static" SelectedDate="12/25/2013" />
+                                <span>to</span>
+                                <Rock:DatePicker runat="server" ID="dpExclusionDateEnd" ClientIDMode="Static" SelectedDate="12/26/2013" />
+
+                                <a class="btn btn-primary btn-mini" id="add-exclusion-daterange-ok"></i>
+                                    <span>OK</span>
+                                </a>
+                                <a class="btn btn-mini" id="add-exclusion-daterange-cancel"></i>
+                                    <span>Cancel</span>
+                                </a>
                             </div>
+
+                            <script>
+                                // show daterangepicker, ok, cancel so that new daterange can be added to the list
+                                $('#add-exclusion-daterange').click(function () {
+                                    $('#add-exclusion-daterange').hide();
+                                    $('#add-exclusion-daterange-group').show();
+                                });
+
+                                // add new date to list when ok is clicked
+                                $('#add-exclusion-daterange-ok').click(function () {
+
+                                    // get date list from hidden field
+                                    var dateList = $('#exclusion-daterange-list-values').val().split(",");
+                                    var newDateRange = $('#dpExclusionDateStart').val() + ' - ' + $('#dpExclusionDateEnd').val();
+
+                                    // delete newDateRange from list in case it is already there
+                                    var index = dateList.indexOf(newDateRange);
+                                    if (index > 0) {
+                                        dateList.splice(index, 1);
+                                    }
+
+                                    // add new daterange to list
+                                    dateList.push(newDateRange);
+
+                                    // save list back to hidden field
+                                    $('#exclusion-daterange-list-values').val(dateList);
+
+                                    // rebuild the UL
+                                    $('#exclusion-daterange-list').children().remove();
+                                    $.each(dateList, function (index, value) {
+                                        // add to ul
+                                        var newLi = "<li><span>" + value + "</span><a href='#' style='display: none'><i class='icon-remove'></i></a></li>";
+                                        $('#exclusion-daterange-list').append(newLi);
+                                    });
+
+                                    $('#add-exclusion-daterange-group').hide();
+                                    $('#add-exclusion-daterange').show();
+                                });
+
+                                // cancel out of adding a new daterange
+                                $('#add-exclusion-daterange-cancel').click(function () {
+                                    $('#add-exclusion-daterange-group').hide();
+                                    $('#add-exclusion-daterange').show();
+                                });
+
+                                // fadeIn/fadeOut the X buttons to delete dateranges
+                                $('#exclusion-daterange-list').hover(
+                                    function () {
+                                        $(this).find('li a').stop(true, true).show();
+                                    },
+                                    function () {
+                                        $(this).find('li a').stop(true, true).fadeOut(500);
+                                    }
+                               );
+
+                                // delete daterange from list
+                                $('#exclusion-daterange-list').on('click', 'li a', function (event) {
+                                    var selectedDateRange = $(this).siblings().text();
+
+                                    // get daterange list from hidden field
+                                    var dateRangeList = $('#exclusion-daterange-list-values').val().split(",");
+
+                                    // delete selectedDateRange
+                                    var index = dateRangeList.indexOf(selectedDateRange);
+                                    if (index > 0) {
+                                        dateRangeList.splice(index, 1);
+                                    }
+
+                                    // save list back to hidden field
+                                    $('#exclusion-daterange-list-values').val(dateRangeList);
+
+                                    // remove daterange from ul list
+                                    var liItem = $(this).parent();
+                                    liItem.remove();
+                                });
+                            </script>
                         </div>
 
                     </div>
