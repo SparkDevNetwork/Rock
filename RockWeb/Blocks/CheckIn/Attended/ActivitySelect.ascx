@@ -7,7 +7,7 @@
 
     <div class="row-fluid attended-checkin-header">
         <div class="span3 attended-checkin-actions">
-            <asp:LinkButton ID="lbBack2" CssClass="btn btn-primary btn-large" runat="server" OnClick="lbBack_Click" Text="BACK"/>
+            <asp:LinkButton ID="lbBack2" CssClass="btn btn-primary btn-large" runat="server" OnClick="lbBack_Click" Text="Back"/>
         </div>
 
         <div class="span6">
@@ -15,7 +15,7 @@
         </div>
 
         <div class="span3 attended-checkin-actions">
-            <asp:LinkButton ID="lbNext" CssClass="btn btn-primary btn-large last" runat="server" OnClick="lbNext_Click" Text="NEXT"/>
+            <asp:LinkButton ID="lbNext" CssClass="btn btn-primary btn-large last" runat="server" OnClick="lbNext_Click" Text="Next"/>
         </div>
     </div>
                 
@@ -23,9 +23,10 @@
 
         <div class="span3">
             <div class="checkin-body-container">
+                <h3>Ministry</h3>
                 <asp:Repeater ID="rMinistry" runat="server" OnItemCommand="rMinistry_ItemCommand">
                     <ItemTemplate>
-                        <asp:LinkButton ID="lbSelectMinistry" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("GroupType.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" />
+                        <asp:LinkButton ID="lbSelectMinistry" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" />
                     </ItemTemplate>
                 </asp:Repeater>
             </div>
@@ -33,6 +34,7 @@
 
         <div class="span3">
             <div class="checkin-body-container">
+                <h3>Time</h3>
                 <asp:Repeater ID="rTime" runat="server" OnItemCommand="rTime_ItemCommand">
                     <ItemTemplate>
                         <asp:LinkButton ID="lbSelectTime" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Time.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" />
@@ -44,9 +46,10 @@
 
         <div class="span3">
             <div class="checkin-body-container">
+                <h3>Activity</h3>
                 <asp:Repeater ID="rActivity" runat="server" OnItemCommand="rActivity_ItemCommand">
                     <ItemTemplate>
-                        <asp:LinkButton ID="lbSelectActivity" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Group.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" />
+                        <asp:LinkButton ID="lbSelectActivity" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" />
                     </ItemTemplate>
                 </asp:Repeater>
             </div>

@@ -231,7 +231,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     GetRooms( int.Parse(linky.CommandArgument), roomList );
                 }
             }
-
+            
             rRooms.DataSource = roomList;
             rRooms.DataBind();
         }
@@ -249,6 +249,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
                 else
                 {
+
                     GroupType groupType = new GroupTypeService().Get( theParentGroupType.Id );
                     returnGroupType.Add( groupType );
                 }

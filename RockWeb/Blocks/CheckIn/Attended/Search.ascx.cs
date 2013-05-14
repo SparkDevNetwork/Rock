@@ -19,6 +19,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
 {
     [Description( "Attended Check-In Search block" )]
     [LinkedPage( "Admin Page" )]
+    [IntegerField( "Minimum Phone Number Length", "Minimum length for phone number searches (defaults to 4).", false, 4 )]
+    [IntegerField( "Maximum Phone Number Length", "Maximum length for phone number searches (defaults to 10).", false, 10 )]
     public partial class Search : CheckInBlock
     {
         protected override void OnInit( EventArgs e )
@@ -35,13 +37,13 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             if ( KioskCurrentlyActive )
             {
-                //// TODO: Validate text entered
-                
+                var NameSearch = false;
                 CurrentCheckInState.CheckIn.UserEnteredSearch = true;
                 CurrentCheckInState.CheckIn.ConfirmSingleFamily = true;
                 if ( tbSearchBox.Text.AsNumeric() == "" || tbSearchBox.Text.AsNumeric().Length != tbSearchBox.Text.Length )
                 {
                     CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME );
+                    NameSearch = true;
                 }
                 else if ( tbSearchBox.Text.AsNumeric().Length == tbSearchBox.Text.Length )
                 {
@@ -49,7 +51,19 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
                 CurrentCheckInState.CheckIn.SearchValue = tbSearchBox.Text;
 
-                // move this to next page
+                if ( tbSearchBox.Text == "" )
+                {
+                    maWarning.Show( "Please enter something to search for.", ModalAlertType.Warning );
+                    return;
+                }
+
+                int minLength = int.Parse( GetAttributeValue( "MinimumPhoneNumberLength" ) );
+                int maxLength = int.Parse( GetAttributeValue( "MaximumPhoneNumberLength" ) );
+                if ( !NameSearch && ( tbSearchBox.Text.Length < minLength || tbSearchBox.Text.Length > maxLength ) )
+                {
+                    maWarning.Show( string.Format("In order to properly search by phone number, you should enter between {0} and {1} numbers.", minLength, maxLength), ModalAlertType.Warning);
+                    return;
+                }
                 var errors = new List<string>();
                 if ( ProcessActivity( "Family Search", out errors ) )
                 {
