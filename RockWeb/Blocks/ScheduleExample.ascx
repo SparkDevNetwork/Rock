@@ -66,45 +66,38 @@
                         </div>
 
                         <!-- specific date panel -->
-                        <div id="reoccurrence-pattern-specific-date" class="reoccurrence-pattern-type">
+                        <div id="reoccurrence-pattern-specific-date" class="reoccurrence-pattern-type control-group controls">
+                            <input id="specific-date-list-values" type="hidden" value="4/23/2013,5/23/2013,6/23/2013,7/23/2013" />
+                            <ul id="specific-date-list">
+                                <li>
+                                    <span>4/23/2013</span>
+                                    <a id='A7' href='#' style="display: none"><i class='icon-remove'></i></a>
+                                </li>
+                                <li>
+                                    <span>5/23/2013</span>
+                                    <a id='A1' href='#' style="display: none"><i class='icon-remove'></i></a>
+                                </li>
+                                <li>
+                                    <span>6/23/2013</span>
+                                    <a id='A2' href='#' style="display: none"><i class='icon-remove'></i></a>
+                                </li>
+                                <li>
+                                    <span>7/23/2013</span>
+                                    <a id='A3' href='#' style="display: none"><i class='icon-remove'></i></a>
+                                </li>
+                            </ul>
+                            <a class="btn btn-small" id="add-specific-date"><i class="icon-plus"></i>
+                                <asp:Label ID="Label9" runat="server" Text=" Add Date" />
+                            </a>
+                            <div id="add-specific-date-group" style="display: none">
+                                <Rock:DatePicker runat="server" ID="dpSpecificDate" ClientIDMode="Static" SelectedDate="12/25/2013" />
 
-                            <div class="rock-date-edit-delete">
-                                <div class="control-group controls">
-                                    <input id="specific-date-list-values" type="hidden" value="4/23/2013,5/23/2013,6/23/2013,7/23/2013" />
-                                    <ul id="specific-date-list">
-                                        <li>
-                                            <span>4/23/2013</span>
-                                            <a id='A7' href='#' style="display: none"><i class='icon-remove'></i></a>
-                                        </li>
-                                        <li>
-                                            <span>5/23/2013</span>
-                                            <a id='A1' href='#' style="display: none"><i class='icon-remove'></i></a>
-                                        </li>
-                                        <li>
-                                            <span>6/23/2013</span>
-                                            <a id='A2' href='#' style="display: none"><i class='icon-remove'></i></a>
-                                        </li>
-                                        <li>
-                                            <span>7/23/2013</span>
-                                            <a id='A3' href='#' style="display: none"><i class='icon-remove'></i></a>
-                                        </li>
-                                    </ul>
-                                    <a class="btn btn-small" id="add-specific-date"><i class="icon-plus"></i>
-                                        <asp:Label ID="Label9" runat="server" Text=" Add Date" />
-                                    </a>
-                                    <div id="add-specific-date-group" style="display: none">
-                                        <Rock:DatePicker runat="server" ID="dpSpecificDate" ClientIDMode="Static" SelectedDate="12/25/2013" />
-
-                                        <a class="btn btn-primary btn-mini" id="add-specific-date-ok"></i>
+                                <a class="btn btn-primary btn-mini" id="add-specific-date-ok"></i>
                                                 <asp:Label ID="Label1" runat="server" Text="OK" />
-                                        </a>
-                                        <a class="btn btn-mini" id="add-specific-date-cancel"></i>
+                                </a>
+                                <a class="btn btn-mini" id="add-specific-date-cancel"></i>
                                                 <asp:Label ID="Label2" runat="server" Text="Cancel" />
-                                        </a>
-
-                                    </div>
-
-                                </div>
+                                </a>
                             </div>
 
                             <script>
@@ -133,10 +126,8 @@
                                     // save list back to hidden field
                                     $('#specific-date-list-values').val(dateList);
 
-
                                     // rebuild the UL
                                     $('#specific-date-list').children().remove();
-
                                     $.each(dateList, function (index, value) {
                                         // add to ul
                                         var newLi = "<li><span>" + value + "</span><a href='#' style='display: none'><i class='icon-remove'></i></a></li>";
@@ -157,26 +148,14 @@
                                 $('#specific-date-list').hover(
                                     function () {
                                         $(this).find('li a').stop(true, true).show();
-                                        $(this).find('.rock-date-editor').show();
                                     },
                                     function () {
                                         $(this).find('li a').stop(true, true).fadeOut(500);
-
-                                        var datePicker = $(this).find('.rock-date-editor');
-                                        var focusedElement = $(':focus');
-                                        var selectedElement = $(':selected');
-
-                                        // hide datePicker unless it currently has focus
-                                        if (datePicker.has(focusedElement).length == 0) {
-                                            datePicker.hide();
-                                        }
                                     }
                                );
 
                                 // delete specific date from list
                                 $('#specific-date-list').on('click', 'li a', function (event) {
-
-                                    debugger
                                     var selectedDate = $(this).siblings().text();
 
                                     // get date list from hidden field
