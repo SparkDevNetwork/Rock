@@ -131,7 +131,7 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( "class", "control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            if ( label.Text.Trim() != string.Empty )
+            if ( label != null && label.Text.Trim() != string.Empty )
             {
                 writer.AddAttribute( "class", "control-label" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -159,7 +159,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            if ( label.Text.Trim() == string.Empty)
+            if ( label != null && label.Text.Trim() == string.Empty)
             {
                 helpBlock.RenderControl( writer );
             }

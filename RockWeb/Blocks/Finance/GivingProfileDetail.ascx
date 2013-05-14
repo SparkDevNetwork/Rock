@@ -23,7 +23,7 @@
             return false;
         });
 
-        $('.calc').trigger('change');
+        //$('.calc').trigger('change');
 
         // payment types script
         $('.credit-card').creditCardTypeDetector({ 'credit_card_logos': '.card-logos' });
@@ -57,26 +57,27 @@
 
                             <div id="divCampus" runat="server" visible="false">                                                            
                                 <div class="row-fluid">
-                                    <Rock:ButtonDropDownList ID="btnCampusList" runat="server" CssClass="btn btn-primary" Title="Select Campus" LabelText="Campus" />
+                                    <Rock:ButtonDropDownList ID="btnCampusList" runat="server" CssClass="btn btn-primary" LabelText="Campus" />
                                 </div>                                
                             </div>
-                            
-                            <div id="divAccountList">                                
+                                                        
+                            <asp:Panel ID="pnlAccountList" runat="server">
                                 <asp:Repeater ID="rptAccountList" runat="server" >
                                 <ItemTemplate>       
                                     <div class="row-fluid">
+                                        <asp:HiddenField ID="hfAccountId" runat="server" Value='<%# DataBinder.Eval(Container.DataItem, "AccountId") %>'/>
 	                                    <Rock:NumberBox ID="txtAccountAmount" runat="server" CssClass="input-small calc" PrependText="$" 
                                             LabelText='<%# DataBinder.Eval(Container.DataItem, "Account.PublicName") %>' 
-                                            Text='<%# DataBinder.Eval(Container.DataItem, "Amount") %>'>
+                                            Text='<%# Convert.ToDecimal(DataBinder.Eval(Container.DataItem, "Amount")) > 0 ? DataBinder.Eval(Container.DataItem, "Amount") : "" %>'>
 	                                    </Rock:NumberBox>
                                     </div>
                                 </ItemTemplate>                                
                                 </asp:Repeater>
-                            </div>                     
+                            </asp:Panel>                            
 
                             <div ID="divAddAccount" runat="server">
                                 <div class="row-fluid">
-                                    <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnAddAccount_SelectionChanged" Title="Add Another Gift" />
+                                    <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" CssClass="btn btn-primary controls" OnSelectionChanged="btnAddAccount_SelectionChanged" Title="Add Another Gift" />
                                 </div>                                
                             </div>
 
@@ -94,20 +95,24 @@
                                 <div class="row-fluid">
                                     <Rock:ButtonDropDownList ID="btnFrequency" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnFrequency_SelectionChanged" LabelText="Frequency" />			                        
                                 </div>                                    
+                            
+                                <div id="divRecurrence" runat="server" visible="false">                                
+
+                                    <div class="row-fluid">                                        
+                                        <Rock:DateTimePicker ID="dtpStartingDate" runat="server" LabelText="Starting On" data-date-format="dd-mm-yyyy" DatePickerType="Date" />                                        
+                                    </div>
+
+                                    <div class="row-fluid">
+                                        <Rock:LabeledCheckBox id="chkLimitGifts" runat="server" Text="Limit number of gifts" OnCheckedChanged="chkLimitGifts_CheckedChanged" AutoPostBack="true" Visible="false" />
                                     
-                                <div class="row-fluid">                                        
-                                    <Rock:DateTimePicker ID="dtpStartingDate" runat="server" LabelText="Starting On" data-date-format="dd-mm-yyyy" DatePickerType="Date" />                                        
+                                        <div id="divLimitGifts" runat="server" Visible="false">
+                                            <Rock:NumberBox ID="txtLimitGifts" runat="server" class="input-small" Text="0" />
+                                        </div>                                    
+                                    </div>
+
                                 </div>
 
-                                <div class="row-fluid">
-                                    <Rock:LabeledCheckBox id="chkLimitGifts" runat="server" Text="Limit number of gifts" OnCheckedChanged="chkLimitGifts_CheckedChanged" />
-                                    
-                                    <div id="divLimitGifts" runat="server" Visible="false">
-                                        <Rock:NumberBox ID="txtLimitGifts" runat="server" Text="0" />
-                                    </div>                                    
-                                </div>
-
-                            </div>
+                            </div>                            
                         
                         </div>
 

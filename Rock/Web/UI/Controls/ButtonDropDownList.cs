@@ -19,7 +19,7 @@ namespace Rock.Web.UI.Controls
     public class ButtonDropDownList : ListControl
     {
         private Label _label;
-        private String _btnTitle = string.Empty;
+        private String _btnTitle;
         private HtmlGenericControl _divControl;
         private HtmlGenericControl _btnSelect;
         private HiddenField _hfSelectedItemId;
@@ -34,8 +34,15 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string LabelText
         {
-            get { return _label.Text; }
-            set { _label.Text = value; }
+            get {
+                EnsureChildControls(); 
+                return _label.Text;
+            }
+
+            set {
+                EnsureChildControls(); 
+                _label.Text = value;
+            }
         }
 
         /// <summary>
@@ -181,15 +188,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 return Items.IndexOf( SelectedItem );
-            }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ButtonDropDownList" /> class.
-        /// </summary>
-        public ButtonDropDownList()
-        {
-            _label = new Label();            
+            }                        
         }
 
         /// <summary>

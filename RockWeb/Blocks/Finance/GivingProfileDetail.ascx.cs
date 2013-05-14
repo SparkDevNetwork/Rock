@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Show Campuses", "Should giving be associated with a specific campus?", false, "UI Options", 1 )]
     [BooleanField( "Show Credit Card", "Allow users to give using a credit card?", true, "UI Options", 2 )]
     [BooleanField( "Show Checking/ACH", "Allow users to give using a checking account?", true, "UI Options", 3 )]
-    [BooleanField( "Show Recurrence", "Allow users to give recurring gifts?", true, "UI Options", 4 )]
+    [BooleanField( "Show Frequencies", "Allow users to give recurring gifts?", true, "UI Options", 4 )]
     [BooleanField( "Require Phone", "Should financial contributions require a user's phone number?", true, "Data Requirements", 0 )]    
     public partial class GivingProfileDetail : RockBlock
     {
@@ -54,13 +54,13 @@ namespace RockWeb.Blocks.Finance
         {
             get
             {
-                object currentTab = ViewState["CurrentTab"];
+                object currentTab = Session["CurrentTab"];
                 return currentTab != null ? currentTab.ToString() : "Credit Card";
             }
 
             set
             {
-                ViewState["CurrentTab"] = value;
+                Session["CurrentTab"] = value;
             }
         }
 
@@ -78,36 +78,45 @@ namespace RockWeb.Blocks.Finance
 
             // Set vertical layout
             _spanClass = ( Convert.ToBoolean( GetAttributeValue( "ShowVerticalLayout" ) ) ) ? "span12" : "span6";
-
-            
+                        
             _ShowCreditCard = Convert.ToBoolean( GetAttributeValue( "ShowCreditCard" ) );
             _ShowChecking = Convert.ToBoolean( GetAttributeValue( "ShowChecking/ACH" ) );
-            
+
+            BindAccounts();
+
             if ( !IsPostBack )
             {
+                BindCreditCard();
+                BindPaymentTypes();
+
+                // Show Campus
+                if ( Convert.ToBoolean( GetAttributeValue( "ShowCampuses" ) ) )
+                {
+                    BindCampuses();
+                    divCampus.Visible = true;
+                }
+
+                // Show Frequencies
+                if ( Convert.ToBoolean( GetAttributeValue( "ShowFrequencies" ) ) )
+                {
+                    BindFrequencies();
+                    divFrequency.Visible = true;
+                }
+                
                 // Load account information
                 if ( CurrentPerson != null )
                 {
                     BindPersonDetails();
                     divSavePayment.Visible = true;
                     divCreateAccount.Visible = false;
-                }
+                }                
 
-                // Show Campus?
-                if ( Convert.ToBoolean( GetAttributeValue( "ShowCampuses" ) ) )
-                {
-                    BindCampuses();
-                }
-
-                // Require phone number?
+                // Require phone number
                 if ( Convert.ToBoolean( GetAttributeValue( "RequirePhone" ) ) )
                 {
                     txtPhone.Required = true;
-                }
-            
-                BindAccounts();
-                BindOptions();                
-            }
+                }                
+            }            
         }
 
         /// <summary>
@@ -130,43 +139,37 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddAccount_SelectionChanged( object sender, EventArgs e )
         {
-            FinancialAccountService accountService = new FinancialAccountService(); 
-            FinancialTransactionDetail account;
-            
-            var lookupAccounts = accountService.Queryable().Where(f => f.IsActive)
-                .Distinct().OrderBy(f => f.Order).ToList();
+            List<FinancialTransactionDetail> transactionList = Session["TransactionList"] as List<FinancialTransactionDetail>;
+            FinancialAccountService accountService = new FinancialAccountService();
 
             foreach ( RepeaterItem item in rptAccountList.Items )
-            {
-                account = new FinancialTransactionDetail();                
-                
-                // TODO rewrite account lookup to use ID instead of name
-                string accountName = ( (LabeledTextBox)item.FindControl("lblAccountName") ).LabelText;
-                account.Account = lookupAccounts.Where(f => f.PublicName == accountName).FirstOrDefault();
-                decimal amount = Decimal.Parse( ( (LabeledTextBox)item.FindControl( "txtAccountAmount" ) ).Text );
-                account.Amount = amount;                
-                //account.TransactionId = _transaction.Id;
-                
-                //detailList.Add(account);
+            {   
+                var accountId = Convert.ToInt32(((HiddenField)item.FindControl( "hfAccountId" )).Value);
+                var accountAmount = Decimal.Parse( ( (NumberBox)item.FindControl( "txtAccountAmount" ) ).Text );
+                var index = transactionList.FindIndex( a => a.AccountId == accountId );
+                transactionList[index].Amount = accountAmount;
             }
-            
-            account = new FinancialTransactionDetail();
-            account.Account = lookupAccounts.Where( f => f.PublicName == btnAddAccount.SelectedValue ).FirstOrDefault();
-            account.Amount = 0M;
-            //detailList.Add( account );
+
+            var newAccountId = Convert.ToInt32( btnAddAccount.SelectedValue );
+            FinancialTransactionDetail detail = new FinancialTransactionDetail();
+            detail.AccountId = newAccountId;
+            detail.Account = accountService.Get( newAccountId );
+            transactionList.Add( detail );
 
             if ( btnAddAccount.Items.Count > 1 )
             {
-                btnAddAccount.Items.Remove( btnAddAccount.SelectedValue );
+                btnAddAccount.Items.Remove( btnAddAccount.SelectedItem );
                 btnAddAccount.Title = "Add Another Gift";
             }
             else
             {
                 divAddAccount.Visible = false;
             }
+                        
+            rptAccountList.DataSource = transactionList;
+            rptAccountList.DataBind();
 
-            //rptAccountList.DataSource = detailList.ToDictionary(f => (string)f.Account.PublicName, f => (decimal)f.Amount);
-            //rptAccountList.DataBind();
+            Session["TransactionList"] = transactionList;
         }
 
         /// <summary>
@@ -176,7 +179,16 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnFrequency_SelectionChanged( object sender, EventArgs e )
         {
-            divFrequency.Visible = true;
+            if ( btnFrequency.SelectedValue != DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME_FUTURE ).Id.ToString()
+                && btnFrequency.SelectedValue != DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id.ToString() )
+            {
+                divRecurrence.Visible = true;
+                chkLimitGifts.Visible = true;                
+            }
+            else if ( btnFrequency.SelectedValue == DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME_FUTURE ).Id.ToString() )
+            {
+                divRecurrence.Visible = true;
+            }
         }
 
         /// <summary>
@@ -197,7 +209,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void chkLimitGifts_CheckedChanged( object sender, EventArgs e )
         {
-            divLimitGifts.Visible = !divLimitGifts.Visible;
+            divLimitGifts.Visible = !divLimitGifts.Visible;            
         }
 
         /// <summary>
@@ -295,7 +307,7 @@ namespace RockWeb.Blocks.Finance
             if ( transaction == null )
             {
                 transaction = new FinancialTransaction();
-                transaction.TransactionTypeValueId = Rock.Web.Cache.DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ).Id;
+                transaction.TransactionTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ).Id;
                 transactionService.Add( transaction, person.Id );
             }
 
@@ -363,6 +375,11 @@ namespace RockWeb.Blocks.Finance
             pnlConfirm.Visible = true;
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnGive control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnGive_Click( object sender, EventArgs e )
         {
             FinancialTransactionService transactionService = new FinancialTransactionService();
@@ -394,17 +411,57 @@ namespace RockWeb.Blocks.Finance
         {
             btnCampusList.Items.Clear();
             CampusService campusService = new CampusService();
-            var items = campusService.Queryable().OrderBy( a => a.Name )
-                .Select( a => a.Name ).Distinct();
-
+            var items = campusService.Queryable().OrderBy( a => a.Name ).Distinct();
+                
             if ( items.Any() )
             {
                 btnCampusList.DataSource = items.ToList();
-                divCampus.Visible = true;
-                btnCampusList.Title = "Select Campus";
+                btnCampusList.DataTextField = "Name";
+                btnCampusList.DataBind();
+                btnCampusList.SelectedValue = btnCampusList.Items[0].Value;
             }
         }
 
+        /// <summary>
+        /// Binds the frequencies.
+        /// </summary>
+        protected void BindFrequencies()
+        {
+            var frequencyTypes = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_FREQUENCY ) );
+            if ( frequencyTypes != null )
+            {
+                btnFrequency.BindToDefinedType( frequencyTypes );
+                btnFrequency.SelectedValue = btnFrequency.Items[0].Value;
+            }            
+        }
+
+        /// <summary>
+        /// Binds the payment types.
+        /// </summary>
+        protected void BindPaymentTypes()
+        {
+            var paymentTypeGuid = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_PAYMENT_TYPE ) );
+            if ( paymentTypeGuid != null )
+            {
+                rptPaymentType.DataSource = paymentTypeGuid.DefinedValues;
+                rptPaymentType.DataBind();
+            }
+        }
+        
+        /// <summary>
+        /// Binds the credit card controls.
+        /// </summary>
+        protected void BindCreditCard()
+        {
+            btnMonthExpiration.Items.Clear();
+            btnYearExpiration.Items.Clear();
+
+            btnMonthExpiration.DataSource = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.MonthNames.ToList().GetRange( 0, 12 );
+            btnMonthExpiration.DataBind();
+            btnYearExpiration.DataSource = Enumerable.Range( ( DateTime.Now.Year ), 10 ).ToList();
+            btnYearExpiration.DataBind();
+        }
+            
         /// <summary>
         /// Binds the accounts.
         /// </summary>
@@ -419,8 +476,10 @@ namespace RockWeb.Blocks.Finance
             {
                 var accountGuids = GetAttributeValue( "DefaultAccounts" ).Split( ',' ).Select( a => new Guid(a) );
 
+                btnAddAccount.DataTextField = "PublicName";
+                btnAddAccount.DataValueField = "Id";
                 btnAddAccount.DataSource = selectedAccounts.Where( a => !accountGuids.Contains( a.Guid ) ).ToList();
-                btnAddAccount.DataBind();
+                btnAddAccount.DataBind();                
 
                 selectedAccounts = selectedAccounts.Where( a => accountGuids.Contains( a.Guid ) );
             }
@@ -434,12 +493,13 @@ namespace RockWeb.Blocks.Finance
                 FinancialTransactionDetail detail = new FinancialTransactionDetail();
                 detail.AccountId = account.Id;
                 detail.Account = account;
-                detail.Amount = 0;
                 transactionList.Add( detail );
             }
 
             rptAccountList.DataSource = transactionList;
             rptAccountList.DataBind();
+
+            Session["TransactionList"] = transactionList;
         }
 
         /// <summary>
@@ -485,31 +545,6 @@ namespace RockWeb.Blocks.Finance
             }
 
             return string.Empty;
-        }
-
-        /// <summary>
-        /// Binds the page control options.
-        /// </summary>
-        protected void BindOptions()
-        {
-            // bind frequency options
-            var frequencyTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_FREQUENCY );
-            btnFrequency.BindToDefinedType( DefinedTypeCache.Read( frequencyTypeGuid ) );
-            
-            // bind payment types
-            var paymentTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_PAYMENT_TYPE );
-            rptPaymentType.DataSource = DefinedTypeCache.Read( paymentTypeGuid ).DefinedValues;
-            rptPaymentType.DataBind();
-
-            // bind credit card options
-            btnMonthExpiration.Items.Clear();
-            btnYearExpiration.Items.Clear();
-
-            btnMonthExpiration.DataSource = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.MonthNames.ToList().GetRange(0, 12);
-            btnYearExpiration.DataSource = Enumerable.Range( (DateTime.Now.Year), 10).ToList();
-            
-            btnMonthExpiration.DataBind();
-            btnYearExpiration.DataBind();
         }
 
         /// <summary>
