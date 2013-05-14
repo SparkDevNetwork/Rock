@@ -67,16 +67,135 @@
 
                         <!-- specific date panel -->
                         <div id="reoccurrence-pattern-specific-date" class="reoccurrence-pattern-type">
-                            <Rock:DatePicker runat="server" ID="dpAddSpecificDate" />
 
-                            <div class="controls">
-                                <ul>
-                                    <li>2/13/2013</li>
-                                    <li>3/13/2013</li>
-                                </ul>
+                            <div class="rock-date-edit-delete">
+                                <div class="control-group controls">
+                                    <input id="specific-date-list-values" type="hidden" value="4/23/2013,5/23/2013,6/23/2013,7/23/2013" />
+                                    <ul id="specific-date-list">
+                                        <li>
+                                            <span>4/23/2013</span>
+                                            <a id='A7' href='#' style="display: none"><i class='icon-remove'></i></a>
+                                        </li>
+                                        <li>
+                                            <span>5/23/2013</span>
+                                            <a id='A1' href='#' style="display: none"><i class='icon-remove'></i></a>
+                                        </li>
+                                        <li>
+                                            <span>6/23/2013</span>
+                                            <a id='A2' href='#' style="display: none"><i class='icon-remove'></i></a>
+                                        </li>
+                                        <li>
+                                            <span>7/23/2013</span>
+                                            <a id='A3' href='#' style="display: none"><i class='icon-remove'></i></a>
+                                        </li>
+                                    </ul>
+                                    <a class="btn btn-small" id="add-specific-date"><i class="icon-plus"></i>
+                                        <asp:Label ID="Label9" runat="server" Text=" Add Date" />
+                                    </a>
+                                    <div id="add-specific-date-group" style="display: none">
+                                        <Rock:DatePicker runat="server" ID="dpSpecificDate" ClientIDMode="Static" SelectedDate="12/25/2013" />
 
-                                <a class="btn btn-small"><i class="icon-plus"></i>Add Date</a>
+                                        <a class="btn btn-primary btn-mini" id="add-specific-date-ok"></i>
+                                                <asp:Label ID="Label1" runat="server" Text="OK" />
+                                        </a>
+                                        <a class="btn btn-mini" id="add-specific-date-cancel"></i>
+                                                <asp:Label ID="Label2" runat="server" Text="Cancel" />
+                                        </a>
+
+                                    </div>
+
+                                </div>
                             </div>
+
+                            <script>
+                                // show datepicker, ok, cancel so that new date can be added to the list
+                                $('#add-specific-date').click(function () {
+                                    $('#add-specific-date').hide();
+                                    $('#add-specific-date-group').show();
+                                });
+
+                                // add new date to list when ok is clicked
+                                $('#add-specific-date-ok').click(function () {
+
+                                    // get date list from hidden field
+                                    var dateList = $('#specific-date-list-values').val().split(",");
+                                    var newDate = $('#dpSpecificDate').val();
+
+                                    // delete newDate from list in case it is already there
+                                    var index = dateList.indexOf(newDate);
+                                    if (index > 0) {
+                                        dateList.splice(index, 1);
+                                    }
+
+                                    // add new date to list
+                                    dateList.push(newDate);
+
+                                    // save list back to hidden field
+                                    $('#specific-date-list-values').val(dateList);
+
+
+                                    // rebuild the UL
+                                    $('#specific-date-list').children().remove();
+
+                                    $.each(dateList, function (index, value) {
+                                        // add to ul
+                                        var newLi = "<li><span>" + value + "</span><a href='#' style='display: none'><i class='icon-remove'></i></a></li>";
+                                        $('#specific-date-list').append(newLi);
+                                    });
+
+                                    $('#add-specific-date-group').hide();
+                                    $('#add-specific-date').show();
+                                });
+
+                                // cancel out of adding a new date
+                                $('#add-specific-date-cancel').click(function () {
+                                    $('#add-specific-date-group').hide();
+                                    $('#add-specific-date').show();
+                                });
+
+                                // fadeIn/fadeOut the X buttons to delete dates
+                                $('#specific-date-list').hover(
+                                    function () {
+                                        $(this).find('li a').stop(true, true).show();
+                                        $(this).find('.rock-date-editor').show();
+                                    },
+                                    function () {
+                                        $(this).find('li a').stop(true, true).fadeOut(500);
+
+                                        var datePicker = $(this).find('.rock-date-editor');
+                                        var focusedElement = $(':focus');
+                                        var selectedElement = $(':selected');
+
+                                        // hide datePicker unless it currently has focus
+                                        if (datePicker.has(focusedElement).length == 0) {
+                                            datePicker.hide();
+                                        }
+                                    }
+                               );
+
+                                // delete specific date from list
+                                $('#specific-date-list').on('click', 'li a', function (event) {
+
+                                    debugger
+                                    var selectedDate = $(this).siblings().text();
+
+                                    // get date list from hidden field
+                                    var dateList = $('#specific-date-list-values').val().split(",");
+
+                                    // delete selectedDate
+                                    var index = dateList.indexOf(selectedDate);
+                                    if (index > 0) {
+                                        dateList.splice(index, 1);
+                                    }
+
+                                    // save list back to hidden field
+                                    $('#specific-date-list-values').val(dateList);
+
+                                    // remove date from ul list
+                                    var liItem = $(this).parent();
+                                    liItem.remove();
+                                });
+                            </script>
                         </div>
 
                         <!-- daily reoccurence -->
