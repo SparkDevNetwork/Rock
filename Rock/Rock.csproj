@@ -166,6 +166,10 @@
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionRefundService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionScannedCheckService.cs" />
+    <Compile Include="Migrations\201305092004372_UpdatePersonDetail.cs" />
+    <Compile Include="Migrations\201305092004372_UpdatePersonDetail.Designer.cs">
+      <DependentUpon>201305092004372_UpdatePersonDetail.cs</DependentUpon>
+    </Compile>
     <Compile Include="SystemGuid\EntityType.cs" />
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
     <Compile Include="Web\UI\Controls\Communication\ChannelControl.cs" />
@@ -749,6 +753,7 @@
     <Compile Include="Web\UI\Adapters\RadioButtonAdapter.cs" />
     <Compile Include="Web\UI\Controls\Communication\Sms.cs" />
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
+    <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\HtmlEditor.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DateTimePicker.cs" />
@@ -779,7 +784,7 @@
     <Compile Include="Web\UI\Controls\Pickers\PagePicker.cs" />
     <Compile Include="Web\UI\Controls\KeyValueList.cs" />
     <Compile Include="Web\UI\Controls\Grid\ToggleField.cs" />
-    <Compile Include="Web\UI\Controls\Badge.cs" />
+    <Compile Include="Web\UI\Controls\NoteEditor.cs" />
     <Compile Include="Web\UI\Controls\ButtonDropDownList.cs" />
     <Compile Include="Web\UI\Controls\AttributeEditor.cs" />
     <Compile Include="Web\UI\Controls\ScheduleBuilder.cs" />
@@ -1098,7 +1103,7 @@
     <Compile Include="Web\UI\Controls\Grid\BoolField.cs" />
     <Compile Include="Web\UI\Controls\HtmlGenericContainer.cs" />
     <Compile Include="Web\UI\Controls\NotificationBox.cs" />
-    <Compile Include="Web\UI\Controls\RowEventArgs.cs" />
+    <Compile Include="Web\UI\Controls\Grid\RowEventArgs.cs" />
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="Field\Types\BooleanFieldType.cs" />
     <Compile Include="Field\Types\PageReferenceFieldType.cs" />
@@ -1578,6 +1583,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201305161923438_FinancialTransactionBase.resx">
       <DependentUpon>201305161923438_FinancialTransactionBase.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305092004372_UpdatePersonDetail.resx">
+      <DependentUpon>201305092004372_UpdatePersonDetail.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201305212349171_ScheduleUsingICal.resx">
       <DependentUpon>201305212349171_ScheduleUsingICal.cs</DependentUpon>

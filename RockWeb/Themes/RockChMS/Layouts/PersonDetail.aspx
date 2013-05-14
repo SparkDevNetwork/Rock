@@ -1,4 +1,4 @@
-﻿<%@ Page ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/RockChMS/Layouts/Site.Master"
+﻿<%@ Page ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/RockChMS/Layouts/Site.Master" Trace="true"
     AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
 
 <script runat="server">

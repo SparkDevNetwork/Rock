@@ -101,9 +101,12 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
                         ).ToList().OrderBy( m => m.SortOrder ) )
                 {
+                    string imageFormat = AppPath + "image.ashx?id={0}";
+
                     membersElement.Add( new XElement( "member",
                         new XAttribute( "id", member.Id.ToString() ),
                         new XAttribute( "photo-id", member.PhotoId ),
+                        new XAttribute( "photo-url", member.PhotoId != 0 ? string.Format(imageFormat, member.PhotoId) : string.Empty ),
                         new XAttribute( "first-name", member.FirstName ),
                         new XAttribute( "last-name", member.LastName ),
                         new XAttribute( "role", member.Role )
