@@ -15,6 +15,8 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.CheckIn;
 using Rock.Model;
+using Rock.Web.UI.Controls;
+using System.Runtime.InteropServices;
 
 namespace RockWeb.Blocks.CheckIn.Attended
 {
@@ -138,6 +140,18 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 
         protected void lbNext_Click( object sender, EventArgs e )
         {
+            var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
+            if ( family == null )
+            {
+                maWarning.Show( "You need to pick a family.", ModalAlertType.Warning );
+                return;
+            }
+            var people = family.People.Where( p => p.Selected ).FirstOrDefault();
+            if ( people == null )
+            {
+                maWarning.Show( "You need to pick at least one family member.", ModalAlertType.Warning );
+                return;
+            }
             GoNext();   
         }
 
