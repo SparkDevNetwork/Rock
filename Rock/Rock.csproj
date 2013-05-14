@@ -151,6 +151,10 @@
     <Compile Include="Migrations\201305071959060_ExceptionList_PageCreate.Designer.cs">
       <DependentUpon>201305071959060_ExceptionList_PageCreate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201305132040219_UpdateGivingBlocks.cs" />
+    <Compile Include="Migrations\201305132040219_UpdateGivingBlocks.Designer.cs">
+      <DependentUpon>201305132040219_UpdateGivingBlocks.cs</DependentUpon>
+    </Compile>
     <Compile Include="SystemGuid\EntityType.cs" />
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
     <Compile Include="Web\UI\Controls\Communication\ChannelControl.cs" />
@@ -1558,6 +1562,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201305071959060_ExceptionList_PageCreate.resx">
       <DependentUpon>201305071959060_ExceptionList_PageCreate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305132040219_UpdateGivingBlocks.resx">
+      <DependentUpon>201305132040219_UpdateGivingBlocks.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

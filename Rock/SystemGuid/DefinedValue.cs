@@ -86,7 +86,7 @@ namespace Rock.SystemGuid
         /// An Event Registration Transaction
         /// </summary>
         public const string TRANSACTION_TYPE_EVENT_REGISTRATION = "33CB96DD-8752-4BEE-A142-88DB7DE538F0";
-
+               
         #endregion
 
         #region Financial Transaction Image Type
@@ -110,6 +110,20 @@ namespace Rock.SystemGuid
         /// Back of Envelope
         /// </summary>
         public const string TRANSACTION_IMAGE_TYPE_ENVELOPE_BACK = "746FBD46-AA4C-4A84-A7DA-080763CED187";
+
+        #endregion
+
+        #region Transaction Frequency Type
+
+        /// <summary>
+        /// One Time
+        /// </summary>
+        public const string TRANSACTION_FREQUENCY_ONE_TIME = "82614683-7FB4-4F16-9087-6F85945A7B16";
+
+        /// <summary>
+        /// One Time (Future)
+        /// </summary>
+        public const string TRANSACTION_FREQUENCY_ONE_TIME_FUTURE = "A5A12067-322E-44A4-94C4-561312F9913C";
 
         #endregion
 
