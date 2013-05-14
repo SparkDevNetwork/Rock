@@ -283,7 +283,7 @@ namespace Rock.Web.Cache
 
                 if ( pageIds != null )
                 {
-                    foreach ( int id in pageIds )
+                    foreach ( int id in pageIds.ToList() )
                     {
                         pages.Add( PageCache.Read( id ) );
                     }
@@ -317,7 +317,7 @@ namespace Rock.Web.Cache
 
                 if ( blockIds != null )
                 {
-                    foreach ( int id in blockIds )
+                    foreach ( int id in blockIds.ToList() )
                     {
                         BlockCache block = BlockCache.Read( id, SiteId );
                         if ( block != null )

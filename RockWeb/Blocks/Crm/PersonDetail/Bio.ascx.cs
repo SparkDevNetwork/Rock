@@ -14,6 +14,7 @@ using System.Web.UI.HtmlControls;
 using Rock;
 using Rock.Model;
 using Rock.Web.UI;
+using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -27,10 +28,22 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             if ( Person != null )
             {
+                Page.Title = CurrentPage.Title + ": " + Person.FullName;
+
                 lName.Text = Person.FullName;
                 lPersonStatus.Text = Person.PersonStatusValueId.DefinedValue();
-                RecordStatus = Person.RecordStatusValueId.DefinedValue();
 
+                // Show record status only if it's not 'Active'
+                RecordStatus = string.Empty;
+                if ( Person.RecordStatusValueId.HasValue )
+                {
+                    var recordStatusValue = DefinedValueCache.Read( Person.RecordStatusValueId.Value );
+                    if ( string.Compare(recordStatusValue.Guid.ToString(), Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE, true) != 0)
+                    {
+                        RecordStatus = recordStatusValue.Name;
+                    }
+                }
+                
                 // Campus is associated with the family group(s) person belongs to.
                 var families = PersonGroups( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
                 if ( families != null )
