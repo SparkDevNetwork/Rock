@@ -48,6 +48,7 @@ namespace RockWeb.Blocks.Administraton
             //Set properties and events for Exception Occurrences
             gExceptionOccurrences.DataKeyNames = new string[] { "Id" };
             gExceptionOccurrences.GridRebind += gExceptionOccurrences_GridRebind;
+            gExceptionOccurrences.RowSelected += gExceptionOccurrences_RowSelected;
             gExceptionOccurrences.RowItemText = "Exception";
 
         }
@@ -220,6 +221,12 @@ namespace RockWeb.Blocks.Administraton
             }
 
         }
+
+        protected void gExceptionOccurrences_RowSelected( object sender, RowEventArgs e )
+        {
+            NavigateToDetailPage( "ExceptionId", (int)e.RowKeyValue );
+        }
+
         #endregion
 
         #region Page Events
