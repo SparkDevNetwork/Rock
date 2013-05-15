@@ -208,21 +208,21 @@ namespace RockWeb.Blocks.Finance.Administration
         private void BindGrid()
         {
             var GivingProfileService = new FinancialScheduledTransactionService();
-            var GivingProfilees = GivingProfileService.Queryable();
+            var GivingProfiles = GivingProfileService.Queryable();
             SortProperty sortProperty = rGridGivingProfile.SortProperty;
 
-            if ( dtGivingProfileDate.SelectedDate.HasValue )
+            if ( dtGivingProfileDate.SelectedDateTime.HasValue )
             {
-                GivingProfilees = GivingProfilees.Where( GivingProfile => GivingProfile.StartDate >= dtGivingProfileDate.SelectedDate );
+                GivingProfiles = GivingProfiles.Where( GivingProfile => GivingProfile.StartDate >= dtGivingProfileDate.SelectedDateTime );
             }
 
             if ( sortProperty != null )
             {
-                rGridGivingProfile.DataSource = GivingProfilees.Sort( sortProperty ).ToList();
+                rGridGivingProfile.DataSource = GivingProfiles.Sort( sortProperty ).ToList();
             }
             else
             {
-                rGridGivingProfile.DataSource = GivingProfilees.OrderBy( b => b.AuthorizedPersonId ).ToList();
+                rGridGivingProfile.DataSource = GivingProfiles.OrderBy( b => b.AuthorizedPersonId ).ToList();
             }
 
             rGridGivingProfile.DataBind();
