@@ -8,7 +8,7 @@
     <legend><asp:Literal ID="lGroupTypeName" runat="server" /></legend>
 
         <div class="control-group">
-            <label class="control-label">Select Group Type</label>
+            <label class="control-label">Select Location</label>
             <div class="controls">
                 <asp:Repeater ID="rSelection" runat="server" OnItemCommand="rSelection_ItemCommand">
                     <ItemTemplate>

@@ -21,6 +21,9 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
 
+            this.SourceTypeName = "Rock.Web.UI.Controls.DatePicker, Rock";
+            this.PropertyName = "SelectedDate";
+
             string kendoFunction = "kendoDatePicker";
 
             string script = string.Format( 
