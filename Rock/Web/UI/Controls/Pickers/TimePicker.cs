@@ -22,6 +22,9 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
 
+            this.SourceTypeName = "Rock.Web.UI.Controls.TimePicker, Rock";
+            this.PropertyName = "SelectedTime";
+
             string kendoFunction = "kendoTimePicker";
 
             string script = string.Format(

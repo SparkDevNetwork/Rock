@@ -214,6 +214,7 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
+            // TODO fix screen flash
             RebindAccounts();
         }
 
@@ -276,6 +277,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbPaymentType_Click( object sender, EventArgs e )
         {
+            // TODO fix tab not responding
             LinkButton lb = sender as LinkButton;
             if ( lb != null )
             {
