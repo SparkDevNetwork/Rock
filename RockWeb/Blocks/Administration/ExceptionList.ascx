@@ -11,7 +11,7 @@
         <asp:Panel ID="pnlExceptionGroups" runat="server" CssClass="well" Visible="true">
             <fieldset>
                 <legend>
-                    <h4>Exception Details</h4>
+                    <h4>Exceptions</h4>
                 </legend>
             </fieldset>
             <div class="row-fluid">
