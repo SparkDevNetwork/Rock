@@ -461,7 +461,7 @@ namespace RockWeb
                 foreach ( string serverVar in context.Request.ServerVariables )
                     serverVars.Append( "<tr><td><b>" + serverVar + "</b></td><td>" + context.Request.ServerVariables[serverVar].ToString() + "</td></tr>" );
 
-                cookies.Append( "</table>" );
+                serverVars.Append( "</table>" );
                 exceptionLog.ServerVariables = serverVars.ToString();
 
                 if ( userLogin != null )
