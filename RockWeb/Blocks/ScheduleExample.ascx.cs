@@ -28,5 +28,16 @@ namespace RockWeb.Blocks.Reporting
             }
         }
 
-    }
+        protected void btnCancelSchedule_Click( object sender, EventArgs e )
+        {
+            // ##TODO##
+            var clicked = true;
+        }
+        
+        protected void btnSaveSchedule_Click( object sender, EventArgs e )
+        {
+            // ##TODO##
+            var clicked = true;
+        }
+}
 }
