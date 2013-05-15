@@ -82,12 +82,11 @@ namespace RockWeb.Blocks.Finance
             _ShowCreditCard = Convert.ToBoolean( GetAttributeValue( "ShowCreditCard" ) );
             _ShowChecking = Convert.ToBoolean( GetAttributeValue( "ShowChecking/ACH" ) );
 
-            BindAccounts();
-
             if ( !IsPostBack )
             {
                 BindCreditCard();
                 BindPaymentTypes();
+                BindAccounts();
 
                 // Show Campus
                 if ( Convert.ToBoolean( GetAttributeValue( "ShowCampuses" ) ) )
@@ -139,15 +138,15 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddAccount_SelectionChanged( object sender, EventArgs e )
         {
-            List<FinancialTransactionDetail> transactionList = Session["TransactionList"] as List<FinancialTransactionDetail>;
+            List<FinancialTransactionDetail> transactionList =  Session["TransactionList"] as List<FinancialTransactionDetail>;
             FinancialAccountService accountService = new FinancialAccountService();
-
+            
             foreach ( RepeaterItem item in rptAccountList.Items )
             {   
                 var accountId = Convert.ToInt32(((HiddenField)item.FindControl( "hfAccountId" )).Value);
-                var accountAmount = Decimal.Parse( ( (NumberBox)item.FindControl( "txtAccountAmount" ) ).Text );
+                var accountAmount = ( (NumberBox)item.FindControl( "txtAccountAmount" ) ).Text;
                 var index = transactionList.FindIndex( a => a.AccountId == accountId );
-                transactionList[index].Amount = accountAmount;
+                transactionList[index].Amount = !string.IsNullOrWhiteSpace( accountAmount ) ? Decimal.Parse(accountAmount) : 0M;
             }
 
             var newAccountId = Convert.ToInt32( btnAddAccount.SelectedValue );
@@ -155,7 +154,8 @@ namespace RockWeb.Blocks.Finance
             detail.AccountId = newAccountId;
             detail.Account = accountService.Get( newAccountId );
             transactionList.Add( detail );
-
+            Session["TransactionList"] = transactionList;
+            
             if ( btnAddAccount.Items.Count > 1 )
             {
                 btnAddAccount.Items.Remove( btnAddAccount.SelectedItem );
@@ -165,11 +165,8 @@ namespace RockWeb.Blocks.Finance
             {
                 divAddAccount.Visible = false;
             }
-                        
-            rptAccountList.DataSource = transactionList;
-            rptAccountList.DataBind();
 
-            Session["TransactionList"] = transactionList;
+            RebindAccounts();
         }
 
         /// <summary>
@@ -182,13 +179,42 @@ namespace RockWeb.Blocks.Finance
             if ( btnFrequency.SelectedValue != DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME_FUTURE ).Id.ToString()
                 && btnFrequency.SelectedValue != DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id.ToString() )
             {
-                divRecurrence.Visible = true;
-                chkLimitGifts.Visible = true;                
+                if ( divRecurrence.Visible != true )
+                {
+                    divRecurrence.Visible = true;
+                }
+
+                if ( chkLimitGifts.Visible != true )
+                {
+                    chkLimitGifts.Visible = true;
+                }
             }
             else if ( btnFrequency.SelectedValue == DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME_FUTURE ).Id.ToString() )
             {
-                divRecurrence.Visible = true;
+                if ( divRecurrence.Visible != true )
+                {
+                    divRecurrence.Visible = true;
+                }
+
+                if ( chkLimitGifts.Visible != false )
+                {
+                    chkLimitGifts.Visible = false;
+                }                
             }
+            else
+            {
+                if ( divRecurrence.Visible != false )
+                {
+                    divRecurrence.Visible = false;
+                }
+
+                if ( chkLimitGifts.Visible != false )
+                {
+                    chkLimitGifts.Visible = false;
+                }
+            }
+
+            RebindAccounts();
         }
 
         /// <summary>
@@ -209,7 +235,8 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void chkLimitGifts_CheckedChanged( object sender, EventArgs e )
         {
-            divLimitGifts.Visible = !divLimitGifts.Visible;            
+            divLimitGifts.Visible = !divLimitGifts.Visible;
+            RebindAccounts();
         }
 
         /// <summary>
@@ -221,7 +248,7 @@ namespace RockWeb.Blocks.Finance
         {
             divPaymentNick.Visible = !divPaymentNick.Visible;
         }
-
+        
         /// <summary>
         /// Handles the CheckedChanged event of the chkCreateAcct control.
         /// </summary>
@@ -530,6 +557,16 @@ namespace RockWeb.Blocks.Finance
                 txtZipcode.Text = personLocation.Zip.ToString();
                 txtEmail.Text = CurrentPerson.Email.ToString();
             }
+        }
+
+        /// <summary>
+        /// Rebinds the accounts.
+        /// </summary>
+        protected void RebindAccounts()
+        {
+            List<FinancialTransactionDetail> transactionList = Session["TransactionList"] as List<FinancialTransactionDetail>;
+            rptAccountList.DataSource = transactionList;
+            rptAccountList.DataBind();
         }
 
         /// <summary>

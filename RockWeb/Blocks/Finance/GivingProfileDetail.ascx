@@ -10,20 +10,21 @@
         $('.calc').on('change', function () {
             var total = 0.00;
 
-            $('.calc').each(function () {
-                if ($(this).val() != '') {
+            $('.calc').each(function () {                
+                if ($(this).val() != '' && $(this).val() != null) {
                     total += parseFloat($(this).val());
                     console.log(total);
-                }
+                    //this.value = parseFloat($(this).val()).toFixed(2);
+                }                
             });
-
-            this.value = parseFloat($(this).val()).toFixed(2);
+                        
+            //this.value = parseFloat($(this).val()).toFixed(2);
             $('#spnTotal').html(total.toFixed(2));
             $('.total-label').css('width', $(this).parent().width());
             return false;
         });
 
-        //$('.calc').trigger('change');
+        $('.calc').trigger('change');
 
         // payment types script
         $('.credit-card').creditCardTypeDetector({ 'credit_card_logos': '.card-logos' });
@@ -68,7 +69,7 @@
                                         <asp:HiddenField ID="hfAccountId" runat="server" Value='<%# DataBinder.Eval(Container.DataItem, "AccountId") %>'/>
 	                                    <Rock:NumberBox ID="txtAccountAmount" runat="server" CssClass="input-small calc" PrependText="$" 
                                             LabelText='<%# DataBinder.Eval(Container.DataItem, "Account.PublicName") %>' 
-                                            Text='<%# Convert.ToDecimal(DataBinder.Eval(Container.DataItem, "Amount")) > 0 ? DataBinder.Eval(Container.DataItem, "Amount") : "" %>'>
+                                            Text='<%# Convert.ToDecimal(DataBinder.Eval(Container.DataItem, "Amount")) > 0 ? DataBinder.Eval(Container.DataItem, "Amount") : "" %>' >
 	                                    </Rock:NumberBox>
                                     </div>
                                 </ItemTemplate>                                
@@ -77,16 +78,18 @@
 
                             <div ID="divAddAccount" runat="server">
                                 <div class="row-fluid">
-                                    <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" CssClass="btn btn-primary controls" OnSelectionChanged="btnAddAccount_SelectionChanged" Title="Add Another Gift" />
+                                    <div class="control-group align-right">
+                                        <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnAddAccount_SelectionChanged" Title="Add Another Gift" />
+                                    </div>
                                 </div>                                
                             </div>
 
                             <div id="divFrequency" runat="server" visible="false">
                                 
                                 <div class="row-fluid">
-                                    <div class="control-group">                                    
+                                    <div class="control-group">                                                                            
                                         <label id="lblTotalAmount" class="control-label" for="spnTotal"><b>Total Amount</b></label>
-                                        <div class="controls amount-right">
+                                        <div class="controls align-right">
                                             <b>$ <span id="spnTotal">0.00</span></b>
                                         </div>                     
                                     </div>
@@ -105,8 +108,8 @@
                                     <div class="row-fluid">
                                         <Rock:LabeledCheckBox id="chkLimitGifts" runat="server" Text="Limit number of gifts" OnCheckedChanged="chkLimitGifts_CheckedChanged" AutoPostBack="true" Visible="false" />
                                     
-                                        <div id="divLimitGifts" runat="server" Visible="false">
-                                            <Rock:NumberBox ID="txtLimitGifts" runat="server" class="input-small" Text="0" />
+                                        <div id="divLimitGifts" runat="server" visible="false">
+                                            <Rock:NumberBox ID="txtLimitGifts" runat="server" class="input-small align-right" Text="0" />
                                         </div>                                    
                                     </div>
 
@@ -148,7 +151,7 @@
 
                         <div class="row-fluid">
                             <div class="span12" >
-                                <Rock:LabeledTextBox ID="txtAddress" LabelText="Address" runat="server" Required="true" CssClass="input-xlarge" />
+                                <Rock:LabeledTextBox ID="txtAddress" LabelText="Address" runat="server" Required="true"  />
                             </div>
                             
                         </div>
@@ -156,7 +159,7 @@
                         <div class="row-fluid">
 
                             <div class="span6">
-                                <Rock:LabeledTextBox ID="txtCity" LabelText="City" runat="server" Required="true" CssClass="input-large" />
+                                <Rock:LabeledTextBox ID="txtCity" LabelText="City" runat="server" Required="true" />
                             </div>
   
                             <div class="span4">
@@ -165,14 +168,14 @@
                             </div>
 
                             <div class="span2">
-                                <Rock:LabeledTextBox ID="txtZipcode" LabelText="Zip" runat="server" Required="true" CssClass="input-small" />
+                                <Rock:LabeledTextBox ID="txtZipcode" LabelText="Zip" runat="server" Required="true" CssClass="input-mini" />
                             </div>
 
                         </div>                    
 
                         <div class="row-fluid">   
                             <div class="span12" >
-                                <Rock:LabeledTextBox ID="txtEmail" LabelText="Email" runat="server" Required="true" CssClass="input-xlarge" />
+                                <Rock:LabeledTextBox ID="txtEmail" LabelText="Email" runat="server" Required="true" />
                             </div>
                         </div>
 
