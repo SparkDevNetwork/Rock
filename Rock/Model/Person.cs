@@ -13,6 +13,7 @@ using System.Runtime.Serialization;
 using System.Web;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -635,7 +636,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the grade level of the person based on their high school graduation date.  Grade levels are -1 for prekindergarten, 0 for kindergarten, 1 for first grade, etc. or null if they have no graduation date.
+        /// Gets the grade level of the person based on their high school graduation date.  Grade levels are -1 for prekindergarten, 0 for kindergarten, 1 for first grade, etc. or null if they have no graduation date or if no 'GradeTransitionDate' is configured.
         /// </summary>
         /// <value>
         /// The grade level or null if no graduation date.
@@ -653,11 +654,15 @@ namespace Rock.Model
                 }
                 else
                 {
-                    // Is it before the promotion date?
-                    // TODO: change next line to use a "PromotionDate" instead pulling the mm/dd from the GraduationDate.
-                    DateTime promotionDate = new DateTime( DateTime.Now.Year, GraduationDate.Value.Month, GraduationDate.Value.Day );
+                    // Use the GradeTransitionDate (aka grade promotion date) to figure out what grade their in
+                    DateTime transitionDate;
+                    var globalAttributes = GlobalAttributesCache.Read();
+                    if ( ! DateTime.TryParse( globalAttributes.GetValue( "GradeTransitionDate" ), out transitionDate ) )
+                    {
+                        return null;
+                    }
 
-                    var gradeMaxFactorReactor = ( DateTime.Now < promotionDate ) ? 12 : 13;
+                    int gradeMaxFactorReactor = ( DateTime.Now < transitionDate ) ? 12 : 13;
                     return gradeMaxFactorReactor - ( GraduationDate.Value.Year - DateTime.Now.Year );
                 }
             }
