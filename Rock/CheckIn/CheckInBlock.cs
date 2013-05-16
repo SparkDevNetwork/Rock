@@ -39,6 +39,21 @@ namespace Rock.CheckIn
         protected List<int> CurrentRoomGroupTypeIds;
 
         /// <summary>
+        /// The count of people that need to be checked in
+        /// </summary>
+        protected int CheckInPersonCount;
+
+        /// <summary>
+        /// The count of people that are actually checked in
+        /// </summary>
+        protected int PeopleCheckedIn;
+
+        /// <summary>
+        /// The current list of Id's of people to check in
+        /// </summary>
+        protected List<int> CheckInPeopleIds;
+
+        /// <summary>
         /// The current check in state
         /// </summary>
         protected CheckInState CurrentCheckInState;
@@ -203,6 +218,33 @@ namespace Rock.CheckIn
                 Session.Remove( "CheckInRoomGroupTypeIds" );
             }
 
+            if ( CheckInPersonCount != null )
+            {
+                Session["CheckInPersonCount"] = CheckInPersonCount;
+            }
+            else
+            {
+                Session.Remove( "CheckInPersonCount" );
+            }
+
+            if ( PeopleCheckedIn != null )
+            {
+                Session["PeopleCheckedIn"] = PeopleCheckedIn;
+            }
+            else
+            {
+                Session.Remove( "PeopleCheckedIn" );
+            }
+
+            if ( CheckInPeopleIds != null )
+            {
+                Session["CheckInPeopleIds"] = CheckInPeopleIds;
+            }
+            else
+            {
+                Session.Remove( "CheckInPeopleIds" );
+            }
+
             if ( CurrentWorkflow != null )
             {
                 if ( CurrentCheckInState != null )
@@ -270,6 +312,21 @@ namespace Rock.CheckIn
             if ( Session["CheckInRoomGroupTypeIds"] != null )
             {
                 CurrentRoomGroupTypeIds = Session["CheckInRoomGroupTypeIds"] as List<int>;
+            }
+
+            if ( Session["CheckInPersonCount"] != null )
+            {
+                CheckInPersonCount = (int)Session["CheckInPersonCount"];
+            }
+
+            if ( Session["PeopleCheckedIn"] != null )
+            {
+                PeopleCheckedIn = (int)Session["PeopleCheckedIn"];
+            }
+
+            if ( Session["CheckInPeopleIds"] != null )
+            {
+                CheckInPeopleIds = Session["CheckInPeopleIds"] as List<int>;
             }
 
             if ( Session["CheckInWorkflow"] != null )

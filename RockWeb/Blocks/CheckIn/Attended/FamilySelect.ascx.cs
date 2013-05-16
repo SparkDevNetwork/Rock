@@ -152,7 +152,17 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 maWarning.Show( "You need to pick at least one family member.", ModalAlertType.Warning );
                 return;
             }
-            GoNext();   
+            
+            // set the number of people that need to be checked in. set the counter of those actually checked in to zero. this is important on the activity select page.
+            CheckInPersonCount = family.People.Where( p => p.Selected ).Count();
+            PeopleCheckedIn = 0;
+            List<int> peopleIds = new List<int>();
+            foreach ( var person in family.People.Where( p => p.Selected ) )
+            {
+                peopleIds.Add( person.Person.Id );
+            }
+            CheckInPeopleIds = peopleIds;
+            GoNext();
         }
 
         protected void lbAddFamily_Click( object sender, EventArgs e)
