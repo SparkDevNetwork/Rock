@@ -15,6 +15,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.CheckIn;
 using Rock.Model;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.CheckIn.Attended
 {
@@ -38,88 +39,15 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                     if ( family != null )
                     {
-                        var person = family.People.Where( p => p.Selected ).FirstOrDefault();
+                        var personId = CheckInPeopleIds.FirstOrDefault();
+                        var person = new PersonService().Get( personId );
+                        
+                        //var person = family.People.Where( p => p.Selected ).FirstOrDefault();
                         if ( person != null )
                         {
-                            lblPersonName.Text = person.Person.FullName;
-
-                            // fill the ministry repeater
-                            List<GroupType> groupTypeList = new List<GroupType>();
-                            foreach ( var groupType in CurrentGroupTypeIds )
-                            {
-                                GroupType groupTypeSelected = new GroupTypeService().Get( groupType );
-                                groupTypeList.Add( groupTypeSelected );
-                            }
-                            
-                            rMinistry.DataSource = groupTypeList;
-                            rMinistry.DataBind();
-
-                            // the list shown under "ministry" are all things they've selected on the admin page, so go ahead and make the buttons "active"
-                            foreach ( RepeaterItem item in rMinistry.Items )
-                            {
-                                ( (LinkButton)item.FindControl( "lbSelectMinistry" ) ).AddCssClass( "active" );
-                            }
-
-                            // fill the time repeater
-                            //                        var location = groupType.Locations.Where( l => l.Selected ).FirstOrDefault();
-                            //                        if ( location != null )
-                            //                        {
-                            //                            var group = location.Groups.Where( g => g.Selected ).FirstOrDefault();
-                            //                            if ( group != null )
-                            //                            {
-                            //                                if ( group.Schedules.Count == 1 )
-                            //                                {
-                            //                                    foreach ( var schedule in group.Schedules )
-                            //                                    {
-                            //                                        schedule.Selected = true;
-                            //                                    }
-                            foreach ( var groupType in CurrentRoomGroupTypeIds )
-                            {
-                                CheckInGroupType cigt = new CheckInGroupType();
-                                GroupType gt = new GroupType();
-                                GroupTypeService gts = new GroupTypeService();
-                                gt = gts.Get(groupType);
-                                cigt.GroupType = gt;
-                                CheckInLocation cil = new CheckInLocation();
-                                cil = cigt.Locations.Where( l => l.Selected ).FirstOrDefault();
-                                if ( cil != null )
-                                {
-                                    var group = cil.Groups.Where( g => g.Selected ).FirstOrDefault();
-                                    if ( group != null )
-                                    {
-
-                                    }
-                                }
-                                //okay so here i want to finish drilling down to the schedules, then check to see if the id of the schedule is in the list of possible schedules and if not, add it.
-                            }
-
-                            //fill the activity repeater
-                            List<GroupType> activityGroupTypeList = new List<GroupType>();
-                            foreach ( var activityGroupType in CurrentRoomGroupTypeIds )
-                            {
-                                GroupType activityGroupTypeSelected = new GroupTypeService().Get( activityGroupType );
-                                activityGroupTypeList.Add( activityGroupTypeSelected );
-                            }
-
-                            rActivity.DataSource = activityGroupTypeList;
-                            rActivity.DataBind();
-
-                            if ( person.GroupTypes.Count == 1 )
-                            {
-                                if ( UserBackedUp )
-                                {
-                                    GoBack();
-                                }
-                                else
-                                {
-                                    foreach ( var groupType in person.GroupTypes )
-                                    {
-                                        groupType.Selected = true;
-                                    }
-
-                                    ProcessMinistry();
-                                }
-                            }
+                            //lblPersonName.Text = person.Person.FullName;
+                            lblPersonName.Text = person.FullName;
+                            LoadStuff(person);
                         }
                         else
                         {
@@ -132,6 +60,63 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     }
                 }
             }
+        }
+
+        //protected void LoadStuff(CheckInPerson person)
+        protected void LoadStuff( Person person )
+        {
+            // fill the ministry repeater
+            List<GroupType> groupTypeList = new List<GroupType>();
+            foreach ( var groupType in CurrentGroupTypeIds )
+            {
+                GroupType groupTypeSelected = new GroupTypeService().Get( groupType );
+                groupTypeList.Add( groupTypeSelected );
+            }
+
+            rMinistry.DataSource = groupTypeList;
+            rMinistry.DataBind();
+
+            // the list shown under "ministry" are all things they've selected on the admin page, so go ahead and make the buttons "active"
+            foreach ( RepeaterItem item in rMinistry.Items )
+            {
+                ( (LinkButton)item.FindControl( "lbSelectMinistry" ) ).AddCssClass( "active" );
+            }
+
+            // fill the time repeater
+            foreach ( var groupType in CurrentGroupTypeIds )
+            {
+                List<Schedule> scheduleList = new List<Schedule>();
+                GroupType gt = new GroupType();
+                GroupTypeService gts = new GroupTypeService();
+                gt = gts.Get( groupType );
+                foreach ( var group in gt.Groups )
+                {
+                    foreach ( var groupLocation in group.GroupLocations )
+                    {
+                        foreach ( var schedule in groupLocation.Schedules )
+                        {
+                            if ( !scheduleList.Contains( schedule ) )
+                            {
+                                scheduleList.Add( schedule );
+                            }
+                        }
+                    }
+                }
+
+                rTime.DataSource = scheduleList;
+                rTime.DataBind();
+            }
+
+            // fill the activity repeater
+            List<GroupType> activityGroupTypeList = new List<GroupType>();
+            foreach ( var activityGroupType in CurrentRoomGroupTypeIds )
+            {
+                GroupType activityGroupTypeSelected = new GroupTypeService().Get( activityGroupType );
+                activityGroupTypeList.Add( activityGroupTypeSelected );
+            }
+
+            rActivity.DataSource = activityGroupTypeList;
+            rActivity.DataBind();
         }
 
         #endregion
@@ -149,7 +134,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     if ( person != null )
                     {
                         int id = Int32.Parse( e.CommandArgument.ToString() );
-                        LoadGroups();
                     }
                 }
             }
@@ -157,6 +141,17 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
         protected void rTime_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
+            int id = Int32.Parse( e.CommandArgument.ToString() );
+            if ( HasActiveClass( (LinkButton)e.Item.FindControl( "lbSelectTime" ) ) )
+            {
+                // the button is already selected, so unselect it.
+                ( (LinkButton)e.Item.FindControl( "lbSelectTime" ) ).RemoveCssClass( "active" );
+            }
+            else
+            {
+                // the button isn't already selected. Select it.
+                ( (LinkButton)e.Item.FindControl( "lbSelectTime" ) ).AddCssClass( "active" );
+            }
         }
 
         protected void rActivity_ItemCommand( object source, RepeaterCommandEventArgs e )
@@ -172,7 +167,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 // the button isn't already selected. Select it.
                 ( (LinkButton)e.Item.FindControl( "lbSelectActivity" ) ).AddCssClass( "active" );
             }
-
         }
 
         protected void lbBack_Click( object sender, EventArgs e )
@@ -216,19 +210,82 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
         private void GoNext()
         {
+            // make sure a ministry was chosen.
+            var ministryChosen = false;
+            foreach ( RepeaterItem item in rMinistry.Items )
+            {
+                var linky = (LinkButton)item.FindControl( "lbSelectMinistry" );
+                if ( HasActiveClass( linky ) )
+                {
+                    ministryChosen = true;
+                }
+            }
+
+            if ( !ministryChosen )
+            {
+                maWarning.Show( "You have to choose a ministry.", ModalAlertType.Warning );
+                return;
+            }
+
+            // make sure a time was chosen.
+            var timeChosen = false;
+            foreach ( RepeaterItem item in rTime.Items )
+            {
+                var linky = (LinkButton)item.FindControl( "lbSelectTime" );
+                if ( HasActiveClass( linky ) )
+                {
+                    timeChosen = true;
+                }
+            }
+
+            if ( !timeChosen )
+            {
+                maWarning.Show( "You have to choose a time.", ModalAlertType.Warning );
+                return;
+            }
+
+            // make sure an activity was chosen.
+            var activityChosen = false;
+            foreach ( RepeaterItem item in rActivity.Items )
+            {
+                var linky = (LinkButton)item.FindControl( "lbSelectActivity" );
+                if ( HasActiveClass( linky ) )
+                {
+                    activityChosen = true;
+                }
+            }
+
+            if ( !activityChosen )
+            {
+                maWarning.Show( "You have to choose an activity.", ModalAlertType.Warning );
+                return;
+            }
+
             SaveState();
             //GoToSuccessPage();
-            NavigateToNextPage();
+            
+            // increment the counter of number of people checked in. Also remove the person just checked in on this page from the list of those needing to be checked in.
+            PeopleCheckedIn++;
+            var personJustCheckedIn = CheckInPeopleIds.FirstOrDefault();
+            CheckInPeopleIds.Remove( personJustCheckedIn );
+
+            if ( PeopleCheckedIn != CheckInPersonCount )
+            {
+                NavigateToCurrentPage();
+            }
+            else
+            {
+                NavigateToNextPage();
+            }
         }
 
-        private void ProcessMinistry()
+        private void ProcessActivities()
         {
             var errors = new List<string>();
             //if ( ProcessActivity( "Location Search", out errors ) )
-            if ( ProcessActivity( "Schedule Search", out errors ) )
+            if ( ProcessActivity( "Activity Search", out errors ) )
             {
                 SaveState();
-                LoadTimes();
                 //NavigateToNextPage();
             }
             else
@@ -236,88 +293,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 string errorMsg = "<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
                 maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
             }
-        }
-
-        private void LoadGroups()
-        {
-            var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-            if ( family != null )
-            {
-                var person = family.People.Where( p => p.Selected ).FirstOrDefault();
-                if ( person != null )
-                {
-                    //foreach ( var kioskGroupType in CurrentCheckInState.Kiosk.KioskGroupTypes.Where( g => g.KioskLocations.Any( l => l.Location.IsActive ) ) )
-                    //{
-                    //    if ( !person.GroupTypes.Any( g => g.GroupType.Id == kioskGroupType.GroupType.Id ) )
-                    //    {
-                    //        var checkinGroupType = new CheckInGroupType();
-                    //        checkinGroupType.GroupType = kioskGroupType.GroupType.Clone( false );
-                    //        checkinGroupType.GroupType.CopyAttributesFrom( kioskGroupType.GroupType );
-                    //        person.GroupTypes.Add( checkinGroupType );
-                    //    }
-                    //}
-                    var kioskGroupTypes = CurrentCheckInState.Kiosk.KioskGroupTypes.Where( g => g.KioskLocations.Any( l => l.Location.IsActive ) );
-                    
-                    rActivity.DataSource = kioskGroupTypes;
-                    rActivity.DataBind();
-                }
-            }
-        }
-
-        private void LoadTimes()
-        {
-//            var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-//            if ( family != null )
-//            {
-//                var person = family.People.Where( p => p.Selected ).FirstOrDefault();
-//                if ( person != null )
-//                {
-//                    var groupType = person.GroupTypes.Where( g => g.Selected ).FirstOrDefault();
-//                    if ( groupType != null )
-//                    {
-//                        var location = groupType.Locations.Where( l => l.Selected ).FirstOrDefault();
-//                        if ( location != null )
-//                        {
-//                            var group = location.Groups.Where( g => g.Selected ).FirstOrDefault();
-//                            if ( group != null )
-//                            {
-//                                if ( group.Schedules.Count == 1 )
-//                                {
-//                                    foreach ( var schedule in group.Schedules )
-//                                    {
-//                                        schedule.Selected = true;
-//                                    }
-
-//                                    //ProcessSelection();
-//                                }
-//                                string script = string.Format( @"
-//                                    <script>
-//                                        function GetTimeSelection() {{
-//                                            var ids = '';
-//                                            $('div.checkin-timelist button.active').each( function() {{
-//                                                ids += $(this).attr('schedule-id') + ',';
-//                                            }});
-//                                            if (ids == '') {{
-//                                                alert('Please select at least one time');
-//                                                return false;
-//                                            }}
-//                                            else
-//                                            {{
-//                                                $('#{0}').val(ids);
-//                                                return true;    
-//                                            }}
-//                                        }}
-//                                    </script>
-//                                ", hfTimes.ClientID );
-//                                Page.ClientScript.RegisterClientScriptBlock( this.GetType(), "SelectTime", script );
-
-//                                rTime.DataSource = group.Schedules.OrderBy( s => s.Schedule.StartTime );
-//                                rTime.DataBind();
-//                            }
-//                        }
-//                    }
-//                }
-//            }
         }
 
         #endregion

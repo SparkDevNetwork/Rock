@@ -557,6 +557,14 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Navigates back to the current page.
+        /// </summary>
+        public void NavigateToCurrentPage( Dictionary<string, string> queryString = null )
+        {
+            NavigateToPage( this.CurrentPage.Guid, queryString );
+        }
+
+        /// <summary>
         /// Shows the detail page.
         /// </summary>
         /// <param name="itemKey">The item key.</param>

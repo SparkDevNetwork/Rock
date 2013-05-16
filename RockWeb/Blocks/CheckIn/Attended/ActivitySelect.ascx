@@ -37,7 +37,7 @@
                 <h3>Time</h3>
                 <asp:Repeater ID="rTime" runat="server" OnItemCommand="rTime_ItemCommand">
                     <ItemTemplate>
-                        <asp:LinkButton ID="lbSelectTime" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Time.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" />
+                        <asp:LinkButton ID="lbSelectTime" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" />
                     </ItemTemplate>
                 </asp:Repeater>
             </div>

@@ -44,10 +44,23 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
                 phScript.Controls.Add( new LiteralControl( script ) );
 
+                string script2 = string.Format( @"
+                    <script>
+                        $(document).ready(function (e) {{
+                            if (localStorage) {{
+                                localStorage.checkInKiosk = '{0}';
+                            }}
+                        }});
+                    </script>
+                ", CurrentKioskId );
+                lbOk.Attributes.Add( "OnClick", script2 );
+
                 ddlKiosk.Items.Clear();
                 ddlKiosk.DataSource = new DeviceService().Queryable().ToList();
                 ddlKiosk.DataBind();
                 ddlKiosk.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
+
+                CurrentGroupTypeIds = null;
 
                 if ( CurrentKioskId.HasValue )
                 {
@@ -78,6 +91,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
         protected void ddlKiosk_SelectedIndexChanged( object sender, EventArgs e )
         {
+            CurrentGroupTypeIds = null;
             BindGroupTypes();
         }
 
