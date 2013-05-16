@@ -22,13 +22,10 @@
                                 <div class="span2">
                                     Page:
                                 </div>
-                                <div class="span5">
-                                    <asp:Label ID="lblPage" runat="server" />
+                                <div class="span12">
+                                    <asp:Label ID="lblPage" runat="server" /> &nbsp;
+                                    <asp:HyperLink ID="hlViewPage" runat="server" CssClass="btn btn-mini" Target="_blank"><i class="icon-arrow-right" ></i></asp:HyperLink>
                                 </div>
-                                <div class="span5">
-                                    <asp:HyperLink ID="hlViewPage" runat="server" CssClass="btn" Target="_blank"><i class="icon-arrow-right" ></i></asp:HyperLink>
-                                </div>
-
                             </div>
                         </div>
                     </div>
@@ -62,7 +59,7 @@
         </asp:Panel>
         <asp:Panel ID="pnlCookies" runat="server" Visible="false">
             <fieldset>
-                <legend>Cookies</legend>
+                <legend><h4>Cookies</h4></legend>
                 <div class="row-fluid">
                     <div class="span12">
                         <asp:Literal ID="litCookies" runat="server" />
@@ -82,9 +79,16 @@
         </asp:Panel>
         <asp:Panel ID="pnlExceptionDetail" runat="server" Visible="false">
             <fieldset>
-                <legend>Exception Details</legend>
+                <legend><h4>Exception Details</h4></legend>
                 <div>
-                    asdfk;
+                    <asp:Table ID="tblExceptionDetail" runat="server" CssClass="table-bordered table">
+                        <asp:TableHeaderRow ID="thrExceptionDetailHeader" runat="server">
+                            <asp:TableHeaderCell ID="thcExceptionType" runat="server">Exception Type</asp:TableHeaderCell>
+                            <asp:TableHeaderCell ID="thcExceptionSource" runat="server">Source</asp:TableHeaderCell>
+                            <asp:TableHeaderCell ID="thcExceptionDescription" runat="server">Description</asp:TableHeaderCell>
+                            <asp:TableHeaderCell ID="thcExceptionShowStackTrace" runat="server">&nbsp;</asp:TableHeaderCell>
+                        </asp:TableHeaderRow>
+                    </asp:Table>
                 </div>
             </fieldset>
         </asp:Panel>

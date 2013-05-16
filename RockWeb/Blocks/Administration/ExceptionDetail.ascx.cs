@@ -21,10 +21,13 @@ namespace RockWeb.Blocks.Administration
     public partial class ExceptionDetail : RockBlock, IDetailBlock  
 
     {
+        List<ExceptionLog> exceptions;
+
         #region Control Methods
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+            exceptions = new List<ExceptionLog>();
             cbShowCookies.Text = "<i class=\"icon-laptop\"> </i> Show Cookies";
             cbShowServerVariables.Text = "<i class=\"icon-hdd\"> </i> Show Server Variables";
         }
@@ -83,6 +86,35 @@ namespace RockWeb.Blocks.Administration
             listBuilder.Append( "</ul>" );
 
             return listBuilder.ToString();
+        }
+
+        private void AddExceptionToList( ExceptionLog ex )
+        {
+            if ( ex == null )
+            {
+                return;
+            }
+            exceptions.Add( ex );
+
+            //If has parent
+            if ( ex.ParentId != null && ex.ParentId > 0 )
+            {
+                //if parent doesn't exist in the exceptionList
+                if ( exceptions.Where( e => e.Id == ex.ParentId ).Count() == 0 )
+                {
+                    AddExceptionToList( new ExceptionLogService().Get( (int)ex.ParentId ) );
+                }
+            }
+
+            //foreach child exception (there should only be a max of 1)
+            foreach ( ExceptionLog childException in new ExceptionLogService().GetByParentId(ex.Id) )
+            {
+                //If child doesn't aleady exist in the list
+                if ( exceptions.Where( e => e.Id == childException.Id ).Count() == 0 )
+                {
+                    AddExceptionToList( childException );
+                }
+            }
         }
 
         public void ShowDetail( string itemKey, int itemKeyValue )
