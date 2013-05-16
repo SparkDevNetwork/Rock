@@ -15,8 +15,8 @@
                         </ItemTemplate>
                     </asp:Repeater>
                     <Rock:DataTextBox ID="tbEmail" runat="server" LabelText="Email" TextMode="Email" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email"/>
-                    <Rock:DateTimePicker ID="dtpStartDate" runat="server" LabelText="Start Date" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="StartDate" Visible="False"/>
-                    <Rock:DateTimePicker ID="dtpEndDate" runat="server" LabelText="End Date" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="EndDate" Visible="False"/>
+                    <Rock:DatePicker ID="dtpStartDate" runat="server" LabelText="Start Date" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="StartDate" Visible="False"/>
+                    <Rock:DatePicker ID="dtpEndDate" runat="server" LabelText="End Date" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="EndDate" Visible="False"/>
                     <Rock:DataDropDownList ID="ddlFrequencyType" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="PledgeFrequencyValueId"/>
                     <asp:Panel ID="pnlConfirm" runat="server" CssClass="alert alert-info" Visible="False">
                         <p><strong>Hey!</strong> It looks like you've already made a pledge. Do you want to pledge again?</p>
