@@ -21,8 +21,12 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
 
-            this.SourceTypeName = "Rock.Web.UI.Controls.DatePicker, Rock";
-            this.PropertyName = "SelectedDate";
+            if ( string.IsNullOrWhiteSpace( this.SourceTypeName ) )
+            {
+                this.LabelTextFromPropertyName = false;
+                this.SourceTypeName = "Rock.Web.UI.Controls.DatePicker, Rock";
+                this.PropertyName = "SelectedDate";
+            }
 
             string kendoFunction = "kendoDatePicker";
 

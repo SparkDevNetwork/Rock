@@ -21,7 +21,12 @@
                 $container.tinyscrollbar_update('relative');
 
                 if ($dialog && $dialog.is(':visible')) {
-                    $dialog.tinyscrollbar_update('bottom');
+                    var dialogTop = $dialog.offset().top;
+                    var pickerTop = $container.offset().top;
+                    var amount = pickerTop - dialogTop;
+                    if (amount > 160) {
+                        $dialog.tinyscrollbar_update('bottom');
+                    }
                 }
             }
         };
