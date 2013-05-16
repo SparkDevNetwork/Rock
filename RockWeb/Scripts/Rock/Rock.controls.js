@@ -21,7 +21,12 @@
                 $container.tinyscrollbar_update('relative');
 
                 if ($dialog && $dialog.is(':visible')) {
-                    $dialog.tinyscrollbar_update('bottom');
+                    var dialogTop = $dialog.offset().top;
+                    var pickerTop = $container.offset().top;
+                    var amount = pickerTop - dialogTop;
+                    if (amount > 160) {
+                        $dialog.tinyscrollbar_update('bottom');
+                    }
                 }
             }
         };
@@ -152,6 +157,7 @@
                 updateScrollbar = this.updateScrollbar;
 
             $('#' + controlId + ' a.rock-picker').click(function (e) {
+                e.preventDefault(e);
                 $(this).parent().siblings('.rock-picker').first().toggle();
                 updateScrollbar(controlId);
             });
@@ -354,7 +360,7 @@
                 }
             });
 
-            $('a.rock-picker').click(function (e) {
+            $('#' + controlId + ' a.rock-picker').click(function (e) {
                 e.preventDefault();
                 $(this).parent().siblings('.rock-picker').first().toggle();
             });

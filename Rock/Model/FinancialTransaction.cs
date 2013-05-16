@@ -233,15 +233,6 @@ namespace Rock.Model
         }
         private ICollection<FinancialTransactionImage> _images;
 
-        /// <summary>
-        /// Gets or sets the check micr plain text.
-        /// </summary>
-        /// <value>
-        /// The check micr plain text.
-        /// </value>
-        //[DataMember]
-        //public virtual string CheckMicrPlainText { get; set; }
-
         #endregion
 
         #region Public Methods
