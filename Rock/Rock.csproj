@@ -151,6 +151,10 @@
     <Compile Include="Migrations\201305071959060_ExceptionList_PageCreate.Designer.cs">
       <DependentUpon>201305071959060_ExceptionList_PageCreate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201305161923438_FinancialTransactionBase.cs" />
+    <Compile Include="Migrations\201305161923438_FinancialTransactionBase.Designer.cs">
+      <DependentUpon>201305161923438_FinancialTransactionBase.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionRefundService.cs" />
@@ -1564,6 +1568,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201305071959060_ExceptionList_PageCreate.resx">
       <DependentUpon>201305071959060_ExceptionList_PageCreate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305161923438_FinancialTransactionBase.resx">
+      <DependentUpon>201305161923438_FinancialTransactionBase.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
