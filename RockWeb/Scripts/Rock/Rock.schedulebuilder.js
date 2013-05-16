@@ -1,4 +1,5 @@
 ﻿Sys.Application.add_load(function () {
+    $('#modal-scroll-container').tinyscrollbar({ size: 150 });
 
     /** Schedule Panel Show/Hide Scripts **/
 
@@ -6,11 +7,14 @@
         var reoccurrenceState = $('input[class=schedule-type]:checked').data('schedule-type');
 
         if (reoccurrenceState == 'schedule-onetime') {
-            $('#schedule-reoccurrence-panel').slideUp();
+            $('#schedule-reoccurrence-panel').slideUp(function () {
+                $('#modal-scroll-container').tinyscrollbar_update('relative');
+            });
         } else {
-            $('#schedule-reoccurrence-panel').slideDown();
+            $('#schedule-reoccurrence-panel').slideDown(function () {
+                $('#modal-scroll-container').tinyscrollbar_update('relative');
+            });
         }
-
     });
 
     $('.reoccurrence-pattern-radio').click(function () {
@@ -19,8 +23,12 @@
 
         if ($(reoccurrencePattern).css('display') == 'none') {
 
-            $('.reoccurrence-pattern-type').slideUp();
-            $(reoccurrencePattern).slideDown();
+            $('.reoccurrence-pattern-type').slideUp(function () {
+                $('#modal-scroll-container').tinyscrollbar_update('relative');
+            });
+            $(reoccurrencePattern).slideDown(function () {
+                $('#modal-scroll-container').tinyscrollbar_update('relative');
+            });
         }
     });
 
@@ -87,6 +95,8 @@
 
         $('#add-specific-date-group').hide();
         $('#add-specific-date').show();
+
+        $('#modal-scroll-container').tinyscrollbar_update('relative');
     });
 
     // cancel out of adding a new date
@@ -124,6 +134,8 @@
         // remove date from ul list
         var liItem = $(this).parent();
         liItem.remove();
+
+        $('#modal-scroll-container').tinyscrollbar_update('relative');
     });
 
     /** Exclusion DateRanges Scripts **/
@@ -203,6 +215,8 @@
 
         $('#add-exclusion-daterange-group').hide();
         $('#add-exclusion-daterange').show();
+
+        $('#modal-scroll-container').tinyscrollbar_update('relative');
     });
 
     // cancel out of adding a new dateRange
@@ -240,6 +254,8 @@
         // remove dateRange from ul list
         var liItem = $(this).parent();
         liItem.remove();
+
+        $('#modal-scroll-container').tinyscrollbar_update('relative');
     });
 
 });
