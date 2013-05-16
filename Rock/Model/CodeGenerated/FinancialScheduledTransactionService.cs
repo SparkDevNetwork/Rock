@@ -26,7 +26,7 @@ namespace Rock.Model
         /// Initializes a new instance of the <see cref="FinancialScheduledTransactionService"/> class
         /// </summary>
         public FinancialScheduledTransactionService()
-            : base( new EFRepository<FinancialScheduledTransaction>( new Rock.Data.RockContext() ) )
+            : base()
         {
         }
 
