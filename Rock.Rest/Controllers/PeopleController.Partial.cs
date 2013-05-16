@@ -7,7 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Web.Http;
+
 using Rock.Search.Person;
 using Rock.Model;
 
@@ -41,6 +43,16 @@ namespace Rock.Rest.Controllers
                     controller = "People",
                     action = "GetByUserName"
                 } );
+
+            routes.MapHttpRoute(
+                name: "PeoplePopupHtml",
+                routeTemplate: "api/People/PopupHtml/{personId}",
+                defaults: new
+                {
+                    controller = "People",
+                    action = "GetPopupHtml"
+                } );
+
         }
 
         /// <summary>
@@ -176,6 +188,61 @@ namespace Rock.Rest.Controllers
             }
 
             throw new HttpResponseException( System.Net.HttpStatusCode.NotFound );
+        }
+
+        /// <summary>
+        /// Gets the popup html for the selected person
+        /// </summary>
+        /// <param name="personId">The person id.</param>
+        /// <returns></returns>
+        [HttpGet]
+        public PersonSearchResult GetPopupHtml( int personId )
+        {
+            var result = new PersonSearchResult();
+            result.Id = personId;
+            result.PickerItemDetailsHtml = "No Details Available";
+
+            var html = new StringBuilder();
+            var person = new PersonService().Get( personId );
+            if ( person != null )
+            {
+                var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
+                string imageUrlFormat = Path.Combine( appPath, "Image.ashx?id={0}&width=37&height=37" );
+                string imageNoPhoto = Path.Combine( appPath, "Assets/images/person-no-photo.jpg" );
+                html.AppendFormat( "<header><img src='{0}'/> <div>{1}<small>{2}</small></div></header>",
+                    person.PhotoId.HasValue ? string.Format( imageUrlFormat, person.PhotoId.Value ) : imageNoPhoto,
+                    person.FullName,
+                    person.PersonStatusValueId.HasValue ? person.PersonStatusValue.Name : string.Empty );
+
+                var spouse = person.GetSpouse();
+                if (spouse != null)
+                {
+                    html.AppendFormat("<br/><strong>Spouse</strong> {0}", 
+                        spouse.LastName == person.LastName ? spouse.FirstName : spouse.FullName);
+                }
+
+                int? age = person.Age;
+                if (age.HasValue)
+                {
+                    html.AppendFormat("<br/><strong>Age</strong> {0}", age); 
+                }
+
+                if (!string.IsNullOrWhiteSpace(person.Email))
+                {
+                    html.AppendFormat("<br/><strong>Email</strong> <a href='mailto:{0}'>{0}</a>", person.Email); 
+                }
+
+                foreach(var phoneNumber in person.PhoneNumbers.Where( n => n.IsUnlisted == false).OrderBy( n => n.NumberTypeValue.Order))
+                {
+                    html.AppendFormat("<br/><strong>{0}</strong> {1}", phoneNumber.NumberTypeValue.Name, phoneNumber.NumberFormatted);
+                }
+
+                // TODO: Should also show area: <br /><strong>Area</strong> Westwing
+
+                result.PickerItemDetailsHtml = html.ToString();
+            }
+
+            return result;
         }
     }
 
