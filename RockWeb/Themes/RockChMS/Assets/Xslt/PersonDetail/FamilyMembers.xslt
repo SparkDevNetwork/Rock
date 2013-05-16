@@ -18,7 +18,7 @@
                     </a>
                 </div>
                 <div class="row-fluid">
-                    
+
                     <div class="span8 members clearfix">
                         <header>
                             <xsl:value-of select="@name"/>
@@ -99,7 +99,7 @@
                             </ul>
                         </xsl:if>
                     </div>
-                    
+
                 </div>
 
             </div>
