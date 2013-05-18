@@ -4,29 +4,29 @@
     /** Schedule Panel Show/Hide Scripts **/
 
     $('.schedule-type').click(function () {
-        var reoccurrenceState = $('input[class=schedule-type]:checked').data('schedule-type');
+        var recurrenceState = $('input[class=schedule-type]:checked').data('schedule-type');
 
-        if (reoccurrenceState == 'schedule-onetime') {
-            $('#schedule-reoccurrence-panel').slideUp(function () {
+        if (recurrenceState == 'schedule-onetime') {
+            $('#schedule-recurrence-panel').slideUp(function () {
                 $('#modal-scroll-container').tinyscrollbar_update('relative');
             });
         } else {
-            $('#schedule-reoccurrence-panel').slideDown(function () {
+            $('#schedule-recurrence-panel').slideDown(function () {
                 $('#modal-scroll-container').tinyscrollbar_update('relative');
             });
         }
     });
 
-    $('.reoccurrence-pattern-radio').click(function () {
+    $('.recurrence-pattern-radio').click(function () {
 
-        var reoccurrencePattern = '#' + $('input[name=reoccurrence-pattern-radio]:checked').data('reoccurrence-pattern');
+        var recurrencePattern = '#' + $('input[name=recurrence-pattern-radio]:checked').data('recurrence-pattern');
 
-        if ($(reoccurrencePattern).css('display') == 'none') {
+        if ($(recurrencePattern).css('display') == 'none') {
 
-            $('.reoccurrence-pattern-type').slideUp(function () {
+            $('.recurrence-pattern-type').slideUp(function () {
                 $('#modal-scroll-container').tinyscrollbar_update('relative');
             });
-            $(reoccurrencePattern).slideDown(function () {
+            $(recurrencePattern).slideDown(function () {
                 $('#modal-scroll-container').tinyscrollbar_update('relative');
             });
         }
