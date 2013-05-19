@@ -138,6 +138,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the prepend text.
+        /// </summary>
+        /// <value>
+        /// The prepend text.
+        /// </value>
         [
         Bindable( false ),
         Category( "Appearance" ),
@@ -158,6 +164,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the append text.
+        /// </summary>
+        /// <value>
+        /// The append text.
+        /// </value>
         [
         Bindable( false ),
         Category( "Appearance" ),

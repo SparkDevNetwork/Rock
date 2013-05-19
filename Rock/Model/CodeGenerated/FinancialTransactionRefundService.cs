@@ -18,22 +18,22 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// FinancialScheduledTransactionDetail Service class
+    /// FinancialTransactionRefund Service class
     /// </summary>
-    public partial class FinancialScheduledTransactionDetailService : Service<FinancialScheduledTransactionDetail>
+    public partial class FinancialTransactionRefundService : Service<FinancialTransactionRefund>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="FinancialScheduledTransactionDetailService"/> class
+        /// Initializes a new instance of the <see cref="FinancialTransactionRefundService"/> class
         /// </summary>
-        public FinancialScheduledTransactionDetailService()
+        public FinancialTransactionRefundService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FinancialScheduledTransactionDetailService"/> class
+        /// Initializes a new instance of the <see cref="FinancialTransactionRefundService"/> class
         /// </summary>
-        public FinancialScheduledTransactionDetailService(IRepository<FinancialScheduledTransactionDetail> repository) : base(repository)
+        public FinancialTransactionRefundService(IRepository<FinancialTransactionRefund> repository) : base(repository)
         {
         }
 
@@ -45,7 +45,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( FinancialScheduledTransactionDetail item, out string errorMessage )
+        public bool CanDelete( FinancialTransactionRefund item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -55,29 +55,38 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class FinancialScheduledTransactionDetailExtensionMethods
+    public static class FinancialTransactionRefundExtensionMethods
     {
         /// <summary>
-        /// Clones this FinancialScheduledTransactionDetail object to a new FinancialScheduledTransactionDetail object
+        /// Clones this FinancialTransactionRefund object to a new FinancialTransactionRefund object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static FinancialScheduledTransactionDetail Clone( this FinancialScheduledTransactionDetail source, bool deepCopy )
+        public static FinancialTransactionRefund Clone( this FinancialTransactionRefund source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as FinancialScheduledTransactionDetail;
+                return source.Clone() as FinancialTransactionRefund;
             }
             else
             {
-                var target = new FinancialScheduledTransactionDetail();
-                target.ScheduledTransactionId = source.ScheduledTransactionId;
-                target.AccountId = source.AccountId;
+                var target = new FinancialTransactionRefund();
+                target.RefundTransactionId = source.RefundTransactionId;
+                target.RefundReasonValueId = source.RefundReasonValueId;
+                target.RefundReasonSummary = source.RefundReasonSummary;
+                target.AuthorizedPersonId = source.AuthorizedPersonId;
+                target.BatchId = source.BatchId;
+                target.GatewayId = source.GatewayId;
+                target.TransactionDateTime = source.TransactionDateTime;
                 target.Amount = source.Amount;
+                target.TransactionCode = source.TransactionCode;
                 target.Summary = source.Summary;
-                target.EntityTypeId = source.EntityTypeId;
-                target.EntityId = source.EntityId;
+                target.TransactionTypeValueId = source.TransactionTypeValueId;
+                target.CurrencyTypeValueId = source.CurrencyTypeValueId;
+                target.CreditCardTypeValueId = source.CreditCardTypeValueId;
+                target.SourceTypeValueId = source.SourceTypeValueId;
+                target.CheckMicrEncrypted = source.CheckMicrEncrypted;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 
