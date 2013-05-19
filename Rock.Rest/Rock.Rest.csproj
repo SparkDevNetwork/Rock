@@ -81,8 +81,14 @@
     <Compile Include="Controllers\CodeGenerated\DataViewsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FinancialAccountsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FinancialGatewaysController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FinancialPersonBankAccountsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FinancialPersonSavedAccountsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FinancialPledgesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FinancialScheduledTransactionDetailsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FinancialScheduledTransactionsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FinancialTransactionImagesController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FinancialTransactionRefundsController.cs" />
+    <Compile Include="Controllers\CodeGenerated\FinancialTransactionScannedChecksController.cs" />
     <Compile Include="Controllers\CodeGenerated\NotesController.cs" />
     <Compile Include="Controllers\CodeGenerated\NoteTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PrayerRequestsController.cs" />

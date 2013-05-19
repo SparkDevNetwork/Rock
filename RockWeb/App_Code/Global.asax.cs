@@ -43,9 +43,14 @@ namespace RockWeb
         IScheduler sched = null;
 
         /// <summary>
-        /// 
+        /// The queue in use
         /// </summary>
         public static bool QueueInUse = false;
+
+        /// <summary>
+        /// The base URL
+        /// </summary>
+        public static string BaseUrl = null;
 
         // cache callback object
         private static CacheItemRemovedCallback OnCacheRemove = null;
@@ -70,9 +75,15 @@ namespace RockWeb
             {
                 autoMigrate = true;
             }
+            
             if ( autoMigrate )
             {
                 Database.SetInitializer( new MigrateDatabaseToLatestVersion<Rock.Data.RockContext, Rock.Migrations.Configuration>() );
+            }
+            else
+            {
+                // default Initializer is CreateDatabaseIfNotExists, but we don't want that to happen if automigrate is false, so set it to NULL so that nothing happens
+                Database.SetInitializer<Rock.Data.RockContext>( null );
             }
 
             // Preload the commonly used objects
@@ -146,9 +157,12 @@ namespace RockWeb
                 if ( r == CacheItemRemovedReason.Expired )
                 {
                     // call a page on the site to keep IIS alive 
-                    string url = ConfigurationManager.AppSettings["BaseUrl"].ToString() + "KeepAlive.aspx";
-                    WebRequest request = WebRequest.Create( url );
-                    WebResponse response = request.GetResponse();
+                    if ( !string.IsNullOrWhiteSpace( Global.BaseUrl ) )
+                    {
+                        string url = Global.BaseUrl + "KeepAlive.aspx";
+                        WebRequest request = WebRequest.Create( url );
+                        WebResponse response = request.GetResponse();
+                    }
 
                     // add cache item again
                     AddCallBack();
@@ -207,6 +221,14 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_BeginRequest( object sender, EventArgs e )
         {
+            if ( string.IsNullOrWhiteSpace( Global.BaseUrl ) )
+            {
+                if ( Context.Request.Url != null )
+                {
+                    Global.BaseUrl = string.Format( "{0}://{1}/", Context.Request.Url.Scheme, Context.Request.Url.Authority );
+                }
+            }
+            
             Context.Items.Add( "Request_Start_Time", DateTime.Now );
         }
 

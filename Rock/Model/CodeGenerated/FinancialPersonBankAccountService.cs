@@ -18,22 +18,22 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// FinancialScheduledTransactionDetail Service class
+    /// FinancialPersonBankAccount Service class
     /// </summary>
-    public partial class FinancialScheduledTransactionDetailService : Service<FinancialScheduledTransactionDetail>
+    public partial class FinancialPersonBankAccountService : Service<FinancialPersonBankAccount>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="FinancialScheduledTransactionDetailService"/> class
+        /// Initializes a new instance of the <see cref="FinancialPersonBankAccountService"/> class
         /// </summary>
-        public FinancialScheduledTransactionDetailService()
+        public FinancialPersonBankAccountService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FinancialScheduledTransactionDetailService"/> class
+        /// Initializes a new instance of the <see cref="FinancialPersonBankAccountService"/> class
         /// </summary>
-        public FinancialScheduledTransactionDetailService(IRepository<FinancialScheduledTransactionDetail> repository) : base(repository)
+        public FinancialPersonBankAccountService(IRepository<FinancialPersonBankAccount> repository) : base(repository)
         {
         }
 
@@ -45,7 +45,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( FinancialScheduledTransactionDetail item, out string errorMessage )
+        public bool CanDelete( FinancialPersonBankAccount item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -55,29 +55,25 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class FinancialScheduledTransactionDetailExtensionMethods
+    public static class FinancialPersonBankAccountExtensionMethods
     {
         /// <summary>
-        /// Clones this FinancialScheduledTransactionDetail object to a new FinancialScheduledTransactionDetail object
+        /// Clones this FinancialPersonBankAccount object to a new FinancialPersonBankAccount object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static FinancialScheduledTransactionDetail Clone( this FinancialScheduledTransactionDetail source, bool deepCopy )
+        public static FinancialPersonBankAccount Clone( this FinancialPersonBankAccount source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as FinancialScheduledTransactionDetail;
+                return source.Clone() as FinancialPersonBankAccount;
             }
             else
             {
-                var target = new FinancialScheduledTransactionDetail();
-                target.ScheduledTransactionId = source.ScheduledTransactionId;
-                target.AccountId = source.AccountId;
-                target.Amount = source.Amount;
-                target.Summary = source.Summary;
-                target.EntityTypeId = source.EntityTypeId;
-                target.EntityId = source.EntityId;
+                var target = new FinancialPersonBankAccount();
+                target.PersonId = source.PersonId;
+                target.AccountNumberSecured = source.AccountNumberSecured;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

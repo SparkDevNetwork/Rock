@@ -18,70 +18,47 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// FinancialTransaction Service class
+    /// FinancialTransactionScannedCheck Service class
     /// </summary>
-    public partial class FinancialTransactionService : Service<FinancialTransaction>
+    public partial class FinancialTransactionScannedCheckService : Service<FinancialTransactionScannedCheck>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="FinancialTransactionService"/> class
+        /// Initializes a new instance of the <see cref="FinancialTransactionScannedCheckService"/> class
         /// </summary>
-        public FinancialTransactionService()
+        public FinancialTransactionScannedCheckService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="FinancialTransactionService"/> class
+        /// Initializes a new instance of the <see cref="FinancialTransactionScannedCheckService"/> class
         /// </summary>
-        public FinancialTransactionService(IRepository<FinancialTransaction> repository) : base(repository)
+        public FinancialTransactionScannedCheckService(IRepository<FinancialTransactionScannedCheck> repository) : base(repository)
         {
-        }
-
-        /// <summary>
-        /// Determines whether this instance can delete the specified item.
-        /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns>
-        ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
-        /// </returns>
-        public bool CanDelete( FinancialTransaction item, out string errorMessage )
-        {
-            errorMessage = string.Empty;
- 
-            if ( new Service<FinancialTransactionImage>().Queryable().Any( a => a.TransactionId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialTransaction.FriendlyTypeName, FinancialTransactionImage.FriendlyTypeName );
-                return false;
-            }  
-            
-            // ignoring FinancialTransactionRefund,Id 
-            
-            // ignoring FinancialTransactionRefund,RefundTransactionId 
-            return true;
         }
     }
 
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class FinancialTransactionExtensionMethods
+    public static class FinancialTransactionScannedCheckExtensionMethods
     {
         /// <summary>
-        /// Clones this FinancialTransaction object to a new FinancialTransaction object
+        /// Clones this FinancialTransactionScannedCheck object to a new FinancialTransactionScannedCheck object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static FinancialTransaction Clone( this FinancialTransaction source, bool deepCopy )
+        public static FinancialTransactionScannedCheck Clone( this FinancialTransactionScannedCheck source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as FinancialTransaction;
+                return source.Clone() as FinancialTransactionScannedCheck;
             }
             else
             {
-                var target = new FinancialTransaction();
+                var target = new FinancialTransactionScannedCheck();
+                target.ScannedCheckMicr = source.ScannedCheckMicr;
                 target.AuthorizedPersonId = source.AuthorizedPersonId;
                 target.BatchId = source.BatchId;
                 target.GatewayId = source.GatewayId;
