@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System;
 using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -42,7 +43,7 @@ namespace Rock.Web.UI.Controls
             get { return _label.Text; }
             set { _label.Text = value; }
         }
-            
+
         /// <summary>
         /// Gets or sets the minimum value.
         /// </summary>
@@ -83,11 +84,13 @@ namespace Rock.Web.UI.Controls
         /// Initializes a new instance of the <see cref="NumberBox" /> class.
         /// </summary>
         public NumberBox()
-        {
+        {   
+            _label = new Label
+            {
+                ID = this.ID + "_label"
+            };
+
             rangeValidator = new RangeValidator();
-            _label = new Label();
-            rangeValidator.MinimumValue = int.MinValue.ToString();
-            rangeValidator.MaximumValue = int.MaxValue.ToString();
         }
 
         /// <summary>
@@ -102,8 +105,23 @@ namespace Rock.Web.UI.Controls
             rangeValidator.ID = this.ID + "_RV";
             rangeValidator.Display = ValidatorDisplay.Dynamic;
             rangeValidator.CssClass = "validation-error help-inline";
-            rangeValidator.Type = ValidationDataType.Integer;
             rangeValidator.ErrorMessage = "Numerical value is required";
+            if ( !this.MinimumValue.Contains( "." ) )
+            {
+                rangeValidator.Type = ValidationDataType.Integer;
+                rangeValidator.MinimumValue = !string.IsNullOrEmpty( this.MinimumValue ) 
+                    ? this.MinimumValue : int.MinValue.ToString();
+                rangeValidator.MaximumValue = !string.IsNullOrEmpty( this.MaximumValue ) 
+                    ? this.MaximumValue : int.MaxValue.ToString();
+            }
+            else
+            {
+                rangeValidator.Type = ValidationDataType.Double;
+                rangeValidator.MinimumValue = !string.IsNullOrEmpty( this.MinimumValue )
+                    ? this.MinimumValue : Convert.ToDouble( "9e-300" ).ToString( "F0" );  // allows up to 300 digits
+                rangeValidator.MaximumValue = !string.IsNullOrEmpty( this.MaximumValue )
+                    ? this.MaximumValue : Convert.ToDouble( "9e300" ).ToString( "F0" );   // allows up to 300 digits
+            }          
 
             Controls.Add( rangeValidator );
         }
@@ -137,7 +155,7 @@ namespace Rock.Web.UI.Controls
                 rangeValidator.ErrorMessage = string.Format( "Numerical value is required for '{0}'", FieldName );
             }
 
-            rangeValidator.Type = rangeValidator.MinimumValue.Contains( "." ) ? ValidationDataType.Double : ValidationDataType.Integer;
+            rangeValidator.Type = rangeValidator.MinimumValue.Contains( "." ) ? ValidationDataType.Double : ValidationDataType.Integer;            
             rangeValidator.Enabled = true;
             rangeValidator.RenderControl( writer );
 
