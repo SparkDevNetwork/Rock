@@ -27,6 +27,83 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            if ( CurrentWorkflow == null || CurrentCheckInState == null )
+            {
+                NavigateToHomePage();
+            }
+            else
+            {
+                if ( !Page.IsPostBack )
+                {
+                    CreateGridDataSource();
+                }
+            }
+        }
+
+        protected void CreateGridDataSource()
+        {
+            System.Data.DataTable dt = new System.Data.DataTable();
+
+            // add the columns to the datatable
+            var column = new System.Data.DataColumn();
+            column.DataType = System.Type.GetType( "System.String" );
+            column.ColumnName = "Name";
+            column.ReadOnly = false;
+            dt.Columns.Add( column );
+
+            column = new System.Data.DataColumn();
+            column.DataType = System.Type.GetType( "System.String" );
+            column.ColumnName = "AssignedTo";
+            column.ReadOnly = false;
+            dt.Columns.Add( column );
+
+            column = new System.Data.DataColumn();
+            column.DataType = System.Type.GetType( "System.String" );
+            column.ColumnName = "Room";
+            column.ReadOnly = false;
+            dt.Columns.Add( column );
+
+            column = new System.Data.DataColumn();
+            column.DataType = System.Type.GetType( "System.String" );
+            column.ColumnName = "Time";
+            column.ReadOnly = false;
+            dt.Columns.Add( column );
+
+            foreach ( var TAList in CheckInTimeAndActivityList )
+            {
+                var thingCount = 0;
+                System.Data.DataRow row;
+                row = dt.NewRow();
+                foreach ( var thing in TAList )
+                {
+                    thingCount++;
+                    if ( thingCount <= TAList.Count )
+                    {
+                        switch (thingCount )
+                        {
+                            case 1:
+                                var person = new PersonService().Get( thing );
+                                row["Name"] = person.FullName;
+                                break;
+                            case 2:
+                                var activity = new GroupTypeService().Get( thing );
+                                row["Room"] = activity.Name;
+                                var parentId = GetParent(activity.Id, 0);
+                                var parent1 = new GroupTypeService().Get( parentId );
+                                row["AssignedTo"] = parent1.Name;
+                                break;
+                            case 3:
+                                var schedule = new ScheduleService().Get( thing );
+                                row["Time"] = schedule.Name;
+                                break;
+                        }
+                    }
+                }
+                dt.Rows.Add( row );
+            }
+            gPersonList.DataSource = dt;
+            gPersonList.DataBind();
         }
 
         #endregion
@@ -115,5 +192,33 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         #endregion
+        protected void gPersonList_RowDataBound( object sender, GridViewRowEventArgs e )
+        {
+            if ( e.Row.RowType == DataControlRowType.DataRow )
+            {
+                //int attributeId = (int)gPersonList.DataKeys[e.Row.RowIndex].Value;
+                //e.Row.Cells[1].Text = "<i>" + e.Row.Cells[1].Text + "</i>";
+            }
+        }
+
+        protected int GetParent( int childGroupTypeId, int parentId )
+        {
+            GroupType childGroupType = new GroupTypeService().Get( childGroupTypeId );
+            List<int> parentGroupTypes = childGroupType.ParentGroupTypes.Select( a => a.Id ).ToList();
+            foreach ( var parentGroupType in parentGroupTypes )
+            {
+                GroupType theChildGroupType = new GroupTypeService().Get( parentGroupType );
+                if ( theChildGroupType.ParentGroupTypes.Count > 0 )
+                {
+                    parentId = GetParent( theChildGroupType.Id, parentId );
+                }
+                else
+                {
+                    parentId = theChildGroupType.Id;
+                }
+            }
+
+            return parentId;
+        }
     }
 }

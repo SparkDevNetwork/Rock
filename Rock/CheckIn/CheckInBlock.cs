@@ -54,6 +54,16 @@ namespace Rock.CheckIn
         protected List<int> CheckInPeopleIds;
 
         /// <summary>
+        /// The current list of Id's of people who have checked in
+        /// </summary>
+        protected List<int> CheckedInPeopleIds;
+
+        /// <summary>
+        /// The person id, time id, and activity id of everyone who is checking in
+        /// </summary>
+        protected List<List<int>> CheckInTimeAndActivityList;
+
+        /// <summary>
         /// The current check in state
         /// </summary>
         protected CheckInState CurrentCheckInState;
@@ -245,6 +255,24 @@ namespace Rock.CheckIn
                 Session.Remove( "CheckInPeopleIds" );
             }
 
+            if ( CheckedInPeopleIds != null )
+            {
+                Session["CheckedInPeopleIds"] = CheckedInPeopleIds;
+            }
+            else
+            {
+                Session.Remove( "CheckedInPeopleIds" );
+            }
+
+            if ( CheckInTimeAndActivityList != null )
+            {
+                Session["CheckInTimeAndActivityList"] = CheckInTimeAndActivityList;
+            }
+            else
+            {
+                Session.Remove( "CheckInTimeAndActivityList" );
+            }
+
             if ( CurrentWorkflow != null )
             {
                 if ( CurrentCheckInState != null )
@@ -327,6 +355,16 @@ namespace Rock.CheckIn
             if ( Session["CheckInPeopleIds"] != null )
             {
                 CheckInPeopleIds = Session["CheckInPeopleIds"] as List<int>;
+            }
+
+            if ( Session["CheckedInPeopleIds"] != null )
+            {
+                CheckedInPeopleIds = Session["CheckedInPeopleIds"] as List<int>;
+            }
+
+            if ( Session["CheckInTimeAndActivityList"] != null )
+            {
+                CheckInTimeAndActivityList = Session["CheckInTimeAndActivityList"] as List<List<int>>;
             }
 
             if ( Session["CheckInWorkflow"] != null )

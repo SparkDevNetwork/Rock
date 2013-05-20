@@ -7,7 +7,7 @@
 
     <div class="row-fluid attended-checkin-header">
         <div class="span3 attended-checkin-actions">
-            <asp:LinkButton ID="lbBack2" CssClass="btn btn-primary btn-large" runat="server" OnClick="lbBack_Click" Text="Back"/>
+            <asp:LinkButton ID="lbBack" CssClass="btn btn-primary btn-large" runat="server" OnClick="lbBack_Click" Text="Back"/>
         </div>
 
         <div class="span6">

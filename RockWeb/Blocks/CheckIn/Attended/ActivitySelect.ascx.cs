@@ -42,10 +42,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         var personId = CheckInPeopleIds.FirstOrDefault();
                         var person = new PersonService().Get( personId );
                         
-                        //var person = family.People.Where( p => p.Selected ).FirstOrDefault();
                         if ( person != null )
                         {
-                            //lblPersonName.Text = person.Person.FullName;
                             lblPersonName.Text = person.FullName;
                             LoadStuff(person);
                         }
@@ -210,6 +208,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
         private void GoNext()
         {
+            // variables for holding specific choices so we can hold these for each person checking in. will need these on the confirmation page.
+            int chosenTimeId = 0;
+            int chosenActivityId = 0;
+
             // make sure a ministry was chosen.
             var ministryChosen = false;
             foreach ( RepeaterItem item in rMinistry.Items )
@@ -235,6 +237,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 if ( HasActiveClass( linky ) )
                 {
                     timeChosen = true;
+                    chosenTimeId = int.Parse(linky.CommandArgument);
                 }
             }
 
@@ -252,6 +255,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 if ( HasActiveClass( linky ) )
                 {
                     activityChosen = true;
+                    chosenActivityId = int.Parse( linky.CommandArgument );
                 }
             }
 
@@ -261,13 +265,20 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 return;
             }
 
-            SaveState();
-            //GoToSuccessPage();
-            
-            // increment the counter of number of people checked in. Also remove the person just checked in on this page from the list of those needing to be checked in.
+            // Increment the counter of number of people checked in. 
             PeopleCheckedIn++;
+            // Remove the person just checked in on this page from the list of those needing to be checked in.
             var personJustCheckedIn = CheckInPeopleIds.FirstOrDefault();
             CheckInPeopleIds.Remove( personJustCheckedIn );
+            // Add the person just checked in to the list of those that were checked in.
+            CheckedInPeopleIds.Add( personJustCheckedIn );
+            // Add this person's time and activity to the list for the confirmation page.
+            List<int> temp = new List<int>();
+            temp.Add( personJustCheckedIn );
+            temp.Add( chosenActivityId );
+            temp.Add( chosenTimeId );
+            CheckInTimeAndActivityList.Add( temp );
+            SaveState();
 
             if ( PeopleCheckedIn != CheckInPersonCount )
             {
