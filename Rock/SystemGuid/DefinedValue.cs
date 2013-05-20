@@ -118,13 +118,27 @@ namespace Rock.SystemGuid
         /// <summary>
         /// One Time
         /// </summary>
-        public const string TRANSACTION_FREQUENCY_ONE_TIME = "82614683-7FB4-4F16-9087-6F85945A7B16";
+        public const string TRANSACTION_FREQUENCY_TYPE_ONE_TIME = "82614683-7FB4-4F16-9087-6F85945A7B16";
 
         /// <summary>
         /// One Time (Future)
         /// </summary>
-        public const string TRANSACTION_FREQUENCY_ONE_TIME_FUTURE = "A5A12067-322E-44A4-94C4-561312F9913C";
+        public const string TRANSACTION_FREQUENCY_TYPE_ONE_TIME_FUTURE = "A5A12067-322E-44A4-94C4-561312F9913C";
 
+        #endregion
+
+        #region Transaction Payment Type
+
+        /// <summary>
+        /// Credit Card
+        /// </summary>
+        public const string TRANSACTION_PAYMENT_TYPE_CREDIT_CARD = "09412338-AAAA-4644-BA2A-4CADBE653468";
+
+        /// <summary>
+        /// Checking/ACH 
+        /// </summary>
+        public const string TRANSACTION_PAYMENT_TYPE_CHECKING = "FFAD975C-7504-418F-8959-30BD0C62CD30";
+        
         #endregion
 
         #region Note Type

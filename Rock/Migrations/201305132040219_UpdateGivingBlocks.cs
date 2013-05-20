@@ -32,7 +32,7 @@ namespace Rock.Migrations
             AddBlock( "F23C5BF7-4F52-448F-8445-6BAEEE3030AB", "694FF260-8C6F-4A59-93C9-CF3793FE30E6", "Scheduled Contributions", "", "Content", 0, "32A7BA7B-968E-4BFD-BEA3-042CF863D751" );
             AddBlock( "1615E090-1889-42FF-AB18-5F7BE9F24498", "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "Contributions", "", "Content", 0, "20C12A0F-BEC1-4620-9273-EEFE4CFB1D96" );
 
-            AddDefinedType( "Financial", "Payment Type", "Types of payments", "23E80D98-017E-47B9-BAF3-AC442A1EC3EE" );
+            AddDefinedType( "Financial", "Payment Type", "The type of payment associated with a transaction", "23E80D98-017E-47B9-BAF3-AC442A1EC3EE" );
             AddDefinedValue( "23E80D98-017E-47B9-BAF3-AC442A1EC3EE", "Credit Card", "Credit Card payment type", "09412338-AAAA-4644-BA2A-4CADBE653468" );
             AddDefinedValue( "23E80D98-017E-47B9-BAF3-AC442A1EC3EE", "Checking/ACH", "Checking/ACH payment type", "FFAD975C-7504-418F-8959-30BD0C62CD30" );
 

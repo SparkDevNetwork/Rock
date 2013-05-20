@@ -40,8 +40,6 @@ namespace RockWeb.Blocks.Finance
     {
         #region Fields
 
-        protected bool _ShowCreditCard = false;
-        protected bool _ShowChecking = false;
         protected string _spanClass = "";
 
         /// <summary>
@@ -78,16 +76,9 @@ namespace RockWeb.Blocks.Finance
 
             // Set vertical layout
             _spanClass = ( Convert.ToBoolean( GetAttributeValue( "ShowVerticalLayout" ) ) ) ? "span12" : "span6";
-                        
-            _ShowCreditCard = Convert.ToBoolean( GetAttributeValue( "ShowCreditCard" ) );
-            _ShowChecking = Convert.ToBoolean( GetAttributeValue( "ShowChecking/ACH" ) );
-
+            
             if ( !IsPostBack )
             {
-                BindCreditCard();
-                BindPaymentTypes();
-                BindAccounts();
-
                 // Show Campus
                 if ( Convert.ToBoolean( GetAttributeValue( "ShowCampuses" ) ) )
                 {
@@ -113,8 +104,12 @@ namespace RockWeb.Blocks.Finance
                 // Require phone number
                 if ( Convert.ToBoolean( GetAttributeValue( "RequirePhone" ) ) )
                 {
-                    txtPhone.Required = true;
-                }                
+                    //txtPhone.Required = true;
+                }
+
+                BindAccounts();
+                BindCreditCard();
+                BindPaymentTypes();
             }            
         }
 
@@ -126,7 +121,7 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnLoad( e );
         }
-
+        
         #endregion
 
         #region Edit Events
@@ -138,24 +133,15 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnAddAccount_SelectionChanged( object sender, EventArgs e )
         {
-            List<FinancialTransactionDetail> transactionList =  Session["TransactionList"] as List<FinancialTransactionDetail>;
+            List<FinancialTransactionDetail> transactionList = Session["TransactionList"] as List<FinancialTransactionDetail>;
             FinancialAccountService accountService = new FinancialAccountService();
             
-            foreach ( RepeaterItem item in rptAccountList.Items )
-            {   
-                var accountId = Convert.ToInt32(((HiddenField)item.FindControl( "hfAccountId" )).Value);
-                var accountAmount = ( (NumberBox)item.FindControl( "txtAccountAmount" ) ).Text;
-                var index = transactionList.FindIndex( a => a.AccountId == accountId );
-                transactionList[index].Amount = !string.IsNullOrWhiteSpace( accountAmount ) ? Decimal.Parse(accountAmount) : 0M;
-            }
-
             var newAccountId = Convert.ToInt32( btnAddAccount.SelectedValue );
             FinancialTransactionDetail detail = new FinancialTransactionDetail();
             detail.AccountId = newAccountId;
             detail.Account = accountService.Get( newAccountId );
             transactionList.Add( detail );
-            Session["TransactionList"] = transactionList;
-            
+
             if ( btnAddAccount.Items.Count > 1 )
             {
                 btnAddAccount.Items.Remove( btnAddAccount.SelectedItem );
@@ -166,6 +152,7 @@ namespace RockWeb.Blocks.Finance
                 divAddAccount.Visible = false;
             }
 
+            SaveAccounts( transactionList );
             RebindAccounts();
         }
 
@@ -176,29 +163,31 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnFrequency_SelectionChanged( object sender, EventArgs e )
         {
-            if ( btnFrequency.SelectedValue != DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME_FUTURE ).Id.ToString()
-                && btnFrequency.SelectedValue != DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id.ToString() )
+            SaveAccounts( Session["TransactionList"] as List<FinancialTransactionDetail> );
+            
+            if ( btnFrequency.SelectedValue != DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TYPE_ONE_TIME_FUTURE ).Id.ToString()
+                && btnFrequency.SelectedValue != DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TYPE_ONE_TIME ).Id.ToString() )
             {
                 if ( divRecurrence.Visible != true )
                 {
                     divRecurrence.Visible = true;
                 }
 
-                if ( chkLimitGifts.Visible != true )
+                if ( divLimitGifts.Visible != true )
                 {
-                    chkLimitGifts.Visible = true;
+                    divLimitGifts.Visible = true;
                 }
             }
-            else if ( btnFrequency.SelectedValue == DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME_FUTURE ).Id.ToString() )
+            else if ( btnFrequency.SelectedValue == DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TYPE_ONE_TIME_FUTURE ).Id.ToString() )
             {
                 if ( divRecurrence.Visible != true )
                 {
                     divRecurrence.Visible = true;
                 }
 
-                if ( chkLimitGifts.Visible != false )
+                if ( divLimitGifts.Visible != false )
                 {
-                    chkLimitGifts.Visible = false;
+                    divLimitGifts.Visible = false;
                 }                
             }
             else
@@ -208,13 +197,12 @@ namespace RockWeb.Blocks.Finance
                     divRecurrence.Visible = false;
                 }
 
-                if ( chkLimitGifts.Visible != false )
+                if ( divLimitGifts.Visible != false )
                 {
-                    chkLimitGifts.Visible = false;
+                    divLimitGifts.Visible = false;
                 }
             }
 
-            // TODO fix screen flash
             RebindAccounts();
         }
 
@@ -226,6 +214,7 @@ namespace RockWeb.Blocks.Finance
         protected void btnBack_Click( object sender, EventArgs e )
         {
             pnlConfirm.Visible = false;
+            //RebindAccounts();
             pnlDetails.Visible = true;
         }
 
@@ -236,7 +225,8 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void chkLimitGifts_CheckedChanged( object sender, EventArgs e )
         {
-            divLimitGifts.Visible = !divLimitGifts.Visible;
+            SaveAccounts( Session["TransactionList"] as List<FinancialTransactionDetail> );
+            divLimitNumber.Visible = !divLimitNumber.Visible;
             RebindAccounts();
         }
 
@@ -277,15 +267,10 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbPaymentType_Click( object sender, EventArgs e )
         {
-            // TODO fix tab not responding
             LinkButton lb = sender as LinkButton;
             if ( lb != null )
             {
                 CurrentTab = lb.Text;
-
-                var paymentTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_PAYMENT_TYPE );
-                rptPaymentType.DataSource = DefinedTypeCache.Read( paymentTypeGuid ).DefinedValues;
-                rptPaymentType.DataBind();
             }
 
             ShowSelectedTab();
@@ -432,7 +417,7 @@ namespace RockWeb.Blocks.Finance
         #endregion
 
         #region Internal Methods
-
+                
         /// <summary>
         /// Binds the campuses.
         /// </summary>
@@ -468,13 +453,23 @@ namespace RockWeb.Blocks.Finance
         /// Binds the payment types.
         /// </summary>
         protected void BindPaymentTypes()
-        {
-            var paymentTypeGuid = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_PAYMENT_TYPE ) );
-            if ( paymentTypeGuid != null )
+        {   
+            var queryable = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_PAYMENT_TYPE ) )
+                .DefinedValues.AsQueryable();
+            
+            if ( !Convert.ToBoolean( GetAttributeValue( "ShowCreditCard" ) ) )
             {
-                rptPaymentType.DataSource = paymentTypeGuid.DefinedValues;
-                rptPaymentType.DataBind();
+                queryable = queryable.Where( dv => dv.Guid != new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_PAYMENT_TYPE_CREDIT_CARD ) );
+                pnlCreditCard.Visible = false;                
             }
+            if ( !Convert.ToBoolean( GetAttributeValue( "ShowChecking/ACH" ) ) )
+            {
+                queryable = queryable.Where( dv => dv.Guid != new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_PAYMENT_TYPE_CHECKING ) );
+                pnlChecking.Visible = false;
+            }
+
+            rptPaymentType.DataSource = queryable.ToList();
+            rptPaymentType.DataBind();                        
         }
         
         /// <summary>
@@ -490,7 +485,7 @@ namespace RockWeb.Blocks.Finance
             btnYearExpiration.DataSource = Enumerable.Range( ( DateTime.Now.Year ), 10 ).ToList();
             btnYearExpiration.DataBind();
         }
-            
+        
         /// <summary>
         /// Binds the accounts.
         /// </summary>
@@ -503,7 +498,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( GetAttributeValue( "DefaultAccounts" ).Any() )
             {
-                var accountGuids = GetAttributeValue( "DefaultAccounts" ).Split( ',' ).Select( a => new Guid(a) );
+                var accountGuids = GetAttributeValues( "DefaultAccounts" ).Select( Guid.Parse ).ToList();
 
                 btnAddAccount.DataTextField = "PublicName";
                 btnAddAccount.DataValueField = "Id";
@@ -525,9 +520,34 @@ namespace RockWeb.Blocks.Finance
                 transactionList.Add( detail );
             }
 
+            Session["TransactionList"] = transactionList;
+            rptAccountList.DataSource = transactionList;
+            rptAccountList.DataBind();            
+        }
+
+        /// <summary>
+        /// Saves the account values.
+        /// </summary>
+        protected void SaveAccounts( List<FinancialTransactionDetail> transactionList )
+        {
+            foreach ( RepeaterItem item in rptAccountList.Items )
+            {
+                var accountId = Convert.ToInt32( ( (HiddenField)item.FindControl( "hfAccountId" ) ).Value );
+                var accountAmount = ( (NumberBox)item.FindControl( "txtAccountAmount" ) ).Text;
+                var index = transactionList.FindIndex( a => a.AccountId == accountId );
+                transactionList[index].Amount = !string.IsNullOrWhiteSpace( accountAmount ) ? Decimal.Parse( accountAmount ) : 0M;
+            }
+            Session["TransactionList"] = transactionList;
+        }
+
+        /// <summary>
+        /// Rebinds the accounts.
+        /// </summary>
+        protected void RebindAccounts()
+        {
+            List<FinancialTransactionDetail> transactionList = Session["TransactionList"] as List<FinancialTransactionDetail>;
             rptAccountList.DataSource = transactionList;
             rptAccountList.DataBind();
-
             Session["TransactionList"] = transactionList;
         }
 
@@ -562,16 +582,6 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Rebinds the accounts.
-        /// </summary>
-        protected void RebindAccounts()
-        {
-            List<FinancialTransactionDetail> transactionList = Session["TransactionList"] as List<FinancialTransactionDetail>;
-            rptAccountList.DataSource = transactionList;
-            rptAccountList.DataBind();
-        }
-
-        /// <summary>
         /// Gets the tab class.
         /// </summary>
         /// <param name="property">The property.</param>
@@ -587,11 +597,33 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
+        /// Handles the ItemCommand event of the rptPaymentType control.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
+        protected void rptPaymentType_ItemCommand( object source, RepeaterCommandEventArgs e )
+        {
+            var liSelectedTab = (HtmlGenericControl)e.Item.FindControl( "liSelectedTab" );
+
+            var thiscontrol = liSelectedTab.FindControl( "lbPaymentType" );            
+
+            if ( thiscontrol.Equals( CurrentTab ) )
+            {
+                liSelectedTab.Attributes.Add( "class", "active" );
+            }
+            else
+            {
+                liSelectedTab.Attributes.Remove( "active" );
+            }
+        }
+
+        /// <summary>
         /// Shows the selected pane.
         /// </summary>
         private void ShowSelectedTab()
         {
-            if ( CurrentTab.Equals( "Credit Card" ) )
+            var currentTab = CurrentTab;
+            if ( currentTab.Equals( "Credit Card" ) )
             {
                 pnlCreditCard.Visible = true;
                 pnlChecking.Visible = false;
@@ -602,11 +634,9 @@ namespace RockWeb.Blocks.Finance
                 pnlCreditCard.Visible = false;
                 pnlChecking.Visible = true;
                 pnlChecking.DataBind();
-            }
-
-            pnlPayment.DataBind();
+            }                       
         }
 
-        #endregion
+        #endregion        
     }
 }
