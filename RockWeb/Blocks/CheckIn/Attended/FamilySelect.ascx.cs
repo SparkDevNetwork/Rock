@@ -162,6 +162,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 peopleIds.Add( person.Person.Id );
             }
             CheckInPeopleIds = peopleIds;
+            CheckedInPeopleIds = new List<int>();
+            CheckInTimeAndActivityList = new List<List<int>>();
             GoNext();
         }
 
