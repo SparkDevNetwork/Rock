@@ -3,6 +3,15 @@
 
     /** Schedule Panel Show/Hide Scripts **/
 
+    $('#schedule-builder-button').click(function () {
+        $('#schedule-builder-modal').modal('toggle');
+        $('#modal-scroll-container').tinyscrollbar_update('relative');
+    });
+
+    $('#schedule-builder-modal').on('shown', function () {
+        $('#modal-scroll-container').tinyscrollbar_update('relative');
+    });
+
     $('.schedule-type').click(function () {
         var recurrenceState = $('input[class=schedule-type]:checked').data('schedule-type');
 
@@ -19,7 +28,7 @@
 
     $('.recurrence-pattern-radio').click(function () {
 
-        var recurrencePattern = '#' + $('input[name=recurrence-pattern-radio]:checked').data('recurrence-pattern');
+        var recurrencePattern = '#' + $('input[class=recurrence-pattern-radio]:checked').data('recurrence-pattern');
 
         if ($(recurrencePattern).css('display') == 'none') {
 
@@ -33,7 +42,7 @@
     });
 
     $('.modal-control-close').on('click', function () {
-        $('#myModal').modal('toggle');
+        $('#schedule-builder-modal').modal('toggle');
     });
 
     /** Specific Dates Scripts**/
