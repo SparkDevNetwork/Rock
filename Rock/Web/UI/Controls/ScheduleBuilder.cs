@@ -231,7 +231,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected virtual void RegisterJavaScript()
         {
-            //todo
+            // todo
         }
 
         /// </summary>
@@ -266,49 +266,49 @@ namespace Rock.Web.UI.Controls
             _radOneTime.ClientIDMode = ClientIDMode.Static;
             _radOneTime.ID = "radOneTime";
             _radOneTime.GroupName = "ScheduleTypeGroup";
-            _radOneTime.CssClass = "schedule-type";
+            _radOneTime.InputAttributes["class"] = "schedule-type";
             _radOneTime.Text = "One Time";
-            _radOneTime.Attributes["data-schedule-type"] = "schedule-onetime";
+            _radOneTime.InputAttributes["data-schedule-type"] = "schedule-onetime";
             _radOneTime.Checked = true;
 
             _radRecurring.ClientIDMode = ClientIDMode.Static;
             _radRecurring.ID = "radRecurring";
             _radRecurring.GroupName = "ScheduleTypeGroup";
-            _radRecurring.CssClass = "schedule-type";
+            _radRecurring.InputAttributes["class"] = "schedule-type";
             _radRecurring.Text = "Recurring";
-            _radRecurring.Attributes["data-schedule-type"] = "schedule-Recurring";
+            _radRecurring.InputAttributes["data-schedule-type"] = "schedule-Recurring";
             _radRecurring.Checked = false;
 
             _radSpecificDates.ClientIDMode = ClientIDMode.Static;
             _radSpecificDates.ID = "radSpecificDates";
             _radSpecificDates.GroupName = "recurrence-pattern-radio";
-            _radSpecificDates.CssClass = "recurrence-pattern-radio";
+            _radSpecificDates.InputAttributes["class"] = "recurrence-pattern-radio";
             _radSpecificDates.Text = "Specific Dates";
-            _radSpecificDates.Attributes["data-recurrence-pattern"] = "recurrence-pattern-specific-date";
+            _radSpecificDates.InputAttributes["data-recurrence-pattern"] = "recurrence-pattern-specific-date";
             _radSpecificDates.Checked = true;
 
             _radDaily.ClientIDMode = ClientIDMode.Static;
             _radDaily.ID = "radDaily";
             _radDaily.GroupName = "recurrence-pattern-radio";
-            _radDaily.CssClass = "recurrence-pattern-radio";
+            _radDaily.InputAttributes["class"] = "recurrence-pattern-radio";
             _radDaily.Text = "Daily";
-            _radDaily.Attributes["data-recurrence-pattern"] = "recurrence-pattern-daily";
+            _radDaily.InputAttributes["data-recurrence-pattern"] = "recurrence-pattern-daily";
             _radDaily.Checked = false;
 
             _radWeekly.ClientIDMode = ClientIDMode.Static;
             _radWeekly.ID = "radWeekly";
             _radWeekly.GroupName = "recurrence-pattern-radio";
-            _radWeekly.CssClass = "recurrence-pattern-radio";
+            _radWeekly.InputAttributes["class"] = "recurrence-pattern-radio";
             _radWeekly.Text = "Weekly";
-            _radWeekly.Attributes["data-recurrence-pattern"] = "recurrence-pattern-weekly";
+            _radWeekly.InputAttributes["data-recurrence-pattern"] = "recurrence-pattern-weekly";
             _radWeekly.Checked = false;
 
             _radMonthly.ClientIDMode = ClientIDMode.Static;
             _radMonthly.ID = "radMonthly";
             _radMonthly.GroupName = "recurrence-pattern-radio";
-            _radMonthly.CssClass = "recurrence-pattern-radio";
+            _radMonthly.InputAttributes["class"] = "recurrence-pattern-radio";
             _radMonthly.Text = "Monthly";
-            _radMonthly.Attributes["data-recurrence-pattern"] = "recurrence-pattern-monthly";
+            _radMonthly.InputAttributes["data-recurrence-pattern"] = "recurrence-pattern-monthly";
             _radMonthly.Checked = false;
 
             _hfSpecificDateListValues.ClientIDMode = ClientIDMode.Static;
@@ -546,7 +546,7 @@ namespace Rock.Web.UI.Controls
         protected override void Render( HtmlTextWriter writer )
         {
             string controlHtmlFragment = @"
-    <a href='#myModal' role='button' class='btn btn-small' data-toggle='modal'>
+    <a id='schedule-builder-button' role='button' class='btn btn-small'>
         <i class='icon-calendar'></i> ";
 
             writer.Write( controlHtmlFragment );
@@ -556,7 +556,7 @@ namespace Rock.Web.UI.Controls
             controlHtmlFragment = @"
     </a>
 
-    <div id='myModal' class='modal hide fade schedule-builder'>
+    <div id='schedule-builder-modal' class='modal hide fade schedule-builder'>
         <div class='modal-header'>";
 
             writer.Write( controlHtmlFragment );
@@ -609,7 +609,11 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
 
             // Recurrence Panel: Start
-            writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+            if ( _radOneTime.Checked )
+            {
+                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+            }
+
             writer.AddAttribute( "id", "schedule-recurrence-panel" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
@@ -634,16 +638,32 @@ namespace Rock.Web.UI.Controls
             // Specific Date Panel
             writer.AddAttribute( "class", "recurrence-pattern-type control-group controls" );
             writer.AddAttribute( "id", "recurrence-pattern-specific-date" );
+
+            if ( !_radSpecificDates.Checked )
+            {
+                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+            }
+            
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _hfSpecificDateListValues.RenderControl( writer );
+
+            
             writer.Write( @"
-                <ul id='lstSpecificDates'>
+                <ul id='lstSpecificDates'>");
+
+            foreach (var dateValue in _hfSpecificDateListValues.Value.Split(new char[] {','}, StringSplitOptions.RemoveEmptyEntries))
+            {
+                writer.Write("<li><span>" + dateValue + "</span><a href='#' style='display: none'><i class='icon-remove'></i></a></li>");
+            }
+
+            writer.Write( @"
                 </ul>
                 <a class='btn btn-small' id='add-specific-date'><i class='icon-plus'></i>
                     <span> Add Date</span>
                 </a>" );
 
             writer.AddAttribute( "id", "add-specific-date-group" );
+            
             writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _dpSpecificDate.RenderControl( writer );
@@ -661,7 +681,12 @@ namespace Rock.Web.UI.Controls
             // daily recurrence panel
             writer.AddAttribute( "id", "recurrence-pattern-daily" );
             writer.AddAttribute( "class", "recurrence-pattern-type" );
-            writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+
+            if ( !_radDaily.Checked )
+            {
+                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+            }
+
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.AddAttribute( "class", "control-group controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -689,7 +714,12 @@ namespace Rock.Web.UI.Controls
             // weekly recurrence panel
             writer.AddAttribute( "id", "recurrence-pattern-weekly" );
             writer.AddAttribute( "class", "recurrence-pattern-type" );
-            writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+
+            if ( !_radWeekly.Checked )
+            {
+                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+            }
+
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( "class", "control-group controls" );
@@ -715,7 +745,12 @@ namespace Rock.Web.UI.Controls
             // monthly
             writer.AddAttribute( "id", "recurrence-pattern-monthly" );
             writer.AddAttribute( "class", "recurrence-pattern-type" );
-            writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+
+            if ( !_radMonthly.Checked )
+            {
+                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+            }
+
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.AddAttribute( "class", "control-group controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -764,8 +799,7 @@ namespace Rock.Web.UI.Controls
             writer.Write( "<span>End after </span>" );
             _tbEndByOccurrenceCount.RenderControl( writer );
             writer.Write( "<span> occurrences</span>" );
-            
-            //
+
             writer.RenderEndTag();
 
             writer.RenderEndTag();
@@ -778,8 +812,16 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( "class", "control-group controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _hfExclusionDateRangeListValues.RenderControl( writer );
+
             writer.Write( @"
-                <ul id='lstExclusionDateRanges'>
+                <ul id='lstExclusionDateRanges'>" );
+
+            foreach ( var dateRangeValue in _hfExclusionDateRangeListValues.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+            {
+                writer.Write( "<li><span>" + dateRangeValue + "</span><a href='#' style='display: none'><i class='icon-remove'></i></a></li>" );
+            }
+
+            writer.Write( @"
                 </ul>
                 <a class='btn btn-small' id='add-exclusion-daterange'><i class='icon-plus'></i>
                     <span> Add Date Range</span>
