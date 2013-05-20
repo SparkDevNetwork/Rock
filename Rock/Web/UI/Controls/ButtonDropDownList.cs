@@ -199,10 +199,12 @@ namespace Rock.Web.UI.Controls
             base.CreateChildControls();
 
 			Controls.Clear();
-            
-            _label = new Label();
-            Controls.Add( _label );
 
+            _label = new Label
+            {
+                ID = this.ID + "_label"
+            };
+            
             _divControl = new HtmlGenericControl( "div" );
             _divControl.Attributes["class"] = "btn-group";
             _divControl.ClientIDMode = ClientIDMode.Static;
