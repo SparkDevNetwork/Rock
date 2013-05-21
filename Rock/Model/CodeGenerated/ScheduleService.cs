@@ -82,6 +82,7 @@ namespace Rock.Model
                 target.CheckInEndTime = source.CheckInEndTime;
                 target.EffectiveStartDate = source.EffectiveStartDate;
                 target.EffectiveEndDate = source.EffectiveEndDate;
+                target.IsShared = source.IsShared;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

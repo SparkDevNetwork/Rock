@@ -96,6 +96,7 @@ namespace Rock.Model
                 target.TakesAttendance = source.TakesAttendance;
                 target.AttendanceRule = source.AttendanceRule;
                 target.AttendancePrintTo = source.AttendancePrintTo;
+                target.DisplayOrder = source.DisplayOrder;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

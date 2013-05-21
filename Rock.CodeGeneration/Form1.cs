@@ -57,7 +57,7 @@ namespace Rock.CodeGeneration
 
                     foreach ( Type type in assembly.GetTypes().OfType<Type>().OrderBy( a => a.FullName ) )
                     {
-                        if ( type.Namespace != null && !type.Namespace.StartsWith( "Rock.Data" ) )
+                        if ( type.Namespace != null && !type.Namespace.StartsWith( "Rock.Data" ) && !type.IsAbstract)
                         {
                             foreach ( Type interfaceType in type.GetInterfaces() )
                             {
@@ -309,6 +309,12 @@ order by [parentTable]
 
             SqlCommand sqlCommand = sqlconn.CreateCommand();
             TableAttribute tableAttribute = type.GetCustomAttribute<TableAttribute>();
+            if ( tableAttribute == null )
+            {
+                // not a real table
+                return string.Empty;
+            }
+
             sqlCommand.CommandText = string.Format( sql, tableAttribute.Name );
 
             var reader = sqlCommand.ExecuteReader();
