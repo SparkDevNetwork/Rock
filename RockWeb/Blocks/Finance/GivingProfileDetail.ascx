@@ -95,13 +95,15 @@
                                 </div>
 
                                 <div class="row-fluid">
-                                    <Rock:ButtonDropDownList ID="btnFrequency" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnFrequency_SelectionChanged" LabelText="Frequency" />			                        
+                                    <Rock:ButtonDropDownList ID="btnFrequency" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnFrequency_SelectionChanged" LabelText="Frequency" 
+                                        SourceTypeName="Rock.Model.FinancialScheduledTransaction, Rock" PropertyName="TransactionFrequencyValueId" />			                        
                                 </div>                                    
                             
                                 <div id="divRecurrence" runat="server" visible="false">          
 
                                     <div class="row-fluid">                                        
-                                        <Rock:DateTimePicker ID="dtpStartingDate" runat="server" LabelText="Starting On" data-date-format="dd-mm-yyyy" DatePickerType="Date" />                                        
+                                        <Rock:DatePicker ID="dtpStartDate" runat="server" LabelText="Starting On" data-date-format="dd-mm-yyyy" DatePickerType="Date" 
+                                            SourceTypeName="Rock.Model.FinancialScheduledTransaction, Rock" PropertyName="StartDate" />
                                     </div>
                                     
                                     <div class="row-fluid" id="divLimitGifts" runat="server" Visible="false">
@@ -140,18 +142,18 @@
                         <div class="row-fluid">
                             
                             <div class="<%= _spanClass %>" >
-                                <Rock:LabeledTextBox ID="txtFirstName" LabelText="First Name" runat="server" />
+                                <Rock:DataTextBox ID="txtFirstName" LabelText="First Name" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="GivenName" />
                             </div>             
 
                             <div class="<%= _spanClass %>" >
-                                <Rock:LabeledTextBox ID="txtLastName" LabelText="Last Name" runat="server" />
+                                <Rock:DataTextBox ID="txtLastName" LabelText="Last Name" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" />
                             </div>        
                             
                         </div>
 
                         <div class="row-fluid">
                             <div class="span12" >
-                                <Rock:LabeledTextBox ID="txtAddress" LabelText="Address" runat="server" />
+                                <Rock:DataTextBox ID="txtAddress" LabelText="Address" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Street1" />
                             </div>
                             
                         </div>
@@ -159,7 +161,7 @@
                         <div class="row-fluid">
 
                             <div class="span6">
-                                <Rock:LabeledTextBox ID="txtCity" LabelText="City" runat="server" />
+                                <Rock:DataTextBox ID="txtCity" LabelText="City" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="City" />
                             </div>
   
                             <div class="span4">
@@ -168,20 +170,20 @@
                             </div>
 
                             <div class="span2">
-                                <Rock:LabeledTextBox ID="txtZipcode" LabelText="Zipcode" runat="server" CssClass="input-mini" />
+                                <Rock:DataTextBox ID="txtZipcode" LabelText="Zipcode" runat="server" CssClass="input-mini" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Zip" />
                             </div>
 
                         </div>                    
 
                         <div class="row-fluid">   
                             <div class="span12" >
-                                <Rock:LabeledTextBox ID="txtEmail" LabelText="Email" runat="server" />
+                                <Rock:DataTextBox ID="txtEmail" LabelText="Email" runat="server" TextMode="Email" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" />
                             </div>
                         </div>
 
                         <div class="row-fluid" >   
                             <div class="span12" >
-                                <Rock:LabeledTextBox ID="txtPhone" LabelText="Phone" runat="server" />
+                                <Rock:DataTextBox ID="txtPhone" LabelText="Phone" runat="server" SourceTypeName="Rock.Model.PhoneNumber, Rock" PropertyName="Number" />
                             </div>
                         </div>
 
@@ -210,9 +212,9 @@
                         <legend>Payment Information</legend>
 
                         <ul class="nav nav-pills">
-                            <asp:Repeater ID="rptPaymentType" runat="server" OnItemCommand="rptPaymentType_ItemCommand">
+                            <asp:Repeater ID="rptPaymentType" runat="server">
                             <ItemTemplate >
-                                <li ID="liSelectedTab" runat="server" > <%--class='<%# ( CurrentTab == "Credit Card") ? "active" : "" %>'--%>
+                                <li ID="liSelectedTab" runat="server" class='<%# ( Container.ItemIndex == 0) ? "active" : "" %>' >
                                     <asp:LinkButton ID="lbPaymentType" runat="server" Text='<%# DataBinder.Eval(Container.DataItem, "Name") %>' OnClick="lbPaymentType_Click" />
                                 </li>
                             </ItemTemplate>
@@ -242,17 +244,15 @@
                                 </div>
                            
                                 <div class="row-fluid">
-                                        
-                                    <div class="span4 expiration-group">                                                                                        
-                                        <label class="credit-label">Expiration Date</label>
-                                        <Rock:ButtonDropDownList ID="btnMonthExpiration" runat="server" CssClass="btn btn-primary" Title="Month" />
-                                        <Rock:ButtonDropDownList ID="btnYearExpiration" runat="server" CssClass="btn btn-primary" Title="Year" />                                        
+                                    
+                                    <div class="span6">
+                                        <Rock:DatePicker ID="dtpExpiration" runat="server" LabelText="Expiration Date" />
                                     </div>
 
-                                    <div class="span4">
+                                    <div class="span6">
                                         <Rock:NumberBox ID="txtCVV" LabelText="CVV #" runat="server" MaxLength="3" CssClass="input-mini" />
-                                    </div> 
-
+                                    </div>
+                                                                                                            
                                 </div>
 
                                 <div class="row-fluid">
@@ -346,7 +346,7 @@
         </div>
 
         <div class="actions">
-            <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnNext_Click" />
+            <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnNext_Click" CausesValidation="True" />
         </div>
     
     </ContentTemplate>

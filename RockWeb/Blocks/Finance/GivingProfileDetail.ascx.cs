@@ -108,7 +108,7 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 BindAccounts();
-                BindCreditCard();
+                //BindCreditCard();
                 BindPaymentTypes();
             }            
         }
@@ -152,7 +152,7 @@ namespace RockWeb.Blocks.Finance
                 divAddAccount.Visible = false;
             }
 
-            SaveAccounts( transactionList );
+            SaveAccountValues( transactionList );
             RebindAccounts();
         }
 
@@ -163,7 +163,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnFrequency_SelectionChanged( object sender, EventArgs e )
         {
-            SaveAccounts( Session["TransactionList"] as List<FinancialTransactionDetail> );
+            SaveAccountValues( Session["TransactionList"] as List<FinancialTransactionDetail> );
             
             if ( btnFrequency.SelectedValue != DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TYPE_ONE_TIME_FUTURE ).Id.ToString()
                 && btnFrequency.SelectedValue != DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TYPE_ONE_TIME ).Id.ToString() )
@@ -214,7 +214,7 @@ namespace RockWeb.Blocks.Finance
         protected void btnBack_Click( object sender, EventArgs e )
         {
             pnlConfirm.Visible = false;
-            //RebindAccounts();
+            RebindAccounts();
             pnlDetails.Visible = true;
         }
 
@@ -225,7 +225,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void chkLimitGifts_CheckedChanged( object sender, EventArgs e )
         {
-            SaveAccounts( Session["TransactionList"] as List<FinancialTransactionDetail> );
+            SaveAccountValues( Session["TransactionList"] as List<FinancialTransactionDetail> );
             divLimitNumber.Visible = !divLimitNumber.Visible;
             RebindAccounts();
         }
@@ -270,7 +270,13 @@ namespace RockWeb.Blocks.Finance
             LinkButton lb = sender as LinkButton;
             if ( lb != null )
             {
+                foreach ( RepeaterItem item in rptPaymentType.Items )
+                {
+                    ( (HtmlGenericControl)item.FindControl( "liSelectedTab" ) ).RemoveCssClass( "active" );
+                }
+
                 CurrentTab = lb.Text;
+                ( (HtmlGenericControl) lb.Parent ).AddCssClass( "active" );
             }
 
             ShowSelectedTab();
@@ -469,22 +475,22 @@ namespace RockWeb.Blocks.Finance
             }
 
             rptPaymentType.DataSource = queryable.ToList();
-            rptPaymentType.DataBind();                        
+            rptPaymentType.DataBind();
         }
         
         /// <summary>
         /// Binds the credit card controls.
         /// </summary>
-        protected void BindCreditCard()
-        {
-            btnMonthExpiration.Items.Clear();
-            btnYearExpiration.Items.Clear();
+        //protected void BindCreditCard()
+        //{
+        //    btnMonthExpiration.Items.Clear();
+        //    btnYearExpiration.Items.Clear();
 
-            btnMonthExpiration.DataSource = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.MonthNames.ToList().GetRange( 0, 12 );
-            btnMonthExpiration.DataBind();
-            btnYearExpiration.DataSource = Enumerable.Range( ( DateTime.Now.Year ), 10 ).ToList();
-            btnYearExpiration.DataBind();
-        }
+        //    btnMonthExpiration.DataSource = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.MonthNames.ToList().GetRange( 0, 12 );
+        //    btnMonthExpiration.DataBind();
+        //    btnYearExpiration.DataSource = Enumerable.Range( ( DateTime.Now.Year ), 10 ).ToList();
+        //    btnYearExpiration.DataBind();
+        //}
         
         /// <summary>
         /// Binds the accounts.
@@ -528,7 +534,7 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Saves the account values.
         /// </summary>
-        protected void SaveAccounts( List<FinancialTransactionDetail> transactionList )
+        protected void SaveAccountValues( List<FinancialTransactionDetail> transactionList )
         {
             foreach ( RepeaterItem item in rptAccountList.Items )
             {
@@ -582,42 +588,6 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Gets the tab class.
-        /// </summary>
-        /// <param name="property">The property.</param>
-        /// <returns></returns>
-        protected string GetTabClass( object property )
-        {
-            if ( property.ToString() == CurrentTab )
-            {
-                return "active";
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// Handles the ItemCommand event of the rptPaymentType control.
-        /// </summary>
-        /// <param name="source">The source of the event.</param>
-        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
-        protected void rptPaymentType_ItemCommand( object source, RepeaterCommandEventArgs e )
-        {
-            var liSelectedTab = (HtmlGenericControl)e.Item.FindControl( "liSelectedTab" );
-
-            var thiscontrol = liSelectedTab.FindControl( "lbPaymentType" );            
-
-            if ( thiscontrol.Equals( CurrentTab ) )
-            {
-                liSelectedTab.Attributes.Add( "class", "active" );
-            }
-            else
-            {
-                liSelectedTab.Attributes.Remove( "active" );
-            }
-        }
-
-        /// <summary>
         /// Shows the selected pane.
         /// </summary>
         private void ShowSelectedTab()
@@ -627,14 +597,14 @@ namespace RockWeb.Blocks.Finance
             {
                 pnlCreditCard.Visible = true;
                 pnlChecking.Visible = false;
-                pnlCreditCard.DataBind();
+                pnlCreditCard.DataBind();                
             }
             else if ( CurrentTab.Equals( "Checking/ACH" ) )
             {
                 pnlCreditCard.Visible = false;
                 pnlChecking.Visible = true;
                 pnlChecking.DataBind();
-            }                       
+            }
         }
 
         #endregion        
