@@ -41,7 +41,7 @@
         }
     });
 
-    $('.modal-control-close').on('click', function () {
+    $('.modal-control-cancel').on('click', function () {
         $('#schedule-builder-modal').modal('toggle');
     });
 
@@ -265,6 +265,22 @@
         liItem.remove();
 
         $('#modal-scroll-container').tinyscrollbar_update('relative');
+    });
+
+    // validate on Save
+    $('#btnSaveSchedule').on('click', function (event) {
+        var startDateValue = Date.parse($('#dpStartDateTime').val()) || -1;
+        if (startDateValue < 0) {
+            $('#dpStartDateTime').parents(".control-group").first().toggleClass("error", 1);
+            event.preventDefault();
+            return;
+        }
+        else
+        {
+            $('#dpStartDateTime').parents(".control-group").first().toggleClass("error", 0);
+        }
+
+        $('#schedule-builder-modal').modal('toggle');
     });
 
 });
