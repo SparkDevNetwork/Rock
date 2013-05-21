@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
 
-        <a href='#myModal' role='button' class='btn btn-small' data-toggle='modal'>
+        <a href='#myModal' id="schedule-builder-button" role='button' class='btn btn-small' data-toggle='modal' >
             <i class='icon-calendar'></i>
             Schedule
         </a>

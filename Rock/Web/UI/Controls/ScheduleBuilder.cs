@@ -6,11 +6,12 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using DDay.iCal;
+using DDay.iCal.Serialization.iCalendar;
 
 namespace Rock.Web.UI.Controls
 {
@@ -20,7 +21,6 @@ namespace Rock.Web.UI.Controls
     public class ScheduleBuilder : CompositeControl, ILabeledControl
     {
         private Label _label;
-        private HiddenField _iCalendarContent;
         private LinkButton _btnDialogCancelX;
 
         private DateTimePicker _dpStartDateTime;
@@ -42,7 +42,7 @@ namespace Rock.Web.UI.Controls
 
         // daily recurrence
         private RadioButton _radDailyEveryXDays;
-        private TextBox _txtDailyEveryXDays;
+        private NumberBox _tbDailyEveryXDays;
         private RadioButton _radDailyEveryWeekday;
         private RadioButton _radDailyEveryWeekendDay;
 
@@ -83,7 +83,21 @@ namespace Rock.Web.UI.Controls
         private ScriptManagerProxy _smProxy;
 
         // consts
-        private readonly string[] nthNames = { "First", "Second", "Third", "Fourth", "Last" };
+        private readonly Dictionary<string, int> nthNames = new Dictionary<string, int> { 
+            {"First", 1}, 
+            {"Second", 2}, 
+            {"Third", 3}, 
+            {"Fourth", 4}, 
+            {"Last", -1} 
+        };
+
+        private const string iCalendarContentEmptyEvent = @"
+BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+END:VEVENT
+END:VCALENDAR
+";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ScheduleBuilder"/> class.
@@ -97,8 +111,6 @@ namespace Rock.Web.UI.Controls
             _btnDialogCancelX = new LinkButton();
 
             // modal body
-            _iCalendarContent = new HiddenField();
-
             _dpStartDateTime = new DateTimePicker();
 
             _tbDurationHours = new NumberBox();
@@ -119,7 +131,7 @@ namespace Rock.Web.UI.Controls
 
             // daily
             _radDailyEveryXDays = new RadioButton();
-            _txtDailyEveryXDays = new TextBox();
+            _tbDailyEveryXDays = new NumberBox();
             _radDailyEveryWeekday = new RadioButton();
             _radDailyEveryWeekendDay = new RadioButton();
 
@@ -158,6 +170,9 @@ namespace Rock.Web.UI.Controls
             _btnCancelSchedule = new LinkButton();
 
             _smProxy = new ScriptManagerProxy();
+            
+            iCalendarContent = iCalendarContentEmptyEvent;
+
         }
 
         /// <summary>
@@ -183,18 +198,215 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                if ( string.IsNullOrWhiteSpace( _iCalendarContent.Value ) )
-                {
-                    _iCalendarContent.Value = Rock.Constants.None.IdValue;
-                }
 
-                return _iCalendarContent.Value;
+                DDay.iCal.Event calendarEvent = new DDay.iCal.Event();
+                calendarEvent.DTStart = new DDay.iCal.iCalDateTime( _dpStartDateTime.SelectedDateTime.Value );
+                
+                int durationHours = _tbDurationHours.Text.AsInteger() ?? 1;
+                int durationMins = _tbDurationMinutes.Text.AsInteger() ?? 0;
+                calendarEvent.Duration = new TimeSpan( durationHours, durationMins, 0 );
+                
+                
+                //StringReader stringReader = new StringReader( iCalendarContentEmptyEvent );
+                //var calendarList = DDay.iCal.iCalendar.LoadFromStream( stringReader );
+
+                DDay.iCal.iCalendar calendar = new iCalendar();
+                calendar.Events.Add(calendarEvent);
+
+                iCalendarSerializer s = new iCalendarSerializer( calendar );
+
+                return s.SerializeToString( calendar );
             }
 
             set
             {
                 EnsureChildControls();
-                _iCalendarContent.Value = value;
+
+                //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
+                //// We just need one Calendar and one Event
+
+                StringReader stringReader = new StringReader( value );
+                var calendarList = DDay.iCal.iCalendar.LoadFromStream( stringReader );
+                DDay.iCal.Event calendarEvent = null;
+                if ( calendarList.Count > 0 )
+                {
+                    var calendar = calendarList[0] as DDay.iCal.iCalendar;
+                    if ( calendar != null )
+                    {
+                        calendarEvent = calendar.Events[0] as DDay.iCal.Event;
+
+                        if ( calendarEvent.DTStart != null )
+                        {
+                            _dpStartDateTime.SelectedDateTime = calendarEvent.DTStart.Value;
+                            _tbDurationHours.Text = calendarEvent.Duration.Hours.ToString();
+                            _tbDurationMinutes.Text = calendarEvent.Duration.Minutes.ToString();
+                        }
+                        else
+                        {
+                            _dpStartDateTime.SelectedDateTime = null;
+                            _tbDurationHours.Text = string.Empty;
+                            _tbDurationMinutes.Text = string.Empty;
+                        }
+
+                        if ( calendarEvent.RecurrenceRules.Count == 0 )
+                        {
+                            // One-Time
+                            _radRecurring.Checked = false;
+                            _radOneTime.Checked = true;
+                        }
+                        else
+                        {
+                            // Recurring
+                            _radRecurring.Checked = true;
+                            _radOneTime.Checked = false;
+                        }
+
+                        if ( _radRecurring.Checked )
+                        {
+                            IRecurrencePattern rrule = calendarEvent.RecurrenceRules[0];
+                            switch ( rrule.Frequency )
+                            {
+                                case FrequencyType.Daily:
+                                    #region daily
+
+                                    _radDaily.Checked = true;
+                                    _radDailyEveryXDays.Checked = true;
+                                    _tbDailyEveryXDays.Text = rrule.Interval.ToString();
+
+                                    // NOTE:  Daily Every Weekday/Weekend Day is actually Weekly on Day(s)OfWeek in iCal
+                                    break;
+
+                                    #endregion
+                                case FrequencyType.Weekly:
+                                    #region weekly
+
+                                    _radWeekly.Checked = true;
+                                    _tbWeeklyEveryX.Text = rrule.Interval.ToString();
+
+                                    foreach ( DayOfWeek dow in rrule.ByDay.Select( a => a.DayOfWeek ) )
+                                    {
+                                        switch ( dow )
+                                        {
+                                            case DayOfWeek.Sunday:
+                                                _cbWeeklySunday.Checked = true;
+                                                break;
+                                            case DayOfWeek.Monday:
+                                                _cbWeeklyMonday.Checked = true;
+                                                break;
+                                            case DayOfWeek.Tuesday:
+                                                _cbWeeklyTuesday.Checked = true;
+                                                break;
+                                            case DayOfWeek.Wednesday:
+                                                _cbWeeklyWednesday.Checked = true;
+                                                break;
+                                            case DayOfWeek.Thursday:
+                                                _cbWeeklyThursday.Checked = true;
+                                                break;
+                                            case DayOfWeek.Friday:
+                                                _cbWeeklyFriday.Checked = true;
+                                                break;
+                                            case DayOfWeek.Saturday:
+                                                _cbWeeklySaturday.Checked = true;
+                                                break;
+                                        }
+                                    }
+
+                                    break;
+
+                                    #endregion
+                                case FrequencyType.Monthly:
+                                    #region monthly
+
+                                    _radMonthly.Checked = true;
+                                    if ( rrule.ByMonthDay.Count > 0 )
+                                    {
+                                        // Day X of every X Months
+                                        _radMonthlyDayX.Checked = true;
+                                        int monthDay = rrule.ByMonthDay[0];
+
+                                        _tbMonthlyDayX.Text = monthDay.ToString();
+                                        _tbMonthlyXMonths.Text = rrule.Interval.ToString();
+                                    }
+                                    else if ( rrule.ByDay.Count > 0 )
+                                    {
+                                        // The Nth <DayOfWeekName>
+                                        _radMonthlyNth.Checked = true;
+                                        IWeekDay bydate = rrule.ByDay[0];
+                                        _ddlMonthlyNth.SelectedValue = bydate.Offset.ToString();
+                                        _ddlMonthlyDayName.SelectedValue = bydate.DayOfWeek.ConvertToInt().ToString();
+                                    }
+
+                                    break;
+
+                                    #endregion
+                                default:
+                                    _radSpecificDates.Checked = true;
+                                    break;
+                            }
+
+                            // Continue Until
+                            if ( rrule.Until > DateTime.MinValue )
+                            {
+                                _radEndByDate.Checked = true;
+                                _dpEndBy.SelectedDate = rrule.Until;
+                            }
+                            else if ( rrule.Count > 0 )
+                            {
+                                _radEndByOccurrenceCount.Checked = true;
+                                _tbEndByOccurrenceCount.Text = rrule.Count.ToString();
+                            }
+                            else
+                            {
+                                _radEndByNone.Checked = true;
+                            }
+
+                            // Exclusions
+                            if ( calendarEvent.ExceptionDates.Count > 0 )
+                            {
+                                // convert individual ExceptionDates into a list of Date Ranges
+                                List<Period> exDateRanges = new List<Period>();
+                                List<IDateTime> dates = calendarEvent.ExceptionDates[0].Select( a => a.StartTime ).OrderBy( a => a ).ToList();
+                                IDateTime previousDate = dates[0].AddDays( -1 );
+                                var dateRange = new Period { StartTime = dates[0] };
+                                foreach ( var date in dates )
+                                {
+                                    if ( !date.Equals( previousDate.AddDays( 1 ) ) )
+                                    {
+                                        dateRange.EndTime = previousDate;
+                                        exDateRanges.Add( dateRange );
+                                        dateRange = new Period { StartTime = date };
+                                    }
+
+                                    previousDate = date;
+                                }
+
+                                dateRange.EndTime = dates.Last();
+                                exDateRanges.Add( dateRange );
+
+                                _hfExclusionDateRangeListValues.Value = exDateRanges.Select( a => string.Format( "{0} - {1}", a.StartTime, a.EndTime ) ).ToList().AsDelimited( "," );
+                            }
+                        }
+                        else
+                        {
+                            _radSpecificDates.Checked = true;
+
+                            if ( calendarEvent.RecurrenceDates.Count > 0 )
+                            {
+                                // Specific Dates
+                                _radOneTime.Checked = false;
+                                _radRecurring.Checked = true;
+                                _radEndByNone.Checked = true;
+                                _radEndByDate.Checked = false;
+                                _radEndByOccurrenceCount.Checked = false;
+                                IPeriodList dates = calendarEvent.RecurrenceDates[0];
+                                _hfSpecificDateListValues.Value = dates.Select( a => a.StartTime ).ToList().AsDelimited( "," );
+                            }
+
+                            _radEndByNone.Checked = true;
+                            _hfExclusionDateRangeListValues.Value = string.Empty;
+                        }
+                    }
+                }
             }
         }
 
@@ -231,7 +443,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected virtual void RegisterJavaScript()
         {
-            //todo
+            // todo
         }
 
         /// </summary>
@@ -242,7 +454,7 @@ namespace Rock.Web.UI.Controls
             Controls.Clear();
 
             _btnDialogCancelX.ClientIDMode = ClientIDMode.Static;
-            _btnDialogCancelX.CssClass = "close modal-control-close";
+            _btnDialogCancelX.CssClass = "close modal-control-cancel";
             _btnDialogCancelX.ID = "btnDialogCancelX";
             _btnDialogCancelX.Click += btnCancelSchedule_Click;
             _btnDialogCancelX.Text = "&times;";
@@ -250,13 +462,14 @@ namespace Rock.Web.UI.Controls
             _dpStartDateTime.ClientIDMode = ClientIDMode.Static;
             _dpStartDateTime.ID = "dpStartDateTime";
             _dpStartDateTime.LabelText = "Start Date / Time";
+            _dpStartDateTime.Required = true;
 
             _tbDurationHours.ClientIDMode = ClientIDMode.Static;
             _tbDurationHours.ID = "tbDurationHours";
             _tbDurationHours.CssClass = "input-mini";
             _tbDurationHours.MinimumValue = "0";
             _tbDurationHours.MaximumValue = "24";
-
+            
             _tbDurationMinutes.ClientIDMode = ClientIDMode.Static;
             _tbDurationMinutes.ID = "tbDurationMinutes";
             _tbDurationMinutes.CssClass = "input-mini";
@@ -266,50 +479,44 @@ namespace Rock.Web.UI.Controls
             _radOneTime.ClientIDMode = ClientIDMode.Static;
             _radOneTime.ID = "radOneTime";
             _radOneTime.GroupName = "ScheduleTypeGroup";
-            _radOneTime.CssClass = "schedule-type";
+            _radOneTime.InputAttributes["class"] = "schedule-type";
             _radOneTime.Text = "One Time";
-            _radOneTime.Attributes["data-schedule-type"] = "schedule-onetime";
-            _radOneTime.Checked = true;
+            _radOneTime.InputAttributes["data-schedule-type"] = "schedule-onetime";
 
             _radRecurring.ClientIDMode = ClientIDMode.Static;
             _radRecurring.ID = "radRecurring";
             _radRecurring.GroupName = "ScheduleTypeGroup";
-            _radRecurring.CssClass = "schedule-type";
+            _radRecurring.InputAttributes["class"] = "schedule-type";
             _radRecurring.Text = "Recurring";
-            _radRecurring.Attributes["data-schedule-type"] = "schedule-Recurring";
-            _radRecurring.Checked = false;
+            _radRecurring.InputAttributes["data-schedule-type"] = "schedule-Recurring";
 
             _radSpecificDates.ClientIDMode = ClientIDMode.Static;
             _radSpecificDates.ID = "radSpecificDates";
             _radSpecificDates.GroupName = "recurrence-pattern-radio";
-            _radSpecificDates.CssClass = "recurrence-pattern-radio";
+            _radSpecificDates.InputAttributes["class"] = "recurrence-pattern-radio";
             _radSpecificDates.Text = "Specific Dates";
-            _radSpecificDates.Attributes["data-recurrence-pattern"] = "recurrence-pattern-specific-date";
-            _radSpecificDates.Checked = true;
+            _radSpecificDates.InputAttributes["data-recurrence-pattern"] = "recurrence-pattern-specific-date";
 
             _radDaily.ClientIDMode = ClientIDMode.Static;
             _radDaily.ID = "radDaily";
             _radDaily.GroupName = "recurrence-pattern-radio";
-            _radDaily.CssClass = "recurrence-pattern-radio";
+            _radDaily.InputAttributes["class"] = "recurrence-pattern-radio";
             _radDaily.Text = "Daily";
-            _radDaily.Attributes["data-recurrence-pattern"] = "recurrence-pattern-daily";
-            _radDaily.Checked = false;
+            _radDaily.InputAttributes["data-recurrence-pattern"] = "recurrence-pattern-daily";
 
             _radWeekly.ClientIDMode = ClientIDMode.Static;
             _radWeekly.ID = "radWeekly";
             _radWeekly.GroupName = "recurrence-pattern-radio";
-            _radWeekly.CssClass = "recurrence-pattern-radio";
+            _radWeekly.InputAttributes["class"] = "recurrence-pattern-radio";
             _radWeekly.Text = "Weekly";
-            _radWeekly.Attributes["data-recurrence-pattern"] = "recurrence-pattern-weekly";
-            _radWeekly.Checked = false;
+            _radWeekly.InputAttributes["data-recurrence-pattern"] = "recurrence-pattern-weekly";
 
             _radMonthly.ClientIDMode = ClientIDMode.Static;
             _radMonthly.ID = "radMonthly";
             _radMonthly.GroupName = "recurrence-pattern-radio";
-            _radMonthly.CssClass = "recurrence-pattern-radio";
+            _radMonthly.InputAttributes["class"] = "recurrence-pattern-radio";
             _radMonthly.Text = "Monthly";
-            _radMonthly.Attributes["data-recurrence-pattern"] = "recurrence-pattern-monthly";
-            _radMonthly.Checked = false;
+            _radMonthly.InputAttributes["data-recurrence-pattern"] = "recurrence-pattern-monthly";
 
             _hfSpecificDateListValues.ClientIDMode = ClientIDMode.Static;
             _hfSpecificDateListValues.ID = "hfSpecificDateListValues";
@@ -322,11 +529,10 @@ namespace Rock.Web.UI.Controls
             _radDailyEveryXDays.ClientIDMode = ClientIDMode.Static;
             _radDailyEveryXDays.ID = "radDailyEveryXDays";
             _radDailyEveryXDays.GroupName = "daily-options";
-            _radDailyEveryXDays.Checked = true;
 
-            _txtDailyEveryXDays.ClientIDMode = ClientIDMode.Static;
-            _txtDailyEveryXDays.ID = "txtDailyEveryXDays";
-            _txtDailyEveryXDays.CssClass = "input-mini";
+            _tbDailyEveryXDays.ClientIDMode = ClientIDMode.Static;
+            _tbDailyEveryXDays.ID = "txtDailyEveryXDays";
+            _tbDailyEveryXDays.CssClass = "input-mini";
 
             _radDailyEveryWeekday.ClientIDMode = ClientIDMode.Static;
             _radDailyEveryWeekday.ID = "radDailyEveryWeekday";
@@ -369,7 +575,6 @@ namespace Rock.Web.UI.Controls
             _radMonthlyDayX.ClientIDMode = ClientIDMode.Static;
             _radMonthlyDayX.ID = "radMonthlyDayX";
             _radMonthlyDayX.GroupName = "monthly-options";
-            _radMonthlyDayX.Checked = true;
 
             _tbMonthlyDayX.ClientIDMode = ClientIDMode.Static;
             _tbMonthlyDayX.ID = "tbMonthlyDayX";
@@ -394,7 +599,7 @@ namespace Rock.Web.UI.Controls
             _ddlMonthlyNth.Items.Add( string.Empty );
             foreach ( var nth in nthNames )
             {
-                _ddlMonthlyNth.Items.Add( nth );
+                _ddlMonthlyNth.Items.Add( new ListItem( nth.Key, nth.Value.ToString() ) );
             }
 
             _ddlMonthlyDayName.ClientIDMode = ClientIDMode.Static;
@@ -412,7 +617,6 @@ namespace Rock.Web.UI.Controls
             _radEndByNone.ClientIDMode = ClientIDMode.Static;
             _radEndByNone.ID = "radEndByNone";
             _radEndByNone.GroupName = "end-by";
-            _radEndByNone.Checked = true;
 
             _radEndByDate.ClientIDMode = ClientIDMode.Static;
             _radEndByDate.ID = "radEndByDate";
@@ -444,13 +648,14 @@ namespace Rock.Web.UI.Controls
             // action buttons
             _btnCancelSchedule.ClientIDMode = ClientIDMode.Static;
             _btnCancelSchedule.ID = "btnCancelSchedule";
-            _btnCancelSchedule.CssClass = "btn modal-control-close";
+            _btnCancelSchedule.CssClass = "btn modal-control-cancel";
             _btnCancelSchedule.Click += btnCancelSchedule_Click;
             _btnCancelSchedule.Text = "Cancel";
 
             _btnSaveSchedule.ClientIDMode = ClientIDMode.Static;
             _btnSaveSchedule.ID = "btnSaveSchedule";
-            _btnSaveSchedule.CssClass = "btn btn-primary modal-control-close";
+            
+            _btnSaveSchedule.CssClass = "btn btn-primary modal-control-ok";
             _btnSaveSchedule.Click += btnSaveSchedule_Click;
             _btnSaveSchedule.Text = "Save Schedule";
 
@@ -473,7 +678,7 @@ namespace Rock.Web.UI.Controls
 
             // daily recurrence
             Controls.Add( _radDailyEveryXDays );
-            Controls.Add( _txtDailyEveryXDays );
+            Controls.Add( _tbDailyEveryXDays );
             Controls.Add( _radDailyEveryWeekday );
             Controls.Add( _radDailyEveryWeekendDay );
 
@@ -520,6 +725,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSaveSchedule_Click( object sender, EventArgs e )
         {
+            var s = iCalendarContent;
             if ( SaveSchedule != null )
             {
                 SaveSchedule( sender, e );
@@ -546,7 +752,7 @@ namespace Rock.Web.UI.Controls
         protected override void Render( HtmlTextWriter writer )
         {
             string controlHtmlFragment = @"
-    <a href='#myModal' role='button' class='btn btn-small' data-toggle='modal'>
+    <a id='schedule-builder-button' role='button' class='btn btn-small'>
         <i class='icon-calendar'></i> ";
 
             writer.Write( controlHtmlFragment );
@@ -556,7 +762,7 @@ namespace Rock.Web.UI.Controls
             controlHtmlFragment = @"
     </a>
 
-    <div id='myModal' class='modal hide fade schedule-builder'>
+    <div id='schedule-builder-modal' class='modal hide fade schedule-builder'>
         <div class='modal-header'>";
 
             writer.Write( controlHtmlFragment );
@@ -609,7 +815,11 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
 
             // Recurrence Panel: Start
-            writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+            if ( _radOneTime.Checked )
+            {
+                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+            }
+
             writer.AddAttribute( "id", "schedule-recurrence-panel" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
@@ -634,16 +844,32 @@ namespace Rock.Web.UI.Controls
             // Specific Date Panel
             writer.AddAttribute( "class", "recurrence-pattern-type control-group controls" );
             writer.AddAttribute( "id", "recurrence-pattern-specific-date" );
+
+            if ( !_radSpecificDates.Checked )
+            {
+                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+            }
+
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _hfSpecificDateListValues.RenderControl( writer );
+
+
             writer.Write( @"
-                <ul id='lstSpecificDates'>
+                <ul id='lstSpecificDates'>" );
+
+            foreach ( var dateValue in _hfSpecificDateListValues.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+            {
+                writer.Write( "<li><span>" + dateValue + "</span><a href='#' style='display: none'><i class='icon-remove'></i></a></li>" );
+            }
+
+            writer.Write( @"
                 </ul>
                 <a class='btn btn-small' id='add-specific-date'><i class='icon-plus'></i>
                     <span> Add Date</span>
                 </a>" );
 
             writer.AddAttribute( "id", "add-specific-date-group" );
+
             writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _dpSpecificDate.RenderControl( writer );
@@ -661,7 +887,12 @@ namespace Rock.Web.UI.Controls
             // daily recurrence panel
             writer.AddAttribute( "id", "recurrence-pattern-daily" );
             writer.AddAttribute( "class", "recurrence-pattern-type" );
-            writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+
+            if ( !_radDaily.Checked )
+            {
+                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+            }
+
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.AddAttribute( "class", "control-group controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -669,7 +900,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _radDailyEveryXDays.RenderControl( writer );
             writer.Write( "<span>Every </span>" );
-            _txtDailyEveryXDays.RenderControl( writer );
+            _tbDailyEveryXDays.RenderControl( writer );
             writer.Write( "<span> days</span>" );
             writer.RenderEndTag();
 
@@ -689,7 +920,12 @@ namespace Rock.Web.UI.Controls
             // weekly recurrence panel
             writer.AddAttribute( "id", "recurrence-pattern-weekly" );
             writer.AddAttribute( "class", "recurrence-pattern-type" );
-            writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+
+            if ( !_radWeekly.Checked )
+            {
+                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+            }
+
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( "class", "control-group controls" );
@@ -709,13 +945,18 @@ namespace Rock.Web.UI.Controls
             _cbWeeklyFriday.RenderControl( writer );
             _cbWeeklySaturday.RenderControl( writer );
             writer.RenderEndTag();
-            
+
             writer.RenderEndTag();
 
             // monthly
             writer.AddAttribute( "id", "recurrence-pattern-monthly" );
             writer.AddAttribute( "class", "recurrence-pattern-type" );
-            writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+
+            if ( !_radMonthly.Checked )
+            {
+                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+            }
+
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.AddAttribute( "class", "control-group controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -764,8 +1005,7 @@ namespace Rock.Web.UI.Controls
             writer.Write( "<span>End after </span>" );
             _tbEndByOccurrenceCount.RenderControl( writer );
             writer.Write( "<span> occurrences</span>" );
-            
-            //
+
             writer.RenderEndTag();
 
             writer.RenderEndTag();
@@ -778,16 +1018,24 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( "class", "control-group controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _hfExclusionDateRangeListValues.RenderControl( writer );
+
             writer.Write( @"
-                <ul id='lstExclusionDateRanges'>
+                <ul id='lstExclusionDateRanges'>" );
+
+            foreach ( var dateRangeValue in _hfExclusionDateRangeListValues.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+            {
+                writer.Write( "<li><span>" + dateRangeValue + "</span><a href='#' style='display: none'><i class='icon-remove'></i></a></li>" );
+            }
+
+            writer.Write( @"
                 </ul>
                 <a class='btn btn-small' id='add-exclusion-daterange'><i class='icon-plus'></i>
                     <span> Add Date Range</span>
                 </a>" );
-            
+
             writer.AddAttribute( "id", "add-exclusion-daterange-group" );
             writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
-            writer.RenderBeginTag(HtmlTextWriterTag.Div);
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _dpExclusionDateStart.RenderControl( writer );
             writer.Write( "<span> to </span>" );
             _dpExclusionDateEnd.RenderControl( writer );
@@ -798,7 +1046,7 @@ namespace Rock.Web.UI.Controls
                 <a class='btn btn-mini' id='add-exclusion-daterange-cancel'></i>
                     <span>Cancel</span>
                 </a>" );
-           
+
             writer.RenderEndTag();
 
             writer.RenderEndTag();
