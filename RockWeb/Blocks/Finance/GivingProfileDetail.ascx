@@ -125,27 +125,27 @@
                                         
                 </div>
             
-            <% if ( _spanClass == "span12" ) { %>
+            <% if ( _spanClass != "span6" ) { %>
                     
             </div>
 
-            <div class="row-fluid">
+            <div class="row-fluid form-horizontal">
 
             <% } %>
 
                 <div class="<%= _spanClass %> well">
 
                     <fieldset>
-
+                        
                         <legend>Address Information</legend>
                         
                         <div class="row-fluid">
                             
-                            <div class="<%= _spanClass %>" >
+                            <div class="">
                                 <Rock:DataTextBox ID="txtFirstName" LabelText="First Name" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="GivenName" />
                             </div>             
 
-                            <div class="<%= _spanClass %>" >
+                            <div class="" >
                                 <Rock:DataTextBox ID="txtLastName" LabelText="Last Name" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" />
                             </div>        
                             
@@ -160,7 +160,7 @@
 
                         <div class="row-fluid">
 
-                            <div class="span6">
+                            <div class="span5">
                                 <Rock:DataTextBox ID="txtCity" LabelText="City" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="City" />
                             </div>
   
@@ -169,8 +169,8 @@
                             
                             </div>
 
-                            <div class="span2">
-                                <Rock:DataTextBox ID="txtZipcode" LabelText="Zipcode" runat="server" CssClass="input-mini" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Zip" />
+                            <div class="span3">
+                                <Rock:DataTextBox ID="txtZip" LabelText="Zip" runat="server" CssClass="input-mini" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Zip" />
                             </div>
 
                         </div>                    
@@ -223,12 +223,12 @@
 
                         <div class="tabContent">
                                 
-                            <asp:Panel ID="pnlCreditCard" runat="server" Visible="true" > 
+                            <asp:Panel ID="pnlCreditCard" runat="server" Visible="true" CssClass="fade"> 
 
                                 <div class="row-fluid">
                                     
                                     <div class="span6">
-                                        <Rock:NumberBox ID="txtCreditCard" runat="server" LabelText="Credit Card #" CssClass="credit-card" MaxLength="16" MinimumValue="0.0" MaximumValue="9999999999999999" />
+                                        <Rock:DataTextBox ID="txtCreditCard" runat="server" LabelText="Credit Card #" CssClass="credit-card" MaxLength="16" MinimumValue="0.0" MaximumValue="9999999999999999"  />
                                     </div>
 
                                     <div class="span6 align-middle">
@@ -261,7 +261,7 @@
 
                             </asp:Panel>
 
-                            <asp:Panel ID="pnlChecking" runat="server" Visible="false">
+                            <asp:Panel ID="pnlChecking" runat="server" Visible="false" CssClass="fade">
                                     
                                 <div class="row-fluid">
                                     <div class="span6">
@@ -297,11 +297,11 @@
 
                                     <div class="row-fluid">
 
-                                        <div class="<%= _spanClass %>">
+                                        <div class="">
                                             <Rock:LabeledTextBox ID="diffFirstName" LabelText="First Name" runat="server" />
                                         </div>
 
-                                        <div class="<%= _spanClass %>">
+                                        <div class="">
                                             <Rock:LabeledTextBox ID="diffLastName" LabelText="Last Name" runat="server" />
                                         </div>
 
@@ -314,18 +314,18 @@
 
                                     </div>
 
-                                    <div class="row-fluid">
+                                    <div class="row-fluid control-group">
 
-                                        <div class="span6">
+                                        <div class="span5">
                                             <Rock:LabeledTextBox ID="diffCity" LabelText="City" runat="server" />
                                         </div>
 
-                                        <div class="span4">
-                                            <Rock:StateDropDownList ID="diffState" runat="server" LabelText="State" CssClass="state-select" />
+                                        <div class="span4 state-select">
+                                            <Rock:StateDropDownList ID="diffState" runat="server" LabelText="State" />
 
                                         </div>
 
-                                        <div class="span2">
+                                        <div class="span3">
                                             <Rock:LabeledTextBox ID="diffZipcode" LabelText="Zipcode" runat="server" CssClass="input-mini" />
                                         </div>
 
@@ -345,8 +345,8 @@
 
         </div>
 
-        <div class="actions">
-            <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnNext_Click" CausesValidation="True" />
+        <div class="<%= _spanClass %> actions">
+            <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnNext_Click"  />
         </div>
     
     </ContentTemplate>
