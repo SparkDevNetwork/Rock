@@ -11,6 +11,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using DDay.iCal;
+using DDay.iCal.Serialization.iCalendar;
 
 namespace Rock.Web.UI.Controls
 {
@@ -90,6 +91,14 @@ namespace Rock.Web.UI.Controls
             {"Last", -1} 
         };
 
+        private const string iCalendarContentEmptyEvent = @"
+BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+END:VEVENT
+END:VCALENDAR
+";
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ScheduleBuilder"/> class.
         /// </summary>
@@ -161,51 +170,8 @@ namespace Rock.Web.UI.Controls
             _btnCancelSchedule = new LinkButton();
 
             _smProxy = new ScriptManagerProxy();
-
-            const string iCalendarContentDefault = @"
-BEGIN:VCALENDAR
-VERSION:2.0
-BEGIN:VEVENT
-END:VEVENT
-END:VCALENDAR
-";
-
-            // sample: Monthly on the 1st Friday for ten occurrences:
-            const string iCalendarContentFirstFriday = @"
-BEGIN:VCALENDAR
-VERSION:2.0
-BEGIN:VEVENT
-DTSTART:20130520T170000Z
-DTEND:20130520T183000Z
-RRULE:FREQ=MONTHLY;COUNT=10;BYDAY=1FR
-END:VEVENT
-END:VCALENDAR
-";
-
-
-            const string iCalendarContentDates = @"
-BEGIN:VCALENDAR
-VERSION:2.0
-BEGIN:VEVENT
-DTSTART:20130520T170000Z
-DTEND:20130520T183000Z
-RDATE;VALUE=DATE:20130525,20130603,20130609,20140101
-END:VEVENT
-END:VCALENDAR
-";
-
-            const string iCalendarContentWeekdays = @"
-BEGIN:VCALENDAR
-VERSION:2.0
-BEGIN:VEVENT
-DTSTART:20130520T170000Z
-DTEND:20130520T183000Z
-RRULE:FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR
-EXDATE;VALUE=DATE:20130525,20130524,20130601,20130602,20130603,20130609,20140101,20140102
-END:VEVENT
-END:VCALENDAR
-";
-            iCalendarContent = iCalendarContentDates;
+            
+            iCalendarContent = iCalendarContentEmptyEvent;
 
         }
 
@@ -233,9 +199,23 @@ END:VCALENDAR
             {
                 EnsureChildControls();
 
-                // TODO
+                DDay.iCal.Event calendarEvent = new DDay.iCal.Event();
+                calendarEvent.DTStart = new DDay.iCal.iCalDateTime( _dpStartDateTime.SelectedDateTime.Value );
+                
+                int durationHours = _tbDurationHours.Text.AsInteger() ?? 1;
+                int durationMins = _tbDurationMinutes.Text.AsInteger() ?? 0;
+                calendarEvent.Duration = new TimeSpan( durationHours, durationMins, 0 );
+                
+                
+                //StringReader stringReader = new StringReader( iCalendarContentEmptyEvent );
+                //var calendarList = DDay.iCal.iCalendar.LoadFromStream( stringReader );
 
-                return string.Empty;
+                DDay.iCal.iCalendar calendar = new iCalendar();
+                calendar.Events.Add(calendarEvent);
+
+                iCalendarSerializer s = new iCalendarSerializer( calendar );
+
+                return s.SerializeToString( calendar );
             }
 
             set
@@ -474,7 +454,7 @@ END:VCALENDAR
             Controls.Clear();
 
             _btnDialogCancelX.ClientIDMode = ClientIDMode.Static;
-            _btnDialogCancelX.CssClass = "close modal-control-close";
+            _btnDialogCancelX.CssClass = "close modal-control-cancel";
             _btnDialogCancelX.ID = "btnDialogCancelX";
             _btnDialogCancelX.Click += btnCancelSchedule_Click;
             _btnDialogCancelX.Text = "&times;";
@@ -482,13 +462,14 @@ END:VCALENDAR
             _dpStartDateTime.ClientIDMode = ClientIDMode.Static;
             _dpStartDateTime.ID = "dpStartDateTime";
             _dpStartDateTime.LabelText = "Start Date / Time";
+            _dpStartDateTime.Required = true;
 
             _tbDurationHours.ClientIDMode = ClientIDMode.Static;
             _tbDurationHours.ID = "tbDurationHours";
             _tbDurationHours.CssClass = "input-mini";
             _tbDurationHours.MinimumValue = "0";
             _tbDurationHours.MaximumValue = "24";
-
+            
             _tbDurationMinutes.ClientIDMode = ClientIDMode.Static;
             _tbDurationMinutes.ID = "tbDurationMinutes";
             _tbDurationMinutes.CssClass = "input-mini";
@@ -667,13 +648,14 @@ END:VCALENDAR
             // action buttons
             _btnCancelSchedule.ClientIDMode = ClientIDMode.Static;
             _btnCancelSchedule.ID = "btnCancelSchedule";
-            _btnCancelSchedule.CssClass = "btn modal-control-close";
+            _btnCancelSchedule.CssClass = "btn modal-control-cancel";
             _btnCancelSchedule.Click += btnCancelSchedule_Click;
             _btnCancelSchedule.Text = "Cancel";
 
             _btnSaveSchedule.ClientIDMode = ClientIDMode.Static;
             _btnSaveSchedule.ID = "btnSaveSchedule";
-            _btnSaveSchedule.CssClass = "btn btn-primary modal-control-close";
+            
+            _btnSaveSchedule.CssClass = "btn btn-primary modal-control-ok";
             _btnSaveSchedule.Click += btnSaveSchedule_Click;
             _btnSaveSchedule.Text = "Save Schedule";
 
@@ -743,6 +725,7 @@ END:VCALENDAR
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSaveSchedule_Click( object sender, EventArgs e )
         {
+            var s = iCalendarContent;
             if ( SaveSchedule != null )
             {
                 SaveSchedule( sender, e );
