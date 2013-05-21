@@ -183,12 +183,15 @@ namespace Rock.Web.UI.Controls
                 ( IsValid ? "" : " error" ) +
                 ( Required ? " required" : "" ) );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            writer.AddAttribute( "class", "control-label" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            label.RenderControl( writer );
-            helpBlock.RenderControl( writer );
-            writer.RenderEndTag();
+                        
+            if ( label != null && label.Text.Trim() != string.Empty )
+            {
+                writer.AddAttribute( "class", "control-label" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                label.RenderControl( writer );
+                helpBlock.RenderControl( writer );
+                writer.RenderEndTag();
+            }
 
             writer.AddAttribute( "class", "controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );

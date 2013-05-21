@@ -40,7 +40,7 @@ namespace RockWeb.Blocks.Finance
     {
         #region Fields
 
-        protected string _spanClass = "";
+        protected string _spanClass;
 
         /// <summary>
         /// Gets or sets the current tab.
@@ -75,7 +75,17 @@ namespace RockWeb.Blocks.Finance
             base.OnInit( e );
 
             // Set vertical layout
-            _spanClass = ( Convert.ToBoolean( GetAttributeValue( "ShowVerticalLayout" ) ) ) ? "span12" : "span6";
+            if ( Convert.ToBoolean( GetAttributeValue( "ShowVerticalLayout" ) ) )
+            {
+                _spanClass = "span10 offset2";
+                txtCity.LabelText = "City, State, Zip";
+                ddlState.LabelText = string.Empty;
+                txtZip.LabelText = string.Empty;
+            }
+            else
+            {
+                _spanClass = "span6";
+            }            
             
             if ( !IsPostBack )
             {
@@ -574,15 +584,17 @@ namespace RockWeb.Blocks.Finance
                 .Where( g => personGroups.Contains( g.GroupId ) )
                 .Select( g => g.Location )
                 .ToList().FirstOrDefault();
-            
+
+            txtFirstName.Text = CurrentPerson.FirstName.ToString();
+            txtLastName.Text = CurrentPerson.LastName.ToString();
+            txtEmail.Text = CurrentPerson.Email.ToString();
+
             if ( personLocation != null )
-            {
-                txtFirstName.Text = CurrentPerson.FirstName.ToString();
-                txtLastName.Text = CurrentPerson.LastName.ToString();
+            {                
                 txtAddress.Text = personLocation.Street1.ToString();
                 txtCity.Text = personLocation.City.ToString();
                 ddlState.Text = personLocation.State.ToString();
-                txtZipcode.Text = personLocation.Zip.ToString();
+                txtZip.Text = personLocation.Zip.ToString();
                 txtEmail.Text = CurrentPerson.Email.ToString();
             }
         }
