@@ -146,6 +146,22 @@
     <Compile Include="Migrations\201305032320163_Communications.Designer.cs">
       <DependentUpon>201305032320163_Communications.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201305071858522_ExceptionLog_FKUpdates.cs" />
+    <Compile Include="Migrations\201305071858522_ExceptionLog_FKUpdates.Designer.cs">
+      <DependentUpon>201305071858522_ExceptionLog_FKUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201305071959060_ExceptionList_PageCreate.cs" />
+    <Compile Include="Migrations\201305071959060_ExceptionList_PageCreate.Designer.cs">
+      <DependentUpon>201305071959060_ExceptionList_PageCreate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201305161923438_FinancialTransactionBase.cs" />
+    <Compile Include="Migrations\201305161923438_FinancialTransactionBase.Designer.cs">
+      <DependentUpon>201305161923438_FinancialTransactionBase.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialTransactionRefundService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialTransactionScannedCheckService.cs" />
     <Compile Include="SystemGuid\EntityType.cs" />
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
     <Compile Include="Web\UI\Controls\Communication\ChannelControl.cs" />
@@ -609,6 +625,8 @@
     <Compile Include="Model\CodeGenerated\FinancialBatchService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialGatewayService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPledgeService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialScheduledTransactionDetailService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialScheduledTransactionService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionDetailService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionImageService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionService.cs" />
@@ -783,7 +801,10 @@
     <Compile Include="Web\UI\IDimmableBlock.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterLocationGroupsBySpecialNeeds.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterLocationGroupsByLastName.cs" />
     <Compile Include="Workflow\Action\CheckIn\CreateLabels.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterByGrade.cs" />
     <Compile Include="Workflow\Action\CheckIn\RemoveEmptyPeople.cs" />
     <Compile Include="Workflow\Action\CheckIn\RemoveEmptyGroupTypes.cs" />
     <Compile Include="Workflow\Action\CheckIn\RemoveEmptyLocations.cs" />
@@ -1544,6 +1565,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201305032320163_Communications.resx">
       <DependentUpon>201305032320163_Communications.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305071858522_ExceptionLog_FKUpdates.resx">
+      <DependentUpon>201305071858522_ExceptionLog_FKUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305071959060_ExceptionList_PageCreate.resx">
+      <DependentUpon>201305071959060_ExceptionList_PageCreate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305161923438_FinancialTransactionBase.resx">
+      <DependentUpon>201305161923438_FinancialTransactionBase.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

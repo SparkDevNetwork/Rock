@@ -20,7 +20,15 @@ namespace Rock.Model
     /// </summary>
     [Table( "FinancialTransaction" )]
     [DataContract]
-    public partial class FinancialTransaction : Model<FinancialTransaction>
+    public partial class FinancialTransaction : FinancialTransactionBase<FinancialTransaction>
+    {
+    }
+
+    /// <summary>
+    /// abstract base class for FinancialTransaction so that we can have child classes like FinancialTransactionRefund
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public abstract class FinancialTransactionBase<T> : Model<T> where T: Model<T>, Rock.Security.ISecured, new()
     {
 
         #region Entity Properties
@@ -260,7 +268,7 @@ namespace Rock.Model
     /// </summary>
     [DataContract]
     [NotMapped]
-    public class FinancialTransactionScannedCheck : FinancialTransaction
+    public class FinancialTransactionScannedCheck : FinancialTransactionBase<FinancialTransactionScannedCheck>
     {
         /// <summary>
         /// Gets or sets the scanned check micr.

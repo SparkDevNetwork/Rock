@@ -329,9 +329,10 @@ ul.card-logos
 	padding-top: 5px;		
 }
 
-.form-horizontal .control-group 
+.form-horizontal .control-group .input-prepend
 {
 	margin-bottom: 10px;
+	display: block;
 }
 
 .expiration-group 
@@ -340,15 +341,35 @@ ul.card-logos
 	margin-right: 20px;
 }
 
-.state-select 
+.state-select
 {
-	width: 160px;
+	width: 130px !important;
+}
+
+.credit-label 
+{
+    margin-bottom: 0px;
 }
 
 .check-image 
 {
 	margin-top: 20px;	
 }
+
+
+/*CSF - right align the "Clear Exceptions" link on the Exceptions List Page*/
+.clearExceptionsLink
+{
+    text-align: right;
+    margin-bottom: 10px;
+}
+
+/*CSF - add margin to the "Return to List" button on the Exceptions List page*/
+.exceptionReturnToListButton
+{
+    margin-bottom: 10px;
+}
+
 
 /*  DT - Person Detail */
 
@@ -846,4 +867,32 @@ small
     }
 
 
+}
+
+/* Schedule Builder classes - MP */
+.schedule-builder {
+    /* get the modal schedule-builder to center. Most of our other modals are in iframe's, etc to get centered */
+    margin-left:auto;
+    margin-right:auto;
+    left: 0;
+    right: 0;
+    position:absolute;
+    /* override modal's background-color of grey, which always gets overridden in all our other modals by the iframe's body to be white again */
+    background-color: white;
+    /* override modal's z-index to be bigger than modal backdrop, but less than datepicker, so that datepicker is on top  */
+    z-index: 1041;
+}
+
+.legend-small {
+    font-size: 14px;
+    line-height: 26px;
+}
+            
+.schedule-builder div.controls div {
+    padding-bottom: 5px;
+}
+
+.schedule-builder .modal-scroll-container .viewport {
+    height: auto;
+    min-height: 400px;
 }

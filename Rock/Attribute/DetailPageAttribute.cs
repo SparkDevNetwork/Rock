@@ -19,7 +19,7 @@ namespace Rock.Attribute
         /// <summary>
         /// Initializes a new instance of the <see cref="DetailPageAttribute" /> class.
         /// </summary>
-        public DetailPageAttribute( string name = "Detail Page Guid", string description = "", bool required = false, string defaultValue = "", string category = "", int order = 0 )
+        public DetailPageAttribute( string name = "Detail Page", string description = "", bool required = false, string defaultValue = "", string category = "", int order = 0 )
             : base( name, description, required, defaultValue, category, order, Key, typeof( Rock.Field.Types.PageReferenceFieldType ).FullName )
         {
         }
