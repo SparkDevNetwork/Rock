@@ -121,6 +121,7 @@
     <Compile Include="Attribute\CampusFieldAttribute.cs" />
     <Compile Include="Attribute\BinaryFileTypeFieldAttribute.cs" />
     <Compile Include="Attribute\ComponentFieldAttribute.cs" />
+    <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\DecimalFieldAttribute.cs" />
     <Compile Include="Attribute\DateFieldAttribute.cs" />
     <Compile Include="Attribute\AccountFieldAttribute.cs" />
@@ -142,6 +143,7 @@
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
     <Compile Include="Data\MergeFieldAttribute.cs" />
+    <Compile Include="Field\Types\ComponentsFieldType.cs" />
     <Compile Include="Migrations\201305032320163_Communications.cs" />
     <Compile Include="Migrations\201305032320163_Communications.Designer.cs">
       <DependentUpon>201305032320163_Communications.cs</DependentUpon>
@@ -162,14 +164,31 @@
     <Compile Include="Migrations\201305212349171_ScheduleUsingICal.Designer.cs">
       <DependentUpon>201305212349171_ScheduleUsingICal.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201305201830290_UpdatePersonDetail.cs" />
+    <Compile Include="Migrations\201305201830290_UpdatePersonDetail.Designer.cs">
+      <DependentUpon>201305201830290_UpdatePersonDetail.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionRefundService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionScannedCheckService.cs" />
-    <Compile Include="Migrations\201305092004372_UpdatePersonDetail.cs" />
-    <Compile Include="Migrations\201305092004372_UpdatePersonDetail.Designer.cs">
-      <DependentUpon>201305092004372_UpdatePersonDetail.cs</DependentUpon>
+    <Compile Include="PersonProfile\BadgeComponent.cs" />
+    <Compile Include="PersonProfile\BadgeContainer.cs" />
+    <Compile Include="PersonProfile\Badge\NextSteps.cs" />
+    <Compile Include="PersonProfile\Badge\FamilyAttendance.cs" />
+    <Compile Include="PersonProfile\Badge\eraAttendance.cs" />
+    <Compile Include="PersonProfile\Badge\DiscScore.cs">
+      <SubType>Code</SubType>
     </Compile>
+    <Compile Include="PersonProfile\Badge\eRA.cs" />
+    <Compile Include="PersonProfile\Badge\RecordStatus.cs" />
+    <Compile Include="PersonProfile\Badge\Campus.cs" />
+    <Compile Include="PersonProfile\Badge\PersonStatus.cs" />
+    <Compile Include="PersonProfile\Badge\Serving.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="PersonProfile\IconBadge.cs" />
+    <Compile Include="PersonProfile\TextBadge.cs" />
     <Compile Include="SystemGuid\EntityType.cs" />
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
     <Compile Include="Web\UI\Controls\Communication\ChannelControl.cs" />
@@ -754,9 +773,12 @@
     <Compile Include="Web\UI\Controls\Communication\Sms.cs" />
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
+    <Compile Include="Web\UI\Controls\PersonProfile\Badge.cs" />
     <Compile Include="Web\UI\Controls\PersonLink.cs" />
     <Compile Include="Web\UI\Controls\HtmlEditor.cs" />
+    <Compile Include="Web\UI\Controls\PersonProfile\BadgeList.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ComponentPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\ComponentsPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DateTimePicker.cs" />
     <Compile Include="Web\UI\Controls\TagLists.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DatePicker.cs" />
@@ -1585,8 +1607,8 @@
     <EmbeddedResource Include="Migrations\201305161923438_FinancialTransactionBase.resx">
       <DependentUpon>201305161923438_FinancialTransactionBase.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201305092004372_UpdatePersonDetail.resx">
-      <DependentUpon>201305092004372_UpdatePersonDetail.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201305201830290_UpdatePersonDetail.resx">
+      <DependentUpon>201305201830290_UpdatePersonDetail.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201305212349171_ScheduleUsingICal.resx">
       <DependentUpon>201305212349171_ScheduleUsingICal.cs</DependentUpon>

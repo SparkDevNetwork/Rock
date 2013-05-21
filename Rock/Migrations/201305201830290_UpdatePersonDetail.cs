@@ -19,6 +19,14 @@ namespace Rock.Migrations
         public override void Up()
         {
             Sql( @"
+    -- Update Component attribute to use guid instead of id
+    UPDATE AV SET [Value] = E.[Guid]
+    FROM [AttributeValue] AV
+    INNER JOIN [Attribute] A ON A.[Id] = AV.[AttributeId]
+    INNER JOIN [FieldType] FT ON FT.[Id] = A.[FieldTypeId] AND FT.[Guid] = 'A7486B0E-4CA2-4E00-A987-5544C7DABA76'
+    INNER JOIN [EntityType] E ON E.[Id] = AV.[Value]
+    AND AV.[Value] <> ''
+   
     -- Update PageXslt page attribute to use guid instead of id
     UPDATE AV SET [Value] = P.[Guid]
     FROM [AttributeValue] AV
@@ -55,8 +63,8 @@ namespace Rock.Migrations
             AddPageRoute( "BC8E5377-0F6C-457A-9CF0-0F0A0AB2A418", "Person/{PersonId}/History" );
 
             AddPageContext( "1C737278-4CBA-404B-B6B3-E3F0E05AB5FE", "Rock.Model.Person", "PersonId" );
-            AddPageContext( "183B7B7E-105A-4C9A-A4BC-06CD26B7FE6D", "Rock.Model.Person", "PersonId"  );
-            AddPageContext( "0E56F56E-FB32-4827-A69A-B90D43CB47F5", "Rock.Model.Person", "PersonId"  );
+            AddPageContext( "183B7B7E-105A-4C9A-A4BC-06CD26B7FE6D", "Rock.Model.Person", "PersonId" );
+            AddPageContext( "0E56F56E-FB32-4827-A69A-B90D43CB47F5", "Rock.Model.Person", "PersonId" );
             AddPageContext( "53CF4CBE-85F9-4A50-87D7-0D72A3FB2892", "Rock.Model.Person", "PersonId" );
             AddPageContext( "BC8E5377-0F6C-457A-9CF0-0F0A0AB2A418", "Rock.Model.Person", "PersonId" );
 
@@ -114,7 +122,7 @@ namespace Rock.Migrations
             AddBlockAttributeValue( "32847AAF-15F5-4F8B-9F84-92D6AE827857", "D0D8CFBF-5A66-42EA-AE78-A8BF3FAE45E6", "False" );
 
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
@@ -159,8 +167,17 @@ namespace Rock.Migrations
     INNER JOIN [Page] P ON P.[Guid] = AV.[Value]
     WHERE A.[Guid] = 'DD516FA7-966E-4C80-8523-BEAC91C8EEDA'
     AND AV.[Value] <> ''
+
+    -- Update Component attribute to use id instead of guid
+    UPDATE AV SET [Value] = E.[Id]
+    FROM [AttributeValue] AV
+    INNER JOIN [Attribute] A ON A.[Id] = AV.[AttributeId]
+    INNER JOIN [FieldType] FT ON FT.[Id] = A.[FieldTypeId] AND FT.[Guid] = 'A7486B0E-4CA2-4E00-A987-5544C7DABA76'
+    INNER JOIN [EntityType] E ON E.[Guid] = AV.[Value]
+    AND AV.[Value] <> ''
+
 " );
-    
+
         }
     }
 }

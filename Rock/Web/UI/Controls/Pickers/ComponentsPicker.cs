@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using System.Collections.Generic;
 using Rock.Extension;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -18,38 +19,18 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class ComponentPicker : DropDownList, ILabeledControl
+    public class ComponentsPicker : LabeledCheckBoxList
     {
-        private Label label;
-
         /// <summary>
-        /// Gets or sets the label text.
+        /// Gets or sets the binary file type id.
         /// </summary>
         /// <value>
-        /// The label text.
-        /// </value>
-        public string LabelText
-        {
-            get { return label.Text; }
-            set { label.Text = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the type of the container.
-        /// </summary>
-        /// <value>
-        /// The type of the container.
+        /// The binary file type id.
         /// </value>
         public string ContainerType
         {
-            get 
-            {
-                return ViewState["ContainerType"] as string; 
-            }
             set
             {
-                ViewState["ContainerType"] = value;
-
                 this.Items.Clear();
 
                 if ( !string.IsNullOrWhiteSpace( value ) )
@@ -82,38 +63,23 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ComponentPicker" /> class.
+        /// Gets the selected component ids.
         /// </summary>
-        public ComponentPicker()
-            : base()
+        /// <value>
+        /// The selected component ids.
+        /// </value>
+        public List<Guid> SelectedComponents
         {
-            label = new Label();
-        }
-
-        public override void RenderControl( System.Web.UI.HtmlTextWriter writer )
-        {
-            if ( string.IsNullOrWhiteSpace( LabelText ) )
+            get
             {
-                base.RenderControl( writer );
+                return this.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => Guid.Parse( a.Value ) ).ToList();
             }
-            else
+            set
             {
-                writer.AddAttribute( "class", "control-group" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                label.AddCssClass( "control-label" );
-
-                label.RenderControl( writer );
-
-                writer.AddAttribute( "class", "controls" );
-
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                base.Render( writer );
-
-                writer.RenderEndTag();
-
-                writer.RenderEndTag();
+                foreach ( ListItem componentItem in this.Items )
+                {
+                    componentItem.Selected = value.Exists( a => a.Equals( Guid.Parse( componentItem.Value ) ) );
+                }
             }
         }
     }

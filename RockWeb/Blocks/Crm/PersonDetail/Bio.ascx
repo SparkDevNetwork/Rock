@@ -8,10 +8,8 @@
 		<h1><asp:Literal ID="lName" runat="server" /></h1>
 	</div>
     <div class="span6 labels">
-        <span class="label label-success"><asp:Literal ID="lPersonStatus" runat="server" /></span>
-        <span class="label"><asp:Literal ID="lNeighborhood" runat="server" /></span>
-        <span class="label label-info"><asp:Literal ID="lCampus" runat="server" /></span>
-        <span class="label <%= (RecordStatus == "Active" ? " label-success" : " label-important") %>"><%= RecordStatus %></span>
+
+        <Rock:PersonProfileBadgeList id="blStatus" runat="server" />
 
         <ul class="nav pull-right">
             <li class="dropdown">
@@ -31,6 +29,7 @@
                 </ul>
             </li>
         </ul>
+
     </div>
 </div> <!-- end row -->
 <div class="row-fluid">
