@@ -9,7 +9,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Reflection;
-
 using Rock.Model;
 
 namespace Rock.Data
@@ -19,7 +18,6 @@ namespace Rock.Data
     /// </summary>
     public partial class RockContext : DbContext
     {
-
         #region Models
 
         /// <summary>

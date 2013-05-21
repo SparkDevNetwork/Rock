@@ -13,8 +13,20 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Reporting
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public partial class ScheduleExample : RockBlock
     {
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e)
+        {
+            //
+        }
+        
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -28,5 +40,16 @@ namespace RockWeb.Blocks.Reporting
             }
         }
 
-    }
+        protected void btnCancelSchedule_Click( object sender, EventArgs e )
+        {
+            // ##TODO##
+            //var clicked = true;
+        }
+        
+        protected void btnSaveSchedule_Click( object sender, EventArgs e )
+        {
+            // ##TODO##
+            //var clicked = true;
+        }
+}
 }

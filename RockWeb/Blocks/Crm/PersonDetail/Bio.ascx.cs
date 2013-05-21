@@ -25,56 +25,62 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnInit( e );
 
-            lName.Text = Person.FullName;
-            lPersonStatus.Text = Person.PersonStatusValueId.DefinedValue();
-            RecordStatus = Person.RecordStatusValueId.DefinedValue();
-
-            // Campus is associated with the family group(s) person belongs to.
-            var families = PersonGroups( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
-            if ( families != null )
+            if ( Person != null )
             {
-                var campusNames = new List<string>();
-                foreach ( int campusId in families
-                    .Where( g => g.CampusId.HasValue )
-                    .Select( g => g.CampusId )
-                    .Distinct()
-                    .ToList() )
-                    campusNames.Add( Rock.Web.Cache.CampusCache.Read( campusId ).Name );
-                lCampus.Text = campusNames.OrderBy( n => n ).ToList().AsDelimited( ", " );
+                lName.Text = Person.FullName;
+                lPersonStatus.Text = Person.PersonStatusValueId.DefinedValue();
+                RecordStatus = Person.RecordStatusValueId.DefinedValue();
+
+                // Campus is associated with the family group(s) person belongs to.
+                var families = PersonGroups( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+                if ( families != null )
+                {
+                    var campusNames = new List<string>();
+                    foreach ( int campusId in families
+                        .Where( g => g.CampusId.HasValue )
+                        .Select( g => g.CampusId )
+                        .Distinct()
+                        .ToList() )
+                        campusNames.Add( Rock.Web.Cache.CampusCache.Read( campusId ).Name );
+                    lCampus.Text = campusNames.OrderBy( n => n ).ToList().AsDelimited( ", " );
+                }
+
+                // TODO : Determine how neighborhood is calculated
+                lNeighborhood.Text = "Neighborhood";
+
+                if ( Person.PhotoId.HasValue )
+                {
+                    var imgLink = new HtmlAnchor();
+                    phImage.Controls.Add( imgLink );
+                    imgLink.HRef = "~/image.ashx?" + Person.PhotoId.Value.ToString();
+                    imgLink.Target = "_blank";
+
+                    var img = new HtmlImage();
+                    imgLink.Controls.Add( img );
+                    img.Src = "~/image.ashx?" + Person.PhotoId.Value.ToString();
+                    img.Alt = Person.FullName;
+                }
+
+                if ( Person.BirthDate.HasValue )
+                    lAge.Text = string.Format( "{0} yrs old <small>({1})</small><br/>", Person.BirthDate.Value.Age(), Person.BirthDate.Value.ToString( "MM/dd" ) );
+
+                lGender.Text = Person.Gender.ToString();
+
+                lMaritalStatus.Text = Person.MaritalStatusValueId.DefinedValue();
+                if ( Person.AnniversaryDate.HasValue )
+                    lAnniversary.Text = string.Format( "{0} yrs <small>({1})</small>", Person.AnniversaryDate.Value.Age(), Person.AnniversaryDate.Value.ToString( "MM/dd" ) );
+
+                if ( Person.PhoneNumbers != null )
+                {
+                    rptPhones.DataSource = Person.PhoneNumbers.ToList();
+                    rptPhones.DataBind();
+                }
+
+                lEmail.Text = Person.Email;
+
+                tlPersonTags.EntityTypeId = Person.TypeId;
+                tlPersonTags.EntityId = Person.Id;
             }
-
-            // TODO : Determine how neighborhood is calculated
-            lNeighborhood.Text = "Neighborhood";
-
-            if ( Person.PhotoId.HasValue )
-            {
-                var imgLink = new HtmlAnchor();
-                phImage.Controls.Add( imgLink );
-                imgLink.HRef = "~/image.ashx?" + Person.PhotoId.Value.ToString();
-                imgLink.Target = "_blank";
-
-                var img = new HtmlImage();
-                imgLink.Controls.Add( img );
-                img.Src = "~/image.ashx?" + Person.PhotoId.Value.ToString();
-                img.Alt = Person.FullName;
-            }
-
-            if ( Person.BirthDate.HasValue)
-                lAge.Text = string.Format( "{0} yrs old <small>({1})</small><br/>", Person.BirthDate.Value.Age(), Person.BirthDate.Value.ToString( "MM/dd" ) );
-    
-            lGender.Text = Person.Gender.ToString();
-
-            lMaritalStatus.Text = Person.MaritalStatusValueId.DefinedValue();
-            if ( Person.AnniversaryDate.HasValue )
-                lAnniversary.Text = string.Format( "{0} yrs <small>({1})</small>", Person.AnniversaryDate.Value.Age(), Person.AnniversaryDate.Value.ToString( "MM/dd" ) );
-
-            rptPhones.DataSource = Person.PhoneNumbers.ToList();
-            rptPhones.DataBind();
-
-            lEmail.Text = Person.Email;
-
-            tlPersonTags.EntityTypeId = Person.TypeId;
-            tlPersonTags.EntityId = Person.Id;
         }
     }
 }

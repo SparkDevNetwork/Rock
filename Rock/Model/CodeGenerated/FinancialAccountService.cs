@@ -61,6 +61,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<FinancialScheduledTransactionDetail>().Queryable().Any( a => a.AccountId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialAccount.FriendlyTypeName, FinancialScheduledTransactionDetail.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<FinancialTransactionDetail>().Queryable().Any( a => a.AccountId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialAccount.FriendlyTypeName, FinancialTransactionDetail.FriendlyTypeName );

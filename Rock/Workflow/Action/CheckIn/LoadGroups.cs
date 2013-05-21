@@ -7,18 +7,19 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
-
+using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Model;
 
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
-    /// Loads the groups available for each loction
+    /// Loads the groups available for each location.
     /// </summary>
-    [Description("Loads the groups available for each loction")]
+    [Description("Loads the groups available for each selected (or optionally all) loction(s)")]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Load Groups" )]
+    [BooleanField( "Include Non-Selected Locations", "If set to true, this action will load all groups including those for non-selected locations.  Default false.", false, key: "IncludeNonSelectedLocations" )]
     public class LoadGroups : CheckInActionComponent
     {
         /// <summary>
@@ -34,6 +35,8 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( action, out errorMessages );
             if ( checkInState != null )
             {
+                bool includeNonSelected = bool.Parse( GetAttributeValue( action, "IncludeNonSelectedLocations" ) ?? "false" );
+
                 foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )
                 {
                     foreach ( var person in family.People.Where( p => p.Selected ) )
@@ -43,7 +46,7 @@ namespace Rock.Workflow.Action.CheckIn
                             var kioskGroupType = checkInState.Kiosk.KioskGroupTypes.Where( g => g.GroupType.Id == groupType.GroupType.Id ).FirstOrDefault();
                             if ( kioskGroupType != null )
                             {
-                                foreach ( var location in groupType.Locations.Where( l => l.Selected ) )
+                                foreach ( var location in groupType.Locations.Where( l => l.Selected || includeNonSelected ) )
                                 {
                                     var kioskLocation = kioskGroupType.KioskLocations.Where( l => l.Location.Id == location.Location.Id ).FirstOrDefault();
                                     if ( kioskLocation != null )

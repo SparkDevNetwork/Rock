@@ -48,12 +48,10 @@ namespace Rock.Model
         public bool CanDelete( DefinedValue item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<Attendance>().Queryable().Any( a => a.QualifierValueId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Attendance.FriendlyTypeName );
-                return false;
-            }  
+            
+            // ignoring Attendance,SearchTypeValueId 
+            
+            // ignoring Attendance,QualifierValueId 
  
             if ( new Service<Device>().Queryable().Any( a => a.DeviceTypeValueId == item.Id ) )
             {
@@ -72,20 +70,30 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialPledge.FriendlyTypeName );
                 return false;
             }  
+ 
+            if ( new Service<FinancialScheduledTransaction>().Queryable().Any( a => a.TransactionFrequencyValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialScheduledTransaction.FriendlyTypeName );
+                return false;
+            }  
+            
+            // ignoring FinancialTransaction,SourceTypeValueId 
             
             // ignoring FinancialTransaction,CurrencyTypeValueId 
             
             // ignoring FinancialTransaction,CreditCardTypeValueId 
             
-            // ignoring FinancialTransaction,SourceTypeValueId 
-            
             // ignoring FinancialTransaction,TransactionTypeValueId 
-			
-			// ignoring FinancialBatch,BatchTypeValueId
-			
+ 
             if ( new Service<FinancialTransactionImage>().Queryable().Any( a => a.TransactionImageTypeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialTransactionImage.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialTransactionRefund>().Queryable().Any( a => a.RefundReasonValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, FinancialTransactionRefund.FriendlyTypeName );
                 return false;
             }  
             
@@ -109,19 +117,19 @@ namespace Rock.Model
                 return false;
             }  
             
-            // ignoring Person,MaritalStatusValueId 
-            
-            // ignoring Person,PersonStatusValueId 
-            
-            // ignoring Person,RecordStatusValueId 
-            
-            // ignoring Person,RecordStatusReasonValueId 
-            
-            // ignoring Person,RecordTypeValueId 
-            
             // ignoring Person,SuffixValueId 
             
             // ignoring Person,TitleValueId 
+            
+            // ignoring Person,RecordTypeValueId 
+            
+            // ignoring Person,RecordStatusReasonValueId 
+            
+            // ignoring Person,RecordStatusValueId 
+            
+            // ignoring Person,MaritalStatusValueId 
+            
+            // ignoring Person,PersonStatusValueId 
  
             if ( new Service<PhoneNumber>().Queryable().Any( a => a.NumberTypeValueId == item.Id ) )
             {
