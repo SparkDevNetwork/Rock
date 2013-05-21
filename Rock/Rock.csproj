@@ -43,6 +43,9 @@
     <Reference Include="CKEditor.NET">
       <HintPath>..\packages\CKEditor.3.6.4\CKEditor.NET.dll</HintPath>
     </Reference>
+    <Reference Include="DDay.iCal">
+      <HintPath>..\packages\DDay.iCal.1.0.2.575\lib\DDay.iCal.dll</HintPath>
+    </Reference>
     <Reference Include="DotLiquid, Version=1.7.0.0, Culture=neutral, PublicKeyToken=82e46016ecf9f07c, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\libs\DotLiquid v1.7.0\NET40\DotLiquid.dll</HintPath>
@@ -151,6 +154,16 @@
     <Compile Include="Migrations\201305071959060_ExceptionList_PageCreate.Designer.cs">
       <DependentUpon>201305071959060_ExceptionList_PageCreate.cs</DependentUpon>
     </Compile>
+
+
+    <Compile Include="Migrations\201305161923438_FinancialTransactionBase.cs" />
+    <Compile Include="Migrations\201305161923438_FinancialTransactionBase.Designer.cs">
+      <DependentUpon>201305161923438_FinancialTransactionBase.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialTransactionRefundService.cs" />
+    <Compile Include="Model\CodeGenerated\FinancialTransactionScannedCheckService.cs" />
     <Compile Include="Migrations\201305132040219_UpdateGivingBlocks.cs" />
     <Compile Include="Migrations\201305132040219_UpdateGivingBlocks.Designer.cs">
       <DependentUpon>201305132040219_UpdateGivingBlocks.cs</DependentUpon>
@@ -1564,6 +1577,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201305071959060_ExceptionList_PageCreate.resx">
       <DependentUpon>201305071959060_ExceptionList_PageCreate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305161923438_FinancialTransactionBase.resx">
+      <DependentUpon>201305161923438_FinancialTransactionBase.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201305132040219_UpdateGivingBlocks.resx">
       <DependentUpon>201305132040219_UpdateGivingBlocks.cs</DependentUpon>
