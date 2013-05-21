@@ -4,14 +4,11 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.ObjectModel;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.IO;
 using System.Runtime.Serialization;
-
-using Rock;
 using Rock.Data;
 
 namespace Rock.Model
@@ -23,7 +20,6 @@ namespace Rock.Model
     [DataContract]
     public partial class Schedule : Model<Schedule>
     {
-
         #region Entity Properties
 
         /// <summary>
@@ -48,23 +44,13 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the frequency.
+        /// Gets or sets the content lines of the iCalendar
         /// </summary>
         /// <value>
-        /// The frequency.
+        /// The content of the iCalendar.
         /// </value>
         [DataMember]
-        public ScheduleFrequency Frequency { get; set; }
-
-        /// <summary>
-        /// Gets or sets the frequency qualifier.
-        /// </summary>
-        /// <value>
-        /// The frequency qualifier.
-        /// </value>
-        [MaxLength( 100 )]
-        [DataMember]
-        public string FrequencyQualifier { get; set; }
+        public string iCalendarContent { get; set; }
 
         /// <summary>
         /// Gets or sets the start time.
@@ -136,6 +122,32 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
+        /// Gets the iCalender Event.
+        /// </summary>
+        /// <value>
+        /// The iCalender Event.
+        /// </value>
+        public virtual DDay.iCal.Event GetCalenderEvent()
+        {
+            //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
+            //// We just need one Calendar and one Event
+
+            StringReader stringReader = new StringReader( iCalendarContent.Trim() );
+            var calendarList = DDay.iCal.iCalendar.LoadFromStream( stringReader );
+            DDay.iCal.Event calendarEvent = null;
+            if ( calendarList.Count > 0 )
+            {
+                var calendar = calendarList[0] as DDay.iCal.iCalendar;
+                if ( calendar != null )
+                {
+                    calendarEvent = calendar.Events[0] as DDay.iCal.Event;
+                }
+            }
+
+            return calendarEvent;
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is check in enabled.
         /// </summary>
         /// <value>
@@ -153,6 +165,7 @@ namespace Rock.Model
                 {
                     return true;
                 }
+
                 return false;
             }
         }
@@ -188,48 +201,15 @@ namespace Rock.Model
                     return false;
                 }
 
-                switch ( Frequency )
+                DDay.iCal.Event calEvent = GetCalenderEvent();
+
+                if ( calEvent != null )
                 {
-                    case ScheduleFrequency.Monthly:
-
-                        if ( DateTimeOffset.Now.Day.ToString() == FrequencyQualifier )
-                        {
-                            return true;
-                        }
-
-                        break;
-
-                    case ScheduleFrequency.Weekly:
-
-                        // Get the list of days that this schedule is effective
-                        var days = new List<string>( FrequencyQualifier.Split( ',' ) );
-                        if ( days.Contains( DateTimeOffset.Now.DayOfWeek.ToString() ) )
-                        {
-                            return true;
-                        }
-
-                        break;
-
-                    case ScheduleFrequency.Daily:
-
-                        return true;
-
-                    case ScheduleFrequency.OneTime:
-
-                        DateTime theDate = DateTime.MinValue;
-                        if ( DateTime.TryParse( FrequencyQualifier, out theDate ) )
-                        {
-                            if ( theDate.Date.CompareTo( DateTimeOffset.Now.Date ) == 0 )
-                            {
-                                return true;
-                            }
-                        }
-
-                        break;
+                    var occurrences = calEvent.GetOccurrences( DateTime.Now.Date );
+                    return occurrences.Count > 0;
                 }
-
+                
                 return false;
-
             }
         }
 
@@ -258,88 +238,17 @@ namespace Rock.Model
             }
 
             DateTime? nextStartTime = null;
-            DateTime? nextEndTime = null;
 
-            switch ( Frequency )
+            DDay.iCal.Event calEvent = GetCalenderEvent();
+
+            if ( calEvent != null )
             {
-                case ScheduleFrequency.Monthly:
-
-                    int dom = 0;
-                    if ( Int32.TryParse( FrequencyQualifier, out dom ) )
-                    {
-                        // Get the start/end time for the selected day of the month using the effective start time's month
-                        nextStartTime = CombineDateTime( new DateTime( from.Year, from.Month, dom ), CheckInStartTime.Value );
-                        nextEndTime = CombineDateTime( new DateTime( from.Year, from.Month, dom ), CheckInEndTime.Value );
-
-                        // If the end time is prior to the effective start time, increment the start time by a month
-                        if ( nextEndTime.Value.CompareTo( from ) <= 0 )
-                        {
-                            nextStartTime = nextStartTime.Value.AddMonths( 1 );
-                        }
-                    }
-                    break;
-
-                case ScheduleFrequency.Weekly:
-
-                    // Get the list of days that this schedule is effective
-                    var days = new List<string>( FrequencyQualifier.Split( ',' ) );
-
-                    // Evaluate today and the next seven days, and if this schedule is 
-                    // effective for that day of the week, save the date to a list of dates
-                    var dates = new List<DateTime>();
-                    for ( int i = 0; i <= 7; i++ )
-                    {
-                        if ( days.Contains( from.Date.AddDays( i ).DayOfWeek.ToString() ) )
-                        {
-                            dates.Add( from.Date.AddDays( i ) );
-                        }
-                    }
-
-                    // Evaluate each date.  Select the first date where the end time is not
-                    // prior to the effective start date
-                    foreach ( var date in dates )
-                    {
-                        nextStartTime = CombineDateTime( date, CheckInStartTime.Value );
-                        nextEndTime = CombineDateTime( date, CheckInEndTime.Value );
-                        if ( nextEndTime.Value.CompareTo( from.DateTime ) > 0 )
-                        {
-                            break;
-                        }
-                    }
-
-                    break;
-
-                case ScheduleFrequency.Daily:
-
-                    // Set the start time to the effective date unless the check-in end time is 
-                    // past the effective start time, in that case, increment the start time by
-                    // a day.
-                    nextStartTime = CombineDateTime( from.DateTime, CheckInStartTime.Value );
-                    nextEndTime = CombineDateTime( from.DateTime, CheckInEndTime.Value );
-                    if ( nextEndTime.Value.CompareTo( from.DateTime ) <= 0 )
-                    {
-                        nextStartTime = nextStartTime.Value.AddDays( 1 );
-                    }
-
-                    break;
-
-                case ScheduleFrequency.OneTime:
-
-                    // Get the one time date.  If the check-in end time is past the effective 
-                    // start date, then set the start date to null
-                    DateTime theDate = DateTime.MinValue;
-                    if ( DateTime.TryParse( FrequencyQualifier, out theDate ) )
-                    {
-                        nextStartTime = CombineDateTime( theDate, CheckInStartTime.Value );
-                        nextEndTime = CombineDateTime( theDate, CheckInEndTime.Value );
-
-                        if ( nextEndTime.Value.CompareTo( from.DateTime ) <= 0 )
-                        {
-                            nextStartTime = null;
-                        }
-                    }
-
-                    break;
+                var occurrences = calEvent.GetOccurrences( beginDateTime.DateTime, beginDateTime.DateTime.AddMonths(1) );
+                if ( occurrences.Count > 0 )
+                {
+                    var nextOccurance = occurrences[0];
+                    nextStartTime = nextOccurance.Period.StartTime.Date.Add(CheckInStartTime.Value);
+                }
             }
 
             // If no start time was found, return null
@@ -369,16 +278,6 @@ namespace Rock.Model
         }
 
         #endregion
-
-        #region Private Methods
-
-        private DateTime CombineDateTime( DateTime date, TimeSpan time )
-        {
-            return date.Date.Add( time );
-        }
-
-        #endregion
-
     }
 
     #region Entity Configuration
@@ -397,36 +296,4 @@ namespace Rock.Model
     }
 
     #endregion
-
-    #region Enumerations
-
-    /// <summary>
-    /// The frequency type
-    /// </summary>
-    public enum ScheduleFrequency
-    {
-        /// <summary>
-        /// Daily
-        /// </summary>
-        Daily = 0,
-
-        /// <summary>
-        /// Weekly
-        /// </summary>
-        Weekly = 1,
-
-        /// <summary>
-        /// Monthly
-        /// </summary>
-        Monthly = 2,
-
-        /// <summary>
-        /// One Time
-        /// </summary>
-        OneTime = 3
-    }
-
-    #endregion
-
-
 }
