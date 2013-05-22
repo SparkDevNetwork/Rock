@@ -54,6 +54,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( System.EventArgs e )
+        {
+            base.OnInit( e );
+
+            RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/jquery.tooltipster.min.js" ) );
+            RockPage.AddCSSLink( Page, ResolveUrl( "~/CSS/tooltipster.css" ) );
+        }
+
+        /// <summary>
         /// Sends server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object, which writes the content to be rendered on the client.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the server control content.</param>
@@ -73,6 +85,10 @@ namespace Rock.Web.UI.Controls
                     }
                 }
             }
+
+            string script = "$('.badge').tooltipster({ position: 'top', interactive: true, interactiveTolerance: 350 });";
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "badge-popover", script, true );
+
         }
     }
 }
