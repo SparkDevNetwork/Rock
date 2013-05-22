@@ -158,6 +158,10 @@
     <Compile Include="Migrations\201305161923438_FinancialTransactionBase.Designer.cs">
       <DependentUpon>201305161923438_FinancialTransactionBase.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201305212349171_ScheduleUsingICal.cs" />
+    <Compile Include="Migrations\201305212349171_ScheduleUsingICal.Designer.cs">
+      <DependentUpon>201305212349171_ScheduleUsingICal.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionRefundService.cs" />
@@ -1574,6 +1578,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201305161923438_FinancialTransactionBase.resx">
       <DependentUpon>201305161923438_FinancialTransactionBase.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305212349171_ScheduleUsingICal.resx">
+      <DependentUpon>201305212349171_ScheduleUsingICal.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

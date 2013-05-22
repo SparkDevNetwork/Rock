@@ -201,6 +201,24 @@ END:VCALENDAR
         }
 
         /// <summary>
+        /// Texts the box to positive integer.
+        /// </summary>
+        /// <param name="textBox">The text box.</param>
+        /// <param name="minValue">The min value.</param>
+        /// <returns></returns>
+        private int TextBoxToPositiveInteger( TextBox textBox, int minValue = 1 )
+        {
+            int result = textBox.Text.AsInteger() ?? minValue;
+            if ( result < minValue )
+            {
+                result = minValue;
+            }
+
+            textBox.Text = result.ToString();
+            return result;
+        }
+
+        /// <summary>
         /// Gets the calendar content from controls.
         /// </summary>
         /// <returns></returns>
@@ -217,18 +235,8 @@ END:VCALENDAR
             calendarEvent.DTStart = new DDay.iCal.iCalDateTime( _dpStartDateTime.SelectedDateTime.Value );
             calendarEvent.DTStart.HasTime = true;
 
-            int durationHours = _tbDurationHours.Text.AsInteger( false ) ?? 1;
-            int durationMins = _tbDurationMinutes.Text.AsInteger() ?? 0;
-
-            if ( durationHours < 1 )
-            {
-                durationHours = 1;
-            }
-
-            if ( durationMins < 0 )
-            {
-                durationMins = 0;
-            }
+            int durationHours = TextBoxToPositiveInteger( _tbDurationHours, 1 );
+            int durationMins = TextBoxToPositiveInteger(_tbDurationMinutes, 0);
 
             calendarEvent.Duration = new TimeSpan( durationHours, durationMins, 0 );
 
@@ -259,7 +267,8 @@ END:VCALENDAR
                         if ( _radDailyEveryXDays.Checked )
                         {
                             RecurrencePattern rruleDaily = new RecurrencePattern( FrequencyType.Daily );
-                            rruleDaily.Interval = _tbDailyEveryXDays.Text.AsInteger() ?? 1;
+
+                            rruleDaily.Interval = TextBoxToPositiveInteger(_tbDailyEveryXDays);
                             calendarEvent.RecurrenceRules.Add( rruleDaily );
                         }
                         else
@@ -288,7 +297,7 @@ END:VCALENDAR
                     {
                         #region weekly
                         RecurrencePattern rruleWeekly = new RecurrencePattern( FrequencyType.Weekly );
-                        rruleWeekly.Interval = _tbWeeklyEveryX.Text.AsInteger() ?? 1;
+                        rruleWeekly.Interval = TextBoxToPositiveInteger( _tbWeeklyEveryX );
 
                         if ( _cbWeeklySunday.Checked )
                         {
@@ -334,8 +343,8 @@ END:VCALENDAR
                         RecurrencePattern rruleMonthly = new RecurrencePattern( FrequencyType.Monthly );
                         if ( _radMonthlyDayX.Checked )
                         {
-                            rruleMonthly.ByMonthDay.Add( _tbMonthlyDayX.Text.AsInteger() ?? 1 );
-                            rruleMonthly.Interval = _tbMonthlyXMonths.Text.AsInteger() ?? 1;
+                            rruleMonthly.ByMonthDay.Add( TextBoxToPositiveInteger(_tbMonthlyDayX) );
+                            rruleMonthly.Interval = TextBoxToPositiveInteger(_tbMonthlyXMonths);
                         }
                         else if ( _radMonthlyNth.Checked )
                         {
@@ -366,7 +375,7 @@ END:VCALENDAR
                 }
                 else if ( _radEndByOccurrenceCount.Checked )
                 {
-                    rrule.Count = _tbEndByOccurrenceCount.Text.AsInteger() ?? 0;
+                    rrule.Count = TextBoxToPositiveInteger( _tbEndByOccurrenceCount, 0 );
                 }
             }
 
@@ -688,6 +697,8 @@ END:VCALENDAR
 
             Controls.Clear();
 
+            string validationGroup = "validationgroup_" + this.ID;
+
             _btnDialogCancelX.ClientIDMode = ClientIDMode.Static;
             _btnDialogCancelX.CssClass = "close modal-control-cancel";
             _btnDialogCancelX.ID = "btnDialogCancelX";
@@ -697,19 +708,22 @@ END:VCALENDAR
             _dpStartDateTime.ClientIDMode = ClientIDMode.Static;
             _dpStartDateTime.ID = "dpStartDateTime";
             _dpStartDateTime.LabelText = "Start Date / Time";
-            _dpStartDateTime.Required = true;
+            _dpStartDateTime.Required = false;
+            _dpStartDateTime.ValidationGroup = validationGroup;
 
             _tbDurationHours.ClientIDMode = ClientIDMode.Static;
             _tbDurationHours.ID = "tbDurationHours";
             _tbDurationHours.CssClass = "input-mini";
             _tbDurationHours.MinimumValue = "0";
             _tbDurationHours.MaximumValue = "24";
+            _tbDurationHours.ValidationGroup = validationGroup;
 
             _tbDurationMinutes.ClientIDMode = ClientIDMode.Static;
             _tbDurationMinutes.ID = "tbDurationMinutes";
             _tbDurationMinutes.CssClass = "input-mini";
             _tbDurationMinutes.MinimumValue = "0";
             _tbDurationMinutes.MaximumValue = "59";
+            _tbDurationMinutes.ValidationGroup = validationGroup;
 
             _radOneTime.ClientIDMode = ClientIDMode.Static;
             _radOneTime.ID = "radOneTime";
@@ -759,6 +773,7 @@ END:VCALENDAR
             // specific date
             _dpSpecificDate.ClientIDMode = ClientIDMode.Static;
             _dpSpecificDate.ID = "dpSpecificDate";
+            _dpSpecificDate.ValidationGroup = validationGroup;
 
             // daily recurrence
             _radDailyEveryXDays.ClientIDMode = ClientIDMode.Static;
@@ -766,8 +781,9 @@ END:VCALENDAR
             _radDailyEveryXDays.GroupName = "daily-options";
 
             _tbDailyEveryXDays.ClientIDMode = ClientIDMode.Static;
-            _tbDailyEveryXDays.ID = "txtDailyEveryXDays";
+            _tbDailyEveryXDays.ID = "tbDailyEveryXDays";
             _tbDailyEveryXDays.CssClass = "input-mini";
+            _tbDailyEveryXDays.ValidationGroup = validationGroup;
 
             _radDailyEveryWeekday.ClientIDMode = ClientIDMode.Static;
             _radDailyEveryWeekday.ID = "radDailyEveryWeekday";
@@ -783,6 +799,7 @@ END:VCALENDAR
             _tbWeeklyEveryX.CssClass = "input-mini";
             _tbWeeklyEveryX.MinimumValue = "1";
             _tbWeeklyEveryX.MaximumValue = "52";
+            _tbWeeklyEveryX.ValidationGroup = validationGroup;
 
             _cbWeeklySunday.ClientIDMode = ClientIDMode.Static;
             _cbWeeklySunday.ID = "cbWeeklySunday";
@@ -816,12 +833,14 @@ END:VCALENDAR
             _tbMonthlyDayX.CssClass = "input-mini";
             _tbMonthlyDayX.MinimumValue = "1";
             _tbMonthlyDayX.MaximumValue = "31";
+            _tbMonthlyDayX.ValidationGroup = validationGroup;
 
             _tbMonthlyXMonths.ClientIDMode = ClientIDMode.Static;
             _tbMonthlyXMonths.ID = "tbMonthlyXMonths";
             _tbMonthlyXMonths.CssClass = "input-mini";
             _tbMonthlyXMonths.MinimumValue = "1";
             _tbMonthlyXMonths.MaximumValue = "12";
+            _tbMonthlyXMonths.ValidationGroup = validationGroup;
 
             _radMonthlyNth.ClientIDMode = ClientIDMode.Static;
             _radMonthlyNth.ID = "radMonthlyNth";
@@ -859,6 +878,7 @@ END:VCALENDAR
 
             _dpEndBy.ClientIDMode = ClientIDMode.Static;
             _dpEndBy.ID = "dpEndBy";
+            _dpEndBy.ValidationGroup = validationGroup;
 
             _radEndByOccurrenceCount.ClientIDMode = ClientIDMode.Static;
             _radEndByOccurrenceCount.ID = "radEndByOccurrenceCount";
@@ -869,6 +889,7 @@ END:VCALENDAR
             _tbEndByOccurrenceCount.CssClass = "input-mini";
             _tbEndByOccurrenceCount.MinimumValue = "1";
             _tbEndByOccurrenceCount.MaximumValue = "999";
+            _tbEndByOccurrenceCount.ValidationGroup = validationGroup;
 
             // exclusions
             _hfExclusionDateRangeListValues.ClientIDMode = ClientIDMode.Static;
@@ -876,9 +897,11 @@ END:VCALENDAR
 
             _dpExclusionDateStart.ClientIDMode = ClientIDMode.Static;
             _dpExclusionDateStart.ID = "dpExclusionDateStart";
+            _dpExclusionDateStart.ValidationGroup = validationGroup;
 
             _dpExclusionDateEnd.ClientIDMode = ClientIDMode.Static;
             _dpExclusionDateEnd.ID = "dpExclusionDateEnd";
+            _dpExclusionDateEnd.ValidationGroup = validationGroup;
 
             // action buttons
             _btnCancelSchedule.ClientIDMode = ClientIDMode.Static;
@@ -889,10 +912,10 @@ END:VCALENDAR
 
             _btnSaveSchedule.ClientIDMode = ClientIDMode.Static;
             _btnSaveSchedule.ID = "btnSaveSchedule";
-
             _btnSaveSchedule.CssClass = "btn btn-primary modal-control-ok";
             _btnSaveSchedule.Click += btnSaveSchedule_Click;
             _btnSaveSchedule.Text = "Save Schedule";
+            _btnSaveSchedule.ValidationGroup = validationGroup;
 
             _smProxy.Scripts.Add( new ScriptReference( "~/Scripts/Rock/Rock.schedulebuilder.js" ) );
 
