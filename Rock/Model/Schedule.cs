@@ -208,7 +208,7 @@ namespace Rock.Model
                     var occurrences = calEvent.GetOccurrences( DateTime.Now.Date );
                     return occurrences.Count > 0;
                 }
-                
+
                 return false;
             }
         }
@@ -243,11 +243,11 @@ namespace Rock.Model
 
             if ( calEvent != null )
             {
-                var occurrences = calEvent.GetOccurrences( beginDateTime.DateTime, beginDateTime.DateTime.AddMonths(1) );
+                var occurrences = calEvent.GetOccurrences( beginDateTime.DateTime, beginDateTime.DateTime.AddMonths( 1 ) );
                 if ( occurrences.Count > 0 )
                 {
                     var nextOccurance = occurrences[0];
-                    nextStartTime = nextOccurance.Period.StartTime.Date.Add(CheckInStartTime.Value);
+                    nextStartTime = nextOccurance.Period.StartTime.Date.Add( CheckInStartTime.Value );
                 }
             }
 
