@@ -1,31 +1,48 @@
 ﻿Sys.Application.add_load(function () {
+    $('#modal-scroll-container').tinyscrollbar({ size: 150 });
 
     /** Schedule Panel Show/Hide Scripts **/
 
+    $('#schedule-builder-button').click(function () {
+        $('#schedule-builder-modal').modal('toggle');
+        $('#modal-scroll-container').tinyscrollbar_update('relative');
+    });
+
+    $('#schedule-builder-modal').on('shown', function () {
+        $('#modal-scroll-container').tinyscrollbar_update('relative');
+    });
+
     $('.schedule-type').click(function () {
-        var reoccurrenceState = $('input[class=schedule-type]:checked').data('schedule-type');
+        var recurrenceState = $('input[class=schedule-type]:checked').data('schedule-type');
 
-        if (reoccurrenceState == 'schedule-onetime') {
-            $('#schedule-reoccurrence-panel').slideUp();
+        if (recurrenceState == 'schedule-onetime') {
+            $('#schedule-recurrence-panel').slideUp(function () {
+                $('#modal-scroll-container').tinyscrollbar_update('relative');
+            });
         } else {
-            $('#schedule-reoccurrence-panel').slideDown();
-        }
-
-    });
-
-    $('.reoccurrence-pattern-radio').click(function () {
-
-        var reoccurrencePattern = '#' + $('input[name=reoccurrence-pattern-radio]:checked').data('reoccurrence-pattern');
-
-        if ($(reoccurrencePattern).css('display') == 'none') {
-
-            $('.reoccurrence-pattern-type').slideUp();
-            $(reoccurrencePattern).slideDown();
+            $('#schedule-recurrence-panel').slideDown(function () {
+                $('#modal-scroll-container').tinyscrollbar_update('relative');
+            });
         }
     });
 
-    $('.modal-control-close').on('click', function () {
-        $('#myModal').modal('toggle');
+    $('.recurrence-pattern-radio').click(function () {
+
+        var recurrencePattern = '#' + $('input[class=recurrence-pattern-radio]:checked').data('recurrence-pattern');
+
+        if ($(recurrencePattern).css('display') == 'none') {
+
+            $('.recurrence-pattern-type').slideUp(function () {
+                $('#modal-scroll-container').tinyscrollbar_update('relative');
+            });
+            $(recurrencePattern).slideDown(function () {
+                $('#modal-scroll-container').tinyscrollbar_update('relative');
+            });
+        }
+    });
+
+    $('.modal-control-cancel').on('click', function () {
+        $('#schedule-builder-modal').modal('toggle');
     });
 
     /** Specific Dates Scripts**/
@@ -87,6 +104,8 @@
 
         $('#add-specific-date-group').hide();
         $('#add-specific-date').show();
+
+        $('#modal-scroll-container').tinyscrollbar_update('relative');
     });
 
     // cancel out of adding a new date
@@ -124,6 +143,8 @@
         // remove date from ul list
         var liItem = $(this).parent();
         liItem.remove();
+
+        $('#modal-scroll-container').tinyscrollbar_update('relative');
     });
 
     /** Exclusion DateRanges Scripts **/
@@ -203,6 +224,8 @@
 
         $('#add-exclusion-daterange-group').hide();
         $('#add-exclusion-daterange').show();
+
+        $('#modal-scroll-container').tinyscrollbar_update('relative');
     });
 
     // cancel out of adding a new dateRange
@@ -240,6 +263,24 @@
         // remove dateRange from ul list
         var liItem = $(this).parent();
         liItem.remove();
+
+        $('#modal-scroll-container').tinyscrollbar_update('relative');
+    });
+
+    // validate on Save
+    $('#btnSaveSchedule').on('click', function (event) {
+        var startDateValue = Date.parse($('#dpStartDateTime').val()) || -1;
+        if (startDateValue < 0) {
+            $('#dpStartDateTime').parents(".control-group").first().toggleClass("error", 1);
+            event.preventDefault();
+            return;
+        }
+        else
+        {
+            $('#dpStartDateTime').parents(".control-group").first().toggleClass("error", 0);
+        }
+
+        $('#schedule-builder-modal').modal('toggle');
     });
 
 });

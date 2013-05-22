@@ -527,8 +527,8 @@ ul.card-logos
 {
     float: left;
     border: 1px solid #fff;
-    width: 37px;
-    height: 37px;
+    max-width: 37px;
+    max-height: 37px;
 }
 
 .persondetails-familybar .member
@@ -869,3 +869,30 @@ small
 
 }
 
+/* Schedule Builder classes - MP */
+.schedule-builder {
+    /* get the modal schedule-builder to center. Most of our other modals are in iframe's, etc to get centered */
+    margin-left:auto;
+    margin-right:auto;
+    left: 0;
+    right: 0;
+    position:absolute;
+    /* override modal's background-color of grey, which always gets overridden in all our other modals by the iframe's body to be white again */
+    background-color: white;
+    /* override modal's z-index to be bigger than modal backdrop, but less than datepicker, so that datepicker is on top  */
+    z-index: 1041;
+}
+
+.legend-small {
+    font-size: 14px;
+    line-height: 26px;
+}
+            
+.schedule-builder div.controls div {
+    padding-bottom: 5px;
+}
+
+.schedule-builder .modal-scroll-container .viewport {
+    height: auto;
+    min-height: 400px;
+}

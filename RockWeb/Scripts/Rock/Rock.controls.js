@@ -228,7 +228,7 @@
                 transport: {
                     read: {
                         url: function (options) {
-                            var extraParams = $('#hfItemResturlExtraParams_' + controlId).val(),
+                            var extraParams = $('#hfItemRestUrlExtraParams_' + controlId).val(),
                                 requestUrl = restUrl + (options.Id || 0) + (extraParams || '');
                             return requestUrl;
                         },

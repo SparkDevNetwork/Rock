@@ -48,12 +48,10 @@ namespace Rock.Model
         public bool CanDelete( Person item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<Communication>().Queryable().Any( a => a.SenderPersonId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, Communication.FriendlyTypeName );
-                return false;
-            }  
+            
+            // ignoring Communication,ReviewerPersonId 
+            
+            // ignoring Communication,SenderPersonId 
  
             if ( new Service<CommunicationRecipient>().Queryable().Any( a => a.PersonId == item.Id ) )
             {
@@ -61,9 +59,21 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<FinancialBatch>().Queryable().Any( a => a.CreatedByPersonId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, FinancialBatch.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<FinancialPledge>().Queryable().Any( a => a.PersonId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, FinancialPledge.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialScheduledTransaction>().Queryable().Any( a => a.AuthorizedPersonId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, FinancialScheduledTransaction.FriendlyTypeName );
                 return false;
             }  
  
@@ -117,7 +127,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class PersonExtensionMethods
+    public static partial class PersonExtensionMethods
     {
         /// <summary>
         /// Clones this Person object to a new Person object
