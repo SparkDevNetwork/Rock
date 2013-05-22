@@ -168,6 +168,10 @@
     <Compile Include="Migrations\201305221824203_UpdatePersonDetail.Designer.cs">
       <DependentUpon>201305221824203_UpdatePersonDetail.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201305222118261_ScheduleListDetailBlocks.cs" />
+    <Compile Include="Migrations\201305222118261_ScheduleListDetailBlocks.Designer.cs">
+      <DependentUpon>201305222118261_ScheduleListDetailBlocks.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionRefundService.cs" />
@@ -1612,6 +1616,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201305221824203_UpdatePersonDetail.resx">
       <DependentUpon>201305221824203_UpdatePersonDetail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305222118261_ScheduleListDetailBlocks.resx">
+      <DependentUpon>201305222118261_ScheduleListDetailBlocks.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

@@ -9,6 +9,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.IO;
 using System.Runtime.Serialization;
+using System.Linq;
 using Rock.Data;
 
 namespace Rock.Model
@@ -50,7 +51,66 @@ namespace Rock.Model
         /// The content of the iCalendar.
         /// </value>
         [DataMember]
-        public string iCalendarContent { get; set; }
+        public string iCalendarContent
+        {
+            get
+            {
+                return _iCalendarContent;
+            }
+            set
+            {
+                _iCalendarContent = value;
+                DDay.iCal.Event calendarEvent = GetCalenderEvent();
+                if ( calendarEvent != null )
+                {
+                    if ( calendarEvent.DTStart != null )
+                    {
+                        EffectiveStartDate = calendarEvent.DTStart.Value;
+                    }
+                    else
+                    {
+                        EffectiveStartDate = null;
+                    }
+
+                    if ( calendarEvent.RecurrenceDates.Count() > 0 )
+                    {
+                        var dateList = calendarEvent.RecurrenceDates[0];
+                        EffectiveEndDate = dateList.OrderBy( a => a.StartTime ).Last().StartTime.Value;
+                    }
+                    else if ( calendarEvent.RecurrenceRules.Count() > 0 )
+                    {
+                        var rrule = calendarEvent.RecurrenceRules[0];
+                        if ( rrule.Until > DateTime.MinValue )
+                        {
+                            EffectiveEndDate = rrule.Until;
+                        }
+                        else if ( rrule.Count > 0 )
+                        {
+                            // not really a perfect way to figure out end date.  safer to assume null
+                            EffectiveEndDate = null;
+                        }
+                    }
+                    else
+                    {
+                        EffectiveEndDate = calendarEvent.End.Value;
+                    }
+
+
+                    StartTime = calendarEvent.DTStart.TimeOfDay;
+                    EndTime = calendarEvent.DTEnd.TimeOfDay;
+
+                }
+                else
+                {
+                    EffectiveStartDate = null;
+                    EffectiveEndDate = null;
+                    StartTime = new TimeSpan( 0 );
+                    EndTime = new TimeSpan( 0 );
+                }
+            }
+
+        }
+        private string _iCalendarContent;
 
         /// <summary>
         /// Gets or sets the start time.
@@ -59,7 +119,7 @@ namespace Rock.Model
         /// The start time.
         /// </value>
         [DataMember]
-        public TimeSpan StartTime { get; set; }
+        public TimeSpan StartTime { get; private set; }
 
         /// <summary>
         /// Gets or sets the end time.
@@ -68,7 +128,7 @@ namespace Rock.Model
         /// The end time.
         /// </value>
         [DataMember]
-        public TimeSpan EndTime { get; set; }
+        public TimeSpan EndTime { get; private set; }
 
         /// <summary>
         /// Gets or sets the check in start time.
@@ -96,7 +156,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Column( TypeName = "Date" )]
-        public DateTime? EffectiveStartDate { get; set; }
+        public DateTime? EffectiveStartDate { get; private set; }
 
         /// <summary>
         /// Gets or sets the effective end date.
@@ -106,7 +166,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [Column( TypeName = "Date" )]
-        public DateTime? EffectiveEndDate { get; set; }
+        public DateTime? EffectiveEndDate { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is a shared schedule
