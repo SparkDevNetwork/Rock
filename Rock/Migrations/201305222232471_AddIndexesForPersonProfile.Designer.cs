@@ -11,7 +11,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201305222120426_AddIndexesForPersonProfile"; }
+            get { return "201305222232471_AddIndexesForPersonProfile"; }
         }
         
         string IMigrationMetadata.Source

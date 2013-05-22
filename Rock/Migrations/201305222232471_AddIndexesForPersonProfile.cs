@@ -22,7 +22,7 @@ namespace Rock.Migrations
             CreateIndex( "Person", new string[] { "IsDeceased", "FirstName", "LastName" }, false, "FirstLastName" );
             CreateIndex( "AttributeValue", new string[] { "EntityId", "AttributeId" }, false, "EntityAttribute" );
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
