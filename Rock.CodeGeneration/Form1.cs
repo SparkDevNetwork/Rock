@@ -57,7 +57,7 @@ namespace Rock.CodeGeneration
 
                     foreach ( Type type in assembly.GetTypes().OfType<Type>().OrderBy( a => a.FullName ) )
                     {
-                        if ( type.Namespace != null && !type.Namespace.StartsWith( "Rock.Data" ) )
+                        if ( type.Namespace != null && !type.Namespace.StartsWith( "Rock.Data" ) && !type.IsAbstract)
                         {
                             foreach ( Type interfaceType in type.GetInterfaces() )
                             {
@@ -229,7 +229,7 @@ namespace Rock.CodeGeneration
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class {0}ExtensionMethods
+    public static partial class {0}ExtensionMethods
     {{
         /// <summary>
         /// Clones this {0} object to a new {0} object
@@ -309,6 +309,12 @@ order by [parentTable]
 
             SqlCommand sqlCommand = sqlconn.CreateCommand();
             TableAttribute tableAttribute = type.GetCustomAttribute<TableAttribute>();
+            if ( tableAttribute == null )
+            {
+                // not a real table
+                return string.Empty;
+            }
+
             sqlCommand.CommandText = string.Format( sql, tableAttribute.Name );
 
             var reader = sqlCommand.ExecuteReader();
@@ -575,7 +581,10 @@ order by [parentTable]
                 {
                     if ( !property.GetCustomAttributes( typeof( DatabaseGeneratedAttribute ) ).Any() )
                     {
-                        properties.Add( property.Name, PropertyTypeName( property.PropertyType ) );
+                        if ( property.SetMethod.IsPublic  && property.GetMethod.IsPublic)
+                        {
+                            properties.Add( property.Name, PropertyTypeName( property.PropertyType ) );
+                        }
                     }
                 }
             }

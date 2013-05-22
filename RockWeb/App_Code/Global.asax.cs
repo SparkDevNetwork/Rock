@@ -43,9 +43,14 @@ namespace RockWeb
         IScheduler sched = null;
 
         /// <summary>
-        /// 
+        /// The queue in use
         /// </summary>
         public static bool QueueInUse = false;
+
+        /// <summary>
+        /// The base URL
+        /// </summary>
+        public static string BaseUrl = null;
 
         // cache callback object
         private static CacheItemRemovedCallback OnCacheRemove = null;
@@ -152,9 +157,12 @@ namespace RockWeb
                 if ( r == CacheItemRemovedReason.Expired )
                 {
                     // call a page on the site to keep IIS alive 
-                    string url = ConfigurationManager.AppSettings["BaseUrl"].ToString() + "KeepAlive.aspx";
-                    WebRequest request = WebRequest.Create( url );
-                    WebResponse response = request.GetResponse();
+                    if ( !string.IsNullOrWhiteSpace( Global.BaseUrl ) )
+                    {
+                        string url = Global.BaseUrl + "KeepAlive.aspx";
+                        WebRequest request = WebRequest.Create( url );
+                        WebResponse response = request.GetResponse();
+                    }
 
                     // add cache item again
                     AddCallBack();
@@ -213,6 +221,14 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_BeginRequest( object sender, EventArgs e )
         {
+            if ( string.IsNullOrWhiteSpace( Global.BaseUrl ) )
+            {
+                if ( Context.Request.Url != null )
+                {
+                    Global.BaseUrl = string.Format( "{0}://{1}/", Context.Request.Url.Scheme, Context.Request.Url.Authority );
+                }
+            }
+            
             Context.Items.Add( "Request_Start_Time", DateTime.Now );
         }
 
@@ -713,13 +729,14 @@ namespace RockWeb
                     Rock.Web.Cache.DefinedTypeCache.Read( definedType );
                 }
 
+                // DT: When running with production CCV Data, this is taking a considerable amount of time (we have 2100+ values)
                 // Cache all the Defined Values
-                var definedValueService = new Rock.Model.DefinedValueService();
-                foreach ( var definedValue in definedValueService.Queryable().ToList() )
-                {
-                    definedValue.LoadAttributes();
-                    Rock.Web.Cache.DefinedValueCache.Read( definedValue );
-                }
+                //var definedValueService = new Rock.Model.DefinedValueService();
+                //foreach ( var definedValue in definedValueService.Queryable().ToList() )
+                //{
+                //    definedValue.LoadAttributes();
+                //    Rock.Web.Cache.DefinedValueCache.Read( definedValue );
+                //}
             }
         }
 

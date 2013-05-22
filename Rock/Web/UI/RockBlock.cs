@@ -103,6 +103,17 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Gets the app path.
+        /// </summary>
+        /// <value>
+        /// The app path.
+        /// </value>
+        public string AppPath
+        {
+            get { return ( (RockPage)this.Page ).AppPath; }
+        }
+
+        /// <summary>
         /// Gets the root URL Path.
         /// </summary>
         public string RootPath
