@@ -95,15 +95,13 @@
                                 </div>
 
                                 <div class="row-fluid">
-                                    <Rock:ButtonDropDownList ID="btnFrequency" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnFrequency_SelectionChanged" LabelText="Frequency" 
-                                        SourceTypeName="Rock.Model.FinancialScheduledTransaction, Rock" PropertyName="TransactionFrequencyValueId" />			                        
+                                    <Rock:ButtonDropDownList ID="btnFrequency" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnFrequency_SelectionChanged" LabelText="Frequency" />
                                 </div>                                    
                             
                                 <div id="divRecurrence" runat="server" visible="false">          
 
                                     <div class="row-fluid">                                        
-                                        <Rock:DatePicker ID="dtpStartDate" runat="server" LabelText="Starting On" data-date-format="dd-mm-yyyy" DatePickerType="Date" 
-                                            SourceTypeName="Rock.Model.FinancialScheduledTransaction, Rock" PropertyName="StartDate" />
+                                        <Rock:DatePicker ID="dtpStartDate" runat="server" LabelText="Starting On" data-date-format="dd-mm-yyyy" DatePickerType="Date" />
                                     </div>
                                     
                                     <div class="row-fluid" id="divLimitGifts" runat="server" Visible="false">
@@ -142,48 +140,48 @@
                         <div class="row-fluid">
                             
                             <div class="">
-                                <Rock:DataTextBox ID="txtFirstName" LabelText="First Name" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="GivenName" />
+                                <Rock:LabeledTextBox ID="txtFirstName" LabelText="First Name" runat="server" />
                             </div>             
 
                             <div class="" >
-                                <Rock:DataTextBox ID="txtLastName" LabelText="Last Name" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" />
+                                <Rock:LabeledTextBox ID="txtLastName" LabelText="Last Name" runat="server" />
                             </div>        
                             
                         </div>
 
                         <div class="row-fluid">
                             <div class="span12" >
-                                <Rock:DataTextBox ID="txtAddress" LabelText="Address" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Street1" />
+                                <Rock:LabeledTextBox ID="txtAddress" LabelText="Address" runat="server" />
                             </div>
                             
                         </div>
 
                         <div class="row-fluid">
 
-                            <div class="span5">
-                                <Rock:DataTextBox ID="txtCity" LabelText="City" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="City" />
+                            <div class="span4">
+                                <Rock:LabeledTextBox ID="txtCity" LabelText="City" runat="server" />
                             </div>
   
-                            <div class="span4">
+                            <div class="span3">
                                 <Rock:StateDropDownList ID="ddlState" runat="server" LabelText="State" CssClass="state-select"  />
                             
                             </div>
 
                             <div class="span3">
-                                <Rock:DataTextBox ID="txtZip" LabelText="Zip" runat="server" CssClass="input-mini" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Zip" />
+                                <Rock:LabeledTextBox ID="txtZip" LabelText="Zip" runat="server" CssClass="input-mini" />
                             </div>
 
                         </div>                    
 
                         <div class="row-fluid">   
                             <div class="span12" >
-                                <Rock:DataTextBox ID="txtEmail" LabelText="Email" runat="server" TextMode="Email" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" />
+                                <Rock:LabeledTextBox ID="txtEmail" LabelText="Email" runat="server" TextMode="Email" />
                             </div>
                         </div>
 
                         <div class="row-fluid" >   
                             <div class="span12" >
-                                <Rock:DataTextBox ID="txtPhone" LabelText="Phone" runat="server" SourceTypeName="Rock.Model.PhoneNumber, Rock" PropertyName="Number" />
+                                <Rock:LabeledTextBox ID="txtPhone" LabelText="Phone" runat="server" />
                             </div>
                         </div>
 
@@ -202,9 +200,9 @@
     <ContentTemplate>
 
         <div class="container-fluid">
-            
-            <div class="row-fluid">
-              
+
+            <div class="row-fluid <%= _spanClass != "span6" ? "form-horizontal" : "" %>">
+                         
                 <div class="<%= _spanClass %> well">
 
                     <fieldset>
@@ -223,15 +221,15 @@
 
                         <div class="tabContent">
                                 
-                            <asp:Panel ID="pnlCreditCard" runat="server" Visible="true" CssClass="fade"> 
+                            <asp:Panel ID="pnlCreditCard" runat="server" Visible="true" CssClass="fade in"> 
 
                                 <div class="row-fluid">
                                     
                                     <div class="span6">
-                                        <Rock:DataTextBox ID="txtCreditCard" runat="server" LabelText="Credit Card #" CssClass="credit-card" MaxLength="16" MinimumValue="0.0" MaximumValue="9999999999999999"  />
+                                        <Rock:LabeledTextBox ID="txtCreditCard" runat="server" LabelText="Credit Card #" CssClass="credit-card" MaxLength="16" MinimumValue="0.0" MaximumValue="9999999999999999" />
                                     </div>
 
-                                    <div class="span6 align-middle">
+                                    <div class="span6">
                                         <ul id="ulCardType" class="card-logos">
 	                                        <li class="card-visa"></li>
 	                                        <li class="card-mastercard"></li>
@@ -245,11 +243,11 @@
                            
                                 <div class="row-fluid">
                                     
-                                    <div class="span6">
+                                    <div class="">
                                         <Rock:DatePicker ID="dtpExpiration" runat="server" LabelText="Expiration Date" />
                                     </div>
 
-                                    <div class="span6">
+                                    <div class="">
                                         <Rock:NumberBox ID="txtCVV" LabelText="CVV #" runat="server" MaxLength="3" CssClass="input-mini" />
                                     </div>
                                                                                                             
@@ -261,7 +259,7 @@
 
                             </asp:Panel>
 
-                            <asp:Panel ID="pnlChecking" runat="server" Visible="false" CssClass="fade">
+                            <asp:Panel ID="pnlChecking" runat="server" Visible="false" CssClass="fade in">
                                     
                                 <div class="row-fluid">
                                     <div class="span6">
@@ -316,17 +314,16 @@
 
                                     <div class="row-fluid control-group">
 
-                                        <div class="span5">
+                                        <div class="span4">
                                             <Rock:LabeledTextBox ID="diffCity" LabelText="City" runat="server" />
                                         </div>
 
-                                        <div class="span4 state-select">
+                                        <div class="span3 state-select">
                                             <Rock:StateDropDownList ID="diffState" runat="server" LabelText="State" />
-
                                         </div>
 
                                         <div class="span3">
-                                            <Rock:LabeledTextBox ID="diffZipcode" LabelText="Zipcode" runat="server" CssClass="input-mini" />
+                                            <Rock:LabeledTextBox ID="diffZip" LabelText="Zipcode" runat="server" CssClass="input-mini" />
                                         </div>
 
                                     </div>

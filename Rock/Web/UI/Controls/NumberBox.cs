@@ -85,11 +85,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public NumberBox()
         {   
-            _label = new Label
-            {
-                ID = this.ID + "_label"
-            };
-
+            _label = new Label();
             rangeValidator = new RangeValidator();
         }
 
