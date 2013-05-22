@@ -581,7 +581,10 @@ order by [parentTable]
                 {
                     if ( !property.GetCustomAttributes( typeof( DatabaseGeneratedAttribute ) ).Any() )
                     {
-                        properties.Add( property.Name, PropertyTypeName( property.PropertyType ) );
+                        if ( property.SetMethod.IsPublic  && property.GetMethod.IsPublic)
+                        {
+                            properties.Add( property.Name, PropertyTypeName( property.PropertyType ) );
+                        }
                     }
                 }
             }

@@ -75,12 +75,8 @@ namespace Rock.Model
                 target.Name = source.Name;
                 target.Description = source.Description;
                 target.iCalendarContent = source.iCalendarContent;
-                target.StartTime = source.StartTime;
-                target.EndTime = source.EndTime;
                 target.CheckInStartTime = source.CheckInStartTime;
                 target.CheckInEndTime = source.CheckInEndTime;
-                target.EffectiveStartDate = source.EffectiveStartDate;
-                target.EffectiveEndDate = source.EffectiveEndDate;
                 target.IsShared = source.IsShared;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
