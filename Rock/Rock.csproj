@@ -164,9 +164,9 @@
     <Compile Include="Migrations\201305212349171_ScheduleUsingICal.Designer.cs">
       <DependentUpon>201305212349171_ScheduleUsingICal.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201305201830290_UpdatePersonDetail.cs" />
-    <Compile Include="Migrations\201305201830290_UpdatePersonDetail.Designer.cs">
-      <DependentUpon>201305201830290_UpdatePersonDetail.cs</DependentUpon>
+    <Compile Include="Migrations\201305221824203_UpdatePersonDetail.cs" />
+    <Compile Include="Migrations\201305221824203_UpdatePersonDetail.Designer.cs">
+      <DependentUpon>201305221824203_UpdatePersonDetail.cs</DependentUpon>
     </Compile>
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
@@ -1607,11 +1607,11 @@
     <EmbeddedResource Include="Migrations\201305161923438_FinancialTransactionBase.resx">
       <DependentUpon>201305161923438_FinancialTransactionBase.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201305201830290_UpdatePersonDetail.resx">
-      <DependentUpon>201305201830290_UpdatePersonDetail.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201305212349171_ScheduleUsingICal.resx">
       <DependentUpon>201305212349171_ScheduleUsingICal.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305221824203_UpdatePersonDetail.resx">
+      <DependentUpon>201305221824203_UpdatePersonDetail.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
