@@ -79,8 +79,11 @@ namespace RockWeb.Blocks.Finance
             {
                 _spanClass = "span10 offset2";
                 txtCity.LabelText = "City, State, Zip";
+                diffCity.LabelText = "City, State, Zip";
                 ddlState.LabelText = string.Empty;
+                diffState.LabelText = string.Empty;
                 txtZip.LabelText = string.Empty;
+                diffZip.LabelText = string.Empty;
             }
             else
             {
@@ -391,13 +394,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             litGiftTotal.Text = transaction.Amount.ToString();
-
-            //if ( detailList.Count == 1 )
-            //{
-            //    litMultiGift.Visible = false;
-            //    litGiftTotal.Visible = false;
-            //}
-            
+                        
             //rptGiftConfirmation.DataSource = detailList.ToDictionary(f => (string)f.Account.PublicName, f => (decimal)f.Amount);
             //rptGiftConfirmation.DataBind();
 
