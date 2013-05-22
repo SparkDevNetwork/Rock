@@ -50,6 +50,8 @@ namespace Rock.Migrations
     DELETE [Block] WHERE [PageId] = @PageId
 " );
 
+            UpdateFieldType( "Components Field Type", "", "Rock", "Rock.Field.Types.ComponentsFieldType", "039E2E97-3682-4B29-8748-7132287A2059" );
+
             AddPage( "BF04BB7E-BE3A-4A38-A37C-386B55496303", "Extended Attributes", "", "PersonDetail", "1C737278-4CBA-404B-B6B3-E3F0E05AB5FE" );
             AddPage( "BF04BB7E-BE3A-4A38-A37C-386B55496303", "Groups", "", "PersonDetail", "183B7B7E-105A-4C9A-A4BC-06CD26B7FE6D" );
             AddPage( "BF04BB7E-BE3A-4A38-A37C-386B55496303", "Staff Details", "", "PersonDetail", "0E56F56E-FB32-4827-A69A-B90D43CB47F5" );
@@ -87,6 +89,7 @@ namespace Rock.Migrations
             AddBlockTypeAttribute( "2E9F32D4-B4FC-4A5F-9BE1-B2E3EA624DD3", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Note Type", "NoteType", "", "The note type name associated with the context entity to use (If it doesn't exist it will be created).", 0, "Notes", "4EC3F5BD-4CD9-4A47-A49B-915ED98203D6" );
 
             // Relationship Block type
+            AddBlockTypeAttribute( "77E409D4-11CD-4009-B4CD-4B75DF2CC9FD", "18E29E23-B43B-4CF7-AE41-C85672C09F50", "Group Type", "GroupType", "", "The type of group to display.  Any group of this type that person belongs to will be displayed", 0, "", "AC4C7B54-9CAA-4623-BE1F-2545985B2A8E" );
             AddBlockTypeAttribute( "77E409D4-11CD-4009-B4CD-4B75DF2CC9FD", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Group Role Filter", "GroupRoleFilter", "", "Delimited list of group role id's that if entered, will only show groups where selected person is one of the roles.", 0, "", "FE82ED76-2F25-442C-8AC1-A5532A1EBD9B" );
             AddBlockTypeAttribute( "77E409D4-11CD-4009-B4CD-4B75DF2CC9FD", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Role", "ShowRole", "", "Should the member's role be displayed with their name", 0, "False", "D0D8CFBF-5A66-42EA-AE78-A8BF3FAE45E6" );
 
@@ -104,8 +107,6 @@ namespace Rock.Migrations
             AddBlock( "08DBD8A5-2C35-4146-B4A8-0F7652348B25", "FC8AF928-C4AF-40C7-A667-4B24390F03A1", "badges 1", "", "BadgBarZone1", 0, "98A30DD7-8665-4C6D-B1BB-A8380E862A04" );
             AddBlock( "08DBD8A5-2C35-4146-B4A8-0F7652348B25", "FC8AF928-C4AF-40C7-A667-4B24390F03A1", "Badges 2", "", "BadgBarZone2", 0, "AA588E23-D34C-433A-BA3D-B0B82797A22F" );
             AddBlock( "08DBD8A5-2C35-4146-B4A8-0F7652348B25", "FC8AF928-C4AF-40C7-A667-4B24390F03A1", "Badges 3", "", "BadgBarZone3", 0, "F3E6CC14-C540-4FFC-A5A9-48AD9CC0A61B" );
-
-            UpdateFieldType( "Components Field Type", "", "Rock", "Rock.Field.Types.ComponentsFieldType", "039E2E97-3682-4B29-8748-7132287A2059" );
 
             // Attrib Value for Badge Components:Component Container
             AddBlockAttributeValue( "C5B56466-6EAF-404A-A803-C2314B36C38F", "259AF14D-0214-4BE4-A7BF-40423EA07C99", "Rock.PersonProfile.BadgeContainer, Rock" );
@@ -148,7 +149,190 @@ namespace Rock.Migrations
             // Attrib Value for Peer Network:Show Role
             AddBlockAttributeValue( "32847AAF-15F5-4F8B-9F84-92D6AE827857", "D0D8CFBF-5A66-42EA-AE78-A8BF3FAE45E6", "False" );
 
+            #region Add Relationship Groups for all persons
+
+            Sql( @"
+        --Adds a Known Relationship group for each person in DB that does not have one
+
+        DECLARE @RelationshipId int
+        DECLARE @GroupTypeId int
+        DECLARE @OwnerRoleId int
+
+        SET @GroupTypeId = (
+	        SELECT [Id] 
+	        FROM [GroupType] WITH (NOLOCK)
+	        WHERE [Guid] = 'E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF'
+        )
+
+        SET @OwnerRoleId = (
+	        SELECT [Id]
+	        FROM [GroupRole] WITH (NOLOCK)
+	        WHERE [Guid] = '7BC6C12E-0CD1-4DFD-8D5B-1B35AE714C42'
+        )
+
+        -- Find all the people that aren't owners of an Known Relationship group
+        SELECT
+	         RP.[id]
+	        ,RP.[guid]
+        INTO #Persons
+        FROM [Person] RP WITH(NOLOCK)
+        LEFT OUTER JOIN [GroupMember] GM WITH (NOLOCK)
+	        ON GM.[PersonId] = RP.[Id]
+	        AND GM.[GroupRoleId] = @OwnerRoleId
+        WHERE GM.[Id] IS NULL
+
+        -- Create an implied Relationships group for each person 
+        -- (Use person's guid so we know what group to add owner to in next step)
+        INSERT INTO [Group] (
+	         [IsSystem]
+	        ,[GroupTypeId]
+	        ,[Name]
+	        ,[IsSecurityRole]
+	        ,[IsActive]
+	        ,[Guid]
+        )
+        SELECT
+	         0
+	        ,@GroupTypeId
+	        ,'Relationships'
+	        ,0
+	        ,1
+	        ,[guid]
+        FROM #Persons WITH (NOLOCK)
+
+        -- Add the owner to the group
+        INSERT INTO [GroupMember] (
+	         [IsSystem]
+	        ,[GroupId]
+	        ,[PersonId]
+	        ,[GroupRoleId]
+	        ,[Guid]
+        )
+        SELECT
+	        0
+	        ,G.[Id]
+	        ,P.[Id]
+	        ,@OwnerRoleId
+	        ,NEWID()
+        FROM #Persons P WITH (NOLOCK)
+        INNER JOIN [Group] G WITH (NOLOCK)
+	        ON G.[GroupTypeId] = @GroupTypeId
+	        AND G.[Guid] = P.[Guid]
+
+        -- Reset the Group Guids
+        UPDATE G
+        SET [Guid] = NEWID()
+        FROM #Persons P WITH (NOLOCK)
+        INNER JOIN [Group] G WITH (NOLOCK)
+	        ON G.[Guid] = P.[Guid]
+
+        DROP TABLE #Persons
+
+
+        --Adds an implied Relationship group for each person in DB that does not have one
+
+        DECLARE @RelatedRoleId int
+
+        SET @GroupTypeId = (
+	        SELECT [Id] 
+	        FROM [GroupType] WITH (NOLOCK)
+	        WHERE [Guid] = '8C0E5852-F08F-4327-9AA5-87800A6AB53E'
+        )
+
+        SET @OwnerRoleId = (
+	        SELECT [Id]
+	        FROM [GroupRole] WITH (NOLOCK)
+	        WHERE [Guid] = 'CB9A0E14-6FCF-4C07-A49A-D7873F45E196'
+        )
+
+        SET @RelatedRoleId = (
+	        SELECT [Id]
+	        FROM [GroupRole] WITH (NOLOCK)
+	        WHERE [Guid] = 'FEA75948-97CB-4DE9-8A0D-43FA2646F55B'
+        )
+
+        IF @RelatedRoleId IS NULL
+        BEGIN
+	        INSERT INTO [GroupRole] (
+		         [IsSystem]
+		        ,[GroupTypeId]
+		        ,[Name]
+		        ,[Description]
+		        ,[Guid]
+		        ,[IsLeader]
+	        ) VALUES (
+		         1
+		        ,@GroupTypeId
+		        ,'Related'
+		        ,'Related person in an implied relationship'
+		        ,'FEA75948-97CB-4DE9-8A0D-43FA2646F55B'
+		        ,0
+	        )
+	        SET @RelatedRoleId = SCOPE_IDENTITY()
+        END
+
+        -- Find all the people that aren't owners of an Implied Relationship group
+        SELECT
+	         RP.[id]
+	        ,RP.[guid]
+        INTO #Persons2
+        FROM [Person] RP WITH(NOLOCK)
+        LEFT OUTER JOIN [GroupMember] GM WITH (NOLOCK)
+	        ON GM.[PersonId] = RP.[Id]
+	        AND GM.[GroupRoleId] = @OwnerRoleId
+        WHERE GM.[Id] IS NULL
+
+        -- Create an implied Relationships group for each person
+        -- (Use person's guid so we know what group to add owner to in next step)
+        INSERT INTO [Group] (
+	         [IsSystem]
+	        ,[GroupTypeId]
+	        ,[Name]
+	        ,[IsSecurityRole]
+	        ,[IsActive]
+	        ,[Guid]
+        )
+        SELECT
+	         0
+	        ,@GroupTypeId
+	        ,'Peer Network'
+	        ,0
+	        ,1
+	        ,[guid]
+        FROM #Persons2 WITH (NOLOCK)
+
+        -- Add the owner to the group
+        INSERT INTO [GroupMember] (
+	         [IsSystem]
+	        ,[GroupId]
+	        ,[PersonId]
+	        ,[GroupRoleId]
+	        ,[Guid]
+        )
+        SELECT
+	        0
+	        ,G.[Id]
+	        ,P.[Id]
+	        ,@OwnerRoleId
+	        ,NEWID()
+        FROM #Persons2 P WITH (NOLOCK)
+        INNER JOIN [Group] G WITH (NOLOCK)
+	        ON G.[GroupTypeId] = @GroupTypeId
+	        AND G.[Guid] = P.[Guid]
+
+        -- Reset the Group Guids
+        UPDATE G
+        SET [Guid] = NEWID()
+        FROM #Persons2 P WITH (NOLOCK)
+        INNER JOIN [Group] G WITH (NOLOCK)
+	        ON G.[Guid] = P.[Guid]
+
+        DROP TABLE #Persons2
+
+" );        
         }
+
+            #endregion
 
         /// <summary>
         /// Operations to be performed during the downgrade process.
