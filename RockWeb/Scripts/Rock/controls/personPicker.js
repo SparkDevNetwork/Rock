@@ -47,7 +47,6 @@
 
             $('#' + controlId + ' a.rock-picker').click(function (e) {
                 e.preventDefault();
-                //$(this).next('.rock-picker').toggle();
                 $(this).parent().siblings('.rock-picker').first().toggle();
             });
 
