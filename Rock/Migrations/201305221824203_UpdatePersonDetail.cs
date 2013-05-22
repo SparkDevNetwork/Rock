@@ -110,10 +110,10 @@ namespace Rock.Migrations
 
             // Attrib Value for Badge Components:Component Container
             AddBlockAttributeValue( "C5B56466-6EAF-404A-A803-C2314B36C38F", "259AF14D-0214-4BE4-A7BF-40423EA07C99", "Rock.PersonProfile.BadgeContainer, Rock" );
-            
+
             // Attrib Value for Bio:Badges
             AddBlockAttributeValue( "B5C1FDB6-0224-43E4-8E26-6B2EAF86253A", "8E11F65B-7272-4E9F-A4F1-89CE08E658DE", "3d093330-d547-454b-8956-b76d8f9b8536|d4b2ba9b-4f2c-47cb-a5bb-f3ff53a68f39|09e8cd24-be34-4dc0-8b43-a7ace0549ce0" );
-            
+
             // Attrib Value for badges 1:Badges
             AddBlockAttributeValue( "98A30DD7-8665-4C6D-B1BB-A8380E862A04", "F5AB231E-3836-4D52-BD03-BF79773C237A", "5ee996cb-ea8a-4eef-88d2-f11510aee5cd|d046a808-06a2-4131-88af-a97166840e97|7adba2d4-663f-4039-aa04-e0aec81b5a21|208a2fe8-9cc8-4608-891a-a62ce29be05b" );
             // Attrib Value for Badges 2:Badges
@@ -329,10 +329,10 @@ namespace Rock.Migrations
 
         DROP TABLE #Persons2
 
-" );        
-        }
-
+" );
             #endregion
+
+        }
 
         /// <summary>
         /// Operations to be performed during the downgrade process.
