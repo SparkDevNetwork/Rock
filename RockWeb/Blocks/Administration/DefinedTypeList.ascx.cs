@@ -173,16 +173,13 @@ namespace RockWeb.Blocks.Administration
                 ddlCategoryFilter.Items.Clear();
                 ddlCategoryFilter.Items.Add( Rock.Constants.All.Text );
 
-                DefinedTypeService typeService = new DefinedTypeService();
-                var items = typeService.Queryable().OrderBy( a => a.Category ).Select( a => a.Category ).Distinct().ToList();
-
-                foreach ( var item in items )
-                {
-                    if ( !string.IsNullOrWhiteSpace( item ) )
-                    {
-                        ddlCategoryFilter.Items.Add( item );
-                    }
-                }
+                new DefinedTypeService().Queryable()
+                    .Where( a => a.Category != string.Empty)
+                    .OrderBy( a => a.Category )
+                    .Select( a => a.Category )
+                    .Distinct()
+                    .ToList()
+                    .ForEach( c => ddlCategoryFilter.Items.Add(c));
             }
         }
 
@@ -193,9 +190,10 @@ namespace RockWeb.Blocks.Administration
         {
             var queryable = new DefinedTypeService().Queryable();
 
-            if ( ddlCategoryFilter.SelectedValue != Rock.Constants.All.Text )
+            string categoryFilter = tFilter.GetUserPreference( "Category" );
+            if ( !string.IsNullOrWhiteSpace(categoryFilter) && categoryFilter != Rock.Constants.All.Text )
             {
-                queryable = queryable.Where( a => a.Category == ddlCategoryFilter.SelectedValue );
+                queryable = queryable.Where( a => a.Category == categoryFilter );
             }
 
             SortProperty sortProperty = gDefinedType.SortProperty;
