@@ -191,6 +191,14 @@
     <Compile Include="Migrations\201305222232471_AddIndexesForPersonProfile.Designer.cs">
       <DependentUpon>201305222232471_AddIndexesForPersonProfile.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201305222350477_CampusLocation.cs" />
+    <Compile Include="Migrations\201305222350477_CampusLocation.Designer.cs">
+      <DependentUpon>201305222350477_CampusLocation.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201305231215302_RemoveDigitalSignage.cs" />
+    <Compile Include="Migrations\201305231215302_RemoveDigitalSignage.Designer.cs">
+      <DependentUpon>201305231215302_RemoveDigitalSignage.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionRefundService.cs" />
@@ -1641,6 +1649,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201305222232471_AddIndexesForPersonProfile.resx">
       <DependentUpon>201305222232471_AddIndexesForPersonProfile.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305222350477_CampusLocation.resx">
+      <DependentUpon>201305222350477_CampusLocation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305231215302_RemoveDigitalSignage.resx">
+      <DependentUpon>201305231215302_RemoveDigitalSignage.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

@@ -93,10 +93,10 @@ namespace RockWeb.Blocks.Administraton
                 fExceptionList.SaveUserPreference( "Site", String.Empty );
             }
 
-            int userPersonId;
-            if ( int.TryParse( ppUser.SelectedValue, out userPersonId ) && userPersonId != None.Id && ppUser.PersonName != None.TextHtml )
+            
+            if ( ppUser.PersonId.HasValue )
             {
-                fExceptionList.SaveUserPreference( "User", userPersonId.ToString() );
+                fExceptionList.SaveUserPreference( "User", ppUser.PersonId.ToString() );
             }
             else
             {
