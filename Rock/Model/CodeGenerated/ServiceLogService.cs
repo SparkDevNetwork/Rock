@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class ServiceLogExtensionMethods
+    public static partial class ServiceLogExtensionMethods
     {
         /// <summary>
         /// Clones this ServiceLog object to a new ServiceLog object

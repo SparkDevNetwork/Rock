@@ -61,7 +61,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class DefinedTypeExtensionMethods
+    public static partial class DefinedTypeExtensionMethods
     {
         /// <summary>
         /// Clones this DefinedType object to a new DefinedType object

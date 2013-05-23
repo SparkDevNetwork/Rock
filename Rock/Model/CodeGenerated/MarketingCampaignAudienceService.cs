@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class MarketingCampaignAudienceExtensionMethods
+    public static partial class MarketingCampaignAudienceExtensionMethods
     {
         /// <summary>
         /// Clones this MarketingCampaignAudience object to a new MarketingCampaignAudience object

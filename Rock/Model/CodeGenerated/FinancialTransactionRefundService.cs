@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class FinancialTransactionRefundExtensionMethods
+    public static partial class FinancialTransactionRefundExtensionMethods
     {
         /// <summary>
         /// Clones this FinancialTransactionRefund object to a new FinancialTransactionRefund object
