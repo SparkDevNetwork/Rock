@@ -490,11 +490,11 @@ namespace RockWeb.Blocks.Administration
         {
             AttributeService attributeService = new AttributeService();
 
-            int definedTypeId = hfDefinedTypeId.ValueAsInt();
+            string definedTypeId = hfDefinedTypeId.Value;
 
             var qryDefinedTypeAttributes = attributeService.GetByEntityTypeId( new DefinedValue().TypeId ).AsQueryable()
                 .Where( a => a.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase )
-                && a.EntityTypeQualifierValue.Equals( definedTypeId.ToString() ) );
+                && a.EntityTypeQualifierValue.Equals( definedTypeId ) );
 
             gDefinedTypeAttributes.DataSource = qryDefinedTypeAttributes.OrderBy( a => a.Name ).ToList();
             gDefinedTypeAttributes.DataBind();
@@ -586,7 +586,7 @@ namespace RockWeb.Blocks.Administration
             // add attributes with IsGridColumn to grid
             var qryDefinedTypeAttributes = attributeService.GetByEntityTypeId( new DefinedValue().TypeId ).AsQueryable()
                 .Where( a => a.EntityTypeQualifierColumn.Equals( "DefinedTypeId", StringComparison.OrdinalIgnoreCase )
-                && a.EntityTypeQualifierValue.Equals( definedTypeId.ToString() ) );
+                && a.EntityTypeQualifierValue.Equals( hfDefinedTypeId.Value ) );
 
             qryDefinedTypeAttributes = qryDefinedTypeAttributes.Where( a => a.IsGridColumn );
 
