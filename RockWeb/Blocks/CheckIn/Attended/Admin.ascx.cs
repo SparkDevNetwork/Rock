@@ -187,7 +187,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
                 if ( selectedValues != string.Empty )
                 {
-                    foreach ( string id in selectedValues.Split(',') )
+                    var roomList = new List<GroupType>();
+                    foreach ( string id in selectedValues.Split( ',' ) )
                     {
                         foreach ( RepeaterItem item in rMinistries.Items )
                         {
@@ -195,6 +196,23 @@ namespace RockWeb.Blocks.CheckIn.Attended
                             if ( linky.CommandArgument == id )
                             {
                                 linky.AddCssClass( "active" );
+                                GetRooms( int.Parse(id), roomList );
+                            }
+                        }
+                    }
+                    rRooms.DataSource = roomList;
+                    rRooms.DataBind();
+                    if ( CurrentRoomGroupTypeIds != null )
+                    {
+                        foreach ( int id in CurrentRoomGroupTypeIds )
+                        {
+                            foreach ( RepeaterItem item in rRooms.Items )
+                            {
+                                var linky = (LinkButton)item.FindControl( "lbSelectRooms" );
+                                if ( int.Parse(linky.CommandArgument) == id )
+                                {
+                                    linky.AddCssClass( "active" );
+                                }
                             }
                         }
                     }
@@ -203,6 +221,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 {
                     if ( CurrentGroupTypeIds != null )
                     {
+                        var roomList = new List<GroupType>();
                         foreach ( int id in CurrentGroupTypeIds )
                         {
                             foreach ( RepeaterItem item in rMinistries.Items )
@@ -211,6 +230,23 @@ namespace RockWeb.Blocks.CheckIn.Attended
                                 if ( int.Parse(linky.CommandArgument) == id )
                                 {
                                     linky.AddCssClass( "active" );
+                                    GetRooms( id, roomList );
+                                }
+                            }
+                        }
+                        rRooms.DataSource = roomList;
+                        rRooms.DataBind();
+                        if ( CurrentRoomGroupTypeIds != null )
+                        {
+                            foreach ( int id in CurrentRoomGroupTypeIds )
+                            {
+                                foreach ( RepeaterItem item in rRooms.Items )
+                                {
+                                    var linky = (LinkButton)item.FindControl( "lbSelectRooms" );
+                                    if ( int.Parse( linky.CommandArgument ) == id )
+                                    {
+                                        linky.AddCssClass( "active" );
+                                    }
                                 }
                             }
                         }
