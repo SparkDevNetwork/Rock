@@ -254,12 +254,21 @@ namespace Rock
         }
 
         /// <summary>
-        /// Attempts to convert string to integer.  Returns null if unsucessful.
+        /// Attempts to convert string to integer.  Returns null if unsuccessful.
         /// </summary>
         /// <param name="str">The STR.</param>
+        /// <param name="emptyStringAsZero">if set to <c>true</c> [empty string as zero].</param>
         /// <returns></returns>
-        public static int? AsInteger( this string str )
+        public static int? AsInteger( this string str, bool emptyStringAsZero = true )
         {
+            if ( !emptyStringAsZero )
+            {
+                if ( string.IsNullOrWhiteSpace( str ) )
+                {
+                    return null;
+                }
+            }
+            
             int value;
             if ( int.TryParse( str, out value ) )
             {
@@ -583,6 +592,21 @@ namespace Rock
             }
             return "";
         }
+        #endregion
+
+        #region TimeSpan Extensions
+
+        /// <summary>
+        /// Returns a TimeSpan to HH:MM AM/PM.
+        /// Examples: 1:45 PM, 12:01 AM
+        /// </summary>
+        /// <param name="timespan">The timespan.</param>
+        /// <returns></returns>
+        public static string ToTimeString( this TimeSpan timespan )
+        {
+            return DateTime.Today.Add( timespan ).ToShortTimeString();
+        }
+
         #endregion
 
         #region Control Extensions

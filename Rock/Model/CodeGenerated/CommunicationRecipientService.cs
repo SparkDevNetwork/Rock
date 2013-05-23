@@ -74,6 +74,8 @@ namespace Rock.Model
                 var target = new CommunicationRecipient();
                 target.PersonId = source.PersonId;
                 target.CommunicationId = source.CommunicationId;
+                target.Status = source.Status;
+                target.StatusNote = source.StatusNote;
                 target.AdditionalMergeValuesJson = source.AdditionalMergeValuesJson;
                 target.Id = source.Id;
                 target.Guid = source.Guid;

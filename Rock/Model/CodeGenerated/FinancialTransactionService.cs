@@ -54,6 +54,10 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialTransaction.FriendlyTypeName, FinancialTransactionImage.FriendlyTypeName );
                 return false;
             }  
+            
+            // ignoring FinancialTransactionRefund,Id 
+            
+            // ignoring FinancialTransactionRefund,RefundTransactionId 
             return true;
         }
     }
@@ -89,6 +93,7 @@ namespace Rock.Model
                 target.CurrencyTypeValueId = source.CurrencyTypeValueId;
                 target.CreditCardTypeValueId = source.CreditCardTypeValueId;
                 target.SourceTypeValueId = source.SourceTypeValueId;
+                target.CheckMicrEncrypted = source.CheckMicrEncrypted;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

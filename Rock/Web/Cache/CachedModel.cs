@@ -175,7 +175,7 @@ namespace Rock.Web.Cache
             get
             {
                 var attributes = new List<AttributeCache>();
-                foreach ( int id in AttributeIds )
+                foreach ( int id in AttributeIds.ToList() )
                 {
                     attributes.Add( AttributeCache.Read( id ) );
                 }
@@ -208,7 +208,7 @@ namespace Rock.Web.Cache
             {
                 var attributes = new Dictionary<string, Rock.Web.Cache.AttributeCache>();
 
-                foreach ( int id in AttributeIds )
+                foreach ( int id in AttributeIds.ToList() )
                 {
                     Rock.Web.Cache.AttributeCache attribute = AttributeCache.Read( id );
                     attributes.Add( attribute.Key, attribute );
