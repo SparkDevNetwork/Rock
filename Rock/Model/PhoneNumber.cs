@@ -114,13 +114,24 @@ namespace Rock.Model
             number = new System.Text.RegularExpressions.Regex( @"\D" ).Replace( number, string.Empty );
             number = number.TrimStart( '1' );
             if ( number.Length == 7 )
-                return Convert.ToInt64( number ).ToString( "###\\.####" );
+                return Convert.ToInt64( number ).ToString( "###-####" );
             if ( number.Length == 10 )
-                return Convert.ToInt64( number ).ToString( "###\\.###\\.####" );
+                return Convert.ToInt64( number ).ToString( "(###) ###-####" );
             if ( number.Length > 10 )
                 return Convert.ToInt64( number )
-                    .ToString( "###\\.###\\.#### " + new String( '#', ( number.Length - 10 ) ) );
+                    .ToString( "(###) ###-#### " + new String( '#', ( number.Length - 10 ) ) );
             return number;
+        }
+
+        /// <summary>
+        /// Gets the formatted number.
+        /// </summary>
+        /// <value>
+        /// The formatted number.
+        /// </value>
+        public virtual string NumberFormatted
+        {
+            get { return PhoneNumber.FormattedNumber( Number ); }
         }
 
         /// <summary>

@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Web.UI;
@@ -15,8 +16,9 @@ using Rock.Attribute;
 namespace RockWeb.Blocks.Cms
 {
     [TextField( "XSLT File", "The path to the XSLT File ", true, "~/Assets/XSLT/PageList.xslt" )]
-    [TextField( "Root Page", "The root page to use for the page collection. Defaults to the current page instance if not set.", false, "" )]
+    [LinkedPage( "Root Page", "The root page to use for the page collection. Defaults to the current page instance if not set.", false, "" )]
     [TextField( "Number of Levels", "Number of parent-child page levels to display. Default 3.", false, "3" )]
+    [BooleanField( "Include Current Parameters", "Flag indicating if current page's parameters should be used when building url for child pages", false )]
     public partial class PageXslt : Rock.Web.UI.RockBlock
     {
         private static readonly string ROOT_PAGE = "RootPage";
@@ -24,6 +26,8 @@ namespace RockWeb.Blocks.Cms
 
         protected override void OnInit( EventArgs e )
         {
+            this.EnableViewState = false;
+
             base.OnInit( e );
 
             this.AttributesUpdated += PageXslt_AttributesUpdated;
@@ -41,23 +45,30 @@ namespace RockWeb.Blocks.Cms
         private void TransformXml()
         {
             XslCompiledTransform xslTransformer = new XslCompiledTransform();
-            xslTransformer.Load( Server.MapPath( GetAttributeValue("XSLTFile") ) );
+            xslTransformer.Load( Server.MapPath( GetAttributeValue( "XSLTFile" ) ) );
 
-            Rock.Web.Cache.PageCache rootPage;
-            if ( GetAttributeValue( ROOT_PAGE ) != string.Empty )
+            Rock.Web.Cache.PageCache rootPage = null;
+
+            Guid pageGuid = Guid.Empty;
+            if ( Guid.TryParse( GetAttributeValue( ROOT_PAGE ), out pageGuid ) )
             {
-                int pageId = Convert.ToInt32( GetAttributeValue( ROOT_PAGE ) );
-                if ( pageId == -1 )
-                    rootPage = CurrentPage;
-                else
-                    rootPage = Rock.Web.Cache.PageCache.Read( pageId );
+                rootPage = Rock.Web.Cache.PageCache.Read( pageGuid );
             }
-            else
+
+            if ( rootPage == null )
+            {
                 rootPage = CurrentPage;
+            }
 
             int levelsDeep = Convert.ToInt32( GetAttributeValue( NUM_LEVELS ) );
 
-            XDocument pageXml = rootPage.MenuXml( levelsDeep, CurrentPerson );
+            Dictionary<string, string> pageParameters = null;
+            bool passParams = false;
+            if ( bool.TryParse( GetAttributeValue( "IncludeCurrentParameters" ), out passParams ) && passParams )
+            {
+                pageParameters = CurrentPageReference.Parameters;
+            }
+            XDocument pageXml = rootPage.MenuXml( levelsDeep, CurrentPerson, CurrentPage, pageParameters );
 
             StringBuilder sb = new StringBuilder();
             TextWriter tw = new StringWriter( sb );

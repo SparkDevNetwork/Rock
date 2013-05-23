@@ -20,6 +20,9 @@ namespace Rock.Web
     /// </summary>
     public class PageReference
     {
+
+        #region Properties
+
         /// <summary>
         /// Gets or sets the page id.
         /// </summary>
@@ -71,130 +74,14 @@ namespace Rock.Web
             }
         }
 
-        /// <summary>
-        /// Builds the URL.
-        /// </summary>
-        /// <returns></returns>
-        public string BuildUrl()
-        {
-            string url = string.Empty;
+        #endregion
 
-            var parms = new Dictionary<string, string>();
-
-            // Add any route parameters
-            if (Parameters != null)
-            {
-                foreach(var route in Parameters)
-                {
-                    parms.Add(route.Key, route.Value);
-                }
-            }
-
-            // merge parms from query string to the parms dictionary to get a single list of parms
-            // skipping those parms that are already in the dictionary
-            if ( QueryString != null )
-            {
-                foreach ( string key in QueryString.AllKeys )
-                {
-                    // check that the dictionary doesn't already have this key
-                    if ( !parms.ContainsKey( key ) )
-                        parms.Add( key, QueryString[key].ToString() );
-                }
-            }
-
-            // load route URL 
-            if ( RouteId != 0 )
-            {
-                url = BuildRouteURL( parms );
-            }
-
-            // build normal url if route url didn't process
-            if ( url == string.Empty )
-            {
-                url = "page/" + PageId;
-
-                // add parms to the url
-                if ( parms != null )
-                {
-                    string delimitor = "?";
-                    foreach ( KeyValuePair<string, string> parm in parms )
-                    {
-                        url += delimitor + parm.Key + "=" + HttpUtility.UrlEncode( parm.Value );
-                        delimitor = "&";
-                    }
-                }
-            }
-
-            // add base path to url -- Fixed bug #84
-            url = ( HttpContext.Current.Request.ApplicationPath == "/" ) ? "/" + url : HttpContext.Current.Request.ApplicationPath + "/" + url;
-
-            return url;
-        }
-
-        private string BuildRouteURL( Dictionary<string, string> parms )
-        {
-            string routeUrl = string.Empty;
-
-            foreach ( Route route in RouteTable.Routes )
-            {
-                if ( route.DataTokens != null && route.DataTokens["RouteId"].ToString() == RouteId.ToString() )
-                {
-                    routeUrl = route.Url;
-                    break;
-                }
-            }
-
-            // get dictionary of parms in the route
-            Dictionary<string, string> routeParms = new Dictionary<string, string>();
-            bool allRouteParmsProvided = true;
-
-            var r = new Regex( @"{([A-Za-z0-9\-]+)}" );
-            foreach ( Match match in r.Matches( routeUrl ) )
-            {
-                // add parm to dictionary
-                routeParms.Add( match.Groups[1].Value, match.Value );
-
-                // check that a value for that parm is available
-                if ( parms == null || !parms.ContainsKey( match.Groups[1].Value ) )
-                    allRouteParmsProvided = false;
-            }
-
-            // if we have a value for all route parms build route url
-            if ( allRouteParmsProvided )
-            {
-                // merge route parm values
-                foreach ( KeyValuePair<string, string> parm in routeParms )
-                {
-                    // merge field
-                    routeUrl = routeUrl.Replace( parm.Value, parms[parm.Key] );
-
-                    // remove parm from dictionary
-                    parms.Remove( parm.Key );
-                }
-
-                // add remaining parms to the query string
-                if ( parms != null )
-                {
-                    string delimitor = "?";
-                    foreach ( KeyValuePair<string, string> parm in parms )
-                    {
-                        routeUrl += delimitor + parm.Key + "=" + HttpUtility.UrlEncode( parm.Value );
-                        delimitor = "&";
-                    }
-                }
-
-                return routeUrl;
-            }
-            else
-                return string.Empty;
-        }
-
-
+        #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PageReference"/> class.
         /// </summary>
-        public PageReference(){}
+        public PageReference() { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PageReference"/> class.
@@ -258,7 +145,7 @@ namespace Rock.Web
         /// <param name="parameters">The route parameters.</param>
         /// <param name="queryString">The query string.</param>
         public PageReference( int pageId, int routeId, Dictionary<string, string> parameters, NameValueCollection queryString )
-            : this(pageId, routeId, parameters)
+            : this( pageId, routeId, parameters )
         {
             QueryString = queryString;
         }
@@ -271,6 +158,192 @@ namespace Rock.Web
             : this( pageReference.PageId, pageReference.RouteId, pageReference.Parameters, pageReference.QueryString )
         {
         }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Builds the URL.
+        /// </summary>
+        /// <returns></returns>
+        public string BuildUrl()
+        {
+            string url = string.Empty;
+
+            var parms = new Dictionary<string, string>();
+
+            // Add any route parameters
+            if (Parameters != null)
+            {
+                foreach(var route in Parameters)
+                {
+                    parms.Add(route.Key, route.Value);
+                }
+            }
+
+            // merge parms from query string to the parms dictionary to get a single list of parms
+            // skipping those parms that are already in the dictionary
+            if ( QueryString != null )
+            {
+                foreach ( string key in QueryString.AllKeys )
+                {
+                    // check that the dictionary doesn't already have this key
+                    if ( !parms.ContainsKey( key ) )
+                        parms.Add( key, QueryString[key].ToString() );
+                }
+            }
+
+            // See if there's a route that matches all parms
+            if ( RouteId == 0 )
+            {
+                RouteId = GetRouteIdFromPageAndParms() ?? 0;
+            }
+
+            // load route URL 
+            if ( RouteId != 0 )
+            {
+                url = BuildRouteURL( parms );
+            }
+
+            // build normal url if route url didn't process
+            if ( url == string.Empty )
+            {
+                url = "page/" + PageId;
+
+                // add parms to the url
+                if ( parms != null )
+                {
+                    string delimitor = "?";
+                    foreach ( KeyValuePair<string, string> parm in parms )
+                    {
+                        url += delimitor + parm.Key + "=" + HttpUtility.UrlEncode( parm.Value );
+                        delimitor = "&";
+                    }
+                }
+            }
+
+            // add base path to url -- Fixed bug #84
+            url = ( HttpContext.Current.Request.ApplicationPath == "/" ) ? "/" + url : HttpContext.Current.Request.ApplicationPath + "/" + url;
+
+            return url;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Gets the route id from page and parms.
+        /// </summary>
+        /// <returns></returns>
+        private int? GetRouteIdFromPageAndParms()
+        {
+            var pageCache = PageCache.Read( PageId );
+            if ( pageCache != null && pageCache.PageRoutes.Any() )
+            {
+                var r = new Regex( @"(?<={)[A-Za-z0-9\-]+(?=})" );
+
+                foreach ( var item in pageCache.PageRoutes )
+                {
+                    // If route contains no parameters, and no parameters were provided, return this route
+                    var matches = r.Matches( item.Value);
+                    if ( matches.Count == 0 && ( Parameters == null || Parameters.Count == 0 ) )
+                    {
+                        return item.Key;
+                    }
+
+                    // If route contains the same number of parameters as provided, check to see if they all match names
+                    if ( matches.Count > 0 && Parameters != null && Parameters.Count == matches.Count )
+                    {
+                        bool matchesAllParms = true;
+
+                        foreach ( Match match in matches )
+                        {
+                            if ( !Parameters.ContainsKey( match.Value ) )
+                            {
+                                matchesAllParms = false;
+                                break;
+                            }
+                        }
+
+                        if ( matchesAllParms )
+                        {
+                            return item.Key;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Builds the route URL.
+        /// </summary>
+        /// <param name="parms">The parms.</param>
+        /// <returns></returns>
+        private string BuildRouteURL( Dictionary<string, string> parms )
+        {
+            string routeUrl = string.Empty;
+
+            foreach ( Route route in RouteTable.Routes )
+            {
+                if ( route.DataTokens != null && route.DataTokens["RouteId"].ToString() == RouteId.ToString() )
+                {
+                    routeUrl = route.Url;
+                    break;
+                }
+            }
+
+            // get dictionary of parms in the route
+            Dictionary<string, string> routeParms = new Dictionary<string, string>();
+            bool allRouteParmsProvided = true;
+
+            var r = new Regex( @"{([A-Za-z0-9\-]+)}" );
+            foreach ( Match match in r.Matches( routeUrl ) )
+            {
+                // add parm to dictionary
+                routeParms.Add( match.Groups[1].Value, match.Value );
+
+                // check that a value for that parm is available
+                if ( parms == null || !parms.ContainsKey( match.Groups[1].Value ) )
+                    allRouteParmsProvided = false;
+            }
+
+            // if we have a value for all route parms build route url
+            if ( allRouteParmsProvided )
+            {
+                // merge route parm values
+                foreach ( KeyValuePair<string, string> parm in routeParms )
+                {
+                    // merge field
+                    routeUrl = routeUrl.Replace( parm.Value, parms[parm.Key] );
+
+                    // remove parm from dictionary
+                    parms.Remove( parm.Key );
+                }
+
+                // add remaining parms to the query string
+                if ( parms != null )
+                {
+                    string delimitor = "?";
+                    foreach ( KeyValuePair<string, string> parm in parms )
+                    {
+                        routeUrl += delimitor + parm.Key + "=" + HttpUtility.UrlEncode( parm.Value );
+                        delimitor = "&";
+                    }
+                }
+
+                return routeUrl;
+            }
+            else
+                return string.Empty;
+        }
+
+        #endregion
+
+        #region Public Static Methods
 
         /// <summary>
         /// Gets the parent page references.
@@ -348,5 +421,7 @@ namespace Rock.Web
         {
             HttpContext.Current.Session["RockPageReferenceHistory"] = pageReferences;
         }
+
+        #endregion
     }
 }

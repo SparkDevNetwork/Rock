@@ -32,7 +32,7 @@ namespace Rock.Field.Types
             editControl.Items.Add( None.ListItem );
             foreach ( var groupType in groupTypes )
             {
-                editControl.Items.Add( new ListItem( groupType.Name, groupType.Id.ToString() ) );
+                editControl.Items.Add( new ListItem( groupType.Name, groupType.Guid.ToString().ToUpper() ) );
             }
 
             return editControl;
@@ -52,7 +52,7 @@ namespace Rock.Field.Types
 
             if ( dropDownList != null )
             {
-                if ( dropDownList.SelectedValue.Equals( None.IdValue ) )
+                if ( dropDownList.SelectedValue.Equals( string.Empty ) )
                 {
                     return null;
                 }
@@ -76,7 +76,7 @@ namespace Rock.Field.Types
             if ( value != null )
             {
                 DropDownList dropDownList = control as DropDownList;
-                dropDownList.SetValue( value );
+                dropDownList.SetValue( value.ToUpper() );
             }
         }
     }

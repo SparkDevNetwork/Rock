@@ -76,7 +76,7 @@ namespace RockWeb
                     file.LastModifiedDateTime = fileInfo.LastModifiedDateTime;
 
                     // Is cached version newer?
-                    if ( file.LastModifiedDateTime.HasValue && file.LastModifiedDateTime.Value.CompareTo( System.IO.File.GetCreationTime( physFilePath ) ) <= 0 )
+                    if ( !file.LastModifiedDateTime.HasValue || file.LastModifiedDateTime.Value.CompareTo( System.IO.File.GetCreationTime( physFilePath ) ) <= 0 )
                         file.Data = FetchFromCache( physFilePath );
                 }
 
