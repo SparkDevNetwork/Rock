@@ -12,6 +12,8 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using System.Collections.Generic;
 
+using DotLiquid;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
@@ -25,6 +27,7 @@ namespace RockWeb.Blocks.Finance
     /// Front end block for giving: gift detail, user detail, and payment detail
     /// </summary>    
     [Description("Giving profile details UI")]
+    [BooleanField( "Require Phone", "Should financial contributions require a user's phone number?", true, "Data Requirements", 0 )]   
     [CustomCheckboxListField( "Credit Card Provider", "Which payment processor should be used for credit cards?",
         "SELECT [Name] AS [Text], [Id] AS [Value] FROM [FinancialGateway]", true, "", "Payments", 0 )]
     [CustomCheckboxListField( "Checking/ACH Provider", "Which payment processor should be used for checking/ACH?",
@@ -35,7 +38,20 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Show Credit Card", "Allow users to give using a credit card?", true, "UI Options", 2 )]
     [BooleanField( "Show Checking/ACH", "Allow users to give using a checking account?", true, "UI Options", 3 )]
     [BooleanField( "Show Frequencies", "Allow users to give recurring gifts?", true, "UI Options", 4 )]
-    [BooleanField( "Require Phone", "Should financial contributions require a user's phone number?", true, "Data Requirements", 0 )]    
+    [TextField( "Confirmation Message", "What text should be displayed on the confirmation page?", true, 
+        @"{{ ContributionHeader }}<br/><br/>
+        {{ Person.FirstName }},<br/><br/>
+        You're about to give a total of {{ TotalContribution }} to {{ OrganizationName }}.<br/><br/>  Your contribution will be given using your {{ PaymentType }} ending in {{ PaymentLastFour }}.<br/>
+        <br/>Thank-you,<br/>
+        {{ OrganizationName }}<br/>  
+        {{ ContributionFooter }}"
+    , "UI Options", 5)]
+    [TextField( "Receipt Message", "What text should be displayed on the receipt page?", true,
+        @"{{ ReceiptHeader }}<br/><br/>
+        {{ Person.FirstName }},<br/><br/>
+        Thank you for your generosity! You just gave a total of {{ TotalContribution }} to {{ OrganizationName }}.<br/><br/>        
+        {{ ReceiptFooter }}"
+    , "UI Options", 5 )]
     public partial class GivingProfileDetail : RockBlock
     {
         #region Fields
@@ -117,11 +133,10 @@ namespace RockWeb.Blocks.Finance
                 // Require phone number
                 if ( Convert.ToBoolean( GetAttributeValue( "RequirePhone" ) ) )
                 {
-                    //txtPhone.Required = true;
+                    txtPhone.Required = true;
                 }
 
                 BindAccounts();
-                //BindCreditCard();
                 BindPaymentTypes();
             }            
         }
@@ -302,102 +317,83 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnNext_Click( object sender, EventArgs e )
         {
-            FinancialTransactionDetailService detailService = new FinancialTransactionDetailService();
-            FinancialTransactionService transactionService = new FinancialTransactionService();
-            FinancialAccountService accountService = new FinancialAccountService();            
-            PersonService personService = new PersonService();
-            FinancialTransaction transaction = new FinancialTransaction();
-            Person person;
+            Page.Validate();
+            if ( !Page.IsValid )
+            {
+                return;
+            }
 
-            // process person details          
-            var personGroup = personService.GetByEmail(Request.Form["txtEmail"]);
+            List<FinancialTransactionDetail> transactionList = Session["TransactionList"] as List<FinancialTransactionDetail>;
+            GroupLocationService groupLocationService = new GroupLocationService();
+            GroupMemberService groupMemberService = new GroupMemberService();
+            PersonService personService = new PersonService();
+            Location giftLocation = new Location();
+            Person person;
+            
+            SaveAccountValues( transactionList );
+
+            var personGroup = personService.GetByEmail( Request.Form["txtEmail"] );
 
             if ( personGroup.Count() > 0 )
             {
-                person = personGroup.Where(p => p.FirstName == Request.Form["txtFirstName"]
-                    && p.LastName == Request.Form["txtLastName"]).Distinct().FirstOrDefault();
+                person = personGroup.Where( p => p.FirstName == Request.Form["txtFirstName"]
+                    && p.LastName == Request.Form["txtLastName"] ).Distinct().FirstOrDefault();
                 // TODO duplicate person handling?  ex NewAccount.ascx DisplayDuplicates()
             }
             else
             {
                 person = new Person();
-                personService.Add(person, CurrentPersonId);
+                personService.Add( person, CurrentPersonId );
             }
 
-            person.Email = txtEmail.Text;
             person.GivenName = txtFirstName.Text;
             person.LastName = txtLastName.Text;
-            // TODO get address
+            person.Email = txtEmail.Text;
 
-            personService.Save(person, CurrentPersonId);
-            cfrmName.Text = person.FullName;
-
-            // process gift details
-            var lookupAccounts = accountService.Queryable().Where(f => f.IsActive)
-                .Distinct().OrderBy(f => f.Order).ToList();
-
-            //transaction = transactionService.Get
-            if ( transaction == null )
+            if ( chkDefaultAddress.Checked )
             {
-                transaction = new FinancialTransaction();
-                transaction.TransactionTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ).Id;
-                transactionService.Add( transaction, person.Id );
+                giftLocation.Street1 = txtStreet.Text;
+                giftLocation.City = txtCity.Text;
+                giftLocation.State = ddlState.SelectedValue;
+                giftLocation.Zip = txtZip.Text;
+            }
+            else
+            {
+                giftLocation.Street1 = diffStreet.Text;
+                giftLocation.City = diffCity.Text;
+                giftLocation.State = diffState.SelectedValue;
+                giftLocation.Zip = diffZip.Text;
             }
 
-            foreach ( RepeaterItem item in rptAccountList.Items )
-            {
-                FinancialTransactionDetail account = new FinancialTransactionDetail();
-                FinancialTransactionDetail detail = new FinancialTransactionDetail();
+            List<int> personGroups = groupMemberService.Queryable()
+                .Where( g => g.PersonId == CurrentPersonId )
+                .Select( g => g.GroupId ).ToList();
 
-                // TODO rewrite account lookup to use ID instead of name
-                var accountItem = ( (NumberBox)item.FindControl("txtAccountAmount") );
-                string accountName = accountItem.LabelText;
-                decimal amount = Decimal.Parse( accountItem.Text );
-                detail.Amount = amount;
-                account.Amount = amount;
-                detail.TransactionId = transaction.Id;
-                account.TransactionId = transaction.Id;
-                detail.Summary = "$" + amount + " contribution to " + account.Account + " by " + person.FullName;
+            Location personLocation = groupLocationService.Queryable()
+                .Where( g => personGroups.Contains( g.GroupId ) )
+                .Select( g => g.Location )
+                .ToList().FirstOrDefault();
 
-                detailService.Add(detail, person.Id);
-                //detailList.Add(account);
-            }
-
-            transaction.AuthorizedPersonId = person.Id;
-            //transaction.Amount = detailList.Sum(g => (decimal)g.Amount);
-            transactionService.Save( transaction, CurrentPersonId );
+            personService.Save( person, CurrentPersonId );
+            
 
             // process payment type
-            if ( !string.IsNullOrEmpty(hfCardType.Value) )
+            if ( !string.IsNullOrEmpty(txtCreditCard.Text) && !string.IsNullOrEmpty(hfCardType.Value) )
             {
-                litPaymentType.Text = hfCardType.Value.Split(' ').Reverse().FirstOrDefault().Substring(3);
-                litPaymentType.Text = char.ToUpper(litPaymentType.Text[0]) + litPaymentType.Text.Substring(1);
-                litAccountType.Text = " credit card ";
+                var lPaymentType = hfCardType.Value.Split( ' ' ).Reverse().FirstOrDefault().Substring( 2 );
+                lPaymentType = char.ToUpper( txtCreditCard.Text[0] ) + txtCreditCard.Text.Substring( 1 );
+                lPaymentType = " credit card ";                
+                var lPaymentLastFour = txtCreditCard.Text.Substring( txtCreditCard.Text.Length - 4, 4 );
             }
-            else
+            else if ( !string.IsNullOrEmpty( txtCreditCard.Text ) )
             {
-                litPaymentType.Text = rblAccountType.SelectedValue;
-                litAccountType.Text = " account ";
+                var lPaymentType = rblAccountType.SelectedValue;
+                var lAccountType = " account ";
+                var lPaymentLastFour = txtAccount.Text.Substring( txtAccount.Text.Length - 4, 4 );
             }
-
-            string lastFour = !string.IsNullOrEmpty(txtCreditCard.Text)
-                ? txtCreditCard.Text
-                : txtAccount.Text;
-
-            if ( !string.IsNullOrEmpty(lastFour) )
-            {
-                lblPaymentLastFour.Text = lastFour.Substring(lastFour.Length - 4, 4);
-            }
-            else
-            {
-                divPaymentConfirmation.Visible = false;                
-            }
-
-            litGiftTotal.Text = transaction.Amount.ToString();
                         
-            //rptGiftConfirmation.DataSource = detailList.ToDictionary(f => (string)f.Account.PublicName, f => (decimal)f.Amount);
-            //rptGiftConfirmation.DataBind();
-
+            var lGiftTotal = transactionList.Sum( ftd => ftd.Amount ).ToString();
+                        
             pnlDetails.Visible = false;
             pnlConfirm.Visible = true;
         }
@@ -419,9 +415,7 @@ namespace RockWeb.Blocks.Finance
 
             transactionService.Save( transaction, CurrentPersonId );
 
-            litDateGift.Text = DateTime.Now.ToString( "f" );
-            litGiftTotal2.Text = litGiftTotal.Text;
-            litPaymentType2.Text = litPaymentType.Text;
+            //litDateGift.Text = DateTime.Now.ToString( "f" );
             
             pnlConfirm.Visible = false;
             pnlComplete.Visible = true;
@@ -484,20 +478,6 @@ namespace RockWeb.Blocks.Finance
             rptPaymentType.DataSource = queryable.ToList();
             rptPaymentType.DataBind();
         }
-        
-        /// <summary>
-        /// Binds the credit card controls.
-        /// </summary>
-        //protected void BindCreditCard()
-        //{
-        //    btnMonthExpiration.Items.Clear();
-        //    btnYearExpiration.Items.Clear();
-
-        //    btnMonthExpiration.DataSource = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.MonthNames.ToList().GetRange( 0, 12 );
-        //    btnMonthExpiration.DataBind();
-        //    btnYearExpiration.DataSource = Enumerable.Range( ( DateTime.Now.Year ), 10 ).ToList();
-        //    btnYearExpiration.DataBind();
-        //}
         
         /// <summary>
         /// Binds the accounts.
@@ -588,7 +568,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( personLocation != null )
             {                
-                txtAddress.Text = personLocation.Street1.ToString();
+                txtStreet.Text = personLocation.Street1.ToString();
                 txtCity.Text = personLocation.City.ToString();
                 ddlState.Text = personLocation.State.ToString();
                 txtZip.Text = personLocation.Zip.ToString();

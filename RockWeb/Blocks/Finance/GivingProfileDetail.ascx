@@ -47,10 +47,13 @@
                                 
                 <div class="<%= _spanClass %> well">
 
+                    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error alert" />
+                    <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
+
                     <fieldset>
                             
                         <legend>Contribution Information</legend>
-
+                        
                         <div class="form-horizontal">
 
                             <div id="divCampus" runat="server" visible="false">                                                            
@@ -68,7 +71,7 @@
 	                                    <Rock:NumberBox ID="txtAccountAmount" runat="server" CssClass="input-small calc" PrependText="$"
                                             LabelText='<%# DataBinder.Eval(Container.DataItem, "Account.PublicName") %>'
                                             Text='<%# Convert.ToDecimal(DataBinder.Eval(Container.DataItem, "Amount")) > 0 ? DataBinder.Eval(Container.DataItem, "Amount") : "" %>'
-                                            MinimumValue="0.0" >
+                                            MinimumValue="0.0" Required="true"  >
 	                                    </Rock:NumberBox>
                                     </div>
                                 </ItemTemplate>                                
@@ -95,13 +98,15 @@
                                 </div>
 
                                 <div class="row-fluid">
-                                    <Rock:ButtonDropDownList ID="btnFrequency" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnFrequency_SelectionChanged" LabelText="Frequency" />
+                                    <Rock:ButtonDropDownList ID="btnFrequency" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnFrequency_SelectionChanged" LabelText="Frequency" CausesValidation="true" />
                                 </div>                                    
                             
                                 <div id="divRecurrence" runat="server" visible="false">          
 
-                                    <div class="row-fluid">                                        
-                                        <Rock:DatePicker ID="dtpStartDate" runat="server" LabelText="Starting On" data-date-format="dd-mm-yyyy" DatePickerType="Date" />
+                                    <div class="row-fluid"> 
+                                        <div class="">
+                                            <Rock:DatePicker ID="dtpStartDate" runat="server" LabelText="Starting On" data-date-format="dd-mm-yyyy" DatePickerType="Date" />
+                                        </div>
                                     </div>
                                     
                                     <div class="row-fluid" id="divLimitGifts" runat="server" Visible="false">
@@ -132,7 +137,7 @@
             <% } %>
 
                 <div class="<%= _spanClass %> well">
-
+                    
                     <fieldset>
                         
                         <legend>Address Information</legend>
@@ -140,18 +145,18 @@
                         <div class="row-fluid">
                             
                             <div class="">
-                                <Rock:LabeledTextBox ID="txtFirstName" LabelText="First Name" runat="server" />
+                                <Rock:DataTextBox ID="txtFirstName" LabelText="First Name" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="GivenName" Required="true" />
                             </div>             
 
                             <div class="" >
-                                <Rock:LabeledTextBox ID="txtLastName" LabelText="Last Name" runat="server" />
+                                <Rock:DataTextBox ID="txtLastName" LabelText="Last Name" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" Required="true"  />
                             </div>        
                             
                         </div>
 
                         <div class="row-fluid">
                             <div class="span12" >
-                                <Rock:LabeledTextBox ID="txtAddress" LabelText="Address" runat="server" />
+                                <Rock:DataTextBox ID="txtStreet" LabelText="Address" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Street1" Required="true"  />
                             </div>
                             
                         </div>
@@ -159,29 +164,29 @@
                         <div class="row-fluid">
 
                             <div class="span4">
-                                <Rock:LabeledTextBox ID="txtCity" LabelText="City" runat="server" />
+                                <Rock:DataTextBox ID="txtCity" LabelText="City" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="City" Required="true" />
                             </div>
   
-                            <div class="span3">
+                            <div class="span4">
                                 <Rock:StateDropDownList ID="ddlState" runat="server" LabelText="State" CssClass="state-select"  />
                             
                             </div>
 
                             <div class="span3">
-                                <Rock:LabeledTextBox ID="txtZip" LabelText="Zip" runat="server" CssClass="input-mini" />
+                                <Rock:DataTextBox ID="txtZip" LabelText="Zip" runat="server" CssClass="input-mini" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Zip" />
                             </div>
 
                         </div>                    
 
                         <div class="row-fluid">   
                             <div class="span12" >
-                                <Rock:LabeledTextBox ID="txtEmail" LabelText="Email" runat="server" TextMode="Email" />
+                                <Rock:DataTextBox ID="txtEmail" LabelText="Email" runat="server" TextMode="Email" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" Required="true" />
                             </div>
                         </div>
 
                         <div class="row-fluid" >   
                             <div class="span12" >
-                                <Rock:LabeledTextBox ID="txtPhone" LabelText="Phone" runat="server" />
+                                <Rock:DataTextBox ID="txtPhone" LabelText="Phone" runat="server" SourceTypeName="Rock.Model.PhoneNumber, Rock" PropertyName="Number" />
                             </div>
                         </div>
 
@@ -213,7 +218,7 @@
                             <asp:Repeater ID="rptPaymentType" runat="server">
                             <ItemTemplate >
                                 <li ID="liSelectedTab" runat="server" class='<%# ( Container.ItemIndex == 0) ? "active" : "" %>' >
-                                    <asp:LinkButton ID="lbPaymentType" runat="server" Text='<%# DataBinder.Eval(Container.DataItem, "Name") %>' OnClick="lbPaymentType_Click" />
+                                    <asp:LinkButton ID="lbPaymentType" runat="server" Text='<%# DataBinder.Eval(Container.DataItem, "Name") %>' OnClick="lbPaymentType_Click"  />
                                 </li>
                             </ItemTemplate>
                             </asp:Repeater>
@@ -236,18 +241,18 @@
 	                                        <li class="card-amex"></li>
 	                                        <li class="card-discover"></li>
                                         </ul>
-                                        <asp:HiddenField ID="hfCardType" runat="server" />
+                                        <asp:HiddenField ID="hfCardType" runat="server" Value="" ClientIDMode="Static" />
                                     </div>
                                     
                                 </div>
                            
                                 <div class="row-fluid">
                                     
-                                    <div class="">
+                                    <div class="<%= _spanClass != "span6" ? "" : "span6" %>">
                                         <Rock:DatePicker ID="dtpExpiration" runat="server" LabelText="Expiration Date" />
                                     </div>
 
-                                    <div class="">
+                                    <div class="<%= _spanClass != "span6" ? "" : "span6" %>">
                                         <Rock:NumberBox ID="txtCVV" LabelText="CVV #" runat="server" MaxLength="3" CssClass="input-mini" />
                                     </div>
                                                                                                             
@@ -289,45 +294,33 @@
                         <div id="divConfirmAddress" runat="server">
 
                             <div class="row-fluid">
-                                <Rock:LabeledCheckBox ID="chkDefaultAddress" runat="server" Text="Use address from above" Checked="true" OnCheckedChanged="chkDefaultAddress_CheckedChanged" AutoPostBack="true" />
+                                <Rock:LabeledCheckBox ID="chkDefaultAddress" runat="server" Text="Use address from above" Checked="true" OnCheckedChanged="chkDefaultAddress_CheckedChanged" AutoPostBack="true" CausesValidation="true"/>
 
                                 <div id="divNewAddress" class="fade in" runat="server" visible="false">
 
                                     <div class="row-fluid">
-
-                                        <div class="">
-                                            <Rock:LabeledTextBox ID="diffFirstName" LabelText="First Name" runat="server" />
-                                        </div>
-
-                                        <div class="">
-                                            <Rock:LabeledTextBox ID="diffLastName" LabelText="Last Name" runat="server" />
+                                        <div class="span12">
+                                            <Rock:DataTextBox ID="diffStreet" LabelText="Address" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Street1" />
                                         </div>
 
                                     </div>
 
                                     <div class="row-fluid">
-                                        <div class="span12">
-                                            <Rock:LabeledTextBox ID="diffAddress" LabelText="Address" runat="server" />
-                                        </div>
-
-                                    </div>
-
-                                    <div class="row-fluid control-group">
 
                                         <div class="span4">
-                                            <Rock:LabeledTextBox ID="diffCity" LabelText="City" runat="server" />
+                                            <Rock:DataTextBox ID="diffCity" LabelText="City" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="City" />
                                         </div>
 
-                                        <div class="span3 state-select">
-                                            <Rock:StateDropDownList ID="diffState" runat="server" LabelText="State" />
+                                        <div class="span4">
+                                            <Rock:StateDropDownList ID="diffState" runat="server" LabelText="State" CssClass="state-select" SourceTypeName="Rock.Model.Location, Rock" PropertyName="State" />
                                         </div>
 
                                         <div class="span3">
-                                            <Rock:LabeledTextBox ID="diffZip" LabelText="Zipcode" runat="server" CssClass="input-mini" />
+                                            <Rock:DataTextBox ID="diffZip" LabelText="Zip" runat="server" CssClass="input-mini" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Zip" />
                                         </div>
 
                                     </div>
-                                    
+
                                 </div>
 
                             </div>
@@ -343,7 +336,7 @@
         </div>
 
         <div class="<%= _spanClass %> actions">
-            <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnNext_Click"  />
+            <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnNext_Click" CausesValidation="true" />
         </div>
     
     </ContentTemplate>
@@ -360,22 +353,7 @@
                 
                 <div id="divPaymentConfirmation" runat="server">
 
-                    <p><b><asp:Literal ID="cfrmName" runat="server" /></b>, you're about to give a total of 
-                        <b><asp:Literal ID="litGiftTotal" Visible="true" runat="server"/></b>
-                        <asp:Literal ID="litMultiGift" Visible="true" runat="server">to the following accounts: </asp:Literal>
-                        <asp:Repeater ID="rptGiftConfirmation" runat="server">
-                            <ItemTemplate>
-                                <b><%# ((KeyValuePair<string,decimal>)Container.DataItem).Value %></b> 
-                                to the <b><%# ((KeyValuePair<string,decimal>)Container.DataItem).Key %></b>
-                                <asp:Literal ID="litSpacer" Visible=<%# (litMultiGift.Visible) %> runat="server" >, </asp:Literal>
-                            </ItemTemplate>
-                            <FooterTemplate>.</FooterTemplate>
-                        </asp:Repeater>
-                    </p>                                
-                
-                    <p>Your gift will be paid using your <b><asp:Literal ID="litPaymentType" runat="server"/></b>
-                        <asp:Literal ID="litAccountType" runat="server"/> ending in <b><asp:Literal ID="lblPaymentLastFour" runat="server"/></b>.
-                    </p>
+                    
 
                 </div>
 
@@ -398,17 +376,11 @@
                                 
             <div class="<%= _spanClass %> well">
 
-                <h3 class="header-text" >Contribution Complete! </h3>
-                
-                <p>
-                    <b><asp:Literal ID="litDateGift" runat="server"/></b>
-                </p>
-                
-                <p> Thank you for your generosity! 
-                    You just gave a total of <asp:Literal ID="litGiftTotal2" Visible="true" runat="server"/>
-                    to NewSpring Church using your <asp:Literal ID="litPaymentType2" runat="server"/>.                                       
-                </p>  
-                 
+                 <div id="divShowReceipt" runat="server">
+                     
+
+                 </div>                 
+
                  <div id="divSavePayment" runat="server" visible="false">
 
                     <div class="row-fluid">
