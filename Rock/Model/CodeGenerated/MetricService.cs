@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class MetricExtensionMethods
+    public static partial class MetricExtensionMethods
     {
         /// <summary>
         /// Clones this Metric object to a new Metric object

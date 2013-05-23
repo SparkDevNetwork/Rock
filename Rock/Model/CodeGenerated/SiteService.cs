@@ -61,7 +61,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class SiteExtensionMethods
+    public static partial class SiteExtensionMethods
     {
         /// <summary>
         /// Clones this Site object to a new Site object

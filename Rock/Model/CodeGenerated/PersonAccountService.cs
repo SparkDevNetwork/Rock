@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class PersonAccountExtensionMethods
+    public static partial class PersonAccountExtensionMethods
     {
         /// <summary>
         /// Clones this PersonAccount object to a new PersonAccount object

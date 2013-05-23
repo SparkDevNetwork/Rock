@@ -67,7 +67,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class PageExtensionMethods
+    public static partial class PageExtensionMethods
     {
         /// <summary>
         /// Clones this Page object to a new Page object

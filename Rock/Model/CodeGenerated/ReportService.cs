@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class ReportExtensionMethods
+    public static partial class ReportExtensionMethods
     {
         /// <summary>
         /// Clones this Report object to a new Report object

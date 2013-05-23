@@ -85,6 +85,14 @@ namespace Rock.Data
         public DbSet<BinaryFile> BinaryFiles { get; set; }
 
         /// <summary>
+        /// Gets or sets the Files data.
+        /// </summary>
+        /// <value>
+        /// the Files data
+        /// </value>
+        public DbSet<BinaryFileData> BinaryFilesData { get; set; }
+
+        /// <summary>
         /// Gets or sets the Binary File Types.
         /// </summary>
         /// <value>
@@ -700,6 +708,7 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new AuditConfiguration() );
             modelBuilder.Configurations.Add( new AuthConfiguration() );
             modelBuilder.Configurations.Add( new BinaryFileConfiguration() );
+            modelBuilder.Configurations.Add( new BinaryFileDataConfiguration() );
             modelBuilder.Configurations.Add( new BinaryFileTypeConfiguration() );
             modelBuilder.Configurations.Add( new BlockConfiguration() );
             modelBuilder.Configurations.Add( new BlockTypeConfiguration() );

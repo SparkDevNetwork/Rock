@@ -61,7 +61,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class DataViewFilterExtensionMethods
+    public static partial class DataViewFilterExtensionMethods
     {
         /// <summary>
         /// Clones this DataViewFilter object to a new DataViewFilter object

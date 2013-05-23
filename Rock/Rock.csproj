@@ -199,10 +199,16 @@
     <Compile Include="Migrations\201305231215302_RemoveDigitalSignage.Designer.cs">
       <DependentUpon>201305231215302_RemoveDigitalSignage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201305231329217_BinaryFileData.cs" />
+    <Compile Include="Migrations\201305231329217_BinaryFileData.Designer.cs">
+      <DependentUpon>201305231329217_BinaryFileData.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionRefundService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionScannedCheckService.cs" />
+    <Compile Include="Model\BinaryFileData.cs" />
     <Compile Include="PersonProfile\BadgeComponent.cs" />
     <Compile Include="PersonProfile\BadgeContainer.cs" />
     <Compile Include="PersonProfile\Badge\NextSteps.cs" />
@@ -1655,6 +1661,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201305231215302_RemoveDigitalSignage.resx">
       <DependentUpon>201305231215302_RemoveDigitalSignage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305231329217_BinaryFileData.resx">
+      <DependentUpon>201305231329217_BinaryFileData.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

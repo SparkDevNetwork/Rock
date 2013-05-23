@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class NoteExtensionMethods
+    public static partial class NoteExtensionMethods
     {
         /// <summary>
         /// Clones this Note object to a new Note object

@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class FinancialPledgeExtensionMethods
+    public static partial class FinancialPledgeExtensionMethods
     {
         /// <summary>
         /// Clones this FinancialPledge object to a new FinancialPledge object

@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class AttributeQualifierExtensionMethods
+    public static partial class AttributeQualifierExtensionMethods
     {
         /// <summary>
         /// Clones this AttributeQualifier object to a new AttributeQualifier object

@@ -41,7 +41,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class FinancialTransactionScannedCheckExtensionMethods
+    public static partial class FinancialTransactionScannedCheckExtensionMethods
     {
         /// <summary>
         /// Clones this FinancialTransactionScannedCheck object to a new FinancialTransactionScannedCheck object

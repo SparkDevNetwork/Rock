@@ -61,7 +61,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class DataViewExtensionMethods
+    public static partial class DataViewExtensionMethods
     {
         /// <summary>
         /// Clones this DataView object to a new DataView object

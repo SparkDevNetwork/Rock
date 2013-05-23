@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class AuthExtensionMethods
+    public static partial class AuthExtensionMethods
     {
         /// <summary>
         /// Clones this Auth object to a new Auth object

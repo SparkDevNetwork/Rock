@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class UserLoginExtensionMethods
+    public static partial class UserLoginExtensionMethods
     {
         /// <summary>
         /// Clones this UserLogin object to a new UserLogin object

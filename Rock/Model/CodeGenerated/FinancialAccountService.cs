@@ -79,7 +79,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class FinancialAccountExtensionMethods
+    public static partial class FinancialAccountExtensionMethods
     {
         /// <summary>
         /// Clones this FinancialAccount object to a new FinancialAccount object

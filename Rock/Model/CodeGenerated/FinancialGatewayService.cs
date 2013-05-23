@@ -73,7 +73,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class FinancialGatewayExtensionMethods
+    public static partial class FinancialGatewayExtensionMethods
     {
         /// <summary>
         /// Clones this FinancialGateway object to a new FinancialGateway object

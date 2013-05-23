@@ -18,22 +18,22 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Workflow Service class
+    /// BinaryFileData Service class
     /// </summary>
-    public partial class WorkflowService : Service<Workflow>
+    public partial class BinaryFileDataService : Service<BinaryFileData>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="WorkflowService"/> class
+        /// Initializes a new instance of the <see cref="BinaryFileDataService"/> class
         /// </summary>
-        public WorkflowService()
+        public BinaryFileDataService()
             : base()
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="WorkflowService"/> class
+        /// Initializes a new instance of the <see cref="BinaryFileDataService"/> class
         /// </summary>
-        public WorkflowService(IRepository<Workflow> repository) : base(repository)
+        public BinaryFileDataService(IRepository<BinaryFileData> repository) : base(repository)
         {
         }
 
@@ -45,7 +45,7 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( Workflow item, out string errorMessage )
+        public bool CanDelete( BinaryFileData item, out string errorMessage )
         {
             errorMessage = string.Empty;
             return true;
@@ -55,31 +55,24 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class WorkflowExtensionMethods
+    public static partial class BinaryFileDataExtensionMethods
     {
         /// <summary>
-        /// Clones this Workflow object to a new Workflow object
+        /// Clones this BinaryFileData object to a new BinaryFileData object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static Workflow Clone( this Workflow source, bool deepCopy )
+        public static BinaryFileData Clone( this BinaryFileData source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as Workflow;
+                return source.Clone() as BinaryFileData;
             }
             else
             {
-                var target = new Workflow();
-                target.WorkflowTypeId = source.WorkflowTypeId;
-                target.Name = source.Name;
-                target.Description = source.Description;
-                target.Status = source.Status;
-                target.IsProcessing = source.IsProcessing;
-                target.ActivatedDateTime = source.ActivatedDateTime;
-                target.LastProcessedDateTime = source.LastProcessedDateTime;
-                target.CompletedDateTime = source.CompletedDateTime;
+                var target = new BinaryFileData();
+                target.Content = source.Content;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

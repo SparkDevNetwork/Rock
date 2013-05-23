@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class ExceptionLogExtensionMethods
+    public static partial class ExceptionLogExtensionMethods
     {
         /// <summary>
         /// Clones this ExceptionLog object to a new ExceptionLog object

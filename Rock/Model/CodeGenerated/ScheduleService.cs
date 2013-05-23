@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class ScheduleExtensionMethods
+    public static partial class ScheduleExtensionMethods
     {
         /// <summary>
         /// Clones this Schedule object to a new Schedule object

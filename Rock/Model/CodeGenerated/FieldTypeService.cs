@@ -67,7 +67,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class FieldTypeExtensionMethods
+    public static partial class FieldTypeExtensionMethods
     {
         /// <summary>
         /// Clones this FieldType object to a new FieldType object

@@ -79,9 +79,9 @@ namespace Rock.Model
             
             // ignoring FinancialTransaction,SourceTypeValueId 
             
-            // ignoring FinancialTransaction,CurrencyTypeValueId 
-            
             // ignoring FinancialTransaction,CreditCardTypeValueId 
+            
+            // ignoring FinancialTransaction,CurrencyTypeValueId 
             
             // ignoring FinancialTransaction,TransactionTypeValueId 
  
@@ -143,7 +143,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class DefinedValueExtensionMethods
+    public static partial class DefinedValueExtensionMethods
     {
         /// <summary>
         /// Clones this DefinedValue object to a new DefinedValue object

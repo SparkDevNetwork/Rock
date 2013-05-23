@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class TaggedItemExtensionMethods
+    public static partial class TaggedItemExtensionMethods
     {
         /// <summary>
         /// Clones this TaggedItem object to a new TaggedItem object
