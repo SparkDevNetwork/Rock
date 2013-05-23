@@ -140,31 +140,21 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void rTime_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             int id = Int32.Parse( e.CommandArgument.ToString() );
-            if ( HasActiveClass( (LinkButton)e.Item.FindControl( "lbSelectTime" ) ) )
+            foreach ( RepeaterItem item in rTime.Items )
             {
-                // the button is already selected, so unselect it.
-                ( (LinkButton)e.Item.FindControl( "lbSelectTime" ) ).RemoveCssClass( "active" );
+                ( (LinkButton)item.FindControl( "lbSelectTime" ) ).RemoveCssClass( "active" );
             }
-            else
-            {
-                // the button isn't already selected. Select it.
-                ( (LinkButton)e.Item.FindControl( "lbSelectTime" ) ).AddCssClass( "active" );
-            }
+            ( (LinkButton)e.Item.FindControl( "lbSelectTime" ) ).AddCssClass( "active" );
         }
 
         protected void rActivity_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             int id = Int32.Parse( e.CommandArgument.ToString() );
-            if ( HasActiveClass( (LinkButton)e.Item.FindControl( "lbSelectActivity" ) ) )
+            foreach ( RepeaterItem item in rActivity.Items )
             {
-                // the button is already selected, so unselect it.
-                ( (LinkButton)e.Item.FindControl( "lbSelectActivity" ) ).RemoveCssClass( "active" );
+                ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).RemoveCssClass( "active" );
             }
-            else
-            {
-                // the button isn't already selected. Select it.
-                ( (LinkButton)e.Item.FindControl( "lbSelectActivity" ) ).AddCssClass( "active" );
-            }
+            ( (LinkButton)e.Item.FindControl( "lbSelectActivity" ) ).AddCssClass( "active" );
         }
 
         protected void lbBack_Click( object sender, EventArgs e )

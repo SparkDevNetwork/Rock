@@ -482,6 +482,46 @@ input.attended-checkin-keyboard-entry
 	width: 100%;
 }
 
-.red {
-	color: #ff0000;
-	}
+.grid-table
+{
+	background: rgba(100, 100, 100, .1);
+	font-size: 18px;
+}
+
+.table th, .table td
+{
+	border: none;
+	padding: 10px;
+	vertical-align: middle;
+	text-align: center;
+}
+
+.grid-table thead th a
+{
+	color: @checkinHeaderColor
+}
+
+.table th[scope=col]
+{
+	color: @checkinHeaderColor;
+}
+
+.ConfirmButtons
+{
+	.buttonBackground(@checkinPrimaryButtonBackground, spin(@checkinPrimaryButtonBackground, 20%));
+	width: 40px;
+	height: 40px;
+	padding-top: 20px;
+	font-size: 24px;
+}
+
+.table td a[title=Delete], .table td a[title=Edit]
+{
+	.buttonBackground(@checkinPrimaryButtonBackground, spin(@checkinPrimaryButtonBackground, 20%));
+	width: 55px;
+	height: 45px;
+	padding-top: 20px;
+	font-size: 24px;
+}
+
+

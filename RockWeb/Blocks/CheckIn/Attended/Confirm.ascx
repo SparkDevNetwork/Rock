@@ -21,19 +21,20 @@
 
     <div class="row-fluid attended-checkin-body">
 
-        <div class="span9">
+        <div class="span12">
             <div class="attended-checkin-body-container">
-                <Rock:Grid ID="gPersonList" runat="server" AllowSorting="true" OnRowSelected="gPerson_Edit" OnRowDataBound="gPersonList_RowDataBound">
+                <Rock:Grid ID="gPersonList" runat="server" AllowSorting="true" AllowPaging="false" ShowActionRow="false">
                     <Columns>
-                        <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Text" />
-                        <asp:BoundField DataField="AssignedTo" HeaderText="Assigned To" SortExpression="AssignedTo" />
-                        <asp:BoundField DataField="Room" HeaderText="Room" SortExpression="Room" />
-                        <asp:BoundField DataField="Time" HeaderText="Time" SortExpression="Time" />
-                        <Rock:EditValueField OnClick="gPerson_Edit" />
-                        <Rock:DeleteField OnClick="gPerson_Delete" />
-                        <asp:TemplateField>
+                        <asp:BoundField DataField="ListId" Visible="false" />
+                        <asp:BoundField DataField="Name" HeaderText="Name" />
+                        <asp:BoundField DataField="AssignedTo" HeaderText="Assigned To" />
+                        <asp:BoundField DataField="Room" HeaderText="Room" />
+                        <asp:BoundField DataField="Time" HeaderText="Time" />
+                        <Rock:EditValueField OnClick="gPersonList_Edit" HeaderText="Edit" />
+                        <Rock:DeleteField OnClick="gPersonList_Delete" HeaderText="Delete" />
+                        <asp:TemplateField HeaderText="Print">
                             <ItemTemplate>
-                                <asp:Button ID="btnPrint" runat="server" CommandName="Print" CommandArgument="<%# ((GridViewRow) Container).RowIndex %>" CssClass="icon-print" />
+                                <asp:LinkButton ID="btnPrint" runat="server" CssClass="btn ConfirmButtons" CommandName="Print" Text="Print" CommandArgument="<%# ((GridViewRow) Container).RowIndex %>"><i class="icon-print"></i></asp:LinkButton>
                             </ItemTemplate> 
                         </asp:TemplateField>
                     </Columns>
@@ -41,11 +42,11 @@
             </div>
         </div>
 
-        <div class="span3">
+<%--        <div class="span3">
             <div class="attended-checkin-body-container">
                 <asp:LinkButton ID="lbPrintAll" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" runat="server" OnClick="lbPrintAll_Click" Text="Print All"/>
             </div>
-        </div>
+        </div>--%>
 
     </div>
 

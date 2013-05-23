@@ -36,6 +36,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 if ( !Page.IsPostBack )
                 {
+                    gPersonList.DataKeyNames = new string[] { "ListId" };
                     CreateGridDataSource();
                 }
             }
@@ -47,6 +48,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             // add the columns to the datatable
             var column = new System.Data.DataColumn();
+            column.DataType = System.Type.GetType( "System.String" );
+            column.ColumnName = "ListId";
+            column.ReadOnly = true;
+            dt.Columns.Add( column );
+
+            column = new System.Data.DataColumn();
             column.DataType = System.Type.GetType( "System.String" );
             column.ColumnName = "Name";
             column.ReadOnly = false;
@@ -70,6 +77,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             column.ReadOnly = false;
             dt.Columns.Add( column );
 
+            var TAListIndex = 0;
             foreach ( var TAList in CheckInTimeAndActivityList )
             {
                 var thingCount = 0;
@@ -83,6 +91,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         switch (thingCount )
                         {
                             case 1:
+                                row["ListId"] = TAListIndex;
                                 var person = new PersonService().Get( thing );
                                 row["Name"] = person.FullName;
                                 break;
@@ -101,9 +110,20 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     }
                 }
                 dt.Rows.Add( row );
+                TAListIndex++;
             }
             gPersonList.DataSource = dt;
             gPersonList.DataBind();
+
+            EditValueField evf = new EditValueField();
+            evf.ControlStyle.CssClass = "test";
+            gPersonList.CssClass = "";
+            gPersonList.AddCssClass( "grid-table" );
+            gPersonList.AddCssClass( "table" );
+            //gPersonList.AddCssClass( "table-bordered" );
+            //gPersonList.AddCssClass( "table-striped" );
+            //gPersonList.AddCssClass( "table-hover" );
+            //gPersonList.AddCssClass( "table-full" );
         }
 
         #endregion
@@ -191,16 +211,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             NavigateToNextPage();
         }
 
-        #endregion
-        protected void gPersonList_RowDataBound( object sender, GridViewRowEventArgs e )
-        {
-            if ( e.Row.RowType == DataControlRowType.DataRow )
-            {
-                //int attributeId = (int)gPersonList.DataKeys[e.Row.RowIndex].Value;
-                //e.Row.Cells[1].Text = "<i>" + e.Row.Cells[1].Text + "</i>";
-            }
-        }
-
         protected int GetParent( int childGroupTypeId, int parentId )
         {
             GroupType childGroupType = new GroupTypeService().Get( childGroupTypeId );
@@ -220,5 +230,18 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             return parentId;
         }
-    }
+
+        #endregion
+
+        protected void gPersonList_Edit( object sender, RowEventArgs e )
+        {
+        }
+
+        protected void gPersonList_Delete( object sender, RowEventArgs e )
+        {
+            var something = CheckInTimeAndActivityList[int.Parse( gPersonList.DataKeys[e.RowIndex]["ListId"].ToString() )];
+            CheckInTimeAndActivityList.Remove( something );
+            CreateGridDataSource();
+        }
+}
 }
