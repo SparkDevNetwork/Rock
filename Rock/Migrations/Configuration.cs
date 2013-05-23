@@ -20,6 +20,7 @@ namespace Rock.Migrations
         {
             AutomaticMigrationsEnabled = false;
             CodeGenerator = new RockCSharpMigrationCodeGenerator();
+            CommandTimeout = 300;
         }
 
         /// <summary>
