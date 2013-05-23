@@ -83,9 +83,12 @@ namespace RockWeb.Blocks.CheckIn
 
         private void GoBack()
         {
-            CurrentCheckInState.CheckIn.SearchType = null;
-            CurrentCheckInState.CheckIn.SearchValue = string.Empty;
-            CurrentCheckInState.CheckIn.Families = new List<CheckInFamily>();
+            if ( CurrentCheckInState != null && CurrentCheckInState.CheckIn != null )
+            {
+                CurrentCheckInState.CheckIn.SearchType = null;
+                CurrentCheckInState.CheckIn.SearchValue = string.Empty;
+                CurrentCheckInState.CheckIn.Families = new List<CheckInFamily>();
+            }
 
             SaveState();
 

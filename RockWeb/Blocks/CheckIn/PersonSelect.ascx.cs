@@ -10,6 +10,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock;
 using Rock.CheckIn;
 using Rock.Model;
 
@@ -119,9 +120,8 @@ namespace RockWeb.Blocks.CheckIn
             if ( ! string.IsNullOrEmpty( person.SecurityCode ) )
             {
                 var linkButton = e.Item.FindControl( "lbSelect" ) as LinkButton;
-                //linkButton.Attributes.Add( "class", "btn-checked-in" ); // nope, doesn't work
-                linkButton.CssClass = string.Format( "{0} {1}", linkButton.CssClass, "btn-checked-in" );
+                linkButton.AddCssClass( "btn-dimmed" );
             }
         }
-}
+    }
 }
