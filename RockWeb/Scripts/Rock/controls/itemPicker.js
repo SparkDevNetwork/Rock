@@ -60,14 +60,14 @@
         ItemPicker.prototype.initializeCheckBoxes = function () {
             var controlId = this.controlId,
                 $treeView = $('#treeviewItems_' + controlId),
-                findCheckedNodes = function (nodes, selectedNodes) {
+                findCheckedNodes = function (nodes, nodeList) {
                     for (var i = 0; i < nodes.length; i++) {
                         if (nodes[i].checked) {
-                            selectedNodes.push({ id: nodes[i].Id, name: nodes[i].Name, uid: nodes[i].uid });
+                            nodeList.push({ id: nodes[i].Id, name: nodes[i].Name, uid: nodes[i].uid });
                         }
 
                         if (nodes[i].hasChildren) {
-                            findCheckedNodes(nodes[i].children.view(), selectedNodes);
+                            findCheckedNodes(nodes[i].children.view(), nodeList);
                         }
                     }
                 },
