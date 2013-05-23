@@ -64,7 +64,7 @@ INSERT INTO [Group] ( [IsSystem],[ParentGroupId],[GroupTypeId],[Name],[IsSecurit
 
 -- Create Schedules
 DELETE [Schedule]
-INSERT INTO [Schedule] ([Name],[iCalendarContent],[StartTime],[EndTime],[CheckInStartTime],[CheckInEndTime],[Guid],[IsShared]) VALUES 
+INSERT INTO [Schedule] ([Name],[iCalendarContent],[StartTime],[EndTime],[CheckInStartTime],[CheckInEndTime],[EffectiveStartDate],[Guid],[IsShared]) VALUES 
     ('4:30',        
 'BEGIN:VCALENDAR
 BEGIN:VEVENT
@@ -72,7 +72,7 @@ DTEND:20130501T173000
 DTSTART:20130501T163000
 RRULE:FREQ=WEEKLY;BYDAY=SA
 END:VEVENT
-END:VCALENDAR', '4:30pm', '5:30pm', '4:00pm', '5:00pm', NEWID(),1),
+END:VCALENDAR', '4:30pm', '5:30pm', '4:00pm', '5:00pm', '05/01/2013', NEWID(),1),
     
     ('6:00',        
 'BEGIN:VCALENDAR
@@ -81,7 +81,7 @@ DTEND:20130501T190000
 DTSTART:20130501T180000
 RRULE:FREQ=WEEKLY;BYDAY=SA
 END:VEVENT
-END:VCALENDAR', '6:00pm', '7:00pm', '5:30pm', '6:30pm', NEWID(),1),
+END:VCALENDAR', '6:00pm', '7:00pm', '5:30pm', '6:30pm', '05/01/2013', NEWID(),1),
 
     ('9:00',        
 'BEGIN:VCALENDAR
@@ -90,7 +90,7 @@ DTEND:20130501T100000
 DTSTART:20130501T090000
 RRULE:FREQ=WEEKLY;BYDAY=SU
 END:VEVENT
-END:VCALENDAR', '9:00am', '10:00am', '8:30am', '9:30am', NEWID(),1),
+END:VCALENDAR', '9:00am', '10:00am', '8:30am', '9:30am', '05/01/2013', NEWID(),1),
 
     ('10:30',        
 'BEGIN:VCALENDAR
@@ -99,7 +99,7 @@ DTEND:20130501T113000
 DTSTART:20130501T103000
 RRULE:FREQ=WEEKLY;BYDAY=SU
 END:VEVENT
-END:VCALENDAR', '10:30am', '11:30am', '10:00am', '11:00am', NEWID(),1),
+END:VCALENDAR', '10:30am', '11:30am', '10:00am', '11:00am', '05/01/2013', NEWID(),1),
 
     ('12:00',        
 'BEGIN:VCALENDAR
@@ -108,7 +108,7 @@ DTEND:20130501T130000
 DTSTART:20130501T120000
 RRULE:FREQ=WEEKLY;BYDAY=SU
 END:VEVENT
-END:VCALENDAR', '12:00pm', '1:00pm', '11:30am', '12:30pm', NEWID(),1),
+END:VCALENDAR', '12:00pm', '1:00pm', '11:30am', '12:30pm', '05/01/2013', NEWID(),1),
 
     ('4:30 (test)',        
 'BEGIN:VCALENDAR
@@ -117,7 +117,7 @@ DTEND:20130501T235900
 DTSTART:20130501T000100
 RRULE:FREQ=DAILY
 END:VEVENT
-END:VCALENDAR', '12:01am', '11:59pm', '12:01am', '11:59pm', NEWID(),1),
+END:VCALENDAR', '12:01am', '11:59pm', '12:01am', '11:59pm', '05/01/2013', NEWID(),1),
 
     ('6:00 (test)',        
 'BEGIN:VCALENDAR
@@ -126,7 +126,7 @@ DTEND:20130501T235900
 DTSTART:20130501T000100
 RRULE:FREQ=DAILY
 END:VEVENT
-END:VCALENDAR', '12:01am', '11:59pm', '12:01am', '11:59pm', NEWID(),1)
+END:VCALENDAR', '12:01am', '11:59pm', '12:01am', '11:59pm', '05/01/2013', NEWID(),1)
 
 -- Create Locations
 DELETE [Location]
