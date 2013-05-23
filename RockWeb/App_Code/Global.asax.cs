@@ -729,13 +729,14 @@ namespace RockWeb
                     Rock.Web.Cache.DefinedTypeCache.Read( definedType );
                 }
 
+                // DT: When running with production CCV Data, this is taking a considerable amount of time (we have 2100+ values)
                 // Cache all the Defined Values
-                var definedValueService = new Rock.Model.DefinedValueService();
-                foreach ( var definedValue in definedValueService.Queryable().ToList() )
-                {
-                    definedValue.LoadAttributes();
-                    Rock.Web.Cache.DefinedValueCache.Read( definedValue );
-                }
+                //var definedValueService = new Rock.Model.DefinedValueService();
+                //foreach ( var definedValue in definedValueService.Queryable().ToList() )
+                //{
+                //    definedValue.LoadAttributes();
+                //    Rock.Web.Cache.DefinedValueCache.Read( definedValue );
+                //}
             }
         }
 

@@ -124,6 +124,17 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the formatted number.
+        /// </summary>
+        /// <value>
+        /// The formatted number.
+        /// </value>
+        public virtual string NumberFormatted
+        {
+            get { return PhoneNumber.FormattedNumber( Number ); }
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>

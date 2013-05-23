@@ -1,19 +1,5 @@
-﻿<%@ Page ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/RockChMS/Layouts/Site.Master"
+﻿<%@ Page ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/RockChMS/Layouts/Site.Master" Trace="false"
     AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
-
-<script runat="server">
-
-    protected override void OnInit( EventArgs e )
-    {
-        base.OnInit( e );
-        AddCSSLink( Page, ResolveUrl( "~/CSS/jquery.tagsinput.css" ) );
-        AddScriptLink( Page, ResolveUrl( "~/Scripts/jquery.tagsinput.js" ) );
-
-        AddScriptLink( Page, ResolveUrl( "~/Scripts/jquery.tooltipster.min.js" ) );
-        AddCSSLink( Page, ResolveUrl( "~/CSS/tooltipster.css" ) );
-    }
-    
-</script>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
 
@@ -125,16 +111,6 @@
         </div>
 
 	</div>
-
-    <script>
-        $(function () {
-
-            //$(".popover-person").popover({ trigger: 'hover', html: 'true', delay: 200 });
-            $(".popover-person").tooltipster({ position: 'right', interactive: true, interactiveTolerance: 350 });
-            $(".badge").tooltipster({ position: 'top', interactive: true, interactiveTolerance: 350 });
-
-        });
-    </script>
 
     <footer class="page-footer">
         <div class="container-fluid">

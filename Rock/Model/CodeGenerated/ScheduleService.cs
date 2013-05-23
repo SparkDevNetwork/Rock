@@ -74,14 +74,9 @@ namespace Rock.Model
                 var target = new Schedule();
                 target.Name = source.Name;
                 target.Description = source.Description;
-                target.Frequency = source.Frequency;
-                target.FrequencyQualifier = source.FrequencyQualifier;
-                target.StartTime = source.StartTime;
-                target.EndTime = source.EndTime;
+                target.iCalendarContent = source.iCalendarContent;
                 target.CheckInStartTime = source.CheckInStartTime;
                 target.CheckInEndTime = source.CheckInEndTime;
-                target.EffectiveStartDate = source.EffectiveStartDate;
-                target.EffectiveEndDate = source.EffectiveEndDate;
                 target.IsShared = source.IsShared;
                 target.Id = source.Id;
                 target.Guid = source.Guid;

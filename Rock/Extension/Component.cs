@@ -218,6 +218,21 @@ namespace Rock.Extension
         }
 
         /// <summary>
+        /// Gets the Entity type GUID for this entity
+        /// </summary>
+        /// <value>
+        /// The type GUID.
+        /// </value>
+        public Guid TypeGuid
+        {
+            get
+            {
+                // Read should never return null since it will create entity type if it doesn't exist
+                return Rock.Web.Cache.EntityTypeCache.Read( this.GetType() ).Guid;
+            }
+        }
+
+        /// <summary>
         /// The auth entity. Classes that implement the <see cref="ISecured" /> interface should return
         /// a value that is unique across all <see cref="ISecured" /> classes.  Typically this is the
         /// qualified name of the class.

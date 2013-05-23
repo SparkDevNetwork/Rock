@@ -3,6 +3,7 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System;
 using System.Web.UI;
 
 using Rock.Attribute;
@@ -50,14 +51,14 @@ namespace Rock.Communication
         {
             get
             {
-                int entityTypeId = int.MinValue;
-                if (int.TryParse(GetAttributeValue("TransportContainer"), out entityTypeId))
+                Guid entityTypeGuid = Guid.Empty;
+                if ( Guid.TryParse( GetAttributeValue( "TransportContainer" ), out entityTypeGuid ) )
                 {
                     foreach ( var serviceEntry in TransportContainer.Instance.Components )
                     {
                         var component = serviceEntry.Value.Value;
                         var entityType = EntityTypeCache.Read( component.GetType() );
-                        if (entityType != null && entityType.Id == entityTypeId)
+                        if ( entityType != null && entityType.Guid.Equals( entityTypeGuid ) )
                         {
                             return component;
                         }
@@ -66,6 +67,7 @@ namespace Rock.Communication
                 return null;
             }
         }
+
         /// <summary>
         /// Initializes a new instance of the <see cref="ChannelComponent" /> class.
         /// </summary>
@@ -74,10 +76,6 @@ namespace Rock.Communication
             this.LoadAttributes();
         }
 
-        //public abstract string SerializeData();
-
-        //public abstract void DeserializeData( string data );
-        
     }
 
 }

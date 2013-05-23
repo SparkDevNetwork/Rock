@@ -9,6 +9,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
+using System.Linq;
 using System.Runtime.Serialization;
 using System.Web;
 
@@ -775,6 +776,36 @@ namespace Rock.Model
         /// Female
         /// </summary>
         Female = 2
+    }
+
+    #endregion
+
+    #region Extension Methods
+
+    public static partial class PersonExtensionMethods
+    {
+
+        /// <summary>
+        /// Gets the Family Members.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="includeSelf">if set to <c>true</c> [include self].</param>
+        /// <returns></returns>
+        public static IQueryable<GroupMember> GetFamilyMembers( this Person person, bool includeSelf = false )
+        {
+            return new PersonService().GetFamilyMembers( person, includeSelf );
+        }
+
+        /// <summary>
+        /// Gets the Spouse.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public static Person GetSpouse( this Person person )
+        {
+            return new PersonService().GetSpouse( person );
+        }
+
     }
 
     #endregion

@@ -170,9 +170,6 @@ END:VCALENDAR
             _btnCancelSchedule = new LinkButton();
 
             _smProxy = new ScriptManagerProxy();
-            
-            iCalendarContent = iCalendarContentEmptyEvent;
-
         }
 
         /// <summary>
@@ -188,34 +185,256 @@ END:VCALENDAR
         }
 
         /// <summary>
+        /// The _i calendar content
+        /// </summary>
+        private string _iCalendarContent
+        {
+            get
+            {
+                return ViewState["_iCalendarContent"] as string;
+            }
+
+            set
+            {
+                ViewState["_iCalendarContent"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Texts the box to positive integer.
+        /// </summary>
+        /// <param name="textBox">The text box.</param>
+        /// <param name="minValue">The min value.</param>
+        /// <returns></returns>
+        private int TextBoxToPositiveInteger( TextBox textBox, int minValue = 1 )
+        {
+            int result = textBox.Text.AsInteger() ?? minValue;
+            if ( result < minValue )
+            {
+                result = minValue;
+            }
+
+            textBox.Text = result.ToString();
+            return result;
+        }
+
+        /// <summary>
+        /// Gets the calendar content from controls.
+        /// </summary>
+        /// <returns></returns>
+        private string GetCalendarContentFromControls()
+        {
+            EnsureChildControls();
+
+            if ( _dpStartDateTime.SelectedDateTime == null )
+            {
+                return iCalendarContentEmptyEvent;
+            }
+
+            DDay.iCal.Event calendarEvent = new DDay.iCal.Event();
+            calendarEvent.DTStart = new DDay.iCal.iCalDateTime( _dpStartDateTime.SelectedDateTime.Value );
+            calendarEvent.DTStart.HasTime = true;
+
+            int durationHours = TextBoxToPositiveInteger( _tbDurationHours, 1 );
+            int durationMins = TextBoxToPositiveInteger(_tbDurationMinutes, 0);
+
+            calendarEvent.Duration = new TimeSpan( durationHours, durationMins, 0 );
+
+            if ( _radRecurring.Checked )
+            {
+                if ( _radSpecificDates.Checked )
+                {
+                    #region specific dates
+                    PeriodList recurrenceDates = new PeriodList();
+                    List<string> dateStringList = _hfSpecificDateListValues.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                    foreach ( var dateString in dateStringList )
+                    {
+                        DateTime newDate;
+                        if ( DateTime.TryParse( dateString, out newDate ) )
+                        {
+                            recurrenceDates.Add( new iCalDateTime( newDate.Date ) );
+                        }
+                    }
+
+                    calendarEvent.RecurrenceDates.Add( recurrenceDates );
+                    #endregion
+                }
+                else
+                {
+                    if ( _radDaily.Checked )
+                    {
+                        #region daily
+                        if ( _radDailyEveryXDays.Checked )
+                        {
+                            RecurrencePattern rruleDaily = new RecurrencePattern( FrequencyType.Daily );
+
+                            rruleDaily.Interval = TextBoxToPositiveInteger(_tbDailyEveryXDays);
+                            calendarEvent.RecurrenceRules.Add( rruleDaily );
+                        }
+                        else
+                        {
+                            // NOTE:  Daily Every Weekday/Weekend Day is actually Weekly on Day(s)OfWeek in iCal
+                            RecurrencePattern rruleWeekly = new RecurrencePattern( FrequencyType.Weekly );
+                            if ( _radDailyEveryWeekday.Checked )
+                            {
+                                rruleWeekly.ByDay.Add( new WeekDay( DayOfWeek.Monday ) );
+                                rruleWeekly.ByDay.Add( new WeekDay( DayOfWeek.Tuesday ) );
+                                rruleWeekly.ByDay.Add( new WeekDay( DayOfWeek.Wednesday ) );
+                                rruleWeekly.ByDay.Add( new WeekDay( DayOfWeek.Thursday ) );
+                                rruleWeekly.ByDay.Add( new WeekDay( DayOfWeek.Friday ) );
+                            }
+                            else if ( _radDailyEveryWeekendDay.Checked )
+                            {
+                                rruleWeekly.ByDay.Add( new WeekDay( DayOfWeek.Saturday ) );
+                                rruleWeekly.ByDay.Add( new WeekDay( DayOfWeek.Sunday ) );
+                            }
+
+                            calendarEvent.RecurrenceRules.Add( rruleWeekly );
+                        }
+                        #endregion
+                    }
+                    else if ( _radWeekly.Checked )
+                    {
+                        #region weekly
+                        RecurrencePattern rruleWeekly = new RecurrencePattern( FrequencyType.Weekly );
+                        rruleWeekly.Interval = TextBoxToPositiveInteger( _tbWeeklyEveryX );
+
+                        if ( _cbWeeklySunday.Checked )
+                        {
+                            rruleWeekly.ByDay.Add( new WeekDay( DayOfWeek.Sunday ) );
+                        }
+
+                        if ( _cbWeeklyMonday.Checked )
+                        {
+                            rruleWeekly.ByDay.Add( new WeekDay( DayOfWeek.Monday ) );
+                        }
+
+                        if ( _cbWeeklyTuesday.Checked )
+                        {
+                            rruleWeekly.ByDay.Add( new WeekDay( DayOfWeek.Tuesday ) );
+                        }
+
+                        if ( _cbWeeklyWednesday.Checked )
+                        {
+                            rruleWeekly.ByDay.Add( new WeekDay( DayOfWeek.Wednesday ) );
+                        }
+
+                        if ( _cbWeeklyThursday.Checked )
+                        {
+                            rruleWeekly.ByDay.Add( new WeekDay( DayOfWeek.Thursday ) );
+                        }
+
+                        if ( _cbWeeklyFriday.Checked )
+                        {
+                            rruleWeekly.ByDay.Add( new WeekDay( DayOfWeek.Friday ) );
+                        }
+
+                        if ( _cbWeeklySaturday.Checked )
+                        {
+                            rruleWeekly.ByDay.Add( new WeekDay( DayOfWeek.Saturday ) );
+                        }
+
+                        calendarEvent.RecurrenceRules.Add( rruleWeekly );
+                        #endregion
+                    }
+                    else if ( _radMonthly.Checked )
+                    {
+                        #region monthly
+                        RecurrencePattern rruleMonthly = new RecurrencePattern( FrequencyType.Monthly );
+                        if ( _radMonthlyDayX.Checked )
+                        {
+                            rruleMonthly.ByMonthDay.Add( TextBoxToPositiveInteger(_tbMonthlyDayX) );
+                            rruleMonthly.Interval = TextBoxToPositiveInteger(_tbMonthlyXMonths);
+                        }
+                        else if ( _radMonthlyNth.Checked )
+                        {
+                            WeekDay monthWeekDay = new WeekDay();
+                            monthWeekDay.Offset = _ddlMonthlyNth.SelectedValue.AsInteger() ?? 1;
+                            monthWeekDay.DayOfWeek = (DayOfWeek)( _ddlMonthlyDayName.SelectedValue.AsInteger() ?? 1 );
+                            rruleMonthly.ByDay.Add( monthWeekDay );
+                        }
+
+                        calendarEvent.RecurrenceRules.Add( rruleMonthly );
+                        #endregion
+                    }
+                }
+            }
+
+            if ( calendarEvent.RecurrenceRules.Count > 0 )
+            {
+                IRecurrencePattern rrule = calendarEvent.RecurrenceRules[0];
+
+                // Continue Until
+                if ( _radEndByNone.Checked )
+                {
+                    // intentionally blank
+                }
+                else if ( _radEndByDate.Checked )
+                {
+                    rrule.Until = _dpEndBy.SelectedDate.HasValue ? _dpEndBy.SelectedDate.Value : DateTime.MaxValue;
+                }
+                else if ( _radEndByOccurrenceCount.Checked )
+                {
+                    rrule.Count = TextBoxToPositiveInteger( _tbEndByOccurrenceCount, 0 );
+                }
+            }
+
+            // Exclusions
+            List<string> dateRangeStringList = _hfExclusionDateRangeListValues.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+
+            PeriodList exceptionDates = new PeriodList();
+            foreach ( string dateRangeString in dateRangeStringList )
+            {
+                var dateRangeParts = dateRangeString.Split( new char[] { '-' }, StringSplitOptions.RemoveEmptyEntries );
+                if ( dateRangeParts.Count() == 2 )
+                {
+                    DateTime beginDate;
+                    DateTime endDate;
+
+                    if ( DateTime.TryParse( dateRangeParts[0], out beginDate ) )
+                    {
+                        if ( DateTime.TryParse( dateRangeParts[1], out endDate ) )
+                        {
+                            DateTime dateToAdd = beginDate.Date;
+                            while ( dateToAdd <= endDate )
+                            {
+                                Period periodToAdd = new Period( new iCalDateTime( dateToAdd ) );
+                                if ( !exceptionDates.Contains( periodToAdd ) )
+                                {
+                                    exceptionDates.Add( periodToAdd );
+                                }
+
+                                dateToAdd = dateToAdd.AddDays( 1 );
+                            }
+                        }
+                    }
+                }
+            }
+
+            if ( exceptionDates.Count > 0 )
+            {
+                calendarEvent.ExceptionDates.Add( exceptionDates );
+            }
+
+            DDay.iCal.iCalendar calendar = new iCalendar();
+            calendar.Events.Add( calendarEvent );
+
+            iCalendarSerializer s = new iCalendarSerializer( calendar );
+
+            return s.SerializeToString( calendar );
+        }
+
+        /// <summary>
         /// Gets or sets the content of the i calendar.
         /// </summary>
         /// <value>
-        /// The content of the i calendar.
+        /// The content of the i calendar. 
         /// </value>
         public string iCalendarContent
         {
             get
             {
-                EnsureChildControls();
-
-                DDay.iCal.Event calendarEvent = new DDay.iCal.Event();
-                calendarEvent.DTStart = new DDay.iCal.iCalDateTime( _dpStartDateTime.SelectedDateTime.Value );
-                
-                int durationHours = _tbDurationHours.Text.AsInteger() ?? 1;
-                int durationMins = _tbDurationMinutes.Text.AsInteger() ?? 0;
-                calendarEvent.Duration = new TimeSpan( durationHours, durationMins, 0 );
-                
-                
-                //StringReader stringReader = new StringReader( iCalendarContentEmptyEvent );
-                //var calendarList = DDay.iCal.iCalendar.LoadFromStream( stringReader );
-
-                DDay.iCal.iCalendar calendar = new iCalendar();
-                calendar.Events.Add(calendarEvent);
-
-                iCalendarSerializer s = new iCalendarSerializer( calendar );
-
-                return s.SerializeToString( calendar );
+                return _iCalendarContent;
             }
 
             set
@@ -225,188 +444,213 @@ END:VCALENDAR
                 //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
                 //// We just need one Calendar and one Event
 
+                // set all rad to false to prevent multiple from being true
+                foreach ( var radControl in this.Controls.OfType<RadioButton>().ToList() )
+                {
+                    radControl.Checked = false;
+                }
+
+                foreach ( var cbControl in this.Controls.OfType<CheckBox>().ToList() )
+                {
+                    cbControl.Checked = false;
+                }
+
                 StringReader stringReader = new StringReader( value );
                 var calendarList = DDay.iCal.iCalendar.LoadFromStream( stringReader );
                 DDay.iCal.Event calendarEvent = null;
+                DDay.iCal.iCalendar calendar = null;
                 if ( calendarList.Count > 0 )
                 {
-                    var calendar = calendarList[0] as DDay.iCal.iCalendar;
-                    if ( calendar != null )
+                    calendar = calendarList[0] as DDay.iCal.iCalendar;
+                    if ( calendar == null )
                     {
-                        calendarEvent = calendar.Events[0] as DDay.iCal.Event;
-
-                        if ( calendarEvent.DTStart != null )
-                        {
-                            _dpStartDateTime.SelectedDateTime = calendarEvent.DTStart.Value;
-                            _tbDurationHours.Text = calendarEvent.Duration.Hours.ToString();
-                            _tbDurationMinutes.Text = calendarEvent.Duration.Minutes.ToString();
-                        }
-                        else
-                        {
-                            _dpStartDateTime.SelectedDateTime = null;
-                            _tbDurationHours.Text = string.Empty;
-                            _tbDurationMinutes.Text = string.Empty;
-                        }
-
-                        if ( calendarEvent.RecurrenceRules.Count == 0 )
-                        {
-                            // One-Time
-                            _radRecurring.Checked = false;
-                            _radOneTime.Checked = true;
-                        }
-                        else
-                        {
-                            // Recurring
-                            _radRecurring.Checked = true;
-                            _radOneTime.Checked = false;
-                        }
-
-                        if ( _radRecurring.Checked )
-                        {
-                            IRecurrencePattern rrule = calendarEvent.RecurrenceRules[0];
-                            switch ( rrule.Frequency )
-                            {
-                                case FrequencyType.Daily:
-                                    #region daily
-
-                                    _radDaily.Checked = true;
-                                    _radDailyEveryXDays.Checked = true;
-                                    _tbDailyEveryXDays.Text = rrule.Interval.ToString();
-
-                                    // NOTE:  Daily Every Weekday/Weekend Day is actually Weekly on Day(s)OfWeek in iCal
-                                    break;
-
-                                    #endregion
-                                case FrequencyType.Weekly:
-                                    #region weekly
-
-                                    _radWeekly.Checked = true;
-                                    _tbWeeklyEveryX.Text = rrule.Interval.ToString();
-
-                                    foreach ( DayOfWeek dow in rrule.ByDay.Select( a => a.DayOfWeek ) )
-                                    {
-                                        switch ( dow )
-                                        {
-                                            case DayOfWeek.Sunday:
-                                                _cbWeeklySunday.Checked = true;
-                                                break;
-                                            case DayOfWeek.Monday:
-                                                _cbWeeklyMonday.Checked = true;
-                                                break;
-                                            case DayOfWeek.Tuesday:
-                                                _cbWeeklyTuesday.Checked = true;
-                                                break;
-                                            case DayOfWeek.Wednesday:
-                                                _cbWeeklyWednesday.Checked = true;
-                                                break;
-                                            case DayOfWeek.Thursday:
-                                                _cbWeeklyThursday.Checked = true;
-                                                break;
-                                            case DayOfWeek.Friday:
-                                                _cbWeeklyFriday.Checked = true;
-                                                break;
-                                            case DayOfWeek.Saturday:
-                                                _cbWeeklySaturday.Checked = true;
-                                                break;
-                                        }
-                                    }
-
-                                    break;
-
-                                    #endregion
-                                case FrequencyType.Monthly:
-                                    #region monthly
-
-                                    _radMonthly.Checked = true;
-                                    if ( rrule.ByMonthDay.Count > 0 )
-                                    {
-                                        // Day X of every X Months
-                                        _radMonthlyDayX.Checked = true;
-                                        int monthDay = rrule.ByMonthDay[0];
-
-                                        _tbMonthlyDayX.Text = monthDay.ToString();
-                                        _tbMonthlyXMonths.Text = rrule.Interval.ToString();
-                                    }
-                                    else if ( rrule.ByDay.Count > 0 )
-                                    {
-                                        // The Nth <DayOfWeekName>
-                                        _radMonthlyNth.Checked = true;
-                                        IWeekDay bydate = rrule.ByDay[0];
-                                        _ddlMonthlyNth.SelectedValue = bydate.Offset.ToString();
-                                        _ddlMonthlyDayName.SelectedValue = bydate.DayOfWeek.ConvertToInt().ToString();
-                                    }
-
-                                    break;
-
-                                    #endregion
-                                default:
-                                    _radSpecificDates.Checked = true;
-                                    break;
-                            }
-
-                            // Continue Until
-                            if ( rrule.Until > DateTime.MinValue )
-                            {
-                                _radEndByDate.Checked = true;
-                                _dpEndBy.SelectedDate = rrule.Until;
-                            }
-                            else if ( rrule.Count > 0 )
-                            {
-                                _radEndByOccurrenceCount.Checked = true;
-                                _tbEndByOccurrenceCount.Text = rrule.Count.ToString();
-                            }
-                            else
-                            {
-                                _radEndByNone.Checked = true;
-                            }
-
-                            // Exclusions
-                            if ( calendarEvent.ExceptionDates.Count > 0 )
-                            {
-                                // convert individual ExceptionDates into a list of Date Ranges
-                                List<Period> exDateRanges = new List<Period>();
-                                List<IDateTime> dates = calendarEvent.ExceptionDates[0].Select( a => a.StartTime ).OrderBy( a => a ).ToList();
-                                IDateTime previousDate = dates[0].AddDays( -1 );
-                                var dateRange = new Period { StartTime = dates[0] };
-                                foreach ( var date in dates )
-                                {
-                                    if ( !date.Equals( previousDate.AddDays( 1 ) ) )
-                                    {
-                                        dateRange.EndTime = previousDate;
-                                        exDateRanges.Add( dateRange );
-                                        dateRange = new Period { StartTime = date };
-                                    }
-
-                                    previousDate = date;
-                                }
-
-                                dateRange.EndTime = dates.Last();
-                                exDateRanges.Add( dateRange );
-
-                                _hfExclusionDateRangeListValues.Value = exDateRanges.Select( a => string.Format( "{0} - {1}", a.StartTime, a.EndTime ) ).ToList().AsDelimited( "," );
-                            }
-                        }
-                        else
-                        {
-                            _radSpecificDates.Checked = true;
-
-                            if ( calendarEvent.RecurrenceDates.Count > 0 )
-                            {
-                                // Specific Dates
-                                _radOneTime.Checked = false;
-                                _radRecurring.Checked = true;
-                                _radEndByNone.Checked = true;
-                                _radEndByDate.Checked = false;
-                                _radEndByOccurrenceCount.Checked = false;
-                                IPeriodList dates = calendarEvent.RecurrenceDates[0];
-                                _hfSpecificDateListValues.Value = dates.Select( a => a.StartTime ).ToList().AsDelimited( "," );
-                            }
-
-                            _radEndByNone.Checked = true;
-                            _hfExclusionDateRangeListValues.Value = string.Empty;
-                        }
+                        _iCalendarContent = iCalendarContentEmptyEvent;
+                        return;
                     }
                 }
+                else
+                {
+                    _iCalendarContent = iCalendarContentEmptyEvent;
+                    return;
+                }
+
+                calendarEvent = calendar.Events[0] as DDay.iCal.Event;
+
+                if ( calendarEvent.DTStart != null )
+                {
+                    _dpStartDateTime.SelectedDateTime = calendarEvent.DTStart.Value;
+                    _tbDurationHours.Text = calendarEvent.Duration.Hours.ToString();
+                    _tbDurationMinutes.Text = calendarEvent.Duration.Minutes.ToString();
+                }
+                else
+                {
+                    _dpStartDateTime.SelectedDateTime = null;
+                    _tbDurationHours.Text = string.Empty;
+                    _tbDurationMinutes.Text = string.Empty;
+                }
+
+                if ( calendarEvent.RecurrenceRules.Count == 0 )
+                {
+                    // One-Time
+                    _radRecurring.Checked = false;
+                    _radOneTime.Checked = true;
+                }
+                else
+                {
+                    // Recurring
+                    _radRecurring.Checked = true;
+                    _radOneTime.Checked = false;
+                }
+
+                if ( _radRecurring.Checked )
+                {
+                    IRecurrencePattern rrule = calendarEvent.RecurrenceRules[0];
+                    switch ( rrule.Frequency )
+                    {
+                        case FrequencyType.Daily:
+                            #region daily
+
+                            _radDaily.Checked = true;
+                            _radDailyEveryXDays.Checked = true;
+                            _tbDailyEveryXDays.Text = rrule.Interval.ToString();
+
+                            // NOTE:  Daily Every Weekday/Weekend Day is actually Weekly on Day(s)OfWeek in iCal
+                            break;
+
+                            #endregion
+                        case FrequencyType.Weekly:
+                            #region weekly
+
+                            _radWeekly.Checked = true;
+                            _tbWeeklyEveryX.Text = rrule.Interval.ToString();
+
+                            foreach ( DayOfWeek dow in rrule.ByDay.Select( a => a.DayOfWeek ) )
+                            {
+                                switch ( dow )
+                                {
+                                    case DayOfWeek.Sunday:
+                                        _cbWeeklySunday.Checked = true;
+                                        break;
+                                    case DayOfWeek.Monday:
+                                        _cbWeeklyMonday.Checked = true;
+                                        break;
+                                    case DayOfWeek.Tuesday:
+                                        _cbWeeklyTuesday.Checked = true;
+                                        break;
+                                    case DayOfWeek.Wednesday:
+                                        _cbWeeklyWednesday.Checked = true;
+                                        break;
+                                    case DayOfWeek.Thursday:
+                                        _cbWeeklyThursday.Checked = true;
+                                        break;
+                                    case DayOfWeek.Friday:
+                                        _cbWeeklyFriday.Checked = true;
+                                        break;
+                                    case DayOfWeek.Saturday:
+                                        _cbWeeklySaturday.Checked = true;
+                                        break;
+                                }
+                            }
+
+                            break;
+
+                            #endregion
+                        case FrequencyType.Monthly:
+                            #region monthly
+
+                            _radMonthly.Checked = true;
+                            if ( rrule.ByMonthDay.Count > 0 )
+                            {
+                                // Day X of every X Months
+                                _radMonthlyDayX.Checked = true;
+                                int monthDay = rrule.ByMonthDay[0];
+
+                                _tbMonthlyDayX.Text = monthDay.ToString();
+                                _tbMonthlyXMonths.Text = rrule.Interval.ToString();
+                            }
+                            else if ( rrule.ByDay.Count > 0 )
+                            {
+                                // The Nth <DayOfWeekName>
+                                _radMonthlyNth.Checked = true;
+                                IWeekDay bydate = rrule.ByDay[0];
+                                _ddlMonthlyNth.SelectedValue = bydate.Offset.ToString();
+                                _ddlMonthlyDayName.SelectedValue = bydate.DayOfWeek.ConvertToInt().ToString();
+                            }
+
+                            break;
+
+                            #endregion
+                        default:
+                            // Unexpected type of recurring, fallback to Specific Dates
+                            _radSpecificDates.Checked = true;
+                            break;
+                    }
+
+                    // Continue Until
+                    if ( rrule.Until > DateTime.MinValue )
+                    {
+                        _radEndByDate.Checked = true;
+                        _dpEndBy.SelectedDate = rrule.Until;
+                    }
+                    else if ( rrule.Count > 0 )
+                    {
+                        _radEndByOccurrenceCount.Checked = true;
+                        _tbEndByOccurrenceCount.Text = rrule.Count.ToString();
+                    }
+                    else
+                    {
+                        _radEndByNone.Checked = true;
+                    }
+
+                    // Exclusions
+                    if ( calendarEvent.ExceptionDates.Count > 0 )
+                    {
+                        // convert individual ExceptionDates into a list of Date Ranges
+                        List<Period> exDateRanges = new List<Period>();
+                        List<IDateTime> dates = calendarEvent.ExceptionDates[0].Select( a => a.StartTime ).OrderBy( a => a ).ToList();
+                        IDateTime previousDate = dates[0].AddDays( -1 );
+                        var dateRange = new Period { StartTime = dates[0] };
+                        foreach ( var date in dates )
+                        {
+                            if ( !date.Equals( previousDate.AddDays( 1 ) ) )
+                            {
+                                dateRange.EndTime = previousDate;
+                                exDateRanges.Add( dateRange );
+                                dateRange = new Period { StartTime = date };
+                            }
+
+                            previousDate = date;
+                        }
+
+                        dateRange.EndTime = dates.Last();
+                        exDateRanges.Add( dateRange );
+
+                        _hfExclusionDateRangeListValues.Value = exDateRanges.Select( a => string.Format( "{0} - {1}", a.StartTime, a.EndTime ) ).ToList().AsDelimited( "," );
+                    }
+                }
+                else
+                {
+                    // Specific Dates is a special case of recurring (RecurrenceDates vs RecurrenceRules)
+                    _radSpecificDates.Checked = true;
+
+                    if ( calendarEvent.RecurrenceDates.Count > 0 )
+                    {
+                        // Specific Dates
+                        _radOneTime.Checked = false;
+                        _radRecurring.Checked = true;
+                        _radEndByNone.Checked = true;
+                        _radEndByDate.Checked = false;
+                        _radEndByOccurrenceCount.Checked = false;
+                        IPeriodList dates = calendarEvent.RecurrenceDates[0];
+                        _hfSpecificDateListValues.Value = dates.Select( a => a.StartTime ).ToList().AsDelimited( "," );
+                    }
+
+                    _radEndByNone.Checked = true;
+                    _hfExclusionDateRangeListValues.Value = string.Empty;
+                }
+
+                // rebuild _iCalendarContent from controls in case anything got stripped out from orig value
+                _iCalendarContent = GetCalendarContentFromControls();
             }
         }
 
@@ -453,6 +697,8 @@ END:VCALENDAR
 
             Controls.Clear();
 
+            string validationGroup = "validationgroup_" + this.ID;
+
             _btnDialogCancelX.ClientIDMode = ClientIDMode.Static;
             _btnDialogCancelX.CssClass = "close modal-control-cancel";
             _btnDialogCancelX.ID = "btnDialogCancelX";
@@ -462,19 +708,22 @@ END:VCALENDAR
             _dpStartDateTime.ClientIDMode = ClientIDMode.Static;
             _dpStartDateTime.ID = "dpStartDateTime";
             _dpStartDateTime.LabelText = "Start Date / Time";
-            _dpStartDateTime.Required = true;
+            _dpStartDateTime.Required = false;
+            _dpStartDateTime.ValidationGroup = validationGroup;
 
             _tbDurationHours.ClientIDMode = ClientIDMode.Static;
             _tbDurationHours.ID = "tbDurationHours";
             _tbDurationHours.CssClass = "input-mini";
             _tbDurationHours.MinimumValue = "0";
             _tbDurationHours.MaximumValue = "24";
-            
+            _tbDurationHours.ValidationGroup = validationGroup;
+
             _tbDurationMinutes.ClientIDMode = ClientIDMode.Static;
             _tbDurationMinutes.ID = "tbDurationMinutes";
             _tbDurationMinutes.CssClass = "input-mini";
             _tbDurationMinutes.MinimumValue = "0";
             _tbDurationMinutes.MaximumValue = "59";
+            _tbDurationMinutes.ValidationGroup = validationGroup;
 
             _radOneTime.ClientIDMode = ClientIDMode.Static;
             _radOneTime.ID = "radOneTime";
@@ -524,6 +773,7 @@ END:VCALENDAR
             // specific date
             _dpSpecificDate.ClientIDMode = ClientIDMode.Static;
             _dpSpecificDate.ID = "dpSpecificDate";
+            _dpSpecificDate.ValidationGroup = validationGroup;
 
             // daily recurrence
             _radDailyEveryXDays.ClientIDMode = ClientIDMode.Static;
@@ -531,8 +781,9 @@ END:VCALENDAR
             _radDailyEveryXDays.GroupName = "daily-options";
 
             _tbDailyEveryXDays.ClientIDMode = ClientIDMode.Static;
-            _tbDailyEveryXDays.ID = "txtDailyEveryXDays";
+            _tbDailyEveryXDays.ID = "tbDailyEveryXDays";
             _tbDailyEveryXDays.CssClass = "input-mini";
+            _tbDailyEveryXDays.ValidationGroup = validationGroup;
 
             _radDailyEveryWeekday.ClientIDMode = ClientIDMode.Static;
             _radDailyEveryWeekday.ID = "radDailyEveryWeekday";
@@ -548,6 +799,7 @@ END:VCALENDAR
             _tbWeeklyEveryX.CssClass = "input-mini";
             _tbWeeklyEveryX.MinimumValue = "1";
             _tbWeeklyEveryX.MaximumValue = "52";
+            _tbWeeklyEveryX.ValidationGroup = validationGroup;
 
             _cbWeeklySunday.ClientIDMode = ClientIDMode.Static;
             _cbWeeklySunday.ID = "cbWeeklySunday";
@@ -581,12 +833,14 @@ END:VCALENDAR
             _tbMonthlyDayX.CssClass = "input-mini";
             _tbMonthlyDayX.MinimumValue = "1";
             _tbMonthlyDayX.MaximumValue = "31";
+            _tbMonthlyDayX.ValidationGroup = validationGroup;
 
             _tbMonthlyXMonths.ClientIDMode = ClientIDMode.Static;
             _tbMonthlyXMonths.ID = "tbMonthlyXMonths";
             _tbMonthlyXMonths.CssClass = "input-mini";
             _tbMonthlyXMonths.MinimumValue = "1";
             _tbMonthlyXMonths.MaximumValue = "12";
+            _tbMonthlyXMonths.ValidationGroup = validationGroup;
 
             _radMonthlyNth.ClientIDMode = ClientIDMode.Static;
             _radMonthlyNth.ID = "radMonthlyNth";
@@ -624,6 +878,7 @@ END:VCALENDAR
 
             _dpEndBy.ClientIDMode = ClientIDMode.Static;
             _dpEndBy.ID = "dpEndBy";
+            _dpEndBy.ValidationGroup = validationGroup;
 
             _radEndByOccurrenceCount.ClientIDMode = ClientIDMode.Static;
             _radEndByOccurrenceCount.ID = "radEndByOccurrenceCount";
@@ -634,6 +889,7 @@ END:VCALENDAR
             _tbEndByOccurrenceCount.CssClass = "input-mini";
             _tbEndByOccurrenceCount.MinimumValue = "1";
             _tbEndByOccurrenceCount.MaximumValue = "999";
+            _tbEndByOccurrenceCount.ValidationGroup = validationGroup;
 
             // exclusions
             _hfExclusionDateRangeListValues.ClientIDMode = ClientIDMode.Static;
@@ -641,9 +897,11 @@ END:VCALENDAR
 
             _dpExclusionDateStart.ClientIDMode = ClientIDMode.Static;
             _dpExclusionDateStart.ID = "dpExclusionDateStart";
+            _dpExclusionDateStart.ValidationGroup = validationGroup;
 
             _dpExclusionDateEnd.ClientIDMode = ClientIDMode.Static;
             _dpExclusionDateEnd.ID = "dpExclusionDateEnd";
+            _dpExclusionDateEnd.ValidationGroup = validationGroup;
 
             // action buttons
             _btnCancelSchedule.ClientIDMode = ClientIDMode.Static;
@@ -654,10 +912,10 @@ END:VCALENDAR
 
             _btnSaveSchedule.ClientIDMode = ClientIDMode.Static;
             _btnSaveSchedule.ID = "btnSaveSchedule";
-            
             _btnSaveSchedule.CssClass = "btn btn-primary modal-control-ok";
             _btnSaveSchedule.Click += btnSaveSchedule_Click;
             _btnSaveSchedule.Text = "Save Schedule";
+            _btnSaveSchedule.ValidationGroup = validationGroup;
 
             _smProxy.Scripts.Add( new ScriptReference( "~/Scripts/Rock/Rock.schedulebuilder.js" ) );
 
@@ -725,7 +983,7 @@ END:VCALENDAR
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSaveSchedule_Click( object sender, EventArgs e )
         {
-            var s = iCalendarContent;
+            _iCalendarContent = GetCalendarContentFromControls();
             if ( SaveSchedule != null )
             {
                 SaveSchedule( sender, e );
@@ -751,6 +1009,11 @@ END:VCALENDAR
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         protected override void Render( HtmlTextWriter writer )
         {
+            if ( string.IsNullOrWhiteSpace( _iCalendarContent ) )
+            {
+                iCalendarContent = iCalendarContentEmptyEvent;
+            }
+
             string controlHtmlFragment = @"
     <a id='schedule-builder-button' role='button' class='btn btn-small'>
         <i class='icon-calendar'></i> ";
@@ -852,7 +1115,6 @@ END:VCALENDAR
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _hfSpecificDateListValues.RenderControl( writer );
-
 
             writer.Write( @"
                 <ul id='lstSpecificDates'>" );
