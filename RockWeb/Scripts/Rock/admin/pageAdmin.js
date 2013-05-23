@@ -90,9 +90,9 @@
                 // Bind the block configure icon so that edit icons are displayed on hover
                 $(".block-configuration").hover(function (e) {
                     var barWidth = $('.block-configuration-bar', this).outerWidth() + 45 + 'px';
-                    $(this).stop().animate({ width: barWidth }, 200).css({ 'z-index': '10' });
+                    $(this).stop(true, true).animate({ width: barWidth }, 200).css({ 'z-index': '10' });
                 }, function () {
-                    $(this).stop().animate({ width: '26px' }, 200).css({ 'z-index': '1' });
+                    $(this).stop(true, true).delay(500).animate({ width: '26px' }, 500).css({ 'z-index': '1' });
                 });
 
                 // Bind the block instance delete anchor
@@ -161,9 +161,9 @@
                 // Bind the zone configure icon so that edit icons are displayed on hover
                 $(".zone-configuration").hover(function () {
                     var barWidth = $('.zone-configuration-bar', this).width() + 45 + 'px';
-                    $(this).stop().animate({ width: barWidth }, 200).css({ 'z-index': '10' });
+                    $(this).stop(true, true).animate({ width: barWidth }, 200).css({ 'z-index': '10' });
                 }, function () {
-                    $(this).stop().animate({ width: '26px' }, 200).css({ 'z-index': '1' });
+                    $(this).stop(true, true).delay(500).animate({ width: '26px' }, 500).css({ 'z-index': '1' });
                 });
             },
             exports = {
