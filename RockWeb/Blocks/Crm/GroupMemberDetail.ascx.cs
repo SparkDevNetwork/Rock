@@ -190,8 +190,7 @@ namespace RockWeb.Blocks.Crm
 
             LoadDropDowns();
 
-            ppGroupMemberPerson.PersonId = groupMember.PersonId.ToString();
-            ppGroupMemberPerson.PersonName = groupMember.Person != null ? groupMember.Person.FullName : None.TextHtml;
+            ppGroupMemberPerson.SetValue(groupMember.Person);
             ddlGroupRole.SetValue( groupMember.GroupRoleId );
 
             phAttributes.Controls.Clear();
@@ -294,7 +293,7 @@ namespace RockWeb.Blocks.Crm
                 groupMember = groupMemberService.Get( groupMemberId );
             }
 
-            groupMember.PersonId = int.Parse( ppGroupMemberPerson.PersonId );
+            groupMember.PersonId = ppGroupMemberPerson.PersonId.Value;
             groupMember.GroupRoleId = ddlGroupRole.SelectedValueAsInt() ?? 0;
 
             groupMember.LoadAttributes();

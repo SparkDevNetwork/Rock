@@ -214,12 +214,11 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void ppAddPerson_SelectPerson( object sender, EventArgs e )
         {
-            int personId = int.MinValue;
-            if ( int.TryParse( ppAddPerson.PersonId, out personId ) && personId != 0 )
+            if ( ppAddPerson.PersonId.HasValue )
             {
-                if ( !Recipients.Any( r => r.PersonId == personId ) )
+                if ( !Recipients.Any( r => r.PersonId == ppAddPerson.PersonId.Value ) )
                 {
-                    var Person = new PersonService().Get( personId );
+                    var Person = new PersonService().Get( ppAddPerson.PersonId.Value );
                     if ( Person != null )
                     {
                         Recipients.Add( new Recipient( Person.Id, Person.FullName, CommunicationRecipientStatus.Pending ) );
@@ -652,7 +651,7 @@ namespace RockWeb.Blocks.Core
             lNumRecipients.Text = recipientCount.ToString( "N0" ) +
                 (recipientCount == 1 ? " Person" : " People");
 
-            ppAddPerson.PersonId = Rock.Constants.None.IdValue;
+            ppAddPerson.PersonId = Rock.Constants.None.Id;
             ppAddPerson.PersonName = "Add Person";
 
             int displayCount = int.MaxValue;
