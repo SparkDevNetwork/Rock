@@ -81,7 +81,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         phEditActions.Visible = group.IsAuthorized( "Edit", CurrentPerson );
 
                         // TODO: How many implied relationships should be displayed
-                        rGroupMembers.DataSource = group.Members
+
+                        rGroupMembers.DataSource = new GroupMemberService().GetByGroupId(group.Id)
                             .Where( m => m.PersonId != Person.Id )
                             .OrderBy( m => m.Person.LastName )
                             .ThenBy( m => m.Person.FirstName )
