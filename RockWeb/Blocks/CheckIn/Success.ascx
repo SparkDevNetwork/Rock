@@ -6,7 +6,7 @@
 
     <div class="row-fluid checkin-header">
         <div class="span12">
-            <h1>You Are Checked-in</h1>
+            <h1>Checked-in</h1>
         </div>
     </div>
 

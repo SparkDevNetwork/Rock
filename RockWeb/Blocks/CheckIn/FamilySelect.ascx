@@ -17,7 +17,7 @@
                 <div class="controls">
                     <asp:Repeater ID="rSelection" runat="server" OnItemCommand="rSelection_ItemCommand">
                         <ItemTemplate>
-                            <asp:LinkButton ID="lbSelect" runat="server" CommandArgument='<%# Eval("Group.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" ><%# Eval("Caption") %><span class="checkin-sub-title"><%# Eval("SubCaption") %></span></asp:LinkButton>
+                            <asp:LinkButton ID="lbSelect" runat="server" CommandArgument='<%# Eval("Group.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select"  OnClientClick="$(this).button('loading')"  ><%# Eval("Caption") %><span class="checkin-sub-title"><%# Eval("SubCaption") %></span></asp:LinkButton>
                         </ItemTemplate>
                     </asp:Repeater>
                 </div>
