@@ -325,6 +325,23 @@ namespace RockWeb.Blocks.Administration
             pnlDetails.Visible = true;
         }
 
+        protected void ddlBlockType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            if ( string.IsNullOrWhiteSpace( tbBlockName.Text ) )
+            {
+                var parts = ddlBlockType.SelectedItem.Text.Split( new char[] { '-' } );
+                if ( parts.Length > 1 )
+                {
+                    tbBlockName.Text = parts[parts.Length-1].Trim();
+                }
+                else
+                {
+                    tbBlockName.Text = ddlBlockType.SelectedItem.Text;
+                }
+            }
+        }
+
         #endregion
-    }
+        
+}
 }
