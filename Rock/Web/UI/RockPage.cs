@@ -307,6 +307,7 @@ namespace Rock.Web.UI
         protected override void OnInit( EventArgs e )
         {
             // Add the ScriptManager to each page
+            Page.Trace.Warn( "Adding script manager" );
             ScriptManager sm = ScriptManager.GetCurrent( this.Page );
             if ( sm == null )
             {
@@ -316,10 +317,12 @@ namespace Rock.Web.UI
             }
 
             // Recurse the page controls to find the rock page title and zone controls
+            Page.Trace.Warn( "Recursing layout to find zones" );
             Zones = new Dictionary<string, KeyValuePair<string, Zone>>();
             FindRockControls( this.Controls );
 
             // Add a Rock version meta tag
+            Page.Trace.Warn( "Adding Rock metatag" );
             string version = typeof( Rock.Web.UI.RockPage ).Assembly.GetName().Version.ToString();
             HtmlMeta rockVersion = new HtmlMeta();
             rockVersion.Attributes.Add( "name", "generator" );
@@ -328,6 +331,7 @@ namespace Rock.Web.UI
 
             // If the logout parameter was entered, delete the user's forms authentication cookie and redirect them
             // back to the same page.
+            Page.Trace.Warn( "Checking for logout request" );
             if ( PageParameter( "logout" ) != string.Empty )
             {
                 FormsAuthentication.SignOut();
@@ -339,6 +343,7 @@ namespace Rock.Web.UI
             }
 
             // If the impersonated query key was included then set the current person
+            Page.Trace.Warn( "Checking for person impersanation" );
             string impersonatedPersonKey = PageParameter( "rckipid" );
             if ( !String.IsNullOrEmpty( impersonatedPersonKey ) )
             {
@@ -352,12 +357,14 @@ namespace Rock.Web.UI
             }
 
             // Get current user/person info
+            Page.Trace.Warn( "Getting CurrentUser" );
             Rock.Model.UserLogin user = CurrentUser;
 
             // If there is a logged in user, see if it has an associated Person Record.  If so, set the UserName to 
             // the person's full name (which is then cached in the Session state for future page requests)
             if ( user != null )
             {
+                Page.Trace.Warn( "Setting CurrentPerson" );
                 UserName = user.UserName;
                 int? personId = user.PersonId;
 
@@ -387,6 +394,7 @@ namespace Rock.Web.UI
             if ( CurrentPage != null )
             {
                 // check if page should have been loaded via ssl
+                Page.Trace.Warn( "Checking for SSL request" );
                 if ( !Request.IsSecureConnection && CurrentPage.RequiresEncryption )
                 {
                     string redirectUrl = Request.Url.ToString().Replace( "http:", "https:" );
@@ -397,16 +405,19 @@ namespace Rock.Web.UI
 
                 // Verify that the current user is allowed to view the page.  If not, and 
                 // the user hasn't logged in yet, redirect to the login page
+                Page.Trace.Warn( "Checking if user is authorized" );
                 if ( !CurrentPage.IsAuthorized( "View", CurrentPerson ) )
                 {
                     if ( user == null )
                     {
+                        Page.Trace.Warn( "Redirecting to login page" );
                         FormsAuthentication.RedirectToLoginPage();
                     }
                 }
                 else
                 {
                     // Set current models (context)
+                    Page.Trace.Warn( "Checking for Context" );
                     CurrentPage.Context = new Dictionary<string, Data.KeyEntity>();
                     try 
                     {
@@ -430,6 +441,7 @@ namespace Rock.Web.UI
                     catch { }
 
                     // set page title
+                    Page.Trace.Warn( "Setting page title" );
                     if ( CurrentPage.Title != null && CurrentPage.Title != "" )
                     {
                         this.Title = CurrentPage.Title;
@@ -443,11 +455,14 @@ namespace Rock.Web.UI
                     this.EnableViewState = CurrentPage.EnableViewState;
 
                     // Cache object used for block output caching
+                    Page.Trace.Warn( "Getting memory cache" );
                     ObjectCache cache = MemoryCache.Default;
 
+                    Page.Trace.Warn( "Checking if user can administer" );
                     bool canAdministratePage = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
 
                     // Create a javascript object to store information about the current page for client side scripts to use
+                    Page.Trace.Warn( "Creating JS objects" );
                     string script = string.Format( @"
     var rock = {{ 
         pageId:{0}, 
@@ -461,14 +476,17 @@ namespace Rock.Web.UI
                     // Add config elements
                     if ( CurrentPage.IncludeAdminFooter )
                     {
+                        Page.Trace.Warn( "Adding popup controls (footer elements)" );
                         AddPopupControls();
                         if ( canAdministratePage )
                         {
+                            Page.Trace.Warn( "Adding adminstration options" );
                             AddConfigElements();
                         }
                     }
 
                     // Initialize the list of breadcrumbs for the current page (and blocks on the page)
+                    Page.Trace.Warn( "Setting breadcrumbs" );
                     CurrentPageReference.BreadCrumbs = new List<BreadCrumb>();
 
                     // If the page is configured to display in the breadcrumbs...
@@ -479,9 +497,13 @@ namespace Rock.Web.UI
                     }
 
                     // Load the blocks and insert them into page zones
+                    Page.Trace.Warn( "Loading Blocks" );
                     foreach ( Rock.Web.Cache.BlockCache block in CurrentPage.Blocks )
                     {
+                        Page.Trace.Warn( string.Format( "\tLoading '{0}' block", block.Name ) );
+
                         // Get current user's permissions for the block instance
+                        Page.Trace.Warn( "\tChecking permission" );
                         bool canAdministrate = block.IsAuthorized( "Administrate", CurrentPerson );
                         bool canEdit = block.IsAuthorized( "Edit", CurrentPerson );
                         bool canView = block.IsAuthorized( "View", CurrentPerson );
@@ -491,6 +513,8 @@ namespace Rock.Web.UI
                         {
                             // Create block wrapper control (implements INamingContainer so child control IDs are unique for
                             // each block instance
+                            Page.Trace.Warn( "\tAdding block wrapper html" );
+
                             HtmlGenericContainer blockWrapper = new HtmlGenericContainer( "div" );
                             blockWrapper.ID = string.Format( "bid_{0}", block.Id );
                             blockWrapper.Attributes.Add( "zoneloc", block.BlockLocation.ToString() );
@@ -510,6 +534,7 @@ namespace Rock.Web.UI
                             else
                             {
                                 // Load the control and add to the control tree
+                                Page.Trace.Warn( "\tLoading control" );
                                 Control control;
 
                                 try
@@ -534,6 +559,7 @@ namespace Rock.Web.UI
                                 RockBlock blockControl = null;
 
                                 // Check to see if the control was a PartialCachingControl or not
+                                Page.Trace.Warn( "\tChecking block for partial caching" );
                                 if ( control is RockBlock )
                                     blockControl = control as RockBlock;
                                 else
@@ -547,11 +573,14 @@ namespace Rock.Web.UI
                                 // If the current control is a block, set it's properties
                                 if ( blockControl != null )
                                 {
+                                    Page.Trace.Warn( "\tSetting block properties" );
+
                                     blockControl.CurrentPage = CurrentPage;
                                     blockControl.CurrentPageReference = CurrentPageReference;
                                     blockControl.CurrentBlock = block;
 
                                     // Add any breadcrumbs to current page reference that the block creates
+                                    Page.Trace.Warn( "\tAdding any breadcrumbs from block" );
                                     if ( block.BlockLocation == BlockLocation.Page )
                                     {
                                         blockControl.GetBreadCrumbs( CurrentPageReference ).ForEach( c => CurrentPageReference.BreadCrumbs.Add( c ) );
@@ -560,6 +589,7 @@ namespace Rock.Web.UI
                                     // If the blocktype's additional actions have not yet been loaded, load them now
                                     if ( !block.BlockType.CheckedAdditionalSecurityActions )
                                     {
+                                        Page.Trace.Warn( "\tAdding additional security actions for blcok" );
                                         foreach ( string action in blockControl.GetAdditionalActions() )
                                         {
                                             if ( !block.BlockType.SupportedActions.Contains( action ) )
@@ -573,8 +603,10 @@ namespace Rock.Web.UI
                                     // If the block's AttributeProperty values have not yet been verified verify them.
                                     // (This provides a mechanism for block developers to define the needed block
                                     //  attributes in code and have them automatically added to the database)
+                                    Page.Trace.Warn( "\tChecking if block attributes need refresh" );
                                     if ( !block.BlockType.IsInstancePropertiesVerified )
                                     {
+                                        Page.Trace.Warn( "\tCreating block attributes" );
                                         blockControl.CreateAttributes();
                                         block.BlockType.IsInstancePropertiesVerified = true;
                                     }
@@ -582,10 +614,12 @@ namespace Rock.Web.UI
                                     // Add the block configuration scripts and icons if user is authorized
                                     if ( CurrentPage.IncludeAdminFooter )
                                     {
+                                        Page.Trace.Warn( "\tAdding block configuration tools" );
                                         AddBlockConfig( blockWrapper, blockControl, block, canAdministrate, canEdit );
                                     }
                                 }
 
+                                Page.Trace.Warn( "\tAdding block to control tree" );
                                 HtmlGenericContainer blockContent = new HtmlGenericContainer( "div" );
                                 blockContent.Attributes.Add( "class", "block-content" );
                                 blockWrapper.Controls.Add( blockContent );
@@ -597,16 +631,19 @@ namespace Rock.Web.UI
                     }
 
                     // Make the last crumb for this page the active one
+                    Page.Trace.Warn( "Setting active breadcrumb" );
                     if ( CurrentPageReference.BreadCrumbs.Any() )
                     {
                         CurrentPageReference.BreadCrumbs.Last().Active = true;
                     }
 
+                    Page.Trace.Warn( "Getting parent page references" );
                     var pageReferences = PageReference.GetParentPageReferences( this, CurrentPage, CurrentPageReference );
                     pageReferences.Add( CurrentPageReference );
                     PageReference.SavePageReferences( pageReferences );
 
                     // Update breadcrumbs
+                    Page.Trace.Warn( "Updating breadcrumbs" );
                     BreadCrumbs = new List<BreadCrumb>();
                     foreach ( var pageReference in pageReferences )
                     {
@@ -614,6 +651,7 @@ namespace Rock.Web.UI
                     }
 
                     // Add favicon and apple touch icons to page
+                    Page.Trace.Warn( "Adding favicons and appletouch links" );
                     if ( CurrentPage.Site.FaviconUrl != null )
                     {
                         System.Web.UI.HtmlControls.HtmlLink faviconLink = new System.Web.UI.HtmlControls.HtmlLink();
@@ -637,6 +675,7 @@ namespace Rock.Web.UI
                     // Add the page admin footer if the user is authorized to edit the page
                     if ( CurrentPage.IncludeAdminFooter && canAdministratePage )
                     {
+                        Page.Trace.Warn( "Adding adming footer to page" );
                         HtmlGenericControl adminFooter = new HtmlGenericControl( "div" );
                         adminFooter.ID = "cms-admin-footer";
                         adminFooter.ClientIDMode = System.Web.UI.ClientIDMode.Static;

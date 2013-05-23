@@ -127,7 +127,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class PersonExtensionMethods
+    public static partial class PersonExtensionMethods
     {
         /// <summary>
         /// Clones this Person object to a new Person object

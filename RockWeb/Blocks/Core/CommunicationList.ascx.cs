@@ -79,7 +79,7 @@ namespace RockWeb.Blocks.Core
             rFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
             if ( canApprove )
             {
-                rFilter.SaveUserPreference( "Created By", ppSender.SelectedValue != "0" ? ppSender.SelectedValue : string.Empty );
+                rFilter.SaveUserPreference( "Created By", ppSender.PersonId.ToString() );
             }
             rFilter.SaveUserPreference( "Content", tbContent.Text );
 
@@ -240,10 +240,10 @@ namespace RockWeb.Blocks.Core
                     communications = communications.Where( c => c.Subject.StartsWith( subject ) );
                 }
 
-                int entityTypeId = 0;
-                if ( int.TryParse( rFilter.GetUserPreference( "Channel" ), out entityTypeId ) )
+                Guid entityTypeGuid = Guid.Empty;
+                if ( Guid.TryParse( rFilter.GetUserPreference( "Channel" ), out entityTypeGuid ) )
                 {
-                    communications = communications.Where( c => c.ChannelEntityTypeId.HasValue && c.ChannelEntityTypeId == entityTypeId );
+                    communications = communications.Where( c => c.ChannelEntityType != null && c.ChannelEntityType.Guid.Equals( entityTypeGuid ) );
                 }
 
                 string status = rFilter.GetUserPreference( "Status" );

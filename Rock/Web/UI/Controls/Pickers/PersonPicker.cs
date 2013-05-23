@@ -68,7 +68,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The person id.
         /// </value>
-        public string PersonId
+        public int? PersonId
         {
             get
             {
@@ -78,13 +78,20 @@ namespace Rock.Web.UI.Controls
                     _hfPersonId.Value = Rock.Constants.None.IdValue;
                 }
 
-                return _hfPersonId.Value;
+                if ( _hfPersonId.Value.Equals( Rock.Constants.None.IdValue ) )
+                {
+                    return null;
+                }
+                else
+                {
+                    return _hfPersonId.Value.AsInteger( false );
+                }
             }
 
             set
             {
                 EnsureChildControls();
-                _hfPersonId.Value = value;
+                _hfPersonId.Value = value.ToString();
             }
         }
 
@@ -94,7 +101,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The selected value.
         /// </value>
-        public string SelectedValue
+        public int? SelectedValue
         {
             get
             {
@@ -115,12 +122,12 @@ namespace Rock.Web.UI.Controls
         {
             if ( person != null )
             {
-                PersonId = person.Id.ToString();
+                PersonId = person.Id;
                 PersonName = person.FullName;
             }
             else
             {
-                PersonId = Rock.Constants.None.IdValue;
+                PersonId = Rock.Constants.None.Id;
                 PersonName = Rock.Constants.None.TextHtml;
             }
         }
