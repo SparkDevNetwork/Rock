@@ -123,9 +123,10 @@ namespace RockWeb.Blocks.Administration
 
             AttributeService attributeService = new AttributeService();
 
+            string qualifierValue = binaryFileType.Id.ToString();
             var qryBinaryFileAttributes = attributeService.GetByEntityTypeId( new BinaryFile().TypeId ).AsQueryable()
                 .Where( a => a.EntityTypeQualifierColumn.Equals( "BinaryFileTypeId", StringComparison.OrdinalIgnoreCase )
-                && a.EntityTypeQualifierValue.Equals( binaryFileType.Id.ToString() ) );
+                && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
 
             BinaryFileAttributesState.AddAll( qryBinaryFileAttributes.ToList() );
             BindBinaryFileAttributesGrid();
@@ -231,9 +232,10 @@ namespace RockWeb.Blocks.Administration
                         /* Take care of Binary File Attributes */
 
                         // delete BinaryFileAttributes that are no longer configured in the UI
+                        string qualifierValue = binaryFileType.Id.ToString();
                         var BinaryFileAttributesQry = attributeService.GetByEntityTypeId( new BinaryFile().TypeId ).AsQueryable()
                             .Where( a => a.EntityTypeQualifierColumn.Equals( "BinaryFileTypeId", StringComparison.OrdinalIgnoreCase )
-                            && a.EntityTypeQualifierValue.Equals( binaryFileType.Id.ToString() ) );
+                            && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
 
                         var deletedBinaryFileAttributes = from attr in BinaryFileAttributesQry
                                                           where !( from d in BinaryFileAttributesState

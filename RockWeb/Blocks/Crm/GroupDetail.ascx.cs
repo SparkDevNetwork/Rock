@@ -313,9 +313,10 @@ namespace RockWeb.Blocks.Crm
                     /* Take care of Group Member Attributes */
 
                     // delete GroupMemberAttributes that are no longer configured in the UI
+                    string qualifierValue = group.Id.ToString();
                     var groupMemberAttributesQry = attributeService.GetByEntityTypeId( new GroupMember().TypeId ).AsQueryable()
                         .Where( a => a.EntityTypeQualifierColumn.Equals( "GroupId", StringComparison.OrdinalIgnoreCase )
-                        && a.EntityTypeQualifierValue.Equals( group.Id.ToString() ) );
+                        && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
 
                     var deletedGroupMemberAttributes = from attr in groupMemberAttributesQry
                                                        where !( from d in GroupMemberAttributesState
@@ -616,9 +617,10 @@ namespace RockWeb.Blocks.Crm
 
             AttributeService attributeService = new AttributeService();
 
+            string qualifierValue = group.Id.ToString();
             var qryGroupMemberAttributes = attributeService.GetByEntityTypeId( new GroupMember().TypeId ).AsQueryable()
                 .Where( a => a.EntityTypeQualifierColumn.Equals( "GroupId", StringComparison.OrdinalIgnoreCase )
-                && a.EntityTypeQualifierValue.Equals( group.Id.ToString() ) );
+                && a.EntityTypeQualifierValue.Equals( qualifierValue  ) );
 
             GroupMemberAttributesState.AddAll( qryGroupMemberAttributes.ToList() );
             BindGroupMemberAttributesGrid();

@@ -164,9 +164,10 @@ namespace RockWeb.Blocks.Administration
             AttributeService attributeService = new AttributeService();
 
             // add attributes with IsGridColumn to grid
+            string qualifierValue = workflowType.Id.ToString();
             var qryWorkflowTypeAttributes = attributeService.GetByEntityTypeId( new Workflow().TypeId ).AsQueryable()
                 .Where( a => a.EntityTypeQualifierColumn.Equals( "WorkflowTypeId", StringComparison.OrdinalIgnoreCase )
-                && a.EntityTypeQualifierValue.Equals( workflowType.Id.ToString() ) );
+                && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
 
             qryWorkflowTypeAttributes = qryWorkflowTypeAttributes.Where( a => a.IsGridColumn );
 
