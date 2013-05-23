@@ -112,14 +112,6 @@
 
 	</div>
 
-    <script>
-        $(function () {
-
-            $(".badge").tooltipster({ position: 'top', interactive: true, interactiveTolerance: 350 });
-
-        });
-    </script>
-
     <footer class="page-footer">
         <div class="container-fluid">
             <div class="row-fluid">

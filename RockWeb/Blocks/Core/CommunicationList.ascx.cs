@@ -79,7 +79,7 @@ namespace RockWeb.Blocks.Core
             rFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
             if ( canApprove )
             {
-                rFilter.SaveUserPreference( "Created By", ppSender.SelectedValue != "0" ? ppSender.SelectedValue : string.Empty );
+                rFilter.SaveUserPreference( "Created By", ppSender.PersonId.ToString() );
             }
             rFilter.SaveUserPreference( "Content", tbContent.Text );
 

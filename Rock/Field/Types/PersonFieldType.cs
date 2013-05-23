@@ -69,7 +69,7 @@ namespace Rock.Field.Types
             if ( ppPerson != null )
             {
                 Guid personGuid = Guid.Empty;
-                int? personId = ppPerson.PersonId.AsInteger();
+                int? personId = ppPerson.PersonId;
 
                 var person = new PersonService().Get( personId ?? 0 );
                 if ( person != null )
