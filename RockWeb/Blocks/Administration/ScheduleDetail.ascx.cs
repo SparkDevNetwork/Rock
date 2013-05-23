@@ -129,25 +129,28 @@ namespace RockWeb.Blocks.Administration
             iCalendar calendar = iCalendar.LoadFromStream( new StringReader( sbSchedule.iCalendarContent ) ).First() as iCalendar;
             DDay.iCal.Event calendarEvent = calendar.Events[0] as Event;
 
-            List<Occurrence> nextOccurrences = calendar.GetOccurrences( DateTime.Now.Date, DateTime.Now.Date.AddYears( 1 ) ).Take( 26 ).ToList();
-
-            string listHtml = "<hr /><span>Occurrences Preview</span><ul>";
-            foreach ( var occurrence in nextOccurrences )
+            if ( calendarEvent.DTStart != null )
             {
-                if ( occurrence.Period.StartTime.Value.Date.Equals( occurrence.Period.EndTime.Value.Date ) )
+                List<Occurrence> nextOccurrences = calendar.GetOccurrences( DateTime.Now.Date, DateTime.Now.Date.AddYears( 1 ) ).Take( 26 ).ToList();
+
+                string listHtml = "<hr /><span>Occurrences Preview</span><ul>";
+                foreach ( var occurrence in nextOccurrences )
                 {
-                    listHtml += string.Format( "<li>{0} - {1} to {2} ( {3} hours) </li>", occurrence.Period.StartTime.Value.Date.ToShortDateString(), occurrence.Period.StartTime.Value.TimeOfDay.ToTimeString(), occurrence.Period.EndTime.Value.TimeOfDay.ToTimeString(), occurrence.Period.Duration.TotalHours.ToString( "#0.00" ) );
+                    if ( occurrence.Period.StartTime.Value.Date.Equals( occurrence.Period.EndTime.Value.Date ) )
+                    {
+                        listHtml += string.Format( "<li>{0} - {1} to {2} ( {3} hours) </li>", occurrence.Period.StartTime.Value.Date.ToShortDateString(), occurrence.Period.StartTime.Value.TimeOfDay.ToTimeString(), occurrence.Period.EndTime.Value.TimeOfDay.ToTimeString(), occurrence.Period.Duration.TotalHours.ToString( "#0.00" ) );
+                    }
+                    else
+                    {
+                        listHtml += string.Format( "<li>{0} to {1} ( {2} hours) </li>", occurrence.Period.StartTime.Value.ToString( "g" ), occurrence.Period.EndTime.Value.ToString( "g" ), occurrence.Period.Duration.TotalHours.ToString( "#0.00" ) );
+                    }
                 }
-                else
-                {
-                    listHtml += string.Format( "<li>{0} to {1} ( {2} hours) </li>", occurrence.Period.StartTime.Value.ToString( "g" ), occurrence.Period.EndTime.Value.ToString( "g" ), occurrence.Period.Duration.TotalHours.ToString( "#0.00" ) );
-                }
+
+                listHtml += string.Format( "<li>{0}</li>", "..." );
+                listHtml += "</ul>";
+
+                hbSchedulePreview.Text += listHtml;
             }
-
-            listHtml += string.Format( "<li>{0}</li>", "..." );
-            listHtml += "</ul>";
-
-            hbSchedulePreview.Text += listHtml;
         }
 
         /// <summary>
