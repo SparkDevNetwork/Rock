@@ -28,16 +28,8 @@ namespace Rock.Web.UI.Controls
                 this.PropertyName = "SelectedDate";
             }
 
-            string kendoFunction = "kendoDatePicker";
-
-            string script = string.Format( 
-                @"$(document).ready(function() {{
-                    $('#{0}').{1}();
-                }});",
-                this.ClientID,
-                kendoFunction);
-
-            ScriptManager.RegisterClientScriptBlock( this.Page, typeof( Page ), "KendoDatePickerScript_" + this.ID, script, true );
+            var script = string.Format( @"Rock.controls.datePicker.initialize({{ id: '{0}' }});", this.ClientID );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "date_picker-" + this.ClientID, script, true );
         }
 
         /// <summary>
