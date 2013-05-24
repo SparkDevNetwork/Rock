@@ -80,7 +80,7 @@ namespace Rock.Web.UI.Controls
         private LinkButton _btnSaveSchedule;
         private LinkButton _btnCancelSchedule;
 
-        private ScriptManagerProxy _smProxy;
+        //private ScriptManagerProxy _smProxy;
 
         // consts
         private readonly Dictionary<string, int> nthNames = new Dictionary<string, int> { 
@@ -169,7 +169,7 @@ END:VCALENDAR
             _btnSaveSchedule = new LinkButton();
             _btnCancelSchedule = new LinkButton();
 
-            _smProxy = new ScriptManagerProxy();
+            //_smProxy = new ScriptManagerProxy();
         }
 
         /// <summary>
@@ -687,7 +687,8 @@ END:VCALENDAR
         /// </summary>
         protected virtual void RegisterJavaScript()
         {
-            // todo
+            var script = string.Format( @"Rock.controls.scheduleBuilder.initialize({{ id: '{0}' }});", this.ClientID );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "schedule_builder-init_" + this.ClientID, script, true );
         }
 
         /// </summary>
@@ -917,7 +918,7 @@ END:VCALENDAR
             _btnSaveSchedule.Text = "Save Schedule";
             _btnSaveSchedule.ValidationGroup = validationGroup;
 
-            _smProxy.Scripts.Add( new ScriptReference( "~/Scripts/Rock/Rock.schedulebuilder.js" ) );
+            //_smProxy.Scripts.Add( new ScriptReference( "~/Scripts/Rock/Rock.schedulebuilder.js" ) );
 
             Controls.Add( _btnDialogCancelX );
             Controls.Add( _dpStartDateTime );
@@ -973,7 +974,7 @@ END:VCALENDAR
             Controls.Add( _btnSaveSchedule );
             Controls.Add( _btnCancelSchedule );
 
-            Controls.Add( _smProxy );
+            //Controls.Add( _smProxy );
         }
 
         /// <summary>
@@ -1334,7 +1335,7 @@ END:VCALENDAR
             // write out the closing divs that go after the modal footer
             writer.Write( "</div>" );
 
-            _smProxy.RenderControl( writer );
+            //_smProxy.RenderControl( writer );
         }
     }
 }
