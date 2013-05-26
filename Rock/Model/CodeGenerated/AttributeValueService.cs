@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class AttributeValueExtensionMethods
+    public static partial class AttributeValueExtensionMethods
     {
         /// <summary>
         /// Clones this AttributeValue object to a new AttributeValue object
