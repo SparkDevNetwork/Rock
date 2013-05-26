@@ -41,7 +41,8 @@ namespace RockWeb.Blocks.Finance
     [TextField( "Confirmation Message", "What text should be displayed on the confirmation page?", true, 
         @"{{ ContributionHeader }}<br/><br/>
         {{ Person.FirstName }},<br/><br/>
-        You're about to give a total of {{ TotalContribution }} to {{ OrganizationName }}.<br/><br/>  Your contribution will be given using your {{ PaymentType }} ending in {{ PaymentLastFour }}.<br/>
+        You're about to give a total of {{ TotalContribution }} to {{ OrganizationName }}.<br/><br/>  Your contribution will be given 
+        using your {{ PaymentType }} ending in {{ PaymentLastFour }}.<br/>
         <br/>Thank-you,<br/>
         {{ OrganizationName }}<br/>  
         {{ ContributionFooter }}"
@@ -139,6 +140,19 @@ namespace RockWeb.Blocks.Finance
                 BindAccounts();
                 BindPaymentTypes();
             }            
+
+            // test data
+            txtStreet.Text = "street";
+            txtCity.Text = "city";
+            txtZip.Text = "149471";
+            txtCreditCard.Text = "42567395723957";
+            
+            txtCVV.Text = "572";
+            txtCardName.Text = "dave";
+            txtPhone.Text = "525225";
+            dtpExpiration.SelectedDate =  DateTime.Now;
+            pnlConfirm.Visible = false;
+            pnlComplete.Visible = false;
         }
 
         /// <summary>
@@ -375,26 +389,41 @@ namespace RockWeb.Blocks.Finance
                 .ToList().FirstOrDefault();
 
             personService.Save( person, CurrentPersonId );
-            
 
-            // process payment type
+            // Set up confirmation message
+            var configValues = new Dictionary<string,object>();
+            
+            Rock.Web.Cache.GlobalAttributesCache.Read().AttributeValues
+                .Where( v => 
+                    v.Key.StartsWith( "Organization", StringComparison.CurrentCultureIgnoreCase ) )
+                .ToList()
+                .ForEach( v => configValues.Add( v.Key, v.Value.Value ) );
+            
+            foreach ( string key in System.Configuration.ConfigurationManager.AppSettings.AllKeys )
+            {
+                configValues.Add( "Config_" + key, System.Configuration.ConfigurationManager.AppSettings[key] );
+            }
+
             if ( !string.IsNullOrEmpty(txtCreditCard.Text) && !string.IsNullOrEmpty(hfCardType.Value) )
             {
-                var lPaymentType = hfCardType.Value.Split( ' ' ).Reverse().FirstOrDefault().Substring( 2 );
-                lPaymentType = char.ToUpper( txtCreditCard.Text[0] ) + txtCreditCard.Text.Substring( 1 );
-                lPaymentType = " credit card ";                
-                var lPaymentLastFour = txtCreditCard.Text.Substring( txtCreditCard.Text.Length - 4, 4 );
+                var cardType = hfCardType.Value.Split( ' ' ).Reverse().FirstOrDefault().Replace( "is-", "" );
+                configValues.Add( "PaymentType", CultureInfo.CurrentCulture.TextInfo.ToTitleCase( cardType ) + " card");
+                configValues.Add( "PaymentLastFour", txtCreditCard.Text.Substring( txtCreditCard.Text.Length - 4, 4 ) );                                                
             }
-            else if ( !string.IsNullOrEmpty( txtCreditCard.Text ) )
+            else if ( !string.IsNullOrEmpty( txtAccount.Text ) )
             {
-                var lPaymentType = rblAccountType.SelectedValue;
-                var lAccountType = " account ";
-                var lPaymentLastFour = txtAccount.Text.Substring( txtAccount.Text.Length - 4, 4 );
+                configValues.Add( "PaymentType", rblAccountType.SelectedValue + " account" );
+                configValues.Add( "PaymentLastFour", txtAccount.Text.Substring( txtAccount.Text.Length - 4, 4 ) );                
             }
-                        
-            var lGiftTotal = transactionList.Sum( ftd => ftd.Amount ).ToString();
-                        
-            pnlDetails.Visible = false;
+            
+            configValues.Add( "TotalContribution", transactionList.Sum( ftd => ftd.Amount ).ToString() );
+            
+            var confirmationTemplate = GetAttributeValue( "ConfirmationMessage" );
+            string confirmationMessage = confirmationTemplate.ResolveMergeFields( configValues );
+
+            lPaymentConfirmation.Text = confirmationMessage;   
+
+            pnlContribution.Visible = false;            
             pnlConfirm.Visible = true;
         }
 
