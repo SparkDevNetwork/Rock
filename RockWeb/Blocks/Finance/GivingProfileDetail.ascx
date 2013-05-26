@@ -17,13 +17,11 @@
                     this.value = parseFloat($(this).val()).toFixed(2);
                 }
 
-            });            
+            });
             $('#spnTotal').html(total.toFixed(2));
             $('.total-label').css('width', $(this).parent().width());
             return false;
         });
-
-        $('.calc').trigger('change');
 
         // payment types script
         $('.credit-card').creditCardTypeDetector({ 'credit_card_logos': '.card-logos' });
@@ -32,13 +30,15 @@
             $('#hfCardType').val(ulCardType.className);
         });
 
+        $('.calc').trigger('change');
+        $('.credit-card').trigger('change');
     };
 
 </script>
 
 <asp:Panel ID="pnlContribution" runat="server">
         
-    <asp:UpdatePanel ID="pnlDetails" runat="server" UpdateMode="Conditional">
+    <asp:UpdatePanel ID="pnlDetails" runat="server" ChildrenAsTriggers="true" UpdateMode="Conditional">
     <ContentTemplate>
 
         <div class="container-fluid">     
@@ -201,7 +201,7 @@
     </ContentTemplate>
     </asp:UpdatePanel>
 
-    <asp:UpdatePanel ID="pnlPayment" runat="server" UpdateMode="Conditional">
+    <asp:UpdatePanel ID="pnlPayment" runat="server" ChildrenAsTriggers="true" UpdateMode="Conditional">
     <ContentTemplate>
 
         <div class="container-fluid">
@@ -342,83 +342,81 @@
     </ContentTemplate>
     </asp:UpdatePanel>       
 
-    <asp:UpdatePanel ID="pnlConfirm" runat="server" Visible="false" UpdateMode="conditional">
-    <ContentTemplate>
-        
-        <div class="row-fluid">     
+</asp:Panel>
+
+<asp:Panel ID="pnlConfirm" runat="server" >
+       
+    <div class="row-fluid">     
                                 
-            <div class="<%= _spanClass %> well">
+        <div class="<%= _spanClass %> well">
 
-                <h3 class="header-text" >Confirm your Contribution: </h3>
+            <h3 class="header-text" >Confirm your Contribution: </h3>
                 
-                <div id="divPaymentConfirmation" runat="server">
+            <div id="divPaymentConfirmation" runat="server">
 
-                    
-
-                </div>
+                <asp:Literal ID="lPaymentConfirmation" runat="server" />
 
             </div>
 
         </div>
+
+    </div>
         
-        <div class="actions">
-            <asp:LinkButton ID="btnGive" runat="server" Text="Give" CssClass="btn btn-primary" OnClick="btnGive_Click" />
-            <asp:LinkButton ID="btnBack" runat="server" Text="Back" CssClass="btn btn-cancel"  OnClick="btnBack_Click" />
-        </div>
-
-    </ContentTemplate>
-    </asp:UpdatePanel>
-
-    <asp:UpdatePanel ID="pnlComplete" runat="server" Visible="false" UpdateMode="conditional">
-    <ContentTemplate>
-        
-        <div class="row-fluid">     
-                                
-            <div class="<%= _spanClass %> well">
-
-                 <div id="divShowReceipt" runat="server">
-                     
-
-                 </div>                 
-
-                 <div id="divSavePayment" runat="server" visible="false">
-
-                    <div class="row-fluid">
-
-                        <Rock:LabeledCheckBox ID="chkSavePayment" runat="server" Text="Save my payment information"  OnCheckedChanged="chkSavePayment_CheckedChanged" />
-                                                                                
-                        <div id="divPaymentNick" runat="server" visible="false">
-                            <Rock:LabeledTextBox ID="txtPaymentNick" runat="server" LabelText="Enter a nickname for your payment account" />
-                        </div>                                        
-                                        
-                    </div>
-
-                </div>
-
-                <div id="divSaveInformation" runat="server" visible="true">
-
-                    <Rock:LabeledCheckBox ID="chkCreateAccount" runat="server" LabelText="Save My Information" OnCheckedChanged="chkCreateAccount_CheckedChanged"  />
-                
-                    <div id="divCreateAccount" runat="server" visible="false" >
-
-				        <div class="row-fluid">
-                            <Rock:LabeledTextBox ID="txtUserName" runat="server" LabelText="Enter a username" />
-                            <Rock:LabeledTextBox ID="txtPassword" runat="server" TextMode="Password" LabelText="Enter a password" />	                
-                        </div>                             
-
-                    </div>
-
-                </div>
-                
-            </div>            
-
-        </div>
-        
-        <div class="actions">
-            <asp:LinkButton ID="btnPrint" runat="server" Text="Print" CssClass="btn btn-primary" OnClientClick="javascript: window.print();" />
-        </div>
-
-    </ContentTemplate>
-    </asp:UpdatePanel>
+    <div class="actions">
+        <asp:LinkButton ID="btnGive" runat="server" Text="Give" CssClass="btn btn-primary" OnClick="btnGive_Click" />
+        <asp:LinkButton ID="btnBack" runat="server" Text="Back" CssClass="btn btn-cancel"  OnClick="btnBack_Click" />
+    </div>
 
 </asp:Panel>
+
+<asp:Panel ID="pnlComplete" runat="server" >
+        
+    <div class="row-fluid">     
+                                
+        <div class="<%= _spanClass %> well">
+
+                <div id="divShowReceipt" runat="server">
+                     
+
+                </div>                 
+
+                <div id="divSavePayment" runat="server" visible="false">
+
+                <div class="row-fluid">
+
+                    <Rock:LabeledCheckBox ID="chkSavePayment" runat="server" Text="Save my payment information"  OnCheckedChanged="chkSavePayment_CheckedChanged" />
+                                                                                
+                    <div id="divPaymentNick" runat="server" visible="false">
+                        <Rock:LabeledTextBox ID="txtPaymentNick" runat="server" LabelText="Enter a nickname for your payment account" />
+                    </div>                                        
+                                        
+                </div>
+
+            </div>
+
+            <div id="divSaveInformation" runat="server" visible="true">
+
+                <Rock:LabeledCheckBox ID="chkCreateAccount" runat="server" LabelText="Save My Information" OnCheckedChanged="chkCreateAccount_CheckedChanged"  />
+                
+                <div id="divCreateAccount" runat="server" visible="false" >
+
+				    <div class="row-fluid">
+                        <Rock:LabeledTextBox ID="txtUserName" runat="server" LabelText="Enter a username" />
+                        <Rock:LabeledTextBox ID="txtPassword" runat="server" TextMode="Password" LabelText="Enter a password" />	                
+                    </div>                             
+
+                </div>
+
+            </div>
+                
+        </div>            
+
+    </div>
+        
+    <div class="actions">
+        <asp:LinkButton ID="btnPrint" runat="server" Text="Print" CssClass="btn btn-primary" OnClientClick="javascript: window.print();" />
+    </div>
+
+</asp:Panel>
+
+
