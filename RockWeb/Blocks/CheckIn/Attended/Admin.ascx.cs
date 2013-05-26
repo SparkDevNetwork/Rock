@@ -23,6 +23,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
     [Description( "Check-In Administration block" )]
     public partial class Admin : CheckInBlock
     {
+        #region Control Methods
+
         protected override void OnLoad( EventArgs e )
         {
            if ( !Page.IsPostBack )
@@ -77,6 +79,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 phScript.Controls.Clear();
             }
         }
+
+        #endregion
+
+        #region Edit Events
 
         protected void lbRefresh_Click( object sender, EventArgs e )
         {
@@ -165,6 +171,58 @@ namespace RockWeb.Blocks.CheckIn.Attended
             NavigateToNextPage();
         }
 
+        protected void rMinistries_ItemCommand( object source, RepeaterCommandEventArgs e )
+        {
+            int id = int.Parse( e.CommandArgument.ToString() );
+
+            // step 1: if the button isn't already selected, then show the button as selected. otherwise unselect it.
+            if ( HasActiveClass( (LinkButton)e.Item.FindControl( "lbSelectMinistries" ) ) )
+            {
+                // the button is already selected, so unselect it.
+                ( (LinkButton)e.Item.FindControl( "lbSelectMinistries" ) ).RemoveCssClass( "active" );
+            }
+            else
+            {
+                // the button isn't already selected. Select it.
+                ( (LinkButton)e.Item.FindControl( "lbSelectMinistries" ) ).AddCssClass( "active" );
+            }
+
+            // step 2: go through the buttons and load the appropriate rooms for the selected ministries.
+            List<GroupType> roomList = new List<GroupType>();
+            foreach ( RepeaterItem item in rMinistries.Items )
+            {
+                var linky = (LinkButton)item.FindControl( "lbSelectMinistries" );
+                if ( HasActiveClass( linky ) )
+                {
+                    GetRooms( int.Parse( linky.CommandArgument ), roomList );
+                }
+            }
+
+            rRooms.DataSource = roomList;
+            rRooms.DataBind();
+        }
+
+        protected void rRooms_ItemCommand( object source, RepeaterCommandEventArgs e )
+        {
+            int id = int.Parse( e.CommandArgument.ToString() );
+
+            // if the button isn't already selected, then show the button as selected. otherwise unselect it.
+            if ( HasActiveClass( (LinkButton)e.Item.FindControl( "lbSelectRooms" ) ) )
+            {
+                // the button is already selected, so unselect it.
+                ( (LinkButton)e.Item.FindControl( "lbSelectRooms" ) ).RemoveCssClass( "active" );
+            }
+            else
+            {
+                // the button isn't already selected. Select it.
+                ( (LinkButton)e.Item.FindControl( "lbSelectRooms" ) ).AddCssClass( "active" );
+            }
+        }
+
+        #endregion
+
+        #region Internal Methods
+
         private void BindGroupTypes()
         {
             BindGroupTypes( string.Empty );
@@ -200,6 +258,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                             }
                         }
                     }
+
                     rRooms.DataSource = roomList;
                     rRooms.DataBind();
                     if ( CurrentRoomGroupTypeIds != null )
@@ -234,6 +293,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                                 }
                             }
                         }
+
                         rRooms.DataSource = roomList;
                         rRooms.DataBind();
                         if ( CurrentRoomGroupTypeIds != null )
@@ -255,37 +315,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }
         }
 
-        protected void rMinistries_ItemCommand( object source, RepeaterCommandEventArgs e )
-        {
-            int id = int.Parse( e.CommandArgument.ToString() );
-
-            // step 1: if the button isn't already selected, then show the button as selected. otherwise unselect it.
-            if ( HasActiveClass((LinkButton)e.Item.FindControl("lbSelectMinistries")) )
-            {
-                // the button is already selected, so unselect it.
-                ( (LinkButton)e.Item.FindControl( "lbSelectMinistries" ) ).RemoveCssClass( "active" );
-            }
-            else
-            {
-                // the button isn't already selected. Select it.
-                ( (LinkButton)e.Item.FindControl( "lbSelectMinistries" ) ).AddCssClass( "active" );
-            }
-
-            // step 2: go through the buttons and load the appropriate rooms for the selected ministries.
-            List<GroupType> roomList = new List<GroupType>();
-            foreach ( RepeaterItem item in rMinistries.Items )
-            {
-                var linky = (LinkButton)item.FindControl( "lbSelectMinistries" );
-                if ( HasActiveClass( linky ) )
-                {
-                    GetRooms( int.Parse(linky.CommandArgument), roomList );
-                }
-            }
-            
-            rRooms.DataSource = roomList;
-            rRooms.DataBind();
-        }
-
         protected List<GroupType> GetRooms( int parentGroupTypeId, List<GroupType> returnGroupType )
         {
             GroupType parentGroupType = new GroupTypeService().Get( parentGroupTypeId );
@@ -299,7 +328,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
                 else
                 {
-
                     GroupType groupType = new GroupTypeService().Get( theParentGroupType.Id );
                     returnGroupType.Add( groupType );
                 }
@@ -322,21 +350,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }
         }
 
-        protected void rRooms_ItemCommand( object source, RepeaterCommandEventArgs e )
-        {
-            int id = int.Parse( e.CommandArgument.ToString() );
-
-            // if the button isn't already selected, then show the button as selected. otherwise unselect it.
-            if ( HasActiveClass( (LinkButton)e.Item.FindControl( "lbSelectRooms" ) ) )
-            {
-                // the button is already selected, so unselect it.
-                ( (LinkButton)e.Item.FindControl( "lbSelectRooms" ) ).RemoveCssClass( "active" );
-            }
-            else
-            {
-                // the button isn't already selected. Select it.
-                ( (LinkButton)e.Item.FindControl( "lbSelectRooms" ) ).AddCssClass( "active" );
-            }
-        }
+        #endregion
     }
 }
