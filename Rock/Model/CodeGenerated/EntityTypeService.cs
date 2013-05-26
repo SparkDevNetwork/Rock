@@ -137,7 +137,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class EntityTypeExtensionMethods
+    public static partial class EntityTypeExtensionMethods
     {
         /// <summary>
         /// Clones this EntityType object to a new EntityType object

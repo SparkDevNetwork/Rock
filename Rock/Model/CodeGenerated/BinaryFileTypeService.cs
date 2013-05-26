@@ -61,7 +61,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class BinaryFileTypeExtensionMethods
+    public static partial class BinaryFileTypeExtensionMethods
     {
         /// <summary>
         /// Clones this BinaryFileType object to a new BinaryFileType object

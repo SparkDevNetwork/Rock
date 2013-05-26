@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class BlockExtensionMethods
+    public static partial class BlockExtensionMethods
     {
         /// <summary>
         /// Clones this Block object to a new Block object

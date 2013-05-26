@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class PersonMergedExtensionMethods
+    public static partial class PersonMergedExtensionMethods
     {
         /// <summary>
         /// Clones this PersonMerged object to a new PersonMerged object

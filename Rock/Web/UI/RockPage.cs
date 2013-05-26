@@ -33,6 +33,7 @@ namespace Rock.Web.UI
         #region Private Variables
 
         private PlaceHolder phLoadTime;
+        private ScriptManager _scriptManager;
 
         #endregion
 
@@ -307,14 +308,21 @@ namespace Rock.Web.UI
         protected override void OnInit( EventArgs e )
         {
             // Add the ScriptManager to each page
-            Page.Trace.Warn( "Adding script manager" );
-            ScriptManager sm = ScriptManager.GetCurrent( this.Page );
-            if ( sm == null )
+            _scriptManager = ScriptManager.GetCurrent( this.Page );
+            
+            if ( _scriptManager == null )
             {
-                sm = new ScriptManager();
-                sm.ID = "sManager";
-                Page.Form.Controls.AddAt( 0, sm );
+                _scriptManager = new ScriptManager { ID = "sManager" };
+                Page.Trace.Warn( "Adding script manager" );
+                Page.Form.Controls.AddAt( 0, _scriptManager );
             }
+
+            // Add library and UI bundles during init, that way theme developers will only
+            // need to worry about registering any custom scripts or script bundles they need
+            _scriptManager.Scripts.Add( new ScriptReference { Name = "WebFormsBundle" } );
+            _scriptManager.Scripts.Add( new ScriptReference( "~/bundles/RockLibs" ) );
+            _scriptManager.Scripts.Add( new ScriptReference( "~/bundles/RockUi" ) );
+            _scriptManager.Scripts.Add( new ScriptReference( "~/bundles/RockValidation" ) );
 
             // Recurse the page controls to find the rock page title and zone controls
             Page.Trace.Warn( "Recursing layout to find zones" );
@@ -692,7 +700,7 @@ namespace Rock.Web.UI
                         HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aBlockConfig );
                         aBlockConfig.Attributes.Add( "class", "btn block-config" );
-                        aBlockConfig.Attributes.Add( "href", "javascript: showBlockConfig();" );
+                        aBlockConfig.Attributes.Add( "href", "javascript: Rock.admin.pageAdmin.showBlockConfig();" );
                         aBlockConfig.Attributes.Add( "Title", "Block Configuration" );
                         HtmlGenericControl iBlockConfig = new HtmlGenericControl( "i" );
                         aBlockConfig.Controls.Add( iBlockConfig );
@@ -705,7 +713,7 @@ namespace Rock.Web.UI
                         aAttributes.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                         aAttributes.Attributes.Add( "class", "btn properties" );
                         aAttributes.Attributes.Add( "height", "500px" );
-                        aAttributes.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", CurrentPage.Id ) ) + "')" );
+                        aAttributes.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", CurrentPage.Id ) ) + "')" );
                         aAttributes.Attributes.Add( "Title", "Page Properties" );
                         HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
                         aAttributes.Controls.Add( iAttributes );
@@ -718,7 +726,7 @@ namespace Rock.Web.UI
                         aChildPages.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                         aChildPages.Attributes.Add( "class", "btn page-child-pages" );
                         aChildPages.Attributes.Add( "height", "500px" );
-                        aChildPages.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( string.Format( "~/pages/{0}?t=Child Pages&pb=&sb=Done", CurrentPage.Id ) ) + "')" );
+                        aChildPages.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/pages/{0}?t=Child Pages&pb=&sb=Done", CurrentPage.Id ) ) + "')" );
                         aChildPages.Attributes.Add( "Title", "Child Pages" );
                         HtmlGenericControl iChildPages = new HtmlGenericControl( "i" );
                         aChildPages.Controls.Add( iChildPages );
@@ -728,7 +736,7 @@ namespace Rock.Web.UI
                         HtmlGenericControl aPageZones = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aPageZones );
                         aPageZones.Attributes.Add( "class", "btn page-zones" );
-                        aPageZones.Attributes.Add( "href", "javascript: showPageZones();" );
+                        aPageZones.Attributes.Add( "href", "javascript: Rock.controls.modal.showPageZones();" );
                         aPageZones.Attributes.Add( "Title", "Page Zones" );
                         HtmlGenericControl iPageZones = new HtmlGenericControl( "i" );
                         aPageZones.Controls.Add( iPageZones );
@@ -741,7 +749,7 @@ namespace Rock.Web.UI
                         aPageSecurity.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                         aPageSecurity.Attributes.Add( "class", "btn page-security" );
                         aPageSecurity.Attributes.Add( "height", "500px" );
-                        aPageSecurity.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Page Security&pb=&sb=Done",
+                        aPageSecurity.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Page Security&pb=&sb=Done",
                             EntityTypeCache.Read( typeof( Rock.Model.Page ) ).Id, CurrentPage.Id ) ) + "')" );
                         aPageSecurity.Attributes.Add( "Title", "Page Security" );
                         HtmlGenericControl iPageSecurity = new HtmlGenericControl( "i" );
@@ -755,7 +763,7 @@ namespace Rock.Web.UI
                         aSystemInfo.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                         aSystemInfo.Attributes.Add( "class", "btn system-info" );
                         aSystemInfo.Attributes.Add( "height", "500px" );
-                        aSystemInfo.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( "~/SystemInfo?t=System Information&pb=&sb=Done" ) + "')" );
+                        aSystemInfo.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( "~/SystemInfo?t=System Information&pb=&sb=Done" ) + "')" );
                         aSystemInfo.Attributes.Add( "Title", "Rock Information" );
                         HtmlGenericControl iSystemInfo = new HtmlGenericControl( "i" );
                         aSystemInfo.Controls.Add( iSystemInfo );
@@ -915,11 +923,11 @@ namespace Rock.Web.UI
         private void AddPopupControls()
         {
             // Add the page admin script
-            AddScriptLink( Page, "~/Scripts/Rock/popup.js" );
+            //AddScriptLink( Page, "~/Scripts/Rock/popup.js" );
 
             ModalIFrameDialog modalPopup = new ModalIFrameDialog();
             modalPopup.ID = "modal-popup";
-            modalPopup.OnCancelScript = "closeModal();";
+            modalPopup.OnCancelScript = "window.parent.Rock.controls.modal.close();";
             this.Form.Controls.Add( modalPopup );
         }
 
@@ -930,7 +938,7 @@ namespace Rock.Web.UI
         private void AddConfigElements()
         {
             // Add the page admin script
-            AddScriptLink( Page, "~/Scripts/Rock/page-admin.js" );
+            AddScriptLink( Page, "~/bundles/RockAdmin" );
 
             AddBlockMove();
             // Add Zone Wrappers
@@ -973,7 +981,7 @@ namespace Rock.Web.UI
                 aBlockConfig.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 aBlockConfig.Attributes.Add( "class", "zone-blocks" );
                 aBlockConfig.Attributes.Add( "height", "500px" );
-                aBlockConfig.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}?t=Zone Blocks&pb=&sb=Done", CurrentPage.Id, control.ID ) ) + "')" );
+                aBlockConfig.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}?t=Zone Blocks&pb=&sb=Done", CurrentPage.Id, control.ID ) ) + "')" );
                 aBlockConfig.Attributes.Add( "Title", "Zone Blocks" );
                 aBlockConfig.Attributes.Add( "zone", zoneControl.Key );
                 //aBlockConfig.InnerText = "Blocks";
@@ -1047,7 +1055,7 @@ namespace Rock.Web.UI
             ModalDialog modalBlockMove = new ModalDialog();
             modalBlockMove.ID = "modal-block-move";
             modalBlockMove.Title = "Move Block";
-            modalBlockMove.OnOkScript = "saveBlockMove();";
+            modalBlockMove.OnOkScript = "Rock.admin.pageAdmin.saveBlockMove();";
             this.Form.Controls.Add( modalBlockMove );
 
             HtmlGenericControl fsZoneSelect = new HtmlGenericControl( "fieldset" );
@@ -1339,42 +1347,11 @@ namespace Rock.Web.UI
         /// <param name="path">Path to script file.  Should be relative to layout template.  Will be resolved at runtime</param>
         public static void AddScriptLink( Page page, string path )
         {
-            string relativePath = page.ResolveUrl( path );
+            var scriptManager = ScriptManager.GetCurrent( page );
 
-            bool existsAlready = false;
-
-            if ( page != null && page.Header != null )
-                foreach ( Control control in page.Header.Controls )
-                {
-                    if ( control is LiteralControl )
-                        if ( ( (LiteralControl)control ).Text.ToLower().Contains( "src=" + relativePath.ToLower() ) )
-                        {
-                            existsAlready = true;
-                            break;
-                        }
-
-                    if ( control is HtmlGenericControl )
-                    {
-                        HtmlGenericControl genericControl = (HtmlGenericControl)control;
-                        if ( genericControl.TagName.ToLower() == "script" &&
-                           genericControl.Attributes["src"] != null &&
-                                genericControl.Attributes["src"].ToLower() == relativePath.ToLower() )
-                        {
-                            existsAlready = true;
-                            break;
-                        }
-                    }
-                }
-
-            if ( !existsAlready )
+            if ( scriptManager != null )
             {
-                HtmlGenericControl genericControl = new HtmlGenericControl();
-                genericControl.TagName = "script";
-                genericControl.Attributes.Add( "src", relativePath );
-                genericControl.Attributes.Add( "type", "text/javascript" );
-
-                page.Header.Controls.Add( new LiteralControl( "\n\t" ) );
-                page.Header.Controls.Add( genericControl );
+                scriptManager.Scripts.Add( new ScriptReference( path ) );
             }
         }
 

@@ -231,16 +231,17 @@ namespace RockWeb.Blocks.Crm
 
             AttributeService attributeService = new AttributeService();
 
+            string qualifierValue = groupType.Id.ToString();
             var qryGroupTypeAttributes = attributeService.GetByEntityTypeId( new GroupType().TypeId ).AsQueryable()
                 .Where( a => a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase )
-                && a.EntityTypeQualifierValue.Equals( groupType.Id.ToString() ) );
+                && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
 
             GroupTypeAttributesState.AddAll( qryGroupTypeAttributes.ToList() );
             BindGroupTypeAttributesGrid();
 
             var qryGroupAttributes = attributeService.GetByEntityTypeId( new Group().TypeId ).AsQueryable()
                 .Where( a => a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase )
-                && a.EntityTypeQualifierValue.Equals( groupType.Id.ToString() ) );
+                && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
 
             GroupAttributesState.AddAll( qryGroupAttributes.ToList() );
             BindGroupAttributesGrid();
@@ -584,9 +585,10 @@ namespace RockWeb.Blocks.Crm
                         /* Take care of Group Type Attributes */
 
                         // delete GroupTypeAttributes that are no longer configured in the UI
+                        string qualifierValue = groupType.Id.ToString();
                         var groupTypeAttributesQry = attributeService.GetByEntityTypeId( new GroupType().TypeId ).AsQueryable()
                             .Where( a => a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase )
-                            && a.EntityTypeQualifierValue.Equals( groupType.Id.ToString() ) );
+                            && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
 
                         var deletedGroupTypeAttributes = from attr in groupTypeAttributesQry
                                                          where !( from d in GroupTypeAttributesState
@@ -640,9 +642,10 @@ namespace RockWeb.Blocks.Crm
                         /* Take care of Group Attributes */
 
                         // delete GroupAttributes that are no longer configured in the UI
+                        qualifierValue = groupType.Id.ToString();
                         var groupAttributesQry = attributeService.GetByEntityTypeId( new Group().TypeId ).AsQueryable()
                             .Where( a => a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase )
-                            && a.EntityTypeQualifierValue.Equals( groupType.Id.ToString() ) );
+                            && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
 
                         var deletedGroupAttributes = from attr in groupAttributesQry
                                                      where !( from d in GroupAttributesState
