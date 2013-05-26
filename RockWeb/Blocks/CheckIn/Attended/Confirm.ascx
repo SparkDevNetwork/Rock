@@ -28,7 +28,7 @@
                         <asp:BoundField DataField="ListId" Visible="false" />
                         <asp:BoundField DataField="Name" HeaderText="Name" />
                         <asp:BoundField DataField="AssignedTo" HeaderText="Assigned To" />
-                        <asp:BoundField DataField="Room" HeaderText="Room" />
+                        <%--<asp:BoundField DataField="Room" HeaderText="Room" />--%>
                         <asp:BoundField DataField="Time" HeaderText="Time" />
                         <Rock:EditValueField OnClick="gPersonList_Edit" HeaderText="Edit" />
                         <Rock:DeleteField OnClick="gPersonList_Delete" HeaderText="Delete" />

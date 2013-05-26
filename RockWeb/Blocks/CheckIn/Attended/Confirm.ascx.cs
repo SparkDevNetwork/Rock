@@ -96,15 +96,16 @@ namespace RockWeb.Blocks.CheckIn.Attended
                                 row["Name"] = person.FullName;
                                 break;
                             case 2:
-                                var activity = new GroupTypeService().Get( thing );
-                                row["Room"] = activity.Name;
-                                var parentId = GetParent(activity.Id, 0);
-                                var parent1 = new GroupTypeService().Get( parentId );
-                                row["AssignedTo"] = parent1.Name;
-                                break;
-                            case 3:
                                 var schedule = new ScheduleService().Get( thing );
                                 row["Time"] = schedule.Name;
+                                break;
+                            case 3:
+                                var activity = new GroupTypeService().Get( thing );
+                                //row["Room"] = activity.Name;
+                                var parentId = GetParent(activity.Id, 0);
+                                var parent1 = new GroupTypeService().Get( parentId );
+                                //row["AssignedTo"] = parent1.Name + " - " + activity.Name;
+                                row["AssignedTo"] = activity.Name;
                                 break;
                         }
                     }
@@ -187,9 +188,15 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
         private void GoBack()
         {
-            CurrentCheckInState.CheckIn.SearchType = null;
-            CurrentCheckInState.CheckIn.SearchValue = string.Empty;
-            CurrentCheckInState.CheckIn.Families = new List<CheckInFamily>();
+            //CurrentCheckInState.CheckIn.SearchType = null;
+            //CurrentCheckInState.CheckIn.SearchValue = string.Empty;
+            //CurrentCheckInState.CheckIn.Families = new List<CheckInFamily>();
+
+            foreach ( var family in CurrentCheckInState.CheckIn.Families )
+            {
+                family.Selected = false;
+                family.People = new List<CheckInPerson>();
+            }
 
             SaveState();
 

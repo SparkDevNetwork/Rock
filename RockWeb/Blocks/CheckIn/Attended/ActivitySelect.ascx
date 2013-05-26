@@ -60,10 +60,7 @@
             selects a block here, it highlights the current selections allowing them to edit? And then have a "X" button attached to each block allowing them to delete? Or is that getting too
             complicated for what we need?--%>
             <div class="checkin-body-container">
-                <%--<h1>TEST</h1>--%>
-<%--                <asp:LinkButton ID="lbAddFamily" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddFamily_Click"></asp:LinkButton>
-                <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddPerson_Click"></asp:LinkButton>
-                <asp:LinkButton ID="lbAddVisitor" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddVisitor_Click"></asp:LinkButton>                --%>
+                <%--<h3>Selected Activities</h3>--%>
             </div>
         </div>
 

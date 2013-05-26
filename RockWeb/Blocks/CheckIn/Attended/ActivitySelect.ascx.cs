@@ -16,6 +16,8 @@ using Rock;
 using Rock.CheckIn;
 using Rock.Model;
 using Rock.Web.UI.Controls;
+using System.Collections;
+using System.Runtime.InteropServices;
 
 namespace RockWeb.Blocks.CheckIn.Attended
 {
@@ -45,7 +47,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         if ( person != null )
                         {
                             lblPersonName.Text = person.FullName;
-                            LoadStuff(person);
+                            LoadMinistries(person);
                         }
                         else
                         {
@@ -60,8 +62,126 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }
         }
 
-        //protected void LoadStuff(CheckInPerson person)
-        protected void LoadStuff( Person person )
+        #endregion
+
+        #region Edit Events
+
+        // when you click on a ministry button, you come in here.
+        protected void rMinistry_ItemCommand( object source, RepeaterCommandEventArgs e )
+        {
+            if ( KioskCurrentlyActive )
+            {
+                var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
+                if ( family != null )
+                {
+                    var person = family.People.Where( p => p.Selected ).FirstOrDefault();
+                    if ( person != null )
+                    {
+                        int id = int.Parse( e.CommandArgument.ToString() );
+                        foreach ( RepeaterItem item in rMinistry.Items )
+                        {
+                            ( (LinkButton)item.FindControl( "lbSelectMinistry" ) ).RemoveCssClass( "active" );
+                        }
+
+                        ( (LinkButton)e.Item.FindControl( "lbSelectMinistry" ) ).AddCssClass( "active" );
+                        rTime.DataBind();
+                        rActivity.DataBind();
+                        LoadTimes();
+                    }
+                }
+            }
+        }
+
+        // when you click on a time button, you come in here.
+        protected void rTime_ItemCommand( object source, RepeaterCommandEventArgs e )
+        {
+            int id = int.Parse( e.CommandArgument.ToString() );
+            foreach ( RepeaterItem item in rTime.Items )
+            {
+                ( (LinkButton)item.FindControl( "lbSelectTime" ) ).RemoveCssClass( "active" );
+            }
+
+            ( (LinkButton)e.Item.FindControl( "lbSelectTime" ) ).AddCssClass( "active" );
+            LoadActivities();
+
+            // if there is a currently selected activity for the time period being chosen, then show it as active
+            foreach ( RepeaterItem item in rActivity.Items )
+            {
+                foreach ( var timeAndActivityList in CheckInTimeAndActivityList )
+                {
+                    if ( ( timeAndActivityList[0] == CheckInPeopleIds.FirstOrDefault() ) && ( timeAndActivityList[1] == int.Parse( ( (LinkButton)e.Item.FindControl( "lbSelectTime" ) ).CommandArgument ) ) && ( timeAndActivityList[2] == int.Parse( ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).CommandArgument ) ) )
+                    {
+                        ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).AddCssClass( "active" );
+                    }
+                }
+            }
+        }
+
+        // when you click on an activity button, you come in here.
+        protected void rActivity_ItemCommand( object source, RepeaterCommandEventArgs e )
+        {
+            // every time someone selects an activity, it is automatically saved to the list of check in activities. if the person changes the activity for the same time period, it will check to see if there is an activity already
+            // scheduled at that time and first delete that stored activity before saving the newly selected activity. 
+
+            // Step 1: set the button clicked to appear like it's clicked.
+            int id = int.Parse( e.CommandArgument.ToString() );
+            foreach ( RepeaterItem item in rActivity.Items )
+            {
+                ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).RemoveCssClass( "active" );
+            }
+
+            ( (LinkButton)e.Item.FindControl( "lbSelectActivity" ) ).AddCssClass( "active" );
+
+            // Step 2: make a copy of the CheckInTimeAndActivityList so that we can iterate through this list, and have the freedom to add & remove items from the actual CheckInTimeAndActivityList without messing up the loops.
+            // there's probably a better way to do this, but I don't know what it is.
+            List<List<int>> ctaList = new List<List<int>>();
+            foreach ( var ctaListCopy in CheckInTimeAndActivityList )
+            {
+                ctaList.Add( ctaListCopy );
+            }
+
+            // Step 3: check to see if there are any other activities previously selected at the chosen time for this person. If there are, remove them from the CheckInTimeAndActivityList.
+            int chosenTimeId = 0;
+            foreach ( RepeaterItem timeItem in rTime.Items )
+            {
+                if ( HasActiveClass( (LinkButton)timeItem.FindControl( "lbSelectTime" ) ) )
+                {
+                    chosenTimeId = int.Parse( ( (LinkButton)timeItem.FindControl( "lbSelectTime" ) ).CommandArgument );
+                }
+            }
+
+            foreach ( var timeAndActivityList in ctaList )
+            {
+                if ( timeAndActivityList[0] == CheckInPeopleIds.FirstOrDefault() && timeAndActivityList[1] == chosenTimeId )
+                {
+                    CheckInTimeAndActivityList.Remove( timeAndActivityList );
+                }
+            }
+
+            // Step 4: now add the currently selected activity to the CheckInTimeAndActivityList
+            List<int> temp = new List<int>();
+            temp.Add( CheckInPeopleIds.FirstOrDefault() );
+            temp.Add( chosenTimeId );
+            temp.Add( int.Parse( ( (LinkButton)e.Item.FindControl( "lbSelectActivity" ) ).CommandArgument ) );
+            CheckInTimeAndActivityList.Add( temp );
+
+        }
+
+        protected void lbBack_Click( object sender, EventArgs e )
+        {
+            GoBack();
+        }
+                
+        protected void lbNext_Click( object sender, EventArgs e )
+        {
+            GoNext();   
+        }
+
+        #endregion
+
+        #region Internal Methods 
+
+        protected void LoadMinistries( Person person )
         {
             // fill the ministry repeater
             List<GroupType> groupTypeList = new List<GroupType>();
@@ -73,13 +193,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             rMinistry.DataSource = groupTypeList;
             rMinistry.DataBind();
+        }
 
-            // the list shown under "ministry" are all things they've selected on the admin page, so go ahead and make the buttons "active"
-            foreach ( RepeaterItem item in rMinistry.Items )
-            {
-                ( (LinkButton)item.FindControl( "lbSelectMinistry" ) ).AddCssClass( "active" );
-            }
-
+        protected void LoadTimes()
+        {
             // fill the time repeater
             foreach ( var groupType in CurrentGroupTypeIds )
             {
@@ -104,72 +221,51 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 rTime.DataSource = scheduleList;
                 rTime.DataBind();
             }
+        }
 
+        protected void LoadActivities()
+        {
             // fill the activity repeater
             List<GroupType> activityGroupTypeList = new List<GroupType>();
             foreach ( var activityGroupType in CurrentRoomGroupTypeIds )
             {
                 GroupType activityGroupTypeSelected = new GroupTypeService().Get( activityGroupType );
-                activityGroupTypeList.Add( activityGroupTypeSelected );
+                var parent = GetParent( activityGroupType, 0 );
+                foreach ( RepeaterItem item in rMinistry.Items )
+                {
+                    if ( HasActiveClass( (LinkButton)item.FindControl( "lbSelectMinistry" ) ) )
+                    {
+                        if ( int.Parse( ( (LinkButton)item.FindControl( "lbSelectMinistry" ) ).CommandArgument ) == parent )
+                        {
+                            activityGroupTypeList.Add( activityGroupTypeSelected );
+                        }
+                    }
+                }
             }
 
             rActivity.DataSource = activityGroupTypeList;
             rActivity.DataBind();
         }
 
-        #endregion
-
-        #region Edit Events
-
-        protected void rMinistry_ItemCommand( object source, RepeaterCommandEventArgs e )
+        protected int GetParent( int childGroupTypeId, int parentId )
         {
-            if ( KioskCurrentlyActive )
+            GroupType childGroupType = new GroupTypeService().Get( childGroupTypeId );
+            List<int> parentGroupTypes = childGroupType.ParentGroupTypes.Select( a => a.Id ).ToList();
+            foreach ( var parentGroupType in parentGroupTypes )
             {
-                var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-                if ( family != null )
+                GroupType theChildGroupType = new GroupTypeService().Get( parentGroupType );
+                if ( theChildGroupType.ParentGroupTypes.Count > 0 )
                 {
-                    var person = family.People.Where( p => p.Selected ).FirstOrDefault();
-                    if ( person != null )
-                    {
-                        int id = Int32.Parse( e.CommandArgument.ToString() );
-                    }
+                    parentId = GetParent( theChildGroupType.Id, parentId );
+                }
+                else
+                {
+                    parentId = theChildGroupType.Id;
                 }
             }
-        }
 
-        protected void rTime_ItemCommand( object source, RepeaterCommandEventArgs e )
-        {
-            int id = Int32.Parse( e.CommandArgument.ToString() );
-            foreach ( RepeaterItem item in rTime.Items )
-            {
-                ( (LinkButton)item.FindControl( "lbSelectTime" ) ).RemoveCssClass( "active" );
-            }
-            ( (LinkButton)e.Item.FindControl( "lbSelectTime" ) ).AddCssClass( "active" );
+            return parentId;
         }
-
-        protected void rActivity_ItemCommand( object source, RepeaterCommandEventArgs e )
-        {
-            int id = Int32.Parse( e.CommandArgument.ToString() );
-            foreach ( RepeaterItem item in rActivity.Items )
-            {
-                ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).RemoveCssClass( "active" );
-            }
-            ( (LinkButton)e.Item.FindControl( "lbSelectActivity" ) ).AddCssClass( "active" );
-        }
-
-        protected void lbBack_Click( object sender, EventArgs e )
-        {
-            GoBack();
-        }
-                
-        protected void lbNext_Click( object sender, EventArgs e )
-        {
-            GoNext();   
-        }
-
-        #endregion
-
-        #region Internal Methods 
 
         protected bool HasActiveClass( WebControl webcontrol )
         {
@@ -187,9 +283,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
         private void GoBack()
         {
-            CurrentCheckInState.CheckIn.SearchType = null;
-            CurrentCheckInState.CheckIn.SearchValue = string.Empty;
-            CurrentCheckInState.CheckIn.Families = new List<CheckInFamily>();
+            foreach ( var family in CurrentCheckInState.CheckIn.Families )
+            {
+                family.Selected = false;
+                family.People = new List<CheckInPerson>();
+            }
 
             SaveState();
 
@@ -198,76 +296,32 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
         private void GoNext()
         {
-            // variables for holding specific choices so we can hold these for each person checking in. will need these on the confirmation page.
-            int chosenTimeId = 0;
-            int chosenActivityId = 0;
-
-            // make sure a ministry was chosen.
-            var ministryChosen = false;
-            foreach ( RepeaterItem item in rMinistry.Items )
+            // check to see if there are any entries in the CheckInTimeAndActivityList and if not, let the person know.
+            var thereIsAnActivity = false;
+            foreach ( var timeAndActivityList in CheckInTimeAndActivityList )
             {
-                var linky = (LinkButton)item.FindControl( "lbSelectMinistry" );
-                if ( HasActiveClass( linky ) )
+                if ( timeAndActivityList[0] == CheckInPeopleIds.FirstOrDefault() )
                 {
-                    ministryChosen = true;
+                    thereIsAnActivity = true;
                 }
             }
 
-            if ( !ministryChosen )
+            if ( !thereIsAnActivity )
             {
-                maWarning.Show( "You have to choose a ministry.", ModalAlertType.Warning );
-                return;
-            }
-
-            // make sure a time was chosen.
-            var timeChosen = false;
-            foreach ( RepeaterItem item in rTime.Items )
-            {
-                var linky = (LinkButton)item.FindControl( "lbSelectTime" );
-                if ( HasActiveClass( linky ) )
-                {
-                    timeChosen = true;
-                    chosenTimeId = int.Parse(linky.CommandArgument);
-                }
-            }
-
-            if ( !timeChosen )
-            {
-                maWarning.Show( "You have to choose a time.", ModalAlertType.Warning );
-                return;
-            }
-
-            // make sure an activity was chosen.
-            var activityChosen = false;
-            foreach ( RepeaterItem item in rActivity.Items )
-            {
-                var linky = (LinkButton)item.FindControl( "lbSelectActivity" );
-                if ( HasActiveClass( linky ) )
-                {
-                    activityChosen = true;
-                    chosenActivityId = int.Parse( linky.CommandArgument );
-                }
-            }
-
-            if ( !activityChosen )
-            {
-                maWarning.Show( "You have to choose an activity.", ModalAlertType.Warning );
+                maWarning.Show( "You should probably choose an activity for this person before moving on.", ModalAlertType.Warning );
                 return;
             }
 
             // Increment the counter of number of people checked in. 
             PeopleCheckedIn++;
+
             // Remove the person just checked in on this page from the list of those needing to be checked in.
             var personJustCheckedIn = CheckInPeopleIds.FirstOrDefault();
             CheckInPeopleIds.Remove( personJustCheckedIn );
+
             // Add the person just checked in to the list of those that were checked in.
             CheckedInPeopleIds.Add( personJustCheckedIn );
-            // Add this person's time and activity to the list for the confirmation page.
-            List<int> temp = new List<int>();
-            temp.Add( personJustCheckedIn );
-            temp.Add( chosenActivityId );
-            temp.Add( chosenTimeId );
-            CheckInTimeAndActivityList.Add( temp );
+
             SaveState();
 
             if ( PeopleCheckedIn != CheckInPersonCount )
@@ -283,11 +337,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
         private void ProcessActivities()
         {
             var errors = new List<string>();
-            //if ( ProcessActivity( "Location Search", out errors ) )
+
             if ( ProcessActivity( "Activity Search", out errors ) )
             {
                 SaveState();
-                //NavigateToNextPage();
             }
             else
             {
