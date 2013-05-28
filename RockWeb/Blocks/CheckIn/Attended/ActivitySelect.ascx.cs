@@ -46,6 +46,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         
                         if ( person != null )
                         {
+                            gActivityList.DataKeyNames = new string[] { "ListId" };
+                            BindToActivityGrid();
                             lblPersonName.Text = person.FullName;
                             LoadMinistries(person);
                         }
@@ -165,6 +167,19 @@ namespace RockWeb.Blocks.CheckIn.Attended
             temp.Add( int.Parse( ( (LinkButton)e.Item.FindControl( "lbSelectActivity" ) ).CommandArgument ) );
             CheckInTimeAndActivityList.Add( temp );
 
+            BindToActivityGrid();
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gCheckInList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gActivityList_Delete( object sender, RowEventArgs e )
+        {
+            var activity = CheckInTimeAndActivityList[int.Parse( gActivityList.DataKeys[e.RowIndex]["ListId"].ToString() )];
+            CheckInTimeAndActivityList.Remove( activity );
+            BindToActivityGrid();
         }
 
         protected void lbBack_Click( object sender, EventArgs e )
@@ -347,6 +362,89 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 string errorMsg = "<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
                 maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
             }
+        }
+
+        /// <summary>
+        /// Binds to activity grid.
+        /// </summary>
+        protected void BindToActivityGrid()
+        {
+            var personCheckingIn = CheckInPeopleIds.FirstOrDefault();
+            System.Data.DataTable dt = new System.Data.DataTable();
+            Person person = new Person();
+
+            // add the columns to the datatable
+            var column = new System.Data.DataColumn();
+            column.DataType = System.Type.GetType( "System.String" );
+            column.ColumnName = "ListId";
+            column.ReadOnly = true;
+            dt.Columns.Add( column );
+
+            column = new System.Data.DataColumn();
+            column.DataType = System.Type.GetType( "System.String" );
+            column.ColumnName = "AssignedTo";
+            column.ReadOnly = false;
+            dt.Columns.Add( column );
+
+            column = new System.Data.DataColumn();
+            column.DataType = System.Type.GetType( "System.String" );
+            column.ColumnName = "Time";
+            column.ReadOnly = false;
+            dt.Columns.Add( column );
+
+            var timeAndActivityListIndex = 0;
+            foreach ( var timeAndActivityList in CheckInTimeAndActivityList )
+            {
+                var thingCount = 0;
+                System.Data.DataRow row;
+                row = dt.NewRow();
+                foreach ( var thing in timeAndActivityList )
+                {
+                    thingCount++;
+                    if ( thingCount == 1 ) 
+                    { 
+                        person = new PersonService().Get( thing ); 
+                    }
+
+                    if ( thingCount <= timeAndActivityList.Count )
+                    {
+                        switch ( thingCount )
+                        {
+                            case 1:
+                                
+                                row["ListId"] = timeAndActivityListIndex;
+                                break;
+                            case 2:
+                                var schedule = new ScheduleService().Get( thing );
+                                row["Time"] = schedule.Name;
+                                break;
+                            case 3:
+                                var activity = new GroupTypeService().Get( thing );
+                                var parentId = GetParent( activity.Id, 0 );
+                                var parent1 = new GroupTypeService().Get( parentId );
+                                row["AssignedTo"] = activity.Name;
+                                break;
+                        }
+                    }
+                }
+
+                if ( personCheckingIn == person.Id )
+                {
+                    dt.Rows.Add( row );
+                }
+                    
+                timeAndActivityListIndex++;
+            }
+
+            System.Data.DataView dv = new System.Data.DataView( dt );
+            dv.Sort = "Time ASC";
+            System.Data.DataTable dt2 = dv.ToTable();
+            gActivityList.DataSource = dt2;
+            gActivityList.DataBind();
+
+            gActivityList.CssClass = string.Empty;
+            gActivityList.AddCssClass( "grid-table" );
+            gActivityList.AddCssClass( "table" );
         }
 
         #endregion

@@ -45,7 +45,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void CreateGridDataSource()
         {
             System.Data.DataTable dt = new System.Data.DataTable();
-
+            
             // add the columns to the datatable
             var column = new System.Data.DataColumn();
             column.DataType = System.Type.GetType( "System.String" );
@@ -67,31 +67,25 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             column = new System.Data.DataColumn();
             column.DataType = System.Type.GetType( "System.String" );
-            column.ColumnName = "Room";
-            column.ReadOnly = false;
-            dt.Columns.Add( column );
-
-            column = new System.Data.DataColumn();
-            column.DataType = System.Type.GetType( "System.String" );
             column.ColumnName = "Time";
             column.ReadOnly = false;
             dt.Columns.Add( column );
 
-            var TAListIndex = 0;
-            foreach ( var TAList in CheckInTimeAndActivityList )
+            var timeAndActivityListIndex = 0;
+            foreach ( var timeAndActivityList in CheckInTimeAndActivityList )
             {
                 var thingCount = 0;
                 System.Data.DataRow row;
                 row = dt.NewRow();
-                foreach ( var thing in TAList )
+                foreach ( var thing in timeAndActivityList )
                 {
                     thingCount++;
-                    if ( thingCount <= TAList.Count )
+                    if ( thingCount <= timeAndActivityList.Count )
                     {
                         switch (thingCount )
                         {
                             case 1:
-                                row["ListId"] = TAListIndex;
+                                row["ListId"] = timeAndActivityListIndex;
                                 var person = new PersonService().Get( thing );
                                 row["Name"] = person.FullName;
                                 break;
@@ -101,30 +95,32 @@ namespace RockWeb.Blocks.CheckIn.Attended
                                 break;
                             case 3:
                                 var activity = new GroupTypeService().Get( thing );
-                                //row["Room"] = activity.Name;
                                 var parentId = GetParent(activity.Id, 0);
                                 var parent1 = new GroupTypeService().Get( parentId );
-                                //row["AssignedTo"] = parent1.Name + " - " + activity.Name;
                                 row["AssignedTo"] = activity.Name;
                                 break;
                         }
                     }
                 }
+
                 dt.Rows.Add( row );
-                TAListIndex++;
+                timeAndActivityListIndex++;
             }
-            gPersonList.DataSource = dt;
+
+            System.Data.DataView dv = new System.Data.DataView( dt );
+            dv.Sort = "Name ASC, Time ASC";
+            System.Data.DataTable dt2 = dv.ToTable();
+            gPersonList.DataSource = dt2;
             gPersonList.DataBind();
 
-            EditValueField evf = new EditValueField();
-            evf.ControlStyle.CssClass = "test";
-            gPersonList.CssClass = "";
+            gPersonList.CssClass = string.Empty;
             gPersonList.AddCssClass( "grid-table" );
             gPersonList.AddCssClass( "table" );
-            //gPersonList.AddCssClass( "table-bordered" );
-            //gPersonList.AddCssClass( "table-striped" );
-            //gPersonList.AddCssClass( "table-hover" );
-            //gPersonList.AddCssClass( "table-full" );
+
+            // gPersonList.AddCssClass( "table-bordered" );
+            // gPersonList.AddCssClass( "table-striped" );
+            // gPersonList.AddCssClass( "table-hover" );
+            // gPersonList.AddCssClass( "table-full" );
         }
 
         #endregion
@@ -141,39 +137,18 @@ namespace RockWeb.Blocks.CheckIn.Attended
             GoNext();
         }
 
-        /// <summary>
-        /// Handles the Edit event of the gPersonList control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gPerson_Edit( object sender, RowEventArgs e )
-        {
-            // Put some edit code here.
-        }
-
-        /// <summary>
-        /// Handles the Delete event of the gPersonList control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gPerson_Delete( object sender, RowEventArgs e )
-        {
-            // Put some delete code here
-        }
-
         protected void gPersonList_RowCommand( object sender, GridViewCommandEventArgs e )
         {
             if ( e.CommandName == "Print" )
             {
-                // Retrieve the row index stored in the 
-                // CommandArgument property.
+                // Retrieve the row index stored in the CommandArgument property.
                 int index = Convert.ToInt32( e.CommandArgument );
 
-                // Retrieve the row that contains the button 
-                // from the Rows collection.
+                // Retrieve the row that contains the button from the Rows collection.
                 GridViewRow row = gPersonList.Rows[index];
 
                 // Add code here to print a label or something
+                maWarning.Show( "If there was any code in here you would have just printed a label", ModalAlertType.Information );
             }
         }
 
@@ -182,39 +157,60 @@ namespace RockWeb.Blocks.CheckIn.Attended
             // Do some crazy printing crap in here where you can print labels for everyone listed in the grid.
         }
 
+        /// <summary>
+        /// Handles the Edit event of the gPersonList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gPersonList_Edit( object sender, RowEventArgs e )
+        {
+            // throw the user back to the activity select page for the person they want to edit.
+            CheckInPersonCount = 1;
+            PeopleCheckedIn = 0;
+            List<int> peopleIds = new List<int>();
+            peopleIds.Add( CheckInTimeAndActivityList[int.Parse( gPersonList.DataKeys[e.RowIndex]["ListId"].ToString() )][0] );
+            CheckInPeopleIds = peopleIds;
+            CheckedInPeopleIds = new List<int>();
+            SaveState();
+            NavigateToPreviousPage();
+        }
+
+        /// <summary>
+        /// Handles the Delete event of the gPersonList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
+        protected void gPersonList_Delete( object sender, RowEventArgs e )
+        {
+            var personId = CheckInTimeAndActivityList[int.Parse( gPersonList.DataKeys[e.RowIndex]["ListId"].ToString() )];
+            CheckInTimeAndActivityList.Remove( personId );
+            CreateGridDataSource();
+        }
+
         #endregion
 
         #region Internal Methods
 
         private void GoBack()
         {
-            //CurrentCheckInState.CheckIn.SearchType = null;
-            //CurrentCheckInState.CheckIn.SearchValue = string.Empty;
-            //CurrentCheckInState.CheckIn.Families = new List<CheckInFamily>();
-
-            foreach ( var family in CurrentCheckInState.CheckIn.Families )
+            var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
+            CheckInPersonCount = family.People.Where( p => p.Selected ).Count();
+            PeopleCheckedIn = 0;
+            List<int> peopleIds = new List<int>();
+            foreach ( var person in family.People.Where( p => p.Selected ) )
             {
-                family.Selected = false;
-                family.People = new List<CheckInPerson>();
+                peopleIds.Add( person.Person.Id );
             }
 
+            CheckInPeopleIds = peopleIds;
+            CheckedInPeopleIds = new List<int>();
             SaveState();
-
-        //    if ( CurrentCheckInState.CheckIn.UserEnteredSearch )
-        //    {
-        //        GoToSearchPage( true );
-        //    }
-        //    else
-        //    {
-        //        GoToWelcomePage();
-        //    }
             NavigateToPreviousPage();
         }
 
         private void GoNext()
         {
             SaveState();
-            //GoToSearchPage();
             NavigateToNextPage();
         }
 
@@ -239,16 +235,5 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         #endregion
-
-        protected void gPersonList_Edit( object sender, RowEventArgs e )
-        {
-        }
-
-        protected void gPersonList_Delete( object sender, RowEventArgs e )
-        {
-            var something = CheckInTimeAndActivityList[int.Parse( gPersonList.DataKeys[e.RowIndex]["ListId"].ToString() )];
-            CheckInTimeAndActivityList.Remove( something );
-            CreateGridDataSource();
-        }
-}
+    }
 }

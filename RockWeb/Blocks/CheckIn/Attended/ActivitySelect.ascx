@@ -22,7 +22,7 @@
     <div class="row-fluid attended-checkin-body">
 
         <div class="span3">
-            <div class="checkin-body-container">
+            <div class="attended-checkin-body-container">
                 <h3>Ministry</h3>
                 <asp:Repeater ID="rMinistry" runat="server" OnItemCommand="rMinistry_ItemCommand">
                     <ItemTemplate>
@@ -33,7 +33,7 @@
         </div>
 
         <div class="span3">
-            <div class="checkin-body-container">
+            <div class="attended-checkin-body-container">
                 <h3>Time</h3>
                 <asp:Repeater ID="rTime" runat="server" OnItemCommand="rTime_ItemCommand">
                     <ItemTemplate>
@@ -45,7 +45,7 @@
         </div>
 
         <div class="span3">
-            <div class="checkin-body-container">
+            <div class="attended-checkin-body-container">
                 <h3>Activity</h3>
                 <asp:Repeater ID="rActivity" runat="server" OnItemCommand="rActivity_ItemCommand">
                     <ItemTemplate>
@@ -59,8 +59,16 @@
 <%--        Haven't completely decided what we're going to do with this column yet. I say that we list the choices that the user makes and allow them to make changes. Maybe if the user
             selects a block here, it highlights the current selections allowing them to edit? And then have a "X" button attached to each block allowing them to delete? Or is that getting too
             complicated for what we need?--%>
-            <div class="checkin-body-container">
-                <%--<h3>Selected Activities</h3>--%>
+            <div class="attended-checkin-body-container">
+                <h3>Selected</h3>
+                <Rock:Grid ID="gActivityList" runat="server" AllowSorting="true" AllowPaging="false" ShowActionRow="false" ShowHeader="false">
+                    <Columns>
+                        <asp:BoundField DataField="ListId" Visible="false" />
+                        <asp:BoundField DataField="Time" />
+                        <asp:BoundField DataField="AssignedTo" />
+                        <Rock:DeleteField OnClick="gActivityList_Delete" />
+                    </Columns>
+                </Rock:Grid>
             </div>
         </div>
 
