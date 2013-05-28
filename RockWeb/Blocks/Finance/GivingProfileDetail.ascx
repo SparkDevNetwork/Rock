@@ -26,19 +26,16 @@
         // payment types script
         $('.credit-card').creditCardTypeDetector({ 'credit_card_logos': '.card-logos' });
 
-        $('.credit-card').on('change', function () {
-            $('#hfCardType').val(ulCardType.className);
-        });
-
-        $('.calc').trigger('change');
-        $('.credit-card').trigger('change');
+        $('.credit-card').trigger('keyup');
+        $('.calc').trigger('change');        
     };
 
 </script>
 
-<asp:Panel ID="pnlContribution" runat="server">
-        
-    <asp:UpdatePanel ID="pnlDetails" runat="server" ChildrenAsTriggers="true" UpdateMode="Conditional">
+<asp:UpdatePanel ID="pnlContribution" runat="server">
+<ContentTemplate>
+
+    <asp:UpdatePanel ID="pnlDetails" runat="server" UpdateMode="Conditional">
     <ContentTemplate>
 
         <div class="container-fluid">     
@@ -163,16 +160,15 @@
 
                         <div class="row-fluid">
 
-                            <div class="span4">
+                            <div class="span7">
                                 <Rock:DataTextBox ID="txtCity" LabelText="City" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="City" Required="true" />
                             </div>
   
-                            <div class="span4">
-                                <Rock:StateDropDownList ID="ddlState" runat="server" LabelText="State" CssClass="state-select"  />
-                            
+                            <div class="span3">
+                                <Rock:StateDropDownList ID="ddlState" runat="server" LabelText="State" SourceTypeName="Rock.Model.Location, Rock" PropertyName="State" CssClass="input-medium state-select" />
                             </div>
 
-                            <div class="span3">
+                            <div class="span2">
                                 <Rock:DataTextBox ID="txtZip" LabelText="Zip" runat="server" CssClass="input-mini" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Zip" />
                             </div>
 
@@ -197,57 +193,57 @@
             </div>
 
         </div>
-
+    
     </ContentTemplate>
     </asp:UpdatePanel>
 
-    <asp:UpdatePanel ID="pnlPayment" runat="server" ChildrenAsTriggers="true" UpdateMode="Conditional">
+    <asp:UpdatePanel ID="pnlPayment" runat="server" UpdateMode="Conditional">
     <ContentTemplate>
 
         <div class="container-fluid">
 
             <div class="row-fluid <%= _spanClass != "span6" ? "form-horizontal" : "" %>">
-                         
+
                 <div class="<%= _spanClass %> well">
 
                     <fieldset>
-                    
+
                         <legend>Payment Information</legend>
 
                         <ul class="nav nav-pills">
                             <asp:Repeater ID="rptPaymentType" runat="server">
-                            <ItemTemplate >
-                                <li ID="liSelectedTab" runat="server" class='<%# ( Container.ItemIndex == 0) ? "active" : "" %>' >
-                                    <asp:LinkButton ID="lbPaymentType" runat="server" Text='<%# DataBinder.Eval(Container.DataItem, "Name") %>' OnClick="lbPaymentType_Click"  />
-                                </li>
-                            </ItemTemplate>
+                                <ItemTemplate>
+                                    <li id="liSelectedTab" runat="server" class='<%# ( Container.ItemIndex == 0) ? "active" : "" %>'>
+                                        <asp:LinkButton ID="lbPaymentType" runat="server" Text='<%# DataBinder.Eval(Container.DataItem, "Name") %>' OnClick="lbPaymentType_Click" />
+                                    </li>
+                                </ItemTemplate>
                             </asp:Repeater>
                         </ul>
 
                         <div class="tabContent">
-                                
-                            <asp:Panel ID="pnlCreditCard" runat="server" Visible="true" CssClass="fade in"> 
+
+                            <asp:Panel ID="pnlCreditCard" runat="server" Visible="true" CssClass="tab-pane fade in">
 
                                 <div class="row-fluid">
-                                    
-                                    <div class="span6">
-                                        <Rock:LabeledTextBox ID="txtCreditCard" runat="server" LabelText="Credit Card #" CssClass="credit-card" MaxLength="16" MinimumValue="0.0" MaximumValue="9999999999999999" />
+
+                                    <div class="span7">
+                                        <Rock:LabeledTextBox ID="txtCreditCard" runat="server" LabelText="Credit Card #" CssClass="credit-card" MaxLength="16" MinimumValue="0000000000000000" MaximumValue="9999999999999999" />
                                     </div>
 
-                                    <div class="span6">
+                                    <div class="span5">
                                         <ul id="ulCardType" class="card-logos">
-	                                        <li class="card-visa"></li>
-	                                        <li class="card-mastercard"></li>
-	                                        <li class="card-amex"></li>
-	                                        <li class="card-discover"></li>
+                                            <li class="card-visa"></li>
+                                            <li class="card-mastercard"></li>
+                                            <li class="card-amex"></li>
+                                            <li class="card-discover"></li>
                                         </ul>
                                         <asp:HiddenField ID="hfCardType" runat="server" Value="" ClientIDMode="Static" />
                                     </div>
-                                    
+
                                 </div>
-                           
+
                                 <div class="row-fluid">
-                                    
+
                                     <div class="<%= _spanClass != "span6" ? "" : "span6" %>">
                                         <Rock:DatePicker ID="dtpExpiration" runat="server" LabelText="Expiration Date" />
                                     </div>
@@ -255,7 +251,7 @@
                                     <div class="<%= _spanClass != "span6" ? "" : "span6" %>">
                                         <Rock:NumberBox ID="txtCVV" LabelText="CVV #" runat="server" MaxLength="3" CssClass="input-mini" />
                                     </div>
-                                                                                                            
+
                                 </div>
 
                                 <div class="row-fluid">
@@ -264,10 +260,10 @@
 
                             </asp:Panel>
 
-                            <asp:Panel ID="pnlChecking" runat="server" Visible="false" CssClass="fade in">
-                                    
+                            <asp:Panel ID="pnlChecking" runat="server" Visible="false" CssClass="tab-pane fade in">
+
                                 <div class="row-fluid">
-                                    <div class="span6">
+                                    <div class="span7">
                                         <fieldset>
                                             <Rock:LabeledTextBox ID="txtBankName" runat="server" LabelText="Bank Name" />
                                             <Rock:NumberBox ID="txtRouting" runat="server" LabelText="Routing #" MinimumValue="0.0" />
@@ -280,21 +276,21 @@
                                         </fieldset>
                                     </div>
 
-                                    <div class="span6">
+                                    <div class="span5">
                                         <fieldset>
                                             <img class="check-image" src="../../Assets/Images/check-image.png" />
                                         </fieldset>
                                     </div>
                                 </div>
-                                
+
                             </asp:Panel>
-                                
+
                         </div>
 
                         <div id="divConfirmAddress" runat="server">
 
                             <div class="row-fluid">
-                                <Rock:LabeledCheckBox ID="chkDefaultAddress" runat="server" Text="Use address from above" Checked="true" OnCheckedChanged="chkDefaultAddress_CheckedChanged" AutoPostBack="true" CausesValidation="true"/>
+                                <Rock:LabeledCheckBox ID="chkDefaultAddress" runat="server" Text="Use address from above" Checked="true" OnCheckedChanged="chkDefaultAddress_CheckedChanged" AutoPostBack="true" CausesValidation="true" />
 
                                 <div id="divNewAddress" class="fade in" runat="server" visible="false">
 
@@ -307,15 +303,15 @@
 
                                     <div class="row-fluid">
 
-                                        <div class="span4">
+                                        <div class="span7">
                                             <Rock:DataTextBox ID="diffCity" LabelText="City" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="City" />
                                         </div>
 
-                                        <div class="span4">
+                                        <div class="span3">
                                             <Rock:StateDropDownList ID="diffState" runat="server" LabelText="State" CssClass="state-select" SourceTypeName="Rock.Model.Location, Rock" PropertyName="State" />
                                         </div>
 
-                                        <div class="span3">
+                                        <div class="span2">
                                             <Rock:DataTextBox ID="diffZip" LabelText="Zip" runat="server" CssClass="input-mini" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Zip" />
                                         </div>
 
@@ -327,96 +323,100 @@
 
                         </div>
 
-                    </fieldset>                    
+                    </fieldset>
 
                 </div>
+
+            </div>
+
+        </div>       
+
+        <div class="<%= _spanClass %> actions">
+            <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnNext_Click" CausesValidation="true" />
+        </div>    
+
+    </ContentTemplate>
+    </asp:UpdatePanel>   
+
+    <asp:Panel ID="pnlConfirm" runat="server" Visible="false">    
+    
+        <div class="container-fluid">
+
+            <div class="row-fluid">     
+                                
+                <div class="<%= _spanClass %> well">
+
+                    <h3 class="header-text" >Confirm your Contribution: </h3>                
+
+                    <asp:Literal ID="lPaymentConfirmation" runat="server" />                    
+
+                </div>
+
+            </div>
+
+        </div>
+        
+        <div class="<%= _spanClass %> actions">
+            <asp:LinkButton ID="btnGive" runat="server" Text="Give" CssClass="btn btn-primary" OnClick="btnGive_Click" />
+            <asp:LinkButton ID="btnBack" runat="server" Text="Back" CssClass="btn btn-cancel"  OnClick="btnBack_Click" />
+        </div>
+
+    </asp:Panel>
+
+    <asp:Panel ID="pnlComplete" runat="server" Visible="false">
+    
+        <div class="container-fluid">
+
+            <div class="row-fluid">     
+                                
+                <div class="<%= _spanClass %> well">
+
+                    <div id="divShowReceipt" runat="server">
+
+                        <asp:Literal ID="lReceipt" runat="server" />
+
+                    </div>                 
+
+                    <div id="divSavePayment" runat="server" visible="false">
+
+                        <div class="row-fluid">
+
+                            <Rock:LabeledCheckBox ID="chkSavePayment" runat="server" Text="Save my payment information"  OnCheckedChanged="chkSavePayment_CheckedChanged" />
+                                                                                
+                            <div id="divPaymentNick" runat="server" visible="false">
+                                <Rock:LabeledTextBox ID="txtPaymentNick" runat="server" LabelText="Enter a nickname for your payment account" />
+                            </div>                                        
+                                        
+                        </div>
+
+                    </div>
+
+                    <div id="divSaveInformation" runat="server" visible="true">
+
+                        <Rock:LabeledCheckBox ID="chkCreateAccount" runat="server" LabelText="Save My Information" OnCheckedChanged="chkCreateAccount_CheckedChanged"  />
                 
+                        <div id="divCreateAccount" runat="server" visible="false" >
+
+				            <div class="row-fluid">
+                                <Rock:LabeledTextBox ID="txtUserName" runat="server" LabelText="Enter a username" />
+                                <Rock:LabeledTextBox ID="txtPassword" runat="server" TextMode="Password" LabelText="Enter a password" />	                
+                            </div>                             
+
+                        </div>
+
+                    </div>
+                
+                </div>            
+
             </div>
 
         </div>
 
         <div class="<%= _spanClass %> actions">
-            <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnNext_Click" CausesValidation="true" />
-        </div>
-    
-    </ContentTemplate>
-    </asp:UpdatePanel>       
-
-</asp:Panel>
-
-<asp:Panel ID="pnlConfirm" runat="server" >
-       
-    <div class="row-fluid">     
-                                
-        <div class="<%= _spanClass %> well">
-
-            <h3 class="header-text" >Confirm your Contribution: </h3>
-                
-            <div id="divPaymentConfirmation" runat="server">
-
-                <asp:Literal ID="lPaymentConfirmation" runat="server" />
-
-            </div>
-
+            <asp:LinkButton ID="btnPrint" runat="server" Text="Print" CssClass="btn btn-primary" OnClientClick="javascript: window.print();" />
         </div>
 
-    </div>
-        
-    <div class="actions">
-        <asp:LinkButton ID="btnGive" runat="server" Text="Give" CssClass="btn btn-primary" OnClick="btnGive_Click" />
-        <asp:LinkButton ID="btnBack" runat="server" Text="Back" CssClass="btn btn-cancel"  OnClick="btnBack_Click" />
-    </div>
+    </asp:Panel>
 
-</asp:Panel>
-
-<asp:Panel ID="pnlComplete" runat="server" >
-        
-    <div class="row-fluid">     
-                                
-        <div class="<%= _spanClass %> well">
-
-                <div id="divShowReceipt" runat="server">
-                     
-
-                </div>                 
-
-                <div id="divSavePayment" runat="server" visible="false">
-
-                <div class="row-fluid">
-
-                    <Rock:LabeledCheckBox ID="chkSavePayment" runat="server" Text="Save my payment information"  OnCheckedChanged="chkSavePayment_CheckedChanged" />
-                                                                                
-                    <div id="divPaymentNick" runat="server" visible="false">
-                        <Rock:LabeledTextBox ID="txtPaymentNick" runat="server" LabelText="Enter a nickname for your payment account" />
-                    </div>                                        
-                                        
-                </div>
-
-            </div>
-
-            <div id="divSaveInformation" runat="server" visible="true">
-
-                <Rock:LabeledCheckBox ID="chkCreateAccount" runat="server" LabelText="Save My Information" OnCheckedChanged="chkCreateAccount_CheckedChanged"  />
-                
-                <div id="divCreateAccount" runat="server" visible="false" >
-
-				    <div class="row-fluid">
-                        <Rock:LabeledTextBox ID="txtUserName" runat="server" LabelText="Enter a username" />
-                        <Rock:LabeledTextBox ID="txtPassword" runat="server" TextMode="Password" LabelText="Enter a password" />	                
-                    </div>                             
-
-                </div>
-
-            </div>
-                
-        </div>            
-
-    </div>
-        
-    <div class="actions">
-        <asp:LinkButton ID="btnPrint" runat="server" Text="Print" CssClass="btn btn-primary" OnClientClick="javascript: window.print();" />
-    </div>
-
-</asp:Panel>
-
-
+</ContentTemplate>
+</asp:UpdatePanel>
