@@ -4,8 +4,8 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Xml.Linq;
-using System.Xml.Xsl;
+using System.Collections.Generic;
+using System.Linq;
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
@@ -15,11 +15,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     /// <summary>
     /// User control for viewing key attributes
     /// </summary>
-    [TextField( "Xslt File", "XSLT File to use.", false, "AttributeValues.xslt" )]
     public partial class KeyAttributes : Rock.Web.UI.PersonBlock
     {
-        private XDocument xDocument = null;
-
         /// <summary>
         /// Raises the <see cref="E:Init" /> event.
         /// </summary>
@@ -28,11 +25,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnInit( e );
 
-            var rootElement = new XElement( "root" );
-            var attributesElement = new XElement( "attributes",
-                new XAttribute( "category-name", "Personal Key Attributes" )
-                );
-            rootElement.Add( attributesElement );
+            var attributes = new List<NameValue>();
 
             foreach ( string keyAttributeId in GetUserPreference( "Rock.KeyAttributes" ).SplitDelimitedValues() )
             {
@@ -40,24 +33,31 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 if ( Int32.TryParse( keyAttributeId, out attributeId ) )
                 {
                     var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
-                    if ( attribute != null )
+                    if ( attribute != null && attribute.IsAuthorized( "View", CurrentPerson ) )
                     {
                         var values = Person.AttributeValues[attribute.Key];
                         if ( values != null && values.Count > 0 )
                         {
-                            attributesElement.Add( new XElement( "attribute",
-                                new XAttribute( "name", attribute.Name ),
-                                new XCData( attribute.FieldType.Field.FormatValue( null, values[0].Value, attribute.QualifierValues, false ) ?? string.Empty )
-                            ) );
+                            attributes.Add( new NameValue( attribute.Name,
+                                attribute.FieldType.Field.FormatValue( null, values[0].Value, attribute.QualifierValues, false ) ?? string.Empty ) );
                         }
                     }
                 }
             }
 
-            xDocument = new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), rootElement );
+            rAttributes.DataSource = attributes;
+            rAttributes.DataBind();
+        }
 
-            xmlContent.DocumentContent = xDocument.ToString();
-            xmlContent.TransformSource = Server.MapPath( "~/Themes/" + CurrentPage.Site.Theme + "/Assets/Xslt/" + GetAttributeValue( "XsltFile" ) );
+        class NameValue
+        {
+            public string Name { get; set; }
+            public string Value { get; set; }
+            public NameValue( string name, string value )
+            {
+                Name = name;
+                Value = value;
+            }
         }
     }
 }

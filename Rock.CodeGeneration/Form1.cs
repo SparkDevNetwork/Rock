@@ -229,7 +229,7 @@ namespace Rock.CodeGeneration
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class {0}ExtensionMethods
+    public static partial class {0}ExtensionMethods
     {{
         /// <summary>
         /// Clones this {0} object to a new {0} object
@@ -581,7 +581,10 @@ order by [parentTable]
                 {
                     if ( !property.GetCustomAttributes( typeof( DatabaseGeneratedAttribute ) ).Any() )
                     {
-                        properties.Add( property.Name, PropertyTypeName( property.PropertyType ) );
+                        if ( property.SetMethod.IsPublic  && property.GetMethod.IsPublic)
+                        {
+                            properties.Add( property.Name, PropertyTypeName( property.PropertyType ) );
+                        }
                     }
                 }
             }

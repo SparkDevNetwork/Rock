@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class FinancialPersonBankAccountExtensionMethods
+    public static partial class FinancialPersonBankAccountExtensionMethods
     {
         /// <summary>
         /// Clones this FinancialPersonBankAccount object to a new FinancialPersonBankAccount object

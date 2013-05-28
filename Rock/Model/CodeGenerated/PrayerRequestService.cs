@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class PrayerRequestExtensionMethods
+    public static partial class PrayerRequestExtensionMethods
     {
         /// <summary>
         /// Clones this PrayerRequest object to a new PrayerRequest object

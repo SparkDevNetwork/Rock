@@ -17,6 +17,7 @@ using System.Text;
 using System.Web;
 using System.Web.Caching;
 using System.Web.Http;
+using System.Web.Optimization;
 using System.Web.Routing;
 using DotLiquid;
 using Quartz;
@@ -142,6 +143,8 @@ namespace RockWeb
 
             new EntityTypeService().RegisterEntityTypes( Server.MapPath( "~" ) );
             new FieldTypeService().RegisterFieldTypes( Server.MapPath( "~" ) );
+
+            BundleConfig.RegisterBundles( BundleTable.Bundles );
         }
 
         /// <summary>
@@ -729,13 +732,14 @@ namespace RockWeb
                     Rock.Web.Cache.DefinedTypeCache.Read( definedType );
                 }
 
+                // DT: When running with production CCV Data, this is taking a considerable amount of time (we have 2100+ values)
                 // Cache all the Defined Values
-                var definedValueService = new Rock.Model.DefinedValueService();
-                foreach ( var definedValue in definedValueService.Queryable().ToList() )
-                {
-                    definedValue.LoadAttributes();
-                    Rock.Web.Cache.DefinedValueCache.Read( definedValue );
-                }
+                //var definedValueService = new Rock.Model.DefinedValueService();
+                //foreach ( var definedValue in definedValueService.Queryable().ToList() )
+                //{
+                //    definedValue.LoadAttributes();
+                //    Rock.Web.Cache.DefinedValueCache.Read( definedValue );
+                //}
             }
         }
 

@@ -54,7 +54,11 @@ namespace RockWeb
                 using ( MemoryStream stream = new MemoryStream() )
                 {
                     bmp.Save( stream, ContentTypeToImageFormat( file.MimeType ) );
-                    file.Data = stream.ToArray();
+                    if ( file.Data == null )
+                    {
+                        file.Data = new BinaryFileData();
+                    }
+                    file.Data.Content = stream.ToArray();
                     stream.Close();
                 }
             }

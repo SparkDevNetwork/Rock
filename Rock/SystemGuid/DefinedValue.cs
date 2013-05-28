@@ -54,11 +54,6 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string DEVICE_TYPE_PRINTER = "8284B128-E73B-4863-9FC2-43E6827B65E6";
 
-        /// <summary>
-        /// Digital signage device type
-        /// </summary>
-        public const string DEVICE_TYPE_DIGITAL_SIGNAGE = "01B585B1-389D-4C86-A9DA-267A8564699D";
-
         #endregion
 
         #region Financial Currency Type

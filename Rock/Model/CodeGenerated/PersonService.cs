@@ -49,9 +49,9 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             
-            // ignoring Communication,ReviewerPersonId 
-            
             // ignoring Communication,SenderPersonId 
+            
+            // ignoring Communication,ReviewerPersonId 
  
             if ( new Service<CommunicationRecipient>().Queryable().Any( a => a.PersonId == item.Id ) )
             {
@@ -127,7 +127,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class PersonExtensionMethods
+    public static partial class PersonExtensionMethods
     {
         /// <summary>
         /// Clones this Person object to a new Person object

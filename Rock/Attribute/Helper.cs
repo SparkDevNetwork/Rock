@@ -13,6 +13,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock.Constants;
 
+using Rock.Model;
 using Rock.Web.UI;
 
 namespace Rock.Attribute
@@ -263,15 +264,10 @@ namespace Rock.Attribute
 
             // Read this item's value(s) for each attribute 
             List<int> attributeIds = attributes.Select( a => a.Id ).ToList();
-            foreach ( dynamic item in attributeValueService.Queryable()
-                .Where( v => v.EntityId == entity.Id && attributeIds.Contains( v.AttributeId ) )
-                .Select( v => new
-                {
-                    Value = v,
-                    Key = v.Attribute.Key
-                } ) )
+            foreach ( var attributeValue in attributeValueService.Queryable( "Attribute" )
+                .Where( v => v.EntityId == entity.Id && attributeIds.Contains( v.AttributeId ) ) )
             {
-                attributeValues[item.Key].Add( item.Value.Clone() as Rock.Model.AttributeValue );
+                attributeValues[attributeValue.Attribute.Key].Add( attributeValue.Clone( false ) as Rock.Model.AttributeValue );
             }
 
             // Look for any attributes that don't have a value and create a default value entry

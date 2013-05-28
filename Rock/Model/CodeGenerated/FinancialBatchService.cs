@@ -61,7 +61,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class FinancialBatchExtensionMethods
+    public static partial class FinancialBatchExtensionMethods
     {
         /// <summary>
         /// Clones this FinancialBatch object to a new FinancialBatch object
