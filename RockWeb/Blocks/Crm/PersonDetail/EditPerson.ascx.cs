@@ -45,16 +45,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         protected void btnSave_Click( object sender, EventArgs e )
         {
             SaveValues();
-            Response.Redirect( string.Format( "~/Person/{0}" + Person.Id ), false );
+            Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
         }
 
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            Response.Redirect( string.Format( "~/Person/{0}" + Person.Id ), false );
+            Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
         }
 
         private void SetValues()
         {
+            imgPhoto.ImageId = Person.PhotoId;
             tbGivenName.Text = Person.GivenName;
             tbNickName.Text = Person.NickName;
             tbMiddleName.Text = Person.MiddleName;
@@ -72,13 +73,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var service = new PersonService();
             var person = service.Get( Person.Id );
 
+            person.PhotoId = imgPhoto.ImageId;
             person.GivenName = tbGivenName.Text;
             person.NickName = tbNickName.Text;
             person.MiddleName = tbMiddleName.Text;
             person.LastName = tbLastName.Text;
             person.BirthDate = dpBirthDate.SelectedDate;
             person.AnniversaryDate = dpAnniversaryDate.SelectedDate;
-            person.Gender = rblMaritalStatus.SelectedValue.ConvertToEnum<Gender>();
+            person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
             person.MaritalStatusValueId = int.Parse( rblMaritalStatus.SelectedValue );
             person.PersonStatusValueId = int.Parse( rblStatus.SelectedValue );
             person.Email = tbEmail.Text;

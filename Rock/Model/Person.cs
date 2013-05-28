@@ -201,7 +201,7 @@ namespace Rock.Model
         {
             get
             {
-                return NickName ?? GivenName;
+                return string.IsNullOrEmpty( NickName ) ? GivenName : NickName;
             }
             private set
             {
