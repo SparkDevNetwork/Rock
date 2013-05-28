@@ -38,18 +38,23 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Show Credit Card", "Allow users to give using a credit card?", true, "UI Options", 2 )]
     [BooleanField( "Show Checking/ACH", "Allow users to give using a checking account?", true, "UI Options", 3 )]
     [BooleanField( "Show Frequencies", "Allow users to give recurring gifts?", true, "UI Options", 4 )]
-    [TextField( "Confirmation Message", "What text should be displayed on the confirmation page?", true, 
+    [TextField( "Confirmation Message", "What text should be displayed on the confirmation page?", true,
         @"{{ ContributionHeader }}<br/><br/>
-        {{ Person.FirstName }},<br/><br/>
-        You're about to give a total of {{ TotalContribution }} to {{ OrganizationName }}.<br/><br/>  Your contribution will be given 
-        using your {{ PaymentType }} ending in {{ PaymentLastFour }}.<br/>
-        <br/>Thank-you,<br/>
+        {{ Person.FullName }},<br/><br/>
+        You're about to give a total of <strong>{{ TotalContribution }}</strong> using your {{ PaymentType }} ending in {{ PaymentLastFour }}.<br/><br/>
+        Your contribution will be itemized as follows:<br/>
+        <ul>
+        {% for TransactionDetail in TransactionList %}
+            <li><strong>{{ TransactionDetail.Amount }}</strong> to the <strong>{{ TransactionDetail.Account }}</strong></li>
+        {% endfor %}
+        </ul><br/>
+        Thank you,<br/>
         {{ OrganizationName }}<br/>  
         {{ ContributionFooter }}"
     , "UI Options", 5)]
     [TextField( "Receipt Message", "What text should be displayed on the receipt page?", true,
         @"{{ ReceiptHeader }}<br/><br/>
-        {{ Person.FirstName }},<br/><br/>
+        {{ Person.FullName }},<br/><br/>
         Thank you for your generosity! You just gave a total of {{ TotalContribution }} to {{ OrganizationName }}.<br/><br/>        
         {{ ReceiptFooter }}"
     , "UI Options", 5 )]
@@ -94,7 +99,7 @@ namespace RockWeb.Blocks.Finance
             // Set vertical layout
             if ( Convert.ToBoolean( GetAttributeValue( "ShowVerticalLayout" ) ) )
             {
-                _spanClass = "span10 offset2";
+                _spanClass = "span8 offset2";
                 txtCity.LabelText = "City, State, Zip";
                 diffCity.LabelText = "City, State, Zip";
                 ddlState.LabelText = string.Empty;
@@ -146,13 +151,11 @@ namespace RockWeb.Blocks.Finance
             txtCity.Text = "city";
             txtZip.Text = "149471";
             txtCreditCard.Text = "42567395723957";
-            
+
             txtCVV.Text = "572";
             txtCardName.Text = "dave";
             txtPhone.Text = "525225";
-            dtpExpiration.SelectedDate =  DateTime.Now;
-            pnlConfirm.Visible = false;
-            pnlComplete.Visible = false;
+            dtpExpiration.SelectedDate = DateTime.Now;            
         }
 
         /// <summary>
@@ -258,6 +261,7 @@ namespace RockWeb.Blocks.Finance
             pnlConfirm.Visible = false;
             RebindAccounts();
             pnlDetails.Visible = true;
+            pnlPayment.Visible = true;
         }
 
         /// <summary>
@@ -309,6 +313,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbPaymentType_Click( object sender, EventArgs e )
         {
+            SaveAccountValues( Session["TransactionList"] as List<FinancialTransactionDetail> );
             LinkButton lb = sender as LinkButton;
             if ( lb != null )
             {
@@ -318,9 +323,10 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 CurrentTab = lb.Text;
-                ( (HtmlGenericControl) lb.Parent ).AddCssClass( "active" );
+                ( (HtmlGenericControl)lb.Parent ).AddCssClass( "active" );
             }
 
+            RebindAccounts();
             ShowSelectedTab();
         }
 
@@ -331,7 +337,6 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnNext_Click( object sender, EventArgs e )
         {
-            Page.Validate();
             if ( !Page.IsValid )
             {
                 return;
@@ -346,23 +351,22 @@ namespace RockWeb.Blocks.Finance
             
             SaveAccountValues( transactionList );
 
-            var personGroup = personService.GetByEmail( Request.Form["txtEmail"] );
+            var personGroup = personService.GetByEmail( txtEmail.Text );
 
             if ( personGroup.Count() > 0 )
             {
-                person = personGroup.Where( p => p.FirstName == Request.Form["txtFirstName"]
-                    && p.LastName == Request.Form["txtLastName"] ).Distinct().FirstOrDefault();
+                person = personGroup.Where( p => p.FirstName == txtFirstName.Text
+                    && p.LastName == txtLastName.Text ).Distinct().FirstOrDefault();
                 // TODO duplicate person handling?  ex NewAccount.ascx DisplayDuplicates()
             }
             else
             {
                 person = new Person();
                 personService.Add( person, CurrentPersonId );
-            }
-
-            person.GivenName = txtFirstName.Text;
-            person.LastName = txtLastName.Text;
-            person.Email = txtEmail.Text;
+                person.GivenName = txtFirstName.Text;
+                person.LastName = txtLastName.Text;
+                person.Email = txtEmail.Text;
+            }            
 
             if ( chkDefaultAddress.Checked )
             {
@@ -399,32 +403,53 @@ namespace RockWeb.Blocks.Finance
                 .ToList()
                 .ForEach( v => configValues.Add( v.Key, v.Value.Value ) );
             
-            foreach ( string key in System.Configuration.ConfigurationManager.AppSettings.AllKeys )
+            if ( !string.IsNullOrEmpty( txtCreditCard.Text ) )
             {
-                configValues.Add( "Config_" + key, System.Configuration.ConfigurationManager.AppSettings[key] );
-            }
+                string visa = "^4[0-9]{12}(?:[0-9]{3})?$";
+                string mastercard = "^5[1-5][0-9]{14}$";
+                string amex = "^3[47][0-9]{13}$";
+                string discover = "^6(?:011|5[0-9]{2})[0-9]{12}$";
+                                
+                if ( System.Text.RegularExpressions.Regex.IsMatch( txtCreditCard.Text, visa ) )
+                {
+                    // type visa
+                    configValues.Add( "PaymentType", "Visa" );
+                }
+                else if ( System.Text.RegularExpressions.Regex.IsMatch( txtCreditCard.Text, mastercard ) )
+                {
+                    // type mastercard
+                    configValues.Add( "PaymentType", "MasterCard" );
+                }
+                else if ( System.Text.RegularExpressions.Regex.IsMatch( txtCreditCard.Text, amex ) )
+                {
+                    // type amex
+                    configValues.Add( "PaymentType", "American Express" );
+                }
+                else if ( System.Text.RegularExpressions.Regex.IsMatch( txtCreditCard.Text, discover ) )
+                {
+                    // type discover
+                    configValues.Add( "PaymentType", "Discover" );
+                }
 
-            if ( !string.IsNullOrEmpty(txtCreditCard.Text) && !string.IsNullOrEmpty(hfCardType.Value) )
-            {
-                var cardType = hfCardType.Value.Split( ' ' ).Reverse().FirstOrDefault().Replace( "is-", "" );
-                configValues.Add( "PaymentType", CultureInfo.CurrentCulture.TextInfo.ToTitleCase( cardType ) + " card");
-                configValues.Add( "PaymentLastFour", txtCreditCard.Text.Substring( txtCreditCard.Text.Length - 4, 4 ) );                                                
+                configValues.Add( "PaymentLastFour", txtCreditCard.Text.Substring( txtCreditCard.Text.Length - 4, 4 ) );
             }
             else if ( !string.IsNullOrEmpty( txtAccount.Text ) )
             {
                 configValues.Add( "PaymentType", rblAccountType.SelectedValue + " account" );
-                configValues.Add( "PaymentLastFour", txtAccount.Text.Substring( txtAccount.Text.Length - 4, 4 ) );                
+                configValues.Add( "PaymentLastFour", txtAccount.Text.Substring( txtAccount.Text.Length - 4, 4 ) );
             }
-            
+
+            configValues.Add( "Person", person );
             configValues.Add( "TotalContribution", transactionList.Sum( ftd => ftd.Amount ).ToString() );
+            configValues.Add( "TransactionList", transactionList.Where( t => t.Amount > 0 ).ToArray() );            
             
             var confirmationTemplate = GetAttributeValue( "ConfirmationMessage" );
-            string confirmationMessage = confirmationTemplate.ResolveMergeFields( configValues );
-
-            lPaymentConfirmation.Text = confirmationMessage;   
-
-            pnlContribution.Visible = false;            
+            lPaymentConfirmation.Text = confirmationTemplate.ResolveMergeFields( configValues );
+                        
+            pnlDetails.Visible = false;
+            pnlPayment.Visible = false;
             pnlConfirm.Visible = true;
+            
         }
 
         /// <summary>
@@ -467,6 +492,7 @@ namespace RockWeb.Blocks.Finance
             {
                 btnCampusList.DataSource = items.ToList();
                 btnCampusList.DataTextField = "Name";
+                btnCampusList.DataValueField = "Id";
                 btnCampusList.DataBind();
                 btnCampusList.SelectedValue = btnCampusList.Items[0].Value;
             }
@@ -489,14 +515,14 @@ namespace RockWeb.Blocks.Finance
         /// Binds the payment types.
         /// </summary>
         protected void BindPaymentTypes()
-        {   
+        {
             var queryable = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_PAYMENT_TYPE ) )
                 .DefinedValues.AsQueryable();
-            
+
             if ( !Convert.ToBoolean( GetAttributeValue( "ShowCreditCard" ) ) )
             {
                 queryable = queryable.Where( dv => dv.Guid != new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_PAYMENT_TYPE_CREDIT_CARD ) );
-                pnlCreditCard.Visible = false;                
+                pnlCreditCard.Visible = false;
             }
             if ( !Convert.ToBoolean( GetAttributeValue( "ShowChecking/ACH" ) ) )
             {
@@ -514,10 +540,14 @@ namespace RockWeb.Blocks.Finance
         protected void BindAccounts()
         {
             List<FinancialTransactionDetail> transactionList = new List<FinancialTransactionDetail>();
-            FinancialAccountService accountService = new FinancialAccountService();            
-            
-            var selectedAccounts = accountService.Queryable().Where( f => f.IsActive );
+            FinancialAccountService accountService = new FinancialAccountService();
 
+            var selectedAccounts = accountService.Queryable().Where( f => f.IsActive );
+            if ( btnCampusList.SelectedIndex != -1 )
+            {
+                selectedAccounts = selectedAccounts.Where( f => f.CampusId == Convert.ToInt32( btnCampusList.SelectedValue ) );
+            }
+            
             if ( GetAttributeValue( "DefaultAccounts" ).Any() )
             {
                 var accountGuids = GetAttributeValues( "DefaultAccounts" ).Select( Guid.Parse ).ToList();
@@ -557,7 +587,10 @@ namespace RockWeb.Blocks.Finance
                 var accountId = Convert.ToInt32( ( (HiddenField)item.FindControl( "hfAccountId" ) ).Value );
                 var accountAmount = ( (NumberBox)item.FindControl( "txtAccountAmount" ) ).Text;
                 var index = transactionList.FindIndex( a => a.AccountId == accountId );
-                transactionList[index].Amount = !string.IsNullOrWhiteSpace( accountAmount ) ? Decimal.Parse( accountAmount ) : 0M;
+                if ( index >= 0 )
+                {
+                    transactionList[index].Amount = !string.IsNullOrWhiteSpace( accountAmount ) ? Decimal.Parse( accountAmount ) : 0M;
+                }                
             }
             Session["TransactionList"] = transactionList;
         }
@@ -615,13 +648,11 @@ namespace RockWeb.Blocks.Finance
             {
                 pnlCreditCard.Visible = true;
                 pnlChecking.Visible = false;
-                pnlCreditCard.DataBind();                
             }
             else if ( CurrentTab.Equals( "Checking/ACH" ) )
             {
                 pnlCreditCard.Visible = false;
                 pnlChecking.Visible = true;
-                pnlChecking.DataBind();
             }
         }
 
