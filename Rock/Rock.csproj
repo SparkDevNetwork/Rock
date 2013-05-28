@@ -203,6 +203,10 @@
     <Compile Include="Migrations\201305231329217_BinaryFileData.Designer.cs">
       <DependentUpon>201305231329217_BinaryFileData.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201305281730297_AddMiddleName.cs" />
+    <Compile Include="Migrations\201305281730297_AddMiddleName.Designer.cs">
+      <DependentUpon>201305281730297_AddMiddleName.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
@@ -1665,6 +1669,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201305231329217_BinaryFileData.resx">
       <DependentUpon>201305231329217_BinaryFileData.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305281730297_AddMiddleName.resx">
+      <DependentUpon>201305281730297_AddMiddleName.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
