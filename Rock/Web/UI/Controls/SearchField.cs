@@ -55,7 +55,7 @@ namespace Rock.Web.UI.Controls
                         }}))
                     }},
                     error: function(xhr, status, error) {{
-                        alert(status + ' [' + error + ']: ' + xhr.reponseText);
+                        // alert(status + ' [' + error + ']: ' + xhr.reponseText);
                     }}
                 }});
             }},

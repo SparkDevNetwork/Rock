@@ -22,6 +22,12 @@ namespace Rock.Web.UI.Adapters
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> containing methods to render the target-specific output.</param>
         protected override void RenderBeginTag( System.Web.UI.HtmlTextWriter writer )
         {
+            CheckBoxList cbl = Control as CheckBoxList;
+            if ( cbl != null && cbl.CssClass.Contains( "well" ) )
+            {
+                writer.AddAttribute( "class", "well" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            }
         }
 
         /// <summary>
@@ -30,6 +36,11 @@ namespace Rock.Web.UI.Adapters
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> containing methods to render the target-specific output.</param>
         protected override void RenderEndTag( System.Web.UI.HtmlTextWriter writer )
         {
+            CheckBoxList cbl = Control as CheckBoxList;
+            if ( cbl != null && cbl.CssClass.Contains( "well" ) )
+            {
+                writer.RenderEndTag();
+            }
         }
 
         /// <summary>

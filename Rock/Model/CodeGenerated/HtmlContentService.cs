@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class HtmlContentExtensionMethods
+    public static partial class HtmlContentExtensionMethods
     {
         /// <summary>
         /// Clones this HtmlContent object to a new HtmlContent object

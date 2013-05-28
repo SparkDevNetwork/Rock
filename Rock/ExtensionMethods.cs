@@ -254,12 +254,44 @@ namespace Rock
         }
 
         /// <summary>
-        /// Attempts to convert string to integer.  Returns null if unsucessful.
+        /// Returns True for 'True', 'Yes', '1'
+        /// </summary>
+        /// <param name="str">The string.</param>
+        /// <param name="NullIsFalse">if set to <c>true</c> [null is false].</param>
+        /// <returns></returns>
+        public static bool AsBoolean (this string str, bool NullIsFalse = true)
+        {
+            if ( NullIsFalse )
+            {
+                if ( string.IsNullOrWhiteSpace( str ) )
+                {
+                    return false;
+                }
+            }
+            
+            if ( str.Equals( "true", StringComparison.OrdinalIgnoreCase ) || str.Equals( "yes", StringComparison.OrdinalIgnoreCase ) || str.Equals( "1", StringComparison.OrdinalIgnoreCase ) )
+            {
+                return true;
+            }
+
+            return false;
+        }
+        /// <summary>
+        /// Attempts to convert string to integer.  Returns null if unsuccessful.
         /// </summary>
         /// <param name="str">The STR.</param>
+        /// <param name="emptyStringAsZero">if set to <c>true</c> [empty string as zero].</param>
         /// <returns></returns>
-        public static int? AsInteger( this string str )
+        public static int? AsInteger( this string str, bool emptyStringAsZero = true )
         {
+            if ( !emptyStringAsZero )
+            {
+                if ( string.IsNullOrWhiteSpace( str ) )
+                {
+                    return null;
+                }
+            }
+            
             int value;
             if ( int.TryParse( str, out value ) )
             {

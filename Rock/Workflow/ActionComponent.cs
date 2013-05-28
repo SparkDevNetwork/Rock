@@ -34,6 +34,7 @@ namespace Rock.Workflow
                 return defaults;
             }
         }
+
         /// <summary>
         /// Gets the type of the entity.
         /// </summary>

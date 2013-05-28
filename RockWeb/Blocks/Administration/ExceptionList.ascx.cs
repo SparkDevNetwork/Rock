@@ -1,4 +1,9 @@
-﻿using System;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -88,10 +93,10 @@ namespace RockWeb.Blocks.Administraton
                 fExceptionList.SaveUserPreference( "Site", String.Empty );
             }
 
-            int userPersonId;
-            if ( int.TryParse( ppUser.SelectedValue, out userPersonId ) && userPersonId != None.Id && ppUser.PersonName != None.TextHtml )
+            
+            if ( ppUser.PersonId.HasValue )
             {
-                fExceptionList.SaveUserPreference( "User", userPersonId.ToString() );
+                fExceptionList.SaveUserPreference( "User", ppUser.PersonId.ToString() );
             }
             else
             {

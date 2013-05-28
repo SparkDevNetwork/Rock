@@ -128,7 +128,7 @@ public partial class EntityTypes : RockBlock
                     aSecure.Visible = true;
                     string url = Page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done",
                         entityType.Id, 0, entityType.FriendlyName + " Security" ) );
-                    aSecure.HRef = "javascript: showModalPopup($(this), '" + url + "')";
+                    aSecure.HRef = "javascript: Rock.controls.modal.show($(this), '" + url + "')";
                 }
                 else
                 {
