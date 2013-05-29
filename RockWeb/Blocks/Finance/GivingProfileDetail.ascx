@@ -3,10 +3,7 @@
 <script type="text/javascript" src="../../Scripts/jquery.creditCardTypeDetector.js"></script>
 
 <script type="text/javascript">
-
-    function pageLoad(sender, args) {
-
-        // payment totals script
+    function pageLoad(sender, args) {        
         $('.calc').on('change', function () {
             var total = 0.00;
 
@@ -22,14 +19,11 @@
             $('.total-label').css('width', $(this).parent().width());
             return false;
         });
-
-        // payment types script
+        
         $('.credit-card').creditCardTypeDetector({ 'credit_card_logos': '.card-logos' });
-
         $('.credit-card').trigger('keyup');
         $('.calc').trigger('change');        
     };
-
 </script>
 
 <asp:UpdatePanel ID="pnlContribution" runat="server">
@@ -141,37 +135,33 @@
                         
                         <div class="row-fluid">
                             
-                            <div class="">
+                            <div class="<%= _spanClass != "span6" ? "" : "span6" %>">
                                 <Rock:DataTextBox ID="txtFirstName" LabelText="First Name" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="GivenName" Required="true" />
                             </div>             
 
-                            <div class="" >
+                            <div class="<%= _spanClass != "span6" ? "" : "span6" %>">
                                 <Rock:DataTextBox ID="txtLastName" LabelText="Last Name" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" Required="true"  />
                             </div>        
                             
                         </div>
 
                         <div class="row-fluid">
-                            <div class="span12" >
-                                <Rock:DataTextBox ID="txtStreet" LabelText="Address" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Street1" Required="true"  />
+                            <div class="<%= _spanClass != "span6" ? "" : "span12" %>">
+                                <Rock:DataTextBox ID="txtStreet" LabelText="Address" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Street1" Required="true" />
                             </div>
                             
                         </div>
 
-                        <div class="row-fluid">
-
-                            <div class="span7">
-                                <Rock:DataTextBox ID="txtCity" LabelText="City" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="City" Required="true" />
+                        <div class="row-fluid">                            
+                            <div class="<%= _spanClass != "span6" ? "span7" : "span5" %>">
+                                <Rock:DataTextBox ID="txtCity" LabelText="City" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="City" Required="true" CssClass="input-small address-line"/>
                             </div>
-  
-                            <div class="span3">
-                                <Rock:StateDropDownList ID="ddlState" runat="server" LabelText="State" SourceTypeName="Rock.Model.Location, Rock" PropertyName="State" CssClass="input-medium state-select" />
+                            <div class="<%= _spanClass != "span6" ? "span3" : "span5" %>">
+                                <Rock:StateDropDownList ID="ddlState" runat="server" LabelText="State" SourceTypeName="Rock.Model.Location, Rock" PropertyName="State" Required="true" CssClass="input-medium address-line" />
                             </div>
-
                             <div class="span2">
-                                <Rock:DataTextBox ID="txtZip" LabelText="Zip" runat="server" CssClass="input-mini" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Zip" />
+                                <Rock:DataTextBox ID="txtZip" LabelText="Zip" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Zip" Required="true" CssClass="input-mini address-line" />
                             </div>
-
                         </div>                    
 
                         <div class="row-fluid">   
@@ -226,18 +216,17 @@
 
                                 <div class="row-fluid">
 
-                                    <div class="span7">
+                                    <div class="span6">
                                         <Rock:LabeledTextBox ID="txtCreditCard" runat="server" LabelText="Credit Card #" CssClass="credit-card" MaxLength="16" MinimumValue="0000000000000000" MaximumValue="9999999999999999" />
                                     </div>
 
-                                    <div class="span5">
+                                    <div class="span6">
                                         <ul id="ulCardType" class="card-logos">
                                             <li class="card-visa"></li>
                                             <li class="card-mastercard"></li>
                                             <li class="card-amex"></li>
                                             <li class="card-discover"></li>
-                                        </ul>
-                                        <asp:HiddenField ID="hfCardType" runat="server" Value="" ClientIDMode="Static" />
+                                        </ul>                                        
                                     </div>
 
                                 </div>
@@ -263,7 +252,7 @@
                             <asp:Panel ID="pnlChecking" runat="server" Visible="false" CssClass="tab-pane fade in">
 
                                 <div class="row-fluid">
-                                    <div class="span7">
+                                    <div class="<%= _spanClass != "span6" ? "span7" : "span6" %>">
                                         <fieldset>
                                             <Rock:LabeledTextBox ID="txtBankName" runat="server" LabelText="Bank Name" />
                                             <Rock:NumberBox ID="txtRouting" runat="server" LabelText="Routing #" MinimumValue="0.0" />
@@ -276,7 +265,7 @@
                                         </fieldset>
                                     </div>
 
-                                    <div class="span5">
+                                    <div class="<%= _spanClass != "span6" ? "span5" : "span6" %>">
                                         <fieldset>
                                             <img class="check-image" src="../../Assets/Images/check-image.png" />
                                         </fieldset>
@@ -292,29 +281,24 @@
                             <div class="row-fluid">
                                 <Rock:LabeledCheckBox ID="chkDefaultAddress" runat="server" Text="Use address from above" Checked="true" OnCheckedChanged="chkDefaultAddress_CheckedChanged" AutoPostBack="true" CausesValidation="true" />
 
-                                <div id="divNewAddress" class="fade in" runat="server" visible="false">
+                                <div id="divNewAddress" class="fade in" runat="server" Visible="False">
 
                                     <div class="row-fluid">
                                         <div class="span12">
                                             <Rock:DataTextBox ID="diffStreet" LabelText="Address" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Street1" />
                                         </div>
-
                                     </div>
 
                                     <div class="row-fluid">
-
-                                        <div class="span7">
-                                            <Rock:DataTextBox ID="diffCity" LabelText="City" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="City" />
+                                        <div class="<%= _spanClass != "span6" ? "span7" : "span5" %>">
+                                            <Rock:DataTextBox ID="diffCity" LabelText="City" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="City" CssClass="input-small  address-line" />
                                         </div>
-
-                                        <div class="span3">
-                                            <Rock:StateDropDownList ID="diffState" runat="server" LabelText="State" CssClass="state-select" SourceTypeName="Rock.Model.Location, Rock" PropertyName="State" />
+                                        <div class="<%= _spanClass != "span6" ? "span3" : "span5" %>">
+                                            <Rock:StateDropDownList ID="diffState" runat="server" LabelText="State" SourceTypeName="Rock.Model.Location, Rock" PropertyName="State" CssClass="input-small  address-line" />                                            
                                         </div>
-
                                         <div class="span2">
-                                            <Rock:DataTextBox ID="diffZip" LabelText="Zip" runat="server" CssClass="input-mini" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Zip" />
+                                            <Rock:DataTextBox ID="diffZip" LabelText="Zip" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Zip" CssClass="input-mini address-line" />                                            
                                         </div>
-
                                     </div>
 
                                 </div>
@@ -377,31 +361,32 @@
 
                     </div>                 
 
-                    <div id="divSavePayment" runat="server" visible="false">
+                    <div id="divSavePayment" runat="server" Visible="false">
 
                         <div class="row-fluid">
 
-                            <Rock:LabeledCheckBox ID="chkSavePayment" runat="server" Text="Save my payment information"  OnCheckedChanged="chkSavePayment_CheckedChanged" />
-                                                                                
-                            <div id="divPaymentNick" runat="server" visible="false">
-                                <Rock:LabeledTextBox ID="txtPaymentNick" runat="server" LabelText="Enter a nickname for your payment account" />
+                            <Rock:LabeledCheckBox ID="chkSavePayment" runat="server" Text="Save My Payment"  OnCheckedChanged="chkSavePayment_CheckedChanged" AutoPostBack="true" />                                                                                
+                            <div id="divPaymentNick" runat="server" visible="false" class="fade in">
+                                <Rock:LabeledTextBox ID="txtPaymentNick" runat="server" LabelText="Enter a nickname for your account:" CssClass="input-medium" />
                             </div>                                        
                                         
                         </div>
 
                     </div>
 
-                    <div id="divSaveInformation" runat="server" visible="true">
+                    <div id="divCreateAccount" runat="server" Visible="true">
 
-                        <Rock:LabeledCheckBox ID="chkCreateAccount" runat="server" LabelText="Save My Information" OnCheckedChanged="chkCreateAccount_CheckedChanged"  />
+                        <Rock:LabeledCheckBox ID="chkCreateAccount" runat="server" LabelText="Create An Account" OnCheckedChanged="chkCreateAccount_CheckedChanged" AutoPostBack="true" />
                 
-                        <div id="divCreateAccount" runat="server" visible="false" >
+                        <div id="divCredentials" runat="server" visible="false" class="fade in">
 
 				            <div class="row-fluid">
                                 <Rock:LabeledTextBox ID="txtUserName" runat="server" LabelText="Enter a username" />
-                                <Rock:LabeledTextBox ID="txtPassword" runat="server" TextMode="Password" LabelText="Enter a password" />	                
+                                <Rock:LabeledTextBox ID="txtPassword" runat="server" TextMode="Password" LabelText="Enter a password" />
                             </div>                             
-
+                            <div class="row-fluid">
+                                <asp:LinkButton ID="btnCreateAccount" runat="server" Text="Create Account" CssClass="btn btn-primary" OnClick="btnCreateAccount_Click" />
+                            </div>
                         </div>
 
                     </div>
