@@ -59,8 +59,9 @@
             <div class="span2">
 
                 <fieldset>
-                    <Rock:LabeledDropDownList ID="ddlRecordStatus" runat="server" LabelText="Record Status" />
-                    <Rock:RockDropDownList ID="ddlReason" runat="server"
+                    <Rock:LabeledDropDownList ID="ddlRecordStatus" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" /><br />
+                    <Rock:LabeledDropDownList ID="ddlReason" runat="server" Visible="false"></Rock:LabeledDropDownList>
+                </fieldset>
 
             </div>
 
