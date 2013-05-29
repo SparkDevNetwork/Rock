@@ -829,7 +829,7 @@ namespace Rock
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="enumType">Type of the enum.</param>
-        public static void BindToEnum( this ListControl listControl, Type enumType )
+        public static void BindToEnum( this ListControl listControl, Type enumType, bool insertBlankOption = false )
         {
             var dictionary = new Dictionary<int, string>();
             foreach ( var value in Enum.GetValues( enumType ) )
@@ -841,6 +841,11 @@ namespace Rock
             listControl.DataTextField = "Value";
             listControl.DataValueField = "Key";
             listControl.DataBind();
+
+            if ( insertBlankOption )
+            {
+                listControl.Items.Insert( 0, new ListItem() );
+            }
         }
 
         /// <summary>
@@ -848,7 +853,7 @@ namespace Rock
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="definedType">Type of the defined.</param>
-        public static void BindToDefinedType( this ListControl listControl, Rock.Web.Cache.DefinedTypeCache definedType )
+        public static void BindToDefinedType( this ListControl listControl, Rock.Web.Cache.DefinedTypeCache definedType, bool insertBlankOption = false )
         {
             var ds = definedType.DefinedValues
                 .Select( v => new
@@ -861,6 +866,11 @@ namespace Rock
             listControl.DataTextField = "Name";
             listControl.DataValueField = "Id";
             listControl.DataBind();
+
+            if ( insertBlankOption )
+            {
+                listControl.Items.Insert( 0, new ListItem() );
+            }
         }
 
         #endregion

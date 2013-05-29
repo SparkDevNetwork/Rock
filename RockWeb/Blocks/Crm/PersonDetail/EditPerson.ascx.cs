@@ -30,6 +30,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             rblMaritalStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ) ) );
             rblStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_STATUS ) ) );
+            ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
+            ddlReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
         }
 
         protected override void OnLoad( EventArgs e )
@@ -63,9 +65,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             dpBirthDate.SelectedDate = Person.BirthDate;
             dpAnniversaryDate.SelectedDate = Person.AnniversaryDate;
             rblGender.SelectedValue = Person.Gender.ConvertToString();
-            rblMaritalStatus.SelectedValue = Person.MaritalStatusValueId.ToString();
-            rblStatus.SelectedValue = Person.PersonStatusValueId.ToString();
+            rblMaritalStatus.SelectedValue = Person.MaritalStatusValueId.HasValue ? Person.MaritalStatusValueId.Value.ToString() : string.Empty;
+            rblStatus.SelectedValue = Person.PersonStatusValueId.HasValue ? Person.PersonStatusValueId.Value.ToString() : string.Empty;
             tbEmail.Text = Person.Email;
+            ddlRecordStatus.SelectedValue = Person.RecordStatusValueId.HasValue ? Person.RecordStatusValueId.Value.ToString() : string.Empty;
+            ddlReason.SelectedValue = Person.RecordStatusReasonValueId.HasValue ? Person.RecordStatusReasonValueId.Value.ToString() : string.Empty;
         }
 
         private void SaveValues()
@@ -84,8 +88,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             person.MaritalStatusValueId = int.Parse( rblMaritalStatus.SelectedValue );
             person.PersonStatusValueId = int.Parse( rblStatus.SelectedValue );
             person.Email = tbEmail.Text;
-
+            person.RecordStatusReasonValueId = ddlRecordStatus.SelectedValueAsInt();
+            person.RecordStatusReasonValueId = ddlReason.SelectedValueAsInt();
             service.Save( person, CurrentPersonId );
+        }
+        protected void ddlRecordStatus_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ddlReason.Visible = (ddlRecordStatus.SelectedValueAsInt() == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id);
         }
     }
 }
