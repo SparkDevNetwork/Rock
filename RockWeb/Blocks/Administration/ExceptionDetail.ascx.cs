@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Web;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
@@ -12,156 +13,257 @@ using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
-
 namespace RockWeb.Blocks.Administration
 {
-    [DetailPage]
-    [BooleanField("Show Cookies", "Show cookie data on page load. Default is false", false, "Display Settings")]
-    [BooleanField("Show Server Variables", "Show server variables on page load. Default is false", false, "Display Settings")]
-    public partial class ExceptionDetail : RockBlock, IDetailBlock  
-
+    [DetailPage] 
+    [BooleanField( "Show Cookies", "Show cookie information when block loads.", false )]
+    [BooleanField( "Show Server Variables", "Show server variables when block loads.", false )]
+    public partial class ExceptionDetail : RockBlock, IDetailBlock
     {
-        List<ExceptionLog> exceptions;
 
         #region Control Methods
-        protected override void OnInit( EventArgs e )
-        {
-            base.OnInit( e );
-            exceptions = new List<ExceptionLog>();
-            cbShowCookies.Text = "<i class=\"icon-laptop\"> </i> Show Cookies";
-            cbShowServerVariables.Text = "<i class=\"icon-hdd\"> </i> Show Server Variables";
-        }
-
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
 
             if ( !Page.IsPostBack )
             {
-                string exceptionId = PageParameter( "ExceptionId" );
-                if ( !string.IsNullOrWhiteSpace( exceptionId ) )
+                int exceptionId = 0;
+                cbShowCookies.Text = "<i class=\"icon-laptop\"> </i> Show Cookies";
+                cbShowServerVariables.Text = "<i class=\"icon-hdd\"></i> Show Server Variables";
+                if ( !String.IsNullOrWhiteSpace( PageParameter( "ExceptionId" ) ) && int.TryParse( PageParameter( "ExceptionId" ), out exceptionId ) )
                 {
-                    ShowDetail( "ExceptionId", int.Parse( exceptionId ) );
+                    ShowDetail( "ExceptionId", exceptionId );
                 }
                 else
                 {
-                    pnlExceptionDetail.Visible = false;
+                    pnlSummary.Visible = false;
                 }
             }
-        }
-        #endregion
+            else
+            {
+                if ( ViewState["ExceptionDetails"] != null )
+                {
 
-        #region Block Events
-        protected void cbShowCookies_CheckedChanged( object sender, EventArgs e )
-        {
-            pnlCookies.Visible = ( (LabeledCheckBox ) sender ).Checked;
-        }
-        protected void cbShowServerVariables_CheckedChanged( object sender, EventArgs e )
-        {
-            pnlServerVariables.Visible = ( ( LabeledCheckBox ) sender ).Checked;
+                    List<ExceptionDetailSummary> exceptionDetailSummary = (List<ExceptionDetailSummary>)Newtonsoft.Json.JsonConvert.DeserializeObject( ViewState["ExceptionDetails"].ToString(), typeof( List<ExceptionDetailSummary> ) );
+                    BuildExceptionDetailTable( exceptionDetailSummary );
+                }
+            }
         }
         #endregion
 
         #region Internal Methods
 
-        private string BuildQueryStringList( string rawQueryString )
+        private void BuildExceptionDetailTable( List<ExceptionDetailSummary> detailSummaries )
         {
-            StringBuilder listBuilder = new StringBuilder();
-
-            listBuilder.Append( "<ul type=\"disc\">" );
-            foreach ( string value in rawQueryString.Split( "&".ToCharArray() ) )
+            foreach ( var summary in detailSummaries )
             {
-                string[] valueParts = value.Split( "=".ToCharArray() );
+                TableRow detailRow = new TableRow();
+          
+                detailRow.ID = string.Format( "tdRowExceptionDetail_{0}", summary.ExceptionId );
 
-                if ( valueParts.Length > 1 )
+                TableCell exceptionTypeCell = new TableCell();
+                exceptionTypeCell.ID = string.Format( "tcExceptionType_{0}", summary.ExceptionId );
+                exceptionTypeCell.Text = summary.ExceptionType;
+                detailRow.Cells.Add( exceptionTypeCell );
+
+                TableCell exceptionSourceCell = new TableCell();
+                exceptionSourceCell.ID = string.Format( "tcExceptionSource_{0}", summary.ExceptionId );
+                exceptionSourceCell.Text = summary.ExceptionSource;
+                detailRow.Cells.Add( exceptionSourceCell );
+
+                TableCell exceptionDescriptionCell = new TableCell();
+                exceptionDescriptionCell.ID = string.Format( "tcExceptionDetail_{0}", summary.ExceptionId );
+                exceptionDescriptionCell.Text = summary.ExceptionDescription;
+                detailRow.Cells.Add( exceptionDescriptionCell );
+
+                TableCell exceptionStackTraceToggleCell = new TableCell();
+                exceptionStackTraceToggleCell.ID = string.Format( "tcExceptionStackTraceToggle_{0}", summary.ExceptionId );
+
+                LinkButton lbExceptionStackTrace = new LinkButton();
+                lbExceptionStackTrace.ID = string.Format( "lbExceptionStackTraceToggle_{0}", summary.ExceptionId );
+                lbExceptionStackTrace.Attributes.Add( "onClick", string.Format("toggleStackTrace({0});return false;", summary.ExceptionId) );
+                var iToggle = new HtmlGenericControl( "i" );
+                iToggle.AddCssClass( "icon-file-alt" );
+                lbExceptionStackTrace.Controls.Add( iToggle );
+
+                var spanTitle = new HtmlGenericContainer( "span" );
+                spanTitle.ID = string.Format( "spanExceptionStackTrace_{0}", summary.ExceptionId );
+                spanTitle.InnerText = " Show Stack Trace";
+                lbExceptionStackTrace.Controls.Add( spanTitle );
+
+
+                lbExceptionStackTrace.AddCssClass( "btn" );
+                exceptionStackTraceToggleCell.Controls.Add( lbExceptionStackTrace );
+
+                exceptionStackTraceToggleCell.HorizontalAlign = HorizontalAlign.Center;
+                detailRow.Cells.Add( exceptionStackTraceToggleCell );
+
+                tblExceptionDetails.Rows.Add( detailRow );
+
+                TableRow stackTraceRow = new TableRow();
+                stackTraceRow.CssClass = "exceptionDetail-stackTrace-hide";
+                stackTraceRow.ID = string.Format( "tdRowExceptionStackTrace_{0}", summary.ExceptionId );
+
+                TableCell exceptionStackTraceCell = new TableCell();
+                exceptionStackTraceCell.ColumnSpan = 4;
+                exceptionStackTraceCell.Text = summary.StackTrace;
+                exceptionStackTraceCell.HorizontalAlign = HorizontalAlign.Left;
+
+                stackTraceRow.Cells.Add( exceptionStackTraceCell );
+
+                tblExceptionDetails.Rows.Add( stackTraceRow );
+
+            }
+        }
+
+        private string BuildQueryStringList( string queryString )
+        {
+            string[] queryStringVariables = queryString.Split( "&".ToCharArray() );
+
+            StringBuilder qsList = new StringBuilder();
+            qsList.Append("<ul type=\"disc\">");
+
+            foreach ( string query in queryStringVariables )
+            {
+                string[] queryStringValue = query.Split( "=".ToCharArray() );
+
+                if (queryStringValue.Length > 1)
                 {
-                    listBuilder.AppendFormat( "<li>{0}: {1}</li>", valueParts[0], valueParts[1] );
+                    qsList.AppendFormat( "<li>{0}: {1}</li>", queryStringValue[0], queryStringValue[1] );
                 }
                 else
                 {
-                    listBuilder.AppendFormat( "<li>{0}</li>", valueParts[0] );
+                    qsList.AppendFormat( "<li>{0}</li>", queryStringValue[0] );
                 }
             }
 
-            listBuilder.Append( "</ul>" );
+            qsList.Append( "</ul>" );
 
-            return listBuilder.ToString();
+            return qsList.ToString();
         }
 
-        private void AddExceptionToList( ExceptionLog ex )
+        private List<ExceptionDetailSummary> GetExceptionLogs( ExceptionLog baseException )
         {
-            if ( ex == null )
-            {
-                return;
-            }
-            exceptions.Add( ex );
+            List<ExceptionDetailSummary> summaryList = new List<ExceptionDetailSummary>();
+            ExceptionLogService svc = new ExceptionLogService();
+            summaryList.Add( new ExceptionDetailSummary() 
+                {   ExceptionId = baseException.Id, 
+                    ExceptionSource = baseException.Source, 
+                    ExceptionType = baseException.ExceptionType, 
+                    ExceptionDescription = baseException.Description, 
+                    StackTrace = baseException.StackTrace 
+                } );
 
-            //If has parent
-            if ( ex.ParentId != null && ex.ParentId > 0 )
+            int? parentId = baseException.ParentId;
+            while ( parentId != null && parentId > 0 )
             {
-                //if parent doesn't exist in the exceptionList
-                if ( exceptions.Where( e => e.Id == ex.ParentId ).Count() == 0 )
+                var exception = svc.Get( (int)parentId );
+
+                if ( exception != null )
                 {
-                    AddExceptionToList( new ExceptionLogService().Get( (int)ex.ParentId ) );
+                    summaryList.Add( new ExceptionDetailSummary()
+                        {
+                            ExceptionId = exception.Id,
+                            ExceptionSource = exception.Source,
+                            ExceptionType = exception.ExceptionType,
+                            ExceptionDescription = exception.Description,
+                            StackTrace = exception.StackTrace
+                        }
+                    );
+                }
+
+                parentId = exception.ParentId;
+            }
+
+            if ( baseException.HasInnerException != null &&  (bool)baseException.HasInnerException )
+            {
+                foreach ( ExceptionLog exception in svc.GetByParentId(baseException.Id) )
+                {
+                    summaryList.Add( new ExceptionDetailSummary()
+                        {
+                            ExceptionId = exception.Id,
+                            ExceptionSource = exception.Source,
+                            ExceptionType = exception.ExceptionType,
+                            ExceptionDescription = exception.Description,
+                            StackTrace = exception.StackTrace
+                        }
+                        );
                 }
             }
 
-            //foreach child exception (there should only be a max of 1)
-            foreach ( ExceptionLog childException in new ExceptionLogService().GetByParentId(ex.Id) )
-            {
-                //If child doesn't aleady exist in the list
-                if ( exceptions.Where( e => e.Id == childException.Id ).Count() == 0 )
-                {
-                    AddExceptionToList( childException );
-                }
-            }
+            return summaryList;
         }
 
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
-            if ( !itemKey.Equals( "ExceptionId" ) || itemKeyValue.Equals( 0 ) )
+            if ( !itemKey.Equals( "ExceptionId" ) )
             {
                 return;
             }
 
+            var baseException = new ExceptionLogService().Get( itemKeyValue );
 
-            ExceptionLog exception = new ExceptionLogService().Get( itemKeyValue );
-            lblSiteName.Text = exception.Site.Name;
-            lblPage.Text = exception.Page.Name;
+            hfExceptionID.Value = baseException.Id.ToString();
+            lblSite.Text = baseException.Site.Name;
+            lblPage.Text = baseException.Page.Name;
 
-            hlViewPage.NavigateUrl = exception.PageUrl;
-
-            if ( exception.CreatedByPersonId == null )
+            if ( baseException.CreatedByPersonId == null || baseException.CreatedByPersonId == 0 )
             {
-                lblUserName.Text = "Anonymous";
+                lblUser.Text = "Anonymous";
             }
             else
             {
-                lblUserName.Text = exception.CreatedByPerson.FullName;
+                lblUser.Text = baseException.CreatedByPerson.FullName;
             }
 
-            if ( !String.IsNullOrWhiteSpace( exception.QueryString ) )
+            litCookies.Text = baseException.Cookies;
+            litServerVariables.Text = baseException.ServerVariables;
+
+            if (!String.IsNullOrWhiteSpace(baseException.QueryString))
             {
-                litQueryString.Text = BuildQueryStringList( exception.QueryString );
-                pnlQueryString.Visible = true;
+                litQueryStringList.Text = BuildQueryStringList(baseException.QueryString);
+                divQueryString.Visible = true;
             }
             else
             {
-                pnlQueryString.Visible = false;
+                divQueryString.Visible = false;
             }
 
-            litCookies.Text = exception.Cookies;
-            litServerVariables.Text = exception.ServerVariables;
+            if( Convert.ToBoolean( GetAttributeValue( "ShowCookies" ) ) )
+            {
+                cbShowCookies.Checked = true;
+            }
+            else
+            {
+                cbShowCookies.Checked = false;
+            }
 
-            pnlCookies.Visible = Convert.ToBoolean( GetAttributeValue( "ShowCookies" ) );
-            pnlServerVariables.Visible = Convert.ToBoolean( GetAttributeValue( "ShowServerVariables" ) );
+            if ( Convert.ToBoolean( GetAttributeValue( "ShowServerVariables" ) ) )
+            {
+                cbShowServerVariables.Checked = true;
+            }
+            else
+            {
+                cbShowServerVariables.Checked = false;
+            }
 
-            pnlExceptionSummary.Visible = true;
-            pnlExceptionDetail.Visible = true;
+            List<ExceptionDetailSummary> exceptionDetailSummaryList = GetExceptionLogs( baseException );
+
+            ViewState["ExceptionDetails"] = exceptionDetailSummaryList.ToJson();
+
+            BuildExceptionDetailTable( exceptionDetailSummaryList );
         }
         #endregion
+    }
 
+    public class ExceptionDetailSummary
+    {
+        public int ExceptionId { get; set; }
+        public string ExceptionType { get; set; }
+        public string ExceptionSource { get; set; }
+        public string ExceptionDescription { get; set; }
+        public string StackTrace { get; set; }
 
-
-}
+    }
 }
