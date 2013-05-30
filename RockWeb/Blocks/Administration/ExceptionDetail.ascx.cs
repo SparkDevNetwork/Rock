@@ -242,6 +242,7 @@ namespace RockWeb.Blocks.Administration
             if( Convert.ToBoolean( GetAttributeValue( "ShowCookies" ) ) )
             {
                 cbShowCookies.Checked = true;
+                ScriptManager.RegisterStartupScript( upExcpetionDetail, upExcpetionDetail.GetType(), "ShowCookiesOnLoad" + DateTime.Now.Ticks, "$(\"#pnlCookies\").css(\"display\", \"inherit\");", true );
             }
             else
             {
@@ -251,6 +252,7 @@ namespace RockWeb.Blocks.Administration
             if ( Convert.ToBoolean( GetAttributeValue( "ShowServerVariables" ) ) )
             {
                 cbShowServerVariables.Checked = true;
+                ScriptManager.RegisterStartupScript( upExcpetionDetail, upExcpetionDetail.GetType(), "ShowServerVariablesOnLoad" + DateTime.Now.Ticks, "$(\"#pnlServerVariables\").css(\"display\", \"inherit\");", true );
             }
             else
             {
