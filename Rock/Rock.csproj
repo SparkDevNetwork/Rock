@@ -203,6 +203,10 @@
     <Compile Include="Migrations\201305231329217_BinaryFileData.Designer.cs">
       <DependentUpon>201305231329217_BinaryFileData.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201305281730297_AddMiddleName.cs" />
+    <Compile Include="Migrations\201305281730297_AddMiddleName.Designer.cs">
+      <DependentUpon>201305281730297_AddMiddleName.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
@@ -870,6 +874,7 @@
     <Compile Include="Web\UI\IDimmableBlock.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterLocationGroupsByAbilityLevel.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterLocationGroupsBySpecialNeeds.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterLocationGroupsByLastName.cs" />
     <Compile Include="Workflow\Action\CheckIn\CreateLabels.cs" />
@@ -1323,13 +1328,6 @@
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
-    <Content Include="web.config" />
-    <Content Include="web.Debug.config">
-      <DependentUpon>web.config</DependentUpon>
-    </Content>
-    <Content Include="web.Release.config">
-      <DependentUpon>web.config</DependentUpon>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
@@ -1664,6 +1662,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201305231329217_BinaryFileData.resx">
       <DependentUpon>201305231329217_BinaryFileData.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305281730297_AddMiddleName.resx">
+      <DependentUpon>201305281730297_AddMiddleName.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

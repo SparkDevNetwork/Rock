@@ -65,7 +65,7 @@
                                 <asp:Repeater ID="rptAccountList" runat="server" >
                                 <ItemTemplate>       
                                     <div class="row-fluid">
-	                                    <Rock:NumberBox ID="txtAccountAmount" runat="server" CssClass="input-small calc" PrependText="$" 
+	                                    <Rock:NumberBox ValidationDataType="Double" ID="txtAccountAmount" runat="server" CssClass="input-small calc" PrependText="$" 
                                             LabelText='<%# DataBinder.Eval(Container.DataItem, "Account.PublicName") %>' 
                                             Text='<%# DataBinder.Eval(Container.DataItem, "Amount") %>'>
 	                                    </Rock:NumberBox>
@@ -103,7 +103,7 @@
                                     <Rock:LabeledCheckBox id="chkLimitGifts" runat="server" Text="Limit number of gifts" OnCheckedChanged="chkLimitGifts_CheckedChanged" />
                                     
                                     <div id="divLimitGifts" runat="server" Visible="false">
-                                        <Rock:NumberBox ID="txtLimitGifts" runat="server" Text="0" />
+                                        <Rock:NumberBox ID="txtLimitGifts" runat="server" Text="0" ValidationDataType="Integer" />
                                     </div>                                    
                                 </div>
 
@@ -213,7 +213,7 @@
                                         
                                             <fieldset>      
 
-                                                <Rock:NumberBox ID="txtCreditCard" runat="server" LabelText="Credit Card #" CssClass="credit-card" MaxLength="20" />
+                                                <Rock:NumberBox ID="txtCreditCard" runat="server" LabelText="Credit Card #" CssClass="credit-card" MaxLength="20" ValidationDataType="Double" />
 
                                                 <ul id="ulCardType" class="card-logos">
 	                                                <li class="card-visa"></li>
@@ -237,7 +237,7 @@
                                             </div>
 
                                             <div>
-                                                <Rock:NumberBox ID="txtCVV" LabelText="CVV #" runat="server" MaxLength="3" CssClass="input-mini" />
+                                                <Rock:NumberBox ID="txtCVV" LabelText="CVV #" runat="server" MaxLength="3" CssClass="input-mini" ValidationDataType="Integer" />
                                             </div> 
 
                                         </div>
@@ -254,8 +254,8 @@
                                             <div class="span6">
                                                 <fieldset>
                                                     <Rock:LabeledTextBox ID="txtBankName" runat="server" LabelText="Bank Name" />
-                                                    <Rock:NumberBox ID="txtRouting" runat="server" LabelText="Routing #" />
-                                                    <Rock:NumberBox ID="txtAccount" runat="server" LabelText="Account #" />
+                                                    <Rock:NumberBox ID="txtRouting" runat="server" LabelText="Routing #" ValidationDataType="Double" />
+                                                    <Rock:NumberBox ID="txtAccount" runat="server" LabelText="Account #" ValidationDataType="Double" />
                                                 </fieldset>
                                             </div>
                                         </div>
