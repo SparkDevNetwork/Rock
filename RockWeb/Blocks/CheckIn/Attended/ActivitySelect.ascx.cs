@@ -179,6 +179,13 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             var activity = CheckInTimeAndActivityList[int.Parse( gActivityList.DataKeys[e.RowIndex]["ListId"].ToString() )];
             CheckInTimeAndActivityList.Remove( activity );
+            foreach ( RepeaterItem item in rActivity.Items )
+            {
+                if ( int.Parse( ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).CommandArgument ) == activity[2] )
+                {
+                    ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).RemoveCssClass( "active" );
+                }
+            }
             BindToActivityGrid();
         }
 
@@ -208,6 +215,57 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             rMinistry.DataSource = groupTypeList;
             rMinistry.DataBind();
+
+            // if there are already activities that are selected for this person, load up the first one in the list
+            if ( gActivityList.Rows.Count > 0 )
+            {
+                var row = gActivityList.Rows[0];
+                var cell = row.Cells[2];
+                GroupTypeService gts = new GroupTypeService();
+                var groupTypeId = gts.Queryable().Where( a => a.Name == cell.Text ).Select( a => a.Id );
+                var parentId = GetParent( groupTypeId.FirstOrDefault(), 0 );
+                foreach ( RepeaterItem item in rMinistry.Items )
+                {
+                    if ( int.Parse( ( (LinkButton)item.FindControl( "lbSelectMinistry" ) ).CommandArgument ) == parentId )
+                    {
+                        ( (LinkButton)item.FindControl( "lbSelectMinistry" ) ).AddCssClass( "active" );
+                    }
+                }
+
+                LoadTimes();
+                var groupType = gts.Get( parentId );
+                Schedule s = new Schedule();
+                foreach ( var group in groupType.Groups )
+                {
+                    foreach ( var groupLocation in group.GroupLocations )
+                    {
+                        foreach ( var schedule in groupLocation.Schedules )
+                        {
+                            if ( schedule.Name == row.Cells[1].Text )
+                            {
+                                s = schedule;
+                            }
+                        }
+                    }
+                }
+
+                foreach ( RepeaterItem item in rTime.Items )
+                {
+                    if ( int.Parse( ( (LinkButton)item.FindControl( "lbSelectTime" ) ).CommandArgument ) == s.Id )
+                    {
+                        ( (LinkButton)item.FindControl( "lbSelectTime" ) ).AddCssClass( "active" );
+                    }
+                }
+
+                LoadActivities();
+                foreach ( RepeaterItem item in rActivity.Items )
+                {
+                    if ( int.Parse( ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).CommandArgument ) == groupTypeId.FirstOrDefault() )
+                    {
+                        ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).AddCssClass( "active" );
+                    }
+                }
+            }
         }
 
         protected void LoadTimes()
@@ -445,6 +503,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             gActivityList.CssClass = string.Empty;
             gActivityList.AddCssClass( "grid-table" );
             gActivityList.AddCssClass( "table" );
+            gActivityList.AddCssClass( "select" );
         }
 
         #endregion

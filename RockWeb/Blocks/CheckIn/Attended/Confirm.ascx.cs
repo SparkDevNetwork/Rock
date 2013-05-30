@@ -155,6 +155,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void lbPrintAll_Click( object sender, EventArgs e )
         {
             // Do some crazy printing crap in here where you can print labels for everyone listed in the grid.
+            maWarning.Show( "If there was any code in here you would have just printed all the labels", ModalAlertType.Information );
         }
 
         /// <summary>
