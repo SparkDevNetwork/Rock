@@ -103,6 +103,17 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Gets the app path.
+        /// </summary>
+        /// <value>
+        /// The app path.
+        /// </value>
+        public string AppPath
+        {
+            get { return ( (RockPage)this.Page ).AppPath; }
+        }
+
+        /// <summary>
         /// Gets the root URL Path.
         /// </summary>
         public string RootPath
@@ -688,7 +699,7 @@ namespace Rock.Web.UI
                 aAttributes.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 aAttributes.Attributes.Add( "class", "properties" );
                 aAttributes.Attributes.Add( "height", "500px" );
-                aAttributes.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", CurrentBlock.Id ) ) + "')" );
+                aAttributes.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", CurrentBlock.Id ) ) + "')" );
                 aAttributes.Attributes.Add( "title", "Block Properties" );
                 //aAttributes.Attributes.Add( "instance-id", BlockInstance.Id.ToString() );
                 configControls.Add( aAttributes );
@@ -705,7 +716,7 @@ namespace Rock.Web.UI
                 aSecureBlock.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 aSecureBlock.Attributes.Add( "class", "security" );
                 aSecureBlock.Attributes.Add( "height", "500px" );
-                aSecureBlock.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Block Security&pb=&sb=Done",
+                aSecureBlock.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Block Security&pb=&sb=Done",
                     EntityTypeCache.Read( typeof( Block ) ).Id, CurrentBlock.Id ) ) + "')" );
                 aSecureBlock.Attributes.Add( "title", "Block Security" );
                 configControls.Add( aSecureBlock );

@@ -20,7 +20,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "FinancialTransactionRefund" )]
     [DataContract]
-    public partial class FinancialTransactionRefund : FinancialTransaction
+    public partial class FinancialTransactionRefund : FinancialTransactionBase<FinancialTransactionRefund>
     {
 
         #region Entity Properties

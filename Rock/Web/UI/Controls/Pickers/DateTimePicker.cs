@@ -21,16 +21,15 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
 
-            string kendoFunction = "kendoDateTimePicker"; 
+            if ( string.IsNullOrWhiteSpace( this.SourceTypeName ) )
+            {
+                this.LabelTextFromPropertyName = false;
+                this.SourceTypeName = "Rock.Web.UI.Controls.DateTimePicker, Rock";
+                this.PropertyName = "SelectedDateTime";
+            }
 
-            string script = string.Format( 
-                @"$(document).ready(function() {{
-                    $('#{0}').{1}();
-                }});",
-                this.ClientID,
-                kendoFunction);
-
-            ScriptManager.RegisterClientScriptBlock( this.Page, typeof( Page ), "KendoDateTimePickerScript_" + this.ID, script, true );
+            var script = string.Format( @"Rock.controls.dateTimePicker.initialize({{ id: '{0}' }});", this.ClientID );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "date_time_picker-" + this.ClientID, script, true );
         }
 
         /// <summary>

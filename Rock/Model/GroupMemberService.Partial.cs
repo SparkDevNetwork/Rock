@@ -32,8 +32,8 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<GroupMember> Queryable( bool includeDeceased )
         {
-            return base.Repository.AsQueryable().Where( g => 
-                includeDeceased || !g.Person.IsDeceased.HasValue || !g.Person.IsDeceased.Value );
+            return base.Repository.AsQueryable()
+                .Where( g => includeDeceased || !g.Person.IsDeceased.HasValue || !g.Person.IsDeceased.Value );
         }
 
         /// <summary>
@@ -66,10 +66,11 @@ namespace Rock.Model
         /// <returns>
         /// An enumerable list of Member objects.
         /// </returns>
-        public IEnumerable<GroupMember> GetByGroupId( int groupId, bool includeDeceased = false )
+        public IQueryable<GroupMember> GetByGroupId( int groupId, bool includeDeceased = false )
         {
-            return Repository.Find( t => t.GroupId == groupId &&
-                ( includeDeceased || !t.Person.IsDeceased.HasValue || !t.Person.IsDeceased.Value ) );
+            return Queryable("Person,GroupRole", includeDeceased)
+                .Where( t => t.GroupId == groupId)
+                .OrderBy( g => g.GroupRole.SortOrder );
         }
 
         /// <summary>
@@ -79,12 +80,9 @@ namespace Rock.Model
         /// <param name="personId">The person id.</param>
         /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
         /// <returns></returns>
-        public IEnumerable<GroupMember> GetByGroupIdAndPersonId( int groupId, int personId, bool includeDeceased = false )
+        public IQueryable<GroupMember> GetByGroupIdAndPersonId( int groupId, int personId, bool includeDeceased = false )
         {
-            return Repository.Find( g =>
-                g.GroupId == groupId &&
-                g.PersonId == personId &&
-                ( includeDeceased || !g.Person.IsDeceased.HasValue || !g.Person.IsDeceased.Value ) );
+            return GetByGroupId(groupId, includeDeceased).Where( g => g.PersonId == personId );
         }
 
         /// <summary>
@@ -94,9 +92,9 @@ namespace Rock.Model
         /// <param name="personId">Person Id.</param>
         /// <param name="groupRoleId">Group Role Id.</param>
         /// <returns>Member object.</returns>
-        public GroupMember GetByGroupIdAndPersonIdAndGroupRoleId( int groupId, int personId, int groupRoleId )
+        public GroupMember GetByGroupIdAndPersonIdAndGroupRoleId( int groupId, int personId, int groupRoleId, bool includeDeceased = false )
         {
-            return Repository.FirstOrDefault( t => t.GroupId == groupId && t.PersonId == personId && t.GroupRoleId == groupRoleId );
+            return GetByGroupIdAndPersonId( groupId, personId, includeDeceased ).Where( t => t.GroupRoleId == groupRoleId ).FirstOrDefault();
         }
 
         /// <summary>
@@ -107,11 +105,9 @@ namespace Rock.Model
         /// <returns>
         /// An enumerable list of Member objects.
         /// </returns>
-        public IEnumerable<GroupMember> GetByGroupRoleId( int groupRoleId, bool includeDeceased = false  )
+        public IQueryable<GroupMember> GetByGroupRoleId( int groupRoleId, bool includeDeceased = false )
         {
-            return Repository.Find( t => 
-                t.GroupRoleId == groupRoleId &&
-                ( includeDeceased || !t.Person.IsDeceased.HasValue || !t.Person.IsDeceased.Value ) );
+            return Queryable( "Person", includeDeceased ).Where( t => t.GroupRoleId == groupRoleId );
         }
         
         /// <summary>
@@ -119,9 +115,9 @@ namespace Rock.Model
         /// </summary>
         /// <param name="personId">Person Id.</param>
         /// <returns>An enumerable list of Member objects.</returns>
-        public IEnumerable<GroupMember> GetByPersonId( int personId )
+        public IQueryable<GroupMember> GetByPersonId( int personId )
         {
-            return Repository.Find( t => t.PersonId == personId );
+            return Queryable( "Person", true ).Where(  t => t.PersonId == personId );
         }
 
         /// <summary>
@@ -132,9 +128,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEnumerable<string> GetFirstNames( int groupId, bool includeDeceased = false )
         {
-            return Repository.AsQueryable().
-                Where( m => m.GroupId == groupId &&
-                    ( includeDeceased || !m.Person.IsDeceased.HasValue || !m.Person.IsDeceased.Value ) ).
+            return GetByGroupId(groupId, includeDeceased).
                 OrderBy( m => m.GroupRole.SortOrder ).
                 ThenBy( m => m.Person.BirthYear ).ThenBy( m => m.Person.BirthMonth ).ThenBy( m => m.Person.BirthDay ).
                 ThenBy( m => m.Person.Gender ).

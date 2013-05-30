@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class PageRouteExtensionMethods
+    public static partial class PageRouteExtensionMethods
     {
         /// <summary>
         /// Clones this PageRoute object to a new PageRoute object

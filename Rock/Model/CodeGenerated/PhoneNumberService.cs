@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class PhoneNumberExtensionMethods
+    public static partial class PhoneNumberExtensionMethods
     {
         /// <summary>
         /// Clones this PhoneNumber object to a new PhoneNumber object

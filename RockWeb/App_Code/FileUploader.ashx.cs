@@ -107,7 +107,11 @@ namespace RockWeb
             using ( MemoryStream ms = new MemoryStream() )
             {
                 inputStream.CopyTo( ms );
-                file.Data = ms.ToArray();
+                if ( file.Data == null )
+                {
+                    file.Data = new BinaryFileData();
+                }
+                file.Data.Content = ms.ToArray();
             }
         }
     }

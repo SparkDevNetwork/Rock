@@ -73,7 +73,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class CampusExtensionMethods
+    public static partial class CampusExtensionMethods
     {
         /// <summary>
         /// Clones this Campus object to a new Campus object
@@ -92,6 +92,7 @@ namespace Rock.Model
                 var target = new Campus();
                 target.IsSystem = source.IsSystem;
                 target.Name = source.Name;
+                target.LocationId = source.LocationId;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

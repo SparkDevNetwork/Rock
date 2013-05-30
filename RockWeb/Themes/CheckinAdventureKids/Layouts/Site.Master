@@ -1,4 +1,5 @@
 ﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Site.Master.cs" Inherits="RockWeb.Themes.CheckinGeneric.Layouts.Site" %>
+<%@ Import Namespace="System.Web.Optimization" %>
 <!DOCTYPE html>
 
 <html>
@@ -24,15 +25,8 @@
     <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.bootstrap.min.css") %>"/>
     <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/developer.less") %>">
 
-    <script src="<%# ResolveUrl("~/Scripts/jquery.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/jquery-ui-1.10.0.custom.min.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/Kendo/kendo.web.min.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/Rock/grid.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/bootstrap.min.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/bootbox.min.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/scripts/ckeditor/ckeditor.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/scripts/ckeditor/adapters/jquery.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/fastclick.js") %>" ></script>
+
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
 </head>

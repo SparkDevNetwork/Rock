@@ -53,15 +53,6 @@ namespace Rock.Model
         public int? BinaryFileTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Data.
-        /// </summary>
-        /// <value>
-        /// Data.
-        /// </value>
-        [DataMember]
-        public byte[] Data { get; set; }
-        
-        /// <summary>
         /// Gets or sets the Url.
         /// </summary>
         /// <value>
@@ -123,6 +114,14 @@ namespace Rock.Model
         /// </value>
         public virtual BinaryFileType BinaryFileType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the binary file data.
+        /// </summary>
+        /// <value>
+        /// The binary file data.
+        /// </value>
+        public virtual BinaryFileData Data { get; set; }
+
         #endregion
 
         #region Methods
@@ -176,6 +175,7 @@ namespace Rock.Model
         public BinaryFileConfiguration()
         {
             this.HasOptional( f => f.BinaryFileType ).WithMany().HasForeignKey( f => f.BinaryFileTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( f => f.Data ).WithRequired().WillCascadeOnDelete();
         }
     }
 

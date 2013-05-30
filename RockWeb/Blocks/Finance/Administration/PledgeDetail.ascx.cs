@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Finance.Administration
                 pledge = pledgeService.Get( pledgeId );
             }
 
-            pledge.PersonId = int.Parse( ppPerson.SelectedValue );
+            pledge.PersonId = ppPerson.PersonId;
             pledge.AccountId = int.Parse( fpFund.SelectedValue );
             pledge.TotalAmount = decimal.Parse( tbAmount.Text );
             pledge.StartDate = DateTime.Parse( dtpStartDate.Text );

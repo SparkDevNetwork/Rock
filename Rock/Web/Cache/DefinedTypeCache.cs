@@ -113,7 +113,7 @@ namespace Rock.Web.Cache
 
                 if ( definedValueIds != null )
                 {
-                    foreach ( int id in definedValueIds )
+                    foreach ( int id in definedValueIds.ToList() )
                     {
                         definedValues.Add( DefinedValueCache.Read( id ) );
                     }

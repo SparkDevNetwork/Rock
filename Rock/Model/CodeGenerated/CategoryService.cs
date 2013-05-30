@@ -85,7 +85,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class CategoryExtensionMethods
+    public static partial class CategoryExtensionMethods
     {
         /// <summary>
         /// Clones this Category object to a new Category object

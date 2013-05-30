@@ -19,10 +19,10 @@ namespace Rock.Field
     public class ConfigurationValue
     {
         /// <summary>
-        /// Gets or sets the name.
+        /// Gets or sets the name. The name is used as the field label heading.</param>
         /// </summary>
         /// <value>
-        /// The name.
+        /// The name/label to use as the field label heading.
         /// </value>
         [DataMember]
         public string Name { get; set; }
@@ -64,7 +64,7 @@ namespace Rock.Field
         /// <summary>
         /// Initializes a new instance of the <see cref="ConfigurationValue"/> class.
         /// </summary>
-        /// <param name="name">The name.</param>
+        /// <param name="name">The name (used as the heading label when rendering markup).</param>
         /// <param name="description">The description.</param>
         /// <param name="value">The value.</param>
         public ConfigurationValue( string name, string description, string value )

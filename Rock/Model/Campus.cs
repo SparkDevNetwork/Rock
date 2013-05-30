@@ -19,6 +19,8 @@ namespace Rock.Model
     [DataContract]
     public partial class Campus : Model<Campus>
     {
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the System.
         /// </summary>
@@ -42,6 +44,32 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the location id.
+        /// </summary>
+        /// <value>
+        /// The location id.
+        /// </value>
+        [DataMember]
+        public int? LocationId { get; set; }
+
+        #endregion
+
+        #region Virtual Properties
+
+        /// <summary>
+        /// Gets or sets the location.
+        /// </summary>
+        /// <value>
+        /// The location.
+        /// </value>
+        [DataMember]
+        public virtual Location Location { get; set; }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
         /// </summary>
         /// <returns>
@@ -52,7 +80,11 @@ namespace Rock.Model
             return this.Name;
         }
 
+        #endregion
+
     }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Campus Configuration class.
@@ -64,6 +96,10 @@ namespace Rock.Model
         /// </summary>
         public CampusConfiguration()
         {
+            this.HasOptional( c => c.Location ).WithMany().HasForeignKey( c => c.LocationId ).WillCascadeOnDelete( false );
         }
     }
+
+    #endregion
+
 }

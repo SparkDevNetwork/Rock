@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class TagExtensionMethods
+    public static partial class TagExtensionMethods
     {
         /// <summary>
         /// Clones this Tag object to a new Tag object

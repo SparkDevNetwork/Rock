@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class FinancialTransactionImageExtensionMethods
+    public static partial class FinancialTransactionImageExtensionMethods
     {
         /// <summary>
         /// Clones this FinancialTransactionImage object to a new FinancialTransactionImage object

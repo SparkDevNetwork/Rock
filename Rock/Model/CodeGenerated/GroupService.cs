@@ -67,7 +67,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class GroupExtensionMethods
+    public static partial class GroupExtensionMethods
     {
         /// <summary>
         /// Clones this Group object to a new Group object

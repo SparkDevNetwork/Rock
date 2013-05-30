@@ -14,7 +14,7 @@ namespace Rock.Web.UI.Controls
     /// A <see cref="T:System.Web.UI.WebControls.DropDownList"/> control with an associated label.
     /// </summary>
     [ToolboxData( "<{0}:LabeledDropDownList runat=server></{0}:LabeledDropDownList>" )]
-    public class LabeledDropDownList : DropDownList, ILabeledControl
+    public class LabeledDropDownList : RockDropDownList, ILabeledControl
     {
         /// <summary>
         /// The label

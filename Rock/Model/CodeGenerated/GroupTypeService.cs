@@ -55,9 +55,9 @@ namespace Rock.Model
                 return false;
             }  
             
-            // ignoring GroupTypeAssociation,GroupTypeId 
-            
             // ignoring GroupTypeAssociation,ChildGroupTypeId 
+            
+            // ignoring GroupTypeAssociation,GroupTypeId 
             return true;
         }
     }
@@ -65,7 +65,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class GroupTypeExtensionMethods
+    public static partial class GroupTypeExtensionMethods
     {
         /// <summary>
         /// Clones this GroupType object to a new GroupType object
@@ -96,6 +96,7 @@ namespace Rock.Model
                 target.TakesAttendance = source.TakesAttendance;
                 target.AttendanceRule = source.AttendanceRule;
                 target.AttendancePrintTo = source.AttendancePrintTo;
+                target.DisplayOrder = source.DisplayOrder;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

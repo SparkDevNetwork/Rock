@@ -138,6 +138,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the prepend text.
+        /// </summary>
+        /// <value>
+        /// The prepend text.
+        /// </value>
         [
         Bindable( false ),
         Category( "Appearance" ),
@@ -158,6 +164,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the append text.
+        /// </summary>
+        /// <value>
+        /// The append text.
+        /// </value>
         [
         Bindable( false ),
         Category( "Appearance" ),
@@ -238,20 +250,27 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( "class", "control-group" +
-                ( IsValid ? "" : " error" ) +
-                ( Required ? " required" : "" ) );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            bool renderControlGroupDiv = (!string.IsNullOrEmpty( LabelText ) || !string.IsNullOrWhiteSpace( Help ));
+            string wrapperClassName = string.Empty;
 
-            writer.AddAttribute( "class", "control-label" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            label.Visible = this.Visible;
-            label.RenderControl( writer );
-            helpBlock.RenderControl( writer );
+            if ( renderControlGroupDiv )
+            {
+                writer.AddAttribute( "class", "control-group" +
+                    ( IsValid ? "" : " error" ) +
+                    ( Required ? " required" : "" ) );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.RenderEndTag();
+                writer.AddAttribute( "class", "control-label" );
 
-            var wrapperClassName = "controls";
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                label.Visible = this.Visible;
+                label.RenderControl( writer );
+                helpBlock.RenderControl( writer );
+                writer.RenderEndTag();
+
+                wrapperClassName = "controls";
+            }
+           
 
             if ( !string.IsNullOrWhiteSpace( PrependText ) )
             {
@@ -263,8 +282,13 @@ namespace Rock.Web.UI.Controls
                 wrapperClassName += " input-append";
             }
 
-            writer.AddAttribute( "class", wrapperClassName );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            bool renderControlsDiv = !string.IsNullOrWhiteSpace( wrapperClassName );
+
+            if ( renderControlsDiv )
+            {
+                writer.AddAttribute( "class", wrapperClassName );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            }
 
             if ( !string.IsNullOrWhiteSpace( PrependText ) )
             {
@@ -300,9 +324,15 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
             }
 
-            writer.RenderEndTag();
+            if ( renderControlsDiv )
+            {
+                writer.RenderEndTag();
+            }
 
-            writer.RenderEndTag();
+            if ( renderControlGroupDiv )
+            {
+                writer.RenderEndTag();
+            }
         }
 
         /// <summary>

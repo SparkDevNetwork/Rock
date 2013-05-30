@@ -202,7 +202,7 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                marketingCampaign.ContactPersonId = int.Parse( ppContactPerson.SelectedValue );
+                marketingCampaign.ContactPersonId = ppContactPerson.PersonId;
             }
 
             marketingCampaign.ContactEmail = tbContactEmail.Text;
@@ -499,8 +499,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void ppContactPerson_SelectPerson( object sender, EventArgs e )
         {
-            int personId = int.Parse( ppContactPerson.SelectedValue );
-            Person contactPerson = new PersonService().Get( personId );
+            Person contactPerson = new PersonService().Get( ppContactPerson.PersonId ?? 0 );
             if ( contactPerson != null )
             {
                 tbContactEmail.Text = contactPerson.Email;
