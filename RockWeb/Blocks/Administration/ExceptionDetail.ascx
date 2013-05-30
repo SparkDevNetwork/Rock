@@ -4,7 +4,7 @@
     <ContentTemplate>
         <asp:Panel ID="pnlSummary" runat="server">
             <fieldset>
-                <legend>Exception Summary</legend>
+                <legend>Summary</legend>
 
                 <div class="row-fluid">
                     <div class="span6">
@@ -13,7 +13,7 @@
                                 Site
                             </div>
                             <div class="span10">
-                                <Rock:LabeledText ID="lblSite" runat="server"  />
+                                <Rock:LabeledText ID="lblSite" runat="server" />
                             </div>
                         </div>
                         <div class="row-fluid">
@@ -26,11 +26,13 @@
                             <div class="span6">
                                 <asp:HyperLink ID="hlPageLink" runat="server" CssClass="btn btn-mini" Target="_blank"><i class="icon-arrow-right"></i></asp:HyperLink>
                             </div>
-                        </div>                        
+                        </div>
                     </div>
                     <div class="span6">
                         <div class="span2">User</div>
-                        <div class="span10"><Rock:LabeledText ID="lblUser" runat="server" /></div>
+                        <div class="span10">
+                            <Rock:LabeledText ID="lblUser" runat="server" />
+                        </div>
                     </div>
                 </div>
                 <div id="divQueryString" runat="server">
@@ -41,7 +43,7 @@
                 </div>
                 <div class="row-fluid">
                     <div class="span2">
-                        <Rock:LabeledCheckBox ID="cbShowCookies" runat="server"  TextAlign="Right" />
+                        <Rock:LabeledCheckBox ID="cbShowCookies" runat="server" TextAlign="Right" />
                     </div>
                     <div class="span2">
                         <Rock:LabeledCheckBox ID="cbShowServerVariables" runat="server" TextAlign="Left" />
@@ -49,14 +51,14 @@
                 </div>
             </fieldset>
 
-            <div id="pnlCookies" style="display:none;">
+            <div id="pnlCookies" style="display: none;">
                 <fieldset>
                     <legend>Cookies</legend>
                     <asp:Literal ID="litCookies" runat="server" />
                 </fieldset>
             </div>
 
-            <div id="pnlServerVariables" style="display:none;">
+            <div id="pnlServerVariables" style="display: none;">
                 <fieldset>
                     <legend>Server Variables</legend>
                     <asp:Literal ID="litServerVariables" runat="server" />
@@ -64,7 +66,7 @@
             </div>
             <div id="pnlExceptionDetails">
                 <fieldset>
-                    <legend>Exception Details</legend>
+                    <legend>Details</legend>
                     <asp:Table ID="tblExceptionDetails" runat="server" CssClass="table table-bordered table-striped table-full table-hover">
                         <asp:TableHeaderRow ID="thRowExceptionDetails" runat="server">
                             <asp:TableHeaderCell ID="thExceptionType" runat="server" Text="Exception Type" />
