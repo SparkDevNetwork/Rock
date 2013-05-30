@@ -40,15 +40,6 @@ namespace RockWeb.Blocks.Administration
                     pnlSummary.Visible = false;
                 }
             }
-            else
-            {
-                if ( ViewState["ExceptionDetails"] != null )
-                {
-
-                    List<ExceptionDetailSummary> exceptionDetailSummary = (List<ExceptionDetailSummary>)Newtonsoft.Json.JsonConvert.DeserializeObject( ViewState["ExceptionDetails"].ToString(), typeof( List<ExceptionDetailSummary> ) );
-                    BuildExceptionDetailTable( exceptionDetailSummary );
-                }
-            }
         }
         #endregion
 
@@ -56,9 +47,10 @@ namespace RockWeb.Blocks.Administration
 
         private void BuildExceptionDetailTable( List<ExceptionDetailSummary> detailSummaries )
         {
-            string pageUrl = CurrentPageReference.BuildUrl();
+            StringBuilder script = new StringBuilder();
             foreach ( var summary in detailSummaries )
             {
+                string exceptionPageUrl = string.Format( "/page/{0}?ExceptionId={1}", CurrentPage.Id, summary.ExceptionId );
                 TableRow detailRow = new TableRow();
           
                 detailRow.ID = string.Format( "tdRowExceptionDetail_{0}", summary.ExceptionId );
@@ -107,6 +99,7 @@ namespace RockWeb.Blocks.Administration
                 stackTraceRow.ID = string.Format( "tdRowExceptionStackTrace_{0}", summary.ExceptionId );
 
                 TableCell exceptionStackTraceCell = new TableCell();
+                exceptionStackTraceCell.ID = string.Format( "tdExceptionStackTrace_{0}", summary.ExceptionId );
                 exceptionStackTraceCell.ColumnSpan = 4;
                 exceptionStackTraceCell.Text = summary.StackTrace;
                 exceptionStackTraceCell.HorizontalAlign = HorizontalAlign.Left;
@@ -115,6 +108,15 @@ namespace RockWeb.Blocks.Administration
 
                 tblExceptionDetails.Rows.Add( stackTraceRow );
 
+                script.Append( "$(\"[id*=" + exceptionSourceCell.ID + "]\").click(function () { redirectToPage(\"" + exceptionPageUrl + "\"); });" );
+                script.Append( "$(\"[id*=" + exceptionSourceCell.ID +"]\").click(function () { redirectToPage(\"" + exceptionPageUrl + "\"); });" );
+                script.Append( "$(\"[id*=" + exceptionDescriptionCell.ID + "]\").click(function () { redirectToPage(\"" + exceptionPageUrl + "\"); });" );
+                script.Append( "$(\"[id*=" + exceptionStackTraceCell.ID + "]\").click(function () { redirectToPage(\"" + exceptionPageUrl + "\"); });" );
+            }
+
+            if ( !String.IsNullOrWhiteSpace( script.ToString() ) )
+            {
+                ScriptManager.RegisterStartupScript( upExcpetionDetail, upExcpetionDetail.GetType(), "ExceptionRedirects" + DateTime.Now.Ticks, script.ToString(), true );
             }
         }
 
@@ -251,8 +253,6 @@ namespace RockWeb.Blocks.Administration
             }
 
             List<ExceptionDetailSummary> exceptionDetailSummaryList = GetExceptionLogs( baseException );
-
-            ViewState["ExceptionDetails"] = exceptionDetailSummaryList.ToJson();
 
             BuildExceptionDetailTable( exceptionDetailSummaryList );
         }
