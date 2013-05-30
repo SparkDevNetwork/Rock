@@ -56,6 +56,7 @@ namespace RockWeb.Blocks.Administration
 
         private void BuildExceptionDetailTable( List<ExceptionDetailSummary> detailSummaries )
         {
+            string pageUrl = CurrentPageReference.BuildUrl();
             foreach ( var summary in detailSummaries )
             {
                 TableRow detailRow = new TableRow();
@@ -204,9 +205,10 @@ namespace RockWeb.Blocks.Administration
 
             var baseException = new ExceptionLogService().Get( itemKeyValue );
 
-            hfExceptionID.Value = baseException.Id.ToString();
             lblSite.Text = baseException.Site.Name;
             lblPage.Text = baseException.Page.Name;
+            hlPageLink.NavigateUrl = string.Format( "~{0}", baseException.PageUrl );
+
 
             if ( baseException.CreatedByPersonId == null || baseException.CreatedByPersonId == 0 )
             {

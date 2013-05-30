@@ -2,7 +2,6 @@
 
 <asp:UpdatePanel ID="upExcpetionDetail" runat="server">
     <ContentTemplate>
-        <asp:HiddenField ID="hfExceptionID" runat="server" Visible="false" />
         <asp:Panel ID="pnlSummary" runat="server">
             <fieldset>
                 <legend>Exception Summary</legend>
