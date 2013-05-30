@@ -207,6 +207,10 @@
     <Compile Include="Migrations\201305281730297_AddMiddleName.Designer.cs">
       <DependentUpon>201305281730297_AddMiddleName.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201305302043127_AddExceptionDetailPage.cs" />
+    <Compile Include="Migrations\201305302043127_AddExceptionDetailPage.Designer.cs">
+      <DependentUpon>201305302043127_AddExceptionDetailPage.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
@@ -1672,6 +1676,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201305281730297_AddMiddleName.resx">
       <DependentUpon>201305281730297_AddMiddleName.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305302043127_AddExceptionDetailPage.resx">
+      <DependentUpon>201305302043127_AddExceptionDetailPage.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
