@@ -135,10 +135,27 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
             }
 
-            if (!roomChosen)
+            var roomGroupTypeIds = new List<int>();
+            if ( !roomChosen )
             {
-                maWarning.Show( "At least one room must be selected!", ModalAlertType.Warning );
-                return;
+                //maWarning.Show( "At least one room must be selected!", ModalAlertType.Warning );
+                //return;
+                foreach ( RepeaterItem item in rRooms.Items )
+                {
+                    var linky = (LinkButton)item.FindControl( "lbSelectRooms" );
+                    roomGroupTypeIds.Add( int.Parse( linky.CommandArgument ) );
+                }
+            }
+            else
+            {
+                foreach ( RepeaterItem item in rRooms.Items )
+                {
+                    var linky = (LinkButton)item.FindControl( "lbSelectRooms" );
+                    if ( HasActiveClass( linky ) )
+                    {
+                        roomGroupTypeIds.Add( int.Parse( linky.CommandArgument ) );
+                    }
+                }
             }
 
             var groupTypeIds = new List<int>();
@@ -151,15 +168,15 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
             }
 
-            var roomGroupTypeIds = new List<int>();
-            foreach ( RepeaterItem item in rRooms.Items )
-            {
-                var linky = (LinkButton)item.FindControl( "lbSelectRooms" );
-                if ( HasActiveClass( linky ) )
-                {
-                    roomGroupTypeIds.Add( int.Parse( linky.CommandArgument ) );
-                }
-            }
+            //var roomGroupTypeIds = new List<int>();
+            //foreach ( RepeaterItem item in rRooms.Items )
+            //{
+            //    var linky = (LinkButton)item.FindControl( "lbSelectRooms" );
+            //    if ( HasActiveClass( linky ) )
+            //    {
+            //        roomGroupTypeIds.Add( int.Parse( linky.CommandArgument ) );
+            //    }
+            //}
 
             CurrentKioskId = int.Parse( ddlKiosk.SelectedValue );
             CurrentGroupTypeIds = groupTypeIds;

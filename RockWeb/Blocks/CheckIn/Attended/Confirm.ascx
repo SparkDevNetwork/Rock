@@ -48,6 +48,12 @@
         </div>--%>
 
     </div>
+    <div class="row-fluid attended-checkin-body">
+        <div class="span9"></div>
+        <div class="span3">
+            <asp:LinkButton ID="lbPrintAll" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" runat="server" OnClick="lbPrintAll_Click" Text="Print All" />
+        </div>
+    </div>
 
 </ContentTemplate>
 </asp:UpdatePanel>

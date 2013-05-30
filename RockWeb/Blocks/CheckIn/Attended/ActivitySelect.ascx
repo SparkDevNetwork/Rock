@@ -56,12 +56,9 @@
         </div>
 
         <div class="span3">
-<%--        Haven't completely decided what we're going to do with this column yet. I say that we list the choices that the user makes and allow them to make changes. Maybe if the user
-            selects a block here, it highlights the current selections allowing them to edit? And then have a "X" button attached to each block allowing them to delete? Or is that getting too
-            complicated for what we need?--%>
             <div class="attended-checkin-body-container">
                 <h3>Selected</h3>
-                <Rock:Grid ID="gActivityList" runat="server" AllowSorting="true" AllowPaging="false" ShowActionRow="false" ShowHeader="false">
+                <Rock:Grid ID="gActivityList" runat="server" AllowSorting="true" AllowPaging="false" ShowActionRow="false" ShowHeader="false" CssClass="select">
                     <Columns>
                         <asp:BoundField DataField="ListId" Visible="false" />
                         <asp:BoundField DataField="Time" />
