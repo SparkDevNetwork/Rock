@@ -84,9 +84,9 @@
             oContent[options.axis] = oContent.obj[0]['scroll' + sSize] + 10;
             oContent.obj[0].style.overflow = '';
 
-            oContent.ratio            = oViewport[options.axis] / oContent[options.axis];
+            oContent.ratio = oViewport[options.axis] / oContent[options.axis];
                 
-            oScrollbar.obj.toggleClass('disable', oContent.ratio >= 1);
+            oScrollbar.obj.toggleClass('disable', (oContent.ratio >= 1) || (oContent.ratio === 0));
 
             oTrack[ options.axis ] = options.size === 'auto' ? oViewport[ options.axis ] : options.size;
             oThumb[ options.axis ] = Math.min( oTrack[ options.axis ], Math.max( 0, ( options.sizethumb === 'auto' ? ( oTrack[ options.axis ] * oContent.ratio ) : options.sizethumb ) ) );

@@ -20,7 +20,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// The current person being viewed
         /// </summary>
-        protected Person Person { get; set; }
+        public Person Person { get; set; }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -43,7 +43,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="groupTypeGuid">The group type GUID.</param>
         /// <returns></returns>
-        protected IEnumerable<Group> PersonGroups( string groupTypeGuid )
+        public IEnumerable<Group> PersonGroups( string groupTypeGuid )
         {
             return PersonGroups( new Guid( groupTypeGuid ) );
         }
@@ -52,10 +52,20 @@ namespace Rock.Web.UI
         /// The groups of a particular type that current person belongs to
         /// </summary>
         /// <returns></returns>
-        protected IEnumerable<Group> PersonGroups(Guid groupTypeGuid)
+        public IEnumerable<Group> PersonGroups(Guid groupTypeGuid)
         {
+            string itemKey = "RockGroups:" + groupTypeGuid.ToString();
+
+            if ( Context.Items.Contains( itemKey ) )
+            {
+                return PersonGroups( (int)Context.Items[itemKey] );
+            }
+
             var service = new GroupTypeService();
             int groupTypeId = service.Queryable().Where( g => g.Guid == groupTypeGuid ).Select( g => g.Id ).FirstOrDefault();
+
+            Context.Items.Add( itemKey, groupTypeId );
+
             return PersonGroups( groupTypeId );
         }
 
@@ -63,16 +73,20 @@ namespace Rock.Web.UI
         /// The groups of a particular type that current person belongs to
         /// </summary>
         /// <returns></returns>
-        protected IEnumerable<Group> PersonGroups( int groupTypeId )
+        public IEnumerable<Group> PersonGroups( int groupTypeId )
         {
             string itemKey = "RockGroups:" + groupTypeId.ToString();
 
             var groups = Context.Items[itemKey] as IEnumerable<Group>;
             if ( groups != null )
+            {
                 return groups;
+            }
 
             if ( Person == null )
+            {
                 return null;
+            }
 
             var service = new GroupMemberService();
             groups = service.Queryable()

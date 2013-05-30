@@ -9,7 +9,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.ModelConfiguration.Conventions;
 using System.Reflection;
-
 using Rock.Model;
 
 namespace Rock.Data
@@ -19,16 +18,6 @@ namespace Rock.Data
     /// </summary>
     public partial class RockContext : DbContext
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="RockContext"/> class.
-        /// </summary>
-        public RockContext()
-        {
-            // prevent EF from automatically creating the database and tables when the project is opened or compiled
-            // Now it will only do it when Update-Database is called or when RockWeb does an AutoMigrate
-            Database.SetInitializer<RockContext>( null );
-        }
-        
         #region Models
 
         /// <summary>
@@ -94,6 +83,14 @@ namespace Rock.Data
         /// the Files.
         /// </value>
         public DbSet<BinaryFile> BinaryFiles { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Files data.
+        /// </summary>
+        /// <value>
+        /// the Files data
+        /// </value>
+        public DbSet<BinaryFileData> BinaryFilesData { get; set; }
 
         /// <summary>
         /// Gets or sets the Binary File Types.
@@ -711,6 +708,7 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new AuditConfiguration() );
             modelBuilder.Configurations.Add( new AuthConfiguration() );
             modelBuilder.Configurations.Add( new BinaryFileConfiguration() );
+            modelBuilder.Configurations.Add( new BinaryFileDataConfiguration() );
             modelBuilder.Configurations.Add( new BinaryFileTypeConfiguration() );
             modelBuilder.Configurations.Add( new BlockConfiguration() );
             modelBuilder.Configurations.Add( new BlockTypeConfiguration() );

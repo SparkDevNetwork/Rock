@@ -35,10 +35,10 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the binary file type id.
+        /// Gets or sets the type of the container.
         /// </summary>
         /// <value>
-        /// The binary file type id.
+        /// The type of the container.
         /// </value>
         public string ContainerType
         {
@@ -70,7 +70,7 @@ namespace Rock.Web.UI.Controls
                                         var entityType = EntityTypeCache.Read( component.Value.Value.GetType() );
                                         if ( entityType != null )
                                         {
-                                            this.Items.Add( new ListItem( entityType.FriendlyName, entityType.Id.ToString() ) );
+                                            this.Items.Add( new ListItem( entityType.FriendlyName, entityType.Guid.ToString() ) );
                                         }
                                     }
                                 }

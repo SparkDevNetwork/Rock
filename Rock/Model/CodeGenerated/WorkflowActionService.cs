@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class WorkflowActionExtensionMethods
+    public static partial class WorkflowActionExtensionMethods
     {
         /// <summary>
         /// Clones this WorkflowAction object to a new WorkflowAction object

@@ -49,6 +49,18 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<FinancialPersonSavedAccount>().Queryable().Any( a => a.GatewayId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialGateway.FriendlyTypeName, FinancialPersonSavedAccount.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialScheduledTransaction>().Queryable().Any( a => a.GatewayId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialGateway.FriendlyTypeName, FinancialScheduledTransaction.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<FinancialTransaction>().Queryable().Any( a => a.GatewayId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialGateway.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
@@ -61,7 +73,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class FinancialGatewayExtensionMethods
+    public static partial class FinancialGatewayExtensionMethods
     {
         /// <summary>
         /// Clones this FinancialGateway object to a new FinancialGateway object
@@ -80,6 +92,7 @@ namespace Rock.Model
                 var target = new FinancialGateway();
                 target.Name = source.Name;
                 target.Description = source.Description;
+                target.EntityTypeId = source.EntityTypeId;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

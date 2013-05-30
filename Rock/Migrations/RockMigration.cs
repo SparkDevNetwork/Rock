@@ -343,6 +343,28 @@ namespace Rock.Migrations
 ", pageGuid, route ) );
 
         }
+
+        /// <summary>
+        /// Adds the page context.
+        /// </summary>
+        /// <param name="pageGuid">The page GUID.</param>
+        /// <param name="entity">The entity.</param>
+        /// <param name="idParameter">The id parameter.</param>
+        public void AddPageContext( string pageGuid, string entity, string idParameter )
+        {
+            Sql( string.Format( @"
+
+                DECLARE @PageId int
+                SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{0}')
+
+                INSERT INTO [PageContext] (
+                    [IsSystem],[PageId],[Entity],[IdParameter],[Guid])
+                VALUES(
+                    1, @PageId, '{1}', '{2}', newid())
+", pageGuid, entity, idParameter ) );
+
+        }
+        
         /// <summary>
         /// Defaults the system page.
         /// </summary>

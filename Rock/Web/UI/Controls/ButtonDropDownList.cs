@@ -6,6 +6,7 @@
 using System;
 using System.Linq;
 using System.Web.UI;
+using System.ComponentModel;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
@@ -17,12 +18,55 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:ButtonDropDownList runat=server></{0}:ButtonDropDownList>" )]
     public class ButtonDropDownList : ListControl
     {
+        private Label _label;
+        private String _btnTitle = string.Empty;
         private HtmlGenericControl _divControl;
         private HtmlGenericControl _btnSelect;
         private HiddenField _hfSelectedItemId;
         private HiddenField _hfSelectedItemText;
         private HtmlGenericControl _listControl;
-        protected String btnTitle = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the label text.
+        /// </summary>
+        /// <value>
+        /// The label text.
+        /// </value>
+        public string LabelText
+        {
+            get { return _label.Text; }
+            set { _label.Text = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the title.
+        /// </summary>
+        /// <value>
+        /// The title.
+        /// </value>
+        public string Title
+        {
+            get
+            {
+                return _btnTitle;
+            }
+            set
+            {
+                _btnTitle = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the field.
+        /// </summary>
+        /// <value>
+        /// The name of the field.
+        /// </value>
+        public string FieldName
+        {
+            get { return _label.Text; }
+            set { _label.Text = value; }
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -74,17 +118,17 @@ namespace Rock.Web.UI.Controls
             // <a> click event to prevent the browser from appending '#' to the URL and 
             // causing the window to jump to the top of the.
             const string scriptFormat = @"
-$('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
-    e.preventDefault();
-    var $el = $(this);
-    var text =  $el.html();
-    var textHtml = $el.html() + "" <span class='caret'></span>"";
-    var idvalue = $el.attr('data-id');
-    $('#ButtonDropDown_btn_{0}').html(textHtml);
-    $('#hfSelectedItemId_{0}').val(idvalue);
-    $('#hfSelectedItemText_{0}').val(text);
-    {1}
-}});";
+            $('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
+                e.preventDefault();
+                var $el = $(this);
+                var text =  $el.html();
+                var textHtml = $el.html() + "" <span class='caret'></span>"";
+                var idvalue = $el.attr('data-id');
+                $('#ButtonDropDown_btn_{0}').html(textHtml);
+                $('#hfSelectedItemId_{0}').val(idvalue);
+                $('#hfSelectedItemText_{0}').val(text);
+                {1}
+            }});";
 
             string postbackScript = string.Empty;
             if ( SelectionChanged != null )
@@ -141,21 +185,11 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
         }
 
         /// <summary>
-        /// Gets or sets the title.
+        /// Initializes a new instance of the <see cref="ButtonDropDownList" /> class.
         /// </summary>
-        /// <value>
-        /// The title.
-        /// </value>
-        public string Title
+        public ButtonDropDownList()
         {
-            get
-            {
-                return btnTitle;
-            }
-            set
-            {
-                btnTitle = value;
-            }
+            _label = new Label();            
         }
 
         /// <summary>
@@ -165,7 +199,10 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
         {
             base.CreateChildControls();
 
-            Controls.Clear();
+			Controls.Clear();
+            
+            _label = new Label();
+            Controls.Add( _label );
 
             _divControl = new HtmlGenericControl( "div" );
             _divControl.Attributes["class"] = "btn-group";
@@ -202,6 +239,22 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         protected override void Render( HtmlTextWriter writer )
         {
+            bool renderLabel = !string.IsNullOrEmpty( LabelText );
+
+            if ( renderLabel )
+            {
+                writer.AddAttribute( "class", "control-group" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                _label.AddCssClass( "control-label" );
+
+                _label.RenderControl( writer );
+
+                writer.AddAttribute( "class", "controls" );
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            }
+
             foreach ( var item in this.Items.OfType<ListItem>() )
             {
                 string controlHtmlFormat = "<li><a href='#' data-id='{0}'>{1}</a></li>";
@@ -210,7 +263,7 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
 
             _divControl.Controls.Add( _listControl );
 
-            string selectedText = SelectedItem != null ? SelectedItem.Text : btnTitle;
+            string selectedText = SelectedItem != null ? SelectedItem.Text : _btnTitle;
             _btnSelect.Controls.Clear();
             _btnSelect.Controls.Add( new LiteralControl { Text = string.Format( "{0} <span class='caret'></span>", selectedText ) } );
 
@@ -218,6 +271,13 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
 
             _hfSelectedItemId.RenderControl( writer );
             _hfSelectedItemText.RenderControl( writer );
+
+            if ( renderLabel )
+            {
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();
+            }
         }
 
         /// <summary>

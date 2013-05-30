@@ -764,9 +764,10 @@ namespace RockWeb.Blocks.Administration
 
             int workflowTypeId = hfWorkflowTypeId.ValueAsInt();
 
+            string qualifierValue = workflowTypeId.ToString();
             var qryWorkflowTypeAttributes = attributeService.GetByEntityTypeId( new Workflow().TypeId ).AsQueryable()
                 .Where( a => a.EntityTypeQualifierColumn.Equals( "WorkflowTypeId", StringComparison.OrdinalIgnoreCase )
-                && a.EntityTypeQualifierValue.Equals( workflowTypeId.ToString() ) );
+                && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
 
             gWorkflowTypeAttributes.DataSource = qryWorkflowTypeAttributes.OrderBy( a => a.Name ).ToList();
             gWorkflowTypeAttributes.DataBind();

@@ -49,6 +49,11 @@ namespace Rock.SystemGuid
         public const string FINANCIAL_CREDIT_CARD_TYPE =  "2BD4FFB0-6C7F-4890-8D08-00F0BB7B43E9";
 
         /// <summary>
+        /// Guid for Financial Payment Type
+        /// </summary>
+        public const string FINANCIAL_PAYMENT_TYPE = "23E80D98-017E-47B9-BAF3-AC442A1EC3EE";
+
+        /// <summary>
         /// Guid for the Financial Pledge Frequency 
         /// </summary>
         public const string FINANCIAL_PLEDGE_FREQUENCY = "059F69C0-BF9B-4D53-B7CD-2D3B7C647C5F";
@@ -77,7 +82,7 @@ namespace Rock.SystemGuid
         /// Guid for Financial Transaction Type
         /// </summary>
         public const string FINANCIAL_TRANSACTION_TYPE = "FFF62A4B-5D88-4DEB-AF8F-8E6178E41FE5";
-
+        
         /// <summary>
         /// Guid for the types of Locations (such as Home, Main Office, etc)
         /// </summary>

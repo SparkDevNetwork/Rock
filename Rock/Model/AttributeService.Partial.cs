@@ -23,11 +23,20 @@ namespace Rock.Model
         /// <returns>
         /// An enumerable list of Attribute objects.
         /// </returns>
-        public IEnumerable<Attribute> GetByEntityTypeId( int? entityTypeId )
+        public IQueryable<Attribute> GetByEntityTypeId( int? entityTypeId )
         {
-            return Repository
-                .Find( t => ( t.EntityTypeId == entityTypeId || ( !entityTypeId.HasValue && !t.EntityTypeId.HasValue ) ) )
-                .OrderBy( t => t.Category ).ThenBy( t => t.Order ).ThenBy( t => t.Name );
+            var query = Repository.AsQueryable();
+
+            if ( entityTypeId.HasValue )
+            {
+                query = query.Where( t => t.EntityTypeId == entityTypeId );
+            }
+            else
+            {
+                query = query.Where( t => !t.EntityTypeId.HasValue );
+            }
+
+            return query.OrderBy( t => t.Category ).ThenBy( t => t.Order ).ThenBy( t => t.Name );
         }
 
         /// <summary>
@@ -39,8 +48,18 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<Attribute> Get( int? entityTypeId, string entityQualifierColumn, string entityQualifierValue )
         {
-            return Queryable().Where( t =>
-                ( t.EntityTypeId == entityTypeId || ( !entityTypeId.HasValue && !t.EntityTypeId.HasValue ) ) &&
+            var query = Repository.AsQueryable();
+
+            if ( entityTypeId.HasValue )
+            {
+                query = query.Where( t => t.EntityTypeId == entityTypeId );
+            }
+            else
+            {
+                query = query.Where( t => !t.EntityTypeId.HasValue );
+            }
+
+            return query.Where( t =>
                 t.EntityTypeQualifierColumn == entityQualifierColumn &&
                 t.EntityTypeQualifierValue == entityQualifierValue );
         }
@@ -57,11 +76,8 @@ namespace Rock.Model
         /// </returns>
         public Attribute Get( int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, string key )
         {
-            return Repository.FirstOrDefault( t => 
-                ( t.EntityTypeId == entityTypeId || ( !entityTypeId.HasValue && !t.EntityTypeId.HasValue ) ) && 
-                ( t.EntityTypeQualifierColumn == entityQualifierColumn || ( entityQualifierColumn == null && t.EntityTypeQualifierColumn == null ) ) && 
-                ( t.EntityTypeQualifierValue == entityQualifierValue || ( entityQualifierValue == null && t.EntityTypeQualifierValue == null ) ) && 
-                t.Key == key );
+            var query = Get(entityTypeId, entityQualifierColumn, entityQualifierValue);
+            return query.Where( t => t.Key == key ).FirstOrDefault();
         }
         
         /// <summary>
