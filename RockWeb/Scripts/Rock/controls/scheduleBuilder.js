@@ -19,8 +19,10 @@
             /** Schedule Panel Show/Hide Scripts **/
 
             $button.click(function () {
-                $modal.modal('toggle');
-                $modal.find('.scroll-container').tinyscrollbar_update('relative');
+                if ($modal.is(':hidden')) {
+                    $modal.modal('show');
+                    $modal.find('.scroll-container').tinyscrollbar_update('relative');
+                } 
             });
 
             $modal.on('shown', function () {
@@ -57,7 +59,9 @@
             });
 
             $modal.find('.modal-control-cancel').on('click', function () {
-                $modal.modal('toggle');
+                if ($modal.is(':visible')) {
+                    $modal.modal('hide');
+                }
             });
 
             /** Specific Dates Scripts**/
@@ -131,7 +135,7 @@
             });
 
             // fadeIn/fadeOut the X buttons to delete dates
-            $.modal.find('.lstSpecificDates').hover(
+            $modal.find('.lstSpecificDates').hover(
                 function () {
                     $(this).find('li a').stop(true, true).show();
                 },
@@ -289,7 +293,7 @@
 
             // validate on Save
             $modal.find('[id*="btnSaveSchedule"]').on('click', function (event) {
-                var $datepicker = $modal.find('[id*=dpStartDateTime"]'),
+                var $datepicker = $modal.find('[id*="dpStartDateTime"]'),
                     startDateValue = Date.parse($datepicker.val()) || -1;
                 if (startDateValue < 0) {
                     $datepicker.parents(".control-group").first().toggleClass("error", 1);
