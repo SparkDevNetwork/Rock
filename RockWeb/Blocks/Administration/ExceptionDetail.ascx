@@ -65,7 +65,7 @@
             <div id="pnlExceptionDetails">
                 <fieldset>
                     <legend>Exception Details</legend>
-                    <asp:Table ID="tblExceptionDetails" runat="server" CssClass="table table-bordered table-striped table-full">
+                    <asp:Table ID="tblExceptionDetails" runat="server" CssClass="table table-bordered table-striped table-full table-hover">
                         <asp:TableHeaderRow ID="thRowExceptionDetails" runat="server">
                             <asp:TableHeaderCell ID="thExceptionType" runat="server" Text="Exception Type" />
                             <asp:TableHeaderCell ID="thExceptionSource" runat="server" Text=" Source" />
@@ -92,12 +92,13 @@
         }
     }
 
-    function toggleCookies() {
-        if ($("[id*=cbShowCookies]:checked") == true) {
-            $("#pnlCookies").css("display", "inherit");
-        }
-        else {
-            $("#pnlCookies").css("display", "none");
+    function redirectToPage(pageUrl) {
+        if (pageUrl != undefined && pageUrl != "") {
+            var host = document.location.protocol + "//" + document.location.hostname;
+            if (document.location.port != 80 && document.location.port != 443) {
+                host = host + ":" + document.location.port;
+            }
+            document.location.href = host + pageUrl;
         }
     }
 
