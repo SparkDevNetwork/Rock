@@ -1,7 +1,7 @@
 ﻿(function ($, Sys) {
     'use strict';
     window.Rock = window.Rock || {};
-    Rock.controls = Rock.blocks || {};
+    Rock.controls = Rock.controls || {};
 
     Rock.controls.scheduleBuilder = (function () {
         var exports,
@@ -10,67 +10,69 @@
             };
 
         ScheduleBuilder.prototype.initializeEventHandlers = function () {
-            var $el = $('#' + this.id);
-            
-            $('#modal-scroll-container').tinyscrollbar({ size: 150 });
+            var id = this.id,
+                $modal = $('#schedule-builder-modal_' + id),
+                $button = $('#schedule-builder-button_' + id);
+
+            $modal.find('.scroll-container').tinyscrollbar({ size: 150 });
 
             /** Schedule Panel Show/Hide Scripts **/
 
-            $('#schedule-builder-button').click(function () {
-                $('#schedule-builder-modal').modal('toggle');
-                $('#modal-scroll-container').tinyscrollbar_update('relative');
+            $button.click(function () {
+                $modal.modal('toggle');
+                $modal.find('.scroll-container').tinyscrollbar_update('relative');
             });
 
-            $('#schedule-builder-modal').on('shown', function () {
-                $('#modal-scroll-container').tinyscrollbar_update('relative');
+            $modal.on('shown', function () {
+                $modal.find('.scroll-container').tinyscrollbar_update('relative');
             });
 
-            $('.schedule-type').click(function () {
+            $modal.find('.schedule-type').click(function () {
                 var recurrenceState = $('input[class=schedule-type]:checked').data('schedule-type');
 
-                if (recurrenceState == 'schedule-onetime') {
-                    $('#schedule-recurrence-panel').slideUp(function () {
-                        $('#modal-scroll-container').tinyscrollbar_update('relative');
+                if (recurrenceState === 'schedule-onetime') {
+                    $('#schedule-recurrence-panel_' + id).slideUp(function () {
+                        $modal.find('.scroll-container').tinyscrollbar_update('relative');
                     });
                 } else {
-                    $('#schedule-recurrence-panel').slideDown(function () {
-                        $('#modal-scroll-container').tinyscrollbar_update('relative');
+                    $('#schedule-recurrence-panel_' + id).slideDown(function () {
+                        $modal.find('.scroll-container').tinyscrollbar_update('relative');
                     });
                 }
             });
 
-            $('.recurrence-pattern-radio').click(function () {
+            $modal.find('.recurrence-pattern-radio').click(function () {
 
                 var recurrencePattern = '#' + $('input[class=recurrence-pattern-radio]:checked').data('recurrence-pattern');
 
-                if ($(recurrencePattern).css('display') == 'none') {
+                if ($(recurrencePattern).is(':visible')) {
 
-                    $('.recurrence-pattern-type').slideUp(function () {
-                        $('#modal-scroll-container').tinyscrollbar_update('relative');
+                    $modal.find('.recurrence-pattern-type').slideUp(function () {
+                        $modal.find('.scroll-container').tinyscrollbar_update('relative');
                     });
                     $(recurrencePattern).slideDown(function () {
-                        $('#modal-scroll-container').tinyscrollbar_update('relative');
+                        $modal.find('.scroll-container').tinyscrollbar_update('relative');
                     });
                 }
             });
 
-            $('.modal-control-cancel').on('click', function () {
-                $('#schedule-builder-modal').modal('toggle');
+            $modal.find('.modal-control-cancel').on('click', function () {
+                $modal.modal('toggle');
             });
 
             /** Specific Dates Scripts**/
 
             // show datepicker, ok, cancel so that new date can be added to the list
-            $('#add-specific-date').click(function () {
-                $('#add-specific-date').hide();
-                $('#add-specific-date-group').show();
+            $modal.find('.add-specific-date').click(function () {
+                $(this).hide();
+                $('#add-specific-date-group_' + id).show();
             });
 
             // add new date to list when ok is clicked
-            $('#add-specific-date-ok').click(function () {
+            $modal.find('.add-specific-date-ok').click(function () {
 
                 // get date list from hidden field
-                var dateListValues = $('#hfSpecificDateListValues').val().split(",");
+                var dateListValues = $modal.find('.recurrence-pattern-type > input:hidden').val().split(',');
                 if (!dateListValues[0]) {
                     // if dateList is blank, initialize as a new empty array
                     dateListValues = [];
@@ -79,8 +81,9 @@
                 // validate
 
                 // set colors back to default just in case previously marked invalid
-                $('#dpSpecificDate').css('color', '');
-                var checkDate = Date.parse($('#dpSpecificDate').val());
+                var $datepicker = $modal.find('.specific-date');
+                $datepicker.css('color', '');
+                var checkDate = Date.parse($datepicker.val());
                 if (!checkDate) {
                     // blank, don't color, just return
                     return;
@@ -88,11 +91,11 @@
 
                 if (checkDate < 0) {
                     // invalid date entered, color red and return
-                    $('#dpSpecificDate').css('color', 'red');
+                    $datepicker.css('color', 'red');
                     return;
                 }
 
-                var newDate = $('#dpSpecificDate').val();
+                var newDate = $datepicker.val();
 
                 // delete newDate from list in case it is already there
                 var index = dateListValues.indexOf(newDate);
@@ -104,10 +107,10 @@
                 dateListValues.push(newDate);
 
                 // save list back to hidden field
-                $('#hfSpecificDateListValues').val(dateListValues);
+                $modal.find('input[id*="hfSpecificDateListValues"]').val(dateListValues);
 
                 // rebuild the UL
-                var dateList = $("#lstSpecificDates");
+                var dateList = $modal.find(".lstSpecificDates");
                 dateList.children().remove();
                 $.each(dateListValues, function (i, value) {
                     // add to ul
@@ -115,20 +118,20 @@
                     dateList.append(newLi);
                 });
 
-                $('#add-specific-date-group').hide();
-                $('#add-specific-date').show();
+                $modal.find('#add-specific-date-group_' + id).hide();
+                $modal.find('.add-specific-date').show();
 
-                $('#modal-scroll-container').tinyscrollbar_update('relative');
+                $modal.find('.scroll-container').tinyscrollbar_update('relative');
             });
 
             // cancel out of adding a new date
-            $('#add-specific-date-cancel').click(function () {
-                $('#add-specific-date-group').hide();
-                $('#add-specific-date').show();
+            $modal.find('.add-specific-date-cancel').click(function () {
+                $modal.find('#add-specific-date-group_' + id).hide();
+                $modal.find('.add-specific-date').show();
             });
 
             // fadeIn/fadeOut the X buttons to delete dates
-            $('#lstSpecificDates').hover(
+            $.modal.find('.lstSpecificDates').hover(
                 function () {
                     $(this).find('li a').stop(true, true).show();
                 },
@@ -138,11 +141,12 @@
             );
 
             // delete specific date from list
-            $('#lstSpecificDates').on('click', 'li a', function () {
+            $modal.find('.lstSpecificDates').on('click', 'li a', function () {
                 var selectedDate = $(this).siblings().text();
 
                 // get date list from hidden field
-                var dateList = $('#hfSpecificDateListValues').val().split(",");
+                var $hiddenField = $modal.find('input[id*="hfSpecificDateListValues"]');
+                var dateList = $hiddenField.val().split(",");
 
                 // delete selectedDate
                 var index = dateList.indexOf(selectedDate);
@@ -151,39 +155,41 @@
                 }
 
                 // save list back to hidden field
-                $('#hfSpecificDateListValues').val(dateList);
+                $hiddenField.val(dateList);
 
                 // remove date from ul list
                 var liItem = $(this).parent();
                 liItem.remove();
 
-                $('#modal-scroll-container').tinyscrollbar_update('relative');
+                $modal.find('.scroll-container').tinyscrollbar_update('relative');
             });
 
             /** Exclusion DateRanges Scripts **/
 
             // show dateRangepicker, ok, cancel so that new dateRange can be added to the list
-            $('#add-exclusion-daterange').click(function () {
-                $('#add-exclusion-daterange').hide();
-                $('#add-exclusion-daterange-group').show();
+            $modal.find('.add-exclusion-daterange').click(function () {
+                $(this).hide();
+                $modal.find('#add-exclusion-daterange-group_' + id).show();
             });
 
             // add new date to list when ok is clicked
-            $('#add-exclusion-daterange-ok').click(function () {
+            $modal.find('.add-exclusion-daterange-ok').click(function () {
 
                 // get daterange list from hidden field
-                var dateRangeListValues = $('#hfExclusionDateRangeListValues').val().split(",");
+                var dateRangeListValues = $modal.find('input[id*="hfExclusionDateRangeListValues"]').val().split(",");
                 if (!dateRangeListValues[0]) {
                     // if blank, initialize as a new empty array
                     dateRangeListValues = [];
                 }
 
                 // set colors back to default just in case previously marked invalid
-                $('#dpExclusionDateStart').css('color', '');
-                $('#dpExclusionDateEnd').css('color', '');
+                var $exclusionStart = $modal.find('input[id*="dpExclusionDateStart"]');
+                $exclusionStart.css('color', '');
+                var $exclusionEnd = $modal.find('input[id*="dpExclusionDateEnd"]');
+                $exclusionEnd.css('color', '');
 
-                var startDate = Date.parse($('#dpExclusionDateStart').val());
-                var endDate = Date.parse($('#dpExclusionDateEnd').val());
+                var startDate = Date.parse($exclusionStart.val());
+                var endDate = Date.parse($exclusionEnd.val());
 
                 if (!startDate || !endDate) {
                     // if either is blank, don't color, just exit
@@ -193,10 +199,10 @@
                 if ((startDate < 0) || (endDate < 0)) {
 
                     if (startDate < 0) {
-                        $('#dpExclusionDateStart').css('color', 'red');
+                        $exclusionStart.css('color', 'red');
                     }
                     if (endDate < 0) {
-                        $('#dpExclusionDateEnd').css('color', 'red');
+                        $exclusionEnd.css('color', 'red');
                     }
 
                     // if either is invalid, exit
@@ -205,12 +211,12 @@
 
                 var newDateRange;
                 if (startDate <= endDate) {
-                    newDateRange = $('#dpExclusionDateStart').val() + ' - ' + $('#dpExclusionDateEnd').val();
+                    newDateRange = $exclusionStart.val() + ' - ' + $exclusionEnd.val();
                 }
                 else {
                     // invalid because startdate is after enddate
-                    $('#dpExclusionDateStart').css('color', 'red');
-                    $('#dpExclusionDateEnd').css('color', 'red');
+                    $exclusionStart.css('color', 'red');
+                    $exclusionEnd.css('color', 'red');
                     return;
                 }
 
@@ -224,10 +230,10 @@
                 dateRangeListValues.push(newDateRange);
 
                 // save list back to hidden field
-                $('#hfExclusionDateRangeListValues').val(dateRangeListValues);
+                $modal.find('input[id*="hfExclusionDateRangeListValues"]').val(dateRangeListValues);
 
                 // rebuild the UL
-                var dateRangeList = $('#lstExclusionDateRanges');
+                var dateRangeList = $modal.find('.lstExclusionDateRanges');
                 dateRangeList.children().remove();
                 $.each(dateRangeListValues, function (i, value) {
                     // add to ul
@@ -235,20 +241,20 @@
                     dateRangeList.append(newLi);
                 });
 
-                $('#add-exclusion-daterange-group').hide();
-                $('#add-exclusion-daterange').show();
+                $modal.find('#add-exclusion-daterange-group_' + id).hide();
+                $modal.find('.add-exclusion-daterange').show();
 
-                $('#modal-scroll-container').tinyscrollbar_update('relative');
+                $modal.find('.scroll-container').tinyscrollbar_update('relative');
             });
 
             // cancel out of adding a new dateRange
-            $('#add-exclusion-daterange-cancel').click(function () {
-                $('#add-exclusion-daterange-group').hide();
-                $('#add-exclusion-daterange').show();
+            $modal.find('.add-exclusion-daterange-cancel').click(function () {
+                $modal.find('#add-exclusion-daterange-group' + id).hide();
+                $modal.find('.add-exclusion-daterange').show();
             });
 
             // fadeIn/fadeOut the X buttons to delete dateRanges
-            $('#lstExclusionDateRanges').hover(
+            $modal.find('.lstExclusionDateRanges').hover(
                 function () {
                     $(this).find('li a').stop(true, true).show();
                 },
@@ -258,11 +264,12 @@
             );
 
             // delete dateRange from list
-            $('#lstExclusionDateRanges').on('click', 'li a', function () {
+            $modal.find('.lstExclusionDateRanges').on('click', 'li a', function () {
                 var selectedDateRange = $(this).siblings("span").text();
 
                 // get dateRange list from hidden field
-                var dateRangeList = $('#hfExclusionDateRangeListValues').val().split(",");
+                var $hiddenField = $modal.find('input[id*="hfExclusionDateRangeListValues"]');
+                var dateRangeList = $hiddenField.val().split(",");
 
                 // delete selectedDateRange
                 var index = dateRangeList.indexOf(selectedDateRange);
@@ -271,29 +278,29 @@
                 }
 
                 // save list back to hidden field
-                $('#hfExclusionDateRangeListValues').val(dateRangeList);
+                $hiddenField.val(dateRangeList);
 
                 // remove dateRange from ul list
                 var liItem = $(this).parent();
                 liItem.remove();
 
-                $('#modal-scroll-container').tinyscrollbar_update('relative');
+                $modal.find('.scroll-container').tinyscrollbar_update('relative');
             });
 
             // validate on Save
-            $('#btnSaveSchedule').on('click', function (event) {
-                var startDateValue = Date.parse($('#dpStartDateTime').val()) || -1;
+            $modal.find('[id*="btnSaveSchedule"]').on('click', function (event) {
+                var $datepicker = $modal.find('[id*=dpStartDateTime"]'),
+                    startDateValue = Date.parse($datepicker.val()) || -1;
                 if (startDateValue < 0) {
-                    $('#dpStartDateTime').parents(".control-group").first().toggleClass("error", 1);
+                    $datepicker.parents(".control-group").first().toggleClass("error", 1);
                     event.preventDefault();
                     return;
                 }
-                else
-                {
-                    $('#dpStartDateTime').parents(".control-group").first().toggleClass("error", 0);
+                else {
+                    $datepicker.parents(".control-group").first().toggleClass("error", 0);
                 }
 
-                $('#schedule-builder-modal').modal('toggle');
+                $modal.modal('toggle');
             });
         };
 
@@ -305,7 +312,7 @@
                 }
 
                 var sb = new ScheduleBuilder(options);
-                cache[options.id] = sb;
+                exports.cache[options.id] = sb;
 
                 Sys.Application.add_load(function () {
                     sb.initializeEventHandlers();
