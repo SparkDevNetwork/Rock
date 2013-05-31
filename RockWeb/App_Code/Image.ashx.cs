@@ -77,7 +77,13 @@ namespace RockWeb
 
                     // Is cached version newer?
                     if ( !file.LastModifiedDateTime.HasValue || file.LastModifiedDateTime.Value.CompareTo( System.IO.File.GetCreationTime( physFilePath ) ) <= 0 )
-                        file.Data = FetchFromCache( physFilePath );
+                    {
+                        if ( file.Data == null )
+                        {
+                            file.Data = new BinaryFileData();
+                        }
+                        file.Data.Content = FetchFromCache( physFilePath );
+                    }
                 }
 
                 if ( file == null || file.Data == null )
@@ -117,8 +123,8 @@ namespace RockWeb
         {
             ResizeSettings settings = new ResizeSettings( context.Request.QueryString );
             MemoryStream resizedStream = new MemoryStream();
-            ImageBuilder.Current.Build( new MemoryStream( file.Data ), resizedStream, settings );
-            file.Data = resizedStream.GetBuffer();
+            ImageBuilder.Current.Build( new MemoryStream( file.Data.Content ), resizedStream, settings );
+            file.Data.Content = resizedStream.GetBuffer();
         }
 
         /// <summary>
@@ -132,7 +138,7 @@ namespace RockWeb
             {
                 using ( BinaryWriter binWriter = new BinaryWriter( System.IO.File.Open( physFilePath, FileMode.Create ) ) )
                 {
-                    binWriter.Write( file.Data );
+                    binWriter.Write( file.Data.Content );
                 }
             }
             catch { /* do nothing, not critical if this fails, although TODO: log */ }
@@ -178,7 +184,7 @@ namespace RockWeb
         {
             context.Response.ContentType = file.MimeType;
             context.Response.AddHeader( "content-disposition", "inline;filename=" + file.FileName );
-            context.Response.BinaryWrite( file.Data );
+            context.Response.BinaryWrite( file.Data.Content );
             context.Response.Flush();
         }
 

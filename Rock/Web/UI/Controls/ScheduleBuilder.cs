@@ -5,6 +5,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -79,8 +80,6 @@ namespace Rock.Web.UI.Controls
         // action buttons
         private LinkButton _btnSaveSchedule;
         private LinkButton _btnCancelSchedule;
-
-        private ScriptManagerProxy _smProxy;
 
         // consts
         private readonly Dictionary<string, int> nthNames = new Dictionary<string, int> { 
@@ -168,8 +167,6 @@ END:VCALENDAR
             // modal footer
             _btnSaveSchedule = new LinkButton();
             _btnCancelSchedule = new LinkButton();
-
-            _smProxy = new ScriptManagerProxy();
         }
 
         /// <summary>
@@ -178,10 +175,24 @@ END:VCALENDAR
         /// <value>
         /// The label text.
         /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text for the label." )
+        ]
         public string LabelText
         {
-            get { return _label.Text; }
-            set { _label.Text = value; }
+            get
+            {
+                EnsureChildControls();
+                return _label.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                _label.Text = value;
+            }
         }
 
         /// <summary>
@@ -455,7 +466,7 @@ END:VCALENDAR
                     cbControl.Checked = false;
                 }
 
-                StringReader stringReader = new StringReader( value );
+                StringReader stringReader = new StringReader( value ?? iCalendarContentEmptyEvent );
                 var calendarList = DDay.iCal.iCalendar.LoadFromStream( stringReader );
                 DDay.iCal.Event calendarEvent = null;
                 DDay.iCal.iCalendar calendar = null;
@@ -687,7 +698,8 @@ END:VCALENDAR
         /// </summary>
         protected virtual void RegisterJavaScript()
         {
-            // todo
+            var script = string.Format( @"Rock.controls.scheduleBuilder.initialize({{ id: '{0}' }});", this.ClientID );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "schedule_builder-init_" + this.ClientID, script, true );
         }
 
         /// </summary>
@@ -699,154 +711,154 @@ END:VCALENDAR
 
             string validationGroup = "validationgroup_" + this.ID;
 
-            _btnDialogCancelX.ClientIDMode = ClientIDMode.Static;
+            _btnDialogCancelX.ClientIDMode = ClientIDMode.Predictable;
             _btnDialogCancelX.CssClass = "close modal-control-cancel";
             _btnDialogCancelX.ID = "btnDialogCancelX";
             _btnDialogCancelX.Click += btnCancelSchedule_Click;
             _btnDialogCancelX.Text = "&times;";
 
-            _dpStartDateTime.ClientIDMode = ClientIDMode.Static;
+            _dpStartDateTime.ClientIDMode = ClientIDMode.Predictable;
             _dpStartDateTime.ID = "dpStartDateTime";
             _dpStartDateTime.LabelText = "Start Date / Time";
             _dpStartDateTime.Required = false;
             _dpStartDateTime.ValidationGroup = validationGroup;
 
-            _tbDurationHours.ClientIDMode = ClientIDMode.Static;
+            _tbDurationHours.ClientIDMode = ClientIDMode.Predictable;
             _tbDurationHours.ID = "tbDurationHours";
             _tbDurationHours.CssClass = "input-mini";
             _tbDurationHours.MinimumValue = "0";
             _tbDurationHours.MaximumValue = "24";
             _tbDurationHours.ValidationGroup = validationGroup;
 
-            _tbDurationMinutes.ClientIDMode = ClientIDMode.Static;
+            _tbDurationMinutes.ClientIDMode = ClientIDMode.Predictable;
             _tbDurationMinutes.ID = "tbDurationMinutes";
             _tbDurationMinutes.CssClass = "input-mini";
             _tbDurationMinutes.MinimumValue = "0";
             _tbDurationMinutes.MaximumValue = "59";
             _tbDurationMinutes.ValidationGroup = validationGroup;
 
-            _radOneTime.ClientIDMode = ClientIDMode.Static;
+            _radOneTime.ClientIDMode = ClientIDMode.Predictable;
             _radOneTime.ID = "radOneTime";
             _radOneTime.GroupName = "ScheduleTypeGroup";
             _radOneTime.InputAttributes["class"] = "schedule-type";
             _radOneTime.Text = "One Time";
             _radOneTime.InputAttributes["data-schedule-type"] = "schedule-onetime";
 
-            _radRecurring.ClientIDMode = ClientIDMode.Static;
+            _radRecurring.ClientIDMode = ClientIDMode.Predictable;
             _radRecurring.ID = "radRecurring";
             _radRecurring.GroupName = "ScheduleTypeGroup";
             _radRecurring.InputAttributes["class"] = "schedule-type";
             _radRecurring.Text = "Recurring";
             _radRecurring.InputAttributes["data-schedule-type"] = "schedule-Recurring";
 
-            _radSpecificDates.ClientIDMode = ClientIDMode.Static;
+            _radSpecificDates.ClientIDMode = ClientIDMode.Predictable;
             _radSpecificDates.ID = "radSpecificDates";
             _radSpecificDates.GroupName = "recurrence-pattern-radio";
             _radSpecificDates.InputAttributes["class"] = "recurrence-pattern-radio";
             _radSpecificDates.Text = "Specific Dates";
             _radSpecificDates.InputAttributes["data-recurrence-pattern"] = "recurrence-pattern-specific-date";
 
-            _radDaily.ClientIDMode = ClientIDMode.Static;
+            _radDaily.ClientIDMode = ClientIDMode.Predictable;
             _radDaily.ID = "radDaily";
             _radDaily.GroupName = "recurrence-pattern-radio";
             _radDaily.InputAttributes["class"] = "recurrence-pattern-radio";
             _radDaily.Text = "Daily";
             _radDaily.InputAttributes["data-recurrence-pattern"] = "recurrence-pattern-daily";
 
-            _radWeekly.ClientIDMode = ClientIDMode.Static;
+            _radWeekly.ClientIDMode = ClientIDMode.Predictable;
             _radWeekly.ID = "radWeekly";
             _radWeekly.GroupName = "recurrence-pattern-radio";
             _radWeekly.InputAttributes["class"] = "recurrence-pattern-radio";
             _radWeekly.Text = "Weekly";
             _radWeekly.InputAttributes["data-recurrence-pattern"] = "recurrence-pattern-weekly";
 
-            _radMonthly.ClientIDMode = ClientIDMode.Static;
+            _radMonthly.ClientIDMode = ClientIDMode.Predictable;
             _radMonthly.ID = "radMonthly";
             _radMonthly.GroupName = "recurrence-pattern-radio";
             _radMonthly.InputAttributes["class"] = "recurrence-pattern-radio";
             _radMonthly.Text = "Monthly";
             _radMonthly.InputAttributes["data-recurrence-pattern"] = "recurrence-pattern-monthly";
 
-            _hfSpecificDateListValues.ClientIDMode = ClientIDMode.Static;
+            _hfSpecificDateListValues.ClientIDMode = ClientIDMode.Predictable;
             _hfSpecificDateListValues.ID = "hfSpecificDateListValues";
 
             // specific date
-            _dpSpecificDate.ClientIDMode = ClientIDMode.Static;
+            _dpSpecificDate.ClientIDMode = ClientIDMode.Predictable;
             _dpSpecificDate.ID = "dpSpecificDate";
             _dpSpecificDate.ValidationGroup = validationGroup;
 
             // daily recurrence
-            _radDailyEveryXDays.ClientIDMode = ClientIDMode.Static;
+            _radDailyEveryXDays.ClientIDMode = ClientIDMode.Predictable;
             _radDailyEveryXDays.ID = "radDailyEveryXDays";
             _radDailyEveryXDays.GroupName = "daily-options";
 
-            _tbDailyEveryXDays.ClientIDMode = ClientIDMode.Static;
+            _tbDailyEveryXDays.ClientIDMode = ClientIDMode.Predictable;
             _tbDailyEveryXDays.ID = "tbDailyEveryXDays";
             _tbDailyEveryXDays.CssClass = "input-mini";
             _tbDailyEveryXDays.ValidationGroup = validationGroup;
 
-            _radDailyEveryWeekday.ClientIDMode = ClientIDMode.Static;
+            _radDailyEveryWeekday.ClientIDMode = ClientIDMode.Predictable;
             _radDailyEveryWeekday.ID = "radDailyEveryWeekday";
             _radDailyEveryWeekday.GroupName = "daily-options";
 
-            _radDailyEveryWeekendDay.ClientIDMode = ClientIDMode.Static;
+            _radDailyEveryWeekendDay.ClientIDMode = ClientIDMode.Predictable;
             _radDailyEveryWeekendDay.ID = "radDailyEveryWeekendDay";
             _radDailyEveryWeekendDay.GroupName = "daily-options";
 
             // weekly recurrence
-            _tbWeeklyEveryX.ClientIDMode = ClientIDMode.Static;
+            _tbWeeklyEveryX.ClientIDMode = ClientIDMode.Predictable;
             _tbWeeklyEveryX.ID = "tbWeeklyEveryX";
             _tbWeeklyEveryX.CssClass = "input-mini";
             _tbWeeklyEveryX.MinimumValue = "1";
             _tbWeeklyEveryX.MaximumValue = "52";
             _tbWeeklyEveryX.ValidationGroup = validationGroup;
 
-            _cbWeeklySunday.ClientIDMode = ClientIDMode.Static;
+            _cbWeeklySunday.ClientIDMode = ClientIDMode.Predictable;
             _cbWeeklySunday.ID = "cbWeeklySunday";
             _cbWeeklySunday.Text = "Sun";
-            _cbWeeklyMonday.ClientIDMode = ClientIDMode.Static;
+            _cbWeeklyMonday.ClientIDMode = ClientIDMode.Predictable;
             _cbWeeklyMonday.ID = "cbWeeklyMonday";
             _cbWeeklyMonday.Text = "Mon";
-            _cbWeeklyTuesday.ClientIDMode = ClientIDMode.Static;
+            _cbWeeklyTuesday.ClientIDMode = ClientIDMode.Predictable;
             _cbWeeklyTuesday.ID = "cbWeeklyTuesday";
             _cbWeeklyTuesday.Text = "Tue";
-            _cbWeeklyWednesday.ClientIDMode = ClientIDMode.Static;
+            _cbWeeklyWednesday.ClientIDMode = ClientIDMode.Predictable;
             _cbWeeklyWednesday.ID = "cbWeeklyWednesday";
             _cbWeeklyWednesday.Text = "Wed";
-            _cbWeeklyThursday.ClientIDMode = ClientIDMode.Static;
+            _cbWeeklyThursday.ClientIDMode = ClientIDMode.Predictable;
             _cbWeeklyThursday.ID = "cbWeeklyThursday";
             _cbWeeklyThursday.Text = "Thu";
-            _cbWeeklyFriday.ClientIDMode = ClientIDMode.Static;
+            _cbWeeklyFriday.ClientIDMode = ClientIDMode.Predictable;
             _cbWeeklyFriday.ID = "cbWeeklyFriday";
             _cbWeeklyFriday.Text = "Fri";
-            _cbWeeklySaturday.ClientIDMode = ClientIDMode.Static;
+            _cbWeeklySaturday.ClientIDMode = ClientIDMode.Predictable;
             _cbWeeklySaturday.ID = "cbWeeklySaturday";
             _cbWeeklySaturday.Text = "Sat";
 
             // monthly
-            _radMonthlyDayX.ClientIDMode = ClientIDMode.Static;
+            _radMonthlyDayX.ClientIDMode = ClientIDMode.Predictable;
             _radMonthlyDayX.ID = "radMonthlyDayX";
             _radMonthlyDayX.GroupName = "monthly-options";
 
-            _tbMonthlyDayX.ClientIDMode = ClientIDMode.Static;
+            _tbMonthlyDayX.ClientIDMode = ClientIDMode.Predictable;
             _tbMonthlyDayX.ID = "tbMonthlyDayX";
             _tbMonthlyDayX.CssClass = "input-mini";
             _tbMonthlyDayX.MinimumValue = "1";
             _tbMonthlyDayX.MaximumValue = "31";
             _tbMonthlyDayX.ValidationGroup = validationGroup;
 
-            _tbMonthlyXMonths.ClientIDMode = ClientIDMode.Static;
+            _tbMonthlyXMonths.ClientIDMode = ClientIDMode.Predictable;
             _tbMonthlyXMonths.ID = "tbMonthlyXMonths";
             _tbMonthlyXMonths.CssClass = "input-mini";
             _tbMonthlyXMonths.MinimumValue = "1";
             _tbMonthlyXMonths.MaximumValue = "12";
             _tbMonthlyXMonths.ValidationGroup = validationGroup;
 
-            _radMonthlyNth.ClientIDMode = ClientIDMode.Static;
+            _radMonthlyNth.ClientIDMode = ClientIDMode.Predictable;
             _radMonthlyNth.ID = "radMonthlyNth";
             _radMonthlyNth.GroupName = "monthly-options";
 
-            _ddlMonthlyNth.ClientIDMode = ClientIDMode.Static;
+            _ddlMonthlyNth.ClientIDMode = ClientIDMode.Predictable;
             _ddlMonthlyNth.ID = "ddlMonthlyNth";
             _ddlMonthlyNth.CssClass = "input-small";
 
@@ -856,7 +868,7 @@ END:VCALENDAR
                 _ddlMonthlyNth.Items.Add( new ListItem( nth.Key, nth.Value.ToString() ) );
             }
 
-            _ddlMonthlyDayName.ClientIDMode = ClientIDMode.Static;
+            _ddlMonthlyDayName.ClientIDMode = ClientIDMode.Predictable;
             _ddlMonthlyDayName.ID = "ddlMonthlyDayName";
             _ddlMonthlyDayName.CssClass = "input-medium";
 
@@ -868,23 +880,23 @@ END:VCALENDAR
             }
 
             // end date
-            _radEndByNone.ClientIDMode = ClientIDMode.Static;
+            _radEndByNone.ClientIDMode = ClientIDMode.Predictable;
             _radEndByNone.ID = "radEndByNone";
             _radEndByNone.GroupName = "end-by";
 
-            _radEndByDate.ClientIDMode = ClientIDMode.Static;
+            _radEndByDate.ClientIDMode = ClientIDMode.Predictable;
             _radEndByDate.ID = "radEndByDate";
             _radEndByDate.GroupName = "end-by";
 
-            _dpEndBy.ClientIDMode = ClientIDMode.Static;
+            _dpEndBy.ClientIDMode = ClientIDMode.Predictable;
             _dpEndBy.ID = "dpEndBy";
             _dpEndBy.ValidationGroup = validationGroup;
 
-            _radEndByOccurrenceCount.ClientIDMode = ClientIDMode.Static;
+            _radEndByOccurrenceCount.ClientIDMode = ClientIDMode.Predictable;
             _radEndByOccurrenceCount.ID = "radEndByOccurrenceCount";
             _radEndByOccurrenceCount.GroupName = "end-by";
 
-            _tbEndByOccurrenceCount.ClientIDMode = ClientIDMode.Static;
+            _tbEndByOccurrenceCount.ClientIDMode = ClientIDMode.Predictable;
             _tbEndByOccurrenceCount.ID = "tbEndByOccurrenceCount";
             _tbEndByOccurrenceCount.CssClass = "input-mini";
             _tbEndByOccurrenceCount.MinimumValue = "1";
@@ -892,33 +904,32 @@ END:VCALENDAR
             _tbEndByOccurrenceCount.ValidationGroup = validationGroup;
 
             // exclusions
-            _hfExclusionDateRangeListValues.ClientIDMode = ClientIDMode.Static;
+            _hfExclusionDateRangeListValues.ClientIDMode = ClientIDMode.Predictable;
             _hfExclusionDateRangeListValues.ID = "hfExclusionDateRangeListValues";
 
-            _dpExclusionDateStart.ClientIDMode = ClientIDMode.Static;
+            _dpExclusionDateStart.ClientIDMode = ClientIDMode.Predictable;
             _dpExclusionDateStart.ID = "dpExclusionDateStart";
             _dpExclusionDateStart.ValidationGroup = validationGroup;
 
-            _dpExclusionDateEnd.ClientIDMode = ClientIDMode.Static;
+            _dpExclusionDateEnd.ClientIDMode = ClientIDMode.Predictable;
             _dpExclusionDateEnd.ID = "dpExclusionDateEnd";
             _dpExclusionDateEnd.ValidationGroup = validationGroup;
 
             // action buttons
-            _btnCancelSchedule.ClientIDMode = ClientIDMode.Static;
+            _btnCancelSchedule.ClientIDMode = ClientIDMode.Predictable;
             _btnCancelSchedule.ID = "btnCancelSchedule";
             _btnCancelSchedule.CssClass = "btn modal-control-cancel";
             _btnCancelSchedule.Click += btnCancelSchedule_Click;
             _btnCancelSchedule.Text = "Cancel";
 
-            _btnSaveSchedule.ClientIDMode = ClientIDMode.Static;
+            _btnSaveSchedule.ClientIDMode = ClientIDMode.Predictable;
             _btnSaveSchedule.ID = "btnSaveSchedule";
             _btnSaveSchedule.CssClass = "btn btn-primary modal-control-ok";
             _btnSaveSchedule.Click += btnSaveSchedule_Click;
             _btnSaveSchedule.Text = "Save Schedule";
             _btnSaveSchedule.ValidationGroup = validationGroup;
 
-            _smProxy.Scripts.Add( new ScriptReference( "~/Scripts/Rock/Rock.schedulebuilder.js" ) );
-
+            Controls.Add( _label );
             Controls.Add( _btnDialogCancelX );
             Controls.Add( _dpStartDateTime );
             Controls.Add( _tbDurationHours );
@@ -972,8 +983,6 @@ END:VCALENDAR
 
             Controls.Add( _btnSaveSchedule );
             Controls.Add( _btnCancelSchedule );
-
-            Controls.Add( _smProxy );
         }
 
         /// <summary>
@@ -1014,19 +1023,21 @@ END:VCALENDAR
                 iCalendarContent = iCalendarContentEmptyEvent;
             }
 
-            string controlHtmlFragment = @"
-    <a id='schedule-builder-button' role='button' class='btn btn-small'>
+            string controlHtmlFormatString = @"
+    <a id='schedule-builder-button_{0}' role='button' class='btn btn-small'>
         <i class='icon-calendar'></i> ";
 
+            string controlHtmlFragment = string.Format( controlHtmlFormatString, this.ClientID );
             writer.Write( controlHtmlFragment );
 
             _label.RenderControl( writer );
 
-            controlHtmlFragment = @"
+            controlHtmlFormatString = @"
     </a>
 
-    <div id='schedule-builder-modal' class='modal hide fade schedule-builder'>
+    <div id='schedule-builder-modal_{0}' class='modal hide fade schedule-builder'>
         <div class='modal-header'>";
+            controlHtmlFragment = string.Format( controlHtmlFormatString, this.ClientID );
 
             writer.Write( controlHtmlFragment );
 
@@ -1036,7 +1047,7 @@ END:VCALENDAR
             <h3>Schedule Builder</h3>
         </div>
         <div class='modal-body'>
-            <div id='modal-scroll-container' class='scroll-container'>
+            <div class='scroll-container'>
                 <div class='scrollbar'>
                     <div class='track'>
                         <div class='thumb'>
@@ -1083,7 +1094,7 @@ END:VCALENDAR
                 writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
             }
 
-            writer.AddAttribute( "id", "schedule-recurrence-panel" );
+            writer.AddAttribute( "id", "schedule-recurrence-panel_" + this.ClientID );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.AddAttribute( "class", "legend-small" );
@@ -1105,8 +1116,8 @@ END:VCALENDAR
             writer.RenderEndTag();
 
             // Specific Date Panel
-            writer.AddAttribute( "class", "recurrence-pattern-type control-group controls" );
-            writer.AddAttribute( "id", "recurrence-pattern-specific-date" );
+            writer.AddAttribute( "class", "recurrence-pattern-type control-group controls recurrence-pattern-specific-date" );
+            writer.AddAttribute( "id", "recurrence-pattern-specific-date_" + this.ClientID );
 
             if ( !_radSpecificDates.Checked )
             {
@@ -1117,29 +1128,30 @@ END:VCALENDAR
             _hfSpecificDateListValues.RenderControl( writer );
 
             writer.Write( @"
-                <ul id='lstSpecificDates'>" );
+                <ul class='lstSpecificDates'>" );
 
-            foreach ( var dateValue in _hfSpecificDateListValues.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+            foreach ( var dateValue in _hfSpecificDateListValues.Value.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
             {
                 writer.Write( "<li><span>" + dateValue + "</span><a href='#' style='display: none'><i class='icon-remove'></i></a></li>" );
             }
 
             writer.Write( @"
                 </ul>
-                <a class='btn btn-small' id='add-specific-date'><i class='icon-plus'></i>
+                <a class='btn btn-small add-specific-date'><i class='icon-plus'></i>
                     <span> Add Date</span>
                 </a>" );
 
-            writer.AddAttribute( "id", "add-specific-date-group" );
+            writer.AddAttribute( "id", "add-specific-date-group_" + this.ClientID );
 
             writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _dpSpecificDate.AddCssClass( "specific-date" );
             _dpSpecificDate.RenderControl( writer );
             writer.Write( @"
-                <a class='btn btn-primary btn-mini' id='add-specific-date-ok'></i>
+                <a class='btn btn-primary btn-mini add-specific-date-ok'></i>
                     <span>OK</span>
                 </a>
-                <a class='btn btn-mini' id='add-specific-date-cancel'></i>
+                <a class='btn btn-mini add-specific-date-cancel'></i>
                     <span>Cancel</span>
                 </a>" );
 
@@ -1147,8 +1159,8 @@ END:VCALENDAR
             writer.RenderEndTag();
 
             // daily recurrence panel
-            writer.AddAttribute( "id", "recurrence-pattern-daily" );
-            writer.AddAttribute( "class", "recurrence-pattern-type" );
+            writer.AddAttribute( "id", "recurrence-pattern-daily_" + this.ClientID );
+            writer.AddAttribute( "class", "recurrence-pattern-type recurrence-pattern-daily" );
 
             if ( !_radDaily.Checked )
             {
@@ -1180,8 +1192,8 @@ END:VCALENDAR
             writer.RenderEndTag();
 
             // weekly recurrence panel
-            writer.AddAttribute( "id", "recurrence-pattern-weekly" );
-            writer.AddAttribute( "class", "recurrence-pattern-type" );
+            writer.AddAttribute( "id", "recurrence-pattern-weekly_" + this.ClientID );
+            writer.AddAttribute( "class", "recurrence-pattern-type recurrence-pattern-weekly" );
 
             if ( !_radWeekly.Checked )
             {
@@ -1211,8 +1223,8 @@ END:VCALENDAR
             writer.RenderEndTag();
 
             // monthly
-            writer.AddAttribute( "id", "recurrence-pattern-monthly" );
-            writer.AddAttribute( "class", "recurrence-pattern-type" );
+            writer.AddAttribute( "id", "recurrence-pattern-monthly_" + this.ClientID );
+            writer.AddAttribute( "class", "recurrence-pattern-type recurrence-pattern-monthly" );
 
             if ( !_radMonthly.Checked )
             {
@@ -1276,13 +1288,13 @@ END:VCALENDAR
             // exclusions
             writer.Write( @"<div class='controls'><hr /></div>" );
             writer.Write( @"<label class='control-label'>Exclusions</label>" );
-            writer.AddAttribute( "id", "recurrence-pattern-exclusions" );
+            writer.AddAttribute( "id", "recurrence-pattern-exclusions_" + this.ClientID );
             writer.AddAttribute( "class", "control-group controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _hfExclusionDateRangeListValues.RenderControl( writer );
 
             writer.Write( @"
-                <ul id='lstExclusionDateRanges'>" );
+                <ul class='lstExclusionDateRanges'>" );
 
             foreach ( var dateRangeValue in _hfExclusionDateRangeListValues.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
             {
@@ -1291,21 +1303,21 @@ END:VCALENDAR
 
             writer.Write( @"
                 </ul>
-                <a class='btn btn-small' id='add-exclusion-daterange'><i class='icon-plus'></i>
+                <a class='btn btn-small add-exclusion-daterange'><i class='icon-plus'></i>
                     <span> Add Date Range</span>
                 </a>" );
 
-            writer.AddAttribute( "id", "add-exclusion-daterange-group" );
+            writer.AddAttribute( "id", "add-exclusion-daterange-group_" + this.ClientID );
             writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _dpExclusionDateStart.RenderControl( writer );
             writer.Write( "<span> to </span>" );
             _dpExclusionDateEnd.RenderControl( writer );
             writer.Write( @"
-                <a class='btn btn-primary btn-mini' id='add-exclusion-daterange-ok'></i>
+                <a class='btn btn-primary btn-mini add-exclusion-daterange-ok'></i>
                     <span>OK</span>
                 </a>
-                <a class='btn btn-mini' id='add-exclusion-daterange-cancel'></i>
+                <a class='btn btn-mini add-exclusion-daterange-cancel'></i>
                     <span>Cancel</span>
                 </a>" );
 
@@ -1333,8 +1345,6 @@ END:VCALENDAR
 
             // write out the closing divs that go after the modal footer
             writer.Write( "</div>" );
-
-            _smProxy.RenderControl( writer );
         }
     }
 }

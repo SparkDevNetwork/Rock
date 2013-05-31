@@ -49,7 +49,7 @@ namespace Rock.Workflow.Action
                 StringBuilder sb = new StringBuilder();
 
                 foreach ( Match match in Regex.Matches( 
-                    System.Text.Encoding.Default.GetString( binaryFile.Data ),
+                    System.Text.Encoding.Default.GetString( binaryFile.Data.Content ),
                     @"(?<=\^FD)[^\^FS]*(?=\^FS)" ) )
                 {
                     sb.AppendFormat( "{0}^|", match.Value );

@@ -20,6 +20,9 @@ namespace Rock.Model
     [DataContract]
     public partial class Attribute : Model<Attribute>, IOrdered
     {
+
+        #region Entity Properties
+
         /// <summary>
         /// Gets or sets the System.
         /// </summary>
@@ -168,6 +171,10 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public bool IsRequired { get; set; }
 
+        #endregion
+
+        #region Virtual Properties
+
         /// <summary>
         /// Gets or sets the Attribute Qualifiers.
         /// </summary>
@@ -191,6 +198,10 @@ namespace Rock.Model
         [DataMember]
         public virtual FieldType FieldType { get; set; }
 
+        #endregion
+
+        #region Public Methods
+
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
@@ -201,7 +212,12 @@ namespace Rock.Model
         {
             return this.Key;
         }
-}
+
+        #endregion
+
+    }
+
+    #region Entity Configuration
 
     /// <summary>
     /// Attribute Configuration class.
@@ -217,4 +233,6 @@ namespace Rock.Model
             this.HasOptional( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }
+
+    #endregion
 }

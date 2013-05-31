@@ -245,12 +245,12 @@ namespace Rock.Model
                     return false;
                 }
 
-                if ( EffectiveStartDate.HasValue && EffectiveStartDate.Value.CompareTo( DateTimeOffset.Now ) > 0 )
+                if ( EffectiveStartDate.HasValue && EffectiveStartDate.Value.CompareTo( DateTimeOffset.Now.DateTime ) > 0 )
                 {
                     return false;
                 }
 
-                if ( EffectiveEndDate.HasValue && EffectiveEndDate.Value.CompareTo( DateTimeOffset.Now ) < 0 )
+                if ( EffectiveEndDate.HasValue && EffectiveEndDate.Value.CompareTo( DateTimeOffset.Now.DateTime ) < 0 )
                 {
                     return false;
                 }
@@ -291,10 +291,10 @@ namespace Rock.Model
 
             // Get the effective start datetime if there's not a specific effective 
             // start time
-            DateTimeOffset from = beginDateTime;
-            if ( EffectiveStartDate.HasValue && EffectiveStartDate.Value.CompareTo( from ) > 0 )
+            DateTime fromDate = beginDateTime.DateTime;
+            if ( EffectiveStartDate.HasValue && EffectiveStartDate.Value.CompareTo( fromDate ) > 0 )
             {
-                from = EffectiveStartDate.Value;
+                fromDate = EffectiveStartDate.Value;
             }
 
             DateTime? nextStartTime = null;
@@ -303,7 +303,7 @@ namespace Rock.Model
 
             if ( calEvent != null )
             {
-                var occurrences = calEvent.GetOccurrences( beginDateTime.DateTime, beginDateTime.DateTime.AddMonths( 1 ) );
+                var occurrences = calEvent.GetOccurrences( fromDate, fromDate.AddMonths( 1 ) );
                 if ( occurrences.Count > 0 )
                 {
                     var nextOccurance = occurrences[0];

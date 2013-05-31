@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class CommunicationExtensionMethods
+    public static partial class CommunicationExtensionMethods
     {
         /// <summary>
         /// Clones this Communication object to a new Communication object

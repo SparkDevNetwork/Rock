@@ -16,9 +16,10 @@ namespace Rock.Web.UI.Controls
     /// 
     /// </summary>
     [ToolboxData( "<{0}:ButtonDropDownList runat=server></{0}:ButtonDropDownList>" )]
-    public class ButtonDropDownList : ListControl
+    public class ButtonDropDownList : ListControl, ILabeledControl
     {
-        private Label _label;
+        protected Literal label;
+
         private String _btnTitle = string.Empty;
         private HtmlGenericControl _divControl;
         private HtmlGenericControl _btnSelect;
@@ -34,8 +35,16 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string LabelText
         {
-            get { return _label.Text; }
-            set { _label.Text = value; }
+            get
+            {
+                EnsureChildControls();
+                return label.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                label.Text = value;
+            }
         }
 
         /// <summary>
@@ -64,8 +73,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string FieldName
         {
-            get { return _label.Text; }
-            set { _label.Text = value; }
+            get { return label.Text; }
+            set { label.Text = value; }
         }
 
         /// <summary>
@@ -185,14 +194,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ButtonDropDownList" /> class.
-        /// </summary>
-        public ButtonDropDownList()
-        {
-            _label = new Label();            
-        }
-
-        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -200,9 +201,9 @@ namespace Rock.Web.UI.Controls
             base.CreateChildControls();
 
 			Controls.Clear();
-            
-            _label = new Label();
-            Controls.Add( _label );
+
+            label = new Literal();
+            Controls.Add( label );
 
             _divControl = new HtmlGenericControl( "div" );
             _divControl.Attributes["class"] = "btn-group";
@@ -239,16 +240,15 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            bool renderLabel = !string.IsNullOrEmpty( LabelText );
+            bool renderControlGroupDiv = !string.IsNullOrWhiteSpace( LabelText );
 
-            if ( renderLabel )
+            if ( renderControlGroupDiv )
             {
                 writer.AddAttribute( "class", "control-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                _label.AddCssClass( "control-label" );
-
-                _label.RenderControl( writer );
+                label.Visible = this.Visible;
+                label.RenderControl( writer );
 
                 writer.AddAttribute( "class", "controls" );
 
@@ -272,7 +272,7 @@ namespace Rock.Web.UI.Controls
             _hfSelectedItemId.RenderControl( writer );
             _hfSelectedItemText.RenderControl( writer );
 
-            if ( renderLabel )
+            if ( renderControlGroupDiv )
             {
                 writer.RenderEndTag();
 
