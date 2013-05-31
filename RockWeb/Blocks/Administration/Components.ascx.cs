@@ -176,7 +176,7 @@ namespace RockWeb.Blocks.Administration
 
                     var entityType = EntityTypeCache.Read( componentDescription.Type );
                     string url = Page.ResolveUrl( string.Format( "~/Secure/{0}/{1}?t={2}&pb=&sb=Done", entityType.Id, 0, componentDescription.Name + " Security" ) );
-                    aSecure.HRef = "javascript: showModalPopup($(this), '" + url + "')";
+                    aSecure.HRef = "javascript: Rock.controls.modal.show($(this), '" + url + "')";
                 }
             }
         }

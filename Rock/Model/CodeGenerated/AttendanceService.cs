@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class AttendanceExtensionMethods
+    public static partial class AttendanceExtensionMethods
     {
         /// <summary>
         /// Clones this Attendance object to a new Attendance object

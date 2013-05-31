@@ -7,12 +7,6 @@ SET @GroupTypeEntityTypeId = (SELECT Id FROM EntityType WHERE Name = 'Rock.Model
 
 DECLARE @DecimalFieldTypeId int
 SET @DecimalFieldTypeId = (SELECT Id FROM FieldType WHERE guid = 'c757a554-3009-4214-b05d-cea2b2ea6b8f')
-DELETE [Attribute] WHERE guid = '63FA25AA-7796-4302-BF05-D96A1C390BD7'
-INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, Category, Guid)
-VALUES ( 0, @DecimalFieldTypeId, @GroupTypeEntityTypeId, 'TakesAttendance', 'True', 'MinAge', 'Minimum Age', 0, 0, 0, 0, '', '63FA25AA-7796-4302-BF05-D96A1C390BD7')
-DELETE [Attribute] WHERE guid = 'D05368C9-5069-49CD-B7E8-9CE8C46BB75D'
-INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, Category, Guid)
-VALUES ( 0, @DecimalFieldTypeId, @GroupTypeEntityTypeId, 'TakesAttendance', 'True', 'MaxAge', 'Maximum Age', 1, 0, 0, 0, '', 'D05368C9-5069-49CD-B7E8-9CE8C46BB75D')
 
 -- Groups
 DELETE GTA FROM [GroupTypeAssociation] GTA INNER JOIN [GroupType] GT ON GT.Id = GTA.GroupTypeId AND GT.Name IN ('Family Ministries', 'Check-in Test (Don''t Use)', 'Middle Elementary', '3rd Grade', '4th Grade')
@@ -35,23 +29,36 @@ SET @ChildGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @ChildGroupTypeId);
 SET @ParentGroupTypeId = @ChildGroupTypeId
 
+DELETE [Attribute] WHERE guid in ('63FA25AA-7796-4302-BF05-D96A1C390BD7','D05368C9-5069-49CD-B7E8-9CE8C46BB75D','8A5315C5-1431-4C48-9C91-0675D3BE87EE','47C14AF6-A259-4EE4-8BC6-4D735C2A1252')
+
+-- Third Grade 
 INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo]) VALUES (0, '3rd Grade', NEWID(), 1, 1, 0, 0)
 SET @ChildGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @ChildGroupTypeId);
-INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], Guid) SELECT 1, Id, @ChildGroupTypeId, 0, '7.0', newid() FROM Attribute WHERE guid = '63FA25AA-7796-4302-BF05-D96A1C390BD7'
-INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], Guid) SELECT 1, Id, @ChildGroupTypeId, 0, '10.99', newid() FROM Attribute WHERE guid = 'D05368C9-5069-49CD-B7E8-9CE8C46BB75D'
 INSERT INTO [GroupRole] (IsSystem, GroupTypeId, Name, Guid, IsLeader) VALUES (0, @ChildGroupTypeId, 'Member', newid(), 0)
 SET @GroupRoleId = SCOPE_IDENTITY()
 UPDATE [GroupType] SET DefaultGroupRoleId = @GroupRoleId WHERE Id = @ChildGroupTypeId
+INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, Category, Guid)
+VALUES ( 0, @DecimalFieldTypeId, @GroupTypeEntityTypeId, 'Id', @ChildGroupTypeId, 'MinAge', 'Minimum Age', 0, 0, 0, 0, '', '63FA25AA-7796-4302-BF05-D96A1C390BD7')
+INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, Category, Guid)
+VALUES ( 0, @DecimalFieldTypeId, @GroupTypeEntityTypeId, 'Id', @ChildGroupTypeId, 'MaxAge', 'Maximum Age', 1, 0, 0, 0, '', 'D05368C9-5069-49CD-B7E8-9CE8C46BB75D')
+INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], Guid) SELECT 1, Id, @ChildGroupTypeId, 0, '7.0', newid() FROM Attribute WHERE guid = '63FA25AA-7796-4302-BF05-D96A1C390BD7'
+INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], Guid) SELECT 1, Id, @ChildGroupTypeId, 0, '10.99', newid() FROM Attribute WHERE guid = 'D05368C9-5069-49CD-B7E8-9CE8C46BB75D'
 
+-- Fourth Grade
 INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo]) VALUES (0, '4th Grade', NEWID(), 1, 1, 0, 0)
 SET @ChildGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @ChildGroupTypeId);
-INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], Guid) SELECT 1, Id, @ChildGroupTypeId, 0, '8.0', newid() FROM Attribute WHERE guid = '63FA25AA-7796-4302-BF05-D96A1C390BD7'
-INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], Guid) SELECT 1, Id, @ChildGroupTypeId, 0, '11.99', newid() FROM Attribute WHERE guid = 'D05368C9-5069-49CD-B7E8-9CE8C46BB75D'
 INSERT INTO [GroupRole] (IsSystem, GroupTypeId, Name, Guid, IsLeader) VALUES (0, @ChildGroupTypeId, 'Member', newid(), 0)
 SET @GroupRoleId = SCOPE_IDENTITY()
 UPDATE [GroupType] SET DefaultGroupRoleId = @GroupRoleId WHERE Id = @ChildGroupTypeId
+INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, Category, Guid)
+VALUES ( 0, @DecimalFieldTypeId, @GroupTypeEntityTypeId, 'Id', @ChildGroupTypeId, 'MinAge', 'Minimum Age', 0, 0, 0, 0, '', '8A5315C5-1431-4C48-9C91-0675D3BE87EE')
+INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, Category, Guid)
+VALUES ( 0, @DecimalFieldTypeId, @GroupTypeEntityTypeId, 'Id', @ChildGroupTypeId, 'MaxAge', 'Maximum Age', 1, 0, 0, 0, '', '47C14AF6-A259-4EE4-8BC6-4D735C2A1252')
+INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], Guid) SELECT 1, Id, @ChildGroupTypeId, 0, '8.0', newid() FROM Attribute WHERE guid = '8A5315C5-1431-4C48-9C91-0675D3BE87EE'
+INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], Guid) SELECT 1, Id, @ChildGroupTypeId, 0, '11.99', newid() FROM Attribute WHERE guid = '47C14AF6-A259-4EE4-8BC6-4D735C2A1252'
+
 
 DECLARE @GroupId int
 INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid]) SELECT 0, GT.Id, 'Family Ministries', 0, 1, NEWID() FROM [GroupType] GT WHERE GT.Name = 'Family Ministries'
@@ -64,7 +71,7 @@ INSERT INTO [Group] ( [IsSystem],[ParentGroupId],[GroupTypeId],[Name],[IsSecurit
 
 -- Create Schedules
 DELETE [Schedule]
-INSERT INTO [Schedule] ([Name],[iCalendarContent],[StartTime],[EndTime],[CheckInStartTime],[CheckInEndTime],[Guid],[IsShared]) VALUES 
+INSERT INTO [Schedule] ([Name],[iCalendarContent],[StartTime],[EndTime],[CheckInStartTime],[CheckInEndTime],[EffectiveStartDate],[Guid],[IsShared]) VALUES 
     ('4:30',        
 'BEGIN:VCALENDAR
 BEGIN:VEVENT
@@ -72,7 +79,7 @@ DTEND:20130501T173000
 DTSTART:20130501T163000
 RRULE:FREQ=WEEKLY;BYDAY=SA
 END:VEVENT
-END:VCALENDAR', '4:30pm', '5:30pm', '4:00pm', '5:00pm', NEWID(),1),
+END:VCALENDAR', '4:30pm', '5:30pm', '4:00pm', '5:00pm', '05/01/2013', NEWID(),1),
     
     ('6:00',        
 'BEGIN:VCALENDAR
@@ -81,7 +88,7 @@ DTEND:20130501T190000
 DTSTART:20130501T180000
 RRULE:FREQ=WEEKLY;BYDAY=SA
 END:VEVENT
-END:VCALENDAR', '6:00pm', '7:00pm', '5:30pm', '6:30pm', NEWID(),1),
+END:VCALENDAR', '6:00pm', '7:00pm', '5:30pm', '6:30pm', '05/01/2013', NEWID(),1),
 
     ('9:00',        
 'BEGIN:VCALENDAR
@@ -90,7 +97,7 @@ DTEND:20130501T100000
 DTSTART:20130501T090000
 RRULE:FREQ=WEEKLY;BYDAY=SU
 END:VEVENT
-END:VCALENDAR', '9:00am', '10:00am', '8:30am', '9:30am', NEWID(),1),
+END:VCALENDAR', '9:00am', '10:00am', '8:30am', '9:30am', '05/01/2013', NEWID(),1),
 
     ('10:30',        
 'BEGIN:VCALENDAR
@@ -99,7 +106,7 @@ DTEND:20130501T113000
 DTSTART:20130501T103000
 RRULE:FREQ=WEEKLY;BYDAY=SU
 END:VEVENT
-END:VCALENDAR', '10:30am', '11:30am', '10:00am', '11:00am', NEWID(),1),
+END:VCALENDAR', '10:30am', '11:30am', '10:00am', '11:00am', '05/01/2013', NEWID(),1),
 
     ('12:00',        
 'BEGIN:VCALENDAR
@@ -108,7 +115,7 @@ DTEND:20130501T130000
 DTSTART:20130501T120000
 RRULE:FREQ=WEEKLY;BYDAY=SU
 END:VEVENT
-END:VCALENDAR', '12:00pm', '1:00pm', '11:30am', '12:30pm', NEWID(),1),
+END:VCALENDAR', '12:00pm', '1:00pm', '11:30am', '12:30pm', '05/01/2013', NEWID(),1),
 
     ('4:30 (test)',        
 'BEGIN:VCALENDAR
@@ -117,7 +124,7 @@ DTEND:20130501T235900
 DTSTART:20130501T000100
 RRULE:FREQ=DAILY
 END:VEVENT
-END:VCALENDAR', '12:01am', '11:59pm', '12:01am', '11:59pm', NEWID(),1),
+END:VCALENDAR', '12:01am', '11:59pm', '12:01am', '11:59pm', '05/01/2013', NEWID(),1),
 
     ('6:00 (test)',        
 'BEGIN:VCALENDAR
@@ -126,7 +133,7 @@ DTEND:20130501T235900
 DTSTART:20130501T000100
 RRULE:FREQ=DAILY
 END:VEVENT
-END:VCALENDAR', '12:01am', '11:59pm', '12:01am', '11:59pm', NEWID(),1)
+END:VCALENDAR', '12:01am', '11:59pm', '12:01am', '11:59pm', '05/01/2013', NEWID(),1)
 
 -- Create Locations
 DELETE [Location]

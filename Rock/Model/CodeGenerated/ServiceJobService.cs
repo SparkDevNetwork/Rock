@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class ServiceJobExtensionMethods
+    public static partial class ServiceJobExtensionMethods
     {
         /// <summary>
         /// Clones this ServiceJob object to a new ServiceJob object

@@ -73,7 +73,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class DeviceExtensionMethods
+    public static partial class DeviceExtensionMethods
     {
         /// <summary>
         /// Clones this Device object to a new Device object

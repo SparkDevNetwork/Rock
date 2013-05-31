@@ -20,6 +20,22 @@ namespace Rock.PersonProfile.Badge
     public class PersonStatus : TextBadge
     {
         /// <summary>
+        /// Gets the attribute value defaults.
+        /// </summary>
+        /// <value>
+        /// The attribute defaults.
+        /// </value>
+        public override System.Collections.Generic.Dictionary<string, string> AttributeValueDefaults
+        {
+            get
+            {
+                var defaults = base.AttributeValueDefaults;
+                defaults["Order"] = "0";
+                return defaults;
+            }
+        }
+
+        /// <summary>
         /// Gets the type of the badge.
         /// </summary>
         /// <param name="person">The person.</param>

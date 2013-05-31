@@ -1,4 +1,5 @@
 ﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Site.master.cs" Inherits="RockWeb.Themes.RockChMS.Layouts.Site" %>
+<%@ Import Namespace="System.Web.Optimization" %>
 <!DOCTYPE html>
 
 <html>
@@ -17,34 +18,20 @@
     <asp:ContentPlaceHolder ID="css" runat="server" />
 
 	<!-- Included CSS Files -->
+	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-boot.less") %>"/>
+	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-boot-responsive.less") %>"/>
+	<link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.common.min.css") %>"/>
     <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.bootstrap.min.css") %>"/>
-    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-boot.less") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-boot-responsive.less") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-theme.less") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.common.min.css") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.bootstrap.min.css") %>"/>
-    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/developer.less") %>">
-
-    <script src="<%# ResolveUrl("~/Scripts/jquery.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/jquery-ui-1.10.0.custom.min.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/Kendo/kendo.web.min.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/Rock/Rock.controls.js") %>"></script>
-    <script src="<%# ResolveUrl("~/Scripts/bootstrap.min.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/bootbox.min.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/jquery.tinyscrollbar.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/Scripts/Rock/ajax-client-error-handler.js") %>"></script>
-    <script src="<%# ResolveUrl("~/scripts/ckeditor/ckeditor.js") %>" ></script>
-    <script src="<%# ResolveUrl("~/scripts/ckeditor/adapters/jquery.js") %>" ></script>
+	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-theme.less") %>"/>
+	<link rel="stylesheet" href="<%# ResolveUrl("~/CSS/developer.less") %>"/>
 
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
 </head>
 <body>
-
     <form id="form1" runat="server">
-           
         <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
-  
+        <asp:ScriptManager ID="sManager" runat="server"/>
     </form>
 
     

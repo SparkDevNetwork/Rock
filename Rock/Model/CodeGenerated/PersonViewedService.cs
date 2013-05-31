@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class PersonViewedExtensionMethods
+    public static partial class PersonViewedExtensionMethods
     {
         /// <summary>
         /// Clones this PersonViewed object to a new PersonViewed object

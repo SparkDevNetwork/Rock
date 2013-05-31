@@ -17,7 +17,7 @@ namespace Rock.PersonProfile.Badge
     /// </summary>
     [Description( "eRA Badge" )]
     [Export( typeof( BadgeComponent ) )]
-    [ExportMetadata( "ComponentName", "eRA" )]
+    [ExportMetadata( "ComponentName", "3" )]
     public class eRA : IconBadge
     {
         /// <summary>

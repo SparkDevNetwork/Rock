@@ -14,7 +14,7 @@ namespace Rock.Web.UI.Controls
     /// A <see cref="T:System.Web.UI.WebControls.DropDownList"/> control with an associated label.
     /// </summary>
     [ToolboxData( "<{0}:LabeledDropDownList runat=server></{0}:LabeledDropDownList>" )]
-    public class LabeledDropDownList : DropDownList, ILabeledControl
+    public class LabeledDropDownList : RockDropDownList, ILabeledControl
     {
         /// <summary>
         /// The label
@@ -99,12 +99,10 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                EnsureChildControls();
                 return helpBlock.Text;
             }
             set
             {
-                EnsureChildControls();
                 helpBlock.Text = value;
             }
         }
@@ -125,12 +123,10 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                EnsureChildControls();
                 return label.Text;
             }
             set
             {
-                EnsureChildControls();
                 label.Text = value;
             }
         }
@@ -150,6 +146,16 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="LabeledDropDownList" /> class.
+        /// </summary>
+        public LabeledDropDownList()
+        {
+            label = new Literal();
+            helpBlock = new HelpBlock();
+            requiredValidator = new RequiredFieldValidator();
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -158,10 +164,8 @@ namespace Rock.Web.UI.Controls
 
             Controls.Clear();
 
-            label = new Literal();
             Controls.Add( label );
 
-            requiredValidator = new RequiredFieldValidator();
             requiredValidator.ID = this.ID + "_rfv";
             requiredValidator.ControlToValidate = this.ID;
             requiredValidator.Display = ValidatorDisplay.Dynamic;
@@ -169,7 +173,6 @@ namespace Rock.Web.UI.Controls
             requiredValidator.Enabled = false;
             Controls.Add( requiredValidator );
 
-            helpBlock = new HelpBlock();
             Controls.Add( helpBlock );
         }
 
@@ -179,19 +182,25 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( "class", "control-group" +
-                ( IsValid ? "" : " error" ) +
-                ( Required ? " required" : "" ) );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            bool renderControlGroupDiv = ( !string.IsNullOrWhiteSpace( LabelText ) || !string.IsNullOrWhiteSpace( Help ) );
 
-            writer.AddAttribute( "class", "control-label" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            label.RenderControl( writer );
-            helpBlock.RenderControl( writer );
-            writer.RenderEndTag();
+            if ( renderControlGroupDiv )
+            {
+                writer.AddAttribute( "class", "control-group" +
+                    ( IsValid ? "" : " error" ) +
+                    ( Required ? " required" : "" ) );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( "class", "controls" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.AddAttribute( "class", "control-label" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                label.Visible = this.Visible;
+                label.RenderControl( writer );
+                helpBlock.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.AddAttribute( "class", "controls" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            }
 
             base.RenderControl( writer );
 
@@ -215,9 +224,11 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
             }
 
-            writer.RenderEndTag();
-
-            writer.RenderEndTag();
+            if ( renderControlGroupDiv )
+            {
+                writer.RenderEndTag();
+                writer.RenderEndTag();
+            }
         }
 
         /// <summary>
@@ -241,39 +252,5 @@ namespace Rock.Web.UI.Controls
             return new ControlCollection( this );
         }
 
-        /// <summary>
-        /// Returns the Value as Int or null if Value is <see cref="T:Rock.Constants.None"/>
-        /// </summary>
-        /// <param name="NoneAsNull">if set to <c>true</c>, will return Null if SelectedValue = <see cref="T:Rock.Constants.None" /> </param>
-        /// <returns></returns>
-        public int? SelectedValueAsInt(bool NoneAsNull = true)
-        {
-            if ( NoneAsNull )
-            {
-                if ( this.SelectedValue.Equals( Rock.Constants.None.Id.ToString() ) )
-                {
-                    return null;
-                }
-            }
-
-            if ( string.IsNullOrWhiteSpace( this.SelectedValue ) )
-            {
-                return null;
-            }
-            else
-            {
-                return int.Parse( this.SelectedValue );
-            }
-        }
-
-        /// <summary>
-        /// Selecteds the value as enum.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <returns></returns>
-        public T SelectedValueAsEnum<T>()
-        {
-            return (T)System.Enum.Parse( typeof(T), this.SelectedValue );
-        }
     }
 }
