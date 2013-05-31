@@ -46,6 +46,9 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
+
+        [DataMember]
+        public bool TestColumn { get; set; }
         
         /// <summary>
         /// Gets or sets the Record Type Id.
