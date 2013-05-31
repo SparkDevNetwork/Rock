@@ -27,6 +27,10 @@ namespace RockWeb.Blocks.Administration
     {
 
         #region Control Methods
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
@@ -34,10 +38,15 @@ namespace RockWeb.Blocks.Administration
             if ( !Page.IsPostBack )
             {
                 int exceptionId = 0;
+
+                //sets icon and text for cookies and server variables checkboxes
                 cbShowCookies.Text = "<i class=\"icon-laptop\"> </i> Show Cookies";
                 cbShowServerVariables.Text = "<i class=\"icon-hdd\"></i> Show Server Variables";
+
+                //if ExceptionId is not null and is an integer
                 if ( !String.IsNullOrWhiteSpace( PageParameter( "ExceptionId" ) ) && int.TryParse( PageParameter( "ExceptionId" ), out exceptionId ) )
                 {
+                    //show the detail
                     ShowDetail( "ExceptionId", exceptionId );
                 }
                 else
@@ -50,6 +59,10 @@ namespace RockWeb.Blocks.Administration
 
         #region Internal Methods
 
+        /// <summary>
+        /// Builds table cells for the Exception Detail table and adds them to the table
+        /// </summary>
+        /// <param name="detailSummaries">List of Excpetion Detial Summary objects</param>
         private void BuildExceptionDetailTable( List<ExceptionDetailSummary> detailSummaries )
         {
             StringBuilder script = new StringBuilder();
@@ -125,6 +138,11 @@ namespace RockWeb.Blocks.Administration
             }
         }
 
+        /// <summary>
+        /// Disect the query string value and build unordered list
+        /// </summary>
+        /// <param name="queryString">The query string.</param>
+        /// <returns>unordered list of query string values</returns>
         private string BuildQueryStringList( string queryString )
         {
             string[] queryStringVariables = queryString.Split( "&".ToCharArray() );
@@ -151,10 +169,17 @@ namespace RockWeb.Blocks.Administration
             return qsList.ToString();
         }
 
+        /// <summary>
+        /// Gets the related exception logs
+        /// </summary>
+        /// <param name="baseException">The base exception.</param>
+        /// <returns>List of Exception Detial Summary objects</returns>
         private List<ExceptionDetailSummary> GetExceptionLogs( ExceptionLog baseException )
         {
             List<ExceptionDetailSummary> summaryList = new List<ExceptionDetailSummary>();
             ExceptionLogService svc = new ExceptionLogService();
+
+            //load the base exception 
             summaryList.Add( new ExceptionDetailSummary() 
                 {   ExceptionId = baseException.Id, 
                     ExceptionSource = baseException.Source, 
@@ -162,8 +187,11 @@ namespace RockWeb.Blocks.Administration
                     ExceptionDescription = baseException.Description, 
                     StackTrace = baseException.StackTrace 
                 } );
-
+            
+            //get the parentID
             int? parentId = baseException.ParentId;
+
+            //loop through exception hierachy (parent, grandparent, etc)
             while ( parentId != null && parentId > 0 )
             {
                 var exception = svc.Get( (int)parentId );
@@ -184,6 +212,7 @@ namespace RockWeb.Blocks.Administration
                 parentId = exception.ParentId;
             }
 
+            //get inner excpetions
             if ( baseException.HasInnerException != null &&  (bool)baseException.HasInnerException )
             {
                 foreach ( ExceptionLog exception in svc.GetByParentId(baseException.Id) )
@@ -203,15 +232,23 @@ namespace RockWeb.Blocks.Administration
             return summaryList;
         }
 
+        /// <summary>
+        /// Shows the detail of the exception
+        /// </summary>
+        /// <param name="itemKey">Item Key (should be ExceptionId in this instance).</param>
+        /// <param name="itemKeyValue">Item key value (should be ExceptionId).</param>
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
+            //if item key is not ExceptionId return
             if ( !itemKey.Equals( "ExceptionId" ) )
             {
                 return;
             }
 
+            //Get exception
             var baseException = new ExceptionLogService().Get( itemKeyValue );
 
+            //set fields
             lblSite.Text = baseException.Site.Name;
             lblPage.Text = baseException.Page.Name;
             hlPageLink.NavigateUrl = string.Format( "~{0}", baseException.PageUrl );
@@ -219,6 +256,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( baseException.CreatedByPersonId == null || baseException.CreatedByPersonId == 0 )
             {
+                //user null show Anonymous
                 lblUser.Text = "Anonymous";
             }
             else
@@ -229,6 +267,7 @@ namespace RockWeb.Blocks.Administration
             litCookies.Text = baseException.Cookies;
             litServerVariables.Text = baseException.ServerVariables;
 
+            //If query string is not empty buld query string list and show div
             if (!String.IsNullOrWhiteSpace(baseException.QueryString))
             {
                 litQueryStringList.Text = BuildQueryStringList(baseException.QueryString);
@@ -239,8 +278,10 @@ namespace RockWeb.Blocks.Administration
                 divQueryString.Visible = false;
             }
 
+            //check to see if Show Cookies attribute is true
             if( Convert.ToBoolean( GetAttributeValue( "ShowCookies" ) ) )
             {
+                //if so check checkbox and register script to show cookies div
                 cbShowCookies.Checked = true;
                 ScriptManager.RegisterStartupScript( upExcpetionDetail, upExcpetionDetail.GetType(), "ShowCookiesOnLoad" + DateTime.Now.Ticks, "$(\"#pnlCookies\").css(\"display\", \"inherit\");", true );
             }
@@ -249,6 +290,7 @@ namespace RockWeb.Blocks.Administration
                 cbShowCookies.Checked = false;
             }
 
+            //check to see if show server variables attribute is checked
             if ( Convert.ToBoolean( GetAttributeValue( "ShowServerVariables" ) ) )
             {
                 cbShowServerVariables.Checked = true;
@@ -259,9 +301,13 @@ namespace RockWeb.Blocks.Administration
                 cbShowServerVariables.Checked = false;
             }
 
+            //get related exceptions
             List<ExceptionDetailSummary> exceptionDetailSummaryList = GetExceptionLogs( baseException );
 
+            //build the exception detail table
             BuildExceptionDetailTable( exceptionDetailSummaryList );
+
+            pnlSummary.Visible = true;
         }
         #endregion
     }
