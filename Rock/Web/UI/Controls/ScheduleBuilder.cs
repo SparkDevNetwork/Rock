@@ -5,6 +5,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -174,10 +175,24 @@ END:VCALENDAR
         /// <value>
         /// The label text.
         /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text for the label." )
+        ]
         public string LabelText
         {
-            get { return _label.Text; }
-            set { _label.Text = value; }
+            get
+            {
+                EnsureChildControls();
+                return _label.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                _label.Text = value;
+            }
         }
 
         /// <summary>
@@ -914,6 +929,7 @@ END:VCALENDAR
             _btnSaveSchedule.Text = "Save Schedule";
             _btnSaveSchedule.ValidationGroup = validationGroup;
 
+            Controls.Add( _label );
             Controls.Add( _btnDialogCancelX );
             Controls.Add( _dpStartDateTime );
             Controls.Add( _tbDurationHours );

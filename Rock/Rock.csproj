@@ -215,6 +215,10 @@
     <Compile Include="Migrations\201305311821224_EditPerson.Designer.cs">
       <DependentUpon>201305311821224_EditPerson.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201305312138270_RockControlGallery.cs" />
+    <Compile Include="Migrations\201305312138270_RockControlGallery.Designer.cs">
+      <DependentUpon>201305312138270_RockControlGallery.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
@@ -1679,6 +1683,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201305311821224_EditPerson.resx">
       <DependentUpon>201305311821224_EditPerson.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305312138270_RockControlGallery.resx">
+      <DependentUpon>201305312138270_RockControlGallery.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

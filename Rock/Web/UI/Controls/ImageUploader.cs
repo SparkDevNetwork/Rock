@@ -158,14 +158,19 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( "class", "control-group" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            bool renderControlGroupDiv = ( !string.IsNullOrWhiteSpace( LabelText ) );
 
-            label.AddCssClass( "control-label" );
-            label.RenderControl( writer );
+            if ( renderControlGroupDiv )
+            {
+                writer.AddAttribute( "class", "control-group" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( "class", "controls" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                label.AddCssClass( "control-label" );
+                label.RenderControl( writer );
+
+                writer.AddAttribute( "class", "controls" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            }
             
             writer.AddAttribute( "class", "rock-image" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -192,9 +197,11 @@ namespace Rock.Web.UI.Controls
             
             writer.RenderEndTag();
 
-            writer.RenderEndTag();
-
-            writer.RenderEndTag();
+            if ( renderControlGroupDiv )
+            {
+                writer.RenderEndTag();
+                writer.RenderEndTag();
+            }
         }
 
         /// <summary>
