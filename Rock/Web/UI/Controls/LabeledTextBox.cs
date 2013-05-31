@@ -244,6 +244,11 @@ namespace Rock.Web.UI.Controls
             Controls.Add( appendLabel );
         }
 
+        protected override void Render( HtmlTextWriter writer )
+        {
+            base.Render( writer );
+        }
+
         /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>

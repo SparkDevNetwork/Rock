@@ -29,20 +29,24 @@
                     <Rock:LabeledRadioButtonList ID="rblMaritalStatus" runat="server" RepeatDirection="Horizontal" LabelText="Marital Status" />
                     <Rock:LabeledRadioButtonList ID="rblStatus" runat="server" LabelText="Person Status" />
 
-                    <div class="control-group">
-                        <div class="control-label">Contact Info</div>
-                        <div class="controls">
-                            <ul>
-                                <asp:Repeater ID="rContactInfo" runat="server">
-                                    <ItemTemplate>
-                                        <li>
-                                            <Rock:LabeledTextBox ID="tbPhone" runat="server" />
-                                            <asp:CheckBox ID="cbUnlisted" runat="server" Text="unlisted" />
-                                        </li>
-                                    </ItemTemplate>
-                                </asp:Repeater>
-                            </ul>
-                        </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Contact Info</legend>
+
+                    <div class="form-horizontal">
+                        <asp:Repeater ID="rContactInfo" runat="server">
+                            <ItemTemplate>
+                                <div class="control-group">
+                                    <div class="control-label"><%# Eval("NumberTypeValue.Name")  %></div>
+                                    <div class="controls">
+                                        <asp:HiddenField ID="hfPhoneType" runat="server" Value='<%# Eval("NumberTypeValueId")  %>' />
+                                        <asp:TextBox ID="tbPhone" runat="server" Text='<%# Eval("NumberFormatted")  %>' />
+                                        <asp:CheckBox ID="cbUnlisted" runat="server" Text="unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' />
+                                    </div>
+                                </div>
+                            </ItemTemplate>
+                        </asp:Repeater>
                     </div>
 
                     <Rock:DataTextBox ID="tbEmail" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" />
@@ -59,8 +63,8 @@
             <div class="span2">
 
                 <fieldset>
-                    <Rock:LabeledDropDownList ID="ddlRecordStatus" runat="server" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" /><br />
-                    <Rock:LabeledDropDownList ID="ddlReason" runat="server" Visible="false"></Rock:LabeledDropDownList>
+                    <Rock:LabeledDropDownList ID="ddlRecordStatus" runat="server" LabelText="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" /><br />
+                    <Rock:LabeledDropDownList ID="ddlReason" runat="server" LabelText="Reason" Visible="false"></Rock:LabeledDropDownList>
                 </fieldset>
 
             </div>
