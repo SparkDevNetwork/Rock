@@ -211,6 +211,10 @@
     <Compile Include="Migrations\201305302043127_AddExceptionDetailPage.Designer.cs">
       <DependentUpon>201305302043127_AddExceptionDetailPage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201305311821224_EditPerson.cs" />
+    <Compile Include="Migrations\201305311821224_EditPerson.Designer.cs">
+      <DependentUpon>201305311821224_EditPerson.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
@@ -1672,6 +1676,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201305302043127_AddExceptionDetailPage.resx">
       <DependentUpon>201305302043127_AddExceptionDetailPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305311821224_EditPerson.resx">
+      <DependentUpon>201305311821224_EditPerson.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

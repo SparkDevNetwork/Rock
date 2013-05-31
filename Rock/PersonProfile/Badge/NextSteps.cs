@@ -21,6 +21,22 @@ namespace Rock.PersonProfile.Badge
     public class NextSteps : IconBadge
     {
         /// <summary>
+        /// Gets the attribute value defaults.
+        /// </summary>
+        /// <value>
+        /// The attribute defaults.
+        /// </value>
+        public override System.Collections.Generic.Dictionary<string, string> AttributeValueDefaults
+        {
+            get
+            {
+                var defaults = base.AttributeValueDefaults;
+                defaults["Order"] = "8";
+                return defaults;
+            }
+        }
+
+        /// <summary>
         /// Gets the tool tip text.
         /// </summary>
         /// <param name="person">The person.</param>

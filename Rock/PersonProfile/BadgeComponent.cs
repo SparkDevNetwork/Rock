@@ -80,6 +80,10 @@ namespace Rock.PersonProfile
         /// </summary>
         public BadgeComponent()
         {
+            using ( new Rock.Data.UnitOfWorkScope() )
+            {
+                Rock.Attribute.Helper.UpdateAttributes( this.GetType(), this.TypeId, null );
+            }
             this.LoadAttributes();
         }
 
