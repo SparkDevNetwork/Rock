@@ -255,7 +255,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            bool renderControlGroupDiv = (!string.IsNullOrEmpty( LabelText ) || !string.IsNullOrWhiteSpace( Help ));
+            bool renderControlGroupDiv = ( !string.IsNullOrWhiteSpace( LabelText ) || !string.IsNullOrWhiteSpace( Help ) );
             string wrapperClassName = string.Empty;
 
             if ( renderControlGroupDiv )
