@@ -67,14 +67,16 @@
             <div id="pnlExceptionDetails">
                 <fieldset>
                     <legend>Details</legend>
-                    <asp:Table ID="tblExceptionDetails" runat="server" CssClass="table table-bordered table-striped table-full table-hover">
-                        <asp:TableHeaderRow ID="thRowExceptionDetails" runat="server">
-                            <asp:TableHeaderCell ID="thExceptionType" runat="server" Text="Exception Type" />
-                            <asp:TableHeaderCell ID="thExceptionSource" runat="server" Text=" Source" />
-                            <asp:TableHeaderCell ID="thExceptionDescription" runat="server" Text="Description" />
-                            <asp:TableHeaderCell ID="thExceptionViewStackTrace" runat="server">&nbsp;</asp:TableHeaderCell>
-                        </asp:TableHeaderRow>
-                    </asp:Table>
+                    <div class="row-fluid">
+                        <asp:Table ID="tblExceptionDetails" runat="server" CssClass="table table-bordered table-striped table-full table-hover">
+                            <asp:TableHeaderRow ID="thRowExceptionDetails"  runat="server">
+                                <asp:TableHeaderCell ID="thExceptionType" runat="server" CssClass="span2" Text="Exception Type" />
+                                <asp:TableHeaderCell ID="thExceptionSource" runat="server" CssClass="span2" Text=" Source" />
+                                <asp:TableHeaderCell ID="thExceptionDescription" runat="server" CssClass="span6" Text="Description" />
+                                <asp:TableHeaderCell ID="thExceptionViewStackTrace" runat="server" CssClass="span2">&nbsp;</asp:TableHeaderCell>
+                            </asp:TableHeaderRow>
+                        </asp:Table>
+                    </div>
                 </fieldset>
             </div>
         </asp:Panel>
