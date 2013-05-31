@@ -2,7 +2,7 @@
 
 <asp:UpdatePanel ID="upExcpetionDetail" runat="server">
     <ContentTemplate>
-        <asp:Panel ID="pnlSummary" runat="server">
+        <asp:Panel ID="pnlSummary" runat="server" Visible="false">
             <fieldset>
                 <legend>Summary</legend>
 
