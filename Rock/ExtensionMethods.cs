@@ -829,7 +829,7 @@ namespace Rock
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="enumType">Type of the enum.</param>
-        public static void BindToEnum( this ListControl listControl, Type enumType )
+        public static void BindToEnum( this ListControl listControl, Type enumType, bool insertBlankOption = false )
         {
             var dictionary = new Dictionary<int, string>();
             foreach ( var value in Enum.GetValues( enumType ) )
@@ -841,6 +841,11 @@ namespace Rock
             listControl.DataTextField = "Value";
             listControl.DataValueField = "Key";
             listControl.DataBind();
+
+            if ( insertBlankOption )
+            {
+                listControl.Items.Insert( 0, new ListItem() );
+            }
         }
 
         /// <summary>
@@ -848,7 +853,7 @@ namespace Rock
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="definedType">Type of the defined.</param>
-        public static void BindToDefinedType( this ListControl listControl, Rock.Web.Cache.DefinedTypeCache definedType )
+        public static void BindToDefinedType( this ListControl listControl, Rock.Web.Cache.DefinedTypeCache definedType, bool insertBlankOption = false )
         {
             var ds = definedType.DefinedValues
                 .Select( v => new
@@ -861,6 +866,46 @@ namespace Rock
             listControl.DataTextField = "Name";
             listControl.DataValueField = "Id";
             listControl.DataBind();
+
+            if ( insertBlankOption )
+            {
+                listControl.Items.Insert( 0, new ListItem() );
+            }
+        }
+
+        /// <summary>
+        /// Returns the Value as Int or null if Value is <see cref="T:Rock.Constants.None"/>
+        /// </summary>
+        /// <param name="NoneAsNull">if set to <c>true</c>, will return Null if SelectedValue = <see cref="T:Rock.Constants.None" /> </param>
+        /// <returns></returns>
+        public static int? SelectedValueAsInt( this ListControl listControl, bool NoneAsNull = true )
+        {
+            if ( NoneAsNull )
+            {
+                if ( listControl.SelectedValue.Equals( Rock.Constants.None.Id.ToString() ) )
+                {
+                    return null;
+                }
+            }
+
+            if ( string.IsNullOrWhiteSpace( listControl.SelectedValue ) )
+            {
+                return null;
+            }
+            else
+            {
+                return int.Parse( listControl.SelectedValue );
+            }
+        }
+
+        /// <summary>
+        /// Selecteds the value as enum.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        public static T SelectedValueAsEnum<T>( this ListControl listControl )
+        {
+            return (T)System.Enum.Parse( typeof( T ), listControl.SelectedValue );
         }
 
         #endregion
