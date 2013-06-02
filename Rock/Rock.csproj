@@ -203,6 +203,22 @@
     <Compile Include="Migrations\201305231329217_BinaryFileData.Designer.cs">
       <DependentUpon>201305231329217_BinaryFileData.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201305281730297_AddMiddleName.cs" />
+    <Compile Include="Migrations\201305281730297_AddMiddleName.Designer.cs">
+      <DependentUpon>201305281730297_AddMiddleName.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201305302043127_AddExceptionDetailPage.cs" />
+    <Compile Include="Migrations\201305302043127_AddExceptionDetailPage.Designer.cs">
+      <DependentUpon>201305302043127_AddExceptionDetailPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201305311821224_EditPerson.cs" />
+    <Compile Include="Migrations\201305311821224_EditPerson.Designer.cs">
+      <DependentUpon>201305311821224_EditPerson.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201305312138270_RockControlGallery.cs" />
+    <Compile Include="Migrations\201305312138270_RockControlGallery.Designer.cs">
+      <DependentUpon>201305312138270_RockControlGallery.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
@@ -1328,13 +1344,6 @@
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
-    <Content Include="web.config" />
-    <Content Include="web.Debug.config">
-      <DependentUpon>web.config</DependentUpon>
-    </Content>
-    <Content Include="web.Release.config">
-      <DependentUpon>web.config</DependentUpon>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
@@ -1669,6 +1678,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201305231329217_BinaryFileData.resx">
       <DependentUpon>201305231329217_BinaryFileData.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305281730297_AddMiddleName.resx">
+      <DependentUpon>201305281730297_AddMiddleName.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305302043127_AddExceptionDetailPage.resx">
+      <DependentUpon>201305302043127_AddExceptionDetailPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305311821224_EditPerson.resx">
+      <DependentUpon>201305311821224_EditPerson.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201305312138270_RockControlGallery.resx">
+      <DependentUpon>201305312138270_RockControlGallery.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201305132040219_UpdateGivingBlocks.resx">
       <DependentUpon>201305132040219_UpdateGivingBlocks.cs</DependentUpon>

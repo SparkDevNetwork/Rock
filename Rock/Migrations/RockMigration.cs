@@ -15,6 +15,65 @@ namespace Rock.Migrations
     public abstract class RockMigration : DbMigration
     {
 
+        #region Entity Type Methods
+
+        /// <summary>
+        /// Updates the type of the entity.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="friendlyName">Name of the friendly.</param>
+        /// <param name="assemblyName">Name of the assembly.</param>
+        /// <param name="isEntity">if set to <c>true</c> [is entity].</param>
+        /// <param name="isSecured">if set to <c>true</c> [is secured].</param>
+        /// <param name="guid">The GUID.</param>
+        public void UpdateEntityType( string name, string friendlyName, string assemblyName, bool isEntity, bool isSecured, string guid )
+        {
+            Sql( string.Format( @"
+
+                DECLARE @Id int
+                SET @Id = (SELECT [Id] FROM [EntityType] WHERE [Name] = '{0}')
+                IF @Id IS NULL
+                BEGIN
+                    INSERT INTO [EntityType] (
+                        [Name],[FriendlyName],[AssemblyName],[IsEntity],[IsSecured],[Guid])
+                    VALUES(
+                        '{0}','{1}','{2}',{3},{4},'{5}')
+                END
+                ELSE
+                BEGIN
+                    UPDATE [EntityType] SET 
+                        [FriendlyName] = '{1}',
+                        [AssemblyName] = '{2}',
+                        [IsEntity] = {3},
+                        [IsSecured] = {4},
+                        [Guid] = '{5}'
+                    WHERE [Name] = '{0}'
+                END
+",
+                    name.Replace( "'", "''" ),
+                    friendlyName.Replace( "'", "''" ),
+                    assemblyName.Replace( "'", "''" ),
+                    isEntity ? "1" : "0",
+                    isSecured ? "1" : "0",
+                    guid ) );
+        }
+
+        /// <summary>
+        /// Deletes the type of the entity.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        public void DeleteEntityType( string guid )
+        {
+            Sql( string.Format( @"
+                DELETE [EntityType] WHERE [Guid] = '{0}'
+",
+                    guid
+                    ) );
+        }
+
+        #endregion
+
+
         #region Field Type Methods
 
         /// <summary>

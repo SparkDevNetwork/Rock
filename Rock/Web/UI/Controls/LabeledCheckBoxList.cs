@@ -123,28 +123,29 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( "class", "control-group" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            bool renderControlGroupDiv = ( !string.IsNullOrWhiteSpace( LabelText ) || !string.IsNullOrWhiteSpace( Help ) );
 
-            writer.AddAttribute( "class", "control-label" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            label.RenderControl( writer );
-            helpBlock.RenderControl( writer );
-            writer.RenderEndTag();
+            if ( renderControlGroupDiv )
+            {
+                writer.AddAttribute( "class", "control-group" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( "class", "control-label" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                label.RenderControl( writer );
+                helpBlock.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.AddAttribute( "class", "controls checkbox" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            }
 
             if ( Items.Count == 0 )
             {
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 lblNoItemsText.RenderControl( writer );
-                writer.RenderEndTag();
             }
 
-            writer.AddAttribute( "class", "controls checkbox" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
             base.RenderControl( writer );
-
-            writer.RenderEndTag();
 
             if ( Tip.Trim() != string.Empty )
             {
@@ -157,7 +158,11 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
             }
 
-            writer.RenderEndTag();
+            if ( renderControlGroupDiv )
+            {
+                writer.RenderEndTag();
+                writer.RenderEndTag();
+            }
         }
 
         /// <summary>
