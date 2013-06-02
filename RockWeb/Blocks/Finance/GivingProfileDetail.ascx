@@ -279,7 +279,7 @@
                         <div id="divConfirmAddress" runat="server">
 
                             <div class="row-fluid">
-                                <Rock:LabeledCheckBox ID="chkDefaultAddress" runat="server" Text="Use address from above" Checked="true" OnCheckedChanged="chkDefaultAddress_CheckedChanged" AutoPostBack="true" CausesValidation="true" />
+                                <Rock:LabeledCheckBox ID="chkDefaultAddress" runat="server" Text="Use address from above" Checked="true" OnCheckedChanged="chkDefaultAddress_CheckedChanged" AutoPostBack="true" />
 
                                 <div id="divNewAddress" class="fade in" runat="server" Visible="False">
 
@@ -294,7 +294,7 @@
                                             <Rock:DataTextBox ID="diffCity" LabelText="City" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="City" CssClass="input-small  address-line" />
                                         </div>
                                         <div class="<%= _spanClass != "span6" ? "span3" : "span5" %>">
-                                            <Rock:StateDropDownList ID="diffState" runat="server" LabelText="State" SourceTypeName="Rock.Model.Location, Rock" PropertyName="State" CssClass="input-small  address-line" />                                            
+                                            <Rock:StateDropDownList ID="diffState" runat="server" LabelText="State" SourceTypeName="Rock.Model.Location, Rock" PropertyName="State" CssClass="input-small address-line" />                                            
                                         </div>
                                         <div class="span2">
                                             <Rock:DataTextBox ID="diffZip" LabelText="Zip" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Zip" CssClass="input-mini address-line" />                                            

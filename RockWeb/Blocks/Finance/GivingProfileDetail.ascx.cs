@@ -130,7 +130,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     BindPersonDetails();
                     divSavePayment.Visible = true;
-                    //divCreateAccount.Visible = false;
+                    divCreateAccount.Visible = false;
                 }                
 
                 // Require phone number
