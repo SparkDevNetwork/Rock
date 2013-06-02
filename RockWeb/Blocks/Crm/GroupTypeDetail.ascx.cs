@@ -585,23 +585,14 @@ namespace RockWeb.Blocks.Crm
                         /* Take care of Group Type Attributes */
 
                         // delete GroupTypeAttributes that are no longer configured in the UI
-                        string qualifierValue = groupType.Id.ToString();
-                        var groupTypeAttributesQry = attributeService.GetByEntityTypeId( new GroupType().TypeId ).AsQueryable()
-                            .Where( a => a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase )
-                            && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
-
-                        var deletedGroupTypeAttributes = from attr in groupTypeAttributesQry
-                                                         where !( from d in GroupTypeAttributesState
-                                                                  select d.Guid ).Contains( attr.Guid )
-                                                         select attr;
-
-                        deletedGroupTypeAttributes.ToList().ForEach( a =>
+                        var groupTypeAttributesQry = attributeService.Get( new GroupType().TypeId, "Id", groupType.Id.ToString() );
+                        var selectedAttributes = GroupTypeAttributesState.Select( a => a.Guid);
+                        foreach(var attr in groupTypeAttributesQry.Where( a => !selectedAttributes.Contains( a.Guid)))
                         {
-                            var attr = attributeService.Get( a.Guid );
                             Rock.Web.Cache.AttributeCache.Flush( attr.Id );
                             attributeService.Delete( attr, CurrentPersonId );
                             attributeService.Save( attr, CurrentPersonId );
-                        } );
+                        }
 
                         // add/update the GroupTypeAttributes that are assigned in the UI
                         foreach ( var attributeState in GroupTypeAttributesState )
@@ -642,7 +633,7 @@ namespace RockWeb.Blocks.Crm
                         /* Take care of Group Attributes */
 
                         // delete GroupAttributes that are no longer configured in the UI
-                        qualifierValue = groupType.Id.ToString();
+                        var qualifierValue = groupType.Id.ToString();
                         var groupAttributesQry = attributeService.GetByEntityTypeId( new Group().TypeId ).AsQueryable()
                             .Where( a => a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase )
                             && a.EntityTypeQualifierValue.Equals( qualifierValue ) );

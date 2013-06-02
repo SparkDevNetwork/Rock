@@ -42,7 +42,18 @@ namespace Rock.Web.UI.Controls
             get { return _label.Text; }
             set { _label.Text = value; }
         }
-            
+
+        /// <summary>
+        /// Gets or sets the type of the validation data.
+        /// </summary>
+        /// <value>
+        /// The type of the validation data.
+        /// </value>
+        public ValidationDataType ValidationDataType
+        {
+            get { return rangeValidator.Type; }
+            set { rangeValidator.Type = value; }
+        }
         /// <summary>
         /// Gets or sets the minimum value.
         /// </summary>
@@ -51,14 +62,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string MinimumValue
         {
-            get
-            {
-                return rangeValidator.MinimumValue;
-            }
-            set
-            {
-                rangeValidator.MinimumValue = value;
-            }
+            get { return rangeValidator.MinimumValue; }
+            set { rangeValidator.MinimumValue = value; }
         }
 
         /// <summary>
@@ -69,14 +74,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string MaximumValue
         {
-            get
-            {
-                return rangeValidator.MaximumValue;
-            }
-            set
-            {
-                rangeValidator.MaximumValue = value;
-            }
+            get { return rangeValidator.MaximumValue; }
+            set { rangeValidator.MaximumValue = value; }
         }
 
         /// <summary>
@@ -86,6 +85,7 @@ namespace Rock.Web.UI.Controls
         {
             rangeValidator = new RangeValidator();
             _label = new Label();
+            rangeValidator.Type = ValidationDataType.Integer;
             rangeValidator.MinimumValue = int.MinValue.ToString();
             rangeValidator.MaximumValue = int.MaxValue.ToString();
         }
@@ -102,7 +102,6 @@ namespace Rock.Web.UI.Controls
             rangeValidator.ID = this.ID + "_RV";
             rangeValidator.Display = ValidatorDisplay.Dynamic;
             rangeValidator.CssClass = "validation-error help-inline";
-            rangeValidator.Type = ValidationDataType.Integer;
             rangeValidator.ErrorMessage = "Numerical value is required";
 
             Controls.Add( rangeValidator );
@@ -137,7 +136,6 @@ namespace Rock.Web.UI.Controls
                 rangeValidator.ErrorMessage = string.Format( "Numerical value is required for '{0}'", FieldName );
             }
 
-            rangeValidator.Type = rangeValidator.MinimumValue.Contains( "." ) ? ValidationDataType.Double : ValidationDataType.Integer;
             rangeValidator.Enabled = true;
             rangeValidator.RenderControl( writer );
 

@@ -251,53 +251,56 @@ namespace Rock.Attribute
             var attributeCategories = new Dictionary<string, List<string>>();
             var attributeValues = new Dictionary<string, List<Rock.Model.AttributeValue>>();
 
-            foreach ( var attribute in attributes.OrderBy( a => a.Order ).ThenBy( a => a.Name) )
+            if ( attributes.Any() )
             {
-                // Categorize the attributes
-                if ( !attributeCategories.ContainsKey( attribute.Category ) )
-                    attributeCategories.Add( attribute.Category, new List<string>() );
-                attributeCategories[attribute.Category].Add( attribute.Key );
-
-                // Add a placeholder for this item's value for each attribute
-                attributeValues.Add( attribute.Key, new List<Rock.Model.AttributeValue>() );
-            }
-
-            // Read this item's value(s) for each attribute 
-            List<int> attributeIds = attributes.Select( a => a.Id ).ToList();
-            foreach ( var attributeValue in attributeValueService.Queryable( "Attribute" )
-                .Where( v => v.EntityId == entity.Id && attributeIds.Contains( v.AttributeId ) ) )
-            {
-                attributeValues[attributeValue.Attribute.Key].Add( attributeValue.Clone( false ) as Rock.Model.AttributeValue );
-            }
-
-            // Look for any attributes that don't have a value and create a default value entry
-            foreach ( var attribute in attributes )
-            {
-                if ( attributeValues[attribute.Key].Count == 0 )
+                foreach ( var attribute in attributes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
                 {
-                    var attributeValue = new Rock.Model.AttributeValue();
-                    attributeValue.AttributeId = attribute.Id;
-                    if ( entity.AttributeValueDefaults != null && entity.AttributeValueDefaults.ContainsKey( attribute.Name ) )
+                    // Categorize the attributes
+                    if ( !attributeCategories.ContainsKey( attribute.Category ) )
+                        attributeCategories.Add( attribute.Category, new List<string>() );
+                    attributeCategories[attribute.Category].Add( attribute.Key );
+
+                    // Add a placeholder for this item's value for each attribute
+                    attributeValues.Add( attribute.Key, new List<Rock.Model.AttributeValue>() );
+                }
+
+                // Read this item's value(s) for each attribute 
+                List<int> attributeIds = attributes.Select( a => a.Id ).ToList();
+                foreach ( var attributeValue in attributeValueService.Queryable( "Attribute" )
+                    .Where( v => v.EntityId == entity.Id && attributeIds.Contains( v.AttributeId ) ) )
+                {
+                    attributeValues[attributeValue.Attribute.Key].Add( attributeValue.Clone( false ) as Rock.Model.AttributeValue );
+                }
+
+                // Look for any attributes that don't have a value and create a default value entry
+                foreach ( var attribute in attributes )
+                {
+                    if ( attributeValues[attribute.Key].Count == 0 )
                     {
-                        attributeValue.Value = entity.AttributeValueDefaults[attribute.Name];
+                        var attributeValue = new Rock.Model.AttributeValue();
+                        attributeValue.AttributeId = attribute.Id;
+                        if ( entity.AttributeValueDefaults != null && entity.AttributeValueDefaults.ContainsKey( attribute.Name ) )
+                        {
+                            attributeValue.Value = entity.AttributeValueDefaults[attribute.Name];
+                        }
+                        else
+                        {
+                            attributeValue.Value = attribute.DefaultValue;
+                        }
+                        attributeValues[attribute.Key].Add( attributeValue );
                     }
                     else
                     {
-                        attributeValue.Value = attribute.DefaultValue;
-                    }
-                    attributeValues[attribute.Key].Add( attributeValue );
-                }
-                else
-                {
-                    if ( !String.IsNullOrWhiteSpace( attribute.DefaultValue ) )
-                    {
-                        foreach ( var value in attributeValues[attribute.Key] )
+                        if ( !String.IsNullOrWhiteSpace( attribute.DefaultValue ) )
                         {
-                            if ( String.IsNullOrWhiteSpace( value.Value ) )
+                            foreach ( var value in attributeValues[attribute.Key] )
                             {
-                                value.Value = attribute.DefaultValue;
-                            }
+                                if ( String.IsNullOrWhiteSpace( value.Value ) )
+                                {
+                                    value.Value = attribute.DefaultValue;
+                                }
 
+                            }
                         }
                     }
                 }

@@ -149,6 +149,17 @@ namespace Rock.Model
         public string NickName { get; set; }
 
         /// <summary>
+        /// Gets or sets the Middle Name.
+        /// </summary>
+        /// <value>
+        /// Middle Name.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        [MergeField]
+        public string MiddleName { get; set; }
+
+        /// <summary>
         /// Gets or sets the Last Name.
         /// </summary>
         /// <value>
@@ -190,7 +201,7 @@ namespace Rock.Model
         {
             get
             {
-                return NickName ?? GivenName;
+                return string.IsNullOrEmpty( NickName ) ? GivenName : NickName;
             }
             private set
             {

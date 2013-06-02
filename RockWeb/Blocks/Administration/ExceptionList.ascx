@@ -9,11 +9,6 @@
 <asp:UpdatePanel ID="upExceptionList" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlExceptionGroups" runat="server" CssClass="well" Visible="true">
-            <fieldset>
-                <legend>
-                    <h4>Exception Details</h4>
-                </legend>
-            </fieldset>
             <div class="row-fluid">
                 <div class="span12 clearExceptionsLink">
                     <asp:LinkButton ID="btnClearExceptions" runat="server" CssClass="btn" OnClientClick="return confirmExceptionListClear();" OnClick="btnClearExceptions_Click" CausesValidation="false">

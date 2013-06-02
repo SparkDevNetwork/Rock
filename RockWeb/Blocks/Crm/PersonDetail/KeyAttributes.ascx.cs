@@ -35,11 +35,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
                     if ( attribute != null && attribute.IsAuthorized( "View", CurrentPerson ) )
                     {
-                        var values = Person.AttributeValues[attribute.Key];
-                        if ( values != null && values.Count > 0 )
+                        if ( Person != null && Person.AttributeValues != null )
                         {
-                            attributes.Add( new NameValue( attribute.Name,
-                                attribute.FieldType.Field.FormatValue( null, values[0].Value, attribute.QualifierValues, false ) ?? string.Empty ) );
+                            var values = Person.AttributeValues[attribute.Key];
+                            if ( values != null && values.Count > 0 )
+                            {
+                                attributes.Add( new NameValue( attribute.Name,
+                                    attribute.FieldType.Field.FormatValue( null, values[0].Value, attribute.QualifierValues, false ) ?? string.Empty ) );
+                            }
                         }
                     }
                 }
