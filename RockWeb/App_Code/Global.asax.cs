@@ -486,7 +486,7 @@ namespace RockWeb
                 foreach ( string serverVar in context.Request.ServerVariables )
                     serverVars.Append( "<tr><td><b>" + serverVar + "</b></td><td>" + context.Request.ServerVariables[serverVar].ToString() + "</td></tr>" );
 
-                cookies.Append( "</table>" );
+                serverVars.Append( "</table>" );
                 exceptionLog.ServerVariables = serverVars.ToString();
 
                 if ( userLogin != null )
@@ -724,15 +724,16 @@ namespace RockWeb
                     Rock.Web.Cache.FieldTypeCache.Read( fieldType );
                 }
 
-                // Cache all tha Defined Types
-                var definedTypeService = new Rock.Model.DefinedTypeService();
-                foreach ( var definedType in definedTypeService.Queryable().ToList() )
-                {
-                    definedType.LoadAttributes();
-                    Rock.Web.Cache.DefinedTypeCache.Read( definedType );
-                }
+                // DT: When running with production CCV Data, this is taking a considerable amount of time 
 
-                // DT: When running with production CCV Data, this is taking a considerable amount of time (we have 2100+ values)
+                // Cache all tha Defined Types
+                //var definedTypeService = new Rock.Model.DefinedTypeService();
+                //foreach ( var definedType in definedTypeService.Queryable().ToList() )
+                //{
+                //    definedType.LoadAttributes();
+                //    Rock.Web.Cache.DefinedTypeCache.Read( definedType );
+                //}
+
                 // Cache all the Defined Values
                 //var definedValueService = new Rock.Model.DefinedValueService();
                 //foreach ( var definedValue in definedValueService.Queryable().ToList() )

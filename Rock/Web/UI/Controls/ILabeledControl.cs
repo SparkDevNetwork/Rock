@@ -14,7 +14,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    interface ILabeledControl
+    public interface ILabeledControl
     {
         /// <summary>
         /// Gets or sets the label text.

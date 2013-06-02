@@ -11,6 +11,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
 using Rock;
+using Rock.Constants;
 
 namespace Rock.Field.Types
 {
@@ -92,7 +93,7 @@ namespace Rock.Field.Types
             controls.Add( cb );
             cb.AutoPostBack = true;
             cb.CheckedChanged += OnQualifierUpdated;
-            cb.Text = "";
+            cb.Text = "Allow Multiple Values";
             return controls;
         }
 
@@ -105,7 +106,7 @@ namespace Rock.Field.Types
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( DEFINED_TYPE_KEY, new ConfigurationValue( "Defined Type", "The Defined Type to select values from", "" ) );
-            configurationValues.Add( ALLOW_MULTIPLE_KEY, new ConfigurationValue( "Allow Multiple Value Selection", "When set, allows multiple defined type values to be selected.", "" ) );
+            configurationValues.Add( ALLOW_MULTIPLE_KEY, new ConfigurationValue( "", "When set, allows multiple defined type values to be selected.", "" ) );
 
             if ( controls != null && controls.Count == 2 )
             {
@@ -158,13 +159,13 @@ namespace Rock.Field.Types
             if ( configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ ALLOW_MULTIPLE_KEY ].Value.AsBoolean() )
             {
                 editControl = new CheckBoxList();
-                //( (CheckBoxList)editControl ).RepeatColumns = 2;
-                editControl.AddCssClass( "well" );
-                editControl.Style.Add( "background-color", "white" );
+                editControl.AddCssClass( "checkboxlist-group" );
             }
             else
             {
                 editControl = new DropDownList();
+                // Provide the ability to set a "none" default value (unless the Required is true).
+                editControl.Items.Add( new ListItem( None.Text, None.IdValue ) );
             }
 
             if ( configurationValues != null && configurationValues.ContainsKey( DEFINED_TYPE_KEY ) )
