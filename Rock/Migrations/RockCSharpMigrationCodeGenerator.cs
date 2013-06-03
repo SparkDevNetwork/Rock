@@ -19,38 +19,32 @@ namespace Rock.Migrations
     public class RockCSharpMigrationCodeGenerator : CSharpMigrationCodeGenerator
     {
         #region internal custom methods
-        /// <summary>
-        /// 
-        /// </summary>
-        private Assembly rockAssembly = null;
 
         /// <summary>
         /// 
         /// </summary>
-        private Dictionary<string, Type> tableNameLookup = new Dictionary<string, Type>();
+        private Assembly contextAssembly = null;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RockCSharpMigrationCodeGenerator" /> class.
+        /// 
+        /// </summary>
+        private Dictionary<string, Type> contextTables = new Dictionary<string, Type>();
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockCSharpMigrationCodeGenerator"/> class.
         /// </summary>
         public RockCSharpMigrationCodeGenerator()
+            : base()
         {
             Assembly executingAssembly = Assembly.GetExecutingAssembly();
-            if ( executingAssembly.GetName().Name == "Rock" )
-            {
-                rockAssembly = executingAssembly;
-            }
-            else
-            {
-                AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
-                rockAssembly = Assembly.Load( "Rock" );
-            }
+            contextAssembly = executingAssembly;
 
-            foreach ( var e in rockAssembly.GetTypes().Where( a => a.CustomAttributes.Any( x => x.AttributeType.Name.Equals( "TableAttribute" ) ) ).ToList() )
+            foreach ( var e in contextAssembly.GetTypes().Where( a => a.CustomAttributes.Any( x => x.AttributeType.Name.Equals( "TableAttribute" ) ) ).ToList() )
             {
                 var attrib = e.CustomAttributes.FirstOrDefault( a => a.AttributeType.Name.Equals( "TableAttribute" ) );
                 if ( attrib != null )
                 {
-                    tableNameLookup.Add( attrib.ConstructorArguments[0].Value.ToString(), e );
+                    contextTables.Add( attrib.ConstructorArguments[0].Value.ToString(), e );
                 }
             }
         }
@@ -76,18 +70,10 @@ namespace Rock.Migrations
         {
             string tableName = fullTableName.Replace( "dbo.", string.Empty );
 
-            Type tableType = null;
-            try
+            if ( contextTables.ContainsKey( tableName ) )
             {
-                tableType = tableNameLookup[tableName];
-            }
-            catch (Exception ex)
-            {
-                writer.WriteLine( "// TableName: " + tableName );
-                writer.WriteLine( "// " + ex.Message );
-            }
-            if ( tableType != null )
-            {
+                Type tableType = contextTables[tableName];
+
                 MemberInfo mi = tableType.GetMember( columnName ).FirstOrDefault();
 
                 if ( mi != null )
@@ -105,7 +91,9 @@ namespace Rock.Migrations
             }
             else
             {
+                // not found if Migration is trying to gen code for a table in another DbContext of a Multiple Context project
                 // probably not found if this is the Down() migration
+                writer.WriteLine( string.Format( "// Skipping GenerateCustomColumnCode for Table {0}. Not found in context ", tableName ) );
             }
         }
 
@@ -120,11 +108,22 @@ namespace Rock.Migrations
         /// <param name="writer">Text writer to add the generated code to.</param>
         protected override void Generate( System.Data.Entity.Migrations.Model.CreateTableOperation createTableOperation, System.Data.Entity.Migrations.Utilities.IndentedTextWriter writer )
         {
-            base.Generate( createTableOperation, writer );
+            string tableName = createTableOperation.Name.Replace( "dbo.", string.Empty );
 
-            foreach ( var column in createTableOperation.Columns )
+            if ( contextTables.ContainsKey( tableName ) )
             {
-                GenerateCustomColumnCode( writer, createTableOperation.Name, column.Name );
+                base.Generate( createTableOperation, writer );
+
+                foreach ( var column in createTableOperation.Columns )
+                {
+                    GenerateCustomColumnCode( writer, createTableOperation.Name, column.Name );
+                }
+            }
+            else
+            {
+                // not found if Migration is trying to gen code for a table in another DbContext of a Multiple Context project
+                // probably not found if this is the Down() migration
+                writer.WriteLine( string.Format( "// Skipping Create Table for TableName {0}.  Not found in context. ", tableName ) );
             }
         }
 
@@ -137,6 +136,69 @@ namespace Rock.Migrations
         {
             base.Generate( addColumnOperation, writer );
             GenerateCustomColumnCode( writer, addColumnOperation.Table, addColumnOperation.Column.Name );
+        }
+
+        /// <summary>
+        /// Generates code to perform a <see cref="T:System.Data.Entity.Migrations.Model.DropForeignKeyOperation" />.
+        /// </summary>
+        /// <param name="dropForeignKeyOperation">The operation to generate code for.</param>
+        /// <param name="writer">Text writer to add the generated code to.</param>
+        protected override void Generate( System.Data.Entity.Migrations.Model.DropForeignKeyOperation dropForeignKeyOperation, System.Data.Entity.Migrations.Utilities.IndentedTextWriter writer )
+        {
+            string tableName = dropForeignKeyOperation.PrincipalTable.Replace( "dbo.", string.Empty );
+
+            if ( contextTables.ContainsKey( tableName ) )
+            {
+                base.Generate( dropForeignKeyOperation, writer );
+            }
+            else
+            {
+                // not found if Migration is trying to gen code for a table in another DbContext of a Multiple Context project
+                // probably not found if this is the Down() migration
+                writer.WriteLine( string.Format( "// Skipping Drop FK for TableName {0}.  Not found in context. ", tableName ) );
+            }
+        }
+
+        /// <summary>
+        /// Generates code to perform a <see cref="T:System.Data.Entity.Migrations.Model.DropIndexOperation" />.
+        /// </summary>
+        /// <param name="dropIndexOperation">The operation to generate code for.</param>
+        /// <param name="writer">Text writer to add the generated code to.</param>
+        protected override void Generate( System.Data.Entity.Migrations.Model.DropIndexOperation dropIndexOperation, System.Data.Entity.Migrations.Utilities.IndentedTextWriter writer )
+        {
+            string tableName = dropIndexOperation.Table.Replace( "dbo.", string.Empty );
+
+            if ( contextTables.ContainsKey( tableName ) )
+            {
+                base.Generate( dropIndexOperation, writer );
+            }
+            else
+            {
+                // not found if Migration is trying to gen code for a table in another DbContext of a Multiple Context project
+                // probably not found if this is the Down() migration
+                writer.WriteLine( string.Format( "// Skipping Drop Index for TableName {0}.  Not found in context. ", tableName ) );
+            }
+        }
+
+        /// <summary>
+        /// Generates code to perform a <see cref="T:System.Data.Entity.Migrations.Model.DropTableOperation" />.
+        /// </summary>
+        /// <param name="dropTableOperation">The operation to generate code for.</param>
+        /// <param name="writer">Text writer to add the generated code to.</param>
+        protected override void Generate( System.Data.Entity.Migrations.Model.DropTableOperation dropTableOperation, System.Data.Entity.Migrations.Utilities.IndentedTextWriter writer )
+        {
+            string tableName = dropTableOperation.Name.Replace( "dbo.", string.Empty );
+
+            if ( contextTables.ContainsKey( tableName ) )
+            {
+                base.Generate( dropTableOperation, writer );
+            }
+            else
+            {
+                // not found if Migration is trying to gen code for a table in another DbContext of a Multiple Context project
+                // probably not found if this is the Down() migration
+                writer.WriteLine( string.Format( "// Skipping Drop Table for TableName {0}.  Not found in context. ", tableName ) );
+            }
         }
 
         /// <summary>
@@ -160,25 +222,11 @@ namespace Rock.Migrations
 ";
             result += base.Generate( operations, @namespace, className );
 
-            result = result.Replace( ": DbMigration", ": RockMigration" );
+            result = result.Replace( ": DbMigration", ": Rock.Migrations.RockMigration" );
 
-            result = result.Replace( "public partial class",
-  @"/// <summary>
-    /// 
-    /// </summary>
-    public partial class" );
-
-            result = result.Replace( "public override void Up()",
-      @"/// <summary>
-        /// Operations to be performed during the upgrade process.
-        /// </summary>
-        public override void Up()" );
-
-            result = result.Replace( "public override void Down()",
-      @"/// <summary>
-        /// Operations to be performed during the downgrade process.
-        /// </summary>
-        public override void Down()" );
+            result = result.Replace( "public partial class", "/// <summary>\r\n    ///\r\n    /// </summary>\r\n    public partial class" );
+            result = result.Replace( "public override void Up()", "/// <summary>\r\n        /// Operations to be performed during the upgrade process.\r\n        /// </summary>\r\n        public override void Up()" );
+            result = result.Replace( "public override void Down()", "/// <summary>\r\n        /// Operations to be performed during the downgrade process.\r\n        /// </summary>\r\n        public override void Down()" );
 
             return result;
         }
