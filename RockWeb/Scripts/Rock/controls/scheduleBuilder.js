@@ -74,9 +74,9 @@
 
             // add new date to list when ok is clicked
             $modal.find('.add-specific-date-ok').click(function () {
-
                 // get date list from hidden field
                 var dateListValues = $modal.find('.recurrence-pattern-type > input:hidden').val().split(',');
+
                 if (!dateListValues[0]) {
                     // if dateList is blank, initialize as a new empty array
                     dateListValues = [];
@@ -85,7 +85,7 @@
                 // validate
 
                 // set colors back to default just in case previously marked invalid
-                var $datepicker = $modal.find('.specific-date');
+                var $datepicker = $modal.find('[id$="dpSpecificDate"]');
                 $datepicker.css('color', '');
                 var checkDate = Date.parse($datepicker.val());
                 if (!checkDate) {
