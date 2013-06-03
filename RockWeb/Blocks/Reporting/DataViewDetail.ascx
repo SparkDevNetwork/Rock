@@ -18,7 +18,7 @@
                         <div class="span6">
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Name" CssClass="" />
                             <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
-                            <Rock:LabeledDropDownList ID="ddlTransform" runat="server" LabelText="Post-filter Transformation"  />
+                            <Rock:LabeledDropDownList ID="ddlTransform" runat="server" LabelText="Post-filter Transformation" />
                         </div>
                         <div class="span6">
                             <Rock:DataDropDownList ID="ddlEntityType" runat="server" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="EntityTypeId"

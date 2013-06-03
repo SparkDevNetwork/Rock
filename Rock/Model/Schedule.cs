@@ -19,7 +19,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "Schedule" )]
     [DataContract]
-    public partial class Schedule : Model<Schedule>
+    public partial class Schedule : Model<Schedule>, ICategorized
     {
         #region Entity Properties
 
@@ -92,7 +92,14 @@ namespace Rock.Model
                     }
                     else
                     {
-                        EffectiveEndDate = calendarEvent.End.Value;
+                        if ( calendarEvent.End != null )
+                        {
+                            EffectiveEndDate = calendarEvent.End.Value;
+                        }
+                        else
+                        {
+                            EffectiveEndDate = null;
+                        }
                     }
                 }
                 else
