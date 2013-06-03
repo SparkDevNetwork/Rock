@@ -7,6 +7,8 @@
 using System;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -168,18 +170,21 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindFilter()
         {
-            if ( ddlCategoryFilter.SelectedItem == null )
-            {
-                ddlCategoryFilter.Items.Clear();
-                ddlCategoryFilter.Items.Add( Rock.Constants.All.Text );
+            ddlCategoryFilter.Items.Clear();
+            ddlCategoryFilter.Items.Add( Rock.Constants.All.Text );
 
-                new DefinedTypeService().Queryable()
-                    .Where( a => a.Category != string.Empty)
-                    .OrderBy( a => a.Category )
-                    .Select( a => a.Category )
-                    .Distinct()
-                    .ToList()
-                    .ForEach( c => ddlCategoryFilter.Items.Add(c));
+            var items = new DefinedTypeService().Queryable()
+                .Where( a => a.Category != string.Empty)
+                .OrderBy( a => a.Category )
+                .Select( a => a.Category )
+                .Distinct()
+                .ToList();
+
+            foreach ( var item in items )
+            {
+                ListItem li = new ListItem( item );
+                li.Selected = ( !Page.IsPostBack && tFilter.GetUserPreference( "Category" ) == item );
+                ddlCategoryFilter.Items.Add( li );
             }
         }
 

@@ -302,7 +302,7 @@ namespace Rock.CheckIn
 
                 var kioskGroup = new KioskGroup( groupLocation.Group );
 
-                foreach ( var schedule in groupLocation.Schedules.Where( s => s.CheckInStartTime.HasValue ) )
+                foreach ( var schedule in groupLocation.Schedules.Where( s => s.CheckInStartOffsetMinutes.HasValue ) )
                 {
                     var nextScheduleActiveTime = schedule.GetNextCheckInStartTime( DateTimeOffset.Now );
                     if ( nextScheduleActiveTime.HasValue && nextScheduleActiveTime.Value.CompareTo( nextGroupActiveTime.DateTime ) < 0 )

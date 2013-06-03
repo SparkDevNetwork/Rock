@@ -22,6 +22,22 @@ namespace Rock.PersonProfile.Badge
     public class Campus : TextBadge
     {
         /// <summary>
+        /// Gets the attribute value defaults.
+        /// </summary>
+        /// <value>
+        /// The attribute defaults.
+        /// </value>
+        public override System.Collections.Generic.Dictionary<string, string> AttributeValueDefaults
+        {
+            get
+            {
+                var defaults = base.AttributeValueDefaults;
+                defaults["Order"] = "1";
+                return defaults;
+            }
+        }
+
+        /// <summary>
         /// Gets the type of the badge.
         /// </summary>
         /// <param name="person">The person.</param>

@@ -19,7 +19,7 @@ namespace Rock.Web.UI.Controls
     /// A control to select a file and set any attributes
     /// </summary>
     [ToolboxData( "<{0}:FileUploader runat=server></{0}:FileUploader>" )]
-    public class FileUploader : CompositeControl, IPostBackEventHandler
+    public class FileUploader : CompositeControl, IPostBackEventHandler, ILabeledControl
     {
 
         #region UI Controls
