@@ -633,23 +633,14 @@ namespace RockWeb.Blocks.Crm
                         /* Take care of Group Attributes */
 
                         // delete GroupAttributes that are no longer configured in the UI
-                        var qualifierValue = groupType.Id.ToString();
-                        var groupAttributesQry = attributeService.GetByEntityTypeId( new Group().TypeId ).AsQueryable()
-                            .Where( a => a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase )
-                            && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
-
-                        var deletedGroupAttributes = from attr in groupAttributesQry
-                                                     where !( from d in GroupAttributesState
-                                                              select d.Guid ).Contains( attr.Guid )
-                                                     select attr;
-
-                        deletedGroupAttributes.ToList().ForEach( a =>
+                        var groupAttributesQry = attributeService.Get( new Group().TypeId, "GroupTypeId", groupType.Id.ToString() );
+                        selectedAttributes = GroupAttributesState.Select( a => a.Guid);
+                        foreach( var attr in groupAttributesQry.Where( a => !selectedAttributes.Contains( a.Guid)))
                         {
-                            var attr = attributeService.Get( a.Guid );
                             Rock.Web.Cache.AttributeCache.Flush( attr.Id );
                             attributeService.Delete( attr, CurrentPersonId );
                             attributeService.Save( attr, CurrentPersonId );
-                        } );
+                        }
 
                         // add/update the GroupAttributes that are assigned in the UI
                         foreach ( var attributeState in GroupAttributesState )
