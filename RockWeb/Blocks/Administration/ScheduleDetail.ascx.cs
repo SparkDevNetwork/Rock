@@ -8,12 +8,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Web.UI;
+
 using DDay.iCal;
+
 using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -35,9 +38,17 @@ namespace RockWeb.Blocks.Administration
             if ( !Page.IsPostBack )
             {
                 string itemId = PageParameter( "scheduleId" );
+                string parentCategoryId = PageParameter( "parentCategoryId" );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
-                    ShowDetail( "scheduleId", int.Parse( itemId ) );
+                    if ( string.IsNullOrWhiteSpace( parentCategoryId ) )
+                    {
+                        ShowDetail( "ScheduleId", int.Parse( itemId ) );
+                    }
+                    else
+                    {
+                        ShowDetail( "ScheduleId", int.Parse( itemId ), int.Parse( parentCategoryId ) );
+                    }
                 }
                 else
                 {
@@ -51,13 +62,15 @@ namespace RockWeb.Blocks.Administration
         #region Edit Events
 
         /// <summary>
-        /// Handles the Click event of the btnCancel control.
+        /// Handles the Click event of the btnEdit control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void btnCancel_Click( object sender, EventArgs e )
+        protected void btnEdit_Click( object sender, EventArgs e )
         {
-            NavigateToParentPage();
+            var service = new ScheduleService();
+            var item = service.Get( int.Parse( hfScheduleId.Value ) );
+            ShowEditDetails( item );
         }
 
         /// <summary>
@@ -126,8 +139,79 @@ namespace RockWeb.Blocks.Administration
                 scheduleService.Save( schedule, CurrentPersonId );
             } );
 
-            NavigateToParentPage();
+            var qryParams = new Dictionary<string, string>();
+            qryParams["ScheduleId"] = schedule.Id.ToString();
+            NavigateToPage( this.CurrentPage.Guid, qryParams );
         }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnCancel_Click( object sender, EventArgs e )
+        {
+            if ( hfScheduleId.Value.Equals( "0" ) )
+            {
+                // Cancelling on Add.  Return to tree view with parent category selected
+                var qryParams = new Dictionary<string, string>();
+
+                string parentCategoryId = PageParameter( "parentCategoryId" );
+                if ( !string.IsNullOrWhiteSpace( parentCategoryId ) )
+                {
+                    qryParams["CategoryId"] = parentCategoryId;
+                }
+                NavigateToPage( this.CurrentPage.Guid, qryParams );
+            }
+            else
+            {
+                // Cancelling on Edit.  Return to Details
+                var service = new ScheduleService();
+                var item = service.Get( int.Parse( hfScheduleId.Value ) );
+                ShowReadonlyDetails( item );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnDelete control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnDelete_Click( object sender, EventArgs e )
+        {
+            int? categoryId = null;
+
+            var service = new ScheduleService();
+            var item = service.Get( int.Parse( hfScheduleId.Value ) );
+
+            if ( item != null )
+            {
+                string errorMessage;
+                if ( !service.CanDelete( item, out errorMessage ) )
+                {
+                    ShowReadonlyDetails( item );
+                    mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                }
+                else
+                {
+                    categoryId = item.CategoryId;
+
+                    service.Delete( item, CurrentPersonId );
+                    service.Save( item, CurrentPersonId );
+
+                    // reload page, selecting the deleted data view's parent
+                    var qryParams = new Dictionary<string, string>();
+                    if ( categoryId != null )
+                    {
+                        qryParams["CategoryId"] = categoryId.ToString();
+                    }
+
+                    NavigateToPage( this.CurrentPage.Guid, qryParams );
+                }
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// Handles the SaveSchedule event of the sbSchedule control.
@@ -138,6 +222,8 @@ namespace RockWeb.Blocks.Administration
         {
             UpdateHelpText();
         }
+
+        #region Internal Methods
 
         /// <summary>
         /// Updates the help text.
@@ -180,38 +266,42 @@ namespace RockWeb.Blocks.Administration
         /// <param name="itemKeyValue">The item key value.</param>
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
-            // return if unexpected itemKey 
-            if ( itemKey != "scheduleId" )
+            ShowDetail( itemKey, itemKeyValue, null );
+        }
+
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
+        /// <param name="itemKey">The item key.</param>
+        /// <param name="itemKeyValue">The item key value.</param>
+        /// <param name="parentCategoryId">The parent category id.</param>
+        public void ShowDetail( string itemKey, int itemKeyValue, int? parentCategoryId )
+        {
+            pnlDetails.Visible = false;
+            if ( itemKey != "ScheduleId" )
+            {
+                return;
+            }
+
+            var scheduleService = new ScheduleService();
+            Schedule schedule = null;
+
+            if ( !itemKeyValue.Equals( 0 ) )
+            {
+                schedule = new ScheduleService().Get( itemKeyValue );
+            }
+            else
+            {
+                schedule = new Schedule { Id = 0, CategoryId = parentCategoryId };
+            }
+
+            if ( schedule == null )
             {
                 return;
             }
 
             pnlDetails.Visible = true;
-
-            // Load depending on Add(0) or Edit
-            Schedule schedule = null;
-            if ( !itemKeyValue.Equals( 0 ) )
-            {
-                schedule = new ScheduleService().Get( itemKeyValue );
-                lActionTitle.Text = ActionTitle.Edit( Schedule.FriendlyTypeName );
-            }
-            else
-            {
-                schedule = new Schedule { Id = 0 };
-                lActionTitle.Text = ActionTitle.Add( Schedule.FriendlyTypeName );
-            }
-
             hfScheduleId.Value = schedule.Id.ToString();
-            tbScheduleName.Text = schedule.Name;
-            tbScheduleDescription.Text = schedule.Description;
-
-            sbSchedule.iCalendarContent = schedule.iCalendarContent;
-            UpdateHelpText();
-
-            cpCategory.SetValue( schedule.CategoryId );
-
-            nbStartOffset.Text = schedule.CheckInStartOffsetMinutes.HasValue ? schedule.CheckInStartOffsetMinutes.ToString() : string.Empty;
-            nbEndOffset.Text = schedule.CheckInEndOffsetMinutes.HasValue ? schedule.CheckInEndOffsetMinutes.Value.ToString() : string.Empty;
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
@@ -225,12 +315,123 @@ namespace RockWeb.Blocks.Administration
 
             if ( readOnly )
             {
-                lActionTitle.Text = ActionTitle.View( Schedule.FriendlyTypeName );
-                btnCancel.Text = "Close";
+                btnEdit.Visible = false;
+                btnDelete.Visible = false;
+                ShowReadonlyDetails( schedule );
+            }
+            else
+            {
+                btnEdit.Visible = true;
+                string errorMessage = string.Empty;
+                btnDelete.Visible = scheduleService.CanDelete( schedule, out errorMessage );
+                if ( schedule.Id > 0 )
+                {
+                    ShowReadonlyDetails( schedule );
+                }
+                else
+                {
+                    ShowEditDetails( schedule );
+                }
             }
 
-            tbScheduleName.ReadOnly = readOnly;
-            btnSave.Visible = !readOnly;
+        }
+
+        /// <summary>
+        /// Shows the edit details.
+        /// </summary>
+        /// <param name="schedule">The schedule.</param>
+        public void ShowEditDetails ( Schedule schedule )
+        {
+            if ( schedule.Id > 0 )
+            {
+                lActionTitle.Text = ActionTitle.Edit( Schedule.FriendlyTypeName );
+            }
+            else
+            {
+                lActionTitle.Text = ActionTitle.Add( Schedule.FriendlyTypeName );
+            }
+
+            SetEditMode( true );
+
+            tbScheduleName.Text = schedule.Name;
+            tbScheduleDescription.Text = schedule.Description;
+
+            sbSchedule.iCalendarContent = schedule.iCalendarContent;
+            UpdateHelpText();
+
+            cpCategory.SetValue( schedule.CategoryId );
+
+            nbStartOffset.Text = schedule.CheckInStartOffsetMinutes.HasValue ? schedule.CheckInStartOffsetMinutes.ToString() : string.Empty;
+            nbEndOffset.Text = schedule.CheckInEndOffsetMinutes.HasValue ? schedule.CheckInEndOffsetMinutes.Value.ToString() : string.Empty;
+        }
+
+        /// <summary>
+        /// Shows the readonly details.
+        /// </summary>
+        /// <param name="schedule">The schedule.</param>
+        private void ShowReadonlyDetails( Schedule schedule )
+        {
+            SetEditMode( false );
+            hfScheduleId.SetValue( schedule.Id );
+            lReadOnlyTitle.Text = schedule.Name;
+
+            string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
+            lblMainDetails.Text = @"
+<div>
+    <dl>";
+
+            lblMainDetails.Text += string.Format( descriptionFormat, "Description", schedule.Description );
+
+            var calendarEvent = schedule.GetCalenderEvent();
+            if ( calendarEvent != null )
+            {
+                var occurrences = calendarEvent.GetOccurrences( DateTime.Now.Date, DateTime.Now.Date.AddYears( 1 ) );
+                if (occurrences.Any())
+                {
+                    var occurrence = occurrences[0];
+
+                    string occurrenceText = string.Empty;
+                    if ( occurrence.Period.StartTime.Value.Date.Equals( occurrence.Period.EndTime.Value.Date ) )
+                    {
+                        occurrenceText += string.Format( "{0} - {1} to {2} ( {3} hours)", occurrence.Period.StartTime.Value.Date.ToShortDateString(), occurrence.Period.StartTime.Value.TimeOfDay.ToTimeString(), occurrence.Period.EndTime.Value.TimeOfDay.ToTimeString(), occurrence.Period.Duration.TotalHours.ToString( "#0.00" ) );
+                    }
+                    else
+                    {
+                        occurrenceText += string.Format( "<li>{0} to {1} ( {2} hours) </li>", occurrence.Period.StartTime.Value.ToString( "g" ), occurrence.Period.EndTime.Value.ToString( "g" ), occurrence.Period.Duration.TotalHours.ToString( "#0.00" ) );
+                    }
+                    lblMainDetails.Text += string.Format( descriptionFormat, "Next Occurrence", occurrenceText );
+                }
+
+            }
+
+            if ( schedule.Category != null )
+            {
+                lblMainDetails.Text += string.Format( descriptionFormat, "Category", schedule.Category.Name );
+            }
+
+            if ( schedule.CheckInStartOffsetMinutes.HasValue )
+            {
+                lblMainDetails.Text += string.Format( descriptionFormat, "Checkin Starts", schedule.CheckInStartOffsetMinutes.Value.ToString() + " minutes before start of schedule" );
+            }
+
+            if ( schedule.CheckInEndOffsetMinutes.HasValue )
+            {
+                lblMainDetails.Text += string.Format( descriptionFormat, "Checkin Ends", schedule.CheckInEndOffsetMinutes.Value.ToString() + " minutes after start of schedule" );
+            }
+
+            lblMainDetails.Text += @"
+    </dl>
+</div>";
+
+        }
+        /// <summary>
+        /// Sets the edit mode.
+        /// </summary>
+        /// <param name="editable">if set to <c>true</c> [editable].</param>
+        private void SetEditMode( bool editable )
+        {
+            pnlEditDetails.Visible = editable;
+            pnlViewDetails.Visible = !editable;
         }
 
         #endregion
