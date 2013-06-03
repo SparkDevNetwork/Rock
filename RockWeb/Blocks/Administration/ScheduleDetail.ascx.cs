@@ -84,9 +84,29 @@ namespace RockWeb.Blocks.Administration
 
             schedule.Name = tbScheduleName.Text;
             schedule.Description = tbScheduleDescription.Text;
-            schedule.CheckInStartTime = tpCheckInStartTime.SelectedTime;
-            schedule.CheckInEndTime = tpCheckInEndTime.SelectedTime;
             schedule.iCalendarContent = sbSchedule.iCalendarContent;
+
+            schedule.CategoryId = cpCategory.SelectedValueAsInt();
+
+            int offsetMins = int.MinValue;
+            if ( int.TryParse( nbStartOffset.Text, out offsetMins ) )
+            {
+                schedule.CheckInStartOffsetMinutes = offsetMins;
+            }
+            else
+            {
+                schedule.CheckInStartOffsetMinutes = null;
+            }
+
+            offsetMins = int.MinValue;
+            if ( int.TryParse( nbEndOffset.Text, out offsetMins ) )
+            {
+                schedule.CheckInEndOffsetMinutes = offsetMins;
+            }
+            else
+            {
+                schedule.CheckInEndOffsetMinutes = null;
+            }
 
             // check for duplicates
             if ( scheduleService.Queryable().Count( a => a.Name.Equals( schedule.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( schedule.Id ) ) > 0 )
@@ -184,12 +204,14 @@ namespace RockWeb.Blocks.Administration
             hfScheduleId.Value = schedule.Id.ToString();
             tbScheduleName.Text = schedule.Name;
             tbScheduleDescription.Text = schedule.Description;
-            cbIsShared.Checked = schedule.IsShared;
 
-            tpCheckInStartTime.SelectedTime = schedule.CheckInStartTime;
-            tpCheckInEndTime.SelectedTime = schedule.CheckInEndTime;
             sbSchedule.iCalendarContent = schedule.iCalendarContent;
             UpdateHelpText();
+
+            cpCategory.SetValue( schedule.CategoryId );
+
+            nbStartOffset.Text = schedule.CheckInStartOffsetMinutes.HasValue ? schedule.CheckInStartOffsetMinutes.ToString() : string.Empty;
+            nbEndOffset.Text = schedule.CheckInEndOffsetMinutes.HasValue ? schedule.CheckInEndOffsetMinutes.Value.ToString() : string.Empty;
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
