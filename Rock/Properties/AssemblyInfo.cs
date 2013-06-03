@@ -39,4 +39,6 @@ using System.Runtime.InteropServices;
 //[assembly: AssemblyVersion( "0.0.0.*" )]    // I've read some things that make me think we should not do this... comments?
 [assembly: AssemblyVersion( "0.0.0.0" )]
 [assembly: AssemblyFileVersion( "0.0.0.1" )]
-[assembly: AssemblyInformationalVersion( "0.0.0" )]
+
+// required for EntityFramework RockMigrationGenerator's override of CSharpMigrationCodeGenerator (EF6beta1.  (Specifically in CSharpMigrationCodeGenerator.WriteClassStart)
+[assembly: AssemblyInformationalVersion( "Rock 0.0" )]
