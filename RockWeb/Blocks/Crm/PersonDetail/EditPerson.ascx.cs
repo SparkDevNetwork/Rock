@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
@@ -24,37 +25,130 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     /// </summary>
     public partial class EditPerson : Rock.Web.UI.PersonBlock
     {
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
 
             rblMaritalStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ) ) );
             rblStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_STATUS ) ) );
+            ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
+            ddlReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
 
             if ( !Page.IsPostBack && Person != null )
             {
-                SetValues();
+                ShowDetails();
             }
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlRecordStatus control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void ddlRecordStatus_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            ddlReason.Visible = ( ddlRecordStatus.SelectedValueAsInt() == DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ) ).Id );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            SaveValues();
-            Response.Redirect( string.Format( "~/Person/{0}" + Person.Id ), false );
+            var service = new PersonService();
+            var person = service.Get( Person.Id );
+
+            person.PhotoId = imgPhoto.ImageId;
+            person.GivenName = tbGivenName.Text;
+            person.NickName = tbNickName.Text;
+            person.MiddleName = tbMiddleName.Text;
+            person.LastName = tbLastName.Text;
+            person.BirthDate = dpBirthDate.SelectedDate;
+            person.AnniversaryDate = dpAnniversaryDate.SelectedDate;
+            person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
+            person.MaritalStatusValueId = rblMaritalStatus.SelectedValueAsInt();
+            person.PersonStatusValueId = rblStatus.SelectedValueAsInt();
+
+            var phoneNumberTypeIds = new List<int>();
+
+            foreach ( RepeaterItem item in rContactInfo.Items )
+            {
+                HiddenField hfPhoneType = item.FindControl( "hfPhoneType" ) as HiddenField;
+                TextBox tbPhone = item.FindControl( "tbPhone" ) as TextBox;
+                CheckBox cbUnlisted = item.FindControl( "cbUnlisted" ) as CheckBox;
+
+                if ( hfPhoneType != null &&
+                    tbPhone != null &&
+                    cbUnlisted != null )
+                {
+                    if ( !string.IsNullOrWhiteSpace( tbPhone.Text ) )
+                    {
+                        int phoneNumberTypeId = int.MinValue;
+                        if ( int.TryParse( hfPhoneType.Value, out phoneNumberTypeId ) )
+                        {
+                            var phoneNumber = person.PhoneNumbers.Where( n => n.NumberTypeValueId == phoneNumberTypeId ).FirstOrDefault();
+                            if ( phoneNumber == null )
+                            {
+                                phoneNumber = new PhoneNumber { NumberTypeValueId = phoneNumberTypeId };
+                                person.PhoneNumbers.Add( phoneNumber );
+                            }
+
+                            phoneNumber.Number = PhoneNumber.CleanNumber( tbPhone.Text );
+                            phoneNumber.IsUnlisted = cbUnlisted.Checked;
+
+                            phoneNumberTypeIds.Add( phoneNumberTypeId );
+                        }
+                    }
+                }
+            }
+
+            // Remove any blank numbers
+            person.PhoneNumbers
+                .Where( n => !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) )
+                .ToList()
+                .ForEach( n => person.PhoneNumbers.Remove( n ) );
+
+            person.Email = tbEmail.Text;
+            
+            person.RecordStatusValueId = ddlRecordStatus.SelectedValueAsInt();
+            person.RecordStatusReasonValueId = ddlReason.SelectedValueAsInt();
+
+            service.Save( person, CurrentPersonId );
+
+            Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            Response.Redirect( string.Format( "~/Person/{0}" + Person.Id ), false );
+            Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
         }
 
-        private void SetValues()
+        /// <summary>
+        /// Shows the details.
+        /// </summary>
+        private void ShowDetails()
         {
+            imgPhoto.ImageId = Person.PhotoId;
             tbGivenName.Text = Person.GivenName;
             tbNickName.Text = Person.NickName;
             tbMiddleName.Text = Person.MiddleName;
@@ -62,28 +156,36 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             dpBirthDate.SelectedDate = Person.BirthDate;
             dpAnniversaryDate.SelectedDate = Person.AnniversaryDate;
             rblGender.SelectedValue = Person.Gender.ConvertToString();
-            rblMaritalStatus.SelectedValue = Person.MaritalStatusValueId.ToString();
-            rblStatus.SelectedValue = Person.PersonStatusValueId.ToString();
+            rblMaritalStatus.SelectedValue = Person.MaritalStatusValueId.HasValue ? Person.MaritalStatusValueId.Value.ToString() : string.Empty;
+            rblStatus.SelectedValue = Person.PersonStatusValueId.HasValue ? Person.PersonStatusValueId.Value.ToString() : string.Empty;
             tbEmail.Text = Person.Email;
+            ddlRecordStatus.SelectedValue = Person.RecordStatusValueId.HasValue ? Person.RecordStatusValueId.Value.ToString() : string.Empty;
+            ddlReason.SelectedValue = Person.RecordStatusReasonValueId.HasValue ? Person.RecordStatusReasonValueId.Value.ToString() : string.Empty;
+
+            var phoneNumbers = new List<PhoneNumber>();
+            var phoneNumberTypes = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
+            if (phoneNumberTypes.DefinedValues.Any())
+            {
+                foreach(var phoneNumberType in phoneNumberTypes.DefinedValues)
+                {
+                    var phoneNumber = Person.PhoneNumbers.Where( n => n.NumberTypeValueId == phoneNumberType.Id).FirstOrDefault();
+                    if (phoneNumber == null)
+                    {
+                        var numberType = new DefinedValue();
+                        numberType.Id = phoneNumberType.Id;
+                        numberType.Name = phoneNumberType.Name;
+
+                        phoneNumber = new PhoneNumber { NumberTypeValueId = numberType.Id, NumberTypeValue = numberType };
+                    }
+
+                    phoneNumbers.Add( phoneNumber );
+                }
+
+                rContactInfo.DataSource = phoneNumbers;
+                rContactInfo.DataBind();
+            }
+
         }
 
-        private void SaveValues()
-        {
-            var service = new PersonService();
-            var person = service.Get( Person.Id );
-
-            person.GivenName = tbGivenName.Text;
-            person.NickName = tbNickName.Text;
-            person.MiddleName = tbMiddleName.Text;
-            person.LastName = tbLastName.Text;
-            person.BirthDate = dpBirthDate.SelectedDate;
-            person.AnniversaryDate = dpAnniversaryDate.SelectedDate;
-            person.Gender = rblMaritalStatus.SelectedValue.ConvertToEnum<Gender>();
-            person.MaritalStatusValueId = int.Parse( rblMaritalStatus.SelectedValue );
-            person.PersonStatusValueId = int.Parse( rblStatus.SelectedValue );
-            person.Email = tbEmail.Text;
-
-            service.Save( person, CurrentPersonId );
-        }
     }
 }

@@ -75,5 +75,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 blStatus.ComponentGuids = GetAttributeValue( "Badges" );
             }
         }
+
+        protected void lbEditPerson_Click( object sender, EventArgs e )
+        {
+            if ( Person != null )
+            {
+                Response.Redirect( string.Format( "~/Person/{0}/Edit", Person.Id ) );
+            }
+        }
+
     }
 }

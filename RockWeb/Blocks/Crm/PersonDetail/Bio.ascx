@@ -1,7 +1,7 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Bio.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.Bio" %>
 
 <div class="actions" style="display: none;">
-    <a href="#" class="edit btn btn-mini"><i class="icon-pencil"></i> Edit Individual</a>
+    <asp:LinkButton ID="lbEditPerson" runat="server" CssClass="edit btn btn-mini" OnClick="lbEditPerson_Click"><i class="icon-pencil"></i> Edit Individual</asp:LinkButton>
 </div>
 <div class="row-fluid">
 	<div class="span6">

@@ -17,7 +17,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class AccountPicker : ItemPicker
+    public class AccountPicker : ItemPicker, ILabeledControl
     {
         private Label label;
 
