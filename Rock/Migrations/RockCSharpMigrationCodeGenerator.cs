@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Data.Entity.Migrations.Design;
 using System.Linq;
 using System.Reflection;
@@ -16,7 +17,8 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public class RockCSharpMigrationCodeGenerator : CSharpMigrationCodeGenerator
+    /// <typeparam name="T">Target DbContext to be migrated</typeparam>
+    public class RockCSharpMigrationCodeGenerator<T> : CSharpMigrationCodeGenerator where T:DbContext
     {
         #region internal custom methods
 
@@ -28,7 +30,7 @@ namespace Rock.Migrations
         /// <summary>
         /// 
         /// </summary>
-        private Dictionary<string, Type> contextTables = new Dictionary<string, Type>();
+        private Dictionary<string, Type> contextAssemblyTables = new Dictionary<string, Type>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RockCSharpMigrationCodeGenerator"/> class.
@@ -36,15 +38,14 @@ namespace Rock.Migrations
         public RockCSharpMigrationCodeGenerator()
             : base()
         {
-            Assembly executingAssembly = Assembly.GetExecutingAssembly();
-            contextAssembly = executingAssembly;
+            contextAssembly = typeof( T ).Assembly; 
 
             foreach ( var e in contextAssembly.GetTypes().Where( a => a.CustomAttributes.Any( x => x.AttributeType.Name.Equals( "TableAttribute" ) ) ).ToList() )
             {
                 var attrib = e.CustomAttributes.FirstOrDefault( a => a.AttributeType.Name.Equals( "TableAttribute" ) );
                 if ( attrib != null )
                 {
-                    contextTables.Add( attrib.ConstructorArguments[0].Value.ToString(), e );
+                    contextAssemblyTables.Add( attrib.ConstructorArguments[0].Value.ToString(), e );
                 }
             }
         }
@@ -70,9 +71,9 @@ namespace Rock.Migrations
         {
             string tableName = fullTableName.Replace( "dbo.", string.Empty );
 
-            if ( contextTables.ContainsKey( tableName ) )
+            if ( contextAssemblyTables.ContainsKey( tableName ) )
             {
-                Type tableType = contextTables[tableName];
+                Type tableType = contextAssemblyTables[tableName];
 
                 MemberInfo mi = tableType.GetMember( columnName ).FirstOrDefault();
 
@@ -110,7 +111,7 @@ namespace Rock.Migrations
         {
             string tableName = createTableOperation.Name.Replace( "dbo.", string.Empty );
 
-            if ( contextTables.ContainsKey( tableName ) )
+            if ( contextAssemblyTables.ContainsKey( tableName ) )
             {
                 base.Generate( createTableOperation, writer );
 
@@ -147,7 +148,7 @@ namespace Rock.Migrations
         {
             string tableName = dropForeignKeyOperation.PrincipalTable.Replace( "dbo.", string.Empty );
 
-            if ( contextTables.ContainsKey( tableName ) )
+            if ( contextAssemblyTables.ContainsKey( tableName ) )
             {
                 base.Generate( dropForeignKeyOperation, writer );
             }
@@ -168,7 +169,7 @@ namespace Rock.Migrations
         {
             string tableName = dropIndexOperation.Table.Replace( "dbo.", string.Empty );
 
-            if ( contextTables.ContainsKey( tableName ) )
+            if ( contextAssemblyTables.ContainsKey( tableName ) )
             {
                 base.Generate( dropIndexOperation, writer );
             }
@@ -189,7 +190,7 @@ namespace Rock.Migrations
         {
             string tableName = dropTableOperation.Name.Replace( "dbo.", string.Empty );
 
-            if ( contextTables.ContainsKey( tableName ) )
+            if ( contextAssemblyTables.ContainsKey( tableName ) )
             {
                 base.Generate( dropTableOperation, writer );
             }
