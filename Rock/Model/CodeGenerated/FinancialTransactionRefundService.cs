@@ -72,7 +72,6 @@ namespace Rock.Model
             else
             {
                 var target = new FinancialTransactionRefund();
-                target.RefundTransactionId = source.RefundTransactionId;
                 target.RefundReasonValueId = source.RefundReasonValueId;
                 target.RefundReasonSummary = source.RefundReasonSummary;
                 target.Id = source.Id;
