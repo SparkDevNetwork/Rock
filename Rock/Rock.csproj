@@ -219,6 +219,14 @@
     <Compile Include="Migrations\201305312138270_RockControlGallery.Designer.cs">
       <DependentUpon>201305312138270_RockControlGallery.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201306031409550_ScheduleCategory.cs" />
+    <Compile Include="Migrations\201306031409550_ScheduleCategory.Designer.cs">
+      <DependentUpon>201306031409550_ScheduleCategory.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201306032051381_AdditionalCheckinDataRedux.cs" />
+    <Compile Include="Migrations\201306032051381_AdditionalCheckinDataRedux.Designer.cs">
+      <DependentUpon>201306032051381_AdditionalCheckinDataRedux.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
@@ -1690,6 +1698,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201305312138270_RockControlGallery.resx">
       <DependentUpon>201305312138270_RockControlGallery.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306031409550_ScheduleCategory.resx">
+      <DependentUpon>201306031409550_ScheduleCategory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306032051381_AdditionalCheckinDataRedux.resx">
+      <DependentUpon>201306032051381_AdditionalCheckinDataRedux.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201305132040219_UpdateGivingBlocks.resx">
       <DependentUpon>201305132040219_UpdateGivingBlocks.cs</DependentUpon>
