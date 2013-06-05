@@ -283,7 +283,7 @@
     <Compile Include="Migrations\201305032019044_DateTimeDataTypesSweep.Designer.cs">
       <DependentUpon>201305032019044_DateTimeDataTypesSweep.cs</DependentUpon>
     </Compile>
-	<Compile Include="Migrations\201305132040219_UpdateGivingBlocks.cs" />
+    <Compile Include="Migrations\201305132040219_UpdateGivingBlocks.cs" />
     <Compile Include="Migrations\201305132040219_UpdateGivingBlocks.Designer.cs">
       <DependentUpon>201305132040219_UpdateGivingBlocks.cs</DependentUpon>
     </Compile>
