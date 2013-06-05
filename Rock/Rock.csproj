@@ -235,6 +235,10 @@
     <Compile Include="Migrations\201306052232509_FinancialTransactionRefund02.Designer.cs">
       <DependentUpon>201306052232509_FinancialTransactionRefund02.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201306052252368_FinancialTransactionRefund03.cs" />
+    <Compile Include="Migrations\201306052252368_FinancialTransactionRefund03.Designer.cs">
+      <DependentUpon>201306052252368_FinancialTransactionRefund03.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
@@ -1714,6 +1718,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201306052232509_FinancialTransactionRefund02.resx">
       <DependentUpon>201306052232509_FinancialTransactionRefund02.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306052252368_FinancialTransactionRefund03.resx">
+      <DependentUpon>201306052252368_FinancialTransactionRefund03.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
