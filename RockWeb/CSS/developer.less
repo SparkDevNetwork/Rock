@@ -326,15 +326,27 @@ div.aspNetDisabled {
 }
 
 /* DS - CSS for finance styling */
-.align-right 
-{
-	margin-top: 5px;
-    margin-left: 25%;       
-}
-
 .address-line
 {
-    display: inline-block;
+    min-width: 75%;    
+}
+
+@media screen and (min-width: 498px) {
+    .align-middle 
+    {
+        margin-left: 180px;
+    }
+
+    .input-inherit 
+    {
+        width: 95%;
+        max-width: inherit;
+    }
+}
+
+.card-logos 
+{
+    margin: 0;
 }
 
 .check-image 
@@ -342,9 +354,19 @@ div.aspNetDisabled {
 	margin-top: 10px;	
 }
 
-.form-horizontal .controls > select
+.form-horizontal .controls .label-padding 
 {
-    margin-left: -190px;
+    margin-top: 0px;
+}
+
+.label-padding
+{
+    margin-top: 20px;
+}
+
+.text-padding
+{
+    margin-top: 5px;
 }
 
 /*CSF - right align the "Clear Exceptions" link on the Exceptions List Page*/
