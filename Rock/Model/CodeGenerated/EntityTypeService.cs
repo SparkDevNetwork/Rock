@@ -79,9 +79,9 @@ namespace Rock.Model
                 return false;
             }  
             
-            // ignoring DataView,TransformEntityTypeId 
-            
             // ignoring DataView,EntityTypeId 
+            
+            // ignoring DataView,TransformEntityTypeId 
  
             if ( new Service<DataViewFilter>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
