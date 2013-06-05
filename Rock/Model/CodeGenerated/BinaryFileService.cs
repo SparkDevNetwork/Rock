@@ -49,13 +49,13 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             
-            // ignoring BinaryFileType,IconSmallFileId 
-            
             // ignoring BinaryFileType,IconLargeFileId 
             
-            // ignoring Category,IconSmallFileId 
+            // ignoring BinaryFileType,IconSmallFileId 
             
             // ignoring Category,IconLargeFileId 
+            
+            // ignoring Category,IconSmallFileId 
  
             if ( new Service<FinancialTransactionImage>().Queryable().Any( a => a.BinaryFileId == item.Id ) )
             {
@@ -63,9 +63,9 @@ namespace Rock.Model
                 return false;
             }  
             
-            // ignoring GroupType,IconSmallFileId 
-            
             // ignoring GroupType,IconLargeFileId 
+            
+            // ignoring GroupType,IconSmallFileId 
  
             if ( new Service<Page>().Queryable().Any( a => a.IconFileId == item.Id ) )
             {
