@@ -6,7 +6,7 @@
         <Rock:Grid ID="gSchedules" runat="server" AllowSorting="true" OnRowSelected="gSchedules_Edit">
             <Columns>
                 <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
-                <Rock:BoolField DataField="IsShared" HeaderText="Shared" SortExpression="IsShared" />
+                <asp:BoundField DataField="Category.Name" HeaderText="Category" SortExpression="Category.Name" />
                 <Rock:DeleteField OnClick="gSchedules_Delete" />
             </Columns>
         </Rock:Grid>

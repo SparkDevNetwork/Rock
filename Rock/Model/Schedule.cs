@@ -19,7 +19,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "Schedule" )]
     [DataContract]
-    public partial class Schedule : Model<Schedule>
+    public partial class Schedule : Model<Schedule>, ICategorized
     {
         #region Entity Properties
 
@@ -92,20 +92,20 @@ namespace Rock.Model
                     }
                     else
                     {
-                        EffectiveEndDate = calendarEvent.End.Value;
+                        if ( calendarEvent.End != null )
+                        {
+                            EffectiveEndDate = calendarEvent.End.Value;
+                        }
+                        else
+                        {
+                            EffectiveEndDate = null;
+                        }
                     }
-
-
-                    StartTime = calendarEvent.DTStart.TimeOfDay;
-                    EndTime = calendarEvent.DTEnd.TimeOfDay;
-
                 }
                 else
                 {
                     EffectiveStartDate = null;
                     EffectiveEndDate = null;
-                    StartTime = new TimeSpan( 0 );
-                    EndTime = new TimeSpan( 0 );
                 }
             }
 
@@ -113,40 +113,22 @@ namespace Rock.Model
         private string _iCalendarContent;
 
         /// <summary>
-        /// Gets or sets the start time.
+        /// Gets or sets the number of minutes prior to schedule start that check-in should be active
         /// </summary>
         /// <value>
-        /// The start time.
+        /// The check in start offset
         /// </value>
         [DataMember]
-        public TimeSpan StartTime { get; private set; }
+        public int? CheckInStartOffsetMinutes { get; set; }
 
         /// <summary>
-        /// Gets or sets the end time.
+        /// Gets or sets the number of minutes following schedule start that check-in should be active
         /// </summary>
         /// <value>
-        /// The end time.
+        /// The check in end offset
         /// </value>
         [DataMember]
-        public TimeSpan EndTime { get; private set; }
-
-        /// <summary>
-        /// Gets or sets the check in start time.
-        /// </summary>
-        /// <value>
-        /// The check in start time.
-        /// </value>
-        [DataMember]
-        public TimeSpan? CheckInStartTime { get; set; }
-
-        /// <summary>
-        /// Gets or sets the check in end time.
-        /// </summary>
-        /// <value>
-        /// The check in end time.
-        /// </value>
-        [DataMember]
-        public TimeSpan? CheckInEndTime { get; set; }
+        public int? CheckInEndOffsetMinutes { get; set; }
 
         /// <summary>
         /// Gets or sets the effective start date.
@@ -169,43 +151,17 @@ namespace Rock.Model
         public DateTime? EffectiveEndDate { get; private set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is a shared schedule
+        /// Gets or sets the category id.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if this instance is shared; otherwise, <c>false</c>.
+        /// The category id.
         /// </value>
         [DataMember]
-        public bool IsShared { get; set; }
+        public int? CategoryId { get; set; }
 
         #endregion
 
         #region Virtual Properties
-
-        /// <summary>
-        /// Gets the iCalender Event.
-        /// </summary>
-        /// <value>
-        /// The iCalender Event.
-        /// </value>
-        public virtual DDay.iCal.Event GetCalenderEvent()
-        {
-            //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
-            //// We just need one Calendar and one Event
-
-            StringReader stringReader = new StringReader( iCalendarContent.Trim() );
-            var calendarList = DDay.iCal.iCalendar.LoadFromStream( stringReader );
-            DDay.iCal.Event calendarEvent = null;
-            if ( calendarList.Count > 0 )
-            {
-                var calendar = calendarList[0] as DDay.iCal.iCalendar;
-                if ( calendar != null )
-                {
-                    calendarEvent = calendar.Events[0] as DDay.iCal.Event;
-                }
-            }
-
-            return calendarEvent;
-        }
 
         /// <summary>
         /// Gets a value indicating whether this instance is check in enabled.
@@ -217,16 +173,7 @@ namespace Rock.Model
         {
             get
             {
-                // If there is not a checkin start and end time, or the check-in start happens
-                // to be greater than the check-in end time, return null
-                if ( CheckInStartTime.HasValue &&
-                    CheckInEndTime.HasValue &&
-                    CheckInStartTime.Value.CompareTo( CheckInEndTime.Value ) < 0 )
-                {
-                    return true;
-                }
-
-                return false;
+                return CheckInStartOffsetMinutes.HasValue;
             }
         }
 
@@ -255,16 +202,24 @@ namespace Rock.Model
                     return false;
                 }
 
-                if ( CheckInStartTime.Value.TotalSeconds > DateTimeOffset.Now.TimeOfDay.TotalSeconds ||
-                    CheckInEndTime.Value.TotalSeconds <= DateTimeOffset.Now.TimeOfDay.TotalSeconds )
-                {
-                    return false;
-                }
+                var calEvent = this.GetCalenderEvent();
 
-                DDay.iCal.Event calEvent = GetCalenderEvent();
-
-                if ( calEvent != null )
+                if (calEvent != null && calEvent.DTStart != null)
                 {
+                    var checkInStart = calEvent.DTStart.AddMinutes(0 - CheckInStartOffsetMinutes.Value);
+
+                    var checkInEnd = calEvent.DTEnd;
+                    if (CheckInEndOffsetMinutes.HasValue)
+                    {
+                        checkInEnd = calEvent.DTStart.AddMinutes(CheckInEndOffsetMinutes.Value);
+                    }
+
+                    if (DateTimeOffset.Now.TimeOfDay.TotalSeconds < checkInStart.TimeOfDay.TotalSeconds ||
+                        DateTimeOffset.Now.TimeOfDay.TotalSeconds > checkInStart.TimeOfDay.TotalSeconds)
+                    {
+                        return false;
+                    }
+
                     var occurrences = calEvent.GetOccurrences( DateTime.Now.Date );
                     return occurrences.Count > 0;
                 }
@@ -273,9 +228,44 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets or sets the category.
+        /// </summary>
+        /// <value>
+        /// The category.
+        /// </value>
+        [DataMember]
+        public virtual Category Category { get; set; }
+
         #endregion
 
         #region Public Methods
+
+        /// <summary>
+        /// Gets the iCalender Event.
+        /// </summary>
+        /// <value>
+        /// The iCalender Event.
+        /// </value>
+        public virtual DDay.iCal.Event GetCalenderEvent()
+        {
+            //// iCal is stored as a list of Calendar's each with a list of Events, etc.  
+            //// We just need one Calendar and one Event
+
+            StringReader stringReader = new StringReader( iCalendarContent.Trim() );
+            var calendarList = DDay.iCal.iCalendar.LoadFromStream( stringReader );
+            DDay.iCal.Event calendarEvent = null;
+            if ( calendarList.Count > 0 )
+            {
+                var calendar = calendarList[0] as DDay.iCal.iCalendar;
+                if ( calendar != null )
+                {
+                    calendarEvent = calendar.Events[0] as DDay.iCal.Event;
+                }
+            }
+
+            return calendarEvent;
+        }
 
         /// <summary>
         /// Gets the next check in start time.
@@ -307,7 +297,7 @@ namespace Rock.Model
                 if ( occurrences.Count > 0 )
                 {
                     var nextOccurance = occurrences[0];
-                    nextStartTime = nextOccurance.Period.StartTime.Date.Add( CheckInStartTime.Value );
+                    nextStartTime = nextOccurance.Period.StartTime.Date.AddMinutes( 0 - CheckInStartOffsetMinutes.Value );
                 }
             }
 
@@ -352,6 +342,7 @@ namespace Rock.Model
         /// </summary>
         public ScheduleConfiguration()
         {
+            this.HasOptional( s => s.Category ).WithMany().HasForeignKey( s => s.CategoryId ).WillCascadeOnDelete( false );
         }
     }
 

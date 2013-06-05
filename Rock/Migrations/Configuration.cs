@@ -19,7 +19,7 @@ namespace Rock.Migrations
         public Configuration()
         {
             AutomaticMigrationsEnabled = false;
-            CodeGenerator = new RockCSharpMigrationCodeGenerator();
+            CodeGenerator = new RockCSharpMigrationCodeGenerator<Rock.Data.RockContext>();
             CommandTimeout = 300;
         }
 
