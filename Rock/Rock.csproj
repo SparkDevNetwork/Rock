@@ -227,6 +227,10 @@
     <Compile Include="Migrations\201306032051381_AdditionalCheckinDataRedux.Designer.cs">
       <DependentUpon>201306032051381_AdditionalCheckinDataRedux.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201306051809266_FinancialTransactionRefund.cs" />
+    <Compile Include="Migrations\201306051809266_FinancialTransactionRefund.Designer.cs">
+      <DependentUpon>201306051809266_FinancialTransactionRefund.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
@@ -1700,6 +1704,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201306032051381_AdditionalCheckinDataRedux.resx">
       <DependentUpon>201306032051381_AdditionalCheckinDataRedux.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306051809266_FinancialTransactionRefund.resx">
+      <DependentUpon>201306051809266_FinancialTransactionRefund.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

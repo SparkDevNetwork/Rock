@@ -75,18 +75,6 @@ namespace Rock.Model
                 target.RefundTransactionId = source.RefundTransactionId;
                 target.RefundReasonValueId = source.RefundReasonValueId;
                 target.RefundReasonSummary = source.RefundReasonSummary;
-                target.AuthorizedPersonId = source.AuthorizedPersonId;
-                target.BatchId = source.BatchId;
-                target.GatewayId = source.GatewayId;
-                target.TransactionDateTime = source.TransactionDateTime;
-                target.Amount = source.Amount;
-                target.TransactionCode = source.TransactionCode;
-                target.Summary = source.Summary;
-                target.TransactionTypeValueId = source.TransactionTypeValueId;
-                target.CurrencyTypeValueId = source.CurrencyTypeValueId;
-                target.CreditCardTypeValueId = source.CreditCardTypeValueId;
-                target.SourceTypeValueId = source.SourceTypeValueId;
-                target.CheckMicrEncrypted = source.CheckMicrEncrypted;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 
