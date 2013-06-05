@@ -859,6 +859,8 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\LabeledBulletedList.cs" />
+    <Compile Include="Web\UI\Controls\NewFamilyMembers.cs" />
+    <Compile Include="Web\UI\Controls\NewFamilyMembersRow.cs" />
     <Compile Include="Web\UI\Controls\PersonProfile\Badge.cs" />
     <Compile Include="Web\UI\Controls\PersonLink.cs" />
     <Compile Include="Web\UI\Controls\HtmlEditor.cs" />
@@ -867,6 +869,7 @@
     <Compile Include="Web\UI\Controls\Pickers\ComponentsPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MonthDayPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MonthYearPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\CampusPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DateTimePicker.cs" />
     <Compile Include="Web\UI\Controls\TagLists.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DatePicker.cs" />
@@ -1165,7 +1168,7 @@
     <Compile Include="Web\UI\ContextAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Web\UI\Controls\Pickers\CampusPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\CampusesPicker.cs" />
     <Compile Include="Web\UI\Controls\ModalAlert.cs" />
     <Compile Include="Web\UI\Controls\ModalDialog.cs" />
     <Compile Include="Web\UI\Controls\LabeledRadioButtonList.cs" />
