@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System;
 using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -84,10 +85,7 @@ namespace Rock.Web.UI.Controls
         public NumberBox()
         {
             rangeValidator = new RangeValidator();
-            _label = new Label();
-            rangeValidator.Type = ValidationDataType.Integer;
-            rangeValidator.MinimumValue = int.MinValue.ToString();
-            rangeValidator.MaximumValue = int.MaxValue.ToString();
+            _label = new Label();            
         }
 
         /// <summary>
@@ -103,6 +101,23 @@ namespace Rock.Web.UI.Controls
             rangeValidator.Display = ValidatorDisplay.Dynamic;
             rangeValidator.CssClass = "validation-error help-inline";
             rangeValidator.ErrorMessage = "Numerical value is required";
+
+            if ( !this.MinimumValue.Contains( "." ) )
+            {
+                rangeValidator.Type = ValidationDataType.Integer;
+                rangeValidator.MinimumValue = !string.IsNullOrEmpty( this.MinimumValue )
+                    ? this.MinimumValue : int.MinValue.ToString();
+                rangeValidator.MaximumValue = !string.IsNullOrEmpty( this.MaximumValue )
+                    ? this.MaximumValue : int.MaxValue.ToString();
+            }
+            else
+            {
+                rangeValidator.Type = ValidationDataType.Double;
+                rangeValidator.MinimumValue = !string.IsNullOrEmpty( this.MinimumValue )
+                    ? this.MinimumValue : Convert.ToDouble( "9e-300" ).ToString( "F0" );  // allows up to 300 digits
+                rangeValidator.MaximumValue = !string.IsNullOrEmpty( this.MaximumValue )
+                    ? this.MaximumValue : Convert.ToDouble( "9e300" ).ToString( "F0" );   // allows up to 300 digits
+            }   
 
             Controls.Add( rangeValidator );
         }
