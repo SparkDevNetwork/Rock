@@ -304,7 +304,7 @@ where cc.object_id = fk.parent_object_id
 and [fk].[delete_referential_action_desc] != 'CASCADE'
 ) sub
 where [refTable] = '{0}'
-order by [parentTable], [columnName]
+order by [parentTable], [columnName] 
 ";
 
             SqlCommand sqlCommand = sqlconn.CreateCommand();
