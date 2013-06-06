@@ -93,26 +93,60 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnInit( e );
 
-            // Set vertical layout
-            if ( Convert.ToBoolean( GetAttributeValue( "ShowVerticalLayout" ) ) )
-            {
-                _spanClass = "span9 offset2";
-                txtCity.LabelText = "City, State, Zip";
-                diffCity.LabelText = "City, State, Zip";
-                ddlState.LabelText = string.Empty;
-                diffState.LabelText = string.Empty;
-                txtZip.LabelText = string.Empty;
-                diffZip.LabelText = string.Empty;
-            }
-            else
-            {
-                _spanClass = "span6";
-                txtFirstName.AddCssClass( "input-inherit" );
-                txtLastName.AddCssClass( "input-inherit" );                
-            }            
-            
             if ( !IsPostBack )
             {
+                // Change Layout vertically or horizontally
+                if ( Convert.ToBoolean( GetAttributeValue( "ShowVerticalLayout" ) ) )
+                {
+                    _spanClass = "span9 offset2";
+
+                    txtCity.LabelText = "City, State, Zip";
+                    txtNewCity.LabelText = "City, State, Zip";
+                    ddlState.LabelText = string.Empty;
+                    ddlNewState.LabelText = string.Empty;
+                    txtZip.LabelText = string.Empty;
+                    txtNewZip.LabelText = string.Empty;
+
+                    divCity.AddCssClass( "span7" );
+                    divState.AddCssClass( "span3" );
+                    divZip.AddCssClass( "span2" );
+                    divPayment.AddCssClass( "form-horizontal" );
+                    divCreditCard.AddCssClass( "span7" );
+                    divCardType.AddCssClass( "span5" );
+                    divChecking.AddCssClass( "span7" );
+                    divCheckImage.AddCssClass( "span5" );
+                    divDefaultAddress.AddCssClass( "align-middle" );
+                    divNewCity.AddCssClass( "span7" );
+                    divNewState.AddCssClass( "span3" );
+                    divNewZip.AddCssClass( "span2" );
+                }
+                else
+                {
+                    _spanClass = "span6";
+
+                    divCity.AddCssClass( "span5" );
+                    divState.AddCssClass( "span5" );
+                    divZip.AddCssClass( "span2" );
+                    divCreditCard.AddCssClass( "span6" );
+                    divCardType.AddCssClass( "span6 label-padding" );
+                    divExpiration.AddCssClass( "span6" );
+                    divCVV.AddCssClass( "span6" );
+                    divChecking.AddCssClass( "span6" );
+                    divCheckImage.AddCssClass( "span6" );
+                    divNewCity.AddCssClass( "span5" );
+                    divNewState.AddCssClass( "span5" );
+                    divNewZip.AddCssClass( "span2" );
+                }
+
+                divDetails.AddCssClass( _spanClass );
+                divAddress.AddCssClass( _spanClass );
+                divPayment.AddCssClass( _spanClass );
+                divNext.AddCssClass( _spanClass );
+                divConfirm.AddCssClass( _spanClass );
+                divGiveBack.AddCssClass( _spanClass );
+                divReceipt.AddCssClass( _spanClass );
+                divPrint.AddCssClass( _spanClass );
+
                 // Show Campus
                 if ( Convert.ToBoolean( GetAttributeValue( "ShowCampuses" ) ) )
                 {
@@ -314,9 +348,9 @@ namespace RockWeb.Blocks.Finance
         {
             SaveAmounts();
             divNewAddress.Visible = !divNewAddress.Visible;
-            diffCity.Required = !diffCity.Required;
-            diffState.Required = !diffState.Required;
-            diffZip.Required = !diffZip.Required;
+            txtNewCity.Required = !txtNewCity.Required;
+            ddlNewState.Required = !ddlNewState.Required;
+            txtNewZip.Required = !txtNewZip.Required;
             RebindAmounts( (Dictionary<FinancialAccount, Decimal>)Session["CachedAmounts"] );
         }
 
@@ -441,9 +475,9 @@ namespace RockWeb.Blocks.Finance
             else
             {
                 giftLocation.Street1 = diffStreet.Text;
-                giftLocation.City = diffCity.Text;
-                giftLocation.State = diffState.SelectedValue;
-                giftLocation.Zip = diffZip.Text;
+                giftLocation.City = txtNewCity.Text;
+                giftLocation.State = ddlNewState.SelectedValue;
+                giftLocation.Zip = txtNewZip.Text;
             }
 
             ////////////// #TODO ///////////////////
@@ -587,10 +621,10 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         protected void RebindAmounts( Dictionary<FinancialAccount, Decimal> amountList = null )
         {
-            //amountList = amountList ?? Session["CachedTransactions"] as List<FinancialTransactionDetail>;
             amountList = amountList ?? new Dictionary<FinancialAccount, Decimal>();
             rptAccountList.DataSource = amountList;
             rptAccountList.DataBind();
+            spnTotal.InnerText = amountList.Sum( d => d.Value ).ToString();
             Session["CachedAmounts"] = amountList;
         }
 
@@ -632,47 +666,63 @@ namespace RockWeb.Blocks.Finance
         /// <param name="profileId">The profile id.</param>
         protected void BindProfile( int profileId )
         {
+            var accountService = new FinancialAccountService();
+            var selectedAccounts = accountService.Queryable().Where( f => f.IsActive );
+            var accountGuids = GetAttributeValues( "DefaultAccounts" ).Select( Guid.Parse ).ToList();
             var scheduledTransactionService = new FinancialScheduledTransactionService();
             var amountList = new Dictionary<FinancialAccount, decimal>();
-            //var amountList = new List<FinancialTransactionDetail>();
-            var accountService = new FinancialAccountService();
-            FinancialScheduledTransaction scheduledTransaction;            
-            
-            var selectedAccounts = accountService.Queryable().Where( f => f.IsActive );
+            FinancialScheduledTransaction scheduledTransaction;
 
-            if ( profileId != 0 )
+            if ( profileId != 0 && scheduledTransactionService.TryGet( profileId, out scheduledTransaction ) )
             {
-                scheduledTransaction = scheduledTransactionService.Get( profileId );
-                //amountList.AddRange( scheduledTransaction.ScheduledTransactionDetails );
-                
-                
+                btnFrequency.SelectedValue = scheduledTransaction.TransactionFrequencyValue.ToString();
+                dtpStartDate.SelectedDate = scheduledTransaction.StartDate;
+                divFrequency.Visible = true;
 
-            }            
-            
-            if ( btnCampusList.SelectedIndex > -1 )
+                if ( scheduledTransaction.NumberOfPayments != null )
+                {
+                    chkLimitGifts.Checked = true;
+                    txtLimitNumber.Text = scheduledTransaction.NumberOfPayments.ToString();
+                    divLimitGifts.Visible = true;
+                    divLimitNumber.Visible = true;
+                }
+
+                // set btnCampus.SelectedValue
+                foreach ( var details in scheduledTransaction.ScheduledTransactionDetails)
+                {
+                    amountList.Add( details.Account, details.Amount );
+                }               
+
+            }     
+            else 
             {
-                var campusId = btnCampusList.SelectedValueAsInt();
-                selectedAccounts = selectedAccounts.Where( f => f.CampusId == campusId || f.CampusId == null );
+                if ( btnCampusList.SelectedIndex > -1 )
+                {
+                    var campusId = btnCampusList.SelectedValueAsInt();
+                    selectedAccounts = selectedAccounts.Where( f => f.CampusId == campusId );
+                }
+
+                foreach ( var account in selectedAccounts.Where( a => accountGuids.Contains( a.Guid ) ) )
+                {
+                    amountList.Add( account, 0M );
+                }                  
             }
 
-            if ( GetAttributeValue( "DefaultAccounts" ).Any() )
+            if ( accountGuids.Count > selectedAccounts.Count() )
             {
-                var accountGuids = GetAttributeValues( "DefaultAccounts" ).Select( Guid.Parse ).ToList();
-                btnAddAccount.DataTextField = "PublicName";
-                btnAddAccount.DataValueField = "Id";
-                btnAddAccount.DataSource = selectedAccounts.Where( a => !accountGuids.Contains( a.Guid ) ).ToList();
-                btnAddAccount.DataBind();
+                var unselectedAccounts = selectedAccounts.Where( a => !accountGuids.Contains( a.Guid ) ).ToList();
 
-                selectedAccounts = selectedAccounts.Where( a => accountGuids.Contains( a.Guid ) );
+                if ( unselectedAccounts.Any() )
+                {
+                    btnAddAccount.DataTextField = "PublicName";
+                    btnAddAccount.DataValueField = "Id";
+                    btnAddAccount.DataSource = unselectedAccounts.ToList();
+                    btnAddAccount.DataBind();
+                }
             }
             else
             {
                 btnAddAccount.Visible = false;
-            }
-
-            foreach ( var account in selectedAccounts )
-            {
-                amountList.Add( account, 0M );
             }
 
             Session["CachedAmounts"] = amountList;
@@ -703,6 +753,8 @@ namespace RockWeb.Blocks.Finance
 
             rptPaymentType.DataSource = queryable.ToList();
             rptPaymentType.DataBind();
+
+            ( (HtmlGenericControl)rptPaymentType.Items[0].FindControl( "liSelectedTab" ) ).AddCssClass( "active" );
         }
         
         /// <summary>
@@ -735,6 +787,7 @@ namespace RockWeb.Blocks.Finance
                 ddlState.Text = personLocation.State.ToString();
                 txtZip.Text = personLocation.Zip.ToString();
                 txtEmail.Text = CurrentPerson.Email.ToString();
+                txtCardName.Text = CurrentPerson.FullName;
             }
         }
 
@@ -747,12 +800,26 @@ namespace RockWeb.Blocks.Finance
             if ( currentTab.Equals( "Credit Card" ) )
             {
                 pnlCreditCard.Visible = true;
+                txtCreditCard.Required = true;
+                dtpExpiration.Required = true;
+                txtCVV.Required = true;
+                txtCardName.Required = true;
                 pnlChecking.Visible = false;
+                txtBankName.Required = false;
+                txtRouting.Required = false;
+                txtAccount.Required = false;
             }
             else if ( CurrentTab.Equals( "Checking/ACH" ) )
             {
-                pnlCreditCard.Visible = false;
                 pnlChecking.Visible = true;
+                txtBankName.Required = true;
+                txtRouting.Required = true;
+                txtAccount.Required = true;
+                pnlCreditCard.Visible = false;
+                txtCreditCard.Required = false;
+                dtpExpiration.Required = false;
+                txtCVV.Required = false;
+                txtCardName.Required = false;
             }
         }
 
