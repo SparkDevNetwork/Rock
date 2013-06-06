@@ -37,21 +37,22 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             if ( KioskCurrentlyActive )
             {
-                var NameSearch = false;
+                var nameSearch = false;
                 CurrentCheckInState.CheckIn.UserEnteredSearch = true;
                 CurrentCheckInState.CheckIn.ConfirmSingleFamily = true;
-                if ( tbSearchBox.Text.AsNumeric() == "" || tbSearchBox.Text.AsNumeric().Length != tbSearchBox.Text.Length )
+                if ( tbSearchBox.Text.AsNumeric() == string.Empty || tbSearchBox.Text.AsNumeric().Length != tbSearchBox.Text.Length )
                 {
                     CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME );
-                    NameSearch = true;
+                    nameSearch = true;
                 }
                 else if ( tbSearchBox.Text.AsNumeric().Length == tbSearchBox.Text.Length )
                 {
                     CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER );
                 }
+
                 CurrentCheckInState.CheckIn.SearchValue = tbSearchBox.Text;
 
-                if ( tbSearchBox.Text == "" )
+                if ( tbSearchBox.Text == string.Empty )
                 {
                     maWarning.Show( "Please enter something to search for.", ModalAlertType.Warning );
                     return;
@@ -59,11 +60,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
                 int minLength = int.Parse( GetAttributeValue( "MinimumPhoneNumberLength" ) );
                 int maxLength = int.Parse( GetAttributeValue( "MaximumPhoneNumberLength" ) );
-                if ( !NameSearch && ( tbSearchBox.Text.Length < minLength || tbSearchBox.Text.Length > maxLength ) )
+                if ( !nameSearch && ( tbSearchBox.Text.Length < minLength || tbSearchBox.Text.Length > maxLength ) )
                 {
                     maWarning.Show( string.Format("In order to properly search by phone number, you should enter between {0} and {1} numbers.", minLength, maxLength), ModalAlertType.Warning);
                     return;
                 }
+
                 var errors = new List<string>();
                 if ( ProcessActivity( "Family Search", out errors ) )
                 {

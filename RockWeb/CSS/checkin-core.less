@@ -443,18 +443,23 @@ input.attended-checkin-keyboard-entry
     padding: 28px 26px;
 }
 
+input[type="submit"].btn
+{
+	padding: 15px 25px;
+	font-size: 20px;
+}
+
+input[type="submit"].btn[disabled="disabled"]
+{
+	display: none;
+}
+
 @media screen and (max-width:1024px)
 {
 	input.attended-checkin-keyboard-entry
 	{
 		width: 90%;
 	}
-
-	/*.attended-checkin-keyboard
-	{
-		width: 90%;
-		padding-left: 36px;
-	}*/
 
 	.keyboard a.btn 
 	{
@@ -473,6 +478,38 @@ input.attended-checkin-keyboard-entry
 	.keyboard a.spacebar
 	{
 		width: 275px;
+	}
+
+	.attended-checkin-header h1
+	{
+		font-size: 36px;
+	}
+
+	.attended-checkin-actions a.btn-primary
+	{
+		font-size: 36px;
+		padding: 28px 26px;
+	}
+
+	.attended-checkin-body-container .btn-primary
+	{
+		font-size: 20px;
+	}
+
+	input[type="submit"].btn
+	{
+		font-size: 16px;
+		padding: 10px 15px;
+	}
+
+	.btn-primary.disabled, .btn-primary[disabled]
+	{
+		background-color: #b00a0e;
+	}
+
+	.checkin-sub-title
+	{
+		font-size: 16px;
 	}
 
 }
@@ -528,3 +565,16 @@ input.attended-checkin-keyboard-entry
 	padding-top: 12px;
 	font-size: 24px;
 }
+
+.checkin-sub-title span
+{
+	display: block;
+}
+
+.nothing-found-message
+{
+	background: rgba(100, 100, 100, .1);
+	display: none;
+	padding: 20px 25px 25px 25px;
+}
+

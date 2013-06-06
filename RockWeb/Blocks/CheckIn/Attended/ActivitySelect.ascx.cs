@@ -186,6 +186,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).RemoveCssClass( "active" );
                 }
             }
+
             BindToActivityGrid();
         }
 
@@ -299,20 +300,22 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void LoadActivities()
         {
             // fill the activity repeater
-            List<GroupType> activityGroupTypeList = new List<GroupType>();
-            foreach ( var activityGroupType in CurrentRoomGroupTypeIds )
+            var parentId = 0;
+            foreach ( RepeaterItem item in rMinistry.Items )
             {
-                GroupType activityGroupTypeSelected = new GroupTypeService().Get( activityGroupType );
-                var parent = GetParent( activityGroupType, 0 );
-                foreach ( RepeaterItem item in rMinistry.Items )
+                if ( HasActiveClass( (LinkButton)item.FindControl( "lbSelectMinistry" ) ) )
                 {
-                    if ( HasActiveClass( (LinkButton)item.FindControl( "lbSelectMinistry" ) ) )
-                    {
-                        if ( int.Parse( ( (LinkButton)item.FindControl( "lbSelectMinistry" ) ).CommandArgument ) == parent )
-                        {
-                            activityGroupTypeList.Add( activityGroupTypeSelected );
-                        }
-                    }
+                    parentId = int.Parse( ( (LinkButton)item.FindControl( "lbSelectMinistry" ) ).CommandArgument );
+                }
+            }
+
+            List<GroupType> activityGroupTypeList = new List<GroupType>();
+            foreach ( var activityGroupType in CurrentRoomGroupTypes )
+            {
+                var parent = GetParent( activityGroupType.Id, 0 );
+                if ( parentId == parent )
+                {
+                    activityGroupTypeList.Add( activityGroupType );
                 }
             }
 

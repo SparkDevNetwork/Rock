@@ -211,6 +211,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
         private void GoNext()
         {
+            CurrentCheckInState.CheckIn.Families.Clear();
+            CurrentCheckInState.CheckIn.SearchType = null;
+            CurrentCheckInState.CheckIn.SearchValue = string.Empty;
             SaveState();
             NavigateToNextPage();
         }

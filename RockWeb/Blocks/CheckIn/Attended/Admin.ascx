@@ -5,9 +5,6 @@
     <asp:PlaceHolder ID="phScript" runat="server"></asp:PlaceHolder>
     <asp:HiddenField ID="hfKiosk" runat="server" />
     <asp:HiddenField ID="hfGroupTypes" runat="server" />
-    <span style="display:none">
-        <asp:LinkButton ID="lbRefresh" runat="server" OnClick="lbRefresh_Click"></asp:LinkButton>
-    </span>
 
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
@@ -42,7 +39,6 @@
                 </ItemTemplate>
             </asp:Repeater>
         </div>
-        <%--<div class="span3"></div>--%>
     </div>
 
 </ContentTemplate>
