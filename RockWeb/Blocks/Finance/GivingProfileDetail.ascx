@@ -12,7 +12,7 @@
                     console.log(total);
                     this.value = parseFloat($(this).val()).toFixed(2); }
             });
-            $('.span-total').html(total.toFixed(2));
+            $('.total-amount').html(total.toFixed(2));
             $('.total-label').css('width', $(this).parent().width());
             return false;
         });                
@@ -76,7 +76,7 @@
                                 <div class="control-group">
                                     <label id="lblTotalAmount" class="control-label" for="spnTotal"><b>Total Amount</b></label>
                                     <div class="controls text-padding">
-                                        <b>$ <span id="spnTotal" runat="server" class="span-total">0.00</span></b>
+                                        <b>$ <span id="spnTotal" runat="server" class="total-amount">0.00</span></b>
                                     </div>
                                 </div>
                             </div>
@@ -306,11 +306,11 @@
 
             </div>
 
-            <div ID="divNext" runat="server" class="actions">
-                <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnNext_Click" CausesValidation="true" />
-            </div>
+        </div>
 
-        </div>    
+        <div id="divNext" runat="server" class="actions">
+            <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnNext_Click" CausesValidation="true" />
+        </div>
 
     </ContentTemplate>
     </asp:UpdatePanel>

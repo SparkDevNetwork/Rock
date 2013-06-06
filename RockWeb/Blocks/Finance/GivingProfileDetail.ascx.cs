@@ -100,12 +100,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     _spanClass = "span9 offset2";
 
-                    txtCity.LabelText = "City, State, Zip";
-                    txtNewCity.LabelText = "City, State, Zip";
-                    ddlState.LabelText = string.Empty;
-                    ddlNewState.LabelText = string.Empty;
-                    txtZip.LabelText = string.Empty;
-                    txtNewZip.LabelText = string.Empty;
+                    
 
                     divCity.AddCssClass( "span7" );
                     divState.AddCssClass( "span3" );
@@ -197,7 +192,18 @@ namespace RockWeb.Blocks.Finance
                     divSavePayment.Visible = true;
                     divCreateAccount.Visible = false;
                 }                                              
-            }                                 
+            }
+
+            // postback layout changes
+            if ( _spanClass != "span6" )
+            {
+                txtCity.LabelText = "City, State, Zip";
+                txtNewCity.LabelText = "City, State, Zip";
+                ddlState.LabelText = string.Empty;
+                ddlNewState.LabelText = string.Empty;
+                txtZip.LabelText = string.Empty;
+                txtNewZip.LabelText = string.Empty;
+            }            
         }
 
         /// <summary>
@@ -667,14 +673,14 @@ namespace RockWeb.Blocks.Finance
         protected void BindProfile( int profileId )
         {
             var accountService = new FinancialAccountService();
-            var selectedAccounts = accountService.Queryable().Where( f => f.IsActive );
+            var activeAccounts = accountService.Queryable().Where( f => f.IsActive );
             var accountGuids = GetAttributeValues( "DefaultAccounts" ).Select( Guid.Parse ).ToList();
             var scheduledTransactionService = new FinancialScheduledTransactionService();
-            var amountList = new Dictionary<FinancialAccount, decimal>();
+            var transactionList = new Dictionary<FinancialAccount, decimal>();
             FinancialScheduledTransaction scheduledTransaction;
 
             if ( profileId != 0 && scheduledTransactionService.TryGet( profileId, out scheduledTransaction ) )
-            {
+            {   // Retrieve Transaction
                 btnFrequency.SelectedValue = scheduledTransaction.TransactionFrequencyValue.ToString();
                 dtpStartDate.SelectedDate = scheduledTransaction.StartDate;
                 divFrequency.Visible = true;
@@ -690,27 +696,30 @@ namespace RockWeb.Blocks.Finance
                 // set btnCampus.SelectedValue
                 foreach ( var details in scheduledTransaction.ScheduledTransactionDetails)
                 {
-                    amountList.Add( details.Account, details.Amount );
+                    transactionList.Add( details.Account, details.Amount );
                 }               
-
             }     
             else 
-            {
-                if ( btnCampusList.SelectedIndex > -1 )
+            {   // New Transaction
+                IQueryable<FinancialAccount> selectedAccounts = activeAccounts;
+
+                if ( accountGuids.Any() )
                 {
-                    var campusId = btnCampusList.SelectedValueAsInt();
-                    selectedAccounts = selectedAccounts.Where( f => f.CampusId == campusId );
+                    selectedAccounts = selectedAccounts.Where( a => accountGuids.Contains( a.Guid ) );
                 }
 
-                foreach ( var account in selectedAccounts.Where( a => accountGuids.Contains( a.Guid ) ) )
+                var campusId = btnCampusList.SelectedValueAsInt();
+                selectedAccounts = selectedAccounts.Where( f => f.CampusId == campusId || f.CampusId == null );
+
+                foreach ( var account in selectedAccounts )
                 {
-                    amountList.Add( account, 0M );
+                    transactionList.Add( account, 0M );
                 }                  
             }
 
-            if ( accountGuids.Count > selectedAccounts.Count() )
+            if ( activeAccounts.Count() > transactionList.Count() )
             {
-                var unselectedAccounts = selectedAccounts.Where( a => !accountGuids.Contains( a.Guid ) ).ToList();
+                var unselectedAccounts = activeAccounts.Where( a => !accountGuids.Contains( a.Guid ) ).ToList();
 
                 if ( unselectedAccounts.Any() )
                 {
@@ -722,11 +731,11 @@ namespace RockWeb.Blocks.Finance
             }
             else
             {
-                btnAddAccount.Visible = false;
+                divAddAccount.Visible = false;
             }
 
-            Session["CachedAmounts"] = amountList;
-            rptAccountList.DataSource = amountList;
+            Session["CachedAmounts"] = transactionList;
+            rptAccountList.DataSource = transactionList;
             rptAccountList.DataBind();
         }
 
@@ -779,15 +788,14 @@ namespace RockWeb.Blocks.Finance
             txtFirstName.Text = CurrentPerson.GivenName.ToString();
             txtLastName.Text = CurrentPerson.LastName.ToString();
             txtEmail.Text = CurrentPerson.Email.ToString();
+            txtCardName.Text = CurrentPerson.FullName;
 
             if ( personLocation != null )
             {                
                 txtStreet.Text = personLocation.Street1.ToString();
                 txtCity.Text = personLocation.City.ToString();
                 ddlState.Text = personLocation.State.ToString();
-                txtZip.Text = personLocation.Zip.ToString();
-                txtEmail.Text = CurrentPerson.Email.ToString();
-                txtCardName.Text = CurrentPerson.FullName;
+                txtZip.Text = personLocation.Zip.ToString();                
             }
         }
 
