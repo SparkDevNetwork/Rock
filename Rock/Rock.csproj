@@ -243,6 +243,14 @@
     <Compile Include="Migrations\201306062005113_GroupTypeShowInNavigation.Designer.cs">
       <DependentUpon>201306062005113_GroupTypeShowInNavigation.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201306062049526_GroupMemberListBlockAttributes.cs" />
+    <Compile Include="Migrations\201306062049526_GroupMemberListBlockAttributes.Designer.cs">
+      <DependentUpon>201306062049526_GroupMemberListBlockAttributes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201306062058091_DeadBlockCleanup01.cs" />
+    <Compile Include="Migrations\201306062058091_DeadBlockCleanup01.Designer.cs">
+      <DependentUpon>201306062058091_DeadBlockCleanup01.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
@@ -850,6 +858,7 @@
     <Compile Include="Web\UI\Controls\Communication\Sms.cs" />
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
+    <Compile Include="Web\UI\Controls\LabeledBulletedList.cs" />
     <Compile Include="Web\UI\Controls\PersonProfile\Badge.cs" />
     <Compile Include="Web\UI\Controls\PersonLink.cs" />
     <Compile Include="Web\UI\Controls\HtmlEditor.cs" />
@@ -1728,6 +1737,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201306062005113_GroupTypeShowInNavigation.resx">
       <DependentUpon>201306062005113_GroupTypeShowInNavigation.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306062049526_GroupMemberListBlockAttributes.resx">
+      <DependentUpon>201306062049526_GroupMemberListBlockAttributes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306062058091_DeadBlockCleanup01.resx">
+      <DependentUpon>201306062058091_DeadBlockCleanup01.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
