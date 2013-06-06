@@ -15,8 +15,8 @@
             <Columns>
                 
                 <asp:BoundField DataField="Id" HeaderText="Id"  />
-                <asp:BoundField DataField="AuthorizedPersonId" HeaderText="Authorized Person" />                
-                <asp:BoundField DataField="TransactionFrequencyValueId" HeaderText="Frequency" />
+                <asp:BoundField DataField="AuthorizedPerson" HeaderText="Contributor" />
+                <asp:BoundField DataField="TransactionFrequencyValue" HeaderText="Frequency" />
                 <asp:TemplateField HeaderText="Start Date">
                     <ItemTemplate>
                         <span><%# Eval("StartDate") %></span>
@@ -26,12 +26,12 @@
                 
               <asp:BoundField DataField="NumberOfPayments" HeaderText="# Payments"  />
                 
-              <asp:BoundField DataField="IsActive" HeaderText="Active?"  />
-                
               <asp:BoundField DataField="GatewayId" HeaderText="Gateway"  />
                 
               <asp:BoundField DataField="TransactionCode" HeaderText="Transaction Code"  />
               
+                <asp:BoundField DataField="IsActive" HeaderText="Active" />
+
               <asp:BoundField DataField="CardReminderDate" HeaderText="Expiration Date"  />
                 
               <Rock:DeleteField OnClick="rGridGivingProfile_Delete" />
