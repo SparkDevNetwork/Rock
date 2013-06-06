@@ -295,8 +295,6 @@
             $modal.find('[id*="btnSaveSchedule"]').on('click', function (event) {
                 var $datepicker = $modal.find('[id*="dpStartDateTime"]'),
                     startDateValue = Date.parse($datepicker.val()) || -1;
-
-                console.log(startDateValue);
                 
                 if (startDateValue < 0) {
                     $datepicker.parents(".control-group").first().toggleClass("error", 1);
