@@ -252,6 +252,7 @@
     <Compile Include="PersonProfile\TextBadge.cs" />
     <Compile Include="SystemGuid\EntityType.cs" />
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
+    <Compile Include="Web\Cache\CategoryCache.cs" />
     <Compile Include="Web\UI\Controls\Communication\ChannelControl.cs" />
     <Compile Include="Data\IgnoreModelErrorsAttribute.cs" />
     <Compile Include="Migrations\201304190037528_BinaryFileTypeContributionImage.cs" />

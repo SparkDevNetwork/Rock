@@ -456,50 +456,6 @@ namespace Rock.Migrations
                     ) );
         }
 
-        public void AddBlockAttribute( string blockGuid, string fieldTypeGuid, Rock.Model.Attribute attribute )
-        {
-
-            Sql( string.Format( @"
-
-                DECLARE @BlockTypeId int
-                SET @BlockTypeId = (SELECT [Id] FROM [BlockType] WHERE [Guid] = '{0}')
-
-                DECLARE @FieldTypeId int
-                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
-
-                -- Delete existing attribute first (might have been created by Rock system)
-                DELETE [Attribute] 
-                WHERE [Entity] = 'Rock.Model.Block'
-                AND [EntityQualifierColumn] = 'BlockTypeId'
-                AND [EntityQualifierValue] = CAST(@BlockTypeId as varchar)
-                AND [Key] = '{2}'
-
-                INSERT INTO [Attribute] (
-                    [IsSystem],[FieldTypeId],[Entity],[EntityQualifierColumn],[EntityQualifierValue],
-                    [Key],[Name],[Category],[Description],
-                    [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
-                    [Guid])
-                VALUES(
-                    1,@FieldTypeId,'Rock.Model.Block','BlockTypeId',CAST(@BlockTypeId as varchar),
-                    '{2}','{3}','{4}','{5}',
-                    {6},{7},'{8}',{9},{10},
-                    '{11}')
-",
-                    blockGuid,
-                    fieldTypeGuid,
-                    attribute.Key,
-                    attribute.Name,
-                    attribute.Category,
-                    attribute.Description.Replace( "'", "''" ),
-                    attribute.Order,
-                    attribute.IsGridColumn.Bit(),
-                    attribute.DefaultValue,
-                    attribute.IsMultiValue.Bit(),
-                    attribute.IsRequired.Bit(),
-                    attribute.Guid )
-            );
-        }
-
         public void DeleteBlockAttribute( string guid )
         {
             Sql( string.Format( @"
@@ -507,21 +463,6 @@ namespace Rock.Migrations
 ",
                     guid
                     ) );
-        }
-
-        public Rock.Model.Attribute DefaultBlockAttribute( string name, string category, string description, int order, string defaultValue, Guid guid )
-        {
-            var attribute = new Rock.Model.Attribute();
-
-            attribute.IsSystem = true;
-            attribute.Key = name.Replace( " ", string.Empty );
-            attribute.Name = name;
-            attribute.Category = category;
-            attribute.Description = description;
-            attribute.Order = order;
-            attribute.Guid = guid;
-
-            return attribute;
         }
 
         #endregion

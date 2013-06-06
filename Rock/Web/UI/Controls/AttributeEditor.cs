@@ -26,7 +26,7 @@ namespace Rock.Web.UI.Controls
         private DataTextBox tbName;
         private DataTextBox tbKey;
         private CustomValidator cvKey;
-        private DataTextBox tbCategory;
+        private DataTextBox tbCategories;
         private DataTextBox tbDescription;
 
         // column 2
@@ -56,7 +56,7 @@ namespace Rock.Web.UI.Controls
             tbName = new DataTextBox();
             tbKey = new DataTextBox();
             cvKey = new CustomValidator();
-            tbCategory = new DataTextBox();
+            tbCategories = new DataTextBox();
             tbDescription = new DataTextBox();
 
             // Create FieldType Dropdown
@@ -162,10 +162,10 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The category.
         /// </value>
-        public string Category
+        public string Categories
         {
-            get { return tbCategory.Text; }
-            set { tbCategory.Text = value; }
+            get { return tbCategories.Text; }
+            set { tbCategories.Text = value; }
         }
 
         /// <summary>
@@ -329,7 +329,7 @@ namespace Rock.Web.UI.Controls
                 this.AttributeGuid = attribute.Guid;
                 this.Name = attribute.Name;
                 this.Key = attribute.Key;
-                this.Category = attribute.Category;
+                this.Categories = attribute.Categories.Select( c => c.Name ).ToList().AsDelimited( "," );
                 this.Description = attribute.Description;
                 this.FieldTypeId = attribute.FieldTypeId;
                 this.DefaultValue = attribute.DefaultValue;
@@ -370,12 +370,33 @@ namespace Rock.Web.UI.Controls
                 attribute.Guid = this.AttributeGuid;
                 attribute.Name = this.Name;
                 attribute.Key = this.Key;
-                attribute.Category = this.Category;
                 attribute.Description = this.Description;
                 attribute.FieldTypeId = this.FieldTypeId ?? 0;
                 attribute.DefaultValue = this.DefaultValue;
                 attribute.IsMultiValue = this.MultiValue;
                 attribute.IsGridColumn = this.ShowInGrid;
+
+                attribute.Categories.Clear();
+
+                int attributeEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
+
+                var categoryService = new CategoryService();
+                foreach ( string categoryName in this.Categories.SplitDelimitedValues() )
+                {
+                    var category = new Category();
+                    category.Name = categoryName;
+                    category.EntityTypeId = attributeEntityTypeId;
+                    category.EntityTypeQualifierColumn = "EntityTypeId";
+                    category.EntityTypeQualifierValue = attribute.EntityTypeId.ToString();
+                    attribute.Categories.Add( category );
+
+                    var existingCategory = categoryService.Get( category.Name, category.EntityTypeId, category.EntityTypeQualifierColumn, category.EntityTypeQualifierValue ).FirstOrDefault();
+                    if ( existingCategory != null )
+                    {
+                        category.Id = existingCategory.Id;
+                        category.Guid = existingCategory.Guid;
+                    }
+                }
 
                 attribute.AttributeQualifiers.Clear();
                 foreach ( var qualifier in Qualifiers )
@@ -426,10 +447,10 @@ namespace Rock.Web.UI.Controls
             cvKey.ErrorMessage = "There is already an existing property with the key value you entered.  Please select a different key value";
             Controls.Add( cvKey );
 
-            tbCategory .ID = string.Format( "tbCategory_{0}", this.ID );
-            tbCategory.SourceTypeName = "Rock.Model.Attribute, Rock";
-            tbCategory.PropertyName = "Category";
-            Controls.Add( tbCategory );
+            tbCategories .ID = string.Format( "tbCategory_{0}", this.ID );
+            tbCategories.SourceTypeName = "Rock.Model.Attribute, Rock";
+            tbCategories.PropertyName = "Category";
+            Controls.Add( tbCategories );
 
             tbDescription.ID = string.Format( "tbDescription_{0}", this.ID );
             tbDescription.TextMode = TextBoxMode.MultiLine;
@@ -513,7 +534,7 @@ namespace Rock.Web.UI.Controls
             tbKey.RenderControl( writer );
             cvKey.RenderControl( writer );
 
-            tbCategory.RenderControl( writer );
+            tbCategories.RenderControl( writer );
             tbDescription.RenderControl( writer );
             writer.RenderEndTag();
 
