@@ -29,40 +29,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
            if ( !Page.IsPostBack )
             {
-                string script = string.Format( @"
-                    <script>
-                        $(document).ready(function (e) {{
-                            if (localStorage) {{
-                                if (localStorage.checkInKiosk) {{
-                                    $('[id$=""hfKiosk""]').val(localStorage.checkInKiosk);
-                                    if (localStorage.checkInGroupTypes) {{
-                                        $('[id$=""hfGroupTypes""]').val(localStorage.checkInGroupTypes);
-                                    }}
-                                    {0};
-                                }}
-                            }}
-                        }});
-                    </script>
-                ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
-                phScript.Controls.Add( new LiteralControl( script ) );
-
-                string script2 = string.Format( @"
-                    <script>
-                        $(document).ready(function (e) {{
-                            if (localStorage) {{
-                                localStorage.checkInKiosk = '{0}';
-                            }}
-                        }});
-                    </script>
-                ", CurrentKioskId );
-                lbOk.Attributes.Add( "OnClick", script2 );
-
                 ddlKiosk.Items.Clear();
                 ddlKiosk.DataSource = new DeviceService().Queryable().ToList();
                 ddlKiosk.DataBind();
                 ddlKiosk.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
-
-                CurrentGroupTypeIds = null;
 
                 if ( CurrentKioskId.HasValue )
                 {
@@ -83,17 +53,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
         #endregion
 
         #region Edit Events
-
-        protected void lbRefresh_Click( object sender, EventArgs e )
-        {
-            ListItem item = ddlKiosk.Items.FindByValue(hfKiosk.Value);
-            if ( item != null )
-            {
-                ddlKiosk.SelectedValue = item.Value;
-            }
-
-            BindGroupTypes(hfGroupTypes.Value);
-        }
 
         protected void ddlKiosk_SelectedIndexChanged( object sender, EventArgs e )
         {
@@ -135,15 +94,14 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
             }
 
-            var roomGroupTypeIds = new List<int>();
+            var roomGroupTypes = new List<GroupType>();
             if ( !roomChosen )
             {
-                //maWarning.Show( "At least one room must be selected!", ModalAlertType.Warning );
-                //return;
                 foreach ( RepeaterItem item in rRooms.Items )
                 {
                     var linky = (LinkButton)item.FindControl( "lbSelectRooms" );
-                    roomGroupTypeIds.Add( int.Parse( linky.CommandArgument ) );
+                    GroupType gt = new GroupTypeService().Get( int.Parse( linky.CommandArgument ) );
+                    roomGroupTypes.Add( gt );
                 }
             }
             else
@@ -153,7 +111,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     var linky = (LinkButton)item.FindControl( "lbSelectRooms" );
                     if ( HasActiveClass( linky ) )
                     {
-                        roomGroupTypeIds.Add( int.Parse( linky.CommandArgument ) );
+                        GroupType gt = new GroupTypeService().Get( int.Parse( linky.CommandArgument ) );
+                        roomGroupTypes.Add( gt );
                     }
                 }
             }
@@ -168,19 +127,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
             }
 
-            //var roomGroupTypeIds = new List<int>();
-            //foreach ( RepeaterItem item in rRooms.Items )
-            //{
-            //    var linky = (LinkButton)item.FindControl( "lbSelectRooms" );
-            //    if ( HasActiveClass( linky ) )
-            //    {
-            //        roomGroupTypeIds.Add( int.Parse( linky.CommandArgument ) );
-            //    }
-            //}
-
             CurrentKioskId = int.Parse( ddlKiosk.SelectedValue );
+            hfKiosk.Value = CurrentKioskId.ToString();
             CurrentGroupTypeIds = groupTypeIds;
-            CurrentRoomGroupTypeIds = roomGroupTypeIds;
+            hfGroupTypes.Value = CurrentGroupTypeIds.AsDelimited( "," );
+            CurrentRoomGroupTypes = roomGroupTypes;
             CurrentCheckInState = null;
             CurrentWorkflow = null;
             SaveState();

@@ -39,14 +39,19 @@ namespace Rock.CheckIn
         protected List<int> CurrentRoomGroupTypeIds;
 
         /// <summary>
+        /// The current ministry group type ids
+        /// </summary>
+        protected List<GroupType> CurrentRoomGroupTypes;
+
+        /// <summary>
         /// The count of people that need to be checked in
         /// </summary>
-        protected int CheckInPersonCount;
+        protected int? CheckInPersonCount { get; set; }
 
         /// <summary>
         /// The count of people that are actually checked in
         /// </summary>
-        protected int PeopleCheckedIn;
+        protected int? PeopleCheckedIn { get; set; }
 
         /// <summary>
         /// The current list of Id's of people to check in
@@ -228,7 +233,16 @@ namespace Rock.CheckIn
                 Session.Remove( "CheckInRoomGroupTypeIds" );
             }
 
-            if ( CheckInPersonCount != null )
+            if ( CurrentRoomGroupTypes != null )
+            {
+                Session["CheckInRoomGroupTypes"] = CurrentRoomGroupTypes;
+            }
+            else
+            {
+                Session.Remove( "CheckInRoomGroupTypes" );
+            }
+
+            if ( CheckInPersonCount.HasValue )
             {
                 Session["CheckInPersonCount"] = CheckInPersonCount;
             }
@@ -237,7 +251,7 @@ namespace Rock.CheckIn
                 Session.Remove( "CheckInPersonCount" );
             }
 
-            if ( PeopleCheckedIn != null )
+            if ( PeopleCheckedIn.HasValue )
             {
                 Session["PeopleCheckedIn"] = PeopleCheckedIn;
             }
@@ -340,6 +354,11 @@ namespace Rock.CheckIn
             if ( Session["CheckInRoomGroupTypeIds"] != null )
             {
                 CurrentRoomGroupTypeIds = Session["CheckInRoomGroupTypeIds"] as List<int>;
+            }
+
+            if ( Session["CheckInRoomGroupTypes"] != null )
+            {
+                CurrentRoomGroupTypes = Session["CheckInRoomGroupTypes"] as List<GroupType>;
             }
 
             if ( Session["CheckInPersonCount"] != null )
