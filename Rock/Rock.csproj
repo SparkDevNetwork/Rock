@@ -223,6 +223,22 @@
     <Compile Include="Migrations\201306031409550_ScheduleCategory.Designer.cs">
       <DependentUpon>201306031409550_ScheduleCategory.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201306032051381_AdditionalCheckinDataRedux.cs" />
+    <Compile Include="Migrations\201306032051381_AdditionalCheckinDataRedux.Designer.cs">
+      <DependentUpon>201306032051381_AdditionalCheckinDataRedux.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201306051809266_FinancialTransactionRefund.cs" />
+    <Compile Include="Migrations\201306051809266_FinancialTransactionRefund.Designer.cs">
+      <DependentUpon>201306051809266_FinancialTransactionRefund.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201306052232509_FinancialTransactionRefund02.cs" />
+    <Compile Include="Migrations\201306052232509_FinancialTransactionRefund02.Designer.cs">
+      <DependentUpon>201306052232509_FinancialTransactionRefund02.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201306052252368_FinancialTransactionRefund03.cs" />
+    <Compile Include="Migrations\201306052252368_FinancialTransactionRefund03.Designer.cs">
+      <DependentUpon>201306052252368_FinancialTransactionRefund03.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
@@ -1693,6 +1709,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201306031409550_ScheduleCategory.resx">
       <DependentUpon>201306031409550_ScheduleCategory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306032051381_AdditionalCheckinDataRedux.resx">
+      <DependentUpon>201306032051381_AdditionalCheckinDataRedux.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306051809266_FinancialTransactionRefund.resx">
+      <DependentUpon>201306051809266_FinancialTransactionRefund.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306052232509_FinancialTransactionRefund02.resx">
+      <DependentUpon>201306052232509_FinancialTransactionRefund02.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306052252368_FinancialTransactionRefund03.resx">
+      <DependentUpon>201306052252368_FinancialTransactionRefund03.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
