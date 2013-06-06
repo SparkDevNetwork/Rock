@@ -227,6 +227,10 @@
     <Compile Include="Migrations\201306032051381_AdditionalCheckinDataRedux.Designer.cs">
       <DependentUpon>201306032051381_AdditionalCheckinDataRedux.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201306051614317_UpdateGivingBlocks.cs" />
+    <Compile Include="Migrations\201306051614317_UpdateGivingBlocks.Designer.cs">
+      <DependentUpon>201306051614317_UpdateGivingBlocks.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
@@ -290,10 +294,6 @@
     <Compile Include="Migrations\201305032019044_DateTimeDataTypesSweep.cs" />
     <Compile Include="Migrations\201305032019044_DateTimeDataTypesSweep.Designer.cs">
       <DependentUpon>201305032019044_DateTimeDataTypesSweep.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201305132040219_UpdateGivingBlocks.cs" />
-    <Compile Include="Migrations\201305132040219_UpdateGivingBlocks.Designer.cs">
-      <DependentUpon>201305132040219_UpdateGivingBlocks.cs</DependentUpon>
     </Compile>
     <Compile Include="Net\RockRestClient.cs">
       <SubType>Component</SubType>
@@ -1705,8 +1705,8 @@
     <EmbeddedResource Include="Migrations\201306032051381_AdditionalCheckinDataRedux.resx">
       <DependentUpon>201306032051381_AdditionalCheckinDataRedux.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201305132040219_UpdateGivingBlocks.resx">
-      <DependentUpon>201305132040219_UpdateGivingBlocks.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201306051614317_UpdateGivingBlocks.resx">
+      <DependentUpon>201306051614317_UpdateGivingBlocks.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
