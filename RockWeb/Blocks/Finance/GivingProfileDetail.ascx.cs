@@ -28,8 +28,7 @@ namespace RockWeb.Blocks.Finance
     /// Front end block for giving: gift detail, user detail, and payment detail
     /// </summary>    
     [Description("Giving profile details UI")]
-    [LinkedPage( "New Account" )]
-    [BooleanField( "Require Phone", "Should financial contributions require a user's phone number?", true, "Data Requirements", 0 )]   
+    [LinkedPage( "New Accounts", "What page should users redirect to when creating a new account?")]    
     [CustomCheckboxListField( "Credit Card Provider", "Which payment processor should be used for credit cards?",
         "SELECT [Name] AS [Text], [Id] AS [Value] FROM [FinancialGateway]", true, "", "Payments", 0 )]
     [CustomCheckboxListField( "Checking/ACH Provider", "Which payment processor should be used for checking/ACH?",
@@ -37,24 +36,29 @@ namespace RockWeb.Blocks.Finance
     [AccountsField("Default Accounts", "Which accounts should be displayed by default?", true, "", "Payments", 2)]
     [BooleanField( "Show Vertical Layout", "Should the giving page display vertically or horizontally?", true, "UI Options", 0 )]
     [BooleanField( "Show Campuses", "Should giving be associated with a specific campus?", false, "UI Options", 1 )]
-    [BooleanField( "Show Credit Card", "Allow users to give using a credit card?", true, "UI Options", 2 )]
-    [BooleanField( "Show Checking/ACH", "Allow users to give using a checking account?", true, "UI Options", 3 )]
-    [BooleanField( "Show Frequencies", "Allow users to give recurring gifts?", true, "UI Options", 4 )]
+    [BooleanField( "Show Additional Accounts", "Should users be allowed to give to additional accounts?", true, "UI Options", 2 )]
+    [BooleanField( "Show Credit Card", "Allow users to give using a credit card?", true, "UI Options", 3 )]
+    [BooleanField( "Show Checking/ACH", "Allow users to give using a checking account?", true, "UI Options", 4 )]
+    [BooleanField( "Show Frequencies", "Allow users to give recurring gifts?", true, "UI Options", 5 )]
+    [BooleanField( "Require Phone", "Should financial contributions require a user's phone number?", true, "UI Options", 6 )]   
     [TextField( "Confirmation Message", "What text should be displayed on the confirmation page?", true,
-        @"{{ ContributionHeader }}<br/><br/>
+        @"{{ ContributionConfirmationHeader }}<br/><br/>
         {{ Person.FullName }},<br/><br/>
         You're about to give a total of <strong>{{ TotalContribution }}</strong> using your {{ PaymentType }} ending in {{ PaymentLastFour }}.<br/><br/>
         If this is correct, please press Give.  Otherwise, click Back to edit.<br/>
-        Thank you,<br/>
+        Thank you,<br/><br/>
         {{ OrganizationName }}<br/>  
         {{ ContributionFooter }}"
-    , "UI Options", 5)]
+    , "Messages", 0)]
     [TextField( "Receipt Message", "What text should be displayed on the receipt page?", true,
-        @"{{ ReceiptHeader }}<br/><br/>
+        @"{{ ContributionReceiptHeader }}<br/>
         {{ Person.FullName }},<br/><br/>
         Thank you for your generosity! You just gave a total of {{ TotalContribution }} to {{ OrganizationName }}.<br/><br/>        
         {{ ReceiptFooter }}"
-    , "UI Options", 5 )]
+    , "Messages", 1 )]
+    [TextField( "Summary Message", "What text should be displayed on the transaction summary?", true,
+        @"{{ Date }}: {{ TotalContribution }} given by {{ Person.FullName }} using a {{ PaymentType }} ending in {{ PaymentLastFour }}."
+    , "Messages", 2 )]
     public partial class GivingProfileDetail : RockBlock
     {
         #region Fields
@@ -100,8 +104,6 @@ namespace RockWeb.Blocks.Finance
                 {
                     _spanClass = "span9 offset2";
 
-                    
-
                     divCity.AddCssClass( "span7" );
                     divState.AddCssClass( "span3" );
                     divZip.AddCssClass( "span2" );
@@ -138,8 +140,8 @@ namespace RockWeb.Blocks.Finance
                 divPayment.AddCssClass( _spanClass );
                 divNext.AddCssClass( _spanClass );
                 divConfirm.AddCssClass( _spanClass );
-                divGiveBack.AddCssClass( _spanClass );
                 divReceipt.AddCssClass( _spanClass );
+                divGiveBack.AddCssClass( _spanClass );
                 divPrint.AddCssClass( _spanClass );
 
                 // Show Campus
@@ -152,7 +154,7 @@ namespace RockWeb.Blocks.Finance
                 {
                     divCampus.Visible = false;
                 }
-
+                                
                 // Show Frequencies
                 if ( Convert.ToBoolean( GetAttributeValue( "ShowFrequencies" ) ) )
                 {
@@ -203,18 +205,11 @@ namespace RockWeb.Blocks.Finance
                 ddlNewState.LabelText = string.Empty;
                 txtZip.LabelText = string.Empty;
                 txtNewZip.LabelText = string.Empty;
-            }            
-        }
+            }
 
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
-        /// </summary>
-        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        //protected override void OnLoad( EventArgs e )
-        //{
-        //    base.OnLoad( e );            
-        //}
-        
+            chkDefaultAddress.Checked = true;
+        }
+       
         #endregion
 
         #region Edit Events
@@ -297,7 +292,7 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            RebindAmounts( (Dictionary<FinancialAccount, Decimal>)Session["CachedAmounts"] );
+            RebindAmounts();
         }
 
         /// <summary>
@@ -308,7 +303,7 @@ namespace RockWeb.Blocks.Finance
         protected void btnBack_Click( object sender, EventArgs e )
         {
             pnlConfirm.Visible = false;
-            RebindAmounts( (Dictionary<FinancialAccount, Decimal>)Session["CachedAmounts"] );
+            RebindAmounts();
             pnlDetails.Visible = true;
             pnlPayment.Visible = true;
         }
@@ -322,7 +317,8 @@ namespace RockWeb.Blocks.Finance
         {
             SaveAmounts();
             divLimitNumber.Visible = !divLimitNumber.Visible;
-            RebindAmounts( (Dictionary<FinancialAccount, Decimal>)Session["CachedAmounts"] );
+            chkLimitGifts.Focus();
+            RebindAmounts();
         }
             
         /// <summary>
@@ -353,11 +349,12 @@ namespace RockWeb.Blocks.Finance
         protected void chkDefaultAddress_CheckedChanged( object sender, EventArgs e )
         {
             SaveAmounts();
-            divNewAddress.Visible = !divNewAddress.Visible;
-            txtNewCity.Required = !txtNewCity.Required;
-            ddlNewState.Required = !ddlNewState.Required;
-            txtNewZip.Required = !txtNewZip.Required;
-            RebindAmounts( (Dictionary<FinancialAccount, Decimal>)Session["CachedAmounts"] );
+            bool visibility = !chkDefaultAddress.Checked;
+            divNewAddress.Visible = visibility;
+            txtNewCity.Required = visibility;
+            ddlNewState.Required = visibility;
+            txtNewZip.Required = visibility;
+            RebindAmounts();
         }
 
         /// <summary>
@@ -380,7 +377,7 @@ namespace RockWeb.Blocks.Finance
                 ( (HtmlGenericControl)lb.Parent ).AddCssClass( "active" );
             }
 
-            RebindAmounts( (Dictionary<FinancialAccount, Decimal>)Session["CachedAmounts"] );
+            RebindAmounts();
             ShowSelectedTab();
         }
 
@@ -401,13 +398,11 @@ namespace RockWeb.Blocks.Finance
             var amountList = (Dictionary<FinancialAccount, Decimal>)Session["CachedAmounts"];
             Person person = FindPerson();        
 
-            // Set up confirmation message
-            var configValues = new Dictionary<string,object>();
-            
+            var configValues = new Dictionary<string,object>();            
             Rock.Web.Cache.GlobalAttributesCache.Read().AttributeValues
                 .Where( v => 
                     v.Key.StartsWith( "Organization", StringComparison.CurrentCultureIgnoreCase ) || 
-                    v.Key.StartsWith( "Confirmation", StringComparison.CurrentCultureIgnoreCase ) )
+                    v.Key.StartsWith( "Contribution", StringComparison.CurrentCultureIgnoreCase ) )
                 .ToList()
                 .ForEach( v => configValues.Add( v.Key, v.Value.Value ) );
             
@@ -454,6 +449,7 @@ namespace RockWeb.Blocks.Finance
             
             var confirmationTemplate = GetAttributeValue( "ConfirmationMessage" );
             lPaymentConfirmation.Text = confirmationTemplate.ResolveMergeFields( configValues );
+            Session["CachedMergeFields"] = configValues;
                         
             pnlDetails.Visible = false;
             pnlPayment.Visible = false;
@@ -468,8 +464,17 @@ namespace RockWeb.Blocks.Finance
         protected void btnGive_Click( object sender, EventArgs e )
         {
             var amountList = (Dictionary<FinancialAccount, Decimal>)Session["CachedAmounts"];
+            var profileId = (int)Session["CachedTransactionId"];
             Location giftLocation = new Location();     
             Person person = FindPerson();
+
+            var configValues = (Dictionary<string, object>)Session["CachedMergeFields"];
+            configValues.Add( "Date", DateTime.Now );
+            
+            var receiptTemplate = GetAttributeValue( "ReceiptMessage" );
+            lReceipt.Text = receiptTemplate.ResolveMergeFields( configValues );
+            var summaryTemplate = GetAttributeValue( "SummaryMessage" );
+            string summaryMessage = summaryTemplate.ResolveMergeFields( configValues );
 
             if ( chkDefaultAddress.Checked )
             {
@@ -494,30 +499,44 @@ namespace RockWeb.Blocks.Finance
             ///////////// service //////////////////
             ////////////// #TODO ///////////////////
 
-            if ( divFrequency.Visible && btnFrequency.SelectedValueAsInt() != DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TYPE_ONE_TIME ).Id )
+            if ( btnFrequency.SelectedIndex > -1 && btnFrequency.SelectedValueAsInt() != DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TYPE_ONE_TIME ).Id )
             {
                 using ( new UnitOfWorkScope() )
                 {
                     RockTransactionScope.WrapTransaction( () =>
                     {
                         var scheduledTransactionDetailService = new FinancialScheduledTransactionDetailService();
-                        var scheduledTransactionService = new FinancialScheduledTransactionService();                        
-                        var scheduledTransaction = new FinancialScheduledTransaction();
+                        var scheduledTransactionService = new FinancialScheduledTransactionService();
+                        FinancialScheduledTransaction scheduledTransaction;
                         var detailList = amountList.ToList();
+
+                        if ( profileId != null )
+                        {
+                            scheduledTransaction = scheduledTransactionService.Get( profileId );
+                        }
+                        else
+                        {
+                            scheduledTransaction = new FinancialScheduledTransaction();
+                            scheduledTransactionService.Add( scheduledTransaction, person.Id );
+                        }
 
                         scheduledTransaction.TransactionFrequencyValueId = (int)btnFrequency.SelectedValueAsInt();
                         scheduledTransaction.StartDate = (DateTime)dtpStartDate.SelectedDate;
                         scheduledTransaction.AuthorizedPersonId = person.Id;
                         scheduledTransaction.IsActive = true;
 
+                        if ( !string.IsNullOrEmpty( txtCreditCard.Text ) )
+                        {
+                            scheduledTransaction.CardReminderDate = dtpExpiration.SelectedDate;
+                        }                        
+
                         if ( chkLimitGifts.Checked && !string.IsNullOrWhiteSpace( txtLimitNumber.Text ) )
                         {
                             scheduledTransaction.NumberOfPayments = Convert.ToInt32( txtLimitNumber.Text );
                         }                                                
                         
-                        scheduledTransactionService.Add( scheduledTransaction, person.Id );
-                        scheduledTransactionService.Save( scheduledTransaction, person.Id );
-
+                        
+                        
                         foreach ( var detail in amountList.ToList() )
                         {
                             var scheduledTransactionDetail = new FinancialScheduledTransactionDetail();
@@ -526,7 +545,9 @@ namespace RockWeb.Blocks.Finance
                             scheduledTransactionDetail.ScheduledTransactionId = scheduledTransaction.Id;
                             scheduledTransactionDetailService.Add( scheduledTransactionDetail, person.Id );
                             scheduledTransactionDetailService.Save( scheduledTransactionDetail, person.Id );
-                        }                        
+                        }
+
+                        scheduledTransactionService.Save( scheduledTransaction, person.Id );
                     });
                 }
             }
@@ -541,12 +562,12 @@ namespace RockWeb.Blocks.Finance
                         var transaction = new FinancialTransaction();
                         var detailList = amountList.ToList();
 
+                        transaction.Summary = summaryMessage;
                         transaction.Amount = detailList.Sum( d => d.Value );
                         transaction.TransactionTypeValueId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION ).Id;
                         transaction.AuthorizedPersonId = person.Id;
                         transactionService.Add( transaction, person.Id );
-                        transactionService.Save( transaction, person.Id );
-
+                        
                         foreach ( var detail in detailList )
                         {
                             var td = new FinancialTransactionDetail();
@@ -557,25 +578,12 @@ namespace RockWeb.Blocks.Finance
                             tdService.Add( td, person.Id );
                             tdService.Save( td, person.Id );
                         }
+
+                        transactionService.Save( transaction, person.Id );
                     } );
                 }
             }
             
-            // display receipt
-            var configValues = new Dictionary<string, object>();
-            Rock.Web.Cache.GlobalAttributesCache.Read().AttributeValues
-                .Where( v =>
-                    v.Key.StartsWith( "Organization", StringComparison.CurrentCultureIgnoreCase ) ||
-                    v.Key.StartsWith( "Receipt", StringComparison.CurrentCultureIgnoreCase ) )
-                .ToList()
-                .ForEach( v => configValues.Add( v.Key, v.Value.Value ) );
-
-            configValues.Add( "Person", person );
-            configValues.Add( "TotalContribution", amountList.Sum( d => d.Value ).ToString() );
-
-            var receiptTemplate = GetAttributeValue( "ReceiptMessage" );
-            lReceipt.Text = receiptTemplate.ResolveMergeFields( configValues );
-
             pnlConfirm.Visible = false;
             pnlComplete.Visible = true;
         }
@@ -587,12 +595,23 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCreateAccount_Click( object sender, EventArgs e )
         {
-            ViewState["Password"] = txtPassword.Text;
             Dictionary<string, string> userValues = new Dictionary<string, string>();
+            ViewState["Password"] = txtPassword.Text;            
             userValues.Add( "FirstName", txtFirstName.Text );
             userValues.Add( "LastName", txtLastName.Text );
             userValues.Add( "Email", txtEmail.Text );
             NavigateToLinkedPage( "NewAccount", userValues );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSavePaymentInfo control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSavePaymentInfo_Click( object sender, EventArgs e )
+        {
+            // save info
+            divPaymentNick.Visible = false;
         }
 
         #endregion
@@ -627,7 +646,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         protected void RebindAmounts( Dictionary<FinancialAccount, Decimal> amountList = null )
         {
-            amountList = amountList ?? new Dictionary<FinancialAccount, Decimal>();
+            amountList = amountList ?? (Dictionary<FinancialAccount, Decimal>)Session["CachedAmounts"];
             rptAccountList.DataSource = amountList;
             rptAccountList.DataBind();
             spnTotal.InnerText = amountList.Sum( d => d.Value ).ToString();
@@ -673,7 +692,10 @@ namespace RockWeb.Blocks.Finance
         protected void BindProfile( int profileId )
         {
             var accountService = new FinancialAccountService();
-            var activeAccounts = accountService.Queryable().Where( f => f.IsActive );
+            var activeAccounts = accountService.Queryable().Where( f => f.IsActive 
+                && ( f.StartDate == null || f.StartDate <= DateTime.Now )
+                && ( f.EndDate == null || f.EndDate <= DateTime.Now )
+                && f.PublicName != null && f.PublicName != "" );
             var accountGuids = GetAttributeValues( "DefaultAccounts" ).Select( Guid.Parse ).ToList();
             var scheduledTransactionService = new FinancialScheduledTransactionService();
             var transactionList = new Dictionary<FinancialAccount, decimal>();
@@ -681,19 +703,19 @@ namespace RockWeb.Blocks.Finance
 
             if ( profileId != 0 && scheduledTransactionService.TryGet( profileId, out scheduledTransaction ) )
             {   // Retrieve Transaction
-                btnFrequency.SelectedValue = scheduledTransaction.TransactionFrequencyValue.ToString();
-                dtpStartDate.SelectedDate = scheduledTransaction.StartDate;
+                btnFrequency.SelectedValue = scheduledTransaction.TransactionFrequencyValue.Id.ToString();
                 divFrequency.Visible = true;
+                dtpStartDate.SelectedDate = scheduledTransaction.StartDate;                
+                divRecurrence.Visible = true;
+                divLimitGifts.Visible = true;
 
                 if ( scheduledTransaction.NumberOfPayments != null )
                 {
                     chkLimitGifts.Checked = true;
                     txtLimitNumber.Text = scheduledTransaction.NumberOfPayments.ToString();
-                    divLimitGifts.Visible = true;
                     divLimitNumber.Visible = true;
                 }
 
-                // set btnCampus.SelectedValue
                 foreach ( var details in scheduledTransaction.ScheduledTransactionDetails)
                 {
                     transactionList.Add( details.Account, details.Amount );
@@ -709,15 +731,16 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 var campusId = btnCampusList.SelectedValueAsInt();
-                selectedAccounts = selectedAccounts.Where( f => f.CampusId == campusId || f.CampusId == null );
+                selectedAccounts = selectedAccounts.Where( f => f.CampusId == campusId 
+                    || ( f.CampusId == null && f.ChildAccounts.Count() == 0 ) );
 
                 foreach ( var account in selectedAccounts )
                 {
-                    transactionList.Add( account, 0M );
+                    transactionList.Add( account, new decimal() );
                 }                  
             }
 
-            if ( activeAccounts.Count() > transactionList.Count() )
+            if ( activeAccounts.Count() > transactionList.Count() && Convert.ToBoolean( GetAttributeValue( "ShowAdditionalAccounts" ) ) )
             {
                 var unselectedAccounts = activeAccounts.Where( a => !accountGuids.Contains( a.Guid ) ).ToList();
 
@@ -735,8 +758,10 @@ namespace RockWeb.Blocks.Finance
             }
 
             Session["CachedAmounts"] = transactionList;
+            Session["CachedTransactionId"] = profileId;
             rptAccountList.DataSource = transactionList;
             rptAccountList.DataBind();
+            spnTotal.InnerText = transactionList.Sum( d => d.Value ).ToString( "f2" );
         }
 
         /// <summary>
@@ -744,7 +769,6 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         protected void BindPaymentTypes( bool showCredit, bool showChecking )
         {
-            // get all available payment types
             var queryable = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_PAYMENT_TYPE ) )
                 .DefinedValues.AsQueryable();
 
@@ -762,6 +786,7 @@ namespace RockWeb.Blocks.Finance
 
             rptPaymentType.DataSource = queryable.ToList();
             rptPaymentType.DataBind();
+            ShowSelectedTab();
 
             ( (HtmlGenericControl)rptPaymentType.Items[0].FindControl( "liSelectedTab" ) ).AddCssClass( "active" );
         }
@@ -829,6 +854,23 @@ namespace RockWeb.Blocks.Finance
                 txtCVV.Required = false;
                 txtCardName.Required = false;
             }
+            else
+            {
+                pnlChecking.Visible = false;
+                pnlCreditCard.Visible = false;
+            }
+        }
+
+        protected void AccountValidator_ServerValidate( object source, ServerValidateEventArgs args )
+        {
+            foreach ( RepeaterItem item in rptAccountList.Items )
+            {
+                if ( Convert.ToBoolean( ( (HiddenField)item.FindControl( "hfAccountValidator" ) ).Value ) )
+                {
+                    args.IsValid = true;
+                    break;
+                }
+            }            
         }
 
         /// <summary>
@@ -867,5 +909,6 @@ namespace RockWeb.Blocks.Finance
         }
 
         #endregion                
+
     }
 }
