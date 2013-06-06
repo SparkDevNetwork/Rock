@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.Linq;
 using System.Web.UI;
 using Rock.Constants;
 using Rock.Data;
@@ -99,6 +100,24 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
+        /// Gets the name of the fully qualified page.
+        /// </summary>
+        /// <param name="page">The page.</param>
+        /// <returns></returns>
+        private string GetFullyQualifiedPageName( Rock.Model.Page page )
+        {
+            string result = page.Name;
+            Rock.Model.Page parent = page.ParentPage;
+            while ( parent != null )
+            {
+                result = parent.Name + " / " + result;
+                parent = parent.ParentPage;
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Shows the detail.
         /// </summary>
         /// <param name="itemKey">The item key.</param>
@@ -130,11 +149,20 @@ namespace RockWeb.Blocks.Administration
             tbName.Text = blockType.Name;
             tbPath.Text = blockType.Path;
             tbDescription.Text = blockType.Description;
+            foreach ( var fullPageName in blockType.Blocks.ToList().Where( a => a.Page != null ).Select(a => GetFullyQualifiedPageName(a.Page)).OrderBy(a => a))
+            {
+                lstPages.Items.Add( fullPageName );
+            }
+
+            if ( lstPages.Items.Count == 0 )
+            {
+                lstPages.Items.Add( Rock.Constants.None.Text );
+            }
 
             string blockPath = Request.MapPath( blockType.Path );
             if ( !System.IO.File.Exists( blockPath ) )
             {
-                lblStatus.Text = string.Format( "<span class='label label-important'>The file '{0}' does not exist.</span>", blockType.Path );
+                lblStatus.Text = string.Format( "<span class='label label-important'>The file '{0}' [{1}] does not exist.</span>", blockType.Path, blockType.Guid );
             }
             else
             {
