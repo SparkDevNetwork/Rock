@@ -340,11 +340,11 @@ namespace RockWeb.Blocks.Administration
                         attributeService.Add( attribute, CurrentPersonId );
                     }
 
-                    edtAttribute.GetAttributeProperties( attribute );
-
                     attribute.EntityTypeId = _entityTypeId;
                     attribute.EntityTypeQualifierColumn = _entityQualifierColumn;
                     attribute.EntityTypeQualifierValue = _entityQualifierValue;
+
+                    edtAttribute.GetAttributeProperties( attribute );
 
                     // Controls will show warnings
                     if ( !attribute.IsValid )
@@ -389,9 +389,10 @@ namespace RockWeb.Blocks.Administration
 
             AttributeService attributeService = new AttributeService();
             var items = attributeService.Get( _entityTypeId, _entityQualifierColumn, _entityQualifierValue )
-                .Where( a => a.Category != string.Empty && a.Category != null )
-                .OrderBy( a => a.Category )
-                .Select( a => a.Category )
+                .Where( a => a.Categories.Any() )
+                .SelectMany( a => a.Categories )
+                .OrderBy( c => c.Name )
+                .Select( c => c.Name )
                 .Distinct()
                 .ToList();
 
@@ -414,7 +415,7 @@ namespace RockWeb.Blocks.Administration
             if ( ddlCategoryFilter.SelectedValue != Rock.Constants.All.Text )
             {
                 queryable = queryable.
-                    Where( a => a.Category == ddlCategoryFilter.SelectedValue );
+                    Where( a => a.Categories.Any( c => string.Compare( c.Name, ddlCategoryFilter.SelectedValue, true ) == 0 ) );
             }
 
             SortProperty sortProperty = rGrid.SortProperty;
@@ -426,8 +427,7 @@ namespace RockWeb.Blocks.Administration
             else
             {
                 queryable = queryable.
-                    OrderBy( a => a.Category ).
-                    ThenBy( a => a.Key );
+                    OrderBy( a => a.Key );
             }
 
             rGrid.DataSource = queryable.ToList();
@@ -445,7 +445,7 @@ namespace RockWeb.Blocks.Administration
             if ( attributeModel == null )
             {
                 attributeModel = new Rock.Model.Attribute();
-                attributeModel.Category = ddlCategoryFilter.SelectedValue != Rock.Constants.All.Text ? ddlCategoryFilter.SelectedValue : string.Empty;
+                attributeModel.Categories = ddlCategoryFilter.SelectedValue != Rock.Constants.All.Text ? ddlCategoryFilter.SelectedValue : string.Empty;
                 edtAttribute.ActionTitle = Rock.Constants.ActionTitle.Add( Rock.Model.Attribute.FriendlyTypeName );
             }
             else

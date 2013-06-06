@@ -36,7 +36,7 @@ namespace Rock.Model
                 query = query.Where( t => !t.EntityTypeId.HasValue );
             }
 
-            return query.OrderBy( t => t.Category ).ThenBy( t => t.Order ).ThenBy( t => t.Name );
+            return query.OrderBy( t => t.Order ).ThenBy( t => t.Name );
         }
 
         /// <summary>

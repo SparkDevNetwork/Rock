@@ -80,10 +80,11 @@ namespace Rock.Attribute
             {
                 var attributeQualifierService = new Model.AttributeQualifierService();
                 var fieldTypeService = new Model.FieldTypeService();
+                var categoryService = new Model.CategoryService();
 
                 foreach ( var blockProperty in blockProperties )
                 {
-                    attributesUpdated = UpdateAttribute( attributeService, attributeQualifierService, fieldTypeService,
+                    attributesUpdated = UpdateAttribute( attributeService, attributeQualifierService, fieldTypeService, categoryService,
                         blockProperty, entityTypeId, entityQualifierColumn, entityQualifierValue, currentPersonId ) || attributesUpdated;
                     existingKeys.Add( blockProperty.Key );
                 }
@@ -111,7 +112,7 @@ namespace Rock.Attribute
         /// <param name="entityQualifierValue">The entity qualifier value.</param>
         /// <param name="currentPersonId">The current person id.</param>
         /// <returns></returns>
-        private static bool UpdateAttribute( Model.AttributeService attributeService, Model.AttributeQualifierService attributeQualifierService, Model.FieldTypeService fieldTypeService, 
+        private static bool UpdateAttribute( Model.AttributeService attributeService, Model.AttributeQualifierService attributeQualifierService, Model.FieldTypeService fieldTypeService, Model.CategoryService categoryService,
             FieldAttribute property, int? entityTypeId, string entityQualifierColumn, string entityQualifierValue, int? currentPersonId )
         {
             bool updated = false;
@@ -135,13 +136,19 @@ namespace Rock.Attribute
             {
                 // Check to see if the existing attribute record needs to be updated
                 if ( attribute.Name != property.Name ||
-                    attribute.Category != property.Category ||
                     attribute.DefaultValue != property.DefaultValue ||
                     attribute.Description != property.Description ||
                     attribute.Order != property.Order ||
                     attribute.FieldType.Assembly != property.FieldTypeAssembly ||
                     attribute.FieldType.Class != property.FieldTypeClass ||
                     attribute.IsRequired != property.IsRequired )
+                {
+                    updated = true;
+                }
+
+                // Check category
+                else if ( attribute.Categories.Any( c => c.Name != property.Category ) ||
+                    attribute.Categories.Where( c => c.Name == property.Category ).FirstOrDefault() == null )
                 {
                     updated = true;
                 }
@@ -171,11 +178,26 @@ namespace Rock.Attribute
             {
                 // Update the attribute
                 attribute.Name = property.Name;
-                attribute.Category = property.Category;
                 attribute.Description = property.Description;
                 attribute.DefaultValue = property.DefaultValue;
                 attribute.Order = property.Order;
                 attribute.IsRequired = property.IsRequired;
+
+                attribute.Categories.Clear();
+                if ( !string.IsNullOrWhiteSpace( property.Category ) )
+                {
+                    int attributeEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
+                    var category = categoryService.Get( property.Category, attributeEntityTypeId, "EntityTypeId", entityTypeId.ToString() ).FirstOrDefault();
+                    if ( category == null )
+                    {
+                        category = new Category();
+                        category.Name = property.Category;
+                        category.EntityTypeId = attributeEntityTypeId;
+                        category.EntityTypeQualifierColumn = "EntityTypeId";
+                        category.EntityTypeQualifierValue = entityTypeId.ToString();
+                    }
+                    attribute.Categories.Add( category );
+                }
 
                 foreach ( var qualifier in attribute.AttributeQualifiers.ToList() )
                 {
@@ -248,18 +270,12 @@ namespace Rock.Attribute
                 }
             }
 
-            var attributeCategories = new Dictionary<string, List<string>>();
             var attributeValues = new Dictionary<string, List<Rock.Model.AttributeValue>>();
 
             if ( attributes.Any() )
             {
                 foreach ( var attribute in attributes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
                 {
-                    // Categorize the attributes
-                    if ( !attributeCategories.ContainsKey( attribute.Category ) )
-                        attributeCategories.Add( attribute.Category, new List<string>() );
-                    attributeCategories[attribute.Category].Add( attribute.Key );
-
                     // Add a placeholder for this item's value for each attribute
                     attributeValues.Add( attribute.Key, new List<Rock.Model.AttributeValue>() );
                 }
@@ -306,12 +322,76 @@ namespace Rock.Attribute
                 }
             }
 
-            entity.AttributeCategories = attributeCategories;
-
             entity.Attributes = new Dictionary<string, Web.Cache.AttributeCache>();
             attributes.ForEach( a => entity.Attributes.Add( a.Key, a ) );
 
             entity.AttributeValues = attributeValues;
+        }
+
+        /// <summary>
+        /// Gets the attribute categories.
+        /// </summary>
+        /// <param name="entity">The entity.</param>
+        /// <param name="allowMultiple">if set to <c>true</c> returns the attribute in each of it's categories, if false, only returns attribut in first category.</param>
+        /// <returns></returns>
+        public static List<AttributeCategory> GetAttributeCategories( IHasAttributes entity, bool allowMultiple = false )
+        {
+            var attributes = entity.Attributes.Select( a => a.Value ).ToList();
+            return GetAttributeCategories( attributes, allowMultiple );
+        }
+
+        /// <summary>
+        /// Gets attributes grouped by category
+        /// </summary>
+        /// <param name="attributes">The attributes.</param>
+        /// <param name="allowMultiple">if set to <c>true</c> returns the attribute in each of it's categories, if false, only returns attribut in first category.</param>
+        /// <returns></returns>
+        public static List<AttributeCategory> GetAttributeCategories( List<Rock.Web.Cache.AttributeCache> attributes, bool allowMultiple = false )
+        {
+            var attributeCategories = new List<AttributeCategory>();
+            foreach ( var attribute in attributes )
+            {
+                if ( attribute.Categories.Any() )
+                {
+                    foreach ( var category in attribute.Categories.OrderBy( c => c.Name ) )
+                    {
+                        AddAttributeCategory( attributeCategories, category, attribute );
+                        if (!allowMultiple)
+                        {
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    AddAttributeCategory( attributeCategories, null, attribute );
+                }
+            }
+
+            return attributeCategories.OrderBy( c => c.Category.Name ).ToList();
+        }
+
+        private static void AddAttributeCategory( List<AttributeCategory> attributeCategories, Rock.Web.Cache.CategoryCache category, Rock.Web.Cache.AttributeCache attribute )
+        {
+            AttributeCategory attributeCategory = null;
+            if (category != null)
+            {
+                attributeCategory = attributeCategories.Where( g => g.Category.Id == category.Id ).FirstOrDefault();
+            }
+            else
+            {
+                attributeCategory = attributeCategories.Where( g => g.Category == null ).FirstOrDefault();
+            }
+
+            if ( attributeCategory == null )
+            {
+                attributeCategory = new AttributeCategory();
+                attributeCategory.Category = category;
+                attributeCategory.Attributes = new List<Web.Cache.AttributeCache>();
+                attributeCategories.Add( attributeCategory );
+            }
+
+            attributeCategory.Attributes.Add( attribute );
         }
 
         /// <summary>
@@ -409,25 +489,6 @@ namespace Rock.Attribute
         /// <param name="target">The target.</param>
         public static void CopyAttributes( IHasAttributes source, IHasAttributes target )
         {
-            // Copy Categories
-            if ( source.AttributeCategories != null )
-            {
-                target.AttributeCategories = new Dictionary<string, List<string>>();
-                foreach ( var item in source.AttributeCategories )
-                {
-                    var list = new List<string>();
-                    foreach ( string value in item.Value )
-                    {
-                        list.Add( value );
-                    }
-                    target.AttributeCategories.Add( item.Key, list );
-                }
-            }
-            else
-            {
-                target.AttributeCategories = null;
-            }
-
             // Copy Attributes
             if ( source.Attributes != null )
             {
@@ -493,14 +554,12 @@ namespace Rock.Attribute
         {
             if ( item.Attributes != null )
             {
-                if ( item.AttributeCategories.ContainsKey( string.Empty ) )
+                foreach(var attributeCategory in GetAttributeCategories(item ))
                 {
-                    AddEditControls( string.Empty, item.AttributeCategories[string.Empty], item, parentControl, setValue, exclude );
-                }
-
-                foreach ( var category in item.AttributeCategories.Where( i => i.Key != string.Empty ) )
-                {
-                    AddEditControls( category.Key, category.Value, item, parentControl, setValue, exclude );
+                    AddEditControls(
+                        attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty,
+                        attributeCategory.Attributes.Select( a => a.Key ).ToList(),
+                        item, parentControl, setValue, exclude);
                 }
             }
         }
@@ -605,19 +664,20 @@ namespace Rock.Attribute
 
             if ( item.Attributes != null )
             {
-                foreach ( var category in item.AttributeCategories )
+                foreach ( var attributeCategory in GetAttributeCategories( item ) )
                 {
                     HtmlGenericControl header = new HtmlGenericControl( "h4" );
-                    header.InnerText = category.Key.Trim() != string.Empty ? category.Key.Trim() : item.GetType().GetFriendlyTypeName() +  " Attributes";
+
+                    string categoryName = attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty;
+
+                    header.InnerText = string.IsNullOrWhiteSpace( categoryName ) ? item.GetType().GetFriendlyTypeName() + " Attributes" : categoryName.Trim();
                     parentControl.Controls.Add( header );
-                    
+
                     HtmlGenericControl dl = new HtmlGenericControl( "dl" );
                     parentControl.Controls.Add( dl );
 
-                    foreach ( string key in category.Value )
+                    foreach ( var attribute in attributeCategory.Attributes )
                     {
-                        var attribute = item.Attributes[key];
-
                         if ( !exclude.Contains( attribute.Name ) )
                         {
                             HtmlGenericControl dt = new HtmlGenericControl( "dt" );
@@ -639,7 +699,7 @@ namespace Rock.Attribute
                 }
             }
         }
-        
+
         /// <summary>
         /// Sets any missing required field error indicators.
         /// </summary>
@@ -684,5 +744,41 @@ namespace Rock.Attribute
                     }
                 }
         }
+
+
     }
+
+    /// <summary>
+    /// Attributes group by category
+    /// </summary>
+    public class AttributeCategory
+    {
+        /// <summary>
+        /// Gets or sets the category.
+        /// </summary>
+        /// <value>
+        /// The category.
+        /// </value>
+        public Rock.Web.Cache.CategoryCache Category { get; set; }
+
+        /// <summary>
+        /// Gets or sets the attributes.
+        /// </summary>
+        /// <value>
+        /// The attributes.
+        /// </value>
+        public List<Rock.Web.Cache.AttributeCache> Attributes { get; set; }
+
+        /// <summary>
+        /// Gets the name of the category.
+        /// </summary>
+        /// <value>
+        /// The name of the category.
+        /// </value>
+        public string CategoryName
+        {
+            get { return Category != null ? Category.Name : string.Empty; }
+        }
+    }
+
 }
