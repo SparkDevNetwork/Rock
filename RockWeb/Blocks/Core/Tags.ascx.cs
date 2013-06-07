@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.Core
             {
                 var service = new TaggedItemService();
                 foreach ( dynamic item in service.Get(
-                    contextEntity.TypeId, entityQualifierColumn, entityQualifierValue, CurrentPersonId, contextEntity.Id )
+                    contextEntity.TypeId, entityQualifierColumn, entityQualifierValue, CurrentPersonId, contextEntity.Guid )
                     .Select( i => new {
                         OwnerId = i.Tag.OwnerId,
                         Name = i.Tag.Name
@@ -135,7 +135,7 @@ namespace RockWeb.Blocks.Core
     }}
 
 ",
-    contextEntity.TypeId, CurrentPersonId, contextEntity.Id,
+    contextEntity.TypeId, CurrentPersonId, contextEntity.Guid.ToString(),
     string.IsNullOrWhiteSpace( entityQualifierColumn ) ? "" : "/" + entityQualifierColumn,
     string.IsNullOrWhiteSpace( entityQualifierValue ) ? "" : "/" + entityQualifierValue );
                 this.Page.ClientScript.RegisterStartupScript( this.GetType(), "tags-" + this.CurrentBlock.Id.ToString(), script, true );

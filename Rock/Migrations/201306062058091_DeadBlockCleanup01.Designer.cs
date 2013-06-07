@@ -5,13 +5,13 @@ namespace Rock.Migrations
     using System.Data.Entity.Migrations.Infrastructure;
     using System.Resources;
     
-    public sealed partial class FinancialBatchNewFields : IMigrationMetadata
+    public sealed partial class DeadBlockCleanup01 : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(FinancialBatchNewFields));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(DeadBlockCleanup01));
         
         string IMigrationMetadata.Id
         {
-            get { return "201304111854079_FinancialBatchNewFields"; }
+            get { return "201306062058091_DeadBlockCleanup01"; }
         }
         
         string IMigrationMetadata.Source
