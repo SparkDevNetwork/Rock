@@ -45,14 +45,13 @@
 
             $modal.find('.recurrence-pattern-radio').click(function () {
 
-                var recurrencePattern = '#' + $('input[class=recurrence-pattern-radio]:checked').data('recurrence-pattern');
+                var recurrencePattern = '.' + $('input[class=recurrence-pattern-radio]:checked').data('recurrence-pattern');
 
-                if ($(recurrencePattern).is(':visible')) {
+                if ($modal.find(recurrencePattern)) {
 
-                    $modal.find('.recurrence-pattern-type').slideUp(function () {
-                        $modal.find('.scroll-container').tinyscrollbar_update('relative');
-                    });
-                    $(recurrencePattern).slideDown(function () {
+                    $modal.find('.recurrence-pattern-type').not(recurrencePattern).hide();
+
+                    $(recurrencePattern).fadeIn(function () {
                         $modal.find('.scroll-container').tinyscrollbar_update('relative');
                     });
                 }
