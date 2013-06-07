@@ -74,7 +74,7 @@ namespace Rock.Model
                 var target = new TaggedItem();
                 target.IsSystem = source.IsSystem;
                 target.TagId = source.TagId;
-                target.EntityId = source.EntityId;
+                target.EntityGuid = source.EntityGuid;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 
