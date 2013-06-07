@@ -54,10 +54,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialTransaction.FriendlyTypeName, FinancialTransactionImage.FriendlyTypeName );
                 return false;
             }  
-            
-            // ignoring FinancialTransactionRefund,Id 
-            
-            // ignoring FinancialTransactionRefund,RefundTransactionId 
+ 
+            if ( new Service<FinancialTransactionRefund>().Queryable().Any( a => a.Id == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialTransaction.FriendlyTypeName, FinancialTransactionRefund.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }

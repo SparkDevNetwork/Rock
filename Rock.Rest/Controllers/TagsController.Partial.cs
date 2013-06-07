@@ -25,7 +25,7 @@ namespace Rock.Rest.Controllers
         {
             routes.MapHttpRoute(
                 name: "TagNamesAvail",
-                routeTemplate: "api/tags/availablenames/{entityTypeId}/{ownerid}/{entityid}/{entityqualifier}/{entityqualifiervalue}",
+                routeTemplate: "api/tags/availablenames/{entityTypeId}/{ownerid}/{entityguid}/{entityqualifier}/{entityqualifiervalue}",
                 defaults: new
                 {
                     controller = "tags",
@@ -72,23 +72,23 @@ namespace Rock.Rest.Controllers
         }
 
         [HttpGet]
-        public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, int entityId )
+        public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, Guid entityGuid )
         {
-            return AvailableNames( entityTypeId, ownerId, entityId, string.Empty, string.Empty );
+            return AvailableNames( entityTypeId, ownerId, entityGuid, string.Empty, string.Empty );
         }
 
         [HttpGet]
-        public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, int entityId, string entityQualifier )
+        public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, Guid entityGuid, string entityQualifier )
         {
-            return AvailableNames( entityTypeId, ownerId, entityId, entityQualifier, string.Empty );
+            return AvailableNames( entityTypeId, ownerId, entityGuid, entityQualifier, string.Empty );
         }
 
         [HttpGet]
-        public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, int entityId, string entityQualifier, string entityQualifierValue )
+        public IQueryable<Tag> AvailableNames( int entityTypeId, int ownerId, Guid entityGuid, string entityQualifier, string entityQualifierValue )
         {
             var service = new TagService();
             return service.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId )
-                .Where( t => t.TaggedItems.Select( i => i.EntityId ).Contains( entityId ) == false )
+                .Where( t => t.TaggedItems.Select( i => i.EntityGuid ).Contains( entityGuid ) == false )
                 .OrderBy( t => t.Name );
         }
 

@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System.Configuration;
 using System.Web.Optimization;
 
 /// <summary>
@@ -55,6 +56,17 @@ public class BundleConfig
         // to be included for administrative users
         bundles.Add( new ScriptBundle( "~/bundles/RockAdmin" ).Include( 
             "~/Scripts/Rock/admin/*.js" ) );
+
+
+        var cfg = (System.Web.Configuration.CompilationSection)ConfigurationManager.GetSection( "system.web/compilation" );
+        if ( cfg.Debug )
+        {
+            // remove the js minification if debugging
+            foreach ( var bundle in bundles )
+            {
+                bundle.Transforms.Clear();
+            }
+        }
 
         // TODO: Consider adding a MEF component to dynamically load external bundle configurations
 	}
