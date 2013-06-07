@@ -70,7 +70,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 lEmail.Text = Person.Email;
 
                 tlPersonTags.EntityTypeId = Person.TypeId;
-                tlPersonTags.EntityId = Person.Id;
+                tlPersonTags.EntityGuid = Person.Guid;
 
                 blStatus.ComponentGuids = GetAttributeValue( "Badges" );
             }
