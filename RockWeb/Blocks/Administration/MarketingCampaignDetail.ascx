@@ -21,7 +21,7 @@
                             <Rock:DataDropDownList ID="ddlEventGroup" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" LabelText="Linked Event" />
                         </div>
                         <div class="span6">
-                            <Rock:CampusPicker ID="cpCampuses" runat="server" />
+                            <Rock:CampusesPicker ID="cpCampuses" runat="server" />
                             <Rock:Grid ID="gMarketingCampaignAudiencesPrimary" runat="server" DisplayType="Light">
                                 <Columns>
                                     <asp:BoundField DataField="Name" HeaderText="Primary Audience" />

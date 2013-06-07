@@ -20,6 +20,7 @@
                 <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.BlockType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
                 <Rock:DataTextBox ID="tbPath" runat="server" SourceTypeName="Rock.Model.BlockType, Rock" PropertyName="Path" CssClass="input-xlarge" />
                 <Rock:LabeledText ID="lblStatus" runat="server" LabelText="Status" />
+                <Rock:LabeledBulletedList ID="lstPages" runat="server" LabelText="Pages that use this block type"/>
             </fieldset>
 
             <div class="actions">
