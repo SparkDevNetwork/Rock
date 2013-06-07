@@ -49,9 +49,9 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             
-            // ignoring Communication,SenderPersonId 
-            
             // ignoring Communication,ReviewerPersonId 
+            
+            // ignoring Communication,SenderPersonId 
  
             if ( new Service<CommunicationRecipient>().Queryable().Any( a => a.PersonId == item.Id ) )
             {
@@ -101,9 +101,9 @@ namespace Rock.Model
                 return false;
             }  
             
-            // ignoring PersonViewed,ViewerPersonId 
-            
             // ignoring PersonViewed,TargetPersonId 
+            
+            // ignoring PersonViewed,ViewerPersonId 
  
             if ( new Service<PhoneNumber>().Queryable().Any( a => a.PersonId == item.Id ) )
             {
@@ -111,9 +111,9 @@ namespace Rock.Model
                 return false;
             }  
             
-            // ignoring PrayerRequest,RequestedByPersonId 
-            
             // ignoring PrayerRequest,ApprovedByPersonId 
+            
+            // ignoring PrayerRequest,RequestedByPersonId 
  
             if ( new Service<Tag>().Queryable().Any( a => a.OwnerId == item.Id ) )
             {
@@ -153,6 +153,7 @@ namespace Rock.Model
                 target.TitleValueId = source.TitleValueId;
                 target.GivenName = source.GivenName;
                 target.NickName = source.NickName;
+                target.MiddleName = source.MiddleName;
                 target.LastName = source.LastName;
                 target.SuffixValueId = source.SuffixValueId;
                 target.PhotoId = source.PhotoId;

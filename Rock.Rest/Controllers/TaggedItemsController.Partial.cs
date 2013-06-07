@@ -27,7 +27,7 @@ namespace Rock.Rest.Controllers
         {
             routes.MapHttpRoute(
                 name: "TaggedItemsByEntity",
-                routeTemplate: "api/taggeditems/{entityTypeId}/{ownerid}/{entityid}/{name}/{entityqualifier}/{entityqualifiervalue}",
+                routeTemplate: "api/taggeditems/{entityTypeId}/{ownerid}/{entityguid}/{name}/{entityqualifier}/{entityqualifiervalue}",
                 defaults: new
                 {
                     controller = "taggeditems",
@@ -37,19 +37,19 @@ namespace Rock.Rest.Controllers
         }
 
         [Authenticate]
-        public HttpResponseMessage Post( int entityTypeId, int ownerId, int entityId, string name )
+        public HttpResponseMessage Post( int entityTypeId, int ownerId, Guid entityGuid, string name )
         {
-            return Post( entityTypeId, ownerId, entityId, name, string.Empty, string.Empty );
+            return Post( entityTypeId, ownerId, entityGuid, name, string.Empty, string.Empty );
         }
 
         [Authenticate]
-        public HttpResponseMessage Post( int entityTypeId, int ownerId, int entityId, string name, string entityQualifier )
+        public HttpResponseMessage Post( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier )
         {
-            return Post( entityTypeId, ownerId, entityId, name, entityQualifier, string.Empty );
+            return Post( entityTypeId, ownerId, entityGuid, name, entityQualifier, string.Empty );
         }
 
         [Authenticate]
-        public HttpResponseMessage Post( int entityTypeId, int ownerId, int entityId, string name, string entityQualifier, string entityQualifierValue )
+        public HttpResponseMessage Post( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier, string entityQualifierValue )
         {
             var user = CurrentUser();
             if ( user != null )
@@ -72,12 +72,12 @@ namespace Rock.Rest.Controllers
                         tagService.Save( tag, user.PersonId );
                     }
 
-                    var taggedItem = taggedItemService.Get( tag.Id, entityId );
+                    var taggedItem = taggedItemService.Get( tag.Id, entityGuid );
                     if ( taggedItem == null )
                     {
                         taggedItem = new TaggedItem();
                         taggedItem.TagId = tag.Id;
-                        taggedItem.EntityId = entityId;
+                        taggedItem.EntityGuid = entityGuid;
                         taggedItemService.Add( taggedItem, user.PersonId );
                         taggedItemService.Save( taggedItem, user.PersonId );
                     }
@@ -90,19 +90,19 @@ namespace Rock.Rest.Controllers
         }
 
         [Authenticate]
-        public void Delete( int entityTypeId, int ownerId, int entityId, string name )
+        public void Delete( int entityTypeId, int ownerId, Guid entityGuid, string name )
         {
-            Delete( entityTypeId, ownerId, entityId, name, string.Empty, string.Empty );
+            Delete( entityTypeId, ownerId, entityGuid, name, string.Empty, string.Empty );
         }
 
         [Authenticate]
-        public void Delete( int entityTypeId, int ownerId, int entityId, string name, string entityQualifier )
+        public void Delete( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier )
         {
-            Delete( entityTypeId, ownerId, entityId, name, entityQualifier, string.Empty );
+            Delete( entityTypeId, ownerId, entityGuid, name, entityQualifier, string.Empty );
         }
 
         [Authenticate]
-        public void Delete( int entityTypeId, int ownerId, int entityId, string name, string entityQualifier, string entityQualifierValue )
+        public void Delete( int entityTypeId, int ownerId, Guid entityGuid, string name, string entityQualifier, string entityQualifierValue )
         {
             var user = CurrentUser();
             if ( user != null )
@@ -119,7 +119,7 @@ namespace Rock.Rest.Controllers
                     if ( tag == null )
                         throw new HttpResponseException( HttpStatusCode.NotFound );
 
-                    var taggedItem = taggedItemService.Get( tag.Id, entityId );
+                    var taggedItem = taggedItemService.Get( tag.Id, entityGuid );
                     if ( taggedItem == null )
                         throw new HttpResponseException( HttpStatusCode.NotFound );
 
