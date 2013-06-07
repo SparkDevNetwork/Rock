@@ -109,5 +109,25 @@ namespace RockWeb.Blocks.Examples
                 
             }
         }
+
+        /// <summary>
+        /// Handles the TextChanged event of the monthYearPicker control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void monthYearPicker_TextChanged( object sender, EventArgs e )
+        {
+            var date = monthYearPicker.SelectedDate;
+        }
+        
+        /// <summary>
+        /// Handles the TextChanged event of the monthDayPicker control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void monthDayPicker_TextChanged( object sender, EventArgs e )
+        {
+            var date = monthDayPicker.SelectedDate;
+        }
 }
 }

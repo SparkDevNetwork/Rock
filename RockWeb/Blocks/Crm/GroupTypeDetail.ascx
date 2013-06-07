@@ -22,6 +22,7 @@
                         <Rock:DataTextBox ID="tbGroupMemberTerm" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="GroupMemberTerm" />
                         <Rock:DataDropDownList ID="ddlDefaultGroupRole" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="Name" LabelText="Default Group Role" />
                         <Rock:LabeledCheckBox ID="cbShowInGroupList" runat="server" LabelText="Show in Group Lists" />
+                        <Rock:LabeledCheckBox ID="cbShowInNavigation" runat="server" LabelText="Show in Navigation" Help="Set this to false to hide in in navigation controls such as TreeViews and Menus." />
                         <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="IconCssClass" />
                         <Rock:ImageUploader ID="imgIconSmall" runat="server" LabelText="Small Icon Image" />
                         <Rock:ImageUploader ID="imgIconLarge" runat="server" LabelText="Large Icon Image" />
