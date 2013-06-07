@@ -251,6 +251,10 @@
     <Compile Include="Migrations\201306062058091_DeadBlockCleanup01.Designer.cs">
       <DependentUpon>201306062058091_DeadBlockCleanup01.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201306061659276_TagGuid.cs" />
+    <Compile Include="Migrations\201306061659276_TagGuid.Designer.cs">
+      <DependentUpon>201306061659276_TagGuid.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
@@ -1748,6 +1752,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201306062058091_DeadBlockCleanup01.resx">
       <DependentUpon>201306062058091_DeadBlockCleanup01.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306061659276_TagGuid.resx">
+      <DependentUpon>201306061659276_TagGuid.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
