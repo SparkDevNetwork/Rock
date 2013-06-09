@@ -49,9 +49,9 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             
-            // ignoring Attendance,SearchTypeValueId 
-            
             // ignoring Attendance,QualifierValueId 
+            
+            // ignoring Attendance,SearchTypeValueId 
  
             if ( new Service<Device>().Queryable().Any( a => a.DeviceTypeValueId == item.Id ) )
             {
@@ -77,11 +77,11 @@ namespace Rock.Model
                 return false;
             }  
             
-            // ignoring FinancialTransaction,SourceTypeValueId 
-            
             // ignoring FinancialTransaction,CreditCardTypeValueId 
             
             // ignoring FinancialTransaction,CurrencyTypeValueId 
+            
+            // ignoring FinancialTransaction,SourceTypeValueId 
             
             // ignoring FinancialTransaction,TransactionTypeValueId 
  
@@ -117,19 +117,19 @@ namespace Rock.Model
                 return false;
             }  
             
-            // ignoring Person,SuffixValueId 
+            // ignoring Person,MaritalStatusValueId 
             
-            // ignoring Person,TitleValueId 
-            
-            // ignoring Person,RecordTypeValueId 
+            // ignoring Person,PersonStatusValueId 
             
             // ignoring Person,RecordStatusReasonValueId 
             
             // ignoring Person,RecordStatusValueId 
             
-            // ignoring Person,MaritalStatusValueId 
+            // ignoring Person,RecordTypeValueId 
             
-            // ignoring Person,PersonStatusValueId 
+            // ignoring Person,SuffixValueId 
+            
+            // ignoring Person,TitleValueId 
  
             if ( new Service<PhoneNumber>().Queryable().Any( a => a.NumberTypeValueId == item.Id ) )
             {

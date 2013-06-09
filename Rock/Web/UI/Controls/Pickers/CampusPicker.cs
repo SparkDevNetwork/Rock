@@ -13,7 +13,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class CampusPicker : LabeledCheckBoxList
+    public class CampusPicker : LabeledDropDownList
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CampusPicker" /> class.
@@ -21,7 +21,7 @@ namespace Rock.Web.UI.Controls
         public CampusPicker()
             : base()
         {
-            LabelText = "Campuses";
+            LabelText = "Campus";
         }
 
         /// <summary>
@@ -47,37 +47,25 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the available campus ids.
-        /// </summary>
-        /// <value>
-        /// The available campus ids.
-        /// </value>
-        public List<int> AvailableCampusIds
-        {
-            get
-            {
-                return this.Items.OfType<ListItem>().Select( a => int.Parse( a.Value ) ).ToList();
-            }
-        }
-
-        /// <summary>
         /// Gets the selected campus ids.
         /// </summary>
         /// <value>
         /// The selected campus ids.
         /// </value>
-        public List<int> SelectedCampusIds
+        public int? SelectedCampusId
         {
             get
             {
-                return this.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => int.Parse( a.Value ) ).ToList();
+                int campusId = int.MinValue;
+                if ( int.TryParse( this.SelectedValue, out campusId ) && campusId > 0 )
+                {
+                    return campusId;
+                }
+                return null;
             }
             set
             {
-                foreach ( ListItem campusItem in this.Items )
-                {
-                    campusItem.Selected = value.Exists( a => a.Equals( int.Parse( campusItem.Value ) ) );
-                }
+                this.SelectedValue = value.ToString();
             }
         }
 

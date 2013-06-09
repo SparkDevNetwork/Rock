@@ -71,6 +71,9 @@ namespace Rock.Rest.Controllers
                     qry = qry.Where( a => groupTypes.Contains( a.GroupTypeId ) );
                 }
             }
+            
+            // only fetch groups that should be shown in Navigation (Treeview, Menus, etc);
+            qry = qry.Where( a => a.GroupType.ShowInNavigation == true );
 
             List<Group> groupList = qry.ToList();
             List<TreeViewItem> groupNameList = new List<TreeViewItem>();

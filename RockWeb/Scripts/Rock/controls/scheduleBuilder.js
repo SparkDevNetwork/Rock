@@ -45,14 +45,13 @@
 
             $modal.find('.recurrence-pattern-radio').click(function () {
 
-                var recurrencePattern = '#' + $('input[class=recurrence-pattern-radio]:checked').data('recurrence-pattern');
+                var recurrencePattern = '.' + $('input[class=recurrence-pattern-radio]:checked').data('recurrence-pattern');
 
-                if ($(recurrencePattern).is(':visible')) {
+                if ($modal.find(recurrencePattern)) {
 
-                    $modal.find('.recurrence-pattern-type').slideUp(function () {
-                        $modal.find('.scroll-container').tinyscrollbar_update('relative');
-                    });
-                    $(recurrencePattern).slideDown(function () {
+                    $modal.find('.recurrence-pattern-type').not(recurrencePattern).hide();
+
+                    $(recurrencePattern).fadeIn(function () {
                         $modal.find('.scroll-container').tinyscrollbar_update('relative');
                     });
                 }
@@ -74,9 +73,9 @@
 
             // add new date to list when ok is clicked
             $modal.find('.add-specific-date-ok').click(function () {
-
                 // get date list from hidden field
                 var dateListValues = $modal.find('.recurrence-pattern-type > input:hidden').val().split(',');
+
                 if (!dateListValues[0]) {
                     // if dateList is blank, initialize as a new empty array
                     dateListValues = [];
@@ -85,7 +84,7 @@
                 // validate
 
                 // set colors back to default just in case previously marked invalid
-                var $datepicker = $modal.find('.specific-date');
+                var $datepicker = $modal.find('[id$="dpSpecificDate"]');
                 $datepicker.css('color', '');
                 var checkDate = Date.parse($datepicker.val());
                 if (!checkDate) {
@@ -295,6 +294,7 @@
             $modal.find('[id*="btnSaveSchedule"]').on('click', function (event) {
                 var $datepicker = $modal.find('[id*="dpStartDateTime"]'),
                     startDateValue = Date.parse($datepicker.val()) || -1;
+                
                 if (startDateValue < 0) {
                     $datepicker.parents(".control-group").first().toggleClass("error", 1);
                     event.preventDefault();
@@ -304,7 +304,9 @@
                     $datepicker.parents(".control-group").first().toggleClass("error", 0);
                 }
 
-                $modal.modal('toggle');
+                if ($modal.is(':visible')) {
+                    $modal.modal('hide');
+                }
             });
         };
 

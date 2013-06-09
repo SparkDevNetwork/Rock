@@ -214,6 +214,15 @@ namespace Rock.Model
         public virtual DefinedValue SourceTypeValue { get; set; }
 
         /// <summary>
+        /// Gets or sets the refund.
+        /// </summary>
+        /// <value>
+        /// The refund.
+        /// </value>
+        [DataMember]
+        public virtual FinancialTransactionRefund Refund { get; set; }
+
+        /// <summary>
         /// Gets or sets the transaction details.
         /// </summary>
         /// <value>
@@ -300,6 +309,7 @@ namespace Rock.Model
             this.HasOptional( t => t.CurrencyTypeValue ).WithMany().HasForeignKey( t => t.CurrencyTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.CreditCardTypeValue ).WithMany().HasForeignKey( t => t.CreditCardTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.SourceTypeValue ).WithMany().HasForeignKey( t => t.SourceTypeValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.Refund ).WithRequired().WillCascadeOnDelete( true );
         }
     }
 

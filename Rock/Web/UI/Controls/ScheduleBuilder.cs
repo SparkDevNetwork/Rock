@@ -716,6 +716,7 @@ END:VCALENDAR
             _btnDialogCancelX.ID = "btnDialogCancelX";
             _btnDialogCancelX.Click += btnCancelSchedule_Click;
             _btnDialogCancelX.Text = "&times;";
+            _btnDialogCancelX.CausesValidation = false;
 
             _dpStartDateTime.ClientIDMode = ClientIDMode.Predictable;
             _dpStartDateTime.ID = "dpStartDateTime";
@@ -921,6 +922,7 @@ END:VCALENDAR
             _btnCancelSchedule.CssClass = "btn modal-control-cancel";
             _btnCancelSchedule.Click += btnCancelSchedule_Click;
             _btnCancelSchedule.Text = "Cancel";
+            _btnCancelSchedule.CausesValidation = false;
 
             _btnSaveSchedule.ClientIDMode = ClientIDMode.Predictable;
             _btnSaveSchedule.ID = "btnSaveSchedule";

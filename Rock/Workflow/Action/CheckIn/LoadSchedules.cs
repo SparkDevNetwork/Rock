@@ -59,6 +59,7 @@ namespace Rock.Workflow.Action.CheckIn
                                                      {
                                                          var checkInSchedule = new CheckInSchedule();
                                                          checkInSchedule.Schedule = kioskSchedule.Schedule.Clone( false );
+                                                         checkInSchedule.StartTime = kioskSchedule.StartTime;
                                                          group.Schedules.Add( checkInSchedule );
                                                      }
                                                  }
