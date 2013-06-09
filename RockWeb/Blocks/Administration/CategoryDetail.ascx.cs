@@ -19,12 +19,16 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    [EntityType( "Entity Type", "The Category Entity Type" )]
+    [EntityType( "Entity Type", "The type of entity to associate category with" )]
+    [TextField( "Entity Type Qualifier Property", "", false )]
+    [TextField( "Entity Type Qualifier Value", "", false )]
     public partial class CategoryDetail : RockBlock, IDetailBlock
     {
         #region Control Methods
 
         private int entityTypeId = 0;
+        private string entityTypeQualifierProperty = string.Empty;
+        private string entityTypeQualifierValue = string.Empty;
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -36,6 +40,8 @@ namespace RockWeb.Blocks.Administration
 
             string entityTypeName = GetAttributeValue( "EntityType" );
             entityTypeId = EntityTypeCache.Read(entityTypeName).Id;
+            entityTypeQualifierProperty = GetAttributeValue( "EntityTypeQualifierProperty" );
+            entityTypeQualifierValue = GetAttributeValue( "EntityTypeQualifierValue" );
             
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return confirmDelete(event, '{0}');", Category.FriendlyTypeName );
             btnSecurity.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Category ) ).Id;
@@ -181,6 +187,8 @@ namespace RockWeb.Blocks.Administration
                 category = new Category();
                 category.IsSystem = false;
                 category.EntityTypeId = entityTypeId;
+                category.EntityTypeQualifierColumn = entityTypeQualifierProperty;
+                category.EntityTypeQualifierValue = entityTypeQualifierValue;
             }
             else
             {
@@ -265,6 +273,8 @@ namespace RockWeb.Blocks.Administration
             {
                 category = new Category { Id = 0, IsSystem = false, ParentCategoryId = parentCategoryId};
                 category.EntityTypeId = entityTypeId;
+                category.EntityTypeQualifierColumn = entityTypeQualifierProperty;
+                category.EntityTypeQualifierValue = entityTypeQualifierValue;
             }
 
             if ( category == null || !category.IsAuthorized( "View", CurrentPerson ) )
