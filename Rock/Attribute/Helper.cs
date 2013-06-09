@@ -117,6 +117,8 @@ namespace Rock.Attribute
         {
             bool updated = false;
 
+            var propertyCategories = property.Category.SplitDelimitedValues( false ).ToList();
+
             // Look for an existing attribute record based on the entity, entityQualifierColumn and entityQualifierValue
             Model.Attribute attribute = attributeService.Get(
                 entityTypeId, entityQualifierColumn, entityQualifierValue, property.Key );
@@ -147,8 +149,8 @@ namespace Rock.Attribute
                 }
 
                 // Check category
-                else if ( attribute.Categories.Any( c => c.Name != property.Category ) ||
-                    attribute.Categories.Where( c => c.Name == property.Category ).FirstOrDefault() == null )
+                else if ( attribute.Categories.Select( c => c.Name ).Except( propertyCategories ).Any() ||
+                    propertyCategories.Except( attribute.Categories.Select( c => c.Name ) ).Any() )
                 {
                     updated = true;
                 }
@@ -184,19 +186,22 @@ namespace Rock.Attribute
                 attribute.IsRequired = property.IsRequired;
 
                 attribute.Categories.Clear();
-                if ( !string.IsNullOrWhiteSpace( property.Category ) )
+                if ( propertyCategories.Any() )
                 {
-                    int attributeEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
-                    var category = categoryService.Get( property.Category, attributeEntityTypeId, "EntityTypeId", entityTypeId.ToString() ).FirstOrDefault();
-                    if ( category == null )
+                    foreach ( string propertyCategory in propertyCategories )
                     {
-                        category = new Category();
-                        category.Name = property.Category;
-                        category.EntityTypeId = attributeEntityTypeId;
-                        category.EntityTypeQualifierColumn = "EntityTypeId";
-                        category.EntityTypeQualifierValue = entityTypeId.ToString();
+                        int attributeEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
+                        var category = categoryService.Get( propertyCategory, attributeEntityTypeId, "EntityTypeId", entityTypeId.ToString() ).FirstOrDefault();
+                        if ( category == null )
+                        {
+                            category = new Category();
+                            category.Name = propertyCategory;
+                            category.EntityTypeId = attributeEntityTypeId;
+                            category.EntityTypeQualifierColumn = "EntityTypeId";
+                            category.EntityTypeQualifierValue = entityTypeId.ToString();
+                        }
+                        attribute.Categories.Add( category );
                     }
-                    attribute.Categories.Add( category );
                 }
 
                 foreach ( var qualifier in attribute.AttributeQualifiers.ToList() )
@@ -368,7 +373,7 @@ namespace Rock.Attribute
                 }
             }
 
-            return attributeCategories.OrderBy( c => c.Category.Name ).ToList();
+            return attributeCategories.OrderBy( c => c.CategoryName ).ToList();
         }
 
         private static void AddAttributeCategory( List<AttributeCategory> attributeCategories, Rock.Web.Cache.CategoryCache category, Rock.Web.Cache.AttributeCache attribute )

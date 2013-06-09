@@ -39,22 +39,6 @@ namespace Rock.Web.Cache
         #region Properties
 
         /// <summary>
-        /// Gets or sets the id.
-        /// </summary>
-        /// <value>
-        /// The id.
-        /// </value>
-        public virtual int Id { get; set; }
-
-        /// <summary>
-        /// Gets or sets the GUID.
-        /// </summary>
-        /// <value>
-        /// The GUID.
-        /// </value>
-        public virtual Guid Guid { get; set; }
-
-        /// <summary>
         /// Gets or sets a value indicating whether this instance is system.
         /// </summary>
         /// <value>
@@ -192,7 +176,7 @@ namespace Rock.Web.Cache
         /// Copies from model.
         /// </summary>
         /// <param name="category">The category.</param>
-        public void CopyFromModel( Data.IEntity model )
+        public override void CopyFromModel( Data.IEntity model )
         {
             base.CopyFromModel( model );
 

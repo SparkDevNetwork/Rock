@@ -4,9 +4,11 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -197,9 +199,51 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( "Category", ddlCategoryFilter.SelectedValue );
+            string categoryFilterValue = cpCategoriesFilter.SelectedValuesAsInt()
+                .Where( v => v != 0)
+                .Select( c => c.ToString() )
+                .ToList()
+                .AsDelimited( "," );
+
+            rFilter.SaveUserPreference( "Categories", categoryFilterValue );
 
             BindGrid();
+        }
+
+        /// <summary>
+        /// Rs the filter_ display filter value.
+        /// </summary>
+        /// <param name="sender">The sender.</param>
+        /// <param name="e">The e.</param>
+        protected void rFilter_DisplayFilterValue( object sender, GridFilter.DisplayFilterValueArgs e )
+        {
+            switch ( e.Key )
+            {
+                case "Categories":
+
+                    var categories = new List<string>();
+
+                    foreach ( var idVal in e.Value.SplitDelimitedValues() )
+                    {
+                        int id = int.MinValue;
+                        if ( int.TryParse( idVal, out id ) )
+                        {
+                            if ( id != 0 )
+                            {
+                                var category = CategoryCache.Read( id );
+                                if ( category != null )
+                                {
+                                    categories.Add( CategoryCache.Read( id ).Name );
+                                }
+                            }
+                        }
+                    }
+
+                    e.Value = categories.AsDelimited( ", " );
+
+                    break;
+            }
+
         }
 
         /// <summary>
@@ -279,6 +323,12 @@ namespace RockWeb.Blocks.Administration
 
                 var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
                 var fieldType = Rock.Web.Cache.FieldTypeCache.Read( attribute.FieldTypeId );
+
+                Literal lCategories = e.Row.FindControl( "lCategories" ) as Literal;
+                if ( lCategories != null )
+                {
+                    lCategories.Text = attribute.Categories.Select( c => c.Name ).ToList().AsDelimited( ", " );
+                }
 
                 if ( _displayValueEdit )
                 {
@@ -384,23 +434,24 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindFilter()
         {
-            ddlCategoryFilter.Items.Clear();
-            ddlCategoryFilter.Items.Add( Rock.Constants.All.Text );
+            cpCategoriesFilter.EntityTypeId = EntityTypeCache.Read(typeof( Rock.Model.Attribute )).Id;
+            cpCategoriesFilter.EntityTypeQualifierColumn = "EntityTypeId";
+            cpCategoriesFilter.EntityTypeQualifierValue = _entityTypeId.ToString();
 
-            AttributeService attributeService = new AttributeService();
-            var items = attributeService.Get( _entityTypeId, _entityQualifierColumn, _entityQualifierValue )
-                .Where( a => a.Categories.Any() )
-                .SelectMany( a => a.Categories )
-                .OrderBy( c => c.Name )
-                .Select( c => c.Name )
-                .Distinct()
-                .ToList();
-
-            foreach ( var item in items )
+            var selectedIDs = new List<int>();
+            foreach ( var idVal in rFilter.GetUserPreference( "Categories" ).SplitDelimitedValues() )
             {
-                ListItem li = new ListItem( item );
-                li.Selected = ( !Page.IsPostBack && rFilter.GetUserPreference( "Category" ) == item );
-                ddlCategoryFilter.Items.Add( li );
+                int id = int.MinValue;
+                if ( int.TryParse( idVal, out id ) )
+                {
+                    selectedIDs.Add( id );
+                }
+            }
+
+            cpCategoriesFilter.SetValues( selectedIDs );
+            if ( !selectedIDs.Any() )
+            {
+                cpCategoriesFilter.ItemName = "<All>";
             }
         }
 
@@ -412,10 +463,11 @@ namespace RockWeb.Blocks.Administration
             AttributeService attributeService = new AttributeService();
             var queryable = attributeService.Get( _entityTypeId, _entityQualifierColumn, _entityQualifierValue );
 
-            if ( ddlCategoryFilter.SelectedValue != Rock.Constants.All.Text )
+            List<int> selectedCategoryIds = cpCategoriesFilter.SelectedValuesAsInt().Where( v => v != 0).ToList();
+            if ( selectedCategoryIds.Any() )
             {
                 queryable = queryable.
-                    Where( a => a.Categories.Any( c => string.Compare( c.Name, ddlCategoryFilter.SelectedValue, true ) == 0 ) );
+                    Where( a => a.Categories.Any( c => selectedCategoryIds.Contains( c.Id ) ) );
             }
 
             SortProperty sortProperty = rGrid.SortProperty;
@@ -442,10 +494,14 @@ namespace RockWeb.Blocks.Administration
         {
             var attributeModel = new AttributeService().Get( attributeId );
 
+            edtAttribute.AttributeEntityTypeId = _entityTypeId;
+
             if ( attributeModel == null )
             {
                 attributeModel = new Rock.Model.Attribute();
-                attributeModel.Categories = ddlCategoryFilter.SelectedValue != Rock.Constants.All.Text ? ddlCategoryFilter.SelectedValue : string.Empty;
+                List<int> selectedCategoryIds = cpCategoriesFilter.SelectedValuesAsInt().ToList();
+                new CategoryService().Queryable().Where( c => selectedCategoryIds.Contains( c.Id ) ).ToList().ForEach( c =>
+                    attributeModel.Categories.Add( c ) );
                 edtAttribute.ActionTitle = Rock.Constants.ActionTitle.Add( Rock.Model.Attribute.FriendlyTypeName );
             }
             else
@@ -500,5 +556,5 @@ namespace RockWeb.Blocks.Administration
         }
 
         #endregion
-    }
+}
 }

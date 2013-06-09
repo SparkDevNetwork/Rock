@@ -5,6 +5,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 using Rock;
 using Rock.Attribute;
@@ -19,13 +20,15 @@ namespace RockWeb.Blocks.Utility
     /// </summary>
     [DetailPage]
     [EntityType("Entity Type", "The types of entities to display categories for")]
+    [TextField("Entity Type Qualifier Property", "Limit entities based on this property value", false)]
+    [TextField("Entity type Qualifier Value", "Property Value to limit entities on", false)]
     [TextField( "Page Parameter Key", "The page parameter to look for" )]
     public partial class CategoryTreeView : RockBlock
     {
         /// <summary>
         /// The entity type name
         /// </summary>
-        protected string EntityTypeName;
+        protected string RestParms;
 
         /// <summary>
         /// The page parameter name
@@ -43,18 +46,33 @@ namespace RockWeb.Blocks.Utility
             // Get EntityTypeName
             string entityTypeName = GetAttributeValue( "EntityType" );
             int entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityTypeName ).Id;
+            string entityTypeQualiferColumn = GetAttributeValue("EntityTypeQualifierProperty");
+            string entityTypeQualifierValue = GetAttributeValue("EntityTypeQualifierValue");
+
+            var parms = new StringBuilder();
+            parms.AppendFormat( "/True/{0}", entityTypeId );
+            if ( !string.IsNullOrEmpty( entityTypeQualiferColumn ) )
+            {
+                parms.AppendFormat( "/{0}", entityTypeQualiferColumn );
+
+                if ( !string.IsNullOrEmpty( entityTypeQualifierValue ) )
+                {
+                    parms.AppendFormat( "/{0}", entityTypeQualifierValue );
+                }
+            }
+
+            RestParms = parms.ToString();
 
             var cachedEntityType = Rock.Web.Cache.EntityTypeCache.Read( entityTypeId );
             if ( cachedEntityType != null )
             {
-                EntityTypeName = cachedEntityType.Name;
                 lbAddItem.ToolTip = "Add " + cachedEntityType.FriendlyName;
                 lAddItem.Text = "Add " + cachedEntityType.FriendlyName;
             }
 
             PageParameterName = GetAttributeValue( "PageParameterKey" );
             string itemId = PageParameter( PageParameterName );
-            string selectedEntityType = EntityTypeName;
+            string selectedEntityType = cachedEntityType.Name;
             if ( string.IsNullOrWhiteSpace( itemId ) )
             {
                 itemId = PageParameter( "categoryId" );

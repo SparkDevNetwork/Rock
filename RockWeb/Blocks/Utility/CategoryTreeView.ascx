@@ -107,7 +107,7 @@
                     transport: {
                         read: {
                             url: function (options) {
-                                var requestUrl = restUrl + (options.id || 0) + '/' + '<%=EntityTypeName%>' + '/true';
+                                var requestUrl = restUrl + (options.id || 0) + '<%=RestParms%>';
                                 return requestUrl;
                             },
                             error: function (xhr, status, error) {
