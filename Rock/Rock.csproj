@@ -255,6 +255,10 @@
     <Compile Include="Migrations\201306071411579_TagGuid.Designer.cs">
       <DependentUpon>201306071411579_TagGuid.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201306072134322_AttributeCategories.cs" />
+    <Compile Include="Migrations\201306072134322_AttributeCategories.Designer.cs">
+      <DependentUpon>201306072134322_AttributeCategories.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
@@ -1756,6 +1760,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201306071411579_TagGuid.resx">
       <DependentUpon>201306071411579_TagGuid.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306072134322_AttributeCategories.resx">
+      <DependentUpon>201306072134322_AttributeCategories.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

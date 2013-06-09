@@ -340,15 +340,17 @@ namespace RockWeb.Blocks.Administration
             {
                 var entityType = EntityTypeCache.Read( category.EntityTypeId );
                 lblEntityTypeName.Text = entityType.Name;
-                cpParentCategory.CategoryEntityTypeName = entityType.Name;
             }
             else
             {
                 lblEntityTypeName.Text = string.Empty;
-                cpParentCategory.CategoryEntityTypeName = string.Empty;
             }
 
+            cpParentCategory.EntityTypeId = category.EntityTypeId;
+            cpParentCategory.EntityTypeQualifierColumn = category.EntityTypeQualifierColumn;
+            cpParentCategory.EntityTypeQualifierValue = category.EntityTypeQualifierValue;
             cpParentCategory.SetValue( category.ParentCategoryId );
+
             lblEntityTypeQualifierColumn.Visible = !string.IsNullOrWhiteSpace( category.EntityTypeQualifierColumn );
             lblEntityTypeQualifierColumn.Text = category.EntityTypeQualifierColumn;
             lblEntityTypeQualifierValue.Visible = !string.IsNullOrWhiteSpace( category.EntityTypeQualifierValue );
