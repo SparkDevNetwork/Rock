@@ -21,30 +21,69 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:TagList runat=server></{0}:TagList>" )]
     public class TagList : CompositeControl
     {
+        /// <summary>
+        /// Gets or sets the entity type id.
+        /// </summary>
+        /// <value>
+        /// The entity type id.
+        /// </value>
         public int EntityTypeId
         {
             get { return ViewState["EntityTypeId"] as int? ?? 0; }
             set { ViewState["EntityTypeId"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the entity qualifier column.
+        /// </summary>
+        /// <value>
+        /// The entity qualifier column.
+        /// </value>
         public string EntityQualifierColumn
         {
             get { return ViewState["EntityQualifierColumn"] as string ?? string.Empty; }
             set { ViewState["EntityQualifierColumn"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the entity qualifier value.
+        /// </summary>
+        /// <value>
+        /// The entity qualifier value.
+        /// </value>
         public string EntityQualifierValue
         {
             get { return ViewState["EntityQualifierValue"] as string ?? string.Empty; }
             set { ViewState["EntityQualifierValue"] = value; }
         }
 
-        public int EntityId
+        /// <summary>
+        /// Gets or sets the entity GUID.
+        /// </summary>
+        /// <value>
+        /// The entity GUID.
+        /// </value>
+        public Guid EntityGuid
         {
-            get { return ViewState["EntityId"] as int? ?? 0; }
-            set { ViewState["EntityId"] = value; }
+            get
+            {
+                string entityGuid = ViewState["EntityGuid"] as string;
+                if ( !string.IsNullOrWhiteSpace( entityGuid ) )
+                {
+                    return new Guid( entityGuid );
+                }
+                return Guid.Empty;
+            }
+            set
+            {
+                ViewState["EntityGuid"] = value.ToString();
+            }
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
@@ -52,6 +91,10 @@ namespace Rock.Web.UI.Controls
             RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/jquery.tagsinput.js" ) );
         }
 
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
             var rockPage = this.Page as RockPage;
@@ -61,7 +104,7 @@ namespace Rock.Web.UI.Controls
 
                 var service = new TaggedItemService();
                 foreach ( dynamic item in service.Get(
-                    EntityTypeId, EntityQualifierColumn, EntityQualifierValue, rockPage.CurrentPersonId, EntityId )
+                    EntityTypeId, EntityQualifierColumn, EntityQualifierValue, rockPage.CurrentPersonId, EntityGuid )
                     .Select( i => new
                     {
                         OwnerId = i.Tag.OwnerId,
@@ -160,7 +203,7 @@ namespace Rock.Web.UI.Controls
     }}
 
 ",
-    EntityTypeId, rockPage.CurrentPersonId, EntityId,
+    EntityTypeId, rockPage.CurrentPersonId, EntityGuid.ToString(),
     string.IsNullOrWhiteSpace( EntityQualifierColumn ) ? "" : "/" + EntityQualifierColumn,
     string.IsNullOrWhiteSpace( EntityQualifierValue ) ? "" : "/" + EntityQualifierValue,
     this.ID);

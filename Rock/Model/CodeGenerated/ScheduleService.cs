@@ -72,12 +72,10 @@ namespace Rock.Model
             else
             {
                 var target = new Schedule();
-                target.Name = source.Name;
                 target.Description = source.Description;
                 target.iCalendarContent = source.iCalendarContent;
-                target.CheckInStartTime = source.CheckInStartTime;
-                target.CheckInEndTime = source.CheckInEndTime;
-                target.IsShared = source.IsShared;
+                target.CheckInStartOffsetMinutes = source.CheckInStartOffsetMinutes;
+                target.CheckInEndOffsetMinutes = source.CheckInEndOffsetMinutes;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

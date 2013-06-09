@@ -22,7 +22,8 @@
             <Rock:DatePicker ID="datePicker" runat="server" LabelText="Rock:DatePicker" />
             <Rock:DateTimePicker ID="dateTimePicker" runat="server" LabelText="Rock:DateTimePicker" />
             <Rock:TimePicker ID="timePicker" runat="server" LabelText="Rock:TimePicker" />
-            
+            <Rock:MonthYearPicker ID="monthYearPicker" runat="server" LabelText="Rock:MonthYearPicker" OnTextChanged="monthYearPicker_TextChanged" AutoPostBack="true" />
+            <Rock:MonthDayPicker ID="monthDayPicker" runat="server" LabelText="Rock:MonthDayPicker" OnTextChanged="monthDayPicker_TextChanged" AutoPostBack="true" />
             
             <Rock:GroupPicker ID="groupPicker" runat="server" LabelText="Rock:GroupPicker" />
             <Rock:CampusPicker ID="campusPicker" runat="server" LabelText="Rock:CampusPicker" />

@@ -5,7 +5,7 @@
 
         <div class="row-fluid">
 
-            <div class="span2">
+            <div class="span3">
                 <Rock:ImageUploader ID="imgPhoto" runat="server" LabelText="Photo" />
             </div>
 
@@ -60,7 +60,7 @@
 
             </div>
 
-            <div class="span2">
+            <div class="span3">
 
                 <fieldset>
                     <Rock:LabeledDropDownList ID="ddlRecordStatus" runat="server" LabelText="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" /><br />
