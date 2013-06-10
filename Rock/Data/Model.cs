@@ -144,7 +144,7 @@ namespace Rock.Data
         /// </value>
         [NotMapped]
         [DataMember]
-        public Dictionary<string, Rock.Web.Cache.AttributeCache> Attributes { get; set; }
+        public virtual Dictionary<string, Rock.Web.Cache.AttributeCache> Attributes { get; set; }
 
         /// <summary>
         /// Dictionary of all attributes and their value.  Key is the attribute key, and value is the values
@@ -155,7 +155,7 @@ namespace Rock.Data
         /// </value>
         [NotMapped]
         [DataMember]
-        public Dictionary<string, List<Rock.Model.AttributeValue>> AttributeValues { get; set; }
+        public virtual Dictionary<string, List<Rock.Model.AttributeValue>> AttributeValues { get; set; }
 
         /// <summary>
         /// Gets the attribute value defaults.
