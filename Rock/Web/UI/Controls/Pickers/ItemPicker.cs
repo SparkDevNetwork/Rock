@@ -315,6 +315,29 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool AllowMultiSelect { get; set; }
 
+        private string _defaultText;
+
+        /// <summary>
+        /// Gets or sets the default text.
+        /// </summary>
+        /// <value>
+        /// The default text.
+        /// </value>
+        public string DefaultText
+        {
+            get
+            {
+                if ( string.IsNullOrWhiteSpace( _defaultText ) )
+                {
+                    _defaultText = Constants.None.Text;
+                }
+
+                return _defaultText;
+            }
+
+            set { _defaultText = value; }
+        }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
