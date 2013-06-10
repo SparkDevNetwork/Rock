@@ -449,10 +449,6 @@ namespace RockWeb.Blocks.Administration
             }
 
             cpCategoriesFilter.SetValues( selectedIDs );
-            if ( !selectedIDs.Any() )
-            {
-                cpCategoriesFilter.ItemName = "<All>";
-            }
         }
 
         /// <summary>

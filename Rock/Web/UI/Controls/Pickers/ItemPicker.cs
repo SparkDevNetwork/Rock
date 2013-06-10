@@ -504,7 +504,7 @@ namespace Rock.Web.UI.Controls
                 <b class='caret'></b>
             </a>
 ";
-                writer.Write( controlHtmlFormatStart, this.ID, System.Web.HttpUtility.HtmlEncode( this.ItemName ) );
+                writer.Write( controlHtmlFormatStart, this.ID, this.ItemName );
 
                 // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
                 if ( SelectItem != null )
@@ -563,7 +563,7 @@ namespace Rock.Web.UI.Controls
         <i class='icon-file-alt'></i>
         <span id='selectedItemLabel_{0}'>{1}</span>
 ";
-                writer.Write( controlHtmlFormatDisabled, this.ID, System.Web.HttpUtility.HtmlEncode( this.ItemName ) );
+                writer.Write( controlHtmlFormatDisabled, this.ID, this.ItemName );
             }
         }
     }
