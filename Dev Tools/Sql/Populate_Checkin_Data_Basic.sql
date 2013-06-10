@@ -323,7 +323,7 @@ INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive
 SET @ParentGroupId = SCOPE_IDENTITY()
 
 INSERT INTO [Group] ( [IsSystem],[ParentGroupId],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid] )
-   VALUES ( 0, @ParentGroupId, @ParentGroupTypeId, 'Check-in Test (Don''t Use)', 0, 1, 'CBBBEEE0-DE95-4876-9FEF-5EB68FA67853' )
+   VALUES ( 0, @ParentGroupId, @TestGroupTypeId, 'Check-in Test (Don''t Use)', 0, 1, 'CBBBEEE0-DE95-4876-9FEF-5EB68FA67853' )
 SET @TestGroupId = SCOPE_IDENTITY()
 
 INSERT INTO [Group] ( [IsSystem],[ParentGroupId],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid] )
@@ -550,7 +550,7 @@ DTEND:20130501T235900
 DTSTART:20130501T000100
 RRULE:FREQ=DAILY
 END:VEVENT
-END:VCALENDAR', '30', '30', '05/01/2013', NEWID() ),
+END:VCALENDAR', '0', '0', '05/01/2013', NEWID() ),
 
     ('6:00 (test)',        
 'BEGIN:VCALENDAR
@@ -559,7 +559,7 @@ DTEND:20130501T235900
 DTSTART:20130501T000100
 RRULE:FREQ=DAILY
 END:VEVENT
-END:VCALENDAR', '30', '30', '05/01/2013', NEWID() )
+END:VCALENDAR', '0', '0', '05/01/2013', NEWID() )
 
 ---------------------------------------------------------------------------
 -- Create Locations
