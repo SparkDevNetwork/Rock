@@ -356,7 +356,6 @@ namespace Rock.Model
                 attribute.EntityTypeQualifierValue = string.Empty;
                 attribute.Key = key;
                 attribute.Name = key;
-                attribute.Category = string.Empty;
                 attribute.DefaultValue = string.Empty;
                 attribute.IsMultiValue = false;
                 attribute.IsRequired = false;

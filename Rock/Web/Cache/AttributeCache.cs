@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Caching;
 using System.Runtime.Serialization;
 using System.Web.UI;
@@ -130,15 +131,6 @@ namespace Rock.Web.Cache
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the category.
-        /// </summary>
-        /// <value>
-        /// The category.
-        /// </value>
-        [DataMember]
-        public string Category { get; set; }
-
-        /// <summary>
         /// Gets or sets the description.
         /// </summary>
         /// <value>
@@ -210,6 +202,32 @@ namespace Rock.Web.Cache
         [DataMember]
         public Dictionary<string, ConfigurationValue> QualifierValues { get; private set; }
 
+        /// <summary>
+        /// Gets the categories.
+        /// </summary>
+        /// <value>
+        /// The categories.
+        /// </value>
+        public List<CategoryCache> Categories
+        {
+            get
+            {
+                List<CategoryCache> categories = new List<CategoryCache>();
+
+                if ( categoryIds != null )
+                {
+                    foreach ( int id in categoryIds.ToList() )
+                    {
+                        categories.Add( CategoryCache.Read( id ) );
+                    }
+                }
+
+                return categories;
+            }
+        }
+        private List<int> categoryIds = null;
+
+
         #endregion
 
         #region Methods
@@ -249,7 +267,6 @@ namespace Rock.Web.Cache
             this.EntityTypeQualifierValue = attribute.EntityTypeQualifierValue;
             this.Key = attribute.Key;
             this.Name = attribute.Name;
-            this.Category = attribute.Category;
             this.Description = attribute.Description;
             this.Order = attribute.Order;
             this.IsGridColumn = attribute.IsGridColumn;
@@ -264,6 +281,8 @@ namespace Rock.Web.Cache
             this.QualifierValues = new Dictionary<string, ConfigurationValue>();
             foreach ( var qualifier in qualifiers )
                 this.QualifierValues.Add( qualifier.Key, new ConfigurationValue( qualifier.Value ) );
+
+            this.categoryIds = attribute.Categories.Select( c => c.Id ).ToList();
         }
 
         /// <summary>

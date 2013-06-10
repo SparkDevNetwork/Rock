@@ -26,7 +26,7 @@ namespace Rock.Web.UI.Controls
         private DataTextBox tbName;
         private DataTextBox tbKey;
         private CustomValidator cvKey;
-        private DataTextBox tbCategory;
+        private CategoryPicker cpCategories;
         private DataTextBox tbDescription;
 
         // column 2
@@ -56,7 +56,7 @@ namespace Rock.Web.UI.Controls
             tbName = new DataTextBox();
             tbKey = new DataTextBox();
             cvKey = new CustomValidator();
-            tbCategory = new DataTextBox();
+            cpCategories = new CategoryPicker();
             tbDescription = new DataTextBox();
 
             // Create FieldType Dropdown
@@ -157,18 +157,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the category.
-        /// </summary>
-        /// <value>
-        /// The category.
-        /// </value>
-        public string Category
-        {
-            get { return tbCategory.Text; }
-            set { tbCategory.Text = value; }
-        }
-
-        /// <summary>
         /// Gets or sets the description.
         /// </summary>
         /// <value>
@@ -178,6 +166,18 @@ namespace Rock.Web.UI.Controls
         {
             get { return tbDescription.Text; }
             set { tbDescription.Text = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the categories ids.
+        /// </summary>
+        /// <value>
+        /// The categories ids.
+        /// </value>
+        public IEnumerable<int> CategoryIds
+        {
+            get { return cpCategories.SelectedValuesAsInt();  }
+            set { cpCategories.SetValues(value); }
         }
 
         /// <summary>
@@ -227,6 +227,20 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["DefaultValue"] as string; }
             set { ViewState["DefaultValue"] = value; }
+        }
+
+
+        /// <summary>
+        /// Gets or sets the entity type that attribute is being used for.  If specified, the the list of available categories
+        /// will only display categories for attribute belonging to this type of entity
+        /// </summary>
+        /// <value>
+        /// The default value.
+        /// </value>
+        public int? AttributeEntityTypeId
+        {
+            get { return ViewState["AttributeEntityTypeId"] as int?; }
+            set { ViewState["AttributeEntityTypeId"] = value; }
         }
 
         /// <summary>
@@ -329,7 +343,7 @@ namespace Rock.Web.UI.Controls
                 this.AttributeGuid = attribute.Guid;
                 this.Name = attribute.Name;
                 this.Key = attribute.Key;
-                this.Category = attribute.Category;
+                this.CategoryIds = attribute.Categories.Select( c => c.Id ).ToList();
                 this.Description = attribute.Description;
                 this.FieldTypeId = attribute.FieldTypeId;
                 this.DefaultValue = attribute.DefaultValue;
@@ -359,7 +373,8 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Updates the attribute with the value of the control's properties
+        /// Updates the attribute with the value of the control's properties NOTE: This call should be wrapped in a 
+        /// Unit of Work.
         /// </summary>
         /// <param name="attribute">The attribute.</param>
         public void GetAttributeProperties( Rock.Model.Attribute attribute )
@@ -370,12 +385,15 @@ namespace Rock.Web.UI.Controls
                 attribute.Guid = this.AttributeGuid;
                 attribute.Name = this.Name;
                 attribute.Key = this.Key;
-                attribute.Category = this.Category;
                 attribute.Description = this.Description;
                 attribute.FieldTypeId = this.FieldTypeId ?? 0;
                 attribute.DefaultValue = this.DefaultValue;
                 attribute.IsMultiValue = this.MultiValue;
                 attribute.IsGridColumn = this.ShowInGrid;
+
+                attribute.Categories.Clear();
+                new CategoryService().Queryable().Where( c => this.CategoryIds.Contains( c.Id ) ).ToList().ForEach( c =>
+                    attribute.Categories.Add( c ) );
 
                 attribute.AttributeQualifiers.Clear();
                 foreach ( var qualifier in Qualifiers )
@@ -386,7 +404,6 @@ namespace Rock.Web.UI.Controls
                     attributeQualifier.Value = qualifier.Value.Value ?? string.Empty;
                     attribute.AttributeQualifiers.Add( attributeQualifier );
                 }
-
             }
         }
 
@@ -426,10 +443,12 @@ namespace Rock.Web.UI.Controls
             cvKey.ErrorMessage = "There is already an existing property with the key value you entered.  Please select a different key value";
             Controls.Add( cvKey );
 
-            tbCategory .ID = string.Format( "tbCategory_{0}", this.ID );
-            tbCategory.SourceTypeName = "Rock.Model.Attribute, Rock";
-            tbCategory.PropertyName = "Category";
-            Controls.Add( tbCategory );
+            cpCategories.LabelText = "Categories";
+            cpCategories.ID = string.Format( "cpCategories_{0}", this.ID );
+            cpCategories.AllowMultiSelect = true;
+            cpCategories.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
+            cpCategories.EntityTypeQualifierColumn = "EntityTypeId";
+            Controls.Add( cpCategories );
 
             tbDescription.ID = string.Format( "tbDescription_{0}", this.ID );
             tbDescription.TextMode = TextBoxMode.MultiLine;
@@ -513,7 +532,12 @@ namespace Rock.Web.UI.Controls
             tbKey.RenderControl( writer );
             cvKey.RenderControl( writer );
 
-            tbCategory.RenderControl( writer );
+            if ( this.AttributeEntityTypeId.HasValue )
+            {
+                cpCategories.EntityTypeQualifierValue = this.AttributeEntityTypeId.Value.ToString();
+            }
+            cpCategories.RenderControl( writer );
+
             tbDescription.RenderControl( writer );
             writer.RenderEndTag();
 
