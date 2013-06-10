@@ -79,7 +79,6 @@ namespace Rock.Model
                 target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
                 target.Key = source.Key;
                 target.Name = source.Name;
-                target.Category = source.Category;
                 target.Description = source.Description;
                 target.Order = source.Order;
                 target.IsGridColumn = source.IsGridColumn;

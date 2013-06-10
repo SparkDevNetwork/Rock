@@ -68,7 +68,10 @@ namespace Rock.Migrations
             foreach ( var entityType in entityTypes )
             {
                 var table = dbSets.Select( a => a.PropertyType.GetGenericArguments().First() ).Where( a => a != null && a.Name.Equals( entityType.Name ) ).FirstOrDefault();
-                dbContextEntities.Add( entityType.Name, table );
+                if ( table != null )
+                {
+                    dbContextEntities.Add( entityType.Name, table );
+                }
             }
 
             StorageEntityContainerMapping storageMapping = objectContext.MetadataWorkspace.GetItems<StorageEntityContainerMapping>( DataSpace.CSSpace ).OrderBy( a => a.GetType().Name ).FirstOrDefault();

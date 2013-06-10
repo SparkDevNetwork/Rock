@@ -67,7 +67,7 @@ namespace Rock.Field
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
         /// <returns></returns>
-        Control EditControl( Dictionary<string, ConfigurationValue> configurationValues );
+        Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id );
 
         /// <summary>
         /// Reads the value of the control.

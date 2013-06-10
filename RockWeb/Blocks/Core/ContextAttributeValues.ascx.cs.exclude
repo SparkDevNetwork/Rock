@@ -60,8 +60,7 @@ namespace RockWeb.Blocks.Core
                     AttributeService attributeService = new AttributeService();
                     foreach ( var item in attributeService
                         .Get( contextEntity.TypeId, entityQualifierColumn, entityQualifierValue )
-                        .OrderBy( a => a.Category )
-                        .ThenBy( a => a.Order )
+                        .OrderBy( a => a.Order )
                         .Select( a => new { a.Category, a.Id } ) )
                     {
                         if ( !cachedAttributes.ContainsKey( item.Category ) )

@@ -44,9 +44,9 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override System.Web.UI.Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues )
+        public override System.Web.UI.Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new NumberBox();
+            return new NumberBox { ID = id }; 
         }
     }
 }

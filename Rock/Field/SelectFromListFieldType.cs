@@ -32,9 +32,9 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
+        public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            CheckBoxList editControl = new CheckBoxList();
+            CheckBoxList editControl = new CheckBoxList { ID = id };
             editControl.RepeatDirection = RepeatDirection.Horizontal;
 
             foreach ( var item in ListSource )
