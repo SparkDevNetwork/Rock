@@ -44,14 +44,6 @@ namespace Rock.Extension
         /// </summary>
         public int Id { get { return 0; } }
 
-         /// <summary>
-        /// Dictionary of categorized attributes.  Key is the category name, and Value is list of attributes in the category
-        /// </summary>
-        /// <value>
-        /// The attribute categories.
-        /// </value>
-        public Dictionary<string, List<string>> AttributeCategories { get; set; }
-
         /// <summary>
         /// List of attributes associated with the object.  This property will not include the attribute values.
         /// The <see cref="AttributeValues"/> property should be used to get attribute values.  Dictionary key

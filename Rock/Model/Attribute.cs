@@ -104,16 +104,6 @@ namespace Rock.Model
         public string Name { get; set; }
         
         /// <summary>
-        /// Gets or sets the Category.
-        /// </summary>
-        /// <value>
-        /// Category.
-        /// </value>
-        [MaxLength( 100 )]
-        [DataMember]
-        public string Category { get; set; }
-        
-        /// <summary>
         /// Gets or sets the Description.
         /// </summary>
         /// <value>
@@ -198,6 +188,20 @@ namespace Rock.Model
         [DataMember]
         public virtual FieldType FieldType { get; set; }
 
+        /// <summary>
+        /// Gets or sets the categories.
+        /// </summary>
+        /// <value>
+        /// The categories.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<Category> Categories
+        {
+            get { return _categories ?? ( _categories = new Collection<Category>() ); }
+            set { _categories = value; }
+        }
+        private ICollection<Category> _categories;
+
         #endregion
 
         #region Public Methods
@@ -229,8 +233,9 @@ namespace Rock.Model
         /// </summary>
         public AttributeConfiguration()
         {
-            this.HasRequired( p => p.FieldType ).WithMany( ).HasForeignKey( p => p.FieldTypeId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.EntityType ).WithMany().HasForeignKey( p => p.EntityTypeId ).WillCascadeOnDelete( false );
+            this.HasRequired( a => a.FieldType ).WithMany( ).HasForeignKey( a => a.FieldTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.EntityType ).WithMany().HasForeignKey( a => a.EntityTypeId ).WillCascadeOnDelete( false );
+            this.HasMany( a => a.Categories ).WithMany().Map( a => { a.MapLeftKey( "AttributeId" ); a.MapRightKey( "CategoryId" ); a.ToTable( "AttributeCategory" ); } );
         }
     }
 

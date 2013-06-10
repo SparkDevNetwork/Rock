@@ -21,9 +21,9 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new TextBox { TextMode=TextBoxMode.MultiLine, Rows = 3 };
+            return new TextBox { ID = id, TextMode = TextBoxMode.MultiLine, Rows = 3 };
         }
     }
 }

@@ -77,8 +77,10 @@ namespace Rock.Model
                 target.iCalendarContent = source.iCalendarContent;
                 target.CheckInStartOffsetMinutes = source.CheckInStartOffsetMinutes;
                 target.CheckInEndOffsetMinutes = source.CheckInEndOffsetMinutes;
+                target.CategoryId = source.CategoryId;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
+
             
                 return target;
             }
