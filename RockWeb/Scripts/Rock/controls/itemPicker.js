@@ -8,6 +8,7 @@
             this.controlId = options.controlId;
             this.restUrl = options.restUrl;
             this.allowMultiSelect = options.allowMultiSelect;
+            this.defaultText = options.defaultText || '<none>';
         };
 
         ItemPicker.prototype.updateScrollbar = function (e) {
@@ -59,6 +60,7 @@
 
         ItemPicker.prototype.initializeCheckBoxes = function () {
             var controlId = this.controlId,
+                defaultText = this.defaultText,
                 $treeView = $('#treeviewItems_' + controlId),
                 findCheckedNodes = function (nodes, nodeList) {
                     for (var i = 0; i < nodes.length; i++) {
@@ -81,7 +83,7 @@
                     ids,
                     names,
                     selectedValues = '0',
-                    selectedNames = '<none>';
+                    selectedNames = defaultText;
                 
                 selectedNodes = [];
                 findCheckedNodes(nodes, selectedNodes);
@@ -153,6 +155,7 @@
 
         ItemPicker.prototype.initializeEventHandlers = function () {
             var controlId = this.controlId,
+                defaultText = this.defaultText,
                 isMultiSelect = this.isMultiSelect,
                 updateScrollbar = this.updateScrollbar;
 
@@ -180,7 +183,7 @@
                 e.stopImmediatePropagation();
 
                 var selectedValue = '0',
-                    selectedText = '<none>',
+                    selectedText = defaultText,
                     $selectedItemLabel = $('#selectedItemLabel_' + controlId),
                     $hiddenItemId = $('#hfItemId_' + controlId),
                     $hiddenItemName = $('#hfItemName_' + controlId);
@@ -197,7 +200,7 @@
                     selectedNode = treeViewData.select(),
                     nodeData = treeViewData.dataItem(selectedNode),
                     selectedValue = '0',
-                    selectedText = '<none>',
+                    selectedText = defaultText,
                     $selectedItemLabel = $('#selectedItemLabel_' + controlId),
                     $hiddenItemId = $('#hfItemId_' + controlId),
                     $hiddenItemName = $('#hfItemName_' + controlId);
