@@ -26,7 +26,7 @@
                         </div>
                         <div class="span6">
 
-                            <Rock:CategoryPicker ID="cpCategory" runat="server" CategoryEntityTypeName="Rock.Model.Schedule" LabelText="Category" Required="true" />
+                            <Rock:CategoryPicker ID="cpCategory" runat="server" EntityTypeName="Rock.Model.Schedule" LabelText="Category" Required="true" />
                             <div class="control-group">
                                 <div class="control-label">Enable Check-In</div>
                                 <div class="controls">
