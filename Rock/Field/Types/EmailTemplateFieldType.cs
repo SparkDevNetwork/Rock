@@ -25,9 +25,9 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override Control EditControl(Dictionary<string,ConfigurationValue> configurationValues)
+        public override Control EditControl(Dictionary<string,ConfigurationValue> configurationValues, string id)
         {
-            ListControl editControl = new DropDownList();
+            ListControl editControl = new DropDownList { ID = id }; 
 
             var service = new EmailTemplateService();
             foreach ( var emailTemplate in service.Queryable().OrderBy( e => e.Title ) )

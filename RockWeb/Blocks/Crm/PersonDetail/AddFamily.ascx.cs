@@ -21,6 +21,7 @@ using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
+    [AttributeCategoryField("Category", "The Attribute Category to display attributes from", "Rock.Model.Person")]
     public partial class AddFamily : Rock.Web.UI.RockBlock
     {
         protected override void OnInit( EventArgs e )
@@ -29,6 +30,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             cpCampus.Campuses = new CampusService().Queryable().OrderBy( a => a.Name ).ToList();
             cpCampus.Visible = cpCampus.Items.Count > 0;
+
+            string category = GetAttributeValue( "Category" );
         }
 
         protected override void OnLoad( EventArgs e )
