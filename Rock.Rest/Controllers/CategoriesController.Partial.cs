@@ -71,11 +71,15 @@ namespace Rock.Rest.Controllers
             var cachedEntityType = EntityTypeCache.Read( entityTypeId );
             if ( cachedEntityType != null )
             {
-                qry = qry.Where( a => 
-                    a.EntityTypeId == entityTypeId &&
-                    ( a.EntityTypeQualifierColumn == entityQualifier || ( a.EntityTypeQualifierColumn == null && entityQualifier == null ) ) &&
-                    ( a.EntityTypeQualifierValue == entityQualifierValue || ( a.EntityTypeQualifierValue == null && entityQualifierValue == null ) ) 
-                    );
+                qry = qry.Where( a => a.EntityTypeId == entityTypeId );
+                if (!string.IsNullOrWhiteSpace(entityQualifier))
+                {
+                    qry = qry.Where( a => string.Compare(a.EntityTypeQualifierColumn, entityQualifier, true) == 0);
+                    if (!string.IsNullOrWhiteSpace(entityQualifierValue))
+                    {
+                        qry = qry.Where( a => string.Compare(a.EntityTypeQualifierValue, entityQualifierValue, true) == 0);
+                    }
+                }
 
                 // Get the GetByCategory method
                 if ( cachedEntityType.AssemblyName != null )
