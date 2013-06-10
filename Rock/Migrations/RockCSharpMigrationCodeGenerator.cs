@@ -7,86 +7,60 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Data.Entity.Core.Mapping;
-using System.Data.Entity.Core.Metadata.Edm;
-using System.Data.Entity.Core.Objects;
-using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Migrations.Design;
 using System.Data.Entity.Migrations.Model;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using Rock.Data;
 
 namespace Rock.Migrations
 {
-    /// *************** NOTE!! ***************
-    /// To Debug this, put these Debugger calls wherever you want to set your breakpoint, then run Add-Migration
-    /// Debugger.Launch(); 
-    /// Debugger.Break();
-    
     /// <summary>
     /// 
     /// </summary>
     /// <typeparam name="T">Target DbContext to be migrated</typeparam>
-    public class RockCSharpMigrationCodeGenerator<T> : CSharpMigrationCodeGenerator where T : DbContext, new()
+    public class RockCSharpMigrationCodeGenerator<T> : CSharpMigrationCodeGenerator where T : DbContext
     {
         #region internal custom methods
 
         /// <summary>
-        /// Gets or sets a value indicating whether Migrations Code Generation should 
-        /// skip operations if the Table is not directly associated with the DbContext.
-        /// Default is True. 
+        /// 
+        /// </summary>
+        private Assembly contextAssembly = null;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [limit operations to context assembly]
+        /// Default is True
         /// </summary>
         /// <value>
-        /// <c>true</c> if [limit operations to db context tables]; otherwise, <c>false</c>.
+        /// <c>true</c> if [limit operations to context assembly]; otherwise, <c>false</c>.
         /// </value>
-        public bool LimitOperationsToDbContextTables { get; set; }
-        
+        public bool LimitOperationsToContextAssembly { get; set; }
+
         /// <summary>
         /// 
         /// </summary>
-        private Dictionary<string, Type> dbContextEntities = new Dictionary<string, Type>();
+        private Dictionary<string, Type> contextAssemblyTables = new Dictionary<string, Type>();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RockCSharpMigrationCodeGenerator{T}"/> class.
+        /// Initializes a new instance of the <see cref="RockCSharpMigrationCodeGenerator" /> class.
         /// </summary>
-        /// <param name="limitOperationsToDbContextTables">if set to <c>true</c> [limit operations to db context tables].</param>
-        public RockCSharpMigrationCodeGenerator( bool limitOperationsToDbContextTables = true )
+        /// <param name="limitOperationsToContextAssembly">if set to <c>true</c> [limit operations to context assembly].</param>
+        public RockCSharpMigrationCodeGenerator( bool limitOperationsToContextAssembly = true )
             : base()
         {
-            Type dbContextType = typeof( T );
-            var dbSets = dbContextType.GetProperties().Where( a => a.PropertyType.IsGenericType && a.PropertyType.GetGenericTypeDefinition() == typeof( DbSet<> ) );
+            contextAssembly = typeof( T ).Assembly;
+            LimitOperationsToContextAssembly = limitOperationsToContextAssembly;
 
-            DbContext dbContext = new T();
-            Database.SetInitializer<T>( null );
-            IObjectContextAdapter objectContextAdapter = dbContext as IObjectContextAdapter;
-            ObjectContext objectContext = objectContextAdapter.ObjectContext;
-
-            List<EntityType> entityTypes = objectContext.MetadataWorkspace.GetItems<EntityType>( DataSpace.CSpace ).OrderBy(a => a.Name).ToList();
-
-            // add all entities that are a DbSet<> in the dbContext
-            foreach ( var entityType in entityTypes )
+            foreach ( var e in contextAssembly.GetTypes().Where( a => a.CustomAttributes.Any( x => x.AttributeType.Name.Equals( "TableAttribute" ) ) ).ToList() )
             {
-                var table = dbSets.Select( a => a.PropertyType.GetGenericArguments().First() ).Where( a => a != null && a.Name.Equals( entityType.Name ) ).FirstOrDefault();
-                dbContextEntities.Add( entityType.Name, table );
-            }
-
-            StorageEntityContainerMapping storageMapping = objectContext.MetadataWorkspace.GetItems<StorageEntityContainerMapping>( DataSpace.CSSpace ).OrderBy( a => a.GetType().Name ).FirstOrDefault();
-            
-            // add any tables that just be assocation tables, and not a DbSet<>
-            foreach ( StorageSetMapping mapping in storageMapping.RelationshipSetMaps )
-            {
-                StorageAssociationSetMapping a = mapping as StorageAssociationSetMapping;
-                if (a != null)
+                var attrib = e.CustomAttributes.FirstOrDefault( a => a.AttributeType.Name.Equals( "TableAttribute" ) );
+                if ( attrib != null )
                 {
-                    if ( !dbContextEntities.ContainsKey( a.StoreEntitySet.Name ) )
-                    {
-                        dbContextEntities.Add( a.StoreEntitySet.Name, null );
-                    }
+                    contextAssemblyTables.Add( attrib.ConstructorArguments[0].Value.ToString(), e );
                 }
             }
-
-            LimitOperationsToDbContextTables = limitOperationsToDbContextTables;
         }
 
         /// <summary>
@@ -99,25 +73,23 @@ namespace Rock.Migrations
         {
             string tableName = fullTableName.Replace( "dbo.", string.Empty );
 
-            if ( dbContextEntities.ContainsKey( tableName ) )
+            if ( contextAssemblyTables.ContainsKey( tableName ) )
             {
-                Type tableType = dbContextEntities[tableName];
-                if ( tableType != null )
-                {
-                    MemberInfo mi = tableType.GetMember( columnName ).FirstOrDefault();
+                Type tableType = contextAssemblyTables[tableName];
 
-                    if ( mi != null )
+                MemberInfo mi = tableType.GetMember( columnName ).FirstOrDefault();
+
+                if ( mi != null )
+                {
+                    AlternateKeyAttribute attribute = mi.GetCustomAttribute<AlternateKeyAttribute>();
+                    if ( attribute != null )
                     {
-                        AlternateKeyAttribute attribute = mi.GetCustomAttribute<AlternateKeyAttribute>();
-                        if ( attribute != null )
-                        {
-                            writer.WriteLine( "CreateIndex( \"" + fullTableName + "\", \"" + columnName + "\", true );" );
-                        }
+                        writer.WriteLine( "CreateIndex( \"" + fullTableName + "\", \"" + columnName + "\", true );" );
                     }
-                    else
-                    {
-                        // probably not found if this is the Down() migration
-                    }
+                }
+                else
+                {
+                    // probably not found if this is the Down() migration
                 }
             }
             else
@@ -177,7 +149,7 @@ namespace Rock.Migrations
 ";
             List<string> skippedOperationComments = new List<string>();
             IEnumerable<MigrationOperation> includedOperations;
-            if ( LimitOperationsToDbContextTables )
+            if ( LimitOperationsToContextAssembly )
             {
                 includedOperations = GetFilteredOperations( operations, out skippedOperationComments );
             }
@@ -196,8 +168,7 @@ namespace Rock.Migrations
 
             if ( skippedOperationComments.Count > 0 )
             {
-                result += string.Format( "/* Skipped Operations for tables that are not part of {0}: Review these comments to verify the proper things were skipped */" + Environment.NewLine, typeof(T).Name );
-                result += string.Format( "/* To disable skipping, edit your Migrations\\Configuration.cs so that CodeGenerator = new {0}<{1}>(false); */" + Environment.NewLine, this.GetType().Name.Replace("`1", string.Empty), typeof(T).Name );
+                result += string.Format( "/* Skipped Operations for tables that are not in the assembly {0}: Review these comments to verify the proper things were skipped */" + Environment.NewLine, Path.GetFileName( contextAssembly.Location ) );
                 foreach ( var comment in skippedOperationComments )
                 {
                     result += comment + Environment.NewLine;
@@ -219,16 +190,16 @@ namespace Rock.Migrations
             skippedOperationComments = new List<string>();
 
             // make comments on the skipped Down() operations and add to includedOperations ones that are not skipped
-            skippedOperationComments.Add( string.Empty );
+            skippedOperationComments.Add( "" );
             skippedOperationComments.Add( "// Up()..." );
             foreach ( MigrationOperation operation in operations )
             {
                 TableColumnInfo tableColumnInfo = GetOperationTableColumnInfo( operation );
 
-                if ( !string.IsNullOrWhiteSpace( tableColumnInfo.TableName ) && !dbContextEntities.ContainsKey( tableColumnInfo.TableName ) )
+                if ( !string.IsNullOrWhiteSpace( tableColumnInfo.TableName ) && !contextAssemblyTables.ContainsKey( tableColumnInfo.TableName ) )
                 {
-                    //// not found if Migration is trying to gen code for a table in another DbContext of a Multiple Context project
-                    //// probably not found if this is the Down() migration
+                    // not found if Migration is trying to gen code for a table in another DbContext of a Multiple Context project
+                    // probably not found if this is the Down() migration
 
                     string columnInfo = string.Empty;
                     if ( !string.IsNullOrWhiteSpace( tableColumnInfo.ColumnName ) )
@@ -245,16 +216,16 @@ namespace Rock.Migrations
             }
 
             // make comments on the skipped Down() operations
-            skippedOperationComments.Add( string.Empty );
+            skippedOperationComments.Add( "" );
             skippedOperationComments.Add( "// Down()..." );
             foreach ( MigrationOperation operation in operations.Select( a => a.Inverse ).Where( a => a != null ).Reverse() )
             {
                 TableColumnInfo tableColumnInfo = GetOperationTableColumnInfo( operation );
 
-                if ( !string.IsNullOrWhiteSpace( tableColumnInfo.TableName ) && !dbContextEntities.ContainsKey( tableColumnInfo.TableName ) )
+                if ( !string.IsNullOrWhiteSpace( tableColumnInfo.TableName ) && !contextAssemblyTables.ContainsKey( tableColumnInfo.TableName ) )
                 {
-                    //// not found if Migration is trying to gen code for a table in another DbContext of a Multiple Context project
-                    //// probably not found if this is the Down() migration
+                    // not found if Migration is trying to gen code for a table in another DbContext of a Multiple Context project
+                    // probably not found if this is the Down() migration
 
                     string columnInfo = string.Empty;
                     if ( !string.IsNullOrWhiteSpace( tableColumnInfo.ColumnName ) )
@@ -297,6 +268,7 @@ namespace Rock.Migrations
             public string ColumnName { get; set; }
         }
 
+
         /// <summary>
         /// Gets the operation table column info.
         /// </summary>
@@ -334,11 +306,6 @@ namespace Rock.Migrations
             {
                 tableName = ( operation as ForeignKeyOperation ).PrincipalTable;
                 columnName = ( operation as ForeignKeyOperation ).DependentColumns.ToList().AsDelimited( "," );
-            }
-            else if ( operation is DropForeignKeyOperation )
-            {
-                tableName = ( operation as DropForeignKeyOperation ).PrincipalTable;
-                columnName = ( operation as DropForeignKeyOperation ).DependentColumns.ToList().AsDelimited( "," );
             }
             else if ( operation is HistoryOperation )
             {
