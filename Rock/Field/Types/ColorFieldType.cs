@@ -25,9 +25,9 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            DropDownList ddl = new DropDownList();
+            DropDownList ddl = new DropDownList { ID = id }; 
 
             Type colors = typeof( System.Drawing.Color );
             PropertyInfo[] colorInfo = colors.GetProperties( BindingFlags.Public | BindingFlags.Static );

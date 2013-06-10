@@ -105,9 +105,9 @@ namespace Rock.Field
         /// <returns>
         /// The control
         /// </returns>
-        public virtual Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
+        public virtual Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new TextBox();
+            return new TextBox { ID = id };
         }
 
         /// <summary>

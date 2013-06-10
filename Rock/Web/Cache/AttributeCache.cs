@@ -303,10 +303,9 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public Control CreateControl( string value, bool setValue, bool setId)
         {
-            Control editControl = this.FieldType.Field.EditControl( QualifierValues);
+            Control editControl = this.FieldType.Field.EditControl( QualifierValues, setId ? string.Format( "attribute_field_{0}", this.Id ) : string.Empty );
             if ( setId )
             {
-                editControl.ID = string.Format( "attribute_field_{0}", this.Id );
                 editControl.ClientIDMode = ClientIDMode.AutoID;
             }
 

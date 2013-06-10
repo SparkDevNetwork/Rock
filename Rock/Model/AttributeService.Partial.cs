@@ -40,6 +40,16 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the by category id.
+        /// </summary>
+        /// <param name="categoryId">The category id.</param>
+        /// <returns></returns>
+        public IQueryable<Attribute> GetByCategoryId( int categoryId )
+        {
+            return Repository.AsQueryable().Where( a => a.Categories.Any( c => c.Id == categoryId ) );
+        }
+
+        /// <summary>
         /// Gets Attributes by Entity Type Id, Entity Qualifier Column, Entity Qualifier Value
         /// </summary>
         /// <param name="entityTypeId">The entity type id.</param>

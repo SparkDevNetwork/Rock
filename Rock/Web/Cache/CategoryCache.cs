@@ -239,7 +239,48 @@ namespace Rock.Web.Cache
                 if ( categoryModel != null )
                 {
                     category = new CategoryCache( categoryModel );
-                    cache.Set( cacheKey, category, new CacheItemPolicy() );
+
+                    var cachePolicy = new CacheItemPolicy();
+                    cache.Set( cacheKey, category, cachePolicy );
+                    cache.Set( category.Guid.ToString(), category.Id, cachePolicy );
+
+                    return category;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Reads the specified GUID.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        /// <returns></returns>
+        public static CategoryCache Read( Guid guid )
+        {
+            ObjectCache cache = MemoryCache.Default;
+            object cacheObj = cache[guid.ToString()];
+
+            if ( cacheObj != null )
+            {
+                return Read( (int)cacheObj );
+            }
+            else
+            {
+                var categoryService = new CategoryService();
+                var categoryModel = categoryService.Get(guid);
+
+                if ( categoryModel != null )
+                {
+                    categoryModel.LoadAttributes();
+                    var category = new CategoryCache( categoryModel );
+
+                    var cachePolicy = new CacheItemPolicy();
+                    cache.Set( CategoryCache.CacheKey( category.Id ), category, cachePolicy );
+                    cache.Set( category.Guid.ToString(), category.Id, cachePolicy );
+
                     return category;
                 }
                 else
@@ -268,7 +309,11 @@ namespace Rock.Web.Cache
             else
             {
                 category = new CategoryCache( categoryModel );
-                cache.Set( cacheKey, category, new CacheItemPolicy() );
+
+                var cachePolicy = new CacheItemPolicy();
+                cache.Set( cacheKey, category, cachePolicy );
+                cache.Set( category.Guid.ToString(), category.Id, cachePolicy );
+                
                 return category;
             }
         }

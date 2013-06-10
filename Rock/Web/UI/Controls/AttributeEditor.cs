@@ -476,10 +476,9 @@ namespace Rock.Web.UI.Controls
                     Controls.Add( control );
                 }
 
-                DefaultValueControl = field.EditControl( Qualifiers );
+                DefaultValueControl = field.EditControl( Qualifiers, string.Format( "defaultValue_{0}_{1}", FieldTypeId.Value, this.ID ) );
                 if ( DefaultValueControl != null )
                 {
-                    DefaultValueControl.ID = string.Format( "defaultValue_{0}_{1}", FieldTypeId.Value, this.ID );
                     Controls.Add( DefaultValueControl );
                 }
             }

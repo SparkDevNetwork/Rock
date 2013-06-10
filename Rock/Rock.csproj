@@ -137,6 +137,8 @@
     <Compile Include="Attribute\BinaryFileTypeFieldAttribute.cs" />
     <Compile Include="Attribute\ComponentFieldAttribute.cs" />
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
+    <Compile Include="Attribute\CategoryFieldAttribute.cs" />
+    <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
     <Compile Include="Attribute\DecimalFieldAttribute.cs" />
     <Compile Include="Attribute\DateFieldAttribute.cs" />
     <Compile Include="Attribute\AccountFieldAttribute.cs" />
@@ -159,6 +161,7 @@
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
     <Compile Include="Data\MergeFieldAttribute.cs" />
     <Compile Include="Field\Types\ComponentsFieldType.cs" />
+    <Compile Include="Field\Types\CategoryFieldType.cs" />
     <Compile Include="Migrations\201305032320163_Communications.cs" />
     <Compile Include="Migrations\201305032320163_Communications.Designer.cs">
       <DependentUpon>201305032320163_Communications.cs</DependentUpon>
@@ -868,8 +871,10 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\LabeledBulletedList.cs" />
-    <Compile Include="Web\UI\Controls\NewFamilyMembers.cs" />
-    <Compile Include="Web\UI\Controls\NewFamilyMembersRow.cs" />
+    <Compile Include="Web\UI\Controls\NewFamily\Attributes.cs" />
+    <Compile Include="Web\UI\Controls\NewFamily\AttributesRow.cs" />
+    <Compile Include="Web\UI\Controls\NewFamily\Members.cs" />
+    <Compile Include="Web\UI\Controls\NewFamily\MembersRow.cs" />
     <Compile Include="Web\UI\Controls\PersonProfile\Badge.cs" />
     <Compile Include="Web\UI\Controls\PersonLink.cs" />
     <Compile Include="Web\UI\Controls\HtmlEditor.cs" />

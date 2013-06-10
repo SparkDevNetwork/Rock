@@ -46,9 +46,9 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override System.Web.UI.Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues )
+        public override System.Web.UI.Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var numberBox = new NumberBox();
+            var numberBox = new NumberBox { ID = id }; 
             numberBox.ValidationDataType = System.Web.UI.WebControls.ValidationDataType.Double;
             numberBox.MinimumValue = decimal.MinValue.ToString();
             numberBox.MaximumValue = decimal.MaxValue.ToString();
