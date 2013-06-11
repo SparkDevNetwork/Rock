@@ -239,10 +239,6 @@
     <Compile Include="Migrations\201306052252368_FinancialTransactionRefund03.Designer.cs">
       <DependentUpon>201306052252368_FinancialTransactionRefund03.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201306051614317_UpdateGivingBlocks.cs" />
-    <Compile Include="Migrations\201306051614317_UpdateGivingBlocks.Designer.cs">
-      <DependentUpon>201306051614317_UpdateGivingBlocks.cs</DependentUpon>
-    </Compile> 
     <Compile Include="Migrations\201306062005113_GroupTypeShowInNavigation.cs" />
     <Compile Include="Migrations\201306062005113_GroupTypeShowInNavigation.Designer.cs">
       <DependentUpon>201306062005113_GroupTypeShowInNavigation.cs</DependentUpon>
@@ -258,6 +254,10 @@
     <Compile Include="Migrations\201306071411579_TagGuid.cs" />
     <Compile Include="Migrations\201306071411579_TagGuid.Designer.cs">
       <DependentUpon>201306071411579_TagGuid.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201306111652134_UpdateGivingBlocks.cs" />
+    <Compile Include="Migrations\201306111652134_UpdateGivingBlocks.Designer.cs">
+      <DependentUpon>201306111652134_UpdateGivingBlocks.cs</DependentUpon>
     </Compile>
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -1748,9 +1748,6 @@
     <EmbeddedResource Include="Migrations\201306052252368_FinancialTransactionRefund03.resx">
       <DependentUpon>201306052252368_FinancialTransactionRefund03.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201306051614317_UpdateGivingBlocks.resx">
-      <DependentUpon>201306051614317_UpdateGivingBlocks.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201306062005113_GroupTypeShowInNavigation.resx">
       <DependentUpon>201306062005113_GroupTypeShowInNavigation.cs</DependentUpon>
     </EmbeddedResource>
@@ -1762,6 +1759,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201306071411579_TagGuid.resx">
       <DependentUpon>201306071411579_TagGuid.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306111652134_UpdateGivingBlocks.resx">
+      <DependentUpon>201306111652134_UpdateGivingBlocks.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

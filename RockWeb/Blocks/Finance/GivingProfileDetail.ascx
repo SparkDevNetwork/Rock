@@ -3,24 +3,32 @@
 <script type="text/javascript" src="../../Scripts/jquery.creditCardTypeDetector.js"></script>
 
 <script type="text/javascript">
-    function pageLoad(sender, args) {        
-        $('.calc').on('change', function () {
+    function pageLoad(sender, args) {
+        $('#chkDefaultAddress').attr('autocomplete', 'off');
+
+        $('.contribution-calculate').on('change', function () {
             var total = 0.00;
-            $('.calc').each(function () {                
-                if ($(this).val() != '' && $(this).val() != null) {
+            $('.contribution-calculate').each(function () {
+                if ($(this).val() != '' && $(this).val() != null && $(this).val() > 0) {
                     total += parseFloat($(this).val());
                     console.log(total);
                     this.value = parseFloat($(this).val()).toFixed(2);
-                    $('#hfAccountValidator').val(true);
                 }
             });
             $('.total-amount').html(total.toFixed(2));
-            $('.total-label').css('width', $(this).parent().width());
             return false;
         });
         
         $('.credit-card').creditCardTypeDetector({ 'credit_card_logos': '.card-logos' });
         $('.credit-card').trigger('keyup');
+    };
+
+    function cvAccountValidator_ClientValidate(sender, args) {
+        args.IsValid = false;
+        if ($('.total-amount').text() > 0) {
+            args.IsValid = true;
+            return;
+        }
     };
 </script>
 
@@ -36,7 +44,7 @@
                                 
                 <div ID="divDetails" runat="server" class="well">
 
-                    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error alert" />
+                    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following:" CssClass="alert alert-error block-message error alert" />
                     <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
                     <fieldset>
@@ -53,21 +61,26 @@
                             </div>
                                                         
                             <asp:Panel ID="pnlAccountList" runat="server">
+                                <asp:CustomValidator ID="cvAccountValidator" runat="server"
+                                    ErrorMessage="At least one contribution is Required"
+                                    CssClass="align-middle" EnableClientScript="true" Display="None"
+                                    ClientValidationFunction="cvAccountValidator_ClientValidate"
+                                    OnServerValidate="cvAccountValidator_ServerValidate" />
+
                                 <asp:Repeater ID="rptAccountList" runat="server" >
                                 <ItemTemplate>       
                                     <div class="row-fluid">
                                         <asp:HiddenField ID="hfAccountId" runat="server" Value='<%# DataBinder.Eval(Container.DataItem, "Key.Id") %>'/>
-	                                    <Rock:NumberBox ID="txtAccountAmount" runat="server" CssClass="input-small calc" PrependText="$"
+	                                    <Rock:NumberBox ID="txtAccountAmount" runat="server" CssClass="input-small contribution-calculate" PrependText="$"
                                             LabelText='<%# DataBinder.Eval(Container.DataItem, "Key.Name") %>'
-                                            Text='<%# DataBinder.Eval(Container.DataItem, "Value") ?? "" %>'
-                                            MinimumValue="0.0" Required="false" >
-	                                    </Rock:NumberBox>
-                                        <asp:HiddenField ID="hfAccountValidator" runat="server" ClientIDMode="Static" Value="false"/>
+                                            Text='<%# Decimal.Parse(DataBinder.Eval(Container.DataItem, "Value").ToString()) != 0 ? DataBinder.Eval(Container.DataItem, "Value", "{0:f2}") : "" %>'
+                                            MinimumValue="0.0">
+	                                    </Rock:NumberBox>                                        
                                     </div>
                                 </ItemTemplate>                                
-                                </asp:Repeater>
-                            </asp:Panel>                            
-
+                                </asp:Repeater>                                            
+                            </asp:Panel>              
+                            
                             <div ID="divAddAccount" runat="server">
                                 <div class="row-fluid">
                                     <div class="control-group align-middle">
@@ -98,7 +111,7 @@
                                     </div>
                                     
                                     <div id="divLimitGifts" runat="server" class="row-fluid align-middle" visible="false">
-                                        <Rock:LabeledCheckBox id="chkLimitGifts" runat="server" Text="Limit number of gifts" OnCheckedChanged="chkLimitGifts_CheckedChanged" AutoPostBack="true" />
+                                        <Rock:LabeledCheckBox ID="chkLimitGifts" runat="server" Text="Limit number of gifts" OnCheckedChanged="chkLimitGifts_CheckedChanged" AutoPostBack="true" />
                                     
                                         <div id="divLimitNumber" class="label-padding fade in" runat="server" visible="false">
                                             <Rock:NumberBox ID="txtLimitNumber" runat="server" class="input-small" Text="0" />
@@ -109,10 +122,7 @@
                                 </div>
 
                             </div>
-
-                            <asp:CustomValidator ID="AccountValidator" runat="server"
-                                ErrorMessage="At least one gift is required" Display="Dynamic"
-                                OnServerValidate="AccountValidator_ServerValidate" />
+                            
                         </div>                            
 
                     </fieldset>                                     
@@ -226,7 +236,7 @@
                                 </div>
                                                                         
                                 <div ID="divCardType" runat="server">
-                                    <ul id="ulCardType" class="card-logos">
+                                    <ul id="ulCardType" class="card-logos no-margin">
                                         <li class="card-visa"></li>
                                         <li class="card-mastercard"></li>
                                         <li class="card-amex"></li>
@@ -264,17 +274,15 @@
                                         <Rock:NumberBox ID="txtRouting" runat="server" LabelText="Routing #" MinimumValue="0.0" CssClass="input-inherit" />
                                         <Rock:NumberBox ID="txtAccount" runat="server" LabelText="Account #" MinimumValue="0.0" CssClass="input-inherit" />
 
-                                        <Rock:LabeledRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" LabelText="Account Type">
-                                            <asp:ListItem Text="Checking" Selected="true" />
+                                        <Rock:LabeledRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" LabelText="Account Type" CssClass="no-margin">
+                                            <asp:ListItem Text="Checking" Selected="true"  />
                                             <asp:ListItem Text="Savings" />
                                         </Rock:LabeledRadioButtonList>
                                     </fieldset>
                                 </div>
 
                                 <div ID="divCheckImage" runat="server">
-                                    <fieldset>
-                                        <img class="check-image" src="../../Assets/Images/check-image.png" />
-                                    </fieldset>
+                                    <img class="check-image" src="../../Assets/Images/check-image.png" />
                                 </div>
                             </div>
 
@@ -283,7 +291,7 @@
                     </div>
 
                     <div ID="divDefaultAddress" runat="server">
-                        <Rock:LabeledCheckBox ID="chkDefaultAddress" runat="server" Text="Use address from above" OnCheckedChanged="chkDefaultAddress_CheckedChanged" AutoPostBack="true" Checked="true" />
+                        <Rock:LabeledCheckBox ID="chkDefaultAddress" runat="server" Checked="true" Text="Use address from above" OnCheckedChanged="chkDefaultAddress_CheckedChanged" AutoPostBack="true" />
                     </div>
 
                     <div id="divNewAddress" class="label-padding fade in" runat="server" visible="False">
@@ -357,22 +365,20 @@
                     <div id="divSavePayment" runat="server">
 
                         <div class="row-fluid">
-
                             <Rock:LabeledCheckBox ID="chkSavePayment" runat="server" Text="Save My Payment Information" OnCheckedChanged="chkSavePayment_CheckedChanged" AutoPostBack="true" />                                                                                
                             <div id="divPaymentNick" runat="server" visible="false" class="label-padding fade in">
                                 <div class="row-fluid">                                    
                                     <Rock:LabeledTextBox ID="txtPaymentNick" runat="server" LabelText="Account nickname:" CssClass="input-medium" />                                    
                                     <asp:LinkButton ID="btnSavePaymentInfo" runat="server" Text="Save" CssClass="btn btn-primary padding-label" OnClick="btnSavePaymentInfo_Click" />                                    
                                 </div>
-                            </div>                                        
-                                        
+                            </div>             
                         </div>
 
                     </div>
 
                     <div id="divCreateAccount" runat="server">
 
-                        <Rock:LabeledCheckBox ID="chkCreateAccount" runat="server" LabelText="Create An Account" OnCheckedChanged="chkCreateAccount_CheckedChanged" AutoPostBack="true" />
+                        <Rock:LabeledCheckBox ID="chkCreateAccount" runat="server" LabelText="Create An Account" OnCheckedChanged="chkDefaultAddress_CheckedChanged" AutoPostBack="true"/>
                 
                         <div id="divCredentials" runat="server" visible="false" class="fade in">
 
