@@ -11,7 +11,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201306051614317_UpdateGivingBlocks"; }
+            get { return "201306111652134_UpdateGivingBlocks"; }
         }
         
         string IMigrationMetadata.Source
