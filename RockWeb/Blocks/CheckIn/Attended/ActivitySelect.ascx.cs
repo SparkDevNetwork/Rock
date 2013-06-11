@@ -87,7 +87,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
                         ( (LinkButton)e.Item.FindControl( "lbSelectMinistry" ) ).AddCssClass( "active" );
                         rTime.DataBind();
-                        rActivity.DataBind();
+                        //rActivity.DataBind();
+                        lvActivity.DataBind();
                         LoadTimes();
                     }
                 }
@@ -107,68 +108,71 @@ namespace RockWeb.Blocks.CheckIn.Attended
             LoadActivities();
 
             // if there is a currently selected activity for the time period being chosen, then show it as active
-            foreach ( RepeaterItem item in rActivity.Items )
+            //foreach ( RepeaterItem item in rActivity.Items )
+            foreach ( ListViewItem item in lvActivity.Items )
             {
                 foreach ( var timeAndActivityList in CheckInTimeAndActivityList )
                 {
-                    if ( ( timeAndActivityList[0] == CheckInPeopleIds.FirstOrDefault() ) && ( timeAndActivityList[1] == int.Parse( ( (LinkButton)e.Item.FindControl( "lbSelectTime" ) ).CommandArgument ) ) && ( timeAndActivityList[2] == int.Parse( ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).CommandArgument ) ) )
+                    //if ( ( timeAndActivityList[0] == CheckInPeopleIds.FirstOrDefault() ) && ( timeAndActivityList[1] == int.Parse( ( (LinkButton)e.Item.FindControl( "lbSelectTime" ) ).CommandArgument ) ) && ( timeAndActivityList[2] == int.Parse( ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).CommandArgument ) ) )
+                    if ( ( timeAndActivityList[0] == CheckInPeopleIds.FirstOrDefault() ) && ( timeAndActivityList[1] == int.Parse( ( (LinkButton)e.Item.FindControl( "lbSelectTime" ) ).CommandArgument ) ) && ( timeAndActivityList[2] == int.Parse( ( (LinkButton)item.FindControl( "lSelectActivity" ) ).CommandArgument ) ) )
                     {
-                        ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).AddCssClass( "active" );
+                        //( (LinkButton)item.FindControl( "lbSelectActivity" ) ).AddCssClass( "active" );
+                        ( (LinkButton)item.FindControl( "lSelectActivity" ) ).AddCssClass( "active" );
                     }
                 }
             }
         }
 
         // when you click on an activity button, you come in here.
-        protected void rActivity_ItemCommand( object source, RepeaterCommandEventArgs e )
-        {
-            // every time someone selects an activity, it is automatically saved to the list of check in activities. if the person changes the activity for the same time period, it will check to see if there is an activity already
-            // scheduled at that time and first delete that stored activity before saving the newly selected activity. 
+        //protected void rActivity_ItemCommand( object source, RepeaterCommandEventArgs e )
+        //{
+        //    // every time someone selects an activity, it is automatically saved to the list of check in activities. if the person changes the activity for the same time period, it will check to see if there is an activity already
+        //    // scheduled at that time and first delete that stored activity before saving the newly selected activity. 
 
-            // Step 1: set the button clicked to appear like it's clicked.
-            int id = int.Parse( e.CommandArgument.ToString() );
-            foreach ( RepeaterItem item in rActivity.Items )
-            {
-                ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).RemoveCssClass( "active" );
-            }
+        //    // Step 1: set the button clicked to appear like it's clicked.
+        //    int id = int.Parse( e.CommandArgument.ToString() );
+        //    foreach ( RepeaterItem item in rActivity.Items )
+        //    {
+        //        ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).RemoveCssClass( "active" );
+        //    }
 
-            ( (LinkButton)e.Item.FindControl( "lbSelectActivity" ) ).AddCssClass( "active" );
+        //    ( (LinkButton)e.Item.FindControl( "lbSelectActivity" ) ).AddCssClass( "active" );
 
-            // Step 2: make a copy of the CheckInTimeAndActivityList so that we can iterate through this list, and have the freedom to add & remove items from the actual CheckInTimeAndActivityList without messing up the loops.
-            // there's probably a better way to do this, but I don't know what it is.
-            List<List<int>> ctaList = new List<List<int>>();
-            foreach ( var ctaListCopy in CheckInTimeAndActivityList )
-            {
-                ctaList.Add( ctaListCopy );
-            }
+        //    // Step 2: make a copy of the CheckInTimeAndActivityList so that we can iterate through this list, and have the freedom to add & remove items from the actual CheckInTimeAndActivityList without messing up the loops.
+        //    // there's probably a better way to do this, but I don't know what it is.
+        //    List<List<int>> ctaList = new List<List<int>>();
+        //    foreach ( var ctaListCopy in CheckInTimeAndActivityList )
+        //    {
+        //        ctaList.Add( ctaListCopy );
+        //    }
 
-            // Step 3: check to see if there are any other activities previously selected at the chosen time for this person. If there are, remove them from the CheckInTimeAndActivityList.
-            int chosenTimeId = 0;
-            foreach ( RepeaterItem timeItem in rTime.Items )
-            {
-                if ( HasActiveClass( (LinkButton)timeItem.FindControl( "lbSelectTime" ) ) )
-                {
-                    chosenTimeId = int.Parse( ( (LinkButton)timeItem.FindControl( "lbSelectTime" ) ).CommandArgument );
-                }
-            }
+        //    // Step 3: check to see if there are any other activities previously selected at the chosen time for this person. If there are, remove them from the CheckInTimeAndActivityList.
+        //    int chosenTimeId = 0;
+        //    foreach ( RepeaterItem timeItem in rTime.Items )
+        //    {
+        //        if ( HasActiveClass( (LinkButton)timeItem.FindControl( "lbSelectTime" ) ) )
+        //        {
+        //            chosenTimeId = int.Parse( ( (LinkButton)timeItem.FindControl( "lbSelectTime" ) ).CommandArgument );
+        //        }
+        //    }
 
-            foreach ( var timeAndActivityList in ctaList )
-            {
-                if ( timeAndActivityList[0] == CheckInPeopleIds.FirstOrDefault() && timeAndActivityList[1] == chosenTimeId )
-                {
-                    CheckInTimeAndActivityList.Remove( timeAndActivityList );
-                }
-            }
+        //    foreach ( var timeAndActivityList in ctaList )
+        //    {
+        //        if ( timeAndActivityList[0] == CheckInPeopleIds.FirstOrDefault() && timeAndActivityList[1] == chosenTimeId )
+        //        {
+        //            CheckInTimeAndActivityList.Remove( timeAndActivityList );
+        //        }
+        //    }
 
-            // Step 4: now add the currently selected activity to the CheckInTimeAndActivityList
-            List<int> temp = new List<int>();
-            temp.Add( CheckInPeopleIds.FirstOrDefault() );
-            temp.Add( chosenTimeId );
-            temp.Add( int.Parse( ( (LinkButton)e.Item.FindControl( "lbSelectActivity" ) ).CommandArgument ) );
-            CheckInTimeAndActivityList.Add( temp );
+        //    // Step 4: now add the currently selected activity to the CheckInTimeAndActivityList
+        //    List<int> temp = new List<int>();
+        //    temp.Add( CheckInPeopleIds.FirstOrDefault() );
+        //    temp.Add( chosenTimeId );
+        //    temp.Add( int.Parse( ( (LinkButton)e.Item.FindControl( "lbSelectActivity" ) ).CommandArgument ) );
+        //    CheckInTimeAndActivityList.Add( temp );
 
-            BindToActivityGrid();
-        }
+        //    BindToActivityGrid();
+        //}
 
         /// <summary>
         /// Handles the Delete event of the gCheckInList control.
@@ -179,11 +183,14 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             var activity = CheckInTimeAndActivityList[int.Parse( gActivityList.DataKeys[e.RowIndex]["ListId"].ToString() )];
             CheckInTimeAndActivityList.Remove( activity );
-            foreach ( RepeaterItem item in rActivity.Items )
+            //foreach ( RepeaterItem item in rActivity.Items )
+            foreach ( ListViewItem item in lvActivity.Items )
             {
-                if ( int.Parse( ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).CommandArgument ) == activity[2] )
+                //if ( int.Parse( ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).CommandArgument ) == activity[2] )
+                if ( int.Parse( ( (LinkButton)item.FindControl( "lSelectActivity" ) ).CommandArgument ) == activity[2] )
                 {
-                    ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).RemoveCssClass( "active" );
+                    //( (LinkButton)item.FindControl( "lbSelectActivity" ) ).RemoveCssClass( "active" );
+                    ( (LinkButton)item.FindControl( "lSelectActivity" ) ).RemoveCssClass( "active" );
                 }
             }
 
@@ -259,11 +266,14 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
 
                 LoadActivities();
-                foreach ( RepeaterItem item in rActivity.Items )
+                //foreach ( RepeaterItem item in rActivity.Items )
+                foreach ( ListViewItem item in lvActivity.Items )
                 {
-                    if ( int.Parse( ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).CommandArgument ) == groupTypeId.FirstOrDefault() )
+                    //if ( int.Parse( ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).CommandArgument ) == groupTypeId.FirstOrDefault() )
+                    if ( int.Parse( ( (LinkButton)item.FindControl( "lSelectActivity" ) ).CommandArgument ) == groupTypeId.FirstOrDefault() )
                     {
-                        ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).AddCssClass( "active" );
+                        //( (LinkButton)item.FindControl( "lbSelectActivity" ) ).AddCssClass( "active" );
+                        ( (LinkButton)item.FindControl( "lSelectActivity" ) ).AddCssClass( "active" );
                     }
                 }
             }
@@ -318,9 +328,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     activityGroupTypeList.Add( activityGroupType );
                 }
             }
+            Session["activityGroupTypeList"] = activityGroupTypeList;
+            //rActivity.DataSource = activityGroupTypeList;
+            //rActivity.DataBind();
 
-            rActivity.DataSource = activityGroupTypeList;
-            rActivity.DataBind();
+            lvActivity.DataSource = activityGroupTypeList;
+            lvActivity.DataBind();
         }
 
         protected int GetParent( int childGroupTypeId, int parentId )
@@ -510,5 +523,84 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         #endregion
-    }
+        protected void lvActivity_PagePropertiesChanging( object sender, PagePropertiesChangingEventArgs e )
+        {
+            //set current page startindex, max rows and rebind to false
+            Pager.SetPageProperties( e.StartRowIndex, e.MaximumRows, false );
+            lvActivity.DataSource = Session["activityGroupTypeList"];
+            lvActivity.DataBind();
+
+            // since we have to rebind to the data source errr time they click a button, we have to search for actually selected buttons every time as well. Freaking time hog. Slows things down considerably...especially on large data sets.
+            var timeButtonId = 0;
+            foreach ( RepeaterItem item in rTime.Items )
+            {
+                if ( HasActiveClass( (LinkButton)item.FindControl( "lbSelectTime" ) ) )
+                {
+                    timeButtonId = int.Parse( ( (LinkButton)item.FindControl( "lbSelectTime" ) ).CommandArgument );
+                }
+            }
+
+            // if there is a currently selected activity for the time period being chosen, then show it as active
+            foreach ( ListViewItem item in lvActivity.Items )
+            {
+                foreach ( var timeAndActivityList in CheckInTimeAndActivityList )
+                {
+                    if ( ( timeAndActivityList[0] == CheckInPeopleIds.FirstOrDefault() ) && ( timeAndActivityList[1] == timeButtonId ) && ( timeAndActivityList[2] == int.Parse( ( (LinkButton)item.FindControl( "lSelectActivity" ) ).CommandArgument ) ) )
+                    {
+                        ( (LinkButton)item.FindControl( "lSelectActivity" ) ).AddCssClass( "active" );
+                    }
+                }
+            }
+        }
+
+        protected void lvActivity_ItemCommand( object sender, ListViewCommandEventArgs e )
+        {
+            // every time someone selects an activity, it is automatically saved to the list of check in activities. if the person changes the activity for the same time period, it will check to see if there is an activity already
+            // scheduled at that time and first delete that stored activity before saving the newly selected activity. 
+
+            // Step 1: set the button clicked to appear like it's clicked.
+            int id = int.Parse( e.CommandArgument.ToString() );
+            foreach ( ListViewDataItem item in lvActivity.Items )
+            {
+                ( (LinkButton)item.FindControl( "lSelectActivity" ) ).RemoveCssClass( "active" );
+            }
+
+            ( (LinkButton)e.Item.FindControl( "lSelectActivity" ) ).AddCssClass( "active" );
+
+            // Step 2: make a copy of the CheckInTimeAndActivityList so that we can iterate through this list, and have the freedom to add & remove items from the actual CheckInTimeAndActivityList without messing up the loops.
+            // there's probably a better way to do this, but I don't know what it is.
+            List<List<int>> ctaList = new List<List<int>>();
+            foreach ( var ctaListCopy in CheckInTimeAndActivityList )
+            {
+                ctaList.Add( ctaListCopy );
+            }
+
+            // Step 3: check to see if there are any other activities previously selected at the chosen time for this person. If there are, remove them from the CheckInTimeAndActivityList.
+            int chosenTimeId = 0;
+            foreach ( RepeaterItem timeItem in rTime.Items )
+            {
+                if ( HasActiveClass( (LinkButton)timeItem.FindControl( "lbSelectTime" ) ) )
+                {
+                    chosenTimeId = int.Parse( ( (LinkButton)timeItem.FindControl( "lbSelectTime" ) ).CommandArgument );
+                }
+            }
+
+            foreach ( var timeAndActivityList in ctaList )
+            {
+                if ( timeAndActivityList[0] == CheckInPeopleIds.FirstOrDefault() && timeAndActivityList[1] == chosenTimeId )
+                {
+                    CheckInTimeAndActivityList.Remove( timeAndActivityList );
+                }
+            }
+
+            // Step 4: now add the currently selected activity to the CheckInTimeAndActivityList
+            List<int> temp = new List<int>();
+            temp.Add( CheckInPeopleIds.FirstOrDefault() );
+            temp.Add( chosenTimeId );
+            temp.Add( int.Parse( ( (LinkButton)e.Item.FindControl( "lSelectActivity" ) ).CommandArgument ) );
+            CheckInTimeAndActivityList.Add( temp );
+
+            BindToActivityGrid();
+        }
+}
 }
