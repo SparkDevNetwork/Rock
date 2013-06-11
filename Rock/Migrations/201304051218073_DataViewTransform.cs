@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class DataViewTransform : RockMigration
+    public partial class DataViewTransform : RockMigration_5
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
