@@ -152,18 +152,18 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             ListControl editControl;
 
             if ( configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ ALLOW_MULTIPLE_KEY ].Value.AsBoolean() )
             {
-                editControl = new CheckBoxList();
+                editControl = new CheckBoxList { ID = id }; 
                 editControl.AddCssClass( "checkboxlist-group" );
             }
             else
             {
-                editControl = new DropDownList();
+                editControl = new DropDownList { ID = id }; 
                 // Provide the ability to set a "none" default value (unless the Required is true).
                 editControl.Items.Add( new ListItem( None.Text, None.IdValue ) );
             }

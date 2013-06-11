@@ -575,16 +575,38 @@ order by [parentTable], [columnName]
         {
             var properties = new Dictionary<string, string>();
 
+            var interfaces = type.GetInterfaces();
+
             foreach ( var property in type.GetProperties() )
             {
-                if ( !property.GetGetMethod().IsVirtual || property.Name == "Id" || property.Name == "Guid" || property.Name == "Order" )
+                var getMethod = property.GetGetMethod();
+                if ( getMethod.IsVirtual )
                 {
-                    if ( !property.GetCustomAttributes( typeof( DatabaseGeneratedAttribute ) ).Any() )
+                    if ( !getMethod.IsFinal )
                     {
-                        if ( property.SetMethod.IsPublic  && property.GetMethod.IsPublic)
+                        continue;
+                    }
+
+                    bool interfaceProperty = false;
+                    foreach ( Type interfaceType in interfaces )
+                    {
+                        if ( interfaceType.GetProperties().Any( p => p.Name == property.Name ) )
                         {
-                            properties.Add( property.Name, PropertyTypeName( property.PropertyType ) );
+                            interfaceProperty = true;
+                            break;
                         }
+                    }
+                    if ( !interfaceProperty )
+                    {
+                        continue;
+                    }
+                }
+
+                if ( !property.GetCustomAttributes( typeof( DatabaseGeneratedAttribute ) ).Any() )
+                {
+                    if ( property.SetMethod != null && property.SetMethod.IsPublic  && property.GetMethod.IsPublic)
+                    {
+                        properties.Add( property.Name, PropertyTypeName( property.PropertyType ) );
                     }
                 }
             }

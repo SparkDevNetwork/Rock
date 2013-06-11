@@ -137,11 +137,11 @@ namespace RockWeb.Blocks.Finance.Administration
                 pledges = pledges.Where( p => p.PersonId == ppFilterPerson.PersonId.Value );
             }
 
-            var accountIds = fpFilterAccount.SelectedValuesAsInt().Where( i => i.HasValue && i.Value != 0 ).ToList();
+            var accountIds = fpFilterAccount.SelectedValuesAsInt().Where( i => i != 0 ).ToList();
 
             if ( accountIds.Any() )
             {
-                pledges = pledges.Where( p => accountIds.Contains( p.AccountId ) );
+                pledges = pledges.Where( p => p.AccountId.HasValue && accountIds.Contains( p.AccountId.Value ) );
             }
 
             gPledges.DataSource = sortProperty != null ? pledges.Sort( sortProperty ).ToList() : pledges.OrderBy( p => p.AccountId ).ToList();

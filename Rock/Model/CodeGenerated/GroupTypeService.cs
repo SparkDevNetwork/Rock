@@ -90,6 +90,7 @@ namespace Rock.Model
                 target.DefaultGroupRoleId = source.DefaultGroupRoleId;
                 target.AllowMultipleLocations = source.AllowMultipleLocations;
                 target.ShowInGroupList = source.ShowInGroupList;
+                target.ShowInNavigation = source.ShowInNavigation;
                 target.IconSmallFileId = source.IconSmallFileId;
                 target.IconLargeFileId = source.IconLargeFileId;
                 target.IconCssClass = source.IconCssClass;
