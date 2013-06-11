@@ -47,9 +47,9 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            DropDownList dropDownList = new DropDownList();
+            DropDownList dropDownList = new DropDownList { ID = id }; 
 
             var service = new EntityTypeService();
             var entityTypes = new EntityTypeService().GetEntities();

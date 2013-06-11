@@ -73,7 +73,9 @@ namespace Rock.Model
             {
                 var target = new Report();
                 target.IsSystem = source.IsSystem;
+                target.Name = source.Name;
                 target.Description = source.Description;
+                target.CategoryId = source.CategoryId;
                 target.EntityTypeId = source.EntityTypeId;
                 target.DataViewId = source.DataViewId;
                 target.Id = source.Id;

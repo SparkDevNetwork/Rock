@@ -211,11 +211,11 @@ namespace Rock.Model
                     var checkInEnd = calEvent.DTEnd;
                     if (CheckInEndOffsetMinutes.HasValue)
                     {
-                        checkInEnd = calEvent.DTStart.AddMinutes(CheckInEndOffsetMinutes.Value);
+                        checkInEnd = calEvent.DTStart.AddMinutes( CheckInEndOffsetMinutes.Value );
                     }
 
                     if (DateTimeOffset.Now.TimeOfDay.TotalSeconds < checkInStart.TimeOfDay.TotalSeconds ||
-                        DateTimeOffset.Now.TimeOfDay.TotalSeconds > checkInStart.TimeOfDay.TotalSeconds)
+                        DateTimeOffset.Now.TimeOfDay.TotalSeconds > checkInEnd.TimeOfDay.TotalSeconds)
                     {
                         return false;
                     }
