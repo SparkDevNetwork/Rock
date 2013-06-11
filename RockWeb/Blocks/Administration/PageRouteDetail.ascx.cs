@@ -151,13 +151,6 @@ namespace RockWeb.Blocks.Administration
             int selectedPageId = int.Parse( ppPage.SelectedValue );
             pageRoute.PageId = selectedPageId;
 
-            // check for duplicates
-            if ( pageRouteService.Queryable().Count( a => a.Route.Equals( pageRoute.Route, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( pageRoute.Id ) ) > 0 )
-            {
-                tbRoute.ShowErrorMessage( WarningMessage.DuplicateFoundMessage( "route", Rock.Model.Page.FriendlyTypeName ) );
-                return;
-            }
-
             if ( !pageRoute.IsValid )
             {
                 // Controls will render the error messages                    
