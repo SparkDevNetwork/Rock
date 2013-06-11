@@ -22,7 +22,15 @@ namespace Rock.Model
     [DataContract]
     public partial class GroupType : Model<GroupType>
     {
-
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupType"/> class.
+        /// </summary>
+        public GroupType()
+        {
+            ShowInGroupList = true;
+            ShowInNavigation = true;
+        }
+        
         #region Entity Properties
 
         /// <summary>
@@ -61,7 +69,7 @@ namespace Rock.Model
         /// <value>
         /// The group term.
         /// </value>
-        [MaxLength(100)]
+        [MaxLength( 100 )]
         [DataMember]
         public string GroupTerm { get; set; }
 
@@ -71,7 +79,7 @@ namespace Rock.Model
         /// <value>
         /// The group member term.
         /// </value>
-        [MaxLength(100)]
+        [MaxLength( 100 )]
         [DataMember]
         public string GroupMemberTerm { get; set; }
 
@@ -100,12 +108,17 @@ namespace Rock.Model
         ///   <c>true</c> if [show in group list]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool ShowInGroupList
-        {
-            get { return showInGroupList; }
-            set { showInGroupList = value; }
-        }
-        private bool showInGroupList = true;
+        public bool ShowInGroupList { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show in navigation].
+        /// If false, this GroupType will be hidden navigation controls, such as TreeViews and Menus
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show in navigation]; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool ShowInNavigation { get; set; }
 
         /// <summary>
         /// Gets or sets the small icon.

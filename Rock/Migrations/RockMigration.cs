@@ -15,6 +15,65 @@ namespace Rock.Migrations
     public abstract class RockMigration : DbMigration
     {
 
+        #region Entity Type Methods
+
+        /// <summary>
+        /// Updates the type of the entity.
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="friendlyName">Name of the friendly.</param>
+        /// <param name="assemblyName">Name of the assembly.</param>
+        /// <param name="isEntity">if set to <c>true</c> [is entity].</param>
+        /// <param name="isSecured">if set to <c>true</c> [is secured].</param>
+        /// <param name="guid">The GUID.</param>
+        public void UpdateEntityType( string name, string friendlyName, string assemblyName, bool isEntity, bool isSecured, string guid )
+        {
+            Sql( string.Format( @"
+
+                DECLARE @Id int
+                SET @Id = (SELECT [Id] FROM [EntityType] WHERE [Name] = '{0}')
+                IF @Id IS NULL
+                BEGIN
+                    INSERT INTO [EntityType] (
+                        [Name],[FriendlyName],[AssemblyName],[IsEntity],[IsSecured],[Guid])
+                    VALUES(
+                        '{0}','{1}','{2}',{3},{4},'{5}')
+                END
+                ELSE
+                BEGIN
+                    UPDATE [EntityType] SET 
+                        [FriendlyName] = '{1}',
+                        [AssemblyName] = '{2}',
+                        [IsEntity] = {3},
+                        [IsSecured] = {4},
+                        [Guid] = '{5}'
+                    WHERE [Name] = '{0}'
+                END
+",
+                    name.Replace( "'", "''" ),
+                    friendlyName.Replace( "'", "''" ),
+                    assemblyName.Replace( "'", "''" ),
+                    isEntity ? "1" : "0",
+                    isSecured ? "1" : "0",
+                    guid ) );
+        }
+
+        /// <summary>
+        /// Deletes the type of the entity.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        public void DeleteEntityType( string guid )
+        {
+            Sql( string.Format( @"
+                DELETE [EntityType] WHERE [Guid] = '{0}'
+",
+                    guid
+                    ) );
+        }
+
+        #endregion
+
+
         #region Field Type Methods
 
         /// <summary>
@@ -343,6 +402,28 @@ namespace Rock.Migrations
 ", pageGuid, route ) );
 
         }
+
+        /// <summary>
+        /// Adds the page context.
+        /// </summary>
+        /// <param name="pageGuid">The page GUID.</param>
+        /// <param name="entity">The entity.</param>
+        /// <param name="idParameter">The id parameter.</param>
+        public void AddPageContext( string pageGuid, string entity, string idParameter )
+        {
+            Sql( string.Format( @"
+
+                DECLARE @PageId int
+                SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{0}')
+
+                INSERT INTO [PageContext] (
+                    [IsSystem],[PageId],[Entity],[IdParameter],[Guid])
+                VALUES(
+                    1, @PageId, '{1}', '{2}', newid())
+", pageGuid, entity, idParameter ) );
+
+        }
+        
         /// <summary>
         /// Defaults the system page.
         /// </summary>
@@ -607,20 +688,6 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Adds the block attribute.
-        /// </summary>
-        /// <param name="blockGuid">The block GUID.</param>
-        /// <param name="fieldTypeGuid">The field type GUID.</param>
-        /// <param name="attribute">The attribute.</param>
-        public void AddBlockAttribute( string blockGuid, string fieldTypeGuid, Rock.Model.Attribute attribute )
-        {
-            AddBlockTypeAttribute( blockGuid, fieldTypeGuid, attribute.Name, attribute.Key, attribute.Category, attribute.Description, attribute.Order, attribute.DefaultValue, attribute.Guid.ToString() );
-
-            string updateSql = "Update [Attribute] set [IsGridColumn] = {0}, [IsMultiValue] = {1}, [IsRequired] = {2} where Guid = '{3}'";
-            Sql( string.Format( updateSql, attribute.IsGridColumn.Bit(), attribute.IsMultiValue.Bit(), attribute.IsRequired.Bit(), attribute.Guid.ToString() ) );
-        }
-
-        /// <summary>
         /// Deletes the block attribute.
         /// </summary>
         /// <param name="guid">The GUID.</param>
@@ -768,33 +835,6 @@ namespace Rock.Migrations
 ",
                     guid
                     ) );
-        }
-
-
-
-        /// <summary>
-        /// Defaults the block attribute.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="category">The category.</param>
-        /// <param name="description">The description.</param>
-        /// <param name="order">The order.</param>
-        /// <param name="defaultValue">The default value.</param>
-        /// <param name="guid">The GUID.</param>
-        /// <returns></returns>
-        public Rock.Model.Attribute DefaultBlockAttribute( string name, string category, string description, int order, string defaultValue, Guid guid )
-        {
-            var attribute = new Rock.Model.Attribute();
-
-            attribute.IsSystem = true;
-            attribute.Key = name.Replace( " ", string.Empty );
-            attribute.Name = name;
-            attribute.Category = category;
-            attribute.Description = description;
-            attribute.Order = order;
-            attribute.Guid = guid;
-
-            return attribute;
         }
 
         #endregion

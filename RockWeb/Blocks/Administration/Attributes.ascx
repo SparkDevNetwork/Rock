@@ -4,15 +4,20 @@
     <ContentTemplate>
         <asp:Panel ID="pnlList" runat="server">
 
-            <Rock:GridFilter ID="rFilter" runat="server">
-                <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" />
+            <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
+                <Rock:CategoryPicker ID="cpCategoriesFilter" runat="server" LabelText="Categories" AllowMultiSelect="true" />
             </Rock:GridFilter>
             <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="setting" OnRowSelected="rGrid_Edit">
                 <Columns>
                     <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
-                    <asp:BoundField DataField="Category" HeaderText="Category" SortExpression="Category" />
                     <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                     <asp:BoundField DataField="Description" HeaderText="Description" />
+                    <asp:TemplateField>
+                        <HeaderTemplate>Categories</HeaderTemplate>
+                        <ItemTemplate>
+                            <asp:Literal ID="lCategories" runat="server"></asp:Literal>
+                        </ItemTemplate>
+                    </asp:TemplateField>
                     <asp:BoundField DataField="FieldType" HeaderText="Type" />
                     <Rock:BoolField DataField="IsMultiValue" HeaderText="Multi-Value" SortExpression="IsMultiValue" />
                     <Rock:BoolField DataField="IsRequired" HeaderText="Required" SortExpression="IsRequired" />

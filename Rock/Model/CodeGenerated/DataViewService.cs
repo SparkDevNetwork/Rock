@@ -61,7 +61,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class DataViewExtensionMethods
+    public static partial class DataViewExtensionMethods
     {
         /// <summary>
         /// Clones this DataView object to a new DataView object
@@ -79,7 +79,9 @@ namespace Rock.Model
             {
                 var target = new DataView();
                 target.IsSystem = source.IsSystem;
+                target.Name = source.Name;
                 target.Description = source.Description;
+                target.CategoryId = source.CategoryId;
                 target.EntityTypeId = source.EntityTypeId;
                 target.DataViewFilterId = source.DataViewFilterId;
                 target.TransformEntityTypeId = source.TransformEntityTypeId;

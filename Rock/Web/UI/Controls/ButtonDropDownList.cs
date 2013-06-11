@@ -6,6 +6,7 @@
 using System;
 using System.Linq;
 using System.Web.UI;
+using System.ComponentModel;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
@@ -15,14 +16,66 @@ namespace Rock.Web.UI.Controls
     /// 
     /// </summary>
     [ToolboxData( "<{0}:ButtonDropDownList runat=server></{0}:ButtonDropDownList>" )]
-    public class ButtonDropDownList : ListControl
+    public class ButtonDropDownList : ListControl, ILabeledControl
     {
+        protected Literal label;
+
+        private String _btnTitle = string.Empty;
         private HtmlGenericControl _divControl;
         private HtmlGenericControl _btnSelect;
         private HiddenField _hfSelectedItemId;
         private HiddenField _hfSelectedItemText;
         private HtmlGenericControl _listControl;
-        protected String btnTitle = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the label text.
+        /// </summary>
+        /// <value>
+        /// The label text.
+        /// </value>
+        public string LabelText
+        {
+            get
+            {
+                EnsureChildControls();
+                return label.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                label.Text = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the title.
+        /// </summary>
+        /// <value>
+        /// The title.
+        /// </value>
+        public string Title
+        {
+            get
+            {
+                return _btnTitle;
+            }
+            set
+            {
+                _btnTitle = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the field.
+        /// </summary>
+        /// <value>
+        /// The name of the field.
+        /// </value>
+        public string FieldName
+        {
+            get { return label.Text; }
+            set { label.Text = value; }
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -74,17 +127,17 @@ namespace Rock.Web.UI.Controls
             // <a> click event to prevent the browser from appending '#' to the URL and 
             // causing the window to jump to the top of the.
             const string scriptFormat = @"
-$('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
-    e.preventDefault();
-    var $el = $(this);
-    var text =  $el.html();
-    var textHtml = $el.html() + "" <span class='caret'></span>"";
-    var idvalue = $el.attr('data-id');
-    $('#ButtonDropDown_btn_{0}').html(textHtml);
-    $('#hfSelectedItemId_{0}').val(idvalue);
-    $('#hfSelectedItemText_{0}').val(text);
-    {1}
-}});";
+            $('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
+                e.preventDefault();
+                var $el = $(this);
+                var text =  $el.html();
+                var textHtml = $el.html() + "" <span class='caret'></span>"";
+                var idvalue = $el.attr('data-id');
+                $('#ButtonDropDown_btn_{0}').html(textHtml);
+                $('#hfSelectedItemId_{0}').val(idvalue);
+                $('#hfSelectedItemText_{0}').val(text);
+                {1}
+            }});";
 
             string postbackScript = string.Empty;
             if ( SelectionChanged != null )
@@ -141,31 +194,16 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
         }
 
         /// <summary>
-        /// Gets or sets the title.
-        /// </summary>
-        /// <value>
-        /// The title.
-        /// </value>
-        public string Title
-        {
-            get
-            {
-                return btnTitle;
-            }
-            set
-            {
-                btnTitle = value;
-            }
-        }
-
-        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
         {
             base.CreateChildControls();
 
-            Controls.Clear();
+			Controls.Clear();
+
+            label = new Literal();
+            Controls.Add( label );
 
             _divControl = new HtmlGenericControl( "div" );
             _divControl.Attributes["class"] = "btn-group";
@@ -202,6 +240,21 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         protected override void Render( HtmlTextWriter writer )
         {
+            bool renderControlGroupDiv = !string.IsNullOrWhiteSpace( LabelText );
+
+            if ( renderControlGroupDiv )
+            {
+                writer.AddAttribute( "class", "control-group" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                label.Visible = this.Visible;
+                label.RenderControl( writer );
+
+                writer.AddAttribute( "class", "controls" );
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            }
+
             foreach ( var item in this.Items.OfType<ListItem>() )
             {
                 string controlHtmlFormat = "<li><a href='#' data-id='{0}'>{1}</a></li>";
@@ -210,7 +263,7 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
 
             _divControl.Controls.Add( _listControl );
 
-            string selectedText = SelectedItem != null ? SelectedItem.Text : btnTitle;
+            string selectedText = SelectedItem != null ? SelectedItem.Text : _btnTitle;
             _btnSelect.Controls.Clear();
             _btnSelect.Controls.Add( new LiteralControl { Text = string.Format( "{0} <span class='caret'></span>", selectedText ) } );
 
@@ -218,6 +271,13 @@ $('#ButtonDropDown_{0} .dropdown-menu a').click(function (e) {{
 
             _hfSelectedItemId.RenderControl( writer );
             _hfSelectedItemText.RenderControl( writer );
+
+            if ( renderControlGroupDiv )
+            {
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();
+            }
         }
 
         /// <summary>

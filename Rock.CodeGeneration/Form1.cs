@@ -57,7 +57,7 @@ namespace Rock.CodeGeneration
 
                     foreach ( Type type in assembly.GetTypes().OfType<Type>().OrderBy( a => a.FullName ) )
                     {
-                        if ( type.Namespace != null && !type.Namespace.StartsWith( "Rock.Data" ) )
+                        if ( type.Namespace != null && !type.Namespace.StartsWith( "Rock.Data" ) && !type.IsAbstract)
                         {
                             foreach ( Type interfaceType in type.GetInterfaces() )
                             {
@@ -229,7 +229,7 @@ namespace Rock.CodeGeneration
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class {0}ExtensionMethods
+    public static partial class {0}ExtensionMethods
     {{
         /// <summary>
         /// Clones this {0} object to a new {0} object
@@ -304,11 +304,17 @@ where cc.object_id = fk.parent_object_id
 and [fk].[delete_referential_action_desc] != 'CASCADE'
 ) sub
 where [refTable] = '{0}'
-order by [parentTable]
+order by [parentTable], [columnName] 
 ";
 
             SqlCommand sqlCommand = sqlconn.CreateCommand();
             TableAttribute tableAttribute = type.GetCustomAttribute<TableAttribute>();
+            if ( tableAttribute == null )
+            {
+                // not a real table
+                return string.Empty;
+            }
+
             sqlCommand.CommandText = string.Format( sql, tableAttribute.Name );
 
             var reader = sqlCommand.ExecuteReader();
@@ -569,11 +575,36 @@ order by [parentTable]
         {
             var properties = new Dictionary<string, string>();
 
+            var interfaces = type.GetInterfaces();
+
             foreach ( var property in type.GetProperties() )
             {
-                if ( !property.GetGetMethod().IsVirtual || property.Name == "Id" || property.Name == "Guid" || property.Name == "Order" )
+                var getMethod = property.GetGetMethod();
+                if ( getMethod.IsVirtual )
                 {
-                    if ( !property.GetCustomAttributes( typeof( DatabaseGeneratedAttribute ) ).Any() )
+                    if ( !getMethod.IsFinal )
+                    {
+                        continue;
+                    }
+
+                    bool interfaceProperty = false;
+                    foreach ( Type interfaceType in interfaces )
+                    {
+                        if ( interfaceType.GetProperties().Any( p => p.Name == property.Name ) )
+                        {
+                            interfaceProperty = true;
+                            break;
+                        }
+                    }
+                    if ( !interfaceProperty )
+                    {
+                        continue;
+                    }
+                }
+
+                if ( !property.GetCustomAttributes( typeof( DatabaseGeneratedAttribute ) ).Any() )
+                {
+                    if ( property.SetMethod != null && property.SetMethod.IsPublic  && property.GetMethod.IsPublic)
                     {
                         properties.Add( property.Name, PropertyTypeName( property.PropertyType ) );
                     }

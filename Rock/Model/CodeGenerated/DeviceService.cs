@@ -49,6 +49,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<Attendance>().Queryable().Any( a => a.DeviceId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Device.FriendlyTypeName, Attendance.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Device>().Queryable().Any( a => a.PrinterDeviceId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Device.FriendlyTypeName, Device.FriendlyTypeName );
@@ -67,7 +73,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class DeviceExtensionMethods
+    public static partial class DeviceExtensionMethods
     {
         /// <summary>
         /// Clones this Device object to a new Device object

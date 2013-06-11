@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class AuditExtensionMethods
+    public static partial class AuditExtensionMethods
     {
         /// <summary>
         /// Clones this Audit object to a new Audit object

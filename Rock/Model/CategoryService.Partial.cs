@@ -36,6 +36,24 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the category by name and entity type
+        /// </summary>
+        /// <param name="name">The name.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <returns></returns>
+        public IQueryable<Category> Get( string name, int? entityTypeId, string entityTypeQualifierColumn, string entityTypeQualifierValue )
+        {
+            return Repository.AsQueryable()
+                .Where( c =>
+                    string.Compare( c.Name, name, true ) == 0 &&
+                    c.EntityTypeId == entityTypeId &&
+                    c.EntityTypeQualifierColumn == entityTypeQualifierColumn &&
+                    c.EntityTypeQualifierValue == entityTypeQualifierValue );
+        }
+
+        /// <summary>
         /// Gets Categories for the given Entity Type
         /// </summary>
         /// <param name="categoryId">The category id.</param>

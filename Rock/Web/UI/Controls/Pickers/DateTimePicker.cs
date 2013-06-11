@@ -14,33 +14,6 @@ namespace Rock.Web.UI.Controls
     public class DateTimePicker : DataTextBox
     {
         /// <summary>
-        /// Gets or sets the type of the date picker.
-        /// </summary>
-        /// <value>
-        /// The type of the date picker.
-        /// </value>
-        public DateTimePickerType DatePickerType
-        {
-            get
-            {
-                var pickerType = ViewState["DatePickerType"];
-                if ( pickerType != null )
-                {
-                    return (DateTimePickerType)pickerType;
-                }
-                else
-                {
-                    return DateTimePickerType.Date;
-                }
-            }
-            
-            set
-            {
-                ViewState["DatePickerType"] = value;
-            }
-        }
-
-        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
@@ -48,24 +21,15 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
 
-            string kendoFunction;
-            if (DatePickerType.Equals(DateTimePickerType.Date))
+            if ( string.IsNullOrWhiteSpace( this.SourceTypeName ) )
             {
-                kendoFunction = "kendoDatePicker";
-            }
-            else
-            {
-                kendoFunction = "kendoDateTimePicker";
+                this.LabelTextFromPropertyName = false;
+                this.SourceTypeName = "Rock.Web.UI.Controls.DateTimePicker, Rock";
+                this.PropertyName = "SelectedDateTime";
             }
 
-            string script = string.Format( 
-                @"$(document).ready(function() {{
-                    $('#{0}').{1}();
-                }});",
-                this.ClientID,
-                kendoFunction);
-
-            ScriptManager.RegisterClientScriptBlock( this.Page, typeof( Page ), "KendoDatePickerScript_" + this.ID, script, true );
+            var script = string.Format( @"Rock.controls.dateTimePicker.initialize({{ id: '{0}' }});", this.ClientID );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "date_time_picker-" + this.ClientID, script, true );
         }
 
         /// <summary>
@@ -98,7 +62,7 @@ namespace Rock.Web.UI.Controls
             {
                 if ( value != null )
                 {
-                    this.Text = value.Value.ToShortDateString();
+                    this.Text = value.Value.ToString("g");
                 }
                 else
                 {
@@ -106,45 +70,5 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
-
-        /// <summary>
-        /// Gets or sets the selected date.
-        /// </summary>
-        /// <value>
-        /// The selected date.
-        /// </value>
-        public DateTime? SelectedDate
-        {
-            get
-            {
-                if ( SelectedDateTime != null )
-                {
-                    return SelectedDateTime.Value.Date;
-                }
-                else
-                {
-                    return null;
-                }
-            }
-            
-            set
-            {
-                SelectedDateTime = value;
-            }
-        }
-    }
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum DateTimePickerType
-    {
-        /// <summary>
-        /// 
-        /// </summary>
-        Date = 1,
-        
-        // we'll need to upgrade Kendo to get the DateTimePicker
-        // DateTime = 2
     }
 }

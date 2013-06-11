@@ -33,6 +33,7 @@ namespace Rock.Web.UI
         #region Private Variables
 
         private PlaceHolder phLoadTime;
+        private ScriptManager _scriptManager;
 
         #endregion
 
@@ -307,19 +308,29 @@ namespace Rock.Web.UI
         protected override void OnInit( EventArgs e )
         {
             // Add the ScriptManager to each page
-            ScriptManager sm = ScriptManager.GetCurrent( this.Page );
-            if ( sm == null )
+            _scriptManager = ScriptManager.GetCurrent( this.Page );
+            
+            if ( _scriptManager == null )
             {
-                sm = new ScriptManager();
-                sm.ID = "sManager";
-                Page.Form.Controls.AddAt( 0, sm );
+                _scriptManager = new ScriptManager { ID = "sManager" };
+                Page.Trace.Warn( "Adding script manager" );
+                Page.Form.Controls.AddAt( 0, _scriptManager );
             }
 
+            // Add library and UI bundles during init, that way theme developers will only
+            // need to worry about registering any custom scripts or script bundles they need
+            _scriptManager.Scripts.Add( new ScriptReference { Name = "WebFormsBundle" } );
+            _scriptManager.Scripts.Add( new ScriptReference( "~/bundles/RockLibs" ) );
+            _scriptManager.Scripts.Add( new ScriptReference( "~/bundles/RockUi" ) );
+            _scriptManager.Scripts.Add( new ScriptReference( "~/bundles/RockValidation" ) );
+
             // Recurse the page controls to find the rock page title and zone controls
+            Page.Trace.Warn( "Recursing layout to find zones" );
             Zones = new Dictionary<string, KeyValuePair<string, Zone>>();
             FindRockControls( this.Controls );
 
             // Add a Rock version meta tag
+            Page.Trace.Warn( "Adding Rock metatag" );
             string version = typeof( Rock.Web.UI.RockPage ).Assembly.GetName().Version.ToString();
             HtmlMeta rockVersion = new HtmlMeta();
             rockVersion.Attributes.Add( "name", "generator" );
@@ -328,6 +339,7 @@ namespace Rock.Web.UI
 
             // If the logout parameter was entered, delete the user's forms authentication cookie and redirect them
             // back to the same page.
+            Page.Trace.Warn( "Checking for logout request" );
             if ( PageParameter( "logout" ) != string.Empty )
             {
                 FormsAuthentication.SignOut();
@@ -339,6 +351,7 @@ namespace Rock.Web.UI
             }
 
             // If the impersonated query key was included then set the current person
+            Page.Trace.Warn( "Checking for person impersanation" );
             string impersonatedPersonKey = PageParameter( "rckipid" );
             if ( !String.IsNullOrEmpty( impersonatedPersonKey ) )
             {
@@ -352,12 +365,14 @@ namespace Rock.Web.UI
             }
 
             // Get current user/person info
+            Page.Trace.Warn( "Getting CurrentUser" );
             Rock.Model.UserLogin user = CurrentUser;
 
             // If there is a logged in user, see if it has an associated Person Record.  If so, set the UserName to 
             // the person's full name (which is then cached in the Session state for future page requests)
             if ( user != null )
             {
+                Page.Trace.Warn( "Setting CurrentPerson" );
                 UserName = user.UserName;
                 int? personId = user.PersonId;
 
@@ -387,6 +402,7 @@ namespace Rock.Web.UI
             if ( CurrentPage != null )
             {
                 // check if page should have been loaded via ssl
+                Page.Trace.Warn( "Checking for SSL request" );
                 if ( !Request.IsSecureConnection && CurrentPage.RequiresEncryption )
                 {
                     string redirectUrl = Request.Url.ToString().Replace( "http:", "https:" );
@@ -397,16 +413,19 @@ namespace Rock.Web.UI
 
                 // Verify that the current user is allowed to view the page.  If not, and 
                 // the user hasn't logged in yet, redirect to the login page
+                Page.Trace.Warn( "Checking if user is authorized" );
                 if ( !CurrentPage.IsAuthorized( "View", CurrentPerson ) )
                 {
                     if ( user == null )
                     {
+                        Page.Trace.Warn( "Redirecting to login page" );
                         FormsAuthentication.RedirectToLoginPage();
                     }
                 }
                 else
                 {
                     // Set current models (context)
+                    Page.Trace.Warn( "Checking for Context" );
                     CurrentPage.Context = new Dictionary<string, Data.KeyEntity>();
                     try 
                     {
@@ -430,6 +449,7 @@ namespace Rock.Web.UI
                     catch { }
 
                     // set page title
+                    Page.Trace.Warn( "Setting page title" );
                     if ( CurrentPage.Title != null && CurrentPage.Title != "" )
                     {
                         this.Title = CurrentPage.Title;
@@ -443,11 +463,14 @@ namespace Rock.Web.UI
                     this.EnableViewState = CurrentPage.EnableViewState;
 
                     // Cache object used for block output caching
+                    Page.Trace.Warn( "Getting memory cache" );
                     ObjectCache cache = MemoryCache.Default;
 
+                    Page.Trace.Warn( "Checking if user can administer" );
                     bool canAdministratePage = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
 
                     // Create a javascript object to store information about the current page for client side scripts to use
+                    Page.Trace.Warn( "Creating JS objects" );
                     string script = string.Format( @"
     var rock = {{ 
         pageId:{0}, 
@@ -461,14 +484,17 @@ namespace Rock.Web.UI
                     // Add config elements
                     if ( CurrentPage.IncludeAdminFooter )
                     {
+                        Page.Trace.Warn( "Adding popup controls (footer elements)" );
                         AddPopupControls();
                         if ( canAdministratePage )
                         {
+                            Page.Trace.Warn( "Adding adminstration options" );
                             AddConfigElements();
                         }
                     }
 
                     // Initialize the list of breadcrumbs for the current page (and blocks on the page)
+                    Page.Trace.Warn( "Setting breadcrumbs" );
                     CurrentPageReference.BreadCrumbs = new List<BreadCrumb>();
 
                     // If the page is configured to display in the breadcrumbs...
@@ -479,9 +505,13 @@ namespace Rock.Web.UI
                     }
 
                     // Load the blocks and insert them into page zones
+                    Page.Trace.Warn( "Loading Blocks" );
                     foreach ( Rock.Web.Cache.BlockCache block in CurrentPage.Blocks )
                     {
+                        Page.Trace.Warn( string.Format( "\tLoading '{0}' block", block.Name ) );
+
                         // Get current user's permissions for the block instance
+                        Page.Trace.Warn( "\tChecking permission" );
                         bool canAdministrate = block.IsAuthorized( "Administrate", CurrentPerson );
                         bool canEdit = block.IsAuthorized( "Edit", CurrentPerson );
                         bool canView = block.IsAuthorized( "View", CurrentPerson );
@@ -491,6 +521,8 @@ namespace Rock.Web.UI
                         {
                             // Create block wrapper control (implements INamingContainer so child control IDs are unique for
                             // each block instance
+                            Page.Trace.Warn( "\tAdding block wrapper html" );
+
                             HtmlGenericContainer blockWrapper = new HtmlGenericContainer( "div" );
                             blockWrapper.ID = string.Format( "bid_{0}", block.Id );
                             blockWrapper.Attributes.Add( "zoneloc", block.BlockLocation.ToString() );
@@ -510,6 +542,7 @@ namespace Rock.Web.UI
                             else
                             {
                                 // Load the control and add to the control tree
+                                Page.Trace.Warn( "\tLoading control" );
                                 Control control;
 
                                 try
@@ -534,6 +567,7 @@ namespace Rock.Web.UI
                                 RockBlock blockControl = null;
 
                                 // Check to see if the control was a PartialCachingControl or not
+                                Page.Trace.Warn( "\tChecking block for partial caching" );
                                 if ( control is RockBlock )
                                     blockControl = control as RockBlock;
                                 else
@@ -547,11 +581,14 @@ namespace Rock.Web.UI
                                 // If the current control is a block, set it's properties
                                 if ( blockControl != null )
                                 {
+                                    Page.Trace.Warn( "\tSetting block properties" );
+
                                     blockControl.CurrentPage = CurrentPage;
                                     blockControl.CurrentPageReference = CurrentPageReference;
                                     blockControl.CurrentBlock = block;
 
                                     // Add any breadcrumbs to current page reference that the block creates
+                                    Page.Trace.Warn( "\tAdding any breadcrumbs from block" );
                                     if ( block.BlockLocation == BlockLocation.Page )
                                     {
                                         blockControl.GetBreadCrumbs( CurrentPageReference ).ForEach( c => CurrentPageReference.BreadCrumbs.Add( c ) );
@@ -560,6 +597,7 @@ namespace Rock.Web.UI
                                     // If the blocktype's additional actions have not yet been loaded, load them now
                                     if ( !block.BlockType.CheckedAdditionalSecurityActions )
                                     {
+                                        Page.Trace.Warn( "\tAdding additional security actions for blcok" );
                                         foreach ( string action in blockControl.GetAdditionalActions() )
                                         {
                                             if ( !block.BlockType.SupportedActions.Contains( action ) )
@@ -573,8 +611,10 @@ namespace Rock.Web.UI
                                     // If the block's AttributeProperty values have not yet been verified verify them.
                                     // (This provides a mechanism for block developers to define the needed block
                                     //  attributes in code and have them automatically added to the database)
+                                    Page.Trace.Warn( "\tChecking if block attributes need refresh" );
                                     if ( !block.BlockType.IsInstancePropertiesVerified )
                                     {
+                                        Page.Trace.Warn( "\tCreating block attributes" );
                                         blockControl.CreateAttributes();
                                         block.BlockType.IsInstancePropertiesVerified = true;
                                     }
@@ -582,10 +622,12 @@ namespace Rock.Web.UI
                                     // Add the block configuration scripts and icons if user is authorized
                                     if ( CurrentPage.IncludeAdminFooter )
                                     {
+                                        Page.Trace.Warn( "\tAdding block configuration tools" );
                                         AddBlockConfig( blockWrapper, blockControl, block, canAdministrate, canEdit );
                                     }
                                 }
 
+                                Page.Trace.Warn( "\tAdding block to control tree" );
                                 HtmlGenericContainer blockContent = new HtmlGenericContainer( "div" );
                                 blockContent.Attributes.Add( "class", "block-content" );
                                 blockWrapper.Controls.Add( blockContent );
@@ -597,16 +639,19 @@ namespace Rock.Web.UI
                     }
 
                     // Make the last crumb for this page the active one
+                    Page.Trace.Warn( "Setting active breadcrumb" );
                     if ( CurrentPageReference.BreadCrumbs.Any() )
                     {
                         CurrentPageReference.BreadCrumbs.Last().Active = true;
                     }
 
+                    Page.Trace.Warn( "Getting parent page references" );
                     var pageReferences = PageReference.GetParentPageReferences( this, CurrentPage, CurrentPageReference );
                     pageReferences.Add( CurrentPageReference );
                     PageReference.SavePageReferences( pageReferences );
 
                     // Update breadcrumbs
+                    Page.Trace.Warn( "Updating breadcrumbs" );
                     BreadCrumbs = new List<BreadCrumb>();
                     foreach ( var pageReference in pageReferences )
                     {
@@ -614,6 +659,7 @@ namespace Rock.Web.UI
                     }
 
                     // Add favicon and apple touch icons to page
+                    Page.Trace.Warn( "Adding favicons and appletouch links" );
                     if ( CurrentPage.Site.FaviconUrl != null )
                     {
                         System.Web.UI.HtmlControls.HtmlLink faviconLink = new System.Web.UI.HtmlControls.HtmlLink();
@@ -637,6 +683,7 @@ namespace Rock.Web.UI
                     // Add the page admin footer if the user is authorized to edit the page
                     if ( CurrentPage.IncludeAdminFooter && canAdministratePage )
                     {
+                        Page.Trace.Warn( "Adding adming footer to page" );
                         HtmlGenericControl adminFooter = new HtmlGenericControl( "div" );
                         adminFooter.ID = "cms-admin-footer";
                         adminFooter.ClientIDMode = System.Web.UI.ClientIDMode.Static;
@@ -653,7 +700,7 @@ namespace Rock.Web.UI
                         HtmlGenericControl aBlockConfig = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aBlockConfig );
                         aBlockConfig.Attributes.Add( "class", "btn block-config" );
-                        aBlockConfig.Attributes.Add( "href", "javascript: showBlockConfig();" );
+                        aBlockConfig.Attributes.Add( "href", "javascript: Rock.admin.pageAdmin.showBlockConfig();" );
                         aBlockConfig.Attributes.Add( "Title", "Block Configuration" );
                         HtmlGenericControl iBlockConfig = new HtmlGenericControl( "i" );
                         aBlockConfig.Controls.Add( iBlockConfig );
@@ -666,7 +713,7 @@ namespace Rock.Web.UI
                         aAttributes.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                         aAttributes.Attributes.Add( "class", "btn properties" );
                         aAttributes.Attributes.Add( "height", "500px" );
-                        aAttributes.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", CurrentPage.Id ) ) + "')" );
+                        aAttributes.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/PageProperties/{0}?t=Page Properties", CurrentPage.Id ) ) + "')" );
                         aAttributes.Attributes.Add( "Title", "Page Properties" );
                         HtmlGenericControl iAttributes = new HtmlGenericControl( "i" );
                         aAttributes.Controls.Add( iAttributes );
@@ -679,7 +726,7 @@ namespace Rock.Web.UI
                         aChildPages.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                         aChildPages.Attributes.Add( "class", "btn page-child-pages" );
                         aChildPages.Attributes.Add( "height", "500px" );
-                        aChildPages.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( string.Format( "~/pages/{0}?t=Child Pages&pb=&sb=Done", CurrentPage.Id ) ) + "')" );
+                        aChildPages.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/pages/{0}?t=Child Pages&pb=&sb=Done", CurrentPage.Id ) ) + "')" );
                         aChildPages.Attributes.Add( "Title", "Child Pages" );
                         HtmlGenericControl iChildPages = new HtmlGenericControl( "i" );
                         aChildPages.Controls.Add( iChildPages );
@@ -689,7 +736,7 @@ namespace Rock.Web.UI
                         HtmlGenericControl aPageZones = new HtmlGenericControl( "a" );
                         buttonBar.Controls.Add( aPageZones );
                         aPageZones.Attributes.Add( "class", "btn page-zones" );
-                        aPageZones.Attributes.Add( "href", "javascript: showPageZones();" );
+                        aPageZones.Attributes.Add( "href", "javascript: Rock.admin.pageAdmin.showPageZones();" );
                         aPageZones.Attributes.Add( "Title", "Page Zones" );
                         HtmlGenericControl iPageZones = new HtmlGenericControl( "i" );
                         aPageZones.Controls.Add( iPageZones );
@@ -702,7 +749,7 @@ namespace Rock.Web.UI
                         aPageSecurity.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                         aPageSecurity.Attributes.Add( "class", "btn page-security" );
                         aPageSecurity.Attributes.Add( "height", "500px" );
-                        aPageSecurity.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Page Security&pb=&sb=Done",
+                        aPageSecurity.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/Secure/{0}/{1}?t=Page Security&pb=&sb=Done",
                             EntityTypeCache.Read( typeof( Rock.Model.Page ) ).Id, CurrentPage.Id ) ) + "')" );
                         aPageSecurity.Attributes.Add( "Title", "Page Security" );
                         HtmlGenericControl iPageSecurity = new HtmlGenericControl( "i" );
@@ -716,7 +763,7 @@ namespace Rock.Web.UI
                         aSystemInfo.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                         aSystemInfo.Attributes.Add( "class", "btn system-info" );
                         aSystemInfo.Attributes.Add( "height", "500px" );
-                        aSystemInfo.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( "~/SystemInfo?t=System Information&pb=&sb=Done" ) + "')" );
+                        aSystemInfo.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( "~/SystemInfo?t=System Information&pb=&sb=Done" ) + "')" );
                         aSystemInfo.Attributes.Add( "Title", "Rock Information" );
                         HtmlGenericControl iSystemInfo = new HtmlGenericControl( "i" );
                         aSystemInfo.Controls.Add( iSystemInfo );
@@ -876,11 +923,11 @@ namespace Rock.Web.UI
         private void AddPopupControls()
         {
             // Add the page admin script
-            AddScriptLink( Page, "~/Scripts/Rock/popup.js" );
+            //AddScriptLink( Page, "~/Scripts/Rock/popup.js" );
 
             ModalIFrameDialog modalPopup = new ModalIFrameDialog();
             modalPopup.ID = "modal-popup";
-            modalPopup.OnCancelScript = "closeModal();";
+            modalPopup.OnCancelScript = "window.parent.Rock.controls.modal.close();";
             this.Form.Controls.Add( modalPopup );
         }
 
@@ -891,7 +938,7 @@ namespace Rock.Web.UI
         private void AddConfigElements()
         {
             // Add the page admin script
-            AddScriptLink( Page, "~/Scripts/Rock/page-admin.js" );
+            AddScriptLink( Page, "~/bundles/RockAdmin" );
 
             AddBlockMove();
             // Add Zone Wrappers
@@ -934,7 +981,7 @@ namespace Rock.Web.UI
                 aBlockConfig.ClientIDMode = System.Web.UI.ClientIDMode.Static;
                 aBlockConfig.Attributes.Add( "class", "zone-blocks" );
                 aBlockConfig.Attributes.Add( "height", "500px" );
-                aBlockConfig.Attributes.Add( "href", "javascript: showModalPopup($(this), '" + ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}?t=Zone Blocks&pb=&sb=Done", CurrentPage.Id, control.ID ) ) + "')" );
+                aBlockConfig.Attributes.Add( "href", "javascript: Rock.controls.modal.show($(this), '" + ResolveUrl( string.Format( "~/ZoneBlocks/{0}/{1}?t=Zone Blocks&pb=&sb=Done", CurrentPage.Id, control.ID ) ) + "')" );
                 aBlockConfig.Attributes.Add( "Title", "Zone Blocks" );
                 aBlockConfig.Attributes.Add( "zone", zoneControl.Key );
                 //aBlockConfig.InnerText = "Blocks";
@@ -1008,7 +1055,7 @@ namespace Rock.Web.UI
             ModalDialog modalBlockMove = new ModalDialog();
             modalBlockMove.ID = "modal-block-move";
             modalBlockMove.Title = "Move Block";
-            modalBlockMove.OnOkScript = "saveBlockMove();";
+            modalBlockMove.OnOkScript = "Rock.admin.pageAdmin.saveBlockMove();";
             this.Form.Controls.Add( modalBlockMove );
 
             HtmlGenericControl fsZoneSelect = new HtmlGenericControl( "fieldset" );
@@ -1300,42 +1347,11 @@ namespace Rock.Web.UI
         /// <param name="path">Path to script file.  Should be relative to layout template.  Will be resolved at runtime</param>
         public static void AddScriptLink( Page page, string path )
         {
-            string relativePath = page.ResolveUrl( path );
+            var scriptManager = ScriptManager.GetCurrent( page );
 
-            bool existsAlready = false;
-
-            if ( page != null && page.Header != null )
-                foreach ( Control control in page.Header.Controls )
-                {
-                    if ( control is LiteralControl )
-                        if ( ( (LiteralControl)control ).Text.ToLower().Contains( "src=" + relativePath.ToLower() ) )
-                        {
-                            existsAlready = true;
-                            break;
-                        }
-
-                    if ( control is HtmlGenericControl )
-                    {
-                        HtmlGenericControl genericControl = (HtmlGenericControl)control;
-                        if ( genericControl.TagName.ToLower() == "script" &&
-                           genericControl.Attributes["src"] != null &&
-                                genericControl.Attributes["src"].ToLower() == relativePath.ToLower() )
-                        {
-                            existsAlready = true;
-                            break;
-                        }
-                    }
-                }
-
-            if ( !existsAlready )
+            if ( scriptManager != null )
             {
-                HtmlGenericControl genericControl = new HtmlGenericControl();
-                genericControl.TagName = "script";
-                genericControl.Attributes.Add( "src", relativePath );
-                genericControl.Attributes.Add( "type", "text/javascript" );
-
-                page.Header.Controls.Add( new LiteralControl( "\n\t" ) );
-                page.Header.Controls.Add( genericControl );
+                scriptManager.Scripts.Add( new ScriptReference( path ) );
             }
         }
 

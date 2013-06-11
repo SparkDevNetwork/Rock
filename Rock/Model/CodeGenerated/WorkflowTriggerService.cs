@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class WorkflowTriggerExtensionMethods
+    public static partial class WorkflowTriggerExtensionMethods
     {
         /// <summary>
         /// Clones this WorkflowTrigger object to a new WorkflowTrigger object

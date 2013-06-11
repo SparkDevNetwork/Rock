@@ -50,10 +50,9 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var picker = new AccountPicker { AllowMultiSelect = true };
-            return picker;
+            return new AccountPicker { ID = id, AllowMultiSelect = true };
         }
 
         /// <summary>

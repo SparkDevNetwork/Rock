@@ -198,12 +198,10 @@ namespace Rock.Reporting.DataFilter
                         filterControl.Controls.Add( ddlDate );
                         controls.Add( ddlDate );
 
-                        var dtPicker = new DateTimePicker();
+                        var dtPicker = new DatePicker();
                         dtPicker.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
                         filterControl.Controls.Add( dtPicker );
                         controls.Add( dtPicker );
-
-                        dtPicker.DatePickerType = DateTimePickerType.Date;
 
                         break;
 
@@ -449,12 +447,36 @@ namespace Rock.Reporting.DataFilter
                 {
                     foreach ( Control control in groupedControls[selectedProperty] )
                     {
-                        if ( control is DateTimePicker )
+                        if ( control is DatePicker )
                         {
-                            var dtp = control as DateTimePicker;
+                            var dtp = control as DatePicker;
                             if ( dtp != null && dtp.SelectedDate.HasValue )
                             {
                                 values.Add( dtp.SelectedDate.Value.ToShortDateString() );
+                            }
+                            else
+                            {
+                                values.Add( string.Empty );
+                            }
+                        }
+                        else if ( control is DateTimePicker )
+                        {
+                            var dtp = control as DateTimePicker;
+                            if ( dtp != null && dtp.SelectedDateTime.HasValue )
+                            {
+                                values.Add( dtp.SelectedDateTime.Value.ToShortDateString() );
+                            }
+                            else
+                            {
+                                values.Add( string.Empty );
+                            }
+                        }
+                        else if ( control is TimePicker )
+                        {
+                            var dtp = control as TimePicker;
+                            if ( dtp != null && dtp.SelectedTime.HasValue )
+                            {
+                                values.Add( dtp.SelectedTime.Value.ToTimeString() );
                             }
                             else
                             {
@@ -520,12 +542,28 @@ namespace Rock.Reporting.DataFilter
                             {
                                 Control control = groupedControls[selectedProperty][i];
 
-                                if ( control is DateTimePicker )
+                                if ( control is DatePicker )
                                 {
                                     var dt = DateTime.MinValue;
                                     if ( DateTime.TryParse( values[i + 1], out dt ) )
                                     {
-                                        ( (DateTimePicker)control ).SelectedDate = dt;
+                                        ( (DatePicker)control ).SelectedDate = dt.Date;
+                                    }
+                                }
+                                else if ( control is DateTimePicker )
+                                {
+                                    var dt = DateTime.MinValue;
+                                    if ( DateTime.TryParse( values[i + 1], out dt ) )
+                                    {
+                                        ( (DateTimePicker)control ).SelectedDateTime = dt;
+                                    }
+                                }
+                                else if ( control is TimePicker )
+                                {
+                                    var dt = DateTime.MinValue;
+                                    if ( DateTime.TryParse( values[i + 1], out dt ) )
+                                    {
+                                        ( (TimePicker)control ).SelectedTime = dt.TimeOfDay;
                                     }
                                 }
                                 else if ( control is TextBox )

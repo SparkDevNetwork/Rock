@@ -161,10 +161,9 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var dp = new DateTimePicker();
-            dp.DatePickerType = DateTimePickerType.Date;
+            var dp = new DatePicker { ID = id }; 
             return dp;
         }
 
@@ -176,9 +175,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if (control != null && control is DateTimePicker)
+            if (control != null && control is DatePicker)
             {
-                var dtp = control as DateTimePicker;
+                var dtp = control as DatePicker;
                 if (dtp != null && dtp.SelectedDate.HasValue)
                 {
                     return dtp.SelectedDate.Value.ToShortDateString();
@@ -200,9 +199,9 @@ namespace Rock.Field.Types
             if ( DateTime.TryParse( value, out dt ) )
             {
 
-                if ( control != null && control is DateTimePicker ) 
+                if ( control != null && control is DatePicker ) 
                 {
-                    var dtp = control as DateTimePicker;
+                    var dtp = control as DatePicker;
                     if ( dtp != null )
                     {
                         dtp.SelectedDate = dt;

@@ -240,6 +240,23 @@ namespace Rock.Model
             );
         }
 
+        /// <summary>
+        /// Gets the family members.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="includeSelf">if set to <c>true</c> [include self].</param>
+        /// <returns></returns>
+        public IQueryable<GroupMember> GetFamilyMembers( Person person, bool includeSelf = false )
+        {
+            Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+
+            return new GroupMemberService().Queryable()
+                .Where( m => m.PersonId == person.Id && m.Group.GroupType.Guid == familyGuid)
+                .SelectMany( m => m.Group.Members)
+                .Where( fm => includeSelf || fm.PersonId != person.Id)
+                .Distinct();
+        }
+
         #endregion
 
         #region Get Person
@@ -309,6 +326,20 @@ namespace Rock.Model
             return GetByEncryptedKey( encryptedKey );
         }
 
+        /// <summary>
+        /// Gets the spouse.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public Person GetSpouse( Person person )
+        {
+            Guid adultGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT );
+            return GetFamilyMembers(person)
+                .Where( m => m.GroupRole.Guid == adultGuid && m.Person.Gender != person.Gender )
+                .Select( m => m.Person )
+                .FirstOrDefault();
+        }
+
         #endregion
 
         #region User Preferences
@@ -339,7 +370,6 @@ namespace Rock.Model
                 attribute.EntityTypeQualifierValue = string.Empty;
                 attribute.Key = key;
                 attribute.Name = key;
-                attribute.Category = string.Empty;
                 attribute.DefaultValue = string.Empty;
                 attribute.IsMultiValue = false;
                 attribute.IsRequired = false;

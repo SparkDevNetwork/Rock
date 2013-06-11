@@ -44,14 +44,6 @@ namespace Rock.Extension
         /// </summary>
         public int Id { get { return 0; } }
 
-         /// <summary>
-        /// Dictionary of categorized attributes.  Key is the category name, and Value is list of attributes in the category
-        /// </summary>
-        /// <value>
-        /// The attribute categories.
-        /// </value>
-        public Dictionary<string, List<string>> AttributeCategories { get; set; }
-
         /// <summary>
         /// List of attributes associated with the object.  This property will not include the attribute values.
         /// The <see cref="AttributeValues"/> property should be used to get attribute values.  Dictionary key
@@ -214,6 +206,21 @@ namespace Rock.Extension
             {
                 // Read should never return null since it will create entity type if it doesn't exist
                 return Rock.Web.Cache.EntityTypeCache.Read( this.GetType() ).Id;
+            }
+        }
+
+        /// <summary>
+        /// Gets the Entity type GUID for this entity
+        /// </summary>
+        /// <value>
+        /// The type GUID.
+        /// </value>
+        public Guid TypeGuid
+        {
+            get
+            {
+                // Read should never return null since it will create entity type if it doesn't exist
+                return Rock.Web.Cache.EntityTypeCache.Read( this.GetType() ).Guid;
             }
         }
 

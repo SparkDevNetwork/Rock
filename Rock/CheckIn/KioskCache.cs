@@ -256,7 +256,7 @@ namespace Rock.CheckIn
                 label.Guid = file.Guid;
                 label.Url = string.Format( "{0}File.ashx?{1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), file.Id );
                 label.MergeFields = new Dictionary<string, string>();
-                label.FileContent = System.Text.Encoding.Default.GetString( file.Data );
+                label.FileContent = System.Text.Encoding.Default.GetString( file.Data.Content );
 
                 file.LoadAttributes();
                 string attributeValue = file.GetAttributeValue( "MergeCodes" );
@@ -302,7 +302,7 @@ namespace Rock.CheckIn
 
                 var kioskGroup = new KioskGroup( groupLocation.Group );
 
-                foreach ( var schedule in groupLocation.Schedules.Where( s => s.CheckInStartTime.HasValue ) )
+                foreach ( var schedule in groupLocation.Schedules.Where( s => s.CheckInStartOffsetMinutes.HasValue ) )
                 {
                     var nextScheduleActiveTime = schedule.GetNextCheckInStartTime( DateTimeOffset.Now );
                     if ( nextScheduleActiveTime.HasValue && nextScheduleActiveTime.Value.CompareTo( nextGroupActiveTime.DateTime ) < 0 )

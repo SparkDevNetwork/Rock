@@ -23,9 +23,9 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
+        public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            DropDownList editControl = new DropDownList();
+            DropDownList editControl = new DropDownList { ID = id }; 
 
             CampusService campusService = new CampusService();
             var campusList = campusService.Queryable().OrderBy( a => a.Name ).ToList();

@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class AttendanceExtensionMethods
+    public static partial class AttendanceExtensionMethods
     {
         /// <summary>
         /// Clones this Attendance object to a new Attendance object
@@ -76,6 +76,8 @@ namespace Rock.Model
                 target.ScheduleId = source.ScheduleId;
                 target.GroupId = source.GroupId;
                 target.PersonId = source.PersonId;
+                target.DeviceId = source.DeviceId;
+                target.SearchTypeValueId = source.SearchTypeValueId;
                 target.AttendanceCodeId = source.AttendanceCodeId;
                 target.QualifierValueId = source.QualifierValueId;
                 target.StartDateTime = source.StartDateTime;

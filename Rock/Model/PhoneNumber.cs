@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
+using System.Text.RegularExpressions;
 using Rock.Data;
 
 namespace Rock.Model
@@ -111,16 +111,43 @@ namespace Rock.Model
         /// <returns></returns>
         public static string FormattedNumber( string number )
         {
+            if ( string.IsNullOrWhiteSpace( number ) )
+            {
+                return string.Empty;
+            }
+
             number = new System.Text.RegularExpressions.Regex( @"\D" ).Replace( number, string.Empty );
             number = number.TrimStart( '1' );
             if ( number.Length == 7 )
-                return Convert.ToInt64( number ).ToString( "###\\.####" );
+                return Convert.ToInt64( number ).ToString( "###-####" );
             if ( number.Length == 10 )
-                return Convert.ToInt64( number ).ToString( "###\\.###\\.####" );
+                return Convert.ToInt64( number ).ToString( "(###) ###-####" );
             if ( number.Length > 10 )
                 return Convert.ToInt64( number )
-                    .ToString( "###\\.###\\.#### " + new String( '#', ( number.Length - 10 ) ) );
+                    .ToString( "(###) ###-#### " + new String( '#', ( number.Length - 10 ) ) );
             return number;
+        }
+
+        /// <summary>
+        /// Removes non-numeric characters from number
+        /// </summary>
+        /// <param name="number">The number.</param>
+        /// <returns></returns>
+        public static string CleanNumber( string number )
+        {
+            return digitsOnly.Replace(number, "");
+        }
+        private static Regex digitsOnly = new Regex( @"[^\d]" );
+
+        /// <summary>
+        /// Gets the formatted number.
+        /// </summary>
+        /// <value>
+        /// The formatted number.
+        /// </value>
+        public virtual string NumberFormatted
+        {
+            get { return PhoneNumber.FormattedNumber( Number ); }
         }
 
         /// <summary>

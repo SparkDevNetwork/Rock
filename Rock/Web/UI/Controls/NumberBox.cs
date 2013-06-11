@@ -14,9 +14,22 @@ namespace Rock.Web.UI.Controls
     /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with numerical validation 
     /// </summary>
     [ToolboxData( "<{0}:NumberBox runat=server></{0}:NumberBox>" )]
-    public class NumberBox : TextBox
+    public class NumberBox : TextBox, ILabeledControl
     {
         private RangeValidator rangeValidator;
+        private Label _label;
+
+        /// <summary>
+        /// Gets or sets the label text.
+        /// </summary>
+        /// <value>
+        /// The label text.
+        /// </value>
+        public string LabelText
+        {
+            get { return _label.Text; }
+            set { _label.Text = value; }
+        }
 
         /// <summary>
         /// Gets or sets the name of the field (for validation messages)
@@ -26,10 +39,21 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string FieldName
         {
-            get { return ViewState["FieldName"] as string ?? string.Empty; }
-            set { ViewState["FieldName"] = value; }
+            get { return _label.Text; }
+            set { _label.Text = value; }
         }
-            
+
+        /// <summary>
+        /// Gets or sets the type of the validation data.
+        /// </summary>
+        /// <value>
+        /// The type of the validation data.
+        /// </value>
+        public ValidationDataType ValidationDataType
+        {
+            get { return rangeValidator.Type; }
+            set { rangeValidator.Type = value; }
+        }
         /// <summary>
         /// Gets or sets the minimum value.
         /// </summary>
@@ -38,14 +62,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string MinimumValue
         {
-            get
-            {
-                return rangeValidator.MinimumValue;
-            }
-            set
-            {
-                rangeValidator.MinimumValue = value;
-            }
+            get { return rangeValidator.MinimumValue; }
+            set { rangeValidator.MinimumValue = value; }
         }
 
         /// <summary>
@@ -56,14 +74,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string MaximumValue
         {
-            get
-            {
-                return rangeValidator.MaximumValue;
-            }
-            set
-            {
-                rangeValidator.MaximumValue = value;
-            }
+            get { return rangeValidator.MaximumValue; }
+            set { rangeValidator.MaximumValue = value; }
         }
 
         /// <summary>
@@ -72,6 +84,8 @@ namespace Rock.Web.UI.Controls
         public NumberBox()
         {
             rangeValidator = new RangeValidator();
+            _label = new Label();
+            rangeValidator.Type = ValidationDataType.Integer;
             rangeValidator.MinimumValue = int.MinValue.ToString();
             rangeValidator.MaximumValue = int.MaxValue.ToString();
         }
@@ -88,7 +102,6 @@ namespace Rock.Web.UI.Controls
             rangeValidator.ID = this.ID + "_RV";
             rangeValidator.Display = ValidatorDisplay.Dynamic;
             rangeValidator.CssClass = "validation-error help-inline";
-            rangeValidator.Type = ValidationDataType.Integer;
             rangeValidator.ErrorMessage = "Numerical value is required";
 
             Controls.Add( rangeValidator );
@@ -100,15 +113,38 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
+            bool renderLabel = !string.IsNullOrEmpty( LabelText );
+
+            if ( renderLabel )
+            {
+                writer.AddAttribute( "class", "control-group" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                _label.AddCssClass( "control-label" );
+
+                _label.RenderControl( writer );
+
+                writer.AddAttribute( "class", "controls" );
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            }
+
             base.RenderControl( writer );
 
             if ( !string.IsNullOrWhiteSpace( FieldName ) )
             {
                 rangeValidator.ErrorMessage = string.Format( "Numerical value is required for '{0}'", FieldName );
             }
-            rangeValidator.Type = rangeValidator.MinimumValue.Contains( "." ) ? ValidationDataType.Double: ValidationDataType.Integer;
+
             rangeValidator.Enabled = true;
             rangeValidator.RenderControl( writer );
+
+            if ( renderLabel )
+            {
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();
+            }
         }
     }
 }

@@ -165,36 +165,6 @@ namespace Rock.Web.Cache
         #region IHasAttribute Implementation
 
         /// <summary>
-        /// Dictionary of categorized attributes.  Key is the category name, and Value is list of attributes in the category
-        /// </summary>
-        /// <value>
-        /// The attribute categories.
-        /// </value>
-        public Dictionary<string, List<string>> AttributeCategories
-        {
-            get
-            {
-                var attributes = new List<AttributeCache>();
-                foreach ( int id in AttributeIds )
-                {
-                    attributes.Add( AttributeCache.Read( id ) );
-                }
-
-                var attributeCategories = new Dictionary<string, List<string>>();
-                foreach ( var attribute in attributes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
-                {
-                    if ( !attributeCategories.ContainsKey( attribute.Category ) )
-                        attributeCategories.Add( attribute.Category, new List<string>() );
-                    attributeCategories[attribute.Category].Add( attribute.Key );
-                }
-
-                return attributeCategories;
-            }
-
-            set { }
-        }
-
-        /// <summary>
         /// List of attributes associated with the object.  This property will not include the attribute values.
         /// The <see cref="AttributeValues" /> property should be used to get attribute values.  Dictionary key
         /// is the attribute key, and value is the cached attribute
@@ -208,7 +178,7 @@ namespace Rock.Web.Cache
             {
                 var attributes = new Dictionary<string, Rock.Web.Cache.AttributeCache>();
 
-                foreach ( int id in AttributeIds )
+                foreach ( int id in AttributeIds.ToList() )
                 {
                     Rock.Web.Cache.AttributeCache attribute = AttributeCache.Read( id );
                     attributes.Add( attribute.Key, attribute );

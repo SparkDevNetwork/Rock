@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class ScheduleExtensionMethods
+    public static partial class ScheduleExtensionMethods
     {
         /// <summary>
         /// Clones this Schedule object to a new Schedule object
@@ -74,14 +74,10 @@ namespace Rock.Model
                 var target = new Schedule();
                 target.Name = source.Name;
                 target.Description = source.Description;
-                target.Frequency = source.Frequency;
-                target.FrequencyQualifier = source.FrequencyQualifier;
-                target.StartTime = source.StartTime;
-                target.EndTime = source.EndTime;
-                target.CheckInStartTime = source.CheckInStartTime;
-                target.CheckInEndTime = source.CheckInEndTime;
-                target.EffectiveStartDate = source.EffectiveStartDate;
-                target.EffectiveEndDate = source.EffectiveEndDate;
+                target.iCalendarContent = source.iCalendarContent;
+                target.CheckInStartOffsetMinutes = source.CheckInStartOffsetMinutes;
+                target.CheckInEndOffsetMinutes = source.CheckInEndOffsetMinutes;
+                target.CategoryId = source.CategoryId;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

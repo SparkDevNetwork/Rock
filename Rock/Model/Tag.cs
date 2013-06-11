@@ -96,7 +96,6 @@ namespace Rock.Model
         /// <value>
         /// The owner.
         /// </value>
-        [DataMember]
         public virtual Model.Person Owner { get; set; }
 
         /// <summary>
@@ -105,7 +104,6 @@ namespace Rock.Model
         /// <value>
         /// The type of the entity.
         /// </value>
-        [DataMember]
         public virtual Model.EntityType EntityType { get; set; }
 
         /// <summary>
@@ -114,7 +112,6 @@ namespace Rock.Model
         /// <value>
         /// The tagged items.
         /// </value>
-        [DataMember]
         public virtual ICollection<TaggedItem> TaggedItems { get; set; }
         
         /// <summary>

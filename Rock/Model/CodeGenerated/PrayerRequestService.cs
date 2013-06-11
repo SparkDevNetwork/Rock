@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class PrayerRequestExtensionMethods
+    public static partial class PrayerRequestExtensionMethods
     {
         /// <summary>
         /// Clones this PrayerRequest object to a new PrayerRequest object
@@ -76,6 +76,7 @@ namespace Rock.Model
                 target.LastName = source.LastName;
                 target.Email = source.Email;
                 target.RequestedByPersonId = source.RequestedByPersonId;
+                target.CategoryId = source.CategoryId;
                 target.Text = source.Text;
                 target.Answer = source.Answer;
                 target.EnteredDate = source.EnteredDate;
