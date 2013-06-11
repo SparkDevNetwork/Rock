@@ -55,7 +55,7 @@ namespace Rock.Migrations
             //UpdateFieldType( "Accounts Field Type", "", "Rock", "Rock.Field.Types.AccountsFieldType", "1629FF21-8491-41B5-B0FF-C424608E50E0" );
 
             // Attrib for BlockType: Finance - Giving Profile Detail:Confirmation Message
-            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Confirmation Message", "ConfirmationMessage", "Message Options", "What text should be displayed on the confirmation page?", 0
+            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Confirmation Message", "ConfirmationMessage", "", "What text should be displayed on the confirmation page?", 0
                 , @"{{ ContributionConfirmationHeader }}<br/><br/>
 	            {{ Person.FullName }},<br/><br/>
 	            You are about to give a total of <strong>{{ TotalContribution }}</strong> using your {{ PaymentType }} ending in {{ PaymentLastFour }}.<br/><br/>
@@ -66,7 +66,7 @@ namespace Rock.Migrations
                 , "D396F18E-3A84-43C6-93AC-9282460B6A17" );
 
             // Attrib for BlockType: Finance - Giving Profile Detail:Receipt Message
-            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Receipt Message", "ReceiptMessage", "Message Options", "What text should be displayed on the receipt page?", 1
+            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Receipt Message", "ReceiptMessage", "", "What text should be displayed on the receipt page?", 1
                 , @"{{ ContributionReceiptHeader }}<br/>
 	            {{ Person.FullName }},<br/><br/>
 	            Thank you for your generosity! You just gave a total of {{ TotalContribution }} to {{ OrganizationName }}.<br/><br/>        
@@ -74,47 +74,47 @@ namespace Rock.Migrations
                 , "FB1292E0-B0FA-4A1E-953B-CACD2FC65983" );
 
             // Attrib for BlockType: Finance - Giving Profile Detail:Summary Message
-            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Summary Message", "SummaryMessage", "Message Options", "What text should be displayed on the transaction summary?", 3
+            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Summary Message", "SummaryMessage", "", "What text should be displayed on the transaction summary?", 3
                 , "{{ Date }}<br/> {{ TotalContribution }} given by {{ Person.FullName }} using a {{ PaymentType }} ending in {{ PaymentLastFour }}.", "12EB04DB-664F-4B50-85F5-22860BFDE340" );
 
             // Attrib for BlockType: Finance - Giving Profile List:Detail Page
             AddBlockTypeAttribute( "694FF260-8C6F-4A59-93C9-CF3793FE30E6", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Detail Page", "DetailPageGuid", "", "", 0, "", "D9775A5E-A271-439C-B7A3-00141195A0F2" );
 
             // Attrib for BlockType: Finance - Giving Profile Detail:Show Campuses
-            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Campuses", "ShowCampuses", "UI Options", "Should giving be associated with a specific campus?", 1, "False", "F4C4BB2B-2492-4DDC-BCA1-F8279BF23CA3" );
+            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Campuses", "ShowCampuses", "", "Should giving be associated with a specific campus?", 1, "False", "F4C4BB2B-2492-4DDC-BCA1-F8279BF23CA3" );
 
             // Attrib for BlockType: Finance - Giving Profile Detail:Show Credit Card
-            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Credit Card", "ShowCreditCard", "UI Options", "Allow users to give using a credit card?", 3, "True", "C295CDA1-8010-438B-85A2-1CC76AA6D231" );
+            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Credit Card", "ShowCreditCard", "", "Allow users to give using a credit card?", 3, "True", "C295CDA1-8010-438B-85A2-1CC76AA6D231" );
 
             // Attrib for BlockType: Finance - Giving Profile Detail:Show Checking/ACH
-            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Checking/ACH", "ShowChecking/ACH", "UI Options", "Allow users to give using a checking account?", 4, "True", "14896278-80A6-475E-A543-F96FB5683482" );
+            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Checking/ACH", "ShowChecking/ACH", "", "Allow users to give using a checking account?", 4, "True", "14896278-80A6-475E-A543-F96FB5683482" );
 
             // Attrib for BlockType: Finance - Giving Profile Detail:Show Frequencies
-            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Frequencies", "ShowFrequencies", "UI Options", "Allow users to give recurring gifts?", 5, "True", "9EEDD59A-AC64-4ACC-8C72-35F01F341505" );
+            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Frequencies", "ShowFrequencies", "", "Allow users to give recurring gifts?", 5, "True", "9EEDD59A-AC64-4ACC-8C72-35F01F341505" );
 
             // Attrib for BlockType: Finance - Giving Profile Detail:Require Phone
-            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Require Phone", "RequirePhone", "UI Options", "Should financial contributions require a user's phone number?", 6, "True", "9E95E73D-80BF-404D-B5D3-B4A1146E1C9C" );
+            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Require Phone", "RequirePhone", "", "Should financial contributions require a user's phone number?", 6, "True", "9E95E73D-80BF-404D-B5D3-B4A1146E1C9C" );
 
             // Attrib for BlockType: Finance - Giving Profile Detail:New Accounts
-            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "New Accounts", "NewAccounts", "Financial", "What page should users redirect to when creating a new account?", 0, "7D4E2142-D24E-4DD2-84BC-B34C5C3D0D46", "1328AE22-8FFE-41B6-90E3-2E5A5159348B" );
+            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "New Accounts", "NewAccounts", "", "What page should users redirect to when creating a new account?", 0, "7D4E2142-D24E-4DD2-84BC-B34C5C3D0D46", "1328AE22-8FFE-41B6-90E3-2E5A5159348B" );
 
             // Attrib for BlockType: Finance - Giving Profile Detail:Summary Message
-            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Summary Message", "SummaryMessage", "Message Options", "What text should be displayed on the transaction summary?", 2, "{{ Date }}: {{ TotalContribution }} given by {{ Person.FullName }} using a {{ PaymentType }} ending in {{ PaymentLastFour }}.", "12EB04DB-664F-4B50-85F5-22860BFDE340" );
+            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "9C204CD0-1233-41C5-818A-C5DA439445AA", "Summary Message", "SummaryMessage", "", "What text should be displayed on the transaction summary?", 2, "{{ Date }}: {{ TotalContribution }} given by {{ Person.FullName }} using a {{ PaymentType }} ending in {{ PaymentLastFour }}.", "12EB04DB-664F-4B50-85F5-22860BFDE340" );
 
             // Attrib for BlockType: Finance - Giving Profile Detail:Checking/ACH Provider
-            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "BD0D9B57-2A41-4490-89FF-F01DAB7D4904", "Checking/ACH Provider", "Checking/ACHProvider", "Payment Options", "Which payment processor should be used for checking/ACH?", 1, "", "1BD00EB8-E86B-4EC1-BAC3-FEDFEDFF9EDA" );
+            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "BD0D9B57-2A41-4490-89FF-F01DAB7D4904", "Checking/ACH Provider", "Checking/ACHProvider", "", "Which payment processor should be used for checking/ACH?", 1, "", "1BD00EB8-E86B-4EC1-BAC3-FEDFEDFF9EDA" );
 
             // Attrib for BlockType: Finance - Giving Profile Detail:Show Additional Accounts
-            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Additional Accounts", "ShowAdditionalAccounts", "UI Options", "Should users be allowed to give to additional accounts?", 2, "True", "015325DA-34AE-4E70-A1BD-9D657AD8C67B" );
+            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Additional Accounts", "ShowAdditionalAccounts", "", "Should users be allowed to give to additional accounts?", 2, "True", "015325DA-34AE-4E70-A1BD-9D657AD8C67B" );
 
             // Attrib for BlockType: Finance - Giving Profile Detail:Credit Card Provider
-            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "BD0D9B57-2A41-4490-89FF-F01DAB7D4904", "Credit Card Provider", "CreditCardProvider", "Payment Options", "Which payment processor should be used for credit cards?", 0, "", "5DD98BDC-4E8F-4452-A0D0-4AD7F378E581" );
+            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "BD0D9B57-2A41-4490-89FF-F01DAB7D4904", "Credit Card Provider", "CreditCardProvider", "", "Which payment processor should be used for credit cards?", 0, "", "5DD98BDC-4E8F-4452-A0D0-4AD7F378E581" );
 
             // Attrib for BlockType: Finance - Giving Profile Detail:Default Accounts
-            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "17033CDD-EF97-4413-A483-7B85A787A87F", "Default Accounts", "DefaultAccounts", "Payment Options", "Which accounts should be displayed by default?", 2, "", "B5986804-EC11-45E4-AFF6-326B58385BB0" );
+            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "17033CDD-EF97-4413-A483-7B85A787A87F", "Default Accounts", "DefaultAccounts", "", "Which accounts should be displayed by default?", 2, "", "B5986804-EC11-45E4-AFF6-326B58385BB0" );
 
             // Attrib for BlockType: Finance - Giving Profile Detail:Show Vertical Layout
-            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Vertical Layout", "ShowVerticalLayout", "UI Options", "Should the giving page display vertically or horizontally?", 0, "True", "0E559CB5-9A27-433C-80C6-0DBCFB5E1FA3" );
+            AddBlockTypeAttribute( "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "Show Vertical Layout", "ShowVerticalLayout", "", "Should the giving page display vertically or horizontally?", 0, "True", "0E559CB5-9A27-433C-80C6-0DBCFB5E1FA3" );
 
             // Attrib Value for Scheduled Contributions:Detail Page
             AddBlockAttributeValue( "32A7BA7B-968E-4BFD-BEA3-042CF863D751", "D9775A5E-A271-439C-B7A3-00141195A0F2", "1615E090-1889-42FF-AB18-5F7BE9F24498" );
