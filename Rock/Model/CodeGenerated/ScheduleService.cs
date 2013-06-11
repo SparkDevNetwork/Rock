@@ -72,10 +72,12 @@ namespace Rock.Model
             else
             {
                 var target = new Schedule();
+                target.Name = source.Name;
                 target.Description = source.Description;
                 target.iCalendarContent = source.iCalendarContent;
                 target.CheckInStartOffsetMinutes = source.CheckInStartOffsetMinutes;
                 target.CheckInEndOffsetMinutes = source.CheckInEndOffsetMinutes;
+                target.CategoryId = source.CategoryId;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

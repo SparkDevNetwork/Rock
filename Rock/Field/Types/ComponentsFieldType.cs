@@ -116,11 +116,11 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             try
             {
-                ComponentsPicker editControl = new ComponentsPicker();
+                ComponentsPicker editControl = new ComponentsPicker { ID = id }; 
 
                 if ( configurationValues != null && configurationValues.ContainsKey( "container" ) )
                 {

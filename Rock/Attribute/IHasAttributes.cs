@@ -19,14 +19,6 @@ namespace Rock.Attribute
         int Id { get; }
 
         /// <summary>
-        /// Dictionary of categorized attributes.  Key is the category name, and Value is list of attributes in the category
-        /// </summary>
-        /// <value>
-        /// The attribute categories.
-        /// </value>
-        Dictionary<string, List<string>> AttributeCategories { get; set; }
-
-        /// <summary>
         /// List of attributes associated with the object.  This property will not include the attribute values.
         /// The <see cref="AttributeValues"/> property should be used to get attribute values.  Dictionary key
         /// is the attribute key, and value is the cached attribute
