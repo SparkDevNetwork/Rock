@@ -6,6 +6,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -128,7 +129,8 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void SetValuesOnSelect()
         {
-            var items = new CategoryService().Queryable().Where( i => ItemIds.Contains( i.Id.ToString() ) );
+            var ids = this.SelectedValuesAsInt().ToList();
+            var items = new CategoryService().Queryable().Where( i => ids.Contains( i.Id ) );
             this.SetValues( items );
         }
 
@@ -149,13 +151,62 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The type of the category entity.
         /// </value>
-        public string CategoryEntityTypeName
+        public string EntityTypeName
         {
             set
             {
-                ItemRestUrlExtraParams = "/" + value + "/false";
+                EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( value ).Id;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the entity type id.
+        /// </summary>
+        /// <value>
+        /// The entity type id.
+        /// </value>
+        public int EntityTypeId
+        {
+            get { return ViewState["EntityTypeId"] as int? ?? 0; }
+            set 
+            { 
+                ViewState["EntityTypeId"] = value;
+                SetExtraRestParams();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the entity type qualifier column.
+        /// </summary>
+        /// <value>
+        /// The entity type qualifier column.
+        /// </value>
+        public string EntityTypeQualifierColumn
+        {
+            get { return ViewState["EntityTypeQualifierColumn"] as string; }
+            set 
+            { 
+                ViewState["EntityTypeQualifierColumn"] = value;
+                SetExtraRestParams();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the entity type qualifier value.
+        /// </summary>
+        /// <value>
+        /// The entity type qualifier value.
+        /// </value>
+        public string EntityTypeQualifierValue
+        {
+            get { return ViewState["EntityTypeQualifierValue"] as string; }
+            set 
+            { 
+                ViewState["EntityTypeQualifierValue"] = value;
+                SetExtraRestParams();
+            }
+        }
+
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
@@ -195,5 +246,26 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
             }
         }
+
+        /// <summary>
+        /// Sets the extra rest params.
+        /// </summary>
+        private void SetExtraRestParams()
+        {
+            var parms = new StringBuilder();
+            parms.AppendFormat( "/false/{0}", EntityTypeId );
+            if ( !string.IsNullOrEmpty( EntityTypeQualifierColumn ) )
+            {
+                parms.AppendFormat( "/{0}", EntityTypeQualifierColumn );
+
+                if ( !string.IsNullOrEmpty( EntityTypeQualifierValue ) )
+                {
+                    parms.AppendFormat( "/{0}", EntityTypeQualifierValue );
+                }
+            }
+
+            ItemRestUrlExtraParams = parms.ToString();
+        }
+
     }
 }

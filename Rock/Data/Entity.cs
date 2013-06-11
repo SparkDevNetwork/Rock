@@ -103,7 +103,7 @@ namespace Rock.Data
         /// Gets the validation results.
         /// </summary>
         [NotMapped]
-        public List<ValidationResult> ValidationResults
+        public virtual List<ValidationResult> ValidationResults
         {
             get { return _validationResults; }
         }
@@ -116,13 +116,26 @@ namespace Rock.Data
         ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
         /// </value>
         [NotMapped]
-        public bool IsValid
+        public virtual bool IsValid
         {
             get
             {
                 var valContext = new ValidationContext( this, serviceProvider: null, items: null );
                 _validationResults = new List<ValidationResult>();
                 return Validator.TryValidateObject( this, valContext, _validationResults );
+            }
+        }
+
+        /// <summary>
+        /// Gets a publicly viewable unique key for the model.
+        /// </summary>
+        [NotMapped]
+        public virtual string EncryptedKey
+        {
+            get
+            {
+                string identifier = this.Id.ToString() + ">" + this.Guid.ToString();
+                return Rock.Security.Encryption.EncryptString( identifier );
             }
         }
 
@@ -143,19 +156,6 @@ namespace Rock.Data
             {
                 var type = typeof( T );
                 return type.GetFriendlyTypeName();
-            }
-        }
-
-        /// <summary>
-        /// Gets a publicly viewable unique key for the model.
-        /// </summary>
-        [NotMapped]
-        public string EncryptedKey
-        {
-            get
-            {
-                string identifier = this.Id.ToString() + ">" + this.Guid.ToString();
-                return Rock.Security.Encryption.EncryptString( identifier );
             }
         }
 

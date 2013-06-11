@@ -688,20 +688,6 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Adds the block attribute.
-        /// </summary>
-        /// <param name="blockGuid">The block GUID.</param>
-        /// <param name="fieldTypeGuid">The field type GUID.</param>
-        /// <param name="attribute">The attribute.</param>
-        public void AddBlockAttribute( string blockGuid, string fieldTypeGuid, Rock.Model.Attribute attribute )
-        {
-            AddBlockTypeAttribute( blockGuid, fieldTypeGuid, attribute.Name, attribute.Key, attribute.Category, attribute.Description, attribute.Order, attribute.DefaultValue, attribute.Guid.ToString() );
-
-            string updateSql = "Update [Attribute] set [IsGridColumn] = {0}, [IsMultiValue] = {1}, [IsRequired] = {2} where Guid = '{3}'";
-            Sql( string.Format( updateSql, attribute.IsGridColumn.Bit(), attribute.IsMultiValue.Bit(), attribute.IsRequired.Bit(), attribute.Guid.ToString() ) );
-        }
-
-        /// <summary>
         /// Deletes the block attribute.
         /// </summary>
         /// <param name="guid">The GUID.</param>
@@ -849,33 +835,6 @@ namespace Rock.Migrations
 ",
                     guid
                     ) );
-        }
-
-
-
-        /// <summary>
-        /// Defaults the block attribute.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="category">The category.</param>
-        /// <param name="description">The description.</param>
-        /// <param name="order">The order.</param>
-        /// <param name="defaultValue">The default value.</param>
-        /// <param name="guid">The GUID.</param>
-        /// <returns></returns>
-        public Rock.Model.Attribute DefaultBlockAttribute( string name, string category, string description, int order, string defaultValue, Guid guid )
-        {
-            var attribute = new Rock.Model.Attribute();
-
-            attribute.IsSystem = true;
-            attribute.Key = name.Replace( " ", string.Empty );
-            attribute.Name = name;
-            attribute.Category = category;
-            attribute.Description = description;
-            attribute.Order = order;
-            attribute.Guid = guid;
-
-            return attribute;
         }
 
         #endregion
