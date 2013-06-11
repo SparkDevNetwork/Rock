@@ -193,16 +193,6 @@ namespace RockWeb.Blocks.Reporting
                 report.EntityTypeId = ddlEntityType.SelectedValueAsInt();
                 report.DataViewId = ddlDataView.SelectedValueAsInt();
 
-                // check for duplicates within Category
-                if ( service.Queryable()
-                    .Where( g => ( g.CategoryId == report.CategoryId ) )
-                    .Count( a => a.Name.Equals( report.Name, StringComparison.OrdinalIgnoreCase ) &&
-                        !a.Id.Equals( report.Id ) ) > 0 )
-                {
-                    tbName.ShowErrorMessage( WarningMessage.DuplicateFoundMessage( "name", Report.FriendlyTypeName ) );
-                    return;
-                }
-
                 if ( !Page.IsValid )
                 {
                     return;

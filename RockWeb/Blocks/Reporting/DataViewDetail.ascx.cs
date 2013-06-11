@@ -160,16 +160,6 @@ $(document).ready(function() {
 
                 dataView.DataViewFilter = GetFilterControl();
 
-                // check for duplicates within Category
-                if ( service.Queryable()
-                    .Where( g => ( g.CategoryId == dataView.CategoryId ) )
-                    .Count( a => a.Name.Equals( dataView.Name, StringComparison.OrdinalIgnoreCase ) &&
-                        !a.Id.Equals( dataView.Id ) ) > 0 )
-                {
-                    tbName.ShowErrorMessage( WarningMessage.DuplicateFoundMessage( "name", DataView.FriendlyTypeName ) );
-                    return;
-                }
-
                 if ( !Page.IsValid )
                 {
                     return;
