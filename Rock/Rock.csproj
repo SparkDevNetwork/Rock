@@ -261,6 +261,10 @@
     <Compile Include="Migrations\201306072134322_AttributeCategories.Designer.cs">
       <DependentUpon>201306072134322_AttributeCategories.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201306111652134_UpdateGivingBlocks.cs" />
+    <Compile Include="Migrations\201306111652134_UpdateGivingBlocks.Designer.cs">
+      <DependentUpon>201306111652134_UpdateGivingBlocks.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
@@ -1767,6 +1771,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201306072134322_AttributeCategories.resx">
       <DependentUpon>201306072134322_AttributeCategories.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306111652134_UpdateGivingBlocks.resx">
+      <DependentUpon>201306111652134_UpdateGivingBlocks.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
