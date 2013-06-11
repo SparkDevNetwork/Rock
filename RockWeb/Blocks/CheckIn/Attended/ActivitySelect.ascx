@@ -47,11 +47,21 @@
         <div class="span3">
             <div class="attended-checkin-body-container">
                 <h3>Activity</h3>
-                <asp:Repeater ID="rActivity" runat="server" OnItemCommand="rActivity_ItemCommand">
+<%--                <asp:Repeater ID="rActivity" runat="server" OnItemCommand="rActivity_ItemCommand">
                     <ItemTemplate>
                         <asp:LinkButton ID="lbSelectActivity" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" />
                     </ItemTemplate>
-                </asp:Repeater>
+                </asp:Repeater>--%>
+                <asp:ListView ID="lvActivity" runat="server" OnPagePropertiesChanging="lvActivity_PagePropertiesChanging" OnItemCommand="lvActivity_ItemCommand">
+                    <ItemTemplate>
+                        <asp:LinkButton ID="lSelectActivity" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" ></asp:LinkButton>
+                    </ItemTemplate>
+                </asp:ListView>
+                <asp:DataPager ID="Pager" runat="server" PageSize="6" PagedControlID="lvActivity">
+                    <Fields>
+                        <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary" />
+                    </Fields>
+                </asp:DataPager>
             </div>
         </div>
 
