@@ -73,6 +73,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<Schedule>().Queryable().Any( a => a.CategoryId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, Schedule.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<WorkflowType>().Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, WorkflowType.FriendlyTypeName );
@@ -85,7 +91,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class CategoryExtensionMethods
+    public static partial class CategoryExtensionMethods
     {
         /// <summary>
         /// Clones this Category object to a new Category object

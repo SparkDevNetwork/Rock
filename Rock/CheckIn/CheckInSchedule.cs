@@ -27,6 +27,15 @@ namespace Rock.CheckIn
         public Schedule Schedule { get; set; }
 
         /// <summary>
+        /// Gets the start time.
+        /// </summary>
+        /// <value>
+        /// The start time.
+        /// </value>
+        [DataMember]
+        public DateTime? StartTime { get; set; }
+
+        /// <summary>
         /// Gets or sets the last time person checked into this schedule for the selected group type, location and group 
         /// </summary>
         /// <value>

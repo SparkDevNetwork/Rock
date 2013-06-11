@@ -9,6 +9,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Newtonsoft.Json;
+using Rock;
+using Rock.Constants;
 
 namespace Rock.Field.Types
 {
@@ -18,6 +21,9 @@ namespace Rock.Field.Types
     [Serializable]
     public class DefinedValueFieldType : FieldType
     {
+        private const string DEFINED_TYPE_KEY = "definedtype";
+        private const string ALLOW_MULTIPLE_KEY = "allowmultiple";
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -55,7 +61,8 @@ namespace Rock.Field.Types
         public override List<string> ConfigurationKeys()
         {
             var configKeys = base.ConfigurationKeys();
-            configKeys.Add( "definedtype" );
+            configKeys.Add( DEFINED_TYPE_KEY );
+            configKeys.Add( ALLOW_MULTIPLE_KEY );
             return configKeys;
         }
 
@@ -67,6 +74,8 @@ namespace Rock.Field.Types
         {
             var controls = base.ConfigurationControls();
 
+            // build a drop down list of defined types (the one that gets selected is
+            // used to build a list of defined values) 
             DropDownList ddl = new DropDownList();
             controls.Add( ddl );
             ddl.AutoPostBack = true;
@@ -78,6 +87,13 @@ namespace Rock.Field.Types
                 ddl.Items.Add( new ListItem( definedType.Name, definedType.Id.ToString() ) );
             }
 
+            // Add checkbox for deciding if the defined values list is renedered as a drop
+            // down list or a checkbox list.
+            CheckBox cb = new CheckBox();
+            controls.Add( cb );
+            cb.AutoPostBack = true;
+            cb.CheckedChanged += OnQualifierUpdated;
+            cb.Text = "Allow Multiple Values";
             return controls;
         }
 
@@ -89,12 +105,20 @@ namespace Rock.Field.Types
         public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
-            configurationValues.Add( "definedtype", new ConfigurationValue( "Defined Type", "The Defined Type to select values from", "" ) );
+            configurationValues.Add( DEFINED_TYPE_KEY, new ConfigurationValue( "Defined Type", "The Defined Type to select values from", "" ) );
+            configurationValues.Add( ALLOW_MULTIPLE_KEY, new ConfigurationValue( "", "When set, allows multiple defined type values to be selected.", "" ) );
 
-            if ( controls != null && controls.Count == 1 &&
-                controls[0] != null && controls[0] is DropDownList )
+            if ( controls != null && controls.Count == 2 )
             {
-                configurationValues["definedtype"].Value = ( (DropDownList)controls[0] ).SelectedValue;
+                if ( controls[0] != null && controls[0] is DropDownList )
+                {
+                    configurationValues[DEFINED_TYPE_KEY].Value = ( (DropDownList)controls[0] ).SelectedValue;
+                }
+
+                if ( controls[1] != null && controls[1] is CheckBox )
+                {
+                    configurationValues[ ALLOW_MULTIPLE_KEY ].Value = ( (CheckBox)controls[1] ).Checked.ToString();
+                }
             }
 
             return configurationValues;
@@ -107,10 +131,17 @@ namespace Rock.Field.Types
         /// <param name="configurationValues"></param>
         public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            if ( controls != null && controls.Count == 1 && configurationValues != null &&
-                controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( "definedtype" ) )
+            if ( controls != null && controls.Count == 2 && configurationValues != null )
             {
-                ( (DropDownList)controls[0] ).SelectedValue = configurationValues["definedtype"].Value;
+                if ( controls[0] != null && controls[0] is DropDownList && configurationValues.ContainsKey( DEFINED_TYPE_KEY ) )
+                {
+                    ( (DropDownList)controls[0] ).SelectedValue = configurationValues[DEFINED_TYPE_KEY].Value;
+                }
+
+                if ( controls[1] != null && controls[1] is CheckBox && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) )
+                {
+                    ( (CheckBox)controls[1] ).Checked = configurationValues[ALLOW_MULTIPLE_KEY].Value.AsBoolean();
+                }
             }
         }
 
@@ -121,14 +152,26 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            ListControl editControl = new DropDownList();
+            ListControl editControl;
 
-            if ( configurationValues != null && configurationValues.ContainsKey( "definedtype" ) )
+            if ( configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ ALLOW_MULTIPLE_KEY ].Value.AsBoolean() )
+            {
+                editControl = new CheckBoxList { ID = id }; 
+                editControl.AddCssClass( "checkboxlist-group" );
+            }
+            else
+            {
+                editControl = new DropDownList { ID = id }; 
+                // Provide the ability to set a "none" default value (unless the Required is true).
+                editControl.Items.Add( new ListItem( None.Text, None.IdValue ) );
+            }
+
+            if ( configurationValues != null && configurationValues.ContainsKey( DEFINED_TYPE_KEY ) )
             {
                 int definedTypeId = 0;
-                if ( Int32.TryParse( configurationValues["definedtype"].Value, out definedTypeId ) )
+                if ( Int32.TryParse( configurationValues[DEFINED_TYPE_KEY].Value, out definedTypeId ) )
                 {
                     Rock.Model.DefinedValueService definedValueService = new Model.DefinedValueService();
                     foreach ( var definedValue in definedValueService.GetByDefinedTypeId( definedTypeId ) )
@@ -137,6 +180,7 @@ namespace Rock.Field.Types
                     }
                 }
             }
+            
             return editControl;
         }
 
@@ -150,7 +194,26 @@ namespace Rock.Field.Types
         {
             if ( control != null && control is ListControl )
             {
-                return ( (ListControl)control ).SelectedValue;
+                if ( control is DropDownList )
+                {
+                    return ( (ListControl)control ).SelectedValue;
+                }
+                else if ( control is CheckBoxList )
+                {
+                    string x =  ( (CheckBoxList)control ).Items.Cast<ListItem>()
+                        .Where(i => i.Selected)
+                        .Select( i => i.Value ).ToJson();
+
+                    //return ( (CheckBoxList)control ).Items.Cast<ListItem>()
+                    //    .Where(i => i.Selected)
+                    //    .Select( i => i.Value ).ToJson();
+
+                    IEnumerable<string> allChecked = ( (CheckBoxList)control ).Items.Cast<ListItem>()
+                        .Where( i => i.Selected )
+                        .Select( i => i.Value );
+
+                    return string.Join( ",", allChecked );
+                }
             }
             return null;
         }
@@ -167,7 +230,22 @@ namespace Rock.Field.Types
             {
                 if ( control != null && control is ListControl )
                 {
-                    ( (ListControl)control ).SelectedValue = value;
+                    if ( control is DropDownList )
+                    {
+                        ( (ListControl)control ).SelectedValue = value;
+                    }
+                    else if ( control is CheckBoxList )
+                    {
+                        //List<string> values =  JsonConvert.DeserializeObject(value, typeof(List<string>)) as List<string>;
+                        List<string> values = new List<string>();
+                        values.AddRange( value.Split( ',' ) );
+
+                        CheckBoxList cbl = (CheckBoxList)control;
+                        foreach ( ListItem li in cbl.Items )
+                        {
+                            li.Selected = values.Contains( li.Value );
+                        }
+                    }
                 }
             }
         }

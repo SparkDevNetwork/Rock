@@ -3,8 +3,8 @@
     <ContentTemplate>
         <asp:Panel ID="pnlLists" runat="server" Visible="true">
             <Rock:GridFilter ID="rFilter" runat="server" OnApplyFilterClick="rFilter_ApplyFilterClick" OnDisplayFilterValue="rFilter_DisplayFilterValue">
-                <Rock:DateTimePicker ID="dtDateRangeStartDate" runat="server" SourceTypeName="Rock.Model.Note, Rock" PropertyName="Date" LabelText="From date" />
-                <Rock:DateTimePicker ID="dtDateRangeEndDate" runat="server" SourceTypeName="Rock.Model.Note, Rock" PropertyName="Date" LabelText="To date" />
+                <Rock:DatePicker ID="dtDateRangeStartDate" runat="server" SourceTypeName="Rock.Model.Note, Rock" PropertyName="Date" LabelText="From date" />
+                <Rock:DatePicker ID="dtDateRangeEndDate" runat="server" SourceTypeName="Rock.Model.Note, Rock" PropertyName="Date" LabelText="To date" />
                 <Rock:LabeledRadioButtonList ID="rblApprovedFilter" runat="server" LabelText="Approval Status">
                     <asp:ListItem Text="all" Value="all" Selected="True"></asp:ListItem>
                     <asp:ListItem Text="only approved" Value="approved"></asp:ListItem>

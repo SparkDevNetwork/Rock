@@ -20,19 +20,10 @@ namespace Rock.Model
     /// </summary>
     [Table( "FinancialTransactionRefund" )]
     [DataContract]
-    public partial class FinancialTransactionRefund : FinancialTransaction
+    public partial class FinancialTransactionRefund : Model<FinancialTransactionRefund>
     {
 
         #region Entity Properties
-
-        /// <summary>
-        /// Gets or sets the refund transaction id.
-        /// </summary>
-        /// <value>
-        /// The refund transaction id.
-        /// </value>
-        [DataMember]
-        public int RefundTransactionId { get; set; }
 
         /// <summary>
         /// Gets or sets the refund reason value id.
@@ -56,15 +47,6 @@ namespace Rock.Model
         #endregion
 
         #region Virtual Properties
-
-        /// <summary>
-        /// Gets or sets the refund transaction.
-        /// </summary>
-        /// <value>
-        /// The refund transaction.
-        /// </value>
-        [DataMember]
-        public virtual FinancialTransaction RefundTransaction { get; set; }
 
         /// <summary>
         /// Gets or sets the refund reason value.
@@ -92,7 +74,6 @@ namespace Rock.Model
         /// </summary>
         public FinancialTransactionRefundConfiguration()
         {
-            this.HasRequired( t => t.RefundTransaction ).WithMany().HasForeignKey( t => t.RefundTransactionId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.RefundReasonValue ).WithMany().HasForeignKey( t => t.RefundReasonValueId ).WillCascadeOnDelete( false );
         }
     }

@@ -218,6 +218,7 @@ namespace RockWeb.Blocks.Crm
             tbGroupMemberTerm.Text = groupType.GroupMemberTerm;
             ddlDefaultGroupRole.SetValue( groupType.DefaultGroupRoleId );
             cbShowInGroupList.Checked = groupType.ShowInGroupList;
+            cbShowInNavigation.Checked = groupType.ShowInNavigation;
             tbIconCssClass.Text = groupType.IconCssClass;
             imgIconSmall.ImageId = groupType.IconSmallFileId;
             imgIconLarge.ImageId = groupType.IconLargeFileId;
@@ -231,16 +232,17 @@ namespace RockWeb.Blocks.Crm
 
             AttributeService attributeService = new AttributeService();
 
+            string qualifierValue = groupType.Id.ToString();
             var qryGroupTypeAttributes = attributeService.GetByEntityTypeId( new GroupType().TypeId ).AsQueryable()
                 .Where( a => a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase )
-                && a.EntityTypeQualifierValue.Equals( groupType.Id.ToString() ) );
+                && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
 
             GroupTypeAttributesState.AddAll( qryGroupTypeAttributes.ToList() );
             BindGroupTypeAttributesGrid();
 
             var qryGroupAttributes = attributeService.GetByEntityTypeId( new Group().TypeId ).AsQueryable()
                 .Where( a => a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase )
-                && a.EntityTypeQualifierValue.Equals( groupType.Id.ToString() ) );
+                && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
 
             GroupAttributesState.AddAll( qryGroupAttributes.ToList() );
             BindGroupAttributesGrid();
@@ -273,6 +275,7 @@ namespace RockWeb.Blocks.Crm
             tbGroupTerm.ReadOnly = readOnly;
             tbGroupMemberTerm.ReadOnly = readOnly;
             cbShowInGroupList.Enabled = !readOnly;
+            cbShowInNavigation.Enabled = !readOnly;
             tbIconCssClass.ReadOnly = readOnly;
             imgIconLarge.Enabled = !readOnly;
             imgIconSmall.Enabled = !readOnly;
@@ -529,6 +532,7 @@ namespace RockWeb.Blocks.Crm
                 groupType.GroupMemberTerm = tbGroupMemberTerm.Text;
                 groupType.DefaultGroupRoleId = ddlDefaultGroupRole.SelectedValueAsInt();
                 groupType.ShowInGroupList = cbShowInGroupList.Checked;
+                groupType.ShowInNavigation = cbShowInNavigation.Checked;
                 groupType.IconCssClass = tbIconCssClass.Text;
                 groupType.IconSmallFileId = imgIconSmall.ImageId;
                 groupType.IconLargeFileId = imgIconLarge.ImageId;
@@ -584,22 +588,14 @@ namespace RockWeb.Blocks.Crm
                         /* Take care of Group Type Attributes */
 
                         // delete GroupTypeAttributes that are no longer configured in the UI
-                        var groupTypeAttributesQry = attributeService.GetByEntityTypeId( new GroupType().TypeId ).AsQueryable()
-                            .Where( a => a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase )
-                            && a.EntityTypeQualifierValue.Equals( groupType.Id.ToString() ) );
-
-                        var deletedGroupTypeAttributes = from attr in groupTypeAttributesQry
-                                                         where !( from d in GroupTypeAttributesState
-                                                                  select d.Guid ).Contains( attr.Guid )
-                                                         select attr;
-
-                        deletedGroupTypeAttributes.ToList().ForEach( a =>
+                        var groupTypeAttributesQry = attributeService.Get( new GroupType().TypeId, "Id", groupType.Id.ToString() );
+                        var selectedAttributes = GroupTypeAttributesState.Select( a => a.Guid);
+                        foreach(var attr in groupTypeAttributesQry.Where( a => !selectedAttributes.Contains( a.Guid)))
                         {
-                            var attr = attributeService.Get( a.Guid );
                             Rock.Web.Cache.AttributeCache.Flush( attr.Id );
                             attributeService.Delete( attr, CurrentPersonId );
                             attributeService.Save( attr, CurrentPersonId );
-                        } );
+                        }
 
                         // add/update the GroupTypeAttributes that are assigned in the UI
                         foreach ( var attributeState in GroupTypeAttributesState )
@@ -640,22 +636,14 @@ namespace RockWeb.Blocks.Crm
                         /* Take care of Group Attributes */
 
                         // delete GroupAttributes that are no longer configured in the UI
-                        var groupAttributesQry = attributeService.GetByEntityTypeId( new Group().TypeId ).AsQueryable()
-                            .Where( a => a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase )
-                            && a.EntityTypeQualifierValue.Equals( groupType.Id.ToString() ) );
-
-                        var deletedGroupAttributes = from attr in groupAttributesQry
-                                                     where !( from d in GroupAttributesState
-                                                              select d.Guid ).Contains( attr.Guid )
-                                                     select attr;
-
-                        deletedGroupAttributes.ToList().ForEach( a =>
+                        var groupAttributesQry = attributeService.Get( new Group().TypeId, "GroupTypeId", groupType.Id.ToString() );
+                        selectedAttributes = GroupAttributesState.Select( a => a.Guid);
+                        foreach( var attr in groupAttributesQry.Where( a => !selectedAttributes.Contains( a.Guid)))
                         {
-                            var attr = attributeService.Get( a.Guid );
                             Rock.Web.Cache.AttributeCache.Flush( attr.Id );
                             attributeService.Delete( attr, CurrentPersonId );
                             attributeService.Save( attr, CurrentPersonId );
-                        } );
+                        }
 
                         // add/update the GroupAttributes that are assigned in the UI
                         foreach ( var attributeState in GroupAttributesState )

@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class WorkflowTypeExtensionMethods
+    public static partial class WorkflowTypeExtensionMethods
     {
         /// <summary>
         /// Clones this WorkflowType object to a new WorkflowType object
@@ -74,7 +74,9 @@ namespace Rock.Model
                 var target = new WorkflowType();
                 target.IsSystem = source.IsSystem;
                 target.IsActive = source.IsActive;
+                target.Name = source.Name;
                 target.Description = source.Description;
+                target.CategoryId = source.CategoryId;
                 target.Order = source.Order;
                 target.WorkTerm = source.WorkTerm;
                 target.ProcessingIntervalSeconds = source.ProcessingIntervalSeconds;

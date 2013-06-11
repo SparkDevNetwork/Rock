@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class TaggedItemExtensionMethods
+    public static partial class TaggedItemExtensionMethods
     {
         /// <summary>
         /// Clones this TaggedItem object to a new TaggedItem object
@@ -74,7 +74,7 @@ namespace Rock.Model
                 var target = new TaggedItem();
                 target.IsSystem = source.IsSystem;
                 target.TagId = source.TagId;
-                target.EntityId = source.EntityId;
+                target.EntityGuid = source.EntityGuid;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

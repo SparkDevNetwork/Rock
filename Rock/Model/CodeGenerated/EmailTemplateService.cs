@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class EmailTemplateExtensionMethods
+    public static partial class EmailTemplateExtensionMethods
     {
         /// <summary>
         /// Clones this EmailTemplate object to a new EmailTemplate object

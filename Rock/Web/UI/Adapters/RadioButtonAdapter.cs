@@ -3,6 +3,7 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.WebControls.Adapters;
@@ -43,12 +44,28 @@ namespace Rock.Web.UI.Adapters
                 writer.AddAttribute( "class", "radio inline" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Label );
 
-                writer.AddAttribute( "id", rb.ClientID );
-                writer.AddAttribute( "type", "radio" );
-                writer.AddAttribute( "name", rb.UniqueID );
+                writer.AddAttribute( HtmlTextWriterAttribute.Id, rb.ClientID );
+                writer.AddAttribute( HtmlTextWriterAttribute.Type, "radio" );
+                
+                string uniqueGroupName = rb.GetType().GetProperty( "UniqueGroupName", BindingFlags.Instance | BindingFlags.NonPublic ).GetValue( rb, null ) as string;
+                writer.AddAttribute( HtmlTextWriterAttribute.Name, uniqueGroupName );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Value, rb.ClientID );
+
+                if ( !string.IsNullOrWhiteSpace( rb.CssClass ) )
+                {
+                    writer.AddAttribute( "class", rb.CssClass );
+                }
+                
                 if ( rb.Checked )
                 {
                     writer.AddAttribute( "checked", "checked" );
+                }
+
+                foreach ( var attributeKey in rb.Attributes.Keys )
+                {
+                    var key = attributeKey as string;
+                    writer.AddAttribute( key, rb.Attributes[key] );
                 }
 
                 foreach ( var inputAttributeKey in rb.InputAttributes.Keys )
@@ -66,7 +83,7 @@ namespace Rock.Web.UI.Adapters
 
                 if ( Page != null && Page.ClientScript != null )
                 {
-                    Page.ClientScript.RegisterForEventValidation( rb.UniqueID );
+                    Page.ClientScript.RegisterForEventValidation( uniqueGroupName, rb.ID );
                 }
             }
         }

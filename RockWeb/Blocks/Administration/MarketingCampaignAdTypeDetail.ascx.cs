@@ -266,9 +266,10 @@ namespace RockWeb.Blocks.Administration
 
                     // delete AdTypeAttributes that are no longer configured in the UI
                     AttributeService attributeService = new AttributeService();
+                    string qualifierValue = marketingCampaignAdType.Id.ToString();
                     var qry = attributeService.GetByEntityTypeId( new MarketingCampaignAd().TypeId ).AsQueryable()
                         .Where( a => a.EntityTypeQualifierColumn.Equals( "MarketingCampaignAdTypeId", StringComparison.OrdinalIgnoreCase )
-                        && a.EntityTypeQualifierValue.Equals( marketingCampaignAdType.Id.ToString() ) );
+                        && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
 
                     var deletedAttributes = from attr in qry
                                             where !( from d in AttributesState
@@ -372,9 +373,10 @@ namespace RockWeb.Blocks.Administration
 
             AttributeService attributeService = new AttributeService();
 
+            string qualifierValue = marketingCampaignAdType.Id.ToString();
             var qry = attributeService.GetByEntityTypeId( new MarketingCampaignAd().TypeId ).AsQueryable()
                 .Where( a => a.EntityTypeQualifierColumn.Equals( "MarketingCampaignAdTypeId", StringComparison.OrdinalIgnoreCase )
-                && a.EntityTypeQualifierValue.Equals( marketingCampaignAdType.Id.ToString() ) );
+                && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
 
             AttributesState.AddAll( qry.ToList() );
             BindMarketingCampaignAdAttributeTypeGrid();

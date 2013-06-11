@@ -17,6 +17,7 @@
 //********************************************************************************************
 
 using System;
+using System.Linq;
 using System.Collections.Generic;
 
 namespace Rock.Model
@@ -256,7 +257,7 @@ namespace Rock.Model
         static public AssessmentResults LoadSavedAssessmentResults(Person person)
         {
             AssessmentResults savedScores = new AssessmentResults();
-            var discAttributes = person.AttributeCategories["DISC"];
+            var discAttributes = person.Attributes.Values.Where( a => a.Categories.Any( c => c.Name == "DISC" ) ).Select( a => a.Name );
 
             foreach (string attrib in discAttributes)
             {
@@ -319,8 +320,7 @@ namespace Rock.Model
             String NBs,
             String NBc)
         {
-            var discAttributes = person.AttributeCategories["DISC"];
-
+            var discAttributes = person.Attributes.Values.Where( a => a.Categories.Any( c => c.Name == "DISC" ) ).Select( a => a.Name );
             foreach (string attrib in discAttributes)
             {
                 switch (attrib)

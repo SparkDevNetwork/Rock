@@ -49,10 +49,9 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
+        public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            PersonPicker ppPerson = new PersonPicker();
-            return ppPerson;
+            return new PersonPicker { ID = id }; 
         }
 
         /// <summary>
@@ -69,7 +68,7 @@ namespace Rock.Field.Types
             if ( ppPerson != null )
             {
                 Guid personGuid = Guid.Empty;
-                int? personId = ppPerson.PersonId.AsInteger();
+                int? personId = ppPerson.PersonId;
 
                 var person = new PersonService().Get( personId ?? 0 );
                 if ( person != null )

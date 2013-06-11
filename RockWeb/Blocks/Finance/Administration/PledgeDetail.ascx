@@ -16,8 +16,8 @@
                 <Rock:AccountPicker ID="fpFund" runat="server" LabelText="Fund" Required="True"/>
             
                 <Rock:DataTextBox ID="tbAmount" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="TotalAmount" LabelText="Total Amount" PrependText="$" Required="True" />
-                <Rock:DateTimePicker ID="dtpStartDate" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="StartDate" LabelText="Start Date" Required="True"/>
-                <Rock:DateTimePicker ID="dtpEndDate" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="EndDate" LabelText="End Date" Required="True"/>
+                <Rock:DatePicker ID="dtpStartDate" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="StartDate" LabelText="Start Date" Required="True"/>
+                <Rock:DatePicker ID="dtpEndDate" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="EndDate" LabelText="End Date" Required="True"/>
                 <Rock:DataDropDownList ID="ddlFrequencyType" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="PledgeFrequencyValue" LabelText="Payment Schedule" Required="True"/>
             </fieldset>
 

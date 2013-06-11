@@ -72,14 +72,32 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Category.FriendlyTypeName );
                 return false;
             }  
-            
-            // ignoring DataView,TransformEntityTypeId 
+ 
+            if ( new Service<Communication>().Queryable().Any( a => a.ChannelEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Communication.FriendlyTypeName );
+                return false;
+            }  
             
             // ignoring DataView,EntityTypeId 
+            
+            // ignoring DataView,TransformEntityTypeId 
  
             if ( new Service<DataViewFilter>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, DataViewFilter.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialGateway>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialGateway.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialScheduledTransactionDetail>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialScheduledTransactionDetail.FriendlyTypeName );
                 return false;
             }  
  
@@ -119,7 +137,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class EntityTypeExtensionMethods
+    public static partial class EntityTypeExtensionMethods
     {
         /// <summary>
         /// Clones this EntityType object to a new EntityType object

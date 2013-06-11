@@ -4,9 +4,9 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Web.UI.HtmlControls;
+using System.Text;
+
 using Rock.Model;
 using Rock.Web;
 using Rock.Web.UI;
@@ -23,69 +23,61 @@ public partial class SiteMap : RockBlock
 
         PageService pageService = new PageService();
 
-        List<Rock.Model.Page> pageList = pageService.Queryable().ToList();
-        string treeHtml = "<ul id=\"treeview\">" + Environment.NewLine;
+        var sb = new StringBuilder();
+
+        sb.AppendLine("<ul id=\"treeview\">");
         foreach ( var page in pageService.Queryable().Where( a => a.ParentPageId == null ).OrderBy( a => a.Order ).ThenBy( a => a.Name) )
         {
-            treeHtml += string.Format( "<li data-expanded='false'><i class=\"icon-file-alt\"></i><a href='{0}' >" + page.Name + "</a>" + Environment.NewLine, new PageReference(page.Id).BuildUrl() );
-            AddChildNodes( ref treeHtml, page, pageList);
-            treeHtml += "</li>" + Environment.NewLine;
+            sb.Append( PageNode( page ) );
         }
+        sb.AppendLine( "</ul>" );
 
-        treeHtml += "</ul>" + Environment.NewLine;
-        lPages.Text = treeHtml;
+        lPages.Text = sb.ToString();
     }
 
     /// <summary>
-    /// Adds the child nodes.
+    /// Adds the page nodes.
     /// </summary>
-    /// <param name="nodeHtml">The node HTML.</param>
-    /// <param name="parentPage">The parent page.</param>
-    /// <param name="pageList">The page list.</param>
-    protected void AddChildNodes( ref string nodeHtml, Rock.Model.Page parentPage, List<Rock.Model.Page> pageList)
+    /// <param name="Page">The page.</param>
+    /// <returns></returns>
+    protected string PageNode( Rock.Model.Page Page )
     {
-        var childPages = pageList.Where( a => a.ParentPageId.Equals( parentPage.Id ) );
-        if ( childPages.Count() > 0 )
-        {
-            nodeHtml += "<ul>" + Environment.NewLine;
+        var sb = new StringBuilder();
 
-            foreach ( var childPage in childPages.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+        sb.AppendFormat( "<li data-expanded='false'><i class=\"icon-file-alt\"></i><a href='{0}'>{1}</a>{2}", new PageReference( Page.Id ).BuildUrl(), Page.Name, Environment.NewLine );
+
+        if ( Page.Pages.Any() || Page.Blocks.Any() )
+        {
+            sb.AppendLine("<ul>");
+
+            foreach ( var childPage in Page.Pages.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
-                string childNodeHtml = string.Format( "<li data-expanded='false'><i class=\"icon-file-alt\"></i><a href='{0}' >" + childPage.Name + "</a>" + Environment.NewLine, new PageReference( childPage.Id ).BuildUrl() );
-                if ( childPage.Blocks.Count > 0 )
-                {
-                    childNodeHtml += "<ul><li data-expanded='false'>";
-                    var lastBlock = childPage.Blocks.OrderBy( b => b.Order ).Last();
-                    foreach ( var block in childPage.Blocks.OrderBy( b => b.Order ) )
-                    {
-                        childNodeHtml += CreateConfigIcon( block );
-                        childNodeHtml += string.Format( "{1}:{0}", block.Name, block.BlockType.Name );
-                        if ( !block.Equals( lastBlock ) )
-                        {
-                            childNodeHtml += "</li>" + Environment.NewLine + "<li data-expanded='false'>";
-                        }
-                    }
-                    AddChildNodes( ref childNodeHtml, childPage, pageList);
-                    childNodeHtml += "</li></ul>";
-                }
-                else
-                {
-                    AddChildNodes( ref childNodeHtml, childPage, pageList);
-                }
-                
-                childNodeHtml += "</li>" + Environment.NewLine;
-                nodeHtml += childNodeHtml;
+                sb.Append( PageNode( childPage ) );
             }
 
-            nodeHtml += "</ul>" + Environment.NewLine;
+            foreach ( var block in Page.Blocks.OrderBy( b => b.Order ) )
+            {
+                sb.AppendFormat("<li data-expanded='false'>{0}{1}:{2}</li>{3}", CreateConfigIcon(block), block.Name, block.BlockType.Name, Environment.NewLine );
+            }
+
+            sb.AppendLine( "</ul>" );
         }
+
+        sb.AppendLine( "</li>" );
+
+        return sb.ToString();
     }
 
+    /// <summary>
+    /// Creates the block config icon.
+    /// </summary>
+    /// <param name="block">The block.</param>
+    /// <returns></returns>
     protected string CreateConfigIcon( Block block )
     {
         var blockPropertyUrl = ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", block.Id ) );
 
-        return string.Format( "<i class=\"icon-th-large\"></i> <a href=\"javascript: showModalPopup($(this), '{0}')\" title=\"Block Properties\"><i class=\"icon-cog\"></i></a>",
+        return string.Format( "<i class=\"icon-th-large\"></i> <a href=\"javascript: Rock.controls.modal.show($(this), '{0}')\" title=\"Block Properties\"><i class=\"icon-cog\"></i></a>",
             blockPropertyUrl );
     }
 }

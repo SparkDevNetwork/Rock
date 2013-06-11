@@ -49,13 +49,13 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
             
-            // ignoring BinaryFileType,IconSmallFileId 
-            
             // ignoring BinaryFileType,IconLargeFileId 
             
-            // ignoring Category,IconSmallFileId 
+            // ignoring BinaryFileType,IconSmallFileId 
             
             // ignoring Category,IconLargeFileId 
+            
+            // ignoring Category,IconSmallFileId 
  
             if ( new Service<FinancialTransactionImage>().Queryable().Any( a => a.BinaryFileId == item.Id ) )
             {
@@ -63,9 +63,9 @@ namespace Rock.Model
                 return false;
             }  
             
-            // ignoring GroupType,IconSmallFileId 
-            
             // ignoring GroupType,IconLargeFileId 
+            
+            // ignoring GroupType,IconSmallFileId 
  
             if ( new Service<Page>().Queryable().Any( a => a.IconFileId == item.Id ) )
             {
@@ -85,7 +85,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class BinaryFileExtensionMethods
+    public static partial class BinaryFileExtensionMethods
     {
         /// <summary>
         /// Clones this BinaryFile object to a new BinaryFile object
@@ -105,7 +105,6 @@ namespace Rock.Model
                 target.IsTemporary = source.IsTemporary;
                 target.IsSystem = source.IsSystem;
                 target.BinaryFileTypeId = source.BinaryFileTypeId;
-                target.Data = source.Data;
                 target.Url = source.Url;
                 target.FileName = source.FileName;
                 target.MimeType = source.MimeType;

@@ -55,9 +55,9 @@ namespace Rock.Model
                 return false;
             }  
             
-            // ignoring GroupTypeAssociation,GroupTypeId 
-            
             // ignoring GroupTypeAssociation,ChildGroupTypeId 
+            
+            // ignoring GroupTypeAssociation,GroupTypeId 
             return true;
         }
     }
@@ -65,7 +65,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class GroupTypeExtensionMethods
+    public static partial class GroupTypeExtensionMethods
     {
         /// <summary>
         /// Clones this GroupType object to a new GroupType object
@@ -90,12 +90,14 @@ namespace Rock.Model
                 target.DefaultGroupRoleId = source.DefaultGroupRoleId;
                 target.AllowMultipleLocations = source.AllowMultipleLocations;
                 target.ShowInGroupList = source.ShowInGroupList;
+                target.ShowInNavigation = source.ShowInNavigation;
                 target.IconSmallFileId = source.IconSmallFileId;
                 target.IconLargeFileId = source.IconLargeFileId;
                 target.IconCssClass = source.IconCssClass;
                 target.TakesAttendance = source.TakesAttendance;
                 target.AttendanceRule = source.AttendanceRule;
                 target.AttendancePrintTo = source.AttendancePrintTo;
+                target.DisplayOrder = source.DisplayOrder;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

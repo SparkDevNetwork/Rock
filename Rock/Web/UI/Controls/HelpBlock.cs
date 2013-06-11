@@ -26,7 +26,8 @@ namespace Rock.Web.UI.Controls
 
             string script = @"
 $(document).ready(function() {
-    $('a.help').click(function () {
+    $('a.help').click(function (e) {
+        e.preventDefault();
         $(this).siblings('div.alert-info').slideToggle(function(){
             $('.scroll-container').each(function() {
                 $(this).tinyscrollbar_update('relative');

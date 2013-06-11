@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class AttributeExtensionMethods
+    public static partial class AttributeExtensionMethods
     {
         /// <summary>
         /// Clones this Attribute object to a new Attribute object
@@ -79,7 +79,6 @@ namespace Rock.Model
                 target.EntityTypeQualifierValue = source.EntityTypeQualifierValue;
                 target.Key = source.Key;
                 target.Name = source.Name;
-                target.Category = source.Category;
                 target.Description = source.Description;
                 target.Order = source.Order;
                 target.IsGridColumn = source.IsGridColumn;

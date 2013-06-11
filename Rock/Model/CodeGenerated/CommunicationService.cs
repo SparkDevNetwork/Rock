@@ -55,7 +55,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class CommunicationExtensionMethods
+    public static partial class CommunicationExtensionMethods
     {
         /// <summary>
         /// Clones this Communication object to a new Communication object
@@ -73,11 +73,12 @@ namespace Rock.Model
             {
                 var target = new Communication();
                 target.SenderPersonId = source.SenderPersonId;
-                target.Status = CommunicationStatus.Transient;
+                target.Subject = source.Subject;
+                target.FutureSendDateTime = source.FutureSendDateTime;
+                target.Status = source.Status;
                 target.ReviewerPersonId = source.ReviewerPersonId;
                 target.ReviewedDateTime = source.ReviewedDateTime;
                 target.ReviewerNote = source.ReviewerNote;
-                target.Subject = source.Subject;
                 target.ChannelEntityTypeId = source.ChannelEntityTypeId;
                 target.ChannelDataJson = source.ChannelDataJson;
                 target.AdditionalMergeFieldsJson = source.AdditionalMergeFieldsJson;

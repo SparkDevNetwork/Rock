@@ -17,8 +17,8 @@ namespace RockWeb.Themes.RockChMS.Layouts
         {
             base.OnInit( e );
 
-            string validationScript = string.Format("<script src=\"{0}\"></script>", ResolveUrl("~/Scripts/Rock/validation.js"));
-            System.Web.UI.ScriptManager.RegisterStartupScript(Page, Page.GetType(), "validationScript", validationScript, false );
+            //string validationScript = string.Format("<script src=\"{0}\"></script>", ResolveUrl("~/Scripts/Rock/validation.js"));
+            //System.Web.UI.ScriptManager.RegisterStartupScript(Page, Page.GetType(), "validationScript", validationScript, false );
         }
     }
 }

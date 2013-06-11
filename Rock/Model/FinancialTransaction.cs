@@ -20,7 +20,15 @@ namespace Rock.Model
     /// </summary>
     [Table( "FinancialTransaction" )]
     [DataContract]
-    public partial class FinancialTransaction : Model<FinancialTransaction>
+    public partial class FinancialTransaction : FinancialTransactionBase<FinancialTransaction>
+    {
+    }
+
+    /// <summary>
+    /// abstract base class for FinancialTransaction so that we can have child classes like FinancialTransactionRefund
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public abstract class FinancialTransactionBase<T> : Model<T> where T: Model<T>, Rock.Security.ISecured, new()
     {
 
         #region Entity Properties
@@ -206,6 +214,15 @@ namespace Rock.Model
         public virtual DefinedValue SourceTypeValue { get; set; }
 
         /// <summary>
+        /// Gets or sets the refund.
+        /// </summary>
+        /// <value>
+        /// The refund.
+        /// </value>
+        [DataMember]
+        public virtual FinancialTransactionRefund Refund { get; set; }
+
+        /// <summary>
         /// Gets or sets the transaction details.
         /// </summary>
         /// <value>
@@ -232,15 +249,6 @@ namespace Rock.Model
             set { _images = value; }
         }
         private ICollection<FinancialTransactionImage> _images;
-
-        /// <summary>
-        /// Gets or sets the check micr plain text.
-        /// </summary>
-        /// <value>
-        /// The check micr plain text.
-        /// </value>
-        //[DataMember]
-        //public virtual string CheckMicrPlainText { get; set; }
 
         #endregion
 
@@ -269,7 +277,7 @@ namespace Rock.Model
     /// </summary>
     [DataContract]
     [NotMapped]
-    public class FinancialTransactionScannedCheck : FinancialTransaction
+    public class FinancialTransactionScannedCheck : FinancialTransactionBase<FinancialTransactionScannedCheck>
     {
         /// <summary>
         /// Gets or sets the scanned check micr.
@@ -301,6 +309,7 @@ namespace Rock.Model
             this.HasOptional( t => t.CurrencyTypeValue ).WithMany().HasForeignKey( t => t.CurrencyTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.CreditCardTypeValue ).WithMany().HasForeignKey( t => t.CreditCardTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.SourceTypeValue ).WithMany().HasForeignKey( t => t.SourceTypeValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.Refund ).WithRequired().WillCascadeOnDelete( true );
         }
     }
 

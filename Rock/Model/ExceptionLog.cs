@@ -38,7 +38,17 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? SiteId { get; set; }
-        
+
+
+        /// <summary>
+        /// Gets or sets the site.
+        /// </summary>
+        /// <value>
+        /// Site that the exception occurred.
+        /// </value>
+        [DataMember]
+        public virtual Rock.Model.Site Site { get; set; }
+
         /// <summary>
         /// Gets or sets the Page Id.
         /// </summary>
@@ -47,6 +57,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? PageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the page.
+        /// </summary>
+        /// <value>
+        /// The Page that the exception occurred on.
+        /// </value>
+        [DataMember]
+        public virtual Rock.Model.Page Page { get; set; }
 
         /// <summary>
         /// Gets or sets the exception date time.
@@ -202,6 +221,8 @@ namespace Rock.Model
         public ExceptionLogConfiguration()
         {
             this.HasOptional( p => p.CreatedByPerson ).WithMany().HasForeignKey( p => p.CreatedByPersonId ).WillCascadeOnDelete( true );
+            this.HasOptional( s => s.Site ).WithMany().HasForeignKey( s => s.SiteId ).WillCascadeOnDelete( true );
+            this.HasOptional( p => p.Page ).WithMany().HasForeignKey( p => p.PageId ).WillCascadeOnDelete( true );
         }
     }
 }

@@ -49,6 +49,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
  
+            if ( new Service<Campus>().Queryable().Any( a => a.LocationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, Campus.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Location>().Queryable().Any( a => a.ParentLocationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, Location.FriendlyTypeName );
@@ -61,7 +67,7 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static class LocationExtensionMethods
+    public static partial class LocationExtensionMethods
     {
         /// <summary>
         /// Clones this Location object to a new Location object

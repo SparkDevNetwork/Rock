@@ -112,7 +112,7 @@ namespace RockWeb.Blocks.Administration
 
             var routes = new SortedDictionary<string, System.Web.Routing.Route>();
             foreach ( System.Web.Routing.Route route in System.Web.Routing.RouteTable.Routes )
-                routes.Add( route.Url, route );
+                if ( ! routes.ContainsKey( route.Url ) ) routes.Add( route.Url, route );
 
             sb = new StringBuilder();
             foreach(var routeItem in routes)
