@@ -21,6 +21,8 @@ namespace RockWeb.Blocks.Crm
     [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false )]
     [BooleanField( "Show User Count", "", true )]
     [BooleanField( "Show Description", "", true )]
+    [BooleanField( "Show GroupType", "", true )]
+    [BooleanField( "Show IsSystem", "", true )]
     [BooleanField( "Show Edit", "", true )]
     [BooleanField( "Show Notification" )]
     [BooleanField( "Limit to Security Role Groups" )]
@@ -51,6 +53,8 @@ namespace RockWeb.Blocks.Crm
             Dictionary<string, BoundField> boundFields = gGroups.Columns.OfType<BoundField>().ToDictionary( a => a.DataField );
             boundFields["Members.Count"].Visible = GetAttributeValue( "ShowUserCount" ).FromTrueFalse();
             boundFields["Description"].Visible = GetAttributeValue( "ShowDescription" ).FromTrueFalse();
+            boundFields["GroupType.Name"].Visible = GetAttributeValue( "ShowGroupType" ).FromTrueFalse();
+            boundFields["IsSystem"].Visible = GetAttributeValue( "ShowIsSystem" ).FromTrueFalse();
         }
 
         /// <summary>
