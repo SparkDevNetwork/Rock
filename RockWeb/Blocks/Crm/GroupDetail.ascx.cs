@@ -277,13 +277,6 @@ namespace RockWeb.Blocks.Crm
                     return;
                 }
 
-                // check for duplicates within GroupType
-                if ( groupService.Queryable().Where( g => g.GroupTypeId.Equals( group.GroupTypeId ) ).Count( a => a.Name.Equals( group.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( group.Id ) ) > 0 )
-                {
-                    tbName.ShowErrorMessage( WarningMessage.DuplicateFoundMessage( "name", Group.FriendlyTypeName ) );
-                    return;
-                }
-
                 group.LoadAttributes();
 
                 Rock.Attribute.Helper.GetEditValues( phGroupAttributes, group );

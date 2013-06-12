@@ -207,13 +207,6 @@ namespace RockWeb.Blocks.Crm
                 }
             }
 
-            // check for duplicates within GroupType
-            if ( groupRoleService.Queryable().Where( g => ( g.GroupTypeId ?? 0 ).Equals( groupRole.GroupTypeId ?? 0 ) ).Count( a => a.Name.Equals( groupRole.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( groupRole.Id ) ) > 0 )
-            {
-                tbName.ShowErrorMessage( WarningMessage.DuplicateFoundMessage( "name", GroupRole.FriendlyTypeName ) );
-                return;
-            }
-
             if ( !groupRole.IsValid )
             {
                 // Controls will render the error messages                    

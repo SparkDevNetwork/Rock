@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class Communications : RockMigration
+    public partial class Communications : RockMigration_5
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

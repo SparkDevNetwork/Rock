@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class AttributeCategories : Rock.Migrations.RockMigration
+    public partial class AttributeCategories : Rock.Migrations.RockMigration_5
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

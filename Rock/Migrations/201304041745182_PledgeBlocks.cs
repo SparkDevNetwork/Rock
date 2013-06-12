@@ -8,7 +8,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class PledgeBlocks : RockMigration
+    public partial class PledgeBlocks : RockMigration_5
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
