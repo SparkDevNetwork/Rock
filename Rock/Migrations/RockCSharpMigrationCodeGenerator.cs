@@ -13,9 +13,10 @@ using System.Data.Entity.Core.Objects;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Migrations.Design;
 using System.Data.Entity.Migrations.Model;
-using System.Linq;
+using System.Linq; 
 using System.Reflection;
 using Rock.Data;
+using Rock;
 
 namespace Rock.Migrations
 {
@@ -23,7 +24,7 @@ namespace Rock.Migrations
     /// To Debug this, put these Debugger calls wherever you want to set your breakpoint, then run Add-Migration
     /// Debugger.Launch(); 
     /// Debugger.Break();
-    
+
     /// <summary>
     /// 
     /// </summary>
@@ -40,8 +41,8 @@ namespace Rock.Migrations
         /// <value>
         /// <c>true</c> if [limit operations to db context tables]; otherwise, <c>false</c>.
         /// </value>
-        public bool LimitOperationsToDbContextTables { get; set; }
-        
+        public bool LimitOperationsToDbContextTables { get; private set; }
+
         /// <summary>
         /// 
         /// </summary>
@@ -54,6 +55,16 @@ namespace Rock.Migrations
         public RockCSharpMigrationCodeGenerator( bool limitOperationsToDbContextTables = true )
             : base()
         {
+            LimitOperationsToDbContextTables = limitOperationsToDbContextTables;
+
+            PopulateDbContextEntityLookup();
+        }
+
+        /// <summary>
+        /// Populates the db context entity lookup which is used by Rock.Data.AlternateKeyAttribute and LimitOperationsToDbContextTables
+        /// </summary>
+        private void PopulateDbContextEntityLookup()
+        {
             Type dbContextType = typeof( T );
             var dbSets = dbContextType.GetProperties().Where( a => a.PropertyType.IsGenericType && a.PropertyType.GetGenericTypeDefinition() == typeof( DbSet<> ) );
 
@@ -62,7 +73,7 @@ namespace Rock.Migrations
             IObjectContextAdapter objectContextAdapter = dbContext as IObjectContextAdapter;
             ObjectContext objectContext = objectContextAdapter.ObjectContext;
 
-            List<EntityType> entityTypes = objectContext.MetadataWorkspace.GetItems<EntityType>( DataSpace.CSpace ).OrderBy(a => a.Name).ToList();
+            List<EntityType> entityTypes = objectContext.MetadataWorkspace.GetItems<EntityType>( DataSpace.CSpace ).OrderBy( a => a.Name ).ToList();
 
             // add all entities that are a DbSet<> in the dbContext
             foreach ( var entityType in entityTypes )
@@ -70,17 +81,21 @@ namespace Rock.Migrations
                 var table = dbSets.Select( a => a.PropertyType.GetGenericArguments().First() ).Where( a => a != null && a.Name.Equals( entityType.Name ) ).FirstOrDefault();
                 if ( table != null )
                 {
-                    dbContextEntities.Add( entityType.Name, table );
+                    var tableAttribute = table.CustomAttributes.FirstOrDefault( a => a.AttributeType.Name.Equals( "TableAttribute" ) );
+                    if ( tableAttribute != null )
+                    {
+                        dbContextEntities.Add( tableAttribute.ConstructorArguments[0].Value.ToString(), table );
+                    }
                 }
             }
 
             StorageEntityContainerMapping storageMapping = objectContext.MetadataWorkspace.GetItems<StorageEntityContainerMapping>( DataSpace.CSSpace ).OrderBy( a => a.GetType().Name ).FirstOrDefault();
-            
+
             // add any tables that just be assocation tables, and not a DbSet<>
             foreach ( StorageSetMapping mapping in storageMapping.RelationshipSetMaps )
             {
                 StorageAssociationSetMapping a = mapping as StorageAssociationSetMapping;
-                if (a != null)
+                if ( a != null )
                 {
                     if ( !dbContextEntities.ContainsKey( a.StoreEntitySet.Name ) )
                     {
@@ -88,8 +103,6 @@ namespace Rock.Migrations
                     }
                 }
             }
-
-            LimitOperationsToDbContextTables = limitOperationsToDbContextTables;
         }
 
         /// <summary>
@@ -199,8 +212,8 @@ namespace Rock.Migrations
 
             if ( skippedOperationComments.Count > 0 )
             {
-                result += string.Format( "/* Skipped Operations for tables that are not part of {0}: Review these comments to verify the proper things were skipped */" + Environment.NewLine, typeof(T).Name );
-                result += string.Format( "/* To disable skipping, edit your Migrations\\Configuration.cs so that CodeGenerator = new {0}<{1}>(false); */" + Environment.NewLine, this.GetType().Name.Replace("`1", string.Empty), typeof(T).Name );
+                result += string.Format( "/* Skipped Operations for tables that are not part of {0}: Review these comments to verify the proper things were skipped */" + Environment.NewLine, typeof( T ).Name );
+                result += string.Format( "/* To disable skipping, edit your Migrations\\Configuration.cs so that CodeGenerator = new {0}<{1}>(false); */" + Environment.NewLine, this.GetType().Name.Replace( "`1", string.Empty ), typeof( T ).Name );
                 foreach ( var comment in skippedOperationComments )
                 {
                     result += comment + Environment.NewLine;
@@ -335,12 +348,14 @@ namespace Rock.Migrations
             }
             else if ( operation is ForeignKeyOperation )
             {
-                tableName = ( operation as ForeignKeyOperation ).PrincipalTable;
+                // FK when the DependentTable is from our DbContext is OK, otherwise skip it
+                tableName = ( operation as ForeignKeyOperation ).DependentTable;
                 columnName = ( operation as ForeignKeyOperation ).DependentColumns.ToList().AsDelimited( "," );
             }
             else if ( operation is DropForeignKeyOperation )
             {
-                tableName = ( operation as DropForeignKeyOperation ).PrincipalTable;
+                // FK when the DependentTable is from our DbContext is OK, otherwise skip it
+                tableName = ( operation as DropForeignKeyOperation ).DependentTable;
                 columnName = ( operation as DropForeignKeyOperation ).DependentColumns.ToList().AsDelimited( "," );
             }
             else if ( operation is HistoryOperation )
