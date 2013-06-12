@@ -8,7 +8,7 @@ namespace Rock.Migrations
     /// <summary>
     /// 
     /// </summary>
-    public partial class StateDropDownList : RockMigration
+    public partial class StateDropDownList : RockMigration_5
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.

@@ -201,13 +201,6 @@ namespace RockWeb.Blocks.Administration
             category.IconSmallFileId = imgIconSmall.ImageId;
             category.IconLargeFileId = imgIconLarge.ImageId;
 
-            // check for duplicates within EntityTypeId, ParentId
-            if ( categoryService.Queryable().Where( g => g.EntityTypeId == category.EntityTypeId && g.ParentCategoryId == category.ParentCategoryId ).Count( a => a.Name.Equals( category.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( category.Id ) ) > 0 )
-            {
-                tbName.ShowErrorMessage( WarningMessage.DuplicateFoundMessage( "name", Category.FriendlyTypeName ) );
-                return;
-            }
-
             if ( !Page.IsValid )
             {
                 return;
