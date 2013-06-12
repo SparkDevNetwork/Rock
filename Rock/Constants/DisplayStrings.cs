@@ -12,18 +12,7 @@ namespace Rock.Constants
     public static class WarningMessage
     {
         /// <summary>
-        /// Duplicates the found message.
-        /// </summary>
-        /// <param name="nameFieldname">The name fieldname.</param>
-        /// <param name="itemFriendlyName">Name of the item friendly.</param>
-        /// <returns></returns>
-        public static string DuplicateFoundMessage( string nameFieldname, string itemFriendlyName )
-        {
-            return string.Format( "This {0} is already being used by another {1}.", nameFieldname.ToLower(), itemFriendlyName.ToLower() );
-        }
-
-        /// <summary>
-        /// Nots the authorized to edit.
+        /// Returns a message in the format: "You are not authorized to edit {0}."
         /// </summary>
         /// <param name="itemFieldName">Name of the item field.</param>
         /// <returns></returns>
@@ -33,7 +22,7 @@ namespace Rock.Constants
         }
 
         /// <summary>
-        /// Dates the time format invalid.
+        /// Returns a message in the format: Invalid format for {0}."
         /// </summary>
         /// <param name="itemFieldName">Name of the item field.</param>
         /// <returns></returns>
@@ -43,7 +32,7 @@ namespace Rock.Constants
         }
 
         /// <summary>
-        /// Dates the range end date before start date.
+        /// Returns a message: "End Date cannot be earlier than Start Date"
         /// </summary>
         /// <returns></returns>
         public static string DateRangeEndDateBeforeStartDate()
@@ -52,7 +41,7 @@ namespace Rock.Constants
         }
 
         /// <summary>
-        /// Cannots the be blank.
+        /// Returns a message in the format: "Value required for {0}."
         /// </summary>
         /// <param name="itemFieldName">Name of the item field.</param>
         /// <returns></returns>
@@ -68,17 +57,17 @@ namespace Rock.Constants
     public static class None
     {
         /// <summary>
-        /// 
+        /// 0
         /// </summary>
         public const int Id = 0;
 
         /// <summary>
-        /// 
+        /// 0
         /// </summary>
         public const string IdValue = "0";
 
         /// <summary>
-        /// 
+        /// "<none>"
         /// </summary>
         public const string Text = "<none>";
 
@@ -88,7 +77,7 @@ namespace Rock.Constants
         public const string TextHtml = "&lt;none&gt;";
 
         /// <summary>
-        /// Gets the list item.
+        /// Return a ListItem with Text: "None", Value: 0
         /// </summary>
         /// <value>
         /// The list item.
@@ -108,17 +97,17 @@ namespace Rock.Constants
     public static class All
     {
         /// <summary>
-        /// 
+        /// Returns -1
         /// </summary>
         public const int Id = -1;
 
         /// <summary>
-        /// 
+        /// Returns "-1"
         /// </summary>
         public const string IdValue = "-1";
 
         /// <summary>
-        /// 
+        /// returns "[All]"
         /// </summary>
         public const string Text = "[All]";
 
@@ -143,7 +132,7 @@ namespace Rock.Constants
     public static class ActionTitle
     {
         /// <summary>
-        /// Adds the specified item field name.
+        /// Returns a message in the format: "Add {0}"
         /// </summary>
         /// <param name="itemFriendlyName">Name of the item field.</param>
         /// <returns></returns>
@@ -153,7 +142,7 @@ namespace Rock.Constants
         }
 
         /// <summary>
-        /// Edits the specified item field name.
+        /// Returns a message in the format: "Edit {0}"
         /// </summary>
         /// <param name="itemFriendlyName">Name of the item field.</param>
         /// <returns></returns>
@@ -163,7 +152,7 @@ namespace Rock.Constants
         }
 
         /// <summary>
-        /// Views the specified item field name.
+        /// Returns a message in the format: "View {0}"
         /// </summary>
         /// <param name="itemFriendlyName">Name of the item field.</param>
         /// <returns></returns>
@@ -179,7 +168,7 @@ namespace Rock.Constants
     public static class EditModeMessage
     {
         /// <summary>
-        /// Reads the only system.
+        /// Returns a message in the format: "INFO: This is a read-only system {0}."
         /// </summary>
         /// <param name="itemFriendlyName">Name of the item friendly.</param>
         /// <returns></returns>
@@ -189,7 +178,7 @@ namespace Rock.Constants
         }
 
         /// <summary>
-        /// Reads the only edit action not allowed.
+        /// Returns a message in the format: "INFO: You do not have access to edit this {0}."
         /// </summary>
         /// <param name="itemFriendlyName">Name of the item field.</param>
         /// <returns></returns>

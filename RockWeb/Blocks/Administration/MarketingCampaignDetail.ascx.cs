@@ -218,13 +218,6 @@ namespace RockWeb.Blocks.Administration
                 marketingCampaign.EventGroupId = int.Parse( ddlEventGroup.SelectedValue );
             }
 
-            // check for duplicates
-            if ( marketingCampaignService.Queryable().Count( a => a.Title.Equals( marketingCampaign.Title, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( marketingCampaign.Id ) ) > 0 )
-            {
-                tbTitle.ShowErrorMessage( WarningMessage.DuplicateFoundMessage( "title", MarketingCampaign.FriendlyTypeName ) );
-                return;
-            }
-
             if ( !marketingCampaign.IsValid )
             {
                 // Controls will render the error messages                    
