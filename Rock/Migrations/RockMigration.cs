@@ -723,7 +723,7 @@ namespace Rock.Migrations
             EnsureEntityTypeExists( entityTypeName );
 
             Sql( string.Format( @"
-                
+                 
                 DECLARE @EntityTypeId int
                 SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = '{0}')
 
@@ -734,8 +734,8 @@ namespace Rock.Migrations
                 DELETE [Attribute] 
                 WHERE [EntityTypeId] = @EntityTypeId
                 AND [Key] = '{2}'
-                AND [EntityTypeQualifierColumn] = '{9}'
-                AND [EntityTypeQualifierValue] = '{10}'
+                AND [EntityTypeQualifierColumn] = '{8}'
+                AND [EntityTypeQualifierValue] = '{9}'
 
                 INSERT INTO [Attribute] (
                     [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
