@@ -273,13 +273,6 @@ namespace RockWeb.Blocks.Administration
             workflowType.LoggingLevel = ddlLoggingLevel.SelectedValueAsEnum<WorkflowLoggingLevel>();
             workflowType.IsActive = cbIsActive.Checked;
 
-            // check for duplicates within Category
-            if ( service.Queryable().Where( g => ( g.CategoryId == workflowType.CategoryId ) ).Count( a => a.Name.Equals( workflowType.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( workflowType.Id ) ) > 0 )
-            {
-                tbName.ShowErrorMessage( WarningMessage.DuplicateFoundMessage( "name", WorkflowType.FriendlyTypeName ) );
-                return;
-            }
-
             if ( !Page.IsValid )
             {
                 return;

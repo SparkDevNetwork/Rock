@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GivingProfileList.ascx.cs" Inherits="RockWeb.Blocks.Finance.Administration.GivingProfileList" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="GivingProfileList.ascx.cs" Inherits="RockWeb.Blocks.Finance.GivingProfileList" %>
 
 <asp:UpdatePanel ID="upFinancialGivingProfile" runat="server">
     <ContentTemplate>
@@ -7,7 +7,7 @@
         <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
         <Rock:GridFilter ID="rFBFilter" runat="server">
-            <Rock:DateTimePicker ID="dtGivingProfileDate" runat="server" SourceTypeName="Rock.Model.FinancialGivingProfile, Rock" PropertyName="StartDate" LabelText="Date" />
+            <Rock:DateTimePicker ID="dtpGivingProfileDate" runat="server" SourceTypeName="Rock.Model.FinancialScheduledTransaction, Rock" PropertyName="StartDate" LabelText="Date" />
         </Rock:GridFilter>
 
         <Rock:Grid ID="rGridGivingProfile" runat="server" EmptyDataText="No Scheduled Contributions Found" OnRowDataBound="rGridGivingProfile_RowDataBound"
@@ -15,8 +15,8 @@
             <Columns>
                 
                 <asp:BoundField DataField="Id" HeaderText="Id"  />
-                <asp:BoundField DataField="AuthorizedPersonId" HeaderText="Authorized Person" />                
-                <asp:BoundField DataField="TransactionFrequencyValueId" HeaderText="Frequency"  />
+                <asp:BoundField DataField="AuthorizedPerson" HeaderText="Contributor" />
+                <asp:BoundField DataField="TransactionFrequencyValue" HeaderText="Frequency" />
                 <asp:TemplateField HeaderText="Start Date">
                     <ItemTemplate>
                         <span><%# Eval("StartDate") %></span>
@@ -26,19 +26,15 @@
                 
               <asp:BoundField DataField="NumberOfPayments" HeaderText="# Payments"  />
                 
-              <asp:BoundField DataField="IsActive" HeaderText="Active?"  />
-                
               <asp:BoundField DataField="GatewayId" HeaderText="Gateway"  />
                 
               <asp:BoundField DataField="TransactionCode" HeaderText="Transaction Code"  />
+              
+                <asp:BoundField DataField="IsActive" HeaderText="Active" />
+
+              <asp:BoundField DataField="CardReminderDate" HeaderText="Expiration Date"  />
                 
-              <asp:BoundField DataField="Guid" HeaderText="Guid"  />
-                
-              <asp:BoundField DataField="CardReminderDate" HeaderText="CardReminderDate"  />
-                
-              <asp:BoundField DataField="LastRemindedDate" HeaderText="LastRemindedDate"  />
-                
-                <Rock:DeleteField OnClick="rGridGivingProfile_Delete" />
+              <Rock:DeleteField OnClick="rGridGivingProfile_Delete" />
 
             </Columns>
 
