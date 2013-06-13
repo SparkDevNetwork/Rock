@@ -4,8 +4,6 @@
 
 <script type="text/javascript">
     function pageLoad(sender, args) {
-        $('#chkDefaultAddress').attr('autocomplete', 'off');
-
         $('.contribution-calculate').on('change', function () {
             var total = 0.00;
             $('.contribution-calculate').each(function () {
@@ -21,6 +19,15 @@
         
         $('.credit-card').creditCardTypeDetector({ 'credit_card_logos': '.card-logos' });
         $('.credit-card').trigger('keyup');
+
+        $('checkbox').on('click', function () {
+            alert('hey');
+            $(this).closest('.toggle-content').slideToggle();
+        });
+    };
+
+    function toggleNextDiv() {
+        $('[id*="chkNewAddress"]').next().slideToggle();
     };
 
     function cvAccountValidator_ClientValidate(sender, args) {
@@ -32,16 +39,15 @@
     };
 </script>
 
-<asp:UpdatePanel ID="pnlContribution" runat="server">
+<asp:UpdatePanel ID="pnlContribution" runat="server" UpdateMode="Conditional">
 <ContentTemplate>
 
-    <asp:UpdatePanel ID="pnlDetails" runat="server" UpdateMode="Conditional">
-    <ContentTemplate>
+    <asp:Panel ID="pnlDetailsAndAddress" runat="server">
 
         <div class="container-fluid">     
                                 
-            <div class="row-fluid">
-                                
+            <div class="row-fluid form-horizontal">
+                    
                 <div ID="divDetails" runat="server" class="well">
 
                     <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following:" CssClass="alert alert-error block-message error alert" />
@@ -51,7 +57,8 @@
                             
                         <legend>Contribution Information</legend>
                         
-                        <div class="form-horizontal">
+                        <asp:UpdatePanel ID="pnlAmounts" runat="server" UpdateMode="Conditional">
+                        <ContentTemplate>
 
                             <div id="divCampus" runat="server" visible="false">                                                            
                                 <div class="row-fluid">
@@ -113,7 +120,7 @@
                                     <div id="divLimitGifts" runat="server" class="row-fluid align-middle" visible="false">
                                         <Rock:LabeledCheckBox ID="chkLimitGifts" runat="server" Text="Limit number of gifts" OnCheckedChanged="chkLimitGifts_CheckedChanged" AutoPostBack="true" />
                                     
-                                        <div id="divLimitNumber" class="label-padding fade in" runat="server" visible="false">
+                                        <div id="divLimitNumber" class="label-padding slide-toggle" runat="server" visible="false">
                                             <Rock:NumberBox ID="txtLimitNumber" runat="server" class="input-small" Text="0" />
                                         </div>                                    
 
@@ -122,13 +129,14 @@
                                 </div>
 
                             </div>
-                            
-                        </div>                            
+
+                        </ContentTemplate>
+                        </asp:UpdatePanel>
 
                     </fieldset>                                     
                                         
                 </div>
-            
+                        
             <% if ( _spanClass != "span6" ) { %>
                     
             </div>
@@ -189,132 +197,162 @@
 
                         <div class="row-fluid">   
                             <div class="span12" >
-                                <Rock:DataTextBox ID="txtPhone" LabelText="Phone" runat="server" SourceTypeName="Rock.Model.PhoneNumber, Rock" PropertyName="Number" CssClass="input-medium" />
+                                <Rock:DataTextBox ID="txtPhone" LabelText="Phone" runat="server" SourceTypeName="Rock.Model.PhoneNumber, Rock" PropertyName="Number" CssClass="input-medium" Required="true" />
                             </div>
                         </div>
 
                     </fieldset>
 
                 </div>
-                
+
             </div>
 
         </div>
-    
-    </ContentTemplate>
-    </asp:UpdatePanel>
 
-    <asp:UpdatePanel ID="pnlPayment" runat="server" UpdateMode="Conditional">
-    <ContentTemplate>
+    </asp:Panel>
+    
+    <asp:Panel ID="pnlPayment" runat="server">
 
         <div class="container-fluid">
-
+            
             <div ID="divPayment" runat="server" class="well">
 
                 <fieldset>
 
-                    <legend>Payment Information</legend>
+                    <div class="tabHeader">
+
+                        <asp:UpdatePanel ID="pnlPaymentTabs" runat="server" UpdateMode="Conditional">
+                        <ContentTemplate>
+
+                            <legend>Payment Information</legend>
     
-                    <ul class="nav nav-pills">
-                        <asp:Repeater ID="rptPaymentType" runat="server">
-                            <ItemTemplate>
-                                <li id="liSelectedTab" runat="server">
-                                    <asp:LinkButton ID="lbPaymentType" runat="server" Text='<%# DataBinder.Eval(Container.DataItem, "Name") %>' OnClick="lbPaymentType_Click" CausesValidation="false" />
-                                </li>
-                            </ItemTemplate>
-                        </asp:Repeater>
-                    </ul>
+                            <ul class="nav nav-pills">
+                                <asp:Repeater ID="rptPaymentType" runat="server">
+                                    <ItemTemplate>
+                                        <li id="liSelectedTab" runat="server">
+                                            <asp:LinkButton ID="lbPaymentType" runat="server" Text='<%# DataBinder.Eval(Container.DataItem, "Name") %>' OnClick="lbPaymentType_Click" CausesValidation="false" />
+                                        </li>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </ul>
+
+                        </ContentTemplate>
+                        </asp:UpdatePanel>
+
+                    </div>
     
-                    <div class="tabContent">
+                    <div class="tabContent checkbox-align">
 
-                        <asp:Panel ID="pnlCreditCard" runat="server" Visible="true" CssClass="tab-pane fade in">
+                        <asp:UpdatePanel ID="pnlPaymentContent" runat="server" UpdateMode="Conditional">
+                        <ContentTemplate>
 
-                            <div class="row-fluid">
-
-                                <div ID="divCreditCard" runat="server">
-                                    <Rock:LabeledTextBox ID="txtCreditCard" runat="server" LabelText="Credit Card #" MaxLength="19" MinimumValue="1000000000" MaximumValue="9999999999999999" CssClass="credit-card input-inherit" />
+                            <div ID="divCreditCard" runat="server" Visible="true" CssClass="tab-pane">
+                            
+                                <div id="divSavedCard" runat="server">
+                                    <Rock:LabeledRadioButtonList ID="rblSavedCard" runat="server" RepeatDirection="Vertical" OnSelectedIndexChanged="rblSavedCard_Click" AutoPostBack="true" CssClass="align-middle"/>                                    
                                 </div>
+
+                                <div id="divNewCard" runat="server" class="toggle-content" Visible="false">
+
+                                    <div class="row-fluid">
+
+                                        <div id="divCardNumber" runat="server">
+                                            <Rock:LabeledTextBox ID="txtCreditCard" runat="server" LabelText="Credit Card #" MaxLength="19" MinimumValue="1000000000" MaximumValue="9999999999999999" CssClass="credit-card input-inherit" Required="true" />
+                                        </div>
                                                                         
-                                <div ID="divCardType" runat="server">
-                                    <ul id="ulCardType" class="card-logos no-margin">
-                                        <li class="card-visa"></li>
-                                        <li class="card-mastercard"></li>
-                                        <li class="card-amex"></li>
-                                        <li class="card-discover"></li>
-                                    </ul>                                        
-                                </div>
+                                        <div ID="divCardType" runat="server">
+                                            <ul id="ulCardType" class="card-logos no-margin">
+                                                <li class="card-visa"></li>
+                                                <li class="card-mastercard"></li>
+                                                <li class="card-amex"></li>
+                                                <li class="card-discover"></li>
+                                            </ul>                                        
+                                        </div>
+
+                                    </div>
+
+                                    <div class="row-fluid">
+
+                                        <div id="divExpiration" runat="server">
+                                            <Rock:DatePicker ID="dtpExpiration" runat="server" LabelText="Expiration Date" Required="true" />
+                                        </div>
+
+                                        <div id="divCVV" runat="server">
+                                            <Rock:NumberBox ID="txtCVV" LabelText="CVV #" runat="server" MaxLength="3" CssClass="input-mini" Required="true" />
+                                        </div>
+
+                                    </div>
+
+                                    <div class="row-fluid">
+                                        <Rock:LabeledTextBox ID="txtCardName" runat="server" LabelText="Name on Card" Required="true" />
+                                    </div>
+
+                                </div>                            
 
                             </div>
 
-                            <div class="row-fluid">
-
-                                <div ID="divExpiration" runat="server">
-                                    <Rock:DatePicker ID="dtpExpiration" runat="server" LabelText="Expiration Date" />
+                            <div ID="divChecking" runat="server" Visible="false" CssClass="tab-pane">
+                            
+                                <div id="divSavedAccount" runat="server" >
+                                    <Rock:LabeledRadioButtonList ID="rblSavedAccount" runat="server" LabelText="Saved Accounts" RepeatDirection="Vertical" OnSelectedIndexChanged="rblSavedAccount_Click" AutoPostBack="true"/>
                                 </div>
 
-                                <div ID="divCVV" runat="server">
-                                    <Rock:NumberBox ID="txtCVV" LabelText="CVV #" runat="server" MaxLength="3" CssClass="input-mini" />
-                                </div>
-
-                            </div>
-
-                            <div class="row-fluid">
-                                <Rock:LabeledTextBox ID="txtCardName" runat="server" LabelText="Name on Card" />
-                            </div>
-
-                        </asp:Panel>
-
-                        <asp:Panel ID="pnlChecking" runat="server" Visible="false" CssClass="tab-pane fade in">
-
-                            <div class="row-fluid">
+                                <div id="divNewAccount" runat="server" class="row-fluid">
                                     
-                                <div ID="divChecking" runat="server">
-                                    <fieldset>
-                                        <Rock:LabeledTextBox ID="txtBankName" runat="server" LabelText="Bank Name" CssClass="input-inherit" />
-                                        <Rock:NumberBox ID="txtRouting" runat="server" LabelText="Routing #" MinimumValue="0.0" CssClass="input-inherit" />
-                                        <Rock:NumberBox ID="txtAccount" runat="server" LabelText="Account #" MinimumValue="0.0" CssClass="input-inherit" />
+                                    <div ID="divAccountDetail" runat="server">
+                                        <fieldset>
+                                            <Rock:LabeledTextBox ID="txtBankName" runat="server" LabelText="Bank Name" CssClass="input-inherit" Required="true" />
+                                            <Rock:NumberBox ID="txtRouting" runat="server" LabelText="Routing #" MinimumValue="0.0" CssClass="input-inherit" Required="true" />
+                                            <Rock:NumberBox ID="txtAccount" runat="server" LabelText="Account #" MinimumValue="0.0" CssClass="input-inherit" Required="true" />
 
-                                        <Rock:LabeledRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" LabelText="Account Type" CssClass="no-margin">
-                                            <asp:ListItem Text="Checking" Selected="true"  />
-                                            <asp:ListItem Text="Savings" />
-                                        </Rock:LabeledRadioButtonList>
-                                    </fieldset>
+                                            <Rock:LabeledRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" LabelText="Account Type" CssClass="no-margin">
+                                                <asp:ListItem Text="Checking" Selected="true"  />
+                                                <asp:ListItem Text="Savings" />
+                                            </Rock:LabeledRadioButtonList>
+                                        </fieldset>
+                                    </div>
+
+                                    <div ID="divCheckImage" runat="server">
+                                        <img class="check-image" src="../../Assets/Images/check-image.png" />
+                                    </div>
                                 </div>
 
-                                <div ID="divCheckImage" runat="server">
-                                    <img class="check-image" src="../../Assets/Images/check-image.png" />
-                                </div>
                             </div>
 
-                        </asp:Panel>
+                        </ContentTemplate>
+                        </asp:UpdatePanel>
                                 
                     </div>
+                    
+                    <div class="tabFooter">
 
-                    <div ID="divDefaultAddress" runat="server">
-                        <Rock:LabeledCheckBox ID="chkDefaultAddress" runat="server" Checked="true" Text="Use address from above" OnCheckedChanged="chkDefaultAddress_CheckedChanged" AutoPostBack="true" />
+                        <div ID="divDefaultAddress" runat="server" class="row-fluid">
+                            <Rock:LabeledCheckBox ID="chkNewAddress" runat="server" Text="Use a different billing address" OnClientClick="toggleNextDiv()" />
+                        </div>
+
+                        <div id="divNewAddress" class="toggle-content label-padding" runat="server">
+
+                            <div class="row-fluid">
+                                <div class="span12">
+                                    <Rock:DataTextBox ID="diffStreet" LabelText="Address" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Street1" Required="true" />
+                                </div>
+                            </div>
+
+                            <div class="row-fluid">
+                                <div ID="divNewCity" runat="server">
+                                    <Rock:DataTextBox ID="txtNewCity" LabelText="City" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="City" CssClass="input-inherit" Required="true" />
+                                </div>
+                                <div ID="divNewState" runat="server" >
+                                    <Rock:StateDropDownList ID="ddlNewState" runat="server" LabelText="State" SourceTypeName="Rock.Model.Location, Rock" PropertyName="State" CssClass="input-inherit" Required="true" />
+                                </div>
+                                <div ID="divNewZip" runat="server" >
+                                    <Rock:DataTextBox ID="txtNewZip" LabelText="Zip" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Zip" CssClass="input-inherit" Required="true" />
+                                </div>
+                            </div>
+
+                        </div>                        
+                                               
                     </div>
-
-                    <div id="divNewAddress" class="label-padding fade in" runat="server" visible="False">
-
-                        <div class="row-fluid">
-                            <div class="span12">
-                                <Rock:DataTextBox ID="diffStreet" LabelText="Address" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Street1" />
-                            </div>
-                        </div>
-
-                        <div class="row-fluid">
-                            <div ID="divNewCity" runat="server">
-                                <Rock:DataTextBox ID="txtNewCity" LabelText="City" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="City" CssClass="input-inherit"  />
-                            </div>
-                            <div ID="divNewState" runat="server" >
-                                <Rock:StateDropDownList ID="ddlNewState" runat="server" LabelText="State" SourceTypeName="Rock.Model.Location, Rock" PropertyName="State" CssClass="input-inherit" />
-                            </div>
-                            <div ID="divNewZip" runat="server" >
-                                <Rock:DataTextBox ID="txtNewZip" LabelText="Zip" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Zip" CssClass="input-inherit" />
-                            </div>
-                        </div>
-
-                    </div>                        
 
                 </fieldset>
 
@@ -325,9 +363,8 @@
         <div id="divNext" runat="server" class="actions">
             <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnNext_Click" CausesValidation="true" />
         </div>
-        
-    </ContentTemplate>
-    </asp:UpdatePanel>
+
+    </asp:Panel>
 
     <asp:Panel ID="pnlConfirm" runat="server" Visible="false">    
     
@@ -362,7 +399,8 @@
 
                     <asp:Literal ID="lReceipt" runat="server" />
 
-                    <div id="divSavePayment" runat="server">
+                    <asp:UpdatePanel id="pnlSavePayment" runat="server" UpdateMode="Conditional">
+                    <ContentTemplate>
 
                         <div class="row-fluid">
                             <Rock:LabeledCheckBox ID="chkSavePayment" runat="server" Text="Save My Payment Information" OnCheckedChanged="chkSavePayment_CheckedChanged" AutoPostBack="true" />                                                                                
@@ -374,11 +412,13 @@
                             </div>             
                         </div>
 
-                    </div>
+                    </ContentTemplate>
+                    </asp:UpdatePanel>
 
-                    <div id="divCreateAccount" runat="server">
+                    <asp:UpdatePanel id="pnlCreateAccount" runat="server" updatemode="Conditional">
+                    <ContentTemplate>
 
-                        <Rock:LabeledCheckBox ID="chkCreateAccount" runat="server" LabelText="Create An Account" OnCheckedChanged="chkDefaultAddress_CheckedChanged" AutoPostBack="true"/>
+                        <Rock:LabeledCheckBox ID="chkCreateAccount" runat="server" LabelText="Create An Account" OnCheckedChanged="chkCreateAccount_CheckedChanged" AutoPostBack="true"/>
                 
                         <div id="divCredentials" runat="server" visible="false" class="fade in">
 
@@ -391,7 +431,8 @@
                             </div>
                         </div>
 
-                    </div>
+                    </ContentTemplate>
+                    </asp:UpdatePanel>
                 
                 </div>            
 
