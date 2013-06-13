@@ -39,7 +39,7 @@ namespace Rock.Model
         /// <value>
         /// The assembly name.
         /// </value>
-        [MaxLength( 200 )]
+        [MaxLength( 260 )]
         [DataMember]
         public string AssemblyName { get; set; }
 
