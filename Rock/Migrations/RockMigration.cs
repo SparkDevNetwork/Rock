@@ -743,7 +743,7 @@ namespace Rock.Migrations
                     [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
                     [Guid])
                 VALUES(
-                    1,@FieldTypeId,@EntityTypeid,'{9}','{10}',
+                    1,@FieldTypeId,@EntityTypeid,'{8}','{9}',
                     '{2}','{3}','{4}'
                     {5},0,'{6}',0,0,
                     '{7}')
