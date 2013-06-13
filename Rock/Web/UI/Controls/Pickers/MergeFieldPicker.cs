@@ -135,17 +135,5 @@ namespace Rock.Web.UI.Controls
             get { return "~/api/mergefields/getchildren/"; }
         }
 
-        /// <summary>
-        /// Sets the type of the category entity.
-        /// </summary>
-        /// <value>
-        /// The type of the category entity.
-        /// </value>
-        public string CategoryEntityTypeName
-        {
-            set
-            {
-            }
-        }
     }
 }

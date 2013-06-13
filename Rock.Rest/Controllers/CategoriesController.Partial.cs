@@ -28,11 +28,13 @@ namespace Rock.Rest.Controllers
         {
             routes.MapHttpRoute(
                 name: "CategoriesGetChildren",
-                routeTemplate: "api/Categories/GetChildren/{id}/{entityTypeName}/{getCategorizedItems}",
+                routeTemplate: "api/Categories/GetChildren/{id}/{getCategorizedItems}/{entityTypeId}/{entityqualifier}/{entityqualifiervalue}",
                 defaults: new
                 {
                     controller = "Categories",
-                    action = "GetChildren"
+                    action = "GetChildren",
+                    entityqualifier = RouteParameter.Optional,
+                    entityqualifiervalue = RouteParameter.Optional
                 } );
         }
 
@@ -44,7 +46,19 @@ namespace Rock.Rest.Controllers
         /// <param name="getCategorizedItems">if set to <c>true</c> [get categorized items].</param>
         /// <returns></returns>
         [Authenticate]
-        public IQueryable<CategoryItem> GetChildren( int id, string entityTypeName, bool getCategorizedItems )
+        public IQueryable<CategoryItem> GetChildren( int id, bool getCategorizedItems, int entityTypeId )
+        {
+            return GetChildren(id, getCategorizedItems, entityTypeId, null, null);
+        }
+
+        [Authenticate]
+        public IQueryable<CategoryItem> GetChildren( int id, bool getCategorizedItems, int entityTypeId, string entityQualifier )
+        {
+            return GetChildren(id, getCategorizedItems, entityTypeId, entityQualifier, null);
+        }
+
+        [Authenticate]
+        public IQueryable<CategoryItem> GetChildren( int id, bool getCategorizedItems, int entityTypeId, string entityQualifier, string entityQualifierValue )
         {
             var user = CurrentUser();
             Person currentPerson = user != null ? user.Person : null;
@@ -52,30 +66,32 @@ namespace Rock.Rest.Controllers
             IQueryable<Category> qry;
             qry = Get().Where( a => ( a.ParentCategoryId ?? 0 ) == id );
 
-            int? entityTypeId = null;
-
             object serviceInstance = null;
 
-            if ( !string.IsNullOrWhiteSpace( entityTypeName ) )
+            var cachedEntityType = EntityTypeCache.Read( entityTypeId );
+            if ( cachedEntityType != null )
             {
-                var cachedEntityType = EntityTypeCache.Read( entityTypeName );
-                if ( cachedEntityType != null )
+                qry = qry.Where( a => a.EntityTypeId == entityTypeId );
+                if (!string.IsNullOrWhiteSpace(entityQualifier))
                 {
-                    entityTypeId = cachedEntityType.Id;
-                    qry = qry.Where( a => a.EntityTypeId == entityTypeId );
-
-                    // Get the GetByCategory method
-                    if ( cachedEntityType.AssemblyName != null )
+                    qry = qry.Where( a => string.Compare(a.EntityTypeQualifierColumn, entityQualifier, true) == 0);
+                    if (!string.IsNullOrWhiteSpace(entityQualifierValue))
                     {
-                        Type entityType = cachedEntityType.GetEntityType();
-                        if ( entityType != null )
-                        {
-                            Type[] modelType = { entityType };
-                            Type genericServiceType = typeof( Rock.Data.Service<> );
-                            Type modelServiceType = genericServiceType.MakeGenericType( modelType );
+                        qry = qry.Where( a => string.Compare(a.EntityTypeQualifierValue, entityQualifierValue, true) == 0);
+                    }
+                }
 
-                            serviceInstance = Activator.CreateInstance( modelServiceType );
-                        }
+                // Get the GetByCategory method
+                if ( cachedEntityType.AssemblyName != null )
+                {
+                    Type entityType = cachedEntityType.GetEntityType();
+                    if ( entityType != null )
+                    {
+                        Type[] modelType = { entityType };
+                        Type genericServiceType = typeof( Rock.Data.Service<> );
+                        Type modelServiceType = genericServiceType.MakeGenericType( modelType );
+
+                        serviceInstance = Activator.CreateInstance( modelServiceType );
                     }
                 }
             }

@@ -53,9 +53,9 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new BinaryFileTypePicker();
+            return new BinaryFileTypePicker { ID = id }; 
         }
 
         /// <summary>

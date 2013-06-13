@@ -64,7 +64,7 @@
                     <div class="span6">
                         <Rock:DataTextBox ID="tbFirstName" runat="server" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="FirstName" />
                         <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="LastName" />
-                        <Rock:CategoryPicker ID="cpCategory" runat="server" LabelText="Category" Required="true" CategoryEntityTypeName="Rock.Model.PrayerRequest"/>
+                        <Rock:CategoryPicker ID="cpCategory" runat="server" LabelText="Category" Required="true" EntityTypeName="Rock.Model.PrayerRequest"/>
                     </div>
                 </div>
                 <div class="row-fluid">

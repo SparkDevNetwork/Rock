@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System;
 using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -16,8 +17,36 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:NumberBox runat=server></{0}:NumberBox>" )]
     public class NumberBox : TextBox, ILabeledControl
     {
-        private RangeValidator rangeValidator;
+        private RequiredFieldValidator requiredValidator;
+        private RangeValidator rangeValidator;        
         private Label _label;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="LabeledTextBox"/> is required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "false" ),
+        Description( "Is the value required?" )
+        ]
+        public bool Required
+        {
+            get
+            {
+                if ( ViewState["Required"] != null )
+                    return (bool)ViewState["Required"];
+                else
+                    return false;
+            }
+            set
+            {
+                ViewState["Required"] = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the label text.
@@ -83,11 +112,23 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public NumberBox()
         {
+            requiredValidator = new RequiredFieldValidator();
             rangeValidator = new RangeValidator();
-            _label = new Label();
-            rangeValidator.Type = ValidationDataType.Integer;
-            rangeValidator.MinimumValue = int.MinValue.ToString();
-            rangeValidator.MaximumValue = int.MaxValue.ToString();
+            _label = new Label();            
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool IsValid
+        {
+            get
+            {
+                return !Required || requiredValidator.IsValid;
+            }
         }
 
         /// <summary>
@@ -104,7 +145,31 @@ namespace Rock.Web.UI.Controls
             rangeValidator.CssClass = "validation-error help-inline";
             rangeValidator.ErrorMessage = "Numerical value is required";
 
+            if ( !this.MinimumValue.Contains( "." ) )
+            {
+                rangeValidator.Type = ValidationDataType.Integer;
+                rangeValidator.MinimumValue = !string.IsNullOrEmpty( this.MinimumValue )
+                    ? this.MinimumValue : int.MinValue.ToString();
+                rangeValidator.MaximumValue = !string.IsNullOrEmpty( this.MaximumValue )
+                    ? this.MaximumValue : int.MaxValue.ToString();
+            }
+            else
+            {
+                rangeValidator.Type = ValidationDataType.Double;
+                rangeValidator.MinimumValue = !string.IsNullOrEmpty( this.MinimumValue )
+                    ? this.MinimumValue : Convert.ToDouble( "9e-300" ).ToString( "F0" );  // allows up to 300 digits
+                rangeValidator.MaximumValue = !string.IsNullOrEmpty( this.MaximumValue )
+                    ? this.MaximumValue : Convert.ToDouble( "9e300" ).ToString( "F0" );   // allows up to 300 digits
+            }   
+
             Controls.Add( rangeValidator );
+
+            requiredValidator.ID = this.ID + "_rfv";
+            requiredValidator.ControlToValidate = this.ID;
+            requiredValidator.Display = ValidatorDisplay.Dynamic;
+            requiredValidator.CssClass = "validation-error help-inline";
+            requiredValidator.Enabled = false;
+            Controls.Add( requiredValidator );
         }
 
         /// <summary>
@@ -130,15 +195,22 @@ namespace Rock.Web.UI.Controls
             }
 
             base.RenderControl( writer );
+            
+            rangeValidator.Enabled = true;
+            rangeValidator.RenderControl( writer );
+
+            if ( Required )
+            {
+                requiredValidator.Enabled = true;
+                requiredValidator.ErrorMessage = LabelText + " is Required.";
+                requiredValidator.RenderControl( writer );
+            }
 
             if ( !string.IsNullOrWhiteSpace( FieldName ) )
             {
                 rangeValidator.ErrorMessage = string.Format( "Numerical value is required for '{0}'", FieldName );
             }
-
-            rangeValidator.Enabled = true;
-            rangeValidator.RenderControl( writer );
-
+            
             if ( renderLabel )
             {
                 writer.RenderEndTag();

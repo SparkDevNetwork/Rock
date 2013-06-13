@@ -21,9 +21,9 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
+        public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            GroupPicker groupPicker = new GroupPicker();
+            GroupPicker groupPicker = new GroupPicker { ID = id }; 
             return groupPicker;
         }
 

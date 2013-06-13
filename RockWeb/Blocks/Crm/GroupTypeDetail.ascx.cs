@@ -218,6 +218,7 @@ namespace RockWeb.Blocks.Crm
             tbGroupMemberTerm.Text = groupType.GroupMemberTerm;
             ddlDefaultGroupRole.SetValue( groupType.DefaultGroupRoleId );
             cbShowInGroupList.Checked = groupType.ShowInGroupList;
+            cbShowInNavigation.Checked = groupType.ShowInNavigation;
             tbIconCssClass.Text = groupType.IconCssClass;
             imgIconSmall.ImageId = groupType.IconSmallFileId;
             imgIconLarge.ImageId = groupType.IconLargeFileId;
@@ -274,6 +275,7 @@ namespace RockWeb.Blocks.Crm
             tbGroupTerm.ReadOnly = readOnly;
             tbGroupMemberTerm.ReadOnly = readOnly;
             cbShowInGroupList.Enabled = !readOnly;
+            cbShowInNavigation.Enabled = !readOnly;
             tbIconCssClass.ReadOnly = readOnly;
             imgIconLarge.Enabled = !readOnly;
             imgIconSmall.Enabled = !readOnly;
@@ -530,6 +532,7 @@ namespace RockWeb.Blocks.Crm
                 groupType.GroupMemberTerm = tbGroupMemberTerm.Text;
                 groupType.DefaultGroupRoleId = ddlDefaultGroupRole.SelectedValueAsInt();
                 groupType.ShowInGroupList = cbShowInGroupList.Checked;
+                groupType.ShowInNavigation = cbShowInNavigation.Checked;
                 groupType.IconCssClass = tbIconCssClass.Text;
                 groupType.IconSmallFileId = imgIconSmall.ImageId;
                 groupType.IconLargeFileId = imgIconLarge.ImageId;
@@ -560,13 +563,6 @@ namespace RockWeb.Blocks.Crm
                     {
                         groupType.LocationTypes.Add( new GroupTypeLocationType { LocationTypeValueId = locationType.Id } );
                     }
-                }
-
-                // check for duplicates
-                if ( groupTypeService.Queryable().Count( a => a.Name.Equals( groupType.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( groupType.Id ) ) > 0 )
-                {
-                    tbName.ShowErrorMessage( WarningMessage.DuplicateFoundMessage( "name", GroupType.FriendlyTypeName ) );
-                    return;
                 }
 
                 if ( !groupType.IsValid )

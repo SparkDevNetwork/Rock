@@ -207,20 +207,22 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="noneAsNull">if set to <c>true</c> [none as null].</param>
         /// <returns></returns>
-        public IEnumerable<int?> SelectedValuesAsInt( bool noneAsNull = true )
+        public IEnumerable<int> SelectedValuesAsInt()
         {
-            var ids = new List<int?>();
+            var ids = new List<int>();
 
             if ( ItemIds == null || !ItemIds.Any() )
             {
                 return ids;
             }
 
-            ids.AddRange( ItemIds.Select( s => new int?( int.Parse( s ) ) ) );
-
-            if ( noneAsNull && !ids.Any() )
+            foreach ( string keyVal in ItemIds )
             {
-                return null;
+                int id = int.MinValue;
+                if ( int.TryParse( keyVal, out id ) )
+                {
+                    ids.Add( id );
+                }
             }
 
             return ids;
@@ -408,9 +410,9 @@ namespace Rock.Web.UI.Controls
         /// Sets the values.
         /// </summary>
         /// <param name="ids">The ids.</param>
-        public void SetValues( IEnumerable<int?> ids )
+        public void SetValues( IEnumerable<int> ids )
         {
-            ItemIds = ids.Select( i => i.HasValue ? i.ToString() : Constants.None.IdValue );
+            ItemIds = ids.Select( i => i.ToString() );
             SetValuesOnSelect();
         }
 
@@ -558,7 +560,7 @@ namespace Rock.Web.UI.Controls
 
             <hr />
 ";
-                writer.Write( controlHtmlFormatMiddle, this.ID, this.ItemName );
+                writer.Write( controlHtmlFormatMiddle, this.ID );
 
                 // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
                 if ( SelectItem != null )
@@ -576,14 +578,14 @@ namespace Rock.Web.UI.Controls
         </div>
     </span>
 ";
-                writer.Write( controlHtmlFormatEnd, this.ID, this.ItemName );
+                writer.Write( controlHtmlFormatEnd, this.ID );
             }
             else
             {
                 string controlHtmlFormatDisabled = @"
         <i class='icon-file-alt'></i>
         <span id='selectedItemLabel_{0}'>{1}</span>
-"; 
+";
                 writer.Write( controlHtmlFormatDisabled, this.ID, this.ItemName );
             }
         }
