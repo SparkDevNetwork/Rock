@@ -5,7 +5,7 @@
         <Rock:ModalAlert ID="mdGridWarning" runat="server"/>
         <Rock:GridFilter ID="rFilter" runat="server">
             <Rock:PersonPicker ID="ppFilterPerson" runat="server" LabelText="Filter by person"/>
-            <Rock:AccountPicker ID="fpFilterAccount" runat="server" LabelText="Filter by account" AllowMultiSelect="True"/>
+            <Rock:AccountPicker ID="fpFilterAccount" runat="server" LabelText="Filter by account" AllowMultiSelect="True" DefaultText="Nada Tostada"/>
         </Rock:GridFilter>
         <Rock:Grid ID="gPledges" runat="server" AutoGenerateColumns="False" AllowSorting="True" AllowPaging="True" OnRowSelected="gPledges_Edit">
             <Columns>
