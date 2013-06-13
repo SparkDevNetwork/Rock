@@ -37,8 +37,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 if ( !Page.IsPostBack )
                 {
-                    //rFamily.DataSource = CurrentCheckInState.CheckIn.Families;
-                    //rFamily.DataBind();
                     lvFamily.DataSource = CurrentCheckInState.CheckIn.Families;
                     lvFamily.DataBind();
 
@@ -82,45 +80,55 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
         #region Edit Events
 
-        //protected void rFamily_ItemCommand( object source, RepeaterCommandEventArgs e )
-        //{
-        //    if ( KioskCurrentlyActive )
-        //    {
-        //        int id = int.Parse( e.CommandArgument.ToString() );
-        //        var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Group.Id == id ).FirstOrDefault();
-        //        if ( family != null )
-        //        {
-        //            if ( family.Selected )
-        //            {
-        //                family.Selected = false;
-        //                var control = (LinkButton)e.Item.FindControl( "lbSelectFamily" );
-        //                control.RemoveCssClass( "active" );
-        //                rPerson.DataSource = null;
-        //                rPerson.DataBind();
-        //                SaveState();
-        //            }
-        //            else
-        //            {
-        //                // make sure there are no other families selected
-        //                foreach ( var f in CurrentCheckInState.CheckIn.Families )
-        //                {
-        //                    f.Selected = false;
-        //                }
-        //                
-        //                // make sure no other families look like they're selected
-        //                foreach ( RepeaterItem ri in rFamily.Items )
-        //                {
-        //                    ( (LinkButton)ri.FindControl("lbSelectFamily") ).RemoveCssClass( "active" );
-        //                }
+        protected void lvFamily_PagePropertiesChanging( object sender, PagePropertiesChangingEventArgs e )
+        {
+            // set current page startindex, max rows and rebind to false
+            Pager.SetPageProperties( e.StartRowIndex, e.MaximumRows, false );
+            
+            // rebind List View
+            lvFamily.DataSource = CurrentCheckInState.CheckIn.Families;
+            lvFamily.DataBind();
+        }
+        
+        protected void lvFamily_ItemCommand( object sender, ListViewCommandEventArgs e )
+        {
+            if ( KioskCurrentlyActive )
+            {
+                int id = int.Parse( e.CommandArgument.ToString() );
+                var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Group.Id == id ).FirstOrDefault();
+                if ( family != null )
+                {
+                    if ( family.Selected )
+                    {
+                        family.Selected = false;
+                        var control = (LinkButton)e.Item.FindControl( "lbSelectFamily" );
+                        control.RemoveCssClass( "active" );
+                        rPerson.DataSource = null;
+                        rPerson.DataBind();
+                        SaveState();
+                    }
+                    else
+                    {
+                        // make sure there are no other families selected
+                        foreach ( var f in CurrentCheckInState.CheckIn.Families )
+                        {
+                            f.Selected = false;
+                        }
 
-        //                // select the clicked on family
-        //                family.Selected = true;
-        //                ( (LinkButton)e.Item.FindControl( "lbSelectFamily" ) ).AddCssClass( "active" );
-        //                ProcessFamily();
-        //            }
-        //        }
-        //    }
-        //}
+                        // make sure no other families look like they're selected
+                        foreach ( ListViewDataItem li in lvFamily.Items )
+                        {
+                            ( (LinkButton)li.FindControl( "lbSelectFamily" ) ).RemoveCssClass( "active" );
+                        }
+
+                        // select the clicked on family
+                        family.Selected = true;
+                        ( (LinkButton)e.Item.FindControl( "lbSelectFamily" ) ).AddCssClass( "active" );
+                        ProcessFamily();
+                    }
+                }
+            }
+        }
 
         protected void rPerson_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
@@ -259,54 +267,5 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         #endregion
-        protected void lvFamily_PagePropertiesChanging( object sender, PagePropertiesChangingEventArgs e )
-        {
-            //set current page startindex, max rows and rebind to false
-            Pager.SetPageProperties( e.StartRowIndex, e.MaximumRows, false );
-            //rebind List View
-            lvFamily.DataSource = CurrentCheckInState.CheckIn.Families;
-            lvFamily.DataBind();
-        }
-        protected void lvFamily_ItemCommand( object sender, ListViewCommandEventArgs e )
-        {
-            if ( KioskCurrentlyActive )
-            {
-                int id = int.Parse( e.CommandArgument.ToString() );
-                var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Group.Id == id ).FirstOrDefault();
-                if ( family != null )
-                {
-                    if ( family.Selected )
-                    {
-                        family.Selected = false;
-                        var control = (LinkButton)e.Item.FindControl( "lSelectFamily" );
-                        control.RemoveCssClass( "active" );
-                        rPerson.DataSource = null;
-                        rPerson.DataBind();
-                        SaveState();
-                    }
-                    else
-                    {
-                        // make sure there are no other families selected
-                        foreach ( var f in CurrentCheckInState.CheckIn.Families )
-                        {
-                            f.Selected = false;
-                        }
-
-                        // make sure no other families look like they're selected
-                        foreach(ListViewDataItem li in lvFamily.Items)
-                        //foreach ( RepeaterItem ri in rFamily.Items )
-                        {
-                            ( (LinkButton)li.FindControl( "lSelectFamily" ) ).RemoveCssClass( "active" );
-                            //( (LinkButton)ri.FindControl( "lSelectFamily" ) ).RemoveCssClass( "active" );
-                        }
-
-                        // select the clicked on family
-                        family.Selected = true;
-                        ( (LinkButton)e.Item.FindControl( "lSelectFamily" ) ).AddCssClass( "active" );
-                        ProcessFamily();
-                    }
-                }
-            }
-        }
-}
+    }
 }

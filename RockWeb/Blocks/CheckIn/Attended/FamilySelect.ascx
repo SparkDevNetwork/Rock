@@ -21,21 +21,11 @@
                 
     <div class="row-fluid attended-checkin-body">
         
-<%--        <div id="familyDiv" class="span3 family-div" runat="server">
-            <div class="attended-checkin-body-container">
-                <asp:Repeater ID="rFamily" runat="server" OnItemCommand="rFamily_ItemCommand">
-                    <ItemTemplate>
-                        <asp:LinkButton ID="lbSelectFamily" runat="server" CommandArgument='<%# Eval("Group.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" ><%# Eval("Caption") %><br /><span class="checkin-sub-title"><%# Eval("SubCaption") %></span></asp:LinkButton>
-                    </ItemTemplate>
-                </asp:Repeater>
-            </div>
-        </div>--%>
-
         <div id="familyDiv" class="span3 family-div" runat="server">
             <div class="attended-checkin-body-container">
                 <asp:ListView ID="lvFamily" runat="server" OnPagePropertiesChanging="lvFamily_PagePropertiesChanging" OnItemCommand="lvFamily_ItemCommand">
                     <ItemTemplate>
-                        <asp:LinkButton ID="lSelectFamily" runat="server" CommandArgument='<%# Eval("Group.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" ><%# Eval("Caption") %><br /><span class="checkin-sub-title"><%# Eval("SubCaption") %></span></asp:LinkButton>
+                        <asp:LinkButton ID="lbSelectFamily" runat="server" CommandArgument='<%# Eval("Group.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" ><%# Eval("Caption") %><br /><span class="checkin-sub-title"><%# Eval("SubCaption") %></span></asp:LinkButton>
                     </ItemTemplate>
                 </asp:ListView>
                 <asp:DataPager ID="Pager" runat="server" PageSize="4" PagedControlID="lvFamily">
@@ -57,18 +47,6 @@
         </div>
 
         <div id="emptyDiv" class="span3 empty-div" runat="server">
-<%--            <div class="attended-checkin-body-container">
-                <asp:ListView ID="lvFamily" runat="server" OnPagePropertiesChanging="lvFamily_PagePropertiesChanging" OnItemCommand="lvFamily_ItemCommand">
-                    <ItemTemplate>
-                        <asp:LinkButton ID="lSelectFamily" runat="server" CommandArgument='<%# Eval("Group.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" ><%# Eval("Caption") %><br /><span class="checkin-sub-title"><%# Eval("SubCaption") %></span></asp:LinkButton>
-                    </ItemTemplate>
-                </asp:ListView>
-                <asp:DataPager ID="Pager" runat="server" PageSize="5" PagedControlID="lvFamily">
-                    <Fields>
-                        <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary" />
-                    </Fields>
-                </asp:DataPager>
-            </div>--%>
         </div>
 
         <div id="nothingFoundMessage" class="span9 nothing-found-message" runat="server">
