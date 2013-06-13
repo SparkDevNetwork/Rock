@@ -274,6 +274,10 @@
     <Compile Include="Migrations\201306112335040_AttributeCategoriesEmptyMigration.Designer.cs">
       <DependentUpon>201306112335040_AttributeCategoriesEmptyMigration.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201306132253131_PathLength260.cs" />
+    <Compile Include="Migrations\201306132253131_PathLength260.Designer.cs">
+      <DependentUpon>201306132253131_PathLength260.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -1788,6 +1792,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201306112335040_AttributeCategoriesEmptyMigration.resx">
       <DependentUpon>201306112335040_AttributeCategoriesEmptyMigration.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306132253131_PathLength260.resx">
+      <DependentUpon>201306132253131_PathLength260.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
