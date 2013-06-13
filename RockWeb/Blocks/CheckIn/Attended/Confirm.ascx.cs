@@ -116,11 +116,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             gPersonList.CssClass = string.Empty;
             gPersonList.AddCssClass( "grid-table" );
             gPersonList.AddCssClass( "table" );
-
-            // gPersonList.AddCssClass( "table-bordered" );
-            // gPersonList.AddCssClass( "table-striped" );
-            // gPersonList.AddCssClass( "table-hover" );
-            // gPersonList.AddCssClass( "table-full" );
         }
 
         #endregion

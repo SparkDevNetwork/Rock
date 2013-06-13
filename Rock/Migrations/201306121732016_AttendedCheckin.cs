@@ -73,73 +73,76 @@ namespace Rock.Migrations
             AddBlockTypeAttribute( "5B1D4187-9B34-4AB6-AC57-7E2CF67B266F", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Workflow Type Id", "WorkflowTypeId", "", "The Id of the workflow type to activate for check-in", 0, "0", "2A71729F-E7CA-4ACD-9996-A6A661A069FD" );
             AddBlockTypeAttribute( "5B1D4187-9B34-4AB6-AC57-7E2CF67B266F", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Home Page", "HomePage", "", "", 0, "", "DEB23724-94F9-4164-BFAB-AD2DDE1F90ED" );
 
-            // Attrib Value for Admin:Previous Page
+            // Attrib Value for Admin:Previous Page -> There is no previous page
             AddBlockAttributeValue( "9F8731AB-07DB-406F-A344-45E31D0DE301", "B196160E-4397-4C6F-8C5A-317CAD3C118F", "00000000-0000-0000-0000-000000000000" );
 
-            // Attrib Value for Admin:Next Page
+            // Attrib Value for Admin:Next Page -> Goes to search page
             AddBlockAttributeValue( "9F8731AB-07DB-406F-A344-45E31D0DE301", "7332D1F1-A1A5-48AE-BAB9-91C3AF085DB0", "8f618315-f554-4751-ab7f-00cc5658120a" );
 
             // Attrib Value for Admin:Workflow Type Id
             AddBlockAttributeValue( "9F8731AB-07DB-406F-A344-45E31D0DE301", "18864DE7-F075-437D-BA72-A6054C209FA5", "0" );
 
-            // Attrib Value for Admin:Home Page
+            // Attrib Value for Admin:Home Page -> Goes to search page
             AddBlockAttributeValue( "9F8731AB-07DB-406F-A344-45E31D0DE301", "40F39C36-3092-4B87-81F8-A9B1C6B261B2", "8f618315-f554-4751-ab7f-00cc5658120a" );
 
             // Attrib Value for Search:Admin Page
             AddBlockAttributeValue( "182C9AA0-E76F-4AAF-9F61-5418EE5A0CDB", "BBB93FF9-C021-4E82-8C03-55942FA4141E", "771e3cf1-63bd-4880-bc43-ac29b4cce963" );
 
-            // Attrib Value for Search:Previous Page
+            // Attrib Value for Search:Previous Page -> Goes to confirmation page
             AddBlockAttributeValue( "182C9AA0-E76F-4AAF-9F61-5418EE5A0CDB", "72E40960-2072-4F08-8EA8-5A766B49A2E0", "be996c9b-3dfe-407f-bd53-d6f58d85a035" );
 
-            // Attrib Value for Search:Next Page
+            // Attrib Value for Search:Next Page -> Goes to family select page
             AddBlockAttributeValue( "182C9AA0-E76F-4AAF-9F61-5418EE5A0CDB", "BF8AAB12-57A2-4F50-992C-428C5DDCB89B", "af83d0b2-2995-4e46-b0df-1a4763637a68" );
 
             // Attrib Value for Search:Workflow Type Id
             AddBlockAttributeValue( "182C9AA0-E76F-4AAF-9F61-5418EE5A0CDB", "C4E992EA-62AE-4211-BE5A-9EEF5131235C", "0" );
 
-            // Attrib Value for Search:Home Page
+            // Attrib Value for Search:Home Page -> Goes to search page
             AddBlockAttributeValue( "182C9AA0-E76F-4AAF-9F61-5418EE5A0CDB", "EBE397EF-07FF-4B97-BFF3-152D139F9B80", "8f618315-f554-4751-ab7f-00cc5658120a" );
 
-            // Attrib Value for Family Select:Previous Page
+            // Attrib Value for Family Select:Previous Page -> Goes to search page
             AddBlockAttributeValue( "82929409-8551-413C-972A-98EDBC23F420", "DD9F93C9-009B-4FA5-8FF9-B186E4969ACB", "8f618315-f554-4751-ab7f-00cc5658120a" );
 
-            // Attrib Value for Family Select:Next Page
-            AddBlockAttributeValue( "82929409-8551-413C-972A-98EDBC23F420", "81A02B6F-F760-4110-839C-4507CF285A7E", "c87916fe-417e-4a11-8831-5cfa7678a228" );
+            // Attrib Value for Family Select:Next Page -> Goes to confirmation page
+            //AddBlockAttributeValue( "82929409-8551-413C-972A-98EDBC23F420", "81A02B6F-F760-4110-839C-4507CF285A7E", "c87916fe-417e-4a11-8831-5cfa7678a228" );
+            AddBlockAttributeValue( "82929409-8551-413C-972A-98EDBC23F420", "81A02B6F-F760-4110-839C-4507CF285A7E", "BE996C9B-3DFE-407F-BD53-D6F58D85A035" );
 
             // Attrib Value for Family Select:Workflow Type Id
             AddBlockAttributeValue( "82929409-8551-413C-972A-98EDBC23F420", "338CAD91-3272-465B-B768-0AC2F07A0B40", "0" );
 
-            // Attrib Value for Family Select:Home Page
+            // Attrib Value for Family Select:Home Page -> Goes to search page
             AddBlockAttributeValue( "82929409-8551-413C-972A-98EDBC23F420", "2DF1D39B-DFC7-4FB2-B638-3D99C3C4F4DF", "8f618315-f554-4751-ab7f-00cc5658120a" );
 
-            // Attrib Value for Family Select:Redirect Page
+            // Attrib Value for Family Select:Redirect Page -> Goes to search page
             AddBlockAttributeValue( "BDD502FF-40D2-42E6-845E-95C49C3505B3", "C4204D6E-715E-4E3A-BA1B-949D20D26487", "search" );
 
             // Attrib Value for Family Select:Timeout Value
-            AddBlockAttributeValue( "BDD502FF-40D2-42E6-845E-95C49C3505B3", "A7F99980-BED4-4A80-AB83-DDAB5C7D7AAD", "30" );
+            AddBlockAttributeValue( "BDD502FF-40D2-42E6-845E-95C49C3505B3", "A7F99980-BED4-4A80-AB83-DDAB5C7D7AAD", "120" );
 
-            // Attrib Value for Activity Select:Previous Page
-            AddBlockAttributeValue( "8C8CBBE9-2502-4FEC-804D-C0DA13C07FA4", "6048A23D-6544-441A-A8B3-5782CAF5B468", "AF83D0B2-2995-4E46-B0DF-1A4763637A68" );
+            // Attrib Value for Activity Select:Previous Page -> Goes to confirmation page
+            //AddBlockAttributeValue( "8C8CBBE9-2502-4FEC-804D-C0DA13C07FA4", "6048A23D-6544-441A-A8B3-5782CAF5B468", "AF83D0B2-2995-4E46-B0DF-1A4763637A68" );
+            AddBlockAttributeValue( "8C8CBBE9-2502-4FEC-804D-C0DA13C07FA4", "6048A23D-6544-441A-A8B3-5782CAF5B468", "BE996C9B-3DFE-407F-BD53-D6F58D85A035" );
 
-            // Attrib Value for Activity Select:Next Page
+            // Attrib Value for Activity Select:Next Page -> Goes to confirmation page
             AddBlockAttributeValue( "8C8CBBE9-2502-4FEC-804D-C0DA13C07FA4", "39008E18-48C9-445F-B9D7-78334B76A7EE", "BE996C9B-3DFE-407F-BD53-D6F58D85A035" );
 
             // Attrib Value for Activity Select:Workflow Type Id
             AddBlockAttributeValue( "8C8CBBE9-2502-4FEC-804D-C0DA13C07FA4", "BEC10B87-4B19-4CD5-8952-A4D59DDA3E9C", "0" );
 
-            // Attrib Value for Activity Select:Home Page
+            // Attrib Value for Activity Select:Home Page -> Goes to search page
             AddBlockAttributeValue( "8C8CBBE9-2502-4FEC-804D-C0DA13C07FA4", "5046A353-D901-45BB-9981-9CC1B33550C6", "8f618315-f554-4751-ab7f-00cc5658120a" );
 
-            // Attrib Value for Confirmation:Previous Page
-            AddBlockAttributeValue( "7CC68DD4-A6EF-4B67-9FEA-A144C479E058", "E45D2B10-D1B1-4CBE-9C7A-3098B1D95F47", "C87916FE-417E-4A11-8831-5CFA7678A228" );
-
-            // Attrib Value for Confirmation:Next Page
+            // Attrib Value for Confirmation:Previous Page -> Goes to family select page
+            //AddBlockAttributeValue( "7CC68DD4-A6EF-4B67-9FEA-A144C479E058", "E45D2B10-D1B1-4CBE-9C7A-3098B1D95F47", "C87916FE-417E-4A11-8831-5CFA7678A228" );
+            AddBlockAttributeValue( "7CC68DD4-A6EF-4B67-9FEA-A144C479E058", "E45D2B10-D1B1-4CBE-9C7A-3098B1D95F47", "AF83D0B2-2995-4E46-B0DF-1A4763637A68" );
+            
+            // Attrib Value for Confirmation:Next Page -> Goes to search page
             AddBlockAttributeValue( "7CC68DD4-A6EF-4B67-9FEA-A144C479E058", "48813610-DD26-4E72-9D19-817535802C49", "8f618315-f554-4751-ab7f-00cc5658120a" );
 
             // Attrib Value for Confirmation:Workflow Type Id
             AddBlockAttributeValue( "7CC68DD4-A6EF-4B67-9FEA-A144C479E058", "2A71729F-E7CA-4ACD-9996-A6A661A069FD", "0" );
 
-            // Attrib Value for Confirmation:Home Page
+            // Attrib Value for Confirmation:Home Page -> Goes to search page
             AddBlockAttributeValue( "7CC68DD4-A6EF-4B67-9FEA-A144C479E058", "DEB23724-94F9-4164-BFAB-AD2DDE1F90ED", "8f618315-f554-4751-ab7f-00cc5658120a" );
         }
         
