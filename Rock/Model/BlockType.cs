@@ -43,7 +43,7 @@ namespace Rock.Model
         /// Path.
         /// </value>
         [Required]
-        [MaxLength( 200 )]
+        [MaxLength( 260 )]
         [DataMember( IsRequired = true )]
         public string Path { get; set; }
         
