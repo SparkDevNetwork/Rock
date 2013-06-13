@@ -18,7 +18,7 @@ namespace RockWeb.Blocks.Crm
     /// <summary>
     /// 
     /// </summary>
-    [ContextAware( typeof( Group ) )]
+    [GroupField( "Group", "Either pick a specific group or choose <none> to have group be determined by the groupId page parameter" )]
     [DetailPage]
     public partial class GroupMemberList : RockBlock, IDimmableBlock
     {
@@ -50,31 +50,8 @@ namespace RockWeb.Blocks.Crm
 
             if ( !Page.IsPostBack )
             {
-                Group group = this.ContextEntity<Group>();
-                if ( group != null )
-                {
-                    hfGroupId.Value = group.Id.ToString();
-                    BindGroupMembersGrid();
-                }
-                else
-                {
-                    pnlGroupMembers.Visible = false;
-                }
+                BindGroupMembersGrid();
             }
-        }
-
-        #endregion
-
-        #region dimmable
-
-        /// <summary>
-        /// Sets the dimmed.
-        /// </summary>
-        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
-        public void SetDimmed( bool dimmed )
-        {
-            pnlGroupMembers.Disabled = dimmed;
-            gGroupMembers.Enabled = !dimmed;
         }
 
         #endregion
@@ -137,15 +114,21 @@ namespace RockWeb.Blocks.Crm
         {
             pnlGroupMembers.Visible = false;
 
-            var group = this.ContextEntity<Group>();
+            // if this block has a specific GroupId set, use that, otherwise, determine it from the PageParameters
+            int groupId = GetAttributeValue( "Group" ).AsInteger() ?? 0;
 
-            if ( group == null )
+            if ( groupId == 0 )
             {
-                return;
+                groupId = PageParameter( "groupId" ).AsInteger() ?? 0;
+
+                if ( groupId == 0 )
+                {
+                    // quit if the groupId can't be determined
+                    return;
+                }
             }
 
-            int groupId = group.Id;
-            hfGroupId.SetValue( group.Id );
+            hfGroupId.SetValue( groupId );
 
             pnlGroupMembers.Visible = true;
 
@@ -176,6 +159,20 @@ namespace RockWeb.Blocks.Crm
         protected void gGroupMembers_GridRebind( object sender, EventArgs e )
         {
             BindGroupMembersGrid();
+        }
+
+        #endregion
+
+        #region IDimmableBlock
+
+        /// <summary>
+        /// Sets the dimmed.
+        /// </summary>
+        /// <param name="dimmed">if set to <c>true</c> [dimmed].</param>
+        public void SetDimmed( bool dimmed )
+        {
+            pnlGroupMembers.Disabled = dimmed;
+            gGroupMembers.Enabled = !dimmed;
         }
 
         #endregion

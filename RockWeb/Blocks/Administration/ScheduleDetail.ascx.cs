@@ -121,13 +121,6 @@ namespace RockWeb.Blocks.Administration
                 schedule.CheckInEndOffsetMinutes = null;
             }
 
-            // check for duplicates
-            if ( scheduleService.Queryable().Count( a => a.Name.Equals( schedule.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( schedule.Id ) ) > 0 )
-            {
-                nbWarningMessage.Text = WarningMessage.DuplicateFoundMessage( "name", Schedule.FriendlyTypeName );
-                return;
-            }
-
             if ( !schedule.IsValid )
             {
                 // Controls will render the error messages

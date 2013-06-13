@@ -279,15 +279,6 @@ div.aspNetDisabled {
 }
 
 /* DS - CSS for credit card stripe */
-
-ul.card-logos 
-{
-	display: inline-block;
-	margin: 0;
-	padding: 0;
-	margin-left: 12px;
-}
-
 .card-visa, .card-mastercard, .card-amex, .card-discover, .card-diners, .card-jcb 
 {
 	display: inline-block;
@@ -335,44 +326,50 @@ ul.card-logos
 }
 
 /* DS - CSS for finance styling */
-
-.payment-details 
+.address-line
 {
-	overflow: visible;
+    min-width: 75%;    
 }
 
-.amount-right 
-{
-	padding-top: 5px;		
+@media screen and (min-width: 498px) {
+    .align-middle 
+    {
+        margin-left: 180px;
+    }
+
+    .input-inherit 
+    {
+        width: 95%;
+        max-width: inherit;
+    }
 }
 
-.form-horizontal .control-group .input-prepend
+.no-margin
 {
-	margin-bottom: 10px;
-	display: block;
-}
-
-.expiration-group 
-{
-	float: left;
-	margin-right: 20px;
-}
-
-.state-select
-{
-	width: 130px !important;
-}
-
-.credit-label 
-{
-    margin-bottom: 0px;
+    margin: 0;
 }
 
 .check-image 
 {
-	margin-top: 20px;	
+	margin-top: 10px;
+    width: 95%;	
+    max-width: inherit;
 }
 
+.form-horizontal .controls .label-padding 
+{
+    margin-top: 0px;
+}
+
+.label-padding
+{
+    margin-top: 20px;
+}
+
+.text-padding
+{
+    margin-top: 5px;
+}
 
 /*CSF - right align the "Clear Exceptions" link on the Exceptions List Page*/
 .clearExceptionsLink

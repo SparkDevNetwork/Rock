@@ -208,7 +208,6 @@ namespace RockWeb.Blocks.Administration
             List<Rock.Web.Cache.AttributeCache> attributesForAdType = GetAttributesForAdType( marketingAdTypeId );
 
             marketingCampaignAd.Attributes = marketingCampaignAd.Attributes ?? new Dictionary<string, Rock.Web.Cache.AttributeCache>();
-            marketingCampaignAd.AttributeCategories = marketingCampaignAd.AttributeCategories ?? new Dictionary<string, List<string>>();
             marketingCampaignAd.AttributeValues = marketingCampaignAd.AttributeValues ?? new Dictionary<string, List<AttributeValue>>();
             foreach ( var attribute in attributesForAdType )
             {
@@ -219,11 +218,6 @@ namespace RockWeb.Blocks.Administration
                     attributeValues.Add( new AttributeValue { Value = attribute.DefaultValue } );
                     marketingCampaignAd.AttributeValues.Add( attribute.Key, attributeValues );
                 }
-            }
-
-            foreach ( var category in attributesForAdType.Select( a => a.Category ).Distinct() )
-            {
-                marketingCampaignAd.AttributeCategories[category] = attributesForAdType.Where( a => a.Category.Equals( category ) ).Select( a => a.Key ).ToList();
             }
 
             if ( createControls )

@@ -244,13 +244,6 @@ namespace RockWeb.Blocks.Administration
                 marketingCampaignAdType.Name = tbName.Text;
                 marketingCampaignAdType.DateRangeType = (DateRangeTypeEnum)int.Parse( ddlDateRangeType.SelectedValue );
 
-                // check for duplicates
-                if ( marketingCampaignAdTypeService.Queryable().Count( a => a.Name.Equals( marketingCampaignAdType.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( marketingCampaignAdType.Id ) ) > 0 )
-                {
-                    tbName.ShowErrorMessage( WarningMessage.DuplicateFoundMessage( "name", MarketingCampaignAdType.FriendlyTypeName ) );
-                    return;
-                }
-
                 if ( !marketingCampaignAdType.IsValid )
                 {
                     // Controls will render the error messages                    

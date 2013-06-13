@@ -127,9 +127,9 @@ namespace Rock.Field.Types
         /// <returns>
         /// The control
         /// </returns>
-        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues )
+        public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            var control = new BinaryFilePicker();
+            var control = new BinaryFilePicker { ID = id }; 
 
             if ( configurationValues != null && configurationValues.ContainsKey( "binaryFileType" ) )
             {

@@ -3,6 +3,7 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -40,13 +41,13 @@ namespace Rock.Model
         public int TagId { get; set; }
         
         /// <summary>
-        /// Gets or sets the Entity Id.
+        /// Gets or sets the Entity Guid.
         /// </summary>
         /// <value>
-        /// Entity Id.
+        /// Entity guid.
         /// </value>
         [DataMember]
-        public int? EntityId { get; set; }
+        public Guid EntityGuid { get; set; }
         
         /// <summary>
         /// Gets or sets the Tag
@@ -73,7 +74,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.EntityId.HasValue ? this.EntityId.ToString() : "";
+            return this.Tag != null ? this.Tag.Name : string.Empty;
         }
     }
 

@@ -9,8 +9,17 @@
                 if (!options.id) {
                     throw 'id is required';
                 }
-                
-                $('#' + options.id).kendoDatePicker();
+
+                if (!options.format) {
+                    $('#' + options.id).kendoDatePicker();
+                }
+                else {
+                    $('#' + options.id).kendoDatePicker({
+                        format: "" + options.format + "",
+                        depth: "" + options.depth + "",
+                        start: "" + options.start + ""
+                    });
+                }
             }
         };
 

@@ -55,15 +55,25 @@ namespace RockWeb.Blocks.Core
                     cachedAttributes = new Dictionary<string, List<int>>();
 
                     AttributeService attributeService = new AttributeService();
-                    foreach ( var item in attributeService
+                    var attributes = new List<Rock.Web.Cache.AttributeCache>();
+                    foreach(var attribute in attributeService
                         .Get(contextEntity.TypeId, entityQualifierColumn, entityQualifierValue)
-                        .OrderBy( a => a.Category )
-                        .ThenBy( a => a.Order )
-                        .Select( a => new { a.Category, a.Id } ) )
+                        .OrderBy( a => a.Order ))
                     {
-                        if ( !cachedAttributes.ContainsKey( item.Category ) )
-                            cachedAttributes.Add( item.Category, new List<int>() );
-                        cachedAttributes[item.Category].Add( item.Id );
+                        attributes.Add(Rock.Web.Cache.AttributeCache.Read(attribute));
+                    }
+
+                    foreach(var attributeCategory in Rock.Attribute.Helper.GetAttributeCategories(attributes))
+                    {
+                        if ( !cachedAttributes.ContainsKey( attributeCategory.CategoryName ) )
+                        {
+                            cachedAttributes.Add( attributeCategory.CategoryName, new List<int>() );
+                        }
+
+                        foreach ( int attributeId in attributeCategory.Attributes.Select( a => a.Id ) )
+                        {
+                            cachedAttributes[attributeCategory.CategoryName].Add( attributeId );
+                        }
                     }
 
                     CacheItemPolicy cacheItemPolicy = null;

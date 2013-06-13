@@ -80,13 +80,6 @@ namespace RockWeb.Blocks.Administration
 
             campus.Name = tbCampusName.Text;
 
-            // check for duplicates
-            if ( campusService.Queryable().Count( a => a.Name.Equals( campus.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( campus.Id ) ) > 0 )
-            {
-                nbWarningMessage.Text = WarningMessage.DuplicateFoundMessage( "name", Campus.FriendlyTypeName );
-                return;
-            }
-
             if ( !campus.IsValid )
             {
                 // Controls will render the error messages

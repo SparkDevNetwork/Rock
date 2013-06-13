@@ -8,7 +8,7 @@
 
                 <%--<Rock:LabeledDropDownList ID="ddlGroupCategoryFilter" runat="server" LabelText="Prayer Group Category" OnTextChanged="ddlGroupCategoryFilter_TextChanged" />
                 <Rock:LabeledDropDownList ID="ddlPrayerCategoryFilter" runat="server" LabelText="Prayer Category" />--%>
-                <Rock:CategoryPicker ID="cpPrayerCategoryFilter" runat="server" LabelText="Category" Required="true" CategoryEntityTypeName="Rock.Model.PrayerRequest"/>
+                <Rock:CategoryPicker ID="cpPrayerCategoryFilter" runat="server" LabelText="Category" Required="true" EntityTypeName="Rock.Model.PrayerRequest"/>
 
                 <Rock:LabeledRadioButtonList ID="rblApprovedFilter" runat="server" LabelText="Approval Status">
                     <asp:ListItem Text="all" Value="all" Selected="True"></asp:ListItem>
