@@ -18,6 +18,9 @@ public class BundleConfig
     /// <param name="bundles">The bundles.</param>
 	public static void RegisterBundles( BundleCollection bundles )
     {
+        // start with a clean bundles (this seems to have fixed the javascript errors that would occur on the first time you debug after opening the solution)
+        bundles.ResetAll();
+        
         // TODO: Add bundles for CSS files
 
         bundles.Add( new ScriptBundle( "~/bundles/WebFormsJs" ).Include(
@@ -57,6 +60,12 @@ public class BundleConfig
         bundles.Add( new ScriptBundle( "~/bundles/RockAdmin" ).Include( 
             "~/Scripts/Rock/admin/*.js" ) );
 
+
+        // make sure the ConcatenationToken is what we want.  This is supposed to be the default, but it occassionally was an empty string.
+        foreach ( var bundle in bundles )
+        {
+            bundle.ConcatenationToken = ";\r\n";
+        }
 
         var cfg = (System.Web.Configuration.CompilationSection)ConfigurationManager.GetSection( "system.web/compilation" );
         if ( cfg.Debug )
