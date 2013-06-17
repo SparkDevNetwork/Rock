@@ -18,7 +18,7 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:ButtonDropDownList runat=server></{0}:ButtonDropDownList>" )]
     public class ButtonDropDownList : ListControl, ILabeledControl
     {
-        protected Literal label;
+        protected Label label;
 
         private String _btnTitle = string.Empty;
         private HtmlGenericControl _divControl;
@@ -202,7 +202,7 @@ namespace Rock.Web.UI.Controls
 
 			Controls.Clear();
 
-            label = new Literal();
+            label = new Label();
             Controls.Add( label );
 
             _divControl = new HtmlGenericControl( "div" );
@@ -247,6 +247,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "control-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+                label.AddCssClass( "control-label" );
                 label.Visible = this.Visible;
                 label.RenderControl( writer );
 

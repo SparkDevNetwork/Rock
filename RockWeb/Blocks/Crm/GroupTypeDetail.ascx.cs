@@ -565,13 +565,6 @@ namespace RockWeb.Blocks.Crm
                     }
                 }
 
-                // check for duplicates
-                if ( groupTypeService.Queryable().Count( a => a.Name.Equals( groupType.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( groupType.Id ) ) > 0 )
-                {
-                    tbName.ShowErrorMessage( WarningMessage.DuplicateFoundMessage( "name", GroupType.FriendlyTypeName ) );
-                    return;
-                }
-
                 if ( !groupType.IsValid )
                 {
                     // Controls will render the error messages                    

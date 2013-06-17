@@ -209,13 +209,6 @@ namespace RockWeb.Blocks.Administration
                 binaryFileType.IconSmallFileId = imgIconSmall.ImageId;
                 binaryFileType.IconLargeFileId = imgIconLarge.ImageId;
 
-                // check for duplicates
-                if ( binaryFileTypeService.Queryable().Count( a => a.Name.Equals( binaryFileType.Name, StringComparison.OrdinalIgnoreCase ) && !a.Id.Equals( binaryFileType.Id ) ) > 0 )
-                {
-                    tbName.ShowErrorMessage( WarningMessage.DuplicateFoundMessage( "name", BinaryFileType.FriendlyTypeName ) );
-                    return;
-                }
-
                 if ( !binaryFileType.IsValid )
                 {
                     // Controls will render the error messages                    

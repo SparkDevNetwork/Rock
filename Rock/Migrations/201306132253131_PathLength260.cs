@@ -9,18 +9,18 @@ namespace Rock.Migrations
     using System.Data.Entity.Migrations;
     
     /// <summary>
-    /// 
+    ///
     /// </summary>
-    public partial class CampusLocation : RockMigration_5
+    public partial class PathLength260 : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.Campus", "LocationId", c => c.Int());
-            AddForeignKey("dbo.Campus", "LocationId", "dbo.Location", "Id");
-            CreateIndex("dbo.Campus", "LocationId");
+            AlterColumn("dbo.EntityType", "AssemblyName", c => c.String(maxLength: 260));
+            AlterColumn("dbo.BlockType", "Path", c => c.String(nullable: false, maxLength: 260));
+            AlterColumn("dbo.Site", "ErrorPage", c => c.String(maxLength: 260));
         }
         
         /// <summary>
@@ -28,9 +28,9 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            DropIndex("dbo.Campus", new[] { "LocationId" });
-            DropForeignKey("dbo.Campus", "LocationId", "dbo.Location");
-            DropColumn("dbo.Campus", "LocationId");
+            AlterColumn("dbo.Site", "ErrorPage", c => c.String(maxLength: 200));
+            AlterColumn("dbo.BlockType", "Path", c => c.String(nullable: false, maxLength: 200));
+            AlterColumn("dbo.EntityType", "AssemblyName", c => c.String(maxLength: 200));
         }
     }
 }
