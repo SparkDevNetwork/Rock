@@ -285,6 +285,9 @@
     <Compile Include="Model\CodeGenerated\FinancialTransactionRefundService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionScannedCheckService.cs" />
     <Compile Include="Model\BinaryFileData.cs" />
+    <Compile Include="Net\RockWebRequest.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="PersonProfile\BadgeComponent.cs" />
     <Compile Include="PersonProfile\BadgeContainer.cs" />
     <Compile Include="PersonProfile\Badge\NextSteps.cs" />
@@ -344,9 +347,7 @@
     <Compile Include="Migrations\201305032019044_DateTimeDataTypesSweep.Designer.cs">
       <DependentUpon>201305032019044_DateTimeDataTypesSweep.cs</DependentUpon>
     </Compile>
-    <Compile Include="Net\RockRestClient.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="Net\RockRestClient.cs" />
     <Compile Include="Security\LoginParameters.cs" />
     <Compile Include="CheckIn\CheckInBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
