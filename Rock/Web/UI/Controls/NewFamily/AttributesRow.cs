@@ -21,7 +21,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Displays a bootstrap badge
     /// </summary>
-    public class NewFamilyPersonAttributesRow : CompositeControl
+    public class NewFamilyAttributesRow : CompositeControl
     {
         List<Control> attributeControls;
 
@@ -54,7 +54,7 @@ namespace Rock.Web.UI.Controls
         }
         private List<AttributeCache> _attributeList = null;
 
-        public NewFamilyPersonAttributesRow()
+        public NewFamilyAttributesRow()
             : base()
         {
             attributeControls = new List<Control>();

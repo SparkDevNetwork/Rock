@@ -52,7 +52,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         {
                             if ( attribute.IsAuthorized( "Edit", CurrentPerson ) )
                             {
-                                attributeControl.Attributes.Add( AttributeCache.Read( attribute ) );
+                                attributeControl.AttributeList.Add( AttributeCache.Read( attribute ) );
                             }
                         }
                     }
@@ -174,7 +174,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 var attributeRow = new NewFamilyAttributesRow();
                 attributeControl.Controls.Add( attributeRow );
-                attributeRow.Attributes = attributeControl.Attributes;
+                attributeRow.AttributeList = attributeControl.AttributeList;
                 attributeRow.ID = string.Format( "attribute_row_{0}_{1}", attributeControl.ID, rows.Count + 1 );
             }
         }
