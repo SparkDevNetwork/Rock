@@ -16,6 +16,29 @@ namespace Rock.Web.UI.Controls
     public class StateDropDownList : LabeledDropDownList
     {
         /// <summary>
+        /// Is the state abbreviated
+        /// </summary>
+        protected bool IsAbbreviated = false;
+
+        /// <summary>
+        /// Whether or not the State name is abbreviated
+        /// </summary>
+        /// <value>
+        /// The boolean.
+        /// </value>
+        public bool UseAbbreviation
+        {
+            get
+            {
+                return IsAbbreviated;
+            }
+            set
+            {
+                IsAbbreviated = value;
+            }
+        }
+
+        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> that contains the event data.</param>
@@ -26,8 +49,16 @@ namespace Rock.Web.UI.Controls
 
             // Using custom solution instead of `BindToDefinedType` because we don't want the DefinedValue's `Id`
             // to be the value in the dropdown list.
-            var items = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => new { Id = v.Name, Value = v.Description } );
-            this.DataSource = items;
+            var states = definedType.DefinedValues.OrderBy( v => v.Order );
+            if ( IsAbbreviated )
+            {
+                this.DataSource = states.Select( v => new { Id = v.Name, Value = v.Name } );
+            }
+            else 
+            {
+                this.DataSource = states.Select( v => new { Id = v.Name, Value = v.Description } );
+            }
+                        
             this.DataTextField = "Value";
             this.DataValueField = "Id";
             this.DataBind();
