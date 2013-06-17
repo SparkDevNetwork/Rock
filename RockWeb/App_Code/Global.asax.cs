@@ -80,6 +80,13 @@ namespace RockWeb
             if ( autoMigrate )
             {
                 Database.SetInitializer( new MigrateDatabaseToLatestVersion<Rock.Data.RockContext, Rock.Migrations.Configuration>() );
+
+                // explictly check if the database exists, and force create it if doesn't exist
+                Rock.Data.RockContext rockContext = new Rock.Data.RockContext();
+                if ( !rockContext.Database.Exists() )
+                {
+                    rockContext.Database.Initialize( true );
+                }
             }
             else
             {
