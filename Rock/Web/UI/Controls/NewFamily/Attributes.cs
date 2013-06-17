@@ -48,17 +48,17 @@ namespace Rock.Web.UI.Controls
         }
         private List<AttributeCache> _attributeList = null;
 
-        public List<NewFamilyPersonAttributesRow> FamilyMemberRows
+        public List<NewFamilyAttributesRow> FamilyMemberRows
         {
             get
             {
-                var rows = new List<NewFamilyPersonAttributesRow>();
+                var rows = new List<NewFamilyAttributesRow>();
 
                 foreach ( Control control in Controls )
                 {
-                    if ( control is NewFamilyPersonAttributesRow )
+                    if ( control is NewFamilyAttributesRow )
                     {
-                        var newFamilyAttributesRow = control as NewFamilyPersonAttributesRow;
+                        var newFamilyAttributesRow = control as NewFamilyAttributesRow;
                         if ( newFamilyAttributesRow != null )
                         {
                             rows.Add( newFamilyAttributesRow );
@@ -96,7 +96,7 @@ namespace Rock.Web.UI.Controls
 
             foreach ( Control control in Controls )
             {
-                if ( control is NewFamilyPersonAttributesRow )
+                if ( control is NewFamilyAttributesRow )
                 {
                     control.RenderControl( writer );
                 }
