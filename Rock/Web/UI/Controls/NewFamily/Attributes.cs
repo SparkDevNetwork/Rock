@@ -26,39 +26,39 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The attribute ids.
         /// </value>
-        public List<AttributeCache> Attributes
+        public List<AttributeCache> AttributeList
         {
             get 
             {
-                if ( _attributes == null )
+                if ( _attributeList == null )
                 {
-                    _attributes = ViewState["Attributes"] as List<AttributeCache>;
-                    if ( _attributes == null )
+                    _attributeList = ViewState["AttributeList"] as List<AttributeCache>;
+                    if ( _attributeList == null )
                     {
-                        _attributes = new List<AttributeCache>();
+                        _attributeList = new List<AttributeCache>();
                     }
                 }
-                return _attributes;
+                return _attributeList;
             }
             set 
             {
-                _attributes = value;
-                ViewState["Attributes"] = _attributes;
+                _attributeList = value;
+                ViewState["AttributeList"] = _attributeList;
             }
         }
-        private List<AttributeCache> _attributes = null;
+        private List<AttributeCache> _attributeList = null;
 
-        public List<NewFamilyAttributesRow> FamilyMemberRows
+        public List<NewFamilyPersonAttributesRow> FamilyMemberRows
         {
             get
             {
-                var rows = new List<NewFamilyAttributesRow>();
+                var rows = new List<NewFamilyPersonAttributesRow>();
 
                 foreach ( Control control in Controls )
                 {
-                    if ( control is NewFamilyAttributesRow )
+                    if ( control is NewFamilyPersonAttributesRow )
                     {
-                        var newFamilyAttributesRow = control as NewFamilyAttributesRow;
+                        var newFamilyAttributesRow = control as NewFamilyPersonAttributesRow;
                         if ( newFamilyAttributesRow != null )
                         {
                             rows.Add( newFamilyAttributesRow );
@@ -82,7 +82,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Thead );
             writer.RenderBeginTag( HtmlTextWriterTag.Tr );
 
-            foreach ( var attribute in Attributes)
+            foreach ( var attribute in AttributeList)
             {
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );
                 writer.Write( attribute.Name );
@@ -96,7 +96,7 @@ namespace Rock.Web.UI.Controls
 
             foreach ( Control control in Controls )
             {
-                if ( control is NewFamilyAttributesRow )
+                if ( control is NewFamilyPersonAttributesRow )
                 {
                     control.RenderControl( writer );
                 }

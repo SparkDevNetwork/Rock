@@ -21,7 +21,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Displays a bootstrap badge
     /// </summary>
-    public class NewFamilyAttributesRow : CompositeControl
+    public class NewFamilyPersonAttributesRow : CompositeControl
     {
         List<Control> attributeControls;
 
@@ -31,30 +31,30 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The attribute ids.
         /// </value>
-        public List<AttributeCache> Attributes
+        public List<AttributeCache> AttributeList
         {
             get
             {
-                if ( _attributes == null )
+                if ( _attributeList == null )
                 {
-                    _attributes = ViewState["Attributes"] as List<AttributeCache>;
-                    if ( _attributes == null )
+                    _attributeList = ViewState["AttributeList"] as List<AttributeCache>;
+                    if ( _attributeList == null )
                     {
-                        _attributes = new List<AttributeCache>();
+                        _attributeList = new List<AttributeCache>();
                     }
                 }
-                return _attributes;
+                return _attributeList;
             }
             set
             {
-                _attributes = value;
-                ViewState["Attributes"] = _attributes;
+                _attributeList = value;
+                ViewState["AttributeList"] = _attributeList;
                 RecreateChildControls();
             }
         }
-        private List<AttributeCache> _attributes = null;
+        private List<AttributeCache> _attributeList = null;
 
-        public NewFamilyAttributesRow()
+        public NewFamilyPersonAttributesRow()
             : base()
         {
             attributeControls = new List<Control>();
@@ -67,7 +67,7 @@ namespace Rock.Web.UI.Controls
             attributeControls.Clear();
 
             int i = 0;
-            foreach ( var attribute in Attributes )
+            foreach ( var attribute in AttributeList )
             {
                 Control control = attribute.CreateControl();
                 control.ID = string.Format( "{0}_{1}", this.ID, i++ );
