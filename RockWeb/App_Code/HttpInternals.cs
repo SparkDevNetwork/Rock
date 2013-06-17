@@ -63,11 +63,32 @@ internal static class HttpInternals
     {
         StopFileMonitoring();
         HttpInternals.StopFileMonitoring();
-        System.IO.FileSystemWatcher fsw = new FileSystemWatcher( HttpRuntime.AppDomainAppPath );
-        fsw.NotifyFilter = NotifyFilters.LastWrite;
-        fsw.IncludeSubdirectories = true;
-        fsw.Changed += fsw_Changed;
-        fsw.EnableRaisingEvents = true;
+        DirectoryInfo rockWebPath = new DirectoryInfo(HttpRuntime.AppDomainAppPath);
+        
+        System.IO.FileSystemWatcher rockWebFsw = new FileSystemWatcher( rockWebPath.FullName );
+        rockWebFsw.NotifyFilter = NotifyFilters.LastWrite;
+        rockWebFsw.IncludeSubdirectories = true;
+        rockWebFsw.Changed += fsw_Changed;
+        rockWebFsw.EnableRaisingEvents = true;
+
+        // also restart if any .cs files are modified in the solution
+        var solutionPath = Path.Combine( rockWebPath.Parent.FullName );
+        System.IO.FileSystemWatcher sourceFileFsw = new FileSystemWatcher( solutionPath, "*.cs" );
+
+        sourceFileFsw.NotifyFilter = NotifyFilters.LastWrite;
+        sourceFileFsw.IncludeSubdirectories = true;
+        sourceFileFsw.Changed += sourceFileFsw_Changed;
+        sourceFileFsw.EnableRaisingEvents = true;
+    }
+
+    /// <summary>
+    /// Handles the Changed event of the sourceFileFsw control.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="FileSystemEventArgs"/> instance containing the event data.</param>
+    static void sourceFileFsw_Changed( object sender, FileSystemEventArgs e )
+    {
+        HostingEnvironment.InitiateShutdown();
     }
 
     /// <summary>

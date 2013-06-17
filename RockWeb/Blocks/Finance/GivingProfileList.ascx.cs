@@ -17,7 +17,7 @@ using Rock.Web.UI.Controls;
 using Rock.Web.Cache;
 using System.Collections.Generic;
 
-namespace RockWeb.Blocks.Finance.Administration
+namespace RockWeb.Blocks.Finance
 {
     [DetailPage]
     public partial class GivingProfileList : Rock.Web.UI.RockBlock
@@ -89,7 +89,6 @@ namespace RockWeb.Blocks.Finance.Administration
                     DateTime GivingProfileDate = DateTime.Now;
                     e.Value = GivingProfileDate.ToString();
                     break;
-
             }
         }
 
@@ -100,7 +99,7 @@ namespace RockWeb.Blocks.Finance.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFBFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFBFilter.SaveUserPreference( "Start Date", dtGivingProfileDate.Text );
+            rFBFilter.SaveUserPreference( "Start Date", dtpGivingProfileDate.Text );
             
             BindGrid();
         }
@@ -112,13 +111,13 @@ namespace RockWeb.Blocks.Finance.Administration
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void rGridGivingProfile_Delete( object sender, RowEventArgs e )
         {
-            var FinancialGivingProfileService = new Rock.Model.FinancialScheduledTransactionService();
+            var scheduledTransactionService = new FinancialScheduledTransactionService();
 
-            Rock.Model.FinancialScheduledTransaction FinancialGivingProfile = FinancialGivingProfileService.Get( (int)rGridGivingProfile.DataKeys[e.RowIndex]["id"] );
-            if ( FinancialGivingProfile != null )
+            FinancialScheduledTransaction profile = scheduledTransactionService.Get( (int)rGridGivingProfile.DataKeys[e.RowIndex]["id"] );
+            if ( profile != null )
             {
-                FinancialGivingProfileService.Delete( FinancialGivingProfile, CurrentPersonId );
-                FinancialGivingProfileService.Save( FinancialGivingProfile, CurrentPersonId );
+                scheduledTransactionService.Delete( profile, CurrentPersonId );
+                scheduledTransactionService.Save( profile, CurrentPersonId );
             }
 
             BindGrid();
@@ -158,7 +157,7 @@ namespace RockWeb.Blocks.Finance.Administration
             {
                 fromDate = DateTime.Today;
             }
-            dtGivingProfileDate.Text = fromDate.ToShortDateString();
+            dtpGivingProfileDate.Text = fromDate.ToShortDateString();
 
         }
 
@@ -184,11 +183,11 @@ namespace RockWeb.Blocks.Finance.Administration
         /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
         private void rGridGivingProfile_GridReorder( object sender, GridReorderEventArgs e )
         {
-            var GivingProfileService = new Rock.Model.FinancialScheduledTransactionService();
-            var queryable = GivingProfileService.Queryable();
+            var profileService = new FinancialScheduledTransactionService();
+            var queryable = profileService.Queryable();
 
-            List<Rock.Model.FinancialScheduledTransaction> items = queryable.ToList();
-            GivingProfileService.Reorder( items, e.OldIndex, e.NewIndex, CurrentPersonId );
+            List<FinancialScheduledTransaction> items = queryable.ToList();
+            profileService.Reorder( items, e.OldIndex, e.NewIndex, CurrentPersonId );
             BindGrid();
         }
 
@@ -207,22 +206,22 @@ namespace RockWeb.Blocks.Finance.Administration
         /// </summary>
         private void BindGrid()
         {
-            var GivingProfileService = new FinancialScheduledTransactionService();
-            var GivingProfiles = GivingProfileService.Queryable();
+            var profiles = new FinancialScheduledTransactionService().Queryable();
+
             SortProperty sortProperty = rGridGivingProfile.SortProperty;
 
-            if ( dtGivingProfileDate.SelectedDateTime.HasValue )
+            if ( dtpGivingProfileDate.SelectedDateTime.HasValue )
             {
-                GivingProfiles = GivingProfiles.Where( GivingProfile => GivingProfile.StartDate >= dtGivingProfileDate.SelectedDateTime );
+                profiles = profiles.Where( GivingProfile => GivingProfile.StartDate >= dtpGivingProfileDate.SelectedDateTime );
             }
 
             if ( sortProperty != null )
             {
-                rGridGivingProfile.DataSource = GivingProfiles.Sort( sortProperty ).ToList();
+                rGridGivingProfile.DataSource = profiles.Sort( sortProperty ).ToList();
             }
             else
             {
-                rGridGivingProfile.DataSource = GivingProfiles.OrderBy( b => b.AuthorizedPersonId ).ToList();
+                rGridGivingProfile.DataSource = profiles.OrderBy( b => b.AuthorizedPersonId ).ToList();
             }
 
             rGridGivingProfile.DataBind();
@@ -255,8 +254,8 @@ namespace RockWeb.Blocks.Finance.Administration
         /// <param name="e">The <see cref="GridViewRowEventArgs"/> instance containing the event data.</param>
         protected void rGridGivingProfile_RowDataBound( object sender, GridViewRowEventArgs e )
         {
-            Rock.Model.FinancialScheduledTransaction GivingProfile = e.Row.DataItem as Rock.Model.FinancialScheduledTransaction;
-            if ( GivingProfile != null )
+            FinancialScheduledTransaction profile = e.Row.DataItem as FinancialScheduledTransaction;
+            if ( profile != null )
             {
                 //do stuff here
               

@@ -12,7 +12,7 @@ namespace Rock.Migrations
     /// <summary>
     /// Custom Migration methods
     /// </summary>
-    public abstract class RockMigration : DbMigration
+    public abstract class RockMigration_5 : DbMigration
     {
 
         #region Entity Type Methods
@@ -646,11 +646,6 @@ namespace Rock.Migrations
         /// <param name="guid">The GUID.</param>
         public void AddBlockTypeAttribute( string blockTypeGuid, string fieldTypeGuid, string name, string key, string category, string description, int order, string defaultValue, string guid )
         {
-            if ( !string.IsNullOrWhiteSpace( category ) )
-            {
-                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself. Sorry!" );
-            }
-            
             Sql( string.Format( @"
                 
                 DECLARE @BlockTypeId int
@@ -671,19 +666,20 @@ namespace Rock.Migrations
 
                 INSERT INTO [Attribute] (
                     [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
-                    [Key],[Name],[Description],
+                    [Key],[Name],[Category],[Description],
                     [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
                     [Guid])
                 VALUES(
                     1,@FieldTypeId, @EntityTypeId,'BlockTypeId',CAST(@BlockTypeId as varchar),
-                    '{2}','{3}','{4}',
-                    {5},0,'{6}',0,0,
-                    '{7}')
+                    '{2}','{3}','{4}','{5}',
+                    {6},0,'{7}',0,0,
+                    '{8}')
 ",
                     blockTypeGuid,
                     fieldTypeGuid,
                     key ?? name.Replace( " ", string.Empty ),
                     name,
+                    category,
                     description.Replace( "'", "''" ),
                     order,
                     defaultValue,
@@ -715,15 +711,10 @@ namespace Rock.Migrations
         /// <param name="guid">The GUID.</param>
         public void AddEntityAttribute( string entityTypeName, string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string category, string description, int order, string defaultValue, string guid )
         {
-            if ( !string.IsNullOrWhiteSpace( category ) )
-            {
-                throw new Exception( "Attribute Category no longer supported by this helper function. You'll have to write special migration code yourself. Sorry!" );
-            }
-            
             EnsureEntityTypeExists( entityTypeName );
 
             Sql( string.Format( @"
-                 
+                
                 DECLARE @EntityTypeId int
                 SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = '{0}')
 
@@ -734,24 +725,25 @@ namespace Rock.Migrations
                 DELETE [Attribute] 
                 WHERE [EntityTypeId] = @EntityTypeId
                 AND [Key] = '{2}'
-                AND [EntityTypeQualifierColumn] = '{8}'
-                AND [EntityTypeQualifierValue] = '{9}'
+                AND [EntityTypeQualifierColumn] = '{9}'
+                AND [EntityTypeQualifierValue] = '{10}'
 
                 INSERT INTO [Attribute] (
                     [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
-                    [Key],[Name],[Description],
+                    [Key],[Name],[Category],[Description],
                     [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
                     [Guid])
                 VALUES(
-                    1,@FieldTypeId,@EntityTypeid,'{8}','{9}',
-                    '{2}','{3}','{4}',
-                    {5},0,'{6}',0,0,
-                    '{7}')
+                    1,@FieldTypeId,@EntityTypeid,'{9}','{10}',
+                    '{2}','{3}','{4}','{5}',
+                    {6},0,'{7}',0,0,
+                    '{8}')
 ",
                     entityTypeName,
                     fieldTypeGuid,
                     name.Replace( " ", string.Empty ),
                     name,
+                    category,
                     description.Replace( "'", "''" ),
                     order,
                     defaultValue,
