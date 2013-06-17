@@ -347,7 +347,9 @@
     <Compile Include="Migrations\201305032019044_DateTimeDataTypesSweep.Designer.cs">
       <DependentUpon>201305032019044_DateTimeDataTypesSweep.cs</DependentUpon>
     </Compile>
-    <Compile Include="Net\RockRestClient.cs" />
+    <Compile Include="Net\RockRestClient.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Security\LoginParameters.cs" />
     <Compile Include="CheckIn\CheckInBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
