@@ -40,25 +40,16 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Show Credit Card", "Allow users to give using a credit card?", true, "UI Options", 3 )]
     [BooleanField( "Show Checking/ACH", "Allow users to give using a checking account?", true, "UI Options", 4 )]
     [BooleanField( "Show Frequencies", "Allow users to give recurring gifts?", true, "UI Options", 5 )]
-    [BooleanField( "Require Phone", "Should financial contributions require a user's phone number?", true, "UI Options", 6 )]   
-    [TextField( "Confirmation Message", "What text should be displayed on the confirmation page?", true,
-        @"{{ ContributionConfirmationHeader }}<br/><br/>
-        {{ Person.FullName }},<br/><br/>
+    [BooleanField( "Show State Name", "Should the address state show the full name (Arizona) or the abbreviation (AZ)?", true, "UI Options", 6 )]
+    [BooleanField( "Require Phone", "Should financial contributions require a user's phone number?", true, "UI Options", 7 )]
+    [DefinedValueField( Rock.SystemGuid.DefinedType.LOCATION_ADDRESS_STATE, "Default State", "Which state should be selected by default?", false, "", "UI Options", 8)]    
+    [MemoField( "Confirmation Message", "What text should be displayed on the confirmation page?", true,  @"{{ ContributionConfirmationHeader }}<br/><br/>{{ Person.FullName }},<br/><br/>
         You are about to give a total of <strong>{{ TotalContribution }}</strong> using your {{ PaymentType }} ending in {{ PaymentLastFour }}.<br/><br/>
-        If this is correct, please press Give.  Otherwise, click Back to edit.<br/>
-        Thank you,<br/><br/>
-        {{ OrganizationName }}<br/>  
-        {{ ContributionConfirmaFooter }}"
-    , "Message Options", 0)]
-    [TextField( "Receipt Message", "What text should be displayed on the receipt page?", true,
-        @"{{ ContributionReceiptHeader }}<br/>
-        {{ Person.FullName }},<br/><br/>
-        Thank you for your generosity! You just gave a total of {{ TotalContribution }} to {{ OrganizationName }}.<br/><br/>        
-        {{ ContributionReceiptFooter }}"
-    , "Message Options", 1 )]
-    [TextField( "Summary Message", "What text should be displayed on the transaction summary?", true,
-        @"{{ Date }}: {{ TotalContribution }} given by {{ Person.FullName }} using a {{ PaymentType }} ending in {{ PaymentLastFour }}."
-    , "Message Options", 2 )]
+        If this is correct, please press Give.  Otherwise, click Back to edit.<br/>Thank you,<br/><br/>{{ OrganizationName }}<br/>{{ ContributionConfirmFooter }}", "Message Options", 0)]
+    [MemoField( "Receipt Message", "What text should be displayed on the receipt page?", true, @"{{ ContributionReceiptHeader }}<br/>{{ Person.FullName }},<br/><br/>
+        Thank you for your generosity! You just gave a total of {{ TotalContribution }} to {{ OrganizationName }}.<br/><br/>{{ ContributionReceiptFooter }}", "Message Options", 1 )]
+    [MemoField( "Summary Message", "What text should be displayed on the transaction summary?", true, @"{{ Date }}: {{ TotalContribution }} given by {{ Person.FullName }} using a 
+        {{ PaymentType }} ending in {{ PaymentLastFour }}.", "Message Options", 2 )]
     public partial class GivingProfileDetail : RockBlock
     {
         #region Fields
@@ -140,15 +131,14 @@ namespace RockWeb.Blocks.Finance
                 divPayment.AddCssClass( _spanClass );
                 divNext.AddCssClass( _spanClass );
                 divConfirm.AddCssClass( _spanClass );
-                divReceipt.AddCssClass( _spanClass );
+                pnlComplete.AddCssClass( _spanClass );
                 divGiveBack.AddCssClass( _spanClass );
                 divPrint.AddCssClass( _spanClass );
 
                 // Show Campus
                 if ( Convert.ToBoolean( GetAttributeValue( "ShowCampuses" ) ) )
                 {
-                    BindCampuses();
-                    divCampus.Visible = true;
+                    BindCampuses();                    
                 }
                 else
                 {
@@ -170,6 +160,18 @@ namespace RockWeb.Blocks.Finance
                 bool showCredit = Convert.ToBoolean( GetAttributeValue( "ShowCreditCard" ) );
                 bool showChecking = Convert.ToBoolean( GetAttributeValue( "ShowChecking/ACH" ) );
                 BindPaymentTypes( showCredit, showChecking );
+
+                // Customize State picker
+                if ( !Convert.ToBoolean( GetAttributeValue( "ShowStateName" ) ) )
+                {
+                    ddlState.UseAbbreviation = true;
+                }
+
+                //var defaultState = GetAttributeValues( "DefaultState" ).Select( Guid.Parse );
+                //if ( defaultState != null )
+                //{
+                //    ddlState.SelectedValue = defaultState;
+                //}
 
                 // Require Phone
                 if ( Convert.ToBoolean( GetAttributeValue( "RequirePhone" ) ) )
@@ -529,7 +531,7 @@ namespace RockWeb.Blocks.Finance
 
                         if ( !string.IsNullOrEmpty( txtCreditCard.Text ) )
                         {
-                            scheduledTransaction.CardReminderDate = dtpExpiration.SelectedDate;
+                            scheduledTransaction.CardReminderDate = mypExpiration.SelectedDate;
                         }                        
 
                         if ( chkLimitGifts.Checked && !string.IsNullOrWhiteSpace( txtLimitNumber.Text ) )
@@ -717,7 +719,7 @@ namespace RockWeb.Blocks.Finance
             btnCampusList.Items.Clear();
             CampusService campusService = new CampusService();
             var items = campusService.Queryable().OrderBy( a => a.Name ).Distinct();
-                
+
             if ( items.Any() )
             {
                 btnCampusList.DataSource = items.ToList();
@@ -725,6 +727,10 @@ namespace RockWeb.Blocks.Finance
                 btnCampusList.DataValueField = "Id";
                 btnCampusList.DataBind();
                 btnCampusList.SelectedValue = btnCampusList.Items[0].Value;
+            }
+            else
+            {
+                divCampus.Visible = false;
             }
         }
 
@@ -833,7 +839,7 @@ namespace RockWeb.Blocks.Finance
             {
                 queryable = queryable.Where( dv => dv.Guid != new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_PAYMENT_TYPE_CREDIT_CARD ) );
                 divCreditCard.Visible = false;
-                dtpExpiration.SelectedDate = DateTime.Now.AddYears(2);
+                mypExpiration.SelectedDate = DateTime.Now.AddYears( 2 );
             }
             if ( !showChecking )
             {
@@ -897,9 +903,9 @@ namespace RockWeb.Blocks.Finance
                     var savedCreditCard = accountsQueryable.Where( a => a.PaymentMethod == PaymentMethod.CreditCard )
                         .ToDictionary( a => a.Name + " ending in " + a.MaskedAccountNumber, a => a.Id );
                     savedCreditCard.Add( "Use a different card", 0 );
-                    rblSavedCard.DataTextField = "Key";
-                    rblSavedCard.DataValueField = "Value";
                     rblSavedCard.DataSource = savedCreditCard;
+                    rblSavedCard.DataValueField = "Value";
+                    rblSavedCard.DataTextField = "Key";                                        
                     rblSavedCard.DataBind();
                     divSavedCard.Visible = true;                    
                 }
@@ -913,9 +919,9 @@ namespace RockWeb.Blocks.Finance
                     var savedACH = accountsQueryable.Where( a => a.PaymentMethod == PaymentMethod.ACH )
                         .ToDictionary( a => a.Name + " ending in " + a.MaskedAccountNumber, a => a.Id );
                     savedACH.Add( "Use a different account", 0 );
-                    rblSavedAccount.DataTextField = "Key";
-                    rblSavedAccount.DataValueField = "Value";
                     rblSavedAccount.DataSource = savedACH;
+                    rblSavedAccount.DataValueField = "Value";
+                    rblSavedAccount.DataTextField = "Key";
                     rblSavedAccount.DataBind();
                     divSavedAccount.Visible = true;
                 }

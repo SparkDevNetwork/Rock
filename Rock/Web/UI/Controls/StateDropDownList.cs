@@ -16,12 +16,12 @@ namespace Rock.Web.UI.Controls
     public class StateDropDownList : LabeledDropDownList
     {
         /// <summary>
-        /// Is the state abbreviated
+        /// Display an abbreviated state name
         /// </summary>
         protected bool IsAbbreviated = false;
 
         /// <summary>
-        /// Whether or not the State name is abbreviated
+        /// Sets whether or not the State name is abbreviated. Default setting is false.
         /// </summary>
         /// <value>
         /// The boolean.
@@ -57,8 +57,7 @@ namespace Rock.Web.UI.Controls
             else 
             {
                 this.DataSource = states.Select( v => new { Id = v.Name, Value = v.Description } );
-            }
-                        
+            }                        
             this.DataTextField = "Value";
             this.DataValueField = "Id";
             this.DataBind();
