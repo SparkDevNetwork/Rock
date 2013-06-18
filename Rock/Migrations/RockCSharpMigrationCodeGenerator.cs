@@ -22,8 +22,8 @@ namespace Rock.Migrations
 {
     /// *************** NOTE!! ***************
     /// To Debug this, put these Debugger calls wherever you want to set your breakpoint, then run Add-Migration
-    /// Debugger.Launch(); 
-    /// Debugger.Break();
+    /// System.Diagnostics.Debugger.Launch();
+    /// System.Diagnostics.Debugger.Break();
 
     /// <summary>
     /// 
@@ -99,7 +99,18 @@ namespace Rock.Migrations
                 {
                     if ( !dbContextEntities.ContainsKey( a.StoreEntitySet.Name ) )
                     {
-                        dbContextEntities.Add( a.StoreEntitySet.Name, null );
+                        if ( mapping.Set is System.Data.Entity.Core.Metadata.Edm.AssociationSet )
+                        {
+                            var associationSetEnds = ( (System.Data.Entity.Core.Metadata.Edm.AssociationSet)( mapping.Set ) ).AssociationSetEnds;
+                            if (associationSetEnds.Count == 2)
+                            {
+                                if ( dbContextEntities.ContainsKey( associationSetEnds[0].EntitySet.Name ) || dbContextEntities.ContainsKey( associationSetEnds[1].EntitySet.Name ) )
+                                {
+                                    // add AssociationTable if either of the associated tables belong to our dbContext
+                                    dbContextEntities.Add( a.StoreEntitySet.Name, null );
+                                }
+                            }
+                        }
                     }
                 }
             }
