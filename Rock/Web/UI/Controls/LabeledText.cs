@@ -112,30 +112,31 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            writer.AddAttribute( "class", "control-group" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            label.AddCssClass( "control-label" );
-            
-
-            label.RenderControl( writer );
-
-            if ( !string.IsNullOrWhiteSpace( TextCssClass ) )
+            if ( this.Visible )
             {
-                writer.AddAttribute( "class", "controls " + TextCssClass );
+                writer.AddAttribute( "class", "control-group" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                label.AddCssClass( "control-label" );
+                label.RenderControl( writer );
+
+                if ( !string.IsNullOrWhiteSpace( TextCssClass ) )
+                {
+                    writer.AddAttribute( "class", "controls " + TextCssClass );
+                }
+                else
+                {
+                    writer.AddAttribute( "class", "controls" );
+                }
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                literal.RenderControl( writer );
+
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();
             }
-            else
-            {
-                writer.AddAttribute( "class", "controls" );
-            }
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            literal.RenderControl( writer );
-
-            writer.RenderEndTag();
-
-            writer.RenderEndTag();
         }
 
     }
