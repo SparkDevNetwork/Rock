@@ -27,6 +27,7 @@
     };
 
     function toggleNextDiv() {
+        alert('fired');
         $('[id*="chkNewAddress"]').next().slideToggle();
     };
 
@@ -60,10 +61,9 @@
                         <asp:UpdatePanel ID="pnlAmounts" runat="server" UpdateMode="Conditional">
                         <ContentTemplate>
 
-                            <div id="divCampus" runat="server" visible="false">                                                            
+                            <div id="divCampus" runat="server">                                                            
                                 <div class="row-fluid">
-                                    <asp:HiddenField ID="hfCampusId" runat="server" />
-                                    <Rock:ButtonDropDownList ID="btnCampusList" runat="server" CssClass="btn btn-primary" LabelText="Campus" />                                    
+                                    <Rock:ButtonDropDownList ID="btnCampusList" runat="server" CssClass="btn btn-primary" LabelText="Campus" />
                                 </div>                                
                             </div>
                                                         
@@ -171,7 +171,7 @@
 
                         <div class="row-fluid">
                             <div class="span12">
-                                <Rock:DataTextBox ID="txtStreet" LabelText="Address" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Street1" Required="true" />                            
+                                <Rock:DataTextBox ID="txtStreet" LabelText="Street" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Street1" Required="true" />                            
                             </div>
                         </div>
 
@@ -252,7 +252,7 @@
                                     <Rock:LabeledRadioButtonList ID="rblSavedCard" runat="server" RepeatDirection="Vertical" OnSelectedIndexChanged="rblSavedCard_Click" AutoPostBack="true" CssClass="align-middle"/>                                    
                                 </div>
 
-                                <div id="divNewCard" runat="server" class="toggle-content" Visible="false">
+                                <div id="divNewCard" runat="server" class="toggle-content">
 
                                     <div class="row-fluid">
 
@@ -274,7 +274,7 @@
                                     <div class="row-fluid">
 
                                         <div id="divExpiration" runat="server">
-                                            <Rock:DatePicker ID="dtpExpiration" runat="server" LabelText="Expiration Date" Required="true" />
+                                            <Rock:MonthYearPicker ID="mypExpiration" runat="server" LabelText="Expiration Date" Required="true" />
                                         </div>
 
                                         <div id="divCVV" runat="server">
@@ -320,6 +320,10 @@
                             </div>
 
                         </ContentTemplate>
+                        <Triggers>
+                            <asp:AsyncPostBackTrigger ControlID="rblSavedCard" />
+                            <asp:AsyncPostBackTrigger ControlID="rblSavedAccount" />
+                        </Triggers>
                         </asp:UpdatePanel>
                                 
                     </div>
@@ -330,11 +334,11 @@
                             <Rock:LabeledCheckBox ID="chkNewAddress" runat="server" Text="Use a different billing address" OnClientClick="toggleNextDiv()" />
                         </div>
 
-                        <div id="divNewAddress" class="toggle-content label-padding" runat="server">
+                        <div id="divNewAddress" class="toggle-content label-padding" runat="server" visible="false">
 
                             <div class="row-fluid">
                                 <div class="span12">
-                                    <Rock:DataTextBox ID="diffStreet" LabelText="Address" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Street1" Required="true" />
+                                    <Rock:DataTextBox ID="diffStreet" LabelText="Street" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Street1" Required="true"  />
                                 </div>
                             </div>
 
@@ -343,7 +347,7 @@
                                     <Rock:DataTextBox ID="txtNewCity" LabelText="City" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="City" CssClass="input-inherit" Required="true" />
                                 </div>
                                 <div ID="divNewState" runat="server" >
-                                    <Rock:StateDropDownList ID="ddlNewState" runat="server" LabelText="State" SourceTypeName="Rock.Model.Location, Rock" PropertyName="State" CssClass="input-inherit" Required="true" />
+                                    <Rock:StateDropDownList ID="ddlNewState" runat="server" LabelText="State" SourceTypeName="Rock.Model.Location, Rock" PropertyName="State" CssClass="input-inherit" Required="true"  />
                                 </div>
                                 <div ID="divNewZip" runat="server" >
                                     <Rock:DataTextBox ID="txtNewZip" LabelText="Zip" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Zip" CssClass="input-inherit" Required="true" />
@@ -391,51 +395,62 @@
 
     <asp:Panel ID="pnlComplete" runat="server" Visible="false">
     
-        <div class="container-fluid">
+        <div class="container-fluid well" >
 
             <div class="row-fluid">     
                                 
-                <div ID="divReceipt" runat="server" class="well">
+                <div ID="divReceipt" runat="server">
 
                     <asp:Literal ID="lReceipt" runat="server" />
 
-                    <asp:UpdatePanel id="pnlSavePayment" runat="server" UpdateMode="Conditional">
-                    <ContentTemplate>
+                </div>
 
-                        <div class="row-fluid">
-                            <Rock:LabeledCheckBox ID="chkSavePayment" runat="server" Text="Save My Payment Information" OnCheckedChanged="chkSavePayment_CheckedChanged" AutoPostBack="true" />                                                                                
-                            <div id="divPaymentNick" runat="server" visible="false" class="label-padding fade in">
-                                <div class="row-fluid">                                    
-                                    <Rock:LabeledTextBox ID="txtPaymentNick" runat="server" LabelText="Account nickname:" CssClass="input-medium" />                                    
-                                    <asp:LinkButton ID="btnSavePaymentInfo" runat="server" Text="Save" CssClass="btn btn-primary padding-label" OnClick="btnSavePaymentInfo_Click" />                                    
-                                </div>
-                            </div>             
-                        </div>
+            </div>
 
-                    </ContentTemplate>
-                    </asp:UpdatePanel>
+            <div class="row-fluid">
 
-                    <asp:UpdatePanel id="pnlCreateAccount" runat="server" updatemode="Conditional">
-                    <ContentTemplate>
+                <asp:UpdatePanel id="pnlSavePayment" runat="server" UpdateMode="Conditional" Visible="false">
+                <ContentTemplate>
 
-                        <Rock:LabeledCheckBox ID="chkCreateAccount" runat="server" LabelText="Create An Account" OnCheckedChanged="chkCreateAccount_CheckedChanged" AutoPostBack="true"/>
-                
-                        <div id="divCredentials" runat="server" visible="false" class="fade in">
-
-				            <div class="row-fluid">
-                                <Rock:LabeledTextBox ID="txtUserName" runat="server" LabelText="Enter a username" />
-                                <Rock:LabeledTextBox ID="txtPassword" runat="server" TextMode="Password" LabelText="Enter a password" />
-                            </div>                             
-                            <div class="row-fluid">
-                                <asp:LinkButton ID="btnCreateAccount" runat="server" Text="Create Account" CssClass="btn btn-primary" OnClick="btnCreateAccount_Click" />
+                    <div class="row-fluid">
+                        <Rock:LabeledCheckBox ID="chkSavePayment" runat="server" Text="Save My Payment Information" OnCheckedChanged="chkSavePayment_CheckedChanged" AutoPostBack="true" />                                                                                
+                        <div id="divPaymentNick" runat="server" visible="false" class="label-padding fade in">
+                            <div class="span6">
+                                <Rock:LabeledTextBox ID="txtPaymentNick" runat="server" LabelText="Account nickname:" CssClass="input-medium" />                                    
                             </div>
-                        </div>
+                            <div class="span6">
+                                <asp:LinkButton ID="btnSavePaymentInfo" runat="server" Text="Save" CssClass="btn btn-primary padding-label" OnClick="btnSavePaymentInfo_Click" />                                    
+                            </div>
+                        </div>             
+                    </div>
 
-                    </ContentTemplate>
-                    </asp:UpdatePanel>
+                </ContentTemplate>
+                </asp:UpdatePanel>
+
+                <asp:UpdatePanel id="pnlCreateAccount" runat="server" updatemode="Conditional">
+                <ContentTemplate>
+
+                    <Rock:LabeledCheckBox ID="chkCreateAccount" runat="server" LabelText="Create An Account" OnCheckedChanged="chkCreateAccount_CheckedChanged" AutoPostBack="true"/>
                 
-                </div>            
+                    <div id="divCredentials" runat="server" visible="false" class="fade in">
 
+				        <div class="span6">
+                            <div class="row-fluid">
+                                <Rock:LabeledTextBox ID="txtUserName" runat="server" LabelText="Enter a username" />
+                            </div>
+                            <div class="row-fluid">
+                                <Rock:LabeledTextBox ID="txtPassword" runat="server" TextMode="Password" LabelText="Enter a password" />
+                            </div>
+                        </div>    
+                                                 
+                        <div class="span6">
+                            <asp:LinkButton ID="btnCreateAccount" runat="server" Text="Create Account" CssClass="btn btn-primary" OnClick="btnCreateAccount_Click" />
+                        </div>
+                    </div>
+
+                </ContentTemplate>
+                </asp:UpdatePanel>
+                
             </div>
             
         </div>

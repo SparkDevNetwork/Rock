@@ -27,8 +27,8 @@ namespace Rock.Attribute
         /// <param name="required">if set to <c>true</c> [required].</param>
         /// <param name="order">The order.</param>
         public MemoFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null)
-            : base( name, description, required, defaultValue, category, order, key)
-        {
+            : base( name, description, required, defaultValue, category, order, key, typeof( Rock.Field.Types.MemoFieldType ).FullName)
+        {            
         }
 
     }
