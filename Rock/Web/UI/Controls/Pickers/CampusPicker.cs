@@ -65,7 +65,8 @@ namespace Rock.Web.UI.Controls
             }
             set
             {
-                this.SelectedValue = value.ToString();
+                int id = value.HasValue ? value.Value : 0;
+                this.SelectedValue = id.ToString();
             }
         }
 

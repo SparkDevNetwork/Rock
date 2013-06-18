@@ -182,52 +182,55 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            bool renderControlGroupDiv = ( !string.IsNullOrWhiteSpace( LabelText ) || !string.IsNullOrWhiteSpace( Help ) );
-
-            if ( renderControlGroupDiv )
+            if ( this.Visible )
             {
-                writer.AddAttribute( "class", "control-group" +
-                    ( IsValid ? "" : " error" ) +
-                    ( Required ? " required" : "" ) );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                bool renderControlGroupDiv = ( !string.IsNullOrWhiteSpace( LabelText ) || !string.IsNullOrWhiteSpace( Help ) );
 
-                writer.AddAttribute( "class", "control-label" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                label.Visible = this.Visible;
-                label.RenderControl( writer );
-                helpBlock.RenderControl( writer );
-                writer.RenderEndTag();
+                if ( renderControlGroupDiv )
+                {
+                    writer.AddAttribute( "class", "control-group" +
+                        ( IsValid ? "" : " error" ) +
+                        ( Required ? " required" : "" ) );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( "class", "controls" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            }
+                    writer.AddAttribute( "class", "control-label" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    label.Visible = this.Visible;
+                    label.RenderControl( writer );
+                    helpBlock.RenderControl( writer );
+                    writer.RenderEndTag();
 
-            base.RenderControl( writer );
+                    writer.AddAttribute( "class", "controls" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                }
 
-            if ( Required )
-            {
-                requiredValidator.Enabled = true;
-                requiredValidator.ErrorMessage = LabelText + " is Required.";
-                requiredValidator.RenderControl( writer );
-            }
+                base.RenderControl( writer );
 
-            RenderDataValidator( writer );
+                if ( Required )
+                {
+                    requiredValidator.Enabled = true;
+                    requiredValidator.ErrorMessage = LabelText + " is Required.";
+                    requiredValidator.RenderControl( writer );
+                }
 
-            if ( Tip.Trim() != string.Empty )
-            {
-                writer.AddAttribute( "class", "help-tip" );
-                writer.AddAttribute( "href", "#" );
-                writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                writer.Write( Tip.Trim() );
-                writer.RenderEndTag();
-                writer.RenderEndTag();
-            }
+                RenderDataValidator( writer );
 
-            if ( renderControlGroupDiv )
-            {
-                writer.RenderEndTag();
-                writer.RenderEndTag();
+                if ( Tip.Trim() != string.Empty )
+                {
+                    writer.AddAttribute( "class", "help-tip" );
+                    writer.AddAttribute( "href", "#" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.A );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                    writer.Write( Tip.Trim() );
+                    writer.RenderEndTag();
+                    writer.RenderEndTag();
+                }
+
+                if ( renderControlGroupDiv )
+                {
+                    writer.RenderEndTag();
+                    writer.RenderEndTag();
+                }
             }
         }
 
