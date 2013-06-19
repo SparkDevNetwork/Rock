@@ -381,7 +381,7 @@ namespace Rock.Attribute
             AttributeCategory attributeCategory = null;
             if (category != null)
             {
-                attributeCategory = attributeCategories.Where( g => g.Category.Id == category.Id ).FirstOrDefault();
+                attributeCategory = attributeCategories.Where( g => g.Category != null && g.Category.Id == category.Id ).FirstOrDefault();
             }
             else
             {
