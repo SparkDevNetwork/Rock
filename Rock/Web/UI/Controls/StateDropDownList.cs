@@ -39,12 +39,12 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
+        /// Handles the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> that contains the event data.</param>
-        protected override void OnPreRender( EventArgs e )
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
         {
-            base.OnPreRender( e );
+            base.OnLoad( e );
             var definedType = DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ) );
 
             // Using custom solution instead of `BindToDefinedType` because we don't want the DefinedValue's `Id`
@@ -52,11 +52,11 @@ namespace Rock.Web.UI.Controls
             var states = definedType.DefinedValues.OrderBy( v => v.Order );
             if ( IsAbbreviated )
             {
-                this.DataSource = states.Select( v => new { Id = v.Name, Value = v.Name } );
+                this.DataSource = states.Select( v => new { Id = v.Id, Value = v.Name } );
             }
             else 
             {
-                this.DataSource = states.Select( v => new { Id = v.Name, Value = v.Description } );
+                this.DataSource = states.Select( v => new { Id = v.Id, Value = v.Description } );
             }                        
             this.DataTextField = "Value";
             this.DataValueField = "Id";
