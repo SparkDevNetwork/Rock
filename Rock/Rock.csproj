@@ -271,6 +271,10 @@
     <Compile Include="Migrations\201306112335040_AttributeCategoriesEmptyMigration.Designer.cs">
       <DependentUpon>201306112335040_AttributeCategoriesEmptyMigration.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201306132253131_PathLength260.cs" />
+    <Compile Include="Migrations\201306132253131_PathLength260.Designer.cs">
+      <DependentUpon>201306132253131_PathLength260.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -278,6 +282,9 @@
     <Compile Include="Model\CodeGenerated\FinancialTransactionRefundService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionScannedCheckService.cs" />
     <Compile Include="Model\BinaryFileData.cs" />
+    <Compile Include="Net\RockWebRequest.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="PersonProfile\BadgeComponent.cs" />
     <Compile Include="PersonProfile\BadgeContainer.cs" />
     <Compile Include="PersonProfile\Badge\NextSteps.cs" />
@@ -298,6 +305,7 @@
     <Compile Include="SystemGuid\EntityType.cs" />
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
     <Compile Include="Web\Cache\CategoryCache.cs" />
+    <Compile Include="Web\DescriptionList.cs" />
     <Compile Include="Web\UI\Controls\Communication\ChannelControl.cs" />
     <Compile Include="Data\IgnoreModelErrorsAttribute.cs" />
     <Compile Include="Migrations\201304190037528_BinaryFileTypeContributionImage.cs" />
@@ -337,9 +345,7 @@
     <Compile Include="Migrations\201305032019044_DateTimeDataTypesSweep.Designer.cs">
       <DependentUpon>201305032019044_DateTimeDataTypesSweep.cs</DependentUpon>
     </Compile>
-    <Compile Include="Net\RockRestClient.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="Net\RockRestClient.cs" />
     <Compile Include="Security\LoginParameters.cs" />
     <Compile Include="CheckIn\CheckInBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
@@ -1784,6 +1790,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201306112335040_AttributeCategoriesEmptyMigration.resx">
       <DependentUpon>201306112335040_AttributeCategoriesEmptyMigration.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306132253131_PathLength260.resx">
+      <DependentUpon>201306132253131_PathLength260.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

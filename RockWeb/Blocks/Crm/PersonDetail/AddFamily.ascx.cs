@@ -24,6 +24,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     [AttributeCategoryField("Category", "The Attribute Category to display attributes from", "Rock.Model.Person")]
     public partial class AddFamily : Rock.Web.UI.RockBlock
     {
+        private List<NewFamilyAttributes> attributeControls = new List<NewFamilyAttributes>();
+
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
@@ -31,7 +33,31 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             cpCampus.Campuses = new CampusService().Queryable().OrderBy( a => a.Name ).ToList();
             cpCampus.Visible = cpCampus.Items.Count > 0;
 
-            string category = GetAttributeValue( "Category" );
+            pnlAttributes.Controls.Clear();
+
+            foreach ( string categoryGuid in GetAttributeValue( "Category" ).SplitDelimitedValues(false) )
+            {
+                Guid guid = Guid.Empty;
+                if ( Guid.TryParse( categoryGuid, out guid ) )
+                {
+                    var category = CategoryCache.Read( guid );
+                    if ( category != null )
+                    {
+                        var attributeControl = new NewFamilyAttributes();
+                        pnlAttributes.Controls.Add( attributeControl );
+                        attributeControls.Add( attributeControl );
+                        attributeControl.ID = "familyAttributes_" + category.Id.ToString();
+
+                        foreach ( var attribute in new AttributeService().GetByCategoryId( category.Id ) )
+                        {
+                            if ( attribute.IsAuthorized( "Edit", CurrentPerson ) )
+                            {
+                                attributeControl.AttributeList.Add( AttributeCache.Read( attribute ) );
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         protected override void OnLoad( EventArgs e )
@@ -137,12 +163,19 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             var familyMemberRow = new NewFamilyMembersRow();
             nfmMembers.Controls.Add( familyMemberRow );
-
             familyMemberRow.ID = string.Format( "nfmMembers_row_{1}", nfmMembers.ID, rows.Count + 1 );
 
             if ( rows.Count > 0 )
             {
                 familyMemberRow.LastName = rows[0].LastName;
+            }
+
+            foreach ( var attributeControl in attributeControls )
+            {
+                var attributeRow = new NewFamilyAttributesRow();
+                attributeControl.Controls.Add( attributeRow );
+                attributeRow.AttributeList = attributeControl.AttributeList;
+                attributeRow.ID = string.Format( "attribute_row_{0}_{1}", attributeControl.ID, rows.Count + 1 );
             }
         }
     }

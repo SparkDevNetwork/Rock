@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.Collections.Specialized;
 using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
@@ -23,12 +24,37 @@ namespace Rock.Web.UI.Controls
         public int RowIndex { get; private set; }
 
         /// <summary>
-        /// Gets the row key value.
+        /// Gets the row key value.  
+        /// Usually the Id value of the data in the row
+        /// Cast this to an Int (or use RowKeyId) if your datakey is an integer
         /// </summary>
         /// <value>
         /// The row key value.
         /// </value>
         public object RowKeyValue { get; private set; }
+
+        /// <summary>
+        /// Gets the row key values
+        /// Use this if your datarow has multiple keys (rare)
+        /// </summary>
+        /// <value>
+        /// The row key values.
+        /// </value>
+        public IOrderedDictionary RowKeyValues { get; private set; }
+
+        /// <summary>
+        /// Gets the row key id
+        /// Usually the Id value of the data in the row
+        /// </summary>
+        /// <value>
+        /// The row key id.
+        /// </value>
+        public object RowKeyId {
+            get
+            {
+                return (int)RowKeyValue;
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RowEventArgs" /> class.
@@ -44,6 +70,7 @@ namespace Rock.Web.UI.Controls
                 if ( grid.DataKeyNames.Length > 0 )
                 {
                     RowKeyValue = grid.DataKeys[row.RowIndex].Value;
+                    RowKeyValues = grid.DataKeys[row.RowIndex].Values;
                 }
             }
             else

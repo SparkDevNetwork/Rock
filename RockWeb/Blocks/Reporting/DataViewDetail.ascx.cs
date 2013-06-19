@@ -18,6 +18,7 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+using Rock.Web;
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -432,38 +433,33 @@ $(document).ready(function() {
             hfDataViewId.SetValue( dataView.Id );
             lReadOnlyTitle.Text = dataView.Name;
 
-            string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
-            lblMainDetails.Text = @"
-<div>
-    <dl>";
+            DescriptionList descriptionList = new DescriptionList();
 
             if ( dataView.EntityType != null )
             {
-                lblMainDetails.Text += string.Format( descriptionFormat, "Applies To", dataView.EntityType.FriendlyName );
+                descriptionList.Add( "Applies To", dataView.EntityType.FriendlyName );
             }
 
             if ( dataView.Category != null )
             {
-                lblMainDetails.Text += string.Format( descriptionFormat, "Category", dataView.Category.Name );
+                descriptionList.Add( "Category", dataView.Category.Name );
             }
 
-            lblMainDetails.Text += string.Format( descriptionFormat, "Description", dataView.Description );
+            descriptionList.Add( "Description", dataView.Description );
 
             if ( dataView.DataViewFilter != null && dataView.EntityTypeId.HasValue )
             {
-                lblMainDetails.Text += string.Format( descriptionFormat, "Filter", dataView.DataViewFilter.ToString( EntityTypeCache.Read( dataView.EntityTypeId.Value ).GetEntityType() ) );
+                descriptionList.Add( "Filter", dataView.DataViewFilter.ToString( EntityTypeCache.Read( dataView.EntityTypeId.Value ).GetEntityType() ) );
             }
 
             if ( dataView.TransformEntityType != null )
             {
-                lblMainDetails.Text += string.Format( descriptionFormat, "Post-filter Transformation", dataView.TransformEntityType.FriendlyName );
+                descriptionList.Add( "Post-filter Transformation", dataView.TransformEntityType.FriendlyName );
             }
-            lblMainDetails.Text += @"
-    </dl>
-</div>";
+
+            lblMainDetails.Text = descriptionList.Html;
 
             ShowReport( dataView );
-
         }
 
         private void ShowReport( DataView dataView )

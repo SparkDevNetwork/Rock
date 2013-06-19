@@ -89,7 +89,15 @@ namespace Rock.Model
                     BlockType blockType = new BlockType();
                     blockType.Path = path;
                     blockType.Guid = new Guid();
-                    blockType.Name = String.Join(" - ", nameParts);
+
+                    blockType.Name = string.Join( " - ", nameParts );
+
+                    // limit name to 100 chars so it fits into the .Name column
+                    if (blockType.Name.Length > 100)
+                    {
+                        blockType.Name = blockType.Name.Substring( 0, 97 ) + "...";
+                    }
+                    
                     blockType.Description = Rock.Reflection.GetDescription( control.GetType() ) ?? string.Empty;
 
                     this.Add( blockType, currentPersonId );
