@@ -12,6 +12,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
+using Rock.Web;
 
 namespace RockWeb.Blocks.Crm
 {
@@ -232,17 +233,12 @@ namespace RockWeb.Blocks.Crm
             lGroupIconHtml.Text = groupIconHtml;
             lReadOnlyTitle.Text = groupMember.Person.FullName;
 
-            string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
-            lblMainDetails.Text = @"
-<div>
-    <dl>";
-            lblMainDetails.Text += string.Format( descriptionFormat, "Group Member", groupMember.Person.FullName );
-            lblMainDetails.Text += string.Format( descriptionFormat, "Member's Role", groupMember.GroupRole.Name );
-            lblMainDetails.Text += string.Format( descriptionFormat, "Group Name", group.Name );
-            lblMainDetails.Text += string.Format( descriptionFormat, "Group Description", group.Description );
-            lblMainDetails.Text += @"
-    </dl>
-</div>";
+            lblMainDetails.Text = new DescriptionList()
+                .Add("Group Member", groupMember.Person)
+                .Add("Member's Role", groupMember.GroupRole.Name)
+                .Add("Group Name", group.Name)
+                .Add("Group Description", group.Description)
+                .Html;
 
             groupMember.LoadAttributes();
             Rock.Attribute.Helper.AddDisplayControls( groupMember, phGroupMemberAttributesReadOnly );
