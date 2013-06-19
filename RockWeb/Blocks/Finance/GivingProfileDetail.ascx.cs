@@ -48,7 +48,7 @@ namespace RockWeb.Blocks.Finance
         If this is correct, please press Give.  Otherwise, click Back to edit.<br/>Thank you,<br/><br/>{{ OrganizationName }}<br/>{{ ContributionConfirmFooter }}", "Message Options", 0)]
     [MemoField( "Receipt Message", "What text should be displayed on the receipt page?", true, @"{{ ContributionReceiptHeader }}<br/>{{ Person.FullName }},<br/><br/>
         Thank you for your generosity! You just gave a total of {{ TotalContribution }} to {{ OrganizationName }}.<br/><br/>{{ ContributionReceiptFooter }}", "Message Options", 1 )]
-    [MemoField( "Summary Message", "What text should be displayed on the transaction summary?", true, @"{{ Date }}: {{ TotalContribution }} given by {{ Person.FullName }} using a 
+    [MemoField( "Summary Message", "What text should be displayed on the transaction summary?", true, @"{{ DateTime }}: {{ TotalContribution }} given by {{ Person.FullName }} using a 
         {{ PaymentType }} ending in {{ PaymentLastFour }}.", "Message Options", 2 )]
     public partial class GivingProfileDetail : RockBlock
     {
@@ -135,6 +135,9 @@ namespace RockWeb.Blocks.Finance
                 divGiveBack.AddCssClass( _spanClass );
                 divPrint.AddCssClass( _spanClass );
 
+                chkLimitGifts.InputAttributes.Add( "class", "toggle-input" );
+                chkNewAddress.InputAttributes.Add( "class", "toggle-input" );
+
                 // Show Campus
                 if ( Convert.ToBoolean( GetAttributeValue( "ShowCampuses" ) ) )
                 {
@@ -151,10 +154,6 @@ namespace RockWeb.Blocks.Finance
                     BindFrequencies();
                     divFrequency.Visible = true;
                 }
-                else
-                {
-                    divFrequency.Visible = false;
-                }
 
                 // Show Payment types
                 bool showCredit = Convert.ToBoolean( GetAttributeValue( "ShowCreditCard" ) );
@@ -167,11 +166,11 @@ namespace RockWeb.Blocks.Finance
                     ddlState.UseAbbreviation = true;
                 }
 
-                //var defaultState = GetAttributeValues( "DefaultState" ).Select( Guid.Parse );
-                //if ( defaultState != null )
-                //{
-                //    ddlState.SelectedValue = defaultState;
-                //}
+                var defaultState = GetAttributeValues( "DefaultState" ).FirstOrDefault();
+                if ( defaultState != null )
+                {
+                    ddlState.SelectedValue = defaultState;
+                }
 
                 // Require Phone
                 if ( Convert.ToBoolean( GetAttributeValue( "RequirePhone" ) ) )
@@ -209,8 +208,10 @@ namespace RockWeb.Blocks.Finance
                 ddlState.LabelText = string.Empty;
                 ddlNewState.LabelText = string.Empty;
                 txtZip.LabelText = string.Empty;
-                txtNewZip.LabelText = string.Empty;
+                txtNewZip.LabelText = string.Empty;                                
             }
+
+            
         }
        
         #endregion
@@ -299,18 +300,6 @@ namespace RockWeb.Blocks.Finance
         }
 
         /// <summary>
-        /// Handles the CheckedChanged event of the chkLimitGifts control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void chkLimitGifts_CheckedChanged( object sender, EventArgs e )
-        {
-            SaveAmounts();
-            divLimitNumber.Visible = !divLimitNumber.Visible;
-            RebindAmounts();
-        }
-
-        /// <summary>
         /// Handles the SelectedIndexChanged event of the rblSavedCard control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -328,18 +317,6 @@ namespace RockWeb.Blocks.Finance
         protected void rblSavedAccount_Click( object sender, EventArgs e )
         {
             divNewAccount.Visible = Convert.ToInt32( rblSavedAccount.SelectedValue ) == 0 ? true : false;            
-        }
-
-        /// <summary>
-        /// Handles the CheckedChanged event of the chkDefaultAddress control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void chkNewAddress_CheckedChanged( object sender, EventArgs e )
-        {
-            SaveAmounts();
-            divNewAddress.Visible = chkNewAddress.Checked;
-            RebindAmounts();
         }
 
         /// <summary>
@@ -468,7 +445,7 @@ namespace RockWeb.Blocks.Finance
             Person person = FindPerson();
 
             var configValues = (Dictionary<string, object>)Session["CachedMergeFields"];
-            configValues.Add( "Date", DateTimeOffset.Now );
+            configValues.Add( "DateTime", DateTimeOffset.Now.ToString( "MM/DD/YYYY hh:mm tt" ) );
             
             var receiptTemplate = GetAttributeValue( "ReceiptMessage" );
             lReceipt.Text = receiptTemplate.ResolveMergeFields( configValues );
@@ -628,7 +605,7 @@ namespace RockWeb.Blocks.Finance
             account.TransactionCode = "Unknown";
             //////// TODO WITH GATEWAY CALL ////////
             account.PersonId = person.Id;
-            account.MaskedAccountNumber = string.Concat( Enumerable.Repeat( '*', 12 ), configValues["PaymentLastFour"] );
+            account.MaskedAccountNumber = configValues["PaymentLastFour"].ToString();
 
             if ( !string.IsNullOrEmpty( txtCreditCard.Text ) )
             {
@@ -881,7 +858,7 @@ namespace RockWeb.Blocks.Finance
             {                
                 txtStreet.Text = personLocation.Street1.ToString();
                 txtCity.Text = personLocation.City.ToString();
-                ddlState.Text = personLocation.State.ToString();
+                ddlState.SelectedValue = personLocation.State.ToString();
                 txtZip.Text = personLocation.Zip.ToString();                
             }
         }
@@ -896,40 +873,39 @@ namespace RockWeb.Blocks.Finance
 
             var accountsQueryable = savedAccountService.Queryable().Where( a => a.PersonId == person.Id );
 
-            if ( accountsQueryable != null )
+            if ( accountsQueryable.Count() > 0 )
             {
                 if ( accountsQueryable.Where( a => a.PaymentMethod == PaymentMethod.CreditCard ).Any() )
                 {
                     var savedCreditCard = accountsQueryable.Where( a => a.PaymentMethod == PaymentMethod.CreditCard )
-                        .ToDictionary( a => a.Name + " ending in " + a.MaskedAccountNumber, a => a.Id );
+                        .ToDictionary( a => "Use " + a.Name + " ending in " + a.MaskedAccountNumber, a => a.Id );
                     savedCreditCard.Add( "Use a different card", 0 );
                     rblSavedCard.DataSource = savedCreditCard;
                     rblSavedCard.DataValueField = "Value";
-                    rblSavedCard.DataTextField = "Key";                                        
+                    rblSavedCard.DataTextField = "Key";
                     rblSavedCard.DataBind();
-                    divSavedCard.Visible = true;                    
-                }
-                else
-                {
-                    divSavedCard.Visible = false;
+                    divSavedCard.Visible = true;
+                    divNewCard.Visible = false;
                 }
 
                 if ( accountsQueryable.Where( a => a.PaymentMethod == PaymentMethod.ACH ).Any() )
                 {
                     var savedACH = accountsQueryable.Where( a => a.PaymentMethod == PaymentMethod.ACH )
-                        .ToDictionary( a => a.Name + " ending in " + a.MaskedAccountNumber, a => a.Id );
+                        .ToDictionary( a => "Use " + a.Name + " ending in " + a.MaskedAccountNumber, a => a.Id );
                     savedACH.Add( "Use a different account", 0 );
                     rblSavedAccount.DataSource = savedACH;
                     rblSavedAccount.DataValueField = "Value";
                     rblSavedAccount.DataTextField = "Key";
                     rblSavedAccount.DataBind();
                     divSavedAccount.Visible = true;
+                    divNewAccount.Visible = false;
                 }
-                else
-                {
-                    divSavedAccount.Visible = false;
-                }
-            }            
+            }
+            else
+            {
+                divSavedCard.Visible = false;
+                divSavedAccount.Visible = false;
+            }
         }
 
         /// <summary>
