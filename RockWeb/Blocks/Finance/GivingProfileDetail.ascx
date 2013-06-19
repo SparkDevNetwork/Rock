@@ -3,7 +3,7 @@
 <script type="text/javascript" src="../../Scripts/jquery.creditCardTypeDetector.js"></script>
 
 <script type="text/javascript">
-    function pageLoad(sender, args) {
+    $(document).ready(function() {
         $('.contribution-calculate').on('change', function () {
             var total = 0.00;
             $('.contribution-calculate').each(function () {
@@ -20,16 +20,10 @@
         $('.credit-card').creditCardTypeDetector({ 'credit_card_logos': '.card-logos' });
         $('.credit-card').trigger('keyup');
 
-        $('checkbox').on('click', function () {
-            alert('hey');
-            $(this).closest('.toggle-content').slideToggle();
+        $('.toggle-input').on('click', function () {
+            $(this).parents().next('.toggle-content').slideToggle();
         });
-    };
-
-    function toggleNextDiv() {
-        alert('fired');
-        $('[id*="chkNewAddress"]').next().slideToggle();
-    };
+    });
 
     function cvAccountValidator_ClientValidate(sender, args) {
         args.IsValid = false;
@@ -117,10 +111,10 @@
                                         <Rock:DatePicker ID="dtpStartDate" runat="server" LabelText="Starting On" data-date-format="dd-mm-yyyy" DatePickerType="Date" />
                                     </div>
                                     
-                                    <div id="divLimitGifts" runat="server" class="row-fluid align-middle" visible="false">
-                                        <Rock:LabeledCheckBox ID="chkLimitGifts" runat="server" Text="Limit number of gifts" OnCheckedChanged="chkLimitGifts_CheckedChanged" AutoPostBack="true" />
+                                    <div id="divLimitGifts" runat="server" class="row-fluid align-middle">
+                                        <Rock:LabeledCheckBox ID="chkLimitGifts" runat="server" Text="Limit number of gifts" CssClass="toggle-input" />
                                     
-                                        <div id="divLimitNumber" class="label-padding slide-toggle" runat="server" visible="false">
+                                        <div id="divLimitNumber" runat="server" class="toggle-content label-padding" style="display: none">
                                             <Rock:NumberBox ID="txtLimitNumber" runat="server" class="input-small" Text="0" />
                                         </div>                                    
 
@@ -246,10 +240,10 @@
                         <asp:UpdatePanel ID="pnlPaymentContent" runat="server" UpdateMode="Conditional">
                         <ContentTemplate>
 
-                            <div ID="divCreditCard" runat="server" Visible="true" CssClass="tab-pane">
+                            <div ID="divCreditCard" runat="server" CssClass="tab-pane">
                             
                                 <div id="divSavedCard" runat="server">
-                                    <Rock:LabeledRadioButtonList ID="rblSavedCard" runat="server" RepeatDirection="Vertical" OnSelectedIndexChanged="rblSavedCard_Click" AutoPostBack="true" CssClass="align-middle"/>                                    
+                                    <Rock:LabeledRadioButtonList ID="rblSavedCard" runat="server" LabelText="" RepeatDirection="Vertical" CssClass="align-middle"/>
                                 </div>
 
                                 <div id="divNewCard" runat="server" class="toggle-content">
@@ -293,8 +287,8 @@
 
                             <div ID="divChecking" runat="server" Visible="false" CssClass="tab-pane">
                             
-                                <div id="divSavedAccount" runat="server" >
-                                    <Rock:LabeledRadioButtonList ID="rblSavedAccount" runat="server" LabelText="Saved Accounts" RepeatDirection="Vertical" OnSelectedIndexChanged="rblSavedAccount_Click" AutoPostBack="true"/>
+                                <div id="divSavedAccount" runat="server">
+                                    <Rock:LabeledRadioButtonList ID="rblSavedAccount" runat="server" RepeatDirection="Vertical" />
                                 </div>
 
                                 <div id="divNewAccount" runat="server" class="row-fluid">
@@ -331,10 +325,10 @@
                     <div class="tabFooter">
 
                         <div ID="divDefaultAddress" runat="server" class="row-fluid">
-                            <Rock:LabeledCheckBox ID="chkNewAddress" runat="server" Text="Use a different billing address" OnClientClick="toggleNextDiv()" />
+                            <Rock:LabeledCheckBox ID="chkNewAddress" runat="server" Text="Use a different billing address" CssClass="toggle-input" />
                         </div>
 
-                        <div id="divNewAddress" class="toggle-content label-padding" runat="server" visible="false">
+                        <div id="divNewAddress" runat="server" class="toggle-content label-padding" style="display:none">
 
                             <div class="row-fluid">
                                 <div class="span12">
