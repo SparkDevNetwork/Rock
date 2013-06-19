@@ -117,7 +117,7 @@
                 dateList.children().remove();
                 $.each(dateListValues, function (i, value) {
                     // add to ul
-                    var newLi = "<li><span>" + value + "</span><a href='#' style='display: none'><i class='icon-remove'></i></a></li>";
+                    var newLi = "<li><span>" + value + "</span> <a href='#' style='display: none'><i class='icon-remove'></i></a></li>";
                     dateList.append(newLi);
                 });
 
