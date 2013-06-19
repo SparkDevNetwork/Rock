@@ -12,6 +12,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -659,33 +660,21 @@ namespace RockWeb.Blocks.Crm
                 lblActiveHtml.Text = string.Format( activeHtmlFormat, "label-important", "Inactive" );
             }
 
-            string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
-            lblMainDetails.Text = @"
-<div class='span5'>
-    <dl>";
+            DescriptionList descriptionList = new DescriptionList()
+                .Add("Group Type", group.GroupType.Name)
+                .Add("Group Description", group.Description);
 
-            lblMainDetails.Text += string.Format( descriptionFormat, "Group Type", group.GroupType.Name );
-
-            lblMainDetails.Text += string.Format( descriptionFormat, "Group Description", group.Description );
             if ( group.ParentGroup != null )
             {
-                lblMainDetails.Text += string.Format( descriptionFormat, "Parent Group", group.ParentGroup.Name );
+                descriptionList.Add("Parent Group", group.ParentGroup.Name );
             }
-
-            lblMainDetails.Text += @"
-    </dl>
-</div>
-<div class='span4'>
-    <dl>";
 
             if ( group.Campus != null )
             {
-                lblMainDetails.Text += string.Format( descriptionFormat, "Campus", group.Campus == null ? None.TextHtml : group.Campus.Name );
+                descriptionList.Add( "Campus", group.Campus.Name );
             }
 
-            lblMainDetails.Text += @"
-    </dl>
-</div>";
+            lblMainDetails.Text = descriptionList.Html;
 
             GroupType groupType = new GroupTypeService().Get( group.GroupTypeId );
             groupType.LoadAttributes();

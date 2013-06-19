@@ -13,6 +13,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -394,16 +395,10 @@ namespace RockWeb.Blocks.Administration
             lCategoryIconHtml.Text = categoryIconHtml;
             lReadOnlyTitle.Text = category.Name;
 
-            string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
-            lblMainDetails.Text = @"
-<div>
-    <dl>";
-
-            lblMainDetails.Text += string.Format( descriptionFormat, "Entity Type", category.EntityType.Name );
-            lblMainDetails.Text += @"
-    </dl>
-</div>
-";
+            lblMainDetails.Text = new DescriptionList()
+                .Add("Entity Type", category.EntityType.Name)
+                .Html;
+            
         }
 
         #endregion
