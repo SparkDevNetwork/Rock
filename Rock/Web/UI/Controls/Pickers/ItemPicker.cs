@@ -241,7 +241,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 if ( string.IsNullOrWhiteSpace( _hfItemName.Value ) )
                 {
-                    _hfItemName.Value = Constants.None.Text;
+                    _hfItemName.Value = !string.IsNullOrWhiteSpace( DefaultText ) ? DefaultText : Constants.None.TextHtml;
                 }
 
                 return _hfItemName.Value;
@@ -325,20 +325,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The default text.
         /// </value>
-        public string DefaultText
-        {
-            get
-            {
-                if ( string.IsNullOrWhiteSpace( _defaultText ) )
-                {
-                    _defaultText = Constants.None.Text;
-                }
-
-                return _defaultText;
-            }
-
-            set { _defaultText = value; }
-        }
+        public string DefaultText { get; set; }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
