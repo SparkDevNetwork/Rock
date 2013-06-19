@@ -75,9 +75,13 @@ namespace Rock.Rest.Controllers
                 if (!string.IsNullOrWhiteSpace(entityQualifier))
                 {
                     qry = qry.Where( a => string.Compare(a.EntityTypeQualifierColumn, entityQualifier, true) == 0);
-                    if (!string.IsNullOrWhiteSpace(entityQualifierValue))
+                    if ( !string.IsNullOrWhiteSpace( entityQualifierValue ) )
                     {
-                        qry = qry.Where( a => string.Compare(a.EntityTypeQualifierValue, entityQualifierValue, true) == 0);
+                        qry = qry.Where( a => string.Compare( a.EntityTypeQualifierValue, entityQualifierValue, true ) == 0 );
+                    }
+                    else
+                    {
+                        qry = qry.Where( a => a.EntityTypeQualifierValue == null || a.EntityTypeQualifierValue == "" );
                     }
                 }
 

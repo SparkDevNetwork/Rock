@@ -135,7 +135,7 @@ namespace Rock.Model
         /// <value>
         /// Path to the error page for this site..
         /// </value>
-        [MaxLength( 200 )]
+        [MaxLength( 260 )]
         [DataMember]
         public string ErrorPage { get; set; }
         
