@@ -275,6 +275,10 @@
     <Compile Include="Migrations\201306132253131_PathLength260.Designer.cs">
       <DependentUpon>201306132253131_PathLength260.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201306200023112_SecurityRoleBlocksPages.cs" />
+    <Compile Include="Migrations\201306200023112_SecurityRoleBlocksPages.Designer.cs">
+      <DependentUpon>201306200023112_SecurityRoleBlocksPages.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -1793,6 +1797,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201306132253131_PathLength260.resx">
       <DependentUpon>201306132253131_PathLength260.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306200023112_SecurityRoleBlocksPages.resx">
+      <DependentUpon>201306200023112_SecurityRoleBlocksPages.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
