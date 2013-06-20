@@ -71,7 +71,7 @@ namespace Rock.Rest.Controllers
             List<Person> sortedPersonList = topQry.ToList();
 
             var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-            string imageUrlFormat = Path.Combine( appPath, "Image.ashx?id={0}&width=25&height=25" );
+            string imageUrlFormat = string.Format( "<image src='{0}' />", Path.Combine( appPath, "Image.ashx?id={0}&width=25&height=25" ) );
             string imageNoPhoto = string.Format("<image src='{0}' />", Path.Combine( appPath, "/Assets/images/person-no-photo.jpg" ));
             string itemDetailFormat = @"
 <div class='rock-picker-select-item-details clearfix' style='display: none;'>
@@ -97,6 +97,8 @@ namespace Rock.Rest.Controllers
                 {
                     imageHtml = imageNoPhoto;
                 }
+
+                imageHtml = string.Format( imageUrlFormat, 3 );
 
                 string personInfo = string.Empty;
 
