@@ -279,13 +279,9 @@
     <Compile Include="Migrations\201306200023112_SecurityRoleBlocksPages.Designer.cs">
       <DependentUpon>201306200023112_SecurityRoleBlocksPages.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201306201707369_PersonMergedUpdates.cs" />
-    <Compile Include="Migrations\201306201707369_PersonMergedUpdates.Designer.cs">
-      <DependentUpon>201306201707369_PersonMergedUpdates.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201306201835409_CreateIndexes.cs" />
-    <Compile Include="Migrations\201306201835409_CreateIndexes.Designer.cs">
-      <DependentUpon>201306201835409_CreateIndexes.cs</DependentUpon>
+    <Compile Include="Migrations\201306202221542_PersonMergedUpdates.cs" />
+    <Compile Include="Migrations\201306202221542_PersonMergedUpdates.Designer.cs">
+      <DependentUpon>201306202221542_PersonMergedUpdates.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
@@ -1805,11 +1801,8 @@
     <EmbeddedResource Include="Migrations\201306200023112_SecurityRoleBlocksPages.resx">
       <DependentUpon>201306200023112_SecurityRoleBlocksPages.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201306201707369_PersonMergedUpdates.resx">
-      <DependentUpon>201306201707369_PersonMergedUpdates.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201306201835409_CreateIndexes.resx">
-      <DependentUpon>201306201835409_CreateIndexes.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201306202221542_PersonMergedUpdates.resx">
+      <DependentUpon>201306202221542_PersonMergedUpdates.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
