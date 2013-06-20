@@ -30,7 +30,7 @@ namespace Rock.Migrations
             DropColumn( "dbo.PersonMerged", "CurrentId" );
             DropColumn( "dbo.PersonMerged", "CurrentGuid" );
         }
-
+        
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
@@ -39,12 +39,12 @@ namespace Rock.Migrations
             CreateTable(
                 "dbo.PersonAccount",
                 c => new
-                    {
-                        Id = c.Int( nullable: false, identity: true ),
-                        PersonId = c.Int(),
-                        Account = c.String( maxLength: 50 ),
-                        Guid = c.Guid( nullable: false ),
-                    } )
+                {
+                    Id = c.Int( nullable: false, identity: true ),
+                    PersonId = c.Int(),
+                    Account = c.String( maxLength: 50 ),
+                    Guid = c.Guid( nullable: false ),
+                } )
                 .PrimaryKey( t => t.Id );
             CreateIndex( "dbo.PersonAccount", "PersonId" );
             AddForeignKey( "dbo.PersonAccount", "PersonId", "dbo.Person", "Id" );
