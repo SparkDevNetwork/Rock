@@ -94,12 +94,6 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, MarketingCampaign.FriendlyTypeName );
                 return false;
             }  
- 
-            if ( new Service<PersonAccount>().Queryable().Any( a => a.PersonId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Person.FriendlyTypeName, PersonAccount.FriendlyTypeName );
-                return false;
-            }  
             
             // ignoring PersonViewed,TargetPersonId 
             
