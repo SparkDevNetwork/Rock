@@ -245,7 +245,7 @@
                 transport: {
                     read: {
                         url: function (options) {
-                            var extraParams = $('#' + controlId + ' [id*="hfItemRestUrlExtraParams"]').val(),
+                            var extraParams = $('#hfItemRestUrlExtraParams_' + controlId).val(),
                                 requestUrl = restUrl + (options.Id || 0) + (extraParams || '');
                             return requestUrl;
                         },
