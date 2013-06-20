@@ -98,8 +98,6 @@ namespace Rock.Rest.Controllers
                     imageHtml = imageNoPhoto;
                 }
 
-                imageHtml = string.Format( imageUrlFormat, 3 );
-
                 string personInfo = string.Empty;
 
                 var groupMemberQry = groupMemberService.Queryable().Where( a => a.PersonId.Equals( person.Id ) );
@@ -111,7 +109,7 @@ namespace Rock.Rest.Controllers
                     personInfo += familyGroupMember.GroupRole.Name;
                     if ( person.Age != null )
                     {
-                        personInfo += " - " + person.Age.ToString() + "yrs";
+                        personInfo += " - " + person.Age.ToString() + " yrs old";
                     }
 
                     // Figure out spouse (Implied by "the other GROUPROLE_FAMILY_MEMBER_ADULT that is of the opposite gender")
@@ -129,7 +127,7 @@ namespace Rock.Rest.Controllers
                 }
                 else
                 {
-                    personInfo += person.Age.ToString() + "yrs";
+                    personInfo += person.Age.ToString() + " yrs old";
                 }
 
                 if ( familyGroupMember != null )
