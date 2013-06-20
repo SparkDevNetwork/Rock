@@ -140,7 +140,6 @@
     <Compile Include="Controllers\CodeGenerated\PageRoutesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PagesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PeopleController.cs" />
-    <Compile Include="Controllers\CodeGenerated\PersonAccountsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonMergedsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonViewedsController.cs" />
     <Compile Include="Controllers\CodeGenerated\PhoneNumbersController.cs" />
