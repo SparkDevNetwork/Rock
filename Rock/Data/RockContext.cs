@@ -477,14 +477,6 @@ namespace Rock.Data
         public DbSet<Person> People { get; set; }
 
         /// <summary>
-        /// Gets or sets the person account lookups.
-        /// </summary>
-        /// <value>
-        /// The person account lookups.
-        /// </value>
-        public DbSet<PersonAccount> PersonAccountLookups { get; set; }
-
-        /// <summary>
         /// Gets or sets the Person Trails.
         /// </summary>
         /// <value>
@@ -757,7 +749,6 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new PageContextConfiguration() );
             modelBuilder.Configurations.Add( new PageRouteConfiguration() );
             modelBuilder.Configurations.Add( new PersonConfiguration() );
-            modelBuilder.Configurations.Add( new PersonAccountLookupConfiguration() );
             modelBuilder.Configurations.Add( new PersonMergedConfiguration() );
             modelBuilder.Configurations.Add( new PersonViewedConfiguration() );
             modelBuilder.Configurations.Add( new PhoneNumberConfiguration() );

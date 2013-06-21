@@ -4,12 +4,12 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -44,6 +44,16 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             label = new Label();
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+            SetExtraRestParams();
         }
 
         /// <summary>
