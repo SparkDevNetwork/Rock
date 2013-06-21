@@ -260,11 +260,12 @@ namespace RockWeb.Blocks.Administration
                     // delete AdTypeAttributes that are no longer configured in the UI
                     AttributeService attributeService = new AttributeService();
                     string qualifierValue = marketingCampaignAdType.Id.ToString();
-                    var qry = attributeService.GetByEntityTypeId( new MarketingCampaignAd().TypeId ).AsQueryable()
-                        .Where( a => a.EntityTypeQualifierColumn.Equals( "MarketingCampaignAdTypeId", StringComparison.OrdinalIgnoreCase )
+                    int typeId = new MarketingCampaignAd().TypeId;
+                    var qry = attributeService.GetByEntityTypeId( typeId  ).AsQueryable()
+                        .Where( a => a.EntityTypeQualifierColumn == "MarketingCampaignAdTypeId"
                         && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
 
-                    var deletedAttributes = from attr in qry
+                    var deletedAttributes = from attr in qry.ToList()
                                             where !( from d in AttributesState
                                                      select d.Guid ).Contains( attr.Guid )
                                             select attr;
@@ -272,9 +273,12 @@ namespace RockWeb.Blocks.Administration
                     deletedAttributes.ToList().ForEach( a =>
                         {
                             var attr = attributeService.Get( a.Guid );
-                            Rock.Web.Cache.AttributeCache.Flush( attr.Id );
-                            attributeService.Delete( attr, CurrentPersonId );
-                            attributeService.Save( attr, CurrentPersonId );
+                            if ( attr != null )
+                            {
+                                Rock.Web.Cache.AttributeCache.Flush( attr.Id );
+                                attributeService.Delete( attr, CurrentPersonId );
+                                attributeService.Save( attr, CurrentPersonId );
+                            }
                         } );
 
                     // add/update the AdTypes that are assigned in the UI
