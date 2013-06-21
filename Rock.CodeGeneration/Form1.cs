@@ -351,6 +351,12 @@ order by [parentTable], [columnName]
 
             foreach ( var item in parentTableColumnNameList )
             {
+                // Ignore custom tables
+                if ( item.Key.StartsWith( "_" ) )
+                {
+                    continue;
+                }
+
                 if ( parentTablesToIgnore.Contains( item.Key ) )
                 {
                     canDeleteMiddle += string.Format(
