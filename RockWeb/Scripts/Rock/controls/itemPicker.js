@@ -10,6 +10,9 @@
                 var controlId = itemPicker.controlId,
                     $treeview = $('#treeviewItems_' + controlId),
                     onPostBack = function () {
+                        // itempicker might not exist if it was on an updatepanel and Visible set to false after postback
+                        if (!$('#' + itemPicker.controlId).length) return;
+
                         if (!itemPicker.isMultiSelect) return;
 
                         var val = $('#hfItemId_' + controlId).val(),
@@ -245,7 +248,7 @@
                 transport: {
                     read: {
                         url: function (options) {
-                            var extraParams = $('#' + controlId + ' [id*="hfItemRestUrlExtraParams"]').val(),
+                            var extraParams = $('#hfItemRestUrlExtraParams_' + controlId).val(),
                                 requestUrl = restUrl + (options.Id || 0) + (extraParams || '');
                             return requestUrl;
                         },

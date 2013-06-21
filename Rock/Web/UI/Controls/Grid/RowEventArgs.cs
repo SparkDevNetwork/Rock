@@ -49,7 +49,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The row key id.
         /// </value>
-        public object RowKeyId {
+        public int RowKeyId {
             get
             {
                 return (int)RowKeyValue;
