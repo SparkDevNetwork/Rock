@@ -84,7 +84,7 @@ namespace RockWeb.Blocks.Cms
             if ( !string.IsNullOrWhiteSpace( audience ) )
             {
                 List<int> idlist = audience.SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
-                qry = qry.Where( a => a.MarketingCampaign.MarketingCampaignAudiences.Any( x => idlist.Contains( x.Id ) ) );
+                qry = qry.Where( a => a.MarketingCampaign.MarketingCampaignAudiences.Any( x => idlist.Contains( x.AudienceTypeValueId ) ) );
             }
 
             // AudiencePrimarySecondary

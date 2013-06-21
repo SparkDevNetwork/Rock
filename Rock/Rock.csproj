@@ -282,6 +282,10 @@
     <Compile Include="Migrations\201306200023112_SecurityRoleBlocksPages.Designer.cs">
       <DependentUpon>201306200023112_SecurityRoleBlocksPages.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201306202221542_PersonMergedUpdates.cs" />
+    <Compile Include="Migrations\201306202221542_PersonMergedUpdates.Designer.cs">
+      <DependentUpon>201306202221542_PersonMergedUpdates.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -858,7 +862,6 @@
     <Compile Include="Model\CodeGenerated\EntityTypeService.cs" />
     <Compile Include="Field\Types\HtmlFieldType.cs" />
     <Compile Include="Field\Types\MemoFieldType.cs" />
-    <Compile Include="Model\CodeGenerated\PersonAccountService.cs" />
     <Compile Include="Migrations\201211292334047_CreateDatabase.cs" />
     <Compile Include="Migrations\201211292334047_CreateDatabase.Designer.cs">
       <DependentUpon>201211292334047_CreateDatabase.cs</DependentUpon>
@@ -1097,9 +1100,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\FinancialGateway.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Model\PersonAccount.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\FinancialPledge.cs">
@@ -1806,6 +1806,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201306200023112_SecurityRoleBlocksPages.resx">
       <DependentUpon>201306200023112_SecurityRoleBlocksPages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306202221542_PersonMergedUpdates.resx">
+      <DependentUpon>201306202221542_PersonMergedUpdates.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
