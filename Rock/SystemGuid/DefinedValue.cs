@@ -192,5 +192,15 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Location Type
+
+        public const string LOCATION_TYPE_HOME = "8C52E53C-2A66-435A-AE6E-5EE307D9A0DC";
+
+        /// <summary>
+        /// Business Record Type
+        /// </summary>
+        public const string LOCATION_TYPE_OFFICE = "E071472A-F805-4FC4-917A-D5E3C095C35C";
+
+        #endregion
     }
 }
