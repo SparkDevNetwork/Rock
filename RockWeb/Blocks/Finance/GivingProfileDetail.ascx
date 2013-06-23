@@ -332,19 +332,19 @@
 
                             <div class="row-fluid">
                                 <div class="span12">
-                                    <Rock:DataTextBox ID="diffStreet" LabelText="Street" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Street1" Required="true"  />
+                                    <Rock:DataTextBox ID="diffStreet" LabelText="Street" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Street1" />
                                 </div>
                             </div>
 
                             <div class="row-fluid">
                                 <div ID="divNewCity" runat="server">
-                                    <Rock:DataTextBox ID="txtNewCity" LabelText="City" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="City" CssClass="input-inherit" Required="true" />
+                                    <Rock:DataTextBox ID="txtNewCity" LabelText="City" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="City" CssClass="input-inherit" />
                                 </div>
                                 <div ID="divNewState" runat="server" >
-                                    <Rock:StateDropDownList ID="ddlNewState" runat="server" LabelText="State" SourceTypeName="Rock.Model.Location, Rock" PropertyName="State" CssClass="input-inherit" Required="true"  />
+                                    <Rock:StateDropDownList ID="ddlNewState" runat="server" LabelText="State" SourceTypeName="Rock.Model.Location, Rock" PropertyName="State" CssClass="input-inherit" />
                                 </div>
                                 <div ID="divNewZip" runat="server" >
-                                    <Rock:DataTextBox ID="txtNewZip" LabelText="Zip" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Zip" CssClass="input-inherit" Required="true" />
+                                    <Rock:DataTextBox ID="txtNewZip" LabelText="Zip" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Zip" CssClass="input-inherit" />
                                 </div>
                             </div>
 
@@ -407,8 +407,8 @@
                 <ContentTemplate>
 
                     <div class="row-fluid">
-                        <Rock:LabeledCheckBox ID="chkSavePayment" runat="server" Text="Save My Payment Information" OnCheckedChanged="chkSavePayment_CheckedChanged" AutoPostBack="true" />                                                                                
-                        <div id="divPaymentNick" runat="server" visible="false" class="label-padding fade in">
+                        <Rock:LabeledCheckBox ID="chkSavePayment" runat="server" Text="Save My Payment Information" CssClass="toggle-input" />                                                                                
+                        <div id="divPaymentNick" runat="server" class="toggle-content label-padding" style="display: none">
                             <div class="span6">
                                 <Rock:LabeledTextBox ID="txtPaymentNick" runat="server" LabelText="Account nickname:" CssClass="input-medium" />                                    
                             </div>
@@ -424,9 +424,9 @@
                 <asp:UpdatePanel id="pnlCreateAccount" runat="server" updatemode="Conditional">
                 <ContentTemplate>
 
-                    <Rock:LabeledCheckBox ID="chkCreateAccount" runat="server" LabelText="Create An Account" OnCheckedChanged="chkCreateAccount_CheckedChanged" AutoPostBack="true"/>
+                    <Rock:LabeledCheckBox ID="chkCreateAccount" runat="server" LabelText="Create An Account" CssClass="toggle-input"/>
                 
-                    <div id="divCredentials" runat="server" visible="false" class="fade in">
+                    <div id="divCredentials" runat="server" class="toggle-content" style="display:none">
 
 				        <div class="span6">
                             <div class="row-fluid">
