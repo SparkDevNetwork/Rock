@@ -49,16 +49,8 @@ namespace Rock.Web.UI.Controls
 
             // Using custom solution instead of `BindToDefinedType` because we don't want the DefinedValue's `Id`
             // to be the value in the dropdown list.
-            var states = definedType.DefinedValues.OrderBy( v => v.Order );
-            if ( IsAbbreviated )
-            {
-                this.DataSource = states.Select( v => new { Id = v.Id, Value = v.Name } );
-            }
-            else 
-            {
-                this.DataSource = states.Select( v => new { Id = v.Id, Value = v.Description } );
-            }                        
-            this.DataTextField = "Value";
+            this.DataSource = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => new { Id = v.Name, Value = v.Description } );
+            this.DataTextField = IsAbbreviated ? "Id" : "Value";
             this.DataValueField = "Id";
             this.DataBind();
         }
