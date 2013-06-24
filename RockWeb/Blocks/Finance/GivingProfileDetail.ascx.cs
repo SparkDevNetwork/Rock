@@ -507,7 +507,7 @@ namespace RockWeb.Blocks.Finance
                         FinancialScheduledTransaction scheduledTransaction;
                         var detailList = amountList.ToList();
 
-                        if ( profileId != null && profileId > 0 )
+                        if ( profileId > 0 )
                         {
                             scheduledTransaction = scheduledTransactionService.Get( profileId );
                         }
@@ -906,7 +906,7 @@ namespace RockWeb.Blocks.Finance
                 args.IsValid = false;
                 decimal amount;
                 Decimal.TryParse( ((NumberBox)item.FindControl( "txtAccountAmount" )).Text, out amount );
-                if ( amount != null && amount > 0 )
+                if ( amount > 0 )
                 {
                     args.IsValid = true;
                     return;
