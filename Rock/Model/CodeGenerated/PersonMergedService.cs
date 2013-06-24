@@ -72,8 +72,10 @@ namespace Rock.Model
             else
             {
                 var target = new PersonMerged();
-                target.CurrentId = source.CurrentId;
-                target.CurrentGuid = source.CurrentGuid;
+                target.PreviousPersonId = source.PreviousPersonId;
+                target.PreviousPersonGuid = source.PreviousPersonGuid;
+                target.NewPersonId = source.NewPersonId;
+                target.NewPersonGuid = source.NewPersonGuid;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

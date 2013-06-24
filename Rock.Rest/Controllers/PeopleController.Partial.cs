@@ -71,7 +71,7 @@ namespace Rock.Rest.Controllers
             List<Person> sortedPersonList = topQry.ToList();
 
             var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-            string imageUrlFormat = Path.Combine( appPath, "Image.ashx?id={0}&width=25&height=25" );
+            string imageUrlFormat = string.Format( "<image src='{0}' />", Path.Combine( appPath, "Image.ashx?id={0}&width=25&height=25" ) );
             string imageNoPhoto = string.Format("<image src='{0}' />", Path.Combine( appPath, "/Assets/images/person-no-photo.jpg" ));
             string itemDetailFormat = @"
 <div class='rock-picker-select-item-details clearfix' style='display: none;'>
@@ -109,7 +109,7 @@ namespace Rock.Rest.Controllers
                     personInfo += familyGroupMember.GroupRole.Name;
                     if ( person.Age != null )
                     {
-                        personInfo += " - " + person.Age.ToString() + "yrs";
+                        personInfo += " - " + person.Age.ToString() + " yrs old";
                     }
 
                     // Figure out spouse (Implied by "the other GROUPROLE_FAMILY_MEMBER_ADULT that is of the opposite gender")
@@ -127,7 +127,7 @@ namespace Rock.Rest.Controllers
                 }
                 else
                 {
-                    personInfo += person.Age.ToString() + "yrs";
+                    personInfo += person.Age.ToString() + " yrs old";
                 }
 
                 if ( familyGroupMember != null )

@@ -8,13 +8,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Web.UI;
-
 using DDay.iCal;
-
 using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -368,22 +367,15 @@ namespace RockWeb.Blocks.Administration
             hfScheduleId.SetValue( schedule.Id );
             lReadOnlyTitle.Text = schedule.Name;
 
-            string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
-            lblMainDetails.Text = @"
-<div>
-    <dl>";
-
-            lblMainDetails.Text += string.Format( descriptionFormat, "Description", schedule.Description );
-
             var calendarEvent = schedule.GetCalenderEvent();
+            string occurrenceText = string.Empty;
             if ( calendarEvent != null )
             {
                 var occurrences = calendarEvent.GetOccurrences( DateTime.Now.Date, DateTime.Now.Date.AddYears( 1 ) );
                 if (occurrences.Any())
                 {
                     var occurrence = occurrences[0];
-
-                    string occurrenceText = string.Empty;
+                    
                     if ( occurrence.Period.StartTime.Value.Date.Equals( occurrence.Period.EndTime.Value.Date ) )
                     {
                         occurrenceText += string.Format( "{0} - {1} to {2} ( {3} hours)", occurrence.Period.StartTime.Value.Date.ToShortDateString(), occurrence.Period.StartTime.Value.TimeOfDay.ToTimeString(), occurrence.Period.EndTime.Value.TimeOfDay.ToTimeString(), occurrence.Period.Duration.TotalHours.ToString( "#0.00" ) );
@@ -392,31 +384,27 @@ namespace RockWeb.Blocks.Administration
                     {
                         occurrenceText += string.Format( "<li>{0} to {1} ( {2} hours) </li>", occurrence.Period.StartTime.Value.ToString( "g" ), occurrence.Period.EndTime.Value.ToString( "g" ), occurrence.Period.Duration.TotalHours.ToString( "#0.00" ) );
                     }
-                    lblMainDetails.Text += string.Format( descriptionFormat, "Next Occurrence", occurrenceText );
                 }
-
             }
 
-            if ( schedule.Category != null )
-            {
-                lblMainDetails.Text += string.Format( descriptionFormat, "Category", schedule.Category.Name );
-            }
+            DescriptionList descriptionList = new DescriptionList()
+                .Add("Description", schedule.Description)
+                .Add("Next Occurrence", occurrenceText)
+                .Add("Category", schedule.Category.Name);
 
             if ( schedule.CheckInStartOffsetMinutes.HasValue )
             {
-                lblMainDetails.Text += string.Format( descriptionFormat, "Checkin Starts", schedule.CheckInStartOffsetMinutes.Value.ToString() + " minutes before start of schedule" );
+                descriptionList.Add( "Checkin Starts", schedule.CheckInStartOffsetMinutes.Value.ToString() + " minutes before start of schedule" );
             }
 
             if ( schedule.CheckInEndOffsetMinutes.HasValue )
             {
-                lblMainDetails.Text += string.Format( descriptionFormat, "Checkin Ends", schedule.CheckInEndOffsetMinutes.Value.ToString() + " minutes after start of schedule" );
+                descriptionList.Add(  "Checkin Ends", schedule.CheckInEndOffsetMinutes.Value.ToString() + " minutes after start of schedule" );
             }
 
-            lblMainDetails.Text += @"
-    </dl>
-</div>";
-
+            lblMainDetails.Text = descriptionList.Html;
         }
+
         /// <summary>
         /// Sets the edit mode.
         /// </summary>

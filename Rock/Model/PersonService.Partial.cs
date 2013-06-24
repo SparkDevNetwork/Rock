@@ -262,65 +262,48 @@ namespace Rock.Model
         #region Get Person
 
         /// <summary>
-        /// Gets the by encrypted ID.
-        /// </summary>
-        /// <param name="encryptedID">The encrypted ID.</param>
-        /// <returns></returns>
-        public Person GetByEncryptedID( string encryptedID )
-        {
-            string identifier = Rock.Security.Encryption.DecryptString( encryptedID );
-
-            string[] idParts = identifier.Split( '|' );
-            if ( idParts.Length == 2 )
-            {
-                Guid personGuid = new Guid( idParts[0] );
-                int personId = Int32.Parse( idParts[1] );
-
-                Person person = Queryable().
-                    Where( p => p.Guid == personGuid && p.Id == personId ).FirstOrDefault();
-
-                if ( person != null )
-                    return person;
-
-                // Check to see if the record was merged
-                PersonMergedService personMergedService = new PersonMergedService();
-                PersonMerged personMerged = personMergedService.Queryable().
-                    Where( p => p.Guid == personGuid && p.Id == personId ).FirstOrDefault();
-
-                if ( personMerged != null )
-                    return Get( personMerged.Id, true );
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Gets Person by Id
         /// </summary>
         /// <param name="id">The id.</param>
-        /// <param name="followTrail">if set to <c>true</c> follow the merge trail.</param>
+        /// <param name="followMerges">if set to <c>true</c> follow the merge trail.</param>
         /// <returns>
         /// Person object.
         /// </returns>
-        public Person Get( int id, bool followTrail )
+        public Person Get( int id, bool followMerges )
         {
-            if ( followTrail )
+            if ( followMerges )
+            {
                 id = new PersonMergedService().Current( id );
-
+            }
             return Get( id );
+        }
+
+        /// <summary>
+        /// Gets the specified GUID.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        /// <param name="followMerges">if set to <c>true</c> follow the merge trail.</param>
+        /// <returns></returns>
+        public Person Get( Guid guid, bool followMerges )
+        {
+            if ( followMerges )
+            {
+                guid = new PersonMergedService().Current( guid );
+            }
+            return Get( guid );
         }
 
         /// <summary>
         /// Gets Person by Guid
         /// </summary>
         /// <param name="encryptedKey">The encrypted key.</param>
-        /// <param name="followTrail">if set to <c>true</c> follow the merge trail</param>
+        /// <param name="followMergeTrail">if set to <c>true</c> follow the merge trail</param>
         /// <returns>
         /// Person object.
         /// </returns>
-        public Person GetByEncryptedKey( string encryptedKey, bool followTrail )
+        public Person GetByEncryptedKey( string encryptedKey, bool followMergeTrail )
         {
-            if ( followTrail )
+            if ( followMergeTrail )
                 encryptedKey = new PersonMergedService().Current( encryptedKey );
 
             return GetByEncryptedKey( encryptedKey );

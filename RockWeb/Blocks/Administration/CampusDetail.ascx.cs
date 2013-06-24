@@ -66,7 +66,7 @@ namespace RockWeb.Blocks.Administration
             Campus campus;
             CampusService campusService = new CampusService();
 
-            int campusId = int.Parse( hfCampusId.Value ); ;
+            int campusId = int.Parse( hfCampusId.Value );
 
             if ( campusId == 0 )
             {

@@ -12,50 +12,98 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Person Trail POCO Service class
+    /// Person Merged Service class
     /// </summary>
     public partial class PersonMergedService 
     {
-        /// <summary>
-        /// Gets Person Trails by Current Id
-        /// </summary>
-        /// <param name="currentId">Current Id.</param>
-        /// <returns>An enumerable list of PersonMerged objects.</returns>
-        public IEnumerable<PersonMerged> GetByCurrentId( int currentId )
+        public PersonMerged GetNew( int previousPersonId )
         {
-            return Repository.Find( t => t.CurrentId == currentId );
+            return Repository.FirstOrDefault( t => t.PreviousPersonId == previousPersonId );
+        }
+
+        public PersonMerged GetNew( Guid previousPersonGuid )
+        {
+            return Repository.FirstOrDefault( t => t.PreviousPersonGuid == previousPersonGuid );
+        }
+
+        public virtual PersonMerged GetNewByPreviousEncryptedKey( string encryptedKey )
+        {
+            string publicKey = Rock.Security.Encryption.DecryptString( encryptedKey );
+            return GetNewByPreviousPublicKey( publicKey );
+        }
+
+        public virtual PersonMerged GetNewByPreviousPublicKey( string publicKey )
+        {
+            try
+            {
+                string[] idParts = publicKey.Split( '>' );
+                if ( idParts.Length == 2 )
+                {
+                    int id = Int32.Parse( idParts[0] );
+                    Guid guid = new Guid( idParts[1] );
+
+                    PersonMerged personMerged = GetNew( id );
+
+                    if ( personMerged != null && personMerged.PreviousPersonGuid.CompareTo( guid ) == 0 )
+                    {
+                        return personMerged;
+                    }
+                }
+
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         /// <summary>
-        /// Get's the current person Guid
+        /// Currents the specified public key.
         /// </summary>
         /// <param name="publicKey">The public key.</param>
         /// <returns></returns>
         public string Current( string publicKey )
         {
-            PersonMerged personMerged = GetByEncryptedKey( publicKey );
+            PersonMerged personMerged = GetNewByPreviousEncryptedKey( publicKey );
             while ( personMerged != null )
             {
-                publicKey = personMerged.CurrentPublicKey;
-                personMerged = GetByEncryptedKey( publicKey );
+                publicKey = personMerged.NewEncryptedKey;
+                personMerged = GetNewByPreviousEncryptedKey( publicKey );
             }
             return publicKey;
         }
 
         /// <summary>
-        /// Get's the current person id
+        /// Currents the specified person id.
         /// </summary>
-        /// <param name="id">The id.</param>
+        /// <param name="personId">The person id.</param>
         /// <returns></returns>
-        public int Current( int id )
+        public int Current( int personId )
         {
-            PersonMerged personMerged = Get( id );
+            PersonMerged personMerged = GetNew( personId );
             while ( personMerged != null )
             {
-                id = personMerged.CurrentId;
-                personMerged = Get( id );
+                personId = personMerged.NewPersonId;
+                personMerged = GetNew( personId );
             }
-            return id;
+            return personId;
+        }
+
+        /// <summary>
+        /// Currents the specified person GUID.
+        /// </summary>
+        /// <param name="personGuid">The person GUID.</param>
+        /// <returns></returns>
+        public Guid Current( Guid personGuid )
+        {
+            PersonMerged personMerged = GetNew( personGuid );
+            while ( personMerged != null )
+            {
+                personGuid = personMerged.NewPersonGuid;
+                personMerged = GetNew( personGuid );
+            }
+            return personGuid;
         }
     }
 }
