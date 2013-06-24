@@ -123,45 +123,48 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            bool renderControlGroupDiv = ( !string.IsNullOrWhiteSpace( LabelText ) || !string.IsNullOrWhiteSpace( Help ) );
-
-            if ( renderControlGroupDiv )
+            if ( this.Visible )
             {
-                writer.AddAttribute( "class", "control-group" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                bool renderControlGroupDiv = ( !string.IsNullOrWhiteSpace( LabelText ) || !string.IsNullOrWhiteSpace( Help ) );
 
-                writer.AddAttribute( "class", "control-label" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                label.RenderControl( writer );
-                helpBlock.RenderControl( writer );
-                writer.RenderEndTag();
+                if ( renderControlGroupDiv )
+                {
+                    writer.AddAttribute( "class", "control-group" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( "class", "controls checkbox" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            }
+                    writer.AddAttribute( "class", "control-label" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    label.RenderControl( writer );
+                    helpBlock.RenderControl( writer );
+                    writer.RenderEndTag();
 
-            if ( Items.Count == 0 )
-            {
-                lblNoItemsText.RenderControl( writer );
-            }
+                    writer.AddAttribute( "class", "controls checkbox" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                }
 
-            base.RenderControl( writer );
+                if ( Items.Count == 0 )
+                {
+                    lblNoItemsText.RenderControl( writer );
+                }
 
-            if ( Tip.Trim() != string.Empty )
-            {
-                writer.AddAttribute( "class", "help-tip" );
-                writer.AddAttribute( "href", "#" );
-                writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                writer.Write( Tip.Trim() );
-                writer.RenderEndTag();
-                writer.RenderEndTag();
-            }
+                base.RenderControl( writer );
 
-            if ( renderControlGroupDiv )
-            {
-                writer.RenderEndTag();
-                writer.RenderEndTag();
+                if ( Tip.Trim() != string.Empty )
+                {
+                    writer.AddAttribute( "class", "help-tip" );
+                    writer.AddAttribute( "href", "#" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.A );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                    writer.Write( Tip.Trim() );
+                    writer.RenderEndTag();
+                    writer.RenderEndTag();
+                }
+
+                if ( renderControlGroupDiv )
+                {
+                    writer.RenderEndTag();
+                    writer.RenderEndTag();
+                }
             }
         }
 

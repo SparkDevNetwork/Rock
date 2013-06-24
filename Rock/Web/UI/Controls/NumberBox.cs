@@ -195,9 +195,6 @@ namespace Rock.Web.UI.Controls
             }
 
             base.RenderControl( writer );
-            
-            rangeValidator.Enabled = true;
-            rangeValidator.RenderControl( writer );
 
             if ( Required )
             {
@@ -206,10 +203,32 @@ namespace Rock.Web.UI.Controls
                 requiredValidator.RenderControl( writer );
             }
 
-            if ( !string.IsNullOrWhiteSpace( FieldName ) )
+            int minValue = MinimumValue.AsInteger() ?? int.MinValue;
+            int maxValue = MaximumValue.AsInteger() ?? int.MaxValue;
+
+            string rangeMessageFormat = null;
+            if ( minValue > int.MinValue)
             {
-                rangeValidator.ErrorMessage = string.Format( "Numerical value is required for '{0}'", FieldName );
+                rangeMessageFormat = "{0} must be at least " + MinimumValue;
             }
+            
+            if ( maxValue < int.MaxValue )
+            {
+                rangeMessageFormat = "{0} must be at most " + MaximumValue;
+            }
+
+            if ( ( minValue > int.MinValue ) && ( maxValue < int.MaxValue ) )
+            {
+                rangeMessageFormat = string.Format( "{{0}} must be between {0} and {1} ", MinimumValue, MaximumValue );
+            }
+
+            if ( !string.IsNullOrWhiteSpace( rangeMessageFormat ) )
+            {
+                rangeValidator.ErrorMessage = string.Format( rangeMessageFormat, string.IsNullOrWhiteSpace(FieldName) ? "Value" : FieldName );
+            }
+
+            rangeValidator.Enabled = true;
+            rangeValidator.RenderControl( writer );
             
             if ( renderLabel )
             {

@@ -440,15 +440,6 @@ namespace Rock.Model
         private ICollection<Attendance> _attendances;
 
         /// <summary>
-        /// Gets or sets the PersonAccountLookups.
-        /// </summary>
-        /// <value>
-        /// Collection of PersonAccountLookups.
-        /// </value>
-        [DataMember]
-        public virtual ICollection<PersonAccount> PersonAccountLookups { get; set; }
-
-        /// <summary>
         /// Gets or sets the Marital Status.
         /// </summary>
         /// <value>

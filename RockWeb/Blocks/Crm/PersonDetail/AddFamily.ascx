@@ -39,9 +39,9 @@
 
         </asp:Panel>
 
-        <asp:HiddenField ID="hfAttributeCategory" runat="server" />
-        <asp:Panel ID="pnlAttributes" runat="server" Visible="false">
+        <asp:Panel ID="pnlAttributes" runat="server" Visible="true">
         </asp:Panel>
+
 
     </ContentTemplate>
 </asp:UpdatePanel>
