@@ -22,13 +22,13 @@
                         </div>
                         <div class="span6">
                             <Rock:CampusesPicker ID="cpCampuses" runat="server" />
-                            <Rock:Grid ID="gMarketingCampaignAudiencesPrimary" runat="server" DisplayType="Light">
+                            <Rock:Grid ID="gMarketingCampaignAudiencesPrimary" runat="server" DisplayType="Light" AllowPaging="false">
                                 <Columns>
                                     <asp:BoundField DataField="Name" HeaderText="Primary Audience" />
                                     <Rock:DeleteField OnClick="gMarketingCampaignAudiences_Delete" />
                                 </Columns>
                             </Rock:Grid>
-                            <Rock:Grid ID="gMarketingCampaignAudiencesSecondary" runat="server" DisplayType="Light">
+                            <Rock:Grid ID="gMarketingCampaignAudiencesSecondary" runat="server" DisplayType="Light" AllowPaging="false">
                                 <Columns>
                                     <asp:BoundField DataField="Name" HeaderText="Secondary Audience" />
                                     <Rock:DeleteField OnClick="gMarketingCampaignAudiences_Delete" />
