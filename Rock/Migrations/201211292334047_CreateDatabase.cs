@@ -1880,7 +1880,7 @@ SET IDENTITY_INSERT [Person] OFF
 
 -- Add 1 row to [UserLogin]
 SET IDENTITY_INSERT [UserLogin] ON
-INSERT INTO [UserLogin] ([Id], [ServiceType], [ServiceName], [UserName], [Password], [IsConfirmed], [LastActivityDate], [LastLoginDate], [LastPasswordChangedDate], [CreationDate], [IsOnLine], [IsLockedOut], [LastLockedOutDate], [FailedPasswordAttemptCount], [FailedPasswordAttemptWindowStart], [ApiKey], [PersonId], [Guid]) VALUES (1, 0, N'Rock.Security.Authentication.Database', N'admin', N'xTa7rQK3k6AxSlvacgE5BNl5mNk=', 1, '2012-07-13 15:15:30.813', '2012-07-13 14:57:54.513', '2012-01-23 03:43:25.170', '2011-03-19 07:34:15.327', NULL, NULL, '2011-12-15 02:45:54.937', 1, '2012-06-07 15:25:06.977', N'CcvRockApiKey', 1, '7e10a764-ef6b-431f-87c7-861053c84131')
+INSERT INTO [UserLogin] ([Id], [ServiceType], [ServiceName], [UserName], [Password], [IsConfirmed], [LastActivityDate], [LastLoginDate], [LastPasswordChangedDate], [CreationDate], [IsOnLine], [IsLockedOut], [LastLockedOutDate], [FailedPasswordAttemptCount], [FailedPasswordAttemptWindowStart], [ApiKey], [PersonId], [Guid]) VALUES (1, 0, N'Rock.Security.Authentication.Database', N'admin', N'xTa7rQK3k6AxSlvacgE5BNl5mNk=', 1, '2012-07-13 15:15:30.813', '2012-07-13 14:57:54.513', '2012-01-23 03:43:25.170', '2011-03-19 07:34:15.327', NULL, NULL, '2011-12-15 02:45:54.937', 1, '2012-06-07 15:25:06.977', N'', 1, '7e10a764-ef6b-431f-87c7-861053c84131')
 SET IDENTITY_INSERT [UserLogin] OFF
 
 -- Add 4 rows to [EmailTemplate]

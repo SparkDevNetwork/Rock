@@ -99,7 +99,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gDefinedType_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "definedTypeId", (int)e.RowKeyValue );
+            NavigateToDetailPage( "definedTypeId", e.RowKeyId );
         }
 
         /// <summary>
@@ -109,26 +109,26 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gDefinedType_Delete( object sender, RowEventArgs e )
         {
-            DefinedType type = new DefinedTypeService().Get( (int)e.RowKeyValue );
+            var definedValueService = new DefinedValueService();
+            var definedTypeService = new DefinedTypeService();
 
-            var valueService = new DefinedValueService();
-            var typeService = new DefinedTypeService();
+            DefinedType type = definedTypeService.Get( e.RowKeyId );
 
             if ( type != null )
             {
                 string errorMessage;
-                if ( !typeService.CanDelete( type, out errorMessage ) )
+                if ( !definedTypeService.CanDelete( type, out errorMessage ) )
                 {
                     mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                     return;
                 }
 
                 // if this DefinedType has DefinedValues, see if they can be deleted
-                var definedValues = valueService.GetByDefinedTypeId( type.Id ).ToList();
+                var definedValues = definedValueService.GetByDefinedTypeId( type.Id ).ToList();
 
                 foreach ( var value in definedValues )
                 {
-                    if ( !valueService.CanDelete( value, out errorMessage ) )
+                    if ( !definedValueService.CanDelete( value, out errorMessage ) )
                     {
                         mdGridWarning.Show( errorMessage, ModalAlertType.Information );
                         return;
@@ -139,12 +139,12 @@ namespace RockWeb.Blocks.Administration
                 {
                     foreach ( var value in definedValues )
                     {
-                        valueService.Delete( value, CurrentPersonId );
-                        valueService.Save( value, CurrentPersonId );
+                        definedValueService.Delete( value, CurrentPersonId );
+                        definedValueService.Save( value, CurrentPersonId );
                     }
 
-                    typeService.Delete( type, CurrentPersonId );
-                    typeService.Save( type, CurrentPersonId );
+                    definedTypeService.Delete( type, CurrentPersonId );
+                    definedTypeService.Save( type, CurrentPersonId );
                 } );
             }
 
