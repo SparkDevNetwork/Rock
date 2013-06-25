@@ -3,9 +3,10 @@
 <script type="text/javascript" src="../../Scripts/jquery.creditCardTypeDetector.js"></script>
 
 <script type="text/javascript">
-    $(document).ready(function() {
+
+    function SetControlEvents() {
         $('.contribution-calculate').on('change', function () {
-            var total = 0.00;
+            var total = 0;
             $('.contribution-calculate').each(function () {
                 if ($(this).val() != '' && $(this).val() != null && $(this).val() > 0) {
                     total += parseFloat($(this).val());
@@ -16,14 +17,13 @@
             $('.total-amount').html(total.toFixed(2));
             return false;
         });
-        
+
         $('.credit-card').creditCardTypeDetector({ 'credit_card_logos': '.card-logos' });
-        $('.credit-card').trigger('keyup');
 
         $('.toggle-input').on('click', function () {
             $(this).parents().next('.toggle-content').slideToggle();
         });
-    });
+    };
 
     function cvAccountValidator_ClientValidate(sender, args) {
         args.IsValid = false;
@@ -32,6 +32,9 @@
             return;
         }
     };
+
+    window.onload = SetControlEvents;
+    Sys.WebForms.PageRequestManager.getInstance().add_endRequest(SetControlEvents);
 </script>
 
 <asp:UpdatePanel ID="pnlContribution" runat="server" UpdateMode="Conditional">

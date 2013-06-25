@@ -720,7 +720,8 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         protected void SaveAmounts()
         {
-            var amountList = (Dictionary<FinancialAccount, Decimal>)Session["CachedAmounts"];
+            var amountList = (Dictionary<FinancialAccount, Decimal>)Session["CachedAmounts"] ?? 
+                    new Dictionary<FinancialAccount, Decimal>();   
 
             foreach ( RepeaterItem item in rptAccountList.Items )
             {
