@@ -118,20 +118,24 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            bool renderControlGroupDiv = ( !string.IsNullOrWhiteSpace( LabelText ) || !string.IsNullOrWhiteSpace( Help ) );
-            string wrapperClassName = string.Empty;
-
-            if ( renderControlGroupDiv )
+            if ( this.Visible )
             {
-                writer.AddAttribute( "class", "control-group" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                bool renderControlGroupDiv = ( !string.IsNullOrWhiteSpace( LabelText ) || !string.IsNullOrWhiteSpace( Help ) );
+                string wrapperClassName = string.Empty;
 
-                writer.AddAttribute( "class", "control-label" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                label.RenderControl( writer );
-                helpBlock.RenderControl( writer );
+                if ( renderControlGroupDiv )
+                {
 
-                writer.RenderEndTag();
+                    writer.AddAttribute( "class", "control-group" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                    writer.AddAttribute( "class", "control-label" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    label.RenderControl( writer );
+                    helpBlock.RenderControl( writer );
+
+                    writer.RenderEndTag();
+                }
 
                 writer.AddAttribute( "class", "controls" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -142,24 +146,23 @@ namespace Rock.Web.UI.Controls
                 base.RenderControl( writer );
 
                 writer.RenderEndTag();
-            }
 
-            if ( Tip.Trim() != string.Empty )
-            {
-                writer.AddAttribute( "class", "help-tip" );
-                writer.AddAttribute( "href", "#" );
-                writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                writer.Write( Tip.Trim() );
-                writer.RenderEndTag();
-                writer.RenderEndTag();
-            }
+                if ( Tip.Trim() != string.Empty )
+                {
+                    writer.AddAttribute( "class", "help-tip" );
+                    writer.AddAttribute( "href", "#" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.A );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                    writer.Write( Tip.Trim() );
+                    writer.RenderEndTag();
+                    writer.RenderEndTag();
+                }
 
-            if ( renderControlGroupDiv )
-            {
-                writer.RenderEndTag();
-
-                writer.RenderEndTag();
+                if ( renderControlGroupDiv )
+                {
+                    writer.RenderEndTag();
+                    writer.RenderEndTag();
+                }
             }
         }
 
