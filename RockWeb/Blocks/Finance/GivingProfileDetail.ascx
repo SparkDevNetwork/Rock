@@ -3,7 +3,6 @@
 <script type="text/javascript" src="../../Scripts/jquery.creditCardTypeDetector.js"></script>
 
 <script type="text/javascript">
-
     function SetControlEvents() {
         $('.contribution-calculate').on('change', function () {
             var total = 0;
@@ -19,8 +18,15 @@
         });
 
         $('.credit-card').creditCardTypeDetector({ 'credit_card_logos': '.card-logos' });
-
-        $('.toggle-input').on('click', function () {
+                
+        $('.radio-list').unbind('click').on('click', function () {
+            console.log($(this));
+            if ($(this).selected.val() == 0) {
+                $(this).parents().next('.radio-content').slideToggle();
+            }            
+        });
+                
+        $('.toggle-input').unbind('click').on('click', function () {
             $(this).parents().next('.toggle-content').slideToggle();
         });
     };
@@ -33,8 +39,12 @@
         }
     };
 
-    window.onload = SetControlEvents;
+    $(document).ready(function () {
+        SetControlEvents();
+    });
+
     Sys.WebForms.PageRequestManager.getInstance().add_endRequest(SetControlEvents);
+
 </script>
 
 <asp:UpdatePanel ID="pnlContribution" runat="server" UpdateMode="Conditional">
@@ -161,7 +171,7 @@
                         <% } %>
 
                             <div class="span6">
-                                <Rock:DataTextBox ID="txtLastName" LabelText="Last Name" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" Required="true" CssClass="input-inherit" />
+                                <Rock:DataTextBox ID="txtLastName" LabelText="Last Name" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" Required="true" CssClass="input-inherit calc-name" />
                             </div>        
                             
                         </div>
@@ -223,7 +233,7 @@
 
                             <legend>Payment Information</legend>
     
-                            <ul class="nav nav-pills">
+                            <ul class="nav nav-pills remove-margin">
                                 <asp:Repeater ID="rptPaymentType" runat="server">
                                     <ItemTemplate>
                                         <li id="liSelectedTab" runat="server">
@@ -244,12 +254,12 @@
                         <ContentTemplate>
 
                             <div ID="divCreditCard" runat="server" CssClass="tab-pane">
-                            
+                                                       
                                 <div id="divSavedCard" runat="server">
-                                    <Rock:LabeledRadioButtonList ID="rblSavedCard" runat="server" LabelText="" RepeatDirection="Vertical" CssClass="align-middle"/>
+                                    <Rock:LabeledRadioButtonList ID="rblSavedCard" runat="server" RepeatDirection="Vertical" CssClass="align-middle radio-list" />
                                 </div>
-
-                                <div id="divNewCard" runat="server" class="toggle-content">
+                                
+                                <div id="divNewCard" runat="server" class="radio-content">
 
                                     <div class="row-fluid">
 
@@ -258,7 +268,7 @@
                                         </div>
                                                                         
                                         <div ID="divCardType" runat="server">
-                                            <ul id="ulCardType" class="card-logos no-margin">
+                                            <ul id="ulCardType" class="card-logos remove-margin">
                                                 <li class="card-visa"></li>
                                                 <li class="card-mastercard"></li>
                                                 <li class="card-amex"></li>
@@ -289,20 +299,20 @@
                             </div>
 
                             <div ID="divChecking" runat="server" Visible="false" CssClass="tab-pane">
-                            
-                                <div id="divSavedAccount" runat="server">
-                                    <Rock:LabeledRadioButtonList ID="rblSavedAccount" runat="server" RepeatDirection="Vertical" />
+                                
+                                <div id="divSavedCheck" runat="server">                                                              
+                                    <Rock:LabeledRadioButtonList ID="rblSavedCheck" runat="server" RepeatDirection="Vertical" CssClass="align-middle radio-list" />
                                 </div>
-
-                                <div id="divNewAccount" runat="server" class="row-fluid">
+                            
+                                <div id="divNewCheck" runat="server" class="row-fluid radio-content">
                                     
-                                    <div ID="divAccountDetail" runat="server">
+                                    <div ID="divCheckDetail" runat="server">
                                         <fieldset>
                                             <Rock:LabeledTextBox ID="txtBankName" runat="server" LabelText="Bank Name" CssClass="input-inherit" Required="true" />
                                             <Rock:NumberBox ID="txtRouting" runat="server" LabelText="Routing #" MinimumValue="0.0" CssClass="input-inherit" Required="true" />
                                             <Rock:NumberBox ID="txtAccount" runat="server" LabelText="Account #" MinimumValue="0.0" CssClass="input-inherit" Required="true" />
 
-                                            <Rock:LabeledRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" LabelText="Account Type" CssClass="no-margin">
+                                            <Rock:LabeledRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" LabelText="Account Type" CssClass="remove-margin">
                                                 <asp:ListItem Text="Checking" Selected="true"  />
                                                 <asp:ListItem Text="Savings" />
                                             </Rock:LabeledRadioButtonList>
@@ -316,11 +326,7 @@
 
                             </div>
 
-                        </ContentTemplate>
-                        <Triggers>
-                            <asp:AsyncPostBackTrigger ControlID="rblSavedCard" />
-                            <asp:AsyncPostBackTrigger ControlID="rblSavedAccount" />
-                        </Triggers>
+                        </ContentTemplate>                        
                         </asp:UpdatePanel>
                                 
                     </div>
@@ -328,7 +334,7 @@
                     <div class="tabFooter">
 
                         <div ID="divDefaultAddress" runat="server" class="row-fluid">
-                            <Rock:LabeledCheckBox ID="chkNewAddress" runat="server" Text="Use a different billing address" CssClass="toggle-input" />
+                            <Rock:LabeledCheckBox ID="chkNewAddress" runat="server" Text="Enter a different billing address" CssClass="toggle-input" />
                         </div>
 
                         <div id="divNewAddress" runat="server" class="toggle-content label-padding" style="display:none">
@@ -409,17 +415,15 @@
                 <asp:UpdatePanel id="pnlSavePayment" runat="server" UpdateMode="Conditional" Visible="false">
                 <ContentTemplate>
 
-                    <div class="row-fluid">
-                        <Rock:LabeledCheckBox ID="chkSavePayment" runat="server" Text="Save My Payment Information" CssClass="toggle-input" />                                                                                
-                        <div id="divPaymentNick" runat="server" class="toggle-content label-padding" style="display: none">
-                            <div class="span6">
-                                <Rock:LabeledTextBox ID="txtPaymentNick" runat="server" LabelText="Account nickname:" CssClass="input-medium" />                                    
-                            </div>
-                            <div class="span6">
-                                <asp:LinkButton ID="btnSavePaymentInfo" runat="server" Text="Save" CssClass="btn btn-primary padding-label" OnClick="btnSavePaymentInfo_Click" />                                    
-                            </div>
-                        </div>             
-                    </div>
+                    <Rock:LabeledCheckBox ID="chkSavePayment" runat="server" Text="Save My Payment Information" CssClass="toggle-input" />                                                                                
+                    <div id="divPaymentNick" runat="server" class="toggle-content label-padding" style="display: none">
+                        <div class="span6">
+                            <Rock:LabeledTextBox ID="txtPaymentNick" runat="server" LabelText="Account nickname:" CssClass="input-medium" />                                    
+                        </div>
+                        <div class="span6">
+                            <asp:LinkButton ID="btnSavePaymentInfo" runat="server" Text="Save" CssClass="btn btn-primary padding-label" OnClick="btnSavePaymentInfo_Click" />                                    
+                        </div>
+                    </div>             
 
                 </ContentTemplate>
                 </asp:UpdatePanel>
@@ -427,8 +431,7 @@
                 <asp:UpdatePanel id="pnlCreateAccount" runat="server" updatemode="Conditional">
                 <ContentTemplate>
 
-                    <Rock:LabeledCheckBox ID="chkCreateAccount" runat="server" LabelText="Create An Account" CssClass="toggle-input"/>
-                
+                    <Rock:LabeledCheckBox ID="chkCreateAccount" runat="server" LabelText="Create An Account" CssClass="toggle-input"/>                
                     <div id="divCredentials" runat="server" class="toggle-content" style="display:none">
 
 				        <div class="span6">
