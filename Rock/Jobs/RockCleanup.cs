@@ -85,7 +85,7 @@ namespace Rock.Jobs
                 if ( context.Scheduler.SchedulerName == "RockSchedulerIIS" )
                 {
                     //get the physical path of the cache directory
-                    cacheDirectoryPath = HttpContext.Current.Server.MapPath( cacheDirectoryPath );
+                    cacheDirectoryPath = System.Web.Hosting.HostingEnvironment.MapPath( cacheDirectoryPath );
                 }
 
                 //Clean cache directory
@@ -110,13 +110,13 @@ namespace Rock.Jobs
             }
 
             // loop through each file in the directory
-            foreach ( string fileName in Directory.GetFiles( directoryPath ) )
+            foreach ( string filePath in Directory.GetFiles( directoryPath ) )
             {
                 //if the file creation date is older than the expiration date
-                if ( File.GetCreationTime( directoryPath + "\\" + fileName ) < expirationDate )
+                if ( File.GetCreationTime( filePath ) < expirationDate )
                 {
                     //delete the file
-                    DeleteFile( directoryPath + "\\" + fileName, false );
+                    DeleteFile( filePath, false );
                 }
             }
 
@@ -124,7 +124,7 @@ namespace Rock.Jobs
             foreach ( string subDirectory in Directory.GetDirectories( directoryPath ) )
             {
                 //if the directory is not a reparse point
-                if ( ( File.GetAttributes( subDirectory ) & FileAttributes.ReparsePoint ) == FileAttributes.ReparsePoint )
+                if ( ( File.GetAttributes( subDirectory ) & FileAttributes.ReparsePoint ) != FileAttributes.ReparsePoint )
                 {
                     //clean the directory
                     CleanCacheDirectory( subDirectory, expirationDate );
