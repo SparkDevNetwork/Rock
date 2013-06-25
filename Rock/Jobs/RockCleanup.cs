@@ -64,7 +64,7 @@ namespace Rock.Jobs
 
             // purge exception log
             int exceptionExpireDays = Int32.Parse( dataMap.GetString( "DaysKeepExceptions" ) );
-            DateTime exceptionExpireDate = DateTime.Now.Add( new TimeSpan( userExpireHours * -1, 0, 0 ) );
+            DateTime exceptionExpireDate = DateTime.Now.Add( new TimeSpan( exceptionExpireDays * -1, 0, 0, 0 ) );
 
             ExceptionLogService exceptionLogService = new ExceptionLogService();
 
@@ -75,21 +75,24 @@ namespace Rock.Jobs
             }
 
             // clean the cached file directory
+
+            //get the attributes
             string cacheDirectoryPath = dataMap.GetString( "BaseCacheDirectory" );
             int cacheExpirationDays = int.Parse( dataMap.GetString( "DaysKeepCachedFiles" ) );
+            DateTime cacheExpirationDate = DateTime.Now.Add( new TimeSpan( cacheExpirationDays * -1, 0, 0, 0 ) );
 
-            //if directory is not blank and cache expriation > 0 days
-            if ( !String.IsNullOrEmpty( cacheDirectoryPath ) && cacheExpirationDays >= 0 )
+            //if job is being run by the IIS scheduler and path is not null
+            if ( context.Scheduler.SchedulerName == "RockSchedulerIIS" && String.IsNullOrEmpty( cacheDirectoryPath ) )
             {
-                //if job is being run by the IIS scheduler
-                if ( context.Scheduler.SchedulerName == "RockSchedulerIIS" )
-                {
-                    //get the physical path of the cache directory
-                    cacheDirectoryPath = System.Web.Hosting.HostingEnvironment.MapPath( cacheDirectoryPath );
-                }
+                //get the physical path of the cache directory
+                cacheDirectoryPath = System.Web.Hosting.HostingEnvironment.MapPath( cacheDirectoryPath );
+            }
 
+            //if directory is not blank and cache expiration date not in the future
+            if ( !String.IsNullOrEmpty( cacheDirectoryPath ) && cacheExpirationDate <= DateTime.Now )
+            {
                 //Clean cache directory
-                CleanCacheDirectory( cacheDirectoryPath, DateTime.Now.AddDays( -cacheExpirationDays ) );
+                CleanCacheDirectory( cacheDirectoryPath, cacheExpirationDate );
             }
 
         }
