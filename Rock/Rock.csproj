@@ -287,6 +287,10 @@
     <Compile Include="Migrations\201306241812457_UniqueUsername.Designer.cs">
       <DependentUpon>201306241812457_UniqueUsername.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201306241937463_AttendedCheckin.cs" />
+    <Compile Include="Migrations\201306241937463_AttendedCheckin.Designer.cs">
+      <DependentUpon>201306241937463_AttendedCheckin.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -1812,6 +1816,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201306241812457_UniqueUsername.resx">
       <DependentUpon>201306241812457_UniqueUsername.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306241937463_AttendedCheckin.resx">
+      <DependentUpon>201306241937463_AttendedCheckin.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

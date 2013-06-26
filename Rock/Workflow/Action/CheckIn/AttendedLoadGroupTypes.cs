@@ -31,7 +31,7 @@ namespace Rock.Workflow.Action.CheckIn
         /// <exception cref="System.NotImplementedException"></exception>
         public override bool Execute( Model.WorkflowAction action, Data.IEntity entity, out List<string> errorMessages )
         {
-            
+
             // This seems to only pull the top level ministry (Creativity, KidSpring, whatever), and doesn't go all the way down to the room level. So this needs to be changed
             // to pull from something like CurrentRoomGroupTypes or something like that.
 
