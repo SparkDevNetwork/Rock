@@ -16,7 +16,6 @@ using System.Data.Entity.Migrations.Model;
 using System.Linq; 
 using System.Reflection;
 using Rock.Data;
-using Rock;
 
 namespace Rock.Migrations
 {
@@ -46,7 +45,20 @@ namespace Rock.Migrations
         /// <summary>
         /// 
         /// </summary>
-        private Dictionary<string, Type> dbContextEntities = new Dictionary<string, Type>();
+        private Dictionary<string, Type> dbContextEntities
+        {
+            get
+            {
+                if ( _dbContextEntities == null )
+                {
+                    _dbContextEntities = new Dictionary<string, Type>();
+                    PopulateDbContextEntityLookup();
+                }
+
+                return _dbContextEntities;
+            }
+        }
+        private Dictionary<string, Type> _dbContextEntities = null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RockCSharpMigrationCodeGenerator{T}"/> class.
@@ -56,8 +68,6 @@ namespace Rock.Migrations
             : base()
         {
             LimitOperationsToDbContextTables = limitOperationsToDbContextTables;
-
-            PopulateDbContextEntityLookup();
         }
 
         /// <summary>
