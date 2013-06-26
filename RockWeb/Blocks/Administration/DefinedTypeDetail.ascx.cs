@@ -161,27 +161,14 @@ namespace RockWeb.Blocks.Administration
             hfDefinedTypeId.SetValue( definedType.Id );
             tbTypeName.Text = definedType.Name;
 
-            string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
-            lblMainDetails.Text = @"
-<div class='span5'>
-    <dl>";
-
-            lblMainDetails.Text += string.Format( descriptionFormat, "Name", definedType.Name );
-            lblMainDetails.Text += string.Format( descriptionFormat, "Description", definedType.Description );
-
-            lblMainDetails.Text += @"
-    </dl>
-</div>
-<div class='span4'>
-    <dl>";
-
-            lblMainDetails.Text += string.Format( descriptionFormat, "Category", definedType.Category );
             definedType.FieldType = definedType.FieldType ?? new FieldTypeService().Get( definedType.FieldTypeId ?? 0 );
-            lblMainDetails.Text += string.Format( descriptionFormat, "FieldType", definedType.FieldType.Name );
 
-            lblMainDetails.Text += @"
-    </dl>
-</div>";
+            lblMainDetails.Text = new DescriptionList()
+                .Add("Name", definedType.Name)
+                .Add("Description", definedType.Description)
+                .Add("Category", definedType.Category)
+                .Add("FieldType", definedType.FieldType.Name)
+                .Html;
 
             definedType.LoadAttributes();
         }

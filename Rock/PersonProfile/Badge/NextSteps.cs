@@ -53,7 +53,7 @@ namespace Rock.PersonProfile.Badge
         /// <returns></returns>
         public override string GetIconPath( Person person )
         {
-            return "../../../Assets/Mockup/next-steps.jpg";
+            return string.Format( "{0}/Assets/Mockup/next-steps.jpg", System.Web.VirtualPathUtility.ToAbsolute( "~" ) );
         }
     }
 }

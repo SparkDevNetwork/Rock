@@ -4,11 +4,37 @@
     Rock.controls = Rock.controls || {};
 
     Rock.controls.itemPicker = (function () {
-        var ItemPicker = function (options) {
-            this.controlId = options.controlId;
-            this.restUrl = options.restUrl;
-            this.allowMultiSelect = options.allowMultiSelect;
-        };
+        // Kendo Treeview does not participate in ViewState, so if checkboxes are enabled
+        // need to re-select the checkboxes for each checked node.
+        var _registerPostBackHandler = function (itemPicker) {
+                var controlId = itemPicker.controlId,
+                    $treeview = $('#treeviewItems_' + controlId),
+                    onPostBack = function () {
+                        // itempicker might not exist if it was on an updatepanel and Visible set to false after postback
+                        if (!$('#' + itemPicker.controlId).length) return;
+
+                        if (!itemPicker.isMultiSelect) return;
+
+                        var val = $('#hfItemId_' + controlId).val(),
+                            ids = val.split(','),
+                            $checkbox,
+                            i;
+
+                        // Find each selected node by its model's Id and attempt to check it
+                        for (i = 0; i < ids.length; i++) {
+                            $checkbox = $treeview.find('input[data-id="' + ids[i] + '"]');
+                            $checkbox.prop('checked', true);
+                        }
+                    };
+            
+                Sys.WebForms.PageRequestManager.getInstance().add_endRequest(onPostBack);
+            },
+            ItemPicker = function (options) {
+                this.controlId = options.controlId;
+                this.restUrl = options.restUrl;
+                this.allowMultiSelect = options.allowMultiSelect;
+                this.defaultText = options.defaultText || '<none>';
+            };
 
         ItemPicker.prototype.updateScrollbar = function (e) {
             var findControl = Rock.controls.itemPicker.findControl,
@@ -59,11 +85,16 @@
 
         ItemPicker.prototype.initializeCheckBoxes = function () {
             var controlId = this.controlId,
+                defaultText = this.defaultText,
                 $treeView = $('#treeviewItems_' + controlId),
                 findCheckedNodes = function (nodes, nodeList) {
                     for (var i = 0; i < nodes.length; i++) {
                         if (nodes[i].checked) {
-                            nodeList.push({ id: nodes[i].Id, name: nodes[i].Name, uid: nodes[i].uid });
+                            nodeList.push({
+                                id: nodes[i].Id,        // The model's actual `Id` in the database
+                                name: nodes[i].Name,    // The model's name
+                                uid: nodes[i].uid       // The guid that Kendo assigns to the node on each postback
+                            });
                         }
 
                         if (nodes[i].hasChildren) {
@@ -81,7 +112,7 @@
                     ids,
                     names,
                     selectedValues = '0',
-                    selectedNames = '<none>';
+                    selectedNames = defaultText;
                 
                 selectedNodes = [];
                 findCheckedNodes(nodes, selectedNodes);
@@ -103,18 +134,6 @@
                 $hiddenItemName.val(selectedNames);
                 $selectedItemLabel.val(selectedValues);
                 $selectedItemLabel.text(selectedNames);
-            });
-
-            // Kendo TreeView does not participate in ViewState, so checkboxes must
-            // be re-populated after PostBack from cached values.
-            Sys.WebForms.PageRequestManager.getInstance().add_endRequest(function () {
-                var data = $treeView.data('kendoTreeView'),
-                    node;
-
-                for (var i = 0; i < selectedNodes.length; i++) {
-                    node = data.findByUid(selectedNodes[i].uid);
-                    $(node).find(':checkbox').attr('checked', true);
-                }
             });
         };
 
@@ -153,6 +172,7 @@
 
         ItemPicker.prototype.initializeEventHandlers = function () {
             var controlId = this.controlId,
+                defaultText = this.defaultText,
                 isMultiSelect = this.isMultiSelect,
                 updateScrollbar = this.updateScrollbar;
 
@@ -180,7 +200,7 @@
                 e.stopImmediatePropagation();
 
                 var selectedValue = '0',
-                    selectedText = '<none>',
+                    selectedText = defaultText,
                     $selectedItemLabel = $('#selectedItemLabel_' + controlId),
                     $hiddenItemId = $('#hfItemId_' + controlId),
                     $hiddenItemName = $('#hfItemName_' + controlId);
@@ -197,7 +217,7 @@
                     selectedNode = treeViewData.select(),
                     nodeData = treeViewData.dataItem(selectedNode),
                     selectedValue = '0',
-                    selectedText = '<none>',
+                    selectedText = defaultText,
                     $selectedItemLabel = $('#selectedItemLabel_' + controlId),
                     $hiddenItemId = $('#hfItemId_' + controlId),
                     $hiddenItemName = $('#hfItemName_' + controlId);
@@ -278,11 +298,23 @@
                 return exports.itemPickers[id];
             },
             initialize: function (options) {
+                var itemPicker;
+
                 if (!options.controlId) throw '`controlId` is required';
                 if (!options.restUrl) throw '`resturl` is required';
 
-                var itemPicker = new ItemPicker(options);
-                exports.itemPickers[options.controlId] = itemPicker;
+                // Check to see if the item picker is already in the cache.
+                // If so, this is a postback.
+                if (exports.itemPickers[options.controlId]) {
+                    itemPicker = exports.itemPickers[options.controlId];
+                } else {
+                    // If not in a postback, create a new instance of itempicker,
+                    // cache it, and register postback handler.
+                    itemPicker = new ItemPicker(options);
+                    exports.itemPickers[options.controlId] = itemPicker;
+                    _registerPostBackHandler(itemPicker);
+                }
+                
                 itemPicker.initialize();
             }
         };
