@@ -140,6 +140,7 @@
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
+    <Compile Include="Attribute\MemoFieldAttribute.cs" />
     <Compile Include="Attribute\DecimalFieldAttribute.cs" />
     <Compile Include="Attribute\DateFieldAttribute.cs" />
     <Compile Include="Attribute\AccountFieldAttribute.cs" />
@@ -282,6 +283,10 @@
     <Compile Include="Migrations\201306202221542_PersonMergedUpdates.cs" />
     <Compile Include="Migrations\201306202221542_PersonMergedUpdates.Designer.cs">
       <DependentUpon>201306202221542_PersonMergedUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201306241812457_UniqueUsername.cs" />
+    <Compile Include="Migrations\201306241812457_UniqueUsername.Designer.cs">
+      <DependentUpon>201306241812457_UniqueUsername.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
@@ -1802,6 +1807,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201306202221542_PersonMergedUpdates.resx">
       <DependentUpon>201306202221542_PersonMergedUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306241812457_UniqueUsername.resx">
+      <DependentUpon>201306241812457_UniqueUsername.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

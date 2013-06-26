@@ -201,6 +201,29 @@ namespace Rock.Web.UI.Controls
             set
             {
                 this.ViewState["DisplayType"] = value;
+                
+                if ( DisplayType == GridDisplayType.Light )
+                {
+                    this.AllowPaging = false;
+                    this.AllowSorting = false;
+                    this.Actions.ShowExcelExport = false;
+
+                    this.RemoveCssClass( "table-bordered" );
+                    this.RemoveCssClass( "table-striped" );
+                    this.RemoveCssClass( "table-hover" );
+                    this.RemoveCssClass( "table-full" );
+                    this.AddCssClass( "table-condensed" );
+                    this.AddCssClass( "table-light" );
+                }
+                else
+                {
+                    this.RemoveCssClass( "table-condensed" );
+                    this.RemoveCssClass( "table-light" );
+                    this.AddCssClass( "table-bordered" );
+                    this.AddCssClass( "table-striped" );
+                    this.AddCssClass( "table-hover" );
+                    this.AddCssClass( "table-full" );
+                }
             }
         }
 
@@ -314,6 +337,9 @@ namespace Rock.Web.UI.Controls
             base.PageIndex = 0;
 
             _gridActions = new GridActions( this );
+
+            // set default DisplayType
+            DisplayType = GridDisplayType.Full;
         }
 
         #endregion
@@ -706,28 +732,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">An <see cref="T:System.EventArgs"/> object that contains the event data.</param>
         protected override void OnDataBound( EventArgs e )
         {
-            if ( DisplayType == GridDisplayType.Light )
-            {
-                this.AllowPaging = false;
-                this.AllowSorting = false;
-                this.Actions.ShowExcelExport = false;
-
-                this.RemoveCssClass( "table-bordered" );
-                this.RemoveCssClass( "table-striped" );
-                this.RemoveCssClass( "table-hover" );
-                this.RemoveCssClass( "table-full" );
-                this.AddCssClass( "table-condensed" );
-                this.AddCssClass( "table-light" );
-            }
-            else
-            {
-                this.RemoveCssClass( "table-condensed" );
-                this.RemoveCssClass( "table-light" );
-                this.AddCssClass( "table-bordered" );
-                this.AddCssClass( "table-striped" );
-                this.AddCssClass( "table-hover" );
-                this.AddCssClass( "table-full" );
-            }
+            
 
             base.OnDataBound( e );
 

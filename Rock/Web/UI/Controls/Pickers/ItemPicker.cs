@@ -317,8 +317,6 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool AllowMultiSelect { get; set; }
 
-        private string _defaultText;
-
         /// <summary>
         /// Gets or sets the default text.
         /// </summary>
