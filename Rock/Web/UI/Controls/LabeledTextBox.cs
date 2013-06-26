@@ -31,7 +31,14 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected RequiredFieldValidator requiredValidator;
 
+        /// <summary>
+        /// The prepend label
+        /// </summary>
         protected Label prependLabel;
+
+        /// <summary>
+        /// The append label
+        /// </summary>
         protected Label appendLabel;
 
         /// <summary>
@@ -312,7 +319,7 @@ namespace Rock.Web.UI.Controls
             if ( Required )
             {
                 requiredValidator.Enabled = true;
-                requiredValidator.ErrorMessage = LabelText + " is Required.";
+                requiredValidator.ErrorMessage = !string.IsNullOrWhiteSpace(LabelText) ? LabelText + " is Required." : "";
                 requiredValidator.RenderControl( writer );
             }
 

@@ -21,6 +21,7 @@ namespace Rock.Net
     /// and http://stackoverflow.com/questions/1777221/using-cookiecontainer-with-webclient-class
     /// Used by Apps.CheckScannerUtility
     /// </summary>
+    [System.ComponentModel.DesignerCategory( "Code" )]
     public class RockRestClient : WebClient
     {
         /// <summary>

@@ -14,44 +14,93 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Person Trail POCO Entity.
+    /// Person Merged POCO Entity.
     /// </summary>
     [Table( "PersonMerged" )]
     [DataContract]
-    public partial class PersonMerged : Model<PersonMerged>
+    public partial class PersonMerged : Entity<PersonMerged>
     {
+        #region Entity Properties
+
         /// <summary>
-        /// Gets or sets the Current Id.
+        /// Gets or sets the previous person id.
         /// </summary>
         /// <value>
-        /// Current Id.
+        /// The previous person id.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        public int CurrentId { get; set; }
-        
+        [AlternateKey]
+        public int PreviousPersonId { get; set; }
+
         /// <summary>
-        /// Gets or sets the Current Guid.
+        /// Gets or sets the previous person GUID.
         /// </summary>
         /// <value>
-        /// Current Guid.
+        /// The previous person GUID.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        public Guid CurrentGuid { get; set; }
-        
+        public Guid PreviousPersonGuid { get; set; }
+
         /// <summary>
-        /// Gets a publicly viewable unique key for the model.
+        /// Gets or sets the new person id.
         /// </summary>
+        /// <value>
+        /// The new person id.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int NewPersonId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the new person GUID.
+        /// </summary>
+        /// <value>
+        /// The new person GUID.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public Guid NewPersonGuid { get; set; }
+
+        #endregion
+
+        #region Virtual Properties
+
+        /// <summary>
+        /// Gets the previous encrypted key.
+        /// </summary>
+        /// <value>
+        /// The previous encrypted key.
+        /// </value>
         [NotMapped]
-        public virtual string CurrentPublicKey
+        public virtual string PreviousEncryptedKey
         {
             get
             {
-                string identifier = this.CurrentId.ToString() + ">" + this.CurrentGuid.ToString();
+                string identifier = this.PreviousPersonId.ToString() + ">" + this.PreviousPersonGuid.ToString();
                 return Rock.Security.Encryption.EncryptString( identifier );
             }
         }
+        /// <summary>
+        /// Gets the new encrypted key.
+        /// </summary>
+        /// <value>
+        /// The new encrypted key.
+        /// </value>
+        [NotMapped]
+        public virtual string NewEncryptedKey
+        {
+            get
+            {
+                string identifier = this.NewPersonId.ToString() + ">" + this.NewPersonGuid.ToString();
+                return Rock.Security.Encryption.EncryptString( identifier );
+            }
+        }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
@@ -61,12 +110,16 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return string.Format( "{0}->{1}", this.Id, this.CurrentId );
+            return string.Format( "{0}->{1}", this.PreviousPersonId, this.NewPersonId);
         }
+
+        #endregion
     }
 
+    #region Entity Configuration
+
     /// <summary>
-    /// Person Trail Configuration class.
+    /// Person Merged Configuration class.
     /// </summary>
     public partial class PersonMergedConfiguration : EntityTypeConfiguration<PersonMerged>
     {
@@ -77,4 +130,6 @@ namespace Rock.Model
         {
         }
     }
+
+    #endregion
 }

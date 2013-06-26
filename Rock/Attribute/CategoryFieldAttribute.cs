@@ -32,13 +32,13 @@ namespace Rock.Attribute
         /// <param name="order">The order.</param>
         /// <param name="key">The key.</param>
         public CategoryFieldAttribute( string name, string description = "",
-             string entityTypeName = "", string entityTypeQualifierColumn = "", string entityTypeQualifierValue = "",
-             bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null ) :
-            base( name, description, required, defaultValue, category, order, key, typeof( CategoryFieldType ).FullName )
-        {
-            FieldConfigurationValues.Add( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( entityTypeName ) );
-            FieldConfigurationValues.Add( QUALIFIER_COLUMN_KEY, new Field.ConfigurationValue( entityTypeQualifierColumn ) );
-            FieldConfigurationValues.Add( QUALIFIER_VALUE_KEY, new Field.ConfigurationValue( entityTypeQualifierValue ) );
-        }
+            string entityTypeName = "", string entityTypeQualifierColumn = "", string entityTypeQualifierValue = "",
+            bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null ) 
+            : base( name, description, required, defaultValue, category, order, key, typeof( CategoryFieldType ).FullName )
+            {
+                FieldConfigurationValues.Add( ENTITY_TYPE_NAME_KEY, new Field.ConfigurationValue( entityTypeName ) );
+                FieldConfigurationValues.Add( QUALIFIER_COLUMN_KEY, new Field.ConfigurationValue( entityTypeQualifierColumn ) );
+                FieldConfigurationValues.Add( QUALIFIER_VALUE_KEY, new Field.ConfigurationValue( entityTypeQualifierValue ) );
+            }
     }
 }

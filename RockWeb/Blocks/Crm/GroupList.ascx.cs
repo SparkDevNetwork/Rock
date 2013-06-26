@@ -120,7 +120,7 @@ namespace RockWeb.Blocks.Crm
                     bool isSecurityRoleGroup = group.IsSecurityRole;
                     if ( isSecurityRoleGroup )
                     {
-                        foreach ( var auth in authService.Queryable().Where( a => a.GroupId.Equals( group.Id ) ).ToList() )
+                        foreach ( var auth in authService.Queryable().Where( a => a.GroupId == group.Id ).ToList() )
                         {
                             authService.Delete( auth, CurrentPersonId );
                             authService.Save( auth, CurrentPersonId );

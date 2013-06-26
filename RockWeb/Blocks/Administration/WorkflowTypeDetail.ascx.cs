@@ -11,6 +11,7 @@ using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -535,21 +536,15 @@ namespace RockWeb.Blocks.Administration
             lblWorkflowTypeInactive.Visible = workflowType.IsActive == false;
             lblActivitiesReadonlyHeaderLabel.Text = string.Format( "<strong>Activities</strong> ({0})", workflowType.ActivityTypes.Count() );
 
-            string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
-            lblMainDetails.Text = @"
-<div>
-    <dl>";
-
-            lblMainDetails.Text += string.Format( descriptionFormat, "Description", workflowType.Description );
+            DescriptionList descriptionList = new DescriptionList()
+                .Add("Description", workflowType.Description);
 
             if ( workflowType.Category != null )
             {
-                lblMainDetails.Text += string.Format( descriptionFormat, "Category", workflowType.Category.Name );
+                descriptionList.Add("Category", workflowType.Category.Name );
             }
 
-            lblMainDetails.Text += @"
-    </dl>
-</div>";
+            lblMainDetails.Text = descriptionList.Html;
 
             if ( workflowType.ActivityTypes.Count > 0 )
             {

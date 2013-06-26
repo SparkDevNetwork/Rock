@@ -430,22 +430,15 @@ namespace RockWeb.Blocks.Administration
             // set title.text value even though it is hidden so that Ad Edit can get the title of the campaign
             tbTitle.Text = marketingCampaign.Title;
 
-            // make a Description section for nonEdit mode
-            string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
-            lblMainDetails.Text = @"
-<div class='span6'>
-    <dl>";
-
-            lblMainDetails.Text += string.Format( descriptionFormat, "Title", marketingCampaign.Title );
-
             string contactInfo = string.Format( "{0}<br>{1}<br>{2}", marketingCampaign.ContactFullName, marketingCampaign.ContactEmail, marketingCampaign.ContactPhoneNumber );
             contactInfo = string.IsNullOrWhiteSpace( contactInfo.Replace( "<br>", string.Empty ) ) ? None.TextHtml : contactInfo;
-            lblMainDetails.Text += string.Format( descriptionFormat, "Contact", contactInfo );
 
+            string eventGroupHtml = null;
+            string eventPageGuid = this.GetAttributeValue( "EventPage" );
+            
             if ( marketingCampaign.EventGroup != null )
             {
-                string eventGroupHtml = marketingCampaign.EventGroup.Name;
-                string eventPageGuid = this.GetAttributeValue( "EventPage" );
+                eventGroupHtml = marketingCampaign.EventGroup.Name;
 
                 if ( !string.IsNullOrWhiteSpace( eventPageGuid ) )
                 {
@@ -456,33 +449,35 @@ namespace RockWeb.Blocks.Administration
                     string eventGroupUrl = new PageReference( page.Id, 0, queryString ).BuildUrl();
                     eventGroupHtml = string.Format( "<a href='{0}'>{1}</a>", eventGroupUrl, marketingCampaign.EventGroup.Name );
                 }
-
-                lblMainDetails.Text += string.Format( descriptionFormat, "Linked Event", eventGroupHtml );
             }
-
-            lblMainDetails.Text += @"
-    </dl>
-</div>
-<div class='span6'>
-    <dl>";
 
             string campusList = marketingCampaign.MarketingCampaignCampuses.Select( a => a.Campus.Name ).OrderBy( a => a ).ToList().AsDelimited( "<br>" );
-            if ( marketingCampaign.MarketingCampaignCampuses.Count > 0 )
-            {
-                lblMainDetails.Text += string.Format( descriptionFormat, "Campuses", campusList );
-            }
 
             string primaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => a.IsPrimary ).Select( a => a.Name ).OrderBy( a => a ).ToList().AsDelimited( "<br>" );
             primaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => a.IsPrimary ).Count() == 0 ? None.TextHtml : primaryAudiences;
-            lblMainDetails.Text += string.Format( descriptionFormat, "Primary Audience", primaryAudiences );
 
             string secondaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => !a.IsPrimary ).Select( a => a.Name ).OrderBy( a => a ).ToList().AsDelimited( "<br>" );
             secondaryAudiences = marketingCampaign.MarketingCampaignAudiences.Where( a => !a.IsPrimary ).Count() == 0 ? None.TextHtml : secondaryAudiences;
-            lblMainDetails.Text += string.Format( descriptionFormat, "Secondary Audience", secondaryAudiences );
 
-            lblMainDetails.Text += @"
-    </dl>
-</div>";
+            DescriptionList descriptionList = new DescriptionList()
+                .Add("Title", marketingCampaign.Title)
+                .Add("Contact", contactInfo);
+
+            if (eventGroupHtml != null)
+            {
+                descriptionList.Add("Linked Event", eventGroupHtml);
+            }
+
+            if ( marketingCampaign.MarketingCampaignCampuses.Count > 0 )
+            {
+                descriptionList.Add("Campuses", campusList);
+            }
+
+            descriptionList
+                .Add( "Primary Audience", primaryAudiences )
+                .Add( "Secondary Audience", secondaryAudiences );
+
+            lblMainDetails.Text = descriptionList.Html;
         }
 
         /// <summary>
