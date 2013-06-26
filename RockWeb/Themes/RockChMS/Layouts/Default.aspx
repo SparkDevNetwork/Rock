@@ -80,7 +80,7 @@
                     <!-- display any ajax error messages here (use with ajax-client-error-handler.js) -->
                     <div class="alert alert-error ajax-error" style="display:none">
                         <strong>Ooops!</strong>
-                        <span class="ajax-error-message" / ></span>
+                        <span class="ajax-error-message"></span>
                     </div>
 
                     <Rock:Zone ID="Content" runat="server" />
