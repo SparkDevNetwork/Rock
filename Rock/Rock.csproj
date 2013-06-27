@@ -164,6 +164,7 @@
     <Compile Include="Data\MergeFieldAttribute.cs" />
     <Compile Include="Field\Types\ComponentsFieldType.cs" />
     <Compile Include="Field\Types\CategoryFieldType.cs" />
+    <Compile Include="Field\Types\CategoriesFieldType.cs" />
     <Compile Include="Migrations\201305032320163_Communications.cs" />
     <Compile Include="Migrations\201305032320163_Communications.Designer.cs">
       <DependentUpon>201305032320163_Communications.cs</DependentUpon>
