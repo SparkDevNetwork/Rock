@@ -909,6 +909,7 @@
     <Compile Include="Web\UI\Controls\PersonProfile\BadgeList.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ComponentsPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\GeoPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MonthDayPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MonthYearPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\CampusPicker.cs" />
@@ -1125,7 +1126,6 @@
     <Compile Include="Model\CodeGenerated\GroupMemberService.cs" />
     <Compile Include="Model\GroupMemberService.Partial.cs" />
     <Compile Include="Model\GroupLocation.cs" />
-    <Compile Include="Jobs\CleanCachedImages.cs" />
     <Compile Include="Jobs\SendGridProcess.cs" />
     <Compile Include="Jobs\RockCleanup.cs" />
     <Compile Include="Migrations\Configuration.cs" />
