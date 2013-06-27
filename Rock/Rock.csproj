@@ -288,6 +288,14 @@
     <Compile Include="Migrations\201306241812457_UniqueUsername.Designer.cs">
       <DependentUpon>201306241812457_UniqueUsername.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201306272119300_GroupMemberUniqueMemberRole.cs" />
+    <Compile Include="Migrations\201306272119300_GroupMemberUniqueMemberRole.Designer.cs">
+      <DependentUpon>201306272119300_GroupMemberUniqueMemberRole.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201306272128075_GroupMemberAddGroupMemberStatus.cs" />
+    <Compile Include="Migrations\201306272128075_GroupMemberAddGroupMemberStatus.Designer.cs">
+      <DependentUpon>201306272128075_GroupMemberAddGroupMemberStatus.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -1811,6 +1819,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201306241812457_UniqueUsername.resx">
       <DependentUpon>201306241812457_UniqueUsername.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306272119300_GroupMemberUniqueMemberRole.resx">
+      <DependentUpon>201306272119300_GroupMemberUniqueMemberRole.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306272128075_GroupMemberAddGroupMemberStatus.resx">
+      <DependentUpon>201306272128075_GroupMemberAddGroupMemberStatus.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
