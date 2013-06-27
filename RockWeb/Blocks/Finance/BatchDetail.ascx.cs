@@ -92,14 +92,6 @@ namespace RockWeb.Blocks.Finance.Administration
         /// </summary>
         private void LoadDropDowns()
         {           
-            CampusService campusService = new CampusService();
-            ddlCampus.DataSource = campusService.Queryable()
-                .OrderBy( a => a.Name )
-                .ToDictionary( a => a.Id, a => a.Name );
-            ddlCampus.Items.Add( Rock.Constants.All.Text );
-            ddlCampus.DataValueField = "Key";
-            ddlCampus.DataTextField = "Value";
-            ddlCampus.DataBind();
             ddlStatus.BindToEnum( typeof( BatchStatus ) );
         }
 
@@ -108,19 +100,16 @@ namespace RockWeb.Blocks.Finance.Administration
         /// </summary>
         private void BindGrid()
         {
-            int itemId = 0;
-            var parm = PageParameter( "financialBatchId" );
-            if ( parm == null )
-                return;
-
-            int.TryParse( parm.ToString(), out itemId);
-            if ( itemId == 0 )
-                return;
-            var batchService = new FinancialBatchService();
-            var batch = batchService.Get( itemId );
-
-            ShowEditValue( batch );
-
+            var itemId = PageParameter( "financialBatchId" );
+            if ( !string.IsNullOrWhiteSpace( itemId ) )
+            {
+                int batchId;
+                Int32.TryParse( itemId, out batchId );
+                if ( batchId > 0 )
+                {
+                    ShowEditValue( batchId );
+                }                
+            }
         }
         
         /// <summary>
@@ -142,21 +131,22 @@ namespace RockWeb.Blocks.Finance.Administration
         /// </summary>
         /// <param name="attributeId">The attribute id.</param>
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
-        protected void ShowEditValue( Rock.Model.FinancialBatch batchValue )
-        {            
-            hfIdValue.Value = batchValue.Id.ToString();
+        protected void ShowEditValue( int batchId )
+        {
+            var batchService = new FinancialBatchService();
+            var batch = batchService.Get( batchId );
+            hfIdValue.Value = batch.Id.ToString();
             
             lValue.Text = "Edit";
-            tbName.Text = batchValue.Name;
-            dtBatchDate.SelectedDate = batchValue.BatchDate;
-            if ( batchValue.CampusId.HasValue )
+            tbName.Text = batch.Name;
+            dtBatchDate.SelectedDate = batch.BatchDate;
+            if ( batch.CampusId.HasValue )
             {
-                ddlCampus.SelectedValue = batchValue.CampusId.ToString();                  
+                cpCampus.SelectedCampusId = batch.CampusId;  
             }
             ddlStatus.BindToEnum( typeof(BatchStatus) );
-             
-            tbControlAmount.Text = batchValue.ControlAmount.ToString();
-            setTransactionDataSource( batchValue.Transactions.ToList() );
+            tbControlAmount.Text = batch.ControlAmount.ToString();
+            setTransactionDataSource( batch.Transactions.ToList() );
         }
 
         /// <summary>
@@ -187,11 +177,7 @@ namespace RockWeb.Blocks.Finance.Administration
 
                 financialBatch.Name = tbName.Text;
                 financialBatch.BatchDate = dtBatchDate.SelectedDate;
-                if ( ddlCampus.SelectedIndex > -1 )
-                {
-                    financialBatch.CampusId = ddlCampus.SelectedValue.AsInteger();
-                    
-                }
+                financialBatch.CampusId = cpCampus.SelectedCampusId;                
                 financialBatch.Status = (BatchStatus) ddlStatus.SelectedIndex;
                 decimal fcontrolamt = 0;
                 decimal.TryParse( tbControlAmount.Text, out fcontrolamt );
