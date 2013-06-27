@@ -303,8 +303,9 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected virtual void RegisterJavaScript()
         {
-            const string scriptFormat = "Rock.controls.geoPicker.initialize({{ controlId: '{0}', drawingMode: '{1}' }});";
-            string script = string.Format( scriptFormat, this.ClientID, this.DrawingMode );
+            var organizationAddress = GlobalAttributesCache.Read().GetValue( "OrganizationAddress" );
+            const string scriptFormat = "Rock.controls.geoPicker.initialize({{ controlId: '{0}', drawingMode: '{1}', centerAddress: '{2}' }});";
+            string script = string.Format( scriptFormat, this.ClientID, this.DrawingMode, organizationAddress );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "geo_picker-" + this.ClientID, script, true );
         }
 
@@ -469,7 +470,7 @@ namespace Rock.Web.UI.Controls
                 }
 
                 string controlHtmlFormatEnd = @"
-            <a class='btn btn-mini' id='btnCancel_{0}'>Close</a>
+            <a class='btn btn-mini' id='btnCancel_{0}'>Cancel</a>
         </div>
     </span>
 ";
