@@ -17,11 +17,9 @@
             return false;
         });
 
-        $('.credit-card').creditCardTypeDetector({ 'credit_card_logos': '.card-logos' });
-                
-        $('.radio-list').unbind('click').on('click', function () {
-            console.log($(this));
-            if ($(this).selected.val() == 0) {
+        $('.credit-card').creditCardTypeDetector({ 'credit_card_logos': '.card-logos' });           
+        $('.radio-list input:radio').unbind('click').on('click', function () {
+            if ($(this).val() == 0 && $(this).parents().next('.radio-content').css("display") != "none" ) {
                 $(this).parents().next('.radio-content').slideToggle();
             }            
         });
@@ -39,12 +37,8 @@
         }
     };
 
-    $(document).ready(function () {
-        SetControlEvents();
-    });
-
+    $(document).ready(function () { SetControlEvents(); });
     Sys.WebForms.PageRequestManager.getInstance().add_endRequest(SetControlEvents);
-
 </script>
 
 <asp:UpdatePanel ID="pnlContribution" runat="server" UpdateMode="Conditional">
@@ -161,7 +155,7 @@
                         <div class="row-fluid">
                             
                             <div class="span6">
-                                <Rock:DataTextBox ID="txtFirstName" LabelText="First Name" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="GivenName" Required="true" CssClass="input-inherit" />
+                                <Rock:DataTextBox ID="txtFirstName" LabelText="First Name" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="GivenName" Required="true" CssClass="input-inherit" AutoCompleteType="FirstName" />
                             </div>
 
                         <% if ( _spanClass != "span6" ) { %>
@@ -171,40 +165,40 @@
                         <% } %>
 
                             <div class="span6">
-                                <Rock:DataTextBox ID="txtLastName" LabelText="Last Name" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" Required="true" CssClass="input-inherit calc-name" />
+                                <Rock:DataTextBox ID="txtLastName" LabelText="Last Name" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" Required="true" CssClass="input-inherit calc-name" AutoCompleteType="LastName" />
                             </div>        
                             
                         </div>
 
                         <div class="row-fluid">
                             <div class="span12">
-                                <Rock:DataTextBox ID="txtStreet" LabelText="Street" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Street1" Required="true" />                            
+                                <Rock:DataTextBox ID="txtStreet" LabelText="Street" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Street1" Required="true" AutoCompleteType="HomeStreetAddress" />
                             </div>
                         </div>
 
                         <div class="row-fluid">
 
                             <div ID="divCity" runat="server">
-                                <Rock:DataTextBox ID="txtCity" LabelText="City" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="City" Required="true" CssClass="input-inherit" />    
+                                <Rock:DataTextBox ID="txtCity" LabelText="City" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="City" Required="true" CssClass="input-inherit" AutoCompleteType="HomeCity" />    
                             </div>
                             <div id="divState" runat="server">
-                                <Rock:StateDropDownList ID="ddlState" runat="server" LabelText="State" SourceTypeName="Rock.Model.Location, Rock" PropertyName="State" Required="true" CssClass="input-inherit address-line" />
+                                <Rock:StateDropDownList ID="ddlState" runat="server" LabelText="State" SourceTypeName="Rock.Model.Location, Rock" PropertyName="State" Required="true" CssClass="input-inherit address-line" AutoCompleteType="HomeState"/>
                             </div>
                             <div id="divZip" runat="server">
-                                <Rock:DataTextBox ID="txtZip" LabelText="Zip" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Zip" Required="true" CssClass="input-mini input-inherit address-line" />
+                                <Rock:DataTextBox ID="txtZip" LabelText="Zip" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Zip" Required="true" CssClass="input-mini input-inherit address-line" AutoCompleteType="HomeZipCode" />
                             </div>
                             
                         </div>                    
 
                         <div class="row-fluid">   
                             <div class="span12" >
-                                <Rock:DataTextBox ID="txtEmail" LabelText="Email" runat="server" TextMode="Email" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" Required="true" />
+                                <Rock:DataTextBox ID="txtEmail" LabelText="Email" runat="server" TextMode="Email" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" Required="true" AutoCompleteType="Email" />
                             </div>
                         </div>
 
                         <div class="row-fluid">   
                             <div class="span12" >
-                                <Rock:DataTextBox ID="txtPhone" LabelText="Phone" runat="server" SourceTypeName="Rock.Model.PhoneNumber, Rock" PropertyName="Number" CssClass="input-medium" Required="true" />
+                                <Rock:DataTextBox ID="txtPhone" LabelText="Phone" runat="server" SourceTypeName="Rock.Model.PhoneNumber, Rock" PropertyName="Number" CssClass="input-medium" Required="true" AutoCompleteType="HomePhone" />
                             </div>
                         </div>
 
@@ -255,8 +249,8 @@
 
                             <div ID="divCreditCard" runat="server" CssClass="tab-pane">
                                                        
-                                <div id="divSavedCard" runat="server">
-                                    <Rock:LabeledRadioButtonList ID="rblSavedCard" runat="server" RepeatDirection="Vertical" CssClass="align-middle radio-list" />
+                                <div id="divSavedCard" runat="server" class="radio-list">
+                                    <Rock:LabeledRadioButtonList ID="rblSavedCard" runat="server" RepeatDirection="Vertical" />
                                 </div>
                                 
                                 <div id="divNewCard" runat="server" class="radio-content">
@@ -264,7 +258,7 @@
                                     <div class="row-fluid">
 
                                         <div id="divCardNumber" runat="server">
-                                            <Rock:LabeledTextBox ID="txtCreditCard" runat="server" LabelText="Credit Card #" MaxLength="19" MinimumValue="1000000000" MaximumValue="9999999999999999" CssClass="credit-card input-inherit" Required="true" />
+                                            <Rock:LabeledTextBox ID="txtCreditCard" runat="server" LabelText="Credit Card #" MaxLength="19" MinimumValue="1000000000" MaximumValue="9999999999999999" CssClass="credit-card input-inherit" />
                                         </div>
                                                                         
                                         <div ID="divCardType" runat="server">
@@ -281,17 +275,17 @@
                                     <div class="row-fluid">
 
                                         <div id="divExpiration" runat="server">
-                                            <Rock:MonthYearPicker ID="mypExpiration" runat="server" LabelText="Expiration Date" Required="true" />
+                                            <Rock:MonthYearPicker ID="mypExpiration" runat="server" LabelText="Expiration Date" />
                                         </div>
 
                                         <div id="divCVV" runat="server">
-                                            <Rock:NumberBox ID="txtCVV" LabelText="CVV #" runat="server" MaxLength="3" CssClass="input-mini" Required="true" />
+                                            <Rock:NumberBox ID="txtCVV" LabelText="CVV #" runat="server" MaxLength="3" CssClass="input-mini" />
                                         </div>
 
                                     </div>
 
                                     <div class="row-fluid">
-                                        <Rock:LabeledTextBox ID="txtCardName" runat="server" LabelText="Name on Card" Required="true" />
+                                        <Rock:LabeledTextBox ID="txtCardName" runat="server" LabelText="Name on Card" />
                                     </div>
 
                                 </div>                            
@@ -300,17 +294,17 @@
 
                             <div ID="divChecking" runat="server" Visible="false" CssClass="tab-pane">
                                 
-                                <div id="divSavedCheck" runat="server">                                                              
-                                    <Rock:LabeledRadioButtonList ID="rblSavedCheck" runat="server" RepeatDirection="Vertical" CssClass="align-middle radio-list" />
+                                <div id="divSavedCheck" runat="server" class="radio-list">                                                              
+                                    <Rock:LabeledRadioButtonList ID="rblSavedCheck" runat="server" RepeatDirection="Vertical" />
                                 </div>
                             
                                 <div id="divNewCheck" runat="server" class="row-fluid radio-content">
                                     
                                     <div ID="divCheckDetail" runat="server">
                                         <fieldset>
-                                            <Rock:LabeledTextBox ID="txtBankName" runat="server" LabelText="Bank Name" CssClass="input-inherit" Required="true" />
-                                            <Rock:NumberBox ID="txtRouting" runat="server" LabelText="Routing #" MinimumValue="0.0" CssClass="input-inherit" Required="true" />
-                                            <Rock:NumberBox ID="txtAccount" runat="server" LabelText="Account #" MinimumValue="0.0" CssClass="input-inherit" Required="true" />
+                                            <Rock:LabeledTextBox ID="txtBankName" runat="server" LabelText="Bank Name" CssClass="input-inherit" />
+                                            <Rock:NumberBox ID="txtRoutingNumber" runat="server" LabelText="Routing #" MinimumValue="0.0" CssClass="input-inherit" />
+                                            <Rock:NumberBox ID="txtAccountNumber" runat="server" LabelText="Account #" MinimumValue="0.0" CssClass="input-inherit" />
 
                                             <Rock:LabeledRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" LabelText="Account Type" CssClass="remove-margin">
                                                 <asp:ListItem Text="Checking" Selected="true"  />
@@ -341,7 +335,7 @@
 
                             <div class="row-fluid">
                                 <div class="span12">
-                                    <Rock:DataTextBox ID="diffStreet" LabelText="Street" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Street1" />
+                                    <Rock:DataTextBox ID="txtNewStreet" LabelText="Street" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Street1" />
                                 </div>
                             </div>
 
