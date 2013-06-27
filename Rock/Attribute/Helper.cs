@@ -424,6 +424,11 @@ namespace Rock.Attribute
             var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attribute.Id, model.Id ).FirstOrDefault();
             if ( attributeValue == null )
             {
+                if ( newValue == null )
+                {
+                    return;
+                }
+
                 attributeValue = new Rock.Model.AttributeValue();
                 attributeValue.AttributeId = attribute.Id;
                 attributeValue.EntityId = model.Id;
