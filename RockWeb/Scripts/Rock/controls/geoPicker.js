@@ -227,9 +227,7 @@
             * Takes the path data stored in the path and plots it on the map.
             */
             this.plotPath = function (map) {
-                console.log("plotPath was called.");
                 obj.initMinMaxLatLng();
-                console.log("obj.path: " + obj.path);
                 // only try this if we have a path
                 if (obj.path) {
                     //console.log("found an obj.path to plot: " + obj.path);
@@ -325,7 +323,6 @@
                 if (!latlng || isNaN(latlng.lat()) || isNaN(latlng.lng()) ) {
                     return;
                 }
-                console.log(latlng);
                 var geocoder = new google.maps.Geocoder();
                 geocoder = geocoder.geocode({ 'latLng': latlng }, function (results, status) {
                     if (status == google.maps.GeocoderStatus.OK) {
@@ -415,7 +412,7 @@
                     selectedGeographyLabel = $('#selectedGeographyLabel_' + controlId),
                     $hiddenField = $('#hfGeoPath_' + self.controlId);
 
-                console.log('storing coordinates into hf (' + '#hfGeoPath_' + self.controlId + ') self.path:' + self.path);
+                //console.log('storing coordinates into hf (' + '#hfGeoPath_' + self.controlId + ') self.path:' + self.path);
                 $hiddenField.val(self.path);
 
                 selectedGeographyLabel.val(selectedValue);
