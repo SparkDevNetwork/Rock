@@ -18,26 +18,8 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Display an abbreviated state name
         /// </summary>
-        protected bool IsAbbreviated = false;
-
-        /// <summary>
-        /// Sets whether or not the State name is abbreviated. Default setting is false.
-        /// </summary>
-        /// <value>
-        /// The boolean.
-        /// </value>
-        public bool UseAbbreviation
-        {
-            get
-            {
-                return IsAbbreviated;
-            }
-            set
-            {
-                IsAbbreviated = value;
-            }
-        }
-
+        public bool UseAbbreviation { get; set; }
+        
         /// <summary>
         /// Handles the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -46,11 +28,11 @@ namespace Rock.Web.UI.Controls
         {
             base.OnLoad( e );
             var definedType = DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ) );
-
+            
             // Using custom solution instead of `BindToDefinedType` because we don't want the DefinedValue's `Id`
             // to be the value in the dropdown list.
             this.DataSource = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => new { Id = v.Name, Value = v.Description } );
-            this.DataTextField = IsAbbreviated ? "Id" : "Value";
+            this.DataTextField = UseAbbreviation ? "Id" : "Value";
             this.DataValueField = "Id";
             this.DataBind();
         }
