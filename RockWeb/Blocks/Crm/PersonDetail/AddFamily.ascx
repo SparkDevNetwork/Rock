@@ -26,11 +26,11 @@
                         <div class="control-group">
                             <div class="control-label">City</div>
                             <div class="controls">
-                                <asp:TextBox ID="tbCity" runat="server" CssClass="input-small" />
+                                <asp:TextBox ID="tbCity" runat="server" />
                                 &nbsp;&nbsp;&nbsp;&nbsp;State&nbsp;&nbsp;
-                                <Rock:StateDropDownList ID="ddlState" runat="server" />
+                                <Rock:StateDropDownList ID="ddlState" runat="server" UseAbbreviation="true" CssClass="input-mini" />
                                 &nbsp;&nbsp;&nbsp;&nbsp;Zip&nbsp;&nbsp;
-                                <asp:TextBox ID="tbZip" runat="server" CssClass="input-mini" />
+                                <asp:TextBox ID="tbZip" runat="server" CssClass="input-small" />
                             </div>
                         </div>
                     </fieldset>
