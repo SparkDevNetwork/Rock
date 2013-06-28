@@ -34,24 +34,17 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            if ( !string.IsNullOrWhiteSpace( value ) )
+            int id = int.MinValue;
+            if ( int.TryParse( value, out id ) )
             {
-                try
+                var definedValue = Rock.Web.Cache.DefinedValueCache.Read( id );
+                if ( definedValue != null )
                 {
-                    var definedValue = Rock.Web.Cache.DefinedValueCache.Read( Int32.Parse( value ) );
-                    if ( definedValue != null )
-                    {
-                        return definedValue.Name;
-                    }
+                    return definedValue.Name;
                 }
-                catch { }
+            }
 
-                return "Unknown Defined Value: " + value;
-            }
-            else
-            {
-                return string.Empty;
-            }
+            return string.Empty;
         }
 
         /// <summary>
@@ -158,14 +151,13 @@ namespace Rock.Field.Types
 
             if ( configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ ALLOW_MULTIPLE_KEY ].Value.AsBoolean() )
             {
-                editControl = new CheckBoxList { ID = id }; 
+                editControl = new Rock.Web.UI.Controls.LabeledCheckBoxList { ID = id }; 
                 editControl.AddCssClass( "checkboxlist-group" );
             }
             else
             {
-                editControl = new DropDownList { ID = id }; 
-                // Provide the ability to set a "none" default value (unless the Required is true).
-                editControl.Items.Add( new ListItem( None.Text, None.IdValue ) );
+                editControl = new Rock.Web.UI.Controls.LabeledDropDownList { ID = id }; 
+                editControl.Items.Add( new ListItem() );
             }
 
             if ( configurationValues != null && configurationValues.ContainsKey( DEFINED_TYPE_KEY ) )
@@ -194,24 +186,17 @@ namespace Rock.Field.Types
         {
             if ( control != null && control is ListControl )
             {
-                if ( control is DropDownList )
+                if ( control is Rock.Web.UI.Controls.LabeledDropDownList )
                 {
                     return ( (ListControl)control ).SelectedValue;
                 }
-                else if ( control is CheckBoxList )
+                else if ( control is Rock.Web.UI.Controls.LabeledCheckBoxList )
                 {
-                    string x =  ( (CheckBoxList)control ).Items.Cast<ListItem>()
-                        .Where(i => i.Selected)
-                        .Select( i => i.Value ).ToJson();
+                    var cblControl = control as Rock.Web.UI.Controls.LabeledCheckBoxList;
 
-                    //return ( (CheckBoxList)control ).Items.Cast<ListItem>()
-                    //    .Where(i => i.Selected)
-                    //    .Select( i => i.Value ).ToJson();
-
-                    IEnumerable<string> allChecked = ( (CheckBoxList)control ).Items.Cast<ListItem>()
+                    IEnumerable<string> allChecked = cblControl.Items.Cast<ListItem>()
                         .Where( i => i.Selected )
                         .Select( i => i.Value );
-
                     return string.Join( ",", allChecked );
                 }
             }
@@ -236,7 +221,6 @@ namespace Rock.Field.Types
                     }
                     else if ( control is CheckBoxList )
                     {
-                        //List<string> values =  JsonConvert.DeserializeObject(value, typeof(List<string>)) as List<string>;
                         List<string> values = new List<string>();
                         values.AddRange( value.Split( ',' ) );
 

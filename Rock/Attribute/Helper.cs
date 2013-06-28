@@ -643,18 +643,11 @@ namespace Rock.Attribute
                         }
                     }
 
-                    if ( attribute.IsRequired && ( attributeControl is TextBox ) )
+                    if ( attributeControl is Rock.Web.UI.Controls.IRequiredControl)
                     {
-                        RequiredFieldValidator rfv = new RequiredFieldValidator();
-                        divControls.Controls.Add( rfv );
-                        rfv.CssClass = "validation-error help-inline";
-                        rfv.ControlToValidate = attributeControl.ID;
-                        rfv.ID = string.Format( "attribute_rfv_{0}", attribute.Id );
-                        rfv.ErrorMessage = string.Format( "{0} is Required", attribute.Name );
-                        rfv.Display = ValidatorDisplay.None;
-
-                        if ( !setValue && !rfv.IsValid )
-                            div.Attributes.Add( "class", "error" );
+                        var requiredControl = attributeControl as Rock.Web.UI.Controls.IRequiredControl;
+                        requiredControl.Required = attribute.IsRequired;
+                        requiredControl.RequiredErrorMessage = attribute.Name + " is required.";
                     }
                 }
             }
@@ -708,31 +701,6 @@ namespace Rock.Attribute
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// Sets any missing required field error indicators.
-        /// </summary>
-        /// <param name="parentControl">The parent control.</param>
-        /// <param name="item">The item.</param>
-        public static void SetErrorIndicators( Control parentControl, IHasAttributes item )
-        {
-            if ( item.Attributes != null )
-                foreach ( var attribute in item.Attributes )
-                {
-                    if ( attribute.Value.IsRequired )
-                    {
-                        HtmlGenericControl div = parentControl.FindControl( string.Format( "attribute_{0}", attribute.Value.Id ) ) as HtmlGenericControl;
-                        RequiredFieldValidator rfv = parentControl.FindControl( string.Format( "attribute_rfv_{0}", attribute.Value.Id ) ) as RequiredFieldValidator;
-                        if ( div != null && rfv != null )
-                        {
-                            if ( rfv.IsValid )
-                                div.RemoveCssClass( "error" );
-                            else
-                                div.AddCssClass( "error" );
-                        }
-                    }
-                }
         }
 
         /// <summary>

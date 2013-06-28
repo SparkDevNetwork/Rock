@@ -312,7 +312,6 @@ namespace RockWeb.Blocks.Administration
 
             LoadAdAttributes( marketingCampaignAd, false, false );
             Rock.Attribute.Helper.GetEditValues( phAttributes, marketingCampaignAd );
-            Rock.Attribute.Helper.SetErrorIndicators( phAttributes, marketingCampaignAd );
 
             if ( !Page.IsValid )
             {

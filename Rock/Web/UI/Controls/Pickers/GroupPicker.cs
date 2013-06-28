@@ -32,7 +32,7 @@ namespace Rock.Web.UI.Controls
             set 
             { 
                 label.Text = value;
-                base.FieldName = label.Text;
+                base.RequiredErrorMessage = string.IsNullOrWhiteSpace( value ) ? "Group value is required" : value + " is required";
             }
         }
 
