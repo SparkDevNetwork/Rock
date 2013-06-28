@@ -42,6 +42,7 @@ namespace Rock.Web.UI.Controls
                 return rows;
             }
         }
+
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
@@ -75,82 +76,85 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "table" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Table );
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Thead );
-            writer.RenderBeginTag( HtmlTextWriterTag.Tr );
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Th );
-            writer.Write( "Role" );
-            writer.RenderEndTag();
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Th );
-            writer.Write( "Title" );
-            writer.RenderEndTag();
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Th );
-            writer.Write( "First Name" );
-            writer.RenderEndTag();
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Th );
-            writer.Write( "Nick Name" );
-            writer.RenderEndTag();
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Th );
-            writer.Write( "Last Name" );
-            writer.RenderEndTag();
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Th );
-            writer.Write( "Gender" );
-            writer.RenderEndTag();
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Th );
-            writer.Write( "Birthdate" );
-            writer.RenderEndTag();
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Th );
-            writer.Write( "Status" );
-            writer.RenderEndTag();
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Th );
-            writer.Write( "Grade" );
-            writer.RenderEndTag();
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Th );
-            writer.Write( "" );
-            writer.RenderEndTag();
-
-            writer.RenderEndTag();  // tr
-            writer.RenderEndTag();  // thead
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Tbody );
-
-            foreach ( Control control in Controls )
+            if ( this.Visible )
             {
-                if ( control is NewFamilyMembersRow )
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "table" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Table );
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Thead );
+                writer.RenderBeginTag( HtmlTextWriterTag.Tr );
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Th );
+                writer.Write( "Role" );
+                writer.RenderEndTag();
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Th );
+                writer.Write( "Title" );
+                writer.RenderEndTag();
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Th );
+                writer.Write( "First Name" );
+                writer.RenderEndTag();
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Th );
+                writer.Write( "Nick Name" );
+                writer.RenderEndTag();
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Th );
+                writer.Write( "Last Name" );
+                writer.RenderEndTag();
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Th );
+                writer.Write( "Gender" );
+                writer.RenderEndTag();
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Th );
+                writer.Write( "Birthdate" );
+                writer.RenderEndTag();
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Th );
+                writer.Write( "Status" );
+                writer.RenderEndTag();
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Th );
+                writer.Write( "Grade" );
+                writer.RenderEndTag();
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Th );
+                writer.Write( "" );
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();  // tr
+                writer.RenderEndTag();  // thead
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Tbody );
+
+                foreach ( Control control in Controls )
                 {
-                    control.RenderControl( writer );
+                    if ( control is NewFamilyMembersRow )
+                    {
+                        control.RenderControl( writer );
+                    }
                 }
+
+                writer.RenderEndTag();  // tbody
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Tfoot );
+                writer.RenderBeginTag( HtmlTextWriterTag.Tr );
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Colspan, "9" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Td );
+                writer.RenderEndTag();
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Td );
+                lbAddFamilyMember.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.RenderEndTag();  // tr
+                writer.RenderEndTag();  // tfoot
+
+                writer.RenderEndTag();  // table
             }
-
-            writer.RenderEndTag();  // tbody
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Tfoot );
-            writer.RenderBeginTag( HtmlTextWriterTag.Tr );
-
-            writer.AddAttribute( HtmlTextWriterAttribute.Colspan, "9" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Td );
-            writer.RenderEndTag();
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Td );
-            lbAddFamilyMember.RenderControl( writer );
-            writer.RenderEndTag();
-
-            writer.RenderEndTag();  // tr
-            writer.RenderEndTag();  // tfoot
-
-            writer.RenderEndTag();  // table
         }
 
         /// <summary>
