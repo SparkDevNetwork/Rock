@@ -292,6 +292,10 @@
     <Compile Include="Migrations\201306271809000_GlobalAttributeDefaultsForOrg.Designer.cs">
       <DependentUpon>201306271809000_GlobalAttributeDefaultsForOrg.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201306282038440_GoogleAPIKeyGlobalAttribute.cs" />
+    <Compile Include="Migrations\201306282038440_GoogleAPIKeyGlobalAttribute.Designer.cs">
+      <DependentUpon>201306282038440_GoogleAPIKeyGlobalAttribute.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -1818,6 +1822,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201306271809000_GlobalAttributeDefaultsForOrg.resx">
       <DependentUpon>201306271809000_GlobalAttributeDefaultsForOrg.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306282038440_GoogleAPIKeyGlobalAttribute.resx">
+      <DependentUpon>201306282038440_GoogleAPIKeyGlobalAttribute.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
