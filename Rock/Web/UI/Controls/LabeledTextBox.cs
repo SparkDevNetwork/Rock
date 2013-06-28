@@ -14,7 +14,7 @@ namespace Rock.Web.UI.Controls
     /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with an associated label.
     /// </summary>
     [ToolboxData( "<{0}:LabeledTextBox runat=server></{0}:LabeledTextBox>" )]
-    public class LabeledTextBox : TextBox, ILabeledControl
+    public class LabeledTextBox : TextBox, ILabeledControl, IRequiredControl
     {
         /// <summary>
         /// The label
@@ -212,6 +212,32 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the required error message.  If blank, the LabelName name will be used
+        /// </summary>
+        /// <value>
+        /// The required error message.
+        /// </value>
+        public string RequiredErrorMessage
+        {
+            get
+            {
+                return requiredValidator.ErrorMessage;
+            }
+            set
+            {
+                requiredValidator.ErrorMessage = value;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LabeledTextBox" /> class.
+        /// </summary>
+        public LabeledTextBox() : base()
+        {
+            requiredValidator = new RequiredFieldValidator();
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -223,7 +249,6 @@ namespace Rock.Web.UI.Controls
             label = new Literal();
             Controls.Add( label );
 
-            requiredValidator = new RequiredFieldValidator();
             requiredValidator.ID = this.ID + "_rfv";
             requiredValidator.ControlToValidate = this.ID;
             requiredValidator.Display = ValidatorDisplay.Dynamic;
@@ -262,88 +287,93 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            bool renderControlGroupDiv = ( !string.IsNullOrWhiteSpace( LabelText ) || !string.IsNullOrWhiteSpace( Help ) );
-            string wrapperClassName = string.Empty;
-
-            if ( renderControlGroupDiv )
+            if ( this.Visible )
             {
-                writer.AddAttribute( "class", "control-group" +
-                    ( IsValid ? "" : " error" ) +
-                    ( Required ? " required" : "" ) );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                bool renderControlGroupDiv = ( !string.IsNullOrWhiteSpace( LabelText ) || !string.IsNullOrWhiteSpace( Help ) );
+                string wrapperClassName = string.Empty;
 
-                writer.AddAttribute( "class", "control-label" );
+                if ( renderControlGroupDiv )
+                {
+                    writer.AddAttribute( "class", "control-group" +
+                        ( IsValid ? "" : " error" ) +
+                        ( Required ? " required" : "" ) );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                label.Visible = this.Visible;
-                label.RenderControl( writer );
-                helpBlock.RenderControl( writer );
-                writer.RenderEndTag();
+                    writer.AddAttribute( "class", "control-label" );
 
-                wrapperClassName = "controls";
-            }
-           
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    label.RenderControl( writer );
+                    helpBlock.RenderControl( writer );
+                    writer.RenderEndTag();
 
-            if ( !string.IsNullOrWhiteSpace( PrependText ) )
-            {
-                wrapperClassName += " input-prepend";
-            }
+                    wrapperClassName = "controls";
+                }
 
-            if ( !string.IsNullOrWhiteSpace( AppendText ) )
-            {
-                wrapperClassName += " input-append";
-            }
 
-            bool renderControlsDiv = !string.IsNullOrWhiteSpace( wrapperClassName );
+                if ( !string.IsNullOrWhiteSpace( PrependText ) )
+                {
+                    wrapperClassName += " input-prepend";
+                }
 
-            if ( renderControlsDiv )
-            {
-                writer.AddAttribute( "class", wrapperClassName );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            }
+                if ( !string.IsNullOrWhiteSpace( AppendText ) )
+                {
+                    wrapperClassName += " input-append";
+                }
 
-            if ( !string.IsNullOrWhiteSpace( PrependText ) )
-            {
-                prependLabel.Text = PrependText;
-                prependLabel.RenderControl( writer );
-            }
+                bool renderControlsDiv = !string.IsNullOrWhiteSpace( wrapperClassName );
 
-            base.RenderControl( writer );
+                if ( renderControlsDiv )
+                {
+                    writer.AddAttribute( "class", wrapperClassName );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                }
 
-            if ( !string.IsNullOrWhiteSpace( AppendText ) )
-            {
-                appendLabel.Text = AppendText;
-                appendLabel.RenderControl( writer );
-            }
+                if ( !string.IsNullOrWhiteSpace( PrependText ) )
+                {
+                    prependLabel.Text = PrependText;
+                    prependLabel.RenderControl( writer );
+                }
 
-            if ( Required )
-            {
-                requiredValidator.Enabled = true;
-                requiredValidator.ErrorMessage = !string.IsNullOrWhiteSpace(LabelText) ? LabelText + " is Required." : "";
-                requiredValidator.RenderControl( writer );
-            }
+                base.RenderControl( writer );
 
-            RenderDataValidator( writer );
+                if ( !string.IsNullOrWhiteSpace( AppendText ) )
+                {
+                    appendLabel.Text = AppendText;
+                    appendLabel.RenderControl( writer );
+                }
 
-            if ( Tip.Trim() != string.Empty )
-            {
-                writer.AddAttribute( "class", "help-tip" );
-                writer.AddAttribute( "href", "#" );
-                writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                writer.Write( Tip.Trim() );
-                writer.RenderEndTag();
-                writer.RenderEndTag();
-            }
+                if ( Required )
+                {
+                    requiredValidator.Enabled = true;
+                    if ( string.IsNullOrWhiteSpace( requiredValidator.ErrorMessage ) )
+                    {
+                        requiredValidator.ErrorMessage = LabelText + " is Required.";
+                    }
+                    requiredValidator.RenderControl( writer );
+                }
 
-            if ( renderControlsDiv )
-            {
-                writer.RenderEndTag();
-            }
+                RenderDataValidator( writer );
 
-            if ( renderControlGroupDiv )
-            {
-                writer.RenderEndTag();
+                if ( Tip.Trim() != string.Empty )
+                {
+                    writer.AddAttribute( "class", "help-tip" );
+                    writer.AddAttribute( "href", "#" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.A );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                    writer.Write( Tip.Trim() );
+                    writer.RenderEndTag();
+                    writer.RenderEndTag();
+                }
+
+                if ( renderControlsDiv )
+                {
+                    writer.RenderEndTag();
+                }
+
+                if ( renderControlGroupDiv )
+                {
+                    writer.RenderEndTag();
+                }
             }
         }
 
