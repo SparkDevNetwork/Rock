@@ -222,7 +222,11 @@ namespace Rock.Web.UI.Controls
         public bool RequireGender
         {
             get { return ViewState["RequireGender"] as bool? ?? false; }
-            set { ViewState["RequireGender"] = value; }
+            set 
+            { 
+                ViewState["RequireGender"] = value;
+                BindGender();
+            }
         }
 
         /// <summary>
@@ -295,13 +299,7 @@ namespace Rock.Web.UI.Controls
             rfvLastName.CssClass = "validation-error help-inline";
             rfvLastName.Enabled = true;
 
-            rblGender.Items.Clear();
-            rblGender.Items.Add( new ListItem( "Male", "Male" ) );
-            rblGender.Items.Add( new ListItem( "Female", "Female" ) );
-            if ( !RequireGender )
-            {
-                rblGender.Items.Add( new ListItem( "Unknown", "" ) );
-            }
+            BindGender();
 
             rfvGender = new RequiredFieldValidator();
             rfvGender.Display = ValidatorDisplay.Dynamic;
@@ -473,6 +471,24 @@ namespace Rock.Web.UI.Controls
 
                 writer.RenderEndTag();
             }
+        }
+
+        /// <summary>
+        /// Binds the gender.
+        /// </summary>
+        private void BindGender()
+        {
+            string selectedValue = rblGender.SelectedValue;
+
+            rblGender.Items.Clear();
+            rblGender.Items.Add( new ListItem( "Male", "Male" ) );
+            rblGender.Items.Add( new ListItem( "Female", "Female" ) );
+            if ( !RequireGender )
+            {
+                rblGender.Items.Add( new ListItem( "Unknown", "" ) );
+            }
+
+            rblGender.SelectedValue = selectedValue;
         }
 
         /// <summary>
