@@ -11,15 +11,14 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class GlobalAttributeDefaultsForOrg : Rock.Migrations.RockMigration
+    public partial class GoogleAPIKeyGlobalAttribute : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            AddGlobalAttribute( "9C204CD0-1233-41C5-818A-C5DA439445AA", "", "", "Organization Address", "The primary mailing address for the organization.", 1, "555 E Main St, Kansas, USA", "E132C358-F28E-45BD-B357-6A2F8B24743A" );
-            UpdateAttribute( "410bf494-0714-4e60-afbd-ad65899a12be", "[DefaultValue]", "'Rock Solid Church'" );
+            AddGlobalAttribute( "9C204CD0-1233-41C5-818A-C5DA439445AA", "", "", "Google API Key", "Google API key for browser apps (with referers) as described here: https://developers.google.com/maps/documentation/javascript/tutorial#api_key", 0, "", "d8b02008-b672-4414-95b1-616d62676056" );
         }
         
         /// <summary>
@@ -27,8 +26,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            DeleteAttribute( "E132C358-F28E-45BD-B357-6A2F8B24743A" );
-            UpdateAttribute( "410bf494-0714-4e60-afbd-ad65899a12be", "[DefaultValue]", "'Our Organization Name'" );
+            DeleteAttribute( "d8b02008-b672-4414-95b1-616d62676056" );
         }
     }
 }

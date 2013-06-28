@@ -59,6 +59,16 @@
                   "stylers": [
                     { "visibility": "off" }
                   ]
+              }, {
+                  "featureType": "administrative.province",
+                  "stylers": [
+                    { "visibility": "on" }
+                  ]
+              }, {
+                  "featureType": "administrative.locality",
+                  "stylers": [
+                    { "visibility": "on" }
+                  ]
               }
             ];
 
