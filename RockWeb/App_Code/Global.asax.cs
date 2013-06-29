@@ -87,6 +87,11 @@ namespace RockWeb
                 {
                     rockContext.Database.Initialize( true );
                 }
+                else
+                {
+                    var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
+                    migrator.Update();
+                }
             }
             else
             {

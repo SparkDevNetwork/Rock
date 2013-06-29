@@ -286,6 +286,10 @@
     <Compile Include="Migrations\201306202221542_PersonMergedUpdates.Designer.cs">
       <DependentUpon>201306202221542_PersonMergedUpdates.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201306241812457_UniqueUsername.cs" />
+    <Compile Include="Migrations\201306241812457_UniqueUsername.Designer.cs">
+      <DependentUpon>201306241812457_UniqueUsername.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -293,9 +297,7 @@
     <Compile Include="Model\CodeGenerated\FinancialTransactionRefundService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionScannedCheckService.cs" />
     <Compile Include="Model\BinaryFileData.cs" />
-    <Compile Include="Net\RockRestClient.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="Net\RockRestClient.cs" />
     <Compile Include="Net\RockWebRequest.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -1809,6 +1811,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201306202221542_PersonMergedUpdates.resx">
       <DependentUpon>201306202221542_PersonMergedUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306241812457_UniqueUsername.resx">
+      <DependentUpon>201306241812457_UniqueUsername.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
