@@ -8,7 +8,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
+
+using Rock.Constants;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -16,8 +20,9 @@ namespace Rock.Field.Types
     /// <summary>
     /// 
     /// </summary>
-    public class AccountsFieldType : FieldType
+    public class CategoriesFieldType : CategoryFieldType
     {
+
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -28,17 +33,19 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
+
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
                 var guids = value.SplitDelimitedValues();
-                var accounts = new FinancialAccountService().Queryable().Where( a => guids.Contains( a.Guid.ToString() ) );
-                if ( accounts.Any() )
+                var categories = new CategoryService().Queryable().Where( a => guids.Contains( a.Guid.ToString() ) );
+                if ( categories.Any() )
                 {
-                    return string.Join( ", ", ( from account in accounts select account.PublicName ).ToArray() );
+                    return string.Join( ", ", ( from category in categories select category.Name ).ToArray() );
                 }
             }
 
             return string.Empty;
+
         }
 
         /// <summary>
@@ -50,7 +57,28 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new AccountPicker { ID = id, AllowMultiSelect = true };
+            var picker = new CategoryPicker { ID = id, AllowMultiSelect = true }; 
+
+            if ( configurationValues != null )
+            {
+                if ( configurationValues.ContainsKey( ENTITY_TYPE_NAME_KEY ) )
+                {
+                    string entityTypeName = configurationValues[ENTITY_TYPE_NAME_KEY].Value;
+                    if ( !string.IsNullOrWhiteSpace( entityTypeName ) && entityTypeName != None.IdValue )
+                    {
+                        picker.EntityTypeName = entityTypeName;
+                        if ( configurationValues.ContainsKey( QUALIFIER_COLUMN_KEY ) )
+                        {
+                            picker.EntityTypeQualifierColumn = configurationValues[QUALIFIER_COLUMN_KEY].Value;
+                            if ( configurationValues.ContainsKey( QUALIFIER_VALUE_KEY ) )
+                            {
+                                picker.EntityTypeQualifierValue = configurationValues[QUALIFIER_VALUE_KEY].Value;
+                            }
+                        }
+                    }
+                }
+            }
+            return picker;
         }
 
         /// <summary>
@@ -61,21 +89,22 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
-            var picker = control as AccountPicker;
+            var picker = control as CategoryPicker;
             string result = null;
 
             if ( picker != null )
             {
                 var guids = new List<Guid>();
                 var ids = picker.SelectedValuesAsInt();
-                var accounts = new FinancialAccountService().Queryable().Where( a => ids.Contains( a.Id ) );
+                var categories = new CategoryService().Queryable().Where( c => ids.Contains( c.Id ) );
 
-                if ( accounts.Any() )
+                if ( categories.Any() )
                 {
-                    guids = accounts.Select( a => a.Guid ).ToList();
+                    guids = categories.Select( c => c.Guid ).ToList();
                 }
 
                 result = string.Join( ",", guids );
+
             }
 
             return result;
@@ -91,7 +120,7 @@ namespace Rock.Field.Types
         {
             if ( value != null )
             {
-                var picker = control as AccountPicker;
+                var picker = control as CategoryPicker;
                 var guids = new List<Guid>();
 
                 if ( picker != null )
@@ -108,8 +137,8 @@ namespace Rock.Field.Types
                         }
                     }
 
-                    var accounts = new FinancialAccountService().Queryable().Where( a => guids.Contains( a.Guid ) );
-                    picker.SetValues( accounts );
+                    var categories = new CategoryService().Queryable().Where( c => guids.Contains( c.Guid ) );
+                    picker.SetValues( categories );
                 }
             }
         }

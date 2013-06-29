@@ -80,8 +80,7 @@
                                                 </xsl:if>
                                                 <span>
                                                     <xsl:value-of select="address/@city"/>,
-                                                    <xsl:value-of select="address/@state"/>
-                                                    <xsl:value-of select="address/@zip"/>
+                                                    <xsl:value-of select="address/@state"/>&#160;<xsl:value-of select="address/@zip"/>
                                                 </span>
                                             </div>
                                             <div class="actions" style="display: none;">
