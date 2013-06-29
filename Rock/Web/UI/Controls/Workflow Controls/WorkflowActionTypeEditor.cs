@@ -105,7 +105,6 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
                 result.IsActivityCompletedOnSuccess = cbIsActivityCompletedOnSuccess.Checked;
                 result.LoadAttributes();
                 Rock.Attribute.Helper.GetEditValues( phActionAttributes, result );
-                Rock.Attribute.Helper.SetErrorIndicators( phActionAttributes, result );
                 return result;
             }
 

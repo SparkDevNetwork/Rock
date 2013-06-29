@@ -104,6 +104,8 @@ namespace RockWeb.Blocks.Administration
             ddlPrintTo.SetValue( Device.PrintToOverride.ConvertToInt().ToString() );
             ddlPrinter.SetValue( Device.PrinterDeviceId );
             ddlPrintFrom.SetValue( Device.PrintFrom.ConvertToInt().ToString() );
+            gpGeoPoint.SetValue( Device.GeoPoint );
+            gpGeoFence.SetValue( Device.GeoFence );
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
@@ -178,6 +180,9 @@ namespace RockWeb.Blocks.Administration
             Device.PrinterDeviceId = ddlPrinter.SelectedValueAsInt();
             Device.PrintFrom = (PrintFrom)System.Enum.Parse( typeof( PrintFrom ), ddlPrintFrom.SelectedValue );
 
+            Device.GeoPoint = gpGeoPoint.SelectedValue;
+            Device.GeoFence = gpGeoFence.SelectedValue;
+
             if ( !Device.IsValid )
             {
                 // Controls will render the error messages                    
@@ -194,5 +199,6 @@ namespace RockWeb.Blocks.Administration
         #region Activities and Actions
 
         #endregion
-    }
+
+}
 }

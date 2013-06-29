@@ -389,6 +389,7 @@ namespace Rock.Web.UI.Controls
                 attribute.FieldTypeId = this.FieldTypeId ?? 0;
                 attribute.DefaultValue = this.DefaultValue;
                 attribute.IsMultiValue = this.MultiValue;
+                attribute.IsRequired = this.Required;
                 attribute.IsGridColumn = this.ShowInGrid;
 
                 attribute.Categories.Clear();

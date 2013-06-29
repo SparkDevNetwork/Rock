@@ -107,7 +107,7 @@ namespace Rock.Field
         /// </returns>
         public virtual Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new TextBox { ID = id };
+            return new Rock.Web.UI.Controls.LabeledTextBox { ID = id };
         }
 
         /// <summary>

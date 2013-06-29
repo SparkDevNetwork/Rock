@@ -33,7 +33,7 @@ namespace Rock.Web.UI.Controls
             set 
             { 
                 label.Text = value;
-                base.FieldName = label.Text;
+                base.RequiredErrorMessage = string.IsNullOrWhiteSpace( value ) ? "Category value is required" : value + " is required";
             }
         }
 

@@ -762,6 +762,55 @@ namespace Rock.Migrations
         }
 
         /// <summary>
+        /// Adds a global attribute.
+        /// </summary>
+        /// <param name="fieldTypeGuid">The field type GUID.</param>
+        /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
+        /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>
+        /// <param name="name">The name.</param>
+        /// <param name="description">The description.</param>
+        /// <param name="order">The order.</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="guid">The GUID.</param>
+        public void AddGlobalAttribute( string fieldTypeGuid, string entityTypeQualifierColumn, string entityTypeQualifierValue, string name, string description, int order, string defaultValue, string guid )
+        {
+            Sql( string.Format( @"
+                 
+                DECLARE @FieldTypeId int
+                SET @FieldTypeId = (SELECT [Id] FROM [FieldType] WHERE [Guid] = '{1}')
+
+                -- Delete existing attribute first (might have been created by Rock system)
+                DELETE [Attribute] 
+                WHERE [EntityTypeId] IS NULL
+                AND [Key] = '{2}'
+                AND [EntityTypeQualifierColumn] = '{8}'
+                AND [EntityTypeQualifierValue] = '{9}'
+
+                INSERT INTO [Attribute] (
+                    [IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],
+                    [Key],[Name],[Description],
+                    [Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],
+                    [Guid])
+                VALUES(
+                    1,@FieldTypeId,NULL,'{8}','{9}',
+                    '{2}','{3}','{4}',
+                    {5},0,'{6}',0,0,
+                    '{7}')
+",
+                    "", // no entity; keeps {#} the same as AddEntityAttribute()
+                    fieldTypeGuid,
+                    name.Replace( " ", string.Empty ),
+                    name,
+                    description.Replace( "'", "''" ),
+                    order,
+                    defaultValue,
+                    guid,
+                    entityTypeQualifierColumn,
+                    entityTypeQualifierValue )
+            );
+        }
+
+        /// <summary>
         /// Updates the type of the entity.
         /// </summary>
         /// <param name="name">The name.</param>
@@ -832,6 +881,18 @@ namespace Rock.Migrations
                     guid )
             );
         }
+
+        /// <summary>
+        /// Updates a particular Attribute's column value.
+        /// </summary>
+        /// <param name="guid">the guid of the attribute to udpate.</param>
+        /// <param name="columnName">a column name.</param>
+        /// <param name="valueQuotedIfNecessary">the value, quoted if necessary, such as 1 or 'foo'.</param>
+        public void UpdateAttribute( string guid, string columnName, string valueQuotedIfNecessary )
+        {
+            Sql( string.Format( @"UPDATE [Attribute] SET [{1}] = {2} WHERE [Guid] = '{0}'", guid, columnName.Trim( '[', ']', ' ' ), valueQuotedIfNecessary ) );
+        }
+
         /// <summary>
         /// Deletes the attribute.
         /// </summary>
