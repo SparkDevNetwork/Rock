@@ -21,6 +21,12 @@
                         </div>
                     </div>
 
+                    <div class="row-fluid">
+                        <div class="span12">
+                            <Rock:LabeledDropDownList ID="ddlGroupMemberStatus" runat="server" LabelText="Member Status" />
+                        </div>
+                    </div>
+
                     <div class="attributes">
                         <asp:PlaceHolder ID="phAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
                     </div>

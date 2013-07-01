@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 using System.Linq;
 using Rock;
 using Rock.Constants;
@@ -83,6 +84,14 @@ namespace RockWeb.Blocks.Crm
                 ddlGroupRole.DataSource = group.GroupType.Roles.OrderBy( a => a.SortOrder ).ToList();
                 ddlGroupRole.DataBind();
             }
+
+            int[] statusValues = (int[]) Enum.GetValues( typeof( GroupMemberStatus ) );
+            string[] statusNames = (string[])Enum.GetNames( typeof( GroupMemberStatus ) );
+
+            for ( int i = 0; i < statusValues.Length; i++ )
+            {
+                ddlGroupMemberStatus.Items.Add( new ListItem( statusNames[i], statusValues[i].ToString() ) );
+            }
         }
 
         /// <summary>
@@ -125,6 +134,7 @@ namespace RockWeb.Blocks.Crm
                     groupMember.GroupId = groupId.Value;
                     groupMember.Group = new GroupService().Get( groupMember.GroupId );
                     groupMember.GroupRoleId = groupMember.Group.GroupType.DefaultGroupRoleId ?? 0;
+                    groupMember.GroupMemberStatus = GroupMemberStatus.Active;
                 }
             }
 
@@ -193,6 +203,7 @@ namespace RockWeb.Blocks.Crm
 
             ppGroupMemberPerson.SetValue(groupMember.Person);
             ddlGroupRole.SetValue( groupMember.GroupRoleId );
+            ddlGroupMemberStatus.SetValue( (int) groupMember.GroupMemberStatus );
 
             phAttributes.Controls.Clear();
             groupMember.LoadAttributes();
@@ -236,8 +247,10 @@ namespace RockWeb.Blocks.Crm
             lblMainDetails.Text = new DescriptionList()
                 .Add("Group Member", groupMember.Person)
                 .Add("Member's Role", groupMember.GroupRole.Name)
+                .Add( "Member's Status", Enum.GetName( typeof( GroupMemberStatus ), groupMember.GroupMemberStatus ) )
                 .Add("Group Name", group.Name)
                 .Add("Group Description", group.Description)
+                
                 .Html;
 
             groupMember.LoadAttributes();
@@ -283,6 +296,8 @@ namespace RockWeb.Blocks.Crm
             {
                 groupMember = new GroupMember { Id = 0 };
                 groupMember.GroupId = hfGroupId.ValueAsInt();
+
+
             }
             else
             {
@@ -291,6 +306,7 @@ namespace RockWeb.Blocks.Crm
 
             groupMember.PersonId = ppGroupMemberPerson.PersonId.Value;
             groupMember.GroupRoleId = ddlGroupRole.SelectedValueAsInt() ?? 0;
+            groupMember.GroupMemberStatus = (GroupMemberStatus)int.Parse( ddlGroupMemberStatus.SelectedValue );
 
             groupMember.LoadAttributes();
 
