@@ -164,6 +164,7 @@
     <Compile Include="Data\MergeFieldAttribute.cs" />
     <Compile Include="Field\Types\ComponentsFieldType.cs" />
     <Compile Include="Field\Types\CategoryFieldType.cs" />
+    <Compile Include="Field\Types\CategoriesFieldType.cs" />
     <Compile Include="Migrations\201305032320163_Communications.cs" />
     <Compile Include="Migrations\201305032320163_Communications.Designer.cs">
       <DependentUpon>201305032320163_Communications.cs</DependentUpon>
@@ -287,6 +288,14 @@
     <Compile Include="Migrations\201306241812457_UniqueUsername.cs" />
     <Compile Include="Migrations\201306241812457_UniqueUsername.Designer.cs">
       <DependentUpon>201306241812457_UniqueUsername.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201306271809000_GlobalAttributeDefaultsForOrg.cs" />
+    <Compile Include="Migrations\201306271809000_GlobalAttributeDefaultsForOrg.Designer.cs">
+      <DependentUpon>201306271809000_GlobalAttributeDefaultsForOrg.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201306282038440_GoogleAPIKeyGlobalAttribute.cs" />
+    <Compile Include="Migrations\201306282038440_GoogleAPIKeyGlobalAttribute.Designer.cs">
+      <DependentUpon>201306282038440_GoogleAPIKeyGlobalAttribute.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
@@ -898,6 +907,7 @@
     <Compile Include="Web\UI\Controls\Communication\Sms.cs" />
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
+    <Compile Include="Web\UI\Controls\IRequiredControl.cs" />
     <Compile Include="Web\UI\Controls\LabeledBulletedList.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\Attributes.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\AttributesRow.cs" />
@@ -1811,6 +1821,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201306241812457_UniqueUsername.resx">
       <DependentUpon>201306241812457_UniqueUsername.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306271809000_GlobalAttributeDefaultsForOrg.resx">
+      <DependentUpon>201306271809000_GlobalAttributeDefaultsForOrg.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306282038440_GoogleAPIKeyGlobalAttribute.resx">
+      <DependentUpon>201306282038440_GoogleAPIKeyGlobalAttribute.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

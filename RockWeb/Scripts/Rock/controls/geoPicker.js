@@ -10,14 +10,19 @@
             obj.controlId = options.controlId;
             obj.restUrl = options.restUrl;
             obj.path = options.path;
+            obj.centerAddress = options.centerAddress;                     // used when nothing is on map
             obj.centerLatitude = options.centerLatitude || "33.27541";     // used when nothing is on map
             obj.centerLongitude = options.centerLongitude || "-111.77025"; // used when nothing is on map
             obj.drawingMode = options.drawingMode || "Polygon" || "Point"; // the available modes
             obj.strokeColor = options.strokeColor || "#0088cc";
             obj.fillColor = options.fillColor || "#0088cc";
 
-            // the selected polygon
+            // This is used to temporarily store in case of user cancel.
+            obj.pathTemp = null;
+
+            // the selected polygon or point
             obj.selectedShape = null;
+
             // these are used to set the map's viewport boundary
             obj.minLat = null;
             obj.maxLat = null;
@@ -53,6 +58,16 @@
                   "featureType": "landscape",
                   "stylers": [
                     { "visibility": "off" }
+                  ]
+              }, {
+                  "featureType": "administrative.province",
+                  "stylers": [
+                    { "visibility": "on" }
+                  ]
+              }, {
+                  "featureType": "administrative.locality",
+                  "stylers": [
+                    { "visibility": "on" }
                   ]
               }
             ];
@@ -339,6 +354,27 @@
             }
 
             /**
+            * Geocode an address to a latLng and center the map on that point.
+            */
+            this.centerMapOnAddress = function () {
+                var self = this;
+                // only try if a centerAddress is set
+                if (!obj.centerAddress) {
+                    return;
+                }
+
+                var geocoder = new google.maps.Geocoder();
+
+                geocoder.geocode({ 'address': obj.centerAddress }, function (results, status) {
+                    if (status == google.maps.GeocoderStatus.OK) {
+                        self.map.setCenter(results[0].geometry.location);
+                    } else {
+                        console.log('Geocode was not successful for the following reason: ' + status);
+                    }
+                });
+            }
+
+            /**
             * Return a latLng for the "first point" of the selected map.
             */
             this.firstPoint = function () {
@@ -377,30 +413,16 @@
             });
 
             /**
-            * TBD? From the Person Picker...
-            */
-            $('.rock-picker-select').on('click', '.rock-picker-select-item', function () {
-                console.log("WARNING: What just happened that made this .rock-picker-select .rock-picker-select-item fire?");
-                var $selectedItem = $(this).attr('data-person-id');
-
-                // hide other open details
-                $('.rock-picker-select-item-details').each(function () {
-                    var $el = $(this),
-                        $currentItem = $el.parent().attr('data-person-id');
-
-                    if ($currentItem != $selectedItem) {
-                        $el.slideUp();
-                    }
-                });
-
-                $(this).find('.rock-picker-select-item-details:hidden').slideDown();
-            });
-
-            /**
             * Handle the Cancel button click by hiding the overlay.
             */
             $('#btnCancel_' + controlId).click(function () {
                 $(this).parent().slideUp();
+                self.path = self.pathTemp;
+                if ( self.selectedShape ) {
+                    self.selectedShape.setMap(null);
+                    self.clearSelection();
+                }
+                self.plotPath(self.map);
             });
 
             /**
@@ -437,6 +459,9 @@
             // Pull anything in the hidden field onto this object's path
             self.path = $hiddenField.val();
 
+            // store path into pathTemp in case of user cancel.
+            self.pathTemp = self.path;
+
             // Create a new StyledMapType object, passing it the array of styles,
             // as well as the name to be displayed on the map type control.
             var styledMap = new google.maps.StyledMapType(self.styles, { name: "Styled Map" });
@@ -450,6 +475,8 @@
                     mapTypeIds: [google.maps.MapTypeId.ROADMAP, 'map_style']
                 }
             };
+            // center the map on the configured address
+            self.centerMapOnAddress();
 
             self.map = new google.maps.Map(document.getElementById('geoPicker_' + self.controlId), mapOptions);
             //console.log("adding map to element( " + 'geoPicker_' + self.controlId + " )");
@@ -469,8 +496,8 @@
                 },
                 polygonOptions: {
                     editable: true,
-                    strokeColor: '#0088cc',
-                    fillColor: '#0088cc',
+                    strokeColor: self.strokeColor,
+                    fillColor: self.fillColor,
                     strokeWeight: 2
                 },
             });

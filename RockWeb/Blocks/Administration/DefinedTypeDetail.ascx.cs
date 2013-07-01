@@ -673,7 +673,6 @@ namespace RockWeb.Blocks.Administration
             definedValue.Description = tbValueDescription.Text;
             definedValue.LoadAttributes();
             Rock.Attribute.Helper.GetEditValues( phDefinedValueAttributes, definedValue );
-            Rock.Attribute.Helper.SetErrorIndicators( phDefinedValueAttributes, definedValue );
 
             if ( !Page.IsValid )
             {

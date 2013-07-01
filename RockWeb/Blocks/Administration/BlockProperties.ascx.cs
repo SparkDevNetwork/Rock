@@ -105,10 +105,6 @@ namespace RockWeb.Blocks.Administration
                 string script = @"window.parent.Rock.controls.modal.close();";
                 ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
             }
-            else
-            {
-                Rock.Attribute.Helper.SetErrorIndicators( phAttributes, _block );
-            }
         }
 
         /// <summary>

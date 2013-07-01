@@ -281,7 +281,6 @@ namespace RockWeb.Blocks.Crm
                 group.LoadAttributes();
 
                 Rock.Attribute.Helper.GetEditValues( phGroupAttributes, group );
-                Rock.Attribute.Helper.SetErrorIndicators( phGroupAttributes, group );
 
                 if ( !Page.IsValid )
                 {

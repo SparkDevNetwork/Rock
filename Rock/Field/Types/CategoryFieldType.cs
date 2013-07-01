@@ -22,9 +22,9 @@ namespace Rock.Field.Types
     /// </summary>
     public class CategoryFieldType : FieldType
     {
-        private const string ENTITY_TYPE_NAME_KEY = "entityTypeName";
-        private const string QUALIFIER_COLUMN_KEY = "qualifierColumn";
-        private const string QUALIFIER_VALUE_KEY = "qualifierValue";
+        protected const string ENTITY_TYPE_NAME_KEY = "entityTypeName";
+        protected const string QUALIFIER_COLUMN_KEY = "qualifierColumn";
+        protected const string QUALIFIER_VALUE_KEY = "qualifierValue";
 
         /// <summary>
         /// Returns a list of the configuration keys
