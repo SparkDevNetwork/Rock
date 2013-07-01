@@ -170,12 +170,14 @@ namespace RockWeb.Blocks.Finance
                 var defaultState = GetAttributeValue( "DefaultState" );
                 if ( !string.IsNullOrWhiteSpace( defaultState ) )
                 {
-                    int stateId = Convert.ToInt32( defaultState);
-                    if ( stateId > 0 ) 
+                    Guid stateGuid = Guid.Empty;
+                    if (Guid.TryParse(defaultState, out stateGuid))
                     {
-                        var definedValueState = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ) )
-                            .DefinedValues.Where( dv => dv.Id == stateId ).FirstOrDefault();
-                        ddlState.SelectedValue = definedValueState.Name;                        
+                        var definedValueState = DefinedValueCache.Read( stateGuid );
+                        if ( definedValueState != null )
+                        {
+                            ddlState.SelectedValue = definedValueState.Name;
+                        }
                     }
                 }
 

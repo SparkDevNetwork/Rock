@@ -390,10 +390,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                         tbStreet1.Text, tbStreet2.Text, tbCity.Text, ddlState.SelectedValue, tbZip.Text );
                                     groupLocation.Location = location;
 
-                                    int locationTypeId = int.MinValue;
-                                    if ( int.TryParse( GetAttributeValue( "LocationType" ), out locationTypeId ) )
+                                    Guid locationTypeGuid = Guid.Empty;
+                                    if ( Guid.TryParse( GetAttributeValue( "LocationType" ), out locationTypeGuid ) )
                                     {
-                                        groupLocation.GroupLocationTypeValueId = locationTypeId;
+                                        var locationType = Rock.Web.Cache.DefinedValueCache.Read( locationTypeGuid );
+                                        if (locationType != null)
+                                        {
+                                            groupLocation.GroupLocationTypeValueId = locationType.Id;
+                                        }
                                     }
 
                                     familyGroup.GroupLocations.Add( groupLocation );
