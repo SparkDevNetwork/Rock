@@ -506,8 +506,6 @@ namespace Rock.Web.Cache
 
                 if ( keyModel.Entity == null )
                 {
-                    Type serviceType = typeof( Rock.Data.Service<> );
-
                     Type modelType = Type.GetType( entity );
 
                     if ( modelType == null )
@@ -524,8 +522,30 @@ namespace Rock.Web.Cache
                         }
                     }
 
+                    /// In the case of core Rock.dll Types, we'll just use Rock.Data.Service<> and Rock.Data.RockContext<>
+                    /// otherwise find the first (and hopefully only) Service<> and dbContext we can find in the Assembly.  
+                    Type serviceType = typeof( Rock.Data.Service<> );
+                    Type contextType = typeof( Rock.Data.RockContext );
+                    if ( modelType.Assembly != serviceType.Assembly )
+                    {
+                        var serviceTypeLookup = Reflection.SearchAssembly( modelType.Assembly, serviceType );
+                        if ( serviceTypeLookup.Any() )
+                        {
+                            serviceType = serviceTypeLookup.First().Value;
+                        }
+
+                        var contextTypeLookup = Reflection.SearchAssembly( modelType.Assembly, typeof( System.Data.Entity.DbContext ) );
+
+                        if ( contextTypeLookup.Any() )
+                        {
+                            contextType = contextTypeLookup.First().Value;
+                        }
+                    }
+
+                    System.Data.Entity.DbContext dbContext = Activator.CreateInstance( contextType ) as System.Data.Entity.DbContext;
+
                     Type service = serviceType.MakeGenericType( new Type[] { modelType } );
-                    var serviceInstance = Activator.CreateInstance( service );
+                    var serviceInstance = Activator.CreateInstance( service, dbContext );
 
                     if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
                     {
