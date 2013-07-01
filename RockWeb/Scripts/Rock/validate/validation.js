@@ -29,9 +29,9 @@
             this.innerHTML = '';
 
             if (isValid) {
-                controlToValidate.parents($('div.control-group')).removeClass("error");
+                controlToValidate.parents('div.control-group').removeClass("error");
             } else {
-                controlToValidate.parents($('div.control-group')).addClass("error");
+                controlToValidate.parents('div.control-group').addClass("error");
             }
         });
 

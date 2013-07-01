@@ -15,7 +15,7 @@ namespace Rock.Web.UI.Controls
     /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with numerical validation 
     /// </summary>
     [ToolboxData( "<{0}:NumberBox runat=server></{0}:NumberBox>" )]
-    public class NumberBox : TextBox, ILabeledControl
+    public class NumberBox : TextBox, ILabeledControl, IRequiredControl
     {
         private RequiredFieldValidator requiredValidator;
         private RangeValidator rangeValidator;        
@@ -108,16 +108,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="NumberBox" /> class.
-        /// </summary>
-        public NumberBox()
-        {
-            requiredValidator = new RequiredFieldValidator();
-            rangeValidator = new RangeValidator();
-            _label = new Label();            
-        }
-
-        /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
@@ -127,8 +117,36 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return !Required || requiredValidator.IsValid;
+                return ( !Required || requiredValidator.IsValid ) && rangeValidator.IsValid;
             }
+        }
+
+        /// <summary>
+        /// Gets or sets the required error message.  If blank, the LabelName name will be used
+        /// </summary>
+        /// <value>
+        /// The required error message.
+        /// </value>
+        public string RequiredErrorMessage
+        {
+            get
+            {
+                return requiredValidator.ErrorMessage;
+            }
+            set
+            {
+                requiredValidator.ErrorMessage = value;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NumberBox" /> class.
+        /// </summary>
+        public NumberBox()
+        {
+            requiredValidator = new RequiredFieldValidator();
+            rangeValidator = new RangeValidator();
+            _label = new Label();            
         }
 
         /// <summary>
@@ -182,15 +200,15 @@ namespace Rock.Web.UI.Controls
 
             if ( renderLabel )
             {
-                writer.AddAttribute( "class", "control-group" );
+                writer.AddAttribute( "class", "control-group" +
+                    ( IsValid ? "" : " error" ) +
+                    ( Required ? " required" : "" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 _label.AddCssClass( "control-label" );
-
                 _label.RenderControl( writer );
 
                 writer.AddAttribute( "class", "controls" );
-
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
             }
 
@@ -199,7 +217,10 @@ namespace Rock.Web.UI.Controls
             if ( Required )
             {
                 requiredValidator.Enabled = true;
-                requiredValidator.ErrorMessage = LabelText + " is Required.";
+                if ( string.IsNullOrWhiteSpace( requiredValidator.ErrorMessage ) )
+                {
+                    requiredValidator.ErrorMessage = LabelText + " is Required.";
+                }
                 requiredValidator.RenderControl( writer );
             }
 

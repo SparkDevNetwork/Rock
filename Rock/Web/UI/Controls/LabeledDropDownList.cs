@@ -14,7 +14,7 @@ namespace Rock.Web.UI.Controls
     /// A <see cref="T:System.Web.UI.WebControls.DropDownList"/> control with an associated label.
     /// </summary>
     [ToolboxData( "<{0}:LabeledDropDownList runat=server></{0}:LabeledDropDownList>" )]
-    public class LabeledDropDownList : RockDropDownList, ILabeledControl
+    public class LabeledDropDownList : RockDropDownList, ILabeledControl, IRequiredControl
     {
         /// <summary>
         /// The label
@@ -146,6 +146,24 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the required error message.  If blank, the LabelName name will be used
+        /// </summary>
+        /// <value>
+        /// The required error message.
+        /// </value>
+        public string RequiredErrorMessage
+        {
+            get
+            {
+                return requiredValidator.ErrorMessage;
+            }
+            set
+            {
+                requiredValidator.ErrorMessage = value;
+            }
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="LabeledDropDownList" /> class.
         /// </summary>
         public LabeledDropDownList()
@@ -209,7 +227,10 @@ namespace Rock.Web.UI.Controls
                 if ( Required )
                 {
                     requiredValidator.Enabled = true;
-                    requiredValidator.ErrorMessage = LabelText + " is Required.";
+                    if ( string.IsNullOrWhiteSpace( requiredValidator.ErrorMessage ) )
+                    {
+                        requiredValidator.ErrorMessage = LabelText + " is Required.";
+                    }
                     requiredValidator.RenderControl( writer );
                 }
 

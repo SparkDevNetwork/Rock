@@ -15,26 +15,37 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class StateDropDownList : LabeledDropDownList
     {
+
         /// <summary>
         /// Display an abbreviated state name
         /// </summary>
-        public bool UseAbbreviation { get; set; }
-        
-        /// <summary>
-        /// Handles the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnLoad( EventArgs e )
+        public bool UseAbbreviation
         {
-            base.OnLoad( e );
-            var definedType = DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ) );
-            
-            // Using custom solution instead of `BindToDefinedType` because we don't want the DefinedValue's `Id`
-            // to be the value in the dropdown list.
-            this.DataSource = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => new { Id = v.Name, Value = v.Description } );
-            this.DataTextField = UseAbbreviation ? "Id" : "Value";
-            this.DataValueField = "Id";
-            this.DataBind();
+            get { return ViewState["UseAbbreviation"] as bool? ?? false; }
+            set { ViewState["UseAbbreviation"] = value; }
         }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StateDropDownList" /> class.
+        /// </summary>
+        public StateDropDownList()
+            : base()
+        {
+            var definedType = DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ) );
+            this.DataSource = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => new { Id = v.Name, Value = v.Description } );
+            this.DataValueField = "Id";
+        }
+
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( System.Web.UI.HtmlTextWriter writer )
+        {
+            this.DataTextField = UseAbbreviation ? "Id" : "Value";
+            this.DataBind();
+            base.RenderControl( writer );
+        }
+
     }
 }
