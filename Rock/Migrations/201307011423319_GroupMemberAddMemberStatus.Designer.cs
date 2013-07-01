@@ -5,13 +5,13 @@ namespace Rock.Migrations
     using System.Data.Entity.Migrations.Infrastructure;
     using System.Resources;
     
-    public sealed partial class GroupMemberAddGroupMemberStatus : IMigrationMetadata
+    public sealed partial class GroupMemberAddMemberStatus : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(GroupMemberAddGroupMemberStatus));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(GroupMemberAddMemberStatus));
         
         string IMigrationMetadata.Id
         {
-            get { return "201306272128075_GroupMemberAddGroupMemberStatus"; }
+            get { return "201307011423319_GroupMemberAddMemberStatus"; }
         }
         
         string IMigrationMetadata.Source

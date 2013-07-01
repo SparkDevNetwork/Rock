@@ -11,22 +11,22 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class GroupMemberAddGroupMemberStatus : Rock.Migrations.RockMigration
+    public partial class GroupMemberUniqueMemberRole : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.GroupMember", "GroupMemberStatus", c => c.Int(nullable: false, defaultValue: 1));
+            CreateIndex( "GroupMember", new string[] { "GroupId", "PersonId", "GroupRoleId" }, true );
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {
-            DropColumn("dbo.GroupMember", "GroupMemberStatus");
+            DropIndex( "GroupMember", new string[] { "GroupId", "PersonId", "GroupRoleId" } );
         }
     }
 }

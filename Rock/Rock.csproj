@@ -297,6 +297,14 @@
     <Compile Include="Migrations\201306282038440_GoogleAPIKeyGlobalAttribute.Designer.cs">
       <DependentUpon>201306282038440_GoogleAPIKeyGlobalAttribute.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201307011423319_GroupMemberAddMemberStatus.cs" />
+    <Compile Include="Migrations\201307011423319_GroupMemberAddMemberStatus.Designer.cs">
+      <DependentUpon>201307011423319_GroupMemberAddMemberStatus.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307011433578_GroupMemberUniqueMemberRole.cs" />
+    <Compile Include="Migrations\201307011433578_GroupMemberUniqueMemberRole.Designer.cs">
+      <DependentUpon>201307011433578_GroupMemberUniqueMemberRole.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -1827,6 +1835,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201306282038440_GoogleAPIKeyGlobalAttribute.resx">
       <DependentUpon>201306282038440_GoogleAPIKeyGlobalAttribute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307011423319_GroupMemberAddMemberStatus.resx">
+      <DependentUpon>201307011423319_GroupMemberAddMemberStatus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307011433578_GroupMemberUniqueMemberRole.resx">
+      <DependentUpon>201307011433578_GroupMemberUniqueMemberRole.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
