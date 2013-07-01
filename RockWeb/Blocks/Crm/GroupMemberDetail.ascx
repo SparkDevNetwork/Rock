@@ -4,6 +4,7 @@
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" runat="server" Visible="false">
             <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
+            <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Error" />
             <asp:HiddenField ID="hfGroupId" runat="server" />
             <asp:HiddenField ID="hfGroupMemberId" runat="server" />
 
