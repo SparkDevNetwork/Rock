@@ -194,6 +194,9 @@ namespace Rock.SystemGuid
 
         #region Location Type
 
+        /// <summary>
+        /// Home location type
+        /// </summary>
         public const string LOCATION_TYPE_HOME = "8C52E53C-2A66-435A-AE6E-5EE307D9A0DC";
 
         /// <summary>
