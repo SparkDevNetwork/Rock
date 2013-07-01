@@ -30,5 +30,14 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string GROUPTYPE_EVENTATTENDEES = "3311132B-268D-44E9-811A-A56A0835E50A";
 
+        /// <summary>
+        /// Know relationship group type
+        /// </summary>
+        public const string GROUPTYPE_KNOWN_RELATIONSHIPS = "E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF";
+
+        /// <summary>
+        /// Implied relationship group type
+        /// </summary>
+        public const string GROUPTYPE_IMPLIED_RELATIONSHIPS = "8C0E5852-F08F-4327-9AA5-87800A6AB53E";
     }
 }

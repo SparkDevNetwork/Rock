@@ -5,6 +5,7 @@
 //
 
 using System.ComponentModel;
+using System.IO;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -60,7 +61,7 @@ namespace Rock.Web.UI.Controls
         {
             this.AddCssClass( "popover-person" );
 
-            HRef = string.Format( "{0}Person/{1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), PersonId );
+            HRef = Path.Combine( System.Web.VirtualPathUtility.ToAbsolute( "~" ), string.Format( "Person/{0}", PersonId ) );
 
             this.Attributes["personId"] = PersonId.ToString();
             base.RenderBeginTag( writer );
