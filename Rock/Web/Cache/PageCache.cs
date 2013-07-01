@@ -128,7 +128,7 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if [page display icon]; otherwise, <c>false</c>.
         /// </value>
         public bool PageDisplayIcon { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a value indicating whether [page display description].
         /// </summary>
@@ -405,7 +405,7 @@ namespace Rock.Web.Cache
             get
             {
                 string bcName = string.Empty;
-                
+
                 if ( BreadCrumbDisplayIcon && !string.IsNullOrWhiteSpace( IconCssClass ) )
                 {
                     bcName = string.Format( "<i class='{0}'></i>", IconCssClass );
@@ -462,7 +462,7 @@ namespace Rock.Web.Cache
                 this.PageContexts = new Dictionary<string, string>();
                 if ( page.PageContexts != null )
                 {
-                    page.PageContexts.ToList().ForEach( c => this.PageContexts.Add( c.Entity, c.IdParameter));
+                    page.PageContexts.ToList().ForEach( c => this.PageContexts.Add( c.Entity, c.IdParameter ) );
                 }
 
                 this.PageRoutes = new Dictionary<int, string>();
@@ -507,13 +507,25 @@ namespace Rock.Web.Cache
                 if ( keyModel.Entity == null )
                 {
                     Type serviceType = typeof( Rock.Data.Service<> );
-                    Type[] modelType = { Type.GetType( entity ) };
-                    Type service = serviceType.MakeGenericType( modelType );
+
+                    Type modelType = Type.GetType( entity );
+
+                    if ( modelType == null )
+                    {
+                        // if the Type isn't found in the Rock.dll (it might be from a Plugin), lookup which assessmbly it is in and look in there
+                        EntityType entityTypeInfo = new EntityTypeService().Get( entity );
+                        if ( entityTypeInfo != null )
+                        {
+                            modelType = Type.GetType( string.Format( "{0}, {1}", entityTypeInfo.Name, entityTypeInfo.AssemblyName ) );
+                        }
+                    }
+
+                    Type service = serviceType.MakeGenericType( new Type[] { modelType } );
                     var serviceInstance = Activator.CreateInstance( service );
 
                     if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
                     {
-                        MethodInfo getMethod = service.GetMethod( "Get", new Type[] { typeof(int) } );
+                        MethodInfo getMethod = service.GetMethod( "Get", new Type[] { typeof( int ) } );
                         keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Id } ) as Rock.Data.IEntity;
                     }
                     else
@@ -569,7 +581,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Fires the block content updated event.
         /// </summary>
-        public void BlockContentUpdated(object sender)
+        public void BlockContentUpdated( object sender )
         {
             if ( OnBlockContentUpdated != null )
             {
@@ -599,8 +611,8 @@ namespace Rock.Web.Cache
         /// <param name="item"></param>
         public void SaveSharedItem( string key, object item )
         {
-            string itemKey = string.Format("{0}:Item:{1}", PageCache.CacheKey( Id ), key);
-            
+            string itemKey = string.Format( "{0}:Item:{1}", PageCache.CacheKey( Id ), key );
+
             System.Collections.IDictionary items = HttpContext.Current.Items;
             if ( items.Contains( itemKey ) )
                 items[itemKey] = item;
@@ -811,7 +823,7 @@ namespace Rock.Web.Cache
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, page, cachePolicy );
                     cache.Set( page.Guid.ToString(), page.Id, cachePolicy );
-                    
+
                     return page;
                 }
                 else
