@@ -73,6 +73,31 @@ namespace RockWeb.Blocks.Crm
         #region Edit Events
 
         /// <summary>
+        /// Finds an exsiting member of a group by groupId, roleId and personId
+        /// if a existing member is found it returns the groupMemberId
+        /// </summary>
+        /// <returns>nullable groupMemberId </returns>
+        private int? FindExistingGroupMemberRole()
+        {
+            int groupId = int.Parse( hfGroupId.Value );
+            int personId = 0;
+            int roleId = int.Parse( ddlGroupRole.SelectedValue );
+
+            if ( ppGroupMemberPerson.PersonId != null )
+            {
+                personId = (int)ppGroupMemberPerson.PersonId;
+            }
+
+            var service = new GroupMemberService();
+
+            return service.Queryable()
+                    .Where( m => m.GroupId == groupId )
+                    .Where( m => m.PersonId == personId )
+                    .Where( m => m.GroupRoleId == roleId )
+                    .Select( m => m.Id ).FirstOrDefault();
+        }
+
+        /// <summary>
         /// Loads the drop downs.
         /// </summary>
         private void LoadDropDowns()
@@ -288,6 +313,9 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            nbErrorMessage.Title = String.Empty;
+            nbErrorMessage.Text = String.Empty;
+
             int groupMemberId = int.Parse( hfGroupMemberId.Value );
             GroupMemberService groupMemberService = new GroupMemberService();
 
@@ -297,7 +325,21 @@ namespace RockWeb.Blocks.Crm
                 groupMember = new GroupMember { Id = 0 };
                 groupMember.GroupId = hfGroupId.ValueAsInt();
 
+                int? existingGroupMemberId = FindExistingGroupMemberRole();
 
+                if ( existingGroupMemberId != null && existingGroupMemberId > 0 )
+                {
+                    var person = new PersonService().Get( (int)ppGroupMemberPerson.PersonId );
+
+                    nbErrorMessage.Title = string.Format( "Can not add {0} to {1} role.", person.FullName, ddlGroupRole.SelectedItem.Text );
+                    nbErrorMessage.Text = string.Format("<br /> {0} is already a member of the {1} role for this group, and can not be added. <a href=\"/page/{2}?groupMemberId={3}\">Click here</a> to view existing membership.", 
+                        person.FullName, 
+                        ddlGroupRole.SelectedItem.Text,
+                        CurrentPage.Id,
+                        existingGroupMemberId
+                        );
+                    return;
+                }
             }
             else
             {
