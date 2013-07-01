@@ -21,7 +21,7 @@ namespace RockWeb.Blocks.Core
 {
     [ContextAware]
     [TextField( "Note Type", "The note type name associated with the context entity to use (If it doesn't exist it will be created).", false, "Notes" )]
-    public partial class Notes : RockBlock
+    public partial class Notes : RockBlock, IHidableBlock
     {
         private IEntity contextEntity = null;
         private NoteType noteType;
@@ -306,5 +306,22 @@ namespace RockWeb.Blocks.Core
             return "icon-comment";
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="Notes"/> is hidden.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if hidden; otherwise, <c>false</c>.
+        /// </value>
+        public bool Hidden
+        {
+            get
+            {
+                return pnlNotes.Style[HtmlTextWriterStyle.Display].Equals("none"); 
+            }
+            set
+            {
+                pnlNotes.Style[HtmlTextWriterStyle.Display] = value ? "none" : string.Empty; 
+            }
+        }
     }
 }
