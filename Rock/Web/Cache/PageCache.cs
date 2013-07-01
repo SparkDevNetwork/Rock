@@ -513,10 +513,14 @@ namespace Rock.Web.Cache
                     if ( modelType == null )
                     {
                         // if the Type isn't found in the Rock.dll (it might be from a Plugin), lookup which assessmbly it is in and look in there
-                        EntityType entityTypeInfo = new EntityTypeService().Get( entity );
+                        EntityTypeCache entityTypeInfo = EntityTypeCache.Read( entity );
                         if ( entityTypeInfo != null )
                         {
-                            modelType = Type.GetType( string.Format( "{0}, {1}", entityTypeInfo.Name, entityTypeInfo.AssemblyName ) );
+                            string[] assemblyNameParts = entityTypeInfo.AssemblyName.Split( new char[] { ',' } );
+                            if ( assemblyNameParts.Length > 1 )
+                            {
+                                modelType = Type.GetType( string.Format( "{0}, {1}", entityTypeInfo.Name, assemblyNameParts[1] ) );
+                            }
                         }
                     }
 
