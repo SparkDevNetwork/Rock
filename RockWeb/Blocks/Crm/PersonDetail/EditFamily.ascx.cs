@@ -53,6 +53,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
             }
 
+            var campusi = new CampusService().Queryable().OrderBy( a => a.Name ).ToList();
+            cpCampus.Campuses = campusi;
+            cpCampus.Visible = campusi.Any();
+
             ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
             ddlReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
         }
