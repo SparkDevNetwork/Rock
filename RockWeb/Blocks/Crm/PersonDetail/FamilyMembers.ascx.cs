@@ -53,6 +53,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     Repeater rptrMembers = e.Item.FindControl( "rptrMembers" ) as Repeater;
                     if (rptrMembers != null)
                     {
+                        rptrMembers.ItemDataBound += rptrMembers_ItemDataBound;
                         rptrMembers.DataSource = group.Members
                             .Where( m => m.PersonId != Person.Id)
                             .OrderBy( m => m.GroupRole.SortOrder )
@@ -67,6 +68,29 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         rptrAddresses.DataSource = group.GroupLocations.ToList();
                         rptrAddresses.DataBind();
                     }
+                }
+            }
+        }
+
+        void rptrMembers_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            {
+                var groupMember = e.Item.DataItem as GroupMember;
+                if ( groupMember != null && groupMember.Person != null )
+                {
+                    Person fm = groupMember.Person;
+
+                    System.Web.UI.WebControls.Image imgPerson = e.Item.FindControl( "imgPerson" ) as System.Web.UI.WebControls.Image;
+                    if ( imgPerson != null )
+                    {
+                        imgPerson.Visible = Person.PhotoId.HasValue;
+                        if ( Person.PhotoId.HasValue )
+                        {
+                            imgPerson.ImageUrl = string.Format( "~/image.ashx?id={0}", Person.PhotoId );
+                        }
+                    }
+
                 }
             }
         }
