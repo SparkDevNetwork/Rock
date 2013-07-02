@@ -5,6 +5,7 @@
 //
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
 
 using Rock.Model;
 
@@ -53,7 +54,7 @@ namespace Rock.PersonProfile.Badge
         /// <returns></returns>
         public override string GetIconPath( Person person )
         {
-            return string.Format( "{0}/Assets/Mockup/attendence-bars.jpg", System.Web.VirtualPathUtility.ToAbsolute( "~" ) );
+            return Path.Combine( System.Web.VirtualPathUtility.ToAbsolute( "~" ), "Assets/Mockup/attendence-bars.jpg" );
         }
     }
 }

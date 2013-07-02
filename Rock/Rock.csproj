@@ -143,6 +143,7 @@
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
+    <Compile Include="Attribute\GroupRoleFieldAttribute.cs" />
     <Compile Include="Attribute\MemoFieldAttribute.cs" />
     <Compile Include="Attribute\DecimalFieldAttribute.cs" />
     <Compile Include="Attribute\DateFieldAttribute.cs" />
@@ -168,6 +169,7 @@
     <Compile Include="Field\Types\ComponentsFieldType.cs" />
     <Compile Include="Field\Types\CategoryFieldType.cs" />
     <Compile Include="Field\Types\CategoriesFieldType.cs" />
+    <Compile Include="Field\Types\GroupRoleFieldType.cs" />
     <Compile Include="Migrations\201305032320163_Communications.cs" />
     <Compile Include="Migrations\201305032320163_Communications.Designer.cs">
       <DependentUpon>201305032320163_Communications.cs</DependentUpon>
@@ -926,6 +928,7 @@
     <Compile Include="Web\UI\Controls\PersonProfile\BadgeList.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ComponentsPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\GroupRolePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GeoPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MonthDayPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MonthYearPicker.cs" />
