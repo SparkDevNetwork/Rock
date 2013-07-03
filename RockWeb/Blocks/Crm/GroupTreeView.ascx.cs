@@ -5,6 +5,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
@@ -32,9 +33,13 @@ namespace RockWeb.Blocks.Crm
 
             hfLimitToSecurityRoleGroups.Value = GetAttributeValue( "LimittoSecurityRoleGroups" );
             hfRootGroupId.Value = GetAttributeValue( "Group" );
-            string groupTypes = GetAttributeValue( "GroupTypes" );
-            groupTypes = string.IsNullOrWhiteSpace(groupTypes) ? "0" : groupTypes;
-            hfGroupTypes.Value = groupTypes;
+
+            // limit GroupType selection to what Block Attributes allow
+            List<Guid> groupTypeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
+
+            string groupTypeIds = new GroupTypeService().Queryable().Where( a => groupTypeGuids.Contains( a.Guid ) ).Select( a => a.Id ).ToList().AsDelimited( "," );
+            groupTypeIds = string.IsNullOrWhiteSpace( groupTypeIds ) ? "0" : groupTypeIds;
+            hfGroupTypes.Value = groupTypeIds;
             string groupId = PageParameter( "groupId" );
 
             if ( !string.IsNullOrWhiteSpace( groupId ) )
@@ -42,7 +47,7 @@ namespace RockWeb.Blocks.Crm
                 hfInitialGroupId.Value = groupId;
                 hfSelectedGroupId.Value = groupId.ToString();
                 Group group = ( new GroupService() ).Get( int.Parse( groupId ) );
-                
+
                 if ( group != null )
                 {
                     // show the Add button if the selected Group's GroupType can have children
@@ -83,5 +88,5 @@ namespace RockWeb.Blocks.Crm
             int groupId = hfSelectedGroupId.ValueAsInt();
             NavigateToDetailPage( "groupId", 0, "parentGroupId", groupId );
         }
-}
+    }
 }

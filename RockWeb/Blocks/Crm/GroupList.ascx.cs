@@ -26,7 +26,7 @@ namespace RockWeb.Blocks.Crm
     [BooleanField( "Show Edit", "", true )]
     [BooleanField( "Show Notification" )]
     [BooleanField( "Limit to Security Role Groups" )]
-    [ContextAware( typeof(Group) )]
+    [ContextAware( typeof( Group ) )]
     [DetailPage]
     public partial class GroupList : RockBlock
     {
@@ -164,17 +164,20 @@ namespace RockWeb.Blocks.Crm
             SortProperty sortProperty = gGroups.SortProperty;
             var qry = groupService.Queryable();
 
-            List<int> groupTypeIds = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
-            if ( groupTypeIds.Count > 0 )
+            // limit GroupType selection to what Block Attributes allow
+
+            List<Guid> groupTypeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
+
+            if ( groupTypeGuids.Count > 0 )
             {
-                qry = qry.Where( a => groupTypeIds.Contains( a.GroupTypeId ) );
+                qry = qry.Where( a => groupTypeGuids.Contains( a.GroupType.Guid ) );
             }
 
             if ( GetAttributeValue( "LimittoSecurityRoleGroups" ).FromTrueFalse() )
             {
                 qry = qry.Where( a => a.IsSecurityRole );
             }
-            
+
             Group parentGroup = ContextEntity<Group>();
             if ( parentGroup != null )
             {
