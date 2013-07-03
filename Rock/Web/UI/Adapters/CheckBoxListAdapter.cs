@@ -54,6 +54,22 @@ namespace Rock.Web.UI.Adapters
             CheckBoxList cbl = Control as CheckBoxList;
             if ( cbl != null )
             {
+                PostBackOptions postBackOption = null;
+
+                if ( cbl.AutoPostBack )
+                {
+                    postBackOption = new PostBackOptions(cbl, string.Empty);
+                    if (cbl.CausesValidation && this.Page.GetValidators(cbl.ValidationGroup).Count > 0)
+                    {
+                        postBackOption.PerformValidation = true;
+                        postBackOption.ValidationGroup = cbl.ValidationGroup;
+                    }
+                    if (this.Page.Form != null)
+                    {
+                        postBackOption.AutoPostBack = true;
+                    }
+                }
+
                 int i = 0;
                 foreach ( ListItem li in cbl.Items )
                 {
@@ -76,6 +92,11 @@ namespace Rock.Web.UI.Adapters
                     {
                         var key = attributeKey as string;
                         writer.AddAttribute( key, li.Attributes[key] );
+                    }
+                    
+                    if (postBackOption != null)
+                    {
+                        writer.AddAttribute( HtmlTextWriterAttribute.Onclick, Page.ClientScript.GetPostBackEventReference( postBackOption, true ) );
                     }
 
                     writer.RenderBeginTag( HtmlTextWriterTag.Input );

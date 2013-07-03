@@ -17,10 +17,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     /// <summary>
     /// Renders the related members of a group (typically used for the Relationships group and the Peer Network group)
     /// </summary>
-    [GroupTypeField( "Group Type", "The type of group to display.  Any group of this type that person belongs to will be displayed", true )]
-    // TODO: Make a group/role picker
-    [TextField( "Group Role Filter", "Delimited list of group role guid's that if entered, will only show groups where selected person is one of the roles.", false, "" )]
+    [GroupRoleField( "", "Group Type/Role Filter", "The Group Type and role to display other members from.", false, "" )]
     [BooleanField("Show Role", "Should the member's role be displayed with their name")]
+    [BooleanField("Create Group", "Should group be created if a group/role cannot be found for the current person.", true)]
     public partial class Relationships : Rock.Web.UI.PersonBlock
     {
         protected bool ShowRole = false;
@@ -43,52 +42,72 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </summary>
         private void BindData()
         {
-            Guid GroupTypeGuid = Guid.Empty;
-            if ( Guid.TryParse( GetAttributeValue( "GroupType" ), out GroupTypeGuid ) )
+            if ( Person != null && Person.Id > 0 )
             {
-                var filterRoles = new List<Guid>();
-                foreach ( string stringRoleGuid in GetAttributeValue( "GroupRoleFilter" ).SplitDelimitedValues() )
-                {
-                    Guid roleGuid = Guid.Empty;
-                    if ( Guid.TryParse( stringRoleGuid, out roleGuid ) )
-                    {
-                        filterRoles.Add( roleGuid );
-                    }
-                }
+                Group group = null;
 
-                var memberService = new GroupMemberService();
-                var group = memberService.Queryable()
-                    .Where( m =>
-                        m.PersonId == Person.Id &&
-                        m.Group.GroupType.Guid == GroupTypeGuid &&
-                        ( filterRoles.Count == 0 || filterRoles.Contains( m.GroupRole.Guid ) ) )
-                    .Select( m => m.Group )
-                    .FirstOrDefault();
-
-                if ( group != null )
+                Guid roleGuid = Guid.Empty;
+                if ( Guid.TryParse( GetAttributeValue( "GroupType/RoleFilter" ), out roleGuid ) )
                 {
-                    if ( group.IsAuthorized( "View", CurrentPerson ) )
+                    using ( new Rock.Data.UnitOfWorkScope() )
                     {
-                        if ( !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) )
+                        var memberService = new GroupMemberService();
+                        group = memberService.Queryable()
+                            .Where( m =>
+                                m.PersonId == Person.Id &&
+                                m.GroupRole.Guid == roleGuid
+                            )
+                            .Select( m => m.Group )
+                            .FirstOrDefault();
+
+                        if ( group == null && bool.Parse( GetAttributeValue( "CreateGroup" ) ) )
                         {
-                            phGroupTypeIcon.Controls.Add(
-                                new LiteralControl(
-                                    string.Format( "<i class='{0}'></i>", group.GroupType.IconCssClass ) ) );
+                            var role = new GroupRoleService().Get( roleGuid );
+                            if ( role != null && role.GroupTypeId.HasValue )
+                            {
+                                var groupMember = new GroupMember();
+                                groupMember.PersonId = Person.Id;
+                                groupMember.GroupRoleId = role.Id;
+
+                                group = new Group();
+                                group.Name = role.GroupType.Name;
+                                group.GroupTypeId = role.GroupTypeId.Value;
+                                group.Members.Add( groupMember );
+
+                                var groupService = new GroupService();
+                                groupService.Add( group, CurrentPersonId );
+                                groupService.Save( group, CurrentPersonId );
+
+                                group = groupService.Get( group.Id );
+                            }
                         }
 
-                        lGroupName.Text = group.Name;
+                        if ( group != null )
+                        {
+                            if ( group.IsAuthorized( "View", CurrentPerson ) )
+                            {
+                                if ( !string.IsNullOrWhiteSpace( group.GroupType.IconCssClass ) )
+                                {
+                                    phGroupTypeIcon.Controls.Add(
+                                        new LiteralControl(
+                                            string.Format( "<i class='{0}'></i>", group.GroupType.IconCssClass ) ) );
+                                }
 
-                        phEditActions.Visible = group.IsAuthorized( "Edit", CurrentPerson );
+                                lGroupName.Text = group.Name;
 
-                        // TODO: How many implied relationships should be displayed
+                                phEditActions.Visible = group.IsAuthorized( "Edit", CurrentPerson );
 
-                        rGroupMembers.DataSource = new GroupMemberService().GetByGroupId(group.Id)
-                            .Where( m => m.PersonId != Person.Id )
-                            .OrderBy( m => m.Person.LastName )
-                            .ThenBy( m => m.Person.FirstName )
-                            .Take(50)
-                            .ToList();
-                        rGroupMembers.DataBind();
+                                // TODO: How many implied relationships should be displayed
+
+                                rGroupMembers.DataSource = new GroupMemberService().GetByGroupId( group.Id )
+                                    .Where( m => m.PersonId != Person.Id )
+                                    .OrderBy( m => m.Person.LastName )
+                                    .ThenBy( m => m.Person.FirstName )
+                                    .Take( 50 )
+                                    .ToList();
+                                rGroupMembers.DataBind();
+                            }
+                        }
                     }
                 }
             }

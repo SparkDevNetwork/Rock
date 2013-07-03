@@ -281,7 +281,6 @@ namespace RockWeb.Blocks.Crm
                 group.LoadAttributes();
 
                 Rock.Attribute.Helper.GetEditValues( phGroupAttributes, group );
-                Rock.Attribute.Helper.SetErrorIndicators( phGroupAttributes, group );
 
                 if ( !Page.IsValid )
                 {
@@ -415,15 +414,15 @@ namespace RockWeb.Blocks.Crm
             var groupTypeQry = groupTypeService.Queryable();
 
             // limit GroupType selection to what Block Attributes allow
-            List<int> groupTypeIds = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
-            if ( groupTypeIds.Count > 0 )
+            List<Guid> groupTypeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
+            if ( groupTypeGuids.Count > 0 )
             {
-                groupTypeQry = groupTypeQry.Where( a => groupTypeIds.Contains( a.Id ) );
+                groupTypeQry = groupTypeQry.Where( a => groupTypeGuids.Contains( a.Guid ) );
             }
 
             // next, limit GroupType to ChildGroupTypes that the ParentGroup allows
             int? parentGroupId = gpParentGroup.SelectedValueAsInt();
-            if ( (parentGroupId ?? 0) != 0 )
+            if ( ( parentGroupId ?? 0 ) != 0 )
             {
                 Group parentGroup = new GroupService().Get( parentGroupId.Value );
                 List<int> allowedChildGroupTypeIds = parentGroup.GroupType.ChildGroupTypes.Select( a => a.Id ).ToList();
@@ -556,7 +555,7 @@ namespace RockWeb.Blocks.Crm
 
             GroupMemberAttributesState = new ViewStateList<Attribute>();
 
-            gpParentGroup.SetValue( group.ParentGroup ?? new GroupService().Get(group.ParentGroupId ?? 0) );
+            gpParentGroup.SetValue( group.ParentGroup ?? new GroupService().Get( group.ParentGroupId ?? 0 ) );
 
             // GroupType depends on Selected ParentGroup
             ddlParentGroup_SelectedIndexChanged( null, null );
@@ -614,7 +613,7 @@ namespace RockWeb.Blocks.Crm
             string qualifierValue = group.Id.ToString();
             var qryGroupMemberAttributes = attributeService.GetByEntityTypeId( new GroupMember().TypeId ).AsQueryable()
                 .Where( a => a.EntityTypeQualifierColumn.Equals( "GroupId", StringComparison.OrdinalIgnoreCase )
-                && a.EntityTypeQualifierValue.Equals( qualifierValue  ) );
+                && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
 
             GroupMemberAttributesState.AddAll( qryGroupMemberAttributes.ToList() );
             BindGroupMemberAttributesGrid();
@@ -661,12 +660,12 @@ namespace RockWeb.Blocks.Crm
             }
 
             DescriptionList descriptionList = new DescriptionList()
-                .Add("Group Type", group.GroupType.Name)
-                .Add("Group Description", group.Description);
+                .Add( "Group Type", group.GroupType.Name )
+                .Add( "Group Description", group.Description );
 
             if ( group.ParentGroup != null )
             {
-                descriptionList.Add("Parent Group", group.ParentGroup.Name );
+                descriptionList.Add( "Parent Group", group.ParentGroup.Name );
             }
 
             if ( group.Campus != null )

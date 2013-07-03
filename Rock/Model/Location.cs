@@ -10,6 +10,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Data.Spatial;
+using System.Text;
 
 using System.Runtime.Serialization;
 
@@ -327,6 +328,18 @@ namespace Rock.Model
             this.LocationPoint = DbGeography.FromText( string.Format( "POINT({0} {1})", longitude, latitude ) );
         }
 
+        public virtual string GoogleMapLink(string title)
+        {
+            string qParm = this.ToString();
+            if (!string.IsNullOrWhiteSpace(title))
+            {
+                qParm += " (" + title + ")";
+            }
+
+            return "http://maps.google.com/maps?q=" +
+                System.Web.HttpUtility.UrlEncode(qParm);
+        }
+
         /// <summary>
         /// Returns a <see cref="System.String"/> that represents this instance.
         /// </summary>
@@ -338,7 +351,7 @@ namespace Rock.Model
             if ( string.IsNullOrEmpty( this.Name ) )
             {
                 return string.Format( "{0} {1} {2}, {3} {4}",
-                    this.Street1, this.Street2, this.City, this.State, this.Zip );
+                    this.Street1, this.Street2, this.City, this.State, this.Zip ).ReplaceWhileExists( "  ", " " );
             }
             else
             {

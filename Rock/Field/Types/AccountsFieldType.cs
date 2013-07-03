@@ -31,9 +31,7 @@ namespace Rock.Field.Types
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
                 var guids = value.SplitDelimitedValues();
-                var service = new FinancialAccountService();
-                var accounts = service.Queryable().Where( a => guids.Contains( a.Guid.ToString() ) );
-
+                var accounts = new FinancialAccountService().Queryable().Where( a => guids.Contains( a.Guid.ToString() ) );
                 if ( accounts.Any() )
                 {
                     return string.Join( ", ", ( from account in accounts select account.PublicName ).ToArray() );

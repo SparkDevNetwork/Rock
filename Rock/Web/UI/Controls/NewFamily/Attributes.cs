@@ -21,6 +21,18 @@ namespace Rock.Web.UI.Controls
     public class NewFamilyAttributes : CompositeControl, INamingContainer
     {
         /// <summary>
+        /// Gets or sets the category id.
+        /// </summary>
+        /// <value>
+        /// The category id.
+        /// </value>
+        public int CategoryId
+        {
+            get { return ViewState["CategoryId"] as int? ?? 0; }
+            set { ViewState["CategoryId"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the attribute ids.
         /// </summary>
         /// <value>
@@ -48,7 +60,13 @@ namespace Rock.Web.UI.Controls
         }
         private List<AttributeCache> _attributeList = null;
 
-        public List<NewFamilyAttributesRow> FamilyMemberRows
+        /// <summary>
+        /// Gets the attributes rows.
+        /// </summary>
+        /// <value>
+        /// The attributes rows.
+        /// </value>
+        public List<NewFamilyAttributesRow> AttributesRows
         {
             get
             {
@@ -76,36 +94,56 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "table" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Table );
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Thead );
-            writer.RenderBeginTag( HtmlTextWriterTag.Tr );
-
-            foreach ( var attribute in AttributeList)
+            if ( this.Visible )
             {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "table" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Table );
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Thead );
+                writer.RenderBeginTag( HtmlTextWriterTag.Tr );
+
+                // name
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );
-                writer.Write( attribute.Name );
                 writer.RenderEndTag();
-            }
 
-            writer.RenderEndTag();  // tr
-            writer.RenderEndTag();  // thead
-
-            writer.RenderBeginTag( HtmlTextWriterTag.Tbody );
-
-            foreach ( Control control in Controls )
-            {
-                if ( control is NewFamilyAttributesRow )
+                foreach ( var attribute in AttributeList )
                 {
-                    control.RenderControl( writer );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Th );
+                    writer.Write( attribute.Name );
+                    writer.RenderEndTag();
+                }
+
+                writer.RenderEndTag();  // tr
+                writer.RenderEndTag();  // thead
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Tbody );
+
+                foreach ( Control control in Controls )
+                {
+                    if ( control is NewFamilyAttributesRow )
+                    {
+                        control.RenderControl( writer );
+                    }
+                }
+
+                writer.RenderEndTag();  // tbody
+
+                writer.RenderEndTag();  // table
+            }
+        }
+
+        /// <summary>
+        /// Clears the rows.
+        /// </summary>
+        public void ClearRows()
+        {
+            for ( int i = Controls.Count - 1; i >= 0; i-- )
+            {
+                if ( Controls[i] is NewFamilyAttributesRow )
+                {
+                    Controls.RemoveAt( i );
                 }
             }
-
-            writer.RenderEndTag();  // tbody
-
-            writer.RenderEndTag();  // table
         }
-       
     }
 }

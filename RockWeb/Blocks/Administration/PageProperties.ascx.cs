@@ -182,10 +182,6 @@ namespace RockWeb.Blocks.Administration
 
             base.OnLoad( e );
 
-            if ( Page.IsPostBack )
-            {
-                Rock.Attribute.Helper.SetErrorIndicators( phAttributes, _page );
-            }
         }
 
         #endregion
