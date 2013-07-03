@@ -162,6 +162,10 @@
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
+    <Compile Include="BinaryFile\StorageComponent.cs" />
+    <Compile Include="BinaryFile\StorageContainer.cs" />
+    <Compile Include="BinaryFile\Storage\Database.cs" />
+    <Compile Include="BinaryFile\Storage\FileSystem.cs" />
     <Compile Include="Data\MergeFieldAttribute.cs" />
     <Compile Include="Field\Types\ComponentsFieldType.cs" />
     <Compile Include="Field\Types\CategoryFieldType.cs" />
