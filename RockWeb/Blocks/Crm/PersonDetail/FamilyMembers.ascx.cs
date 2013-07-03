@@ -84,10 +84,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     System.Web.UI.WebControls.Image imgPerson = e.Item.FindControl( "imgPerson" ) as System.Web.UI.WebControls.Image;
                     if ( imgPerson != null )
                     {
-                        imgPerson.Visible = Person.PhotoId.HasValue;
+                        imgPerson.Visible = fm.PhotoId.HasValue;
                         if ( Person.PhotoId.HasValue )
                         {
-                            imgPerson.ImageUrl = string.Format( "~/image.ashx?id={0}", Person.PhotoId );
+                            imgPerson.ImageUrl = string.Format( "~/image.ashx?id={0}", fm.PhotoId );
                         }
                     }
 
