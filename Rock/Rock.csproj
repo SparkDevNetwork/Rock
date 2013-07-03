@@ -313,6 +313,10 @@
     <Compile Include="Migrations\201307031943568_UpdatePhoneLocationTypes.Designer.cs">
       <DependentUpon>201307031943568_UpdatePhoneLocationTypes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201307032041530_CleanUpFieldTypes01.cs" />
+    <Compile Include="Migrations\201307032041530_CleanUpFieldTypes01.Designer.cs">
+      <DependentUpon>201307032041530_CleanUpFieldTypes01.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -1854,6 +1858,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307031943568_UpdatePhoneLocationTypes.resx">
       <DependentUpon>201307031943568_UpdatePhoneLocationTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307032041530_CleanUpFieldTypes01.resx">
+      <DependentUpon>201307032041530_CleanUpFieldTypes01.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
