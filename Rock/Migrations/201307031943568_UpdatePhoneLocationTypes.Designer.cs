@@ -11,7 +11,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201307031753562_UpdatePhoneLocationTypes"; }
+            get { return "201307031943568_UpdatePhoneLocationTypes"; }
         }
         
         string IMigrationMetadata.Source

@@ -309,9 +309,9 @@
     <Compile Include="Migrations\201307022331042_GroupTypesAttributeAsGuids.Designer.cs">
       <DependentUpon>201307022331042_GroupTypesAttributeAsGuids.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201307031753562_UpdatePhoneLocationTypes.cs" />
-    <Compile Include="Migrations\201307031753562_UpdatePhoneLocationTypes.Designer.cs">
-      <DependentUpon>201307031753562_UpdatePhoneLocationTypes.cs</DependentUpon>
+    <Compile Include="Migrations\201307031943568_UpdatePhoneLocationTypes.cs" />
+    <Compile Include="Migrations\201307031943568_UpdatePhoneLocationTypes.Designer.cs">
+      <DependentUpon>201307031943568_UpdatePhoneLocationTypes.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
@@ -1852,8 +1852,8 @@
     <EmbeddedResource Include="Migrations\201307022331042_GroupTypesAttributeAsGuids.resx">
       <DependentUpon>201307022331042_GroupTypesAttributeAsGuids.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201307031753562_UpdatePhoneLocationTypes.resx">
-      <DependentUpon>201307031753562_UpdatePhoneLocationTypes.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201307031943568_UpdatePhoneLocationTypes.resx">
+      <DependentUpon>201307031943568_UpdatePhoneLocationTypes.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

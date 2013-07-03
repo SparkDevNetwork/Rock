@@ -34,15 +34,15 @@ namespace Rock.Migrations
     IF EXISTS (SELECT [ID] FROM [DefinedValue] WHERE [Guid] = '2CC66D5A-F61C-4B74-9AF9-590A9847C13C')
     BEGIN
 	    UPDATE [DefinedValue] SET
-		     [Name] = 'Business'
-		    ,[Description] = 'Business phone number'
+		     [Name] = 'Work'
+		    ,[Description] = 'Work phone number'
 	    WHERE [Guid] = '2CC66D5A-F61C-4B74-9AF9-590A9847C13C'
     END
     ELSE
     BEGIN
 	    INSERT INTO [DefinedValue] ([IsSystem], [DefinedTypeId], [Order], [Name], [Description], [Guid])
 	    VALUES (1, (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '8345DD45-73C6-4F5E-BEBD-B77FC83F18FD'), 
-		    2, 'Business', 'Business phone number', '2CC66D5A-F61C-4B74-9AF9-590A9847C13C')
+		    2, 'Work', 'Work phone number', '2CC66D5A-F61C-4B74-9AF9-590A9847C13C')
     END
 
     -- Update any group locations using 'Business' to use 'Office'
@@ -63,6 +63,20 @@ namespace Rock.Migrations
        ,[Description] = 'Work address'
     WHERE [Guid] = 'E071472A-F805-4FC4-917A-D5E3C095C35C'
     
+    IF EXISTS (SELECT [ID] FROM [DefinedValue] WHERE [Guid] = '853D98F1-6E08-4321-861B-520B4106CFE0')
+    BEGIN
+	    UPDATE [DefinedValue] SET
+		     [Name] = 'Previous'
+		    ,[Description] = 'Previous address'
+	    WHERE [Guid] = '853D98F1-6E08-4321-861B-520B4106CFE0'
+    END
+    ELSE
+    BEGIN
+	    INSERT INTO [DefinedValue] ([IsSystem], [DefinedTypeId], [Order], [Name], [Description], [Guid])
+	    VALUES (1, (SELECT [Id] FROM [DefinedType] WHERE [Guid] = '2E68D37C-FB7B-4AA5-9E09-3785D52156CB'), 
+		    2, 'Previous', 'Previous address', '853D98F1-6E08-4321-861B-520B4106CFE0')
+    END
+
 " );
 
         }
