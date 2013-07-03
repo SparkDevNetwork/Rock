@@ -148,14 +148,19 @@ namespace Rock.SystemGuid
         #region Person Phone Type
 
         /// <summary>
-        /// Person Primary Phone
+        /// Person Mobile Phone
         /// </summary>
-        public const string PERSON_PHONE_TYPE_PRIMARY = "407E7E45-7B2E-4FCD-9605-ECB1339F2453";
+        public const string PERSON_PHONE_TYPE_MOBILE = "407E7E45-7B2E-4FCD-9605-ECB1339F2453";
 
         /// <summary>
-        /// Person Secondary Phone
+        /// Person Home Phone
         /// </summary>
-        public const string PERSON_PHONE_TYPE_SECONDARY = "AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303";
+        public const string PERSON_PHONE_TYPE_HOME = "AA8732FB-2CEA-4C76-8D6D-6AAA2C6A4303";
+
+        /// <summary>
+        /// Person Home Phone
+        /// </summary>
+        public const string PERSON_PHONE_TYPE_BUSINESS = "2CC66D5A-F61C-4B74-9AF9-590A9847C13C";
 
         #endregion
 
@@ -202,7 +207,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Business Record Type
         /// </summary>
-        public const string LOCATION_TYPE_OFFICE = "E071472A-F805-4FC4-917A-D5E3C095C35C";
+        public const string LOCATION_TYPE_WORK = "E071472A-F805-4FC4-917A-D5E3C095C35C";
 
         #endregion
     }
