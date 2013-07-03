@@ -125,6 +125,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         family.Selected = true;
                         ( (LinkButton)e.Item.FindControl( "lbSelectFamily" ) ).AddCssClass( "active" );
                         ProcessFamily();
+                        foreach ( RepeaterItem item in rPerson.Items )
+                        {
+                            ( (LinkButton)item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
+                        }
+                        
                     }
                 }
             }
@@ -197,14 +202,24 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
         protected void lbAddFamily_Click( object sender, EventArgs e)
         {
+            // open up a modal window & display the add family panel.
         }
 
-        protected void lbAddPerson_Click( object sender, EventArgs e)
+        protected void lbAddPerson_Click( object sender, EventArgs e )
         {
         }
 
         protected void lbAddVisitor_Click( object sender, EventArgs e)
         {
+        }
+
+        protected void lbAddFamilyCancel_Click( object sender, EventArgs e )
+        {
+
+        }
+        protected void lbAddFamilyAdd_Click( object sender, EventArgs e )
+        {
+
         }
 
         #endregion
@@ -267,5 +282,85 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         #endregion
-    }
+        protected void AddButton_Click( object sender, EventArgs e )
+        {
+            // need to add code here to add a set of text boxes/date pickers as a row on this page.
+            Panel childPanel = new Panel();
+            childPanel.AddCssClass( "row-fluid attended-checkin-body person" );
+            Panel divOne = new Panel();
+            divOne.AddCssClass( "span3" );
+            DataTextBox FirstName = new DataTextBox();
+            FirstName.AddCssClass( "fullBlock" );
+            FirstName.ID = this.ID;
+            divOne.Controls.Add( FirstName );
+            Panel divTwo = new Panel();
+            divTwo.AddCssClass( "span3" );
+            DataTextBox LastName = new DataTextBox();
+            LastName.AddCssClass( "fullBlock" );
+            LastName.ID = this.ID;
+            divTwo.Controls.Add( LastName );
+            Panel divThree = new Panel();
+            divThree.AddCssClass( "span3" );
+            DatePicker DOBAgePicker = new DatePicker();
+            DOBAgePicker.ID = this.ID;
+            divThree.Controls.Add( DOBAgePicker );
+            Panel divFour = new Panel();
+            divFour.AddCssClass( "span3" );
+            TextBox Grade = new TextBox();
+            Grade.AddCssClass( "fullBlock" );
+            Grade.ID = this.ID;
+            divFour.Controls.Add( Grade );
+            childPanel.Controls.Add( divOne );
+            childPanel.Controls.Add( divTwo );
+            childPanel.Controls.Add( divThree );
+            childPanel.Controls.Add( divFour );
+            div1.Controls.Add( childPanel );
+            mpe.Show();
+        }
+        protected void PreviousButton_Click( object sender, EventArgs e )
+        {
+            if ( div2.Visible )
+            {
+                div1.Visible = true;
+                div2.Visible = false;
+                PreviousButton.Visible = false;
+            }
+            else if ( div3.Visible )
+            {
+                div2.Visible = true;
+                div3.Visible = false;
+                MoreButton.Visible = true;
+            }
+            mpe.Show();
+        }
+
+        protected void MoreButton_Click( object sender, EventArgs e )
+        {
+            if ( div1.Visible )
+            {
+                div1.Visible = false;
+                div2.Visible = true;
+                PreviousButton.Visible = true;
+            }
+            else if ( div2.Visible )
+            {
+                div2.Visible = false;
+                div3.Visible = true;
+                MoreButton.Visible = false;
+            }
+            mpe.Show();
+        }
+
+        protected void cvDOBAgeValidator_ServerValidate( object source, ServerValidateEventArgs args )
+        {
+            // check to see if what is in the field is a number 3 digits or less (age) or a date.
+            int someNumber;
+            DateTime someDate;
+            args.IsValid = false;
+            if ( ( args.Value.Length <= 3 && int.TryParse( args.Value, out someNumber ) ) || ( DateTime.TryParse( args.Value, out someDate ) ) )
+            {
+                args.IsValid = true;
+            }
+        }
+}
 }
