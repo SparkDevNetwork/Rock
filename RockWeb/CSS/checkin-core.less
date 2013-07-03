@@ -513,6 +513,72 @@ input[type="submit"].btn[disabled="disabled"]
 	padding: 20px 25px 25px 25px;
 }
 
+.modalBackground 
+{
+    background-color: #000000;
+    filter: alpha(opacity=80);
+    opacity: 0.8;
+    z-index: 10000 !important;
+    position: absolute !important;
+    top: 0;
+}
+
+.AddFamily {
+    background: #EEEEEE;
+    width: 90%;
+    height: 90%;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    z-index: 10001 !important;
+}
+
+/*.bored {
+    display: inline;
+}
+
+.or {
+    float: left;
+    margin: 5px 10px 0 10px;
+}
+
+.textInline {
+    width: 40%;
+    float: left;
+}
+
+.textInlineLast {
+    width: 40%;
+    float: right;
+}*/
+
+.person {
+    padding: 10px 0;
+}
+
+/*.k-calendar, k-calendar-container, k-animation-container {
+    z-index: 100002;
+}*/
+
+.buttons {
+    padding-top: 10px;
+    text-align: center;
+}
+
+.left-button {
+    float: left;
+}
+
+.right-button {
+    float: right;
+}
+
+.error-modal {
+    width: 50%;
+    position: relative;
+    left: 25%;
+}
+
 @media screen and (max-width:1024px)
 {
 	input.attended-checkin-keyboard-entry
@@ -587,4 +653,15 @@ input[type="submit"].btn[disabled="disabled"]
 		font-size: 16px;
 	}
 
+    h3 {
+        font-size: 18px;
+    }
+
+    .fullBlock {
+        width: 75%;
+    }
+
+    .textInline {
+        width: 35%;
+    }
 }

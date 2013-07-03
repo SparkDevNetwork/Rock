@@ -42,13 +42,24 @@ namespace Rock.Workflow.Action.CheckIn
                 {
                     foreach ( var person in family.People )
                     {
-                        foreach ( var kioskGroupType in checkInState.Kiosk.KioskGroupTypes.Where( g => g.KioskLocations.Any( l => l.Location.IsActive ) ) )
+                        //foreach ( var kioskGroupType in checkInState.Kiosk.KioskGroupTypes.Where( g => g.KioskLocations.Any( l => l.Location.IsActive ) ) )
+                        //{
+                        //    if ( !person.GroupTypes.Any( g => g.GroupType.Id == kioskGroupType.GroupType.Id ) )
+                        //    {
+                        //        var checkinGroupType = new CheckInGroupType();
+                        //        checkinGroupType.GroupType = kioskGroupType.GroupType.Clone( false );
+                        //        checkinGroupType.GroupType.CopyAttributesFrom( kioskGroupType.GroupType );
+                        //        person.GroupTypes.Add( checkinGroupType );
+                        //    }
+                        //}
+                        
+                        foreach ( var roomGroupType in CheckInBlock.CurrentRoomGroupTypes )
                         {
-                            if ( !person.GroupTypes.Any( g => g.GroupType.Id == kioskGroupType.GroupType.Id ) )
+                            if ( !person.GroupTypes.Any( g => g.GroupType.Id == roomGroupType.Id ) )
                             {
                                 var checkinGroupType = new CheckInGroupType();
-                                checkinGroupType.GroupType = kioskGroupType.GroupType.Clone( false );
-                                checkinGroupType.GroupType.CopyAttributesFrom( kioskGroupType.GroupType );
+                                checkinGroupType.GroupType = roomGroupType.Clone( false );
+                                checkinGroupType.GroupType.CopyAttributesFrom( roomGroupType );
                                 person.GroupTypes.Add( checkinGroupType );
                             }
                         }

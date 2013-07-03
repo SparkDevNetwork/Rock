@@ -41,7 +41,7 @@ namespace Rock.CheckIn
         /// <summary>
         /// The current ministry group type ids
         /// </summary>
-        protected List<GroupType> CurrentRoomGroupTypes;
+        public static List<GroupType> CurrentRoomGroupTypes;
 
         /// <summary>
         /// The count of people that need to be checked in
