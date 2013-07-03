@@ -100,23 +100,6 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 _family.CampusId = cpCampus.SelectedValueAsInt();
                 service.Save( _family, CurrentPersonId );
 
-                var phoneNumberService = new PhoneNumberService();
-                int primaryPhoneId = DefinedValueCache.Read(new Guid(Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_PRIMARY)).Id;
-                foreach( var person in _family.Members.Select( m => m.Person) )
-                {
-                    var phoneNumber = person.PhoneNumbers.Where( n => n.NumberTypeValueId == primaryPhoneId).FirstOrDefault();
-                    if (phoneNumber == null)
-                    {
-                        phoneNumber = new PhoneNumber();
-                        phoneNumber.PersonId = person.Id;
-                        phoneNumber.NumberTypeValueId = primaryPhoneId;
-                        phoneNumberService.Add(phoneNumber, CurrentPersonId);
-                    }
-                    phoneNumber.Number = tbPhone.Text;
-                    phoneNumber.IsUnlisted = cbUnlisted.Checked;
-                    phoneNumberService.Save(phoneNumber, CurrentPersonId);
-                }
-
                 if ( _family.Members.Any( m => m.PersonId == Person.Id ) )
                 {
                     Response.Redirect( string.Format( "~/Person/{0}", Person.Id ), false );
