@@ -16,14 +16,12 @@
             $('.total-amount').html(total.toFixed(2));
             return false;
         });
-
         $('.credit-card').creditCardTypeDetector({ 'credit_card_logos': '.card-logos' });           
         $('.radio-list input:radio').unbind('click').on('click', function () {
             if ($(this).val() == 0 && $(this).parents().next('.radio-content').css("display") != "none" ) {
                 $(this).parents().next('.radio-content').slideToggle();
             }            
-        });
-                
+        });                
         $('.toggle-input').unbind('click').on('click', function () {
             $(this).parents().next('.toggle-content').slideToggle();
         });
