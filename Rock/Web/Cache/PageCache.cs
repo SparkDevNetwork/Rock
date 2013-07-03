@@ -128,7 +128,7 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if [page display icon]; otherwise, <c>false</c>.
         /// </value>
         public bool PageDisplayIcon { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a value indicating whether [page display description].
         /// </summary>
@@ -405,7 +405,7 @@ namespace Rock.Web.Cache
             get
             {
                 string bcName = string.Empty;
-                
+
                 if ( BreadCrumbDisplayIcon && !string.IsNullOrWhiteSpace( IconCssClass ) )
                 {
                     bcName = string.Format( "<i class='{0}'></i>", IconCssClass );
@@ -462,7 +462,7 @@ namespace Rock.Web.Cache
                 this.PageContexts = new Dictionary<string, string>();
                 if ( page.PageContexts != null )
                 {
-                    page.PageContexts.ToList().ForEach( c => this.PageContexts.Add( c.Entity, c.IdParameter));
+                    page.PageContexts.ToList().ForEach( c => this.PageContexts.Add( c.Entity, c.IdParameter ) );
                 }
 
                 this.PageRoutes = new Dictionary<int, string>();
@@ -506,14 +506,50 @@ namespace Rock.Web.Cache
 
                 if ( keyModel.Entity == null )
                 {
+                    Type modelType = Type.GetType( entity );
+
+                    if ( modelType == null )
+                    {
+                        // if the Type isn't found in the Rock.dll (it might be from a Plugin), lookup which assessmbly it is in and look in there
+                        EntityTypeCache entityTypeInfo = EntityTypeCache.Read( entity );
+                        if ( entityTypeInfo != null )
+                        {
+                            string[] assemblyNameParts = entityTypeInfo.AssemblyName.Split( new char[] { ',' } );
+                            if ( assemblyNameParts.Length > 1 )
+                            {
+                                modelType = Type.GetType( string.Format( "{0}, {1}", entityTypeInfo.Name, assemblyNameParts[1] ) );
+                            }
+                        }
+                    }
+
+                    /// In the case of core Rock.dll Types, we'll just use Rock.Data.Service<> and Rock.Data.RockContext<>
+                    /// otherwise find the first (and hopefully only) Service<> and dbContext we can find in the Assembly.  
                     Type serviceType = typeof( Rock.Data.Service<> );
-                    Type[] modelType = { Type.GetType( entity ) };
-                    Type service = serviceType.MakeGenericType( modelType );
-                    var serviceInstance = Activator.CreateInstance( service );
+                    Type contextType = typeof( Rock.Data.RockContext );
+                    if ( modelType.Assembly != serviceType.Assembly )
+                    {
+                        var serviceTypeLookup = Reflection.SearchAssembly( modelType.Assembly, serviceType );
+                        if ( serviceTypeLookup.Any() )
+                        {
+                            serviceType = serviceTypeLookup.First().Value;
+                        }
+
+                        var contextTypeLookup = Reflection.SearchAssembly( modelType.Assembly, typeof( System.Data.Entity.DbContext ) );
+
+                        if ( contextTypeLookup.Any() )
+                        {
+                            contextType = contextTypeLookup.First().Value;
+                        }
+                    }
+
+                    System.Data.Entity.DbContext dbContext = Activator.CreateInstance( contextType ) as System.Data.Entity.DbContext;
+
+                    Type service = serviceType.MakeGenericType( new Type[] { modelType } );
+                    var serviceInstance = Activator.CreateInstance( service, dbContext );
 
                     if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
                     {
-                        MethodInfo getMethod = service.GetMethod( "Get", new Type[] { typeof(int) } );
+                        MethodInfo getMethod = service.GetMethod( "Get", new Type[] { typeof( int ) } );
                         keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Id } ) as Rock.Data.IEntity;
                     }
                     else
@@ -569,7 +605,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Fires the block content updated event.
         /// </summary>
-        public void BlockContentUpdated(object sender)
+        public void BlockContentUpdated( object sender )
         {
             if ( OnBlockContentUpdated != null )
             {
@@ -599,8 +635,8 @@ namespace Rock.Web.Cache
         /// <param name="item"></param>
         public void SaveSharedItem( string key, object item )
         {
-            string itemKey = string.Format("{0}:Item:{1}", PageCache.CacheKey( Id ), key);
-            
+            string itemKey = string.Format( "{0}:Item:{1}", PageCache.CacheKey( Id ), key );
+
             System.Collections.IDictionary items = HttpContext.Current.Items;
             if ( items.Contains( itemKey ) )
                 items[itemKey] = item;
@@ -811,7 +847,7 @@ namespace Rock.Web.Cache
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, page, cachePolicy );
                     cache.Set( page.Guid.ToString(), page.Id, cachePolicy );
-                    
+
                     return page;
                 }
                 else

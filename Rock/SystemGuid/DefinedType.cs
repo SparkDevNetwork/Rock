@@ -86,7 +86,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Guid for the types of Locations (such as Home, Main Office, etc)
         /// </summary>
-        public const string LOCATION_LOCATION_TYPE =  "2e68d37c-fb7b-4aa5-9e09-3785d52156cb";
+        public const string LOCATION_LOCATION_TYPE =  "2E68D37C-FB7B-4AA5-9E09-3785D52156CB";
 
         /// <summary>
         /// Guid for the types of States that can be tied to a Location's address.

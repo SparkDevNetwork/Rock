@@ -39,6 +39,22 @@ namespace Rock.Web.UI.Adapters
             RadioButtonList rbl = Control as RadioButtonList;
             if ( rbl != null )
             {
+                PostBackOptions postBackOption = null;
+
+                if ( rbl.AutoPostBack )
+                {
+                    postBackOption = new PostBackOptions( rbl, string.Empty );
+                    if ( rbl.CausesValidation && this.Page.GetValidators( rbl.ValidationGroup ).Count > 0 )
+                    {
+                        postBackOption.PerformValidation = true;
+                        postBackOption.ValidationGroup = rbl.ValidationGroup;
+                    }
+                    if ( this.Page.Form != null )
+                    {
+                        postBackOption.AutoPostBack = true;
+                    }
+                }
+
                 int i = 0;
                 foreach ( ListItem li in rbl.Items )
                 {
@@ -60,6 +76,11 @@ namespace Rock.Web.UI.Adapters
                     {
                         var key = attributeKey as string;
                         writer.AddAttribute( key, li.Attributes[key] );
+                    }
+
+                    if ( postBackOption != null )
+                    {
+                        writer.AddAttribute( HtmlTextWriterAttribute.Onclick, Page.ClientScript.GetPostBackEventReference( postBackOption, true ) );
                     }
 
                     writer.RenderBeginTag( HtmlTextWriterTag.Input );

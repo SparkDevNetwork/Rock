@@ -141,7 +141,10 @@ namespace Rock.Web.UI.Controls
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     label.Visible = this.Visible;
                     label.RenderControl( writer );
-                    helpBlock.RenderControl( writer );
+                    if ( !string.IsNullOrWhiteSpace( LabelText ) )
+                    {
+                        helpBlock.RenderControl( writer );
+                    }
                     writer.RenderEndTag();
 
                     writer.AddAttribute( "class", "controls" );
@@ -151,6 +154,11 @@ namespace Rock.Web.UI.Controls
                 if ( Enabled )
                 {
                     base.RenderControl( writer );
+
+                    if ( renderControlGroupDiv && string.IsNullOrWhiteSpace( LabelText ) )
+                    {
+                        helpBlock.RenderControl( writer );
+                    }
                 }
                 else
                 {

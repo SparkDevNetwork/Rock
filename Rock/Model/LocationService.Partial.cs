@@ -29,7 +29,8 @@ namespace Rock.Model
         }
         
         /// <summary>
-        /// Gets Location by Street 1 And Street 2 And City And State And Zip
+        /// Gets Location by Street 1 And Street 2 And City And State And Zip, will first standardize the address.  If an existing location 
+        /// is not found, a new locaiton will be created and geocoded.
         /// </summary>
         /// <param name="street1">Street 1.</param>
         /// <param name="street2">Street 2.</param>
@@ -37,9 +38,51 @@ namespace Rock.Model
         /// <param name="state">State.</param>
         /// <param name="zip">Zip.</param>
         /// <returns>Location object.</returns>
-        public Location GetByStreet1AndStreet2AndCityAndStateAndZip( string street1, string street2, string city, string state, string zip )
+        public Location Get( string street1, string street2, string city, string state, string zip )
         {
-            return Repository.FirstOrDefault( t => ( t.Street1 == street1 || ( street1 == null && t.Street1 == null ) ) && ( t.Street2 == street2 || ( street2 == null && t.Street2 == null ) ) && ( t.City == city || ( city == null && t.City == null ) ) && ( t.State == state || ( state == null && t.State == null ) ) && ( t.Zip == zip || ( zip == null && t.Zip == null ) ) );
+            // First check if a location exists with the entered values
+            Location existingLoction = Repository.FirstOrDefault( t =>
+                ( t.Street1 == street1 || ( street1 == null && t.Street1 == null ) ) &&
+                ( t.Street2 == street2 || ( street2 == null && t.Street2 == null ) ) &&
+                ( t.City == city || ( city == null && t.City == null ) ) &&
+                ( t.State == state || ( state == null && t.State == null ) ) &&
+                ( t.Zip == zip || ( zip == null && t.Zip == null ) ) );
+            if ( existingLoction != null )
+            {
+                return existingLoction;
+            }
+
+            // If existing location wasn't found with entered values, try standardizing the values, and 
+            // search for an existing value again
+            var newLocation = new Location
+            {
+                Street1 = street1,
+                Street2 = street2,
+                City = city,
+                State = state,
+                Zip = zip
+            };
+
+            Standardize( newLocation, null );
+
+            existingLoction = Repository.FirstOrDefault( t =>
+                ( t.Street1 == newLocation.Street1 || ( newLocation.Street1 == null && t.Street1 == null ) ) &&
+                ( t.Street2 == newLocation.Street2 || ( newLocation.Street2 == null && t.Street2 == null ) ) &&
+                ( t.City == newLocation.City || ( newLocation.City == null && t.City == null ) ) &&
+                ( t.State == newLocation.State || ( newLocation.State == null && t.State == null ) ) &&
+                ( t.Zip == newLocation.Zip || ( newLocation.Zip == null && t.Zip == null ) ) );
+
+            if ( existingLoction != null )
+            {
+                return existingLoction;
+            }
+
+            // If still no existing location, geocode the new location and save it.
+            Geocode( newLocation, null );
+
+            Save( newLocation, null );
+
+            return newLocation;
         }
 
         /// <summary>
@@ -125,36 +168,5 @@ namespace Rock.Model
             location.GeocodeAttemptedDateTime = DateTime.Now;
         }
 
-        /// <summary>
-        /// Looks for an existing location model first by searching for a raw value, and then by the street, 
-        /// city, state, and zip of the specified location stub.  If a match is not found, then a new location
-        /// block is returned.
-        /// </summary>
-        /// <param name="location">The location.</param>
-        /// <param name="personId">The person id.</param>
-        /// <returns></returns>
-        private Location GetByLocation(Location location, int? personId)
-        {
-            string address = location.FullAddress;
-
-            Location locationModel = GetByFullAddress( address );
-
-            if ( locationModel == null )
-                locationModel = GetByStreet1AndStreet2AndCityAndStateAndZip(
-                    location.Street1, location.Street2, location.City, location.State, location.Zip );
-
-            if ( locationModel == null )
-            {
-                locationModel = new Model.Location();
-                locationModel.FullAddress = address;
-                locationModel.Street1 = location.Street1;
-                locationModel.Street2 = location.Street2;
-                locationModel.City = location.City;
-                locationModel.State = location.State;
-                locationModel.Zip = location.Zip;
-            }
-
-            return locationModel;
-        }
     }
 }
