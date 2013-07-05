@@ -321,6 +321,10 @@
     <Compile Include="Migrations\201307052157088_NoteBlockShowOptionsAttributes.Designer.cs">
       <DependentUpon>201307052157088_NoteBlockShowOptionsAttributes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201307052225548_ChangeSubPageNavPath.cs" />
+    <Compile Include="Migrations\201307052225548_ChangeSubPageNavPath.Designer.cs">
+      <DependentUpon>201307052225548_ChangeSubPageNavPath.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -1867,6 +1871,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307052157088_NoteBlockShowOptionsAttributes.resx">
       <DependentUpon>201307052157088_NoteBlockShowOptionsAttributes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307052225548_ChangeSubPageNavPath.resx">
+      <DependentUpon>201307052225548_ChangeSubPageNavPath.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
