@@ -328,6 +328,10 @@
     <Compile Include="Migrations\201307052225548_ChangeSubPageNavPath.Designer.cs">
       <DependentUpon>201307052225548_ChangeSubPageNavPath.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201307052339047_PageXsltIncludeQueryStringBlockAttribute.cs" />
+    <Compile Include="Migrations\201307052339047_PageXsltIncludeQueryStringBlockAttribute.Designer.cs">
+      <DependentUpon>201307052339047_PageXsltIncludeQueryStringBlockAttribute.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -1878,6 +1882,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307052225548_ChangeSubPageNavPath.resx">
       <DependentUpon>201307052225548_ChangeSubPageNavPath.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307052339047_PageXsltIncludeQueryStringBlockAttribute.resx">
+      <DependentUpon>201307052339047_PageXsltIncludeQueryStringBlockAttribute.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

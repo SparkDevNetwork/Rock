@@ -6,13 +6,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Caching;
 using System.Web;
 using System.Web.UI.HtmlControls;
 using System.Xml.Linq;
-
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
@@ -734,13 +734,22 @@ namespace Rock.Web.Cache
         /// <param name="levelsDeep">The page levels deep.</param>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public XDocument MenuXml( int levelsDeep, Person person, PageCache currentPage = null, Dictionary<string, string> parameters = null )
+        public XDocument MenuXml( int levelsDeep, Person person, PageCache currentPage = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
         {
-            XElement menuElement = MenuXmlElement( levelsDeep, person, currentPage, parameters );
+            XElement menuElement = MenuXmlElement( levelsDeep, person, currentPage, parameters, queryString );
             return new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), menuElement );
         }
 
-        private XElement MenuXmlElement( int levelsDeep, Person person, PageCache currentPage = null, Dictionary<string, string> parameters = null )
+        /// <summary>
+        /// Menus the XML element.
+        /// </summary>
+        /// <param name="levelsDeep">The levels deep.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="currentPage">The current page.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <param name="queryString">The query string.</param>
+        /// <returns></returns>
+        private XElement MenuXmlElement( int levelsDeep, Person person, PageCache currentPage = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
         {
             if ( levelsDeep >= 0 && this.DisplayInNav( person ) )
             {
@@ -758,7 +767,7 @@ namespace Rock.Web.Cache
                     new XAttribute( "id", this.Id ),
                     new XAttribute( "title", this.Title ?? this.Name ),
                     new XAttribute( "current", isCurrentPage.ToString() ),
-                    new XAttribute( "url", new PageReference( this.Id, 0, parameters ).BuildUrl() ),
+                    new XAttribute( "url", new PageReference( this.Id, 0, parameters, queryString ).BuildUrl() ),
                     new XAttribute( "display-description", this.MenuDisplayDescription.ToString().ToLower() ),
                     new XAttribute( "display-icon", this.MenuDisplayIcon.ToString().ToLower() ),
                     new XAttribute( "display-child-pages", this.MenuDisplayChildPages.ToString().ToLower() ),
@@ -775,7 +784,7 @@ namespace Rock.Web.Cache
                     {
                         if ( page != null )
                         {
-                            XElement childPageElement = page.MenuXmlElement( levelsDeep - 1, person, currentPage, parameters );
+                            XElement childPageElement = page.MenuXmlElement( levelsDeep - 1, person, currentPage, parameters , queryString);
                             if ( childPageElement != null )
                                 childPagesElement.Add( childPageElement );
                         }
