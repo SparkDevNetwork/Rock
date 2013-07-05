@@ -6,11 +6,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Text;
 using System.Web.UI;
 using System.Xml.Linq;
 using System.Xml.Xsl;
+using Rock;
 using Rock.Attribute;
 
 namespace RockWeb.Blocks.Cms
@@ -19,6 +21,7 @@ namespace RockWeb.Blocks.Cms
     [LinkedPage( "Root Page", "The root page to use for the page collection. Defaults to the current page instance if not set.", false, "" )]
     [TextField( "Number of Levels", "Number of parent-child page levels to display. Default 3.", false, "3" )]
     [BooleanField( "Include Current Parameters", "Flag indicating if current page's parameters should be used when building url for child pages", false )]
+    [BooleanField( "Include Current QueryString", "Flag indicating if current page's QueryString should be used when building url for child pages", false )]
     public partial class PageXslt : Rock.Web.UI.RockBlock
     {
         private static readonly string ROOT_PAGE = "RootPage";
@@ -63,12 +66,18 @@ namespace RockWeb.Blocks.Cms
             int levelsDeep = Convert.ToInt32( GetAttributeValue( NUM_LEVELS ) );
 
             Dictionary<string, string> pageParameters = null;
-            bool passParams = false;
-            if ( bool.TryParse( GetAttributeValue( "IncludeCurrentParameters" ), out passParams ) && passParams )
+            if ( GetAttributeValue( "IncludeCurrentParameters" ).AsBoolean() )
             {
                 pageParameters = CurrentPageReference.Parameters;
             }
-            XDocument pageXml = rootPage.MenuXml( levelsDeep, CurrentPerson, CurrentPage, pageParameters );
+
+            NameValueCollection queryString = null;
+            if ( GetAttributeValue( "IncludeCurrentQueryString" ).AsBoolean() )
+            {
+                queryString = CurrentPageReference.QueryString;
+            }
+
+            XDocument pageXml = rootPage.MenuXml( levelsDeep, CurrentPerson, CurrentPage, pageParameters, queryString );
 
             StringBuilder sb = new StringBuilder();
             TextWriter tw = new StringWriter( sb );
