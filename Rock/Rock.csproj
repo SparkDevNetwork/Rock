@@ -317,6 +317,10 @@
     <Compile Include="Migrations\201307032041530_CleanUpFieldTypes01.Designer.cs">
       <DependentUpon>201307032041530_CleanUpFieldTypes01.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201307052157088_NoteBlockShowOptionsAttributes.cs" />
+    <Compile Include="Migrations\201307052157088_NoteBlockShowOptionsAttributes.Designer.cs">
+      <DependentUpon>201307052157088_NoteBlockShowOptionsAttributes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -996,7 +1000,6 @@
     <Compile Include="Web\UI\BreadCrumb.cs" />
     <Compile Include="Web\UI\IDetailBlock.cs" />
     <Compile Include="Web\UI\IDimmableBlock.cs" />
-    <Compile Include="Web\UI\IHidableBlock.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterLocationGroupsByAbilityLevel.cs" />
@@ -1861,6 +1864,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307032041530_CleanUpFieldTypes01.resx">
       <DependentUpon>201307032041530_CleanUpFieldTypes01.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307052157088_NoteBlockShowOptionsAttributes.resx">
+      <DependentUpon>201307052157088_NoteBlockShowOptionsAttributes.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
