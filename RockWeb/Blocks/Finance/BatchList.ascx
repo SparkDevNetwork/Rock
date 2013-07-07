@@ -13,15 +13,14 @@
             <Rock:LabeledDropDownList ID="ddlCampus" runat="server" LabelText="Campus" />
         </Rock:GridFilter>
 
-        <Rock:Grid ID="rGridBatch" runat="server" EmptyDataText="No Batches Found" OnRowDataBound="rGridBatch_RowDataBound"
-             ShowConfirmDeleteDialog="true"  OnRowSelected="rGridBatch_Edit">
+        <Rock:Grid ID="rGridBatch" runat="server" OnRowDataBound="rGridBatch_RowDataBound"
+             ShowConfirmDeleteDialog="true" OnRowSelected="rGridBatch_Edit">
             <Columns>
                 <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
                 <asp:BoundField DataField="Name" HeaderText="Title" SortExpression="Name" />
                 <asp:TemplateField HeaderText="Date">
                     <ItemTemplate>
                         <span><%# Eval("BatchDate") %></span>
-
                     </ItemTemplate>
                 </asp:TemplateField>
                 <Rock:EnumField DataField="Status" HeaderText="Status" SortExpression="Status" />

@@ -242,7 +242,6 @@ namespace RockWeb.Blocks.Administration
 
             BinaryFile.LoadAttributes();
             Rock.Attribute.Helper.GetEditValues( phAttributes, BinaryFile );
-            Rock.Attribute.Helper.SetErrorIndicators( phAttributes, BinaryFile );
 
             if ( !Page.IsValid )
             {

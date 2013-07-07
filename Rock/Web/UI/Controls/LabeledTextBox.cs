@@ -14,7 +14,7 @@ namespace Rock.Web.UI.Controls
     /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with an associated label.
     /// </summary>
     [ToolboxData( "<{0}:LabeledTextBox runat=server></{0}:LabeledTextBox>" )]
-    public class LabeledTextBox : TextBox, ILabeledControl
+    public class LabeledTextBox : TextBox, ILabeledControl, IRequiredControl
     {
         /// <summary>
         /// The label
@@ -31,7 +31,14 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected RequiredFieldValidator requiredValidator;
 
+        /// <summary>
+        /// The prepend label
+        /// </summary>
         protected Label prependLabel;
+
+        /// <summary>
+        /// The append label
+        /// </summary>
         protected Label appendLabel;
 
         /// <summary>
@@ -205,6 +212,32 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the required error message.  If blank, the LabelName name will be used
+        /// </summary>
+        /// <value>
+        /// The required error message.
+        /// </value>
+        public string RequiredErrorMessage
+        {
+            get
+            {
+                return requiredValidator.ErrorMessage;
+            }
+            set
+            {
+                requiredValidator.ErrorMessage = value;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LabeledTextBox" /> class.
+        /// </summary>
+        public LabeledTextBox() : base()
+        {
+            requiredValidator = new RequiredFieldValidator();
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -216,7 +249,6 @@ namespace Rock.Web.UI.Controls
             label = new Literal();
             Controls.Add( label );
 
-            requiredValidator = new RequiredFieldValidator();
             requiredValidator.ID = this.ID + "_rfv";
             requiredValidator.ControlToValidate = this.ID;
             requiredValidator.Display = ValidatorDisplay.Dynamic;
@@ -313,7 +345,10 @@ namespace Rock.Web.UI.Controls
                 if ( Required )
                 {
                     requiredValidator.Enabled = true;
-                    requiredValidator.ErrorMessage = LabelText + " is Required.";
+                    if ( string.IsNullOrWhiteSpace( requiredValidator.ErrorMessage ) )
+                    {
+                        requiredValidator.ErrorMessage = LabelText + " is Required.";
+                    }
                     requiredValidator.RenderControl( writer );
                 }
 
