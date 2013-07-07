@@ -29,6 +29,7 @@ namespace Rock.Web.UI.Controls
             _label = new Label();
             _btnSelect = new LinkButton();
             _btnSelectNone = new LinkButton();
+            RequiredValidator = new HiddenFieldValidator();
         }
 
 
@@ -45,22 +46,27 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the name of the field to display in validation messages
-        /// when a LabelText is not entered
-        /// </summary>
-        /// <value>
-        /// The name of the field.
-        /// </value>
-        public string FieldName
-        {
-            get { return _label.Text; }
-            set { _label.Text = value; }
-        }
-
-        /// <summary>
         /// The required validator
         /// </summary>
         protected HiddenFieldValidator RequiredValidator;
+
+        /// <summary>
+        /// Gets or sets the required error message.  If blank, the LabelName name will be used
+        /// </summary>
+        /// <value>
+        /// The required error message.
+        /// </value>
+        public string RequiredErrorMessage
+        {
+            get
+            {
+                return RequiredValidator.ErrorMessage;
+            }
+            set
+            {
+                RequiredValidator.ErrorMessage = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the person id.
@@ -272,7 +278,6 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _btnSelect );
             Controls.Add( _btnSelectNone );
 
-            RequiredValidator = new HiddenFieldValidator();
             RequiredValidator.ID = this.ID + "_rfv";
             RequiredValidator.InitialValue = "0";
             RequiredValidator.ControlToValidate = _hfPersonId.ID;
@@ -322,7 +327,6 @@ namespace Rock.Web.UI.Controls
             if ( Required )
             {
                 RequiredValidator.Enabled = true;
-                RequiredValidator.ErrorMessage = LabelText + " is Required.";
                 RequiredValidator.RenderControl( writer );
             }
 

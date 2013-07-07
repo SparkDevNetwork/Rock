@@ -120,15 +120,22 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                writer.AddAttribute( "class", "control-group" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                bool renderControlGroupDiv = ( !string.IsNullOrWhiteSpace( LabelText ) || !string.IsNullOrWhiteSpace( Help ) );
+                string wrapperClassName = string.Empty;
 
-                writer.AddAttribute( "class", "control-label" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                label.RenderControl( writer );
-                helpBlock.RenderControl( writer );
+                if ( renderControlGroupDiv )
+                {
 
-                writer.RenderEndTag();
+                    writer.AddAttribute( "class", "control-group" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                    writer.AddAttribute( "class", "control-label" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    label.RenderControl( writer );
+                    helpBlock.RenderControl( writer );
+
+                    writer.RenderEndTag();
+                }
 
                 writer.AddAttribute( "class", "controls" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -151,9 +158,11 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();
                 }
 
-                writer.RenderEndTag();
-
-                writer.RenderEndTag();
+                if ( renderControlGroupDiv )
+                {
+                    writer.RenderEndTag();
+                    writer.RenderEndTag();
+                }
             }
         }
 

@@ -186,6 +186,29 @@ namespace Rock
         }
 
         /// <summary>
+        /// Replaces every instance of oldValue with newValue.  Will continue to replace
+        /// values after each replace until the oldValue does not exist.  
+        /// </summary>
+        /// <param name="str">The source string.</param>
+        /// <param name="oldValue">The value to replace.</param>
+        /// <param name="newValue">The value to insert.</param>
+        /// <returns>System.String.</returns>
+        public static string ReplaceWhileExists( this string str, string oldValue, string newValue )
+        {
+            string newstr = str;
+
+            if ( oldValue != newValue )
+            {
+                while ( newstr.Contains( oldValue ) )
+                {
+                    newstr = newstr.Replace( oldValue, newValue );
+                }
+            }
+
+            return newstr;
+
+        }
+        /// <summary>
         /// Adds escape character for quotes in a string
         /// </summary>
         /// <param name="str"></param>

@@ -16,7 +16,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public abstract class ItemPicker : CompositeControl
+    public abstract class ItemPicker : CompositeControl, IRequiredControl
     {
         private HiddenField _hfItemId;
         private HiddenField _hfInitialItemParentIds;
@@ -24,18 +24,6 @@ namespace Rock.Web.UI.Controls
         private HiddenField _hfItemRestUrlExtraParams;
         private LinkButton _btnSelect;
         private LinkButton _btnSelectNone;
-
-        /// <summary>
-        /// Gets or sets the name of the field (for validation messages)
-        /// </summary>
-        /// <value>
-        /// The name of the field.
-        /// </value>
-        public string FieldName
-        {
-            get { return ViewState["FieldName"] as string ?? string.Empty; }
-            set { ViewState["FieldName"] = value; }
-        }
 
         /// <summary>
         /// The required validator
@@ -317,8 +305,6 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool AllowMultiSelect { get; set; }
 
-        private string _defaultText;
-
         /// <summary>
         /// Gets or sets the default text.
         /// </summary>
@@ -357,6 +343,33 @@ namespace Rock.Web.UI.Controls
             {
                 return !Required || RequiredValidator.IsValid;
             }
+        }
+
+        /// <summary>
+        /// Gets or sets the required error message.  If blank, the LabelName name will be used
+        /// </summary>
+        /// <value>
+        /// The required error message.
+        /// </value>
+        public string RequiredErrorMessage
+        {
+            get
+            {
+                return RequiredValidator.ErrorMessage;
+            }
+            set
+            {
+                RequiredValidator.ErrorMessage = value;
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ItemPicker" /> class.
+        /// </summary>
+        public ItemPicker()
+            : base()
+        {
+            RequiredValidator = new HiddenFieldValidator();
         }
 
         /// <summary>
@@ -474,7 +487,6 @@ namespace Rock.Web.UI.Controls
             Controls.Add( _btnSelect );
             Controls.Add( _btnSelectNone );
 
-            RequiredValidator = new HiddenFieldValidator();
             RequiredValidator.ID = this.ID + "_rfv";
             RequiredValidator.InitialValue = "0";
             RequiredValidator.ControlToValidate = _hfItemId.ID;
@@ -494,7 +506,6 @@ namespace Rock.Web.UI.Controls
             if ( Required )
             {
                 RequiredValidator.Enabled = true;
-                RequiredValidator.ErrorMessage = FieldName + " is Required.";
                 RequiredValidator.RenderControl( writer );
             }
 

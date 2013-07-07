@@ -144,7 +144,7 @@ namespace RockWeb.Blocks.Prayer
             SetEditMode( false );
 
             litFullName.Text = prayerRequest.FullName;
-            litCategory.Text = prayerRequest.Category.Name;
+            litCategory.Text = prayerRequest.Category != null ? prayerRequest.Category.Name : "";
             litRequest.Text = HttpUtility.HtmlEncode( prayerRequest.Text );
 
             ShowStatus( prayerRequest, this.CurrentPerson, litFlaggedMessageRO );

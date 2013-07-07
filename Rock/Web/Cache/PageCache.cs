@@ -6,13 +6,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Caching;
 using System.Web;
 using System.Web.UI.HtmlControls;
 using System.Xml.Linq;
-
 using Rock.Model;
 using Rock.Security;
 using Rock.Web.UI;
@@ -128,7 +128,7 @@ namespace Rock.Web.Cache
         ///   <c>true</c> if [page display icon]; otherwise, <c>false</c>.
         /// </value>
         public bool PageDisplayIcon { get; set; }
-        
+
         /// <summary>
         /// Gets or sets a value indicating whether [page display description].
         /// </summary>
@@ -405,7 +405,7 @@ namespace Rock.Web.Cache
             get
             {
                 string bcName = string.Empty;
-                
+
                 if ( BreadCrumbDisplayIcon && !string.IsNullOrWhiteSpace( IconCssClass ) )
                 {
                     bcName = string.Format( "<i class='{0}'></i>", IconCssClass );
@@ -462,7 +462,7 @@ namespace Rock.Web.Cache
                 this.PageContexts = new Dictionary<string, string>();
                 if ( page.PageContexts != null )
                 {
-                    page.PageContexts.ToList().ForEach( c => this.PageContexts.Add( c.Entity, c.IdParameter));
+                    page.PageContexts.ToList().ForEach( c => this.PageContexts.Add( c.Entity, c.IdParameter ) );
                 }
 
                 this.PageRoutes = new Dictionary<int, string>();
@@ -506,14 +506,50 @@ namespace Rock.Web.Cache
 
                 if ( keyModel.Entity == null )
                 {
+                    Type modelType = Type.GetType( entity );
+
+                    if ( modelType == null )
+                    {
+                        // if the Type isn't found in the Rock.dll (it might be from a Plugin), lookup which assessmbly it is in and look in there
+                        EntityTypeCache entityTypeInfo = EntityTypeCache.Read( entity );
+                        if ( entityTypeInfo != null )
+                        {
+                            string[] assemblyNameParts = entityTypeInfo.AssemblyName.Split( new char[] { ',' } );
+                            if ( assemblyNameParts.Length > 1 )
+                            {
+                                modelType = Type.GetType( string.Format( "{0}, {1}", entityTypeInfo.Name, assemblyNameParts[1] ) );
+                            }
+                        }
+                    }
+
+                    /// In the case of core Rock.dll Types, we'll just use Rock.Data.Service<> and Rock.Data.RockContext<>
+                    /// otherwise find the first (and hopefully only) Service<> and dbContext we can find in the Assembly.  
                     Type serviceType = typeof( Rock.Data.Service<> );
-                    Type[] modelType = { Type.GetType( entity ) };
-                    Type service = serviceType.MakeGenericType( modelType );
-                    var serviceInstance = Activator.CreateInstance( service );
+                    Type contextType = typeof( Rock.Data.RockContext );
+                    if ( modelType.Assembly != serviceType.Assembly )
+                    {
+                        var serviceTypeLookup = Reflection.SearchAssembly( modelType.Assembly, serviceType );
+                        if ( serviceTypeLookup.Any() )
+                        {
+                            serviceType = serviceTypeLookup.First().Value;
+                        }
+
+                        var contextTypeLookup = Reflection.SearchAssembly( modelType.Assembly, typeof( System.Data.Entity.DbContext ) );
+
+                        if ( contextTypeLookup.Any() )
+                        {
+                            contextType = contextTypeLookup.First().Value;
+                        }
+                    }
+
+                    System.Data.Entity.DbContext dbContext = Activator.CreateInstance( contextType ) as System.Data.Entity.DbContext;
+
+                    Type service = serviceType.MakeGenericType( new Type[] { modelType } );
+                    var serviceInstance = Activator.CreateInstance( service, dbContext );
 
                     if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
                     {
-                        MethodInfo getMethod = service.GetMethod( "Get", new Type[] { typeof(int) } );
+                        MethodInfo getMethod = service.GetMethod( "Get", new Type[] { typeof( int ) } );
                         keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Id } ) as Rock.Data.IEntity;
                     }
                     else
@@ -569,7 +605,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Fires the block content updated event.
         /// </summary>
-        public void BlockContentUpdated(object sender)
+        public void BlockContentUpdated( object sender )
         {
             if ( OnBlockContentUpdated != null )
             {
@@ -599,8 +635,8 @@ namespace Rock.Web.Cache
         /// <param name="item"></param>
         public void SaveSharedItem( string key, object item )
         {
-            string itemKey = string.Format("{0}:Item:{1}", PageCache.CacheKey( Id ), key);
-            
+            string itemKey = string.Format( "{0}:Item:{1}", PageCache.CacheKey( Id ), key );
+
             System.Collections.IDictionary items = HttpContext.Current.Items;
             if ( items.Contains( itemKey ) )
                 items[itemKey] = item;
@@ -698,13 +734,22 @@ namespace Rock.Web.Cache
         /// <param name="levelsDeep">The page levels deep.</param>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public XDocument MenuXml( int levelsDeep, Person person, PageCache currentPage = null, Dictionary<string, string> parameters = null )
+        public XDocument MenuXml( int levelsDeep, Person person, PageCache currentPage = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
         {
-            XElement menuElement = MenuXmlElement( levelsDeep, person, currentPage, parameters );
+            XElement menuElement = MenuXmlElement( levelsDeep, person, currentPage, parameters, queryString );
             return new XDocument( new XDeclaration( "1.0", "UTF-8", "yes" ), menuElement );
         }
 
-        private XElement MenuXmlElement( int levelsDeep, Person person, PageCache currentPage = null, Dictionary<string, string> parameters = null )
+        /// <summary>
+        /// Menus the XML element.
+        /// </summary>
+        /// <param name="levelsDeep">The levels deep.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="currentPage">The current page.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <param name="queryString">The query string.</param>
+        /// <returns></returns>
+        private XElement MenuXmlElement( int levelsDeep, Person person, PageCache currentPage = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
         {
             if ( levelsDeep >= 0 && this.DisplayInNav( person ) )
             {
@@ -722,7 +767,7 @@ namespace Rock.Web.Cache
                     new XAttribute( "id", this.Id ),
                     new XAttribute( "title", this.Title ?? this.Name ),
                     new XAttribute( "current", isCurrentPage.ToString() ),
-                    new XAttribute( "url", new PageReference( this.Id, 0, parameters ).BuildUrl() ),
+                    new XAttribute( "url", new PageReference( this.Id, 0, parameters, queryString ).BuildUrl() ),
                     new XAttribute( "display-description", this.MenuDisplayDescription.ToString().ToLower() ),
                     new XAttribute( "display-icon", this.MenuDisplayIcon.ToString().ToLower() ),
                     new XAttribute( "display-child-pages", this.MenuDisplayChildPages.ToString().ToLower() ),
@@ -739,7 +784,7 @@ namespace Rock.Web.Cache
                     {
                         if ( page != null )
                         {
-                            XElement childPageElement = page.MenuXmlElement( levelsDeep - 1, person, currentPage, parameters );
+                            XElement childPageElement = page.MenuXmlElement( levelsDeep - 1, person, currentPage, parameters , queryString);
                             if ( childPageElement != null )
                                 childPagesElement.Add( childPageElement );
                         }
@@ -811,7 +856,7 @@ namespace Rock.Web.Cache
                     var cachePolicy = new CacheItemPolicy();
                     cache.Set( cacheKey, page, cachePolicy );
                     cache.Set( page.Guid.ToString(), page.Id, cachePolicy );
-                    
+
                     return page;
                 }
                 else

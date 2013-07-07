@@ -83,8 +83,16 @@ namespace RockWeb.Blocks.Cms
             string audience = GetAttributeValue( "Audience" );
             if ( !string.IsNullOrWhiteSpace( audience ) )
             {
-                List<int> idlist = audience.SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
-                qry = qry.Where( a => a.MarketingCampaign.MarketingCampaignAudiences.Any( x => idlist.Contains( x.AudienceTypeValueId ) ) );
+                var idList = new List<int>();
+                foreach ( string guid in audience.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+                {
+                    var definedValue = DefinedValueCache.Read( new Guid( guid ) );
+                    if ( definedValue != null )
+                    {
+                        idList.Add( definedValue.Id );
+                    }
+                }
+                qry = qry.Where( a => a.MarketingCampaign.MarketingCampaignAudiences.Any( x => idList.Contains( x.AudienceTypeValueId ) ) );
             }
 
             // AudiencePrimarySecondary
