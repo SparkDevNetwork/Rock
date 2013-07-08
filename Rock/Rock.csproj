@@ -332,6 +332,10 @@
     <Compile Include="Migrations\201307052339047_PageXsltIncludeQueryStringBlockAttribute.Designer.cs">
       <DependentUpon>201307052339047_PageXsltIncludeQueryStringBlockAttribute.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201307081815266_GroupMemberDetailBreadCrumb.cs" />
+    <Compile Include="Migrations\201307081815266_GroupMemberDetailBreadCrumb.Designer.cs">
+      <DependentUpon>201307081815266_GroupMemberDetailBreadCrumb.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -1885,6 +1889,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307052339047_PageXsltIncludeQueryStringBlockAttribute.resx">
       <DependentUpon>201307052339047_PageXsltIncludeQueryStringBlockAttribute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307081815266_GroupMemberDetailBreadCrumb.resx">
+      <DependentUpon>201307081815266_GroupMemberDetailBreadCrumb.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
