@@ -329,6 +329,10 @@
     <Compile Include="Migrations\201307052339047_PageXsltIncludeQueryStringBlockAttribute.Designer.cs">
       <DependentUpon>201307052339047_PageXsltIncludeQueryStringBlockAttribute.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201307071303205_AttendedCheckin.cs" />
+    <Compile Include="Migrations\201307071303205_AttendedCheckin.Designer.cs">
+      <DependentUpon>201307071303205_AttendedCheckin.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -1008,6 +1012,8 @@
     <Compile Include="Web\UI\BreadCrumb.cs" />
     <Compile Include="Web\UI\IDetailBlock.cs" />
     <Compile Include="Web\UI\IDimmableBlock.cs" />
+    <Compile Include="Workflow\Action\CheckIn\AttendedFindFamilies.cs" />
+    <Compile Include="Workflow\Action\CheckIn\AttendedLoadGroupTypes.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterLocationGroupsByAbilityLevel.cs" />
@@ -1881,6 +1887,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307052339047_PageXsltIncludeQueryStringBlockAttribute.resx">
       <DependentUpon>201307052339047_PageXsltIncludeQueryStringBlockAttribute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307071303205_AttendedCheckin.resx">
+      <DependentUpon>201307071303205_AttendedCheckin.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

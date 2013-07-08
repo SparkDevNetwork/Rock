@@ -217,8 +217,98 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
 
         }
+        
         protected void lbAddFamilyAdd_Click( object sender, EventArgs e )
         {
+            // Handle getting the data from the modal window and creating a family out of it.
+
+            //List<CheckInFamily> FamilyList = new List<CheckInFamily>();
+            List<Person> FamilyList = new List<Person>();
+            for ( var i = 1; i <= 12; i++ )
+            {
+                var FirstNameControl = "tbFirstName" + i.ToString();
+                var LastNameControl = "tbLastName" + i.ToString();
+                var DOBAgeControl = "dpDOBAge" + i.ToString();
+                var GradeControl = "tbGrade" + i.ToString();
+                DataTextBox FirstName = (DataTextBox)FindControl( FirstNameControl );
+                DataTextBox LastName = (DataTextBox)FindControl( LastNameControl );
+                DatePicker DOBAge = (DatePicker)FindControl( DOBAgeControl );
+                DataTextBox Grade = (DataTextBox)FindControl( GradeControl );
+
+                // if the first name, last name and DOB/Age are not blank for this set of controls, add this person to the family list.
+                if ( FirstName.Text != "" && LastName.Text != "" && DOBAge.Text != "" )
+                {
+                    Person person = new Person();
+                    person.GivenName = FirstName.Text;
+                    person.LastName = LastName.Text;
+                    if ( DOBAge.Text.Length <= 3 )
+                    {
+                        //person.Age = DOBAge.Text;
+                    }
+                    else
+                    {
+                        person.BirthDate = Convert.ToDateTime(DOBAge.Text);
+                    }
+                    //person.Grade = int.Parse(Grade.Text);
+
+                    FamilyList.Add( person );
+                }
+                
+            }
+
+            //foreach ( var p in person )
+            //{
+            //    foreach ( var group in p.Members.Where( m => m.Group.GroupType.Guid == new Guid( SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Select( m => m.Group ) )
+            //    {
+            //        var family = checkInState.CheckIn.Families.Where( f => f.Group.Id == group.Id ).FirstOrDefault();
+            //        if ( family == null )
+            //        {
+            //            family = new CheckInFamily();
+            //            family.Group = group.Clone( false );
+            //            family.Group.LoadAttributes();
+            //            family.Caption = group.ToString();
+            //            family.SubCaption = memberService.GetFirstNames( group.Id ).ToList().AsDelimited( ", " );
+            //            checkInState.CheckIn.Families.Add( family );
+            //        }
+            //    }
+            //}
+
+            //SetCheckInState( action, checkInState );
+
+
+            CheckInFamily CIF = new CheckInFamily();
+            string subCaption = "";
+            foreach(Person person in FamilyList)
+            {
+                CheckInPerson CIP = new CheckInPerson();
+                CIP.Person = person;
+                CIF.People.Add( CIP );
+                if ( subCaption == "" )
+                {
+                    subCaption += person.FirstName;
+                }
+                else
+                {
+                    subCaption += ", " + person.FirstName;
+                }
+            }
+            CIF.Caption = FamilyList.FirstOrDefault().LastName;
+            CIF.SubCaption = subCaption;
+
+            CurrentCheckInState.CheckIn.Families.Clear();
+            CurrentCheckInState.CheckIn.Families.Add( CIF );
+            lvFamily.DataSource = CurrentCheckInState.CheckIn.Families;
+            lvFamily.DataBind();
+            rPerson.DataSource = CIF.People;
+            rPerson.DataBind();
+            foreach ( ListViewDataItem li in lvFamily.Items )
+            {
+                ( (LinkButton)li.FindControl( "lbSelectFamily" ) ).AddCssClass( "active" );
+            }
+            foreach ( RepeaterItem item in rPerson.Items )
+            {
+                ( (LinkButton)item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
+            }
 
         }
 
@@ -282,41 +372,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         #endregion
-        protected void AddButton_Click( object sender, EventArgs e )
-        {
-            // need to add code here to add a set of text boxes/date pickers as a row on this page.
-            Panel childPanel = new Panel();
-            childPanel.AddCssClass( "row-fluid attended-checkin-body person" );
-            Panel divOne = new Panel();
-            divOne.AddCssClass( "span3" );
-            DataTextBox FirstName = new DataTextBox();
-            FirstName.AddCssClass( "fullBlock" );
-            FirstName.ID = this.ID;
-            divOne.Controls.Add( FirstName );
-            Panel divTwo = new Panel();
-            divTwo.AddCssClass( "span3" );
-            DataTextBox LastName = new DataTextBox();
-            LastName.AddCssClass( "fullBlock" );
-            LastName.ID = this.ID;
-            divTwo.Controls.Add( LastName );
-            Panel divThree = new Panel();
-            divThree.AddCssClass( "span3" );
-            DatePicker DOBAgePicker = new DatePicker();
-            DOBAgePicker.ID = this.ID;
-            divThree.Controls.Add( DOBAgePicker );
-            Panel divFour = new Panel();
-            divFour.AddCssClass( "span3" );
-            TextBox Grade = new TextBox();
-            Grade.AddCssClass( "fullBlock" );
-            Grade.ID = this.ID;
-            divFour.Controls.Add( Grade );
-            childPanel.Controls.Add( divOne );
-            childPanel.Controls.Add( divTwo );
-            childPanel.Controls.Add( divThree );
-            childPanel.Controls.Add( divFour );
-            div1.Controls.Add( childPanel );
-            mpe.Show();
-        }
         protected void PreviousButton_Click( object sender, EventArgs e )
         {
             if ( div2.Visible )
