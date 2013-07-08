@@ -5,22 +5,48 @@
 //
 
 using System;
+using System.Collections.Generic;
 using Rock.Attribute;
 using Rock.Extension;
 using Rock.Web.Cache;
 
 namespace Rock.BinaryFile
 {
+    /// <summary>
+    /// Base class for BinaryFile storage components
+    /// </summary>
     [ComponentField( "Rock.BinaryFile.StorageContainer, Rock" )]
     public abstract class StorageComponent : Component
     {
-        public abstract StorageControl Control { get; }
+        /// <summary>
+        /// Saves the files.
+        /// </summary>
+        /// <param name="files">The files.</param>
+        public abstract void SaveFiles( IEnumerable<Model.BinaryFile> files );
 
+        /// <summary>
+        /// Removes the file.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        public abstract void RemoveFile( Model.BinaryFile file );
+
+        /// <summary>
+        /// Gets the type of the entity.
+        /// </summary>
+        /// <value>
+        /// The type of the entity.
+        /// </value>
         public EntityTypeCache EntityType
         {
             get { return EntityTypeCache.Read( this.GetType() ); }
         }
 
+        /// <summary>
+        /// Gets the storage.
+        /// </summary>
+        /// <value>
+        /// The storage.
+        /// </value>
         public StorageComponent Storage
         {
             get
@@ -45,6 +71,9 @@ namespace Rock.BinaryFile
             }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StorageComponent"/> class.
+        /// </summary>
         public StorageComponent()
         {
             this.LoadAttributes();
