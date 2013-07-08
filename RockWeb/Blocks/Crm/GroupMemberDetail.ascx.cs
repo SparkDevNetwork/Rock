@@ -67,6 +67,31 @@ namespace RockWeb.Blocks.Crm
             Rock.Attribute.Helper.AddEditControls( groupMember, phAttributes, false );
         }
 
+        /// <summary>
+        /// Returns breadcrumbs specific to the block that should be added to navigation
+        /// based on the current page reference.  This function is called during the page's
+        /// oninit to load any initial breadcrumbs
+        /// </summary>
+        /// <param name="pageReference">The page reference.</param>
+        /// <returns></returns>
+        public override List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
+        {
+            var breadCrumbs = new List<BreadCrumb>();
+
+            int groupMemberId = PageParameter( "groupMemberId" ).AsInteger() ?? 0;
+            GroupMember groupMember = new GroupMemberService().Get( groupMemberId );
+            if ( groupMember != null )
+            {
+                breadCrumbs.Add( new BreadCrumb( groupMember.Person.FullName, pageReference ) );
+            }
+            else
+            {
+                breadCrumbs.Add( new BreadCrumb( "New Group Member", pageReference ) );
+            }
+
+            return breadCrumbs;
+        }
+
         #endregion
 
         #region Edit Events
