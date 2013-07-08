@@ -18,9 +18,6 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     public partial class BlockProperties : RockBlock
     {
-        //private BlockCache _block = null;
-        //private string _zoneName = string.Empty;
-
         /// <summary>
         /// Raises the <see cref="E:Init" /> event.
         /// </summary>
@@ -68,6 +65,7 @@ namespace RockWeb.Blocks.Administration
             if ( !Page.IsPostBack && _block.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 tbBlockName.Text = _block.Name;
+                tbBlockType.Text = _block.BlockType.Name;
                 tbCacheDuration.Text = _block.OutputCacheDuration.ToString();
             }
 
