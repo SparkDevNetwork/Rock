@@ -28,22 +28,6 @@
             </div>
        </div>
 
-        <div class="row-fluid">
-            <div class="span6 form-horizontal">
-                <fieldset>
-                    <div class="control-group">
-                        <div class="control-label">Home Phone</div>
-                        <div class="controls">
-                            <asp:TextBox ID="tbPhone" runat="server" />
-                            <asp:CheckBox ID="cbUnlisted" runat="server" Text="unlisted" />
-                        </div>
-                    </div>
-                </fieldset>
-            </div>
-            <div class="span6 form-horizontal">
-            </div>
-        </div>
-
         <div class="actions">
             <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
             <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />

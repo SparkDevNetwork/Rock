@@ -313,6 +313,30 @@
     <Compile Include="Migrations\201307022331042_GroupTypesAttributeAsGuids.Designer.cs">
       <DependentUpon>201307022331042_GroupTypesAttributeAsGuids.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201307031943568_UpdatePhoneLocationTypes.cs" />
+    <Compile Include="Migrations\201307031943568_UpdatePhoneLocationTypes.Designer.cs">
+      <DependentUpon>201307031943568_UpdatePhoneLocationTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307032041530_CleanUpFieldTypes01.cs" />
+    <Compile Include="Migrations\201307032041530_CleanUpFieldTypes01.Designer.cs">
+      <DependentUpon>201307032041530_CleanUpFieldTypes01.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307052157088_NoteBlockShowOptionsAttributes.cs" />
+    <Compile Include="Migrations\201307052157088_NoteBlockShowOptionsAttributes.Designer.cs">
+      <DependentUpon>201307052157088_NoteBlockShowOptionsAttributes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307052225548_ChangeSubPageNavPath.cs" />
+    <Compile Include="Migrations\201307052225548_ChangeSubPageNavPath.Designer.cs">
+      <DependentUpon>201307052225548_ChangeSubPageNavPath.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307052339047_PageXsltIncludeQueryStringBlockAttribute.cs" />
+    <Compile Include="Migrations\201307052339047_PageXsltIncludeQueryStringBlockAttribute.Designer.cs">
+      <DependentUpon>201307052339047_PageXsltIncludeQueryStringBlockAttribute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307081815266_GroupMemberDetailBreadCrumb.cs" />
+    <Compile Include="Migrations\201307081815266_GroupMemberDetailBreadCrumb.Designer.cs">
+      <DependentUpon>201307081815266_GroupMemberDetailBreadCrumb.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -992,7 +1016,6 @@
     <Compile Include="Web\UI\BreadCrumb.cs" />
     <Compile Include="Web\UI\IDetailBlock.cs" />
     <Compile Include="Web\UI\IDimmableBlock.cs" />
-    <Compile Include="Web\UI\IHidableBlock.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterLocationGroupsByAbilityLevel.cs" />
@@ -1851,6 +1874,24 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307022331042_GroupTypesAttributeAsGuids.resx">
       <DependentUpon>201307022331042_GroupTypesAttributeAsGuids.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307031943568_UpdatePhoneLocationTypes.resx">
+      <DependentUpon>201307031943568_UpdatePhoneLocationTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307032041530_CleanUpFieldTypes01.resx">
+      <DependentUpon>201307032041530_CleanUpFieldTypes01.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307052157088_NoteBlockShowOptionsAttributes.resx">
+      <DependentUpon>201307052157088_NoteBlockShowOptionsAttributes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307052225548_ChangeSubPageNavPath.resx">
+      <DependentUpon>201307052225548_ChangeSubPageNavPath.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307052339047_PageXsltIncludeQueryStringBlockAttribute.resx">
+      <DependentUpon>201307052339047_PageXsltIncludeQueryStringBlockAttribute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307081815266_GroupMemberDetailBreadCrumb.resx">
+      <DependentUpon>201307081815266_GroupMemberDetailBreadCrumb.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
