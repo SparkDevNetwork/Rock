@@ -333,6 +333,10 @@
     <Compile Include="Migrations\201307071303205_AttendedCheckin.Designer.cs">
       <DependentUpon>201307071303205_AttendedCheckin.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201307081959246_AddAttendedCheckInSite.cs" />
+    <Compile Include="Migrations\201307081959246_AddAttendedCheckInSite.Designer.cs">
+      <DependentUpon>201307081959246_AddAttendedCheckInSite.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -1890,6 +1894,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307071303205_AttendedCheckin.resx">
       <DependentUpon>201307071303205_AttendedCheckin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307081959246_AddAttendedCheckInSite.resx">
+      <DependentUpon>201307081959246_AddAttendedCheckInSite.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
