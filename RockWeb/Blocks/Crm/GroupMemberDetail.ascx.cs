@@ -78,15 +78,22 @@ namespace RockWeb.Blocks.Crm
         {
             var breadCrumbs = new List<BreadCrumb>();
 
-            int groupMemberId = PageParameter( "groupMemberId" ).AsInteger() ?? 0;
-            GroupMember groupMember = new GroupMemberService().Get( groupMemberId );
-            if ( groupMember != null )
+            int? groupMemberId = PageParameter(pageReference, "groupMemberId" ).AsInteger();
+            if ( groupMemberId != null )
             {
-                breadCrumbs.Add( new BreadCrumb( groupMember.Person.FullName, pageReference ) );
+                GroupMember groupMember = new GroupMemberService().Get( groupMemberId.Value );
+                if ( groupMember != null )
+                {
+                    breadCrumbs.Add( new BreadCrumb( groupMember.Person.FullName, pageReference ) );
+                }
+                else
+                {
+                    breadCrumbs.Add( new BreadCrumb( "New Group Member", pageReference ) );
+                }
             }
             else
             {
-                breadCrumbs.Add( new BreadCrumb( "New Group Member", pageReference ) );
+                // don't show a breadcrumb if we don't have a pageparam to work with
             }
 
             return breadCrumbs;
