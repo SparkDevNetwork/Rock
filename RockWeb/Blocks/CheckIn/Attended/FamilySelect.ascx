@@ -2,6 +2,7 @@
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="asp" %>
 
 <script type="text/javascript">
+
     function cvDOBAgeValidator_ClientValidate(sender, args) {
         args.IsValid = false;
         if (args.Value.length <= 3 && !isNaN(args.Value)) {
@@ -15,7 +16,7 @@
     };
 
     function isValidDate(value, userFormat) {
-        userFormat = userFormat || 'mm/dd/yyyy';
+        userFormat = userFormat || 'mm/dd/yyyy' || 'mm/dd/yy';
         delimiter = /[^mdy]/.exec(userFormat)[0];
         theFormat = userFormat.split(delimiter);
         theDate = value.split(delimiter);
@@ -26,10 +27,11 @@
                 if (/d/.test(format[i])) d = date[i];
                 if (/y/.test(format[i])) y = date[i];
             }
-            return (m > 0 && m < 13 && y && y.length === 4 && d > 0 && d <= (new Date(y, m, 0)).getDate());
+            return (m > 0 && m < 13 && y && (y.length === 2 || y.length === 4) && d > 0 && d <= (new Date(y, m, 0)).getDate());
         }
         return isDate(theDate, theFormat);
     }
+
 </script>
 
 <asp:UpdatePanel ID="upContent" runat="server">
@@ -132,272 +134,213 @@
                 <h3>Grade</h3>
             </div>
         </div>
-<%--        <div id="peopleDiv" runat="server">
-        <div class="row-fluid attended-checkin-body person">
-            <div class="span3">
-                <Rock:DataTextBox ID="tbFirstName1" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
-            </div>
-            <div class="span3">
-                <Rock:DataTextBox ID="tbLastName1" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
-            </div>
-            <div class="span3">
-                <Rock:DatePicker ID="DatePicker1" runat="server" CssClass="datePickerClass"></Rock:DatePicker>
-            </div>
-            <div class="span3">
-                <Rock:DataTextBox ID="tbGrade1" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
-            </div>
-        </div>
-        <div class="row-fluid attended-checkin-body person">
-            <div class="span3">
-                <Rock:DataTextBox ID="tbFirstName2" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
-            </div>
-            <div class="span3">
-                <Rock:DataTextBox ID="tbLastName2" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
-            </div>
-            <div class="span3">
-                <Rock:DatePicker ID="DatePicker2" runat="server"></Rock:DatePicker>
-            </div>
-            <div class="span3">
-                <Rock:DataTextBox ID="tbGrade2" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
-            </div>
-        </div>
-        <div class="row-fluid attended-checkin-body person">
-            <div class="span3">
-                <Rock:DataTextBox ID="tbFirstName3" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
-            </div>
-            <div class="span3">
-                <Rock:DataTextBox ID="tbLastName3" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
-            </div>
-            <div class="span3">
-                <Rock:DatePicker ID="DatePicker3" runat="server"></Rock:DatePicker>
-            </div>
-            <div class="span3">
-                <Rock:DataTextBox ID="tbGrade3" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
-            </div>
-        </div>
-        <div class="row-fluid attended-checkin-body person">
-            <div class="span3">
-                <Rock:DataTextBox ID="tbFirstName4" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
-            </div>
-            <div class="span3">
-                <Rock:DataTextBox ID="tbLastName4" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
-            </div>
-            <div class="span3">
-                <Rock:DatePicker ID="DatePicker4" runat="server"></Rock:DatePicker>
-            </div>
-            <div class="span3">
-                <Rock:DataTextBox ID="tbGrade4" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
-            </div>
-        </div>
-        </div>
-        <asp:Button ID="AddButton" runat="server" Text="Add Row" OnClick="AddButton_Click" />--%>
         <div id="div1" runat="server">
             <div class="row-fluid attended-checkin-body person">
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox1" runat="server" CssClass="fullBlock" Text="1"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbFirstName1" runat="server" CssClass="fullBlock" Text="1"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox2" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbLastName1" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DatePicker ID="DatePicker1" runat="server" CssClass="datePickerClass"></Rock:DatePicker>
+                    <Rock:DatePicker ID="dpDOBAge1" runat="server" CssClass="datePickerClass"></Rock:DatePicker>
                     <asp:CustomValidator ID="cvDOBAgeValidator1" runat="server" ErrorMessage="The first DOB/Age field is incorrect."
                         CssClass="align-middle" EnableClientScript="true" Display="None" 
-                        ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="DatePicker1" />
+                        ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="dpDOBAge1" />
                 </div>
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox3" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbGrade1" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
             </div>
             <div class="row-fluid attended-checkin-body person">
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox4" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbFirstName2" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox5" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbLastName2" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DatePicker ID="DatePicker2" runat="server"></Rock:DatePicker>
+                    <Rock:DatePicker ID="dpDOBAge2" runat="server"></Rock:DatePicker>
                     <asp:CustomValidator ID="cvDOBAgeValidator2" runat="server" ErrorMessage="The second DOB/Age field is incorrect."
                         CssClass="align-middle" EnableClientScript="true" Display="None" 
-                        ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="DatePicker2" />
+                        ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="dpDOBAge2" />
                 </div>
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox6" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbGrade2" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
             </div>
             <div class="row-fluid attended-checkin-body person">
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox7" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbFirstName3" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox8" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbLastName3" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DatePicker ID="DatePicker3" runat="server"></Rock:DatePicker>
+                    <Rock:DatePicker ID="dpDOBAge3" runat="server"></Rock:DatePicker>
                     <asp:CustomValidator ID="cvDOBAgeValidator3" runat="server" ErrorMessage="The third DOB/Age field is incorrect."
                         CssClass="align-middle" EnableClientScript="true" Display="None" 
-                        ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="DatePicker3" />
+                        ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="dpDOBAge3" />
                 </div>
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox9" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbGrade3" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
             </div>
             <div class="row-fluid attended-checkin-body person">
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox10" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbFirstName4" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox11" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbLastName4" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DatePicker ID="DatePicker4" runat="server"></Rock:DatePicker>
+                    <Rock:DatePicker ID="dpDOBAge4" runat="server"></Rock:DatePicker>
                     <asp:CustomValidator ID="cvDOBAgeValidator4" runat="server" ErrorMessage="The fourth DOB/Age field is incorrect."
                         CssClass="align-middle" EnableClientScript="true" Display="None" 
-                        ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="DatePicker4" />
+                        ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="dpDOBAge4" />
                 </div>
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox12" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbGrade4" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
             </div>
         </div>
         <div id="div2" runat="server" visible="false">
             <div class="row-fluid attended-checkin-body person">
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox13" runat="server" CssClass="fullBlock" Text="2"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbFirstName5" runat="server" CssClass="fullBlock" Text="2"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox14" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbLastName5" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DatePicker ID="DatePicker5" runat="server" CssClass="datePickerClass"></Rock:DatePicker>
+                    <Rock:DatePicker ID="dpDOBAge5" runat="server" CssClass="datePickerClass"></Rock:DatePicker>
                     <asp:CustomValidator ID="cvDOBAgeValidator5" runat="server" ErrorMessage="The first DOB/Age field is incorrect."
                         CssClass="align-middle" EnableClientScript="true" Display="None" 
-                        ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="DatePicker5" />
+                        ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="dpDOBAge5" />
                 </div>
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox15" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbGrade5" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
             </div>
             <div class="row-fluid attended-checkin-body person">
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox16" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbFirstName6" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox17" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbLastName6" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DatePicker ID="DatePicker6" runat="server"></Rock:DatePicker>
+                    <Rock:DatePicker ID="dpDOBAge6" runat="server"></Rock:DatePicker>
                     <asp:CustomValidator ID="cvDOBAgeValidator6" runat="server" ErrorMessage="The second DOB/Age field is incorrect."
                         CssClass="align-middle" EnableClientScript="true" Display="None" 
-                        ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="DatePicker6" />
+                        ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="dpDOBAge6" />
                 </div>
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox18" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbGrade6" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
             </div>
             <div class="row-fluid attended-checkin-body person">
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox19" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbFirstName7" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox20" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbLastName7" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DatePicker ID="DatePicker7" runat="server"></Rock:DatePicker>
+                    <Rock:DatePicker ID="dpDOBAge7" runat="server"></Rock:DatePicker>
                     <asp:CustomValidator ID="cvDOBAgeValidator7" runat="server" ErrorMessage="The third DOB/Age field is incorrect."
                         CssClass="align-middle" EnableClientScript="true" Display="None" 
-                        ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="DatePicker7" />
+                        ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="dpDOBAge7" />
                 </div>
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox21" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbGrade7" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
             </div>
             <div class="row-fluid attended-checkin-body person">
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox22" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbFirstName8" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox23" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbLastName8" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DatePicker ID="DatePicker8" runat="server"></Rock:DatePicker>
+                    <Rock:DatePicker ID="dpDOBAge8" runat="server"></Rock:DatePicker>
                     <asp:CustomValidator ID="cvDOBAgeValidator8" runat="server" ErrorMessage="The fourth DOB/Age field is incorrect."
                         CssClass="align-middle" EnableClientScript="true" Display="None" 
-                        ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="DatePicker8" />
+                        ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="dpDOBAge8" />
                 </div>
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox24" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbGrade8" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
             </div>
         </div>
         <div id="div3" runat="server" visible="false">
             <div class="row-fluid attended-checkin-body person">
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox25" runat="server" CssClass="fullBlock" Text="3"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbFirstName9" runat="server" CssClass="fullBlock" Text="3"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox26" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbLastName9" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DatePicker ID="DatePicker9" runat="server" CssClass="datePickerClass"></Rock:DatePicker>
+                    <Rock:DatePicker ID="dpDOBAge9" runat="server" CssClass="datePickerClass"></Rock:DatePicker>
                     <asp:CustomValidator ID="cvDOBAgeValidator9" runat="server" ErrorMessage="The first DOB/Age field is incorrect."
                         CssClass="align-middle" EnableClientScript="true" Display="None" 
-                        ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="DatePicker9" />
+                        ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="dpDOBAge9" />
                 </div>
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox27" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbGrade9" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
             </div>
             <div class="row-fluid attended-checkin-body person">
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox28" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbFirstName10" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox29" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbLastName10" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DatePicker ID="DatePicker10" runat="server"></Rock:DatePicker>
+                    <Rock:DatePicker ID="dpDOBAge10" runat="server"></Rock:DatePicker>
                     <asp:CustomValidator ID="cvDOBAgeValidator10" runat="server" ErrorMessage="The second DOB/Age field is incorrect."
                         CssClass="align-middle" EnableClientScript="true" Display="None" 
-                        ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="DatePicker10" />
+                        ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="dpDOBAge10" />
                 </div>
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox30" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbGrade10" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
             </div>
             <div class="row-fluid attended-checkin-body person">
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox31" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbFirstName11" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox32" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbLastName11" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DatePicker ID="DatePicker11" runat="server"></Rock:DatePicker>
+                    <Rock:DatePicker ID="dpDOBAge11" runat="server"></Rock:DatePicker>
                     <asp:CustomValidator ID="cvDOBAgeValidator11" runat="server" ErrorMessage="The third DOB/Age field is incorrect."
                         CssClass="align-middle" EnableClientScript="true" Display="None" 
-                        ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="DatePicker11" />
+                        ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="dpDOBAge11" />
                 </div>
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox33" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbGrade11" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
             </div>
             <div class="row-fluid attended-checkin-body person">
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox34" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbFirstName12" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox35" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbLastName12" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DatePicker ID="DatePicker12" runat="server"></Rock:DatePicker>
+                    <Rock:DatePicker ID="dpDOBAge12" runat="server"></Rock:DatePicker>
                     <asp:CustomValidator ID="cvDOBAgeValidator12" runat="server" ErrorMessage="The fourth DOB/Age field is incorrect."
                         CssClass="align-middle" EnableClientScript="true" Display="None" 
-                        ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="DatePicker12" />
+                        ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="dpDOBAge12" />
                 </div>
                 <div class="span3">
-                    <Rock:DataTextBox ID="DataTextBox36" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                    <Rock:DataTextBox ID="tbGrade12" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
             </div>
         </div>
@@ -409,12 +352,6 @@
     </asp:Panel>
     <%--<asp:ModalPopupExtender ID="mpe" runat="server" TargetControlID="lbAddFamily" PopupControlID="AddFamilyPanel" CancelControlID="lbAddFamilyCancel" OkControlID="lbAddFamilyAdd" BackgroundCssClass="modalBackground"></asp:ModalPopupExtender>--%>
     <asp:ModalPopupExtender ID="mpe" runat="server" TargetControlID="lbAddFamily" PopupControlID="AddFamilyPanel" CancelControlID="lbAddFamilyCancel" BackgroundCssClass="modalBackground"></asp:ModalPopupExtender>
-<%--            
-<div class="bored"><Rock:DataTextBox ID="tbDOB1" runat="server" CssClass="textInline"></Rock:DataTextBox><span class="or">or</span><Rock:DataTextBox ID="tbAge1" runat="server" CssClass="textInlineLast"></Rock:DataTextBox></div>
-<div class="bored"><Rock:DataTextBox ID="tbDOB2" runat="server" CssClass="textInline"></Rock:DataTextBox><span class="or">or</span><Rock:DataTextBox ID="tbAge2" runat="server" CssClass="textInlineLast"></Rock:DataTextBox></div>
-<div class="bored"><Rock:DataTextBox ID="tbDOB3" runat="server" CssClass="textInline"></Rock:DataTextBox><span class="or">or</span><Rock:DataTextBox ID="tbAge3" runat="server" CssClass="textInline"></Rock:DataTextBox></div>
-<div class="bored"><Rock:DataTextBox ID="tbDOB4" runat="server" CssClass="textInline"></Rock:DataTextBox><span class="or">or</span><Rock:DataTextBox ID="tbAge4" runat="server" CssClass="textInline"></Rock:DataTextBox></div>
---%>
 
 </ContentTemplate>
 </asp:UpdatePanel>
