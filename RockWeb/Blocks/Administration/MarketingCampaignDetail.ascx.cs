@@ -492,7 +492,7 @@ namespace RockWeb.Blocks.Administration
             {
                 tbContactEmail.Text = contactPerson.Email;
                 tbContactFullName.Text = contactPerson.FullName;
-                PhoneNumber phoneNumber = contactPerson.PhoneNumbers.FirstOrDefault( a => a.NumberTypeValue.Guid == new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_PRIMARY ) );
+                PhoneNumber phoneNumber = contactPerson.PhoneNumbers.FirstOrDefault( a => a.NumberTypeValue.Guid == new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ) );
                 tbContactPhoneNumber.Text = phoneNumber == null ? string.Empty : phoneNumber.Number;
             }
         }

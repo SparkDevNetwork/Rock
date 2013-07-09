@@ -891,18 +891,6 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Hides blocks of BlockType 
-        /// </summary>
-        /// <param name="blockTypeName">Name of the block type.</param>
-        public void HideBlockType( string blockTypeName, bool hidden )
-        {
-            foreach( IHidableBlock block in this.RockBlocks.Where(a => a is IHidableBlock).Where( a => a.CurrentBlock.BlockType.Name. Equals(blockTypeName, StringComparison.OrdinalIgnoreCase)))
-            {
-                block.Hidden = hidden;
-            }
-        }
-
-        /// <summary>
         /// Gets the control list. 
         /// http://stackoverflow.com/questions/7362482/c-sharp-get-all-web-controls-on-page
         /// </summary>
