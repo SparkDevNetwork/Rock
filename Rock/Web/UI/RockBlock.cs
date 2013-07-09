@@ -624,16 +624,6 @@ namespace Rock.Web.UI
             this.RockPage().DimOtherBlocks( this, dimmed );
         }
 
-        /// <summary>
-        /// Hides the type of the block.
-        /// </summary>
-        /// <param name="blockTypeName">Name of the block type.</param>
-        /// <param name="hidden">if set to <c>true</c> [hidden].</param>
-        public void HideBlockType( string blockTypeName, bool hidden )
-        {
-            this.RockPage().HideBlockType( blockTypeName, hidden );
-        }
-
         #region User Preferences
 
         /// <summary>
