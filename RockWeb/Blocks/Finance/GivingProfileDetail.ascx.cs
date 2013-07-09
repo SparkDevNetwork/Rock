@@ -958,7 +958,7 @@ namespace RockWeb.Blocks.Finance
                 if ( accountsQueryable.Where( a => a.PaymentMethod == PaymentMethod.CreditCard ).Any() )
                 {
                     var savedCreditCard = accountsQueryable.Where( a => a.PaymentMethod == PaymentMethod.CreditCard )
-                        .ToDictionary( a => "Use " + a.Name + " ending in " + a.MaskedAccountNumber, a => a.Id );
+                        .ToDictionary( a => "Use " + a.Name + " ending in *************" + a.MaskedAccountNumber, a => a.Id );
                     savedCreditCard.Add( "Use a different card", 0 );
                     rblSavedCard.DataSource = savedCreditCard;
                     rblSavedCard.DataValueField = "Value";
@@ -966,13 +966,12 @@ namespace RockWeb.Blocks.Finance
                     rblSavedCard.DataBind();
                     divSavedCard.Visible = true;                 
                     divNewCard.Style["display"] = "none";
-                    pnlPaymentContent.Update();
                 }
 
                 if ( accountsQueryable.Where( a => a.PaymentMethod == PaymentMethod.ACH ).Any() )
                 {
                     var savedACH = accountsQueryable.Where( a => a.PaymentMethod == PaymentMethod.ACH )
-                        .ToDictionary( a => "Use " + a.Name + " ending in " + a.MaskedAccountNumber, a => a.Id );
+                        .ToDictionary( a => "Use " + a.Name + " account ending in *************" + a.MaskedAccountNumber, a => a.Id );
                     savedACH.Add( "Use a different account", 0 );
                     rblSavedCheck.DataSource = savedACH;
                     rblSavedCheck.DataValueField = "Value";
@@ -980,7 +979,6 @@ namespace RockWeb.Blocks.Finance
                     rblSavedCheck.DataBind();
                     divSavedCheck.Visible = true;
                     divNewCheck.Style["display"] = "none";
-                    pnlPaymentContent.Update();
                 }
             }
             else
