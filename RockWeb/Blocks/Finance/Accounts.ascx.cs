@@ -16,10 +16,29 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// 
     /// </summary>
-    [ContextAware( typeof( Accounts ) )]
+    [ContextAware( typeof( FinancialAccount ) )]
     public partial class Accounts : RockBlock
     {
         #region Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            rGridAccount.DataKeyNames = new string[] { "id" };
+            rAccountFilter.ApplyFilterClick += rAccountFilter_ApplyFilterClick;
+            rGridAccount.Actions.AddClick += rGridAccount_Add;
+            rGridAccount.GridRebind += rGridAccounts_GridRebind;
+            
+            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            rGridAccount.Actions.ShowAdd = canAddEditDelete;
+            rGridAccount.IsDeleteEnabled = canAddEditDelete;
+            btnSaveAccount.Enabled = canAddEditDelete;            
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -29,17 +48,8 @@ namespace RockWeb.Blocks.Finance
         {
             if ( !Page.IsPostBack )
             {
-                rAccountFilter.ApplyFilterClick += rAccountFilter_ApplyFilterClick;
-                rGridAccount.Actions.AddClick += rGridAccount_Add;
-                rGridAccount.GridRebind += rGridAccounts_GridRebind;
-                rGridAccount.DataKeyNames = new string[] { "id" };
-
-                bool canAddEditDelete = IsUserAuthorized( "Edit" );
-                rGridAccount.Actions.ShowAdd = canAddEditDelete;
-                rGridAccount.IsDeleteEnabled = canAddEditDelete;
-                btnSaveAccount.Enabled = canAddEditDelete;
                 BindGrid();
-            }            
+            }
 
             base.OnLoad( e );
         }
@@ -191,23 +201,23 @@ namespace RockWeb.Blocks.Finance
             FinancialAccount contextAccount = ContextEntity<FinancialAccount>();
             if ( contextAccount == null )
             {
-                var AccountService = new FinancialAccountService();
+                var accountService = new FinancialAccountService();
                 SortProperty sortProperty = rGridAccount.SortProperty;
-                var accountQuery = AccountService.Queryable();
+                var accountQuery = accountService.Queryable();
 
                 if ( !string.IsNullOrEmpty( txtAccountName.Text ) )
                 {
-                    accountQuery = accountQuery.Where( Account => Account.Name.Contains( txtAccountName.Text ) );
+                    accountQuery = accountQuery.Where( account => account.Name.Contains( txtAccountName.Text ) );
                 }
 
                 if ( dtStartDate.SelectedDate != null )
                 {
-                    accountQuery = accountQuery.Where( Account => Account.StartDate >= dtStartDate.SelectedDate );
+                    accountQuery = accountQuery.Where( account => account.StartDate >= dtStartDate.SelectedDate );
                 }
 
                 if ( dtEndDate.SelectedDate != null )
                 {
-                    accountQuery = accountQuery.Where( Account => Account.EndDate <= dtEndDate.SelectedDate );
+                    accountQuery = accountQuery.Where( account => account.EndDate <= dtEndDate.SelectedDate );
                 }
 
                 if ( ddlIsActive.SelectedValue != "Any" )
@@ -246,7 +256,6 @@ namespace RockWeb.Blocks.Finance
             if ( accountTypes != null )
             {
                 ddlAccountType.BindToDefinedType( accountTypes );
-                ddlAccountType.SelectedValue = ddlAccountType.Items[0].Value;
             }                
         }
 
