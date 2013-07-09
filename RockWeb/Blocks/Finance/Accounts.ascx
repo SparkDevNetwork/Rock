@@ -20,7 +20,7 @@
         </Rock:GridFilter>
         
         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-        <Rock:Grid ID="rGridAccount" runat="server" DisplayType="Full" AllowSorting="true" RowItemText="account" OnRowSelected="rGridAccount_Edit">
+        <Rock:Grid ID="rGridAccount" runat="server" AllowSorting="true" RowItemText="account" OnRowSelected="rGridAccount_Edit">
             <Columns>
                 <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />
                 <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
@@ -48,20 +48,20 @@
 
                 <div class="span6">
                     <Rock:DataTextBox ID="tbName" runat="server"
-                        SourceTypeName="Rock.Model.Account, Rock" PropertyName="Name" />
+                        SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="Name" />
                     <Rock:DataTextBox ID="tbPublicName" runat="server"
-                        SourceTypeName="Rock.Model.Account, Rock" PropertyName="PublicName" />
+                        SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="PublicName" />
                     <Rock:DataTextBox ID="tbDescription" runat="server"
-                        SourceTypeName="Rock.Model.Account, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+                        SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
                     <Rock:DataTextBox ID="tbOrder" runat="server"
-                        SourceTypeName="Rock.Model.Account, Rock" PropertyName="Order" />
+                        SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="Order" />
                     <Rock:DataTextBox ID="tbGLCode" runat="server"
-                        SourceTypeName="Rock.Model.Account, Rock" PropertyName="GlCode" />
+                        SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="GlCode" />
                 </div>
 
                 <div class="span6">                
-                    <Rock:DatePicker ID="dtpStartDate" runat="server" SourceTypeName="Rock.Model.Account, Rock" PropertyName="StartDate" LabelText="Start Date" />
-                    <Rock:DatePicker ID="dtpEndDate" runat="server" SourceTypeName="Rock.Model.Account, Rock" PropertyName="EndDate" LabelText="End Date" />
+                    <Rock:DatePicker ID="dtpStartDate" runat="server" SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="StartDate" LabelText="Start Date" />
+                    <Rock:DatePicker ID="dtpEndDate" runat="server" SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="EndDate" LabelText="End Date" />
                     <Rock:LabeledCheckBox ID="cbIsActive" runat="server" LabelText="Active" />
                     <Rock:LabeledCheckBox ID="cbIsTaxDeductible" runat="server" LabelText="Tax Deductible" />
                     <Rock:LabeledDropDownList ID="ddlAccountType" runat="server" LabelText="Account Type" />
