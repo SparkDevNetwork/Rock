@@ -337,6 +337,10 @@
     <Compile Include="Migrations\201307092306332_MarketingCampaignXsltAttribs.Designer.cs">
       <DependentUpon>201307092306332_MarketingCampaignXsltAttribs.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201307092345097_CleanUpExtraNotesBlockTypes.cs" />
+    <Compile Include="Migrations\201307092345097_CleanUpExtraNotesBlockTypes.Designer.cs">
+      <DependentUpon>201307092345097_CleanUpExtraNotesBlockTypes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -1895,6 +1899,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307092306332_MarketingCampaignXsltAttribs.resx">
       <DependentUpon>201307092306332_MarketingCampaignXsltAttribs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307092345097_CleanUpExtraNotesBlockTypes.resx">
+      <DependentUpon>201307092345097_CleanUpExtraNotesBlockTypes.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
