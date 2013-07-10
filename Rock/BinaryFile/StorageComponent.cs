@@ -22,13 +22,15 @@ namespace Rock.BinaryFile
         /// Saves the files.
         /// </summary>
         /// <param name="files">The files.</param>
-        public abstract void SaveFiles( IEnumerable<Model.BinaryFile> files );
+        /// <param name="personId"></param>
+        public abstract void SaveFiles( IEnumerable<Model.BinaryFile> files, int? personId );
 
         /// <summary>
         /// Removes the file.
         /// </summary>
         /// <param name="file">The file.</param>
-        public abstract void RemoveFile( Model.BinaryFile file );
+        /// <param name="personId"></param>
+        public abstract void RemoveFile( Model.BinaryFile file, int? personId );
 
         /// <summary>
         /// Gets the type of the entity.

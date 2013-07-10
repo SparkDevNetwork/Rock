@@ -337,6 +337,10 @@
     <Compile Include="Migrations\201307081815266_GroupMemberDetailBreadCrumb.Designer.cs">
       <DependentUpon>201307081815266_GroupMemberDetailBreadCrumb.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201307082052506_StorageEntityType.cs" />
+    <Compile Include="Migrations\201307082052506_StorageEntityType.Designer.cs">
+      <DependentUpon>201307082052506_StorageEntityType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -1892,6 +1896,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307081815266_GroupMemberDetailBreadCrumb.resx">
       <DependentUpon>201307081815266_GroupMemberDetailBreadCrumb.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307082052506_StorageEntityType.resx">
+      <DependentUpon>201307082052506_StorageEntityType.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
