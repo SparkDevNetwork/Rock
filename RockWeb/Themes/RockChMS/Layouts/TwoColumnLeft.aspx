@@ -60,8 +60,7 @@
             <div class="container-fluid">
                 <div class="row-fluid">
                     <div class="span6">
-                        <h1>
-                            <Rock:PageTitle ID="PageTitle" runat="server" /></h1>
+                        <Rock:PageIcon ID="PageIcon" runat="server" /> <h1><Rock:PageTitle ID="PageTitle" runat="server" /></h1>
                         <Rock:Zone ID="PageTitleBar" runat="server" />
                     </div>
                     <div class="span6">
@@ -77,10 +76,6 @@
             <div class="span12">
                 <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
                 
-                <section class="pageoverview clearfix">
-                    <Rock:PageIcon ID="PageIcon" runat="server" />
-                    <Rock:PageDescription ID="PageDescription" runat="server" />
-                </section>
 
                 <%-- Content Area --%>
                     
