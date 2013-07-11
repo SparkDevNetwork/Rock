@@ -53,11 +53,32 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     Repeater rptrMembers = e.Item.FindControl( "rptrMembers" ) as Repeater;
                     if (rptrMembers != null)
                     {
-                        rptrMembers.ItemDataBound += rptrMembers_ItemDataBound;
-                        rptrMembers.DataSource = group.Members
-                            .Where( m => m.PersonId != Person.Id)
+                        var members = group.Members
+                            .Where( m => m.PersonId != Person.Id )
                             .OrderBy( m => m.GroupRole.SortOrder )
                             .ToList();
+
+                        var orderedMembers = new List<GroupMember>();
+                        
+                        // Add adult males
+                        orderedMembers.AddRange(members
+                            .Where( m => m.GroupRole.Guid.Equals(new Guid(Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT)) &&
+                                m.Person.Gender == Gender.Male)
+                            .OrderByDescending( m => m.Person.Age));
+                        
+                        // Add adult females
+                        orderedMembers.AddRange(members
+                            .Where( m => m.GroupRole.Guid.Equals(new Guid(Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT)) &&
+                                m.Person.Gender != Gender.Male)
+                            .OrderByDescending( m => m.Person.Age));
+
+                        // Add non-adults
+                        orderedMembers.AddRange(members
+                            .Where( m => !m.GroupRole.Guid.Equals(new Guid(Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT)))
+                            .OrderByDescending( m => m.Person.Age));
+
+                        rptrMembers.ItemDataBound += rptrMembers_ItemDataBound;
+                        rptrMembers.DataSource = orderedMembers;
                         rptrMembers.DataBind();
                     }
 
@@ -85,7 +106,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     if ( imgPerson != null )
                     {
                         imgPerson.Visible = fm.PhotoId.HasValue;
-                        if ( Person.PhotoId.HasValue )
+                        if ( fm.PhotoId.HasValue )
                         {
                             imgPerson.ImageUrl = string.Format( "~/image.ashx?id={0}", fm.PhotoId );
                         }
@@ -221,5 +242,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             rptrFamilies.DataBind();
         }
 
+
+        protected string FormatAddressType(object addressType)
+        {
+            string type = addressType.ToString();
+            return type.EndsWith("Address", StringComparison.CurrentCultureIgnoreCase) ? type : type + " Address";
+        }
     }
 }
