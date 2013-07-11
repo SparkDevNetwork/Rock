@@ -344,6 +344,14 @@
     <Compile Include="Migrations\201307092345097_CleanUpExtraNotesBlockTypes.Designer.cs">
       <DependentUpon>201307092345097_CleanUpExtraNotesBlockTypes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201307101515281_FinancialAccountPage.cs" />
+    <Compile Include="Migrations\201307101515281_FinancialAccountPage.Designer.cs">
+      <DependentUpon>201307101515281_FinancialAccountPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307111546017_SiteReferenceFields260.cs" />
+    <Compile Include="Migrations\201307111546017_SiteReferenceFields260.Designer.cs">
+      <DependentUpon>201307111546017_SiteReferenceFields260.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -1906,6 +1914,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307092345097_CleanUpExtraNotesBlockTypes.resx">
       <DependentUpon>201307092345097_CleanUpExtraNotesBlockTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307101515281_FinancialAccountPage.resx">
+      <DependentUpon>201307101515281_FinancialAccountPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307111546017_SiteReferenceFields260.resx">
+      <DependentUpon>201307111546017_SiteReferenceFields260.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
