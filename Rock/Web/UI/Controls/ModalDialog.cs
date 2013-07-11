@@ -71,6 +71,16 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the save button text.
+        /// </summary>
+        /// <value>The save button text.</value>
+        public string SaveButtonText
+        {
+            get { return ViewState["SaveButtonText"] as string ?? "Save"; }
+            set { ViewState["SaveButtonText"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the default save behavior should be enabled.
         /// </summary>
         [
@@ -170,7 +180,7 @@ namespace Rock.Web.UI.Controls
             _footerPanel.Controls.Add( _saveLink );
             _saveLink.ID = "saveLink";
             _saveLink.Attributes.Add( "class", "btn btn-primary" );
-            _saveLink.InnerText = "Save";
+            _saveLink.ValidationGroup = this.ID + "ValidationGroup";
             _saveLink.ServerClick += SaveLink_ServerClick;
 
             this.PopupControlID = _dialogPanel.ID;
@@ -195,6 +205,10 @@ namespace Rock.Web.UI.Controls
                 {
                     this.OkControlID = _cancelLink.ID;
                 }
+            }
+            else
+            {
+                _saveLink.InnerText = SaveButtonText;
             }
 
 
