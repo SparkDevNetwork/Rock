@@ -67,11 +67,12 @@ namespace Rock.Rest.Controllers
 
                 model.Zone = block.Zone;
                 model.PageId = block.PageId;
+                model.SiteId = block.SiteId;
                 model.Layout = block.Layout;
 
                 if ( model.IsValid )
                 {
-                    service.Move( model );
+                    model.Order = service.GetMaxOrder( model );
                     service.Save( model, user.PersonId );
                 }
                 else
