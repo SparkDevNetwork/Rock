@@ -74,6 +74,7 @@ namespace Rock.Model
                 var target = new Block();
                 target.IsSystem = source.IsSystem;
                 target.PageId = source.PageId;
+                target.SiteId = source.SiteId;
                 target.Layout = source.Layout;
                 target.BlockTypeId = source.BlockTypeId;
                 target.Zone = source.Zone;
