@@ -421,7 +421,20 @@ namespace Rock.Web.UI
                         Page.Trace.Warn( "Redirecting to login page" );
                         if (!string.IsNullOrWhiteSpace(CurrentPage.Site.LoginPageReference))
                         {
-                            Response.Redirect( CurrentPage.Site.LoginPageReference + "?returnurl=" + Server.UrlEncode(Request.RawUrl) );
+                            // if the QueryString already has a returnUrl, use that, otherwise redirect to RawUrl
+                            string returnUrl = Request.QueryString["returnUrl"] ?? Server.UrlEncode(Request.RawUrl);
+                            
+                            string loginPageRequestPath = ResolveUrl( CurrentPage.Site.LoginPageReference );
+
+                            if ( loginPageRequestPath.Equals( Request.Path ) )
+                            {
+                                // The LoginPage security isn't set to Allow All, so throw exception to prevent recursive loop
+                                throw new Exception( string.Format("Page security for Site.LoginPageReference {0} is invalid", CurrentPage.Site.LoginPageReference));
+                            }
+                            else
+                            {
+                                Response.Redirect( loginPageRequestPath + "?returnurl=" + returnUrl );
+                            }
                         }
                         else
                         {
