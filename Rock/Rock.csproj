@@ -959,6 +959,7 @@
     <Compile Include="Web\UI\Controls\Communication\Sms.cs" />
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
+    <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
     <Compile Include="Web\UI\Controls\IRequiredControl.cs" />
     <Compile Include="Web\UI\Controls\LabeledBulletedList.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\Attributes.cs" />
@@ -971,6 +972,7 @@
     <Compile Include="Web\UI\Controls\PersonProfile\BadgeList.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ComponentsPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\PersonPicker2.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GroupRolePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GeoPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MonthDayPicker.cs" />
