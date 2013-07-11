@@ -49,7 +49,9 @@ namespace RockWeb.Blocks.Security
             if ( action == "Login" )
                 if ( !string.IsNullOrWhiteSpace( CurrentPage.Site.LoginPageReference ) )
                 {
-                    Response.Redirect( CurrentPage.Site.LoginPageReference + "?returnurl=" + Server.UrlEncode(Request.RawUrl) );
+                    // if the QueryString already has a returnUrl, use that, otherwise redirect to RawUrl
+                    string returnUrl = Request.QueryString["returnUrl"] ?? Server.UrlEncode( Request.RawUrl );
+                    Response.Redirect( CurrentPage.Site.LoginPageReference + "?returnurl=" + returnUrl );
                 }
                 else
                 {
