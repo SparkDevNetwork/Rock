@@ -115,7 +115,7 @@ namespace Rock.Model
         /// <value>
         /// Login Page Reference.
         /// </value>
-        [MaxLength( 10 )]
+        [MaxLength( 260 )]
         [DataMember]
         public string LoginPageReference { get; set; }
         
@@ -125,7 +125,7 @@ namespace Rock.Model
         /// <value>
         /// Registration Page Reference.
         /// </value>
-        [MaxLength( 10 )]
+        [MaxLength( 260 )]
         [DataMember]
         public string RegistrationPageReference { get; set; }
         
