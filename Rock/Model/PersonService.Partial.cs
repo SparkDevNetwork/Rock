@@ -241,6 +241,34 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets a list of people with a matching first name.
+        /// </summary>
+        /// <param name="firstName">The last name.</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <returns></returns>
+        public IEnumerable<Person> GetByFirstName( string firstName, bool includeDeceased = false )
+        {
+            return Repository.Find( p =>
+                ( includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value ) &&
+                p.FirstName.ToLower().StartsWith( firstName )
+            );
+        }
+
+        /// <summary>
+        /// Gets a list of people with a matching last name.
+        /// </summary>
+        /// <param name="lastName">The last name.</param>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <returns></returns>
+        public IEnumerable<Person> GetByLastName( string lastName, bool includeDeceased = false )
+        {
+            return Repository.Find( p =>
+                ( includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value ) &&
+                p.LastName.ToLower().StartsWith( lastName )
+            );
+        }
+
+        /// <summary>
         /// Gets the family members.
         /// </summary>
         /// <param name="person">The person.</param>

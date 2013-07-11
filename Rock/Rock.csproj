@@ -1013,6 +1013,7 @@
     <Compile Include="Web\UI\IDetailBlock.cs" />
     <Compile Include="Web\UI\IDimmableBlock.cs" />
     <Compile Include="Workflow\Action\CheckIn\AttendedFindFamilies.cs" />
+    <Compile Include="Workflow\Action\CheckIn\AttendedFindFamilyMembers.cs" />
     <Compile Include="Workflow\Action\CheckIn\AttendedLoadGroupTypes.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
