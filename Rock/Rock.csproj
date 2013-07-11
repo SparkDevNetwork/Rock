@@ -349,6 +349,10 @@
     <Compile Include="Migrations\201307111546017_SiteReferenceFields260.Designer.cs">
       <DependentUpon>201307111546017_SiteReferenceFields260.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201307111959002_EditFamily.cs" />
+    <Compile Include="Migrations\201307111959002_EditFamily.Designer.cs">
+      <DependentUpon>201307111959002_EditFamily.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -1918,6 +1922,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307111546017_SiteReferenceFields260.resx">
       <DependentUpon>201307111546017_SiteReferenceFields260.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307111959002_EditFamily.resx">
+      <DependentUpon>201307111959002_EditFamily.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
