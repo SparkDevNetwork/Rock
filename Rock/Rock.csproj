@@ -353,6 +353,10 @@
     <Compile Include="Migrations\201307111959002_EditFamily.Designer.cs">
       <DependentUpon>201307111959002_EditFamily.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201307112143164_LayoutBlocksSiteSpecific.cs" />
+    <Compile Include="Migrations\201307112143164_LayoutBlocksSiteSpecific.Designer.cs">
+      <DependentUpon>201307112143164_LayoutBlocksSiteSpecific.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -1925,6 +1929,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307111959002_EditFamily.resx">
       <DependentUpon>201307111959002_EditFamily.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307112143164_LayoutBlocksSiteSpecific.resx">
+      <DependentUpon>201307112143164_LayoutBlocksSiteSpecific.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

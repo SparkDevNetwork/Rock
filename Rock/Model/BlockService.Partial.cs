@@ -23,7 +23,10 @@ namespace Rock.Model
         /// <returns>An enumerable list of Block objects.</returns>
         public IEnumerable<Block> GetByBlockTypeId( int blockTypeId )
         {
-            return Repository.Find( t => t.BlockTypeId == blockTypeId ).OrderBy( t => t.Order );
+            return Repository
+                .Find( t => 
+                    t.BlockTypeId == blockTypeId )
+                .OrderBy( t => t.Order );
         }
         
         /// <summary>
@@ -31,31 +34,40 @@ namespace Rock.Model
         /// </summary>
         /// <param name="layout">Layout.</param>
         /// <returns>An enumerable list of Block objects.</returns>
-        public IEnumerable<Block> GetByLayout( string layout )
+        public IEnumerable<Block> GetByLayout( int siteId, string layout )
         {
-            return Repository.Find( t => ( t.Layout == layout || ( layout == null && t.Layout == null ) ) ).OrderBy( t => t.Order );
+            return Repository
+                .Find( t => 
+                    t.SiteId == siteId && 
+                    string.Compare(t.Layout, layout, true) == 0 )
+                .OrderBy( t => t.Order );
         }
-        
-        /// <summary>
-        /// Gets Block Instances by Layout And Page Id And Zone
-        /// </summary>
-        /// <param name="layout">Layout.</param>
-        /// <param name="pageId">Page Id.</param>
-        /// <param name="zone">Zone.</param>
-        /// <returns>An enumerable list of Block objects.</returns>
-        public IEnumerable<Block> GetByLayoutAndPageIdAndZone( string layout, int? pageId, string zone )
+
+        public IEnumerable<Block> GetByLayoutAndZone( int siteId, string layout, string zone )
         {
-            return Repository.Find( t => ( t.Layout == layout || ( layout == null && t.Layout == null ) ) && ( t.PageId == pageId || ( pageId == null && t.PageId == null ) ) && t.Zone == zone ).OrderBy( t => t.Order );
+            return Repository
+                .Find( t => 
+                    t.SiteId == siteId && 
+                    string.Compare(t.Layout, layout, true) == 0 && 
+                    string.Compare(t.Zone, zone ) == 0)
+                .OrderBy( t => t.Order );
         }
-        
-        /// <summary>
-        /// Gets Block Instances by Page Id
-        /// </summary>
-        /// <param name="pageId">Page Id.</param>
-        /// <returns>An enumerable list of Block objects.</returns>
-        public IEnumerable<Block> GetByPageId( int? pageId )
+
+        public IEnumerable<Block> GetByPage( int pageId )
         {
-            return Repository.Find( t => ( t.PageId == pageId || ( pageId == null && t.PageId == null ) ) ).OrderBy( t => t.Order );
+            return Repository
+                .Find( t =>
+                    t.PageId == pageId )
+                .OrderBy( t => t.Order );
+        }
+
+        public IEnumerable<Block> GetByPageAndZone( int pageId, string zone )
+        {
+            return Repository
+                .Find( t =>
+                    t.PageId == pageId &&
+                    string.Compare( t.Zone, zone ) == 0 )
+                .OrderBy( t => t.Order );
         }
 
         /// <summary>
@@ -63,19 +75,19 @@ namespace Rock.Model
         /// </summary>
         /// <param name="block">The block.</param>
         /// <returns></returns>
-        public int Move( Block block )
+        public int GetMaxOrder( Block block )
         {
             Block existingBlock = Get( block.Id );
 
-            int? order = Queryable().
-                            Where( b => b.Layout == block.Layout &&
-                                b.PageId == block.PageId &&
-                                b.Zone == block.Zone ).
-                            Select( b => ( int? )b.Order ).Max();
-
-            block.Order = order.HasValue ? order.Value + 1 : 0;
-
-            return block.Order;
+            int? order = Queryable()
+                .Where( b => 
+                    b.SiteId == block.SiteId &&
+                    b.Layout == block.Layout &&
+                    b.PageId == block.PageId &&
+                    b.Zone == block.Zone )
+                .Select( b => ( int? )b.Order ).Max();
+                
+            return order.HasValue ? order.Value + 1 : 0;
         }
     }
 }

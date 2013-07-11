@@ -493,12 +493,13 @@ namespace Rock.Web.UI
                     Page.Trace.Warn( "Creating JS objects" );
                     string script = string.Format( @"
     var rock = {{ 
-        pageId:{0}, 
-        layout:'{1}',
-        baseUrl:'{2}' 
+        siteId:{0},
+        pageId:{1}, 
+        layout:'{2}',
+        baseUrl:'{3}' 
     }};
 ",
-                        CurrentPage.Id, CurrentPage.Layout, AppPath );
+                        CurrentPage.SiteId.Value, CurrentPage.Id, CurrentPage.Layout, AppPath );
                     this.Page.ClientScript.RegisterStartupScript( this.GetType(), "rock-js-object", script, true );
 
                     // Add config elements
