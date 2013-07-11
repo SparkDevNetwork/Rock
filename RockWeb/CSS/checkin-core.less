@@ -492,6 +492,10 @@ input[type="submit"].btn[disabled="disabled"]
 	font-size: 24px;
 }
 
+.page-size, .item-count {
+    display: none;
+}
+
 .table td a[title=Delete], .table td a[title=Edit]
 {
 	.buttonBackground(@checkinPrimaryButtonBackground, spin(@checkinPrimaryButtonBackground, 20%));
@@ -523,7 +527,7 @@ input[type="submit"].btn[disabled="disabled"]
     top: 0;
 }
 
-.AddFamily {
+.AddFamily, .AddPerson {
     background: #EEEEEE;
     width: 90%;
     height: 90%;
@@ -554,6 +558,14 @@ input[type="submit"].btn[disabled="disabled"]
     width: 50%;
     position: relative;
     left: 25%;
+}
+
+#lbOpenPanel, #lbOpenFamilyPanel {
+    display: none;
+}
+
+.modal {
+    z-index: 10002 !important;
 }
 
 @media screen and (max-width:1024px)
@@ -641,4 +653,27 @@ input[type="submit"].btn[disabled="disabled"]
     .textInline {
         width: 35%;
     }
+
+    .ConfirmButtons
+    {
+	    width: 10px;
+	    height: 12px;
+	    /*padding: 6px 0;*/
+	    font-size: 12px;
+    }
+
+    .ConfirmButtons i {
+        position: relative;
+        top: -40%;
+    }
+
+
+    .grid-table {
+        font-size: 14px;
+    }
+
+    .pagination {
+        margin: 10px 0;
+    }
+
 }
