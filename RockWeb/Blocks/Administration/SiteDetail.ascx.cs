@@ -94,6 +94,7 @@ namespace RockWeb.Blocks.Administration
                 site.Description = tbDescription.Text;
                 site.Theme = ddlTheme.Text;
                 site.DefaultPageId = int.Parse( ppDefaultPage.SelectedValue );
+                site.LoginPageReference = tbLoginPageReference.Text;
 
                 var currentDomains = tbSiteDomains.Text.SplitDelimitedValues().ToList<string>();
                 site.SiteDomains = site.SiteDomains ?? new List<SiteDomain>();
@@ -121,6 +122,8 @@ namespace RockWeb.Blocks.Administration
                 site.AppleTouchIconUrl = tbAppleTouchIconUrl.Text;
                 site.FacebookAppId = tbFacebookAppId.Text;
                 site.FacebookAppSecret = tbFacebookAppSecret.Text;
+                site.RegistrationPageReference = tbRegistrationPageReference.Text;
+                site.ErrorPage = tbErrorPage.Text;
 
                 if ( !site.IsValid )
                 {
@@ -196,11 +199,15 @@ namespace RockWeb.Blocks.Administration
             tbDescription.Text = site.Description;
             ddlTheme.SetValue( site.Theme );
             ppDefaultPage.SetValue( site.DefaultPage );
+            tbLoginPageReference.Text = site.LoginPageReference;
+
             tbSiteDomains.Text = string.Join( "\n", site.SiteDomains.Select( dom => dom.Domain ).ToArray() );
             tbFaviconUrl.Text = site.FaviconUrl;
             tbAppleTouchIconUrl.Text = site.AppleTouchIconUrl;
             tbFacebookAppId.Text = site.FacebookAppId;
             tbFacebookAppSecret.Text = site.FacebookAppSecret;
+            tbRegistrationPageReference.Text = site.RegistrationPageReference;
+            tbErrorPage.Text = site.ErrorPage;
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
@@ -227,12 +234,15 @@ namespace RockWeb.Blocks.Administration
             tbSiteName.ReadOnly = readOnly;
             tbDescription.ReadOnly = readOnly;
             ddlTheme.Enabled = !readOnly;
+            tbLoginPageReference.ReadOnly = readOnly;
             ppDefaultPage.Enabled = !readOnly;
             tbSiteDomains.ReadOnly = readOnly;
             tbFaviconUrl.ReadOnly = readOnly;
             tbAppleTouchIconUrl.ReadOnly = readOnly;
             tbFacebookAppId.ReadOnly = readOnly;
             tbFacebookAppSecret.ReadOnly = readOnly;
+            tbRegistrationPageReference.ReadOnly = readOnly;
+            tbErrorPage.ReadOnly = readOnly;
 
             btnSave.Visible = !readOnly;
         }
