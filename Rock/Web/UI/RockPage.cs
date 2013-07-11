@@ -419,7 +419,14 @@ namespace Rock.Web.UI
                     if ( user == null )
                     {
                         Page.Trace.Warn( "Redirecting to login page" );
-                        FormsAuthentication.RedirectToLoginPage();
+                        if (!string.IsNullOrWhiteSpace(CurrentPage.Site.LoginPageReference))
+                        {
+                            Response.Redirect( CurrentPage.Site.LoginPageReference + "?returnurl=" + Server.UrlEncode(Request.RawUrl) );
+                        }
+                        else
+                        {
+                            FormsAuthentication.RedirectToLoginPage();
+                        }
                     }
                 }
                 else
