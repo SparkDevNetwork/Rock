@@ -195,6 +195,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 if ( family != null )
                 {
                     int id = int.Parse( e.CommandArgument.ToString() );
+
                     // no matter the id (if it's 0, this person is brand new and hasn't been added to the system yet), add the person to this family for this check in
                     if ( HasActiveClass((LinkButton)e.Item.FindControl( "lbSelectVisitor" ) ) )
                     {
@@ -204,11 +205,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     {
                         // this visitor is not selected. select it.
                         CheckInPerson CIP = new CheckInPerson();
-
                     }
 
                     // ************************************ NOT DONE NOT DONE NOT DONE *************************************************
-
                 }
             }
         }
@@ -282,6 +281,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 DOBAge.Text = "";
                 Grade.Text = "";
             }
+
             valSummaryBottom.DataBind();
             mpe.Show();
         }
@@ -346,7 +346,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void lbAddFamilyAdd_Click( object sender, EventArgs e )
         {
             // Handle getting the data from the modal window and creating a family out of it.
-
             List<Person> FamilyList = new List<Person>();
             for ( var i = 1; i <= 12; i++ )
             {
@@ -367,13 +366,13 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     person.LastName = LastName.Text;
                     if ( DOBAge.Text.Length <= 3 )
                     {
-                        //person.Age = DOBAge.Text;
+                        // person.Age = DOBAge.Text;
                     }
                     else
                     {
                         person.BirthDate = Convert.ToDateTime(DOBAge.Text);
                     }
-                    //person.Grade = int.Parse(Grade.Text);
+                    // person.Grade = int.Parse(Grade.Text);
 
                     FamilyList.Add( person );
                 }
@@ -648,12 +647,32 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 CheckInPerson CIP = new CheckInPerson();
                 CIP.Person = person;
                 CIP.Selected = true;
-                family.People.Add( CIP );
-                rPerson.DataSource = family.People;
-                rPerson.DataBind();
-                foreach ( RepeaterItem item in rPerson.Items )
+                if ( PersonVisitorType.Value == "Person" )
                 {
-                    ( (LinkButton)item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
+                    // this came from Add Person
+                    var isPersonInFamily = false;
+                    foreach ( var familyPerson in family.People )
+                    {
+                        if ( familyPerson.Person.Id == person.Id )
+                        {
+                            isPersonInFamily = true;
+                        }
+                    }
+                    // only add the person to the family if they aren't listed as part of the family.
+                    if ( !isPersonInFamily )
+                    {
+                        family.People.Add( CIP );
+                        rPerson.DataSource = family.People;
+                        rPerson.DataBind();
+                        foreach ( RepeaterItem item in rPerson.Items )
+                        {
+                            ( (LinkButton)item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
+                        }
+                    }
+                }
+                else
+                {
+                    // this came from Add Visitor
                 }
                 SaveState();
             }
@@ -681,6 +700,36 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }
             else
             {
+                Person person = new Person();
+                person.GivenName = tbFirstNameSearch.Text;
+                person.LastName = tbLastNameSearch.Text;
+                if ( dpDOBAgeSearch.Text.Length <= 3 )
+                {
+                    //person.Age = DOBAge.Text;
+                }
+                else
+                {
+                    person.BirthDate = Convert.ToDateTime( dpDOBAgeSearch.Text );
+                }
+                //person.Grade = int.Parse(Grade.Text);
+
+                var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
+                if ( family == null )
+                {
+                    family = new CheckInFamily();
+                    family.Selected = true;
+                    CurrentCheckInState.CheckIn.Families.Add( family );
+                }
+                CheckInPerson CIP = new CheckInPerson();
+                CIP.Person = person;
+                CIP.Selected = true;
+                family.People.Add( CIP );
+                rPerson.DataSource = family.People;
+                rPerson.DataBind();
+                foreach ( RepeaterItem item in rPerson.Items )
+                {
+                    ( (LinkButton)item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
+                }
             }
         }
 
