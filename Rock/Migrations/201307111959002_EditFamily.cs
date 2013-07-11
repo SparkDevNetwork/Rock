@@ -21,7 +21,7 @@ namespace Rock.Migrations
             AddPage("08DBD8A5-2C35-4146-B4A8-0F7652348B25","Edit Family","","Default","E9E1E5F2-467D-47CB-AF41-B4D9EF8B0B27","");
             AddBlockType("CRM - Person Detail - Edit Family","","~/Blocks/CRM/PersonDetail/EditFamily.ascx","B4EB68FE-1A73-40FD-8236-78C9A015BDDE");
             AddBlock( "E9E1E5F2-467D-47CB-AF41-B4D9EF8B0B27", "B4EB68FE-1A73-40FD-8236-78C9A015BDDE", "Edit Family", "", "Content", 0, "E3A7A9E0-9321-4153-928F-94AB0B576A3B" );
-            AddPageRoute( "E9E1E5F2-467D-47CB-AF41-B4D9EF8B0B27", "PageEdit/{PersonId}/{FamilyId}" );
+            AddPageRoute( "E9E1E5F2-467D-47CB-AF41-B4D9EF8B0B27", "EditFamily/{PersonId}/{FamilyId}" );
             AddPageContext( "E9E1E5F2-467D-47CB-AF41-B4D9EF8B0B27", "Rock.Model.Person", "PersonId" );
         }
         
