@@ -15,6 +15,7 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class StateDropDownList : LabeledDropDownList
     {
+        private bool RebindRequired = false;
 
         /// <summary>
         /// Display an abbreviated state name
@@ -22,18 +23,28 @@ namespace Rock.Web.UI.Controls
         public bool UseAbbreviation
         {
             get { return ViewState["UseAbbreviation"] as bool? ?? false; }
-            set { ViewState["UseAbbreviation"] = value; }
+            set 
+            {
+                RebindRequired = (ViewState["UseAbbreviation"] as bool? ?? false) != value;
+                ViewState["UseAbbreviation"] = value; 
+            }
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="StateDropDownList" /> class.
+        /// Handles the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
-        public StateDropDownList()
-            : base()
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
         {
+            base.OnInit( e );
+
+            this.DataValueField = "Id";
+            this.DataTextField = UseAbbreviation ? "Id" : "Value";
+
+            RebindRequired = false;
             var definedType = DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ) );
             this.DataSource = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => new { Id = v.Name, Value = v.Description } );
-            this.DataValueField = "Id";
+            this.DataBind();
         }
 
         /// <summary>
@@ -42,8 +53,20 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( System.Web.UI.HtmlTextWriter writer )
         {
-            this.DataTextField = UseAbbreviation ? "Id" : "Value";
-            this.DataBind();
+            if ( RebindRequired )
+            {
+                string value = this.SelectedValue;
+
+                this.DataTextField = UseAbbreviation ? "Id" : "Value";
+                this.DataBind();
+
+                var li = this.Items.FindByValue( value );
+                if ( li != null )
+                {
+                    li.Selected = true;
+                }
+            }
+
             base.RenderControl( writer );
         }
 

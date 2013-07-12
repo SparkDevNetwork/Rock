@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Text;
 using Rock.Model;
 
 namespace Rock.BinaryFile.Storage
@@ -60,6 +61,36 @@ namespace Rock.BinaryFile.Storage
         {
             var fileService = new BinaryFileService();
             fileService.Delete( file, personId );
+        }
+
+        /// <summary>
+        /// Gets the URL.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="height">The height.</param>
+        /// <param name="width">The width.</param>
+        /// <returns></returns>
+        public override string GetUrl( Model.BinaryFile file, int? height = null, int? width = null )
+        {
+            if ( string.IsNullOrWhiteSpace( file.FileName ) )
+            {
+                return null;
+            }
+
+            var urlBuilder = new StringBuilder();
+            urlBuilder.AppendFormat( "~/File.ashx?guid={0}", file.FileName );
+
+            if ( height.HasValue )
+            {
+                urlBuilder.AppendFormat( "&height={0}", height );
+            }
+
+            if ( width.HasValue )
+            {
+                urlBuilder.AppendFormat( "&width={0}", width );
+            }
+
+            return urlBuilder.ToString();
         }
     }
 }

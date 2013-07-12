@@ -11,7 +11,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201307082052506_StorageEntityType"; }
+            get { return "201307112349040_StorageEntityType"; }
         }
         
         string IMigrationMetadata.Source
