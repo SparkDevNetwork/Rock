@@ -136,13 +136,24 @@ namespace Rock.Web.UI.Controls
     <div class='control-group'>
         <div class='control-label'>Search</div>
         <div class='controls'>
-            <input id='personPicker_{0}' type='text' class='rock-picker-search' />
+            <input id='personPicker_{0}' type='text' class='rock-picker-search input-medium' />
         </div>
     </div>
-    <div class='person-search-results scroll-container'>
-        <ul class='rock-picker-select' id='personPickerItems_{0}'>
-        </ul>
-    <div>   
+    <div id='person-search-results' class='scroll-container'>
+        <div class='scrollbar'>
+            <div class='track'>
+                <div class='thumb'>
+                    <div class='end'></div>
+                </div>
+            </div>
+        </div>
+        <div class='viewport'>
+            <div class='overview'>
+                <ul class='rock-picker-select' id='personPickerItems_{0}'>
+                </ul>
+            </div>
+        </div>
+    </div>		
 ", this.ID ) );
 
             }

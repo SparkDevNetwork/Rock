@@ -13,6 +13,7 @@
             var controlId = this.controlId,
                 restUrl = this.restUrl;
 
+
             // TODO: Can we use TypeHead here (already integrated into BootStrap) instead of jQueryUI?
             // Might be a good opportunity to break the dependency on jQueryUI.
             $('#personPicker_' + controlId).autocomplete({
@@ -27,6 +28,7 @@
                         response($.map(data, function (item) {
                             return item;
                         }));
+                        $('#person-search-results.scroll-container').tinyscrollbar_update();
                     });
 
                     // Is this needed? If an error is thrown on the server, we should see an exception in the log now...
@@ -37,7 +39,6 @@
                     });
                 },
                 minLength: 3,
-                html: true,
                 appendTo: '#personPickerItems_' + controlId,
                 messages: {
                     noResults: function () {},
@@ -49,41 +50,43 @@
                 $('#hfPersonId_' + controlId).val($(this).attr('data-person-id'));
             });
 
+            $('#person-search-results.scroll-container').tinyscrollbar();
         };
 
         PersonPicker2.prototype.initialize = function () {
             $.extend($.ui.autocomplete.prototype, {
                 _renderItem: function ($ul, item) {
-                    if (this.options.html) {
-                        // override jQueryUI autocomplete's _renderItem so that we can do Html for the listitems
-                        // derived from http://github.com/scottgonzalez/jquery-ui-extensions
 
-                        var $label = $('<label/>').text(item.Name),
+                    // override jQueryUI autocomplete's _renderItem so that we can do Html for the listitems
+                    // derived from http://github.com/scottgonzalez/jquery-ui-extensions
 
-                            $radio = $('<input type="radio" name="person-id" />')
-                                .attr('id', item.Id)
-                                .attr('value', item.Id)
-                                .prependTo($label),
+                    var $label = $('<label/>').text(item.Name),
 
-                            $li = $('<li/>')
-                                .addClass('rock-picker-select-item')
-                                .attr('data-person-id', item.Id)
-                                .html($label),
+                        $radio = $('<input type="radio" name="person-id" />')
+                            .attr('id', item.Id)
+                            .attr('value', item.Id)
+                            .prependTo($label),
 
-                            $resultSection = $(this.options.appendTo);
+                        $li = $('<li/>')
+                            .addClass('rock-picker-select-item')
+                            .attr('data-person-id', item.Id)
+                            .html($label),
 
-                        if (!item.IsActive) {
-                            $li.addClass('inactive');
-                        }
+                        $resultSection = $(this.options.appendTo);
 
-                        return $resultSection.append($li);
+                    $label.append(' (' + item.Gender);
+
+                    if (item.Age > 0) {
+                        $label.append(' Age: ' + item.Age);
                     }
-                    else {
-                        return $('<li></li>')
-                            .data('item.autocomplete', item)
-                            .append($('<a></a>').text(item.label))
-                            .appendTo($ul);
+
+                    $label.append(')');
+
+                    if (!item.IsActive) {
+                        $li.addClass('disabled');
                     }
+
+                    return $resultSection.append($li);
                 }
             });
             
