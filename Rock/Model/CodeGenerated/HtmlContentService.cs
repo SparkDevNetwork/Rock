@@ -33,7 +33,16 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="HtmlContentService"/> class
         /// </summary>
+        /// <param name="repository">The repository.</param>
         public HtmlContentService(IRepository<HtmlContent> repository) : base(repository)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HtmlContentService"/> class
+        /// </summary>
+        /// <param name="context">The context.</param>
+        public HtmlContentService(RockContext context) : base(context)
         {
         }
 

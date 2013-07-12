@@ -33,7 +33,16 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="BinaryFileTypeService"/> class
         /// </summary>
+        /// <param name="repository">The repository.</param>
         public BinaryFileTypeService(IRepository<BinaryFileType> repository) : base(repository)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BinaryFileTypeService"/> class
+        /// </summary>
+        /// <param name="context">The context.</param>
+        public BinaryFileTypeService(RockContext context) : base(context)
         {
         }
 
