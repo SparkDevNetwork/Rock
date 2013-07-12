@@ -33,7 +33,16 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="FinancialTransactionScannedCheckService"/> class
         /// </summary>
+        /// <param name="repository">The repository.</param>
         public FinancialTransactionScannedCheckService(IRepository<FinancialTransactionScannedCheck> repository) : base(repository)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FinancialTransactionScannedCheckService"/> class
+        /// </summary>
+        /// <param name="context">The context.</param>
+        public FinancialTransactionScannedCheckService(RockContext context) : base(context)
         {
         }
     }
