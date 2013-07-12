@@ -172,13 +172,37 @@
                     </div>
 
                     <div id="divNewPerson" runat="server" class="tab-pane">
-                        <fieldset>
-                            <Rock:LabeledTextBox ID="tbNewPersonFirstName" runat="server" LabelText="First Name" ValidationGroup="modalAddPersonValidationGroup" />
-                            <Rock:LabeledTextBox ID="tbNewPersonLastName" runat="server" LabelText="Last Name" ValidationGroup="modalAddPersonValidationGroup" />
-                            <Rock:LabeledDropDownList ID="ddlNewPersonGender" runat="server" LabelText="Gender" />
-                            <Rock:DatePicker ID="dpNewPersonBirthDate" runat="server" LabelText="Birthdate" />
-                            <Rock:LabeledRadioButtonList ID="rblNewPersonRole" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" LabelText="Role" />
-                        </fieldset>
+                        <div class="row-fluid">
+                            <div class="span4">
+                                <fieldset>
+                                    <Rock:LabeledTextBox ID="tbNewPersonFirstName" runat="server" LabelText="First Name" ValidationGroup="modalAddPersonValidationGroup" />
+                                </fieldset>
+                            </div>
+                            <div class="span4">
+                                <fieldset>
+                                    <Rock:LabeledTextBox ID="tbNewPersonLastName" runat="server" LabelText="Last Name" ValidationGroup="modalAddPersonValidationGroup" />
+                                </fieldset>
+                            </div>
+                        </div>
+                        <div class="row-fluid">
+                            <div class="span4">
+                                <fieldset>
+                                    <Rock:LabeledDropDownList ID="ddlNewPersonGender" runat="server" LabelText="Gender" />
+                                </fieldset>
+                            </div>
+                            <div class="span4">
+                                <fieldset>
+                                    <Rock:DatePicker ID="dpNewPersonBirthDate" runat="server" LabelText="Birthdate" />
+                                </fieldset>
+                            </div>
+                        </div>
+                        <div class="row-fluid">
+                            <div class="span4">
+                                <fieldset>
+                                    <Rock:LabeledRadioButtonList ID="rblNewPersonRole" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" LabelText="Role" />
+                                </fieldset>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
