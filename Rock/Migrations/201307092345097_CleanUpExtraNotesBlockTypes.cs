@@ -11,16 +11,16 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class StorageEntityType : Rock.Migrations.RockMigration
+    public partial class CleanUpExtraNotesBlockTypes : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.BinaryFileType", "StorageEntityTypeId", c => c.Int());
-            AddForeignKey("dbo.BinaryFileType", "StorageEntityTypeId", "dbo.EntityType", "Id");
-            CreateIndex("dbo.BinaryFileType", "StorageEntityTypeId");
+            // there were two Blocks with a path of '~/Blocks/Core/Notes.ascx', the one with '2E9F32D4-B4FC-4A5F-9BE1-B2E3EA624DD3' is being used, the other isn't
+            DeleteBlockType( "599D274D-55C7-4DE6-BB2D-B334D4BD51BC" );
+            Sql( @"update [BlockType] set [Description] = 'Context aware block for adding notes to an entity' where [Guid] = '2E9F32D4-B4FC-4A5F-9BE1-B2E3EA624DD3'" );
         }
         
         /// <summary>
@@ -28,9 +28,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            DropIndex("dbo.BinaryFileType", new[] { "StorageEntityTypeId" });
-            DropForeignKey("dbo.BinaryFileType", "StorageEntityTypeId", "dbo.EntityType");
-            DropColumn("dbo.BinaryFileType", "StorageEntityTypeId");
+            // intentionally blank
         }
     }
 }

@@ -337,9 +337,21 @@
     <Compile Include="Migrations\201307081815266_GroupMemberDetailBreadCrumb.Designer.cs">
       <DependentUpon>201307081815266_GroupMemberDetailBreadCrumb.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201307082052506_StorageEntityType.cs" />
-    <Compile Include="Migrations\201307082052506_StorageEntityType.Designer.cs">
-      <DependentUpon>201307082052506_StorageEntityType.cs</DependentUpon>
+    <Compile Include="Migrations\201307092306332_MarketingCampaignXsltAttribs.cs" />
+    <Compile Include="Migrations\201307092306332_MarketingCampaignXsltAttribs.Designer.cs">
+      <DependentUpon>201307092306332_MarketingCampaignXsltAttribs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307092345097_CleanUpExtraNotesBlockTypes.cs" />
+    <Compile Include="Migrations\201307092345097_CleanUpExtraNotesBlockTypes.Designer.cs">
+      <DependentUpon>201307092345097_CleanUpExtraNotesBlockTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307101515281_FinancialAccountPage.cs" />
+    <Compile Include="Migrations\201307101515281_FinancialAccountPage.Designer.cs">
+      <DependentUpon>201307101515281_FinancialAccountPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307112349040_StorageEntityType.cs" />
+    <Compile Include="Migrations\201307112349040_StorageEntityType.Designer.cs">
+      <DependentUpon>201307112349040_StorageEntityType.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
@@ -1897,8 +1909,17 @@
     <EmbeddedResource Include="Migrations\201307081815266_GroupMemberDetailBreadCrumb.resx">
       <DependentUpon>201307081815266_GroupMemberDetailBreadCrumb.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201307082052506_StorageEntityType.resx">
-      <DependentUpon>201307082052506_StorageEntityType.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201307092306332_MarketingCampaignXsltAttribs.resx">
+      <DependentUpon>201307092306332_MarketingCampaignXsltAttribs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307092345097_CleanUpExtraNotesBlockTypes.resx">
+      <DependentUpon>201307092345097_CleanUpExtraNotesBlockTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307101515281_FinancialAccountPage.resx">
+      <DependentUpon>201307101515281_FinancialAccountPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307112349040_StorageEntityType.resx">
+      <DependentUpon>201307112349040_StorageEntityType.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

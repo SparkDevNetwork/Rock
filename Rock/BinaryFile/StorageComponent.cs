@@ -32,6 +32,8 @@ namespace Rock.BinaryFile
         /// <param name="personId"></param>
         public abstract void RemoveFile( Model.BinaryFile file, int? personId );
 
+        public abstract string GetUrl( Model.BinaryFile file, int? height = null, int? width = null );
+
         /// <summary>
         /// Gets the type of the entity.
         /// </summary>

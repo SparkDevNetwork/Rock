@@ -380,6 +380,8 @@ namespace Rock.Web
                                 parentPageReference.PageId = page.Id;
 
                                 parentPageReference.BreadCrumbs = new List<BreadCrumb>();
+                                parentPageReference.QueryString = new NameValueCollection();
+                                parentPageReference.Parameters = new Dictionary<string, string>();
 
                                 string bcName = page.BreadCrumbText;
                                 if ( bcName != string.Empty )

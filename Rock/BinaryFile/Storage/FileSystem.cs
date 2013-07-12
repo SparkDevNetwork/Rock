@@ -59,5 +59,24 @@ namespace Rock.BinaryFile.Storage
             File.Delete( HttpContext.Current.Server.MapPath( file.Url ) );
             fileService.Delete( file, personId );
         }
+
+        /// <summary>
+        /// Gets the URL.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="height">The height.</param>
+        /// <param name="width">The width.</param>
+        /// <returns></returns>
+        public override string GetUrl( Model.BinaryFile file, int? height = null, int? width = null )
+        {
+            if ( string.IsNullOrWhiteSpace( file.FileName ) )
+            {
+                return null;
+            }
+
+            // Since the FS provider doesn't need to worry about resizing, just return the URL.
+            var url = "~/Assets/Uploads/" + file.FileName;
+            return url;
+        }
     }
 }
