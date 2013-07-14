@@ -215,6 +215,7 @@ namespace Rock.Web.Cache
                 var block = (Block)model;
                 this.IsSystem = block.IsSystem;
                 this.PageId = block.PageId;
+                this.SiteId = block.SiteId;
                 this.Layout = block.Layout;
                 this.BlockTypeId = block.BlockTypeId;
                 this.Zone = block.Zone;

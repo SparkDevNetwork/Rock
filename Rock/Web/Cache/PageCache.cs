@@ -332,7 +332,7 @@ namespace Rock.Web.Cache
 
                     // Load Layout Blocks
                     BlockService blockService = new BlockService();
-                    foreach ( Block block in blockService.GetByLayout( this.Layout ) )
+                    foreach ( Block block in blockService.GetByLayout( this.SiteId.Value, this.Layout ) )
                     {
                         blockIds.Add( block.Id );
                         block.LoadAttributes();
@@ -340,7 +340,7 @@ namespace Rock.Web.Cache
                     }
 
                     // Load Page Blocks
-                    foreach ( Block block in blockService.GetByPageId( this.Id ) )
+                    foreach ( Block block in blockService.GetByPage( this.Id ) )
                     {
                         blockIds.Add( block.Id );
                         block.LoadAttributes();

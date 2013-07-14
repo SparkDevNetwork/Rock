@@ -33,7 +33,16 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="PersonMergedService"/> class
         /// </summary>
+        /// <param name="repository">The repository.</param>
         public PersonMergedService(IRepository<PersonMerged> repository) : base(repository)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PersonMergedService"/> class
+        /// </summary>
+        /// <param name="context">The context.</param>
+        public PersonMergedService(RockContext context) : base(context)
         {
         }
 

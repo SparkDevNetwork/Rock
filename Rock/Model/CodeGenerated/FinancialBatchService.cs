@@ -33,7 +33,16 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="FinancialBatchService"/> class
         /// </summary>
+        /// <param name="repository">The repository.</param>
         public FinancialBatchService(IRepository<FinancialBatch> repository) : base(repository)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FinancialBatchService"/> class
+        /// </summary>
+        /// <param name="context">The context.</param>
+        public FinancialBatchService(RockContext context) : base(context)
         {
         }
 

@@ -47,7 +47,16 @@ namespace RockWeb.Blocks.Security
         protected void lbLoginLogout_Click( object sender, EventArgs e )
         {
             if ( action == "Login" )
-                FormsAuthentication.RedirectToLoginPage();
+                if ( !string.IsNullOrWhiteSpace( CurrentPage.Site.LoginPageReference ) )
+                {
+                    // if the QueryString already has a returnUrl, use that, otherwise redirect to RawUrl
+                    string returnUrl = Request.QueryString["returnUrl"] ?? Server.UrlEncode( Request.RawUrl );
+                    Response.Redirect( CurrentPage.Site.LoginPageReference + "?returnurl=" + returnUrl );
+                }
+                else
+                {
+                    FormsAuthentication.RedirectToLoginPage();
+                }
             else
             {
                 FormsAuthentication.SignOut();

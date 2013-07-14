@@ -33,7 +33,16 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="UserLoginService"/> class
         /// </summary>
+        /// <param name="repository">The repository.</param>
         public UserLoginService(IRepository<UserLogin> repository) : base(repository)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserLoginService"/> class
+        /// </summary>
+        /// <param name="context">The context.</param>
+        public UserLoginService(RockContext context) : base(context)
         {
         }
 

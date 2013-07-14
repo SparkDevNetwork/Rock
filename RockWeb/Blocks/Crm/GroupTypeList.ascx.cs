@@ -78,7 +78,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gGroupType_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "groupTypeId", (int)e.RowKeyValue );
+            NavigateToDetailPage( "groupTypeId", e.RowKeyId );
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace RockWeb.Blocks.Crm
             RockTransactionScope.WrapTransaction( () =>
             {
                 GroupTypeService groupTypeService = new GroupTypeService();
-                GroupType groupType = groupTypeService.Get( (int)e.RowKeyValue );
+                GroupType groupType = groupTypeService.Get( e.RowKeyId );
 
                 if ( groupType != null )
                 {
@@ -132,13 +132,23 @@ namespace RockWeb.Blocks.Crm
             GroupTypeService groupTypeService = new GroupTypeService();
             SortProperty sortProperty = gGroupType.SortProperty;
 
+            var qry = groupTypeService.Queryable().Select( a =>
+                new
+                {
+                    a.Id,
+                    a.Name,
+                    a.Description,
+                    GroupsCount = a.Groups.Count(),
+                    a.IsSystem
+                } );
+
             if ( sortProperty != null )
             {
-                gGroupType.DataSource = groupTypeService.Queryable().Sort( sortProperty ).ToList();
+                gGroupType.DataSource = qry.Sort( sortProperty ).ToList();
             }
             else
             {
-                gGroupType.DataSource = groupTypeService.Queryable().OrderBy( p => p.Name ).ToList();
+                gGroupType.DataSource = qry.OrderBy( p => p.Name ).ToList();
             }
 
             gGroupType.DataBind();

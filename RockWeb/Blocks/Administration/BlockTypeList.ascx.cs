@@ -141,10 +141,9 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewRowEventArgs" /> instance containing the event data.</param>
         protected void gBlockTypes_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
         {
-            BlockType blockType = e.Row.DataItem as Rock.Model.BlockType;
-            if ( blockType != null )
+            if ( e.Row.DataItem != null )
             {
-                string blockPath = Request.MapPath( blockType.Path );
+                string blockPath = Request.MapPath( e.Row.DataItem.GetPropertyValue( "Path" ) as string );
                 if ( !System.IO.File.Exists( blockPath ) )
                 {
                     e.Row.Cells[4].Text = "<span class='label label-important'>Missing</span>";
@@ -188,13 +187,39 @@ namespace RockWeb.Blocks.Administration
                 blockTypes = blockTypes.Where( b => b.Path.Contains( tbPathFilter.Text.Trim() ) );
             }
 
+            var selectQry = blockTypes.Select( a =>
+                new
+                {
+                    a.Id,
+                    a.Name,
+                    a.Description,
+                    a.Path,
+                    BlocksCount = a.Blocks.Count(),
+                    a.IsSystem
+                } );
+
             if ( sortProperty != null )
             {
-                gBlockTypes.DataSource = blockTypes.Sort( sortProperty ).ToList();
+                if ( sortProperty.Property == "Status" )
+                {
+                    // special case:  See if the file exists and sort by that
+                    if ( sortProperty.Direction == System.Web.UI.WebControls.SortDirection.Ascending )
+                    {
+                        gBlockTypes.DataSource = selectQry.ToList().OrderBy( a => System.IO.File.Exists( Request.MapPath( a.Path ) ) ).ToList();
+                    }
+                    else
+                    {
+                        gBlockTypes.DataSource = selectQry.ToList().OrderBy( a => !System.IO.File.Exists( Request.MapPath( a.Path ) ) ).ToList();
+                    }
+                }
+                else
+                {
+                    gBlockTypes.DataSource = selectQry.Sort( sortProperty ).ToList();
+                }
             }
             else
             {
-                gBlockTypes.DataSource = blockTypes.OrderBy( b => b.Name ).ToList();
+                gBlockTypes.DataSource = selectQry.OrderBy( b => b.Name ).ToList();
             }
 
             gBlockTypes.DataBind();

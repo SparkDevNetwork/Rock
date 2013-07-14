@@ -93,13 +93,6 @@ namespace RockWeb.Blocks.Administration
                         }
                     }
 
-                    // Special handling is required when the entity is a block associated with a layout to set 
-                    // the site used by it's parent authority property
-                    if ( block.BlockLocation == Rock.Model.BlockLocation.Layout )
-                    {
-                        block.SiteCache = CurrentPage.Site;
-                    }
-
                     iSecured = block;
                 }
 

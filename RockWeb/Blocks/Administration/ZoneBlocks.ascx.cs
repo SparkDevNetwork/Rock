@@ -137,7 +137,7 @@ namespace RockWeb.Blocks.Administration
             Rock.Web.Cache.PageCache page = Rock.Web.Cache.PageCache.Read( pageId );
             string zoneName = this.PageParameter( "ZoneName" );
 
-            blockService.Reorder( blockService.GetByLayoutAndPageIdAndZone( page.Layout, null, zoneName ).ToList(), e.OldIndex, e.NewIndex, CurrentPersonId );
+            blockService.Reorder( blockService.GetByLayoutAndZone( page.SiteId.Value, page.Layout, zoneName ).ToList(), e.OldIndex, e.NewIndex, CurrentPersonId );
 
             BindGrids();
         }
@@ -206,7 +206,7 @@ namespace RockWeb.Blocks.Administration
             Rock.Web.Cache.PageCache page = Rock.Web.Cache.PageCache.Read( pageId );
             string zoneName = this.PageParameter( "ZoneName" );
 
-            blockService.Reorder( blockService.GetByLayoutAndPageIdAndZone( null, page.Id, zoneName ).ToList(), e.OldIndex, e.NewIndex, CurrentPersonId );
+            blockService.Reorder( blockService.GetByPageAndZone( page.Id, zoneName ).ToList(), e.OldIndex, e.NewIndex, CurrentPersonId );
 
             BindGrids();
         }
@@ -303,18 +303,20 @@ namespace RockWeb.Blocks.Administration
                 BlockLocation location = hfBlockLocation.Value.ConvertToEnum<BlockLocation>();
                 if ( location == BlockLocation.Layout )
                 {
+                    block.SiteId = page.SiteId;
                     block.Layout = page.Layout;
                     block.PageId = null;
                 }
                 else
                 {
+                    block.SiteId = null;
                     block.Layout = null;
                     block.PageId = page.Id;
                 }
 
                 block.Zone = zoneName;
 
-                Rock.Model.Block lastBlock = blockService.GetByLayoutAndPageIdAndZone( null, page.Id, zoneName ).OrderByDescending( b => b.Order ).FirstOrDefault();
+                Rock.Model.Block lastBlock = blockService.GetByPageAndZone( page.Id, zoneName ).OrderByDescending( b => b.Order ).FirstOrDefault();
 
                 if ( lastBlock != null )
                 {
@@ -377,7 +379,7 @@ namespace RockWeb.Blocks.Administration
             Rock.Web.Cache.PageCache page = Rock.Web.Cache.PageCache.Read( pageId );
             string zoneName = this.PageParameter( "ZoneName" );
 
-            gLayoutBlocks.DataSource = blockService.GetByLayoutAndPageIdAndZone( page.Layout, null, zoneName ).ToList();
+            gLayoutBlocks.DataSource = blockService.GetByLayoutAndZone( page.SiteId.Value, page.Layout, zoneName ).ToList();
             gLayoutBlocks.DataBind();
         }
 
@@ -391,7 +393,7 @@ namespace RockWeb.Blocks.Administration
             Rock.Web.Cache.PageCache page = Rock.Web.Cache.PageCache.Read( pageId );
             string zoneName = this.PageParameter( "ZoneName" );
 
-            gPageBlocks.DataSource = blockService.GetByLayoutAndPageIdAndZone( null, page.Id, zoneName ).ToList();
+            gPageBlocks.DataSource = blockService.GetByPageAndZone( page.Id, zoneName ).ToList();
             gPageBlocks.DataBind();
         }
 
