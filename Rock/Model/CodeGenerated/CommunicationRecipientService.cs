@@ -33,7 +33,16 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="CommunicationRecipientService"/> class
         /// </summary>
+        /// <param name="repository">The repository.</param>
         public CommunicationRecipientService(IRepository<CommunicationRecipient> repository) : base(repository)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CommunicationRecipientService"/> class
+        /// </summary>
+        /// <param name="context">The context.</param>
+        public CommunicationRecipientService(RockContext context) : base(context)
         {
         }
 

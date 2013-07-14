@@ -565,11 +565,11 @@ namespace Rock.Migrations
                 INSERT INTO [Block] (
                     [IsSystem],[PageId],[Layout],[BlockTypeId],[Zone],
                     [Order],[Name],[OutputCacheDuration],
-                    [Guid])
+                    [Guid],[SiteId])
                 VALUES(
                     {1},@PageId,{2},@BlockTypeId,'{3}',
                     {4},'{5}',{6},
-                    '{7}')
+                    '{7}',{8})
                 SET @BlockId = SCOPE_IDENTITY()
 ",
                     blockTypeGuid,
@@ -579,7 +579,8 @@ namespace Rock.Migrations
                     block.Order,
                     block.Name,
                     block.OutputCacheDuration,
-                    block.Guid );
+                    block.Guid,
+                    block.SiteId == null ? "NULL" : block.SiteId.ToString());
 
             // If adding a layout block, give edit/configuration authorization to admin role
             if ( string.IsNullOrWhiteSpace( pageGuid ) )
