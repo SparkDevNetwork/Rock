@@ -18,7 +18,7 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            AddColumn("dbo.GroupMember", "GroupMemberStatus", c => c.Int(nullable: false, defaultValue: 1));
+            AddColumn( "dbo.GroupMember", "GroupMemberStatus", c => c.Int( nullable: false, defaultValue: 1 ) );
         }
         
         /// <summary>

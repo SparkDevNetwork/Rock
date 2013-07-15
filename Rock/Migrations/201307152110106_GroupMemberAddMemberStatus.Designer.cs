@@ -11,7 +11,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201307011423319_GroupMemberAddMemberStatus"; }
+            get { return "201307152110106_GroupMemberAddMemberStatus"; }
         }
         
         string IMigrationMetadata.Source
