@@ -24,6 +24,8 @@ namespace RockWeb.Blocks.Crm
     {
         #region Control Methods
 
+        private GroupRole _groupRole = null;
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -31,6 +33,26 @@ namespace RockWeb.Blocks.Crm
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            string roleIdParam = PageParameter( "groupRoleId" );
+            if ( !string.IsNullOrWhiteSpace( roleIdParam ) )
+            {
+                int roleId = int.MinValue;
+                if (int.TryParse(roleIdParam, out roleId) && !roleId.Equals(0))
+                {
+                    _groupRole = new GroupRoleService().Get( roleId );
+                }
+                else
+                {
+                    _groupRole = new GroupRole { Id = 0 };
+                }
+
+                _groupRole.LoadAttributes();
+
+                phAttributes.Controls.Clear();
+                Rock.Attribute.Helper.AddEditControls( _groupRole, phAttributes, !Page.IsPostBack );
+            }
+
         }
 
         /// <summary>
@@ -43,10 +65,10 @@ namespace RockWeb.Blocks.Crm
 
             if ( !Page.IsPostBack )
             {
-                string itemId = PageParameter( "groupRoleId" );
-                if ( !string.IsNullOrWhiteSpace( itemId ) )
+                if ( _groupRole != null )
                 {
-                    ShowDetail( "groupRoleId", int.Parse( itemId ) );
+                    pnlDetails.Visible = true;
+                    ShowDetail( _groupRole );
                 }
                 else
                 {
@@ -88,11 +110,24 @@ namespace RockWeb.Blocks.Crm
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 groupRole = new GroupRoleService().Get( itemKeyValue );
-                lActionTitle.Text = ActionTitle.Edit( GroupRole.FriendlyTypeName );
             }
             else
             {
                 groupRole = new GroupRole { Id = 0 };
+            }
+
+            ShowDetail( groupRole );
+
+        }
+
+        public void ShowDetail(GroupRole groupRole)
+        {
+            if ( groupRole.Id > 0 )
+            {
+                lActionTitle.Text = ActionTitle.Edit( GroupRole.FriendlyTypeName );
+            }
+            else
+            {
                 lActionTitle.Text = ActionTitle.Add( GroupRole.FriendlyTypeName );
             }
 
@@ -174,6 +209,8 @@ namespace RockWeb.Blocks.Crm
                 groupRole = groupRoleService.Get( groupRoleId );
             }
 
+            groupRole.LoadAttributes();
+
             groupRole.Name = tbName.Text;
             groupRole.Description = tbDescription.Text;
             groupRole.GroupTypeId = int.Parse( ddlGroupType.SelectedValue );
@@ -216,6 +253,8 @@ namespace RockWeb.Blocks.Crm
             RockTransactionScope.WrapTransaction( () =>
             {
                 groupRoleService.Save( groupRole, CurrentPersonId );
+                Rock.Attribute.Helper.GetEditValues( phAttributes, groupRole );
+                Rock.Attribute.Helper.SaveAttributeValues( groupRole, CurrentPersonId );
             } );
 
             NavigateToParentPage();
