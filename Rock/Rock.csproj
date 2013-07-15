@@ -155,7 +155,7 @@
     <Compile Include="Attribute\CustomDropdownListFieldAttribute.cs" />
     <Compile Include="Attribute\DefinedValueFieldAttribute.cs" />
     <Compile Include="Attribute\CampusesFieldAttribute.cs" />
-    <Compile Include="Attribute\EntityTypeAttribute.cs" />
+    <Compile Include="Attribute\EntityTypeFieldAttribute.cs" />
     <Compile Include="Attribute\DetailPageAttribute.cs" />
     <Compile Include="Attribute\FieldAttribute.cs" />
     <Compile Include="Attribute\GroupFieldAttribute.cs" />

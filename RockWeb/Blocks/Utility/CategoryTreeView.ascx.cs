@@ -19,7 +19,7 @@ namespace RockWeb.Blocks.Utility
     /// 
     /// </summary>
     [DetailPage]
-    [EntityType("Entity Type", "Display categories associated with this type of entity")]
+    [EntityTypeField("Entity Type", "Display categories associated with this type of entity")]
     [TextField("Entity Type Qualifier Property", "", false)]
     [TextField("Entity type Qualifier Value", "", false)]
     [TextField( "Page Parameter Key", "The page parameter to look for" )]
