@@ -135,5 +135,93 @@ namespace Rock.Model
                 Select( m => m.Person.FirstName ).
                 ToList();
         }
+
+        /// <summary>
+        /// Gets the inverse relationship.
+        /// </summary>
+        /// <param name="groupMember">The group member.</param>
+        /// <returns>GroupMember.</returns>
+        public GroupMember GetInverseRelationship( GroupMember groupMember, bool createGroup, int? personId )
+        {
+            var groupRole = groupMember.GroupRole;
+            if ( groupRole == null )
+            {
+                groupRole = Queryable()
+                    .Where( m => m.Id == groupMember.Id )
+                    .Select( m => m.GroupRole )
+                    .FirstOrDefault();
+            }
+
+            if ( groupRole != null )
+            {
+                if ( groupRole.Attributes == null )
+                {
+                    groupRole.LoadAttributes();
+                }
+
+                if ( groupRole.Attributes.ContainsKey( "InverseRelationship" ) )
+                {
+                    Guid ownerRoleGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER );
+
+                    int? ownerPersonId = Queryable()
+                        .Where( m =>
+                            m.GroupId == groupMember.GroupId &&
+                            m.GroupRole.Guid.Equals( ownerRoleGuid ) )
+                        .Select( m => m.PersonId )
+                        .FirstOrDefault();
+
+                    if ( ownerPersonId.HasValue )
+                    {
+                        // Find related person's group
+                        var inverseGroup = Queryable()
+                            .Where( m =>
+                                m.PersonId == groupMember.PersonId &&
+                                m.Group.GroupTypeId == groupRole.GroupTypeId &&
+                                m.GroupRole.Guid.Equals( ownerRoleGuid ) )
+                            .Select( m => m.Group )
+                            .FirstOrDefault();
+
+                        if ( inverseGroup == null && createGroup )
+                        {
+                            inverseGroup = new Group();
+                            inverseGroup.Name = groupRole.GroupType.Name;
+                            inverseGroup.GroupTypeId = groupRole.GroupTypeId.Value;
+                        }
+
+                        if ( inverseGroup != null )
+                        {
+                            Guid inverseRoleGuid = Guid.Empty;
+                            if ( Guid.TryParse( groupRole.GetAttributeValue( "InverseRelationship" ), out inverseRoleGuid ) )
+                            {
+                                var inverseGroupMember = Queryable()
+                                    .Where( m =>
+                                        m.PersonId == ownerPersonId &&
+                                        m.GroupId == inverseGroup.Id &&
+                                        m.GroupRole.Guid.Equals( inverseRoleGuid ) )
+                                    .FirstOrDefault();
+
+                                if ( inverseGroupMember == null )
+                                {
+                                    var inverseRole = new GroupRoleService().Get( inverseRoleGuid );
+                                    if ( inverseRole != null )
+                                    {
+                                        inverseGroupMember = new GroupMember();
+                                        inverseGroupMember.PersonId = ownerPersonId.Value;
+                                        inverseGroupMember.Group = inverseGroup;
+                                        inverseGroupMember.GroupRoleId = inverseRole.Id;
+                                        Add( inverseGroupMember, personId );
+                                    }
+                                }
+
+                                return inverseGroupMember;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
     }
 }
