@@ -34,17 +34,22 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            int id = int.MinValue;
-            if ( int.TryParse( value, out id ) )
+            var names = new List<string>();
+            foreach ( string guidValue in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
             {
-                var definedValue = Rock.Web.Cache.DefinedValueCache.Read( id );
-                if ( definedValue != null )
+                Guid guid = Guid.Empty;
+                if ( Guid.TryParse( guidValue, out guid ) )
                 {
-                    return definedValue.Name;
+                    var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
+                    if ( definedValue != null )
+                    {
+                        names.Add( definedValue.Name );
+                    }
                 }
             }
 
-            return string.Empty;
+            return names.AsDelimited( ", " );
+
         }
 
         /// <summary>
@@ -184,23 +189,40 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string GetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
+            var ids = new List<string>();
+
             if ( control != null && control is ListControl )
             {
                 if ( control is Rock.Web.UI.Controls.LabeledDropDownList )
                 {
-                    return ( (ListControl)control ).SelectedValue;
+                    ids.Add( ( (ListControl)control ).SelectedValue );
                 }
                 else if ( control is Rock.Web.UI.Controls.LabeledCheckBoxList )
                 {
                     var cblControl = control as Rock.Web.UI.Controls.LabeledCheckBoxList;
 
-                    IEnumerable<string> allChecked = cblControl.Items.Cast<ListItem>()
+                    ids.AddRange( cblControl.Items.Cast<ListItem>()
                         .Where( i => i.Selected )
-                        .Select( i => i.Value );
-                    return string.Join( ",", allChecked );
+                        .Select( i => i.Value ) );
                 }
             }
-            return null;
+
+            var guids = new List<string>();
+
+            foreach ( string id in ids )
+            {
+                int definedValueId = int.MinValue;
+                if ( int.TryParse( id, out definedValueId ) )
+                {
+                    var definedValue = Rock.Web.Cache.DefinedValueCache.Read( definedValueId );
+                    if ( definedValue != null )
+                    {
+                        guids.Add( definedValue.Guid.ToString() );
+                    }
+                }
+            }
+
+            return guids.AsDelimited( "," );
         }
 
         /// <summary>
@@ -215,20 +237,24 @@ namespace Rock.Field.Types
             {
                 if ( control != null && control is ListControl )
                 {
-                    if ( control is DropDownList )
+                    var ids = new List<string>();
+                    foreach ( string guidValue in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                     {
-                        ( (ListControl)control ).SelectedValue = value;
-                    }
-                    else if ( control is CheckBoxList )
-                    {
-                        List<string> values = new List<string>();
-                        values.AddRange( value.Split( ',' ) );
-
-                        CheckBoxList cbl = (CheckBoxList)control;
-                        foreach ( ListItem li in cbl.Items )
+                        Guid guid = Guid.Empty;
+                        if ( Guid.TryParse( guidValue, out guid ) )
                         {
-                            li.Selected = values.Contains( li.Value );
+                            var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
+                            if ( definedValue != null )
+                            {
+                                ids.Add( definedValue.Id.ToString() );
+                            }
                         }
+                    }
+
+                    var listControl = control as ListControl;
+                    foreach ( ListItem li in listControl.Items )
+                    {
+                        li.Selected = ids.Contains( li.Value );
                     }
                 }
             }

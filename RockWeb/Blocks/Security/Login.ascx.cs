@@ -180,19 +180,35 @@ namespace RockWeb.Blocks.Security
             pnlMessage.Visible = true;
         }
 
+        /// <summary>
+        /// Logs in the user.
+        /// </summary>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="returnUrl">The return URL.</param>
+        /// <param name="rememberMe">if set to <c>true</c> [remember me].</param>
         private void LoginUser( string userName, string returnUrl, bool rememberMe )
         {
             Rock.Security.Authorization.SetAuthCookie( userName, rememberMe, false );
 
             if ( returnUrl != null )
             {
-                returnUrl = returnUrl.ToLower();
-
-                if ( returnUrl.Contains( "changepassword" ) ||
-                    returnUrl.Contains( "confirmaccount" ) ||
-                    returnUrl.Contains( "forgotusername" ) ||
-                    returnUrl.Contains( "newaccount" ) )
-                    returnUrl = FormsAuthentication.DefaultUrl;
+                // if the url looks like it contains an account related route, redirect to the DefaultUrl
+                string[] accountRoutes = new string[] 
+                {
+                    "changepassword",
+                    "confirmaccount",
+                    "forgotusername",
+                    "newaccount"
+                };
+                
+                foreach (var accountRoute in accountRoutes)
+                {
+                    if ( returnUrl.IndexOf( accountRoute, StringComparison.OrdinalIgnoreCase ) >= 0 )
+                    {
+                        returnUrl = FormsAuthentication.DefaultUrl;
+                        break;
+                    }
+                }
             }
 
             Response.Redirect( returnUrl ?? FormsAuthentication.DefaultUrl, false );

@@ -70,6 +70,15 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="Service{T}"/> class.
+        /// </summary>
+        /// <param name="dbContext">The db context.</param>
+        public Service( System.Data.Entity.DbContext dbContext )
+            : this( new EFRepository<T>( dbContext ) )
+        {
+        }
+
+        /// <summary>
         /// Gets an <see cref="IQueryable{T}"/> list of all models
         /// </summary>
         /// <returns></returns>
@@ -145,7 +154,7 @@ namespace Rock.Data
         /// <param name="whereExpression">The where expression.</param>
         /// <param name="sortProperty">The sort property.</param>
         /// <returns></returns>
-        public List<T> GetList( ParameterExpression parameterExpression, Expression whereExpression, Rock.Web.UI.Controls.SortProperty sortProperty)
+        public List<T> GetList( ParameterExpression parameterExpression, Expression whereExpression, Rock.Web.UI.Controls.SortProperty sortProperty )
         {
             return Get( parameterExpression, whereExpression, sortProperty ).ToList();
         }

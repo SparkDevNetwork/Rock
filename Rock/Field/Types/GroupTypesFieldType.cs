@@ -25,7 +25,7 @@ namespace Rock.Field.Types
             get
             {
                 GroupTypeService groupTypeService = new GroupTypeService();
-                return groupTypeService.Queryable().OrderBy( a => a.Name ).ToDictionary( k => k.Id.ToString(), v => v.Name );
+                return groupTypeService.Queryable().OrderBy( a => a.Name ).ToDictionary( k => k.Guid.ToString(), v => v.Name );
             }
         }
     }

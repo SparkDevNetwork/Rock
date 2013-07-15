@@ -21,6 +21,9 @@ namespace RockWeb.Blocks.Core
 {
     [ContextAware]
     [TextField( "Note Type", "The note type name associated with the context entity to use (If it doesn't exist it will be created).", false, "Notes" )]
+    [BooleanField( "Show Alert Checkbox", "", true)]
+    [BooleanField( "Show Private Checkbox", "", true )]
+    [BooleanField( "Show Security Button", "", true )]
     public partial class Notes : RockBlock
     {
         private IEntity contextEntity = null;
@@ -35,6 +38,10 @@ namespace RockWeb.Blocks.Core
             base.OnInit( e );
             btnAddNote.Click += btnAddNote_Click;
             rptNotes.ItemDataBound += rptNotes_ItemDataBound;
+
+            cbAlert.Visible = GetAttributeValue( "ShowAlertCheckbox" ).AsBoolean();
+            cbPrivate.Visible = GetAttributeValue( "ShowPrivateCheckbox" ).AsBoolean();
+            btnSecurity.Visible = GetAttributeValue( "ShowSecurityButton" ).AsBoolean();
         }
 
         /// <summary>
@@ -305,6 +312,5 @@ namespace RockWeb.Blocks.Core
             }
             return "icon-comment";
         }
-
     }
 }
