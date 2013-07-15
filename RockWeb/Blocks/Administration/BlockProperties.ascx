@@ -11,6 +11,7 @@
         <fieldset>
             <legend>Settings</legend>
             <Rock:DataTextBox ID="tbBlockName" runat="server" SourceTypeName="Rock.Model.Block, Rock" PropertyName="Name" Required="true" />
+            <Rock:LabeledText ID="tbBlockType" runat="server" LabelText="Block Type"/>
             <Rock:DataTextBox ID="tbCacheDuration" runat="server" SourceTypeName="Rock.Model.Block, Rock" PropertyName="OutputCacheDuration" LabelText="Cache Duration" />
         </fieldset>
 
