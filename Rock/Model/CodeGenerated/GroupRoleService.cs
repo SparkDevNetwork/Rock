@@ -33,7 +33,16 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupRoleService"/> class
         /// </summary>
+        /// <param name="repository">The repository.</param>
         public GroupRoleService(IRepository<GroupRole> repository) : base(repository)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupRoleService"/> class
+        /// </summary>
+        /// <param name="context">The context.</param>
+        public GroupRoleService(RockContext context) : base(context)
         {
         }
 

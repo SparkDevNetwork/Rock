@@ -33,7 +33,16 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="LocationService"/> class
         /// </summary>
+        /// <param name="repository">The repository.</param>
         public LocationService(IRepository<Location> repository) : base(repository)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LocationService"/> class
+        /// </summary>
+        /// <param name="context">The context.</param>
+        public LocationService(RockContext context) : base(context)
         {
         }
 
