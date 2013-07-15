@@ -357,13 +357,13 @@
     <Compile Include="Migrations\201307112143164_LayoutBlocksSiteSpecific.Designer.cs">
       <DependentUpon>201307112143164_LayoutBlocksSiteSpecific.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201307071303205_AttendedCheckin.cs" />
-    <Compile Include="Migrations\201307071303205_AttendedCheckin.Designer.cs">
-      <DependentUpon>201307071303205_AttendedCheckin.cs</DependentUpon>
+    <Compile Include="Migrations\201307151503205_AttendedCheckin.cs" />
+    <Compile Include="Migrations\201307151503205_AttendedCheckin.Designer.cs">
+      <DependentUpon>201307151503205_AttendedCheckin.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201307081959246_AddAttendedCheckInSite.cs" />
-    <Compile Include="Migrations\201307081959246_AddAttendedCheckInSite.Designer.cs">
-      <DependentUpon>201307081959246_AddAttendedCheckInSite.cs</DependentUpon>
+    <Compile Include="Migrations\201307151959246_AddAttendedCheckInSite.cs" />
+    <Compile Include="Migrations\201307151959246_AddAttendedCheckInSite.Designer.cs">
+      <DependentUpon>201307151959246_AddAttendedCheckInSite.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
@@ -1945,11 +1945,11 @@
     <EmbeddedResource Include="Migrations\201307112143164_LayoutBlocksSiteSpecific.resx">
       <DependentUpon>201307112143164_LayoutBlocksSiteSpecific.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201307071303205_AttendedCheckin.resx">
-      <DependentUpon>201307071303205_AttendedCheckin.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201307151503205_AttendedCheckin.resx">
+      <DependentUpon>201307151503205_AttendedCheckin.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201307081959246_AddAttendedCheckInSite.resx">
-      <DependentUpon>201307081959246_AddAttendedCheckInSite.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201307151959246_AddAttendedCheckInSite.resx">
+      <DependentUpon>201307151959246_AddAttendedCheckInSite.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
