@@ -32,6 +32,13 @@ namespace Rock.BinaryFile
         /// <param name="personId"></param>
         public abstract void RemoveFile( Model.BinaryFile file, int? personId );
 
+        /// <summary>
+        /// Gets the URL.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="height">The height.</param>
+        /// <param name="width">The width.</param>
+        /// <returns></returns>
         public abstract string GetUrl( Model.BinaryFile file, int? height = null, int? width = null );
 
         /// <summary>
