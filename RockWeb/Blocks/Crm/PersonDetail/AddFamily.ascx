@@ -1,7 +1,8 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="AddFamily.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.AddFamily" %>
 
-<asp:UpdatePanel ID="upEditPerson" runat="server">
+<asp:UpdatePanel ID="upAddFamily" runat="server">
     <ContentTemplate>
+
 
         <asp:ValidationSummary ID="valSummaryTop" runat="server"  
             HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />

@@ -419,7 +419,27 @@ namespace Rock.Web.UI
                     if ( user == null )
                     {
                         Page.Trace.Warn( "Redirecting to login page" );
-                        FormsAuthentication.RedirectToLoginPage();
+                        if (!string.IsNullOrWhiteSpace(CurrentPage.Site.LoginPageReference))
+                        {
+                            // if the QueryString already has a returnUrl, use that, otherwise redirect to RawUrl
+                            string returnUrl = Request.QueryString["returnUrl"] ?? Server.UrlEncode(Request.RawUrl);
+                            
+                            string loginPageRequestPath = ResolveUrl( CurrentPage.Site.LoginPageReference );
+
+                            if ( loginPageRequestPath.Equals( Request.Path ) )
+                            {
+                                // The LoginPage security isn't set to Allow All, so throw exception to prevent recursive loop
+                                throw new Exception( string.Format("Page security for Site.LoginPageReference {0} is invalid", CurrentPage.Site.LoginPageReference));
+                            }
+                            else
+                            {
+                                Response.Redirect( loginPageRequestPath + "?returnurl=" + returnUrl );
+                            }
+                        }
+                        else
+                        {
+                            FormsAuthentication.RedirectToLoginPage();
+                        }
                     }
                 }
                 else
@@ -473,12 +493,13 @@ namespace Rock.Web.UI
                     Page.Trace.Warn( "Creating JS objects" );
                     string script = string.Format( @"
     var rock = {{ 
-        pageId:{0}, 
-        layout:'{1}',
-        baseUrl:'{2}' 
+        siteId:{0},
+        pageId:{1}, 
+        layout:'{2}',
+        baseUrl:'{3}' 
     }};
 ",
-                        CurrentPage.Id, CurrentPage.Layout, AppPath );
+                        CurrentPage.SiteId.Value, CurrentPage.Id, CurrentPage.Layout, AppPath );
                     this.Page.ClientScript.RegisterStartupScript( this.GetType(), "rock-js-object", script, true );
 
                     // Add config elements

@@ -44,7 +44,14 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? PageId { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the site id.
+        /// </summary>
+        /// <value>The site id.</value>
+        [DataMember]
+        public int? SiteId { get; set; }
+
         /// <summary>
         /// Gets or sets the Layout.
         /// </summary>
@@ -130,15 +137,11 @@ namespace Rock.Model
         public virtual Page Page { get; set; }
 
         /// <summary>
-        /// Gets or sets the site cache.  This is only used by security to determine the parent authority
-        /// when the block is associated with a layout instead of a particular page.  The UI will set 
-        /// this property before calling the security dialog
+        /// Gets or sets the site.
         /// </summary>
-        /// <value>
-        /// The site cache.
-        /// </value>
-        [NotMapped]
-        public virtual Rock.Web.Cache.SiteCache SiteCache { get; set; }
+        /// <value>The site.</value>
+        [DataMember]
+        public virtual Site Site { get; set; }
 
         /// <summary>
         /// Gets the block location.
@@ -167,7 +170,7 @@ namespace Rock.Model
                 }
                 else
                 {
-                    return this.SiteCache;
+                    return this.Site;
                 }
             }
         }
@@ -205,6 +208,7 @@ namespace Rock.Model
         {
             this.HasRequired( p => p.BlockType ).WithMany( p => p.Blocks ).HasForeignKey( p => p.BlockTypeId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.Page ).WithMany( p => p.Blocks ).HasForeignKey( p => p.PageId ).WillCascadeOnDelete( true );
+            this.HasOptional( p => p.Site ).WithMany( ).HasForeignKey( p => p.SiteId ).WillCascadeOnDelete( true );
         }
     }
 

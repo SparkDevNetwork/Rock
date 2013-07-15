@@ -292,7 +292,7 @@ namespace RockWeb.Blocks.Finance
 
             if ( person == null )
             {
-                var definedValue = new DefinedValueService().Get( new Guid( GetAttributeValue( "DefaultPersonStatus" ) ) );
+                var definedValue = DefinedValueCache.Read( new Guid( GetAttributeValue( "DefaultPersonStatus" ) ) );
                 person = new Person
                 {
                     GivenName = tbFirstName.Text,

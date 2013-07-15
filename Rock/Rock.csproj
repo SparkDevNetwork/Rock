@@ -140,6 +140,7 @@
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
+    <Compile Include="Attribute\GroupRoleFieldAttribute.cs" />
     <Compile Include="Attribute\MemoFieldAttribute.cs" />
     <Compile Include="Attribute\DecimalFieldAttribute.cs" />
     <Compile Include="Attribute\DateFieldAttribute.cs" />
@@ -165,6 +166,7 @@
     <Compile Include="Field\Types\ComponentsFieldType.cs" />
     <Compile Include="Field\Types\CategoryFieldType.cs" />
     <Compile Include="Field\Types\CategoriesFieldType.cs" />
+    <Compile Include="Field\Types\GroupRoleFieldType.cs" />
     <Compile Include="Migrations\201305032320163_Communications.cs" />
     <Compile Include="Migrations\201305032320163_Communications.Designer.cs">
       <DependentUpon>201305032320163_Communications.cs</DependentUpon>
@@ -296,6 +298,64 @@
     <Compile Include="Migrations\201306282038440_GoogleAPIKeyGlobalAttribute.cs" />
     <Compile Include="Migrations\201306282038440_GoogleAPIKeyGlobalAttribute.Designer.cs">
       <DependentUpon>201306282038440_GoogleAPIKeyGlobalAttribute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201306282349062_NewFamilyPage.cs" />
+    <Compile Include="Migrations\201306282349062_NewFamilyPage.Designer.cs">
+      <DependentUpon>201306282349062_NewFamilyPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307022331042_GroupTypesAttributeAsGuids.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Migrations\201307022331042_GroupTypesAttributeAsGuids.Designer.cs">
+      <DependentUpon>201307022331042_GroupTypesAttributeAsGuids.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307031943568_UpdatePhoneLocationTypes.cs" />
+    <Compile Include="Migrations\201307031943568_UpdatePhoneLocationTypes.Designer.cs">
+      <DependentUpon>201307031943568_UpdatePhoneLocationTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307032041530_CleanUpFieldTypes01.cs" />
+    <Compile Include="Migrations\201307032041530_CleanUpFieldTypes01.Designer.cs">
+      <DependentUpon>201307032041530_CleanUpFieldTypes01.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307052157088_NoteBlockShowOptionsAttributes.cs" />
+    <Compile Include="Migrations\201307052157088_NoteBlockShowOptionsAttributes.Designer.cs">
+      <DependentUpon>201307052157088_NoteBlockShowOptionsAttributes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307052225548_ChangeSubPageNavPath.cs" />
+    <Compile Include="Migrations\201307052225548_ChangeSubPageNavPath.Designer.cs">
+      <DependentUpon>201307052225548_ChangeSubPageNavPath.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307052339047_PageXsltIncludeQueryStringBlockAttribute.cs" />
+    <Compile Include="Migrations\201307052339047_PageXsltIncludeQueryStringBlockAttribute.Designer.cs">
+      <DependentUpon>201307052339047_PageXsltIncludeQueryStringBlockAttribute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307081815266_GroupMemberDetailBreadCrumb.cs" />
+    <Compile Include="Migrations\201307081815266_GroupMemberDetailBreadCrumb.Designer.cs">
+      <DependentUpon>201307081815266_GroupMemberDetailBreadCrumb.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307092306332_MarketingCampaignXsltAttribs.cs" />
+    <Compile Include="Migrations\201307092306332_MarketingCampaignXsltAttribs.Designer.cs">
+      <DependentUpon>201307092306332_MarketingCampaignXsltAttribs.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307092345097_CleanUpExtraNotesBlockTypes.cs" />
+    <Compile Include="Migrations\201307092345097_CleanUpExtraNotesBlockTypes.Designer.cs">
+      <DependentUpon>201307092345097_CleanUpExtraNotesBlockTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307101515281_FinancialAccountPage.cs" />
+    <Compile Include="Migrations\201307101515281_FinancialAccountPage.Designer.cs">
+      <DependentUpon>201307101515281_FinancialAccountPage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307111546017_SiteReferenceFields260.cs" />
+    <Compile Include="Migrations\201307111546017_SiteReferenceFields260.Designer.cs">
+      <DependentUpon>201307111546017_SiteReferenceFields260.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307111959002_EditFamily.cs" />
+    <Compile Include="Migrations\201307111959002_EditFamily.Designer.cs">
+      <DependentUpon>201307111959002_EditFamily.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307112143164_LayoutBlocksSiteSpecific.cs" />
+    <Compile Include="Migrations\201307112143164_LayoutBlocksSiteSpecific.Designer.cs">
+      <DependentUpon>201307112143164_LayoutBlocksSiteSpecific.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
@@ -907,6 +967,8 @@
     <Compile Include="Web\UI\Controls\Communication\Sms.cs" />
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
+    <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
+    <Compile Include="Web\UI\Controls\Grid\ColorField.cs" />
     <Compile Include="Web\UI\Controls\IRequiredControl.cs" />
     <Compile Include="Web\UI\Controls\LabeledBulletedList.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\Attributes.cs" />
@@ -919,6 +981,8 @@
     <Compile Include="Web\UI\Controls\PersonProfile\BadgeList.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ComponentsPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\PersonPicker2.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\GroupRolePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GeoPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MonthDayPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MonthYearPicker.cs" />
@@ -1827,6 +1891,48 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201306282038440_GoogleAPIKeyGlobalAttribute.resx">
       <DependentUpon>201306282038440_GoogleAPIKeyGlobalAttribute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201306282349062_NewFamilyPage.resx">
+      <DependentUpon>201306282349062_NewFamilyPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307022331042_GroupTypesAttributeAsGuids.resx">
+      <DependentUpon>201307022331042_GroupTypesAttributeAsGuids.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307031943568_UpdatePhoneLocationTypes.resx">
+      <DependentUpon>201307031943568_UpdatePhoneLocationTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307032041530_CleanUpFieldTypes01.resx">
+      <DependentUpon>201307032041530_CleanUpFieldTypes01.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307052157088_NoteBlockShowOptionsAttributes.resx">
+      <DependentUpon>201307052157088_NoteBlockShowOptionsAttributes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307052225548_ChangeSubPageNavPath.resx">
+      <DependentUpon>201307052225548_ChangeSubPageNavPath.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307052339047_PageXsltIncludeQueryStringBlockAttribute.resx">
+      <DependentUpon>201307052339047_PageXsltIncludeQueryStringBlockAttribute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307081815266_GroupMemberDetailBreadCrumb.resx">
+      <DependentUpon>201307081815266_GroupMemberDetailBreadCrumb.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307092306332_MarketingCampaignXsltAttribs.resx">
+      <DependentUpon>201307092306332_MarketingCampaignXsltAttribs.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307092345097_CleanUpExtraNotesBlockTypes.resx">
+      <DependentUpon>201307092345097_CleanUpExtraNotesBlockTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307101515281_FinancialAccountPage.resx">
+      <DependentUpon>201307101515281_FinancialAccountPage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307111546017_SiteReferenceFields260.resx">
+      <DependentUpon>201307111546017_SiteReferenceFields260.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307111959002_EditFamily.resx">
+      <DependentUpon>201307111959002_EditFamily.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307112143164_LayoutBlocksSiteSpecific.resx">
+      <DependentUpon>201307112143164_LayoutBlocksSiteSpecific.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

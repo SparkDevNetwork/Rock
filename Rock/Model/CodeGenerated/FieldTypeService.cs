@@ -33,7 +33,16 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="FieldTypeService"/> class
         /// </summary>
+        /// <param name="repository">The repository.</param>
         public FieldTypeService(IRepository<FieldType> repository) : base(repository)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FieldTypeService"/> class
+        /// </summary>
+        /// <param name="context">The context.</param>
+        public FieldTypeService(RockContext context) : base(context)
         {
         }
 

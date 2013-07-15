@@ -84,9 +84,9 @@ namespace RockWeb.Blocks.Finance
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
+        protected override void OnLoad( EventArgs e )
         {
-            base.OnInit( e );
+            base.OnLoad( e );
 
             if ( !IsPostBack )
             {
@@ -170,12 +170,14 @@ namespace RockWeb.Blocks.Finance
                 var defaultState = GetAttributeValue( "DefaultState" );
                 if ( !string.IsNullOrWhiteSpace( defaultState ) )
                 {
-                    int stateId = Convert.ToInt32( defaultState);
-                    if ( stateId > 0 ) 
+                    Guid stateGuid = Guid.Empty;
+                    if (Guid.TryParse(defaultState, out stateGuid))
                     {
-                        var definedValueState = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ) )
-                            .DefinedValues.Where( dv => dv.Id == stateId ).FirstOrDefault();
-                        ddlState.SelectedValue = definedValueState.Name;                        
+                        var definedValueState = DefinedValueCache.Read( stateGuid );
+                        if ( definedValueState != null )
+                        {
+                            ddlState.SelectedValue = definedValueState.Name;
+                        }
                     }
                 }
 
@@ -335,16 +337,10 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnNext_Click( object sender, EventArgs e )
         {
-            if ( !Page.IsValid )
-            {
-                return;
-            }
-
-            SaveAmounts();
+            Person person = FindPerson();
+            SaveAmounts();            
 
             var amountList = (Dictionary<FinancialAccount, Decimal>)Session["CachedAmounts"];
-            Person person = FindPerson();        
-
             var configValues = new Dictionary<string,object>();            
             Rock.Web.Cache.GlobalAttributesCache.Read().AttributeValues
                 .Where( v => 
@@ -424,32 +420,22 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnGive_Click( object sender, EventArgs e )
         {
-            var amountList = (Dictionary<FinancialAccount, Decimal>)Session["CachedAmounts"];
-            var profileId = (int)Session["CachedProfileId"];
-            Location giftLocation = new Location();
             Person person = FindPerson();
-
-            var configValues = (Dictionary<string, object>)Session["CachedMergeFields"];
-            configValues.Add( "Date", DateTimeOffset.Now.ToString( "MM/dd/yyyy hh:mm tt" ) );
-            
-            var receiptTemplate = GetAttributeValue( "ReceiptMessage" );
-            lReceipt.Text = receiptTemplate.ResolveMergeFields( configValues );
-            var summaryTemplate = GetAttributeValue( "SummaryMessage" );
-            string summaryMessage = summaryTemplate.ResolveMergeFields( configValues );
 
             using ( new UnitOfWorkScope() )
             {
-                RockTransactionScope.WrapTransaction( () => 
+                RockTransactionScope.WrapTransaction( () =>
                 {
-                    var groupLocationService = new GroupLocationService();            
+                    var groupLocationService = new GroupLocationService();
                     var groupMemberService = new GroupMemberService();
+                    var phoneService = new PhoneNumberService();
                     var locationService = new LocationService();
-                    var groupService = new GroupService();                    
+                    var groupService = new GroupService();
                     GroupLocation groupLocation;
                     Location homeAddress;
                     Group familyGroup;
-                    
-                    var homeLocationType  = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_HOME);
+
+                    var homeLocationType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_HOME );
                     var addressList = locationService.Queryable().Where( l => l.Street1 == txtStreet.Text
                         && l.City == txtCity.Text && l.State == ddlState.SelectedValue && l.Zip == txtZip.Text
                         && l.LocationTypeValueId == homeLocationType.Id ).ToList();
@@ -457,25 +443,26 @@ namespace RockWeb.Blocks.Finance
                     if ( !addressList.Any() )
                     {
                         homeAddress = new Location();
-                        locationService.Add( homeAddress, person.Id);                        
+                        locationService.Add( homeAddress, person.Id );
                     }
-                    else 
+                    else
                     {
                         homeAddress = addressList.FirstOrDefault();
                     }
 
-                    homeAddress.Street1 = txtStreet.Text;
-                    homeAddress.City = txtCity.Text;
-                    homeAddress.State = ddlState.SelectedValue;
-                    homeAddress.Zip = txtZip.Text;
+                    homeAddress.Street1 = txtStreet.Text ?? homeAddress.Street1;
+                    homeAddress.City = txtCity.Text ?? homeAddress.City;
+                    homeAddress.State = ddlState.SelectedValue ?? homeAddress.State;
+                    homeAddress.Zip = txtZip.Text ?? homeAddress.Zip;
                     homeAddress.IsActive = true;
                     homeAddress.IsLocation = true;
                     homeAddress.Country = "US";
-                    locationService.Save( homeAddress, person.Id );                        
+                    homeAddress.LocationTypeValueId = homeLocationType.Id;
+                    locationService.Save( homeAddress, person.Id );
 
                     GroupType familyGroupType = new GroupTypeService().Get( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) );
                     var familyGroupList = groupMemberService.Queryable().Where( g => g.PersonId == person.Id
-                        && g.Group.GroupType.Guid == familyGroupType.Guid ).Select( g => g.Group ).ToList();                        
+                        && g.Group.GroupType.Guid == familyGroupType.Guid ).Select( g => g.Group ).ToList();
 
                     if ( !familyGroupList.Any() )
                     {
@@ -496,14 +483,14 @@ namespace RockWeb.Blocks.Finance
                         groupMemberService.Add( familyMember, person.Id );
                         groupMemberService.Save( familyMember, person.Id );
                     }
-                    else 
+                    else
                     {
-                        familyGroup = familyGroupList.FirstOrDefault();                        
+                        familyGroup = familyGroupList.FirstOrDefault();
                     }
-                        
+
                     var groupLocationList = groupLocationService.Queryable().Where( g => g.GroupLocationTypeValueId == familyGroupType.Id
                         && g.GroupId == familyGroup.Id ).ToList();
-                    
+
                     if ( !groupLocationList.Any() )
                     {
                         groupLocation = new GroupLocation();
@@ -515,15 +502,43 @@ namespace RockWeb.Blocks.Finance
                         groupLocationService.Add( groupLocation, person.Id );
                         groupLocationService.Save( groupLocation, person.Id );
                     }
-                    else 
+                    else
                     {
                         groupLocation = groupLocationList.FirstOrDefault();
                     }
 
                     groupLocation.LocationId = homeAddress.Id;
                     groupLocationService.Save( groupLocation, person.Id );
-                });
+
+                    var homePhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
+                    string phoneNumeric = txtPhone.Text.AsNumeric();
+                    if ( !phoneService.Queryable().Where( n => n.PersonId == person.Id
+                        && n.NumberTypeValueId == homePhoneType.Id && n.Number == phoneNumeric ).Any() )
+                    {
+                        var homePhone = new PhoneNumber();
+                        homePhone.Number = phoneNumeric;
+                        homePhone.PersonId = person.Id;
+                        homePhone.IsSystem = false;
+                        homePhone.IsMessagingEnabled = false;
+                        homePhone.IsUnlisted = false;
+                        homePhone.NumberTypeValueId = homePhoneType.Id;
+                        phoneService.Add( homePhone, person.Id );
+                        phoneService.Save( homePhone, person.Id );
+                    }
+                } );
             }
+
+            var amountList = (Dictionary<FinancialAccount, Decimal>)Session["CachedAmounts"];
+            var profileId = (int)Session["CachedProfileId"];
+            Location giftLocation = new Location();
+
+            var configValues = (Dictionary<string, object>)Session["CachedMergeFields"];
+            configValues.Add( "Date", DateTimeOffset.Now.ToString( "MM/dd/yyyy hh:mm tt" ) );
+            
+            var receiptTemplate = GetAttributeValue( "ReceiptMessage" );
+            lReceipt.Text = receiptTemplate.ResolveMergeFields( configValues );
+            var summaryTemplate = GetAttributeValue( "SummaryMessage" );
+            string summaryMessage = summaryTemplate.ResolveMergeFields( configValues );
 
             var creditProcessorId = GetAttributeValue( "CreditCardProvider" );
             var achProcessorId = GetAttributeValue( "Checking/ACHProvider" );
@@ -545,7 +560,7 @@ namespace RockWeb.Blocks.Finance
                 gateway = gatewayService.Queryable().FirstOrDefault();
             }
 
-            // test card through gateway 
+            // #TODO test card through gateway 
 
             if ( btnFrequency.SelectedIndex > -1 && btnFrequency.SelectedValueAsInt() != DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TYPE_ONE_TIME ).Id )
             {
@@ -633,7 +648,7 @@ namespace RockWeb.Blocks.Finance
                             tdService.Save( td, person.Id );
                         }
 
-                        // implement gateway charge()
+                        // #TODO implement gateway.charge()
 
                         transactionService.Save( transaction, person.Id );
                     } );
@@ -668,7 +683,7 @@ namespace RockWeb.Blocks.Finance
             }
 
             account.Name = accountNickname;
-            //////// TODO WITH GATEWAY CALL ////////
+            // #TODO WITH GATEWAY CALL
             account.TransactionCode = "Unknown";
             
             account.PersonId = person.Id;
@@ -895,14 +910,16 @@ namespace RockWeb.Blocks.Finance
         {
             var groupLocationService = new GroupLocationService();            
             var groupMemberService = new GroupMemberService();
+            var phoneNumberService = new PhoneNumberService();
             var person = FindPerson();
 
-            var personGroups = groupMemberService.Queryable().Where( gm => gm.PersonId == person.Id ).Select( gm => gm.GroupId ).ToList();
 
-            var homeTypeLocation = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_HOME );
+            var personGroups = groupMemberService.Queryable().Where( gm => gm.PersonId == person.Id ).Select( gm => gm.GroupId ).ToList();
+            var homePhoneType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME );
+            var homeLocationType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_HOME );
 
             Location personLocation = groupLocationService.Queryable().Where( g => personGroups.Contains( g.GroupId ) 
-                && g.GroupLocationTypeValueId == homeTypeLocation.Id)
+                && g.GroupLocationTypeValueId == homeLocationType.Id)
                 .Select( g => g.Location).FirstOrDefault();
 
             txtFirstName.Text = CurrentPerson.GivenName.ToString();
@@ -912,10 +929,17 @@ namespace RockWeb.Blocks.Finance
 
             if ( personLocation != null )
             {                
-                txtStreet.Text = personLocation.Street1.ToString();
-                txtCity.Text = personLocation.City.ToString();
-                ddlState.SelectedValue = personLocation.State.ToString();
-                txtZip.Text = personLocation.Zip.ToString();                
+                txtStreet.Text = personLocation.Street1.ToString() ?? string.Empty;
+                txtCity.Text = personLocation.City.ToString() ?? string.Empty;
+                ddlState.SelectedValue = personLocation.State.ToUpper() ?? string.Empty;
+                txtZip.Text = personLocation.Zip.ToString() ?? string.Empty;                
+            }
+
+            var homePhone = phoneNumberService.Queryable().Where( n => n.PersonId == person.Id
+                && n.NumberTypeValueId == homePhoneType.Id ).FirstOrDefault();            
+            if ( homePhone != null )
+            {
+                txtPhone.Text = homePhone.Number;
             }
         }
 
@@ -934,7 +958,7 @@ namespace RockWeb.Blocks.Finance
                 if ( accountsQueryable.Where( a => a.PaymentMethod == PaymentMethod.CreditCard ).Any() )
                 {
                     var savedCreditCard = accountsQueryable.Where( a => a.PaymentMethod == PaymentMethod.CreditCard )
-                        .ToDictionary( a => "Use " + a.Name + " ending in " + a.MaskedAccountNumber, a => a.Id );
+                        .ToDictionary( a => "Use " + a.Name + " ending in *************" + a.MaskedAccountNumber, a => a.Id );
                     savedCreditCard.Add( "Use a different card", 0 );
                     rblSavedCard.DataSource = savedCreditCard;
                     rblSavedCard.DataValueField = "Value";
@@ -942,13 +966,12 @@ namespace RockWeb.Blocks.Finance
                     rblSavedCard.DataBind();
                     divSavedCard.Visible = true;                 
                     divNewCard.Style["display"] = "none";
-                    pnlPaymentContent.Update();
                 }
 
                 if ( accountsQueryable.Where( a => a.PaymentMethod == PaymentMethod.ACH ).Any() )
                 {
                     var savedACH = accountsQueryable.Where( a => a.PaymentMethod == PaymentMethod.ACH )
-                        .ToDictionary( a => "Use " + a.Name + " ending in " + a.MaskedAccountNumber, a => a.Id );
+                        .ToDictionary( a => "Use " + a.Name + " account ending in *************" + a.MaskedAccountNumber, a => a.Id );
                     savedACH.Add( "Use a different account", 0 );
                     rblSavedCheck.DataSource = savedACH;
                     rblSavedCheck.DataValueField = "Value";
@@ -956,7 +979,6 @@ namespace RockWeb.Blocks.Finance
                     rblSavedCheck.DataBind();
                     divSavedCheck.Visible = true;
                     divNewCheck.Style["display"] = "none";
-                    pnlPaymentContent.Update();
                 }
             }
             else
