@@ -155,7 +155,7 @@
     <Compile Include="Attribute\CustomDropdownListFieldAttribute.cs" />
     <Compile Include="Attribute\DefinedValueFieldAttribute.cs" />
     <Compile Include="Attribute\CampusesFieldAttribute.cs" />
-    <Compile Include="Attribute\EntityTypeAttribute.cs" />
+    <Compile Include="Attribute\EntityTypeFieldAttribute.cs" />
     <Compile Include="Attribute\DetailPageAttribute.cs" />
     <Compile Include="Attribute\FieldAttribute.cs" />
     <Compile Include="Attribute\GroupFieldAttribute.cs" />
@@ -356,6 +356,10 @@
     <Compile Include="Migrations\201307112143164_LayoutBlocksSiteSpecific.cs" />
     <Compile Include="Migrations\201307112143164_LayoutBlocksSiteSpecific.Designer.cs">
       <DependentUpon>201307112143164_LayoutBlocksSiteSpecific.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307151334356_CanCheckIn.cs" />
+    <Compile Include="Migrations\201307151334356_CanCheckIn.Designer.cs">
+      <DependentUpon>201307151334356_CanCheckIn.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\201307151503205_AttendedCheckin.cs" />
     <Compile Include="Migrations\201307151503205_AttendedCheckin.Designer.cs">
@@ -1946,12 +1950,15 @@
     <EmbeddedResource Include="Migrations\201307112143164_LayoutBlocksSiteSpecific.resx">
       <DependentUpon>201307112143164_LayoutBlocksSiteSpecific.cs</DependentUpon>
     </EmbeddedResource>
+	<EmbeddedResource Include="Migrations\201307151334356_CanCheckIn.resx">
+      <DependentUpon>201307151334356_CanCheckIn.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307151503205_AttendedCheckin.resx">
       <DependentUpon>201307151503205_AttendedCheckin.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307151959246_AddAttendedCheckInSite.resx">
       <DependentUpon>201307151959246_AddAttendedCheckInSite.cs</DependentUpon>
-    </EmbeddedResource>
+	</EmbeddedResource>    
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Auth\" />

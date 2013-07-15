@@ -38,6 +38,16 @@ namespace Rock.SystemGuid
         /// The role Guid
         /// </value>
         public const string GROUPROLE_KNOWN_RELATIONSHIPS_OWNER= "7BC6C12E-0CD1-4DFD-8D5B-1B35AE714C42";
+        
+        /// <summary>
+        /// Gets the Can check in role
+        /// </summary>
+        public const string GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN = "DC8E5C35-F37C-4B49-A5C6-DF3D94FC808F";
+
+        /// <summary>
+        /// Gets the Allow check in role
+        /// </summary>
+        public const string GROUPROLE_KNOWN_RELATIONSHIPS_ALLOW_CHECK_IN_BY = "FF9869F1-BC56-4410-8A12-CAFC32C62257";
 
         public const string GROUPROLE_KNOWN_RELATIONSHIPS_CANCHECKIN = "D7980FFC-3E6D-4AD1-833D-04AA405E2741";
 
