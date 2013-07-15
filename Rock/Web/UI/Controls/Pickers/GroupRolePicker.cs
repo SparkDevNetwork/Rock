@@ -15,7 +15,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class GroupRolePicker : CompositeControl, ILabeledControl
+    public class GroupRolePicker : CompositeControl, ILabeledControl, IRequiredControl
     {
         private Literal _label;
         protected HelpBlock _helpBlock;
@@ -102,6 +102,41 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="IRequiredControl" /> is required.
+        /// </summary>
+        /// <value><c>true</c> if required; otherwise, <c>false</c>.</value>
+        public bool Required
+        {
+            get { return ViewState["Required"] as bool? ?? false; }
+            set 
+            { 
+                ViewState["Required"] = value;
+                if ( GroupTypeId.HasValue )
+                {
+                    LoadGroupRoles( GroupTypeId.Value );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the required error message.  If blank, the LabelName name will be used
+        /// </summary>
+        /// <value>The required error message.</value>
+        public string RequiredErrorMessage
+        {
+            get { return ViewState["RequiredErrorMessage"] as string ?? "Group Role is Required"; }
+            set { ViewState["RequiredErrorMessage"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value><c>true</c> if this instance is valid; otherwise, <c>false</c>.</value>
+        public bool IsValid
+        {
+            get { return true; }
+        }
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -201,13 +236,23 @@ namespace Rock.Web.UI.Controls
 
         private void LoadGroupRoles(int groupTypeId)
         {
+            int? groupRoleId = GroupRoleId;
+
             _ddlGroupRole.Items.Clear();
+
+            if ( !Required )
+            {
+                _ddlGroupRole.Items.Add( new ListItem( string.Empty, Rock.Constants.None.IdValue ) );
+            }
 
             var groupRoleService = new Rock.Model.GroupRoleService();
             var groupRoles = groupRoleService.Queryable().Where( r => r.GroupTypeId == groupTypeId ).OrderBy( a => a.Name ).ToList();
             groupRoles.ForEach( r =>
                 _ddlGroupRole.Items.Add( new ListItem( r.Name, r.Id.ToString().ToUpper() ) )
             );
+
+            GroupRoleId = groupRoleId;
         }
+
     }
 }

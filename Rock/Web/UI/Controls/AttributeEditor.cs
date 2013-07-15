@@ -480,6 +480,11 @@ namespace Rock.Web.UI.Controls
                 DefaultValueControl = field.EditControl( Qualifiers, string.Format( "defaultValue_{0}_{1}", FieldTypeId.Value, this.ID ) );
                 if ( DefaultValueControl != null )
                 {
+                    if ( DefaultValueControl is IRequiredControl )
+                    {
+                        ( (IRequiredControl)DefaultValueControl ).Required = false;
+                    }
+
                     Controls.Add( DefaultValueControl );
                 }
             }
