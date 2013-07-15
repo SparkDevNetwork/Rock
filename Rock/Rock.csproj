@@ -357,6 +357,10 @@
     <Compile Include="Migrations\201307112143164_LayoutBlocksSiteSpecific.Designer.cs">
       <DependentUpon>201307112143164_LayoutBlocksSiteSpecific.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201307151334356_CanCheckIn.cs" />
+    <Compile Include="Migrations\201307151334356_CanCheckIn.Designer.cs">
+      <DependentUpon>201307151334356_CanCheckIn.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -1933,6 +1937,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307112143164_LayoutBlocksSiteSpecific.resx">
       <DependentUpon>201307112143164_LayoutBlocksSiteSpecific.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307151334356_CanCheckIn.resx">
+      <DependentUpon>201307151334356_CanCheckIn.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
