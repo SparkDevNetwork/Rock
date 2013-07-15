@@ -323,7 +323,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             tbGradeSearch.Text = "";
             gridPersonSearchResults.DataBind();
             gridPersonSearchResults.Visible = false;
-            lbAddSearchPerson.Visible = false;
+            lbAddSearchedForPerson.Visible = false;
         }
 
         /// <summary>
@@ -334,8 +334,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void lbAddFamilyCancel_Click( object sender, EventArgs e )
         {
             // if we need to clear out anything when we cancel the modal...this would be the place to do it.
-            
-            // ********************** FIGURE OUT HOW TO CLEAR VALIDATOR FIELDS ****************************** //
         }
 
         /// <summary>
@@ -347,6 +345,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             // Handle getting the data from the modal window and creating a family out of it.
             List<Person> FamilyList = new List<Person>();
+            int familyGroupId = 0;
+            Group familyGroup = new Group();
             for ( var i = 1; i <= 12; i++ )
             {
                 var FirstNameControl = "tbFirstName" + i.ToString();
@@ -361,6 +361,25 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 // if the first name, last name and DOB/Age are not blank for this set of controls, add this person to the family list.
                 if ( FirstName.Text != "" && LastName.Text != "" && DOBAge.Text != "" )
                 {
+                    // if this is the first person then we can assume that we're going to need a family group and add it here.
+                    if (i == 1)
+                    {
+                        Group group = new Group();
+                        GroupService gs = new GroupService();
+                        group.IsSystem = false;
+                        group.GroupTypeId = new GroupTypeService().Get( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Id;
+                        group.Name = LastName.Text + " Family";
+                        group.IsSecurityRole = false;
+                        group.IsActive = true;
+                        Rock.Data.RockTransactionScope.WrapTransaction( () =>
+                        {
+                            gs.Add( group, CurrentPersonId );
+                            gs.Save( group, CurrentPersonId );
+                        } );
+                        familyGroupId = group.Id;
+                        familyGroup = group;
+                    }
+
                     Person person = new Person();
                     person.GivenName = FirstName.Text;
                     person.LastName = LastName.Text;
@@ -372,7 +391,70 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     {
                         person.BirthDate = Convert.ToDateTime(DOBAge.Text);
                     }
-                    // person.Grade = int.Parse(Grade.Text);
+                    DateTime transitionDate;
+                    var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                    if ( !string.IsNullOrEmpty( Grade.Text ) )
+                    {
+                        if ( DateTime.TryParse( globalAttributes.GetValue( "GradeTransitionDate" ), out transitionDate ) )
+                        {
+                            int yearsLeft;
+                            if ( DateTime.Now < transitionDate )
+                            {
+                                yearsLeft = 12 - int.Parse( Grade.Text );
+                            }
+                            else
+                            {
+                                yearsLeft = 13 - int.Parse( Grade.Text );
+                            }
+                            person.GraduationDate = Convert.ToDateTime( transitionDate.Month.ToString() + "/" + transitionDate.Day.ToString() + "/" + ( DateTime.Now.Year + yearsLeft ).ToString() );
+                        }
+                        else
+                        {
+                            person.GraduationDate = null;
+                        }
+                    }
+                    else
+                    {
+                        person.GraduationDate = null;
+                    }
+
+                    // let's save the new person right here.
+                    PersonService ps = new PersonService();
+                    Rock.Data.RockTransactionScope.WrapTransaction( () =>
+                    {
+                        ps.Add( person, CurrentPersonId );
+                        ps.Save( person, CurrentPersonId );
+                    } );
+
+                    // Add the Person's GroupMember data so that they can be part of the family
+                    GroupMember gm = new GroupMember();
+                    GroupMemberService gms = new GroupMemberService();
+                    gm.IsSystem = false;
+                    gm.GroupId = familyGroupId;
+                    gm.PersonId = person.Id;
+                    int age = 0;
+                    if ( person.BirthDate == null )
+                    {
+                        // set the age to the age from the date picker
+                        age = int.Parse( DOBAge.Text );
+                    }
+                    else
+                    {
+                        age = int.Parse(person.Age.ToString());
+                    }
+                    if ( age >= 18)
+                    {
+                        gm.GroupRoleId = new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ).Id;
+                    }
+                    else
+                    {
+                        gm.GroupRoleId = new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) ).Id;
+                    }
+                    Rock.Data.RockTransactionScope.WrapTransaction( () =>
+                    {
+                        gms.Add( gm, CurrentPersonId );
+                        gms.Save( gm, CurrentPersonId );
+                    } );
 
                     FamilyList.Add( person );
                 }
@@ -385,6 +467,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }
 
             CheckInFamily CIF = new CheckInFamily();
+
+            // For a family, we need a Group for them. Each person needs to have a GroupMember record (which ties them back to the family group and adds their role) as well as their Person record.
+            CIF.Group = familyGroup;
+
             string subCaption = "";
             foreach(Person person in FamilyList)
             {
@@ -400,6 +486,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 {
                     subCaption += ", " + person.FirstName;
                 }
+
             }
             CIF.Caption = FamilyList.FirstOrDefault().LastName;
             CIF.SubCaption = subCaption;
@@ -447,7 +534,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             gridPersonSearchResults.DataBind();
             gridPersonSearchResults.Visible = true;
 
-            lbAddSearchPerson.Visible = true;
+            lbAddSearchedForPerson.Visible = true;
 
             mpePerson.Show();
         }
@@ -641,8 +728,25 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 if ( family == null )
                 {
                     family = new CheckInFamily();
-                    family.Selected = true;
-                    CurrentCheckInState.CheckIn.Families.Add( family );
+                    foreach( var group in person.Members.Where( m => m.Group.GroupType.Guid == new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Select( m => m.Group ) )
+                    {
+                        family = new CheckInFamily();
+                        family.Group = group.Clone( false );
+                        family.Group.LoadAttributes();
+                        family.Caption = group.ToString();
+                        GroupMemberService gms = new GroupMemberService();
+                        family.SubCaption = gms.GetFirstNames( group.Id ).ToList().AsDelimited( ", " );
+                        family.Selected = true;
+                        CurrentCheckInState.CheckIn.Families.Clear();
+                        CurrentCheckInState.CheckIn.Families.Add( family );
+                        lvFamily.DataSource = CurrentCheckInState.CheckIn.Families;
+                        lvFamily.DataBind();
+                        foreach ( ListViewDataItem li in lvFamily.Items )
+                        {
+                            ( (LinkButton)li.FindControl( "lbSelectFamily" ) ).AddCssClass( "active" );
+
+                        }
+                    }
                 }
                 CheckInPerson CIP = new CheckInPerson();
                 CIP.Person = person;
@@ -661,6 +765,15 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     // only add the person to the family if they aren't listed as part of the family.
                     if ( !isPersonInFamily )
                     {
+                        // because this person is being added to this family, we should make sure his/her groupmember record reflects that.
+                        GroupMemberService gms = new GroupMemberService();
+                        var groupMember = gms.GetByPersonId( person.Id ).FirstOrDefault();
+                        groupMember.GroupId = family.Group.Id;
+                        Rock.Data.RockTransactionScope.WrapTransaction( () =>
+                        {
+                            gms.Save( groupMember, CurrentPersonId );
+                        } );
+
                         family.People.Add( CIP );
                         rPerson.DataSource = family.People;
                         rPerson.DataBind();
@@ -673,6 +786,22 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 else
                 {
                     // this came from Add Visitor
+                    // Add CanCheckIn record to GroupMember 
+                    GroupMember gm = new GroupMember();
+                    GroupMemberService gms = new GroupMemberService();
+                    gm.IsSystem = false;
+                    gm.GroupId = family.Group.Id;
+                    gm.PersonId = person.Id;
+                    gm.GroupRoleId = new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CANCHECKIN ) ).Id;
+                    Rock.Data.RockTransactionScope.WrapTransaction( () =>
+                    {
+                        gms.Add( gm, CurrentPersonId );
+                        gms.Save( gm, CurrentPersonId );
+                    } );
+                    family.People.Add( CIP );
+                    //rVisitors.DataSource = ;        //***************************  NEEDS A DATASOURCE ******************************
+                    //rVisitors.DataBind();
+
                 }
                 SaveState();
             }
@@ -686,11 +815,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
-        /// Handles the Click event of the lbAddSearchPerson control.
+        /// Handles the Click event of the lbAddSearchedForPerson control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbAddSearchPerson_Click( object sender, EventArgs e )
+        protected void lbAddSearchedForPerson_Click( object sender, EventArgs e )
         {
             if ( string.IsNullOrEmpty( tbFirstNameSearch.Text ) || string.IsNullOrEmpty( tbLastNameSearch.Text ) || string.IsNullOrEmpty( dpDOBAgeSearch.Text ) )
             {
@@ -705,25 +834,109 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 person.LastName = tbLastNameSearch.Text;
                 if ( dpDOBAgeSearch.Text.Length <= 3 )
                 {
-                    //person.Age = DOBAge.Text;
+                    //person.Age = dpDOBAgeSearch.Text;
                 }
                 else
                 {
                     person.BirthDate = Convert.ToDateTime( dpDOBAgeSearch.Text );
                 }
-                //person.Grade = int.Parse(Grade.Text);
+                DateTime transitionDate;
+                var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
+                if ( !string.IsNullOrEmpty( tbGradeSearch.Text ) )
+                {
+                    if ( DateTime.TryParse( globalAttributes.GetValue( "GradeTransitionDate" ), out transitionDate ) )
+                    {
+                        int yearsLeft;
+                        if ( DateTime.Now < transitionDate )
+                        {
+                            yearsLeft = 12 - int.Parse( tbGradeSearch.Text );
+                        }
+                        else
+                        {
+                            yearsLeft = 13 - int.Parse( tbGradeSearch.Text );
+                        }
+                        person.GraduationDate = Convert.ToDateTime( transitionDate.Month.ToString() + "/" + transitionDate.Day.ToString() + "/" + ( DateTime.Now.Year + yearsLeft ).ToString() );
+                    }
+                    else
+                    {
+                        person.GraduationDate = null;
+                    }
+                }
+                else
+                {
+                    person.GraduationDate = null;
+                }
+
+                // let's save the new person right here.
+                PersonService ps = new PersonService();
+                Rock.Data.RockTransactionScope.WrapTransaction( () =>
+                {
+                    ps.Add( person, CurrentPersonId );
+                    ps.Save( person, CurrentPersonId );
+                } );
 
                 var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                 if ( family == null )
                 {
+                    // There isn't a current family
                     family = new CheckInFamily();
                     family.Selected = true;
                     CurrentCheckInState.CheckIn.Families.Add( family );
+
+                    // Add a Group for the new family
+                    Group group = new Group();
+                    GroupService gs = new GroupService();
+                    group.IsSystem = false;
+                    group.GroupTypeId = new GroupTypeService().Get( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Id;
+                    group.Name = person.LastName + " Family";
+                    group.IsSecurityRole = false;
+                    group.IsActive = true;
+                    Rock.Data.RockTransactionScope.WrapTransaction( () =>
+                    {
+                        gs.Add( group, CurrentPersonId );
+                        gs.Save( group, CurrentPersonId );
+                    } );
+                    family.Group = group;
                 }
+
+                // put the person into place to be checked in.
                 CheckInPerson CIP = new CheckInPerson();
                 CIP.Person = person;
                 CIP.Selected = true;
                 family.People.Add( CIP );
+                
+                // Add the Person's GroupMember data so that they can be part of the family
+                GroupMember gm = new GroupMember();
+                GroupMemberService gms = new GroupMemberService();
+                gm.IsSystem = false;
+                gm.GroupId = family.Group.Id;
+                gm.PersonId = person.Id;
+                int age = 0;
+                if ( person.BirthDate == null )
+                {
+                    // set the age to the age from the date picker
+                    age = int.Parse( dpDOBAgeSearch.Text );
+                }
+                else
+                {
+                    age = int.Parse( person.Age.ToString() );
+                }
+                if ( age >= 18 )
+                {
+                    gm.GroupRoleId = new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ).Id;
+                }
+                else
+                {
+                    gm.GroupRoleId = new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) ).Id;
+                }
+                Rock.Data.RockTransactionScope.WrapTransaction( () =>
+                {
+                    gms.Add( gm, CurrentPersonId );
+                    gms.Save( gm, CurrentPersonId );
+                } );
+
+                SaveState();
+
                 rPerson.DataSource = family.People;
                 rPerson.DataBind();
                 foreach ( RepeaterItem item in rPerson.Items )

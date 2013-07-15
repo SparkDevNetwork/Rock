@@ -50,6 +50,10 @@ namespace Rock.Migrations
             // DefinedValue for name searches
             AddDefinedValue( "1EBCDB30-A89A-4C14-8580-8289EC2C7742", "Name", "Search for family based on name", "071D6DAA-3063-463A-B8A1-7D9A1BE1BB31" );
 
+            // Person Status DefinedValues associated with visitors & members
+            AddDefinedValue( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Member", "", "E8848110-CDE3-400E-B6CD-C2BD309FAF38" );
+            AddDefinedValue( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Visitor", "", "1B439C81-68B1-44F1-8DDF-0B555823D0F8" );
+
             // Add Block Attributes
             AddBlockTypeAttribute( "2C51230E-BA2E-4646-BB10-817B26C16218", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Previous Page", "PreviousPage", "", "", 0, "", "B196160E-4397-4C6F-8C5A-317CAD3C118F" );
             AddBlockTypeAttribute( "2C51230E-BA2E-4646-BB10-817B26C16218", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Next Page", "NextPage", "", "", 0, "", "7332D1F1-A1A5-48AE-BAB9-91C3AF085DB0" );
@@ -199,6 +203,8 @@ namespace Rock.Migrations
             DeleteAttribute( "DEB23724-94F9-4164-BFAB-AD2DDE1F90ED" ); // Home Page
 
             DeleteDefinedValue( "071D6DAA-3063-463A-B8A1-7D9A1BE1BB31" ); // DefinedValue search by name
+            DeleteDefinedValue( "E8848110-CDE3-400E-B6CD-C2BD309FAF38" ); // DefinedValue Person Status Member
+            DeleteDefinedValue( "1B439C81-68B1-44F1-8DDF-0B555823D0F8" ); // DefinedValue Person Status Visitor
 
             DeleteBlock( "9F8731AB-07DB-406F-A344-45E31D0DE301" ); // Attended Admin
             DeleteBlock( "182C9AA0-E76F-4AAF-9F61-5418EE5A0CDB" ); // Attended Search

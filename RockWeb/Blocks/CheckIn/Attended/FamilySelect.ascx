@@ -152,7 +152,7 @@
                 <Rock:DatePicker ID="dpDOBAgeSearch" runat="server" CssClass="datePickerClass"></Rock:DatePicker>
                 <asp:CustomValidator ID="CustomValidator1" runat="server" ErrorMessage="The first DOB/Age field is incorrect."
                     CssClass="align-middle" EnableClientScript="true" Display="None" 
-                    ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="dpDOBAge1" />
+                    ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="dpDOBAgeSearch" />
             </div>
             <div class="span3">
                 <Rock:DataTextBox ID="tbGradeSearch" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
@@ -176,7 +176,7 @@
             </Rock:Grid>
         </div>
         <div class="row-fluid attended-checkin-body searchperson">
-            <asp:LinkButton ID="lbAddSearchPerson" runat="server" Text="Didn't find what you're looking for? Add the person you searched for above." Visible="false" OnClick="lbAddSearchPerson_Click" CausesValidation="false"></asp:LinkButton>
+            <asp:LinkButton ID="lbAddSearchedForPerson" runat="server" Text="Didn't find what you're looking for? Add the person you searched for above." Visible="false" OnClick="lbAddSearchedForPerson_Click" CausesValidation="false"></asp:LinkButton>
         </div>
     </asp:Panel>
     <asp:ModalPopupExtender ID="mpePerson" runat="server" TargetControlID="lbOpenPanel" PopupControlID="AddPersonPanel" CancelControlID="lbAddPersonCancel" BackgroundCssClass="modalBackground"></asp:ModalPopupExtender>
@@ -219,7 +219,7 @@
                     <Rock:DataTextBox ID="tbLastName1" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DatePicker ID="dpDOBAge1" runat="server" CssClass="datePickerClass"></Rock:DatePicker>
+                    <Rock:DatePicker ID="dpDOBAge1" runat="server"></Rock:DatePicker>
                     <asp:CustomValidator ID="cvDOBAgeValidator1" runat="server" ErrorMessage="The first DOB/Age field is incorrect."
                         CssClass="align-middle" EnableClientScript="true" Display="None" 
                         ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="dpDOBAge1" />
@@ -289,7 +289,7 @@
                     <Rock:DataTextBox ID="tbLastName5" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DatePicker ID="dpDOBAge5" runat="server" CssClass="datePickerClass"></Rock:DatePicker>
+                    <Rock:DatePicker ID="dpDOBAge5" runat="server"></Rock:DatePicker>
                     <asp:CustomValidator ID="cvDOBAgeValidator5" runat="server" ErrorMessage="The first DOB/Age field is incorrect."
                         CssClass="align-middle" EnableClientScript="true" Display="None" 
                         ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="dpDOBAge5" />
@@ -359,7 +359,7 @@
                     <Rock:DataTextBox ID="tbLastName9" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
                 <div class="span3">
-                    <Rock:DatePicker ID="dpDOBAge9" runat="server" CssClass="datePickerClass"></Rock:DatePicker>
+                    <Rock:DatePicker ID="dpDOBAge9" runat="server"></Rock:DatePicker>
                     <asp:CustomValidator ID="cvDOBAgeValidator9" runat="server" ErrorMessage="The first DOB/Age field is incorrect."
                         CssClass="align-middle" EnableClientScript="true" Display="None" 
                         ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="dpDOBAge9" />
