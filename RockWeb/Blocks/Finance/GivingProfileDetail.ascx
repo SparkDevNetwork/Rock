@@ -19,11 +19,14 @@
 
         $('.credit-card').creditCardTypeDetector({ 'credit_card_logos': '.card-logos' });           
         $('.radio-list input:radio').unbind('click').on('click', function () {
-            if ($(this).val() == 0 && $(this).parents().next('.radio-content').css("display") != "none" ) {
+            var radioDisplay = $(this).parents().next('.radio-content').css("display");            
+            if ($(this).val() == 0 && radioDisplay == "none") {
                 $(this).parents().next('.radio-content').slideToggle();
-            }            
-        });
-                
+            }
+            else if ($(this).val() != 0 && radioDisplay != "none") {
+                $(this).parents().next('.radio-content').slideToggle();
+            }
+        });                
         $('.toggle-input').unbind('click').on('click', function () {
             $(this).parents().next('.toggle-content').slideToggle();
         });
@@ -292,7 +295,7 @@
 
                             </div>
 
-                            <div ID="divChecking" runat="server" Visible="false" CssClass="tab-pane">
+                            <div ID="divChecking" runat="server" CssClass="tab-pane">
                                 
                                 <div id="divSavedCheck" runat="server" class="radio-list">                                                              
                                     <Rock:LabeledRadioButtonList ID="rblSavedCheck" runat="server" RepeatDirection="Vertical" />

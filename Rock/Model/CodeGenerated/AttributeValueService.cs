@@ -33,7 +33,16 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="AttributeValueService"/> class
         /// </summary>
+        /// <param name="repository">The repository.</param>
         public AttributeValueService(IRepository<AttributeValue> repository) : base(repository)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AttributeValueService"/> class
+        /// </summary>
+        /// <param name="context">The context.</param>
+        public AttributeValueService(RockContext context) : base(context)
         {
         }
 

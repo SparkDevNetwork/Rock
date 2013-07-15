@@ -33,7 +33,16 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="MarketingCampaignCampusService"/> class
         /// </summary>
+        /// <param name="repository">The repository.</param>
         public MarketingCampaignCampusService(IRepository<MarketingCampaignCampus> repository) : base(repository)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MarketingCampaignCampusService"/> class
+        /// </summary>
+        /// <param name="context">The context.</param>
+        public MarketingCampaignCampusService(RockContext context) : base(context)
         {
         }
 

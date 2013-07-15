@@ -25,10 +25,12 @@
 
                         // Set the appropriate parent value (layout or page)
                         if ($('#block-move-Location_0').attr('checked') == 'checked') {
+                            getData.SiteId = null;
                             getData.Layout = null;
                             getData.PageId = rock.pageId;
                         }
                         else {
+                            getData.SiteId = rock.siteId;
                             getData.Layout = rock.layout;
                             getData.PageId = null;
                         }
