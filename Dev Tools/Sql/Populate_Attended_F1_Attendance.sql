@@ -46,16 +46,27 @@ FROM #resultset r
 	select * from attributevalue
    ================================================== */
 
-DECLARE @LocationID int
-DECLARE @ScheduleID int
-DECLARE @GroupId int
-
 -- Insert Fellowship One Attendance
-INSERT Attendance (LocationId, ScheduleId, GroupId, PersonId, StartDateTime)
-SELECT @LocationId, @ScheduleId, @GroupId, p.Id, a.start_date_time
+INSERT Attendance (LocationId, ScheduleId, GroupId, PersonId, StartDateTime, Note, DidAttend, [Guid])
+SELECT distinct l.id
+, s.id
+, g.id
+, p.Id
+, a.start_date_time
+, 'Imported from F1', 1
+, NEWID()
 FROM Person p
 INNER JOIN AttributeValue av
-ON p.id = av.EntityId
+ON av.attributeid = 552 -- @indivAttrID
+AND av.entityid = p.id
 INNER JOIN [SVR].f1.dbo.Attendance a
-ON av.value = a.individual_id
-
+ON a.individual_id = av.value
+INNER JOIN [SVR].f1.dbo.RLC r
+ON a.rlc_id = r.rlc_id
+INNER JOIN [Group] g
+ON r.rlc_name = g.name
+INNER JOIN Location l
+ON r.rlc_name = l.Name
+INNER JOIN Schedule s
+ON CAST(a.start_date_time as time) = CAST(s.name as time)
+ORDER BY a.start_date_time

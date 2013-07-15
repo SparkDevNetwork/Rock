@@ -1052,6 +1052,7 @@
     <Compile Include="Workflow\Action\CheckIn\AttendedLoadGroupTypes.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterByLastAttended.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterLocationGroupsByAbilityLevel.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterLocationGroupsBySpecialNeeds.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterLocationGroupsByLastName.cs" />

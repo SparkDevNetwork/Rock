@@ -27,7 +27,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
-
+                        
             if ( CurrentWorkflow == null || CurrentCheckInState == null )
             {
                 NavigateToHomePage();
@@ -36,8 +36,16 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 if ( !Page.IsPostBack )
                 {
-                    gPersonList.DataKeyNames = new string[] { "ListId" };
-                    CreateGridDataSource();
+                    bool bestFitComplete = ProcessBestFit();
+                    if ( bestFitComplete )
+                    {
+                        gPersonList.DataKeyNames = new string[] { "ListId" };
+                        CreateGridDataSource();
+                    }
+                    else
+                    {
+                        //NavigateToPage( Activity Select
+                    }                    
                 }
             }
         }
@@ -186,6 +194,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
         #endregion
 
         #region Internal Methods
+
+        private bool ProcessBestFit()
+        {
+            var errors = new List<string>();
+            return ProcessActivity( "Assign Best Fit", out errors );            
+        }
 
         private void GoBack()
         {
