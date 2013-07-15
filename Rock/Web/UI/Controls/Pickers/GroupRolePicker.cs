@@ -66,10 +66,10 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the person id.
+        /// Gets or sets the role id.
         /// </summary>
         /// <value>
-        /// The person id.
+        /// The role id.
         /// </value>
         public int? GroupRoleId
         {
@@ -97,7 +97,12 @@ namespace Rock.Web.UI.Controls
                         _ddlGroupType.SelectedValue = groupRole.GroupTypeId.ToString();
                         LoadGroupRoles( groupRole.GroupTypeId.Value );
                     }
-                    _ddlGroupRole.SelectedValue = groupRoleId.ToString();
+
+                    var selectedItem = _ddlGroupRole.Items.FindByValue( groupRoleId.ToString() );
+                    if ( selectedItem != null )
+                    {
+                        selectedItem.Selected = true;
+                    }
                 }
             }
         }
@@ -204,6 +209,7 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();
 
                     writer.AddAttribute( "class", "controls" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 }
 
                 if ( !GroupTypeId.HasValue )
