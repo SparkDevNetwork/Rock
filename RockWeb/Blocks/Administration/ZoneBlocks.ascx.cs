@@ -5,38 +5,37 @@
 //
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Web.UI;
-
 using Rock;
 using Rock.Model;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    public partial class ZoneBlocks : Rock.Web.UI.RockBlock
+    /// <summary>
+    /// 
+    /// </summary>
+    public partial class ZoneBlocks : RockBlock
     {
-        #region Fields
-
-        private Rock.Web.Cache.PageCache _page = null;
-        private string _zoneName = string.Empty;
-        private Rock.Model.BlockService blockService = new Rock.Model.BlockService();
-
-        #endregion
-
         #region Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            int pageId = Convert.ToInt32( PageParameter( "EditPage" ) );
-            _page = Rock.Web.Cache.PageCache.Read( pageId );
-            _zoneName = this.PageParameter( "ZoneName" );
+            int pageId = PageParameter( "EditPage" ).AsInteger() ?? 0;
+            Rock.Web.Cache.PageCache page = Rock.Web.Cache.PageCache.Read( pageId );
 
-            lAllPages.Text = string.Format( "All Pages Using '{0}' Layout", _page.Layout );
+            string zoneName = this.PageParameter( "ZoneName" );
+
+            lAllPages.Text = string.Format( "All Pages Using '{0}' Layout", page.Layout );
 
             // TODO: Managing layout block instances should probably be controlled by site security
-            if ( _page.IsAuthorized( "Administrate", CurrentPerson ) )
+            if ( page.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 gLayoutBlocks.DataKeyNames = new string[] { "id" };
                 gLayoutBlocks.Actions.ShowAdd = true;
@@ -45,7 +44,7 @@ namespace RockWeb.Blocks.Administration
                 gLayoutBlocks.GridRebind += gLayoutBlocks_GridRebind;
             }
 
-            if ( _page.IsAuthorized( "Administrate", CurrentPerson ) )
+            if ( page.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 gPageBlocks.DataKeyNames = new string[] { "id" };
                 gPageBlocks.Actions.ShowAdd = true;
@@ -54,24 +53,34 @@ namespace RockWeb.Blocks.Administration
                 gPageBlocks.GridRebind += gPageBlocks_GridRebind;
             }
 
-            string script = string.Format( @"
-        Sys.Application.add_load(function () {{
-            $('div.modal-header h3').html('{0} Zone');
-            $('#{1} a').click(function() {{ $('#{3}').val('Page'); }});
-            $('#{2} a').click(function() {{ $('#{3}').val('Layout'); }});
-        }});
-    ", _zoneName, liPage.ClientID, liLayout.ClientID, hfOption.ClientID );
+            string script = string.Format(
+                @"Sys.Application.add_load(function () {{
+                    $('div.modal-header h3').html('{0} Zone');
+                    $('#{1} a').click(function() {{ $('#{3}').val('Page'); }});
+                    $('#{2} a').click(function() {{ $('#{3}').val('Layout'); }});
+                }});",
+                zoneName,
+                liPage.ClientID,
+                liLayout.ClientID,
+                hfOption.ClientID );
 
             this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "zone-add-load-{0}", this.ClientID ), script, true );
 
             base.OnInit( e );
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
+            int pageId = PageParameter( "EditPage" ).AsInteger() ?? 0;
+            Rock.Web.Cache.PageCache page = Rock.Web.Cache.PageCache.Read( pageId );
+
             nbMessage.Visible = false;
 
-            if ( _page.IsAuthorized( "Administrate", CurrentPerson ) )
+            if ( page.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 if ( !Page.IsPostBack )
                 {
@@ -89,6 +98,10 @@ namespace RockWeb.Blocks.Administration
             base.OnLoad( e );
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnPreRender( EventArgs e )
         {
             base.OnPreRender( e );
@@ -112,76 +125,141 @@ namespace RockWeb.Blocks.Administration
 
         #region Grid Events
 
-        void gLayoutBlocks_GridReorder( object sender, GridReorderEventArgs e )
+        /// <summary>
+        /// Handles the GridReorder event of the gLayoutBlocks control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gLayoutBlocks_GridReorder( object sender, GridReorderEventArgs e )
         {
-            blockService.Reorder(
-                blockService.GetByLayoutAndPageIdAndZone( _page.Layout, null, _zoneName ).ToList(),
-                e.OldIndex, e.NewIndex, CurrentPersonId );
+            BlockService blockService = new BlockService();
+            int pageId = PageParameter( "EditPage" ).AsInteger() ?? 0;
+            Rock.Web.Cache.PageCache page = Rock.Web.Cache.PageCache.Read( pageId );
+            string zoneName = this.PageParameter( "ZoneName" );
+
+            blockService.Reorder( blockService.GetByLayoutAndZone( page.SiteId.Value, page.Layout, zoneName ).ToList(), e.OldIndex, e.NewIndex, CurrentPersonId );
 
             BindGrids();
         }
 
+        /// <summary>
+        /// Handles the Edit event of the gLayoutBlocks control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gLayoutBlocks_Edit( object sender, RowEventArgs e )
         {
-            ShowEdit( BlockLocation.Layout, ( int )gLayoutBlocks.DataKeys[e.RowIndex]["id"] );
+            ShowEdit( BlockLocation.Layout, e.RowKeyId );
         }
 
+        /// <summary>
+        /// Handles the Delete event of the gLayoutBlocks control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gLayoutBlocks_Delete( object sender, RowEventArgs e )
         {
-            Rock.Model.Block block = blockService.Get( ( int )gLayoutBlocks.DataKeys[e.RowIndex]["id"] );
+            BlockService blockService = new BlockService();
+            int pageId = PageParameter( "EditPage" ).AsInteger() ?? 0;
+            Rock.Web.Cache.PageCache page = Rock.Web.Cache.PageCache.Read( pageId );
+
+            Rock.Model.Block block = blockService.Get( (int)gLayoutBlocks.DataKeys[e.RowIndex]["id"] );
             if ( CurrentBlock != null )
             {
                 blockService.Delete( block, CurrentPersonId );
                 blockService.Save( block, CurrentPersonId );
-                Rock.Web.Cache.PageCache.FlushLayoutBlocks( _page.Layout );
+                Rock.Web.Cache.PageCache.FlushLayoutBlocks( page.Layout );
             }
 
             BindGrids();
         }
 
-        void LayoutBlocks_Add( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the Add event of the LayoutBlocks control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void LayoutBlocks_Add( object sender, EventArgs e )
         {
             ShowEdit( BlockLocation.Layout, 0 );
         }
 
-        void gLayoutBlocks_GridRebind( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the GridRebind event of the gLayoutBlocks control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gLayoutBlocks_GridRebind( object sender, EventArgs e )
         {
             BindGrids();
         }
 
-        void gPageBlocks_GridReorder( object sender, GridReorderEventArgs e )
+        /// <summary>
+        /// Handles the GridReorder event of the gPageBlocks control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gPageBlocks_GridReorder( object sender, GridReorderEventArgs e )
         {
-            blockService.Reorder(
-                blockService.GetByLayoutAndPageIdAndZone( null, _page.Id, _zoneName ).ToList(),
-                e.OldIndex, e.NewIndex, CurrentPersonId );
+            BlockService blockService = new BlockService();
+            int pageId = PageParameter( "EditPage" ).AsInteger() ?? 0;
+            Rock.Web.Cache.PageCache page = Rock.Web.Cache.PageCache.Read( pageId );
+            string zoneName = this.PageParameter( "ZoneName" );
+
+            blockService.Reorder( blockService.GetByPageAndZone( page.Id, zoneName ).ToList(), e.OldIndex, e.NewIndex, CurrentPersonId );
 
             BindGrids();
         }
 
+        /// <summary>
+        /// Handles the Edit event of the gPageBlocks control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gPageBlocks_Edit( object sender, RowEventArgs e )
         {
-            ShowEdit( BlockLocation.Page, ( int )gPageBlocks.DataKeys[e.RowIndex]["id"] );
+            ShowEdit( BlockLocation.Page, e.RowKeyId );
         }
 
+        /// <summary>
+        /// Handles the Delete event of the gPageBlocks control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gPageBlocks_Delete( object sender, RowEventArgs e )
         {
-            Rock.Model.Block block = blockService.Get( ( int )gPageBlocks.DataKeys[e.RowIndex]["id"] );
+            BlockService blockService = new BlockService();
+            int pageId = PageParameter( "EditPage" ).AsInteger() ?? 0;
+            Rock.Web.Cache.PageCache page = Rock.Web.Cache.PageCache.Read( pageId );
+            string zoneName = this.PageParameter( "ZoneName" );
+
+            Rock.Model.Block block = blockService.Get( e.RowKeyId );
             if ( CurrentBlock != null )
             {
                 blockService.Delete( block, CurrentPersonId );
                 blockService.Save( block, CurrentPersonId );
-                _page.FlushBlocks();
+                page.FlushBlocks();
             }
 
             BindGrids();
         }
 
-        void gPageBlocks_GridAdd( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the GridAdd event of the gPageBlocks control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gPageBlocks_GridAdd( object sender, EventArgs e )
         {
             ShowEdit( BlockLocation.Page, 0 );
         }
 
-        void gPageBlocks_GridRebind( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the GridRebind event of the gPageBlocks control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gPageBlocks_GridRebind( object sender, EventArgs e )
         {
             BindGrids();
         }
@@ -190,19 +268,33 @@ namespace RockWeb.Blocks.Administration
 
         #region Edit Events
 
+        /// <summary>
+        /// Handles the Click event of the btnCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
             pnlDetails.Visible = false;
             pnlLists.Visible = true;
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            int pageId = PageParameter( "EditPage" ).AsInteger() ?? 0;
+            Rock.Web.Cache.PageCache page = Rock.Web.Cache.PageCache.Read( pageId );
+            string zoneName = this.PageParameter( "ZoneName" );
+
             Rock.Model.Block block;
 
-            int blockId = 0;
-            if ( !Int32.TryParse( hfBlockId.Value, out blockId ) )
-                blockId = 0;
+            BlockService blockService = new BlockService();
+
+            int blockId = hfBlockId.ValueAsInt();
 
             if ( blockId == 0 )
             {
@@ -211,42 +303,52 @@ namespace RockWeb.Blocks.Administration
                 BlockLocation location = hfBlockLocation.Value.ConvertToEnum<BlockLocation>();
                 if ( location == BlockLocation.Layout )
                 {
-                    block.Layout = _page.Layout;
+                    block.SiteId = page.SiteId;
+                    block.Layout = page.Layout;
                     block.PageId = null;
                 }
                 else
                 {
+                    block.SiteId = null;
                     block.Layout = null;
-                    block.PageId = _page.Id;
+                    block.PageId = page.Id;
                 }
 
-                block.Zone = _zoneName;
+                block.Zone = zoneName;
 
-                Rock.Model.Block lastBlock =
-                    blockService.GetByLayoutAndPageIdAndZone( null, _page.Id, _zoneName ).
-                                                OrderByDescending( b => b.Order ).FirstOrDefault();
+                Rock.Model.Block lastBlock = blockService.GetByPageAndZone( page.Id, zoneName ).OrderByDescending( b => b.Order ).FirstOrDefault();
 
                 if ( lastBlock != null )
+                {
                     block.Order = lastBlock.Order + 1;
+                }
                 else
+                {
                     block.Order = 0;
+                }
 
                 blockService.Add( block, CurrentPersonId );
             }
             else
+            {
                 block = blockService.Get( blockId );
+            }
 
             block.Name = tbBlockName.Text;
             block.BlockTypeId = Convert.ToInt32( ddlBlockType.SelectedValue );
 
             blockService.Save( block, CurrentPersonId );
 
-            Rock.Security.Authorization.CopyAuthorization( _page, block, CurrentPersonId );
+            Rock.Security.Authorization.CopyAuthorization( page, block, CurrentPersonId );
 
-            if (block.Layout != null)
-                Rock.Web.Cache.PageCache.FlushLayoutBlocks(_page.Layout);
+            if ( block.Layout != null )
+            {
+                Rock.Web.Cache.PageCache.FlushLayoutBlocks( page.Layout );
+            }
             else
-                _page.FlushBlocks();
+            {
+                page.FlushBlocks();
+            }
 
             BindGrids();
 
@@ -258,24 +360,46 @@ namespace RockWeb.Blocks.Administration
 
         #region Internal Methods
 
+        /// <summary>
+        /// Binds the grids.
+        /// </summary>
         private void BindGrids()
         {
             BindLayoutGrid();
             BindPageGrid();
         }
 
+        /// <summary>
+        /// Binds the layout grid.
+        /// </summary>
         private void BindLayoutGrid()
         {
-            gLayoutBlocks.DataSource = blockService.GetByLayoutAndPageIdAndZone( _page.Layout, null, _zoneName ).ToList();
+            BlockService blockService = new BlockService();
+            int pageId = PageParameter( "EditPage" ).AsInteger() ?? 0;
+            Rock.Web.Cache.PageCache page = Rock.Web.Cache.PageCache.Read( pageId );
+            string zoneName = this.PageParameter( "ZoneName" );
+
+            gLayoutBlocks.DataSource = blockService.GetByLayoutAndZone( page.SiteId.Value, page.Layout, zoneName ).ToList();
             gLayoutBlocks.DataBind();
         }
 
+        /// <summary>
+        /// Binds the page grid.
+        /// </summary>
         private void BindPageGrid()
         {
-            gPageBlocks.DataSource = blockService.GetByLayoutAndPageIdAndZone( null, _page.Id, _zoneName ).ToList();
+            BlockService blockService = new BlockService();
+            int pageId = PageParameter( "EditPage" ).AsInteger() ?? 0;
+            Rock.Web.Cache.PageCache page = Rock.Web.Cache.PageCache.Read( pageId );
+            string zoneName = this.PageParameter( "ZoneName" );
+
+            gPageBlocks.DataSource = blockService.GetByPageAndZone( page.Id, zoneName ).ToList();
             gPageBlocks.DataBind();
         }
 
+        /// <summary>
+        /// Loads the block types.
+        /// </summary>
         private void LoadBlockTypes()
         {
             using ( new Rock.Data.UnitOfWorkScope() )
@@ -285,15 +409,21 @@ namespace RockWeb.Blocks.Administration
                 // Add any unregistered blocks
                 blockTypeService.RegisterBlockTypes( Request.MapPath( "~" ), Page, CurrentPersonId );
 
-                ddlBlockType.DataSource = blockTypeService.Queryable().OrderBy( b => b.Name).ToList();
+                ddlBlockType.DataSource = blockTypeService.Queryable().OrderBy( b => b.Name ).ToList();
                 ddlBlockType.DataTextField = "Name";
                 ddlBlockType.DataValueField = "Id";
                 ddlBlockType.DataBind();
             }
         }
 
+        /// <summary>
+        /// Shows the edit.
+        /// </summary>
+        /// <param name="location">The location.</param>
+        /// <param name="blockId">The block id.</param>
         protected void ShowEdit( BlockLocation location, int blockId )
         {
+            BlockService blockService = new BlockService();
             Rock.Model.Block block = blockService.Get( blockId );
             hfBlockLocation.Value = location.ConvertToString();
 
@@ -311,10 +441,14 @@ namespace RockWeb.Blocks.Administration
 
                 // Select HTML Content block by default
                 var blockType = new Rock.Model.BlockTypeService().GetByGuid( new Guid( Rock.SystemGuid.BlockType.HTML_CONTENT ) );
-                if (blockType != null)
-                    ddlBlockType.SelectedValue = blockType.Id.ToString();                
+                if ( blockType != null )
+                {
+                    ddlBlockType.SelectedValue = blockType.Id.ToString();
+                }
                 else
+                {
                     ddlBlockType.SelectedIndex = -1;
+                }
 
                 tbBlockName.Text = string.Empty;
             }
@@ -325,6 +459,11 @@ namespace RockWeb.Blocks.Administration
             pnlDetails.Visible = true;
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlBlockType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlBlockType_SelectedIndexChanged( object sender, EventArgs e )
         {
             if ( string.IsNullOrWhiteSpace( tbBlockName.Text ) )
@@ -332,7 +471,7 @@ namespace RockWeb.Blocks.Administration
                 var parts = ddlBlockType.SelectedItem.Text.Split( new char[] { '-' } );
                 if ( parts.Length > 1 )
                 {
-                    tbBlockName.Text = parts[parts.Length-1].Trim();
+                    tbBlockName.Text = parts[parts.Length - 1].Trim();
                 }
                 else
                 {
@@ -342,6 +481,5 @@ namespace RockWeb.Blocks.Administration
         }
 
         #endregion
-        
-}
+    }
 }

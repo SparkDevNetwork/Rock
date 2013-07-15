@@ -217,6 +217,7 @@ namespace Rock.Web.UI.Controls
             if ( Required )
             {
                 requiredValidator.Enabled = true;
+                requiredValidator.ValidationGroup = this.ValidationGroup;
                 if ( string.IsNullOrWhiteSpace( requiredValidator.ErrorMessage ) )
                 {
                     requiredValidator.ErrorMessage = LabelText + " is Required.";
