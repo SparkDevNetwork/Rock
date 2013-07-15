@@ -39,6 +39,8 @@ namespace Rock.SystemGuid
         /// </value>
         public const string GROUPROLE_KNOWN_RELATIONSHIPS_OWNER= "7BC6C12E-0CD1-4DFD-8D5B-1B35AE714C42";
 
+        public const string GROUPROLE_KNOWN_RELATIONSHIPS_CANCHECKIN = "D7980FFC-3E6D-4AD1-833D-04AA405E2741";
+
         #endregion
 
         #region Implied Relationships

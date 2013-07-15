@@ -219,5 +219,19 @@ namespace Rock.SystemGuid
         public const string LOCATION_TYPE_PREVIOUS = "853D98F1-6E08-4321-861B-520B4106CFE0";
 
         #endregion
+
+        #region Person Status
+
+        /// <summary>
+        /// Member Person Status
+        /// </summary>
+        public const string PERSON_STATUS_MEMBER = "E8848110-CDE3-400E-B6CD-C2BD309FAF38";
+
+        /// <summary>
+        /// Visitor Person Status
+        /// </summary>
+        public const string PERSON_STATUS_VISITOR = "1B439C81-68B1-44F1-8DDF-0B555823D0F8";
+
+        #endregion
     }
 }
