@@ -361,6 +361,14 @@
     <Compile Include="Migrations\201307151334356_CanCheckIn.Designer.cs">
       <DependentUpon>201307151334356_CanCheckIn.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201307152110106_GroupMemberAddMemberStatus.cs" />
+    <Compile Include="Migrations\201307152110106_GroupMemberAddMemberStatus.Designer.cs">
+      <DependentUpon>201307152110106_GroupMemberAddMemberStatus.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307152115127_GroupMemberUniqueMemberRole.cs" />
+    <Compile Include="Migrations\201307152115127_GroupMemberUniqueMemberRole.Designer.cs">
+      <DependentUpon>201307152115127_GroupMemberUniqueMemberRole.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -1940,6 +1948,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307151334356_CanCheckIn.resx">
       <DependentUpon>201307151334356_CanCheckIn.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307152110106_GroupMemberAddMemberStatus.resx">
+      <DependentUpon>201307152110106_GroupMemberAddMemberStatus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307152115127_GroupMemberUniqueMemberRole.resx">
+      <DependentUpon>201307152115127_GroupMemberUniqueMemberRole.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
