@@ -54,7 +54,7 @@ namespace Rock.Field.Types
             var service = new EntityTypeService();
             var entityTypes = new EntityTypeService().GetEntities();
 
-            dropDownList.Items.Add( new ListItem(None.Text, None.IdValue) );
+            dropDownList.Items.Add( new ListItem("None (Global)", "") );
             foreach ( var entityType in entityTypes.OrderBy( e => e.FriendlyName ).ThenBy( e => e.Name ))
             {
                 dropDownList.Items.Add( new ListItem( entityType.FriendlyName, entityType.Name ) );

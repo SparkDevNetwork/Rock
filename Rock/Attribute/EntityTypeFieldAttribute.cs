@@ -15,14 +15,14 @@ namespace Rock.Attribute
     /// Value returns EntityType.Name
     /// </summary>
     [AttributeUsage( AttributeTargets.Class, AllowMultiple = true, Inherited = true )]
-    public class EntityTypeAttribute : FieldAttribute
+    public class EntityTypeFieldAttribute : FieldAttribute
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="EntityTypeAttribute" /> class.
+        /// Initializes a new instance of the <see cref="EntityTypeFieldAttribute" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
-        public EntityTypeAttribute(string name, string description = "", bool required = true, string category = "", int order = 0, string key = null)
+        public EntityTypeFieldAttribute(string name, string description = "", bool required = true, string category = "", int order = 0, string key = null)
             : base( name, description, required, "", category, order, key, typeof( Rock.Field.Types.EntityTypeFieldType ).FullName )
         {
         }
