@@ -369,11 +369,15 @@
     <Compile Include="Migrations\201307161341221_FixRelationshipBlockSettings.Designer.cs">
       <DependentUpon>201307161341221_FixRelationshipBlockSettings.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201307161345205_AttendedCheckin.cs" />
+    <Compile Include="Migrations\201307161345205_AttendedCheckin.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Migrations\201307161345205_AttendedCheckin.Designer.cs">
       <DependentUpon>201307161345205_AttendedCheckin.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201307161346246_AddAttendedCheckInSite.cs" />
+    <Compile Include="Migrations\201307161346246_AddAttendedCheckInSite.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Migrations\201307161346246_AddAttendedCheckInSite.Designer.cs">
       <DependentUpon>201307161346246_AddAttendedCheckInSite.cs</DependentUpon>
     </Compile>
@@ -1959,7 +1963,7 @@
     <EmbeddedResource Include="Migrations\201307112143164_LayoutBlocksSiteSpecific.resx">
       <DependentUpon>201307112143164_LayoutBlocksSiteSpecific.cs</DependentUpon>
     </EmbeddedResource>
-	<EmbeddedResource Include="Migrations\201307151334356_CanCheckIn.resx">
+    <EmbeddedResource Include="Migrations\201307151334356_CanCheckIn.resx">
       <DependentUpon>201307151334356_CanCheckIn.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307160029240_InheritedGroupType.resx">
@@ -1973,7 +1977,7 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307161346246_AddAttendedCheckInSite.resx">
       <DependentUpon>201307161346246_AddAttendedCheckInSite.cs</DependentUpon>
-	</EmbeddedResource>    
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Auth\" />
