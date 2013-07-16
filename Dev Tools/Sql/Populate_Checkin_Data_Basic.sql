@@ -59,21 +59,38 @@ SET @GroupEntityTypeId = (SELECT Id FROM [EntityType] WHERE Name = 'Rock.Model.G
 DECLARE @AttributeEntityTypeId INT
 SET @AttributeEntityTypeId = (SELECT Id FROM [EntityType] WHERE Name = 'Rock.Model.Attribute')
 
--- Category Id
-DECLARE @CheckInCategoryId INT
-SET @CheckInCategoryId = (
+-- Group Type Check-in Category Id
+DECLARE @GroupTypeCheckInCategoryId INT
+SET @GroupTypeCheckInCategoryId = (
 	SELECT Id FROM Category 
 	WHERE EntityTypeId = @AttributeEntityTypeId 
 	AND EntityTypeQualifierColumn = 'EntityTypeId' 
 	AND EntityTypeQualifierValue = CAST(@GroupTypeEntityTypeId AS varchar)
 	AND Name = 'Check-in'
 )
-IF @CheckInCategoryId IS NULL
+IF @GroupTypeCheckInCategoryId IS NULL
 BEGIN
 	INSERT INTO Category (IsSystem, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, Name, Guid)
 	VALUES (0, @AttributeEntityTypeId, 'EntityTypeId', CAST(@GroupTypeEntityTypeId AS varchar), 'Check-in', NEWID())
-	SET @CheckInCategoryId = SCOPE_IDENTITY()
+	SET @GroupTypeCheckInCategoryId = SCOPE_IDENTITY()
 END
+
+-- Group Check-in Category Id
+DECLARE @GroupCheckInCategoryId INT
+SET @GroupCheckInCategoryId = (
+	SELECT Id FROM Category 
+	WHERE EntityTypeId = @AttributeEntityTypeId 
+	AND EntityTypeQualifierColumn = 'EntityTypeId' 
+	AND EntityTypeQualifierValue = CAST(@GroupEntityTypeId AS varchar)
+	AND Name = 'Check-in'
+)
+IF @GroupCheckInCategoryId IS NULL
+BEGIN
+	INSERT INTO Category (IsSystem, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, Name, Guid)
+	VALUES (0, @AttributeEntityTypeId, 'EntityTypeId', CAST(@GroupEntityTypeId AS varchar), 'Check-in', NEWID())
+	SET @GroupCheckInCategoryId = SCOPE_IDENTITY()
+END
+
 
 -- Table of all GroupType Guids
 DECLARE @tGroupTypeGuids TABLE ( [Guid] uniqueidentifier );
@@ -227,7 +244,7 @@ SET @TheGroupTypeId = @NurseryPreschoolGroupTypeId;
 	SET @AttributeId = SCOPE_IDENTITY()
 
 		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @CheckInCategoryId)
+			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
 
 		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid]) 
 			VALUES (0, @AttributeId, @TheGroupTypeId, 0, '0.0', newid())
@@ -238,7 +255,7 @@ SET @TheGroupTypeId = @NurseryPreschoolGroupTypeId;
 	SET @AttributeId = SCOPE_IDENTITY()
 
 		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @CheckInCategoryId)
+			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
 
 		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
 			VALUES (0, @AttributeId, @TheGroupTypeId, 1, '6.00', newid())
@@ -251,7 +268,7 @@ SET @TheGroupTypeId = @ElementaryGroupTypeId;
 	SET @AttributeId = SCOPE_IDENTITY()
 
 		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @CheckInCategoryId)
+			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
 
 		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
 			VALUES (0, @AttributeId, @TheGroupTypeId, 0, '4.75',  newid())
@@ -262,7 +279,7 @@ SET @TheGroupTypeId = @ElementaryGroupTypeId;
 	SET @AttributeId = SCOPE_IDENTITY()
 
 		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @CheckInCategoryId)
+			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
 
 		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
 			VALUES (0, @AttributeId, @TheGroupTypeId, 1, '13.99', newid())
@@ -273,7 +290,7 @@ SET @TheGroupTypeId = @ElementaryGroupTypeId;
 	SET @AttributeId = SCOPE_IDENTITY()
 
 		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @CheckInCategoryId)
+			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
 
 		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
 			VALUES (0, @AttributeId, @TheGroupTypeId, 0, '0', newid())
@@ -283,7 +300,7 @@ SET @TheGroupTypeId = @ElementaryGroupTypeId;
 	SET @AttributeId = SCOPE_IDENTITY()
 
 		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @CheckInCategoryId)
+			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
 
 		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
 			VALUES (0, @AttributeId, @TheGroupTypeId, 1, '6', newid())
@@ -297,7 +314,7 @@ SET @TheGroupTypeId = @JHGroupTypeId;
 	SET @AttributeId = SCOPE_IDENTITY()
 
 		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @CheckInCategoryId)
+			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
 
 		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid]) 
 			VALUES (0, @AttributeId, @TheGroupTypeId, 0, '12', newid())
@@ -307,7 +324,7 @@ SET @TheGroupTypeId = @JHGroupTypeId;
 	SET @AttributeId = SCOPE_IDENTITY()
 
 		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @CheckInCategoryId)
+			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
 
 		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
 			VALUES (0, @AttributeId, @TheGroupTypeId, 1, '15', newid())
@@ -318,7 +335,7 @@ SET @TheGroupTypeId = @JHGroupTypeId;
 	SET @AttributeId = SCOPE_IDENTITY()
 
 		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @CheckInCategoryId)
+			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
 
 		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
 			VALUES (0, @AttributeId, @TheGroupTypeId, 0, '7', newid())
@@ -328,7 +345,7 @@ SET @TheGroupTypeId = @JHGroupTypeId;
 	SET @AttributeId = SCOPE_IDENTITY()
 
 		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @CheckInCategoryId)
+			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
 
 		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
 			VALUES (0, @AttributeId, @TheGroupTypeId, 1, '8', newid())
@@ -342,7 +359,7 @@ SET @TheGroupTypeId = @HSGroupTypeId;
 	SET @AttributeId = SCOPE_IDENTITY()
 
 		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @CheckInCategoryId)
+			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
 
 		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid]) 
 			VALUES (0, @AttributeId, @TheGroupTypeId, 0, '13.0', newid())
@@ -352,7 +369,7 @@ SET @TheGroupTypeId = @HSGroupTypeId;
 	SET @AttributeId = SCOPE_IDENTITY()
 
 		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @CheckInCategoryId)
+			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
 
 		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
 			VALUES (0, @AttributeId, @TheGroupTypeId, 1, '19.0', newid())
@@ -363,7 +380,7 @@ SET @TheGroupTypeId = @HSGroupTypeId;
 	SET @AttributeId = SCOPE_IDENTITY()
 
 		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @CheckInCategoryId)
+			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
 
 		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
 			VALUES (0, @AttributeId, @TheGroupTypeId, 0, '9', newid())
@@ -373,7 +390,7 @@ SET @TheGroupTypeId = @HSGroupTypeId;
 	SET @AttributeId = SCOPE_IDENTITY()
 
 		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @CheckInCategoryId)
+			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
 
 		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
 			VALUES (0, @AttributeId, @TheGroupTypeId, 1, '12', newid())
@@ -471,7 +488,7 @@ DECLARE @TheGroupId int;
 	SET @AttributeId = SCOPE_IDENTITY();
 
 		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @CheckInCategoryId)
+			VALUES (@AttributeId, @GroupCheckInCategoryId)
 
 		-- Nursery MinAge (0 - )
 		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
@@ -487,7 +504,7 @@ DECLARE @TheGroupId int;
 	SET @AttributeId = SCOPE_IDENTITY();
 	
 		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @CheckInCategoryId)
+			VALUES (@AttributeId, @GroupCheckInCategoryId)
 
 		-- Nursery MaxAge ( - 3)
 		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
@@ -505,7 +522,7 @@ DECLARE @TheGroupId int;
 	SET @AttributeId = SCOPE_IDENTITY();
 
 		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @CheckInCategoryId)
+			VALUES (@AttributeId, @GroupCheckInCategoryId)
 
 		-- Grades K-1 MinAge ( 4.75 - )
 		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
@@ -525,7 +542,7 @@ DECLARE @TheGroupId int;
 	SET @AttributeId = SCOPE_IDENTITY();
 
 		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @CheckInCategoryId)
+			VALUES (@AttributeId, @GroupCheckInCategoryId)
 
 		-- Grades K-1 MaxAge ( - 8.75 )
 		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
@@ -545,7 +562,7 @@ DECLARE @TheGroupId int;
 	SET @AttributeId = SCOPE_IDENTITY();
 
 		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @CheckInCategoryId)
+			VALUES (@AttributeId, @GroupCheckInCategoryId)
 
 		-- Grades K-1 MinGrade ( 0 - )
 		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
@@ -565,7 +582,7 @@ DECLARE @TheGroupId int;
 	SET @AttributeId = SCOPE_IDENTITY();
 
 		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @CheckInCategoryId)
+			VALUES (@AttributeId, @GroupCheckInCategoryId)
 
 		-- Grades K-1 MaxGrade ( - 1 )
 		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
@@ -792,6 +809,10 @@ DELETE [GroupLocation]
 	INSERT INTO [GroupLocation] (GroupId, LocationId, Guid)
 	 SELECT @HSGroupId, L.Id, NEWID() FROM Location L WHERE L.Name = 'the Garage' 
 	 
+	-- Add Test group to each location
+	INSERT INTO [GroupLocation] (GroupId, LocationId, Guid)
+	 SELECT @TestGroupId, L.Id, NEWID() FROM Location L WHERE L.ParentLocationId = @BuildingLocationId
+
 ---------------------------------------------------------------------------
 -- Add Group Locations to Schedules
 ---------------------------------------------------------------------------
