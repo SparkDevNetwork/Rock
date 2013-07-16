@@ -15,15 +15,15 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class CampusPicker : LabeledDropDownList
+    public class GroupTypePicker : LabeledDropDownList
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="CampusPicker" /> class.
+        /// Initializes a new instance of the <see cref="GroupTypePicker" /> class.
         /// </summary>
-        public CampusPicker()
+        public GroupTypePicker()
             : base()
         {
-            LabelText = "Campus";
+            LabelText = "Group Type";
         }
 
         /// <summary>
@@ -58,14 +58,13 @@ namespace Rock.Web.UI.Controls
                 base.Required = value;
             }
         }
-
         /// <summary>
-        /// Gets or sets the campuses.
+        /// Gets or sets the group types.
         /// </summary>
         /// <value>
-        /// The campuses.
+        /// The group types.
         /// </value>
-        public List<Campus> Campuses
+        public List<GroupType> GroupTypes
         {
             set
             {
@@ -76,24 +75,24 @@ namespace Rock.Web.UI.Controls
                     this.Items.Add( new ListItem( string.Empty, None.IdValue ) );
                 }
 
-                foreach ( Campus campus in value )
+                foreach ( GroupType groupType in value )
                 {
-                    ListItem campusItem = new ListItem();
-                    campusItem.Value = campus.Id.ToString();
-                    campusItem.Text = campus.Name;
-                    this.Items.Add( campusItem );
+                    ListItem groupTypeItem = new ListItem();
+                    groupTypeItem.Value = groupType.Id.ToString();
+                    groupTypeItem.Text = groupType.Name;
+                    this.Items.Add( groupTypeItem );
                 }
 
             }
         }
 
         /// <summary>
-        /// Gets the selected campus ids.
+        /// Gets the selected groupType ids.
         /// </summary>
         /// <value>
-        /// The selected campus ids.
+        /// The selected groupType ids.
         /// </value>
-        public int? SelectedCampusId
+        public int? SelectedGroupTypeId
         {
             get
             {

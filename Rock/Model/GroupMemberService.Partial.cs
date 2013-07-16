@@ -163,14 +163,27 @@ namespace Rock.Model
                 {
                     Guid ownerRoleGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER );
 
-                    int? ownerPersonId = Queryable()
+                    var memberInfo = Queryable()
                         .Where( m =>
                             m.GroupId == groupMember.GroupId &&
                             m.GroupRole.Guid.Equals( ownerRoleGuid ) )
-                        .Select( m => m.PersonId )
+                        .Select( m => new 
+                        {
+                            PersonId = m.PersonId,
+                            RoleId = m.GroupRoleId
+                        } )
                         .FirstOrDefault();
 
-                    if ( ownerPersonId.HasValue )
+                    int? ownerPersonId = null;
+                    int? ownerRoleId = null;
+
+                    if ( memberInfo != null )
+                    {
+                        ownerPersonId = memberInfo.PersonId;
+                        ownerRoleId = memberInfo.RoleId;
+                    }
+
+                    if ( ownerPersonId.HasValue && ownerRoleId.HasValue )
                     {
                         // Find related person's group
                         var inverseGroup = Queryable()
@@ -183,9 +196,14 @@ namespace Rock.Model
 
                         if ( inverseGroup == null && createGroup )
                         {
+                            var ownerGroupMember = new GroupMember();
+                            ownerGroupMember.PersonId = groupMember.PersonId;
+                            ownerGroupMember.GroupRoleId = ownerRoleId.Value;
+
                             inverseGroup = new Group();
                             inverseGroup.Name = groupRole.GroupType.Name;
                             inverseGroup.GroupTypeId = groupRole.GroupTypeId.Value;
+                            inverseGroup.Members.Add( ownerGroupMember );
                         }
 
                         if ( inverseGroup != null )
