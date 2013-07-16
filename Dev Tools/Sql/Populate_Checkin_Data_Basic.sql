@@ -165,7 +165,6 @@ SELECT Id FROM [Group] WHERE GroupTypeId in (SELECT Id FROM @tAllCheckinGroupTyp
 	-- Delete the legacy Min/Max Age attributes ?? 
 	DELETE [Attribute] WHERE guid in ('63FA25AA-7796-4302-BF05-D96A1C390BD7','D05368C9-5069-49CD-B7E8-9CE8C46BB75D','8A5315C5-1431-4C48-9C91-0675D3BE87EE','47C14AF6-A259-4EE4-8BC6-4D735C2A1252')
 
-
 DECLARE @ParentGroupTypeId int
 DECLARE @ChildGroupTypeId int
 DECLARE @GroupRoleId int
@@ -783,10 +782,6 @@ WHERE C.Name = 'Main Campus'
 -- Add Groups to Locations
 ---------------------------------------------------------------------------
 DELETE [GroupLocation]
-
-	INSERT INTO [GroupLocation] (GroupId, LocationId, Guid) 
-	SELECT @TestGroupId, DL.LocationId, NEWID()
-	FROM DeviceLocation DL
 
 	INSERT INTO [GroupLocation] (GroupId, LocationId, Guid)
 	 SELECT @NurseryGroupId, L.Id, NEWID() FROM Location L WHERE L.Name = 'Bunnies'
