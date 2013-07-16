@@ -210,7 +210,7 @@
                 <h3>Grade</h3>
             </div>
         </div>
-        <div id="div1" runat="server">
+        <div id="addFamilyNamesPage1" runat="server">
             <div class="row-fluid attended-checkin-body person">
                 <div class="span3">
                     <Rock:DataTextBox ID="tbFirstName1" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
@@ -280,7 +280,7 @@
                 </div>
             </div>
         </div>
-        <div id="div2" runat="server" visible="false">
+        <div id="addFamilyNamesPage2" runat="server" visible="false">
             <div class="row-fluid attended-checkin-body person">
                 <div class="span3">
                     <Rock:DataTextBox ID="tbFirstName5" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
@@ -350,7 +350,7 @@
                 </div>
             </div>
         </div>
-        <div id="div3" runat="server" visible="false">
+        <div id="addFamilyNamesPage3" runat="server" visible="false">
             <div class="row-fluid attended-checkin-body person">
                 <div class="span3">
                     <Rock:DataTextBox ID="tbFirstName9" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
