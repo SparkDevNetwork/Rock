@@ -142,6 +142,7 @@ namespace Rock.Web.UI.Controls
         {
             get { return true; }
         }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>

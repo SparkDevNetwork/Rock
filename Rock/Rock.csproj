@@ -361,6 +361,14 @@
     <Compile Include="Migrations\201307151334356_CanCheckIn.Designer.cs">
       <DependentUpon>201307151334356_CanCheckIn.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201307160029240_InheritedGroupType.cs" />
+    <Compile Include="Migrations\201307160029240_InheritedGroupType.Designer.cs">
+      <DependentUpon>201307160029240_InheritedGroupType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307161341221_FixRelationshipBlockSettings.cs" />
+    <Compile Include="Migrations\201307161341221_FixRelationshipBlockSettings.Designer.cs">
+      <DependentUpon>201307161341221_FixRelationshipBlockSettings.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -985,6 +993,7 @@
     <Compile Include="Web\UI\Controls\PersonProfile\BadgeList.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ComponentPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\ComponentsPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\GroupTypePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\PersonPicker2.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GroupRolePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\GeoPicker.cs" />
@@ -1940,6 +1949,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307151334356_CanCheckIn.resx">
       <DependentUpon>201307151334356_CanCheckIn.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307160029240_InheritedGroupType.resx">
+      <DependentUpon>201307160029240_InheritedGroupType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307161341221_FixRelationshipBlockSettings.resx">
+      <DependentUpon>201307161341221_FixRelationshipBlockSettings.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
