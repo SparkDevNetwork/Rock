@@ -183,6 +183,13 @@ namespace Rock.Model
         [DataMember]
         public int DisplayOrder { get; set; }
 
+        /// <summary>
+        /// Gets or sets the inherited group type id.
+        /// </summary>
+        /// <value>The inherited group type id.</value>
+        [DataMember]
+        public int? InheritedGroupTypeId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -313,6 +320,13 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets or sets the inherited group type.  If a group type inherits from another
+        /// group type, it will inherit that group type's attributes
+        /// </summary>
+        /// <value>The type of the inherited group.</value>
+        public virtual GroupType InheritedGroupType { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -347,6 +361,7 @@ namespace Rock.Model
             this.HasOptional( p => p.DefaultGroupRole ).WithMany().HasForeignKey( p => p.DefaultGroupRoleId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.IconSmallFile ).WithMany().HasForeignKey( p => p.IconSmallFileId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.IconLargeFile ).WithMany().HasForeignKey( p => p.IconLargeFileId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.InheritedGroupType ).WithMany().HasForeignKey( p => p.InheritedGroupTypeId ).WillCascadeOnDelete( false );
         }
     }
 

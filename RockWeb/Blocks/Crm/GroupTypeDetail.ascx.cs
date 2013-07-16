@@ -133,6 +133,7 @@ namespace RockWeb.Blocks.Crm
             gGroupAttributes.Actions.AddClick += gGroupAttributes_Add;
             gGroupAttributes.GridRebind += gGroupAttributes_GridRebind;
             gGroupAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
+              
         }
 
         /// <summary>
@@ -174,6 +175,10 @@ namespace RockWeb.Blocks.Crm
 
             ddlAttendanceRule.BindToEnum( typeof( Rock.Model.AttendanceRule ) );
             ddlAttendancePrintTo.BindToEnum( typeof( Rock.Model.PrintTo ) );
+
+            gtpInheritedGroupType.GroupTypes = new GroupTypeService().Queryable()
+                .Where( g => g.Id != groupTypeId)
+                .ToList();
         }
 
         /// <summary>
@@ -227,6 +232,7 @@ namespace RockWeb.Blocks.Crm
             ddlAttendanceRule.SetValue( (int)groupType.AttendanceRule );
             ddlAttendancePrintTo.SetValue( (int)groupType.AttendancePrintTo );
             cbAllowMultipleLocations.Checked = groupType.AllowMultipleLocations;
+            gtpInheritedGroupType.SelectedGroupTypeId = groupType.InheritedGroupTypeId;
             groupType.ChildGroupTypes.ToList().ForEach( a => ChildGroupTypesDictionary.Add( a.Id, a.Name ) );
             groupType.LocationTypes.ToList().ForEach( a => LocationTypesDictionary.Add( a.LocationTypeValueId, a.LocationTypeValue.Name ) );
 
@@ -283,6 +289,7 @@ namespace RockWeb.Blocks.Crm
             ddlAttendanceRule.Enabled = !readOnly;
             ddlAttendancePrintTo.Enabled = !readOnly;
             cbAllowMultipleLocations.Enabled = !readOnly;
+            gtpInheritedGroupType.Enabled = !readOnly;
             gGroupTypeAttributes.Enabled = !readOnly;
             gGroupAttributes.Enabled = !readOnly;
 
@@ -540,6 +547,7 @@ namespace RockWeb.Blocks.Crm
                 groupType.AttendanceRule = ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>();
                 groupType.AttendancePrintTo = ddlAttendancePrintTo.SelectedValueAsEnum<PrintTo>();
                 groupType.AllowMultipleLocations = cbAllowMultipleLocations.Checked;
+                groupType.InheritedGroupTypeId = gtpInheritedGroupType.SelectedGroupTypeId;
 
                 groupType.ChildGroupTypes = new List<GroupType>();
                 groupType.ChildGroupTypes.Clear();
