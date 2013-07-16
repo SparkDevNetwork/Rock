@@ -194,6 +194,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                 if ( family != null )
                 {
+                    //family.People.Where( p => p.Person.PersonStatusValue = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CANCHECKIN );
+                    //new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CANCHECKIN ) ).Id;
                     int id = int.Parse( e.CommandArgument.ToString() );
 
                     // no matter the id (if it's 0, this person is brand new and hasn't been added to the system yet), add the person to this family for this check in
@@ -656,16 +658,16 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void PreviousButton_Click( object sender, EventArgs e )
         {
-            if ( div2.Visible )
+            if ( addFamilyNamesPage2.Visible )
             {
-                div1.Visible = true;
-                div2.Visible = false;
+                addFamilyNamesPage1.Visible = true;
+                addFamilyNamesPage2.Visible = false;
                 PreviousButton.Visible = false;
             }
-            else if ( div3.Visible )
+            else if ( addFamilyNamesPage3.Visible )
             {
-                div2.Visible = true;
-                div3.Visible = false;
+                addFamilyNamesPage2.Visible = true;
+                addFamilyNamesPage3.Visible = false;
                 MoreButton.Visible = true;
             }
             mpe.Show();
@@ -678,16 +680,16 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void MoreButton_Click( object sender, EventArgs e )
         {
-            if ( div1.Visible )
+            if ( addFamilyNamesPage1.Visible )
             {
-                div1.Visible = false;
-                div2.Visible = true;
+                addFamilyNamesPage1.Visible = false;
+                addFamilyNamesPage2.Visible = true;
                 PreviousButton.Visible = true;
             }
-            else if ( div2.Visible )
+            else if ( addFamilyNamesPage2.Visible )
             {
-                div2.Visible = false;
-                div3.Visible = true;
+                addFamilyNamesPage2.Visible = false;
+                addFamilyNamesPage3.Visible = true;
                 MoreButton.Visible = false;
             }
             mpe.Show();
@@ -798,10 +800,32 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         gms.Add( gm, CurrentPersonId );
                         gms.Save( gm, CurrentPersonId );
                     } );
-                    family.People.Add( CIP );
-                    //rVisitors.DataSource = ;        //***************************  NEEDS A DATASOURCE ******************************
-                    //rVisitors.DataBind();
 
+                    family.People.Add( CIP );
+
+                    // load the visitors list
+                    List<CheckInPerson> visitors = new List<CheckInPerson>();
+
+                    // need to get the people that have the CanCheckIn GroupRole on a GroupMember record associated with the selected Family Group.
+                    var groupMembers =  gms.GetByGroupId(family.Group.Id);
+                    foreach (var groupMember in groupMembers)
+                    {
+                        if ( groupMember.GroupRoleId == new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CANCHECKIN ) ).Id )
+                        {
+                            CheckInPerson checkInPerson = new CheckInPerson();
+                            Person per = new PersonService().Get(groupMember.PersonId);
+                            checkInPerson.Person = per;
+                            visitors.Add( checkInPerson );
+                        }
+                    }
+                    rVisitors.DataSource = visitors;
+                    rVisitors.DataBind();
+
+                    // make sure the one person you just added is selected
+                    foreach ( RepeaterItem item in rVisitors.Items )
+                    {
+                        // ( (LinkButton)item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
+                    }
                 }
                 SaveState();
             }
