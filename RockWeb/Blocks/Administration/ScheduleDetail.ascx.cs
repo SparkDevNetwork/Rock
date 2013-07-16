@@ -388,9 +388,9 @@ namespace RockWeb.Blocks.Administration
             }
 
             DescriptionList descriptionList = new DescriptionList()
-                .Add("Description", schedule.Description)
+                .Add("Description", schedule.Description ?? string.Empty)
                 .Add("Next Occurrence", occurrenceText)
-                .Add("Category", schedule.Category.Name);
+                .Add("Category", schedule.Category != null ? schedule.Category.Name : string.Empty);
 
             if ( schedule.CheckInStartOffsetMinutes.HasValue )
             {
