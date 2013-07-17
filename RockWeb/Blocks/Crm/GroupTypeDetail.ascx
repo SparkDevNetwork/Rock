@@ -32,7 +32,7 @@
                         <Rock:LabeledDropDownList ID="ddlAttendanceRule" runat="server" LabelText="Attendance Rule" />
                         <Rock:LabeledDropDownList ID="ddlAttendancePrintTo" runat="server" LabelText="Attendance Print To" />
                         <Rock:LabeledCheckBox ID="cbAllowMultipleLocations" runat="server" LabelText="Allow Multiple Locations" />
-
+                        <Rock:GroupTypePicker ID="gtpInheritedGroupType" runat="server" LabelText="Inherited Group Type" Help="Group Type to inherit properties and attributes from" />
                         <div class="control-group">
                             <h5>Group Type Attributes
                             </h5>
