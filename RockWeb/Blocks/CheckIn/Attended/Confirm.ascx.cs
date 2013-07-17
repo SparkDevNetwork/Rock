@@ -36,16 +36,17 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 if ( !Page.IsPostBack )
                 {
-                    bool bestFitComplete = ProcessBestFit();
-                    if ( bestFitComplete )
-                    {
-                        gPersonList.DataKeyNames = new string[] { "ListId" };
-                        CreateGridDataSource();
-                    }
-                    else
-                    {
-                        //NavigateToPage( Activity Select
-                    }                    
+                    //bool bestFitComplete = ProcessBestFit();
+                    ProcessBestFit();
+                    //if ( bestFitComplete )
+                    //{
+                    gPersonList.DataKeyNames = new string[] { "ListId" };
+                    CreateGridDataSource();
+                    //}
+                    //else
+                    //{
+                    //    //NavigateToPage( Activity Select
+                    //}                    
                 }
             }
         }
@@ -176,7 +177,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
             CheckInPeopleIds = peopleIds;
             CheckedInPeopleIds = new List<int>();
             SaveState();
-            NavigateToPreviousPage();
+            var temp = new Dictionary<string,string>();
+            Guid pageGuid = Guid.Empty;
+            Guid.TryParse( "C87916FE-417E-4A11-8831-5CFA7678A228", out pageGuid );
+            NavigateToPage( pageGuid, temp);
         }
 
         /// <summary>
@@ -195,12 +199,52 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
         #region Internal Methods
 
-        private bool ProcessBestFit()
+        private void ProcessBestFit()
         {
-            var errors = new List<string>();
-            return ProcessActivity( "Assign Best Fit", out errors );            
-        }
 
+            var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
+            if ( family != null && CheckInTimeAndActivityList.Count == 0 )
+            {
+                foreach ( var person in family.People.Where( f => f.Selected ) )
+                {
+                    var personId = CheckInPeopleIds.FirstOrDefault();
+                    var chkperson = new PersonService().Get( personId );
+                    //LoadMinistries( chkperson );
+                    //LoadTimes();
+                    //LoadActivities();
+                    if ( person.LastCheckIn != null && person.GroupTypes.Count > 1 )
+                    {
+                        var groupType = person.GroupTypes.Where( g => g.LastCheckIn == person.LastCheckIn ).FirstOrDefault();
+                        if ( groupType != null )
+                        {
+                            groupType.Selected = true;
+                            var attendService = new AttendanceService();
+                            Attendance attend = attendService.Queryable().Where( a => a.StartDateTime == person.LastCheckIn 
+                                && a.PersonId == person.Person.Id ).FirstOrDefault();
+                            List<int> temp = new List<int>();
+                            temp.Add( person.Person.Id );
+                            temp.Add( (int)attend.ScheduleId );
+                            temp.Add( (int)attend.Group.GroupTypeId );
+                            CheckInTimeAndActivityList.Add( temp );
+
+                            //var location = groupType.Locations.Where( l => l.LastCheckIn == person.LastCheckIn ).FirstOrDefault();
+                            //if ( location != null )
+                            //{
+                            //    location.Selected = true;
+                            //    var group = location.Groups.Where( g => g.LastCheckIn == person.LastCheckIn ).FirstOrDefault();
+                            //    if ( group != null )
+                            //    {
+                            //        group.Selected = true;
+                            //    }
+                            //}
+                        }
+                    }
+                }
+            }
+
+
+        }
+        
         private void GoBack()
         {
             var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
