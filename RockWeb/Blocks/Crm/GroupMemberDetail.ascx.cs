@@ -142,13 +142,7 @@ namespace RockWeb.Blocks.Crm
                 ddlGroupRole.DataBind();
             }
 
-            int[] statusValues = (int[]) Enum.GetValues( typeof( GroupMemberStatus ) );
-            string[] statusNames = (string[])Enum.GetNames( typeof( GroupMemberStatus ) );
-
-            for ( int i = 0; i < statusValues.Length; i++ )
-            {
-                ddlGroupMemberStatus.Items.Add( new ListItem( statusNames[i], statusValues[i].ToString() ) );
-            }
+            ddlGroupMemberStatus.BindToEnum( typeof( GroupMemberStatus ) );
         }
 
         /// <summary>
@@ -304,7 +298,7 @@ namespace RockWeb.Blocks.Crm
             lblMainDetails.Text = new DescriptionList()
                 .Add("Group Member", groupMember.Person)
                 .Add("Member's Role", groupMember.GroupRole.Name)
-                .Add( "Member's Status", Enum.GetName( typeof( GroupMemberStatus ), groupMember.GroupMemberStatus ) )
+                .Add( "Member's Status", groupMember.GroupMemberStatus.ConvertToString() )
                 .Add("Group Name", group.Name)
                 .Add("Group Description", group.Description)
                 
