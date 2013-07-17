@@ -5,13 +5,13 @@ namespace Rock.Migrations
     using System.Data.Entity.Migrations.Infrastructure;
     using System.Resources;
     
-    public sealed partial class AddAttendedCheckInSite : IMigrationMetadata
+    public sealed partial class GroupMemberUniqueMemberRole : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(AddAttendedCheckInSite));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(GroupMemberUniqueMemberRole));
         
         string IMigrationMetadata.Id
         {
-            get { return "201307081959246_AddAttendedCheckInSite"; }
+            get { return "201307162011096_GroupMemberUniqueMemberRole"; }
         }
         
         string IMigrationMetadata.Source

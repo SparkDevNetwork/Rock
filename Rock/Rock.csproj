@@ -369,17 +369,21 @@
     <Compile Include="Migrations\201307161341221_FixRelationshipBlockSettings.Designer.cs">
       <DependentUpon>201307161341221_FixRelationshipBlockSettings.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201307161345205_AttendedCheckin.cs">
-      <SubType>Code</SubType>
+    <Compile Include="Migrations\201307162008184_GroupMemberAddMemberStatus.cs" />
+    <Compile Include="Migrations\201307162008184_GroupMemberAddMemberStatus.Designer.cs">
+      <DependentUpon>201307162008184_GroupMemberAddMemberStatus.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201307161345205_AttendedCheckin.Designer.cs">
-      <DependentUpon>201307161345205_AttendedCheckin.cs</DependentUpon>
+    <Compile Include="Migrations\201307162011096_GroupMemberUniqueMemberRole.cs" />
+    <Compile Include="Migrations\201307162011096_GroupMemberUniqueMemberRole.Designer.cs">
+      <DependentUpon>201307162011096_GroupMemberUniqueMemberRole.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201307161346246_AddAttendedCheckInSite.cs">
-      <SubType>Code</SubType>
+    <Compile Include="Migrations\201307170308438_AttendedCheckin.cs" />
+    <Compile Include="Migrations\201307170308438_AttendedCheckin.Designer.cs">
+      <DependentUpon>201307170308438_AttendedCheckin.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201307161346246_AddAttendedCheckInSite.Designer.cs">
-      <DependentUpon>201307161346246_AddAttendedCheckInSite.cs</DependentUpon>
+    <Compile Include="Migrations\201307170312469_AddAttendedCheckInSite.cs" />
+    <Compile Include="Migrations\201307170312469_AddAttendedCheckInSite.Designer.cs">
+      <DependentUpon>201307170312469_AddAttendedCheckInSite.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
@@ -1972,11 +1976,17 @@
     <EmbeddedResource Include="Migrations\201307161341221_FixRelationshipBlockSettings.resx">
       <DependentUpon>201307161341221_FixRelationshipBlockSettings.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201307161345205_AttendedCheckin.resx">
-      <DependentUpon>201307161345205_AttendedCheckin.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201307162008184_GroupMemberAddMemberStatus.resx">
+      <DependentUpon>201307162008184_GroupMemberAddMemberStatus.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201307161346246_AddAttendedCheckInSite.resx">
-      <DependentUpon>201307161346246_AddAttendedCheckInSite.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201307162011096_GroupMemberUniqueMemberRole.resx">
+      <DependentUpon>201307162011096_GroupMemberUniqueMemberRole.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307170308438_AttendedCheckin.resx">
+      <DependentUpon>201307170308438_AttendedCheckin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307170312469_AddAttendedCheckInSite.resx">
+      <DependentUpon>201307170312469_AddAttendedCheckInSite.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

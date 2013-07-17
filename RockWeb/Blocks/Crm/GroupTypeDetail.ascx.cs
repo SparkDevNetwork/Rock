@@ -8,12 +8,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
+
 using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+
 using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Crm
@@ -721,6 +724,8 @@ namespace RockWeb.Blocks.Crm
             pnlDetails.Visible = false;
             pnlGroupTypeAttribute.Visible = true;
 
+            edtGroupTypeAttributes.AttributeEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( GroupType ) ).Id;
+
             Attribute attribute;
             if ( attributeGuid.Equals( Guid.Empty ) )
             {
@@ -838,6 +843,8 @@ namespace RockWeb.Blocks.Crm
         {
             pnlDetails.Visible = false;
             pnlGroupAttribute.Visible = true;
+
+            edtGroupAttributes.AttributeEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( Group ) ).Id;
 
             Attribute attribute;
             if ( attributeGuid.Equals( Guid.Empty ) )

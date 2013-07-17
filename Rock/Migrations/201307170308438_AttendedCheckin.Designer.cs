@@ -11,7 +11,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201307071303205_AttendedCheckin"; }
+            get { return "201307170308438_AttendedCheckin"; }
         }
         
         string IMigrationMetadata.Source

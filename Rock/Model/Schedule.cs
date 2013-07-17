@@ -207,6 +207,10 @@ namespace Rock.Model
                 if (calEvent != null && calEvent.DTStart != null)
                 {
                     var checkInStart = calEvent.DTStart.AddMinutes(0 - CheckInStartOffsetMinutes.Value);
+                    if (DateTimeOffset.Now.TimeOfDay.TotalSeconds < checkInStart.TimeOfDay.TotalSeconds)
+                    {
+                        return false;
+                    }
 
                     var checkInEnd = calEvent.DTEnd;
                     if (CheckInEndOffsetMinutes.HasValue)
@@ -214,9 +218,19 @@ namespace Rock.Model
                         checkInEnd = calEvent.DTStart.AddMinutes( CheckInEndOffsetMinutes.Value );
                     }
 
-                    if (DateTimeOffset.Now.TimeOfDay.TotalSeconds < checkInStart.TimeOfDay.TotalSeconds ||
-                        DateTimeOffset.Now.TimeOfDay.TotalSeconds > checkInEnd.TimeOfDay.TotalSeconds)
+                    // If compare is greater than zero, then checkin offset end resulted in an end time in next day, in 
+                    // which case, don't need to compare time
+                    int checkInEndDateCompare = checkInEnd.Date.CompareTo(checkInStart.Date);
+
+                    if (checkInEndDateCompare < 0)
                     {
+                        // End offset is prior to start (Would have required a neg number entered)
+                        return false;
+                    }
+
+                    if ( checkInEndDateCompare == 0 && DateTimeOffset.Now.TimeOfDay.TotalSeconds > checkInEnd.TimeOfDay.TotalSeconds )
+                    {
+                        // Same day, but end time has passed
                         return false;
                     }
 
