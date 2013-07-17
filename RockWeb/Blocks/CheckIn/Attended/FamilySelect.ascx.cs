@@ -142,7 +142,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         foreach ( RepeaterItem item in rPerson.Items )
                         {
                             ( (LinkButton)item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
-                        }                        
+                        }
+                        SaveState();
                     }
                 }
             }
@@ -255,7 +256,18 @@ namespace RockWeb.Blocks.CheckIn.Attended
             CheckInPeopleIds = peopleIds;
             CheckedInPeopleIds = new List<int>();
             CheckInTimeAndActivityList = new List<List<int>>();
-            GoNext();
+
+            var errors = new List<string>();
+            if ( ProcessActivity( "Activity Search", out errors ) )
+            {
+                SaveState();
+                NavigateToNextPage();
+            }
+            else
+            {
+                string errorMsg = "<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
+                maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
+            }             
         }
 
         /// <summary>
@@ -1032,30 +1044,21 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     if ( UserBackedUp )
                     {
                         GoBack();
-                    }
-                    else
+                    }                    
+                }
+                else
+                {
+                    foreach ( var familyMember in family.People )
                     {
-                        foreach ( var familyMember in family.People )
-                        {
-                            familyMember.Selected = true;
-                        }
+                        familyMember.Selected = true;
                     }
                 }
 
                 rPerson.DataSource = family.People;
-                rPerson.DataBind();               
+                rPerson.DataBind();
             }
         }
-
-        /// <summary>
-        /// Goes the next.
-        /// </summary>
-        private void GoNext()
-        {
-            SaveState();
-            NavigateToNextPage();
-        }
-
+        
         /// <summary>
         /// Determines whether the specified webcontrol has an "active" class.
         /// </summary>

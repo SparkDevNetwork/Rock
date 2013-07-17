@@ -1,5 +1,3 @@
-USE RockChMS_AC
-
 DECLARE @indivAttrID int
 DECLARE @houseAttrID int
 DECLARE @entityID int
@@ -22,7 +20,6 @@ SELECT @indivAttrID = [ID] FROM [Attribute] WHERE [Guid] = '0F9C847B-4302-421E-9
 SELECT @houseAttrID = [ID] FROM [Attribute] WHERE [Guid] = 'CAB397A9-5E72-4970-AF27-E60967FD6D58'
 
 -- Insert Fellowship One ID's where matched
-DROP table #resultset
 SELECT p.Id, p.FirstName, p.LastName, ih.individual_id, ih.household_id
 INTO #resultset
 FROM person p
@@ -41,6 +38,8 @@ INSERT attributevalue (IsSystem, attributeid, entityid, [order], value, [guid])
 SELECT 0, @houseAttrID, Id, 0, household_id, NEWID()
 FROM #resultset r
 
+DROP table #resultset
+
 /* ================================================== 
 	delete from attributevalue where id >= 685
 	select * from attributevalue
@@ -48,7 +47,7 @@ FROM #resultset r
 
 -- Insert Fellowship One Attendance
 INSERT Attendance (LocationId, ScheduleId, GroupId, PersonId, StartDateTime, Note, DidAttend, [Guid])
-SELECT distinct l.id
+SELECT l.id
 , s.id
 , g.id
 , p.Id
@@ -57,7 +56,7 @@ SELECT distinct l.id
 , NEWID()
 FROM Person p
 INNER JOIN AttributeValue av
-ON av.attributeid = 552 -- @indivAttrID
+ON av.attributeid = @indivAttrID
 AND av.entityid = p.id
 INNER JOIN [SVR].f1.dbo.Attendance a
 ON a.individual_id = av.value
@@ -69,4 +68,7 @@ INNER JOIN Location l
 ON r.rlc_name = l.Name
 INNER JOIN Schedule s
 ON CAST(a.start_date_time as time) = CAST(s.name as time)
+group by l.id, s.id, g.id, p.id, a.start_date_time
 ORDER BY a.start_date_time
+
+

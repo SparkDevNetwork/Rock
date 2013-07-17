@@ -36,24 +36,24 @@ namespace Rock.Workflow.Action.CheckIn
                 {
                     foreach ( var person in family.People.Where( f => f.Selected ) )
                     {
-                        if ( person.LastCheckIn != null && person.GroupTypes.Count > 1)
+                        if ( person.LastCheckIn != null && person.GroupTypes.Count > 1 )
                         {
-                            person.GroupTypes.RemoveAll( g => g.LastCheckIn != person.LastCheckIn );
-                            var groupType = person.GroupTypes.FirstOrDefault();
+                            var groupType = person.GroupTypes.Where( g => g.LastCheckIn == person.LastCheckIn ).FirstOrDefault();
                             if ( groupType != null )
                             {
-                                var location = groupType.Locations.FirstOrDefault();
+                                groupType.Selected = true;
+                                var location = groupType.Locations.Where( l => l.LastCheckIn == person.LastCheckIn ).FirstOrDefault();
                                 if ( location != null )
                                 {
-                                    var group = location.Groups.FirstOrDefault();
+                                    location.Selected = true;
+                                    var group = location.Groups.Where( g => g.LastCheckIn == person.LastCheckIn ).FirstOrDefault();
                                     if ( group != null )
                                     {
-                                        group.Selected = true;                                    
+                                        group.Selected = true;
                                     }
                                 }
                             }
                         }
-
                         continue;
                     }
                 }
