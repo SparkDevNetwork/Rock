@@ -38,10 +38,10 @@ INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @ChildGroupTypeId
 INSERT INTO [GroupRole] (IsSystem, GroupTypeId, Name, Guid, IsLeader) VALUES (0, @ChildGroupTypeId, 'Member', newid(), 0)
 SET @GroupRoleId = SCOPE_IDENTITY()
 UPDATE [GroupType] SET DefaultGroupRoleId = @GroupRoleId WHERE Id = @ChildGroupTypeId
-INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, Category, Guid)
-VALUES ( 0, @DecimalFieldTypeId, @GroupTypeEntityTypeId, 'Id', @ChildGroupTypeId, 'MinAge', 'Minimum Age', 0, 0, 0, 0, '', '63FA25AA-7796-4302-BF05-D96A1C390BD7')
-INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, Category, Guid)
-VALUES ( 0, @DecimalFieldTypeId, @GroupTypeEntityTypeId, 'Id', @ChildGroupTypeId, 'MaxAge', 'Maximum Age', 1, 0, 0, 0, '', 'D05368C9-5069-49CD-B7E8-9CE8C46BB75D')
+INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, Guid)
+VALUES ( 0, @DecimalFieldTypeId, @GroupTypeEntityTypeId, 'Id', @ChildGroupTypeId, 'MinAge', 'Minimum Age', 0, 0, 0, 0, '63FA25AA-7796-4302-BF05-D96A1C390BD7')
+INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, Guid)
+VALUES ( 0, @DecimalFieldTypeId, @GroupTypeEntityTypeId, 'Id', @ChildGroupTypeId, 'MaxAge', 'Maximum Age', 1, 0, 0, 0, 'D05368C9-5069-49CD-B7E8-9CE8C46BB75D')
 INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], Guid) SELECT 1, Id, @ChildGroupTypeId, 0, '7.0', newid() FROM Attribute WHERE guid = '63FA25AA-7796-4302-BF05-D96A1C390BD7'
 INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], Guid) SELECT 1, Id, @ChildGroupTypeId, 0, '10.99', newid() FROM Attribute WHERE guid = 'D05368C9-5069-49CD-B7E8-9CE8C46BB75D'
 
@@ -52,10 +52,10 @@ INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @ChildGroupTypeId
 INSERT INTO [GroupRole] (IsSystem, GroupTypeId, Name, Guid, IsLeader) VALUES (0, @ChildGroupTypeId, 'Member', newid(), 0)
 SET @GroupRoleId = SCOPE_IDENTITY()
 UPDATE [GroupType] SET DefaultGroupRoleId = @GroupRoleId WHERE Id = @ChildGroupTypeId
-INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, Category, Guid)
-VALUES ( 0, @DecimalFieldTypeId, @GroupTypeEntityTypeId, 'Id', @ChildGroupTypeId, 'MinAge', 'Minimum Age', 0, 0, 0, 0, '', '8A5315C5-1431-4C48-9C91-0675D3BE87EE')
-INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, Category, Guid)
-VALUES ( 0, @DecimalFieldTypeId, @GroupTypeEntityTypeId, 'Id', @ChildGroupTypeId, 'MaxAge', 'Maximum Age', 1, 0, 0, 0, '', '47C14AF6-A259-4EE4-8BC6-4D735C2A1252')
+INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, Guid)
+VALUES ( 0, @DecimalFieldTypeId, @GroupTypeEntityTypeId, 'Id', @ChildGroupTypeId, 'MinAge', 'Minimum Age', 0, 0, 0, 0, '8A5315C5-1431-4C48-9C91-0675D3BE87EE')
+INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, Guid)
+VALUES ( 0, @DecimalFieldTypeId, @GroupTypeEntityTypeId, 'Id', @ChildGroupTypeId, 'MaxAge', 'Maximum Age', 1, 0, 0, 0, '47C14AF6-A259-4EE4-8BC6-4D735C2A1252')
 INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], Guid) SELECT 1, Id, @ChildGroupTypeId, 0, '8.0', newid() FROM Attribute WHERE guid = '8A5315C5-1431-4C48-9C91-0675D3BE87EE'
 INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], Guid) SELECT 1, Id, @ChildGroupTypeId, 0, '11.99', newid() FROM Attribute WHERE guid = '47C14AF6-A259-4EE4-8BC6-4D735C2A1252'
 
@@ -120,8 +120,8 @@ END:VCALENDAR', 30, 30, '05/01/2013', NEWID()),
     ('4:30 (test)',        
 'BEGIN:VCALENDAR
 BEGIN:VEVENT
-DTEND:20130501T235900
-DTSTART:20130501T000100
+DTEND:20130701T235900
+DTSTART:20130625T000000
 RRULE:FREQ=DAILY
 END:VEVENT
 END:VCALENDAR', 0, 1439, '05/01/2013', NEWID()),
@@ -129,8 +129,8 @@ END:VCALENDAR', 0, 1439, '05/01/2013', NEWID()),
     ('6:00 (test)',        
 'BEGIN:VCALENDAR
 BEGIN:VEVENT
-DTEND:20130501T235900
-DTSTART:20130501T000100
+DTEND:20130701T235900
+DTSTART:20130625T000000
 RRULE:FREQ=DAILY
 END:VEVENT
 END:VCALENDAR', 0, 1439, '05/01/2013', NEWID())
@@ -438,8 +438,8 @@ WHERE A.[Key] = 'WorkflowTypeId'
 DECLARE @TextFieldTypeId int
 SET @TextFieldTypeId = (SELECT Id FROM FieldType WHERE guid = '9C204CD0-1233-41C5-818A-C5DA439445AA')
 DELETE [Attribute] WHERE guid = '9D2BFE8A-41F3-4A02-B3CF-9193F0C8419E'
-INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, Category, Guid)
-VALUES ( 0, @TextFieldTypeId, @WorkflowEntityTypeId, 'WorkflowTypeId', CAST(@WorkflowTypeId as varchar), 'CheckInState', 'Check In State', 0, 0, 0, 0, '', '9D2BFE8A-41F3-4A02-B3CF-9193F0C8419E')
+INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, Guid)
+VALUES ( 0, @TextFieldTypeId, @WorkflowEntityTypeId, 'WorkflowTypeId', CAST(@WorkflowTypeId as varchar), 'CheckInState', 'Check In State', 0, 0, 0, 0, '9D2BFE8A-41F3-4A02-B3CF-9193F0C8419E')
 
 -- Family Search Activity
 DECLARE @WorkflowActivityTypeId int
