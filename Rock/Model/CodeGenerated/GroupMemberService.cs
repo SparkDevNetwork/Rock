@@ -85,6 +85,7 @@ namespace Rock.Model
                 target.GroupId = source.GroupId;
                 target.PersonId = source.PersonId;
                 target.GroupRoleId = source.GroupRoleId;
+                target.GroupMemberStatus = source.GroupMemberStatus;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 
