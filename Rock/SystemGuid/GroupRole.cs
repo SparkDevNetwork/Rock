@@ -49,8 +49,6 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string GROUPROLE_KNOWN_RELATIONSHIPS_ALLOW_CHECK_IN_BY = "FF9869F1-BC56-4410-8A12-CAFC32C62257";
 
-        public const string GROUPROLE_KNOWN_RELATIONSHIPS_CANCHECKIN = "D7980FFC-3E6D-4AD1-833D-04AA405E2741";
-
         #endregion
 
         #region Implied Relationships

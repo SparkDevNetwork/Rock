@@ -194,8 +194,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                 if ( family != null )
                 {
-                    //family.People.Where( p => p.Person.PersonStatusValue = Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CANCHECKIN );
-                    //new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CANCHECKIN ) ).Id;
                     int id = int.Parse( e.CommandArgument.ToString() );
 
                     // no matter the id (if it's 0, this person is brand new and hasn't been added to the system yet), add the person to this family for this check in
@@ -788,18 +786,19 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 else
                 {
                     // this came from Add Visitor
-                    // Add CanCheckIn record to GroupMember 
-                    GroupMember gm = new GroupMember();
-                    GroupMemberService gms = new GroupMemberService();
-                    gm.IsSystem = false;
-                    gm.GroupId = family.Group.Id;
-                    gm.PersonId = person.Id;
-                    gm.GroupRoleId = new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CANCHECKIN ) ).Id;
-                    Rock.Data.RockTransactionScope.WrapTransaction( () =>
-                    {
-                        gms.Add( gm, CurrentPersonId );
-                        gms.Save( gm, CurrentPersonId );
-                    } );
+                    // Add CanCheckIn record to GroupMember
+                    Person.CreateCheckinRelationship( family.People.FirstOrDefault().Person.Id, person.Id, CurrentPersonId );
+                    //GroupMember gm = new GroupMember();
+                    //GroupMemberService gms = new GroupMemberService();
+                    //gm.IsSystem = false;
+                    //gm.GroupId = family.Group.Id;
+                    //gm.PersonId = person.Id;
+                    //gm.GroupRoleId = new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ).Id;
+                    //Rock.Data.RockTransactionScope.WrapTransaction( () =>
+                    //{
+                    //    gms.Add( gm, CurrentPersonId );
+                    //    gms.Save( gm, CurrentPersonId );
+                    //} );
 
                     family.People.Add( CIP );
 
@@ -807,10 +806,23 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     List<CheckInPerson> visitors = new List<CheckInPerson>();
 
                     // need to get the people that have the CanCheckIn GroupRole on a GroupMember record associated with the selected Family Group.
-                    var groupMembers =  gms.GetByGroupId(family.Group.Id);
+                    GroupMemberService gms = new GroupMemberService();
+                    //var knownRelationshipGroup = gms.Queryable()
+                    //    .Where( m =>
+                    //        m.PersonId == personId &&
+                    //        m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
+                    //    .Select( m => m.Group )
+                    //    .FirstOrDefault();
+                    var canCheckInGroup = gms.Queryable()
+                        .Where( m =>
+                            m.PersonId == personId &&
+                            m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) )
+                        .Select( m => m.Group )
+                        .FirstOrDefault();
+                    var groupMembers = gms.GetByGroupId( canCheckInGroup.Id );
                     foreach (var groupMember in groupMembers)
                     {
-                        if ( groupMember.GroupRoleId == new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CANCHECKIN ) ).Id )
+                        if ( groupMember.GroupRoleId == new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ).Id )
                         {
                             CheckInPerson checkInPerson = new CheckInPerson();
                             Person per = new PersonService().Get(groupMember.PersonId);
@@ -824,7 +836,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     // make sure the one person you just added is selected
                     foreach ( RepeaterItem item in rVisitors.Items )
                     {
-                        // ( (LinkButton)item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
+                        if ( person.Id == int.Parse( ( (LinkButton)item.FindControl( "lbSelectVisitor" ) ).CommandArgument ) )
+                        {
+                            ( (LinkButton)item.FindControl( "lbSelectVisitor" ) ).AddCssClass( "active" );
+                        }
                     }
                 }
                 SaveState();
