@@ -10,28 +10,32 @@
 * placed under a new top level Group called "Weekend Service Check-in" 
 * 
 * GROUPTYPE				   ATTRIBUTES
-*     - GROUP			                                  LOCATION           GUID
-* -------------------     --------------------------      ------------------ ------------------------------------
+*     - GROUP			                                  LOCATION           GUID									Inherits From
+* -------------------     --------------------------      ------------------ --------------------------------------	----------------------
 * Weekend Service Check-in Area                                              FEDD389A-616F-4A53-906C-63D8255631C5
 *     - Weekend Service Check-in                                               64F0F121-8E1E-4A24-B706-BA8E921FE623
 * 
-* Nursery/Preschool Area  Ages: 0-6                                          CADB2D12-7836-44BC-8EEA-3C6AB22FD5E8
+* Check in by Age         Ages:	                                             0572A5FE-20A4-4BF1-95CD-C71DB5281392
+* Check in by Grade 	  Grades:                                            4F9565A7-DD5A-41C3-B4E8-13F0B872B10B	Check in by Age
+*
+* Nursery/Preschool Area                                					 CADB2D12-7836-44BC-8EEA-3C6AB22FD5E8	Check in by Age
 *     - Nursery           Ages: 0-3                       Bunnies              DC1A2A83-1B5D-46BC-9E99-4571466827F5
 *     - Preschool         Ages: 2.5-5.99                  Puppies              366001D1-0E60-4AA1-875D-046286E29284
 *
-* Elementary Area         Ages: 4.75-13.99  Grades: K-6                      E3C8F7D6-5CEB-43BB-802F-66C3E734049E
+* Elementary Area                                                            E3C8F7D6-5CEB-43BB-802F-66C3E734049E	Check in by Grade
 *     - Grades K-1        Ages: 4.75-8.75   Grades: K-1   Bears                FB8AAAA2-9A57-4AA4-8543-10A053C4834F
 *     - Grades 2-3        Ages: 6-10.99     Grades: 2-3   Bobcats              24901861-14CF-474F-9FCE-7BA1D6C84BFF
 *     - Grades 4-6        Ages: 8-13.99     Grades: 4-6   Outpost              42C408CE-3D69-4D7D-B9EA-41087A8945A6
 *
-* Jr High Area            Ages: 12-15 Grades: 7-8                            7A17235B-69AD-439B-BAB0-1A0A472DB96F
-*     - Grades 7-8        n/a                             the Warehouse        7B99F840-66AB-4C7A-99A2-104D9CC953F7
+* Jr High Area																7A17235B-69AD-439B-BAB0-1A0A472DB96F	Check in by Grade
+*     - Grades 7-8        Ages: 12-15 Grades: 7-8         the Warehouse        7B99F840-66AB-4C7A-99A2-104D9CC953F7
 *
-* High School Area        Ages: 13-19 Grades: 9-12                           9A88743B-F336-4404-B877-2A623689195D
-*     - Grades 9-12       n/a                             the Garage           9B982B2A-24AB-4B82-AB49-84BDB4CF9E5F
+* High School Area															9A88743B-F336-4404-B877-2A623689195D	Check in by Grade
+*     - Grades 9-12       Ages: 13-19 Grades: 9-12        the Garage           9B982B2A-24AB-4B82-AB49-84BDB4CF9E5F
 *
-* Check-in Test (Don't Use) Area                                             CAAF4F9B-58B9-45B4-AABC-9188347948B7
+* Check-in Test (Don't Use) Area                                             CAAF4F9B-58B9-45B4-AABC-9188347948B7	
 *     - Check-in Test (Don't Use)                                              CBBBEEE0-DE95-4876-9FEF-5EB68FA67853
+*
 *     
 */
 
@@ -55,7 +59,7 @@ SET @IntFieldTypeId = (SELECT Id FROM [FieldType] WHERE [Guid] = 'A75DFC58-7A1B-
 DECLARE @GroupEntityTypeId INT
 SET @GroupEntityTypeId = (SELECT Id FROM [EntityType] WHERE Name = 'Rock.Model.Group')
 
--- Attribute Enity Type
+-- Attribute Entity Type
 DECLARE @AttributeEntityTypeId INT
 SET @AttributeEntityTypeId = (SELECT Id FROM [EntityType] WHERE Name = 'Rock.Model.Attribute')
 
@@ -75,23 +79,6 @@ BEGIN
 	SET @GroupTypeCheckInCategoryId = SCOPE_IDENTITY()
 END
 
--- Group Check-in Category Id
-DECLARE @GroupCheckInCategoryId INT
-SET @GroupCheckInCategoryId = (
-	SELECT Id FROM Category 
-	WHERE EntityTypeId = @AttributeEntityTypeId 
-	AND EntityTypeQualifierColumn = 'EntityTypeId' 
-	AND EntityTypeQualifierValue = CAST(@GroupEntityTypeId AS varchar)
-	AND Name = 'Check-in'
-)
-IF @GroupCheckInCategoryId IS NULL
-BEGIN
-	INSERT INTO Category (IsSystem, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, Name, Guid)
-	VALUES (0, @AttributeEntityTypeId, 'EntityTypeId', CAST(@GroupEntityTypeId AS varchar), 'Check-in', NEWID())
-	SET @GroupCheckInCategoryId = SCOPE_IDENTITY()
-END
-
-
 -- Table of all GroupType Guids
 DECLARE @tGroupTypeGuids TABLE ( [Guid] uniqueidentifier );
 INSERT INTO @tGroupTypeGuids
@@ -101,6 +88,8 @@ UNION ALL SELECT 'E3C8F7D6-5CEB-43BB-802F-66C3E734049E'
 UNION ALL SELECT '7A17235B-69AD-439B-BAB0-1A0A472DB96F'
 UNION ALL SELECT '9A88743B-F336-4404-B877-2A623689195D'
 UNION ALL SELECT 'CAAF4F9B-58B9-45B4-AABC-9188347948B7'
+UNION ALL SELECT '0572A5FE-20A4-4BF1-95CD-C71DB5281392'
+UNION ALL SELECT '4F9565A7-DD5A-41C3-B4E8-13F0B872B10B'
 
 -- Table of all Group Guids
 DECLARE @tGroupGuids TABLE ( [Guid] uniqueidentifier );
@@ -132,20 +121,8 @@ SELECT Id FROM [Group] WHERE GroupTypeId in (SELECT Id FROM @tAllCheckinGroupTyp
 -- Cleanup the old data before we add the new stuff
 ------------------------------------------------------------------------
 
-    -- Delete Attributes Values for Groups
-	DELETE AV FROM [AttributeValue] AV WHERE AV.AttributeId IN
-	(
-		SELECT Id FROM [Attribute] A WHERE EntityTypeId = @GroupEntityTypeId AND EntityTypeQualifierColumn = 'GroupTypeId' AND EntityTypeQualifierValue IN (SELECT [Id] FROM @tAllCheckinGroupTypeIds )
-    )
-    
-    -- Delete Attributes Values for GroupTypes
-	DELETE AV FROM [AttributeValue] AV WHERE AV.AttributeId IN
-	(
-		SELECT Id FROM [Attribute] A WHERE EntityTypeId = @GroupEntityTypeId AND EntityTypeQualifierColumn = 'Id' AND EntityTypeQualifierValue IN (SELECT [Id] FROM @tAllCheckinGroupTypeIds )
-    )
-    
     -- Delete Attributes for Groups 
-    DELETE A FROM [Attribute] A WHERE A.EntityTypeId = @GroupTypeEntityTypeId AND A.EntityTypeQualifierColumn = 'GroupTypeId' AND A.EntityTypeQualifierValue IN ( SELECT Id from @tAllCheckinGroupTypeIds )
+    DELETE A FROM [Attribute] A WHERE A.EntityTypeId = @GroupEntityTypeId AND A.EntityTypeQualifierColumn = 'GroupTypeId' AND A.EntityTypeQualifierValue IN ( SELECT Id from @tAllCheckinGroupTypeIds )
 	
     -- Delete Attributes for GroupTypes 
     DELETE A FROM [Attribute] A WHERE A.EntityTypeId = @GroupTypeEntityTypeId AND A.EntityTypeQualifierColumn = 'Id' AND A.EntityTypeQualifierValue IN ( SELECT Id from @tAllCheckinGroupTypeIds )
@@ -163,22 +140,24 @@ SELECT Id FROM [Group] WHERE GroupTypeId in (SELECT Id FROM @tAllCheckinGroupTyp
 	DELETE @tAllCheckinGroupIds
 	
 	-- Delete the legacy Min/Max Age attributes ?? 
-	DELETE [Attribute] WHERE guid in ('63FA25AA-7796-4302-BF05-D96A1C390BD7','D05368C9-5069-49CD-B7E8-9CE8C46BB75D','8A5315C5-1431-4C48-9C91-0675D3BE87EE','47C14AF6-A259-4EE4-8BC6-4D735C2A1252')
+	DELETE [Attribute] WHERE guid in (
+		'63FA25AA-7796-4302-BF05-D96A1C390BD7','D05368C9-5069-49CD-B7E8-9CE8C46BB75D','8A5315C5-1431-4C48-9C91-0675D3BE87EE','47C14AF6-A259-4EE4-8BC6-4D735C2A1252',
+		'43511B8F-71D9-423A-85BF-D1CD08C1998E','BB85499E-3BD5-4C77-A711-DC4AE7F6115F','C7C028C2-6582-45E8-839D-5C4467C6FDF4','AD1FECFD-A6B8-4C76-AB5D-B5B91AAAEFA1')
 
+
+---------------------------------------------------------------------------
+-- Add the GroupTypes
+---------------------------------------------------------------------------
 DECLARE @ParentGroupTypeId int
-DECLARE @ChildGroupTypeId int
-DECLARE @GroupRoleId int
-DECLARE @AttributeId int
 
+DECLARE @AgeGroupTypeId int
+DECLARE @GradeGroupTypeId int
 DECLARE @TestGroupTypeId int
 DECLARE @NurseryPreschoolGroupTypeId int
 DECLARE @ElementaryGroupTypeId int
 DECLARE @JHGroupTypeId int
 DECLARE @HSGroupTypeId int
 
----------------------------------------------------------------------------
--- new GroupTypes
----------------------------------------------------------------------------
 -- Insert the new top level Check-in GroupType
 INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo])
    VALUES (0, 'Weekend Service Check-in Area', 'FEDD389A-616F-4A53-906C-63D8255631C5', 0, 0, 0, 0)
@@ -186,230 +165,40 @@ SET @ParentGroupTypeId = SCOPE_IDENTITY()
 
 -- Now insert the all the new GroupTypes under that one...
 INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo])
+   VALUES (0, 'Check in by Age', '0572A5FE-20A4-4BF1-95CD-C71DB5281392', 0, 0, 0, 0)
+SET @AgeGroupTypeId = SCOPE_IDENTITY()
+INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @AgeGroupTypeId);
+
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[InheritedGroupTypeId])
+   VALUES (0, 'Check in by Grade', '4F9565A7-DD5A-41C3-B4E8-13F0B872B10B', 0, 0, 0, 0, @AgeGroupTypeId)
+SET @GradeGroupTypeId = SCOPE_IDENTITY()
+INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @GradeGroupTypeId);
+
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo])
    VALUES (0, 'Check-in Test (Don''t Use) Area', 'CAAF4F9B-58B9-45B4-AABC-9188347948B7', 1, 1, 0, 0)
 SET @TestGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @TestGroupTypeId);
 
-INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo])
-   VALUES (0, 'Nursery/Preschool Area', 'CADB2D12-7836-44BC-8EEA-3C6AB22FD5E8', 1, 1, 0, 0)
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[InheritedGroupTypeId])
+   VALUES (0, 'Nursery/Preschool Area', 'CADB2D12-7836-44BC-8EEA-3C6AB22FD5E8', 1, 1, 0, 0, @AgeGroupTypeId)
 SET @NurseryPreschoolGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @NurseryPreschoolGroupTypeId);
 
-INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo])
-   VALUES (0, 'Elementary Area', 'E3C8F7D6-5CEB-43BB-802F-66C3E734049E', 1, 1, 0, 0)
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[InheritedGroupTypeId])
+   VALUES (0, 'Elementary Area', 'E3C8F7D6-5CEB-43BB-802F-66C3E734049E', 1, 1, 0, 0, @GradeGroupTypeId)
 SET @ElementaryGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @ElementaryGroupTypeId);
 
-INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo])
-   VALUES (0, 'Jr High Area', '7A17235B-69AD-439B-BAB0-1A0A472DB96F', 1, 1, 0, 0)
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[InheritedGroupTypeId])
+   VALUES (0, 'Jr High Area', '7A17235B-69AD-439B-BAB0-1A0A472DB96F', 1, 1, 0, 0, @GradeGroupTypeId)
 SET @JHGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @JHGroupTypeId);
 
-INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo])
-   VALUES (0, 'High School Area', '9A88743B-F336-4404-B877-2A623689195D', 1, 1, 0, 0)
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[InheritedGroupTypeId])
+   VALUES (0, 'High School Area', '9A88743B-F336-4404-B877-2A623689195D', 1, 1, 0, 0, @GradeGroupTypeId)
 SET @HSGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @HSGroupTypeId);
 
-
-SELECT * from [GroupType]  -- TODO COMMENT OUT
-
-------------------------------------------------------------------------------
--- Re-Populate the temp table of GroupTypes
-------------------------------------------------------------------------------
-INSERT INTO @tAllCheckinGroupTypeIds
-SELECT Id, CONVERT(varchar, Id) FROM [GroupType] WHERE [Guid] in (SELECT [Guid] FROM @tGroupTypeGuids )
-
--- TODO COMMENT OUT
-SELECT IdString as AllCheckinGroupTypes from @tAllCheckinGroupTypeIds
-
--- Re-populate the temp tabel of Groups
---INSERT INTO @tAllCheckinGroupIds
---SELECT Id FROM [Group] WHERE GroupTypeId in (SELECT Id FROM @tAllCheckinGroupTypeIds )
-
-
-------------------------------------------------------------------------------------
--- Add the GroupType attributes
---
---		EntityTypeId			EntityTypeQualifierColumn	EntityTypeQualifierValue
---		@GroupTypeEntityTypeId	'Id'						<the GroupType's ID>
-------------------------------------------------------------------------------------
-DECLARE @TheGroupTypeId int;
-
--- Nursery/Preschool GroupType Attributes
-SET @TheGroupTypeId = @NurseryPreschoolGroupTypeId;
-	-- Ages: 0-6
-	INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
-	   VALUES ( 0, @DecimalFieldTypeId, @GroupTypeEntityTypeId, 'Id', @TheGroupTypeId, 'MinAge', 'Minimum Age', 0, 0, 0, 0, '43511B8F-71D9-423A-85BF-D1CD08C1998E', 'The minimum age required to check into these group types.' )
-	SET @AttributeId = SCOPE_IDENTITY()
-
-		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
-
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid]) 
-			VALUES (0, @AttributeId, @TheGroupTypeId, 0, '0.0', newid())
-
-		
-	INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
-	   VALUES ( 0, @DecimalFieldTypeId, @GroupTypeEntityTypeId, 'Id', @TheGroupTypeId, 'MaxAge', 'Maximum Age', 1, 0, 0, 0, 'BB85499E-3BD5-4C77-A711-DC4AE7F6115F', 'The maximum age allowed to check into these group types.' )
-	SET @AttributeId = SCOPE_IDENTITY()
-
-		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
-
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-			VALUES (0, @AttributeId, @TheGroupTypeId, 1, '6.00', newid())
-
--- Elementary GroupType Attributes
-SET @TheGroupTypeId = @ElementaryGroupTypeId;
-	-- Ages: 4.75-13.99
-	INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
-	   VALUES ( 0, @DecimalFieldTypeId, @GroupTypeEntityTypeId, 'Id', @TheGroupTypeId, 'MinAge', 'Minimum Age', 2, 0, 0, 0, 'AA140FB3-31D5-4DF1-B765-067817535CFC', 'The minimum age required to check into these group types.' )
-	SET @AttributeId = SCOPE_IDENTITY()
-
-		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
-
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-			VALUES (0, @AttributeId, @TheGroupTypeId, 0, '4.75',  newid())
-
-
-	INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
-	   VALUES ( 0, @DecimalFieldTypeId, @GroupTypeEntityTypeId, 'Id', @TheGroupTypeId, 'MaxAge', 'Maximum Age', 3, 0, 0, 0, '3AB8B255-8DCD-443A-955B-95578A09AFB5', 'The maximum age allowed to check into these group types.' )
-	SET @AttributeId = SCOPE_IDENTITY()
-
-		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
-
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-			VALUES (0, @AttributeId, @TheGroupTypeId, 1, '13.99', newid())
-
-    -- Grades: K-6
-	INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
-	   VALUES ( 0, @IntFieldTypeId, @GroupTypeEntityTypeId, 'Id', @TheGroupTypeId, 'MinGrade', 'Minimum Grade', 0, 0, 0, 0, 'C7C028C2-6582-45E8-839D-5C4467C6FDF4', 'Defines the lower grade level boundary to check into these group types.' )
-	SET @AttributeId = SCOPE_IDENTITY()
-
-		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
-
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-			VALUES (0, @AttributeId, @TheGroupTypeId, 0, '0', newid())
-
-	INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
-	   VALUES ( 0, @IntFieldTypeId, @GroupTypeEntityTypeId, 'Id', @TheGroupTypeId, 'MaxGrade', 'Maximum Grade', 1, 0, 0, 0, 'AD1FECFD-A6B8-4C76-AB5D-B5B91AAAEFA1', 'Defines the upper grade level boundary to check into these group types.' )
-	SET @AttributeId = SCOPE_IDENTITY()
-
-		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
-
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-			VALUES (0, @AttributeId, @TheGroupTypeId, 1, '6', newid())
-
--- Jr High GroupType Attributes
-SET @TheGroupTypeId = @JHGroupTypeId;
-
-	-- Ages: 12-15
-	INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
-	   VALUES ( 0, @DecimalFieldTypeId, @GroupTypeEntityTypeId, 'Id', @TheGroupTypeId, 'MinAge', 'Minimum Age', 2, 0, 0, 0, 'E88E1E79-96E4-4F91-88A1-21B6230E083F', 'The minimum age required to check into these group types.' )
-	SET @AttributeId = SCOPE_IDENTITY()
-
-		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
-
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid]) 
-			VALUES (0, @AttributeId, @TheGroupTypeId, 0, '12', newid())
-
-	INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
-	   VALUES ( 0, @DecimalFieldTypeId, @GroupTypeEntityTypeId, 'Id', @TheGroupTypeId, 'MaxAge', 'Maximum Age', 3, 0, 0, 0, '360F533A-C502-4578-9410-B8487566E1E2', 'The maximum age allowed to check into these group types.' )
-	SET @AttributeId = SCOPE_IDENTITY()
-
-		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
-
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-			VALUES (0, @AttributeId, @TheGroupTypeId, 1, '15', newid())
-	   
-   -- Grades 7-8
-	INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
-	   VALUES ( 0, @IntFieldTypeId, @GroupTypeEntityTypeId, 'Id', @TheGroupTypeId, 'MinGrade', 'Minimum Grade', 0, 0, 0, 0, 'D4AC0C00-A5D1-405C-B2E3-F2F5F0C58009', 'Defines the lower grade level boundary to check into these group types.' )
-	SET @AttributeId = SCOPE_IDENTITY()
-
-		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
-
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-			VALUES (0, @AttributeId, @TheGroupTypeId, 0, '7', newid())
-
-	INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
-	   VALUES ( 0, @IntFieldTypeId, @GroupTypeEntityTypeId, 'Id', @TheGroupTypeId, 'MaxGrade', 'Maximum Grade', 1, 0, 0, 0, '6C73D5C0-975E-486B-A56A-C7F9CFF05950', 'Defines the upper grade level boundary to check into these group types.' )
-	SET @AttributeId = SCOPE_IDENTITY()
-
-		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
-
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-			VALUES (0, @AttributeId, @TheGroupTypeId, 1, '8', newid())
-	   
--- High School GroupType Attributes
-SET @TheGroupTypeId = @HSGroupTypeId;
-
-	-- Ages: 13-19
-	INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
-	   VALUES ( 0, @DecimalFieldTypeId, @GroupTypeEntityTypeId, 'Id', @TheGroupTypeId, 'MinAge', 'Minimum Age', 2, 0, 0, 0, '44CC7A63-3AAE-4645-8594-F8B3E1BFE961', 'The minimum age required to check into these group types.' )
-	SET @AttributeId = SCOPE_IDENTITY()
-
-		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
-
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid]) 
-			VALUES (0, @AttributeId, @TheGroupTypeId, 0, '13.0', newid())
-
-	INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
-	   VALUES ( 0, @DecimalFieldTypeId, @GroupTypeEntityTypeId, 'Id', @TheGroupTypeId, 'MaxAge', 'Maximum Age', 3, 0, 0, 0, '2C19E957-E049-4FF0-BB10-4FDF448EE712', 'The maximum age allowed for kids to check into these group types.' )
-	SET @AttributeId = SCOPE_IDENTITY()
-
-		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
-
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-			VALUES (0, @AttributeId, @TheGroupTypeId, 1, '19.0', newid())
-
-    -- Grades 9-12
-	INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
-	   VALUES ( 0, @IntFieldTypeId, @GroupTypeEntityTypeId, 'Id', @TheGroupTypeId, 'MinGrade', 'Minimum Grade', 0, 0, 0, 0, '92AE2841-44D4-4331-A255-E2FB900DAF4F', 'Defines the lower grade level boundary to check into these group types.' )
-	SET @AttributeId = SCOPE_IDENTITY()
-
-		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
-
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-			VALUES (0, @AttributeId, @TheGroupTypeId, 0, '9', newid())
-
-	INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
-	   VALUES ( 0, @IntFieldTypeId, @GroupTypeEntityTypeId, 'Id', @TheGroupTypeId, 'MaxGrade', 'Maximum Grade', 1, 0, 0, 0, 'EB9DD62C-AF7C-4DA6-9A67-DA8BFE26BE0A', 'Defines the upper grade level boundary to check into these group types.' )
-	SET @AttributeId = SCOPE_IDENTITY()
-
-		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
-
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-			VALUES (0, @AttributeId, @TheGroupTypeId, 1, '12', newid())
-
--- COMMENT OUT THIS SECTION
---/*
--- Verify GroupType attributes
-SELECT 'Verify GroupType attributes' 
-SELECT * from [Attribute] A WHERE A.EntityTypeId = @GroupTypeEntityTypeId AND A.EntityTypeQualifierColumn = 'Id'
-AND A.EntityTypeQualifierValue
-IN ( SELECT IdString from @tAllCheckinGroupTypeIds )
-
-SELECT 'Verify GroupType attribute values'  
-SELECT * from [AttributeValue] AV WHERE AV.AttributeId IN
-(
-	SELECT Id from [Attribute] A WHERE A.EntityTypeId = @GroupTypeEntityTypeId AND A.EntityTypeQualifierColumn = 'Id'
-	AND A.EntityTypeQualifierValue
-	IN ( SELECT IdString from @tAllCheckinGroupTypeIds )
-)
---*/
 
 ---------------------------------------------------------------------------
 -- Add the Groups
@@ -460,161 +249,133 @@ INSERT INTO [Group] ( [IsSystem],[ParentGroupId],[GroupTypeId],[Name],[IsSecurit
    VALUES ( 0, @ParentGroupId, @HSGroupTypeId, 'Grades 9-12', 0, 1, '9B982B2A-24AB-4B82-AB49-84BDB4CF9E5F' )
 SET @HSGroupId = SCOPE_IDENTITY()
 
--- TODO COMMENT OUT
---SELECT * FROM [Group] WHERE ParentGroupId = (SELECT Id FROM [Group] WHERE Name = 'Weekend Service Check-in' )
 
 ------------------------------------------------------------------------------------
--- Add the Group attributes ([Attributes] table)
---
---		EntityTypeId			EntityTypeQualifierColumn	EntityTypeQualifierValue
---		@GroupEntityTypeId		'GroupTypeId'				<the GroupType's ID>
---
--- NOTE: the use of @*Group*EntityTypeId and NOT @*GroupType*EntityTypeId in
---       the EntityTypeId column which is different than the way the Group Type
---       Attributes are added. 
--- 
--- However when adding the [AttributeValues] for thes attributes the
--- EntityId column value will be the <the GroupId>
-
+-- Add the attributes
 ------------------------------------------------------------------------------------
-DECLARE @TheGroupId int;
+DECLARE @AttributeId int
 
--- Nursery/Preschool GroupType's Group Attributes
+-- Minimum Age
+INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
+	VALUES ( 0, @DecimalFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @AgeGroupTypeId, 'MinAge', 'Minimum Age', 0, 0, 0, 0, '43511B8F-71D9-423A-85BF-D1CD08C1998E', 'The minimum age required to check into these group types.' )
+SET @AttributeId = SCOPE_IDENTITY()
 
-    -- MinAge
-	INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, Guid, [Description])
-	   VALUES ( 0, @DecimalFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @NurseryPreschoolGroupTypeId, 'MinAge', 'Minimum Age', 1, 0, 0, 0, NEWID(), 'The minimum age required to check into this group.' )
-	SET @AttributeId = SCOPE_IDENTITY();
+	INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
+		VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
 
-		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @GroupCheckInCategoryId)
-
-		-- Nursery MinAge (0 - )
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-		   VALUES ( 0, @AttributeId, @NurseryGroupId , 0, '0.0',  newid() )
+	-- Nursery MinAge (0 - )
+	INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
+		VALUES ( 0, @AttributeId, @NurseryGroupId , 0, '0.0',  newid() )
 		   
-		-- Preschool MinAge (2.5 - )
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-		   VALUES ( 0, @AttributeId, @PreschoolGroupId, 0, '2.5',  newid() )
+	-- Grades K-1 MinAge ( 4.75 - )
+	INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
+		VALUES ( 0, @AttributeId, @GradeK1GroupId , 0, '4.75',  newid() )
 
-	-- MaxAge
-	INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, Guid, [Description])
-	   VALUES ( 0, @DecimalFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @NurseryPreschoolGroupTypeId, 'MaxAge', 'Maximum Age', 1, 0, 0, 0, NEWID(), 'The maximum age allowed to check into this group.' )
-	SET @AttributeId = SCOPE_IDENTITY();
-	
-		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @GroupCheckInCategoryId)
-
-		-- Nursery MaxAge ( - 3)
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-		   VALUES ( 0, @AttributeId, @NurseryGroupId , 1, '3.0',  newid() )
+	-- Grades 2-3 MinAge ( 6 - )
+	INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
+		VALUES ( 0, @AttributeId, @Grade23GroupId , 0, '6.0',  newid() )
 		   
-		-- Preschool MaxAge ( - 5.99)
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-		   VALUES ( 0, @AttributeId, @PreschoolGroupId, 1, '5.99',  newid() )
-
--- Elementary GroupType's Group Attributes
-
-    -- MinAge
-	INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, Guid, [Description])
-	   VALUES ( 0, @DecimalFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @ElementaryGroupTypeId, 'MinAge', 'Minimum Age', 1, 0, 0, 0, NEWID(), 'The minimum age required to check into this group.' )
-	SET @AttributeId = SCOPE_IDENTITY();
-
-		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @GroupCheckInCategoryId)
-
-		-- Grades K-1 MinAge ( 4.75 - )
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-		   VALUES ( 0, @AttributeId, @GradeK1GroupId , 2, '4.75',  newid() )
-
-		-- Grades 2-3 MinAge ( 6 - )
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-		   VALUES ( 0, @AttributeId, @Grade23GroupId , 2, '6.0',  newid() )
+	-- Grades 4-6 MinAge ( 8 - )
+	INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
+		VALUES ( 0, @AttributeId, @Grade46GroupId , 0, '8.0',  newid() )
 		   
-		-- Grades 4-6 MinAge ( 8 - )
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-		   VALUES ( 0, @AttributeId, @Grade46GroupId , 2, '8.0',  newid() )
+	-- Jr High MinAge ( 12 - )
+	INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
+		VALUES ( 0, @AttributeId, @JHGroupId , 0, '12.0',  newid() )
 		   
-	-- MaxAge
-	INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, Guid, [Description])
-	   VALUES ( 0, @DecimalFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @ElementaryGroupTypeId, 'MaxAge', 'Maximum Age', 1, 0, 0, 0, NEWID(), 'The maximum age allowed to check into this group.' )
-	SET @AttributeId = SCOPE_IDENTITY();
-
-		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @GroupCheckInCategoryId)
-
-		-- Grades K-1 MaxAge ( - 8.75 )
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-		   VALUES ( 0, @AttributeId, @GradeK1GroupId , 3, '8.75',  newid() )
-
-		-- Grades 2-3 MaxAge ( - 10.99 )
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-		   VALUES ( 0, @AttributeId, @Grade23GroupId , 3, '10.99',  newid() )
+	-- High School MinAge ( 13 - )
+	INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
+		VALUES ( 0, @AttributeId, @HSGroupId , 0, '13.0',  newid() )
 		   
-		-- Grades 4-6 MaxAge ( - 13.99 )
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-		   VALUES ( 0, @AttributeId, @Grade46GroupId , 3, '13.99',  newid() )
+-- Maximum Age
+INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
+	VALUES ( 0, @DecimalFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @AgeGroupTypeId, 'MaxAge', 'Maximum Age', 1, 0, 0, 0, 'BB85499E-3BD5-4C77-A711-DC4AE7F6115F', 'The maximum age allowed to check into these group types.' )
+SET @AttributeId = SCOPE_IDENTITY()
 
-	-- MinGrade
-	INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, Guid, [Description])
-	   VALUES ( 0, @IntFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @ElementaryGroupTypeId, 'MinGrade', 'Minimum Grade', 1, 0, 0, 0, NEWID(), 'Defines the lower grade boundary to check in to this group.' )
-	SET @AttributeId = SCOPE_IDENTITY();
+	INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
+		VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
 
-		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @GroupCheckInCategoryId)
+	-- Preschool MaxAge ( - 5.99)
+	INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
+		VALUES ( 0, @AttributeId, @PreschoolGroupId, 1, '5.99',  newid() )
 
-		-- Grades K-1 MinGrade ( 0 - )
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-		   VALUES ( 0, @AttributeId, @GradeK1GroupId , 0, '0',  newid() )
+	-- Grades K-1 MaxAge ( - 8.75 )
+	INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
+		VALUES ( 0, @AttributeId, @GradeK1GroupId , 3, '8.75',  newid() )
 
-		-- Grades 2-3 MinGrade ( 2 - )
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-		   VALUES ( 0, @AttributeId, @Grade23GroupId , 0, '2',  newid() )
+	-- Grades 2-3 MaxAge ( - 10.99 )
+	INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
+		VALUES ( 0, @AttributeId, @Grade23GroupId , 3, '10.99',  newid() )
 		   
-		-- Grades 4-6 MinGrade ( 4 - )
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-		   VALUES ( 0, @AttributeId, @Grade46GroupId , 0, '4',  newid() )
+	-- Grades 4-6 MaxAge ( - 13.99 )
+	INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
+		VALUES ( 0, @AttributeId, @Grade46GroupId , 3, '13.99',  newid() )
+
+	-- Jr High MaxAge ( - 15 )
+	INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
+		VALUES ( 0, @AttributeId, @JHGroupId , 0, '15.0',  newid() )
 		   
-	-- MaxGrade
-	INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, Guid, [Description])
-	   VALUES ( 0, @IntFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @ElementaryGroupTypeId, 'MaxGrade', 'Maximum Grade', 1, 0, 0, 0, NEWID(), 'Defines the upper grade boundary to check in to this group.' )
-	SET @AttributeId = SCOPE_IDENTITY();
+	-- High School MaxAge ( 8 - )
+	INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
+		VALUES ( 0, @AttributeId, @HSGroupId , 0, '19.0',  newid() )
 
-		INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
-			VALUES (@AttributeId, @GroupCheckInCategoryId)
+-- Minimum Grade
+INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
+	VALUES ( 0, @IntFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @GradeGroupTypeId, 'MinGrade', 'Minimum Grade', 0, 0, 0, 0, 'C7C028C2-6582-45E8-839D-5C4467C6FDF4', 'Defines the lower grade level boundary to check into these group types.' )
+SET @AttributeId = SCOPE_IDENTITY()
 
-		-- Grades K-1 MaxGrade ( - 1 )
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-		   VALUES ( 0, @AttributeId, @GradeK1GroupId , 1, '1',  newid() )
+	INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
+		VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
 
-		-- Grades 2-3 MaxGrade ( - 3 )
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-		   VALUES ( 0, @AttributeId, @Grade23GroupId , 1, '3',  newid() )
+	-- Grades K-1 MinGrade ( 0 - )
+	INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
+		VALUES ( 0, @AttributeId, @GradeK1GroupId , 0, '0',  newid() )
+
+	-- Grades 2-3 MinGrade ( 2 - )
+	INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
+		VALUES ( 0, @AttributeId, @Grade23GroupId , 0, '2',  newid() )
 		   
-		-- Grades 4-6 MaxGrade ( - 6 )
-		INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-		   VALUES ( 0, @AttributeId, @Grade46GroupId , 1, '6',  newid() )
+	-- Grades 4-6 MinGrade ( 4 - )
+	INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
+		VALUES ( 0, @AttributeId, @Grade46GroupId , 0, '4',  newid() )
+		   
+	-- Jr High MinGrade ( 7 - )
+	INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
+		VALUES ( 0, @AttributeId, @JHGroupId , 0, '7',  newid() )
+		   
+	-- High School MinGrade ( 9 - )
+	INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
+		VALUES ( 0, @AttributeId, @HSGroupId , 0, '9',  newid() )
 
+-- Maximum Grade		   
+INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
+	VALUES ( 0, @IntFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @GradeGroupTypeId, 'MaxGrade', 'Maximum Grade', 1, 0, 0, 0, 'AD1FECFD-A6B8-4C76-AB5D-B5B91AAAEFA1', 'Defines the upper grade level boundary to check into these group types.' )
+SET @AttributeId = SCOPE_IDENTITY()
 
--- COMMENT OUT THIS SECTION
-/*
+	INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
+		VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
 
-SELECT 'Verify Group attributes for these groups' 
-SELECT 'Groups:', @TestGroupId, @NurseryGroupId, @PreschoolGroupId, @GradeK1GroupId, @Grade23GroupId, @Grade46GroupId, @JHGroupId, @HSGroupId
-SELECT * FROM [Attribute] A WHERE A.EntityTypeId = @GroupEntityTypeId AND A.EntityTypeQualifierColumn = 'GroupTypeId'
-AND A.EntityTypeQualifierValue
-IN ( SELECT IdString as AllCheckinGroupTypes from @tAllCheckinGroupTypeIds )
+	-- Grades K-1 MaxGrade ( - 1 )
+	INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
+		VALUES ( 0, @AttributeId, @GradeK1GroupId , 1, '1',  newid() )
 
-SELECT 'Verify Group attribute values'  
-SELECT * FROM [AttributeValue] AV WHERE AV.AttributeId IN
-(
-	SELECT Id from [Attribute] A WHERE A.EntityTypeId = @GroupEntityTypeId AND A.EntityTypeQualifierColumn = 'GroupTypeId'
-	AND A.EntityTypeQualifierValue
-    IN ( SELECT IdString as AllCheckinGroupTypes from @tAllCheckinGroupTypeIds )
-)
-SELECT * FROM [AttributeValue]
-*/
+	-- Grades 2-3 MaxGrade ( - 3 )
+	INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
+		VALUES ( 0, @AttributeId, @Grade23GroupId , 1, '3',  newid() )
+		   
+	-- Grades 4-6 MaxGrade ( - 6 )
+	INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
+		VALUES ( 0, @AttributeId, @Grade46GroupId , 1, '6',  newid() )
 
+	-- Jr High MaxGrade ( - 8 )
+	INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
+		VALUES ( 0, @AttributeId, @JHGroupId , 0, '8',  newid() )
+		   
+	-- High School MaxGrade ( - 12 )
+	INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
+		VALUES ( 0, @AttributeId, @HSGroupId , 0, '12',  newid() )
+
+	   
 ---------------------------------------------------------------------------
 -- Create the Schedules
 ---------------------------------------------------------------------------
