@@ -82,6 +82,8 @@ namespace Rock.Rest.Controllers
 	</div>
 </div>
 ";
+
+            Guid activeRecord = new Guid( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE );
  
             // figure out Family, Address, Spouse
             GroupMemberService groupMemberService = new GroupMemberService();
@@ -92,14 +94,17 @@ namespace Rock.Rest.Controllers
                 PersonSearchResult personSearchResult = new PersonSearchResult();
                 personSearchResult.Name = lastFirst ? person.FullNameLastFirst : person.FullName;
                 personSearchResult.Age = person.Age.HasValue ? person.Age.Value : -1;
-                personSearchResult.Gender = person.Gender;
+                personSearchResult.PersonStatus = person.PersonStatusValue != null ? person.PersonStatusValue.Name : string.Empty;
+                personSearchResult.Gender = person.Gender.ConvertToString();
 
-                if ( person.PersonStatusValueId != null )
+                if ( person.RecordStatusValue != null )
                 {
-                    personSearchResult.IsActive = person.PersonStatusValue.Guid.Equals( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE );
+                    personSearchResult.RecordStatus = person.RecordStatusValue.Name;
+                    personSearchResult.IsActive = person.RecordStatusValue.Guid.Equals( activeRecord );
                 }
                 else
                 {
+                    personSearchResult.RecordStatus = string.Empty;
                     personSearchResult.IsActive = false;
                 }
 
@@ -286,7 +291,19 @@ namespace Rock.Rest.Controllers
         /// Gets or sets the gender.
         /// </summary>
         /// <value>The gender.</value>
-        public Gender Gender { get; set; }
+        public string Gender { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person status.
+        /// </summary>
+        /// <value>The person status.</value>
+        public string PersonStatus { get; set; }
+
+        /// <summary>
+        /// Gets or sets the record status.
+        /// </summary>
+        /// <value>The member status.</value>
+        public string RecordStatus { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this instance is active.

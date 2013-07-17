@@ -5,6 +5,7 @@
 //
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -132,18 +133,40 @@ namespace Rock.Web.UI.Controls
 
             if ( this.Enabled )
             {
+                string personName = string.Empty;
+
+                int? personId = _hfPersonId.ValueAsInt();
+                if ( personId.HasValue )
+                {
+                    personName = new Rock.Model.PersonService().Queryable()
+                        .Where( p => p.Id == personId.Value )
+                        .Select( p => p.FullName )
+                        .FirstOrDefault() ?? string.Empty;
+                }
+
                 writer.Write( string.Format( @"
     <div class='control-group'>
         <div class='control-label'>Search</div>
         <div class='controls'>
-            <input id='personPicker_{0}' type='text' class='rock-picker-search' />
+            <input id='personPicker_{0}' type='text' class='rock-picker-search input-medium' value='{1}'/>
         </div>
     </div>
-    <div class='person-search-results scroll-container'>
-        <ul class='rock-picker-select' id='personPickerItems_{0}'>
-        </ul>
-    <div>   
-", this.ID ) );
+    <div id='person-search-results' class='scroll-container'>
+        <div class='scrollbar'>
+            <div class='track'>
+                <div class='thumb'>
+                    <div class='end'></div>
+                </div>
+            </div>
+        </div>
+        <div class='viewport'>
+            <div class='overview'>
+                <ul class='rock-picker-select' id='personPickerItems_{0}'>
+                </ul>
+            </div>
+        </div>
+    </div>		
+", this.ID, personName ) );
 
             }
         }

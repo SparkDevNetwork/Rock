@@ -104,6 +104,10 @@ namespace Rock.Web.Cache
                 string attributeName = AttributeValues[key].Key;
                 AttributeValues[key] = new KeyValuePair<string, string>( attributeName, value );
             }
+            else if ( AttributeValues != null )
+            {
+                AttributeValues[key] = new KeyValuePair<string, string>( key, value );
+            }
         }
 
         #endregion

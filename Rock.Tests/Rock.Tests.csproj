@@ -74,6 +74,7 @@
     <Compile Include="Model\BlockTypeTests.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Model\PersonTests.cs" />
     <Compile Include="Model\DeviceTests.cs" />
     <Compile Include="Model\HtmlContentTests.cs" />
     <Compile Include="Model\PageContextTests.cs" />

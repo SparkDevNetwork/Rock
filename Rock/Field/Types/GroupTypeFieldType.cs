@@ -3,11 +3,15 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Constants;
 using Rock.Model;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
@@ -17,6 +21,29 @@ namespace Rock.Field.Types
     public class GroupTypeFieldType : FieldType
     {
         /// <summary>
+        /// Returns the field's current value(s)
+        /// </summary>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="value">Information about the value</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">Flag indicating if the value should be condensed (i.e. for use in a grid column)</param>
+        /// <returns></returns>
+        public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            Guid guid = Guid.Empty;
+            if ( Guid.TryParse( value, out guid ) )
+            {
+                var groupType = new Rock.Model.GroupTypeService().Get( guid );
+                if ( groupType != null )
+                {
+                    return groupType.Name;
+                }
+            }
+
+            return string.Empty;
+        }
+
+        /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
@@ -25,16 +52,9 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            DropDownList editControl = new DropDownList { ID = id }; 
-
-            GroupTypeService groupTypeService = new GroupTypeService();
-            var groupTypes = groupTypeService.Queryable().OrderBy( a => a.Name ).ToList();
-            editControl.Items.Add( None.ListItem );
-            foreach ( var groupType in groupTypes )
-            {
-                editControl.Items.Add( new ListItem( groupType.Name, groupType.Guid.ToString().ToUpper() ) );
-            }
-
+            var editControl = new GroupTypePicker { ID = id }; 
+            editControl.GroupTypes = new GroupTypeService().Queryable()
+                .OrderBy( a => a.Name ).ToList();
             return editControl;
         }
 
@@ -48,17 +68,19 @@ namespace Rock.Field.Types
         {
             List<string> values = new List<string>();
 
-            DropDownList dropDownList = control as DropDownList;
-
-            if ( dropDownList != null )
+            GroupTypePicker groupTypePicker = control as GroupTypePicker;
+            if ( groupTypePicker != null )
             {
-                if ( dropDownList.SelectedValue.Equals( string.Empty ) )
+                if ( groupTypePicker.SelectedGroupTypeId.HasValue )
                 {
-                    return null;
-                }
-                else
-                {
-                    return dropDownList.SelectedValue;
+                    Guid groupTypeGuid = new GroupTypeService().Queryable()
+                        .Where( g => g.Id == groupTypePicker.SelectedGroupTypeId.Value )
+                        .Select( g => g.Guid )
+                        .FirstOrDefault();
+                    if ( groupTypeGuid != null )
+                    {
+                        return groupTypeGuid.ToString();
+                    }
                 }
             }
 
@@ -73,10 +95,17 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( System.Web.UI.Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            GroupTypePicker dropDownList = control as GroupTypePicker;
+            if (dropDownList != null && !string.IsNullOrWhiteSpace(value))
             {
-                DropDownList dropDownList = control as DropDownList;
-                dropDownList.SetValue( value.ToUpper() );
+                Guid groupTypeGuid = Guid.Empty;
+                if (Guid.TryParse(value, out groupTypeGuid))
+                {
+                    dropDownList.SelectedGroupTypeId = new GroupTypeService().Queryable()
+                        .Where( g => g.Guid.Equals(groupTypeGuid))
+                        .Select( g => g.Id )
+                        .FirstOrDefault();
+                }
             }
         }
     }

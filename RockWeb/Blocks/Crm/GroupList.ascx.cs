@@ -53,7 +53,7 @@ namespace RockWeb.Blocks.Crm
             Dictionary<string, BoundField> boundFields = gGroups.Columns.OfType<BoundField>().ToDictionary( a => a.DataField );
             boundFields["MembersCount"].Visible = GetAttributeValue( "ShowUserCount" ).FromTrueFalse();
             boundFields["Description"].Visible = GetAttributeValue( "ShowDescription" ).FromTrueFalse();
-            boundFields["GroupType.Name"].Visible = GetAttributeValue( "ShowGroupType" ).FromTrueFalse();
+            boundFields["GroupTypeName"].Visible = GetAttributeValue( "ShowGroupType" ).FromTrueFalse();
             boundFields["IsSystem"].Visible = GetAttributeValue( "ShowIsSystem" ).FromTrueFalse();
         }
 
