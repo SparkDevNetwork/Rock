@@ -162,24 +162,10 @@ namespace Rock.Web.UI.Controls
             rangeValidator.Display = ValidatorDisplay.Dynamic;
             rangeValidator.CssClass = "validation-error help-inline";
             rangeValidator.ErrorMessage = "Numerical value is required";
-
-            if ( !this.MinimumValue.Contains( "." ) )
-            {
-                rangeValidator.Type = ValidationDataType.Integer;
-                rangeValidator.MinimumValue = !string.IsNullOrEmpty( this.MinimumValue )
-                    ? this.MinimumValue : int.MinValue.ToString();
-                rangeValidator.MaximumValue = !string.IsNullOrEmpty( this.MaximumValue )
-                    ? this.MaximumValue : int.MaxValue.ToString();
-            }
-            else
-            {
-                rangeValidator.Type = ValidationDataType.Double;
-                rangeValidator.MinimumValue = !string.IsNullOrEmpty( this.MinimumValue )
-                    ? this.MinimumValue : Convert.ToDouble( "9e-300" ).ToString( "F0" );  // allows up to 300 digits
-                rangeValidator.MaximumValue = !string.IsNullOrEmpty( this.MaximumValue )
-                    ? this.MaximumValue : Convert.ToDouble( "9e300" ).ToString( "F0" );   // allows up to 300 digits
-            }   
-
+            rangeValidator.MaximumValue = "0";
+            rangeValidator.MinimumValue = "0";
+            rangeValidator.Type = System.Web.UI.WebControls.ValidationDataType.Integer;
+            rangeValidator.Enabled = false;
             Controls.Add( rangeValidator );
 
             requiredValidator.ID = this.ID + "_rfv";
@@ -224,6 +210,23 @@ namespace Rock.Web.UI.Controls
                 }
                 requiredValidator.RenderControl( writer );
             }
+
+            rangeValidator.Type = ValidationDataType;
+
+            if ( ValidationDataType == System.Web.UI.WebControls.ValidationDataType.Double )
+            {
+                rangeValidator.MinimumValue = !string.IsNullOrEmpty( this.MinimumValue )
+                    ? this.MinimumValue : Convert.ToDouble( "9e-300" ).ToString( "F0" );  // allows up to 300 digits
+                rangeValidator.MaximumValue = !string.IsNullOrEmpty( this.MaximumValue )
+                    ? this.MaximumValue : Convert.ToDouble( "9e300" ).ToString( "F0" );   // allows up to 300 digits
+            }
+            else if (ValidationDataType == System.Web.UI.WebControls.ValidationDataType.Integer)
+            {
+                rangeValidator.MinimumValue = !string.IsNullOrEmpty( this.MinimumValue )
+                    ? this.MinimumValue : int.MinValue.ToString();
+                rangeValidator.MaximumValue = !string.IsNullOrEmpty( this.MaximumValue )
+                    ? this.MaximumValue : int.MaxValue.ToString();
+            }   
 
             int minValue = MinimumValue.AsInteger() ?? int.MinValue;
             int maxValue = MaximumValue.AsInteger() ?? int.MaxValue;
