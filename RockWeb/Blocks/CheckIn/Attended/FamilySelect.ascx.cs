@@ -197,18 +197,23 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 {
                     int id = int.Parse( e.CommandArgument.ToString() );
 
-                    // no matter the id (if it's 0, this person is brand new and hasn't been added to the system yet), add the person to this family for this check in
-                    if ( HasActiveClass((LinkButton)e.Item.FindControl( "lbSelectVisitor" ) ) )
+                    var familyMember = family.People.Where( m => m.Person.Id == id ).FirstOrDefault();
+                    if ( familyMember != null )
                     {
-                        // this visitor is already selected. unselect it.
+                        if ( familyMember.Selected )
+                        {
+                            familyMember.Selected = false;
+                            var control = (LinkButton)e.Item.FindControl( "lbSelectVisitor" );
+                            control.RemoveCssClass( "active" );
+                            SaveState();
+                        }
+                        else
+                        {
+                            familyMember.Selected = true;
+                            ( (LinkButton)e.Item.FindControl( "lbSelectVisitor" ) ).AddCssClass( "active" );
+                            SaveState();
+                        }
                     }
-                    else
-                    {
-                        // this visitor is not selected. select it.
-                        CheckInPerson CIP = new CheckInPerson();
-                    }
-
-                    // ************************************ NOT DONE NOT DONE NOT DONE *************************************************
                 }
             }
         }
@@ -786,6 +791,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                             gms.Save( groupMember, CurrentPersonId );
                         } );
 
+                        CIP.FamilyMember = true;
                         family.People.Add( CIP );
                         rPerson.DataSource = family.People;
                         rPerson.DataBind();
@@ -798,33 +804,15 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 else
                 {
                     // this came from Add Visitor
-                    // Add CanCheckIn record to GroupMember
-                    Person.CreateCheckinRelationship( family.People.FirstOrDefault().Person.Id, person.Id, CurrentPersonId );
-                    //GroupMember gm = new GroupMember();
-                    //GroupMemberService gms = new GroupMemberService();
-                    //gm.IsSystem = false;
-                    //gm.GroupId = family.Group.Id;
-                    //gm.PersonId = person.Id;
-                    //gm.GroupRoleId = new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ).Id;
-                    //Rock.Data.RockTransactionScope.WrapTransaction( () =>
-                    //{
-                    //    gms.Add( gm, CurrentPersonId );
-                    //    gms.Save( gm, CurrentPersonId );
-                    //} );
+                    List<CheckInPerson> visitors = new List<CheckInPerson>();
 
+                    Person.CreateCheckinRelationship( family.People.FirstOrDefault().Person.Id, person.Id, CurrentPersonId );
+                    CIP.FamilyMember = false;
                     family.People.Add( CIP );
 
-                    // load the visitors list
-                    List<CheckInPerson> visitors = new List<CheckInPerson>();
 
                     // need to get the people that have the CanCheckIn GroupRole on a GroupMember record associated with the selected Family Group.
                     GroupMemberService gms = new GroupMemberService();
-                    //var knownRelationshipGroup = gms.Queryable()
-                    //    .Where( m =>
-                    //        m.PersonId == personId &&
-                    //        m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
-                    //    .Select( m => m.Group )
-                    //    .FirstOrDefault();
                     var canCheckInGroup = gms.Queryable()
                         .Where( m =>
                             m.PersonId == personId &&
@@ -838,6 +826,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         {
                             CheckInPerson checkInPerson = new CheckInPerson();
                             Person per = new PersonService().Get(groupMember.PersonId);
+                            //checkInPerson.Person = person.Clone( false );
                             checkInPerson.Person = per;
                             visitors.Add( checkInPerson );
                         }
@@ -954,45 +943,69 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 CheckInPerson CIP = new CheckInPerson();
                 CIP.Person = person;
                 CIP.Selected = true;
-                family.People.Add( CIP );
-                
-                // Add the Person's GroupMember data so that they can be part of the family
-                GroupMember gm = new GroupMember();
-                GroupMemberService gms = new GroupMemberService();
-                gm.IsSystem = false;
-                gm.GroupId = family.Group.Id;
-                gm.PersonId = person.Id;
-                int age = 0;
-                if ( person.BirthDate == null )
+
+                if ( PersonVisitorType.Value == "Person" )
                 {
-                    // set the age to the age from the date picker
-                    age = int.Parse( dpDOBAgeSearch.Text );
+                    // Add the Person's GroupMember data so that they can be part of the family
+                    GroupMember gm = new GroupMember();
+                    GroupMemberService gms = new GroupMemberService();
+                    gm.IsSystem = false;
+                    gm.GroupId = family.Group.Id;
+                    gm.PersonId = person.Id;
+                    int age = 0;
+                    if ( person.BirthDate == null )
+                    {
+                        // set the age to the age from the date picker
+                        age = int.Parse( dpDOBAgeSearch.Text );
+                    }
+                    else
+                    {
+                        age = int.Parse( person.Age.ToString() );
+                    }
+                    if ( age >= 18 )
+                    {
+                        gm.GroupRoleId = new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ).Id;
+                    }
+                    else
+                    {
+                        gm.GroupRoleId = new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) ).Id;
+                    }
+                    Rock.Data.RockTransactionScope.WrapTransaction( () =>
+                    {
+                        gms.Add( gm, CurrentPersonId );
+                        gms.Save( gm, CurrentPersonId );
+                    } );
+
+                    CIP.FamilyMember = true;
+                    family.People.Add( CIP );
+
+                    SaveState();
+
+                    rPerson.DataSource = family.People;
+                    rPerson.DataBind();
+                    foreach ( RepeaterItem item in rPerson.Items )
+                    {
+                        ( (LinkButton)item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
+                    }
                 }
                 else
                 {
-                    age = int.Parse( person.Age.ToString() );
-                }
-                if ( age >= 18 )
-                {
-                    gm.GroupRoleId = new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ).Id;
-                }
-                else
-                {
-                    gm.GroupRoleId = new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) ).Id;
-                }
-                Rock.Data.RockTransactionScope.WrapTransaction( () =>
-                {
-                    gms.Add( gm, CurrentPersonId );
-                    gms.Save( gm, CurrentPersonId );
-                } );
+                    // This is a visitor
+                    Person.CreateCheckinRelationship( family.People.FirstOrDefault().Person.Id, person.Id, CurrentPersonId );
+                    CIP.FamilyMember = false;
+                    family.People.Add( CIP );
 
-                SaveState();
-
-                rPerson.DataSource = family.People;
-                rPerson.DataBind();
-                foreach ( RepeaterItem item in rPerson.Items )
-                {
-                    ( (LinkButton)item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
+                    rVisitors.DataSource = family.People.Where( p => p.FamilyMember == false );
+                    rVisitors.DataBind();
+                    
+                    // make sure the one person you just added is selected
+                    foreach ( RepeaterItem item in rVisitors.Items )
+                    {
+                        if ( person.Id == int.Parse( ( (LinkButton)item.FindControl( "lbSelectVisitor" ) ).CommandArgument ) )
+                        {
+                            ( (LinkButton)item.FindControl( "lbSelectVisitor" ) ).AddCssClass( "active" );
+                        }
+                    }
                 }
             }
         }
@@ -1065,7 +1078,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     }
                 }
 
-                // rPerson.DataSource = family.People;
+                SaveState();
+
                 rPerson.DataSource = PeopleInFamily;
                 rPerson.DataBind();
 
