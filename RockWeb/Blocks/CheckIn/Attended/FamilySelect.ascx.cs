@@ -1036,6 +1036,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// </summary>
         private void ProcessPerson()
         {
+            List<CheckInPerson> PeopleInFamily = new List<CheckInPerson>();
+            List<CheckInPerson> RelatedPeople = new List<CheckInPerson>();
             var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
             if ( family != null )
             {
@@ -1050,12 +1052,25 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 {
                     foreach ( var familyMember in family.People )
                     {
-                        familyMember.Selected = true;
+                        if ( familyMember.FamilyMember )
+                        {
+                            familyMember.Selected = true;
+                            PeopleInFamily.Add( familyMember );
+                        }
+                        else
+                        {
+                            familyMember.Selected = false;
+                            RelatedPeople.Add( familyMember );
+                        }
                     }
                 }
 
-                rPerson.DataSource = family.People;
+                // rPerson.DataSource = family.People;
+                rPerson.DataSource = PeopleInFamily;
                 rPerson.DataBind();
+
+                rVisitors.DataSource = RelatedPeople;
+                rVisitors.DataBind();
             }
         }
         
