@@ -395,10 +395,11 @@ namespace Rock.Migrations
                 DECLARE @PageId int
                 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{0}')
 
-                INSERT INTO [PageRoute] (
-                    [IsSystem],[PageId],[Route],[Guid])
-                VALUES(
-                    1, @PageId, '{1}', newid())
+                IF NOT EXISTS(SELECT [Id] FROM [PageRoute] WHERE [PageId] = @PageId AND [Route] = '{1}')
+                    INSERT INTO [PageRoute] (
+                        [IsSystem],[PageId],[Route],[Guid])
+                    VALUES(
+                        1, @PageId, '{1}', newid())
 ", pageGuid, route ) );
 
         }
