@@ -669,6 +669,24 @@ namespace Rock.Model
                     return gradeMaxFactorReactor - ( GraduationDate.Value.Year - DateTime.Now.Year );
                 }
             }
+
+            set
+            {
+                if ( value.HasValue && value.Value <= 12 )
+                {
+                    DateTime transitionDate;
+                    var globalAttributes = GlobalAttributesCache.Read();
+                    if ( DateTime.TryParse( globalAttributes.GetValue( "GradeTransitionDate" ), out transitionDate ) )
+                    {
+                        int gradeFactorReactor = ( DateTime.Now < transitionDate ) ? 12 : 13;
+                        GraduationDate = DateTime.Now.AddYears( gradeFactorReactor - value.Value);
+                    }
+                }
+                else
+                {
+                    GraduationDate = null;
+                }
+            }
         }
 
         /// <summary>
@@ -726,6 +744,66 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.FullName;
+        }
+
+        #endregion
+
+        #region Static Helper Methods
+
+        /// <summary>
+        /// Adds the related person to the selected person's known relationships with a role of 'Can check in' which
+        /// is typically configured to allow check-in.  If an inverse relationship is configured for 'Can check in' 
+        /// (i.e. 'Allow check in by'), that relationship will also be created.
+        /// </summary>
+        /// <param name="personId">The person id.</param>
+        /// <param name="relatedPersonId">The related person id.</param>
+        /// <param name="curreontPersonId">The current person id.</param>
+        public static void CreateCheckinRelationship(int personId, int relatedPersonId, int? currentPersonId)
+        {
+            using ( new UnitOfWorkScope())
+            {
+                var groupMemberService = new GroupMemberService();
+                var knownRelationshipGroup = groupMemberService.Queryable()
+                    .Where( m =>
+                        m.PersonId == personId &&
+                        m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
+                    .Select( m => m.Group )
+                    .FirstOrDefault();
+
+                if ( knownRelationshipGroup != null )
+                {
+                    int? canCheckInRoleId = new GroupRoleService().Queryable()
+                        .Where( r => 
+                            r.Guid.Equals(new Guid(Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN)))
+                        .Select( r => r.Id)
+                        .FirstOrDefault();
+                    if ( canCheckInRoleId.HasValue )
+                    {
+                        var canCheckInMember = groupMemberService.Queryable()
+                            .Where( m =>
+                                m.GroupId == knownRelationshipGroup.Id &&
+                                m.PersonId == relatedPersonId &&
+                                m.GroupRoleId == canCheckInRoleId.Value )
+                            .FirstOrDefault();
+
+                        if ( canCheckInMember == null )
+                        {
+                            canCheckInMember = new GroupMember();
+                            canCheckInMember.GroupId = knownRelationshipGroup.Id;
+                            canCheckInMember.PersonId = relatedPersonId;
+                            canCheckInMember.GroupRoleId = canCheckInRoleId.Value;
+                            groupMemberService.Add( canCheckInMember, currentPersonId );
+                            groupMemberService.Save( canCheckInMember, currentPersonId );
+                        }
+
+                        var inverseGroupMember = groupMemberService.GetInverseRelationship( canCheckInMember, true, currentPersonId );
+                        if ( inverseGroupMember != null )
+                        {
+                            groupMemberService.Save( inverseGroupMember, currentPersonId );
+                        }
+                    }
+                }
+            }
         }
 
         #endregion

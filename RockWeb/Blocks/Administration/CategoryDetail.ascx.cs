@@ -20,7 +20,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    [EntityType( "Entity Type", "The type of entity to associate category with" )]
+    [EntityTypeField( "Entity Type", "The type of entity to associate category with" )]
     [TextField( "Entity Type Qualifier Property", "", false )]
     [TextField( "Entity Type Qualifier Value", "", false )]
     public partial class CategoryDetail : RockBlock, IDetailBlock

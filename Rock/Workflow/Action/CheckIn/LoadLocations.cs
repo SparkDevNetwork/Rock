@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Model;
 
@@ -19,6 +20,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Description("Adds the locations for each members group types")]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Load Locations" )]
+    [BooleanField( "Load All", "By default locations are only loaded for the selected person and group type.  Select this option to load locations for all the loaded people and group types." )]
     public class LoadLocations : CheckInActionComponent
     {
         /// <summary>
@@ -31,14 +33,20 @@ namespace Rock.Workflow.Action.CheckIn
         /// <exception cref="System.NotImplementedException"></exception>
         public override bool Execute( Model.WorkflowAction action, Data.IEntity entity, out List<string> errorMessages )
         {
+            bool loadAll = false;
+            if ( bool.TryParse( GetAttributeValue( "LoadAll" ), out loadAll ) && loadAll )
+            {
+                loadAll = true;
+            }
+
             var checkInState = GetCheckInState( action, out errorMessages );
             if ( checkInState != null )
             {
                 foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )
                 {
-                    foreach ( var person in family.People.Where( p => p.Selected ) )
+                    foreach ( var person in family.People.Where( p => p.Selected || loadAll ) )
                     {
-                        foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
+                        foreach ( var groupType in person.GroupTypes.Where( t => t.Selected || loadAll ) )
                         {
                             var kioskGroupType = checkInState.Kiosk.KioskGroupTypes.Where( g => g.GroupType.Id == groupType.GroupType.Id ).FirstOrDefault();
                             if ( kioskGroupType != null )
@@ -48,9 +56,9 @@ namespace Rock.Workflow.Action.CheckIn
                                     if ( !groupType.Locations.Any( l => l.Location.Id == kioskLocation.Location.Id ) )
                                     {
                                         var checkInLocation = new CheckInLocation();
-                                        checkInLocation.Location = kioskLocation.Location.Clone(false);
+                                        checkInLocation.Location = kioskLocation.Location.Clone( false );
                                         checkInLocation.Location.CopyAttributesFrom( kioskLocation.Location );
-                                        groupType.Locations.Add(checkInLocation);
+                                        groupType.Locations.Add( checkInLocation );
                                     }
                                 }
                             }

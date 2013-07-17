@@ -5,14 +5,25 @@
         <asp:Panel ID="pnlList" runat="server">
 
             <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
+                <Rock:LabeledDropDownList ID="ddlEntityType" runat="server" LabelText="Entity Type" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
                 <Rock:CategoryPicker ID="cpCategoriesFilter" runat="server" LabelText="Categories" AllowMultiSelect="true" />
             </Rock:GridFilter>
             <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="setting" OnRowSelected="rGrid_Edit">
                 <Columns>
-                    <asp:BoundField DataField="Id" HeaderText="Id" SortExpression="Id" />
-                    <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
+                    <asp:BoundField 
+                        DataField="Id" 
+                        HeaderText="Id" 
+                        SortExpression="EntityType.FriendlyName" 
+                        ItemStyle-Wrap="false" />
+                    <asp:TemplateField ItemStyle-Wrap="false">
+                        <HeaderTemplate>Qualifier</HeaderTemplate>
+                        <ItemTemplate>
+                            <asp:Literal ID="lEntityQualifier" runat="server"></asp:Literal>
+                        </ItemTemplate>
+                    </asp:TemplateField>
+                    <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" ItemStyle-Wrap="false" />
                     <asp:BoundField DataField="Description" HeaderText="Description" />
-                    <asp:TemplateField>
+                    <asp:TemplateField ItemStyle-Wrap="false">
                         <HeaderTemplate>Categories</HeaderTemplate>
                         <ItemTemplate>
                             <asp:Literal ID="lCategories" runat="server"></asp:Literal>
@@ -45,6 +56,11 @@
 
             <asp:ValidationSummary ID="valSummaryTop" runat="server"  
                 HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
+
+            <Rock:LabeledDropDownList ID="ddlAttrEntityType" runat="server" LabelText="Entity Type" />
+            <Rock:LabeledTextBox ID="tbAttrQualifierField" runat="server" LabelText="Qualifier Field" />
+            <Rock:LabeledTextBox ID="tbAttrQualifierValue" runat="server" LabelText="Qualifier Value" />
+
             <Rock:AttributeEditor ID="edtAttribute" runat="server" OnSaveClick="btnSave_Click" OnCancelClick="btnCancel_Click" />
 
         </asp:Panel>
