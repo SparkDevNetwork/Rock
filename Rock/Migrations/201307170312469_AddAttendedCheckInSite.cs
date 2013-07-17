@@ -30,8 +30,7 @@ namespace Rock.Migrations
                     UPDATE [Page]
                     SET [SiteId] = @SiteId where [ParentPageId] = @PageId    
                 END 
-            ");
-
+            " );
         }
         
         /// <summary>
