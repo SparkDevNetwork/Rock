@@ -385,6 +385,10 @@
     <Compile Include="Migrations\201307172022520_PowerTools.Designer.cs">
       <DependentUpon>201307172022520_PowerTools.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201307181215585_HideSystemGroupTypes.cs" />
+    <Compile Include="Migrations\201307181215585_HideSystemGroupTypes.Designer.cs">
+      <DependentUpon>201307181215585_HideSystemGroupTypes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -1983,6 +1987,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307172022520_PowerTools.resx">
       <DependentUpon>201307172022520_PowerTools.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307181215585_HideSystemGroupTypes.resx">
+      <DependentUpon>201307181215585_HideSystemGroupTypes.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
