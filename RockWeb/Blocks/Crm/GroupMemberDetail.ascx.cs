@@ -130,6 +130,21 @@ namespace RockWeb.Blocks.Crm
         }
 
         /// <summary>
+        /// Gets the number of group members who are in the selected role
+        /// </summary>
+        /// <returns>Group Member Count</returns>
+        private int GetGroupMembersInRoleCount()
+        {
+            int groupId = hfGroupId.Value.AsInteger() ?? 0;
+            int roleId = ddlGroupRole.SelectedValueAsInt() ?? 0;
+
+            return new GroupMemberService().Queryable()
+                        .Where( m => m.GroupId == groupId )
+                        .Where( m => m.GroupRoleId == roleId )
+                        .Count();
+        }
+
+        /// <summary>
         /// Loads the drop downs.
         /// </summary>
         private void LoadDropDowns()
@@ -343,7 +358,12 @@ namespace RockWeb.Blocks.Crm
             nbErrorMessage.Text = String.Empty;
 
             int groupMemberId = int.Parse( hfGroupMemberId.Value );
+            GroupRole role = new GroupRoleService().Get( ddlGroupRole.SelectedValueAsInt() ?? 0 );
+            int memberCountInRole = GetGroupMembersInRoleCount();
+
             GroupMemberService groupMemberService = new GroupMemberService();
+
+            int groupMembersInRole = GetGroupMembersInRoleCount();
 
             GroupMember groupMember;
             if ( groupMemberId.Equals( 0 ) )
@@ -357,7 +377,7 @@ namespace RockWeb.Blocks.Crm
                 {
                     var person = new PersonService().Get( (int)ppGroupMemberPerson.PersonId );
 
-                    nbErrorMessage.Title = string.Format( "Can not add {0} to {1} role.", person.FullName, ddlGroupRole.SelectedItem.Text );
+                    nbErrorMessage.Title = string.Format( "Can not add {0} to {1} role.", person.FullName, role.Name );
                     nbErrorMessage.Text = string.Format("<br /> {0} is already a member of the {1} role for this group, and can not be added. <a href=\"/page/{2}?groupMemberId={3}\">Click here</a> to view existing membership.", 
                         person.FullName, 
                         ddlGroupRole.SelectedItem.Text,
@@ -365,16 +385,30 @@ namespace RockWeb.Blocks.Crm
                         existingGroupMemberId
                         );
                     return;
+
                 }
             }
             else
             {
                 groupMember = groupMemberService.Get( groupMemberId );
+
+            }
+
+            if ( groupMemberId.Equals( 0 ) || groupMember.GroupRoleId != role.Id )
+            {
+                if ( role.MaxCount != null && ( groupMembersInRole + 1 ) > role.MaxCount )
+                {
+                    var person = new PersonService().Get( (int)ppGroupMemberPerson.PersonId );
+
+                    nbErrorMessage.Title = string.Format( "Can not add {0} to {1} role.", person.FullName, role.Name );
+                    nbErrorMessage.Text = string.Format( "<br /> {0} role is at it's maximum capacity of {1} members.", role.Name, role.MaxCount.ToString() );
+                    return;
+                }
             }
 
             groupMember.PersonId = ppGroupMemberPerson.PersonId.Value;
-            groupMember.GroupRoleId = ddlGroupRole.SelectedValueAsInt() ?? 0;
-            groupMember.GroupMemberStatus = (GroupMemberStatus)int.Parse( ddlGroupMemberStatus.SelectedValue );
+            groupMember.GroupRoleId = role.Id;
+            groupMember.GroupMemberStatus = ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>();
 
             groupMember.LoadAttributes();
 
