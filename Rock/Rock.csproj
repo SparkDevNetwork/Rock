@@ -140,6 +140,7 @@
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
+    <Compile Include="Attribute\LocationFieldAttribute.cs" />
     <Compile Include="Attribute\GroupRoleFieldAttribute.cs" />
     <Compile Include="Attribute\MemoFieldAttribute.cs" />
     <Compile Include="Attribute\DecimalFieldAttribute.cs" />
@@ -166,6 +167,7 @@
     <Compile Include="Field\Types\ComponentsFieldType.cs" />
     <Compile Include="Field\Types\CategoryFieldType.cs" />
     <Compile Include="Field\Types\CategoriesFieldType.cs" />
+    <Compile Include="Field\Types\LocationFieldType.cs" />
     <Compile Include="Field\Types\GroupRoleFieldType.cs" />
     <Compile Include="Migrations\201305032320163_Communications.cs" />
     <Compile Include="Migrations\201305032320163_Communications.Designer.cs">
@@ -388,6 +390,10 @@
     <Compile Include="Migrations\201307181215585_HideSystemGroupTypes.cs" />
     <Compile Include="Migrations\201307181215585_HideSystemGroupTypes.Designer.cs">
       <DependentUpon>201307181215585_HideSystemGroupTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307191356459_LocationUpdates.cs" />
+    <Compile Include="Migrations\201307191356459_LocationUpdates.Designer.cs">
+      <DependentUpon>201307191356459_LocationUpdates.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
@@ -1990,6 +1996,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307181215585_HideSystemGroupTypes.resx">
       <DependentUpon>201307181215585_HideSystemGroupTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307191356459_LocationUpdates.resx">
+      <DependentUpon>201307191356459_LocationUpdates.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
