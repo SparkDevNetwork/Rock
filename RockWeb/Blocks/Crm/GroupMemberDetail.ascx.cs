@@ -360,10 +360,10 @@ namespace RockWeb.Blocks.Crm
             int groupMemberId = int.Parse( hfGroupMemberId.Value );
             GroupRole role = new GroupRoleService().Get( ddlGroupRole.SelectedValueAsInt() ?? 0 );
             int memberCountInRole = GetGroupMembersInRoleCount();
+            bool roleMembershipBelowMinimum = false;
 
             GroupMemberService groupMemberService = new GroupMemberService();
 
-            int groupMembersInRole = GetGroupMembersInRoleCount();
 
             GroupMember groupMember;
             if ( groupMemberId.Equals( 0 ) )
@@ -396,13 +396,18 @@ namespace RockWeb.Blocks.Crm
 
             if ( groupMemberId.Equals( 0 ) || groupMember.GroupRoleId != role.Id )
             {
-                if ( role.MaxCount != null && ( groupMembersInRole + 1 ) > role.MaxCount )
+                if ( role.MaxCount != null && ( memberCountInRole + 1 ) > role.MaxCount )
                 {
                     var person = new PersonService().Get( (int)ppGroupMemberPerson.PersonId );
 
                     nbErrorMessage.Title = string.Format( "Can not add {0} to {1} role.", person.FullName, role.Name );
                     nbErrorMessage.Text = string.Format( "<br /> {0} role is at it's maximum capacity of {1} members.", role.Name, role.MaxCount.ToString() );
                     return;
+                }
+
+                if ( role.MinCount != null && ( memberCountInRole + 1 ) < role.MinCount )
+                {
+                    roleMembershipBelowMinimum = true;
                 }
             }
 
@@ -437,6 +442,13 @@ namespace RockWeb.Blocks.Crm
 
             Dictionary<string, string> qryString = new Dictionary<string, string>();
             qryString["groupId"] = hfGroupId.Value;
+
+            if ( roleMembershipBelowMinimum )
+            {
+                qryString["roleBelowMin"] = roleMembershipBelowMinimum.ToString();
+                qryString["roleId"] = role.Id.ToString();
+            }
+
             NavigateToParentPage( qryString );
         }
 
