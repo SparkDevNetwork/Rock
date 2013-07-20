@@ -1,0 +1,40 @@
+﻿/*
+    Used to manage styles related to reusable components / widgets.
+    
+    1. Panel - used to visually link related content items together.
+    2. Banner - used as the primary heading for a page or large section.
+
+*/
+
+// 1. Panel
+// -------------------------
+
+.panel
+{
+    border-radius: @panel-border-radius;
+    border: @panel-border-size solid @panel-border-color;
+    background-color: @panel-background;
+    padding: @panel-padding;
+}
+
+.panel h4
+{
+    margin: 48px 0 20px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid darken(@panel-background, 8%);
+}
+
+// 2. Panel
+// -------------------------
+
+.banner
+{
+    color: @banner-font-color;
+    background-color: @banner-background;
+    border-radius: @banner-border-radius;
+    border: @banner-border-size solid @banner-border-color;
+    font-weight: @banner-font-weight;
+    font-size: @banner-font-size;
+    padding: @banner-padding;
+    margin: 0;
+}
