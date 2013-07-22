@@ -61,7 +61,7 @@ namespace Rock.Model
         /// The location point.
         /// </value>
         [DataMember]
-        public DbGeography LocationPoint { get; set; }
+        public DbGeography GeoPoint { get; set; }
 
         /// <summary>
         /// Gets or sets the perimeter.
@@ -70,7 +70,7 @@ namespace Rock.Model
         /// The perimeter.
         /// </value>
         [DataMember]
-        public DbGeography Perimeter { get; set; }
+        public DbGeography GeoFence { get; set; }
 
         /// <summary>
         /// Gets or sets the location type value id. (i.e. Campus, Building, Room, Neighborhood, Region, etc)
@@ -324,7 +324,7 @@ namespace Rock.Model
         /// <param name="longitude">The longitude.</param>
         public void SetLocationPointFromLatLong( double latitude, double longitude )
         {
-            this.LocationPoint = DbGeography.FromText( string.Format( "POINT({0} {1})", longitude, latitude ) );
+            this.GeoPoint = DbGeography.FromText( string.Format( "POINT({0} {1})", longitude, latitude ) );
         }
 
         public virtual string GoogleMapLink(string title)

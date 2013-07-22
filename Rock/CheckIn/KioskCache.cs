@@ -92,7 +92,9 @@ namespace Rock.CheckIn
             DbGeography aLocation = DbGeography.FromText( string.Format( "POINT({0} {1})", longitude, latitude ) );
 
             var kioskStatus = _kiosks
-                .Where( d => aLocation.Intersects( d.Value.Device.GeoFence ) )
+                .Where( d => 
+                    d.Value.Device.Location != null &&
+                    aLocation.Intersects( d.Value.Device.Location.GeoFence ) )
                 .Select( k => k.Value ).FirstOrDefault();
 
             if ( kioskStatus != null )
