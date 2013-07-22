@@ -9,7 +9,7 @@ using System;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field used to save and dispaly a currency value
+    /// Field used to save and display a currency value
     /// </summary>
     [Serializable]
     public class CurrencyFieldType : DecimalFieldType

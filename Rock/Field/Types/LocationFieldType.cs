@@ -9,7 +9,7 @@ using System;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field used to save and dispaly a location value
+    /// Field used to save and display a location value
     /// TODO: For now this just renders a textbox for entering the guid of the location.  Will eventually
     /// need to render a LocationPicker
     /// </summary>
