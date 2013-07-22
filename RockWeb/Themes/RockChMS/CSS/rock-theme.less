@@ -1,34 +1,28 @@
-/*!
- * Rock ChMS Theme v 2.0
- *
- * Copyright 2012 Spark Development Network
- *
- * 
- */
+/*
+    Rock ChMS Theme Styles
 
-// [Table of Contents]
-// 
-// 1. Bootstrap Overides
-// 2. Global Page Settings
-// 3. Components
-// 4. Header and Nav
-// 5. Footer
-// 6. Responsive Tweaks
-// 7. Layout Specific Styles
+    1. Bootstrap Overides
+    2. Global Page Settings
+    3. Components
+    4. Header and Nav
+    5. Footer
+    6. Responsive Tweaks
+    7. Layout Specific Styles
 
-//
-// Variables
-// --------------------------------------------------
+*/
+
+
+// Load Master Styles
+// -------------------------
 @import "./rock-global-variables.less";
 @import "./rock-bootstrap-variables.less";
 @import "../../../Css/Less/Vendor/Bootstrap/mixins.less";
 @import "../../../Css/rock-core.less";
-@import "../../../Css/grid.less";
 
-//
-// 1. Bootstrap Overides
-//
-// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+
+
+// 1. HTML Overrides
+// -------------------------
 
 h1 {
 	font-size: 28px;
@@ -43,7 +37,13 @@ h2, h3, h4
     font-weight: @font-semibold-weight;
 }
 
+// 1. Bootstrap Overrides 
+// ------------------------- 
 
+.btn {
+    background-image: none;
+    box-shadow: none;
+}
 
 .navbar-inner {
 	padding: 0;
@@ -81,6 +81,13 @@ h2, h3, h4
     padding: 0 6px;
 }
 
+.dropdown-menu li > a:hover,
+.dropdown-menu li > a:focus,
+.dropdown-submenu:hover > a {
+    background-image: none;
+    background-color: @site-primary-color;
+}
+
 // add 40px padding if in desktop size so tooltips have a bit more space if they are close to the edge
 @media (min-width: 992px)
 {
@@ -91,10 +98,8 @@ h2, h3, h4
     }
 }
 
-//
-// 2. Global Page Settings
-//
-// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+// 2. Page Styles
+// -------------------------
 
 // set window background
 html
@@ -104,20 +109,16 @@ html
 }
 
 
-// get rid of that dotted box around anchors with focus
+// get rid of dotted box around anchors with focus
 a {
    outline: 0;
 }
 
 
-//
-// 3. Components
-//
-// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+// 3. Page Header
+// -------------------------
 
-// --------------------------------------
-// PageNav
-// Desc: Main navigation for the page
+/* page nav */
 .pagenav {
 	border-top: 1px solid lighten(@rockPageNavBackground, 10%);
 }
@@ -184,6 +185,14 @@ a {
 
 .pagenav-header {
 	font-family: @rockFontFamilyBold;
+}
+
+/* paage title */
+.pagetitle .navbar-inner {
+	background-color: @site-pagetitle-background;
+	border-bottom: 1px solid darken(@site-pagetitle-background, 10%);
+	background-image: none;
+    filter: initial;
 }
 
 
@@ -352,10 +361,10 @@ a {
 	width: 92.83px
 }
 
-.pagetitle .navbar-inner,
+
 .persondetails-header .navbar-inner {
-	background-color: @rockPageTitleBackground;
-	border-bottom: 1px solid darken(@rockPageTitleBackground, 10%);
+	background-color: @site-pagetitle-background;
+	border-bottom: 1px solid darken(@site-pagetitle-background, 10%);
 	background-image: none;
     filter: initial;
 }
