@@ -33,7 +33,16 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="PageContextService"/> class
         /// </summary>
+        /// <param name="repository">The repository.</param>
         public PageContextService(IRepository<PageContext> repository) : base(repository)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PageContextService"/> class
+        /// </summary>
+        /// <param name="context">The context.</param>
+        public PageContextService(RockContext context) : base(context)
         {
         }
 

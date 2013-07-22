@@ -10,6 +10,7 @@ using System.Web.UI;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
@@ -23,6 +24,28 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     public partial class Relationships : Rock.Web.UI.PersonBlock
     {
         protected bool ShowRole = false;
+        protected Guid ownerRoleGuid = Guid.Empty;
+        protected bool IsKnownRelationships = false;
+
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            if ( Guid.TryParse( GetAttributeValue( "GroupType/RoleFilter" ), out ownerRoleGuid ) )
+            {
+                IsKnownRelationships = ownerRoleGuid.Equals(new Guid(Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER));
+            }
+
+            rGroupMembers.ItemCommand += rGroupMembers_ItemCommand;
+            modalAddPerson.SaveClick += modalAddPerson_SaveClick;
+
+            string script = @"
+    $('a.remove-relationship').click(function(){
+        return confirm('Are you sure you want to remove this relationship?');
+    });
+";
+            ScriptManager.RegisterStartupScript( rGroupMembers, rGroupMembers.GetType(), "ConfirmRemoveRelationship", script, true );
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -37,6 +60,97 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             BindData();
         }
 
+        protected void lbAdd_Click( object sender, EventArgs e )
+        {
+            ShowModal( null, null );
+        }
+
+        void rGroupMembers_ItemCommand( object source, System.Web.UI.WebControls.RepeaterCommandEventArgs e )
+        {
+            int groupMemberId = int.MinValue;
+            if ( int.TryParse( e.CommandArgument.ToString(), out groupMemberId ) )
+            {
+                var service = new GroupMemberService();
+                var groupMember = service.Get( groupMemberId );
+                if ( groupMember != null )
+                {
+                    if ( e.CommandName == "EditRole" )
+                    {
+                        ShowModal(groupMember.PersonId, groupMember.GroupRoleId);
+                    }
+
+                    else if ( e.CommandName == "RemoveRole" )
+                    {
+                        if ( IsKnownRelationships )
+                        {
+                            var inverseGroupMember = service.GetInverseRelationship( groupMember, false, CurrentPersonId );
+                            if ( inverseGroupMember != null )
+                            {
+                                service.Delete( inverseGroupMember, CurrentPersonId );
+                            }
+                        }
+
+                        service.Delete( groupMember, CurrentPersonId );
+                        service.Save( groupMember, CurrentPersonId );
+
+                        BindData();
+                    }
+                }
+            }
+        }
+
+        void modalAddPerson_SaveClick( object sender, EventArgs e )
+        {
+            int? personId = ppPerson.PersonId;
+            int? roleId = grpRole.GroupRoleId;
+            if ( personId.HasValue && roleId.HasValue )
+            {
+                using ( new UnitOfWorkScope() )
+                {
+                    var memberService = new GroupMemberService();
+                    var group = memberService.Queryable()
+                        .Where( m =>
+                            m.PersonId == Person.Id &&
+                            m.GroupRole.Guid == ownerRoleGuid
+                        )
+                        .Select( m => m.Group )
+                        .FirstOrDefault();
+
+                    if (group != null)
+                    {
+                        var groupMember = memberService.Queryable()
+                            .Where( m => 
+                                m.GroupId == group.Id &&
+                                m.PersonId == personId.Value &&
+                                m.GroupRoleId == roleId.Value)
+                            .FirstOrDefault();
+
+                        if (groupMember == null)
+                        {
+                            groupMember = new GroupMember();
+                            groupMember.GroupId = group.Id;
+                            groupMember.PersonId = personId.Value;
+                            groupMember.GroupRoleId = roleId.Value;
+                            memberService.Add(groupMember, CurrentPersonId);
+                        }
+
+                        memberService.Save(groupMember, CurrentPersonId);
+                        if (IsKnownRelationships)
+                        {
+                            var inverseGroupMember = memberService.GetInverseRelationship(
+                                groupMember, bool.Parse( GetAttributeValue( "CreateGroup" ) ), CurrentPersonId );
+                            if (inverseGroupMember != null)
+                            {
+                                memberService.Save(inverseGroupMember, CurrentPersonId);
+                            }
+                        }
+                    }
+                }
+            }
+
+            BindData();
+        }
+
         /// <summary>
         /// Binds the data.
         /// </summary>
@@ -44,25 +158,22 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             if ( Person != null && Person.Id > 0 )
             {
-                Group group = null;
-
-                Guid roleGuid = Guid.Empty;
-                if ( Guid.TryParse( GetAttributeValue( "GroupType/RoleFilter" ), out roleGuid ) )
+                if ( ownerRoleGuid != Guid.Empty )
                 {
-                    using ( new Rock.Data.UnitOfWorkScope() )
+                    using ( new UnitOfWorkScope() )
                     {
                         var memberService = new GroupMemberService();
-                        group = memberService.Queryable()
+                        var group = memberService.Queryable()
                             .Where( m =>
                                 m.PersonId == Person.Id &&
-                                m.GroupRole.Guid == roleGuid
+                                m.GroupRole.Guid == ownerRoleGuid
                             )
                             .Select( m => m.Group )
                             .FirstOrDefault();
 
                         if ( group == null && bool.Parse( GetAttributeValue( "CreateGroup" ) ) )
                         {
-                            var role = new GroupRoleService().Get( roleGuid );
+                            var role = new GroupRoleService().Get( ownerRoleGuid );
                             if ( role != null && role.GroupTypeId.HasValue )
                             {
                                 var groupMember = new GroupMember();
@@ -111,6 +222,24 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
                 }
             }
+        }
+
+        private void ShowModal(int? personId, int? roleId)
+        {
+            Guid roleGuid = Guid.Empty;
+            if ( Guid.TryParse( GetAttributeValue( "GroupType/RoleFilter" ), out roleGuid ) )
+            {
+                grpRole.GroupTypeId = new GroupRoleService().Queryable()
+                    .Where( r => r.Guid == roleGuid )
+                    .Select( r => r.GroupTypeId )
+                    .FirstOrDefault();
+
+            }
+
+            ppPerson.PersonId = personId;
+            grpRole.GroupRoleId = roleId;
+
+            modalAddPerson.Show();
         }
     }
 }

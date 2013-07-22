@@ -6,7 +6,6 @@
 
 using System;
 using System.Collections.Generic;
-using Rock.Attribute;
 using Rock.Extension;
 using Rock.Web.Cache;
 
@@ -15,9 +14,18 @@ namespace Rock.BinaryFile
     /// <summary>
     /// Base class for BinaryFile storage components
     /// </summary>
-    [ComponentField( "Rock.BinaryFile.StorageContainer, Rock" )]
     public abstract class StorageComponent : Component
     {
+        /// <summary>
+        /// Saves the file.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <param name="personId">The person id.</param>
+        public virtual void SaveFile( Model.BinaryFile file, int? personId )
+        {
+            SaveFiles( new List<Model.BinaryFile> { file }, personId );
+        }
+
         /// <summary>
         /// Saves the files.
         /// </summary>

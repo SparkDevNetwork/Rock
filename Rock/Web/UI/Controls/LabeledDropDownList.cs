@@ -43,7 +43,7 @@ namespace Rock.Web.UI.Controls
         DefaultValue( "false" ),
         Description( "Is the value required?" )
         ]
-        public bool Required
+        public virtual bool Required
         {
             get
             {
@@ -227,6 +227,7 @@ namespace Rock.Web.UI.Controls
                 if ( Required )
                 {
                     requiredValidator.Enabled = true;
+                    requiredValidator.ValidationGroup = this.ValidationGroup;
                     if ( string.IsNullOrWhiteSpace( requiredValidator.ErrorMessage ) )
                     {
                         requiredValidator.ErrorMessage = LabelText + " is Required.";

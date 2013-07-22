@@ -33,7 +33,16 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="PhoneNumberService"/> class
         /// </summary>
+        /// <param name="repository">The repository.</param>
         public PhoneNumberService(IRepository<PhoneNumber> repository) : base(repository)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PhoneNumberService"/> class
+        /// </summary>
+        /// <param name="context">The context.</param>
+        public PhoneNumberService(RockContext context) : base(context)
         {
         }
 

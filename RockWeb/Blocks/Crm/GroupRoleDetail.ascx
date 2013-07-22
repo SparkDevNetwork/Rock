@@ -24,6 +24,7 @@
                         <Rock:DataTextBox ID="tbSortOrder" runat="server" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="SortOrder" LabelText="Sort Order" Required="true" />
                         <Rock:DataTextBox ID="tbMinCount" runat="server" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="MinCount" LabelText="Min Group Members with this Role" />
                         <Rock:DataTextBox ID="tbMaxCount" runat="server" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="MaxCount" LabelText="Max Group Members with this Role" />
+                        <asp:PlaceHolder ID="phAttributes" runat="server" />
                     </div>
                 </div>
             </fieldset>

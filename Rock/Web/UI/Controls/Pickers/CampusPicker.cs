@@ -6,6 +6,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
+
+using Rock.Constants;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -25,6 +27,39 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="LabeledTextBox" /> is required.
+        /// </summary>
+        /// <value><c>true</c> if required; otherwise, <c>false</c>.</value>
+        public override bool Required
+        {
+            get
+            {
+                return base.Required;
+            }
+            set
+            {
+                var li = this.Items.FindByValue( None.IdValue );
+
+                if ( value )
+                {
+                    if ( li != null )
+                    {
+                        this.Items.Remove( li );
+                    }
+                }
+                else
+                {
+                    if ( li == null )
+                    {
+                        this.Items.Insert( 0, new ListItem( string.Empty, None.IdValue ) );
+                    }
+                }
+
+                base.Required = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the campuses.
         /// </summary>
         /// <value>
@@ -35,6 +70,12 @@ namespace Rock.Web.UI.Controls
             set
             {
                 this.Items.Clear();
+
+                if ( !Required )
+                {
+                    this.Items.Add( new ListItem( string.Empty, None.IdValue ) );
+                }
+
                 foreach ( Campus campus in value )
                 {
                     ListItem campusItem = new ListItem();
@@ -56,17 +97,16 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                int campusId = int.MinValue;
-                if ( int.TryParse( this.SelectedValue, out campusId ) && campusId > 0 )
-                {
-                    return campusId;
-                }
-                return null;
+                return this.SelectedValueAsInt();
             }
             set
             {
                 int id = value.HasValue ? value.Value : 0;
-                this.SelectedValue = id.ToString();
+                var li = this.Items.FindByValue( id.ToString() );
+                if ( li != null )
+                {
+                    li.Selected = true;
+                }
             }
         }
 
