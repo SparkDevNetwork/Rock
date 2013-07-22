@@ -213,7 +213,7 @@ namespace RockWeb.Blocks.Crm
                 }
                 else
                 {
-                    groupType = new GroupType { Id = 0 };
+                    groupType = new GroupType { Id = 0, ShowInGroupList = true };
                     groupType.ChildGroupTypes = new List<GroupType>();
                     groupType.LocationTypes = new List<GroupTypeLocationType>();
                     lActionTitle.Text = ActionTitle.Add( GroupType.FriendlyTypeName );

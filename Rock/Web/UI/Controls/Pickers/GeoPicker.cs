@@ -69,6 +69,39 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected HiddenFieldValidator RequiredValidator;
 
+        /// <summary>
+        /// Gets or sets the point that map should initially be centered on
+        /// </summary>
+        /// <value>
+        /// The center point.
+        /// </value>
+        public DbGeography CenterPoint
+        {
+            get 
+            { 
+                string centerLat = ViewState["CenterLat"] as string;
+                string centerLong = ViewState["CenterLong"] as string;
+                if (!string.IsNullOrWhiteSpace(centerLat) && !string.IsNullOrWhiteSpace(centerLong))
+                {
+                    return DbGeography.FromText( string.Format( "POINT({0} {1})", centerLong, centerLat ) );
+                }
+                return null;
+            }
+
+            set
+            {
+                string centerLat = string.Empty;
+                string centerLong = string.Empty;
+                if (value != null)
+                {
+                    centerLat = value.Latitude.HasValue ? value.Latitude.ToString() : string.Empty;
+                    centerLong = value.Longitude.HasValue ? value.Longitude.ToString() : string.Empty;
+                }
+
+                ViewState["CenterLat"] = centerLat;
+                ViewState["CenterLong"] = centerLong;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the selected value.
@@ -286,7 +319,6 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            RegisterJavaScript();
             var sm = ScriptManager.GetCurrent( this.Page );
 
             if ( sm != null )
@@ -303,9 +335,16 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected virtual void RegisterJavaScript()
         {
-            var organizationAddress = GlobalAttributesCache.Read().GetValue( "OrganizationAddress" );
-            const string scriptFormat = "Rock.controls.geoPicker.initialize({{ controlId: '{0}', drawingMode: '{1}', centerAddress: '{2}' }});";
-            string script = string.Format( scriptFormat, this.ClientID, this.DrawingMode, organizationAddress );
+            string options = string.Format( "controlId: '{0}', drawingMode: '{1}'", this.ClientID, this.DrawingMode );
+
+            DbGeography centerPoint = CenterPoint;
+            if ( centerPoint != null && centerPoint.Latitude != null && centerPoint.Longitude != null )
+            {
+                options += string.Format( ", centerLatitude: '{0}', centerLongitude: '{1}'", centerPoint.Latitude, centerPoint.Longitude );
+            }
+
+            string script = string.Format( "Rock.controls.geoPicker.initialize({{ {0} }});", options );
+            
             ScriptManager.RegisterStartupScript( this, this.GetType(), "geo_picker-" + this.ClientID, script, true );
         }
 
@@ -392,6 +431,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
         {
+            RegisterJavaScript();
+
             bool renderLabel = !string.IsNullOrEmpty( LabelText );
 
             if ( renderLabel )
@@ -453,7 +494,7 @@ namespace Rock.Web.UI.Controls
                 </div>
             </div>
             <!-- This is where the Google Map (with Drawing Tools) will go. -->
-            <div id='geoPicker_{0}' style='height: 300px; width: 100%' /></div>
+            <div id='geoPicker_{0}' style='height: 300px; width: 500px' /></div>
             <hr />
 ";
 

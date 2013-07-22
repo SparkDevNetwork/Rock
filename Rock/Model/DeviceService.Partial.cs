@@ -41,8 +41,10 @@ namespace Rock.Model
             DbGeography aLocation = DbGeography.FromText( string.Format("POINT({0} {1})", longitude, latitude) );
 
             kiosk = Repository.AsQueryable()
-                .Where( d => d.DeviceTypeValueId == deviceTypeValueId &&
-                    aLocation.Intersects( d.GeoFence ) ).FirstOrDefault();
+                .Where( d => 
+                    d.DeviceTypeValueId == deviceTypeValueId &&
+                    d.Location != null &&
+                    aLocation.Intersects( d.Location.GeoFence ) ).FirstOrDefault();
 
             return kiosk;
         }
