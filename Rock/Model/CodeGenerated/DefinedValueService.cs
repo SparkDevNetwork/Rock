@@ -33,7 +33,16 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="DefinedValueService"/> class
         /// </summary>
+        /// <param name="repository">The repository.</param>
         public DefinedValueService(IRepository<DefinedValue> repository) : base(repository)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DefinedValueService"/> class
+        /// </summary>
+        /// <param name="context">The context.</param>
+        public DefinedValueService(RockContext context) : base(context)
         {
         }
 

@@ -34,21 +34,26 @@ namespace Rock.Field.Types
         /// <returns></returns>
         public override string FormatValue( Control parentControl, string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
         {
-            var names = new List<string>();
-            foreach ( string guidValue in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
+            if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                Guid guid = Guid.Empty;
-                if ( Guid.TryParse( guidValue, out guid ) )
+                var names = new List<string>();
+                foreach ( string guidValue in value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
                 {
-                    var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
-                    if ( definedValue != null )
+                    Guid guid = Guid.Empty;
+                    if ( Guid.TryParse( guidValue, out guid ) )
                     {
-                        names.Add( definedValue.Name );
+                        var definedValue = Rock.Web.Cache.DefinedValueCache.Read( guid );
+                        if ( definedValue != null )
+                        {
+                            names.Add( definedValue.Name );
+                        }
                     }
                 }
+
+                return names.AsDelimited( ", " );
             }
 
-            return names.AsDelimited( ", " );
+            return string.Empty;
 
         }
 

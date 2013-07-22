@@ -21,7 +21,7 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     [DetailPage]
     public partial class BinaryFileTypeList : RockBlock
-    { 
+    {
         #region Control Methods
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gBinaryFileType_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "binaryFileTypeId", (int)e.RowKeyValue );
+            NavigateToDetailPage( "binaryFileTypeId", e.RowKeyId );
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace RockWeb.Blocks.Administration
             RockTransactionScope.WrapTransaction( () =>
             {
                 BinaryFileTypeService binaryFileTypeService = new BinaryFileTypeService();
-                BinaryFileType binaryFileType = binaryFileTypeService.Get( (int)e.RowKeyValue );
+                BinaryFileType binaryFileType = binaryFileTypeService.Get( e.RowKeyId );
 
                 if ( binaryFileType != null )
                 {
@@ -129,16 +129,34 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindGrid()
         {
-            BinaryFileTypeService binaryFileTypeService = new BinaryFileTypeService();
+            // use the same rockContext for both services so we can join
+            RockContext rockContext = new RockContext();
+            BinaryFileTypeService binaryFileTypeService = new BinaryFileTypeService( rockContext );
+            BinaryFileService binaryFileService = new BinaryFileService( rockContext );
+            
             SortProperty sortProperty = gBinaryFileType.SortProperty;
+
+            // join so we can both get BinaryFileCount quickly and be able to sort by it (having SQL do all the work)
+            var qry = from ft in binaryFileTypeService.Queryable()
+                      join bf in binaryFileService.Queryable().GroupBy( b => b.BinaryFileTypeId )
+                      on ft.Id equals bf.Key into joinResult
+                      from x in joinResult.DefaultIfEmpty()
+                      select new
+                      {
+                          ft.Id,
+                          ft.Name,
+                          ft.Description,
+                          BinaryFileCount = x.Key == null ? 0 : x.Count(),
+                          ft.IsSystem
+                      };
 
             if ( sortProperty != null )
             {
-                gBinaryFileType.DataSource = binaryFileTypeService.Queryable().Sort( sortProperty ).ToList();
+                gBinaryFileType.DataSource = qry.Sort( sortProperty ).ToList();
             }
             else
             {
-                gBinaryFileType.DataSource = binaryFileTypeService.Queryable().OrderBy( p => p.Name ).ToList();
+                gBinaryFileType.DataSource = qry.OrderBy( p => p.Name ).ToList();
             }
 
             gBinaryFileType.DataBind();

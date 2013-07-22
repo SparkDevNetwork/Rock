@@ -5,13 +5,13 @@ namespace Rock.Migrations
     using System.Data.Entity.Migrations.Infrastructure;
     using System.Resources;
     
-    public sealed partial class StorageEntityType : IMigrationMetadata
+    public sealed partial class LayoutBlocksSiteSpecific : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(StorageEntityType));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(LayoutBlocksSiteSpecific));
         
         string IMigrationMetadata.Id
         {
-            get { return "201307112349040_StorageEntityType"; }
+            get { return "201307112143164_LayoutBlocksSiteSpecific"; }
         }
         
         string IMigrationMetadata.Source

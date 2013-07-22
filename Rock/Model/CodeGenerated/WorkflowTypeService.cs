@@ -33,7 +33,16 @@ namespace Rock.Model
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowTypeService"/> class
         /// </summary>
+        /// <param name="repository">The repository.</param>
         public WorkflowTypeService(IRepository<WorkflowType> repository) : base(repository)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="WorkflowTypeService"/> class
+        /// </summary>
+        /// <param name="context">The context.</param>
+        public WorkflowTypeService(RockContext context) : base(context)
         {
         }
 

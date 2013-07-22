@@ -21,6 +21,7 @@
                         <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
                         <Rock:DataDropDownList ID="ddlTheme" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="Theme" />
                         <Rock:PagePicker ID="ppDefaultPage" runat="server" LabelText="Default Page" Required="true"/>
+                        <Rock:DataTextBox ID="tbLoginPageReference" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="LoginPageReference" />
                     </div>
                     <div class="span6">
                         <Rock:DataTextBox ID="tbSiteDomains" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="SiteDomains" TextMode="MultiLine" />
@@ -28,6 +29,9 @@
                         <Rock:DataTextBox ID="tbAppleTouchIconUrl" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="AppleTouchIconUrl" />
                         <Rock:DataTextBox ID="tbFacebookAppId" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="FacebookAppId" />
                         <Rock:DataTextBox ID="tbFacebookAppSecret" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="FacebookAppSecret" />
+                        
+                        <Rock:DataTextBox ID="tbRegistrationPageReference" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="RegistrationPageReference" />
+                        <Rock:DataTextBox ID="tbErrorPage" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="ErrorPage" />
                     </div>
                 </div>
 
