@@ -9,7 +9,7 @@ using System;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field used to save and dispaly a text value
+    /// Field used to save and display a text value
     /// </summary>
     [Serializable]
     public class TextFieldType : FieldType
