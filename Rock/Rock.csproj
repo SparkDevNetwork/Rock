@@ -22,6 +22,7 @@
     <DocumentationFile>
     </DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -140,6 +141,8 @@
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
+    <Compile Include="Attribute\EncryptedFieldAttribute.cs" />
+    <Compile Include="Attribute\LocationFieldAttribute.cs" />
     <Compile Include="Attribute\GroupRoleFieldAttribute.cs" />
     <Compile Include="Attribute\MemoFieldAttribute.cs" />
     <Compile Include="Attribute\DecimalFieldAttribute.cs" />
@@ -166,6 +169,8 @@
     <Compile Include="Field\Types\ComponentsFieldType.cs" />
     <Compile Include="Field\Types\CategoryFieldType.cs" />
     <Compile Include="Field\Types\CategoriesFieldType.cs" />
+    <Compile Include="Field\Types\EncryptedFieldType.cs" />
+    <Compile Include="Field\Types\LocationFieldType.cs" />
     <Compile Include="Field\Types\GroupRoleFieldType.cs" />
     <Compile Include="Migrations\201305032320163_Communications.cs" />
     <Compile Include="Migrations\201305032320163_Communications.Designer.cs">
@@ -384,6 +389,26 @@
     <Compile Include="Migrations\201307170312469_AddAttendedCheckInSite.cs" />
     <Compile Include="Migrations\201307170312469_AddAttendedCheckInSite.Designer.cs">
       <DependentUpon>201307170312469_AddAttendedCheckInSite.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307171913426_AddGroupTypeRoute.cs" />
+    <Compile Include="Migrations\201307171913426_AddGroupTypeRoute.Designer.cs">
+      <DependentUpon>201307171913426_AddGroupTypeRoute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307172022520_PowerTools.cs" />
+    <Compile Include="Migrations\201307172022520_PowerTools.Designer.cs">
+      <DependentUpon>201307172022520_PowerTools.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307181215585_HideSystemGroupTypes.cs" />
+    <Compile Include="Migrations\201307181215585_HideSystemGroupTypes.Designer.cs">
+      <DependentUpon>201307181215585_HideSystemGroupTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307191356459_LocationUpdates.cs" />
+    <Compile Include="Migrations\201307191356459_LocationUpdates.Designer.cs">
+      <DependentUpon>201307191356459_LocationUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307231337001_AddCampusShortCode.cs" />
+    <Compile Include="Migrations\201307231337001_AddCampusShortCode.Designer.cs">
+      <DependentUpon>201307231337001_AddCampusShortCode.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
@@ -1987,6 +2012,21 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307170312469_AddAttendedCheckInSite.resx">
       <DependentUpon>201307170312469_AddAttendedCheckInSite.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307171913426_AddGroupTypeRoute.resx">
+      <DependentUpon>201307171913426_AddGroupTypeRoute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307172022520_PowerTools.resx">
+      <DependentUpon>201307172022520_PowerTools.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307181215585_HideSystemGroupTypes.resx">
+      <DependentUpon>201307181215585_HideSystemGroupTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307191356459_LocationUpdates.resx">
+      <DependentUpon>201307191356459_LocationUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307231337001_AddCampusShortCode.resx">
+      <DependentUpon>201307231337001_AddCampusShortCode.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

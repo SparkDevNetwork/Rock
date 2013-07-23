@@ -64,7 +64,36 @@ namespace Rock.Model
         /// Value.
         /// </value>
         [DataMember]
-        public string Value { get; set; }
+        public string Value 
+        {
+            get
+            {
+                Rock.Field.IFieldType fieldType = Rock.Web.Cache.AttributeCache.Read( this.AttributeId ).FieldType.Field;
+                if ( fieldType is Rock.Field.Types.EncryptedFieldType )
+                {
+                    return Rock.Security.Encryption.DecryptString( _value );
+                }
+                else
+                {
+                    return _value;
+                }
+            }
+
+            set
+            {
+                Rock.Field.IFieldType fieldType = Rock.Web.Cache.AttributeCache.Read( this.AttributeId ).FieldType.Field;
+                if ( fieldType is Rock.Field.Types.EncryptedFieldType )
+                {
+                    _value = Rock.Security.Encryption.EncryptString( value );
+                }
+                else
+                {
+                    _value = value;
+                }
+
+            }
+        }
+        private string _value;
         
         /// <summary>
         /// Gets or sets the Attribute.
@@ -83,7 +112,15 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.Value;
+            Rock.Field.IFieldType fieldType = Rock.Web.Cache.AttributeCache.Read( this.AttributeId ).FieldType.Field;
+            if ( fieldType is Rock.Field.Types.EncryptedFieldType )
+            {
+                return "**********";
+            }
+            else
+            {
+                return this.Value;
+            }
         }
     }
 

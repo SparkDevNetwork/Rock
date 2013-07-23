@@ -143,8 +143,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                             if ( loc.GeocodedDateTime.HasValue )
                             {
                                 lbGeocode.ToolTip = string.Format( "{0} {1}",
-                                    loc.LocationPoint.Latitude,
-                                    loc.LocationPoint.Longitude );
+                                    loc.GeoPoint.Latitude,
+                                    loc.GeoPoint.Longitude );
                             }
                             else
                             {

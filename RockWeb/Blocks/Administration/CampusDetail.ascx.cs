@@ -79,6 +79,7 @@ namespace RockWeb.Blocks.Administration
             }
 
             campus.Name = tbCampusName.Text;
+            campus.ShortCode = tbCampusCode.Text;
 
             if ( !campus.IsValid )
             {
@@ -124,6 +125,7 @@ namespace RockWeb.Blocks.Administration
 
             hfCampusId.Value = campus.Id.ToString();
             tbCampusName.Text = campus.Name;
+            tbCampusCode.Text = campus.ShortCode;
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
