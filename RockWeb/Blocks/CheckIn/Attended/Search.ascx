@@ -27,34 +27,23 @@
 
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
-    <div class="row-fluid attended-checkin-header headerNumberOne">
-        <div class="span3 attended-checkin-actions admin">
+    <div class="row-fluid attended-checkin-header">
+        <div class="span3 attended-checkin-actions">
             <asp:LinkButton ID="lbAdmin" runat="server" CssClass="btn btn-large btn-primary" OnClick="lbAdmin_Click" Text="Admin"></asp:LinkButton>
         </div>
-        <div class="span6 hheader">
+        <div class="span6">
             <h1>Check In</h1>
         </div>
-        <div class="span3 attended-checkin-actions search">
+        <div class="span3 attended-checkin-actions">
             <asp:LinkButton ID="lbSearch" runat="server" CssClass="btn btn-large last btn-primary" OnClick="lbSearch_Click" Text="Search"></asp:LinkButton>
         </div>
     </div>
-    <div class="row-fluid attended-checkin-header headerNumberTwo">
-        <div class="span6 hheader">
-            <h1>Check In</h1>
-        </div>
-        <div class="span3 attended-checkin-actions admin">
-            <asp:LinkButton ID="lbAdmin2" runat="server" CssClass="btn btn-large btn-primary" OnClick="lbAdmin_Click" Text="Admin"></asp:LinkButton>
-        </div>
-        <div class="span3 attended-checkin-actions search">
-            <asp:LinkButton ID="lbSearch2" runat="server" CssClass="btn btn-large last btn-primary" OnClick="lbSearch_Click" Text="Search"></asp:LinkButton>
-        </div>
-    </div>
-                
     <div class="row-fluid checkin-body">
         <div class="span12">
             <div class="attended-checkin-search-body">
                 <Rock:LabeledTextBox ID="tbSearchBox" MaxLength="50" CssClass="attended-checkin-keyboard-entry" runat="server" LabelText="" TabIndex="0" />
 
+                <!-- Full Keyboard -->
                 <div class="keyboard attended-checkin-keyboard">
                     <div class="row-fluid">
                         <a href="#" class="btn digit">1</a>

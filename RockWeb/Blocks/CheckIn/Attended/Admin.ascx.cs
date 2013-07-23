@@ -49,6 +49,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 if ( kiosk != null )
                 {
                     campusDiv.Visible = false;
+                    kiosk = new DeviceService().Get( 2 );   // ***************** TEMPORARY ******************** //
                     CurrentKioskId = kiosk.Id;
                     repMinistry.DataSource = kiosk.GetLocationGroupTypes();
                     repMinistry.DataBind();

@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Model;
 
@@ -20,6 +21,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Description("Finds families based on a given search critieria (i.e. phone, barcode, etc)")]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Find Families" )]
+    [BooleanField( "Allow None Found", "If true, show an error if nothing is returned by the search. Otherwise ignore the error and continue." )]
     public class FindFamilies : CheckInActionComponent
     {
         /// <summary>
@@ -32,6 +34,12 @@ namespace Rock.Workflow.Action.CheckIn
         /// <exception cref="System.NotImplementedException"></exception>
         public override bool Execute( Model.WorkflowAction action, Data.IEntity entity, out List<string> errorMessages )
         {
+            bool allowNoneFound = false;
+            if ( bool.TryParse( GetAttributeValue( "AllowNoneFound" ), out allowNoneFound ) && allowNoneFound )
+            {
+                allowNoneFound = true;
+            }
+
             var checkInState = GetCheckInState( action, out errorMessages );
             if (checkInState != null)
             {
@@ -85,14 +93,22 @@ namespace Rock.Workflow.Action.CheckIn
                             }
                         }
                     }
-                    if ( checkInState.CheckIn.Families.Count > 0 )
+                    if ( allowNoneFound )
                     {
-                        SetCheckInState( action, checkInState );
-                        return true;
+                        if ( checkInState.CheckIn.Families.Count > 0 )
+                        {
+                            SetCheckInState( action, checkInState );
+                            return true;
+                        }
+                        else
+                        {
+                            errorMessages.Add( errorMessage );
+                        }
                     }
                     else
                     {
-                        errorMessages.Add( errorMessage );
+                        SetCheckInState( action, checkInState );
+                        return true;
                     }
                 }
             }
