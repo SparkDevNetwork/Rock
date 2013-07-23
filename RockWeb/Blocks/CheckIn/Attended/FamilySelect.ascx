@@ -176,7 +176,7 @@
             </Rock:Grid>
         </div>
         <div class="row-fluid attended-checkin-body searchperson">
-            <asp:LinkButton ID="lbAddSearchedForPerson" runat="server" Text="Didn't find what you're looking for? Add the person you searched for above." Visible="false" OnClick="lbAddSearchedForPerson_Click" CausesValidation="false"></asp:LinkButton>
+            <asp:LinkButton ID="lbAddSearchedForPerson" runat="server" Text="None of these, add me as a new [person/visitor]." Visible="false" OnClick="lbAddSearchedForPerson_Click" CausesValidation="false"></asp:LinkButton>
         </div>
     </asp:Panel>
     <asp:ModalPopupExtender ID="mpePerson" runat="server" TargetControlID="lbOpenPanel" PopupControlID="AddPersonPanel" CancelControlID="lbAddPersonCancel" BackgroundCssClass="modalBackground"></asp:ModalPopupExtender>

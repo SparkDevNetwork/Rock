@@ -25,28 +25,100 @@ namespace RockWeb.Blocks.CheckIn.Attended
     {
         #region Control Methods
 
+        // OnLoad we want to:
+        // A) Match IP from actual device to a record in the Device table
+        // B) Get a list of campuses
+        // C) Get the list of ministries
         protected override void OnLoad( EventArgs e )
         {
-           if ( !Page.IsPostBack )
+            if ( !Page.IsPostBack )
             {
-                ddlKiosk.Items.Clear();
-                ddlKiosk.DataSource = new DeviceService().Queryable().ToList();
-                ddlKiosk.DataBind();
-                ddlKiosk.Items.Insert( 0, new ListItem( None.Text, None.IdValue ) );
+                // Load Campuses
+                CampusService campusService = new CampusService();
+                List<Campus> CampusList = new List<Campus>();
+                CampusList = campusService.Queryable().OrderBy( n => n.Name ).ToList();
+                ddlCampus.DataSource = CampusList;
+                ddlCampus.DataBind();
+                ddlCampus.Items.Insert( 0, new ListItem( "Choose A Campus", None.IdValue ) );
 
-                if ( CurrentKioskId.HasValue )
+                // get the Device from the database based on the device name
+                var kiosk = new DeviceService().GetByDeviceName( Environment.MachineName );
+
+                // if we could auto-detect the kiosk, use that to load the ministry repeater. 
+                // otherwise, show the campus drop down list and use that to get the kiosk.
+                if ( kiosk != null )
                 {
-                    ListItem item = ddlKiosk.Items.FindByValue( CurrentKioskId.Value.ToString() );
-                    if ( item != null )
-                    {
-                        item.Selected = true;
-                        BindGroupTypes();
-                    }
+                    campusDiv.Visible = false;
+                    CurrentKioskId = kiosk.Id;
+                    repMinistry.DataSource = kiosk.GetLocationGroupTypes();
+                    repMinistry.DataBind();
                 }
-            }
-            else
-            {
-                phScript.Controls.Clear();
+                else
+                {
+                    campusDiv.Visible = true;
+                }
+                
+                SaveState();
+
+                // auto select the campus based on the first three letters of the Device Name
+                //switch ( kiosk.Name.Substring( 0, 3 ) )
+                //{
+                //    case "AND":
+                //        ddlCampus.Items.FindByText( "Anderson" ).Selected = true;
+                //        break;
+                //    case "CHS":
+                //        ddlCampus.Items.FindByText( "Charleston" ).Selected = true;
+                //        break;
+                //    case "COL":
+                //        ddlCampus.Items.FindByText( "Columbia" ).Selected = true;
+                //        break;
+                //    case "FLO":
+                //        ddlCampus.Items.FindByText( "Florence" ).Selected = true;
+                //        break;
+                //    case "GVL":
+                //        ddlCampus.Items.FindByText( "Greenville" ).Selected = true;
+                //        break;
+                //    case "GWD":
+                //        ddlCampus.Items.FindByText( "Greenwood" ).Selected = true;
+                //        break;
+                //    case "MYR":
+                //        ddlCampus.Items.FindByText( "Myrtle Beach" ).Selected = true;
+                //        break;
+                //    case "SPA":
+                //        ddlCampus.Items.FindByText( "Spartanburg" ).Selected = true;
+                //        break;
+                //    case "CEN":
+                //        ddlCampus.Items.FindByText( "Central" ).Selected = true;
+                //        break;
+                //    default:
+                //        // if the campus cannot be found in the first three letters of the device name...then don't set it automatically.
+                //        foundKioskCampus = false;
+                //        break;
+                //}
+
+                // if the campus was auto found and selected, then let's load the ministries here.
+                //if ( !string.IsNullOrEmpty( campusName ) )
+                //{
+                //    kiosk = new DeviceService().Get( 2 );   // ***************** TEMPORARY ******************** //
+                //    ddlCampus.Items.FindByText( campusName ).Selected = true;
+                //    repMinistry.DataSource = kiosk.GetLocationGroupTypes();
+                //    repMinistry.DataBind();
+                //}
+
+                //var kiosk = new Device();
+                //if ( CurrentKioskId.HasValue )
+                //{
+                //    // if there is a value already cached for the kiosk...get that.
+                //    kiosk = new DeviceService().Get( CurrentKioskId.Value );
+                //}
+                //else
+                //{
+                //    // ...otherwise get the kiosk by it's name & IP address
+                //    kiosk = new DeviceService().Get( 2 );
+                //}
+                //hfKioskId.Value = kiosk.Id.ToString();
+                //CurrentKioskId = kiosk.Id;
+
             }
         }
 
@@ -54,27 +126,71 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
         #region Edit Events
 
-        protected void ddlKiosk_SelectedIndexChanged( object sender, EventArgs e )
+        protected void ddlCampus_SelectedIndexChanged( object sender, EventArgs e )
         {
-            CurrentGroupTypeIds = null;
-            BindGroupTypes();
+            foreach ( RepeaterItem item in repMinistry.Items )
+            {
+                ( (LinkButton)item.FindControl( "lbMinistry" ) ).RemoveCssClass( "active" );
+            }
+            //var kiosk = new Device();
+            //if ( CurrentKioskId.HasValue )
+            //{
+            //    // if there is a value already cached for the kiosk...get that.
+            //    kiosk = new DeviceService().Get( CurrentKioskId.Value );
+            //}
+            //else
+            //{
+            //    // ...otherwise get the kiosk by it's name & IP address
+            //    kiosk = new DeviceService().Get( 2 );
+            //}
+            if ( ddlCampus.SelectedIndex == 0 )
+            {
+                repMinistry.DataSource = null;
+            }
+            else
+            {
+                var kiosk = new DeviceService().GetByDeviceName( ddlCampus.SelectedValue );
+                kiosk = new DeviceService().Get( 2 );   // ***************** TEMPORARY ******************** //
+                CurrentKioskId = kiosk.Id;
+                repMinistry.DataSource = kiosk.GetLocationGroupTypes();
+            }
+            repMinistry.DataBind();
+            SaveState();
+        }
+
+        protected void repMinistry_ItemCommand( object source, RepeaterCommandEventArgs e )
+        {
+            int id = int.Parse( e.CommandArgument.ToString() );
+            if ( HasActiveClass( (LinkButton)e.Item.FindControl( "lbMinistry" ) ) )
+            {
+                ( (LinkButton)e.Item.FindControl( "lbMinistry" ) ).RemoveCssClass( "active" );
+            }
+            else
+            {
+                ( (LinkButton)e.Item.FindControl( "lbMinistry" ) ).AddCssClass( "active" );
+            }
         }
 
         protected void lbOk_Click( object sender, EventArgs e )
         {
-            if ( ddlKiosk.SelectedValue == None.IdValue )
-            {
-                maWarning.Show( "A Kiosk Device needs to be selected!", ModalAlertType.Warning );
-                return;
-            }
+            // Check to make sure they picked a campus
+            //if ( ddlCampus.SelectedIndex == 0 )
+            //{
+            //    maWarning.Show( "Please choose a campus", ModalAlertType.Warning );
+            //    return;
+            //}
 
+            // Check to make sure they picked a ministry
             var ministryChosen = false;
-            foreach ( RepeaterItem item in rMinistries.Items )
+            List<int> ministryGroupTypeIds = new List<int>();
+            foreach ( RepeaterItem item in repMinistry.Items )
             {
-                var linky = (LinkButton)item.FindControl( "lbSelectMinistries" );
+                var linky = (LinkButton)item.FindControl( "lbMinistry" );
+                var blah = linky.Attributes["class"];
                 if ( HasActiveClass( linky ) )
                 {
                     ministryChosen = true;
+                    ministryGroupTypeIds.Add( int.Parse( linky.CommandArgument ) );
                 }
             }
 
@@ -84,225 +200,20 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 return;
             }
 
-            var roomChosen = false;
-            foreach ( RepeaterItem item in rRooms.Items )
-            {
-                var linky = (LinkButton)item.FindControl( "lbSelectRooms" );
-                if ( HasActiveClass( linky ) )
-                {
-                    roomChosen = true;
-                }
-            }
-
-            var roomGroupTypes = new List<GroupType>();
-            if ( !roomChosen )
-            {
-                foreach ( RepeaterItem item in rRooms.Items )
-                {
-                    var linky = (LinkButton)item.FindControl( "lbSelectRooms" );
-                    GroupType gt = new GroupTypeService().Get( int.Parse( linky.CommandArgument ) );
-                    roomGroupTypes.Add( gt );
-                }
-            }
-            else
-            {
-                foreach ( RepeaterItem item in rRooms.Items )
-                {
-                    var linky = (LinkButton)item.FindControl( "lbSelectRooms" );
-                    if ( HasActiveClass( linky ) )
-                    {
-                        GroupType gt = new GroupTypeService().Get( int.Parse( linky.CommandArgument ) );
-                        roomGroupTypes.Add( gt );
-                    }
-                }
-            }
-
-            var groupTypeIds = new List<int>();
-            foreach ( RepeaterItem item in rMinistries.Items )
-            {
-                var linky = (LinkButton)item.FindControl( "lbSelectMinistries" );
-                if ( HasActiveClass( linky ) )
-                {
-                    groupTypeIds.Add( int.Parse( linky.CommandArgument ) );
-                }
-            }
-
-            CurrentKioskId = int.Parse( ddlKiosk.SelectedValue );
-            hfKiosk.Value = CurrentKioskId.ToString();
-            CurrentGroupTypeIds = groupTypeIds;
-            hfGroupTypes.Value = CurrentGroupTypeIds.AsDelimited( "," );
-            CurrentRoomGroupTypes = roomGroupTypes;
+            //CurrentKioskId = int.Parse( ddlKiosk.SelectedValue );
+            //hfKiosk.Value = CurrentKioskId.ToString();
+            //hfGroupTypes.Value = CurrentGroupTypeIds.AsDelimited( "," );
+            //CurrentRoomGroupTypes = roomGroupTypes;
             CurrentCheckInState = null;
             CurrentWorkflow = null;
+            CurrentGroupTypeIds = ministryGroupTypeIds;
             SaveState();
-
             NavigateToNextPage();
-        }
-
-        protected void rMinistries_ItemCommand( object source, RepeaterCommandEventArgs e )
-        {
-            int id = int.Parse( e.CommandArgument.ToString() );
-
-            // step 1: if the button isn't already selected, then show the button as selected. otherwise unselect it.
-            if ( HasActiveClass( (LinkButton)e.Item.FindControl( "lbSelectMinistries" ) ) )
-            {
-                // the button is already selected, so unselect it.
-                ( (LinkButton)e.Item.FindControl( "lbSelectMinistries" ) ).RemoveCssClass( "active" );
-            }
-            else
-            {
-                // the button isn't already selected. Select it.
-                ( (LinkButton)e.Item.FindControl( "lbSelectMinistries" ) ).AddCssClass( "active" );
-            }
-
-            // step 2: go through the buttons and load the appropriate rooms for the selected ministries.
-            List<GroupType> roomList = new List<GroupType>();
-            foreach ( RepeaterItem item in rMinistries.Items )
-            {
-                var linky = (LinkButton)item.FindControl( "lbSelectMinistries" );
-                if ( HasActiveClass( linky ) )
-                {
-                    GetRooms( int.Parse( linky.CommandArgument ), roomList );
-                }
-            }
-
-            rRooms.DataSource = roomList;
-            rRooms.DataBind();
-        }
-
-        protected void rRooms_ItemCommand( object source, RepeaterCommandEventArgs e )
-        {
-            int id = int.Parse( e.CommandArgument.ToString() );
-
-            // if the button isn't already selected, then show the button as selected. otherwise unselect it.
-            if ( HasActiveClass( (LinkButton)e.Item.FindControl( "lbSelectRooms" ) ) )
-            {
-                // the button is already selected, so unselect it.
-                ( (LinkButton)e.Item.FindControl( "lbSelectRooms" ) ).RemoveCssClass( "active" );
-            }
-            else
-            {
-                // the button isn't already selected. Select it.
-                ( (LinkButton)e.Item.FindControl( "lbSelectRooms" ) ).AddCssClass( "active" );
-            }
         }
 
         #endregion
 
         #region Internal Methods
-
-        private void BindGroupTypes()
-        {
-            BindGroupTypes( string.Empty );
-        }
-
-        private void BindGroupTypes( string selectedValues )
-        {
-            var selectedItems = selectedValues.Split( ',' );
-
-            if ( ddlKiosk.SelectedValue != None.IdValue )
-            {
-                var kiosk = new DeviceService().Get( int.Parse( ddlKiosk.SelectedValue ) );
-                if ( kiosk != null )
-                {
-                    rMinistries.DataSource = kiosk.GetLocationGroupTypes();
-                    rMinistries.DataBind();
-                    rRooms.DataSource = null;
-                    rRooms.DataBind();
-                }
-
-                if ( selectedValues != string.Empty )
-                {
-                    var roomList = new List<GroupType>();
-                    foreach ( string id in selectedValues.Split( ',' ) )
-                    {
-                        foreach ( RepeaterItem item in rMinistries.Items )
-                        {
-                            var linky = (LinkButton)item.FindControl( "lbSelectMinistries" );
-                            if ( linky.CommandArgument == id )
-                            {
-                                linky.AddCssClass( "active" );
-                                GetRooms( int.Parse(id), roomList );
-                            }
-                        }
-                    }
-
-                    rRooms.DataSource = roomList;
-                    rRooms.DataBind();
-                    if ( CurrentRoomGroupTypeIds != null )
-                    {
-                        foreach ( int id in CurrentRoomGroupTypeIds )
-                        {
-                            foreach ( RepeaterItem item in rRooms.Items )
-                            {
-                                var linky = (LinkButton)item.FindControl( "lbSelectRooms" );
-                                if ( int.Parse(linky.CommandArgument) == id )
-                                {
-                                    linky.AddCssClass( "active" );
-                                }
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    if ( CurrentGroupTypeIds != null )
-                    {
-                        var roomList = new List<GroupType>();
-                        foreach ( int id in CurrentGroupTypeIds )
-                        {
-                            foreach ( RepeaterItem item in rMinistries.Items )
-                            {
-                                var linky = (LinkButton)item.FindControl( "lbSelectMinistries" );
-                                if ( int.Parse(linky.CommandArgument) == id )
-                                {
-                                    linky.AddCssClass( "active" );
-                                    GetRooms( id, roomList );
-                                }
-                            }
-                        }
-
-                        rRooms.DataSource = roomList;
-                        rRooms.DataBind();
-                        if ( CurrentRoomGroupTypeIds != null )
-                        {
-                            foreach ( int id in CurrentRoomGroupTypeIds )
-                            {
-                                foreach ( RepeaterItem item in rRooms.Items )
-                                {
-                                    var linky = (LinkButton)item.FindControl( "lbSelectRooms" );
-                                    if ( int.Parse( linky.CommandArgument ) == id )
-                                    {
-                                        linky.AddCssClass( "active" );
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        protected List<GroupType> GetRooms( int parentGroupTypeId, List<GroupType> returnGroupType )
-        {
-            GroupType parentGroupType = new GroupTypeService().Get( parentGroupTypeId );
-            List<int> childGroupTypes = parentGroupType.ChildGroupTypes.Select( a => a.Id ).ToList();
-            foreach ( var childGroupType in childGroupTypes )
-            {
-                GroupType theParentGroupType = new GroupTypeService().Get( childGroupType );
-                if ( theParentGroupType.ChildGroupTypes.Count > 0 )
-                {
-                    GetRooms( theParentGroupType.Id, returnGroupType );
-                }
-                else
-                {
-                    GroupType groupType = new GroupTypeService().Get( theParentGroupType.Id );
-                    returnGroupType.Add( groupType );
-                }
-            }
-
-            return returnGroupType;
-        }
 
         protected bool HasActiveClass( WebControl webcontrol )
         {
