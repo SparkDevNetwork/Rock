@@ -8,7 +8,7 @@ using System;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field used to save and dispaly a document
+    /// Field used to save and display a document
     /// </summary>
     [Serializable]
     public class DocumentFieldType : FieldType

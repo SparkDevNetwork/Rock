@@ -30,7 +30,7 @@ namespace Rock.Model
             ShowInGroupList = true;
             ShowInNavigation = true;
         }
-        
+
         #region Entity Properties
 
         /// <summary>
@@ -189,6 +189,15 @@ namespace Rock.Model
         /// <value>The inherited group type id.</value>
         [DataMember]
         public int? InheritedGroupTypeId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the type of the locations allowed on groups of this type.
+        /// </summary>
+        /// <value>
+        /// The type of the locations.
+        /// </value>
+        [DataMember]
+        public LocationType LocationType { get; set; }
 
         #endregion
 
@@ -389,6 +398,37 @@ namespace Rock.Model
         /// User must already belong to the group before they will be allowed to check-in
         /// </summary>
         AlreadyBelongs = 2
+    }
+
+    /// <summary>
+    /// The attendance rule to use when person checks in to a group of this type
+    /// </summary>
+    public enum LocationType
+    {
+        /// <summary>
+        /// Any
+        /// </summary>
+        Any = 0,
+
+        /// <summary>
+        /// An Addresss
+        /// </summary>
+        Address = 1,
+
+        /// <summary>
+        /// A Geographic point (Latitude/Longitude)
+        /// </summary>
+        Point = 2,
+
+        /// <summary>
+        /// A Geographic Polygon
+        /// </summary>
+        Polygon = 3,
+
+        /// <summary>
+        /// A Named location (Building, Room)
+        /// </summary>
+        PointOfInterest = 4
     }
 
     #endregion
