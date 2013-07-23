@@ -64,36 +64,49 @@ namespace Rock.Model
         /// Value.
         /// </value>
         [DataMember]
-        public string Value 
+        public string Value {get; set;}
+
+        /// <summary>
+        /// Gets the type of the field.
+        /// </summary>
+        /// <value>
+        /// The type of the field.
+        /// </value>
+        private Rock.Field.IFieldType FieldType
         {
             get
             {
-                Rock.Field.IFieldType fieldType = Rock.Web.Cache.AttributeCache.Read( this.AttributeId ).FieldType.Field;
-                if ( fieldType is Rock.Field.Types.EncryptedFieldType )
+                Rock.Field.IFieldType result = null;
+                Rock.Web.Cache.AttributeCache attribute = Rock.Web.Cache.AttributeCache.Read( this.AttributeId );
+                if (attribute != null)
                 {
-                    return Rock.Security.Encryption.DecryptString( _value );
-                }
-                else
-                {
-                    return _value;
-                }
-            }
-
-            set
-            {
-                Rock.Field.IFieldType fieldType = Rock.Web.Cache.AttributeCache.Read( this.AttributeId ).FieldType.Field;
-                if ( fieldType is Rock.Field.Types.EncryptedFieldType )
-                {
-                    _value = Rock.Security.Encryption.EncryptString( value );
-                }
-                else
-                {
-                    _value = value;
+                  if (attribute.FieldType != null)
+                  {
+                    result = attribute.FieldType.Field;
+                  }
                 }
 
+                return result; 
             }
         }
-        private string _value;
+
+        /// <summary>
+        /// Determines whether [is encrypted field type].
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if [is encrypted field type]; otherwise, <c>false</c>.
+        /// </returns>
+        internal bool IsEncryptedFieldType()
+        {
+            if ( FieldType != null )
+            {
+                return FieldType is Rock.Field.Types.EncryptedFieldType;
+            }
+            else
+            {
+                return false;
+            }
+        }
         
         /// <summary>
         /// Gets or sets the Attribute.
@@ -112,8 +125,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            Rock.Field.IFieldType fieldType = Rock.Web.Cache.AttributeCache.Read( this.AttributeId ).FieldType.Field;
-            if ( fieldType is Rock.Field.Types.EncryptedFieldType )
+            if ( IsEncryptedFieldType() )
             {
                 return "**********";
             }
