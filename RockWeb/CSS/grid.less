@@ -7,7 +7,8 @@
 */
 
 
-/* bootstrap override */
+// x. Bootstrap Overrides
+// -------------------------
 .table-hover tbody tr:hover td,
 .table-hover tbody tr:hover th
 {
@@ -27,7 +28,7 @@ td[align=center]
 .grid-table a.minimal i
 {
     text-decoration: none;
-    color: @textColor;
+    color: @site-text-color;
 }
 
 
@@ -35,19 +36,15 @@ td[align=center]
 // -------------------------
 .grid-filter 
 {
-    background-color: #f9f9f9;
-    border-radius: 4px 4px 4px 4px;
-    border-width: 1px;
-    border-color: #ddd;
-    border-style: solid;
+    background-color: @grid-filter-background;
+    border-radius: @site-border-radius;
     padding: 0 0 12px 6px;
 	margin-bottom: -10px;
 }
 
 .grid-filter header {
-    .make-gradient(@rockHeaderBackground);
     margin: 0 0 -4px -6px;
-    border-radius: 4px 4px 0 0;
+    border-radius: @site-border-radius @site-border-radius 0 0;
     padding: 4px;
     cursor: pointer;
     height: 22px;
@@ -67,7 +64,7 @@ td[align=center]
 }
 
 .grid-filter header i {
-    color: #7c7c7c;
+    color: lighten(@site-text-color, 20%);
 }
 
 .grid-filter fieldset 
@@ -75,10 +72,11 @@ td[align=center]
     margin-bottom: 0;
 }
 
-.grid-filter legend 
+.grid-filter h4
 {
-    font-size: 16px;
-    margin-bottom: 0;
+    margin: 12px 0 20px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid darken(@grid-filter-background, 8%);
 }
 
 .grid-filter +  div .grid-table 
@@ -162,7 +160,7 @@ td[align=center]
 
 .grid-table .pagination a
 {
-    color: @textColor;
+    color: @site-text-color;
 }
 
 .grid-table .page-navigation
@@ -206,8 +204,8 @@ td[align=center]
 .table-light thead th
 {
     background-color: inherit;
-    color: #515151;
-    font-weight: bold;
+    color: @site-text-color;
+    font-weight: @font-bold-weight;
 }
 
 .table-light tfoot td 

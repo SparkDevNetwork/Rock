@@ -1,6 +1,8 @@
 @import "./components.less";
 @import "./page-admin.less";
 @import "./grid.less";
+@import "./modal.less";
+
 
 // HTML Overrides
 //--------------------------------
@@ -82,79 +84,12 @@ a.help:hover {
 
 
 /* CK Editor Tweaks */
-span.cke_skin_kama {
-    padding: 0 !important;   
-}
-
-/* Dialog Styling */
-.modal-body .scroll-container 
+span.cke_skin_kama
 {
-    width: 720px;
-}
-
-.modal-body .scroll-container .viewport 
-{
-    width: 690px; 
-}
-
-.modal-body.iframe 
-{
-    background: url("../assets/images/ajax-loading.png") center center no-repeat; /* http://preloaders.net/en/popular */
-    overflow: hidden;
-}
-
-.modal-header {
-    min-height: 34px;
-    background-color: @rockModalHeader;  
-    color: @rockModalHeaderTextColor;
-    padding: 5px 15px;
-}
-
-.modal-header h3 
-{
-    float: left;
-}
-
-.modal-backdrop 
-{
-    background-color: #8b8b8b;
-    opacity: 0.7;    
-}
-
-.bootbox.modal {
-    width:500px;
-    left: 50%;
-    margin-left:-250px;
-}
-
-.modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  z-index: 11000;
-  width: 750px;
-  margin-left: 0px;
-  background-color: @site-background-color;
+    padding: 0 !important;
 }
 
 
-.modal-body {
-  padding: 8px 12px 12px 12px;
-}
-
-.modal-footer:after {
-  clear: both;
-}
-.modal-footer .btn {
-  float: right;
-  margin-left: 5px;
-}
-
-#modal-popup_iframe {
-    height: 100%;
-    width: 100%;
-    border: 0;
-}
 
 /* user registration styles */
 .not-me 
@@ -247,139 +182,11 @@ span.cke_skin_kama {
     display: none; 
 }
 
-/* widget wrapper*/
-.widget
-{
-    background-color: @rockWidgetBackground;
-    border: 1px solid @tableBorder;
-    border-radius: @baseBorderRadius;
-    margin-bottom: 2em;
-}
-
-.widget h3 
-{
-    font-size: 15px;  
-    line-height: 15px;
-    margin: 0 0 6px 0;
-}
-
-.widget header
-{
-    .make-gradient(@rockHeaderBackground);
-    padding: 6px 15px;
-    border-radius: @baseBorderRadius @baseBorderRadius 0 0 ;
-}
-
-.filter-toogle > span {
-    vertical-align: 20%;
-}
-
-.widget.widget-dark > header
-{
-	.make-gradient(@rockHeaderDarkBackground);
-    color: #fff;
-}
-
-.widget.widget-dark > header .btn-action {
-	.make-gradient(lighten(@rockHeaderDarkBackground, 3%));
-}
 
 
-.widget-content
-{
-    padding: 20px 15px 15px;
-}
 
-/* tooltip */
-.tooltipster-base {
-	border-radius: @baseBorderRadius; 
-	border: 1px solid #cccccc;
-	background: @rockTooltipBackground;
-	color:  @rockTextColor;
-}
 
-.tooltipster-content header img,
-.tooltipster-content header div
-{
-    float: left;
-}
 
-.tooltipster-content header div
-{
-    margin: 4px 0 0 8px;
-    font-family: @rockFontFamilyBold;
-}
-
-.tooltipster-content header small
-{
-    display: block;
-    font-weight: normal;
-    font-family: @rockFontFamilyLight;
-}
-
-.tooltipster-content header:after
-{
-    content: ".";
-    display: block;
-    height: 0;
-    clear: both;
-    visibility: hidden;
-}
-
-.tooltipster-content header
-{
-    background-color: @rockHeaderBackground;
-    margin: -8px -10px 8px -10px;
-    padding: 8px 10px;
-    border-radius: @baseBorderRadius; 
-}
-
-.tooltipster-content strong
-{
-    font-family: @rockFontFamilySemiBold;
-    font-weight: normal;
-}
-
-/* page list as blocks (used in admin screens) */
-
-.page-list-as-blocks ul 
-{
-    list-style: none;
-}
-
-.page-list-as-blocks li 
-{
-    background-color: @rockPageTitleBackground;
-    border-radius: 6px 6px 6px 6px;
-    border: 1px solid #bbb;
-    float: left;
-    margin: 0 2% 12px 2%;
-    width: 20%;
-    overflow: hidden;
-    color: @rockSecondaryTextColor;
-    text-align: center;
-}
-
-    
-.page-list-as-blocks li a 
-{
-    display: block;
-    color: inherit;
-    height: 65px;
-    padding: 12px;
-}
-
-.page-list-as-blocks li a:hover
-{
-    text-decoration: none;
-}
-
-.page-list-as-blocks h4
-{
-    margin-top: 0;
-    font-size: 14px;
-    margin: 6px 0;
-}
 
 /* error page */
 .error-wrap

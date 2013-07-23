@@ -1,8 +1,12 @@
 ﻿/*
     Used to manage styles related to reusable components / widgets.
     
-    1. Panel - used to visually link related content items together.
-    2. Banner - used as the primary heading for a page or large section.
+    1. Panel - used to visually link related content items together
+    2. Banner - used as the primary heading for a page or large section
+    3. Treeview - additional styles for the kendo treeview
+    4. Widget - reusable box wrapper for content
+    5. Tooltip - styles for the tooltipster module
+    6. Pagelist - used to list child pages; currently used in admin screens
 
 */
 
@@ -37,4 +41,196 @@
     font-size: @banner-font-size;
     padding: @banner-padding;
     margin: 0 0 12px;
+}
+
+// 3. Treeview
+// -------------------------
+
+.treeview {
+	margin-bottom: 20px;
+}
+
+.treeview-actions {
+	padding-right: 12px;
+	margin-bottom: 12px;
+}
+
+#treeview-content { /* TODO this will need to be a class, but the javascript needs to be modified. */
+	clear: both;
+	overflow: hidden;
+}
+
+.k-treeview span.k-in,
+.k-treeview .k-in.k-state-hover, 
+.k-treeview .k-in.k-state-selected, 
+.k-treeview .k-in.k-state-focused
+{
+     padding: 2px 10px;
+}
+
+.k-state-selected,
+.k-state-selected.k-state-focused, 
+.k-state-selected.k-state-highlight { 
+	background-color: @site-primary-color;
+	border: 1px solid transparent;
+	color: @site-primary-inverse-color;
+	box-shadow: none !important;
+}
+
+.k-state-hover {
+
+	border: 1px solid transparent;
+	color: #000 !important;
+	background: #b8b9b9 !important; 
+	background: -moz-linear-gradient(top, #b8b9b9 0%, #b8b9b9 100%) !important;
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#b8b9b9), color-stop(100%,#b8b9b9)) !important;
+	background: -webkit-linear-gradient(top, #b8b9b9 0%,#b8b9b9 100%) !important;
+	background: -o-linear-gradient(top, #b8b9b9 0%,#b8b9b9 100%) !important;
+	background: -ms-linear-gradient(top, #b8b9b9 0%,#b8b9b9 100%) !important;
+	background: linear-gradient(to bottom, #b8b9b9 0%,#b8b9b9 100%) !important;
+    background-color: @site-subtle-background;
+}
+
+.k-state-hover {
+	background-color: @rockHoverBackgroundColor !important;
+}
+
+// 4. Widget
+// -------------------------
+
+.widget
+{
+    background-color: @rockWidgetBackground;
+    border: 1px solid @tableBorder;
+    border-radius: @baseBorderRadius;
+    margin-bottom: 2em;
+}
+
+.widget h3 
+{
+    font-size: 15px;  
+    line-height: 15px;
+    margin: 0 0 6px 0;
+}
+
+.widget header
+{
+    .make-gradient(@rockHeaderBackground);
+    padding: 6px 15px;
+    border-radius: @baseBorderRadius @baseBorderRadius 0 0 ;
+}
+
+.filter-toogle > span {
+    vertical-align: 20%;
+}
+
+.widget.widget-dark > header
+{
+	.make-gradient(@rockHeaderDarkBackground);
+    color: #fff;
+}
+
+.widget.widget-dark > header .btn-action {
+	.make-gradient(lighten(@rockHeaderDarkBackground, 3%));
+}
+
+
+.widget-content
+{
+    padding: 20px 15px 15px;
+}
+
+// 5. Tooltip
+// -------------------------
+
+.tooltipster-base {
+	border-radius: @baseBorderRadius; 
+	border: 1px solid #cccccc;
+	background: @rockTooltipBackground;
+	color:  @rockTextColor;
+}
+
+.tooltipster-content header img,
+.tooltipster-content header div
+{
+    float: left;
+}
+
+.tooltipster-content header div
+{
+    margin: 4px 0 0 8px;
+    font-family: @rockFontFamilyBold;
+}
+
+.tooltipster-content header small
+{
+    display: block;
+    font-weight: normal;
+    font-family: @rockFontFamilyLight;
+}
+
+.tooltipster-content header:after
+{
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+
+.tooltipster-content header
+{
+    background-color: @rockHeaderBackground;
+    margin: -8px -10px 8px -10px;
+    padding: 8px 10px;
+    border-radius: @baseBorderRadius; 
+}
+
+.tooltipster-content strong
+{
+    font-family: @rockFontFamilySemiBold;
+    font-weight: normal;
+}
+
+
+// 6. Pagelist
+// -------------------------
+
+.page-list-as-blocks ul 
+{
+    list-style: none;
+}
+
+.page-list-as-blocks li 
+{
+    background-color: @rockPageTitleBackground;
+    border-radius: 6px 6px 6px 6px;
+    border: 1px solid #bbb;
+    float: left;
+    margin: 0 2% 12px 2%;
+    width: 20%;
+    overflow: hidden;
+    color: @rockSecondaryTextColor;
+    text-align: center;
+}
+
+    
+.page-list-as-blocks li a 
+{
+    display: block;
+    color: inherit;
+    height: 65px;
+    padding: 12px;
+}
+
+.page-list-as-blocks li a:hover
+{
+    text-decoration: none;
+}
+
+.page-list-as-blocks h4
+{
+    margin-top: 0;
+    font-size: 14px;
+    margin: 6px 0;
 }
