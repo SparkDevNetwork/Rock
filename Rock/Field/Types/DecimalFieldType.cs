@@ -10,7 +10,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field used to save and dispaly a decimal numeric value
+    /// Field used to save and display a decimal numeric value
     /// </summary>
     [Serializable]
     public class DecimalFieldType : FieldType
@@ -49,9 +49,7 @@ namespace Rock.Field.Types
         public override System.Web.UI.Control EditControl( System.Collections.Generic.Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             var numberBox = new NumberBox { ID = id }; 
-            numberBox.ValidationDataType = System.Web.UI.WebControls.ValidationDataType.Double;
-            numberBox.MinimumValue = decimal.MinValue.ToString();
-            numberBox.MaximumValue = decimal.MaxValue.ToString();
+            numberBox.NumberType = System.Web.UI.WebControls.ValidationDataType.Double;
             return numberBox;
         }
     }

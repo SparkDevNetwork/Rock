@@ -49,26 +49,6 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the geographic point where the device is located.
-        /// </summary>
-        /// <value>
-        /// The geo point.
-        /// </value>
-        [DataMember]
-        [JsonConverter( typeof( DbGeographyConverter ) )]
-        public DbGeography GeoPoint { get; set; }
-
-        /// <summary>
-        /// Gets or sets the geographic boundry for the device
-        /// </summary>
-        /// <value>
-        /// The geo fence.
-        /// </value>
-        [DataMember]
-        [JsonIgnore]
-        public DbGeography GeoFence { get; set; }
-
-        /// <summary>
         /// Gets or sets the type of the device.
         /// </summary>
         /// <value>
@@ -76,6 +56,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int DeviceTypeValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the location id.
+        /// </summary>
+        /// <value>
+        /// The location id.
+        /// </value>
+        [DataMember]
+        public int? LocationId { get; set; }
 
         /// <summary>
         /// Gets or sets the IP address.
@@ -119,10 +108,19 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the locations.
+        /// Gets or sets the physical location of the device, or the geographic fence 
+        /// that this device is active for
         /// </summary>
         /// <value>
-        /// The locations.
+        /// The location.
+        /// </value>
+        public virtual Location Location { get; set; }
+
+        /// <summary>
+        /// Gets or sets the locations that this device is used for
+        /// </summary>
+        /// <value>
+        /// The locations using this device.
         /// </value>
         [DataMember]
         public virtual ICollection<Location> Locations
@@ -203,6 +201,7 @@ namespace Rock.Model
         /// </summary>
         public DeviceConfiguration()
         {
+            this.HasOptional( d => d.Location ).WithMany().HasForeignKey( d => d.LocationId ).WillCascadeOnDelete( false );
             this.HasMany( d => d.Locations ).WithMany().Map( d => { d.MapLeftKey( "DeviceId" ); d.MapRightKey( "LocationId" ); d.ToTable( "DeviceLocation" ); } );
             this.HasOptional( d => d.PrinterDevice ).WithMany().HasForeignKey( d => d.PrinterDeviceId ).WillCascadeOnDelete( false );
             this.HasRequired( d => d.DeviceType ).WithMany().HasForeignKey( d => d.DeviceTypeValueId ).WillCascadeOnDelete( false );

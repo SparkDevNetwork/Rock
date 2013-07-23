@@ -12,7 +12,7 @@ using System.Web.UI.WebControls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field used to save and dispaly a text value
+    /// Field used to save and display an image value
     /// </summary>
     [Serializable]
     public class ImageFieldType : FieldType

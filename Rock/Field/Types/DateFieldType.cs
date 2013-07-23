@@ -16,7 +16,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field used to save and dispaly a text value
+    /// Field used to save and display a date value
     /// </summary>
     [Serializable]
     public class DateFieldType : FieldType
