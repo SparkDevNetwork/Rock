@@ -19,7 +19,8 @@ namespace Rock.Workflow.Action.CheckIn
     [Description("Loads the groups available for each selected (or optionally all) loction(s)")]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Load Groups" )]
-    [BooleanField( "Include Non-Selected Locations", "If set to true, this action will load all groups including those for non-selected locations.  Default false.", false, key: "IncludeNonSelectedLocations" )]
+    [BooleanField( "Load All", "By default groups are only loaded for the selected person, group type, and location.  Select this option to load groups for all the loaded people, group types, and locations." )]
+    [BooleanField( "Load for all Locations", "If 'Load All' is not selected, this option can be used to load groups for all locations, including those for non-selected locations.", false, key: "IncludeNonSelectedLocations" )]
     public class LoadGroups : CheckInActionComponent
     {
         /// <summary>
@@ -32,21 +33,31 @@ namespace Rock.Workflow.Action.CheckIn
         /// <exception cref="System.NotImplementedException"></exception>
         public override bool Execute( Model.WorkflowAction action, Data.IEntity entity, out List<string> errorMessages )
         {
+            bool loadAll = false;
+            if ( bool.TryParse( GetAttributeValue( "LoadAll" ), out loadAll ) && loadAll )
+            {
+                loadAll = true;
+            }
+
+            bool loadAllLocations = false;
+            if ( bool.TryParse( GetAttributeValue( "IncludeNonSelectedLocations" ), out loadAllLocations ) && loadAllLocations )
+            {
+                loadAllLocations = true;
+            }
+
             var checkInState = GetCheckInState( action, out errorMessages );
             if ( checkInState != null )
             {
-                bool includeNonSelected = bool.Parse( GetAttributeValue( action, "IncludeNonSelectedLocations" ) ?? "false" );
-
                 foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )
                 {
-                    foreach ( var person in family.People.Where( p => p.Selected ) )
+                    foreach ( var person in family.People.Where( p => p.Selected || loadAll) )
                     {
-                        foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
+                        foreach ( var groupType in person.GroupTypes.Where( g => g.Selected || loadAll) )
                         {
                             var kioskGroupType = checkInState.Kiosk.KioskGroupTypes.Where( g => g.GroupType.Id == groupType.GroupType.Id ).FirstOrDefault();
                             if ( kioskGroupType != null )
                             {
-                                foreach ( var location in groupType.Locations.Where( l => l.Selected || includeNonSelected ) )
+                                foreach ( var location in groupType.Locations.Where( l => l.Selected || loadAllLocations || loadAll ) )
                                 {
                                     var kioskLocation = kioskGroupType.KioskLocations.Where( l => l.Location.Id == location.Location.Id ).FirstOrDefault();
                                     if ( kioskLocation != null )

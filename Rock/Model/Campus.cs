@@ -44,6 +44,16 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the campus abbreviation/short code.
+        /// </summary>
+        /// <value>
+        /// Short Code.
+        /// </value>
+        [MaxLength( 50 )]
+        [DataMember]
+        public string ShortCode { get; set; }
+
+        /// <summary>
         /// Gets or sets the location id.
         /// </summary>
         /// <value>

@@ -108,5 +108,28 @@ namespace Rock.Web.UI
             items.ForEach( a => list.Add( a as T ) );
             internalListJson = list.ToJson();
         }
+
+        /// <summary>
+        /// Inserts all.
+        /// </summary>
+        /// <param name="items">The items.</param>
+        public void InsertAll( List<T> items )
+        {
+            var list = GetList().ToList();
+            items.Reverse();
+            items.ForEach( a => list.Insert( 0, a as T ) );
+            internalListJson = list.ToJson();
+        }
+
+        /// <summary>
+        /// Clears this instance.
+        /// </summary>
+        public void Clear()
+        {
+            var list = GetList().ToList();
+            list.Clear();
+            internalListJson = list.ToJson();
+        }
+
     }
 }

@@ -101,8 +101,6 @@ namespace Rock.Model
                 var target = new Device();
                 target.Name = source.Name;
                 target.Description = source.Description;
-                target.GeoPoint = source.GeoPoint;
-                target.GeoFence = source.GeoFence;
                 target.DeviceTypeValueId = source.DeviceTypeValueId;
                 target.IPAddress = source.IPAddress;
                 target.PrinterDeviceId = source.PrinterDeviceId;

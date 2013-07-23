@@ -26,7 +26,7 @@
 
                 function showGroupDetails(groupId) {
                     var groupSearch = '?groupId=' + groupId;
-                    if (window.location.search != groupSearch) {
+                    if (window.location.search.indexOf(groupSearch) === -1) {
                         $('#hfSelectedGroupId').val(groupId);
                         window.location.search = groupSearch;
                     }
