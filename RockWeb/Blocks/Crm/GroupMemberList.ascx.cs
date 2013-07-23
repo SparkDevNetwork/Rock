@@ -68,7 +68,7 @@ namespace RockWeb.Blocks.Crm
             RockTransactionScope.WrapTransaction( () =>
             {
                 GroupMemberService groupMemberService = new GroupMemberService();
-                GroupMember groupMember = groupMemberService.Get( (int)e.RowKeyValue );
+                GroupMember groupMember = groupMemberService.Get( e.RowKeyId );
                 if ( groupMember != null )
                 {
                     string errorMessage;
@@ -78,8 +78,17 @@ namespace RockWeb.Blocks.Crm
                         return;
                     }
 
+                    int groupId = groupMember.GroupId;
+
                     groupMemberService.Delete( groupMember, CurrentPersonId );
                     groupMemberService.Save( groupMember, CurrentPersonId );
+
+                    Group group = new GroupService().Get( groupId );
+                    if ( group.IsSecurityRole )
+                    {
+                        // person removed from SecurityRole, Flush
+                        Rock.Security.Authorization.Flush();
+                    }
                 }
             } );
 

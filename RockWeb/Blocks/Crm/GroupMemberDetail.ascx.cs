@@ -449,6 +449,13 @@ namespace RockWeb.Blocks.Crm
                 qryString["roleId"] = role.Id.ToString();
             }
 
+            Group group = new GroupService().Get( groupMember.GroupId );
+            if ( group.IsSecurityRole )
+            {
+                // new person added to SecurityRole, Flush
+                Rock.Security.Authorization.Flush();
+            }
+
             NavigateToParentPage( qryString );
         }
 
