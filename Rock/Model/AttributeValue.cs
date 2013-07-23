@@ -112,7 +112,15 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.Value;
+            Rock.Field.IFieldType fieldType = Rock.Web.Cache.AttributeCache.Read( this.AttributeId ).FieldType.Field;
+            if ( fieldType is Rock.Field.Types.EncryptedFieldType )
+            {
+                return "**********";
+            }
+            else
+            {
+                return this.Value;
+            }
         }
     }
 
