@@ -81,7 +81,7 @@ h1 {
     color: darken(@checkinPrimaryButtonColor, 10%);
 }
 
-.btn-checkin-select
+.btn-checkin-select, .btn-checkin-post
 {
     font-family: @rockSansFontFamilySemiBold;
     font-size: 24px;
@@ -345,38 +345,37 @@ input.checkin-phone-entry
 // <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
 // --------------------------------------
 
+.keypad {
+    display: none;
+}
+
 .keyboard
 {
-    width: 1080px;
-	width: 100%;
-	font-family: @checkinButtonFontFamily
+	width: 75%;
+	font-family: @checkinButtonFontFamily;
+    margin: 0 auto;
+}
+
+.keyboard .btn {
+    padding: 0;
 }
 
 .keyboard a.btn {
-    margin: 5px;
-    font-size: 20px;
-    width: 60px;
-    height: 38px;
-    padding-top: 33px;
+    font-size: 3em;
+    padding: 1%;
+    width: 6.5%;
+    margin: 0.25%;
+    line-height: 1.5em;
 }
 
 .keyboard a.back
 {
-	font-size: 36px;
-	height: 43px;
-	width: 150px;
+    width: 10%;
 }
 
 .keyboard a.spacebar
 {
-	font-size: 48px;
-	height: 43px;
-	width: 450px;
-}
-
-.keyboard a.digit {
-    font-size: 48px;
-    height: 43px;
+    width: 25%;
 }
 
 .attended-checkin-header
@@ -411,12 +410,7 @@ input.attended-checkin-keyboard-entry
     font-size: 36px;
     padding: 6px 24px;
     width: 1082px;
-}
-
-.attended-checkin-keyboard
-{
-	margin-bottom: 12px;
-	text-align: center;
+    width: 70%;
 }
 
 .attended-checkin-search-body .attended-checkin-actions .btn {
@@ -568,20 +562,31 @@ input[type="submit"].btn[disabled="disabled"]
     z-index: 10002 !important;
 }
 
+.headerNumberTwo {
+    display: none;
+}
+
+@media screen and (max-width:1240px) {
+    input.attended-checkin-keyboard-entry, .keyboard {
+        width: 85%;
+    }
+
+    .keyboard a.btn {
+        font-size: 2.75em;
+    }
+}
+
 @media screen and (max-width:1024px)
 {
-	input.attended-checkin-keyboard-entry
+	input.attended-checkin-keyboard-entry, .keyboard
 	{
 		width: 90%;
 	}
 
 	.keyboard a.btn 
 	{
-		margin: 3px;
-		font-size: 36px;
-		width: 35px;
-		height: 35px;
-		padding-top: 24px;
+        font-size: 2.5em;
+        line-height: 1.25em;
 	}
 
 	.keyboard a.back
@@ -658,7 +663,6 @@ input[type="submit"].btn[disabled="disabled"]
     {
 	    width: 10px;
 	    height: 12px;
-	    /*padding: 6px 0;*/
 	    font-size: 12px;
     }
 
@@ -676,4 +680,80 @@ input[type="submit"].btn[disabled="disabled"]
         margin: 10px 0;
     }
 
+}
+
+@media screen and (max-width:980px) {
+    input.attended-checkin-keyboard-entry, .keyboard {
+        width: 95%;
+    }
+}
+
+@media screen and (max-width:800px) {
+    .keyboard {
+        display: none;
+    }
+
+    .keypad {
+        display: block;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .keypad .btn {
+        padding: 0;
+    }
+
+    .keypad a.btn {
+        font-size: 3em;
+        line-height: 1.5em;
+        width: 10%;
+        padding: 1%;
+        margin: 1%;
+    }
+
+	.attended-checkin-header h1
+	{
+		font-size: 24px;
+	}
+
+	.attended-checkin-actions a.btn-primary
+	{
+		font-size: 24px;
+		padding: 28px 26px;
+	}
+
+    .headerNumberOne {
+        display: none;
+    }
+
+    .headerNumberTwo {
+        display: block;
+    }
+
+    .headerNumberTwo div {
+        border: 1px solid red;
+    }
+
+    .attended-checkin-header .hheader {
+        width: 100%;
+        display: block;
+    }
+
+    .attended-checkin-header .search {
+        float: right;
+    }
+}
+
+@media screen and (max-width:640px) {
+    .keypad a.btn {
+        font-size: 2.5em;
+        line-height: 1.25em;
+    }
+}
+
+@media screen and (max-width:480px) {
+    .keypad a.btn {
+        font-size: 2em;
+        line-height: 1em;
+    }
 }

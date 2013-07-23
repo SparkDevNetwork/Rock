@@ -27,26 +27,30 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             base.OnInit( e );
 
-            if ( !KioskCurrentlyActive )
-            {
-                NavigateToHomePage();
-            }
+            //if ( !KioskCurrentlyActive )
+            //{
+            //    NavigateToHomePage();
+            //}
+        }
+
+        protected override void OnLoad( EventArgs e )
+        {
+            tbSearchBox.Focus();
+            Page.Form.DefaultButton = lbSearch.UniqueID;
         }
 
         protected void lbSearch_Click( object sender, EventArgs e )
         {
             if ( KioskCurrentlyActive )
             {
-                var nameSearch = false;
                 CurrentCheckInState.CheckIn.UserEnteredSearch = true;
                 CurrentCheckInState.CheckIn.ConfirmSingleFamily = true;
                 if ( tbSearchBox.Text.AsNumeric() == string.Empty || tbSearchBox.Text.AsNumeric().Length != tbSearchBox.Text.Length )
                 {
                     CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME );
-                    nameSearch = true;
                 }
                 else if ( tbSearchBox.Text.AsNumeric().Length == tbSearchBox.Text.Length )
-                {
+                { 
                     CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER );
                 }
 
@@ -55,14 +59,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 if ( tbSearchBox.Text == string.Empty )
                 {
                     maWarning.Show( "Please enter something to search for.", ModalAlertType.Warning );
-                    return;
-                }
-
-                int minLength = int.Parse( GetAttributeValue( "MinimumPhoneNumberLength" ) );
-                int maxLength = int.Parse( GetAttributeValue( "MaximumPhoneNumberLength" ) );
-                if ( !nameSearch && ( tbSearchBox.Text.Length < minLength || tbSearchBox.Text.Length > maxLength ) )
-                {
-                    maWarning.Show( string.Format("In order to properly search by phone number, you should enter between {0} and {1} numbers.", minLength, maxLength), ModalAlertType.Warning);
                     return;
                 }
 
