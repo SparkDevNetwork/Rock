@@ -50,6 +50,14 @@ namespace Rock.Web.Cache
         /// </value>
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the short code.
+        /// </summary>
+        /// <value>
+        /// The short code.
+        /// </value>
+        public string ShortCode { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -67,6 +75,7 @@ namespace Rock.Web.Cache
                 var campus = (Campus)model;
                 this.IsSystem = campus.IsSystem;
                 this.Name = campus.Name;
+                this.ShortCode = campus.ShortCode;
             }
         }
 

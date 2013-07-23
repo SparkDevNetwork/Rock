@@ -9,7 +9,7 @@ using System;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field used to save and dispaly a url
+    /// Field used to save and display a url
     /// </summary>
     [Serializable]
     public class UrlFieldType : FieldType

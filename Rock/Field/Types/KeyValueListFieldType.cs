@@ -15,7 +15,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field used to save and dispaly a text value
+    /// Field used to save and display a key/value list
     /// </summary>
     [Serializable]
     public class KeyValueListFieldType : FieldType

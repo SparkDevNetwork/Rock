@@ -37,8 +37,12 @@ namespace RockWeb.Blocks.Crm
             // limit GroupType selection to what Block Attributes allow
             List<Guid> groupTypeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
 
-            string groupTypeIds = new GroupTypeService().Queryable().Where( a => groupTypeGuids.Contains( a.Guid ) ).Select( a => a.Id ).ToList().AsDelimited( "," );
-            groupTypeIds = string.IsNullOrWhiteSpace( groupTypeIds ) ? "0" : groupTypeIds;
+            string groupTypeIds = "0";
+            if ( groupTypeGuids.Any() )
+            {
+                groupTypeIds = new GroupTypeService().Queryable().Where( a => groupTypeGuids.Contains( a.Guid ) ).Select( a => a.Id ).ToList().AsDelimited( "," );
+                groupTypeIds = string.IsNullOrWhiteSpace( groupTypeIds ) ? "0" : groupTypeIds;
+            }
             hfGroupTypes.Value = groupTypeIds;
             string groupId = PageParameter( "groupId" );
 
