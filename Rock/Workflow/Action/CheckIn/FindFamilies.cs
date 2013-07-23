@@ -21,7 +21,8 @@ namespace Rock.Workflow.Action.CheckIn
     [Description("Finds families based on a given search critieria (i.e. phone, barcode, etc)")]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Find Families" )]
-    [BooleanField( "Allow None Found", "If true, show an error if nothing is returned by the search. Otherwise ignore the error and continue." )]
+    [BooleanField( "Allow None Found", "If true, show an error if nothing is returned by the search. Otherwise ignore the error and continue.", false, key: "AllowNoneFound" )]
+    // ************************  WE SHOULD DEFAULT THE ALLOWNONEFOUND TO TRUE WHEN WE FIGURE OUT HOW TO USE THESE ATTRIBUTES *************************** //
     public class FindFamilies : CheckInActionComponent
     {
         /// <summary>

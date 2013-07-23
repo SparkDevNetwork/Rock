@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Model;
 
@@ -19,6 +20,8 @@ namespace Rock.Workflow.Action.CheckIn
     [Description("Finds family members in a given family")]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Find Family Members" )]
+    [BooleanField( "People Select", "If true, set the Selected value on each member of the family to true. Otherwise don't set the value.", true, key: "PeopleSelect" )]
+    // ************************  WE SHOULD DEFAULT THE PEOPLESELECT TO FALSE WHEN WE FIGURE OUT HOW TO USE THESE ATTRIBUTES *************************** //
     public class FindFamilyMembers : CheckInActionComponent
     {
         /// <summary>
@@ -31,6 +34,12 @@ namespace Rock.Workflow.Action.CheckIn
         /// <exception cref="System.NotImplementedException"></exception>
         public override bool Execute( Model.WorkflowAction action, Data.IEntity entity, out List<string> errorMessages )
         {
+            bool peopleSelect = false;
+            if ( bool.TryParse( GetAttributeValue( "PeopleSelect" ), out peopleSelect ) && peopleSelect )
+            {
+                peopleSelect = true;
+            }
+
             var checkInState = GetCheckInState( action, out errorMessages );
             if ( checkInState != null )
             {
@@ -45,6 +54,10 @@ namespace Rock.Workflow.Action.CheckIn
                             var person = new CheckInPerson();
                             person.Person = groupMember.Person.Clone( false );
                             person.FamilyMember = true;
+                            if ( peopleSelect )
+                            {
+                                person.Selected = true;
+                            }
                             family.People.Add( person );
                         }
                     }
