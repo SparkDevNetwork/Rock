@@ -41,6 +41,24 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 ddlCampus.DataBind();
                 ddlCampus.Items.Insert( 0, new ListItem( "Choose A Campus", None.IdValue ) );
 
+                // script to get info from local storage
+                string script = string.Format( @"
+                    <script>
+                        $(document).ready(function (e) {{
+                            if (localStorage) {{
+                                if (localStorage.checkInKiosk) {{
+                                    $('[id$=""hfKiosk""]').val(localStorage.checkInKiosk);
+                                    if (localStorage.checkInGroupTypes) {{
+                                        $('[id$=""hfGroupTypes""]').val(localStorage.checkInGroupTypes);
+                                    }}
+                                    {0};
+                                }}
+                            }}
+                        }});
+                    </script>
+                ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
+                phScript.Controls.Add( new LiteralControl( script ) );
+
                 // get the Device from the database based on the device name
                 var kiosk = new DeviceService().GetByDeviceName( Environment.MachineName );
 
@@ -97,35 +115,75 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 //        break;
                 //}
 
-                // if the campus was auto found and selected, then let's load the ministries here.
-                //if ( !string.IsNullOrEmpty( campusName ) )
-                //{
-                //    kiosk = new DeviceService().Get( 2 );   // ***************** TEMPORARY ******************** //
-                //    ddlCampus.Items.FindByText( campusName ).Selected = true;
-                //    repMinistry.DataSource = kiosk.GetLocationGroupTypes();
-                //    repMinistry.DataBind();
-                //}
-
-                //var kiosk = new Device();
-                //if ( CurrentKioskId.HasValue )
-                //{
-                //    // if there is a value already cached for the kiosk...get that.
-                //    kiosk = new DeviceService().Get( CurrentKioskId.Value );
-                //}
-                //else
-                //{
-                //    // ...otherwise get the kiosk by it's name & IP address
-                //    kiosk = new DeviceService().Get( 2 );
-                //}
-                //hfKioskId.Value = kiosk.Id.ToString();
-                //CurrentKioskId = kiosk.Id;
-
+            }
+            else
+            {
+                phScript.Controls.Clear();
             }
         }
 
         #endregion
 
         #region Edit Events
+
+        /// <summary>
+        /// Used by the local storage script to rebind the group types if they were previously
+        /// saved via local storage.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        protected void lbRefresh_Click( object sender, EventArgs e )
+        {
+            BindGroupTypes( hfGroupTypes.Value );
+        }
+
+        private void BindGroupTypes( string selectedValues )
+        {
+            var selectedItems = selectedValues.Split( ',' );
+
+            // make sure none of the ministry items are selected.
+            foreach ( RepeaterItem item in repMinistry.Items )
+            {
+                ( (LinkButton)item.FindControl( "lbMinistry" ) ).RemoveCssClass( "active" );
+            }
+
+            var kiosk = new DeviceService().GetByDeviceName( ddlCampus.SelectedValue );
+            kiosk = new DeviceService().Get( 2 );   // ***************** TEMPORARY ******************** //
+            repMinistry.DataSource = kiosk.GetLocationGroupTypes();
+            repMinistry.DataBind();
+
+            if ( selectedValues != string.Empty )
+            {
+                foreach ( string id in selectedValues.Split( ',' ) )
+                {
+                    foreach ( RepeaterItem item in repMinistry.Items )
+                    {
+                        var linky = (LinkButton)item.FindControl( "lbMinistry" );
+                        if ( linky.CommandArgument == id )
+                        {
+                            linky.AddCssClass( "active" );
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if ( CurrentGroupTypeIds != null )
+                {
+                    foreach ( int id in CurrentGroupTypeIds )
+                    {
+                        foreach ( RepeaterItem item in repMinistry.Items )
+                        {
+                            var linky = (LinkButton)item.FindControl( "lbMinistry" );
+                            if ( int.Parse(linky.CommandArgument) == id )
+                            {
+                                linky.AddCssClass( "active" );
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         protected void ddlCampus_SelectedIndexChanged( object sender, EventArgs e )
         {
