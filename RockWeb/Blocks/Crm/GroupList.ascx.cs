@@ -184,6 +184,8 @@ namespace RockWeb.Blocks.Crm
                 qry = qry.Where( a => a.IsAncestorOfGroup( parentGroup.Id ) );
             }
 
+            qry = qry.Where( a => a.GroupType.ShowInGroupList );
+
             /// Using Members.Count in a grid boundfield causes the entire Members list to be populated (select * ...) and then counted
             /// Having the qry do the count just does a "select count(1) ..." which is much much faster, especially if the members list is large (a large list will lockup the webserver)
             var selectQry = qry.Select( a =>

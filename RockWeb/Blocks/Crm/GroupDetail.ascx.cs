@@ -78,6 +78,7 @@ namespace RockWeb.Blocks.Crm
             {
                 string itemId = PageParameter( "groupId" );
                 string parentGroupId = PageParameter( "parentGroupId" );
+
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
                     if ( string.IsNullOrWhiteSpace( parentGroupId ) )
@@ -391,6 +392,14 @@ namespace RockWeb.Blocks.Crm
 
         #region Internal Methods
 
+        private int GetGroupRoleMemberCount( int groupId, int roleId )
+        {
+            return new GroupMemberService().Queryable()
+                        .Where( m => m.GroupId == groupId )
+                        .Where( m => m.GroupRoleId == roleId )
+                        .Count();
+        }
+
         /// <summary>
         /// Loads the drop downs.
         /// </summary>
@@ -506,6 +515,40 @@ namespace RockWeb.Blocks.Crm
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( Group.FriendlyTypeName );
+            }
+
+            bool roleBelowMimumumMembership = false;
+
+            if ( bool.TryParse( PageParameter( "roleBelowMin" ), out roleBelowMimumumMembership ) )
+            {
+                int roleId = 0;
+
+                int.TryParse( PageParameter( "roleId" ), out roleId );
+
+                if ( roleBelowMimumumMembership && roleId > 0 )
+                {
+                    GroupRole role = new GroupRoleService().Get( roleId );
+
+                    if(role.MinCount != null)
+                    {
+                        int groupRoleMemberCount = GetGroupRoleMemberCount( itemKeyValue, roleId );
+
+                        string minumumMemberText =  string.Format( "The {0} role is currently below it's minimum membership requirement of {1} {2}.", 
+                                                        role.Name,
+                                                        role.MinCount,
+                                                        role.MinCount == 1 ? "member" : "members"
+                                                        );
+
+                        if ( nbEditModeMessage.Text.Length > 0 )
+                        {
+                            nbEditModeMessage.Text = nbEditModeMessage.Text + " <br> " + minumumMemberText;
+                        }
+                        else
+                        {
+                            nbEditModeMessage.Text = "INFO: " + minumumMemberText;
+                        }
+                    }
+                }
             }
 
             if ( readOnly )

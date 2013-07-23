@@ -11,8 +11,8 @@
             obj.restUrl = options.restUrl;
             obj.path = options.path;
             obj.centerAddress = options.centerAddress;                     // used when nothing is on map
-            obj.centerLatitude = options.centerLatitude || "33.27541";     // used when nothing is on map
-            obj.centerLongitude = options.centerLongitude || "-111.77025"; // used when nothing is on map
+            obj.centerLatitude = options.centerLatitude || "33.590795";     // used when nothing is on map
+            obj.centerLongitude = options.centerLongitude || "-112.126459"; // used when nothing is on map
             obj.drawingMode = options.drawingMode || "Polygon" || "Point"; // the available modes
             obj.strokeColor = options.strokeColor || "#0088cc";
             obj.fillColor = options.fillColor || "#0088cc";
