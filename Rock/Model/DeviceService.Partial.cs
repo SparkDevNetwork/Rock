@@ -46,5 +46,15 @@ namespace Rock.Model
 
             return kiosk;
         }
+
+        /// <summary>
+        /// Gets the device by name.
+        /// </summary>
+        /// <param name="deviceName">Name of the device.</param>
+        /// <returns></returns>
+        public Device GetByDeviceName( string deviceName )
+        {
+            return Repository.AsQueryable().Where( d => d.Name == deviceName ).FirstOrDefault();
+        }
     }
 }

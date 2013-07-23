@@ -1,11 +1,22 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Admin.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Attended.Admin" %>
-<asp:UpdatePanel ID="upContent" runat="server">
+
+<script type="text/javascript">
+    function setControlEvents() {
+        //$('.btn-checkin-select').click(function () {
+        //$('.btn-checkin-select').unbind('click').on('click', function () {
+        //    $(this).toggleClass('active');
+        //    return false;
+        //});
+    };
+    $(document).ready(function () { setControlEvents(); });
+    Sys.WebForms.PageRequestManager.getInstance().add_endRequest(setControlEvents);
+
+</script>
+
+<asp:UpdatePanel ID="upContent" runat="server" UpdateMode="Conditional">
 <ContentTemplate>
 
-    <asp:PlaceHolder ID="phScript" runat="server"></asp:PlaceHolder>
-    <asp:HiddenField ID="hfKiosk" runat="server" />
-    <asp:HiddenField ID="hfGroupTypes" runat="server" />
-
+    <asp:HiddenField ID="hfKioskId" runat="server" />
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
     <div class="row-fluid attended-checkin-header">
@@ -19,26 +30,22 @@
     </div>
 
     <div class="row-fluid checkin-admin-body">
-        <div class="span3">
-            <h3>Station</h3>
-            <Rock:LabeledDropDownList ID="ddlKiosk" runat="server" CssClass="input-large" OnSelectedIndexChanged="ddlKiosk_SelectedIndexChanged" AutoPostBack="true" DataTextField="Name" DataValueField="Id" ></Rock:LabeledDropDownList>
+        <div class="span4">
+            <div id="campusDiv" runat="server">
+            <h3>Campus</h3>
+            <asp:DropDownList ID="ddlCampus" runat="server" OnSelectedIndexChanged="ddlCampus_SelectedIndexChanged" AutoPostBack="true"></asp:DropDownList>
+            </div>
         </div>
-        <div class="span3">
-            <h3>Ministry Types</h3>
-            <asp:Repeater ID="rMinistries" runat="server" OnItemCommand="rMinistries_ItemCommand">
+        <div class="span4">
+            <h3>Ministry</h3>
+            <asp:Repeater ID="repMinistry" runat="server" OnItemCommand="repMinistry_ItemCommand">
                 <ItemTemplate>
-                    <asp:LinkButton ID="lbSelectMinistries" runat="server" CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" ><%# Eval("Name") %></asp:LinkButton>
+                    <asp:LinkButton ID="lbMinistry" runat="server" CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" ><%# Eval("Name") %></asp:LinkButton>
+                    <%--<asp:Button ID="lbMinistry" runat="server" CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" Text='<%# Eval("Name") %>' ></asp:Button>--%>
                 </ItemTemplate>
             </asp:Repeater>
         </div>
-        <div class="span6">
-            <h3>Rooms</h3>
-            <asp:Repeater ID="rRooms" runat="server" OnItemCommand="rRooms_ItemCommand">
-                <ItemTemplate>
-                    <asp:LinkButton ID="lbSelectRooms" runat="server" CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-checkin-select span5" ><%# Eval("Name") %></asp:LinkButton>
-                </ItemTemplate>
-            </asp:Repeater>
-        </div>
+        <div class="span4"></div>
     </div>
 
 </ContentTemplate>
