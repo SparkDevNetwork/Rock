@@ -88,6 +88,7 @@
                 <div id="group-viewer" class="row-fluid">
                     
                     <div id="left-column" class="span3">
+
                         <div id="left-column-content">
                             <Rock:Zone ID="LeftContent" runat="server" />
                         </div>
