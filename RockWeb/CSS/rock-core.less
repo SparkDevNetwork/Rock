@@ -40,6 +40,26 @@ a.help:hover {
     text-decoration:none;
 }
 
+// Kendo Overrides
+//--------------------------------
+
+.k-state-selected, 
+.k-state-selected:link, 
+.k-state-selected:visited, 
+.k-list > .k-state-selected, 
+.k-list > .k-state-highlight, 
+.k-panel > .k-state-selected, 
+.k-button:active, 
+.k-ghost-splitbar-vertical, 
+.k-ghost-splitbar-horizontal, 
+.k-draghandle.k-state-selected:hover, 
+.k-scheduler .k-scheduler-toolbar .k-state-selected, 
+.k-marquee-color {
+    background-color: @site-primary-color;
+    border-color: transparent;
+    color: @site-primary-inverse-color;
+    box-shadow: 0;
+}
 
 
 /* HTML Content */
