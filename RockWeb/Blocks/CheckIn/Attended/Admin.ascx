@@ -6,7 +6,12 @@
         $('.btn-checkin-select').unbind('click').on('click', function () {
             $(this).toggleClass('active');
             var selectedIds = $('#hfSelected').val();
-            $('#hfSelected').val(selectedIds + this.getAttribute('data-id') + ',');
+            if ($('#hfSelected').val().indexOf(this.getAttribute('data-id') + ',') >= 0) {
+                $('#hfSelected').val($('#hfSelected').val().replace(this.getAttribute('data-id') + ',', ''));
+            }
+            else {
+                $('#hfSelected').val(selectedIds + this.getAttribute('data-id') + ',');
+            }
             return false;
         });
     };
@@ -46,9 +51,9 @@
         </div>
         <div class="span4">
             <h3>Ministry</h3>
-            <asp:Repeater ID="repMinistry" runat="server" OnItemCommand="repMinistry_ItemCommand">
+            <asp:Repeater ID="repMinistry" runat="server">
                 <ItemTemplate>
-                    <asp:Button ID="lbMinistry" runat="server" data-id='<%# Eval("Id") %>'  CssClass="btn btn-primary btn-large btn-block btn-checkin-select" Text='<%# Eval("Name") %>' />                
+                    <asp:Button ID="lbMinistry" runat="server" data-id='<%# Eval("Id") %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" Text='<%# Eval("Name") %>' />                
                 </ItemTemplate>
             </asp:Repeater>
         </div>

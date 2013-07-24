@@ -165,24 +165,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
-        /// Handles the ItemCommand event of the repMinistry control.
-        /// </summary>
-        /// <param name="source">The source of the event.</param>
-        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
-        protected void repMinistry_ItemCommand( object source, RepeaterCommandEventArgs e )
-        {
-            //int id = int.Parse( e.CommandArgument.ToString() );
-            //if ( HasActiveClass( (Button)e.Item.FindControl( "lbMinistry" ) ) )
-            //{
-            //    ( (LinkButton)e.Item.FindControl( "lbMinistry" ) ).RemoveCssClass( "active" );
-            //}
-            //else
-            //{
-            //    ( (LinkButton)e.Item.FindControl( "lbMinistry" ) ).AddCssClass( "active" );
-            //}
-        }
-
-        /// <summary>
         /// Handles the Click event of the lbOk control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -190,28 +172,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void lbOk_Click( object sender, EventArgs e )
         {
             // Check to make sure they picked a ministry
-            List<int> ministryGroupTypeIds = new List<int>();
             if ( !string.IsNullOrEmpty( hfSelected.Value ) )
             {
-                ministryGroupTypeIds = hfSelected.Value.SplitDelimitedValues().Select( int.Parse ).ToList();
+                CurrentGroupTypeIds = hfSelected.Value.SplitDelimitedValues().Select( int.Parse ).ToList();
             }
-
-            //foreach (string id in hfSelected.Value.SplitDelimitedValues())
-            //{
-            //        ministryChosen = true;
-            //        ministryGroupTypeIds.Add( int.Parse( id ) );
-            //}
-            //foreach ( RepeaterItem item in repMinistry.Items )
-            //{
-            //    var linky = (Button)item.FindControl( "lbMinistry" );
-            //    var blah = linky.Attributes["class"];
-            //    if ( HasActiveClass( linky ) )
-            //    {
-            //        ministryChosen = true;
-            //        ministryGroupTypeIds.Add( int.Parse( linky.CommandArgument ) );
-            //    }
-            //}
-
             else
             {
                 maWarning.Show( "At least one ministry must be selected!", ModalAlertType.Warning );
@@ -220,7 +184,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             CurrentCheckInState = null;
             CurrentWorkflow = null;
-            CurrentGroupTypeIds = ministryGroupTypeIds;
             SaveState();
             NavigateToNextPage();
         }
@@ -258,6 +221,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         if ( linky.CommandArgument == id )
                         {
                             linky.AddCssClass( "active" );
+                            hfSelected.Value += linky.CommandArgument + ',';
                         }
                     }
                 }
@@ -274,6 +238,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                             if ( int.Parse( linky.CommandArgument ) == id )
                             {
                                 linky.AddCssClass( "active" );
+                                hfSelected.Value += linky.CommandArgument + ',';
                             }
                         }
                     }
