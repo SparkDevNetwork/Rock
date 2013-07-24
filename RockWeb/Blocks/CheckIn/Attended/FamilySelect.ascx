@@ -38,7 +38,7 @@
 <ContentTemplate>
 
     <Rock:ModalAlert ID="maWarning" runat="server" />
-    <asp:HiddenField ID="PersonVisitorType" runat="server" />
+    <asp:HiddenField ID="personVisitorType" runat="server" />
 
     <div class="row-fluid attended-checkin-header">
         <div class="span3 attended-checkin-actions">
@@ -64,7 +64,7 @@
                         <asp:LinkButton ID="lbSelectFamily" runat="server" CommandArgument='<%# Eval("Group.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" CausesValidation="false" ><%# Eval("Caption") %><br /><span class="checkin-sub-title"><%# Eval("SubCaption") %></span></asp:LinkButton>
                     </ItemTemplate>
                 </asp:ListView>
-                <asp:DataPager ID="Pager" runat="server" PageSize="4" PagedControlID="lvFamily">
+                <asp:DataPager ID="dpPager" runat="server" PageSize="4" PagedControlID="lvFamily">
                     <Fields>
                         <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary" />
                     </Fields>
@@ -75,7 +75,7 @@
         <div id="personDiv" class="span3 person-div" runat="server">
             <div class="attended-checkin-body-container">
                 <h3>People</h3>
-                <asp:Repeater ID="rPerson" runat="server" OnItemCommand="rPerson_ItemCommand">
+                <asp:Repeater ID="repPerson" runat="server" OnItemCommand="repPerson_ItemCommand">
                     <ItemTemplate>
                         <asp:LinkButton ID="lbSelectPerson" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Person.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" CausesValidation="false" />
                     </ItemTemplate>
@@ -83,10 +83,10 @@
             </div>
         </div>
 
-        <div id="emptyDiv" class="span3 empty-div" runat="server">
+        <div id="visitorDiv" class="span3 visitor-div" runat="server">
             <div class="attended-checkin-body-container">
                 <h3>Visitors</h3>
-                <asp:Repeater ID="rVisitors" runat="server" OnItemCommand="rVisitors_ItemCommand">
+                <asp:Repeater ID="repVisitors" runat="server" OnItemCommand="repVisitors_ItemCommand">
                     <ItemTemplate>
                         <asp:LinkButton ID="lbSelectVisitor" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Person.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" CausesValidation="false" />
                     </ItemTemplate>
@@ -112,15 +112,15 @@
         </div>
     </div>
 
-    <asp:Panel ID="AddPersonPanel" runat="server" CssClass="AddPerson">
-        <Rock:ModalAlert ID="AddPersonAlert" runat="server" />
+    <asp:Panel ID="AddPersonPanel" runat="server" CssClass="add-person">
+        <Rock:ModalAlert ID="maAddPerson" runat="server" />
         <div class="row-fluid attended-checkin-header">
             <div class="span3 attended-checkin-actions">
                 <asp:LinkButton ID="lbAddPersonCancel" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddPersonCancel_Click" Text="Cancel" CausesValidation="false"/>
             </div>
 
             <div class="span6">
-                <h1 id="H2" runat="server"><asp:Label ID="AddPersonVisitorLabel" runat="server"></asp:Label></h1>
+                <h1><asp:Label ID="lblAddPVHeader" runat="server"></asp:Label></h1>
             </div>
 
             <div class="span3 attended-checkin-actions">
@@ -149,10 +149,10 @@
                 <Rock:DataTextBox ID="tbLastNameSearch" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
             </div>
             <div class="span3">
-                <Rock:DatePicker ID="dpDOBAgeSearch" runat="server" CssClass="datePickerClass"></Rock:DatePicker>
-                <asp:CustomValidator ID="CustomValidator1" runat="server" ErrorMessage="The first DOB/Age field is incorrect."
+                <Rock:DatePicker ID="dtpDOBAgeSearch" runat="server" CssClass="datePickerClass"></Rock:DatePicker>
+                <asp:CustomValidator ID="cvDOBAgeSearch" runat="server" ErrorMessage="The first DOB/Age field is incorrect."
                     CssClass="align-middle" EnableClientScript="true" Display="None" 
-                    ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="dpDOBAgeSearch" />
+                    ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="dtpDOBAgeSearch" />
             </div>
             <div class="span3">
                 <Rock:DataTextBox ID="tbGradeSearch" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
@@ -160,7 +160,7 @@
         </div>
         <br />
         <div class="row-fluid attended-checkin-body searchperson">
-            <Rock:Grid ID="gridPersonSearchResults" runat="server" AllowPaging="true" OnRowCommand="gridPersonSearchResults_RowCommand" ShowActionRow="false" PageSize="3">
+            <Rock:Grid ID="grdPersonSearchResults" runat="server" AllowPaging="true" OnRowCommand="grdPersonSearchResults_RowCommand" ShowActionRow="false" PageSize="3">
                 <Columns>
                     <asp:BoundField DataField="ThePersonsId" Visible="true" />
                     <asp:BoundField DataField="ThePersonsFirstName" HeaderText="First Name" />
@@ -182,7 +182,7 @@
     <asp:ModalPopupExtender ID="mpePerson" runat="server" TargetControlID="lbOpenPanel" PopupControlID="AddPersonPanel" CancelControlID="lbAddPersonCancel" BackgroundCssClass="modalBackground"></asp:ModalPopupExtender>
     <asp:LinkButton ID="lbOpenPanel" runat="server" CausesValidation="false"></asp:LinkButton>
 
-    <asp:Panel ID="AddFamilyPanel" runat="server" CssClass="AddFamily">
+    <asp:Panel ID="AddFamilyPanel" runat="server" CssClass="add-family">
         <div class="row-fluid attended-checkin-header">
             <div class="span3 attended-checkin-actions">
                 <asp:LinkButton ID="lbAddFamilyCancel" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddFamilyCancel_Click" Text="Cancel" CausesValidation="false"/>

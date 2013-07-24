@@ -25,19 +25,19 @@ namespace RockWeb.Blocks.CheckIn.Attended
     {
         #region Control Methods
 
-        // OnLoad we want to:
-        // A) Match IP from actual device to a record in the Device table
-        // B) Get a list of campuses
-        // C) Get the list of ministries
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             if ( !Page.IsPostBack )
             {
-                // Load Campuses
+                // Load Campuses Drop Down
                 CampusService campusService = new CampusService();
-                List<Campus> CampusList = new List<Campus>();
-                CampusList = campusService.Queryable().OrderBy( n => n.Name ).ToList();
-                ddlCampus.DataSource = CampusList;
+                List<Campus> campusList = new List<Campus>();
+                campusList = campusService.Queryable().OrderBy( n => n.Name ).ToList();
+                ddlCampus.DataSource = campusList;
                 ddlCampus.DataBind();
                 ddlCampus.Items.Insert( 0, new ListItem( "Choose A Campus", None.IdValue ) );
 
@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
                 phScript.Controls.Add( new LiteralControl( script ) );
 
-                // get the Device from the database based on the device name
+                // get the Device from the database based on the device name                
                 var kiosk = new DeviceService().GetByDeviceName( Environment.MachineName );
 
                 // if we could auto-detect the kiosk, use that to load the ministry repeater. 
@@ -80,41 +80,40 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 SaveState();
 
                 // auto select the campus based on the first three letters of the Device Name
-                //switch ( kiosk.Name.Substring( 0, 3 ) )
-                //{
-                //    case "AND":
-                //        ddlCampus.Items.FindByText( "Anderson" ).Selected = true;
-                //        break;
-                //    case "CHS":
-                //        ddlCampus.Items.FindByText( "Charleston" ).Selected = true;
-                //        break;
-                //    case "COL":
-                //        ddlCampus.Items.FindByText( "Columbia" ).Selected = true;
-                //        break;
-                //    case "FLO":
-                //        ddlCampus.Items.FindByText( "Florence" ).Selected = true;
-                //        break;
-                //    case "GVL":
-                //        ddlCampus.Items.FindByText( "Greenville" ).Selected = true;
-                //        break;
-                //    case "GWD":
-                //        ddlCampus.Items.FindByText( "Greenwood" ).Selected = true;
-                //        break;
-                //    case "MYR":
-                //        ddlCampus.Items.FindByText( "Myrtle Beach" ).Selected = true;
-                //        break;
-                //    case "SPA":
-                //        ddlCampus.Items.FindByText( "Spartanburg" ).Selected = true;
-                //        break;
-                //    case "CEN":
-                //        ddlCampus.Items.FindByText( "Central" ).Selected = true;
-                //        break;
-                //    default:
-                //        // if the campus cannot be found in the first three letters of the device name...then don't set it automatically.
-                //        foundKioskCampus = false;
-                //        break;
-                //}
-
+                // switch ( kiosk.Name.Substring( 0, 3 ) )
+                // {
+                //     case "AND":
+                //         ddlCampus.Items.FindByText( "Anderson" ).Selected = true;
+                //         break;
+                //     case "CHS":
+                //         ddlCampus.Items.FindByText( "Charleston" ).Selected = true;
+                //         break;
+                //     case "COL":
+                //         ddlCampus.Items.FindByText( "Columbia" ).Selected = true;
+                //         break;
+                //     case "FLO":
+                //         ddlCampus.Items.FindByText( "Florence" ).Selected = true;
+                //         break;
+                //     case "GVL":
+                //         ddlCampus.Items.FindByText( "Greenville" ).Selected = true;
+                //         break;
+                //     case "GWD":
+                //         ddlCampus.Items.FindByText( "Greenwood" ).Selected = true;
+                //         break;
+                //     case "MYR":
+                //         ddlCampus.Items.FindByText( "Myrtle Beach" ).Selected = true;
+                //         break;
+                //     case "SPA":
+                //         ddlCampus.Items.FindByText( "Spartanburg" ).Selected = true;
+                //         break;
+                //     case "CEN":
+                //         ddlCampus.Items.FindByText( "Central" ).Selected = true;
+                //         break;
+                //     default:
+                //         // if the campus cannot be found in the first three letters of the device name...then don't set it automatically.
+                //         foundKioskCampus = false;
+                //         break;
+                // }
             }
             else
             {
@@ -137,6 +136,103 @@ namespace RockWeb.Blocks.CheckIn.Attended
             BindGroupTypes( hfGroupTypes.Value );
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlCampus control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlCampus_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            foreach ( RepeaterItem item in repMinistry.Items )
+            {
+                ( (Button)item.FindControl( "lbMinistry" ) ).RemoveCssClass( "active" );
+            }
+
+            if ( ddlCampus.SelectedIndex == 0 )
+            {
+                repMinistry.DataSource = null;
+            }
+            else
+            {
+                var kiosk = new DeviceService().GetByDeviceName( ddlCampus.SelectedValue );
+                kiosk = new DeviceService().Get( 2 );   // ***************** TEMPORARY ******************** //
+                CurrentKioskId = kiosk.Id;
+                repMinistry.DataSource = kiosk.GetLocationGroupTypes();
+            }
+
+            repMinistry.DataBind();
+            SaveState();
+        }
+
+        /// <summary>
+        /// Handles the ItemCommand event of the repMinistry control.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
+        protected void repMinistry_ItemCommand( object source, RepeaterCommandEventArgs e )
+        {
+            //int id = int.Parse( e.CommandArgument.ToString() );
+            //if ( HasActiveClass( (Button)e.Item.FindControl( "lbMinistry" ) ) )
+            //{
+            //    ( (LinkButton)e.Item.FindControl( "lbMinistry" ) ).RemoveCssClass( "active" );
+            //}
+            //else
+            //{
+            //    ( (LinkButton)e.Item.FindControl( "lbMinistry" ) ).AddCssClass( "active" );
+            //}
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbOk control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbOk_Click( object sender, EventArgs e )
+        {
+            // Check to make sure they picked a ministry
+            List<int> ministryGroupTypeIds = new List<int>();
+            if ( !string.IsNullOrEmpty( hfSelected.Value ) )
+            {
+                ministryGroupTypeIds = hfSelected.Value.SplitDelimitedValues().Select( int.Parse ).ToList();
+            }
+
+            //foreach (string id in hfSelected.Value.SplitDelimitedValues())
+            //{
+            //        ministryChosen = true;
+            //        ministryGroupTypeIds.Add( int.Parse( id ) );
+            //}
+            //foreach ( RepeaterItem item in repMinistry.Items )
+            //{
+            //    var linky = (Button)item.FindControl( "lbMinistry" );
+            //    var blah = linky.Attributes["class"];
+            //    if ( HasActiveClass( linky ) )
+            //    {
+            //        ministryChosen = true;
+            //        ministryGroupTypeIds.Add( int.Parse( linky.CommandArgument ) );
+            //    }
+            //}
+
+            else
+            {
+                maWarning.Show( "At least one ministry must be selected!", ModalAlertType.Warning );
+                return;
+            }
+
+            CurrentCheckInState = null;
+            CurrentWorkflow = null;
+            CurrentGroupTypeIds = ministryGroupTypeIds;
+            SaveState();
+            NavigateToNextPage();
+        }
+
+        #endregion
+
+        #region Internal Methods
+
+        /// <summary>
+        /// Binds the group types if there are values saved from local storage
+        /// </summary>
+        /// <param name="selectedValues">The selected values.</param>
         private void BindGroupTypes( string selectedValues )
         {
             var selectedItems = selectedValues.Split( ',' );
@@ -144,7 +240,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             // make sure none of the ministry items are selected.
             foreach ( RepeaterItem item in repMinistry.Items )
             {
-                ( (LinkButton)item.FindControl( "lbMinistry" ) ).RemoveCssClass( "active" );
+                ( (Button)item.FindControl( "lbMinistry" ) ).RemoveCssClass( "active" );
             }
 
             var kiosk = new DeviceService().GetByDeviceName( ddlCampus.SelectedValue );
@@ -158,7 +254,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 {
                     foreach ( RepeaterItem item in repMinistry.Items )
                     {
-                        var linky = (LinkButton)item.FindControl( "lbMinistry" );
+                        var linky = (Button)item.FindControl( "lbMinistry" );
                         if ( linky.CommandArgument == id )
                         {
                             linky.AddCssClass( "active" );
@@ -174,8 +270,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     {
                         foreach ( RepeaterItem item in repMinistry.Items )
                         {
-                            var linky = (LinkButton)item.FindControl( "lbMinistry" );
-                            if ( int.Parse(linky.CommandArgument) == id )
+                            var linky = (Button)item.FindControl( "lbMinistry" );
+                            if ( int.Parse( linky.CommandArgument ) == id )
                             {
                                 linky.AddCssClass( "active" );
                             }
@@ -185,95 +281,13 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }
         }
 
-        protected void ddlCampus_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            foreach ( RepeaterItem item in repMinistry.Items )
-            {
-                ( (LinkButton)item.FindControl( "lbMinistry" ) ).RemoveCssClass( "active" );
-            }
-            //var kiosk = new Device();
-            //if ( CurrentKioskId.HasValue )
-            //{
-            //    // if there is a value already cached for the kiosk...get that.
-            //    kiosk = new DeviceService().Get( CurrentKioskId.Value );
-            //}
-            //else
-            //{
-            //    // ...otherwise get the kiosk by it's name & IP address
-            //    kiosk = new DeviceService().Get( 2 );
-            //}
-            if ( ddlCampus.SelectedIndex == 0 )
-            {
-                repMinistry.DataSource = null;
-            }
-            else
-            {
-                var kiosk = new DeviceService().GetByDeviceName( ddlCampus.SelectedValue );
-                kiosk = new DeviceService().Get( 2 );   // ***************** TEMPORARY ******************** //
-                CurrentKioskId = kiosk.Id;
-                repMinistry.DataSource = kiosk.GetLocationGroupTypes();
-            }
-            repMinistry.DataBind();
-            SaveState();
-        }
-
-        protected void repMinistry_ItemCommand( object source, RepeaterCommandEventArgs e )
-        {
-            int id = int.Parse( e.CommandArgument.ToString() );
-            if ( HasActiveClass( (LinkButton)e.Item.FindControl( "lbMinistry" ) ) )
-            {
-                ( (LinkButton)e.Item.FindControl( "lbMinistry" ) ).RemoveCssClass( "active" );
-            }
-            else
-            {
-                ( (LinkButton)e.Item.FindControl( "lbMinistry" ) ).AddCssClass( "active" );
-            }
-        }
-
-        protected void lbOk_Click( object sender, EventArgs e )
-        {
-            // Check to make sure they picked a campus
-            //if ( ddlCampus.SelectedIndex == 0 )
-            //{
-            //    maWarning.Show( "Please choose a campus", ModalAlertType.Warning );
-            //    return;
-            //}
-
-            // Check to make sure they picked a ministry
-            var ministryChosen = false;
-            List<int> ministryGroupTypeIds = new List<int>();
-            foreach ( RepeaterItem item in repMinistry.Items )
-            {
-                var linky = (LinkButton)item.FindControl( "lbMinistry" );
-                var blah = linky.Attributes["class"];
-                if ( HasActiveClass( linky ) )
-                {
-                    ministryChosen = true;
-                    ministryGroupTypeIds.Add( int.Parse( linky.CommandArgument ) );
-                }
-            }
-
-            if (!ministryChosen)
-            {
-                maWarning.Show( "At least one ministry must be selected!", ModalAlertType.Warning );
-                return;
-            }
-
-            //CurrentKioskId = int.Parse( ddlKiosk.SelectedValue );
-            //hfKiosk.Value = CurrentKioskId.ToString();
-            //hfGroupTypes.Value = CurrentGroupTypeIds.AsDelimited( "," );
-            //CurrentRoomGroupTypes = roomGroupTypes;
-            CurrentCheckInState = null;
-            CurrentWorkflow = null;
-            CurrentGroupTypeIds = ministryGroupTypeIds;
-            SaveState();
-            NavigateToNextPage();
-        }
-
-        #endregion
-
-        #region Internal Methods
-
+        /// <summary>
+        /// Determines whether webcontrol has a CSS class of "active".
+        /// </summary>
+        /// <param name="webcontrol">The webcontrol.</param>
+        /// <returns>
+        ///   <c>true</c> if the webcontrol has an "active" CSS class; otherwise, <c>false</c>.
+        /// </returns>
         protected bool HasActiveClass( WebControl webcontrol )
         {
             string match = @"\s*\b" + "active" + @"\b";
