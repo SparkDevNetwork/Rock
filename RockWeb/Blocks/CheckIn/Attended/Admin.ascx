@@ -3,10 +3,12 @@
 <script type="text/javascript">
     function setControlEvents() {
         //$('.btn-checkin-select').click(function () {
-        //$('.btn-checkin-select').unbind('click').on('click', function () {
-        //    $(this).toggleClass('active');
-        //    return false;
-        //});
+        $('.btn-checkin-select').unbind('click').on('click', function () {
+            $(this).toggleClass('active');
+            var selectedIds = $('#hfSelected').val();
+            $('#hfSelected').val(selectedIds + this.getAttribute('data-id') + ',');
+            return false;
+        });
     };
     $(document).ready(function () { setControlEvents(); });
     Sys.WebForms.PageRequestManager.getInstance().add_endRequest(setControlEvents);
@@ -17,8 +19,9 @@
 <ContentTemplate>
 
     <asp:PlaceHolder ID="phScript" runat="server"></asp:PlaceHolder>
-    <asp:HiddenField ID="hfKioskId" runat="server" />
+    <asp:HiddenField ID="hfKiosk" runat="server" />
     <asp:HiddenField ID="hfGroupTypes" runat="server" />
+    <asp:HiddenField ID="hfSelected" runat="server" ClientIDMode="Static" />
     <span style="display:none">
         <asp:LinkButton ID="lbRefresh" runat="server" OnClick="lbRefresh_Click"></asp:LinkButton>
     </span>
@@ -45,8 +48,7 @@
             <h3>Ministry</h3>
             <asp:Repeater ID="repMinistry" runat="server" OnItemCommand="repMinistry_ItemCommand">
                 <ItemTemplate>
-                    <asp:LinkButton ID="lbMinistry" runat="server" CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" ><%# Eval("Name") %></asp:LinkButton>
-                    <%--<asp:Button ID="lbMinistry" runat="server" CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" Text='<%# Eval("Name") %>' ></asp:Button>--%>
+                    <asp:Button ID="lbMinistry" runat="server" data-id='<%# Eval("Id") %>'  CssClass="btn btn-primary btn-large btn-block btn-checkin-select" Text='<%# Eval("Name") %>' />                
                 </ItemTemplate>
             </asp:Repeater>
         </div>

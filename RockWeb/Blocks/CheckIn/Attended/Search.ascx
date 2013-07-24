@@ -25,11 +25,13 @@
 
     </script>
 
+    <asp:PlaceHolder ID="phScript" runat="server"></asp:PlaceHolder>
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
     <div class="row-fluid attended-checkin-header">
         <div class="span3 attended-checkin-actions">
             <asp:LinkButton ID="lbAdmin" runat="server" CssClass="btn btn-large btn-primary" OnClick="lbAdmin_Click" Text="Admin"></asp:LinkButton>
+            <asp:LinkButton ID="lbBack" runat="server" CssClass="btn btn-large btn-primary" OnClick="lbBack_Click" Text="Back" Visible="false"></asp:LinkButton>
         </div>
         <div class="span6">
             <h1>Check In</h1>

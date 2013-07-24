@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         lbNext.Visible = false;
                         familyDiv.Visible = false;
                         personDiv.Visible = false;
-                        emptyDiv.Visible = false;
+                        visitorDiv.Visible = false;
                         nothingFoundMessage.Visible = true;
                     }
                     else
@@ -92,7 +92,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void lvFamily_PagePropertiesChanging( object sender, PagePropertiesChangingEventArgs e )
         {
             // set current page startindex, max rows and rebind to false
-            Pager.SetPageProperties( e.StartRowIndex, e.MaximumRows, false );
+            dpPager.SetPageProperties( e.StartRowIndex, e.MaximumRows, false );
             
             // rebind List View
             lvFamily.DataSource = CurrentCheckInState.CheckIn.Families;
@@ -117,8 +117,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         family.Selected = false;
                         var control = (LinkButton)e.Item.FindControl( "lbSelectFamily" );
                         control.RemoveCssClass( "active" );
-                        rPerson.DataSource = null;
-                        rPerson.DataBind();
+                        repPerson.DataSource = null;
+                        repPerson.DataBind();
                         SaveState();
                     }
                     else
@@ -139,7 +139,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         family.Selected = true;
                         ( (LinkButton)e.Item.FindControl( "lbSelectFamily" ) ).AddCssClass( "active" );
                         ProcessFamily();
-                        foreach ( RepeaterItem item in rPerson.Items )
+                        foreach ( RepeaterItem item in repPerson.Items )
                         {
                             ( (LinkButton)item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
                         }
@@ -150,11 +150,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
-        /// Handles the ItemCommand event of the rPerson control.
+        /// Handles the ItemCommand event of the repPerson control.
         /// </summary>
         /// <param name="source">The source of the event.</param>
         /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
-        protected void rPerson_ItemCommand( object source, RepeaterCommandEventArgs e )
+        protected void repPerson_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             if ( KioskCurrentlyActive )
             {
@@ -184,11 +184,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
-        /// Handles the ItemCommand event of the rVisitors control.
+        /// Handles the ItemCommand event of the repVisitors control.
         /// </summary>
         /// <param name="source">The source of the event.</param>
         /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
-        protected void rVisitors_ItemCommand( object source, RepeaterCommandEventArgs e )
+        protected void repVisitors_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             if ( KioskCurrentlyActive )
             {
@@ -311,8 +311,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void lbAddPerson_Click( object sender, EventArgs e )
         {
             ResetAddPersonFields();
-            AddPersonVisitorLabel.Text = "Add Person";
-            PersonVisitorType.Value = "Person";
+            lblAddPVHeader.Text = "Add Person";
+            personVisitorType.Value = "Person";
             mpePerson.Show();
         }
 
@@ -324,8 +324,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void lbAddVisitor_Click( object sender, EventArgs e)
         {
             ResetAddPersonFields();
-            AddPersonVisitorLabel.Text = "Add Visitor";
-            PersonVisitorType.Value = "Visitor";
+            lblAddPVHeader.Text = "Add Visitor";
+            personVisitorType.Value = "Visitor";
             mpePerson.Show();
         }
 
@@ -336,10 +336,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             tbFirstNameSearch.Text = "";
             tbLastNameSearch.Text = "";
-            dpDOBAgeSearch.Text = "";
+            dtpDOBAgeSearch.Text = "";
             tbGradeSearch.Text = "";
-            gridPersonSearchResults.DataBind();
-            gridPersonSearchResults.Visible = false;
+            grdPersonSearchResults.DataBind();
+            grdPersonSearchResults.Visible = false;
             lbAddSearchedForPerson.Visible = false;
         }
 
@@ -513,14 +513,14 @@ namespace RockWeb.Blocks.CheckIn.Attended
             CurrentCheckInState.CheckIn.Families.Add( CIF );
             lvFamily.DataSource = CurrentCheckInState.CheckIn.Families;
             lvFamily.DataBind();
-            rPerson.DataSource = CIF.People;
-            rPerson.DataBind();
+            repPerson.DataSource = CIF.People;
+            repPerson.DataBind();
             foreach ( ListViewDataItem li in lvFamily.Items )
             {
                 ( (LinkButton)li.FindControl( "lbSelectFamily" ) ).AddCssClass( "active" );
                 
             }
-            foreach ( RepeaterItem item in rPerson.Items )
+            foreach ( RepeaterItem item in repPerson.Items )
             {
                 ( (LinkButton)item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
             }
@@ -546,10 +546,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void lbAddPersonSearch_Click( object sender, EventArgs e )
         {
             System.Data.DataTable dt = LoadAllThePeople();
-            gridPersonSearchResults.DataSource = dt;
-            gridPersonSearchResults.PageIndex = 0;
-            gridPersonSearchResults.DataBind();
-            gridPersonSearchResults.Visible = true;
+            grdPersonSearchResults.DataSource = dt;
+            grdPersonSearchResults.PageIndex = 0;
+            grdPersonSearchResults.DataBind();
+            grdPersonSearchResults.Visible = true;
 
             lbAddSearchedForPerson.Visible = true;
 
@@ -578,21 +578,21 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 person = personService.GetByLastName( tbLastNameSearch.Text );
             }
 
-            if ( !string.IsNullOrEmpty( dpDOBAgeSearch.Text ) )
+            if ( !string.IsNullOrEmpty( dtpDOBAgeSearch.Text ) )
             {
-                if ( dpDOBAgeSearch.Text.Length <= 3 )
+                if ( dtpDOBAgeSearch.Text.Length <= 3 )
                 {
-                    person = person.Where( p => p.Age == int.Parse( dpDOBAgeSearch.Text ) );
+                    person = person.Where( p => p.Age == int.Parse( dtpDOBAgeSearch.Text ) );
                 }
                 else
                 {
                     DateTime someDate;
-                    if ( DateTime.TryParse( dpDOBAgeSearch.Text, out someDate ) )
+                    if ( DateTime.TryParse( dtpDOBAgeSearch.Text, out someDate ) )
                     {
-                        string[] dateInfo = dpDOBAgeSearch.Text.Split( new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries );
+                        string[] dateInfo = dtpDOBAgeSearch.Text.Split( new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries );
                         if ( dateInfo.Count() == 3 )
                         {
-                            person = person.Where( p => p.BirthDate == Convert.ToDateTime( dpDOBAgeSearch.Text ) );
+                            person = person.Where( p => p.BirthDate == Convert.ToDateTime( dtpDOBAgeSearch.Text ) );
                         }
                         else if ( dateInfo.Count() == 2 )
                         {
@@ -728,16 +728,16 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
-        /// Handles the RowCommand event of the gridPersonSearchResults control.
+        /// Handles the RowCommand event of the grdPersonSearchResults control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="GridViewCommandEventArgs"/> instance containing the event data.</param>
-        protected void gridPersonSearchResults_RowCommand( object sender, GridViewCommandEventArgs e )
+        protected void grdPersonSearchResults_RowCommand( object sender, GridViewCommandEventArgs e )
         {
             if ( e.CommandName == "Add" )
             {
                 int index = int.Parse( e.CommandArgument.ToString() );
-                GridViewRow row = gridPersonSearchResults.Rows[index];
+                GridViewRow row = grdPersonSearchResults.Rows[index];
                 int personId = int.Parse(row.Cells[0].Text);
                 PersonService personService = new PersonService();
                 Person person = personService.Get( personId );
@@ -768,7 +768,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 CheckInPerson CIP = new CheckInPerson();
                 CIP.Person = person;
                 CIP.Selected = true;
-                if ( PersonVisitorType.Value == "Person" )
+                if ( personVisitorType.Value == "Person" )
                 {
                     // this came from Add Person
                     var isPersonInFamily = false;
@@ -793,9 +793,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
                         CIP.FamilyMember = true;
                         family.People.Add( CIP );
-                        rPerson.DataSource = family.People;
-                        rPerson.DataBind();
-                        foreach ( RepeaterItem item in rPerson.Items )
+                        repPerson.DataSource = family.People;
+                        repPerson.DataBind();
+                        foreach ( RepeaterItem item in repPerson.Items )
                         {
                             ( (LinkButton)item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
                         }
@@ -831,11 +831,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
                             visitors.Add( checkInPerson );
                         }
                     }
-                    rVisitors.DataSource = visitors;
-                    rVisitors.DataBind();
+                    repVisitors.DataSource = visitors;
+                    repVisitors.DataBind();
 
                     // make sure the one person you just added is selected
-                    foreach ( RepeaterItem item in rVisitors.Items )
+                    foreach ( RepeaterItem item in repVisitors.Items )
                     {
                         if ( person.Id == int.Parse( ( (LinkButton)item.FindControl( "lbSelectVisitor" ) ).CommandArgument ) )
                         {
@@ -849,8 +849,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 mpePerson.Show();
                 System.Data.DataTable dt = LoadAllThePeople();
-                gridPersonSearchResults.DataSource = dt;
-                gridPersonSearchResults.DataBind();
+                grdPersonSearchResults.DataSource = dt;
+                grdPersonSearchResults.DataBind();
             }
         }
 
@@ -861,24 +861,24 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddSearchedForPerson_Click( object sender, EventArgs e )
         {
-            if ( string.IsNullOrEmpty( tbFirstNameSearch.Text ) || string.IsNullOrEmpty( tbLastNameSearch.Text ) || string.IsNullOrEmpty( dpDOBAgeSearch.Text ) )
+            if ( string.IsNullOrEmpty( tbFirstNameSearch.Text ) || string.IsNullOrEmpty( tbLastNameSearch.Text ) || string.IsNullOrEmpty( dtpDOBAgeSearch.Text ) )
             {
                 mpePerson.Show();
                 string errorMsg = "<ul><li>You have to fill out the First Name, Last Name, and DOB fields first.</li></ul>";
-                AddPersonAlert.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
+                maAddPerson.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
             }
             else
             {
                 Person person = new Person();
                 person.GivenName = tbFirstNameSearch.Text;
                 person.LastName = tbLastNameSearch.Text;
-                if ( dpDOBAgeSearch.Text.Length <= 3 )
+                if ( dtpDOBAgeSearch.Text.Length <= 3 )
                 {
-                    //person.Age = dpDOBAgeSearch.Text;
+                    //person.Age = dtpDOBAgeSearch.Text;
                 }
                 else
                 {
-                    person.BirthDate = Convert.ToDateTime( dpDOBAgeSearch.Text );
+                    person.BirthDate = Convert.ToDateTime( dtpDOBAgeSearch.Text );
                 }
                 DateTime transitionDate;
                 var globalAttributes = Rock.Web.Cache.GlobalAttributesCache.Read();
@@ -944,7 +944,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 CIP.Person = person;
                 CIP.Selected = true;
 
-                if ( PersonVisitorType.Value == "Person" )
+                if ( personVisitorType.Value == "Person" )
                 {
                     // Add the Person's GroupMember data so that they can be part of the family
                     GroupMember gm = new GroupMember();
@@ -956,7 +956,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     if ( person.BirthDate == null )
                     {
                         // set the age to the age from the date picker
-                        age = int.Parse( dpDOBAgeSearch.Text );
+                        age = int.Parse( dtpDOBAgeSearch.Text );
                     }
                     else
                     {
@@ -981,9 +981,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
                     SaveState();
 
-                    rPerson.DataSource = family.People;
-                    rPerson.DataBind();
-                    foreach ( RepeaterItem item in rPerson.Items )
+                    repPerson.DataSource = family.People;
+                    repPerson.DataBind();
+                    foreach ( RepeaterItem item in repPerson.Items )
                     {
                         ( (LinkButton)item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
                     }
@@ -995,11 +995,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     CIP.FamilyMember = false;
                     family.People.Add( CIP );
 
-                    rVisitors.DataSource = family.People.Where( p => p.FamilyMember == false );
-                    rVisitors.DataBind();
+                    repVisitors.DataSource = family.People.Where( p => p.FamilyMember == false );
+                    repVisitors.DataBind();
                     
                     // make sure the one person you just added is selected
-                    foreach ( RepeaterItem item in rVisitors.Items )
+                    foreach ( RepeaterItem item in repVisitors.Items )
                     {
                         if ( person.Id == int.Parse( ( (LinkButton)item.FindControl( "lbSelectVisitor" ) ).CommandArgument ) )
                         {
@@ -1080,11 +1080,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
                 SaveState();
 
-                rPerson.DataSource = PeopleInFamily;
-                rPerson.DataBind();
+                repPerson.DataSource = PeopleInFamily;
+                repPerson.DataBind();
 
-                rVisitors.DataSource = RelatedPeople;
-                rVisitors.DataBind();
+                repVisitors.DataSource = RelatedPeople;
+                repVisitors.DataBind();
             }
         }
         
