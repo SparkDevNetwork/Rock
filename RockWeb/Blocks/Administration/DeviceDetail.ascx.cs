@@ -79,6 +79,8 @@ namespace RockWeb.Blocks.Administration
                 return;
             }
 
+            using (new Rock.Data.UnitOfWorkScope())
+            {
             pnlDetails.Visible = true;
             Device Device = null;
 
@@ -104,8 +106,27 @@ namespace RockWeb.Blocks.Administration
             ddlPrintTo.SetValue( Device.PrintToOverride.ConvertToInt().ToString() );
             ddlPrinter.SetValue( Device.PrinterDeviceId );
             ddlPrintFrom.SetValue( Device.PrintFrom.ConvertToInt().ToString() );
-            gpGeoPoint.SetValue( Device.GeoPoint );
-            gpGeoFence.SetValue( Device.GeoFence );
+
+            string orgLocGuid = GlobalAttributesCache.Read().GetValue( "OrganizationAddress" );
+            if ( !string.IsNullOrWhiteSpace( orgLocGuid ) )
+            {
+                Guid locGuid = Guid.Empty;
+                if ( Guid.TryParse( orgLocGuid, out locGuid ) )
+                {
+                    var location = new LocationService().Get( locGuid );
+                    if ( location != null )
+                    {
+                        gpGeoPoint.CenterPoint = location.GeoPoint;
+                        gpGeoFence.CenterPoint = location.GeoPoint;
+                    }
+                }
+            }
+
+            if ( Device.Location != null )
+            {
+                gpGeoPoint.SetValue( Device.Location.GeoPoint );
+                gpGeoFence.SetValue( Device.Location.GeoFence );
+            }
 
             // render UI based on Authorized and IsSystem
             bool readOnly = false;
@@ -132,7 +153,7 @@ namespace RockWeb.Blocks.Administration
             ddlPrintFrom.Enabled = !readOnly;
 
             btnSave.Visible = !readOnly;
-
+            }
         }
 
         #endregion
@@ -180,8 +201,12 @@ namespace RockWeb.Blocks.Administration
             Device.PrinterDeviceId = ddlPrinter.SelectedValueAsInt();
             Device.PrintFrom = (PrintFrom)System.Enum.Parse( typeof( PrintFrom ), ddlPrintFrom.SelectedValue );
 
-            Device.GeoPoint = gpGeoPoint.SelectedValue;
-            Device.GeoFence = gpGeoFence.SelectedValue;
+            if ( Device.Location == null )
+            {
+                Device.Location = new Location();
+            }
+            Device.Location.GeoPoint = gpGeoPoint.SelectedValue;
+            Device.Location.GeoFence = gpGeoFence.SelectedValue;
 
             if ( !Device.IsValid )
             {
