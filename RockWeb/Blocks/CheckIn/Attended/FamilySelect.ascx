@@ -134,11 +134,14 @@
             <div class="span3">
                 <h3>Last Name</h3>
             </div>
-            <div class="span3">
-                <h3>DOB/Age</h3>
+            <div class="span2">
+                <h3>DOB</h3>
             </div>
-            <div class="span3">
-                <h3>Grade</h3>
+            <div class="span2">
+                <h3>Gender</h3>
+            </div>
+            <div class="span2">
+                <h3>Attributes</h3>
             </div>
         </div>
         <div class="row-fluid attended-checkin-body searchperson">
@@ -148,13 +151,16 @@
             <div class="span3">
                 <Rock:DataTextBox ID="tbLastNameSearch" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
             </div>
-            <div class="span3">
+            <div class="span2">
                 <Rock:DatePicker ID="dtpDOBAgeSearch" runat="server" CssClass="datePickerClass"></Rock:DatePicker>
                 <asp:CustomValidator ID="cvDOBAgeSearch" runat="server" ErrorMessage="The first DOB/Age field is incorrect."
                     CssClass="align-middle" EnableClientScript="true" Display="None" 
                     ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="dtpDOBAgeSearch" />
             </div>
-            <div class="span3">
+            <div class="span2">
+                <Rock:DataTextBox ID ="tbGenderSearch" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+            </div>
+            <div class="span2">
                 <Rock:DataTextBox ID="tbGradeSearch" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
             </div>
         </div>
@@ -179,8 +185,8 @@
             <asp:LinkButton ID="lbAddSearchedForPerson" runat="server" Text="None of these, add me as a new [person/visitor]." Visible="false" OnClick="lbAddSearchedForPerson_Click" CausesValidation="false"></asp:LinkButton>
         </div>
     </asp:Panel>
-    <asp:ModalPopupExtender ID="mpePerson" runat="server" TargetControlID="lbOpenPanel" PopupControlID="AddPersonPanel" CancelControlID="lbAddPersonCancel" BackgroundCssClass="modalBackground"></asp:ModalPopupExtender>
-    <asp:LinkButton ID="lbOpenPanel" runat="server" CausesValidation="false"></asp:LinkButton>
+    <asp:ModalPopupExtender ID="mpePerson" runat="server" TargetControlID="lbOpenPVPanel" PopupControlID="AddPersonPanel" CancelControlID="lbAddPersonCancel" BackgroundCssClass="modalBackground"></asp:ModalPopupExtender>
+    <asp:LinkButton ID="lbOpenPVPanel" runat="server" CausesValidation="false"></asp:LinkButton>
 
     <asp:Panel ID="AddFamilyPanel" runat="server" CssClass="add-family">
         <div class="row-fluid attended-checkin-header">
@@ -189,11 +195,11 @@
             </div>
 
             <div class="span6">
-                <h1 id="H1" runat="server">Add Family</h1>
+                <h1>Add Family</h1>
             </div>
 
             <div class="span3 attended-checkin-actions">
-                <asp:LinkButton ID="lbAddFamilyAdd" CssClass="btn btn-large last btn-primary" runat="server" OnClick="lbAddFamilyAdd_Click" Text="Add" />
+                <asp:LinkButton ID="lbAddFamilySave" CssClass="btn btn-large last btn-primary" runat="server" OnClick="lbAddFamilySave_Click" Text="Save" />
             </div>
         </div>
         <div class="row-fluid attended-checkin-body">
@@ -426,8 +432,6 @@
         </div>
         <asp:ValidationSummary ID="valSummaryBottom" runat="server" HeaderText="Please Correct the Following:" CssClass="alert alert-error block-message error alert error-modal" />
     </asp:Panel>
-    <%--<asp:ModalPopupExtender ID="mpe" runat="server" TargetControlID="lbAddFamily" PopupControlID="AddFamilyPanel" CancelControlID="lbAddFamilyCancel" OkControlID="lbAddFamilyAdd" BackgroundCssClass="modalBackground"></asp:ModalPopupExtender>--%>
-    <%--<asp:ModalPopupExtender ID="mpe" runat="server" TargetControlID="lbAddFamily" PopupControlID="AddFamilyPanel" CancelControlID="lbAddFamilyCancel" BackgroundCssClass="modalBackground"></asp:ModalPopupExtender>--%>
     <asp:ModalPopupExtender ID="mpe" runat="server" TargetControlID="lbOpenFamilyPanel" PopupControlID="AddFamilyPanel" CancelControlID="lbAddFamilyCancel" BackgroundCssClass="modalBackground"></asp:ModalPopupExtender>
     <asp:LinkButton ID="lbOpenFamilyPanel" runat="server" CausesValidation="false"></asp:LinkButton>
 
