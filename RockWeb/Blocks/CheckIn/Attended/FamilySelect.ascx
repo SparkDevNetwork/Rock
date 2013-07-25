@@ -32,6 +32,12 @@
         return isDate(theDate, theFormat);
     }
 
+    $('.family').change(function () {
+        if ($(this).hasClass('active')) {
+            $('.family').not(this).removeClass('active');
+        };
+    });
+
 </script>
 
 <asp:UpdatePanel ID="upContent" runat="server">
@@ -61,7 +67,7 @@
                 <h3>Families</h3>
                 <asp:ListView ID="lvFamily" runat="server" OnPagePropertiesChanging="lvFamily_PagePropertiesChanging" OnItemCommand="lvFamily_ItemCommand">
                     <ItemTemplate>
-                        <asp:LinkButton ID="lbSelectFamily" runat="server" CommandArgument='<%# Eval("Group.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" CausesValidation="false" ><%# Eval("Caption") %><br /><span class="checkin-sub-title"><%# Eval("SubCaption") %></span></asp:LinkButton>
+                        <asp:LinkButton ID="lbSelectFamily" runat="server" CommandArgument='<%# Eval("Group.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select family" CausesValidation="false" ><%# Eval("Caption") %><br /><span class="checkin-sub-title"><%# Eval("SubCaption") %></span></asp:LinkButton>
                     </ItemTemplate>
                 </asp:ListView>
                 <asp:DataPager ID="dpPager" runat="server" PageSize="4" PagedControlID="lvFamily">
@@ -134,14 +140,11 @@
             <div class="span3">
                 <h3>Last Name</h3>
             </div>
-            <div class="span2">
-                <h3>DOB</h3>
+            <div class="span3">
+                <h3>DOB/Age</h3>
             </div>
-            <div class="span2">
-                <h3>Gender</h3>
-            </div>
-            <div class="span2">
-                <h3>Attributes</h3>
+            <div class="span3">
+                <h3>Grade</h3>
             </div>
         </div>
         <div class="row-fluid attended-checkin-body searchperson">
@@ -151,16 +154,13 @@
             <div class="span3">
                 <Rock:DataTextBox ID="tbLastNameSearch" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
             </div>
-            <div class="span2">
+            <div class="span3">
                 <Rock:DatePicker ID="dtpDOBAgeSearch" runat="server" CssClass="datePickerClass"></Rock:DatePicker>
                 <asp:CustomValidator ID="cvDOBAgeSearch" runat="server" ErrorMessage="The first DOB/Age field is incorrect."
                     CssClass="align-middle" EnableClientScript="true" Display="None" 
                     ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="dtpDOBAgeSearch" />
             </div>
-            <div class="span2">
-                <Rock:DataTextBox ID ="tbGenderSearch" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
-            </div>
-            <div class="span2">
+            <div class="span3">
                 <Rock:DataTextBox ID="tbGradeSearch" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
             </div>
         </div>
@@ -209,11 +209,14 @@
             <div class="span3">
                 <h3>Last Name</h3>
             </div>
-            <div class="span3">
-                <h3>DOB/Age</h3>
+            <div class="span2">
+                <h3>DOB</h3>
             </div>
-            <div class="span3">
-                <h3>Grade</h3>
+            <div class="span2">
+                <h3>Gender</h3>
+            </div>
+            <div class="span2">
+                <h3>Attribute</h3>
             </div>
         </div>
         <div id="addFamilyNamesPage1" runat="server">
@@ -224,13 +227,16 @@
                 <div class="span3">
                     <Rock:DataTextBox ID="tbLastName1" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
-                <div class="span3">
+                <div class="span2">
                     <Rock:DatePicker ID="dpDOBAge1" runat="server"></Rock:DatePicker>
                     <asp:CustomValidator ID="cvDOBAgeValidator1" runat="server" ErrorMessage="The first DOB/Age field is incorrect."
                         CssClass="align-middle" EnableClientScript="true" Display="None" 
                         ClientValidationFunction="cvDOBAgeValidator_ClientValidate" OnServerValidate="cvDOBAgeValidator_ServerValidate" ControlToValidate="dpDOBAge1" />
                 </div>
-                <div class="span3">
+                <div class="span2">
+                    <Rock:DataTextBox ID="tbGender1" runat="server"></Rock:DataTextBox>
+                </div>
+                <div class="span2">
                     <Rock:DataTextBox ID="tbGrade1" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
             </div>

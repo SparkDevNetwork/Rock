@@ -41,9 +41,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 if ( !Page.IsPostBack )
                 {
-                    lvFamily.DataSource = CurrentCheckInState.CheckIn.Families;
-                    lvFamily.DataBind();
-
                     if ( CurrentCheckInState.CheckIn.Families.Count == 0 )
                     {
                         familyTitle.InnerText = "No Search Results Found";
@@ -54,13 +51,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         visitorDiv.Visible = false;
                         nothingFoundMessage.Visible = true;
                     }
-                    else
-                    {
-                        nothingFoundMessage.Visible = false;
-                    }
-
-                    if ( CurrentCheckInState.CheckIn.Families.Count == 1 &&
-                        !CurrentCheckInState.CheckIn.ConfirmSingleFamily )
+                    else if ( CurrentCheckInState.CheckIn.Families.Count == 1 &&
+                             !CurrentCheckInState.CheckIn.ConfirmSingleFamily )
                     {
                         if ( UserBackedUp )
                         {
@@ -68,13 +60,15 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         }
                         else
                         {
-                            foreach ( var family in CurrentCheckInState.CheckIn.Families )
-                            {
-                                family.Selected = true;
-                            }
-
+                            CurrentCheckInState.CheckIn.Families.FirstOrDefault().Selected = true;
                             ProcessFamily();
                         }
+                    }
+                    else
+                    {
+                        nothingFoundMessage.Visible = false;
+                        lvFamily.DataSource = CurrentCheckInState.CheckIn.Families;
+                        lvFamily.DataBind();
                     }
                 }
             }
@@ -106,46 +100,48 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="ListViewCommandEventArgs"/> instance containing the event data.</param>
         protected void lvFamily_ItemCommand( object sender, ListViewCommandEventArgs e )
         {
-            if ( KioskCurrentlyActive )
+            int id = int.Parse( e.CommandArgument.ToString() );
+            var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Group.Id == id ).FirstOrDefault();
+            if ( family != null )
             {
-                int id = int.Parse( e.CommandArgument.ToString() );
-                var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Group.Id == id ).FirstOrDefault();
-                if ( family != null )
+                if ( family.Selected )
                 {
-                    if ( family.Selected )
-                    {
-                        family.Selected = false;
-                        var control = (LinkButton)e.Item.FindControl( "lbSelectFamily" );
-                        control.RemoveCssClass( "active" );
-                        repPerson.DataSource = null;
-                        repPerson.DataBind();
-                        SaveState();
-                    }
-                    else
-                    {
-                        // make sure there are no other families selected
-                        foreach ( var f in CurrentCheckInState.CheckIn.Families )
-                        {
-                            f.Selected = false;
-                        }
-
-                        // make sure no other families look like they're selected
-                        foreach ( ListViewDataItem li in lvFamily.Items )
-                        {
-                            ( (LinkButton)li.FindControl( "lbSelectFamily" ) ).RemoveCssClass( "active" );
-                        }
-
-                        // select the clicked on family
-                        family.Selected = true;
-                        ( (LinkButton)e.Item.FindControl( "lbSelectFamily" ) ).AddCssClass( "active" );
-                        ProcessFamily();
-                        foreach ( RepeaterItem item in repPerson.Items )
-                        {
-                            ( (LinkButton)item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
-                        }
-                        SaveState();
-                    }
+                    family.Selected = false;
+                    ((LinkButton)e.Item.FindControl( "lbSelectFamily" )).RemoveCssClass("active");
+                    repPerson.DataSource = null;
+                    repPerson.DataBind();
                 }
+                else
+                {
+                    // make sure there are no other families selected
+                    //CurrentCheckInState.CheckIn.Families.FirstOrDefault().Selected = true;
+                    CurrentCheckInState.CheckIn.Families.ForEach( f => f.Selected = false );
+
+                    //foreach ( var fam in CurrentCheckInState.CheckIn.Families )
+                    //{
+                    //    fam.Selected = false;
+                    //}
+
+                    // gonna try to do this client side.
+                    // make sure no other families look like they're selected
+                    //foreach ( ListViewDataItem li in lvFamily.Items )
+                    //{
+                    //    ( (LinkButton)li.FindControl( "lbSelectFamily" ) ).RemoveCssClass( "active" );
+                    //}
+
+                    // select the clicked on family
+                    family.Selected = true;
+                    ( (LinkButton)e.Item.FindControl( "lbSelectFamily" ) ).AddCssClass( "active" );
+                    ProcessFamily();
+
+                    // i think this will be done in the find family members action...
+                    // mark all the peoples as active
+                    //foreach ( RepeaterItem item in repPerson.Items )
+                    //{
+                    //    ( (LinkButton)item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
+                    //}
+                }
+                SaveState();
             }
         }
 
@@ -1054,27 +1050,17 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
             if ( family != null )
             {
-                if ( family.People.Count == 1 )
+                foreach ( var familyMember in family.People )
                 {
-                    if ( UserBackedUp )
+                    if ( familyMember.FamilyMember )
                     {
-                        GoBack();
-                    }                    
-                }
-                else
-                {
-                    foreach ( var familyMember in family.People )
+                        familyMember.Selected = true;
+                        PeopleInFamily.Add( familyMember );
+                    }
+                    else
                     {
-                        if ( familyMember.FamilyMember )
-                        {
-                            familyMember.Selected = true;
-                            PeopleInFamily.Add( familyMember );
-                        }
-                        else
-                        {
-                            familyMember.Selected = false;
-                            RelatedPeople.Add( familyMember );
-                        }
+                        familyMember.Selected = false;
+                        RelatedPeople.Add( familyMember );
                     }
                 }
 
