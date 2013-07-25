@@ -85,7 +85,7 @@
 	                                    <Rock:NumberBox ID="txtAccountAmount" runat="server" CssClass="input-small contribution-calculate" PrependText="$"
                                             LabelText='<%# DataBinder.Eval(Container.DataItem, "Key.Name") %>'
                                             Text='<%# Decimal.Parse(DataBinder.Eval(Container.DataItem, "Value").ToString()) != 0 ? DataBinder.Eval(Container.DataItem, "Value", "{0:f2}") : "" %>'
-                                            MinimumValue="0.0">
+                                            NumberType="Double">
 	                                    </Rock:NumberBox>                                        
                                     </div>
                                 </ItemTemplate>                                
