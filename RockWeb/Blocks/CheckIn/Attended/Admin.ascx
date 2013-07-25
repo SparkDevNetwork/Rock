@@ -12,6 +12,7 @@
             else {
                 $('#hfSelected').val(selectedIds + this.getAttribute('data-id') + ',');
             }
+            console.log($('#hfSelected'));
             return false;
         });
     };
@@ -45,13 +46,12 @@
     <div class="row-fluid checkin-admin-body">
         <div class="span4">
             <div id="campusDiv" runat="server">
-            <h3>Campus</h3>
-            <asp:DropDownList ID="ddlCampus" runat="server" OnSelectedIndexChanged="ddlCampus_SelectedIndexChanged" AutoPostBack="true"></asp:DropDownList>
+                <Rock:DataDropDownList ID="ddlCampus" runat="server" LabelText="Campus" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" OnSelectedIndexChanged="ddlCampus_SelectedIndexChanged" AutoPostBack="true" />
             </div>
         </div>
         <div class="span4">
-            <h3>Ministry</h3>
-            <asp:Repeater ID="repMinistry" runat="server">
+            <label class="control-label">Select Ministry</label>
+            <asp:Repeater ID="repMinistry" runat="server" OnItemDataBound="repMinistry_ItemDataBound">
                 <ItemTemplate>
                     <asp:Button ID="lbMinistry" runat="server" data-id='<%# Eval("Id") %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" Text='<%# Eval("Name") %>' />                
                 </ItemTemplate>
