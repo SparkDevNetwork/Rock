@@ -277,25 +277,18 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <returns></returns>
         private List<GroupType> GetLocationParentGroupTypes( int locationId )
         {
-            var parentGroupTypes = new Dictionary<int, GroupType>();
-            var asdf = new GroupLocationService().Queryable()
-                .Where( gl => gl.Location.ParentLocationId == locationId )
-                .Select( gl => gl.Group.GroupType.ParentGroupTypes )
-                .ToList();
-
-            //group.Select( g => g.GroupType.ParentGroupTypes )
-
+            var parentGroupTypes = new List<GroupType>();
             foreach ( var groupTypes in new GroupLocationService().Queryable()
                 .Where( gl => gl.Location.ParentLocationId == locationId )
                 .Select( gl => gl.Group.GroupType.ParentGroupTypes ) )
             {
-                foreach ( var groupType in groupTypes.Where( gt => !parentGroupTypes.Keys.Contains( gt.Id ) ) ) 
+                foreach ( var groupType in groupTypes.Where( gt => !parentGroupTypes.Contains( gt ) ) ) 
                 {
-                    parentGroupTypes.Add( groupType.Id, groupType );   
+                    parentGroupTypes.Add( groupType );   
                 }                            
             }
 
-            return parentGroupTypes.Select( pgt => pgt.Value ).ToList();
+            return parentGroupTypes;
         }
 
         #endregion
