@@ -50,7 +50,7 @@
             </div>
         </div>
         <div class="span4">
-            <label class="control-label">Select Ministry</label>
+            <label class="control-label">Ministry</label>
             <asp:Repeater ID="repMinistry" runat="server" OnItemDataBound="repMinistry_ItemDataBound">
                 <ItemTemplate>
                     <asp:Button ID="lbMinistry" runat="server" data-id='<%# Eval("Id") %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" Text='<%# Eval("Name") %>' />                
