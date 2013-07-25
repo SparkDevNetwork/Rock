@@ -354,11 +354,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
-        /// Handles the Click event of the lbAddFamilyAdd control.
+        /// Handles the Click event of the lbAddFamilySave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbAddFamilyAdd_Click( object sender, EventArgs e )
+        protected void lbAddFamilySave_Click( object sender, EventArgs e )
         {
             // Handle getting the data from the modal window and creating a family out of it.
             List<Person> FamilyList = new List<Person>();
