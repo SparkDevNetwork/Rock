@@ -55,10 +55,38 @@ a.help:hover {
 .k-draghandle.k-state-selected:hover, 
 .k-scheduler .k-scheduler-toolbar .k-state-selected, 
 .k-marquee-color {
-    background-color: @site-primary-color;
+    background-color: @tree-selected-background;
     border-color: transparent;
-    color: @site-primary-inverse-color;
+    color: @tree-selected-color;
     box-shadow: 0;
+}
+
+.k-state-focused
+{
+    box-shadow: 0 0 0 0 transparent inset;
+}
+
+.k-treeview .k-in.k-state-hover, 
+.k-treeview .k-in.k-state-selected, 
+.k-treeview .k-in.k-state-focused,
+.k-treeview .k-in
+{
+    padding: 2px 12px;
+    border: 1px solid transparent;
+}
+
+.k-state-hover,
+.k-state-hover:hover,
+.k-splitbar-horizontal-hover:hover,
+.k-splitbar-vertical-hover:hover,
+.k-list > .k-state-hover,
+.k-scheduler .k-scheduler-toolbar ul li.k-state-hover,
+.k-pager-wrap .k-link:hover,
+.k-dropdown .k-state-focused,
+.k-imagebrowser-dropzone {
+  color: @tree-hover-color;
+  background-color: @tree-hover-background;
+  border-color: darken(@tree-hover-background, 20%);
 }
 
 
