@@ -105,6 +105,15 @@ namespace RockWeb.Blocks.Crm
         #region Edit Events
 
         /// <summary>
+        /// Clears the error message title and text.
+        /// </summary>
+        private void ClearErrorMessage()
+        {
+            nbErrorMessage.Title = String.Empty;
+            nbErrorMessage.Text = String.Empty;
+        }
+
+        /// <summary>
         /// Finds an exsiting member of a group by groupId, roleId and personId
         /// if a existing member is found it returns the groupMemberId
         /// </summary>
@@ -130,7 +139,7 @@ namespace RockWeb.Blocks.Crm
         }
 
         /// <summary>
-        /// Gets the number of group members who are in the selected role
+        /// Gets the number of active group members who are in the selected role
         /// </summary>
         /// <returns>Group Member Count</returns>
         private int GetGroupMembersInRoleCount()
@@ -141,6 +150,7 @@ namespace RockWeb.Blocks.Crm
             return new GroupMemberService().Queryable()
                         .Where( m => m.GroupId == groupId )
                         .Where( m => m.GroupRoleId == roleId )
+                        .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
                         .Count();
         }
 
@@ -283,6 +293,8 @@ namespace RockWeb.Blocks.Crm
         private void ShowReadonlyDetails( GroupMember groupMember )
         {
             SetEditMode( false );
+            
+            ClearErrorMessage();
 
             string groupIconHtml = string.Empty;
             var group = groupMember.Group;
@@ -354,25 +366,30 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            nbErrorMessage.Title = String.Empty;
-            nbErrorMessage.Text = String.Empty;
+            ClearErrorMessage();
 
             int groupMemberId = int.Parse( hfGroupMemberId.Value );
             GroupRole role = new GroupRoleService().Get( ddlGroupRole.SelectedValueAsInt() ?? 0 );
             int memberCountInRole = GetGroupMembersInRoleCount();
             bool roleMembershipBelowMinimum = false;
+            bool roleMembershipAboveMax = false;
 
             GroupMemberService groupMemberService = new GroupMemberService();
 
 
             GroupMember groupMember;
+
+            // if adding a new group member 
             if ( groupMemberId.Equals( 0 ) )
             {
+
                 groupMember = new GroupMember { Id = 0 };
                 groupMember.GroupId = hfGroupId.ValueAsInt();
 
+                //check to see if the person is a member fo the gorup/role
                 int? existingGroupMemberId = FindExistingGroupMemberRole();
 
+                //if so, don't add and show error message
                 if ( existingGroupMemberId != null && existingGroupMemberId > 0 )
                 {
                     var person = new PersonService().Get( (int)ppGroupMemberPerson.PersonId );
@@ -390,25 +407,66 @@ namespace RockWeb.Blocks.Crm
             }
             else
             {
+                //load existing group member
                 groupMember = groupMemberService.Get( groupMemberId );
 
             }
 
-            if ( groupMemberId.Equals( 0 ) || groupMember.GroupRoleId != role.Id )
+            //if adding new active group member
+            if ( groupMemberId.Equals( 0 ) && ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>() == GroupMemberStatus.Active )
             {
+                // verify that active count has not exceeded the max
                 if ( role.MaxCount != null && ( memberCountInRole + 1 ) > role.MaxCount )
                 {
-                    var person = new PersonService().Get( (int)ppGroupMemberPerson.PersonId );
-
-                    nbErrorMessage.Title = string.Format( "Can not add {0} to {1} role.", person.FullName, role.Name );
-                    nbErrorMessage.Text = string.Format( "<br /> {0} role is at it's maximum capacity of {1} members.", role.Name, role.MaxCount.ToString() );
-                    return;
+                    roleMembershipAboveMax = true;
                 }
-
+                //check that min count has been reached
                 if ( role.MinCount != null && ( memberCountInRole + 1 ) < role.MinCount )
                 {
                     roleMembershipBelowMinimum = true;
                 }
+            }
+            //if existing group member changing role or status
+            else if ( groupMemberId > 0 && ( groupMember.GroupRoleId != role.Id || groupMember.GroupMemberStatus != ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>() )
+                    && ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>() == GroupMemberStatus.Active )
+            {
+                // verify that active count has not exceeded the max
+                if ( role.MaxCount != null && ( memberCountInRole + 1 ) > role.MaxCount )
+                {
+                    roleMembershipAboveMax = true;
+                }
+                //check that min count has been reached
+                if ( role.MinCount != null && ( memberCountInRole + 1 ) < role.MinCount )
+                {
+                    roleMembershipBelowMinimum = true;
+                }
+            }
+            // if existing member is going inactive
+            else if ( groupMemberId > 0 && groupMember.GroupMemberStatus == GroupMemberStatus.Active && ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>() != GroupMemberStatus.Active )
+            {
+                //check that min count has been reached
+                if ( role.MinCount != null && ( memberCountInRole - 1 ) < role.MinCount )
+                {
+                    roleMembershipBelowMinimum = true;
+                }
+            }
+            else
+            {
+                //check that min count has been reached
+                if ( role.MinCount != null && memberCountInRole < role.MinCount )
+                {
+                    roleMembershipBelowMinimum = true;
+                }
+            }
+
+            //show error if above max.. do not proceed
+            if ( roleMembershipAboveMax )
+            {
+                var person = new PersonService().Get( (int)ppGroupMemberPerson.PersonId );
+
+                nbErrorMessage.Title = string.Format( "Can not add {0} to {1} role.", person.FullName, role.Name );
+                nbErrorMessage.Text = string.Format( "<br /> {0} role is at it's maximum capacity of {1} active members.", role.Name, role.MaxCount.ToString() );
+                return;
             }
 
             groupMember.PersonId = ppGroupMemberPerson.PersonId.Value;
