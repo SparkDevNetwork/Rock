@@ -12,6 +12,7 @@
             else {
                 $('#hfSelected').val(selectedIds + this.getAttribute('data-id') + ',');
             }
+            console.log($('#hfSelected'));
             return false;
         });
     };

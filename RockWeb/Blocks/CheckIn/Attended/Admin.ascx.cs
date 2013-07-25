@@ -219,8 +219,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 int locationId = (int) new CampusService().Queryable().Where( c => c.Name == ddlCampus.SelectedValue )
                     .Select( c => c.LocationId ).FirstOrDefault();
-                var groupTypes = GetLocationParentGroupTypes( locationId );
-                repMinistry.DataSource = groupTypes;
+                var groupTypeIds = GetLocationParentGroupTypes( locationId );
+                repMinistry.DataSource = new GroupTypeService().Queryable().Where( gt => groupTypeIds.Contains( gt.Id ) ).ToList();
                 repMinistry.DataBind();
             }
 
@@ -255,7 +255,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <returns>Campus</returns>
         protected Campus GetByKioskShortCode( string machineName )
         {
-            return new CampusService().Queryable().Where( c => machineName.StartsWith( c.ShortCode ) ).FirstOrDefault();
+            return new CampusService().Queryable()
+                .Where( c => machineName.StartsWith( c.ShortCode ) ).FirstOrDefault();
         }
 
         /// <summary>
@@ -275,16 +276,16 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// </summary>
         /// <param name="locationId">The location id.</param>
         /// <returns></returns>
-        private List<GroupType> GetLocationParentGroupTypes( int locationId )
+        private List<int> GetLocationParentGroupTypes( int locationId )
         {
-            var parentGroupTypes = new List<GroupType>();
+            var parentGroupTypes = new List<int>();
             foreach ( var groupTypes in new GroupLocationService().Queryable()
                 .Where( gl => gl.Location.ParentLocationId == locationId )
                 .Select( gl => gl.Group.GroupType.ParentGroupTypes ) )
             {
-                foreach ( var groupType in groupTypes.Where( gt => !parentGroupTypes.Contains( gt ) ) ) 
+                foreach ( var groupType in groupTypes.Where( gt => !parentGroupTypes.Contains( gt.Id ) ) ) 
                 {
-                    parentGroupTypes.Add( groupType );   
+                    parentGroupTypes.Add( groupType.Id );   
                 }                            
             }
 
