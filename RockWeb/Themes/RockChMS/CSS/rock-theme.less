@@ -18,6 +18,7 @@
 @import "./rock-bootstrap-variables.less";
 @import "../../../Css/Less/Vendor/Bootstrap/mixins.less";
 @import "../../../Css/rock-core.less";
+@import "../../../Css/Kendo/kendo.flat.less";
 
 
 
@@ -118,6 +119,12 @@ html
 // get rid of dotted box around anchors with focus
 a {
    outline: 0;
+}
+
+
+a:hover i[class^="icon-"]
+{
+    text-decoration: none;
 }
 
 
