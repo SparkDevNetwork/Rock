@@ -61,17 +61,13 @@
 
 @rockCalloutColor:       	#d6d6d6;
 @rockAccentColor:        	#2f2f2f;
-@rockTextColor:          	#515151;
 @rockSecondaryTextColor: 	#7c7c7c;
 @rockLightTextColor: 	    #bbb;
 
-@rockPageTitleBackground:   #f3f3f3; /* delet this*/
+//@rockPageTitleBackground:   #f3f3f3; /* delet this*/
 
-@rockPageNavBackground:  	#3A3A3A;
 @rockWidgetBackground:  	#fff;
 @rockTooltipBackground:  	#fff;
-@rockModalHeader:           @rockAccentColor;
-@rockModalHeaderTextColor:  @rockLightTextColor;
 @rockSelectionBackgroundColor:	#d8d9d9;
 @rockSelectionBorderColor:  #c0c0c0;
 @rockHoverBackgroundColor:	#3b8b9b9;
@@ -80,14 +76,24 @@
 @rockHeaderBackground:      #E9E9E9;
 @rockHeaderDarkBackground:  #797979;
 
-@site-border-radius: 4px;
-@site-primary-color: #779cb1;
-@site-primary-inverse-color: #ecf0f3;
-@site-subtle-background: #e7ecf0;
-@site-background-color: #f4f4f4;
-@site-pagetitle-background: #c7cacd;
+@const-border-darken-amt: 10%; /* creates a border color by darkening the background by this amount */
+
 @site-text-color:           #515151;
 @site-link-color:           #437b9b;
+@site-header-background:     #3A3A3A;
+@site-header-text-color: #bbb;
+@site-background-color: #f4f4f4;
+@site-modal-header-background: @site-header-background;
+@site-modal-header-text-color: @site-header-text-color;
+@site-border-radius: 4px;
+@site-accentbold-color: #779cb1;
+@site-accentbold-inverse-color: #ecf0f3;
+@site-accent-color: #d9e1e8;
+@site-accent-inverse-color: @site-text-color;
+@site-accentlight-color: #e7ecf0;
+@site-accentlight-inverse-color: @site-text-color;
+@site-pagetitle-background: #c7cacd;
+
 
 
 // font variables
@@ -100,7 +106,7 @@
 // Buttons
 // -------------------------
 @button-default-background: #fff;
-@button-primary-background: @site-primary-color;
+@button-primary-background: @site-accentbold-color;
 @button-info-background: #5bc0de;
 @button-success-background: #62c462;
 @button-warning-background: #f89406;
@@ -110,8 +116,8 @@
 // -------------------------
 @grid-filter-background: #d9e1e8;
 
-@grid-column-header-background: @site-primary-color;
-@grid-column-header-font-color: @site-primary-inverse-color;
+@grid-column-header-background: @site-accentbold-color;
+@grid-column-header-font-color: @site-accentbold-inverse-color;
 @grid-column-header-font-size: 14px;
 
 @grid-footer-background: #d9e1e8;
@@ -126,26 +132,30 @@
 
 /* panel */
 @panel-border-radius: 4px;
-@panel-background: @site-subtle-background;
+@panel-background: @site-accentlight-color;
 @panel-border-color: darken(@panel-background, 10%);
 @panel-border-size: 1px;
 @panel-padding: 20px;
 
 /* banner */
-@banner-font-color: @site-primary-inverse-color;
+@banner-font-color: @site-accentbold-inverse-color;
 @banner-font-weight: 700;
 @banner-font-size: 24px;
-@banner-background: @site-primary-color;
+@banner-background: @site-accentbold-color;
 @banner-border-radius: 0;
 @banner-border-color: transparent;  
 @banner-border-size: 0;  
 @banner-padding: 4px 12px;
 
 /* treeview */
-@tree-selected-background: @site-primary-color;
-@tree-selected-color: @site-primary-inverse-color;
-@tree-hover-background: @site-subtle-background;
+@tree-selected-background: @site-accentbold-color;
+@tree-selected-color: @site-accentbold-inverse-color;
+@tree-hover-background: @site-accentlight-color;
 @tree-hover-color: @site-text-color;
+
+/* page list */
+@pagelist-background: @site-accent-color;
+@pagelist-text-color: @site-accent-inverse-color;
 
 
 
@@ -154,13 +164,13 @@
 
 // Block Gradient
 
-.block-gradient (@backgroundColor: @rockPageNavBackground) {
+.block-gradient (@backgroundColor: @site-header-background) {
   	background: @backgroundColor;
 	background-image: -moz-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@backgroundColor, 3%));
 	background-image: -ms-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@backgroundColor, 3%));
 	background-image: -webkit-gradient(linear, 0 0, 0 100%, from(lighten(@backgroundColor, 3%)), to(darken(@backgroundColor, 3%)));
 	background-image: -webkit-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@backgroundColor, 3%));
-	background-image: -o-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@rockPageNavBackground, 3%));
+	background-image: -o-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@site-header-background, 3%));
 	background-image: linear-gradient(top, lighten(@backgroundColor, 3%), darken(@backgroundColor, 3%));
 	background-repeat: repeat-x;
     filter: initial;
