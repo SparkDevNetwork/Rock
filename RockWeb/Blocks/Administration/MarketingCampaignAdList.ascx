@@ -7,7 +7,7 @@
             <Rock:ModalAlert ID="mdGridWarning" runat="server" />
             <Rock:Grid ID="gMarketingCampaignAds" runat="server" DisplayType="Full" OnRowSelected="gMarketingCampaignAds_Edit">
                 <Columns>
-                    <asp:BoundField DataField="MarketingCampaignAdType.Name" HeaderText="Ad Type" />
+                    <asp:BoundField DataField="MarketingCampaignAdTypeName" HeaderText="Ad Type" />
                     <Rock:DateField DataField="StartDate" HeaderText="Date" />
                     <Rock:EnumField DataField="MarketingCampaignAdStatus" HeaderText="Approval Status" />
                     <asp:BoundField DataField="Priority" HeaderText="Priority" />
