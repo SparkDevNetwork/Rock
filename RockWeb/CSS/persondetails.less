@@ -1,17 +1,9 @@
-﻿.persondetails small
+﻿/*.persondetails small
 {
     color: #7c7c7c;
 }
+*/
 
-.persondetails a i[class^="icon-"]
-{
-    color: #9e9e9e;
-}
-
-.persondetails a:hover i[class^="icon-"]
-{
-    text-decoration: none;
-}
 
 /* persondetails-header */
 .persondetails-header .navbar-inner
@@ -27,7 +19,7 @@
     filter: initial;
 }
 
-.persondetails-header .actions
+.persondetails-header .actions // edit individual button
 {
     position: absolute; 
     right: 12px; 
@@ -35,14 +27,17 @@
     margin-top: 50px;
 }
 
-.persondetails-header .labels {
-    text-align: right;
-    margin-top: 12px;
-}
 
 .persondetails-header .label
 {
     margin-top: 11px;
+}
+
+// actions dropdown
+.navbar .nav > li > a.persondetails-actions,
+.navbar .nav li.dropdown.open > a.persondetails-actions {
+    color: @site-accentlight-inverse-color;
+    padding-bottom: 6px;
 }
 
 .persondetails .navbar .nav > li > a:hover,
@@ -51,15 +46,15 @@
     color: inherit;
 }
 
-.persondetails .navbar .nav > li > a .caret
+.persondetails .navbar .nav li.dropdown > .dropdown-toggle .caret
 {
-    border-top: 4px solid #bbb;
+    border-top: 4px solid @site-accentlight-inverse-color;
 }
 
 .persondetails .navbar .nav > li > a:hover .caret,
 .persondetails .navbar .nav > li > a:focus .caret
 {
-    border-top: 4px solid #515151;
+    border-top: 4px solid lighten(@site-accentlight-inverse-color, 20%);
 }
 
 .persondetails-header .photo
