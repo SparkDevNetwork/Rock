@@ -72,9 +72,9 @@
 .k-state-selected,
 .k-state-selected.k-state-focused, 
 .k-state-selected.k-state-highlight { 
-	background-color: @site-primary-color;
+	background-color: @site-accentbold-color;
 	border: 1px solid transparent;
-	color: @site-primary-inverse-color;
+	color: @site-accentbold-inverse-color;
 	box-shadow: none !important;
 }
 
@@ -89,7 +89,7 @@
 	background: -o-linear-gradient(top, #b8b9b9 0%,#b8b9b9 100%) !important;
 	background: -ms-linear-gradient(top, #b8b9b9 0%,#b8b9b9 100%) !important;
 	background: linear-gradient(to bottom, #b8b9b9 0%,#b8b9b9 100%) !important;
-    background-color: @site-subtle-background;
+    background-color: @site-accentlight-color;
 }
 
 .k-state-hover {
@@ -103,9 +103,9 @@
 
 .widget
 {
-    background-color: @rockWidgetBackground;
-    border: 1px solid @tableBorder;
-    border-radius: @baseBorderRadius;
+    background-color: @site-background-color;
+    border: 1px solid darken(@site-accentlight-color, @const-border-darken-amt);
+    border-radius: @site-border-radius;
     margin-bottom: 2em;
 }
 
@@ -118,7 +118,8 @@
 
 .widget header
 {
-    .make-gradient(@rockHeaderBackground);
+    background-color: @site-accentlight-color;
+    color: @site-accentlight-inverse-color;
     padding: 6px 15px;
     border-radius: @baseBorderRadius @baseBorderRadius 0 0 ;
 }
@@ -150,7 +151,7 @@
 	border-radius: @baseBorderRadius; 
 	border: 1px solid #cccccc;
 	background: @rockTooltipBackground;
-	color:  @rockTextColor;
+	color:  @site-text-color;
 }
 
 .tooltipster-content header img,
@@ -206,14 +207,14 @@
 
 .page-list-as-blocks li 
 {
-    background-color: @rockPageTitleBackground;
-    border-radius: 6px 6px 6px 6px;
+    background-color: @pagelist-background;
+    border-radius: @site-border-radius;
     border: 1px solid #bbb;
     float: left;
     margin: 0 2% 12px 2%;
     width: 20%;
     overflow: hidden;
-    color: @rockSecondaryTextColor;
+    color: @pagelist-text-color;
     text-align: center;
 }
 

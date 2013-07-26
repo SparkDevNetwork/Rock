@@ -68,12 +68,18 @@ h2, h3, h4
 .nav-pills > .active > a,
 .nav-pills > .active > a:hover
 {
-    background-color: @rockSecondaryTextColor;
+    background-color: @site-accentbold-color;
+    color: @site-accentbold-inverse-color;
 }
 
 .nav-pills > li > a
 {
-    color: @rockTextColor;
+    color: @site-text-color;
+}
+
+.nav-pills > li > a:hover
+{
+    background-color: @site-accent-color;
 }
 
 .btn-mini
@@ -85,7 +91,7 @@ h2, h3, h4
 .dropdown-menu li > a:focus,
 .dropdown-submenu:hover > a {
     background-image: none;
-    background-color: @site-primary-color;
+    background-color: @site-accentbold-color;
 }
 
 // add 40px padding if in desktop size so tooltips have a bit more space if they are close to the edge
@@ -120,24 +126,24 @@ a {
 
 /* page nav */
 .pagenav {
-	border-top: 1px solid lighten(@rockPageNavBackground, 10%);
+	border-top: 1px solid lighten(@site-header-background, 10%);
 }
 
 .pagenav .navbar-inner {
-	.block-gradient(@rockPageNavBackground);
-	border-bottom: 1px solid darken(@rockPageNavBackground, 10%);
+	.block-gradient(@site-header-background);
+	border-bottom: 1px solid darken(@site-header-background, 10%);
 }
 
 .pagenav ul.nav {
-	border-left: 1px solid lighten(@rockPageNavBackground, 10%);
+	border-left: 1px solid lighten(@site-header-background, 10%);
     
     width: 100%;
 }
 
 .pagenav .nav > li {
 	height: 67px;
-	border-left: 1px solid darken(@rockPageNavBackground, 10%);
-    border-right: 1px solid lighten(@rockPageNavBackground, 10%);
+	border-left: 1px solid darken(@site-header-background, 10%);
+    border-right: 1px solid lighten(@site-header-background, 10%);
     width: 12.5%; /* set to allow 8 nav items */
 }
 
@@ -147,7 +153,7 @@ a {
 	top: 0;
 	right: 0;
 	bottom: 0;
-	border-right: 1px solid darken(@rockPageNavBackground, 10%);
+	border-right: 1px solid darken(@site-header-background, 10%);
 }
 
 .pagenav.navbar .nav > li > a {
@@ -320,12 +326,7 @@ a {
 }
 
 
-.persondetails-header .navbar-inner {
-	background-color: @site-pagetitle-background;
-	border-bottom: 1px solid darken(@site-pagetitle-background, 10%);
-	background-image: none;
-    filter: initial;
-}
+
 
 .pageheader-collapse {
 	margin-top: 6px;
@@ -347,7 +348,7 @@ a {
 .page-footer {
 	padding-top: 24px;
 	min-height: 120px;
-	background-color: @rockPageNavBackground;
+	background-color: @site-header-background;
 	border-top: 1px solid #000;
 	color: @rockCalloutColor;
 }

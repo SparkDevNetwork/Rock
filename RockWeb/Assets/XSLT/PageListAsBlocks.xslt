@@ -10,7 +10,7 @@
   
 	<xsl:template match="/">
 		<xsl:if test="page/@display-child-pages = 'true' and page/pages[count(page) > 0]">
-      <div class="widget page-list-as-blocks clearfix">
+      <div class="panel page-list-as-blocks clearfix">
         <!--<header>
           <xsl:if test="@icon-css-class != ''">
             <i>
