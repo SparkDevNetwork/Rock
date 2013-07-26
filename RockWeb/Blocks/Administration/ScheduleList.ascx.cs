@@ -126,14 +126,21 @@ namespace RockWeb.Blocks.Administration
         {
             ScheduleService scheduleService = new ScheduleService();
             SortProperty sortProperty = gSchedules.SortProperty;
+            var qry = scheduleService.Queryable().Select( a =>
+                new
+                {
+                    a.Id,
+                    a.Name,
+                    CategoryName = a.Category.Name
+                } );
 
             if ( sortProperty != null )
             {
-                gSchedules.DataSource = scheduleService.Queryable().Sort( sortProperty ).ToList();
+                gSchedules.DataSource = qry.Sort( sortProperty ).ToList();
             }
             else
             {
-                gSchedules.DataSource = scheduleService.Queryable().OrderBy( s => s.Name ).ToList();
+                gSchedules.DataSource = qry.OrderBy( s => s.Name ).ToList();
             }
 
             gSchedules.DataBind();

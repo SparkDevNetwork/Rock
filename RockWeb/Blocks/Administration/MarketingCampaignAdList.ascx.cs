@@ -153,9 +153,17 @@ namespace RockWeb.Blocks.Administration
         {
             MarketingCampaignAdService marketingCampaignAdService = new MarketingCampaignAdService();
             int marketingCampaignId = int.Parse( hfMarketingCampaignId.Value );
-            var qry = marketingCampaignAdService.Queryable().Where( a => a.MarketingCampaignId.Equals( marketingCampaignId ) );
+            var qry = marketingCampaignAdService.Queryable().Where( a => a.MarketingCampaignId.Equals( marketingCampaignId ) ).Select( a =>
+                new
+                {
+                    a.Id,
+                    MarketingCampaignAdTypeName = a.MarketingCampaignAdType.Name,
+                    a.StartDate,
+                    a.MarketingCampaignAdStatus,
+                    a.Priority
+                } );
 
-            gMarketingCampaignAds.DataSource = qry.OrderBy( a => a.StartDate ).ThenBy( a => a.Priority ).ThenBy( a => a.MarketingCampaignAdType.Name ).ToList();
+            gMarketingCampaignAds.DataSource = qry.OrderBy( a => a.StartDate ).ThenBy( a => a.Priority ).ThenBy( a => a.MarketingCampaignAdTypeName ).ToList();
             gMarketingCampaignAds.DataBind();
         }
 
