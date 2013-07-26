@@ -15,61 +15,20 @@ namespace Rock.Web.UI.Controls
     /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with numerical validation 
     /// </summary>
     [ToolboxData( "<{0}:NumberBox runat=server></{0}:NumberBox>" )]
-    public class NumberBox : TextBox, ILabeledControl, IRequiredControl
+    public class NumberBox : LabeledTextBox, ILabeledControl, IRequiredControl
     {
-        private RequiredFieldValidator requiredValidator;
-        private RangeValidator rangeValidator;        
-        private Label _label;
+        private RangeValidator rangeValidator;
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="LabeledTextBox"/> is required.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if required; otherwise, <c>false</c>.
-        /// </value>
-        [
-        Bindable( true ),
-        Category( "Behavior" ),
-        DefaultValue( "false" ),
-        Description( "Is the value required?" )
-        ]
-        public bool Required
-        {
-            get
-            {
-                if ( ViewState["Required"] != null )
-                    return (bool)ViewState["Required"];
-                else
-                    return false;
-            }
-            set
-            {
-                ViewState["Required"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the label text.
-        /// </summary>
-        /// <value>
-        /// The label text.
-        /// </value>
-        public string LabelText
-        {
-            get { return _label.Text; }
-            set { _label.Text = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the name of the field (for validation messages)
+        /// Gets or sets the name of the field (for range validation messages when LabelText is not provided)
         /// </summary>
         /// <value>
         /// The name of the field.
         /// </value>
         public string FieldName
         {
-            get { return _label.Text; }
-            set { _label.Text = value; }
+            get { return ViewState["FieldName"] as string ?? LabelText; }
+            set { ViewState["FieldName"] = value; }
         }
 
         /// <summary>
@@ -129,25 +88,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return ( !Required || requiredValidator.IsValid ) && rangeValidator.IsValid;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the required error message.  If blank, the LabelName name will be used
-        /// </summary>
-        /// <value>
-        /// The required error message.
-        /// </value>
-        public string RequiredErrorMessage
-        {
-            get
-            {
-                return requiredValidator.ErrorMessage;
-            }
-            set
-            {
-                requiredValidator.ErrorMessage = value;
+                return base.IsValid && rangeValidator.IsValid;
             }
         }
 
@@ -156,9 +97,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public NumberBox()
         {
-            requiredValidator = new RequiredFieldValidator();
             rangeValidator = new RangeValidator();
-            _label = new Label();            
         }
 
         /// <summary>
@@ -179,52 +118,14 @@ namespace Rock.Web.UI.Controls
             rangeValidator.MaximumValue = int.MaxValue.ToString();
             rangeValidator.Enabled = false;
             Controls.Add( rangeValidator );
-
-            requiredValidator.ID = this.ID + "_rfv";
-            requiredValidator.ControlToValidate = this.ID;
-            requiredValidator.Display = ValidatorDisplay.Dynamic;
-            requiredValidator.CssClass = "validation-error help-inline";
-            requiredValidator.Enabled = false;
-            Controls.Add( requiredValidator );
         }
 
         /// <summary>
-        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// Renders any data validator.
         /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
-        public override void RenderControl( HtmlTextWriter writer )
+        /// <param name="writer">The writer.</param>
+        protected override void RenderDataValidator( HtmlTextWriter writer )
         {
-            bool renderLabel = !string.IsNullOrEmpty( LabelText );
-
-            if ( renderLabel )
-            {
-                writer.AddAttribute( "class", "control-group" +
-                    ( IsValid ? "" : " error" ) +
-                    ( Required ? " required" : "" ) );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                _label.AddCssClass( "control-label" );
-                _label.RenderControl( writer );
-
-                writer.AddAttribute( "class", "controls" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            }
-
-            base.RenderControl( writer );
-
-            if ( Required )
-            {
-                requiredValidator.Enabled = true;
-                requiredValidator.ValidationGroup = this.ValidationGroup;
-                if ( string.IsNullOrWhiteSpace( requiredValidator.ErrorMessage ) )
-                {
-                    requiredValidator.ErrorMessage = LabelText + " is Required.";
-                }
-                requiredValidator.RenderControl( writer );
-            }
-
-            rangeValidator.Type = NumberType;
-
             if ( NumberType == ValidationDataType.Double )
             {
                 rangeValidator.MinimumValue = !string.IsNullOrEmpty( MinimumValue )
@@ -266,13 +167,6 @@ namespace Rock.Web.UI.Controls
 
             rangeValidator.Enabled = true;
             rangeValidator.RenderControl( writer );
-            
-            if ( renderLabel )
-            {
-                writer.RenderEndTag();
-
-                writer.RenderEndTag();
-            }
         }
     }
 }
