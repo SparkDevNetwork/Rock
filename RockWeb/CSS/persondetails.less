@@ -1,11 +1,26 @@
-﻿/*.persondetails small
+﻿/*
+    Used to manage styles related to the person details page
+    
+    1. Header
+    2. Badge Bar
+    3. Family Bar
+    4. Page Tabs
+    5. Timeline
+    6. Misc Items
+
+*/
+
+
+
+/*.persondetails small
 {
     color: #7c7c7c;
 }
 */
 
 
-/* persondetails-header */
+// 1. Header
+// -------------------------
 .persondetails-header .navbar-inner
 {
     padding-bottom: 24px;
@@ -19,7 +34,8 @@
     filter: initial;
 }
 
-.persondetails-header .actions // edit individual button
+// edit individual button
+.persondetails-header .actions 
 {
     position: absolute; 
     right: 12px; 
@@ -82,7 +98,8 @@
     margin-bottom: 12px;
 }
 
-/* persondetails-badgebar */
+// 2. Badge Bar
+// -------------------------
 
 .persondetails-badgebar .navbar-inner
 {
@@ -116,7 +133,8 @@
     background-color: inherit;
 }
 
-/* persondetails-familybar */
+// 3. Family Bar
+// -------------------------
 
 .persondetails-familybar .navbar-inner
 {
@@ -127,7 +145,7 @@
 
 .persondetails-familybar .members header
 {
-    font-family: 'OpenSansSemibold', 'Helvetica Neue',Helvetica,Arial,sans-serif;
+    font-weight: @font-bold-weight;
     font-size: 16px;
     margin-bottom: 12px;
 }
@@ -170,7 +188,6 @@
     margin: 0;
     font-size: 14px;
     font-weight: normal;
-    font-family: 'OpenSans', 'Helvetica Neue',Helvetica,Arial,sans-serif;
     float: left;
     max-width: 88px;
     text-overflow: ellipsis;
@@ -207,8 +224,7 @@
 {
     margin: 0;
     font-size: 14px;
-    font-family: 'OpenSansSemibold', 'Helvetica Neue',Helvetica,Arial,sans-serif;
-    font-weight: normal;
+    font-weight: @font-semibold-weight;
 }
 
 .persondetails-familybar .addresses a.map,
@@ -235,14 +251,10 @@
     right: 12px; 
     z-order: 99;
 }
-        
 
-.bookmarkattributes ul
-{
-    list-style-type: none;
-    margin-left: 0;
-}
 
+// 4. Page Tabs
+// -------------------------
 
 .pagetabs
 {
@@ -253,6 +265,10 @@
 {
     margin: 10px 0;
 }
+
+
+// 5. Timeline
+// -------------------------
 
 .persontimeline header h4
 {
@@ -267,18 +283,17 @@
 
 .persontimeline article
 {
-    background-color: red;
-    border-radius: 4px; /*@baseBorderRadius*/
-    border: 1px solid #d3d3d3;
+    border-radius: @site-border-radius;
+    border: 1px solid darken(@site-accentlight-color, @const-border-darken-amt);
     padding: 12px;
     margin-bottom: 12px;
-    background-color: #f3f3f3; /* variable? */
+    background-color: @site-accentlight-color; 
 }
 
 .persontimeline article .date
 {
     font-size: 13px;
-    font-family: 'OpenSansLight', 'Helvetica Neue',Helvetica,Arial,sans-serif;
+    font-weight: @font-light-weight;
     margin-left: 8px;
 }
 
@@ -327,15 +342,9 @@
 
 .persontimeline article.highlight
 {
-    background-color: #f2dede;
-    border: 1px solid #eed3d7;
-    color: #b94a48;
-
-    /*
-        @errorText:               #b94a48;
-        @errorBackground:         #f2dede;
-        @errorBorder:             darken(spin(@errorBackground, -10), 3%);
-        */
+    background-color: @site-error-background;
+    border: 1px solid darken(spin(@site-error-background, -10), 3%);
+    color: @site-error-text;
 }
 
 .persontimeline article.highlight i
@@ -345,15 +354,9 @@
 
 .persontimeline article.personal
 {
-    background-color: #D9EDF7;
-    border: 1px solid #bce8f1;
-    color: #3a87ad;
-
-    /*
-        @errorText:               #b94a48;
-        @errorBackground:         #f2dede;
-        @errorBorder:             darken(spin(@errorBackground, -10), 3%);
-        */
+    background-color: @site-info-background;
+    border: 1px solid darken(spin(@site-info-background, -10), 3%);
+    color: @site-info-text;
 }
 
 .persontimeline article.personal i
@@ -416,4 +419,13 @@
     text-align: right;
     padding: 8px 6px;
     border-radius: 0 0 4px 4px;
+}
+
+// 6. Misc Items
+// -------------------------
+
+.bookmarkattributes ul // todo check if this is needed
+{
+    list-style-type: none;
+    margin-left: 0;
 }
