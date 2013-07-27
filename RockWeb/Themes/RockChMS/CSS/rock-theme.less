@@ -379,6 +379,23 @@ html
 		float: left;
 		margin-left: 20px;
 	}
+
+    .pagenav .nav > li,
+	.pagenav ul.nav {
+		border: 0;
+	}	
+	
+	.pagenav .nav > li {
+		width: 33%;
+	}
+	
+	.pagenav ul.nav {
+		width: 100%;
+	}
+	
+	.pagenav .nav > li:last-child:after {
+		border-right: 0;
+	}
 }
 
 
@@ -448,6 +465,4 @@ body#splash #content-box {
 		border-right: 0;
 	}
 }
-
-@import "./rock-theme-responsive.less";
 
