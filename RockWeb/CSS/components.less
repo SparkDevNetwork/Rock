@@ -7,6 +7,7 @@
     4. Widget - reusable box wrapper for content
     5. Tooltip - styles for the tooltipster module
     6. Pagelist - used to list child pages; currently used in admin screens
+    7. Tags - component that allows you to tag entities
 
 */
 
@@ -118,10 +119,10 @@
 
 .widget header
 {
-    background-color: @site-accentlight-color;
-    color: @site-accentlight-inverse-color;
+    background-color: @widget-header-background;
+    color: @widget-header-text-color;
     padding: 6px 15px;
-    border-radius: @baseBorderRadius @baseBorderRadius 0 0 ;
+    border-radius: @site-border-radius @site-border-radius 0 0 ;
 }
 
 .filter-toogle > span {
@@ -130,12 +131,12 @@
 
 .widget.widget-dark > header
 {
-	.make-gradient(@rockHeaderDarkBackground);
-    color: #fff;
+	background-color: @widget-header-background-dark;
+    color: @widget-header-text-color-dark;
 }
 
 .widget.widget-dark > header .btn-action {
-	.make-gradient(lighten(@rockHeaderDarkBackground, 3%));
+	//.make-gradient(lighten(@rockHeaderDarkBackground, 3%));
 }
 
 
@@ -148,9 +149,9 @@
 // -------------------------
 
 .tooltipster-base {
-	border-radius: @baseBorderRadius; 
+	border-radius: @site-border-radius; 
 	border: 1px solid #cccccc;
-	background: @rockTooltipBackground;
+	background: @tooltip-background;
 	color:  @site-text-color;
 }
 
@@ -163,14 +164,14 @@
 .tooltipster-content header div
 {
     margin: 4px 0 0 8px;
-    font-family: @rockFontFamilyBold;
+    font-weight: @font-semibold-weight;
 }
 
 .tooltipster-content header small
 {
     display: block;
     font-weight: normal;
-    font-family: @rockFontFamilyLight;
+    font-family: @font-light-weight;
 }
 
 .tooltipster-content header:after
@@ -184,15 +185,16 @@
 
 .tooltipster-content header
 {
-    background-color: @rockHeaderBackground;
+    background-color: @tooltip-header-background;
     margin: -8px -10px 8px -10px;
     padding: 8px 10px;
-    border-radius: @baseBorderRadius; 
+    border-radius: @site-border-radius; 
+    color: @tooltip-header-text-color;
 }
 
 .tooltipster-content strong
 {
-    font-family: @rockFontFamilySemiBold;
+    font-weight: @font-semibold-weight;
     font-weight: normal;
 }
 
@@ -238,3 +240,167 @@
     font-size: 14px;
     margin: 6px 0;
 }
+
+// 7. Tags
+// ------------------------
+
+div.tagsinput  
+{ 
+    width:100%; 
+    overflow-y: auto;
+    float: left;
+    margin-left: 12px;
+}
+
+div.tagsinput span.tag 
+{
+	float: left;
+	height: 18px;
+	line-height: 18px;
+	position: relative;
+	font-size: 11px;
+	margin-bottom: 6px;
+}
+
+div.tagsinput span.tag 
+{
+	margin-left: 20px;
+	padding: 0 10px 0 12px;
+	background: @tag-background;
+	color: @tag-text-color;
+	text-decoration: none;	
+	border-bottom-right-radius: @tag-border-radius;
+	border-top-right-radius: @tag-border-radius;	
+} 
+
+div.tagsinput span.tag:before /* tag point */
+{
+	content: "";
+	float: left;
+	position: absolute;
+	top: 0;
+	left: -9px;
+	width: 0;
+	height: 0;
+	border-color: transparent @tag-background transparent transparent;
+	border-style: solid;
+	border-width: 9px 9px 9px 0;		
+}
+
+div.tagsinput span.tag:after /* tag dot */
+{
+	content: "";
+	position: absolute;
+	top: 7px;
+	left: 0;
+	float: left;
+	width: 4px;
+	height: 4px;
+	border-radius: 2px;
+	background: @tag-dot-color;
+	box-shadow: -1px -1px 2px @tag-background;
+}
+
+
+div.tagsinput span.tag.personal 
+{
+    background: @tag-background-alt;
+}
+
+div.tagsinput span.tag.personal:before
+{
+    border-color: transparent @tag-background-alt transparent transparent;
+}
+
+div.tagsinput span.tag a 
+{ 
+    font-weight: bold; 
+    color: @tag-text-color; 
+    text-decoration:none; 
+    font-size: 11px;
+    opacity: 0;
+    -moz-transition: opacity 0.3s ease 0s, color 0.3s ease 0s, background 0.3s ease 0s;
+    -webkit-transition: opacity 0.3s ease 0s, color 0.3s ease 0s, background 0.3s ease 0s; 
+}
+
+div.tagsinput span.tag:hover a 
+{ 
+    opacity: 1;
+}
+
+div.tagsinput input 
+{ 
+    width:80px; 
+    margin:0px; 
+    font-family: helvetica; 
+    font-size: 13px; 
+    border:1px solid transparent; 
+    padding: 0px; 
+    background: transparent; 
+    color: #8f8f8f !important; /* todo say what */ 
+    outline: 0px; 
+    box-shadow: none;
+    margin: -2px 0 0 10px;
+}
+
+div.tagsinput div 
+{ 
+    display:block; 
+    float: left; 
+}
+
+.tags_clear 
+{ 
+    clear: both; 
+    width: 100%; 
+    height: 0px; 
+}
+
+.not_valid 
+{
+    background: #FBD8DB !important; 
+    color: #90111A !important;
+}
+
+.tag-wrap .ui-autocomplete 
+{
+    position: absolute; 
+    left: 0px; 
+    top: 4px; 
+    width: 250px;
+    z-index: 90;
+    list-style: none;
+    padding: 12px;
+    background-color: #7c7c7c; /* todo */
+    color: #fff;
+    border: 1px solid #515151; /* todo */
+    width: 300px;
+    border-radius: 4px;
+    opacity: .9;
+    z-index: 9999 !important;
+}
+
+.ui-autocomplete li 
+{
+    margin-bottom: 4px;   
+}
+
+.ui-autocomplete li:last-child 
+{
+    margin-bottom: 0;   
+}
+
+.ui-autocomplete a
+{
+    color: #fff; /* todo */
+    text-decoration: none;
+    cursor: pointer;
+    padding: 4px;
+}
+
+.ui-autocomplete a:hover
+{
+    background: #bbb; /* todo */
+    border-radius: 4px;
+}
+ 

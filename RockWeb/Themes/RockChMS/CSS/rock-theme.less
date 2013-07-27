@@ -21,7 +21,6 @@
 @import "../../../Css/Kendo/kendo.flat.less";
 
 
-
 // 1. HTML Overrides
 // -------------------------
 
@@ -36,6 +35,17 @@ h1, h2, h3 {
 h2, h3, h4
 {
     font-weight: @font-semibold-weight;
+}
+
+// get rid of dotted box around anchors with focus
+a {
+   outline: 0;
+}
+
+
+a:hover i[class^="icon-"]
+{
+    text-decoration: none;
 }
 
 // 1. Bootstrap Overrides 
@@ -61,7 +71,7 @@ h2, h3, h4
 
 .modal-header .close
 {
-    color: @rockLightTextColor;
+    color: @site-header-text-color;
 	opacity: 1;
 	text-shadow: none;
 }
@@ -116,16 +126,7 @@ html
 }
 
 
-// get rid of dotted box around anchors with focus
-a {
-   outline: 0;
-}
 
-
-a:hover i[class^="icon-"]
-{
-    text-decoration: none;
-}
 
 
 // 3. Page Header
@@ -187,10 +188,6 @@ a:hover i[class^="icon-"]
 	padding: 16px;
 }
 
-.pagenav li a {
-	color: @rockSecondaryTextColor;
-}
-
 .pagenav .dropdown-menu li.divider:last-child
 {
     display: none;
@@ -234,7 +231,7 @@ a:hover i[class^="icon-"]
 .smart-search input {
 	border: 0;
 	background: transparent;
-	color: @rockLightTextColor;
+	color: @site-header-text-color;
 	border-radius: 0;
 	width: 150px;
 }
@@ -244,15 +241,15 @@ a:hover i[class^="icon-"]
 }
 
 .smart-search input:-moz-placeholder {
-    color: darken(@rockLightTextColor, 25%); 
+    color: darken(@site-header-text-color, 25%); 
 }
 
 .smart-search input::-moz-placeholder {
-    color: darken(@rockLightTextColor, 25%); 
+    color: darken(@site-header-text-color, 25%); 
 }
 
 .smart-search input::-webkit-input-placeholder {
-    color: darken(@rockLightTextColor, 25%); 
+    color: darken(@site-header-text-color, 25%); 
 }
 
 .smart-search .nav > li > a {
@@ -332,9 +329,6 @@ a:hover i[class^="icon-"]
 	width: 92.83px
 }
 
-
-
-
 .pageheader-collapse {
 	margin-top: 6px;
 }
@@ -355,9 +349,9 @@ a:hover i[class^="icon-"]
 .page-footer {
 	padding-top: 24px;
 	min-height: 120px;
-	background-color: @site-header-background;
+	background-color: @site-footer-background;
 	border-top: 1px solid #000;
-	color: @rockCalloutColor;
+	color: @site-footer-text-color;
 }
 
 @media (max-width: 767px) {
@@ -413,7 +407,7 @@ body#splash
 
 body#splash #content-box {
     background-image: url('../Assets/Images/light-texture.png');
-    .border-radius(@baseBorderRadius);
+    .border-radius(@site-border-radius);
 }
 
 #splash .form-actions
@@ -434,14 +428,14 @@ body#splash #content-box {
 }
 
 #splash .login .form-actions {
-    .border-radius(@baseBorderRadius);
+    .border-radius(@site-border-radius);
 }
 
 // 2 Column Left
 
 #left-column-content {
 	min-height: 600px;
-	border-right: 1px solid @rockLightTextColor;
+	border-right: 1px solid @site-header-text-color;
 }
 
 @media (max-width: 767px) {

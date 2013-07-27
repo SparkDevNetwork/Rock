@@ -8,12 +8,14 @@
 
 */
 
+
+
 // 1. Zone Config
 // -------------------------
 
 .zone-instance.outline 
 {
-    border: 1px solid #909090;
+    border: 1px solid #909090; /* todo */
     min-height: 30px;
     min-width: 120px;
     position: relative;
@@ -21,11 +23,9 @@
 }
 
 .zone-configuration {
-    background: #272727;
-    border-color: #565656;
-    border-radius: 4px 4px 4px 4px;
-    border-style: solid;
-    border-width: 1px;
+    background: @adminbar-background;
+    border: 1px solid darken(@adminbar-background, @const-border-darken-amt);
+    border-radius:  @site-border-radius;
     cursor: pointer;
     display: none;
     height: 26px;
@@ -35,11 +35,11 @@
     left: 1px;
     width: 25px;
     z-index: 40;
-    right:auto;
+    right: auto;
 }
 
 .zone-configuration-bar {
-    color: #7F7F7F;
+    color: @adminbar-text-color;
     display: inline-block;
     float: left;
     left: 24px;
@@ -54,7 +54,7 @@
     float: left;
     font-size: 10px;
     padding-right: 20px;
-    margin-top: 4px;
+    margin-top: 3px;
 }
 
 .zone-configuration p {
@@ -64,11 +64,9 @@
 // 2. Module Config
 // -------------------------
 .block-configuration {
-    background: #272727;
-    border-color: #565656;
-    border-radius: 4px 4px 4px 4px;
-    border-style: solid;
-    border-width: 1px;
+    background: @adminbar-background;
+    border: 1px solid darken(@adminbar-background, @const-border-darken-amt);
+    border-radius: @site-border-radius;
     cursor: pointer;
     display: none;
     height: 26px;
@@ -97,12 +95,12 @@
     margin-left: 5px;
     margin-top: 3px;
     font-size: 18px;
-    color: @rockSecondaryTextColor;
+    color: @adminbar-text-color;
     margin-right: 10px;
 }
 
 .block-configuration-bar {
-    color: #7F7F7F;
+    color: @adminbar-text-color;
     display: inline-block;
     float: left;
     left: 24px;
@@ -115,7 +113,8 @@
 .block-configuration-bar .btn
 {
     margin-right: 12px;
-    color: @rockSecondaryTextColor;   
+    color: @adminbar-text-color;
+    text-shadow: none;
 }
 
 .block-configuration-bar span {
@@ -123,7 +122,7 @@
     float: left;
     font-size: 10px;
     padding-right: 20px;
-    margin-top: 4px;
+    margin-top: 3px;
 }
 
 
@@ -136,11 +135,11 @@
     position: fixed;
     right: 0;
     margin-right: 25px;
-    background: rgba(210,210,210,.8);
-    border-color: rgba(150,150,150,.8);
+    background: @adminbar-background;
+    border-color: darken(@adminbar-background, @const-border-darken-amt);
     border-width: 1px 1px 0 1px;
     border-style: solid;
-    color: #454545;
+    color: @adminbar-text-color;
     padding: 5px 12px 0 12px;
     font-size: 80%;
 }
@@ -160,15 +159,16 @@
 
 #cms-admin-footer .btn
 {
-    color: @rockSecondaryTextColor;
+    color: @adminbar-text-color;
     box-shadow: none;
+    text-shadow: none;
 }
 
 // 4. Security Dialog
 // -------------------------
 .add-user fieldset, .add-role fieldset 
 {
-    border: 1px solid #c4c4c4;
+    border: 1px solid #c4c4c4; /* TODO */
     border-radius: 4px;   
     margin-top: 22px;
 }
