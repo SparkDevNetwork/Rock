@@ -16,7 +16,6 @@
 // -------------------------
 @import "./rock-global-variables.less";
 @import "./rock-bootstrap-variables.less";
-@import "../../../Css/Less/Vendor/Bootstrap/mixins.less";
 @import "../../../Css/rock-core.less";
 @import "../../../Css/Kendo/kendo.flat.less";
 
@@ -103,6 +102,11 @@ a:hover i[class^="icon-"]
 .dropdown-submenu:hover > a {
     background-image: none;
     background-color: @site-accentbold-color;
+}
+
+.label,
+.badge {
+    font-weight: @font-light-weight;
 }
 
 // add 40px padding if in desktop size so tooltips have a bit more space if they are close to the edge
