@@ -273,7 +273,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }
 
             valSummaryBottom.DataBind();
-            mpe.Show();
+            mpeFamily.Show();
         }
 
         /// <summary>
@@ -1022,8 +1022,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// </summary>
         private void ProcessPerson()
         {
-            List<CheckInPerson> PeopleInFamily = new List<CheckInPerson>();
-            List<CheckInPerson> RelatedPeople = new List<CheckInPerson>();
+            List<CheckInPerson> peopleInFamily = new List<CheckInPerson>();
+            List<CheckInPerson> relatedPeople = new List<CheckInPerson>();
             var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
             if ( family != null )
             {
@@ -1032,21 +1032,21 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     if ( familyMember.FamilyMember )
                     {
                         familyMember.Selected = true;
-                        PeopleInFamily.Add( familyMember );
+                        peopleInFamily.Add( familyMember );
                     }
                     else
                     {
                         familyMember.Selected = false;
-                        RelatedPeople.Add( familyMember );
+                        relatedPeople.Add( familyMember );
                     }
                 }
 
                 SaveState();
 
-                repPerson.DataSource = PeopleInFamily;
+                repPerson.DataSource = peopleInFamily;
                 repPerson.DataBind();
 
-                repVisitors.DataSource = RelatedPeople;
+                repVisitors.DataSource = relatedPeople;
                 repVisitors.DataBind();
             }
         }
@@ -1073,5 +1073,5 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         #endregion
-}
+    }
 }

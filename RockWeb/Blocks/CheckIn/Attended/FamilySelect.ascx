@@ -468,7 +468,7 @@
         </div>
         <asp:ValidationSummary ID="valSummaryBottom" runat="server" HeaderText="Please Correct the Following:" CssClass="alert alert-error block-message error alert error-modal" />
     </asp:Panel>
-    <asp:ModalPopupExtender ID="mpe" runat="server" TargetControlID="lbOpenFamilyPanel" PopupControlID="AddFamilyPanel" CancelControlID="lbAddFamilyCancel" BackgroundCssClass="modalBackground"></asp:ModalPopupExtender>
+    <asp:ModalPopupExtender ID="mpeFamily" runat="server" TargetControlID="lbOpenFamilyPanel" PopupControlID="AddFamilyPanel" CancelControlID="lbAddFamilyCancel" BackgroundCssClass="modalBackground"></asp:ModalPopupExtender>
     <asp:LinkButton ID="lbOpenFamilyPanel" runat="server" CausesValidation="false"></asp:LinkButton>
 
 </ContentTemplate>
