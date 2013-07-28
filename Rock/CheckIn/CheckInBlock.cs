@@ -34,36 +34,6 @@ namespace Rock.CheckIn
         protected List<int> CurrentGroupTypeIds;
 
         /// <summary>
-        /// The current ministry group type ids
-        /// </summary>
-        public static List<GroupType> CurrentRoomGroupTypes;
-
-        /// <summary>
-        /// The count of people that need to be checked in
-        /// </summary>
-        protected int? CheckInPersonCount { get; set; }
-
-        /// <summary>
-        /// The count of people that are actually checked in
-        /// </summary>
-        protected int? PeopleCheckedIn { get; set; }
-
-        /// <summary>
-        /// The current list of Id's of people to check in
-        /// </summary>
-        protected List<int> CheckInPeopleIds;
-
-        /// <summary>
-        /// The current list of Id's of people who have checked in
-        /// </summary>
-        protected List<int> CheckedInPeopleIds;
-
-        /// <summary>
-        /// The person id, time id, and activity id of everyone who is checking in
-        /// </summary>
-        protected List<List<int>> CheckInTimeAndActivityList;
-
-        /// <summary>
         /// The current check in state
         /// </summary>
         protected CheckInState CurrentCheckInState;
@@ -219,60 +189,6 @@ namespace Rock.CheckIn
                 Session.Remove( "CheckInGroupTypeIds" );
             }
 
-            if ( CurrentRoomGroupTypes != null )
-            {
-                Session["CheckInRoomGroupTypes"] = CurrentRoomGroupTypes;
-            }
-            else
-            {
-                Session.Remove( "CheckInRoomGroupTypes" );
-            }
-
-            if ( CheckInPersonCount.HasValue )
-            {
-                Session["CheckInPersonCount"] = CheckInPersonCount;
-            }
-            else
-            {
-                Session.Remove( "CheckInPersonCount" );
-            }
-
-            if ( PeopleCheckedIn.HasValue )
-            {
-                Session["PeopleCheckedIn"] = PeopleCheckedIn;
-            }
-            else
-            {
-                Session.Remove( "PeopleCheckedIn" );
-            }
-
-            if ( CheckInPeopleIds != null )
-            {
-                Session["CheckInPeopleIds"] = CheckInPeopleIds;
-            }
-            else
-            {
-                Session.Remove( "CheckInPeopleIds" );
-            }
-
-            if ( CheckedInPeopleIds != null )
-            {
-                Session["CheckedInPeopleIds"] = CheckedInPeopleIds;
-            }
-            else
-            {
-                Session.Remove( "CheckedInPeopleIds" );
-            }
-
-            if ( CheckInTimeAndActivityList != null )
-            {
-                Session["CheckInTimeAndActivityList"] = CheckInTimeAndActivityList;
-            }
-            else
-            {
-                Session.Remove( "CheckInTimeAndActivityList" );
-            }
-
             if ( CurrentWorkflow != null )
             {
                 if ( CurrentCheckInState != null )
@@ -335,36 +251,6 @@ namespace Rock.CheckIn
             if ( Session["CheckInGroupTypeIds"] != null )
             {
                 CurrentGroupTypeIds = Session["CheckInGroupTypeIds"] as List<int>;
-            }
-
-            if ( Session["CheckInRoomGroupTypes"] != null )
-            {
-                CurrentRoomGroupTypes = Session["CheckInRoomGroupTypes"] as List<GroupType>;
-            }
-
-            if ( Session["CheckInPersonCount"] != null )
-            {
-                CheckInPersonCount = (int)Session["CheckInPersonCount"];
-            }
-
-            if ( Session["PeopleCheckedIn"] != null )
-            {
-                PeopleCheckedIn = (int)Session["PeopleCheckedIn"];
-            }
-
-            if ( Session["CheckInPeopleIds"] != null )
-            {
-                CheckInPeopleIds = Session["CheckInPeopleIds"] as List<int>;
-            }
-
-            if ( Session["CheckedInPeopleIds"] != null )
-            {
-                CheckedInPeopleIds = Session["CheckedInPeopleIds"] as List<int>;
-            }
-
-            if ( Session["CheckInTimeAndActivityList"] != null )
-            {
-                CheckInTimeAndActivityList = Session["CheckInTimeAndActivityList"] as List<List<int>>;
             }
 
             if ( Session["CheckInWorkflow"] != null )

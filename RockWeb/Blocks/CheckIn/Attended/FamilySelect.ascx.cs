@@ -107,20 +107,19 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 if ( family.Selected )
                 {
                     family.Selected = false;
-                    ((LinkButton)e.Item.FindControl( "lbSelectFamily" )).RemoveCssClass("active");
+                    ( (LinkButton)e.Item.FindControl( "lbSelectFamily" ) ).RemoveCssClass( "active" );
                     repPerson.DataSource = null;
                     repPerson.DataBind();
                 }
                 else
                 {
                     // make sure there are no other families selected
-                    //CurrentCheckInState.CheckIn.Families.FirstOrDefault().Selected = true;
+                    // foreach ( var fam in CurrentCheckInState.CheckIn.Families )
+                    // {
+                    //     fam.Selected = false;
+                    // }
                     CurrentCheckInState.CheckIn.Families.ForEach( f => f.Selected = false );
 
-                    //foreach ( var fam in CurrentCheckInState.CheckIn.Families )
-                    //{
-                    //    fam.Selected = false;
-                    //}
 
                     // gonna try to do this client side.
                     // make sure no other families look like they're selected
@@ -136,10 +135,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
                     // i think this will be done in the find family members action...
                     // mark all the peoples as active
-                    //foreach ( RepeaterItem item in repPerson.Items )
-                    //{
-                    //    ( (LinkButton)item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
-                    //}
+                    // foreach ( RepeaterItem item in repPerson.Items )
+                    // {
+                    //     ( (LinkButton)item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
+                    // }
                 }
                 SaveState();
             }
@@ -152,29 +151,25 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void repPerson_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
-            if ( KioskCurrentlyActive )
+            // *************** TAKE ALL OF THIS OUT TO ALLOW FOR THE TOGGLE *******************
+            var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
+            if ( family != null )
             {
-                var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-                if ( family != null )
+                int id = int.Parse( e.CommandArgument.ToString() );
+                var familyMember = family.People.Where( m => m.Person.Id == id ).FirstOrDefault();
+                if ( familyMember != null )
                 {
-                    int id = int.Parse( e.CommandArgument.ToString() );
-                    var familyMember = family.People.Where( m => m.Person.Id == id ).FirstOrDefault();
-                    if ( familyMember != null )
+                    if ( familyMember.Selected )
                     {
-                        if ( familyMember.Selected )
-                        {
-                            familyMember.Selected = false;
-                            var control = (LinkButton)e.Item.FindControl( "lbSelectPerson" );
-                            control.RemoveCssClass( "active" );
-                            SaveState();
-                        }
-                        else
-                        {
-                            familyMember.Selected = true;
-                            ( (LinkButton)e.Item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
-                            SaveState();
-                        }
+                        familyMember.Selected = false;
+                        ( (LinkButton)e.Item.FindControl( "lbSelectPerson" ) ).RemoveCssClass( "active" );
                     }
+                    else
+                    {
+                        familyMember.Selected = true;
+                        ( (LinkButton)e.Item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
+                    }
+                    SaveState();
                 }
             }
         }
@@ -186,30 +181,25 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void repVisitors_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
-            if ( KioskCurrentlyActive )
+            // *************** TAKE ALL OF THIS OUT TO ALLOW FOR THE TOGGLE *******************
+            var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
+            if ( family != null )
             {
-                var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-                if ( family != null )
+                int id = int.Parse( e.CommandArgument.ToString() );
+                var familyMember = family.People.Where( m => m.Person.Id == id ).FirstOrDefault();
+                if ( familyMember != null )
                 {
-                    int id = int.Parse( e.CommandArgument.ToString() );
-
-                    var familyMember = family.People.Where( m => m.Person.Id == id ).FirstOrDefault();
-                    if ( familyMember != null )
+                    if ( familyMember.Selected )
                     {
-                        if ( familyMember.Selected )
-                        {
-                            familyMember.Selected = false;
-                            var control = (LinkButton)e.Item.FindControl( "lbSelectVisitor" );
-                            control.RemoveCssClass( "active" );
-                            SaveState();
-                        }
-                        else
-                        {
-                            familyMember.Selected = true;
-                            ( (LinkButton)e.Item.FindControl( "lbSelectVisitor" ) ).AddCssClass( "active" );
-                            SaveState();
-                        }
+                        familyMember.Selected = false;
+                        ( (LinkButton)e.Item.FindControl( "lbSelectVisitor" ) ).RemoveCssClass( "active" );
                     }
+                    else
+                    {
+                        familyMember.Selected = true;
+                        ( (LinkButton)e.Item.FindControl( "lbSelectVisitor" ) ).AddCssClass( "active" );
+                    }
+                    SaveState();
                 }
             }
         }
@@ -245,19 +235,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 return;
             }
             
-            // set the number of people that need to be checked in. set the counter of those actually checked in to zero. this is important on the activity select page.
-            CheckInPersonCount = family.People.Where( p => p.Selected ).Count();
-            PeopleCheckedIn = 0;
-            List<int> peopleIds = new List<int>();
-            foreach ( var person in family.People.Where( p => p.Selected ) )
-            {
-                peopleIds.Add( person.Person.Id );
-            }
-
-            CheckInPeopleIds = peopleIds;
-            CheckedInPeopleIds = new List<int>();
-            CheckInTimeAndActivityList = new List<List<int>>();
-
             var errors = new List<string>();
             if ( ProcessActivity( "Activity Search", out errors ) )
             {
@@ -1011,7 +988,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         #region Internal Methods 
 
         /// <summary>
-        /// Goes the back.
+        /// Goes back one page.
         /// </summary>
         private void GoBack()
         {

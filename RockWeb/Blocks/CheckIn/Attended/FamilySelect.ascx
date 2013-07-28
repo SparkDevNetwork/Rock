@@ -38,6 +38,34 @@
         };
     });
 
+    function setControlEvents() {
+        $('.person').unbind('click').on('click', function () {
+            $(this).toggleClass('active');
+            var selectedIds = $('#hfSelectedPerson').val();
+            if ($('#hfSelectedPerson').val().indexOf(this.getAttribute('data-id') + ',') >= 0) {
+                $('#hfSelectedPerson').val($('#hfSelectedPerson').val().replace(this.getAttribute('data-id') + ',', ''));
+            }
+            else {
+                $('#hfSelectedPerson').val(selectedIds + this.getAttribute('data-id') + ',');
+            }
+            return false;
+        });
+
+        $('.visitor').unbind('click').on('click', function () {
+            $(this).toggleClass('active');
+            var selectedIds = $('#hfSelectedVisitor').val();
+            if ($('#hfSelectedVisitor').val().indexOf(this.getAttribute('data-id') + ',') >= 0) {
+                $('#hfSelectedVisitor').val($('#hfSelectedVisitor').val().replace(this.getAttribute('data-id') + ',', ''));
+            }
+            else {
+                $('#hfSelectedVisitor').val(selectedIds + this.getAttribute('data-id') + ',');
+            }
+            return false;
+        });
+    };
+    $(document).ready(function () { setControlEvents(); });
+    Sys.WebForms.PageRequestManager.getInstance().add_endRequest(setControlEvents);
+
 </script>
 
 <asp:UpdatePanel ID="upContent" runat="server">
@@ -45,6 +73,8 @@
 
     <Rock:ModalAlert ID="maWarning" runat="server" />
     <asp:HiddenField ID="personVisitorType" runat="server" />
+    <asp:HiddenField ID="hfSelectedPerson" runat="server" ClientIDMode="Static" />
+    <asp:HiddenField ID="hfSelectedVisitor" runat="server" ClientIDMode="Static" />
 
     <div class="row-fluid attended-checkin-header">
         <div class="span3 attended-checkin-actions">
@@ -83,7 +113,7 @@
                 <h3>People</h3>
                 <asp:Repeater ID="repPerson" runat="server" OnItemCommand="repPerson_ItemCommand">
                     <ItemTemplate>
-                        <asp:LinkButton ID="lbSelectPerson" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Person.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" CausesValidation="false" />
+                        <asp:LinkButton ID="lbSelectPerson" runat="server" Text='<%# Container.DataItem.ToString() %>' data-id='<%# Eval("Person.Id") %>' CommandArgument='<%# Eval("Person.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select person" CausesValidation="false" />
                     </ItemTemplate>
                 </asp:Repeater>
             </div>
@@ -94,7 +124,7 @@
                 <h3>Visitors</h3>
                 <asp:Repeater ID="repVisitors" runat="server" OnItemCommand="repVisitors_ItemCommand">
                     <ItemTemplate>
-                        <asp:LinkButton ID="lbSelectVisitor" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Person.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" CausesValidation="false" />
+                        <asp:LinkButton ID="lbSelectVisitor" runat="server" Text='<%# Container.DataItem.ToString() %>' data-id='<%# Eval("Person.Id") %>' CommandArgument='<%# Eval("Person.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select visitor" CausesValidation="false" />
                     </ItemTemplate>
                 </asp:Repeater>
             </div>
