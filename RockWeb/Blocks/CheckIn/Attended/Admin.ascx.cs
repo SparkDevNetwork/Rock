@@ -8,6 +8,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -47,7 +49,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                                 if (localStorage.checkInKiosk) {{
                                     $('[id$=""hfKiosk""]').val(localStorage.checkInKiosk);
                                     if (localStorage.checkInGroupTypes) {{
-                                        $('[id$=""hfGroupTypes""]').val(localStorage.checkInGroupTypes);
+                                        $('[id$=""hfParentTypes""]').val(localStorage.checkInGroupTypes);
                                     }}
                                     {0};
                                 }}
@@ -57,19 +59,23 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
                 phScript.Controls.Add( new LiteralControl( script ) );
 
-                LoadCampuses();
-                var campus = GetByKioskShortCode( Environment.MachineName );
-                if ( campus != null )
-                {
-                    ddlCampus.SelectedValue = campus.Name;
-                    BindGroupTypes();
-                    campusDiv.Visible = false;                    
+                if ( CurrentKioskId == null )
+                {   // #DEBUG, might be a local machine
+                    // DEVICE because KioskCache location is always null
+                    var kiosk = new DeviceService().GetByDeviceName( Environment.MachineName );
+                    if ( kiosk != null )
+                    {   
+                        CurrentKioskId = kiosk.Id;
+                        hfKiosk.Value = CurrentKioskId.ToString();
+                        BindGroupTypes();
+                    }
                 }
-                else 
+                else
                 {
-                    campusDiv.Visible = true;
+                    maWarning.Show( "This device has not been set up for check in.", ModalAlertType.Warning );
+                    return;
                 }
-
+                                
                 SaveState();
             }
             else
@@ -77,25 +83,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 phScript.Controls.Clear();
             }
         }
-
-        /// <summary>
-        /// Attempts to match a known kiosk based on the IP address of the client.
-        /// </summary>
-        private void AttemptKioskMatchByIpOrName()
-        {
-            // try to find matching kiosk by REMOTE_ADDR (ip/name).
-            var kioskStatus = KioskCache.GetKiosk( Request.ServerVariables["REMOTE_ADDR"], skipReverseLookup: false );
-            if ( kioskStatus != null )
-            {
-                CurrentKioskId = kioskStatus.Device.Id;
-                CurrentGroupTypeIds = GetAllKiosksGroupTypes( kioskStatus.Device ); ;
-                CurrentCheckInState = null;
-                CurrentWorkflow = null;
-                SaveState();
-                NavigateToNextPage();
-            }
-        }
-
+        
         #endregion
 
         #region Edit Events
@@ -108,44 +96,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e"></param>
         protected void lbRefresh_Click( object sender, EventArgs e )
         {
-            BindGroupTypes( hfGroupTypes.Value );
+            BindGroupTypes( hfParentTypes.Value );
         }
-
-        /// <summary>
-        /// Loads the campus dropdown.
-        /// </summary>
-        protected void LoadCampuses()
-        {
-            ddlCampus.DataSource = new CampusService().Queryable().OrderBy( n => n.Name ).ToList();
-            ddlCampus.DataBind();
-            ddlCampus.Items.Insert( 0, new ListItem( "Choose A Campus", None.IdValue ) );
-        }
-
-        /// <summary>
-        /// Handles the SelectedIndexChanged event of the ddlCampus control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void ddlCampus_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            //foreach ( RepeaterItem item in repMinistry.Items )
-            //{
-            //    ( (Button)item.FindControl( "lbMinistry" ) ).RemoveCssClass( "active" );
-            //}
-
-            if ( ddlCampus.SelectedIndex >= 0 )
-            {
-                BindGroupTypes();                
-            }
-            else
-            {
-                repMinistry.DataSource = null;
-                repMinistry.DataBind();
-            }
-            
-            SaveState();
-        }
-
+        
         /// <summary>
         /// Handles the Click event of the lbOk control.
         /// </summary>
@@ -154,9 +107,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void lbOk_Click( object sender, EventArgs e )
         {
             // Check to make sure they picked a ministry
-            if ( !string.IsNullOrEmpty( hfSelected.Value ) )
+            if ( !string.IsNullOrEmpty( hfParentTypes.Value ) )
             {
-                CurrentGroupTypeIds = hfSelected.Value.SplitDelimitedValues().Select( int.Parse ).ToList();
+                var parentGroupTypeIds = hfParentTypes.Value.SplitDelimitedValues().Select( int.Parse ).ToList();
+                
+
             }
             else
             {
@@ -175,22 +130,26 @@ namespace RockWeb.Blocks.CheckIn.Attended
         #region Internal Methods
 
         /// <summary>
-        /// Handles the ItemDataBound event of the repMinistry control.
+        /// Attempts to match a known kiosk based on the IP address of the client.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
-        protected void repMinistry_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        private void AttemptKioskMatchByIpOrName()
         {
-            if ( CurrentGroupTypeIds != null )
+            // try to find matching kiosk by REMOTE_ADDR (ip/name).
+            var ipAddr = Request.ServerVariables["REMOTE_ADDR"];
+            if ( Regex.IsMatch( ipAddr, @"\d+\.\d+\.\d+\.\d+" ) )
             {
-                if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+                var kioskStatus = KioskCache.GetKiosk( ipAddr, skipReverseLookup: false );
+                if ( kioskStatus != null )
                 {
-                    if ( CurrentGroupTypeIds.Contains( ( (GroupType)e.Item.DataItem ).Id ) )
-                    {
-                        ( (Button)e.Item.FindControl( "lbMinistry" ) ).AddCssClass( "active" );
-                    }
+                    CurrentKioskId = kioskStatus.Device.Id;
+                    CurrentGroupTypeIds = GetAllKiosksGroupTypes( kioskStatus.Device ); ;
+                    CurrentCheckInState = null;
+                    CurrentWorkflow = null;
+                    SaveState();
+                    NavigateToNextPage();
                 }
-            }            
+            }
+
         }
 
         /// <summary>
@@ -211,20 +170,32 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             if ( CurrentKioskId != null )
             {
-                var kiosk = KioskCache.GetKiosk( (int)CurrentKioskId );
-                repMinistry.DataSource = kiosk.Device.GetLocationGroupTypes();
-                repMinistry.DataBind();
-            }
-            else if ( ddlCampus.SelectedIndex > 0 )
-            {
-                int locationId = (int) new CampusService().Queryable().Where( c => c.Name == ddlCampus.SelectedValue )
-                    .Select( c => c.LocationId ).FirstOrDefault();
-                var groupTypeIds = GetLocationParentGroupTypes( locationId );
+                var groupTypeIds = GetKioskParentGroupTypes( (int)CurrentKioskId );
                 repMinistry.DataSource = new GroupTypeService().Queryable().Where( gt => groupTypeIds.Contains( gt.Id ) ).ToList();
                 repMinistry.DataBind();
+                
             }
 
             // do something here with selected values
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the repMinistry control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void repMinistry_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( CurrentGroupTypeIds != null )
+            {
+                if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+                {
+                    if ( CurrentGroupTypeIds.Contains( ( (GroupType)e.Item.DataItem ).Id ) )
+                    {
+                        ( (Button)e.Item.FindControl( "lbMinistry" ) ).AddCssClass( "active" );
+                    }
+                }
+            }            
         }
 
         /// <summary>
@@ -249,17 +220,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
-        /// Gets the by kiosk short code.
-        /// </summary>
-        /// <param name="machineName">Name of the machine.</param>
-        /// <returns>Campus</returns>
-        protected Campus GetByKioskShortCode( string machineName )
-        {
-            return new CampusService().Queryable()
-                .Where( c => machineName.StartsWith( c.ShortCode ) ).FirstOrDefault();
-        }
-
-        /// <summary>
         /// Returns a list of IDs that are the GroupTypes the kiosk is responsible for.
         /// </summary>
         /// <param name="kiosk"></param>
@@ -274,13 +234,14 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <summary>
         /// Gets the location parent group types.
         /// </summary>
-        /// <param name="locationId">The location id.</param>
+        /// <param name="kioskDevice">The kiosks's device.</param>
         /// <returns></returns>
-        private List<int> GetLocationParentGroupTypes( int locationId )
+        private List<int> GetKioskParentGroupTypes( int kioskId )
         {
             var parentGroupTypes = new List<int>();
+            var kiosk = new DeviceService().Get( kioskId );  // DEVICE because KioskCache location is always null
             foreach ( var groupTypes in new GroupLocationService().Queryable()
-                .Where( gl => gl.Location.ParentLocationId == locationId )
+                .Where( gl => gl.Location.ParentLocationId == kiosk.LocationId )
                 .Select( gl => gl.Group.GroupType.ParentGroupTypes ) )
             {
                 foreach ( var groupType in groupTypes.Where( gt => !parentGroupTypes.Contains( gt.Id ) ) ) 
@@ -291,7 +252,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             return parentGroupTypes;
         }
-
+        
         #endregion
         
 }
