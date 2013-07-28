@@ -41,20 +41,20 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                     if ( family != null )
                     {
-                        var personId = CheckInPeopleIds.FirstOrDefault();
-                        var person = new PersonService().Get( personId );
-                        
-                        if ( person != null )
-                        {
-                            gActivityList.DataKeyNames = new string[] { "ListId" };
-                            BindToActivityGrid();
-                            lblPersonName.Text = person.FullName;
-                            LoadMinistries(person);
-                        }
-                        else
-                        {
-                            GoBack();
-                        }
+                        //var personId = CheckInPeopleIds.FirstOrDefault();
+                        //var person = new PersonService().Get( personId );
+                        //
+                        //if ( person != null )
+                        //{
+                        //    gActivityList.DataKeyNames = new string[] { "ListId" };
+                        //    BindToActivityGrid();
+                        //    lblPersonName.Text = person.FullName;
+                        //    LoadMinistries(person);
+                        //}
+                        //else
+                        //{
+                        //    GoBack();
+                        //}
                     }
                     else
                     {
@@ -109,13 +109,13 @@ namespace RockWeb.Blocks.CheckIn.Attended
             // if there is a currently selected activity for the time period being chosen, then show it as active
             foreach ( ListViewItem item in lvActivity.Items )
             {
-                foreach ( var timeAndActivityList in CheckInTimeAndActivityList )
-                {
-                    if ( ( timeAndActivityList[0] == CheckInPeopleIds.FirstOrDefault() ) && ( timeAndActivityList[1] == int.Parse( ( (LinkButton)e.Item.FindControl( "lbSelectTime" ) ).CommandArgument ) ) && ( timeAndActivityList[2] == int.Parse( ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).CommandArgument ) ) )
-                    {
-                        ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).AddCssClass( "active" );
-                    }
-                }
+            //    foreach ( var timeAndActivityList in CheckInTimeAndActivityList )
+            //    {
+            //        if ( ( timeAndActivityList[0] == CheckInPeopleIds.FirstOrDefault() ) && ( timeAndActivityList[1] == int.Parse( ( (LinkButton)e.Item.FindControl( "lbSelectTime" ) ).CommandArgument ) ) && ( timeAndActivityList[2] == int.Parse( ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).CommandArgument ) ) )
+            //        {
+            //            ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).AddCssClass( "active" );
+            //        }
+            //    }
             }
         }
 
@@ -126,15 +126,15 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gActivityList_Delete( object sender, RowEventArgs e )
         {
-            var activity = CheckInTimeAndActivityList[int.Parse( gActivityList.DataKeys[e.RowIndex]["ListId"].ToString() )];
-            CheckInTimeAndActivityList.Remove( activity );
-            foreach ( ListViewItem item in lvActivity.Items )
-            {
-                if ( int.Parse( ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).CommandArgument ) == activity[2] )
-                {
-                    ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).RemoveCssClass( "active" );
-                }
-            }
+            //var activity = CheckInTimeAndActivityList[int.Parse( gActivityList.DataKeys[e.RowIndex]["ListId"].ToString() )];
+            //CheckInTimeAndActivityList.Remove( activity );
+            //foreach ( ListViewItem item in lvActivity.Items )
+            //{
+            //    if ( int.Parse( ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).CommandArgument ) == activity[2] )
+            //    {
+            //        ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).RemoveCssClass( "active" );
+            //    }
+            //}
 
             BindToActivityGrid();
         }
@@ -259,14 +259,14 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }
 
             List<GroupType> activityGroupTypeList = new List<GroupType>();
-            foreach ( var activityGroupType in CurrentRoomGroupTypes )
-            {
-                var parent = GetParent( activityGroupType.Id, 0 );
-                if ( parentId == parent )
-                {
-                    activityGroupTypeList.Add( activityGroupType );
-                }
-            }
+            //foreach ( var activityGroupType in CurrentRoomGroupTypes )
+            //{
+            //    var parent = GetParent( activityGroupType.Id, 0 );
+            //    if ( parentId == parent )
+            //    {
+            //        activityGroupTypeList.Add( activityGroupType );
+            //    }
+            //}
 
             Session["activityGroupTypeList"] = activityGroupTypeList;
             lvActivity.DataSource = activityGroupTypeList;
@@ -324,13 +324,13 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             // check to see if there are any entries in the CheckInTimeAndActivityList and if not, let the person know.
             var thereIsAnActivity = false;
-            foreach ( var timeAndActivityList in CheckInTimeAndActivityList )
-            {
-                if ( timeAndActivityList[0] == CheckInPeopleIds.FirstOrDefault() )
-                {
-                    thereIsAnActivity = true;
-                }
-            }
+            //foreach ( var timeAndActivityList in CheckInTimeAndActivityList )
+            //{
+            //    if ( timeAndActivityList[0] == CheckInPeopleIds.FirstOrDefault() )
+            //    {
+            //        thereIsAnActivity = true;
+            //    }
+            //}
 
             if ( !thereIsAnActivity )
             {
@@ -339,25 +339,25 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }
 
             // Increment the counter of number of people checked in. 
-            PeopleCheckedIn++;
+            //PeopleCheckedIn++;
 
             // Remove the person just checked in on this page from the list of those needing to be checked in.
-            var personJustCheckedIn = CheckInPeopleIds.FirstOrDefault();
-            CheckInPeopleIds.Remove( personJustCheckedIn );
+            //var personJustCheckedIn = CheckInPeopleIds.FirstOrDefault();
+            //CheckInPeopleIds.Remove( personJustCheckedIn );
 
             // Add the person just checked in to the list of those that were checked in.
-            CheckedInPeopleIds.Add( personJustCheckedIn );
+            //CheckedInPeopleIds.Add( personJustCheckedIn );
 
             SaveState();
 
-            if ( PeopleCheckedIn != CheckInPersonCount )
-            {
-                NavigateToCurrentPage();
-            }
-            else
-            {
-                NavigateToNextPage();
-            }
+            //if ( PeopleCheckedIn != CheckInPersonCount )
+            //{
+            //    NavigateToCurrentPage();
+            //}
+            //else
+            //{
+            //    NavigateToNextPage();
+            //}
         }
 
         private void ProcessActivities()
@@ -380,83 +380,83 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// </summary>
         protected void BindToActivityGrid()
         {
-            var personCheckingIn = CheckInPeopleIds.FirstOrDefault();
-            System.Data.DataTable dt = new System.Data.DataTable();
-            Person person = new Person();
+            //var personCheckingIn = CheckInPeopleIds.FirstOrDefault();
+            //System.Data.DataTable dt = new System.Data.DataTable();
+            //Person person = new Person();
 
-            // add the columns to the datatable
-            var column = new System.Data.DataColumn();
-            column.DataType = System.Type.GetType( "System.String" );
-            column.ColumnName = "ListId";
-            column.ReadOnly = true;
-            dt.Columns.Add( column );
+            //// add the columns to the datatable
+            //var column = new System.Data.DataColumn();
+            //column.DataType = System.Type.GetType( "System.String" );
+            //column.ColumnName = "ListId";
+            //column.ReadOnly = true;
+            //dt.Columns.Add( column );
 
-            column = new System.Data.DataColumn();
-            column.DataType = System.Type.GetType( "System.String" );
-            column.ColumnName = "AssignedTo";
-            column.ReadOnly = false;
-            dt.Columns.Add( column );
+            //column = new System.Data.DataColumn();
+            //column.DataType = System.Type.GetType( "System.String" );
+            //column.ColumnName = "AssignedTo";
+            //column.ReadOnly = false;
+            //dt.Columns.Add( column );
 
-            column = new System.Data.DataColumn();
-            column.DataType = System.Type.GetType( "System.String" );
-            column.ColumnName = "Time";
-            column.ReadOnly = false;
-            dt.Columns.Add( column );
+            //column = new System.Data.DataColumn();
+            //column.DataType = System.Type.GetType( "System.String" );
+            //column.ColumnName = "Time";
+            //column.ReadOnly = false;
+            //dt.Columns.Add( column );
 
-            var timeAndActivityListIndex = 0;
-            foreach ( var timeAndActivityList in CheckInTimeAndActivityList )
-            {
-                var thingCount = 0;
-                System.Data.DataRow row;
-                row = dt.NewRow();
-                foreach ( var thing in timeAndActivityList )
-                {
-                    thingCount++;
-                    if ( thingCount == 1 ) 
-                    { 
-                        person = new PersonService().Get( thing ); 
-                    }
+            //var timeAndActivityListIndex = 0;
+            //foreach ( var timeAndActivityList in CheckInTimeAndActivityList )
+            //{
+            //    var thingCount = 0;
+            //    System.Data.DataRow row;
+            //    row = dt.NewRow();
+            //    foreach ( var thing in timeAndActivityList )
+            //    {
+            //        thingCount++;
+            //        if ( thingCount == 1 ) 
+            //        { 
+            //            person = new PersonService().Get( thing ); 
+            //        }
 
-                    if ( thingCount <= timeAndActivityList.Count )
-                    {
-                        switch ( thingCount )
-                        {
-                            case 1:
-                                
-                                row["ListId"] = timeAndActivityListIndex;
-                                break;
-                            case 2:
-                                var schedule = new ScheduleService().Get( thing );
-                                row["Time"] = schedule.Name;
-                                break;
-                            case 3:
-                                var activity = new GroupTypeService().Get( thing );
-                                var parentId = GetParent( activity.Id, 0 );
-                                var parent1 = new GroupTypeService().Get( parentId );
-                                row["AssignedTo"] = activity.Name;
-                                break;
-                        }
-                    }
-                }
+            //        if ( thingCount <= timeAndActivityList.Count )
+            //        {
+            //            switch ( thingCount )
+            //            {
+            //                case 1:
+            //                    
+            //                    row["ListId"] = timeAndActivityListIndex;
+            //                    break;
+            //                case 2:
+            //                    var schedule = new ScheduleService().Get( thing );
+            //                    row["Time"] = schedule.Name;
+            //                    break;
+            //                case 3:
+            //                    var activity = new GroupTypeService().Get( thing );
+            //                    var parentId = GetParent( activity.Id, 0 );
+            //                    var parent1 = new GroupTypeService().Get( parentId );
+            //                    row["AssignedTo"] = activity.Name;
+            //                    break;
+            //            }
+            //        }
+            //    }
 
-                if ( personCheckingIn == person.Id )
-                {
-                    dt.Rows.Add( row );
-                }
-                    
-                timeAndActivityListIndex++;
-            }
+            //    if ( personCheckingIn == person.Id )
+            //    {
+            //        dt.Rows.Add( row );
+            //    }
+            //        
+            //    timeAndActivityListIndex++;
+            //}
 
-            System.Data.DataView dv = new System.Data.DataView( dt );
-            dv.Sort = "Time ASC";
-            System.Data.DataTable dt2 = dv.ToTable();
-            gActivityList.DataSource = dt2;
-            gActivityList.DataBind();
+            //System.Data.DataView dv = new System.Data.DataView( dt );
+            //dv.Sort = "Time ASC";
+            //System.Data.DataTable dt2 = dv.ToTable();
+            //gActivityList.DataSource = dt2;
+            //gActivityList.DataBind();
 
-            gActivityList.CssClass = string.Empty;
-            gActivityList.AddCssClass( "grid-table" );
-            gActivityList.AddCssClass( "table" );
-            gActivityList.AddCssClass( "select" );
+            //gActivityList.CssClass = string.Empty;
+            //gActivityList.AddCssClass( "grid-table" );
+            //gActivityList.AddCssClass( "table" );
+            //gActivityList.AddCssClass( "select" );
         }
 
         #endregion
@@ -480,13 +480,13 @@ namespace RockWeb.Blocks.CheckIn.Attended
             // if there is a currently selected activity for the time period being chosen, then show it as active
             foreach ( ListViewItem item in lvActivity.Items )
             {
-                foreach ( var timeAndActivityList in CheckInTimeAndActivityList )
-                {
-                    if ( ( timeAndActivityList[0] == CheckInPeopleIds.FirstOrDefault() ) && ( timeAndActivityList[1] == timeButtonId ) && ( timeAndActivityList[2] == int.Parse( ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).CommandArgument ) ) )
-                    {
-                        ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).AddCssClass( "active" );
-                    }
-                }
+                //foreach ( var timeAndActivityList in CheckInTimeAndActivityList )
+                //{
+                //    if ( ( timeAndActivityList[0] == CheckInPeopleIds.FirstOrDefault() ) && ( timeAndActivityList[1] == timeButtonId ) && ( timeAndActivityList[2] == int.Parse( ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).CommandArgument ) ) )
+                //    {
+                //        ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).AddCssClass( "active" );
+                //    }
+                //}
             }
         }
 
@@ -507,10 +507,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
             // Step 2: make a copy of the CheckInTimeAndActivityList so that we can iterate through this list, and have the freedom to add & remove items from the actual CheckInTimeAndActivityList without messing up the loops.
             // there's probably a better way to do this, but I don't know what it is.
             List<List<int>> ctaList = new List<List<int>>();
-            foreach ( var ctaListCopy in CheckInTimeAndActivityList )
-            {
-                ctaList.Add( ctaListCopy );
-            }
+            //foreach ( var ctaListCopy in CheckInTimeAndActivityList )
+            //{
+            //    ctaList.Add( ctaListCopy );
+            //}
 
             // Step 3: check to see if there are any other activities previously selected at the chosen time for this person. If there are, remove them from the CheckInTimeAndActivityList.
             int chosenTimeId = 0;
@@ -524,18 +524,18 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             foreach ( var timeAndActivityList in ctaList )
             {
-                if ( timeAndActivityList[0] == CheckInPeopleIds.FirstOrDefault() && timeAndActivityList[1] == chosenTimeId )
-                {
-                    CheckInTimeAndActivityList.Remove( timeAndActivityList );
-                }
+                //if ( timeAndActivityList[0] == CheckInPeopleIds.FirstOrDefault() && timeAndActivityList[1] == chosenTimeId )
+                //{
+                //    CheckInTimeAndActivityList.Remove( timeAndActivityList );
+                //}
             }
 
             // Step 4: now add the currently selected activity to the CheckInTimeAndActivityList
-            List<int> temp = new List<int>();
-            temp.Add( CheckInPeopleIds.FirstOrDefault() );
-            temp.Add( chosenTimeId );
-            temp.Add( int.Parse( ( (LinkButton)e.Item.FindControl( "lbSelectActivity" ) ).CommandArgument ) );
-            CheckInTimeAndActivityList.Add( temp );
+            //List<int> temp = new List<int>();
+            //temp.Add( CheckInPeopleIds.FirstOrDefault() );
+            //temp.Add( chosenTimeId );
+            //temp.Add( int.Parse( ( (LinkButton)e.Item.FindControl( "lbSelectActivity" ) ).CommandArgument ) );
+            //CheckInTimeAndActivityList.Add( temp );
 
             BindToActivityGrid();
         }
