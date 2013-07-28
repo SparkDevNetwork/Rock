@@ -5,14 +5,13 @@
         //$('.btn-checkin-select').click(function () {
         $('.btn-checkin-select').unbind('click').on('click', function () {
             $(this).toggleClass('active');
-            var selectedIds = $('#hfSelected').val();
-            if ($('#hfSelected').val().indexOf(this.getAttribute('data-id') + ',') >= 0) {
-                $('#hfSelected').val($('#hfSelected').val().replace(this.getAttribute('data-id') + ',', ''));
+            var selectedIds = $('#hfParentTypes').val();
+            if ($('#hfParentTypes').val().indexOf(this.getAttribute('data-id') + ',') >= 0) {
+                $('#hfParentTypes').val($('#hfParentTypes').val().replace(this.getAttribute('data-id') + ',', ''));
             }
             else {
-                $('#hfSelected').val(selectedIds + this.getAttribute('data-id') + ',');
+                $('#hfParentTypes').val(selectedIds + this.getAttribute('data-id') + ',');
             }
-            console.log($('#hfSelected'));
             return false;
         });
     };
@@ -26,8 +25,7 @@
 
     <asp:PlaceHolder ID="phScript" runat="server"></asp:PlaceHolder>
     <asp:HiddenField ID="hfKiosk" runat="server" />
-    <asp:HiddenField ID="hfGroupTypes" runat="server" />
-    <asp:HiddenField ID="hfSelected" runat="server" ClientIDMode="Static" />
+    <asp:HiddenField ID="hfParentTypes" runat="server" />    
     <span style="display:none">
         <asp:LinkButton ID="lbRefresh" runat="server" OnClick="lbRefresh_Click"></asp:LinkButton>
     </span>
@@ -44,11 +42,7 @@
     </div>
 
     <div class="row-fluid checkin-admin-body">
-        <div class="span4">
-            <div id="campusDiv" runat="server">
-                <Rock:DataDropDownList ID="ddlCampus" runat="server" LabelText="Campus" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" OnSelectedIndexChanged="ddlCampus_SelectedIndexChanged" AutoPostBack="true" />
-            </div>
-        </div>
+        <div class="span4"></div>
         <div class="span4">
             <label class="control-label">Ministry</label>
             <asp:Repeater ID="repMinistry" runat="server" OnItemDataBound="repMinistry_ItemDataBound">
