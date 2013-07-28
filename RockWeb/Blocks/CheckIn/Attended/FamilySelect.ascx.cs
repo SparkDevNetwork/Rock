@@ -658,7 +658,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 addFamilyNamesPage3.Visible = false;
                 MoreButton.Visible = true;
             }
-            mpe.Show();
+            mpeFamily.Show();
         }
 
         /// <summary>
@@ -680,7 +680,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 addFamilyNamesPage3.Visible = true;
                 MoreButton.Visible = false;
             }
-            mpe.Show();
+            mpeFamily.Show();
         }
 
         /// <summary>
