@@ -80,41 +80,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
             column.ReadOnly = false;
             dt.Columns.Add( column );
 
-            var timeAndActivityListIndex = 0;
-            foreach ( var timeAndActivityList in CheckInTimeAndActivityList )
-            {
-                var thingCount = 0;
-                System.Data.DataRow row;
-                row = dt.NewRow();
-                foreach ( var thing in timeAndActivityList )
-                {
-                    thingCount++;
-                    if ( thingCount <= timeAndActivityList.Count )
-                    {
-                        switch (thingCount )
-                        {
-                            case 1:
-                                row["ListId"] = timeAndActivityListIndex;
-                                var person = new PersonService().Get( thing );
-                                row["Name"] = person.FullName;
-                                break;
-                            case 2:
-                                var schedule = new ScheduleService().Get( thing );
-                                row["Time"] = schedule.Name;
-                                break;
-                            case 3:
-                                var activity = new GroupTypeService().Get( thing );
-                                var parentId = GetParent(activity.Id, 0);
-                                var parent1 = new GroupTypeService().Get( parentId );
-                                row["AssignedTo"] = activity.Name;
-                                break;
-                        }
-                    }
-                }
-
-                dt.Rows.Add( row );
-                timeAndActivityListIndex++;
-            }
+            // foreach thing selected
+            // add to datasource
 
             System.Data.DataView dv = new System.Data.DataView( dt );
             dv.Sort = "Name ASC, Time ASC";
@@ -170,17 +137,13 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void gPersonList_Edit( object sender, RowEventArgs e )
         {
             // throw the user back to the activity select page for the person they want to edit.
-            CheckInPersonCount = 1;
-            PeopleCheckedIn = 0;
-            List<int> peopleIds = new List<int>();
-            peopleIds.Add( CheckInTimeAndActivityList[int.Parse( gPersonList.DataKeys[e.RowIndex]["ListId"].ToString() )][0] );
-            CheckInPeopleIds = peopleIds;
-            CheckedInPeopleIds = new List<int>();
+            
+            
+            
+            
             SaveState();
             var temp = new Dictionary<string,string>();
-            Guid pageGuid = Guid.Empty;
-            Guid.TryParse( "C87916FE-417E-4A11-8831-5CFA7678A228", out pageGuid );
-            NavigateToPage( pageGuid, temp);
+            NavigateToPage( new Guid( "C87916FE-417E-4A11-8831-5CFA7678A228" ), temp);
         }
 
         /// <summary>
@@ -190,8 +153,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gPersonList_Delete( object sender, RowEventArgs e )
         {
-            var personId = CheckInTimeAndActivityList[int.Parse( gPersonList.DataKeys[e.RowIndex]["ListId"].ToString() )];
-            CheckInTimeAndActivityList.Remove( personId );
+            // remove person
             CreateGridDataSource();
         }
 
@@ -203,12 +165,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
 
             var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-            if ( family != null && CheckInTimeAndActivityList.Count == 0 )
+            if ( family != null )
             {
                 foreach ( var person in family.People.Where( f => f.Selected ) )
                 {
-                    var personId = CheckInPeopleIds.FirstOrDefault();
-                    var chkperson = new PersonService().Get( personId );
+                    //var personId = CheckInPeopleIds.FirstOrDefault();
+                    var chkperson = new PersonService().Get( person.Person.Id );
                     //LoadMinistries( chkperson );
                     //LoadTimes();
                     //LoadActivities();
@@ -225,7 +187,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                             temp.Add( person.Person.Id );
                             temp.Add( (int)attend.ScheduleId );
                             temp.Add( (int)attend.Group.GroupTypeId );
-                            CheckInTimeAndActivityList.Add( temp );
+                            //CheckInTimeAndActivityList.Add( temp );
 
                             //var location = groupType.Locations.Where( l => l.LastCheckIn == person.LastCheckIn ).FirstOrDefault();
                             //if ( location != null )
@@ -248,16 +210,14 @@ namespace RockWeb.Blocks.CheckIn.Attended
         private void GoBack()
         {
             var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-            CheckInPersonCount = family.People.Where( p => p.Selected ).Count();
-            PeopleCheckedIn = 0;
+                        
             List<int> peopleIds = new List<int>();
             foreach ( var person in family.People.Where( p => p.Selected ) )
             {
                 peopleIds.Add( person.Person.Id );
             }
 
-            CheckInPeopleIds = peopleIds;
-            CheckedInPeopleIds = new List<int>();
+            
             SaveState();
             NavigateToPreviousPage();
         }
