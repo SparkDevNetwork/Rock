@@ -73,7 +73,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     if ( kiosk != null )
                     {
                         CurrentKioskId = kiosk.Id;
-                        //var parentGroupTypeIds = GetAllParentGroupTypes( kiosk );
                         BindGroupTypes( hfGroupTypes.Value );
                     }                    
                 }
@@ -105,7 +104,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     CurrentKioskId = kioskStatus.Device.Id;
                     BindGroupTypes( hfGroupTypes.Value );
                 }
-            }
+           } 
         }
 
         #endregion
@@ -359,18 +358,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
             }
         }
-
-        /// <summary>
-        /// Returns a list of IDs that are the GroupTypes the kiosk is responsible for.
-        /// </summary>
-        /// <param name="kiosk"></param>
-        /// <returns></returns>
-        //private List<int> GetAllKiosksGroupTypes( Device kiosk )
-        //{
-        //    var groupTypes = kiosk.GetLocationGroupTypes();
-        //    var groupTypeIds = groupTypes.Select( gt => gt.Id ).ToList();
-        //    return groupTypeIds;
-        //}
 
         /// <summary>
         /// Gets the parent of currently selected group types.
