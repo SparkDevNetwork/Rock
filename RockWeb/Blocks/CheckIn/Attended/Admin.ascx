@@ -2,15 +2,14 @@
 
 <script type="text/javascript">
     function setControlEvents() {
-        //$('.btn-checkin-select').click(function () {
         $('.btn-checkin-select').unbind('click').on('click', function () {
             $(this).toggleClass('active');
             var selectedIds = $('#hfParentTypes').val();
-            if ($('#hfParentTypes').val().indexOf(this.getAttribute('data-id') + ',') >= 0) {
-                $('#hfParentTypes').val($('#hfParentTypes').val().replace(this.getAttribute('data-id') + ',', ''));
-            }
-            else {
-                $('#hfParentTypes').val(selectedIds + this.getAttribute('data-id') + ',');
+            var buttonId = this.getAttribute('data-id') + ',';
+            if (typeof selectedIds == "string" && (selectedIds.indexOf(buttonId) >= 0) ) {
+                $('#hfParentTypes').val(selectedIds.replace(buttonId, ''));
+            } else {
+                $('#hfParentTypes').val(buttonId + selectedIds);     
             }
             return false;
         });
@@ -21,38 +20,48 @@
 </script>
 
 <asp:UpdatePanel ID="upContent" runat="server" UpdateMode="Conditional">
-<ContentTemplate>
+    <ContentTemplate>
 
-    <asp:PlaceHolder ID="phScript" runat="server"></asp:PlaceHolder>
-    <asp:HiddenField ID="hfKiosk" runat="server" />
-    <asp:HiddenField ID="hfParentTypes" runat="server" />    
-    <span style="display:none">
-        <asp:LinkButton ID="lbRefresh" runat="server" OnClick="lbRefresh_Click"></asp:LinkButton>
-    </span>
-    <Rock:ModalAlert ID="maWarning" runat="server" />
+        <asp:PlaceHolder ID="phScript" runat="server"></asp:PlaceHolder>
+        <asp:HiddenField ID="hfLatitude" runat="server" />
+        <asp:HiddenField ID="hfLongitude" runat="server" />
+        <asp:HiddenField ID="hfKiosk" runat="server" />
+        <asp:HiddenField ID="hfGroupTypes" runat="server" />
+        <asp:HiddenField ID="hfParentTypes" runat="server" Value="" ClientIDMode="static"/>
+        <span style="display: none">
+            <asp:LinkButton ID="lbRefresh" runat="server" OnClick="lbRefresh_Click"></asp:LinkButton>
+            <asp:LinkButton ID="lbCheckGeoLocation" runat="server" OnClick="lbCheckGeoLocation_Click"></asp:LinkButton>
+        </span>
+        <Rock:ModalAlert ID="maWarning" runat="server" />
 
-    <div class="row-fluid attended-checkin-header">
-        <div class="span3 attended-checkin-actions"></div>
-        <div class="span6">
-            <h1>Admin</h1>
+        <div class="row-fluid attended-checkin-header">
+            <div class="span3 attended-checkin-actions"></div>
+            <div class="span6">
+                <h1>Admin</h1>
+            </div>
+            <div class="span3 attended-checkin-actions">
+                <asp:LinkButton ID="lbOk" runat="server" CssClass="btn btn-large last btn-primary" OnClick="lbOk_Click" Text="Ok"></asp:LinkButton>
+            </div>
         </div>
-        <div class="span3 attended-checkin-actions">
-            <asp:LinkButton ID="lbOk" runat="server" CssClass="btn btn-large last btn-primary" OnClick="lbOk_Click" Text="Ok"></asp:LinkButton>
-        </div>
-    </div>
 
-    <div class="row-fluid checkin-admin-body">
-        <div class="span4"></div>
-        <div class="span4">
-            <label class="control-label">Ministry</label>
-            <asp:Repeater ID="repMinistry" runat="server" OnItemDataBound="repMinistry_ItemDataBound">
-                <ItemTemplate>
-                    <asp:Button ID="lbMinistry" runat="server" data-id='<%# Eval("Id") %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" Text='<%# Eval("Name") %>' />                
-                </ItemTemplate>
-            </asp:Repeater>
+        <div class="row-fluid checkin-admin-body">
+            <div class="span4"></div>
+            <div class="span4">
+                <label class="control-label">Checkin Type(s)</label>
+                <asp:Repeater ID="repMinistry" runat="server" OnItemDataBound="repMinistry_ItemDataBound">
+                    <ItemTemplate>
+                        <asp:Button ID="lbMinistry" runat="server" data-id='<%# Eval("Id") %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" Text='<%# Eval("Name") %>' />
+                    </ItemTemplate>
+                </asp:Repeater>
+            </div>
+            <div class="span4"></div>
         </div>
-        <div class="span4"></div>
-    </div>
 
-</ContentTemplate>
+        <div class="row-fluid checkin-footer">
+            <div class="checkin-actions">
+                <a id="lbRetry" runat="server" class="btn btn-primary" visible="false" href="javascript:window.location.href=window.location.href">Retry</a>
+            </div>
+        </div>
+
+    </ContentTemplate>
 </asp:UpdatePanel>
