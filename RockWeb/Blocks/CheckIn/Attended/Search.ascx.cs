@@ -62,6 +62,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 ", CurrentKioskId, CurrentGroupTypeIds.AsDelimited( "," ) );
                 phScript.Controls.Add( new LiteralControl( script ) );
                 SaveState();
+                LoadLocations();
 
                 // if we've already searched for something, no longer show the Admin button. Show the Back button instead.
                 if ( UserBackedUp )
@@ -121,14 +122,46 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbAdmin control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAdmin_Click( object sender, EventArgs e )
         {
             NavigateToLinkedPage( "AdminPage" );
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbBack control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbBack_Click( object sender, EventArgs e )
         {
             NavigateToPreviousPage();
+        }
+
+        #endregion
+
+        #region Internal Methods
+        /// <summary>
+        /// Loads the locations.
+        /// </summary>
+        private void LoadLocations()
+        {
+            List<int> locations = new List<int>();
+
+            foreach ( var groupType in CurrentCheckInState.Kiosk.KioskGroupTypes )
+            {
+                foreach ( var location in groupType.KioskLocations )
+                {
+                    if ( !locations.Contains( location.Location.Id ) )
+                    {
+                        locations.Add( location.Location.Id );
+                    }
+                }
+            }
         }
 
         #endregion
