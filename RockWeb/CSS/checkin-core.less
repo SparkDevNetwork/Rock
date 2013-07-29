@@ -1,23 +1,15 @@
-﻿/*!
- * Rock Checkin Core
- *
- * Copyright 2013 Spark Development Network
- *
- * 
- */
+﻿/*
+    Used to style the check-in screens
+    
+    1. Bootstrap Overrides
+    2. Global Styles
+    3. Components
+    4. Specific Page Styles
 
-// [Table of Contents]
-// 
-// 1. Bootstrap Overides
-// 2. Global Page Settings
-// 3. Components
-// 4. Page Styles
+*/
 
-
-//
-// 1. Bootstrap Overides
-//
-// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+// 1. Bootstrap Overrides
+// -------------------------
 
 h1, h2, h3 {
 	letter-spacing: -0.03em;
@@ -51,7 +43,6 @@ h1 {
 
 .btn
 {
-	.buttonBackground(@checkinButtonBackground, darken(@checkinButtonBackground, 10%) , @grayDark, 0 1px 1px rgba(255,255,255,.75));
 	border-color: @checkinButtonBorderColor;
 	text-shadow:
 		0px -1px 0px rgba(000,000,000,0.6),
@@ -90,10 +81,8 @@ h1 {
     padding-bottom: 14px;
 }
 
-// 
-// 2. Global Page Settings 
-// 
-// < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > 
+// 2. Global Styles
+// -------------------------
 
 // turn off configuration items 
 #cms-admin-footer
@@ -117,12 +106,8 @@ body {
 }
 
 
-//
 // 3. Components
-//
-// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-
-// --------------------------------------
+// -------------------------
 
 // checkin header items
 
@@ -285,11 +270,8 @@ button.btn-checkbox.btn i
 	color: @checkinBodyColor;
 }
 
-//
-// 4. Page Styles
-//
-// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-// --------------------------------------
+// 4. Specific Page Styles
+// -------------------------
 
 // search page
 
