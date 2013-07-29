@@ -65,13 +65,8 @@
         </xsl:if>
         
         
-        <h4><xsl:value-of select="@title"/></h4>
+        <h3><xsl:value-of select="@title"/></h3>
       
-        <xsl:if test="@display-description = 'true'">
-          <span>
-              <xsl:value-of disable-output-escaping="yes" select="description"/>
-          </span>
-        </xsl:if>
       
 			<xsl:if test="@display-child-pages = 'true' and pages[count(page) > 0]">
 				<!-- recursive children -->
