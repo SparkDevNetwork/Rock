@@ -25,10 +25,15 @@ namespace RockWeb.Blocks.CheckIn.Attended
     [Description( "Check-In Administration block" )]
     [BooleanField( "Enable Location Sharing", "If enabled, the block will attempt to determine the kiosk's location via location sharing geocode.", false, "Geo Location", 0 )]
     [IntegerField( "Time to Cache Kiosk GeoLocation", "Time in minutes to cache the coordinates of the kiosk. A value of zero (0) means cache forever. Default 20 minutes.", false, 20, "Geo Location", 1 )]
+    [IntegerField( "Refresh Interval", "How often (seconds) should page automatically query server for new check-in data", false, 10 )]
     public partial class Admin : CheckInBlock
     {
         #region Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             CurrentPage.AddScriptLink( this.Page, "~/Blocks/CheckIn/Scripts/geo-min.js" );
@@ -62,25 +67,23 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     </script>
                 ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
                 phScript.Controls.Add( new LiteralControl( script ) );
-                                
-                if ( CurrentKioskId.HasValue )
+
+                if ( !CurrentKioskId.HasValue )
                 {
-                    BindGroupTypes( hfGroupTypes.Value );
-                }
-                else if ( Environment.MachineName != null )
-                {   // #DEBUG, might be a local machine                    
                     var kiosk = new DeviceService().GetByDeviceName( Environment.MachineName );
                     if ( kiosk != null )
                     {
                         CurrentKioskId = kiosk.Id;
                         BindGroupTypes( hfGroupTypes.Value );
                     }                    
-                }
-                else
-                {
-                    maWarning.Show( "This device has not been set up for check in.", ModalAlertType.Warning );
-                    return;
-                }
+                    else
+                    {
+                        maWarning.Show( "This device has not been set up for check in.", ModalAlertType.Warning );
+                        return;
+                    }
+                }                
+
+                SaveState();
             }
             else
             {
@@ -309,7 +312,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             if ( CurrentKioskId != null )
             {
                 var kiosk = new DeviceService().Get( (int)CurrentKioskId );
-                //var kiosk = KioskCache.GetKiosk( (int)CurrentKioskId );
                 if ( kiosk != null )
                 {
                     var parentGroupTypes = GetAllParentGroupTypes( kiosk );
@@ -346,7 +348,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void repMinistry_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             var parentGroups = hfParentTypes.Value.SplitDelimitedValues().ToList();
-
             if ( parentGroups.Count > 0 )
             {
                 if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
@@ -367,9 +368,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
         private List<GroupType> GetAllParentGroupTypes( Device kiosk)
         {            
             var pgtList = new List<GroupType>();
-            //var groupTypes = kiosk.GetLocationGroupTypes();
-
-            //var groupTypes = new List<int>();
             foreach ( var groupLocations in kiosk.Locations.Select( l => l.GroupLocations ) )
             {
                 foreach(var parentGroupType in groupLocations.Select( gl => gl.Group.GroupType.ParentGroupTypes))
