@@ -29,6 +29,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
     {
         #region Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             CurrentPage.AddScriptLink( this.Page, "~/Blocks/CheckIn/Scripts/geo-min.js" );
@@ -47,40 +51,38 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
 
                 string script = string.Format( @"
-                    <script>
-                        $(document).ready(function (e) {{
-                            if (localStorage) {{
-                                if (localStorage.checkInKiosk) {{
-                                    $('[id$=""hfKiosk""]').val(localStorage.checkInKiosk);
-                                    if (localStorage.checkInGroupTypes) {{
-                                        $('[id$=""hfGroupTypes""]').val(localStorage.checkInGroupTypes);
-                                    }}
-                                    {0};
+                <script>
+                    $(document).ready(function (e) {{
+                        if (localStorage) {{
+                            if (localStorage.checkInKiosk) {{
+                                $('[id$=""hfKiosk""]').val(localStorage.checkInKiosk);
+                                if (localStorage.checkInGroupTypes) {{
+                                    $('[id$=""hfGroupTypes""]').val(localStorage.checkInGroupTypes);
                                 }}
+                                {0};
                             }}
-                        }});
-                    </script>
+                        }}
+                    }});
+                </script>
                 ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
                 phScript.Controls.Add( new LiteralControl( script ) );
-                                
-                if ( CurrentKioskId.HasValue )
+
+                if ( !CurrentKioskId.HasValue )
                 {
-                    BindGroupTypes( hfGroupTypes.Value );
-                }
-                else if ( Environment.MachineName != null )
-                {   // #DEBUG, might be a local machine                    
                     var kiosk = new DeviceService().GetByDeviceName( Environment.MachineName );
                     if ( kiosk != null )
                     {
                         CurrentKioskId = kiosk.Id;
                         BindGroupTypes( hfGroupTypes.Value );
                     }                    
-                }
-                else
-                {
-                    maWarning.Show( "This device has not been set up for check in.", ModalAlertType.Warning );
-                    return;
-                }
+                    else
+                    {
+                        maWarning.Show( "This device has not been set up for check in.", ModalAlertType.Warning );
+                        return;
+                    }
+                }                
+
+                SaveState();
             }
             else
             {
@@ -123,7 +125,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 var selectedParentIds = hfParentTypes.Value.SplitDelimitedValues().Select( int.Parse ).ToList();
                 CurrentKioskId = hfKiosk.ValueAsInt();
-                //var kiosk = KioskCache.GetKiosk( (int)CurrentKioskId );
+
                 var kiosk = new DeviceService().Get( (int)CurrentKioskId );
                 var parentGroups = GetAllParentGroupTypes( kiosk);
                 foreach ( var childTypeList in parentGroups.Where( pg => selectedParentIds.Contains( pg.Id ) )
@@ -309,27 +311,17 @@ namespace RockWeb.Blocks.CheckIn.Attended
             if ( CurrentKioskId != null )
             {
                 var kiosk = new DeviceService().Get( (int)CurrentKioskId );
-                //var kiosk = KioskCache.GetKiosk( (int)CurrentKioskId );
                 if ( kiosk != null )
                 {
                     var parentGroupTypes = GetAllParentGroupTypes( kiosk );
                     
                     if ( !string.IsNullOrWhiteSpace( selectedGroupTypes ) )
                     {
-                        var selectedParentIds = new List<int>();
                         var selectedChildIds = selectedGroupTypes.SplitDelimitedValues().Select( sgt => Convert.ToInt32( sgt ) ).ToList();
-
-                        // get parent types for selected child types
-                        foreach ( var childTypeList in parentGroupTypes.Select( pg => pg.ChildGroupTypes ) )
-                        {
-                            foreach ( var parentTypes in childTypeList.Where( ct => selectedChildIds.Contains( ct.Id ) )
-                                .Select( ct => ct.ParentGroupTypes ) )
-                            {
-                                selectedParentIds.AddRange( parentTypes.Select( pt => pt.Id ) );
-                            }                            
-                        }
-
-                        hfParentTypes.Value = string.Join(",", selectedParentIds.Distinct() );
+                        var selectedParentIds = parentGroupTypes.Where( pgt => pgt.ChildGroupTypes
+                            .Any( cgt => selectedChildIds.Contains( cgt.Id ) ) )
+                            .Select( pgt => pgt.Id ).ToList();
+                        hfParentTypes.Value = string.Join( ",", selectedParentIds );
                     }
 
                     repMinistry.DataSource = parentGroupTypes;
@@ -346,7 +338,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void repMinistry_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             var parentGroups = hfParentTypes.Value.SplitDelimitedValues().ToList();
-
             if ( parentGroups.Count > 0 )
             {
                 if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
@@ -367,11 +358,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
         private List<GroupType> GetAllParentGroupTypes( Device kiosk)
         {            
             var pgtList = new List<GroupType>();
-            //var groupTypes = kiosk.GetLocationGroupTypes();
-
-            //var groupTypes = new List<int>();
             foreach ( var groupLocations in kiosk.Locations.Select( l => l.GroupLocations ) )
-            {
+            {                
                 foreach(var parentGroupType in groupLocations.Select( gl => gl.Group.GroupType.ParentGroupTypes))
                 {
                     pgtList.AddRange( parentGroupType );                    

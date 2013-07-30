@@ -1,30 +1,39 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Search.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Attended.Search" %>
+
+<script>        
+    function SetKeyEvents() {
+        $(document).keypress(function (e) {
+            if (e.which == 13) {
+                console.log($('[id*="lbSearch"]'));
+                $('[id*="lbSearch"]').trigger("click");
+            }
+        });
+        $('.keyboard a.digit').unbind('click').click(function () {
+            $name = $("input[id$='tbSearchBox']");
+            $name.val($name.val() + $(this).html());
+        });
+        $('.keyboard a.back').unbind('click').click(function () {
+            $name = $("input[id$='tbSearchBox']");
+            $name.val($name.val().slice(0, -1));
+        });
+        $('.keyboard a.clear').unbind('click').click(function () {
+            $name = $("input[id$='tbSearchBox']");
+            $name.val('');
+        });
+        $('.keyboard a.spacebar').unbind('click').click(function () {
+            $name = $("input[id$='tbSearchBox']");
+            $name.val($name.val() + ' ');
+        });        
+    };
+
+    $(document).ready(function () { SetKeyEvents(); });
+    Sys.WebForms.PageRequestManager.getInstance().add_endRequest(SetKeyEvents);
+
+</script>
+
 <asp:UpdatePanel ID="upContent" runat="server">
 <ContentTemplate>
-
-    <script>
-        
-        Sys.Application.add_load(function () {
-            $('.keyboard a.digit').click(function () {
-                $name = $("input[id$='tbSearchBox']");
-                $name.val($name.val() + $(this).html());
-            });
-            $('.keyboard a.back').click(function () {
-                $name = $("input[id$='tbSearchBox']");
-                $name.val($name.val().slice(0,-1));
-            });
-            $('.keyboard a.clear').click(function () {
-                $name = $("input[id$='tbSearchBox']");
-                $name.val('');
-            });
-            $('.keyboard a.spacebar').click(function () {
-                $name = $("input[id$='tbSearchBox']");
-                $name.val($name.val() + ' ');
-            });
-        });
-
-    </script>
-
+    
     <asp:PlaceHolder ID="phScript" runat="server"></asp:PlaceHolder>
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
@@ -45,7 +54,6 @@
             <div class="attended-checkin-search-body">
                 <Rock:LabeledTextBox ID="tbSearchBox" MaxLength="50" CssClass="attended-checkin-keyboard-entry" runat="server" LabelText="" TabIndex="0" />
 
-                <!-- Full Keyboard -->
                 <div class="keyboard attended-checkin-keyboard">
                     <div class="row-fluid">
                         <a href="#" class="btn digit">1</a>
@@ -100,7 +108,6 @@
                     </div>
                 </div>
 
-                <!-- Number Keypad -->
                 <div class="keypad checkin-phone-keypad">
                     <div class="row-fluid">
                         <a href="#" class="btn digit">1</a>
@@ -123,7 +130,6 @@
                         <a href="#" class="btn back"><i class='icon-arrow-left'></i></a>
                     </div>
                 </div>
-
             </div>
         </div>
     </div>

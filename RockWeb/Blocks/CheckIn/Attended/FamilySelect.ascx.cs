@@ -13,6 +13,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -21,6 +22,7 @@ using System.Runtime.InteropServices;
 namespace RockWeb.Blocks.CheckIn.Attended
 {
     [Description( "Attended Check-In Family Select Block" )]
+    [LinkedPage( "Activity Select Page" )]
     public partial class FamilySelect : CheckInBlock
     {
         #region Control Methods
