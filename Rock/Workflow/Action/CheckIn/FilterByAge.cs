@@ -37,33 +37,42 @@ namespace Rock.Workflow.Action.CheckIn
                     foreach ( var person in family.People )
                     {
                         double? age = person.Person.AgePrecise;
+                        if ( age == null )
+                        {
+                            continue;
+                        }
 
                         foreach ( var groupType in person.GroupTypes.ToList() )
                         {
-                            string minAgeValue = groupType.GroupType.GetAttributeValue( "MinAge" );
-                            if ( minAgeValue != null )
+                            // Now dig down until we get the "group" because that's where the attribute is..
+                            foreach ( var location in groupType.Locations.ToList() )
                             {
-                                double minAge = 0;
-                                if ( double.TryParse( minAgeValue, out minAge ) )
+                                foreach ( var group in location.Groups.ToList() )
                                 {
-                                    if ( !age.HasValue || age < minAge )
+                                    string minAgeValue = group.Group.GetAttributeValue( "MinAge" );
+                                    if ( minAgeValue != null )
                                     {
-                                        person.GroupTypes.Remove( groupType );
-                                        continue;
+                                        double minAge = 0;
+                                        if ( double.TryParse( minAgeValue, out minAge ) )
+                                        {
+                                            if ( !age.HasValue || age < minAge )
+                                            {
+                                                location.Groups.Remove( group );
+                                            }
+                                        }
                                     }
-                                }
-                            }
 
-                            string maxAgeValue = groupType.GroupType.GetAttributeValue( "MaxAge" );
-                            if ( maxAgeValue != null )
-                            {
-                                double maxAge = 0;
-                                if ( double.TryParse( maxAgeValue, out maxAge ) )
-                                {
-                                    if ( !age.HasValue || age > maxAge )
+                                    string maxAgeValue = group.Group.GetAttributeValue( "MaxAge" );
+                                    if ( maxAgeValue != null )
                                     {
-                                        person.GroupTypes.Remove( groupType );
-                                        continue;
+                                        double maxAge = 0;
+                                        if ( double.TryParse( maxAgeValue, out maxAge ) )
+                                        {
+                                            if ( !age.HasValue || age > maxAge )
+                                            {
+                                                location.Groups.Remove( group );
+                                            }
+                                        }
                                     }
                                 }
                             }

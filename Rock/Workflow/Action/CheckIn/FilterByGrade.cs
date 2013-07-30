@@ -37,37 +37,44 @@ namespace Rock.Workflow.Action.CheckIn
                     foreach ( var person in family.People )
                     {
                         int? personsGrade = person.Person.Grade;
+                        if ( personsGrade == null )
+                        {
+                            continue;
+                        }
 
                         foreach ( var groupType in person.GroupTypes.ToList() )
                         {
-                            string minGradeValue = groupType.GroupType.GetAttributeValue( "MinGrade" );
-                            // if the group type specifies a min grade then the person's grade MUST match
-                            if ( minGradeValue != null )
+                            // Now dig down until we get the "group" because that's where the attribute is..
+                            foreach ( var location in groupType.Locations.ToList() )
                             {
-                                int minGrade = 0;
-                                if ( int.TryParse( minGradeValue, out minGrade ) )
+                                foreach ( var group in location.Groups.ToList() )
                                 {
-                                    // remove if the person does not have a grade or if their grade is less than the min
-                                    if ( !personsGrade.HasValue || personsGrade < minGrade )
+                                    string minGradeValue = group.Group.GetAttributeValue( "MinGrade" );
+                                    if ( minGradeValue != null )
                                     {
-                                        person.GroupTypes.Remove( groupType );
-                                        continue;
+                                        int minGrade = 0;
+                                        if ( int.TryParse( minGradeValue, out minGrade ) )
+                                        {
+                                            // remove if the person does not have a grade or if their grade is less than the min
+                                            if ( !personsGrade.HasValue || personsGrade < minGrade )
+                                            {
+                                                location.Groups.Remove( group );
+                                            }
+                                        }
                                     }
-                                }
-                            }
 
-                            string maxGradeValue = groupType.GroupType.GetAttributeValue( "MaxGrade" );
-                            // if the group type specifies a min grade then the person's grade MUST match
-                            if ( maxGradeValue != null )
-                            {
-                                int maxGrade = 0;
-                                if ( int.TryParse( maxGradeValue, out maxGrade ) )
-                                {
-                                    // remove if the person does not have a grade or if their grade is more than the max
-                                    if ( !personsGrade.HasValue || personsGrade > maxGrade )
+                                    string maxGradeValue = group.Group.GetAttributeValue( "MaxGrade" );
+                                    if ( maxGradeValue != null )
                                     {
-                                        person.GroupTypes.Remove( groupType );
-                                        continue;
+                                        int maxGrade = 0;
+                                        if ( int.TryParse( maxGradeValue, out maxGrade ) )
+                                        {
+                                            // remove if the person does not have a grade or if their grade is more than the max
+                                            if ( !personsGrade.HasValue || personsGrade > maxGrade )
+                                            {
+                                                location.Groups.Remove( group );
+                                            }
+                                        }
                                     }
                                 }
                             }
