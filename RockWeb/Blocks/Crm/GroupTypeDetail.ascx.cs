@@ -8,12 +8,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
+
 using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+
 using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Crm
@@ -125,14 +128,16 @@ namespace RockWeb.Blocks.Crm
             gGroupTypeAttributes.DataKeyNames = new string[] { "Guid" };
             gGroupTypeAttributes.Actions.ShowAdd = true;
             gGroupTypeAttributes.Actions.AddClick += gGroupTypeAttributes_Add;
-            gGroupTypeAttributes.GridRebind += gGroupTypeAttributes_GridRebind;
             gGroupTypeAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
+            gGroupTypeAttributes.RowDataBound += gAttributes_RowDataBound;
+            gGroupTypeAttributes.GridRebind += gGroupTypeAttributes_GridRebind;
 
             gGroupAttributes.DataKeyNames = new string[] { "Guid" };
             gGroupAttributes.Actions.ShowAdd = true;
             gGroupAttributes.Actions.AddClick += gGroupAttributes_Add;
-            gGroupAttributes.GridRebind += gGroupAttributes_GridRebind;
             gGroupAttributes.EmptyDataText = Server.HtmlEncode( None.Text );
+            gGroupAttributes.RowDataBound += gAttributes_RowDataBound;
+            gGroupAttributes.GridRebind += gGroupAttributes_GridRebind;
               
         }
 
@@ -196,61 +201,79 @@ namespace RockWeb.Blocks.Crm
             pnlDetails.Visible = true;
             GroupType groupType = null;
 
-            if ( !itemKeyValue.Equals( 0 ) )
+            using ( new UnitOfWorkScope() )
             {
-                groupType = new GroupTypeService().Get( itemKeyValue );
-                lActionTitle.Text = ActionTitle.Edit( GroupType.FriendlyTypeName );
+                var groupTypeService = new GroupTypeService();
+                var attributeService = new AttributeService();
+
+                if ( !itemKeyValue.Equals( 0 ) )
+                {
+                    groupType = groupTypeService.Get( itemKeyValue );
+                    lActionTitle.Text = ActionTitle.Edit( GroupType.FriendlyTypeName );
+                }
+                else
+                {
+                    groupType = new GroupType { Id = 0, ShowInGroupList = true };
+                    groupType.ChildGroupTypes = new List<GroupType>();
+                    groupType.LocationTypes = new List<GroupTypeLocationType>();
+                    lActionTitle.Text = ActionTitle.Add( GroupType.FriendlyTypeName );
+                }
+
+                LoadDropDowns(groupType.Id);
+
+                ChildGroupTypesDictionary = new Dictionary<int, string>();
+                LocationTypesDictionary = new Dictionary<int, string>();
+                GroupTypeAttributesState = new ViewStateList<Attribute>();
+                GroupAttributesState = new ViewStateList<Attribute>();
+
+                hfGroupTypeId.Value = groupType.Id.ToString();
+                tbName.Text = groupType.Name;
+                tbDescription.Text = groupType.Description;
+                tbGroupTerm.Text = groupType.GroupTerm;
+                tbGroupMemberTerm.Text = groupType.GroupMemberTerm;
+                ddlDefaultGroupRole.SetValue( groupType.DefaultGroupRoleId );
+                cbShowInGroupList.Checked = groupType.ShowInGroupList;
+                cbShowInNavigation.Checked = groupType.ShowInNavigation;
+                tbIconCssClass.Text = groupType.IconCssClass;
+                imgIconSmall.ImageId = groupType.IconSmallFileId;
+                imgIconLarge.ImageId = groupType.IconLargeFileId;
+
+                cbTakesAttendance.Checked = groupType.TakesAttendance;
+                ddlAttendanceRule.SetValue( (int)groupType.AttendanceRule );
+                ddlAttendancePrintTo.SetValue( (int)groupType.AttendancePrintTo );
+                cbAllowMultipleLocations.Checked = groupType.AllowMultipleLocations;
+                gtpInheritedGroupType.SelectedGroupTypeId = groupType.InheritedGroupTypeId;
+                groupType.ChildGroupTypes.ToList().ForEach( a => ChildGroupTypesDictionary.Add( a.Id, a.Name ) );
+                groupType.LocationTypes.ToList().ForEach( a => LocationTypesDictionary.Add( a.LocationTypeValueId, a.LocationTypeValue.Name ) );
+
+                string qualifierValue = groupType.Id.ToString();
+                var qryGroupTypeAttributes = attributeService.GetByEntityTypeId( new GroupType().TypeId ).AsQueryable()
+                    .Where( a =>
+                        a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierValue.Equals( qualifierValue ) );
+
+                var qryGroupAttributes = attributeService.GetByEntityTypeId( new Group().TypeId ).AsQueryable()
+                    .Where( a =>
+                        a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                        a.EntityTypeQualifierValue.Equals( qualifierValue ) );
+
+                GroupTypeAttributesState.AddAll( qryGroupTypeAttributes
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name )
+                    .ToList() );
+
+                GroupAttributesState.AddAll( qryGroupAttributes
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Name )
+                    .ToList() );
+
+                if ( groupType.InheritedGroupTypeId.HasValue )
+                {
+                    RebuildAttributeLists( groupType.InheritedGroupTypeId, groupTypeService, attributeService, false );
+                }
             }
-            else
-            {
-                groupType = new GroupType { Id = 0 };
-                groupType.ChildGroupTypes = new List<GroupType>();
-                groupType.LocationTypes = new List<GroupTypeLocationType>();
-                lActionTitle.Text = ActionTitle.Add( GroupType.FriendlyTypeName );
-            }
 
-            LoadDropDowns(groupType.Id);
-
-            ChildGroupTypesDictionary = new Dictionary<int, string>();
-            LocationTypesDictionary = new Dictionary<int, string>();
-            GroupTypeAttributesState = new ViewStateList<Attribute>();
-            GroupAttributesState = new ViewStateList<Attribute>();
-
-            hfGroupTypeId.Value = groupType.Id.ToString();
-            tbName.Text = groupType.Name;
-            tbDescription.Text = groupType.Description;
-            tbGroupTerm.Text = groupType.GroupTerm;
-            tbGroupMemberTerm.Text = groupType.GroupMemberTerm;
-            ddlDefaultGroupRole.SetValue( groupType.DefaultGroupRoleId );
-            cbShowInGroupList.Checked = groupType.ShowInGroupList;
-            cbShowInNavigation.Checked = groupType.ShowInNavigation;
-            tbIconCssClass.Text = groupType.IconCssClass;
-            imgIconSmall.ImageId = groupType.IconSmallFileId;
-            imgIconLarge.ImageId = groupType.IconLargeFileId;
-
-            cbTakesAttendance.Checked = groupType.TakesAttendance;
-            ddlAttendanceRule.SetValue( (int)groupType.AttendanceRule );
-            ddlAttendancePrintTo.SetValue( (int)groupType.AttendancePrintTo );
-            cbAllowMultipleLocations.Checked = groupType.AllowMultipleLocations;
-            gtpInheritedGroupType.SelectedGroupTypeId = groupType.InheritedGroupTypeId;
-            groupType.ChildGroupTypes.ToList().ForEach( a => ChildGroupTypesDictionary.Add( a.Id, a.Name ) );
-            groupType.LocationTypes.ToList().ForEach( a => LocationTypesDictionary.Add( a.LocationTypeValueId, a.LocationTypeValue.Name ) );
-
-            AttributeService attributeService = new AttributeService();
-
-            string qualifierValue = groupType.Id.ToString();
-            var qryGroupTypeAttributes = attributeService.GetByEntityTypeId( new GroupType().TypeId ).AsQueryable()
-                .Where( a => a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase )
-                && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
-
-            GroupTypeAttributesState.AddAll( qryGroupTypeAttributes.ToList() );
             BindGroupTypeAttributesGrid();
-
-            var qryGroupAttributes = attributeService.GetByEntityTypeId( new Group().TypeId ).AsQueryable()
-                .Where( a => a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase )
-                && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
-
-            GroupAttributesState.AddAll( qryGroupAttributes.ToList() );
             BindGroupAttributesGrid();
 
             // render UI based on Authorized and IsSystem
@@ -299,6 +322,88 @@ namespace RockWeb.Blocks.Crm
 
             BindChildGroupTypesGrid();
             BindLocationTypesGrid();
+        }
+
+        private void RebuildAttributeLists( int? inheritedGroupTypeId, GroupTypeService groupTypeService, AttributeService attributeService,
+            bool clearList )
+        {
+            string qualifierValue = PageParameter( "GroupTypeId" );
+
+            if ( clearList )
+            {
+                var attributes = new List<Attribute>();
+                foreach ( var attribute in GroupTypeAttributesState )
+                {
+                    if ( string.IsNullOrWhiteSpace( attribute.EntityTypeQualifierValue ) ||
+                        attribute.EntityTypeQualifierValue == qualifierValue )
+                    {
+                        attributes.Add( attribute );
+                    }
+                }
+                GroupTypeAttributesState.Clear();
+                GroupTypeAttributesState.AddAll( attributes );
+
+                attributes = new List<Attribute>();
+                foreach ( var attribute in GroupAttributesState )
+                {
+                    if ( string.IsNullOrWhiteSpace( attribute.EntityTypeQualifierValue ) ||
+                        attribute.EntityTypeQualifierValue == qualifierValue )
+                    {
+                        attributes.Add( attribute );
+                    }
+                }
+                GroupAttributesState.Clear();
+                GroupAttributesState.AddAll( attributes );
+            }
+
+            while ( inheritedGroupTypeId.HasValue )
+            {
+                var inheritedGroupType = groupTypeService.Get( inheritedGroupTypeId.Value );
+                if ( inheritedGroupType != null )
+                {
+                    qualifierValue = inheritedGroupType.Id.ToString();
+
+                    var qryGroupTypeAttributes = attributeService.GetByEntityTypeId( new GroupType().TypeId ).AsQueryable()
+                        .Where( a =>
+                            a.EntityTypeQualifierColumn.Equals( "Id", StringComparison.OrdinalIgnoreCase ) &&
+                            a.EntityTypeQualifierValue.Equals( qualifierValue ) );
+
+                    var qryGroupAttributes = attributeService.GetByEntityTypeId( new Group().TypeId ).AsQueryable()
+                        .Where( a =>
+                            a.EntityTypeQualifierColumn.Equals( "GroupTypeId", StringComparison.OrdinalIgnoreCase ) &&
+                            a.EntityTypeQualifierValue.Equals( qualifierValue ) );
+
+                    // TODO: Should probably add GroupTypeCache object so that it can be used during the 
+                    // databind of the attribute grids, instead of having to do this hack of putting 
+                    // the inherited group type name into the description property of the attribute 
+                    // (which is currently how the databound method gets the inherited attributes group type)
+                    qryGroupTypeAttributes
+                        .ToList()
+                        .ForEach( a => a.Description = inheritedGroupType.Name );
+
+                    qryGroupAttributes
+                        .ToList()
+                        .ForEach( a => a.Description = inheritedGroupType.Name );
+
+                    GroupTypeAttributesState.InsertAll( qryGroupTypeAttributes
+                        .OrderBy( a => a.Order )
+                        .ThenBy( a => a.Name )
+                        .ToList() );
+
+                    GroupAttributesState.InsertAll( qryGroupAttributes
+                        .OrderBy( a => a.Order )
+                        .ThenBy( a => a.Name )
+                        .ToList() );
+
+                    inheritedGroupTypeId = inheritedGroupType.InheritedGroupTypeId;
+                }
+                else
+                {
+                    inheritedGroupTypeId = null;
+                }
+
+            }
+
         }
 
         #endregion
@@ -598,8 +703,14 @@ namespace RockWeb.Blocks.Crm
                             attributeService.Save( attr, CurrentPersonId );
                         }
 
+                        string qualifierValue = groupType.Id.ToString();
+
                         // add/update the GroupTypeAttributes that are assigned in the UI
-                        foreach ( var attributeState in GroupTypeAttributesState )
+                        foreach ( var attributeState in GroupTypeAttributesState
+                            .Where( a => 
+                                a.EntityTypeQualifierValue == null ||
+                                a.EntityTypeQualifierValue.Trim() == string.Empty || 
+                                a.EntityTypeQualifierValue.Equals(qualifierValue)))
                         {
                             // remove old qualifiers in case they changed
                             var qualifierService = new AttributeQualifierService();
@@ -628,7 +739,7 @@ namespace RockWeb.Blocks.Crm
                             }
 
                             attribute.EntityTypeQualifierColumn = "Id";
-                            attribute.EntityTypeQualifierValue = groupType.Id.ToString();
+                            attribute.EntityTypeQualifierValue = qualifierValue;
                             attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( GroupType ) ).Id;
                             Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
                             attributeService.Save( attribute, CurrentPersonId );
@@ -647,7 +758,11 @@ namespace RockWeb.Blocks.Crm
                         }
 
                         // add/update the GroupAttributes that are assigned in the UI
-                        foreach ( var attributeState in GroupAttributesState )
+                        foreach ( var attributeState in GroupAttributesState 
+                            .Where( a => 
+                                a.EntityTypeQualifierValue == null ||
+                                a.EntityTypeQualifierValue.Trim() == string.Empty || 
+                                a.EntityTypeQualifierValue.Equals(qualifierValue)))
                         {
                             // remove old qualifiers in case they changed
                             var qualifierService = new AttributeQualifierService();
@@ -676,7 +791,7 @@ namespace RockWeb.Blocks.Crm
                             }
 
                             attribute.EntityTypeQualifierColumn = "GroupTypeId";
-                            attribute.EntityTypeQualifierValue = groupType.Id.ToString();
+                            attribute.EntityTypeQualifierValue = qualifierValue;
                             attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( Group ) ).Id;
                             Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
                             attributeService.Save( attribute, CurrentPersonId );
@@ -685,6 +800,54 @@ namespace RockWeb.Blocks.Crm
 
             }
             NavigateToParentPage();
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the gtpInheritedGroupType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gtpInheritedGroupType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            using ( new UnitOfWorkScope() )
+            {
+                var groupTypeService = new GroupTypeService();
+                var attributeService = new AttributeService();
+                RebuildAttributeLists( gtpInheritedGroupType.SelectedValueAsInt(), groupTypeService, attributeService, true );
+            }
+
+            BindGroupTypeAttributesGrid();
+            BindGroupAttributesGrid();
+        }
+
+        /// <summary>
+        /// Handles the RowDataBound event of the attribute grids.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Web.UI.WebControls.GridViewRowEventArgs"/> instance containing the event data.</param>
+        void gAttributes_RowDataBound( object sender, System.Web.UI.WebControls.GridViewRowEventArgs e )
+        {
+            if ( e.Row.DataItem != null )
+            {
+                Attribute attribute = e.Row.DataItem as Attribute;
+                if ( attribute != null )
+                {
+                    if ( !string.IsNullOrEmpty( attribute.EntityTypeQualifierValue ) &&
+                        attribute.EntityTypeQualifierValue != PageParameter( "GroupTypeId" ) )
+                    {
+
+                        // Inherited Attribute
+                        e.Row.Cells[0].Text = string.Format(
+                            "<span class='muted'>{0} <span class='inherited'>(Inherited from <a href='{1}' target='_blank'>{2}</a>)</span></span>",
+                            attribute.Name,
+                            Page.ResolveUrl( "~/GroupType/" + attribute.EntityTypeQualifierValue ),
+                            attribute.Description );   // TODO, once a GroupTypeCache object exists, the name could be retrieved from the cache object instead of using the description property to hold it (we don't want to do a db qry on every row)
+
+                        e.Row.Cells[1].Controls.Clear();  // Edit
+                        e.Row.Cells[2].Controls.Clear();  // Delete
+                    }
+                }
+            }
         }
 
         #endregion
@@ -720,6 +883,8 @@ namespace RockWeb.Blocks.Crm
         {
             pnlDetails.Visible = false;
             pnlGroupTypeAttribute.Visible = true;
+
+            edtGroupTypeAttributes.AttributeEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( GroupType ) ).Id;
 
             Attribute attribute;
             if ( attributeGuid.Equals( Guid.Empty ) )
@@ -801,7 +966,7 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private void BindGroupTypeAttributesGrid()
         {
-            gGroupTypeAttributes.DataSource = GroupTypeAttributesState.OrderBy( a => a.Name ).ToList();
+            gGroupTypeAttributes.DataSource = GroupTypeAttributesState.ToList();
             gGroupTypeAttributes.DataBind();
         }
 
@@ -838,6 +1003,8 @@ namespace RockWeb.Blocks.Crm
         {
             pnlDetails.Visible = false;
             pnlGroupAttribute.Visible = true;
+
+            edtGroupAttributes.AttributeEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( Group ) ).Id;
 
             Attribute attribute;
             if ( attributeGuid.Equals( Guid.Empty ) )
@@ -919,7 +1086,7 @@ namespace RockWeb.Blocks.Crm
         /// </summary>
         private void BindGroupAttributesGrid()
         {
-            gGroupAttributes.DataSource = GroupAttributesState.OrderBy( a => a.Name ).ToList();
+            gGroupAttributes.DataSource = GroupAttributesState.ToList();
             gGroupAttributes.DataBind();
         }
 

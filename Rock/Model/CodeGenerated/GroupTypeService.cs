@@ -63,6 +63,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, Group.FriendlyTypeName );
                 return false;
             }  
+ 
+            if ( new Service<GroupType>().Queryable().Any( a => a.InheritedGroupTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", GroupType.FriendlyTypeName, GroupType.FriendlyTypeName );
+                return false;
+            }  
             
             // ignoring GroupTypeAssociation,ChildGroupTypeId 
             
@@ -107,6 +113,7 @@ namespace Rock.Model
                 target.AttendanceRule = source.AttendanceRule;
                 target.AttendancePrintTo = source.AttendancePrintTo;
                 target.DisplayOrder = source.DisplayOrder;
+                target.InheritedGroupTypeId = source.InheritedGroupTypeId;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

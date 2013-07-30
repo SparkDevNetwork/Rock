@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using Rock.Attribute;
 using Rock.Extension;
 using Rock.Web.Cache;
 
@@ -14,8 +15,24 @@ namespace Rock.BinaryFile
     /// <summary>
     /// Base class for BinaryFile storage components
     /// </summary>
+    [BooleanField( "Active", "Is this service active?", true )]
     public abstract class StorageComponent : Component
     {
+        public override bool IsActive
+        {
+            get
+            {
+                bool isActive;
+
+                if ( bool.TryParse( GetAttributeValue( "Active" ), out isActive ) )
+                {
+                    return isActive;
+                }
+
+                return true;
+            }
+        }
+
         /// <summary>
         /// Saves the file.
         /// </summary>

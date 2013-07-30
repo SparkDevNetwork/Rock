@@ -58,7 +58,11 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public int GroupRoleId { get; set; }
-        
+
+        [Required]
+        [DataMember( IsRequired = true )]
+        public GroupMemberStatus GroupMemberStatus { get; set; }
+
         /// <summary>
         /// Gets or sets the Person.
         /// </summary>
@@ -114,5 +118,12 @@ namespace Rock.Model
             this.HasRequired( p => p.Group ).WithMany( p => p.Members ).HasForeignKey( p => p.GroupId ).WillCascadeOnDelete(true);
             this.HasRequired( p => p.GroupRole ).WithMany().HasForeignKey( p => p.GroupRoleId ).WillCascadeOnDelete(false);
         }
+    }
+
+    public enum GroupMemberStatus
+    {
+        Inactive = 0,
+        Active = 1, 
+        Pending = 2 
     }
 }

@@ -35,7 +35,7 @@ namespace Rock.Tests.Model
                 var aLong = "-112.20765";
                 var aPointInside = DbGeography.FromText( string.Format( "POINT({0} {1})", aLong, aLat ) ); // NOTE: long, lat
 
-                Assert.True( aPointInside.Intersects( deviceWithGeoFence.GeoFence ) );
+                Assert.True( aPointInside.Intersects( deviceWithGeoFence.Location.GeoFence ) );
             }
 
             [Test]
@@ -51,7 +51,7 @@ namespace Rock.Tests.Model
                 var aPointOutside = DbGeography.FromText( string.Format( "POINT({0} {1})", farLong, farLat ) ); // NOTE: long, lat
 
                 // This point should NOT intersect our buffered CCV location
-                Assert.False( aPointOutside.Intersects( deviceWithGeoFence.GeoFence ) );
+                Assert.False( aPointOutside.Intersects( deviceWithGeoFence.Location.GeoFence ) );
             }
         }
 
@@ -93,8 +93,8 @@ namespace Rock.Tests.Model
                 var deviceFromJson = JsonConvert.DeserializeObject( deviceAsJson, typeof( Device ) ) as Device;
 
                Assert.AreEqual( device.Guid, deviceFromJson.Guid );
-               Assert.AreEqual( device.GeoPoint.Latitude, deviceFromJson.GeoPoint.Latitude );
-               Assert.AreEqual( device.GeoPoint.Longitude, deviceFromJson.GeoPoint.Longitude );
+               Assert.AreEqual( device.Location.GeoPoint.Latitude, deviceFromJson.Location.GeoPoint.Latitude );
+               Assert.AreEqual( device.Location.GeoPoint.Longitude, deviceFromJson.Location.GeoPoint.Longitude );
             }
         }
 
@@ -104,10 +104,12 @@ namespace Rock.Tests.Model
             var ccvLat = "33.71060";
             var ccvLon = "-112.20884";
 
+            var aLocation = new Location();
             var aDevice = new Device();
+            aDevice.Location = aLocation;
             var aPointAtCCV = DbGeography.PointFromText(
                 string.Format( "POINT({0} {1})", ccvLon, ccvLat ), 4326 );  // NOTE: long, lat
-            aDevice.GeoPoint = aPointAtCCV;
+            aLocation.GeoPoint = aPointAtCCV;
             return aDevice;
         }
 
@@ -118,12 +120,14 @@ namespace Rock.Tests.Model
             var ccvLon = "-112.20884";
             var radiusInMeters = 600;
 
-            var aBufferedDevice = new Device();
+            var aBufferedLocation = new Location();
+            var aDeviceAtCCV = new Device();
+            aDeviceAtCCV.Location = aBufferedLocation;
             var aPointAtCCV = DbGeography.PointFromText(
                 string.Format( "POINT({0} {1})", ccvLon, ccvLat ), 4326 );  // NOTE: long, lat
             // now make this 'buffered device' the GeoPoint of CCV. 
-            aBufferedDevice.GeoFence = aPointAtCCV.Buffer( radiusInMeters );
-            return aBufferedDevice;
+            aBufferedLocation.GeoFence = aPointAtCCV.Buffer( radiusInMeters );
+            return aDeviceAtCCV;
         }
     }
 }

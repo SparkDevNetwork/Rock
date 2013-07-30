@@ -22,6 +22,7 @@
     <DocumentationFile>
     </DocumentationFile>
     <Prefer32Bit>false</Prefer32Bit>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -140,6 +141,8 @@
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
+    <Compile Include="Attribute\EncryptedFieldAttribute.cs" />
+    <Compile Include="Attribute\LocationFieldAttribute.cs" />
     <Compile Include="Attribute\GroupRoleFieldAttribute.cs" />
     <Compile Include="Attribute\MemoFieldAttribute.cs" />
     <Compile Include="Attribute\DecimalFieldAttribute.cs" />
@@ -170,6 +173,8 @@
     <Compile Include="Field\Types\ComponentsFieldType.cs" />
     <Compile Include="Field\Types\CategoryFieldType.cs" />
     <Compile Include="Field\Types\CategoriesFieldType.cs" />
+    <Compile Include="Field\Types\EncryptedFieldType.cs" />
+    <Compile Include="Field\Types\LocationFieldType.cs" />
     <Compile Include="Field\Types\GroupRoleFieldType.cs" />
     <Compile Include="Migrations\201305032320163_Communications.cs" />
     <Compile Include="Migrations\201305032320163_Communications.Designer.cs">
@@ -373,9 +378,33 @@
     <Compile Include="Migrations\201307161341221_FixRelationshipBlockSettings.Designer.cs">
       <DependentUpon>201307161341221_FixRelationshipBlockSettings.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201307161727092_StorageEntityTypes.cs" />
-    <Compile Include="Migrations\201307161727092_StorageEntityTypes.Designer.cs">
-      <DependentUpon>201307161727092_StorageEntityTypes.cs</DependentUpon>
+    <Compile Include="Migrations\201307162008184_GroupMemberAddMemberStatus.cs" />
+    <Compile Include="Migrations\201307162008184_GroupMemberAddMemberStatus.Designer.cs">
+      <DependentUpon>201307162008184_GroupMemberAddMemberStatus.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307162011096_GroupMemberUniqueMemberRole.cs" />
+    <Compile Include="Migrations\201307162011096_GroupMemberUniqueMemberRole.Designer.cs">
+      <DependentUpon>201307162011096_GroupMemberUniqueMemberRole.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307171913426_AddGroupTypeRoute.cs" />
+    <Compile Include="Migrations\201307171913426_AddGroupTypeRoute.Designer.cs">
+      <DependentUpon>201307171913426_AddGroupTypeRoute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307172022520_PowerTools.cs" />
+    <Compile Include="Migrations\201307172022520_PowerTools.Designer.cs">
+      <DependentUpon>201307172022520_PowerTools.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307181215585_HideSystemGroupTypes.cs" />
+    <Compile Include="Migrations\201307181215585_HideSystemGroupTypes.Designer.cs">
+      <DependentUpon>201307181215585_HideSystemGroupTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307191356459_LocationUpdates.cs" />
+    <Compile Include="Migrations\201307191356459_LocationUpdates.Designer.cs">
+      <DependentUpon>201307191356459_LocationUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307230011388_StorageEntityTypes.cs" />
+    <Compile Include="Migrations\201307230011388_StorageEntityTypes.Designer.cs">
+      <DependentUpon>201307230011388_StorageEntityTypes.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
@@ -1964,8 +1993,26 @@
     <EmbeddedResource Include="Migrations\201307161341221_FixRelationshipBlockSettings.resx">
       <DependentUpon>201307161341221_FixRelationshipBlockSettings.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201307161727092_StorageEntityTypes.resx">
-      <DependentUpon>201307161727092_StorageEntityTypes.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201307162008184_GroupMemberAddMemberStatus.resx">
+      <DependentUpon>201307162008184_GroupMemberAddMemberStatus.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307162011096_GroupMemberUniqueMemberRole.resx">
+      <DependentUpon>201307162011096_GroupMemberUniqueMemberRole.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307171913426_AddGroupTypeRoute.resx">
+      <DependentUpon>201307171913426_AddGroupTypeRoute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307172022520_PowerTools.resx">
+      <DependentUpon>201307172022520_PowerTools.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307181215585_HideSystemGroupTypes.resx">
+      <DependentUpon>201307181215585_HideSystemGroupTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307191356459_LocationUpdates.resx">
+      <DependentUpon>201307191356459_LocationUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307230011388_StorageEntityTypes.resx">
+      <DependentUpon>201307230011388_StorageEntityTypes.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
