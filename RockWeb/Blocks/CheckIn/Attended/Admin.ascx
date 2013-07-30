@@ -20,7 +20,7 @@
 </script>
 
 <asp:UpdatePanel ID="upContent" runat="server" UpdateMode="Conditional">
-    <ContentTemplate>
+<ContentTemplate>
 
         <asp:PlaceHolder ID="phScript" runat="server"></asp:PlaceHolder>
         <asp:HiddenField ID="hfLatitude" runat="server" />
@@ -63,5 +63,5 @@
             </div>
         </div>
 
-    </ContentTemplate>
+</ContentTemplate>
 </asp:UpdatePanel>

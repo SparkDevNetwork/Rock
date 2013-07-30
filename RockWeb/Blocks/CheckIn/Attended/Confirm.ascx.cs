@@ -13,6 +13,7 @@ using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Model;
 using Rock.Web.UI.Controls;
@@ -20,10 +21,15 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.CheckIn.Attended
 {
     [Description( "Attended Check-In Confirmation Block" )]
+    [LinkedPage("Activity Select Page")]
     public partial class Confirm : CheckInBlock
     {
         #region Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
@@ -51,6 +57,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }
         }
 
+        /// <summary>
+        /// Creates the grid data source.
+        /// </summary>
         protected void CreateGridDataSource()
         {
             System.Data.DataTable dt = new System.Data.DataTable();
@@ -98,16 +107,31 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
         #region Edit Events
 
+        /// <summary>
+        /// Handles the Click event of the lbBack control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbBack_Click( object sender, EventArgs e )
         {
             GoBack();
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbDone control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbDone_Click( object sender, EventArgs e )
         {
             GoNext();
         }
 
+        /// <summary>
+        /// Handles the RowCommand event of the gPersonList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewCommandEventArgs"/> instance containing the event data.</param>
         protected void gPersonList_RowCommand( object sender, GridViewCommandEventArgs e )
         {
             if ( e.CommandName == "Print" )
@@ -123,6 +147,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbPrintAll control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbPrintAll_Click( object sender, EventArgs e )
         {
             // Do some crazy printing crap in here where you can print labels for everyone listed in the grid.
@@ -137,13 +166,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void gPersonList_Edit( object sender, RowEventArgs e )
         {
             // throw the user back to the activity select page for the person they want to edit.
-
-
-
-
             SaveState();
-            var temp = new Dictionary<string, string>();
-            NavigateToPage( new Guid( "C87916FE-417E-4A11-8831-5CFA7678A228" ), temp );
+            var queryParams = new Dictionary<string, string>();
+            NavigateToLinkedPage( "ActivitySelectPage", queryParams);
         }
 
         /// <summary>
@@ -161,52 +186,34 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
         #region Internal Methods
 
+        /// <summary>
+        /// Processes the best fit.
+        /// </summary>
         private void ProcessBestFit()
         {
-
-            var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-            if ( family != null )
+            var errors = new List<string>();
+            if ( ProcessActivity( "Assign Best Fit", out errors ) )
             {
-                foreach ( var person in family.People.Where( f => f.Selected ) )
+                if ( CurrentCheckInState.CheckIn.Families.All( f => f.People.Count == 0 ) )
                 {
-                    //var personId = CheckInPeopleIds.FirstOrDefault();
-                    var chkperson = new PersonService().Get( person.Person.Id );
-                    //LoadMinistries( chkperson );
-                    //LoadTimes();
-                    //LoadActivities();
-                    if ( person.LastCheckIn != null && person.GroupTypes.Count > 1 )
-                    {
-                        var groupType = person.GroupTypes.Where( g => g.LastCheckIn == person.LastCheckIn ).FirstOrDefault();
-                        if ( groupType != null )
-                        {
-                            groupType.Selected = true;
-                            var attendService = new AttendanceService();
-                            Attendance attend = attendService.Queryable().Where( a => a.StartDateTime == person.LastCheckIn
-                                && a.PersonId == person.Person.Id ).FirstOrDefault();
-                            List<int> temp = new List<int>();
-                            temp.Add( person.Person.Id );
-                            temp.Add( (int)attend.ScheduleId );
-                            temp.Add( (int)attend.Group.GroupTypeId );
-                            //CheckInTimeAndActivityList.Add( temp );
-
-                            //var location = groupType.Locations.Where( l => l.LastCheckIn == person.LastCheckIn ).FirstOrDefault();
-                            //if ( location != null )
-                            //{
-                            //    location.Selected = true;
-                            //    var group = location.Groups.Where( g => g.LastCheckIn == person.LastCheckIn ).FirstOrDefault();
-                            //    if ( group != null )
-                            //    {
-                            //        group.Selected = true;
-                            //    }
-                            //}
-                        }
-                    }
+                    string errorMsg = "<ul><li>No one in that family is eligible to check-in.</li></ul>";
+                    maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
+                }
+                else
+                {
+                    SaveState();                    
                 }
             }
-
-
+            else
+            {   // not able to assign everyone, please assign manually
+                string errorMsg = "<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
+                maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
+            }
         }
 
+        /// <summary>
+        /// Goes the back.
+        /// </summary>
         private void GoBack()
         {
             var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
@@ -222,6 +229,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
             NavigateToPreviousPage();
         }
 
+        /// <summary>
+        /// Goes the next.
+        /// </summary>
         private void GoNext()
         {
             CurrentCheckInState.CheckIn.Families.Clear();
@@ -231,6 +241,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
             NavigateToNextPage();
         }
 
+        /// <summary>
+        /// Gets the parent.
+        /// </summary>
+        /// <param name="childGroupTypeId">The child group type id.</param>
+        /// <param name="parentId">The parent id.</param>
+        /// <returns></returns>
         protected int GetParent( int childGroupTypeId, int parentId )
         {
             GroupType childGroupType = new GroupTypeService().Get( childGroupTypeId );
