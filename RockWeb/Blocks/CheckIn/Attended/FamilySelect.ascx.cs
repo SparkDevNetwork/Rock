@@ -43,6 +43,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 if ( !Page.IsPostBack )
                 {
+                    //grdPersonSearchResults.DataKeyNames = new string[] { "personId" }; 
                     if ( CurrentCheckInState.CheckIn.Families.Count == 0 )
                     {
                         familyTitle.InnerText = "No Search Results Found";
@@ -123,12 +124,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     CurrentCheckInState.CheckIn.Families.ForEach( f => f.Selected = false );
 
 
-                    // gonna try to do this client side.
                     // make sure no other families look like they're selected
-                    //foreach ( ListViewDataItem li in lvFamily.Items )
-                    //{
-                    //    ( (LinkButton)li.FindControl( "lbSelectFamily" ) ).RemoveCssClass( "active" );
-                    //}
+                    foreach ( ListViewDataItem li in lvFamily.Items )
+                    {
+                        ( (LinkButton)li.FindControl( "lbSelectFamily" ) ).RemoveCssClass( "active" );
+                    }
 
                     // select the clicked on family
                     family.Selected = true;
@@ -458,6 +458,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 int index = int.Parse( e.CommandArgument.ToString() );
                 GridViewRow row = grdPersonSearchResults.Rows[index];
+                //var person = new PersonService().Get( int.Parse(grdPersonSearchResults.DataKeys[row]["personId"]) );
+                //int test = int.Parse(grdPersonSearchResults.DataKeys[row]["personId"].Value);
                 var person = new PersonService().Get( int.Parse( row.Cells[0].Text ) );
                 var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                 if ( family != null )
@@ -508,17 +510,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
                             .Select( m => m.Group )
                             .FirstOrDefault();
                         var groupMembers = gms.GetByGroupId( canCheckInGroup.Id );
-                        foreach ( var groupMember in groupMembers )
-                        {
-                            if ( groupMember.GroupRoleId == new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ).Id )
-                            {
-                                CheckInPerson checkInPerson = new CheckInPerson();
-                                Person per = new PersonService().Get( groupMember.PersonId );
-                                //checkInPerson.Person = person.Clone( false );
-                                checkInPerson.Person = per;
-                                visitors.Add( checkInPerson );
-                            }
-                        }
+
+                        var groupMember = groupMembers.FirstOrDefault( g => g.GroupRoleId == new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ).Id );
+                        var checkInPerson = new CheckInPerson();
+                        checkInPerson.Person = groupMember.Person.Clone( false );
+                        visitors.Add( checkInPerson );
+
                         repVisitors.DataSource = visitors;
                         repVisitors.DataBind();
 
@@ -591,7 +588,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     var groupMember = AddGroupMember( family.Group, person );
                     CIP.FamilyMember = true;
                     family.People.Add( CIP );
-                    SaveState();
 
                     repPerson.DataSource = family.People;
                     repPerson.DataBind();
@@ -606,7 +602,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     Person.CreateCheckinRelationship( family.People.FirstOrDefault().Person.Id, person.Id, CurrentPersonId );
                     CIP.FamilyMember = false;
                     family.People.Add( CIP );
-                    SaveState();
 
                     repVisitors.DataSource = family.People.Where( p => p.FamilyMember == false );
                     repVisitors.DataBind();
@@ -620,6 +615,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         }
                     }
                 }
+                SaveState();
             }
         }
 
