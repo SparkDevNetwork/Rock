@@ -51,11 +51,33 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 ", CurrentKioskId, CurrentGroupTypeIds.AsDelimited( "," ) );
                 phScript.Controls.Add( new LiteralControl( script ) );
 
+                if ( CurrentCheckInState.Kiosk.KioskGroupTypes.Count == 0 )
+                {
+                    // throw error
+                }
+                else if ( !CurrentCheckInState.Kiosk.HasLocations )
+                {
+                    DateTimeOffset activeAt = CurrentCheckInState.Kiosk.KioskGroupTypes.Select( g => g.NextActiveTime ).Min();
+                    // not active yet
+                }
+                else if ( !CurrentCheckInState.Kiosk.HasActiveLocations )
+                {
+                    // not available
+                }
+                else
+                {
+                    // active
+                }
+
                 //if ( CurrentKioskId != null || UserBackedUp )
                 if ( CurrentCheckInState.CheckIn.SearchType != null || UserBackedUp )
                 {
                     lbAdmin.Visible = false;
                     lbBack.Visible = true;
+                    if ( !string.IsNullOrWhiteSpace( CurrentCheckInState.CheckIn.SearchValue ) )
+                    {
+                        tbSearchBox.Text = CurrentCheckInState.CheckIn.SearchValue;
+                    }
                 }
                 else
                 {
@@ -63,7 +85,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     lbBack.Visible = false;
                 }
 
+                CurrentWorkflow = null;
                 SaveState();
+                //LoadLocations();
             }
         }
 
@@ -98,7 +122,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     var errors = new List<string>();
                     if ( ProcessActivity( "Family Search", out errors ) )
                     {
-                        LoadLocations();
                         SaveState();
                         NavigateToNextPage();
                     }
@@ -134,29 +157,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void lbBack_Click( object sender, EventArgs e )
         {
             NavigateToPreviousPage();
-        }
-
-        #endregion
-
-        #region Internal Methods
-
-        /// <summary>
-        /// Loads the locations.
-        /// </summary>
-        private void LoadLocations()
-        {
-            List<int> locations = new List<int>();
-
-            foreach ( var groupType in CurrentCheckInState.Kiosk.KioskGroupTypes )
-            {
-                foreach ( var location in groupType.KioskLocations )
-                {
-                    if ( !locations.Contains( location.Location.Id ) )
-                    {
-                        locations.Add( location.Location.Id );
-                    }
-                }
-            }
         }
 
         #endregion
