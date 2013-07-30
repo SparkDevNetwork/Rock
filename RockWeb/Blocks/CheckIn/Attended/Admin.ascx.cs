@@ -68,16 +68,17 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 phScript.Controls.Add( new LiteralControl( script ) );
 
                 if ( !CurrentKioskId.HasValue )
-                {
+                {   // #DEBUG, may be the local machine
                     var kiosk = new DeviceService().GetByDeviceName( Environment.MachineName );
                     if ( kiosk != null )
                     {
                         CurrentKioskId = kiosk.Id;
-                        BindGroupTypes( hfGroupTypes.Value );
+                        //BindGroupTypes( hfGroupTypes.Value );
                     }                    
                     else
                     {
                         maWarning.Show( "This device has not been set up for check in.", ModalAlertType.Warning );
+                        lbOk.Visible = false;
                         return;
                     }
                 }                
@@ -123,16 +124,17 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var groupTypeIds = new List<int>();
             if ( !string.IsNullOrEmpty( hfParentTypes.Value ) )
             {
-                var selectedParentIds = hfParentTypes.Value.SplitDelimitedValues().Select( int.Parse ).ToList();
-                CurrentKioskId = hfKiosk.ValueAsInt();
-
                 var kiosk = new DeviceService().Get( (int)CurrentKioskId );
-                var parentGroups = GetAllParentGroupTypes( kiosk);
-                foreach ( var childTypeList in parentGroups.Where( pg => selectedParentIds.Contains( pg.Id ) )
-                    .Select( pg => pg.ChildGroupTypes ) )
-                {                
-                    groupTypeIds.AddRange( childTypeList.Select( cg => cg.Id ) );
-                }
+                var parentGroupTypes = GetAllParentGroupTypes( kiosk );
+
+                var selectedParentIds = hfParentTypes.Value.SplitDelimitedValues().Select( int.Parse ).ToList();
+                
+                // get child types for selected parent types
+                var testList = parentGroupTypes.Where( pg => selectedParentIds.Contains( pg.Id ) )
+                    .SelectMany( pg => pg.ChildGroupTypes
+                        .Select( cg => cg.Id ) );
+
+                groupTypeIds = testList.ToList();
             }
             else
             {
@@ -140,7 +142,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 return;
             }
             
-            ClearMobileCookie();            
+            ClearMobileCookie();
             CurrentGroupTypeIds = groupTypeIds;
             CurrentCheckInState = null;
             CurrentWorkflow = null;
@@ -316,11 +318,14 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     var parentGroupTypes = GetAllParentGroupTypes( kiosk );
                     
                     if ( !string.IsNullOrWhiteSpace( selectedGroupTypes ) )
-                    {
+                    {   
                         var selectedChildIds = selectedGroupTypes.SplitDelimitedValues().Select( sgt => Convert.ToInt32( sgt ) ).ToList();
+
+                        // get parent types for selected child types
                         var selectedParentIds = parentGroupTypes.Where( pgt => pgt.ChildGroupTypes
                             .Any( cgt => selectedChildIds.Contains( cgt.Id ) ) )
                             .Select( pgt => pgt.Id ).ToList();
+
                         hfParentTypes.Value = string.Join( ",", selectedParentIds );
                     }
 
@@ -337,12 +342,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void repMinistry_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-            var parentGroups = hfParentTypes.Value.SplitDelimitedValues().ToList();
+            var parentGroups = hfParentTypes.Value.SplitDelimitedValues().Select( int.Parse ).ToList();
             if ( parentGroups.Count > 0 )
             {
                 if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
                 {
-                    if ( parentGroups.Contains( ( (GroupType)e.Item.DataItem ).Id.ToString() ) )
+                    if ( parentGroups.Contains( ( (GroupType)e.Item.DataItem ).Id ) )
                     {
                         ( (Button)e.Item.FindControl( "lbMinistry" ) ).AddCssClass( "active" );                        
                     }
@@ -357,16 +362,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <returns></returns>
         private List<GroupType> GetAllParentGroupTypes( Device kiosk)
         {            
-            var pgtList = new List<GroupType>();
-            foreach ( var groupLocations in kiosk.Locations.Select( l => l.GroupLocations ) )
-            {                
-                foreach(var parentGroupType in groupLocations.Select( gl => gl.Group.GroupType.ParentGroupTypes))
-                {
-                    pgtList.AddRange( parentGroupType );                    
-                }
-            }
+            var pgtList = kiosk.Locations.Select( l => l.GroupLocations
+                .SelectMany( gl => gl.Group.GroupType.ParentGroupTypes ) );
 
-            return pgtList.Distinct().ToList();
+            return pgtList.Select( gt => gt.First() ).Distinct().ToList();
+                       
+            //return pgtList.Distinct().ToList();
         }
         
         #endregion

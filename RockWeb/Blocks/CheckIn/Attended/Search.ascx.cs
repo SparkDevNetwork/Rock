@@ -51,6 +51,24 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 ", CurrentKioskId, CurrentGroupTypeIds.AsDelimited( "," ) );
                 phScript.Controls.Add( new LiteralControl( script ) );
 
+                if ( CurrentCheckInState.Kiosk.KioskGroupTypes.Count == 0 )
+                {
+                    // throw error
+                }
+                else if ( !CurrentCheckInState.Kiosk.HasLocations )
+                {
+                    DateTimeOffset activeAt = CurrentCheckInState.Kiosk.KioskGroupTypes.Select( g => g.NextActiveTime ).Min();
+                    // not active yet
+                }
+                else if ( !CurrentCheckInState.Kiosk.HasActiveLocations )
+                {
+                    // not available
+                }
+                else
+                {
+                    // active
+                }
+
                 //if ( CurrentKioskId != null || UserBackedUp )
                 if ( CurrentCheckInState.CheckIn.SearchType != null || UserBackedUp )
                 {
@@ -63,7 +81,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     lbBack.Visible = false;
                 }
 
+                CurrentWorkflow = null;
                 SaveState();
+                //LoadLocations();
             }
         }
 
@@ -98,7 +118,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     var errors = new List<string>();
                     if ( ProcessActivity( "Family Search", out errors ) )
                     {
-                        LoadLocations();
                         SaveState();
                         NavigateToNextPage();
                     }
@@ -158,7 +177,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
             }
         }
-
+        
         #endregion
     }
 }
