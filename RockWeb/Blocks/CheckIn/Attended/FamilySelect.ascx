@@ -195,7 +195,7 @@
         </div>
         <br />
         <div class="row-fluid attended-checkin-body searchperson">
-            <Rock:Grid ID="grdPersonSearchResults" runat="server" AllowPaging="true" OnRowCommand="grdPersonSearchResults_RowCommand" ShowActionRow="false" PageSize="3">
+            <Rock:Grid ID="grdPersonSearchResults" runat="server" AllowPaging="true" OnRowCommand="grdPersonSearchResults_RowCommand" ShowActionRow="false" PageSize="3" DataKeyNames="personId">
                 <Columns>
                     <asp:BoundField DataField="personId" Visible="false" />
                     <asp:BoundField DataField="personFirstName" HeaderText="First Name" />
