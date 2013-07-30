@@ -31,45 +31,39 @@ namespace RockWeb.Blocks.CheckIn.Attended
         #region Control Methods
 
         /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
-        {
-            base.OnInit( e );
-        }
-
-        /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             tbSearchBox.Focus();
-            Page.Form.DefaultButton = lbSearch.UniqueID;
-
             if ( !Page.IsPostBack && CurrentCheckInState != null )
             {
                 string script = string.Format( @"
-                    <script>
-                        $(document).ready(function (e) {{
-                            if (localStorage) {{
-                                localStorage.checkInKiosk = '{0}';
-                                localStorage.checkInGroupTypes = '{1}';
-                            }}
-                        }});
-                    </script>
+                <script>
+                    $(document).ready(function (e) {{
+                        if (localStorage) {{
+                            localStorage.checkInKiosk = '{0}';
+                            localStorage.checkInGroupTypes = '{1}';
+                        }}
+                    }});
+                </script>
                 ", CurrentKioskId, CurrentGroupTypeIds.AsDelimited( "," ) );
                 phScript.Controls.Add( new LiteralControl( script ) );
-                SaveState();
-                LoadLocations();
 
-                // if we've already searched for something, no longer show the Admin button. Show the Back button instead.
-                if ( UserBackedUp )
+                //if ( CurrentKioskId != null || UserBackedUp )
+                if ( CurrentCheckInState.CheckIn.SearchType != null || UserBackedUp )
                 {
                     lbAdmin.Visible = false;
                     lbBack.Visible = true;
                 }
+                else
+                {
+                    lbAdmin.Visible = true;
+                    lbBack.Visible = false;
+                }
+
+                SaveState();
             }
         }
 
@@ -89,36 +83,36 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 CurrentCheckInState.CheckIn.UserEnteredSearch = true;
                 CurrentCheckInState.CheckIn.ConfirmSingleFamily = true;
 
-                // determine the search type
-                if ( tbSearchBox.Text.AsNumeric() == string.Empty || tbSearchBox.Text.AsNumeric().Length != tbSearchBox.Text.Length )
+                if ( !string.IsNullOrWhiteSpace( tbSearchBox.Text ) )
                 {
-                    CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME );
-                }
-                else if ( tbSearchBox.Text.AsNumeric().Length == tbSearchBox.Text.Length )
-                { 
-                    CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER );
-                }
+                    if ( tbSearchBox.Text.AsNumeric().Length == tbSearchBox.Text.Length )
+                    {
+                        CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER );
+                    }
+                    else 
+                    {
+                        CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME );                        
+                    }
 
-                CurrentCheckInState.CheckIn.SearchValue = tbSearchBox.Text;
-
-                if ( tbSearchBox.Text == string.Empty )
-                {
-                    maWarning.Show( "Please enter something to search for.", ModalAlertType.Warning );
-                    return;
-                }
-
-                // run the actions for the search step and go to the next page.
-                var errors = new List<string>();
-                if ( ProcessActivity( "Family Search", out errors ) )
-                {
-                    SaveState();
-                    NavigateToNextPage();
+                    CurrentCheckInState.CheckIn.SearchValue = tbSearchBox.Text;
+                    var errors = new List<string>();
+                    if ( ProcessActivity( "Family Search", out errors ) )
+                    {
+                        LoadLocations();
+                        SaveState();
+                        NavigateToNextPage();
+                    }
+                    else
+                    {
+                        string errorMsg = "<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
+                        maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
+                    }           
                 }
                 else
                 {
-                    string errorMsg = "<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
-                    maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
-                }           
+                    maWarning.Show( "Please enter something to search for.", ModalAlertType.Warning );
+                    return;
+                }               
             }
         }
 
@@ -145,6 +139,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         #endregion
 
         #region Internal Methods
+
         /// <summary>
         /// Loads the locations.
         /// </summary>

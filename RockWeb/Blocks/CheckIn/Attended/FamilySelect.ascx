@@ -211,7 +211,7 @@
             <asp:LinkButton ID="lbAddSearchedForPerson" runat="server" Text="None of these, add me as a new [person/visitor]." Visible="false" OnClick="lbAddSearchedForPerson_Click" CausesValidation="false"></asp:LinkButton>
         </div>
     </asp:Panel>
-    <asp:ModalPopupExtender ID="mpePerson" runat="server" TargetControlID="lbOpenPV\ersonPanel" PopupControlID="AddPersonPanel" CancelControlID="lbAddPersonCancel" BackgroundCssClass="modalBackground"></asp:ModalPopupExtender>
+    <asp:ModalPopupExtender ID="mpePerson" runat="server" TargetControlID="lbOpenPersonPanel" PopupControlID="AddPersonPanel" CancelControlID="lbAddPersonCancel" BackgroundCssClass="modalBackground"></asp:ModalPopupExtender>
     <asp:LinkButton ID="lbOpenPersonPanel" runat="server" CausesValidation="false"></asp:LinkButton>
 
     <asp:Panel ID="AddFamilyPanel" runat="server" CssClass="add-family">
