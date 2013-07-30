@@ -114,10 +114,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 else
                 {
                     // make sure there are no other families selected
-                    // foreach ( var fam in CurrentCheckInState.CheckIn.Families )
-                    // {
-                    //     fam.Selected = false;
-                    // }
+                    //foreach ( var fam in CurrentCheckInState.CheckIn.Families )
+                    //{
+                    //    fam.Selected = false;
+                    //}
                     CurrentCheckInState.CheckIn.Families.ForEach( f => f.Selected = false );
 
 
@@ -135,10 +135,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
                     // i think this will be done in the find family members action...
                     // mark all the peoples as active
-                    // foreach ( RepeaterItem item in repPerson.Items )
-                    // {
-                    //     ( (LinkButton)item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
-                    // }
+                    foreach ( RepeaterItem item in repPerson.Items )
+                    {
+                        ( (LinkButton)item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
+                    }
                 }
                 SaveState();
             }
@@ -254,20 +254,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
             // open up a modal window & display the add family panel.
             for ( var i = 1; i <= 12; i++ )
             {
-                var FirstNameControl = "tbFirstName" + i.ToString();
-                var LastNameControl = "tbLastName" + i.ToString();
-                var DOBAgeControl = "dpDOBAge" + i.ToString();
-                var GradeControl = "tbGrade" + i.ToString();
-                DataTextBox FirstName = (DataTextBox)FindControl( FirstNameControl );
-                DataTextBox LastName = (DataTextBox)FindControl( LastNameControl );
-                DatePicker DOBAge = (DatePicker)FindControl( DOBAgeControl );
-                DataTextBox Grade = (DataTextBox)FindControl( GradeControl );
-                FirstName.Text = "";
-                LastName.Text = "";
-                DOBAge.Text = "";
-                Grade.Text = "";
+                ( (DataTextBox)FindControl( "tbFirstName" + i.ToString() ) ).Text = "";
+                ( (DataTextBox)FindControl( "tbLastName" + i.ToString() ) ).Text = "";
+                ( (DatePicker)FindControl( "dpDOB" + i.ToString() ) ).Text = "";
+                ( (DataTextBox)FindControl( "tbGrade" + i.ToString() ) ).Text = "";
             }
-
             valSummaryBottom.DataBind();
             mpeFamily.Show();
         }
