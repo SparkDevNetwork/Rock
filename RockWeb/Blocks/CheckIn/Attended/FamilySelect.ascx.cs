@@ -672,8 +672,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// </summary>
         private void GoBack()
         {
-            CurrentCheckInState.CheckIn.SearchType = null;
-            CurrentCheckInState.CheckIn.SearchValue = string.Empty;
             CurrentCheckInState.CheckIn.Families = new List<CheckInFamily>();
 
             SaveState();

@@ -74,6 +74,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 {
                     lbAdmin.Visible = false;
                     lbBack.Visible = true;
+                    if ( !string.IsNullOrWhiteSpace( CurrentCheckInState.CheckIn.SearchValue ) )
+                    {
+                        tbSearchBox.Text = CurrentCheckInState.CheckIn.SearchValue;
+                    }
                 }
                 else
                 {
@@ -155,29 +159,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             NavigateToPreviousPage();
         }
 
-        #endregion
-
-        #region Internal Methods
-
-        /// <summary>
-        /// Loads the locations.
-        /// </summary>
-        private void LoadLocations()
-        {
-            List<int> locations = new List<int>();
-
-            foreach ( var groupType in CurrentCheckInState.Kiosk.KioskGroupTypes )
-            {
-                foreach ( var location in groupType.KioskLocations )
-                {
-                    if ( !locations.Contains( location.Location.Id ) )
-                    {
-                        locations.Add( location.Location.Id );
-                    }
-                }
-            }
-        }
-        
         #endregion
     }
 }
