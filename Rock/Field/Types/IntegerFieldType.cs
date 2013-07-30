@@ -10,7 +10,7 @@ using Rock.Web.UI.Controls;
 namespace Rock.Field.Types
 {
     /// <summary>
-    /// Field used to save and dispaly a numeric value
+    /// Field used to save and display a numeric value
     /// </summary>
     [Serializable]
     public class IntegerFieldType : FieldType

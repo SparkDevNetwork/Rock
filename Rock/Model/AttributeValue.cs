@@ -64,7 +64,48 @@ namespace Rock.Model
         /// Value.
         /// </value>
         [DataMember]
-        public string Value { get; set; }
+        public string Value 
+        {
+            get
+            {
+                Field.IFieldType fieldType = null;
+                var attribute = Web.Cache.AttributeCache.Read( this.AttributeId );
+                
+                if ( attribute != null )
+                {
+                    fieldType = attribute.FieldType.Field;
+                }
+
+                if ( fieldType is Field.Types.EncryptedFieldType )
+                {
+                    return Security.Encryption.DecryptString( _value );
+                }
+                
+                return _value;
+            }
+
+            set
+            {
+                Field.IFieldType fieldType = null;
+                var attribute = Web.Cache.AttributeCache.Read( this.AttributeId );
+
+                if ( attribute != null )
+                {
+                    fieldType = attribute.FieldType.Field;
+                }
+
+                if ( fieldType is Field.Types.EncryptedFieldType )
+                {
+                    _value = Security.Encryption.EncryptString( value );
+                }
+                else
+                {
+                    _value = value;
+                }
+
+            }
+        }
+        private string _value;
         
         /// <summary>
         /// Gets or sets the Attribute.

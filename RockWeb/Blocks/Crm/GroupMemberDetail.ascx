@@ -4,6 +4,7 @@
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" runat="server" Visible="false">
             <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
+            <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Error" />
             <asp:HiddenField ID="hfGroupId" runat="server" />
             <asp:HiddenField ID="hfGroupMemberId" runat="server" />
 
@@ -18,6 +19,12 @@
                         </div>
                         <div class="span6">
                             <Rock:DataDropDownList runat="server" ID="ddlGroupRole" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="Name" LabelText="Group Role" />
+                        </div>
+                    </div>
+
+                    <div class="row-fluid">
+                        <div class="span12">
+                            <Rock:LabeledDropDownList ID="ddlGroupMemberStatus" runat="server" LabelText="Member Status" />
                         </div>
                     </div>
 

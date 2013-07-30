@@ -256,6 +256,35 @@ namespace Rock.Attribute
             if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
                 entityType = entityType.BaseType;
 
+            // Check for inherited group type attributes
+            var inheritedGroupTypeIds = new List<int>();
+            if ( entity is Group || entity is GroupType)
+            {
+                int? groupTypeId = null;
+
+                if ( entity is Group )
+                {
+                    groupTypeId = ( (Group)entity ).GroupTypeId;
+                }
+                else
+                {
+                    groupTypeId = ( (GroupType)entity ).Id;
+                }
+
+                var groupTypeService = new GroupTypeService();
+
+                while ( groupTypeId.HasValue )
+                {
+                    inheritedGroupTypeIds.Add( groupTypeId.Value );
+
+                    groupTypeId = groupTypeService.Queryable()
+                    .Where( t => t.Id == groupTypeId.Value )
+                    .Select( t => t.InheritedGroupTypeId )
+                    .FirstOrDefault();
+                }
+
+            }
+
             foreach ( PropertyInfo propertyInfo in entityType.GetProperties() )
                 properties.Add( propertyInfo.Name.ToLower(), propertyInfo );
 
@@ -266,7 +295,17 @@ namespace Rock.Attribute
             int? entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityType ).Id;
             foreach ( Rock.Model.Attribute attribute in attributeService.GetByEntityTypeId( entityTypeId ) )
             {
-                if ( string.IsNullOrEmpty( attribute.EntityTypeQualifierColumn ) ||
+                if ( inheritedGroupTypeIds.Any() && (
+                        ( entity is Group && string.Compare( attribute.EntityTypeQualifierColumn, "GroupTypeId", true ) == 0 ) ||
+                        ( entity is GroupType && string.Compare( attribute.EntityTypeQualifierColumn, "Id", true ) == 0 ) ) )
+                {
+                    int groupTypeIdValue = int.MinValue;
+                    if ( int.TryParse( attribute.EntityTypeQualifierValue, out groupTypeIdValue ) && inheritedGroupTypeIds.Contains( groupTypeIdValue ) )
+                    {
+                        attributes.Add( Rock.Web.Cache.AttributeCache.Read( attribute ) );
+                    }
+                }
+                else if ( string.IsNullOrEmpty( attribute.EntityTypeQualifierColumn ) ||
                     ( properties.ContainsKey( attribute.EntityTypeQualifierColumn.ToLower() ) &&
                     ( string.IsNullOrEmpty( attribute.EntityTypeQualifierValue ) ||
                     properties[attribute.EntityTypeQualifierColumn.ToLower()].GetValue( entity, null ).ToString() == attribute.EntityTypeQualifierValue ) ) )
@@ -713,12 +752,16 @@ namespace Rock.Attribute
             if ( item.Attributes != null )
                 foreach ( var attribute in item.Attributes )
                 {
-                    Control control = parentControl.FindControl( string.Format( "attribute_field_{0}", attribute.Value.Id.ToString() ) );
+                    Control control = parentControl.FindControl( string.Format( "attribute_field_{0}", attribute.Value.Id ) );
                     if ( control != null )
                     {
-                        var value = new Rock.Model.AttributeValue();
+                        var value = new AttributeValue();
+
+                        // Creating a brand new AttributeValue and setting its Value property.
+                        // The Value prop's setter then queries the AttributeCache passing in the AttributeId, which is 0
+                        // The AttributeCache.Read method returns null
                         value.Value = attribute.Value.FieldType.Field.GetEditValue( control, attribute.Value.QualifierValues );
-                        item.AttributeValues[attribute.Key] = new List<Rock.Model.AttributeValue>() { value };
+                        item.AttributeValues[attribute.Key] = new List<AttributeValue>() { value };
                     }
                 }
         }

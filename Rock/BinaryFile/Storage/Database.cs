@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Text;
+using Rock.Attribute;
 using Rock.Model;
 
 namespace Rock.BinaryFile.Storage
@@ -18,6 +19,7 @@ namespace Rock.BinaryFile.Storage
     [ExportMetadata( "ComponentName", "Database" )]
     public class Database : StorageComponent
     {
+
         /// <summary>
         /// Saves the files.
         /// </summary>
