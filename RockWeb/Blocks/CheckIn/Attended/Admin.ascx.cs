@@ -25,7 +25,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
     [Description( "Check-In Administration block" )]
     [BooleanField( "Enable Location Sharing", "If enabled, the block will attempt to determine the kiosk's location via location sharing geocode.", false, "Geo Location", 0 )]
     [IntegerField( "Time to Cache Kiosk GeoLocation", "Time in minutes to cache the coordinates of the kiosk. A value of zero (0) means cache forever. Default 20 minutes.", false, 20, "Geo Location", 1 )]
-    [IntegerField( "Refresh Interval", "How often (seconds) should page automatically query server for new check-in data", false, 10 )]
     public partial class Admin : CheckInBlock
     {
         #region Control Methods
@@ -52,19 +51,19 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
 
                 string script = string.Format( @"
-                    <script>
-                        $(document).ready(function (e) {{
-                            if (localStorage) {{
-                                if (localStorage.checkInKiosk) {{
-                                    $('[id$=""hfKiosk""]').val(localStorage.checkInKiosk);
-                                    if (localStorage.checkInGroupTypes) {{
-                                        $('[id$=""hfGroupTypes""]').val(localStorage.checkInGroupTypes);
-                                    }}
-                                    {0};
+                <script>
+                    $(document).ready(function (e) {{
+                        if (localStorage) {{
+                            if (localStorage.checkInKiosk) {{
+                                $('[id$=""hfKiosk""]').val(localStorage.checkInKiosk);
+                                if (localStorage.checkInGroupTypes) {{
+                                    $('[id$=""hfGroupTypes""]').val(localStorage.checkInGroupTypes);
                                 }}
+                                {0};
                             }}
-                        }});
-                    </script>
+                        }}
+                    }});
+                </script>
                 ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
                 phScript.Controls.Add( new LiteralControl( script ) );
 
@@ -126,7 +125,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 var selectedParentIds = hfParentTypes.Value.SplitDelimitedValues().Select( int.Parse ).ToList();
                 CurrentKioskId = hfKiosk.ValueAsInt();
-                //var kiosk = KioskCache.GetKiosk( (int)CurrentKioskId );
+
                 var kiosk = new DeviceService().Get( (int)CurrentKioskId );
                 var parentGroups = GetAllParentGroupTypes( kiosk);
                 foreach ( var childTypeList in parentGroups.Where( pg => selectedParentIds.Contains( pg.Id ) )
@@ -318,20 +317,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     
                     if ( !string.IsNullOrWhiteSpace( selectedGroupTypes ) )
                     {
-                        var selectedParentIds = new List<int>();
                         var selectedChildIds = selectedGroupTypes.SplitDelimitedValues().Select( sgt => Convert.ToInt32( sgt ) ).ToList();
-
-                        // get parent types for selected child types
-                        foreach ( var childTypeList in parentGroupTypes.Select( pg => pg.ChildGroupTypes ) )
-                        {
-                            foreach ( var parentTypes in childTypeList.Where( ct => selectedChildIds.Contains( ct.Id ) )
-                                .Select( ct => ct.ParentGroupTypes ) )
-                            {
-                                selectedParentIds.AddRange( parentTypes.Select( pt => pt.Id ) );
-                            }                            
-                        }
-
-                        hfParentTypes.Value = string.Join(",", selectedParentIds.Distinct() );
+                        var selectedParentIds = parentGroupTypes.Where( pgt => pgt.ChildGroupTypes
+                            .Any( cgt => selectedChildIds.Contains( cgt.Id ) ) )
+                            .Select( pgt => pgt.Id ).ToList();
+                        hfParentTypes.Value = string.Join( ",", selectedParentIds );
                     }
 
                     repMinistry.DataSource = parentGroupTypes;
@@ -369,7 +359,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {            
             var pgtList = new List<GroupType>();
             foreach ( var groupLocations in kiosk.Locations.Select( l => l.GroupLocations ) )
-            {
+            {                
                 foreach(var parentGroupType in groupLocations.Select( gl => gl.Group.GroupType.ParentGroupTypes))
                 {
                     pgtList.AddRange( parentGroupType );                    
