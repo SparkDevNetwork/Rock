@@ -458,9 +458,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 int index = int.Parse( e.CommandArgument.ToString() );
                 GridViewRow row = grdPersonSearchResults.Rows[index];
-                //var person = new PersonService().Get( int.Parse(grdPersonSearchResults.DataKeys[row]["personId"]) );
-                //int test = int.Parse(grdPersonSearchResults.DataKeys[row]["personId"].Value);
-                var person = new PersonService().Get( int.Parse( row.Cells[0].Text ) );
+                var person = new PersonService().Get( int.Parse( grdPersonSearchResults.DataKeys[index].Value.ToString() ) );
+                //var person = new PersonService().Get( int.Parse( row.Cells[0].Text ) );
                 var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                 if ( family != null )
                 {
@@ -497,6 +496,33 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         // this came from Add Visitor
                         List<CheckInPerson> visitors = new List<CheckInPerson>();
 
+                        // check to see if someone in the family has a GroupRole of OWNER in the GroupMember table.
+                        GroupMemberService groupMemberService = new GroupMemberService();
+                        var foundAnOwner = false;
+                        foreach ( var p in family.People )
+                        {
+                            if ( groupMemberService.GetByGroupIdAndPersonIdAndGroupRoleId( family.Group.Id, p.Person.Id, new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ).Id ) != null )
+                            {
+                                foundAnOwner = true;
+                            }
+                        }
+
+                        // nobody with the OWNER GroupRole was found in the family. So add it to everyone in the family.
+                        if ( !foundAnOwner )
+                        {
+                            foreach ( var p in family.People )
+                            {
+                                AddOwnerGroupRole( family.Group, p.Person );
+                            }
+                        }
+
+                        //var knownRelationshipGroup = groupMemberService.Queryable()
+                        //    .Where( m =>
+                        //        m.PersonId == personId &&
+                        //        m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
+                        //    .Select( m => m.Group )
+                        //    .FirstOrDefault();
+
                         Person.CreateCheckinRelationship( family.People.FirstOrDefault().Person.Id, person.Id, CurrentPersonId );
                         CIP.FamilyMember = false;
                         family.People.Add( CIP );
@@ -509,12 +535,21 @@ namespace RockWeb.Blocks.CheckIn.Attended
                                 m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) )
                             .Select( m => m.Group )
                             .FirstOrDefault();
-                        var groupMembers = gms.GetByGroupId( canCheckInGroup.Id );
 
-                        var groupMember = groupMembers.FirstOrDefault( g => g.GroupRoleId == new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ).Id );
-                        var checkInPerson = new CheckInPerson();
-                        checkInPerson.Person = groupMember.Person.Clone( false );
-                        visitors.Add( checkInPerson );
+                        var groupMembers = gms.GetByGroupId( canCheckInGroup.Id );
+                        //var groupMember = groupMembers.FirstOrDefault( g => g.GroupRoleId == new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ).Id );
+                        //var checkInPerson = new CheckInPerson();
+                        //checkInPerson.Person = groupMember.Person.Clone( false );
+                        //visitors.Add( checkInPerson );
+                        foreach ( var groupMember in groupMembers )
+                        {
+                            if ( groupMember.GroupRoleId == new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ).Id )
+                            {
+                                CheckInPerson checkInPerson = new CheckInPerson();
+                                checkInPerson.Person = groupMember.Person.Clone( false );
+                                visitors.Add( checkInPerson );
+                            }
+                        } 
 
                         repVisitors.DataSource = visitors;
                         repVisitors.DataBind();
@@ -811,6 +846,29 @@ namespace RockWeb.Blocks.CheckIn.Attended
             return groupMember;
         }
 
+        /// <summary>
+        /// Adds the owner group role.
+        /// </summary>
+        /// <param name="familyGroup">The family group.</param>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        protected GroupMember AddOwnerGroupRole( Group familyGroup, Person person )
+        {
+            GroupMember groupMember = new GroupMember();
+            GroupMemberService groupMemberService = new GroupMemberService();
+            groupMember.IsSystem = false;
+            groupMember.GroupId = familyGroup.Id;
+            groupMember.PersonId = person.Id;
+            groupMember.GroupRoleId = new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ).Id;
+            Rock.Data.RockTransactionScope.WrapTransaction( () =>
+            {
+                groupMemberService.Add( groupMember, CurrentPersonId );
+                groupMemberService.Save( groupMember, CurrentPersonId );
+            } );
+
+            return groupMember;
+        }
+        
         /// <summary>
         /// Searches for people.
         /// </summary>
