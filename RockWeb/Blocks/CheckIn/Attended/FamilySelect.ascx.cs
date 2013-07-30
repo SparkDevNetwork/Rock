@@ -43,7 +43,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 if ( !Page.IsPostBack )
                 {
-                    //grdPersonSearchResults.DataKeyNames = new string[] { "personId" }; 
                     if ( CurrentCheckInState.CheckIn.Families.Count == 0 )
                     {
                         familyTitle.InnerText = "No Search Results Found";
@@ -207,6 +206,52 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
+        /// Handles the ItemDataBound event of the repPerson control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void repPerson_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            var familyMemberIds = CurrentCheckInState.CheckIn.Families.Where( p => p.People.Any( fm => fm.Selected == true )
+                    && p.People.Any( fm => fm.FamilyMember == true ) )
+                .SelectMany( p => p.People.Select( fm => fm.Person.Id ) ).ToList();
+
+            if ( familyMemberIds.Count > 0 )
+            {
+                if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+                {
+                    if ( familyMemberIds.Contains( ( (GroupType)e.Item.DataItem ).Id ) )
+                    {
+                        ( (Button)e.Item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the repVisitors control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void repVisitors_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            var visitorIds = CurrentCheckInState.CheckIn.Families.Where( p => p.People.Any( fm => fm.Selected == true )
+                    && p.People.Any( fm => fm.FamilyMember == false ) )
+                .SelectMany( p => p.People.Select( fm => fm.Person.Id ) ).ToList();
+
+            if ( visitorIds.Count > 0 )
+            {
+                if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+                {
+                    if ( visitorIds.Contains( ( (GroupType)e.Item.DataItem ).Id ) )
+                    {
+                        ( (Button)e.Item.FindControl( "lbSelectVisitor" ) ).AddCssClass( "active" );
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Handles the Click event of the lbAddPerson control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -347,15 +392,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             lvFamily.DataBind();
             repPerson.DataSource = CIF.People;
             repPerson.DataBind();
-            foreach ( ListViewDataItem li in lvFamily.Items )
-            {
-                ( (LinkButton)li.FindControl( "lbSelectFamily" ) ).AddCssClass( "active" );
-                
-            }
-            foreach ( RepeaterItem item in repPerson.Items )
-            {
-                ( (LinkButton)item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
-            }
+            
             SaveState();
 
         }
@@ -456,113 +493,76 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             if ( e.CommandName == "Add" )
             {
+                GroupMemberService groupMemberService = new GroupMemberService();
+                GroupRoleService groupRoleService = new GroupRoleService();    
                 int index = int.Parse( e.CommandArgument.ToString() );
-                GridViewRow row = grdPersonSearchResults.Rows[index];
-                var person = new PersonService().Get( int.Parse( grdPersonSearchResults.DataKeys[index].Value.ToString() ) );
-                //var person = new PersonService().Get( int.Parse( row.Cells[0].Text ) );
+                int personId = (int)grdPersonSearchResults.DataKeys[index].Value;
+                int knownGroupId = new GroupService().Get( new Guid( Rock.SystemGuid.Group.GROUP_KNOWN_RELATIONSHIPS ) ).Id;
+                int ownerRoleId = groupRoleService.Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ).Id;
+                int canCheckInId = groupRoleService.Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ).Id;
+
                 var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                 if ( family != null )
-                {
-                    CheckInPerson CIP = new CheckInPerson();
-                    CIP.Person = person;
-                    CIP.Selected = true;
+                {                    
+                    var checkInPerson = new CheckInPerson();
+                    checkInPerson.Person = new PersonService().Get( personId );
+                    checkInPerson.Selected = true;
                     if ( personVisitorType.Value == "Person" )
                     {
                         // this came from Add Person
-                        var isPersonInFamily = family.People.Any( p => p.Person.Id == person.Id );
+                        var isPersonInFamily = family.People.Any( p => p.Person.Id == checkInPerson.Person.Id );
                         if ( !isPersonInFamily )
                         {
-                            // because this person is being added to this family, we should make sure his/her groupmember record reflects that.
-                            GroupMemberService gms = new GroupMemberService();
-                            var groupMember = gms.GetByPersonId( person.Id ).FirstOrDefault();
+                            // because this person is being added to this family, we should make sure his/her groupmember record reflects that.                            
+                            var groupMember = groupMemberService.GetByPersonId( personId ).FirstOrDefault();
                             groupMember.GroupId = family.Group.Id;
                             Rock.Data.RockTransactionScope.WrapTransaction( () =>
                             {
-                                gms.Save( groupMember, CurrentPersonId );
+                                groupMemberService.Save( groupMember, CurrentPersonId );
                             } );
 
-                            CIP.FamilyMember = true;
-                            family.People.Add( CIP );
-                            repPerson.DataSource = family.People;
-                            repPerson.DataBind();
-                            foreach ( RepeaterItem item in repPerson.Items )
-                            {
-                                ( (LinkButton)item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
-                            }
+                            checkInPerson.FamilyMember = true;
                         }
                     }
                     else
                     {
                         // this came from Add Visitor
-                        List<CheckInPerson> visitors = new List<CheckInPerson>();
-
-                        // check to see if someone in the family has a GroupRole of OWNER in the GroupMember table.
-                        GroupMemberService groupMemberService = new GroupMemberService();
-                        var foundAnOwner = false;
-                        foreach ( var p in family.People )
+                        foreach ( var familyMember in family.People )
                         {
-                            if ( groupMemberService.GetByGroupIdAndPersonIdAndGroupRoleId( family.Group.Id, p.Person.Id, new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ).Id ) != null )
-                            {
-                                foundAnOwner = true;
-                            }
-                        }
-
-                        // nobody with the OWNER GroupRole was found in the family. So add it to everyone in the family.
-                        if ( !foundAnOwner )
-                        {
-                            foreach ( var p in family.People )
-                            {
-                                AddOwnerGroupRole( family.Group, p.Person );
-                            }
-                        }
-
-                        //var knownRelationshipGroup = groupMemberService.Queryable()
-                        //    .Where( m =>
-                        //        m.PersonId == personId &&
-                        //        m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
-                        //    .Select( m => m.Group )
-                        //    .FirstOrDefault();
-
-                        Person.CreateCheckinRelationship( family.People.FirstOrDefault().Person.Id, person.Id, CurrentPersonId );
-                        CIP.FamilyMember = false;
-                        family.People.Add( CIP );
-
-                        // need to get the people that have the CanCheckIn GroupRole on a GroupMember record associated with the selected Family Group.
-                        GroupMemberService gms = new GroupMemberService();
-                        var canCheckInGroup = gms.Queryable()
+                            var groupMember = groupMemberService.Queryable()
                             .Where( m =>
-                                m.PersonId == person.Id &&
-                                m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) )
-                            .Select( m => m.Group )
+                                m.GroupId == knownGroupId &&
+                                m.PersonId == familyMember.Person.Id &&
+                                m.GroupRoleId == ownerRoleId )
                             .FirstOrDefault();
 
-                        var groupMembers = gms.GetByGroupId( canCheckInGroup.Id );
-                        //var groupMember = groupMembers.FirstOrDefault( g => g.GroupRoleId == new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ).Id );
-                        //var checkInPerson = new CheckInPerson();
-                        //checkInPerson.Person = groupMember.Person.Clone( false );
-                        //visitors.Add( checkInPerson );
-                        foreach ( var groupMember in groupMembers )
-                        {
-                            if ( groupMember.GroupRoleId == new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ).Id )
+                            if ( groupMember == null )
                             {
-                                CheckInPerson checkInPerson = new CheckInPerson();
-                                checkInPerson.Person = groupMember.Person.Clone( false );
-                                visitors.Add( checkInPerson );
+                                groupMember = new GroupMember();
+                                groupMember.GroupId = knownGroupId;
+                                groupMember.PersonId = familyMember.Person.Id;
+                                groupMember.GroupRoleId = ownerRoleId;
+                                groupMemberService.Add( groupMember, CurrentPersonId );
+                                groupMemberService.Save( groupMember, CurrentPersonId );
                             }
-                        } 
-
-                        repVisitors.DataSource = visitors;
-                        repVisitors.DataBind();
-
-                        // make sure the one person you just added is selected
-                        foreach ( RepeaterItem item in repVisitors.Items )
-                        {
-                            if ( person.Id == int.Parse( ( (LinkButton)item.FindControl( "lbSelectVisitor" ) ).CommandArgument ) )
-                            {
-                                ( (LinkButton)item.FindControl( "lbSelectVisitor" ) ).AddCssClass( "active" );
-                            }
+                            
+                            // add the visitor to this group with CanCheckIn
+                            Person.CreateCheckinRelationship( familyMember.Person.Id, personId, CurrentPersonId );
                         }
+
+                        // add the visitor to the checkin group
+                        
+                        checkInPerson.FamilyMember = false;
+
                     }
+                    
+                    family.People.Add( checkInPerson );
+                    repPerson.DataSource = family.People.Where( p => p.FamilyMember );
+                    repPerson.DataBind();
+
+                    repVisitors.DataSource = family.People.Where( p => !p.FamilyMember );
+                    repVisitors.DataBind();
+
                     SaveState();
                 }
                 else
@@ -701,7 +701,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         #endregion
 
         #region Internal Methods 
-
+        
         /// <summary>
         /// Goes back one page.
         /// </summary>

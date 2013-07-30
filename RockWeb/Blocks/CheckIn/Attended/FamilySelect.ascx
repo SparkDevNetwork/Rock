@@ -110,7 +110,7 @@
         <div id="personDiv" class="span3 person-div" runat="server">
             <div class="attended-checkin-body-container">
                 <h3>People</h3>
-                <asp:Repeater ID="repPerson" runat="server" OnItemCommand="repPerson_ItemCommand">
+                <asp:Repeater ID="repPerson" runat="server" OnItemCommand="repPerson_ItemCommand" OnItemDataBound="repPerson_ItemDataBound">
                     <ItemTemplate>
                         <asp:LinkButton ID="lbSelectPerson" runat="server" Text='<%# Container.DataItem.ToString() %>' data-id='<%# Eval("Person.Id") %>' CommandArgument='<%# Eval("Person.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select person" CausesValidation="false" />
                     </ItemTemplate>
@@ -121,7 +121,7 @@
         <div id="visitorDiv" class="span3 visitor-div" runat="server">
             <div class="attended-checkin-body-container">
                 <h3>Visitors</h3>
-                <asp:Repeater ID="repVisitors" runat="server" OnItemCommand="repVisitors_ItemCommand">
+                <asp:Repeater ID="repVisitors" runat="server" OnItemCommand="repVisitors_ItemCommand" OnItemDataBound="repVisitors_ItemDataBound">
                     <ItemTemplate>
                         <asp:LinkButton ID="lbSelectVisitor" runat="server" Text='<%# Container.DataItem.ToString() %>' data-id='<%# Eval("Person.Id") %>' CommandArgument='<%# Eval("Person.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select visitor" CausesValidation="false" />
                     </ItemTemplate>
