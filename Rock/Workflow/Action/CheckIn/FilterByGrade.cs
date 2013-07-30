@@ -37,44 +37,37 @@ namespace Rock.Workflow.Action.CheckIn
                     foreach ( var person in family.People )
                     {
                         int? personsGrade = person.Person.Grade;
-                        if ( personsGrade == null )
-                        {
-                            continue;
-                        }
 
                         foreach ( var groupType in person.GroupTypes.ToList() )
                         {
-                            // Now dig down until we get the "group" because that's where the attribute is..
-                            foreach ( var location in groupType.Locations.ToList() )
+                            string minGradeValue = groupType.GroupType.GetAttributeValue( "MinGrade" );
+                            // if the group type specifies a min grade then the person's grade MUST match
+                            if ( minGradeValue != null )
                             {
-                                foreach ( var group in location.Groups.ToList() )
+                                int minGrade = 0;
+                                if ( int.TryParse( minGradeValue, out minGrade ) )
                                 {
-                                    string minGradeValue = group.Group.GetAttributeValue( "MinGrade" );
-                                    if ( minGradeValue != null )
+                                    // remove if the person does not have a grade or if their grade is less than the min
+                                    if ( !personsGrade.HasValue || personsGrade < minGrade )
                                     {
-                                        int minGrade = 0;
-                                        if ( int.TryParse( minGradeValue, out minGrade ) )
-                                        {
-                                            // remove if the person does not have a grade or if their grade is less than the min
-                                            if ( !personsGrade.HasValue || personsGrade < minGrade )
-                                            {
-                                                location.Groups.Remove( group );
-                                            }
-                                        }
+                                        person.GroupTypes.Remove( groupType );
+                                        continue;
                                     }
+                                }
+                            }
 
-                                    string maxGradeValue = group.Group.GetAttributeValue( "MaxGrade" );
-                                    if ( maxGradeValue != null )
+                            string maxGradeValue = groupType.GroupType.GetAttributeValue( "MaxGrade" );
+                            // if the group type specifies a min grade then the person's grade MUST match
+                            if ( maxGradeValue != null )
+                            {
+                                int maxGrade = 0;
+                                if ( int.TryParse( maxGradeValue, out maxGrade ) )
+                                {
+                                    // remove if the person does not have a grade or if their grade is more than the max
+                                    if ( !personsGrade.HasValue || personsGrade > maxGrade )
                                     {
-                                        int maxGrade = 0;
-                                        if ( int.TryParse( maxGradeValue, out maxGrade ) )
-                                        {
-                                            // remove if the person does not have a grade or if their grade is more than the max
-                                            if ( !personsGrade.HasValue || personsGrade > maxGrade )
-                                            {
-                                                location.Groups.Remove( group );
-                                            }
-                                        }
+                                        person.GroupTypes.Remove( groupType );
+                                        continue;
                                     }
                                 }
                             }
