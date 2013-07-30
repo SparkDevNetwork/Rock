@@ -392,11 +392,18 @@ namespace RockWeb.Blocks.Crm
 
         #region Internal Methods
 
+        /// <summary>
+        /// Gets the number of active members in a group role.
+        /// </summary>
+        /// <param name="groupId">The group id.</param>
+        /// <param name="roleId">The role id.</param>
+        /// <returns></returns>
         private int GetGroupRoleMemberCount( int groupId, int roleId )
         {
             return new GroupMemberService().Queryable()
                         .Where( m => m.GroupId == groupId )
                         .Where( m => m.GroupRoleId == roleId )
+                        .Where( m => m.GroupMemberStatus == GroupMemberStatus.Active )
                         .Count();
         }
 
@@ -533,7 +540,7 @@ namespace RockWeb.Blocks.Crm
                     {
                         int groupRoleMemberCount = GetGroupRoleMemberCount( itemKeyValue, roleId );
 
-                        string minumumMemberText =  string.Format( "The {0} role is currently below it's minimum membership requirement of {1} {2}.", 
+                        string minumumMemberText =  string.Format( "The {0} role is currently below it's minimum active membership requirement of {1} {2}.", 
                                                         role.Name,
                                                         role.MinCount,
                                                         role.MinCount == 1 ? "member" : "members"
