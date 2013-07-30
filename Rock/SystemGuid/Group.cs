@@ -25,5 +25,10 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string  GROUP_STAFF_MEMBERS= "2C112948-FF4C-46E7-981A-0257681EADF4";
 
+        /// <summary>
+        /// Gets the known relationships group guid
+        /// </summary>
+        public const string GROUP_KNOWN_RELATIONSHIPS = "11A7F526-E574-4915-ADF9-554856D96EEC";
+
     }
 }
