@@ -41,11 +41,11 @@
         $('.person').unbind('click').on('click', function () {
             $(this).toggleClass('active');
             var selectedIds = $('#hfSelectedPerson').val();
-            if ($('#hfSelectedPerson').val().indexOf(this.getAttribute('data-id') + ',') >= 0) {
-                $('#hfSelectedPerson').val($('#hfSelectedPerson').val().replace(this.getAttribute('data-id') + ',', ''));
-            }
-            else {
-                $('#hfSelectedPerson').val(selectedIds + this.getAttribute('data-id') + ',');
+            var buttonId = this.getAttribute('data-id') + ',';
+            if (typeof selectedIds == "string" && (selectedIds.indexOf(buttonId) >= 0)) {
+                $('#hfSelectedPerson').val(selectedIds.replace(buttonId, ''));
+            } else {
+                $('#hfSelectedPerson').val(buttonId + selectedIds);
             }
             return false;
         });
@@ -53,14 +53,19 @@
         $('.visitor').unbind('click').on('click', function () {
             $(this).toggleClass('active');
             var selectedIds = $('#hfSelectedVisitor').val();
-            if ($('#hfSelectedVisitor').val().indexOf(this.getAttribute('data-id') + ',') >= 0) {
-                $('#hfSelectedVisitor').val($('#hfSelectedVisitor').val().replace(this.getAttribute('data-id') + ',', ''));
-            }
-            else {
-                $('#hfSelectedVisitor').val(selectedIds + this.getAttribute('data-id') + ',');
+            var buttonId = this.getAttribute('data-id') + ',';
+            if (typeof selectedIds == "string" && (selectedIds.indexOf(buttonId) >= 0)) {
+                $('#hfSelectedVisitor').val(selectedIds.replace(buttonId, ''));
+                alert('removing the class');
+                alert('selected visitor = ' + $('#hfSelectedVisitor').val());
+            } else {
+                $('#hfSelectedVisitor').val(buttonId + selectedIds);
+                alert('adding the class');
+                alert('selected visitor = ' + $('#hfSelectedVisitor').val());
             }
             return false;
         });
+
     };
     $(document).ready(function () { setControlEvents(); });
     Sys.WebForms.PageRequestManager.getInstance().add_endRequest(setControlEvents);
@@ -238,10 +243,13 @@
             <div class="span3">
                 <h3>Last Name</h3>
             </div>
-            <div class="span3">
+            <div class="span2">
                 <h3>DOB</h3>
             </div>
-            <div class="span3">
+            <div class="span2">
+                <h3>Gender</h3>
+            </div>
+            <div class="span2">
                 <h3>Attribute</h3>
             </div>
         </div>
@@ -253,13 +261,16 @@
                 <div class="span3">
                     <Rock:DataTextBox ID="tbLastName1" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
-                <div class="span3">
+                <div class="span2">
                     <Rock:DatePicker ID="dpDOB1" runat="server"></Rock:DatePicker>
                     <asp:CustomValidator ID="cvDOBValidator1" runat="server" ErrorMessage="The first DOB field is incorrect."
                         CssClass="align-middle" EnableClientScript="true" Display="None" 
                         ClientValidationFunction="cvDOBValidator_ClientValidate" OnServerValidate="cvDOBValidator_ServerValidate" ControlToValidate="dpDOB1" />
                 </div>
-                <div class="span3">
+                <div class="span2">
+                    <Rock:DataTextBox ID="tbGender1" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                </div>
+                <div class="span2">
                     <Rock:DataTextBox ID="tbGrade1" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
             </div>
@@ -270,13 +281,16 @@
                 <div class="span3">
                     <Rock:DataTextBox ID="tbLastName2" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
-                <div class="span3">
+                <div class="span2">
                     <Rock:DatePicker ID="dpDOB2" runat="server"></Rock:DatePicker>
                     <asp:CustomValidator ID="cvDOBValidator2" runat="server" ErrorMessage="The second DOB field is incorrect."
                         CssClass="align-middle" EnableClientScript="true" Display="None" 
                         ClientValidationFunction="cvDOBValidator_ClientValidate" OnServerValidate="cvDOBValidator_ServerValidate" ControlToValidate="dpDOB2" />
                 </div>
-                <div class="span3">
+                <div class="span2">
+                    <Rock:DataTextBox ID="tbGender2" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                </div>
+                <div class="span2">
                     <Rock:DataTextBox ID="tbGrade2" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
             </div>
@@ -287,13 +301,16 @@
                 <div class="span3">
                     <Rock:DataTextBox ID="tbLastName3" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
-                <div class="span3">
+                <div class="span2">
                     <Rock:DatePicker ID="dpDOB3" runat="server"></Rock:DatePicker>
                     <asp:CustomValidator ID="cvDOBValidator3" runat="server" ErrorMessage="The third DOB field is incorrect."
                         CssClass="align-middle" EnableClientScript="true" Display="None" 
                         ClientValidationFunction="cvDOBValidator_ClientValidate" OnServerValidate="cvDOBValidator_ServerValidate" ControlToValidate="dpDOB3" />
                 </div>
-                <div class="span3">
+                <div class="span2">
+                    <Rock:DataTextBox ID="tbGender3" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                </div>
+                <div class="span2">
                     <Rock:DataTextBox ID="tbGrade3" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
             </div>
@@ -304,13 +321,16 @@
                 <div class="span3">
                     <Rock:DataTextBox ID="tbLastName4" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
-                <div class="span3">
+                <div class="span2">
                     <Rock:DatePicker ID="dpDOB4" runat="server"></Rock:DatePicker>
                     <asp:CustomValidator ID="cvDOBValidator4" runat="server" ErrorMessage="The fourth DOB field is incorrect."
                         CssClass="align-middle" EnableClientScript="true" Display="None" 
                         ClientValidationFunction="cvDOBValidator_ClientValidate" OnServerValidate="cvDOBValidator_ServerValidate" ControlToValidate="dpDOB4" />
                 </div>
-                <div class="span3">
+                <div class="span2">
+                    <Rock:DataTextBox ID="tbGender4" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                </div>
+                <div class="span2">
                     <Rock:DataTextBox ID="tbGrade4" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
                 </div>
             </div>
