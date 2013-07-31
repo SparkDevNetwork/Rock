@@ -73,7 +73,16 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     if ( kiosk != null )
                     {
                         CurrentKioskId = kiosk.Id;
-                        //BindGroupTypes( hfGroupTypes.Value );
+                        if ( string.IsNullOrWhiteSpace( hfGroupTypes.Value ) )
+                        {
+                            BindGroupTypes();
+                        }
+                        else
+                        {
+                            CurrentGroupTypeIds = hfGroupTypes.Value.SplitDelimitedValues().Select( int.Parse ).ToList();
+                            SaveState();
+                            NavigateToNextPage();
+                        }
                     }                    
                     else
                     {
@@ -126,15 +135,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 var kiosk = new DeviceService().Get( (int)CurrentKioskId );
                 var parentGroupTypes = GetAllParentGroupTypes( kiosk );
-
                 var selectedParentIds = hfParentTypes.Value.SplitDelimitedValues().Select( int.Parse ).ToList();
                 
                 // get child types for selected parent types
-                var testList = parentGroupTypes.Where( pg => selectedParentIds.Contains( pg.Id ) )
+                groupTypeIds = parentGroupTypes.Where( pg => selectedParentIds.Contains( pg.Id ) )
                     .SelectMany( pg => pg.ChildGroupTypes
-                        .Select( cg => cg.Id ) );
-
-                groupTypeIds = testList.ToList();
+                        .Select( cg => cg.Id ) ).ToList();
             }
             else
             {
@@ -147,7 +153,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             CurrentCheckInState = null;
             CurrentWorkflow = null;
             SaveState();
-
             NavigateToNextPage();
         }
 
@@ -366,8 +371,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 .SelectMany( gl => gl.Group.GroupType.ParentGroupTypes ) );
 
             return pgtList.Select( gt => gt.First() ).Distinct().ToList();
-                       
-            //return pgtList.Distinct().ToList();
         }
         
         #endregion
