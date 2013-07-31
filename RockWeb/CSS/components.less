@@ -9,6 +9,7 @@
     6. Pagelist - used to list child pages; currently used in admin screens
     7. Tags - component that allows you to tag entities
     8. Switch - uses the Bootstrap Switch component
+    9. Smart Searh - search at th top of the page for searching people, groups, etc.
 
 */
 
@@ -854,4 +855,64 @@ div.tagsinput div
   background-image: -moz-linear-gradient(bottom, #ee5f5b, #bd362f);
   background-image: -o-linear-gradient(bottom, #ee5f5b, #bd362f);
   background-image: linear-gradient(bottom, #ee5f5b, #bd362f);
+}
+
+
+// 9. Smart Search
+// ------------------------
+
+.smart-search {
+	float: right;
+	margin-top: 10px;
+	font-size: 11px;
+	height: 16px;
+	font-size: 12px;
+	background-color: @smartsearch-background;
+	border: 1px solid @smartsearch-border-color;
+    .box-shadow(@smartsearch-box-shadow);
+    height: 26px;
+    border-radius: 15px;
+    padding: 0 6px;
+}
+
+.smart-search:focus {
+	border-color: #595959;
+}
+
+.smart-search input {
+	border: 0;
+	background: transparent;
+	color: @smartsearch-input-text-color;
+	border-radius: 0;
+	width: 150px;
+}
+
+.smart-search input:focus {
+	box-shadow: 0 0 0 0;
+}
+
+.smart-search input:-moz-placeholder {
+    color: darken(@smartsearch-input-text-color, 25%); 
+}
+
+.smart-search input::-moz-placeholder {
+    color: darken(@smartsearch-input-text-color, 25%); 
+}
+
+.smart-search input::-webkit-input-placeholder {
+    color: darken(@smartsearch-input-text-color, 25%); 
+}
+
+.smart-search .nav > li > a {
+	padding: 4px 15px;
+}
+
+.smart-search input::selection {
+	background: @smartsearch-input-selection-background; /* Safari */
+	color: @smartsearch-input-selection-text-color;
+}
+
+.smart-search input::-moz-selection {
+	background: @smartsearch-input-selection-background; /* Firefox */
+	color: @smartsearch-input-selection-text-color;
 }

@@ -1,13 +1,12 @@
 /*
     Rock ChMS Theme Styles
 
-    1. Bootstrap Overides
-    2. Global Page Settings
-    3. Components
-    4. Header and Nav
-    5. Footer
-    6. Responsive Tweaks
-    7. Layout Specific Styles
+    1. HTML Overrides
+    2. Bootstrap Overides
+    3. Page Header
+    4. Footer
+    5. Responsive Tweaks
+    6. Layout Specific Styles
 
 */
 
@@ -22,6 +21,13 @@
 
 // 1. HTML Overrides
 // -------------------------
+
+// set window background
+html
+{
+ background-color: #3a3a3a;  
+ background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4="); 
+}
 
 h1 {
 	font-size: 28px;
@@ -41,13 +47,17 @@ a {
    outline: 0;
 }
 
+a:hover {
+    text-decoration: none;
+}
+
 
 a:hover i[class^="icon-"]
 {
     text-decoration: none;
 }
 
-// 1. Bootstrap Overrides 
+// 2. Bootstrap Overrides 
 // ------------------------- 
 
 .btn {
@@ -115,6 +125,16 @@ a:hover i[class^="icon-"]
     cursor: not-allowed;
 }
 
+/* breadcrumbs */
+.breadcrumb {
+	margin: 20px 0 20px;
+	padding: 0;
+}
+
+.breadcrumb i[class^="icon-"] {
+	margin-right: 6px;
+}
+
 // add 40px padding if in desktop size so tooltips have a bit more space if they are close to the edge
 @media (min-width: 992px)
 {
@@ -125,20 +145,32 @@ a:hover i[class^="icon-"]
     }
 }
 
-// 2. Page Styles
-// -------------------------
-
-// set window background
-html
-{
- background-color: #3a3a3a;  
- background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4="); 
-}
-
 // 3. Page Header
 // -------------------------
 
-/* page nav */
+// page header (logo bar)
+.pageheader .navbar-inner {  
+	border-bottom: 1px solid #121212;
+	padding: 4px 0;
+    filter: initial;
+	background-image: none;
+	background-color: transparent;
+}
+
+.pageheader .brand {
+	padding: 5px 20px 0 20px;
+}
+
+.pageheader-logo {
+	height: 36px;
+	width: 92.83px
+}
+
+.pageheader-collapse {
+	margin-top: 6px;
+}
+
+// page nav
 .pagenav {
 	border-top: 1px solid lighten(@site-header-background, 10%);
 }
@@ -150,7 +182,6 @@ html
 
 .pagenav ul.nav {
 	border-left: 1px solid lighten(@site-header-background, 10%);
-    
     width: 100%;
 }
 
@@ -199,146 +230,11 @@ html
     display: none;
 }
 
-.pagenav-header {
+.pagenav-subitem-header {
 	font-weight: @font-bold-weight;
 }
 
-/* paage title */
-.pagetitle .navbar-inner {
-	background-color: @site-pagetitle-background;
-	border-bottom: 1px solid darken(@site-pagetitle-background, 10%);
-	background-image: none;
-    filter: initial;
-}
-
-
-/* Smart Search 
-   Used in the header to allow people to search for people, groups, etc
-*/
-
-.smart-search {
-	float: right;
-	margin-top: 10px;
-	font-size: 11px;
-	height: 16px;
-	font-size: 12px;
-	background-color: rgba(255, 255, 255, 0.1);
-	border: 1px solid #2c2c2c;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) inset, 0 1px 0 rgba(255, 255, 255, 0.15);
-    height: 26px;
-    border-radius: 15px;
-    padding: 0 6px;
-}
-
-.smart-search:focus {
-	border-color: #595959;
-}
-
-.smart-search input {
-	border: 0;
-	background: transparent;
-	color: @site-header-text-color;
-	border-radius: 0;
-	width: 150px;
-}
-
-.smart-search input:focus {
-	box-shadow: 0 0 0 0;
-}
-
-.smart-search input:-moz-placeholder {
-    color: darken(@site-header-text-color, 25%); 
-}
-
-.smart-search input::-moz-placeholder {
-    color: darken(@site-header-text-color, 25%); 
-}
-
-.smart-search input::-webkit-input-placeholder {
-    color: darken(@site-header-text-color, 25%); 
-}
-
-.smart-search .nav > li > a {
-	padding: 4px 15px;
-}
-
-.smart-search input::selection {
-	background: #2e2e2e; /* Safari */
-	color: #fff;
-}
-
-.smart-search input::-moz-selection {
-	background: #2e2e2e; /* Firefox */
-	color: #fff;
-}
-
-// switch 
-.switch span.switch-primary, .switch span.switch-left {
-  color: white;
-  background: #898a8a;
-  background-image: none;
-}
-
-/* breadcrumbs */
-.breadcrumb {
-	background-color: transparent;
-	margin: 20px 0 20px;
-	padding: 0;
-}
-
-.breadcrumb a:hover {
-	text-decoration: none;
-}
-
-.breadcrumb i[class^="icon-"] {
-	margin-right: 6px;
-}
-
-.pageoverview {
-	margin-bottom: 24px;
-}
-
-.pageoverview-icon {
-	float: left;
-}
-
-.pageoverview-description {
-	vertical-align: top;
-	margin-left: 18px;
-	margin-top: 6px;
-	float: left;
-}
-
-
-//
-
-//
-// 4. Header and Nav
-//
-// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-
-// background for header
-.pageheader .navbar-inner {  
-	border-bottom: 1px solid #121212;
-	padding: 4px 0;
-    filter: initial;
-	background-image: none;
-	background-color: transparent;
-}
-
-.pageheader .brand {
-	padding: 5px 20px 0 20px;
-}
-
-.pageheader-logo {
-	height: 36px;
-	width: 92.83px
-}
-
-.pageheader-collapse {
-	margin-top: 6px;
-}
-
+// page title
 .page-icon
 {
     font-size: 36px;
@@ -346,10 +242,24 @@ html
     float: left;
 }
 
-//
-// 5. Footer
-//
-// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+.pagetitle .navbar-inner {
+	background-color: @site-pagetitle-background;
+	border-bottom: 1px solid darken(@site-pagetitle-background, 10%);
+	background-image: none;
+    filter: initial;
+}
+
+// switch 
+/*
+ .switch span.switch-primary, .switch span.switch-left {
+  color: white;
+  background: #898a8a;
+  background-image: none;
+}
+    */
+
+// 4. Footer
+// -------------------------
 
 
 .page-footer {
@@ -368,10 +278,8 @@ html
 	}
 }
 
-// 
-// 6. Responsive Tweaks
-// 
-// < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < >
+// 5. Responsive Tweaks
+// -------------------------
 @media (max-width: 767px) {
 	.pagetitle .navbar-inner {
 		padding: 0 20px 0 20px;
@@ -401,17 +309,10 @@ html
 }
 
 
-// 
-// 7. Layout Spefic Styles 
-//
-// < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > 
+// 6. Layout Specific Styles
+// -------------------------
 
-.body-content
-{
-    margin-bottom: 24px;
-}
-
-
+// splash screen
 body#splash
 {
     background: none;
@@ -429,20 +330,13 @@ body#splash
 }
 
 body#splash #content-box {
-    background-image: url('../Assets/Images/light-texture.png');
+    background-color: @site-background-color;
     .border-radius(@site-border-radius);
 }
 
 #splash .form-actions
 {
     margin-bottom: 0;
-}
-
-@media all and (-webkit-min-device-pixel-ratio: 1.5) {
-  #splash #content-box {
-    background-image: url('../Assets/Images/light-texture@2x.png');
-    background-size: 256px 256px;
-  }
 }
 
 // special styles for the login control 
