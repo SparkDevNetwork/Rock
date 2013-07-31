@@ -168,34 +168,40 @@
             </div>
         </div>
         <div class="row-fluid attended-checkin-body">
-            <div class="span3 ">
+            <div class="span2">
                 <h3>First Name</h3>
             </div>
             <div class="span3">
                 <h3>Last Name</h3>
             </div>
-            <div class="span3">
-                <h3>DOB/Age</h3>
+            <div class="span2">
+                <h3>DOB</h3>
+            </div>
+            <div class="span2">
+                <h3>Gender</h3>
             </div>
             <div class="span3">
-                <h3>Grade</h3>
+                <h3>Ability/Grade</h3>
             </div>
         </div>
         <div class="row-fluid attended-checkin-body searchperson">
-            <div class="span3">
+            <div class="span2">
                 <Rock:DataTextBox ID="tbFirstNameSearch" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
             </div>
             <div class="span3">
                 <Rock:DataTextBox ID="tbLastNameSearch" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
             </div>
-            <div class="span3">
+            <div class="span2">
                 <Rock:DatePicker ID="dtpDOBSearch" runat="server" CssClass="datePickerClass"></Rock:DatePicker>
                 <asp:CustomValidator ID="cvDOBSearch" runat="server" ErrorMessage="The first DOB/Age field is incorrect."
                     CssClass="align-middle" EnableClientScript="true" Display="None" 
                     ClientValidationFunction="cvDOBValidator_ClientValidate" OnServerValidate="cvDOBValidator_ServerValidate" ControlToValidate="dtpDOBSearch" />
             </div>
+            <div class="span2">
+                <Rock:DataDropDownList ID="ddlGenderSearch" runat="server" CssClass="fullBlock"></Rock:DataDropDownList>
+            </div>
             <div class="span3">
-                <Rock:DataTextBox ID="tbGradeSearch" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                <Rock:DataDropDownList ID="ddlAttributeSearch" runat="server" CssClass="fullBlock"></Rock:DataDropDownList>
             </div>
         </div>
         <br />
@@ -206,7 +212,8 @@
                     <asp:BoundField DataField="personFirstName" HeaderText="First Name" />
                     <asp:BoundField DataField="personLastName" HeaderText="Last Name" />
                     <asp:BoundField DataField="personDOB" HeaderText="DOB" />
-                    <asp:BoundField DataField="personGrade" HeaderText="Grade" />
+                    <asp:BoundField DataField="personGender" HeaderText="Gender" />
+                    <asp:BoundField DataField="personAttribute" HeaderText="Ability/Grade" />
                     <asp:TemplateField HeaderText="Add">
                         <ItemTemplate>
                             <asp:LinkButton ID="lbAdd" runat="server" CssClass="btn ConfirmButtons" CommandName="Add" Text="Add" CommandArgument="<%# ((GridViewRow) Container).RowIndex %>"><i class="icon-plus"></i></asp:LinkButton>

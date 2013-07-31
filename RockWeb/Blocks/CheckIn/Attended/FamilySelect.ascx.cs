@@ -43,6 +43,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 if ( !Page.IsPostBack )
                 {
+                    ddlGenderSearch.BindToEnum( typeof( Gender ) );
+                    LoadAttributeDropDown( ddlAttributeSearch );
                     if ( CurrentCheckInState.CheckIn.Families.Count == 0 )
                     {
                         familyTitle.InnerText = "No Search Results Found";
@@ -263,6 +265,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             ResetAddPersonFields();
             lblAddPersonHeader.Text = "Add Person";
             personVisitorType.Value = "Person";
+            lbAddSearchedForPerson.Text = "None of these. Add me as a new person";
             mpePerson.Show();
         }
 
@@ -276,6 +279,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             ResetAddPersonFields();
             lblAddPersonHeader.Text = "Add Visitor";
             personVisitorType.Value = "Visitor";
+            lbAddSearchedForPerson.Text = "None of these. Add me as a new visitor";
             mpePerson.Show();
         }
 
@@ -287,7 +291,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
             tbFirstNameSearch.Text = "";
             tbLastNameSearch.Text = "";
             dtpDOBSearch.Text = "";
-            tbGradeSearch.Text = "";
+            ddlGenderSearch.SelectedIndex = 0;
+            ddlAttributeSearch.SelectedIndex = 0;
             grdPersonSearchResults.DataBind();
             grdPersonSearchResults.Visible = false;
             lbAddSearchedForPerson.Visible = false;
@@ -331,7 +336,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             // Create the family and person data
             List<Person> familyList = new List<Person>();
-            Group familyGroup = new Group();
+            Group familyGroup = new Group().Clone( false );
             for ( var i = 1; i <= 12; i++ )
             {
                 DataTextBox firstName = (DataTextBox)FindControl( "tbFirstName" + i.ToString() );
@@ -349,12 +354,13 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     }
 
                     // add the new person record
-                    var person = AddPerson( firstName.Text, lastName.Text, dob.Text, grade.Text );
+                    // ********************* ADD THIS BACK ********************** //
+                    //var person = AddPerson( firstName.Text, lastName.Text, dob.Text, grade.Text );
 
                     // add the group member record
-                    var groupMember = AddGroupMember( familyGroup, person );
+                    //var groupMember = AddGroupMember( familyGroup, person );
 
-                    familyList.Add( person );
+                    //familyList.Add( person );
                 }                
             }
 
@@ -369,7 +375,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             foreach( Person person in familyList )
             {
                 var checkInPerson = new CheckInPerson();
-                checkInPerson.Person = person;
+                checkInPerson.Person = person.Clone( false );
                 checkInPerson.Selected = true;
                 checkInFamily.People.Add( checkInPerson );
                 if ( subCaption == "" )
@@ -380,7 +386,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 {
                     subCaption += ", " + person.FirstName;
                 }
-
             }
 
             checkInFamily.Group = familyGroup;
@@ -503,7 +508,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 if ( family != null )
                 {                    
                     var checkInPerson = new CheckInPerson();
-                    checkInPerson.Person = new PersonService().Get( personId );
+                    checkInPerson.Person = new PersonService().Get( personId ).Clone( false );
                     checkInPerson.Selected = true;
                     if ( personVisitorType.Value == "Person" )
                     {
@@ -577,11 +582,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 if ( family != null )
                 {
                     // Add the Person record.
-                    var person = AddPerson( tbFirstNameSearch.Text, tbLastNameSearch.Text, dtpDOBSearch.Text, tbGradeSearch.Text );
+                    var person = AddPerson( tbFirstNameSearch.Text, tbLastNameSearch.Text, dtpDOBSearch.Text, ddlGenderSearch.SelectedValueAsEnum<Gender>(), ddlAttributeSearch.SelectedValue );
 
                     // put the person into place to be checked in.
                     var checkInPerson = new CheckInPerson();
-                    checkInPerson.Person = person;
+                    checkInPerson.Person = person.Clone( false );
                     checkInPerson.Selected = true;
 
                     if ( personVisitorType.Value == "Person" )
@@ -594,7 +599,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     {
                         // This is a visitor
                         AddVisitorGroupMemberRoles( family, person.Id );
-                        //Person.CreateCheckinRelationship( family.People.FirstOrDefault().Person.Id, person.Id, CurrentPersonId );
                         checkInPerson.FamilyMember = false;
                     }
                     family.People.Add( checkInPerson );
@@ -642,7 +646,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 {
                     var personToAdd = new PersonService().Get( familyMember );
                     var checkInPerson = new CheckInPerson();
-                    checkInPerson.Person = personToAdd;
+                    checkInPerson.Person = personToAdd.Clone( false) ;
                     checkInPerson.Selected = true;
                     checkInPerson.FamilyMember = false;
                     family.People.Add( checkInPerson );
@@ -656,7 +660,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 {
                     var personToAdd = new PersonService().Get( visitor );
                     var checkInPerson = new CheckInPerson();
-                    checkInPerson.Person = personToAdd;
+                    checkInPerson.Person = personToAdd.Clone( false );
                     checkInPerson.Selected = true;
                     checkInPerson.FamilyMember = false;
                     family.People.Add( checkInPerson );
@@ -756,7 +760,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <returns></returns>
         protected Group AddFamilyGroup( string familyLastName )
         {
-            Group group = new Group();
+            Group group = new Group().Clone( false );
             GroupService gs = new GroupService();
             group.IsSystem = false;
             group.GroupTypeId = new GroupTypeService().Get( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Id;
@@ -778,17 +782,27 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="firstName">The first name.</param>
         /// <param name="lastName">The last name.</param>
         /// <param name="DOB">The DOB.</param>
-        /// <param name="grade">The grade.</param>
-        protected Person AddPerson( string firstName, string lastName, string dob, string grade )
+        /// <param name="gender">The gender</param>
+        /// <param name="attribute">The attribute.</param>
+        protected Person AddPerson( string firstName, string lastName, string dob, Gender gender, string attribute )
         {
-            Person person = new Person();
+            var isAttribute = false;
+            Person person = new Person().Clone( false );
             person.GivenName = firstName;
             person.LastName = lastName;
             person.BirthDate = Convert.ToDateTime( dob );
-            if ( !string.IsNullOrEmpty( grade ) )
+            person.Gender = gender;
+
+            string[] grades = { "K", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
+            if ( Array.IndexOf( grades, attribute ) > 0 )
             {
-                person.Grade = int.Parse( grade );
+                person.Grade = int.Parse( attribute );
             }
+            else
+            {
+                isAttribute = true;
+            }
+
             PersonService ps = new PersonService();
             Rock.Data.RockTransactionScope.WrapTransaction( () =>
             {
@@ -796,6 +810,16 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 ps.Save( person, CurrentPersonId );
             } );
 
+            if ( isAttribute )
+            {
+                person.LoadAttributes();
+                var abilityLevelAttributeId = new AttributeService().Queryable().Where( a => a.Key == "AbilityLevel" ).Select( a => a.Id ).FirstOrDefault();
+                person.Attributes.Add( "AbilityLevel", Rock.Web.Cache.AttributeCache.Read( abilityLevelAttributeId ) );
+                person.AttributeValues.Add( "AbilityLevel", new List<Rock.Model.AttributeValue>() );
+                person.SetAttributeValue( "AbilityLevel", attribute );
+                Rock.Attribute.Helper.SaveAttributeValues( person, CurrentPersonId );
+            }
+            
             return person;
         }
 
@@ -807,7 +831,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <returns></returns>
         protected GroupMember AddGroupMember( Group familyGroup, Person person )
         {
-            GroupMember groupMember = new GroupMember();
+            GroupMember groupMember = new GroupMember().Clone( false );
             GroupMemberService groupMemberService = new GroupMemberService();
             groupMember.IsSystem = false;
             groupMember.GroupId = familyGroup.Id;
@@ -854,11 +878,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     var role = new GroupRoleService().Get( ownerRoleId );
                     if ( role != null && role.GroupTypeId.HasValue )
                     {
-                        var groupMember = new GroupMember();
+                        var groupMember = new GroupMember().Clone( false );
                         groupMember.PersonId = familyMember.Person.Id;
                         groupMember.GroupRoleId = role.Id;
 
-                        group = new Group();
+                        group = new Group().Clone( false );
                         group.Name = role.GroupType.Name;
                         group.GroupTypeId = role.GroupTypeId.Value;
                         group.Members.Add( groupMember );
@@ -895,7 +919,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 people = personService.GetByFirstName( tbFirstNameSearch.Text );
             }
-
+            
             if ( !string.IsNullOrEmpty( dtpDOBSearch.Text ) )
             {
                 DateTime someDate;
@@ -905,9 +929,32 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
             }
 
-            if ( !string.IsNullOrEmpty( tbGradeSearch.Text ) )
+            if ( ddlGenderSearch.SelectedValueAsEnum<Gender>() != 0 )
             {
-                people = people.Where( p => p.Grade == int.Parse( tbGradeSearch.Text ) );
+                people = people.Where( p => p.Gender == ddlGenderSearch.SelectedValueAsEnum<Gender>() );
+            }
+
+            if ( ddlAttributeSearch.SelectedIndex != 0 )
+            {
+                string[] grades = { "K", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
+                if ( Array.IndexOf( grades, ddlAttributeSearch.SelectedValue ) > 0 )
+                {
+                    people = people.Where( p => p.Grade == int.Parse( ddlAttributeSearch.SelectedValue ) );
+                }
+                else
+                {
+                    List<Person> people2 = new List<Person>();
+                    foreach ( var p in people )
+                    {
+                        p.LoadAttributes();
+                        if ( p.GetAttributeValue( "AbilityLevel" ) != ddlAttributeSearch.SelectedValue )
+                        {
+                            people2.Add( p );
+                        }
+                    }
+                    people = people.Except( people2 );
+                    //people = people.Where( p => p.GetAttributeValue( "AbilityLevel" ) == ddlAttributeSearch.SelectedValue );
+                }
             }
             return people;
         }
@@ -947,7 +994,13 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             column = new System.Data.DataColumn();
             column.DataType = System.Type.GetType( "System.String" );
-            column.ColumnName = "personGrade";
+            column.ColumnName = "personGender";
+            column.ReadOnly = false;
+            dt.Columns.Add( column );
+
+            column = new System.Data.DataColumn();
+            column.DataType = System.Type.GetType( "System.String" );
+            column.ColumnName = "personAttribute";
             column.ReadOnly = false;
             dt.Columns.Add( column );
 
@@ -959,13 +1012,52 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 row["personFirstName"] = person.FirstName;
                 row["personLastName"] = person.LastName;
                 row["personDOB"] = Convert.ToDateTime( person.BirthDate ).ToString( "d" );
-                row["personGrade"] = person.Grade;
+                row["personGender"] = person.Gender;
+                person.LoadAttributes();
+                if ( !string.IsNullOrEmpty( person.GetAttributeValue( "AbilityLevel" ) ) )
+                {
+                    row["personAttribute"] = person.GetAttributeValue( "AbilityLevel" );
+                }
+                else
+                {
+                    row["personAttribute"] = person.Grade;
+                }
                 dt.Rows.Add( row );
             }
 
             System.Data.DataView dv = new System.Data.DataView( dt );
             dv.Sort = "personLastName ASC, personFirstName ASC";
             return dv.ToTable();
+        }
+
+        /// <summary>
+        /// Loads the attribute drop down.
+        /// </summary>
+        /// <param name="dropDownList">The drop down list.</param>
+        protected void LoadAttributeDropDown( DropDownList dropDownList )
+        {
+            // load the attribute drop down with ability levels and grades
+
+            // list of ability levels
+            var abilityLevelAttributeId = new AttributeService().Queryable().Where( a => a.Key == "AbilityLevel" ).Select( a => a.Id ).FirstOrDefault();
+            var abilityLevelList = new AttributeValueService().Queryable().Where( a => a.AttributeId == abilityLevelAttributeId ).Select( a => a.Value ).Distinct().ToList();
+
+            // list of grades
+            var gradeList = new List<string>();
+            string[] grades = { "K", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
+            foreach ( var grade in grades )
+            {
+                gradeList.Add( grade );
+            }
+
+            var dropDownListSource = new List<string>();
+            dropDownListSource.AddRange( abilityLevelList );
+            dropDownListSource.AddRange( gradeList );
+            
+            dropDownList.DataSource = dropDownListSource;
+            dropDownList.DataBind();
+            dropDownList.Items.Insert( 0, "None" );
+
         }
 
         #endregion
