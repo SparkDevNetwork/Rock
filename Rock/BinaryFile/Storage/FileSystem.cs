@@ -19,13 +19,13 @@ namespace Rock.BinaryFile.Storage
     [Description( "File System-driven document storage" )]
     [Export( typeof( StorageComponent ) )]
     [ExportMetadata( "ComponentName", "FileSystem" )]
-    [TextField( "Path Root", "Root path where the files will be stored on disk." )]
+    [TextField( "Root Path", "Root path where the files will be stored on disk." )]
     [TextField( "Folder Name", "Optional Folder name to place files on disk.", false )]
     public class FileSystem : StorageComponent
     {
-        public string PathRoot
+        public string RootPath
         {
-            get { return GetAttributeValue( "PathRoot" ); }
+            get { return GetAttributeValue( "RootPath" ); }
         }
 
         public string FolderName
@@ -89,9 +89,9 @@ namespace Rock.BinaryFile.Storage
 
             var urlBuilder = new StringBuilder();
 
-            urlBuilder.Append( PathRoot );
+            urlBuilder.Append( RootPath );
 
-            if ( !PathRoot.EndsWith( "/" ) )
+            if ( !RootPath.EndsWith( "/" ) )
             {
                 urlBuilder.Append( "/" );
             }

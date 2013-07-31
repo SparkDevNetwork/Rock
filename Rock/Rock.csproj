@@ -402,10 +402,6 @@
     <Compile Include="Migrations\201307191356459_LocationUpdates.Designer.cs">
       <DependentUpon>201307191356459_LocationUpdates.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201307230011388_StorageEntityTypes.cs" />
-    <Compile Include="Migrations\201307230011388_StorageEntityTypes.Designer.cs">
-      <DependentUpon>201307230011388_StorageEntityTypes.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\201307231337001_AddCampusShortCode.cs" />
     <Compile Include="Migrations\201307231337001_AddCampusShortCode.Designer.cs">
       <DependentUpon>201307231337001_AddCampusShortCode.cs</DependentUpon>
@@ -413,6 +409,10 @@
     <Compile Include="Migrations\201307291620553_PageIcons.cs" />
     <Compile Include="Migrations\201307291620553_PageIcons.Designer.cs">
       <DependentUpon>201307291620553_PageIcons.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307302059199_BinaryFileStorageProviders.cs" />
+    <Compile Include="Migrations\201307302059199_BinaryFileStorageProviders.Designer.cs">
+      <DependentUpon>201307302059199_BinaryFileStorageProviders.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
@@ -2019,14 +2019,14 @@
     <EmbeddedResource Include="Migrations\201307191356459_LocationUpdates.resx">
       <DependentUpon>201307191356459_LocationUpdates.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201307230011388_StorageEntityTypes.resx">
-      <DependentUpon>201307230011388_StorageEntityTypes.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307231337001_AddCampusShortCode.resx">
       <DependentUpon>201307231337001_AddCampusShortCode.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307291620553_PageIcons.resx">
       <DependentUpon>201307291620553_PageIcons.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307302059199_BinaryFileStorageProviders.resx">
+      <DependentUpon>201307302059199_BinaryFileStorageProviders.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
