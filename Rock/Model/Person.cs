@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -857,6 +858,126 @@ namespace Rock.Model
         /// </summary>
         Female = 2
     }
+        
+
+    /// <summary>
+    /// Available grade levels
+    /// </summary>
+    public enum GradeLevel
+    {
+        /// <summary>
+        /// Pre-Kindergarten 
+        /// </summary>
+        [Description("Pre-K")]
+        PreK = -1,
+
+        /// <summary>
+        /// Kindergarten
+        /// </summary>
+        [Description("Kindergarten")]
+        Kindergarten = 0,
+
+        /// <summary>
+        /// 1st Grade
+        /// </summary>
+        [Description("1st Grade")]
+        First = 1,
+
+        /// <summary>
+        /// 2nd Grade
+        /// </summary>
+        [Description( "2nd Grade" )]
+        Second = 2,
+
+        /// <summary>
+        /// 3rd Grade
+        /// </summary>
+        [Description( "3rd Grade" )]
+        Third = 3,
+
+        /// <summary>
+        /// 4th Grade
+        /// </summary>
+        [Description( "4th Grade" )]
+        Fourth = 4,
+
+        /// <summary>
+        /// 5th Grade
+        /// </summary>
+        [Description( "5th Grade" )]
+        Fifth = 5,
+
+        /// <summary>
+        /// 6th Grade
+        /// </summary>
+        [Description( "6th Grade" )]
+        Sixth = 6,
+
+        /// <summary>
+        /// 7th Grade
+        /// </summary>
+        [Description( "7th Grade" )]
+        Seventh = 7,
+
+        /// <summary>
+        /// 8th Grade
+        /// </summary>
+        [Description( "8th Grade" )]
+        Eighth = 8,
+
+        /// <summary>
+        /// 9th Grade
+        /// </summary>
+        [Description( "9th Grade" )]
+        Ninth = 9,
+
+        /// <summary>
+        /// 10th Grade
+        /// </summary>
+        [Description( "10th Grade" )]
+        Tenth = 10,
+
+        /// <summary>
+        /// 11th Grade
+        /// </summary>
+        [Description( "11th Grade" )]
+        Eleventh = 11,
+
+        /// <summary>
+        /// 12th Grade
+        /// </summary>
+        [Description( "12th Grade" )]
+        Twelfth = 12
+    }
+
+    public static class EnumExtensions
+    {
+        /// <summary>
+        /// Gets the enum description.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static string GetDescription( this Enum value )
+        {
+            Type type = value.GetType();
+            string name = Enum.GetName( type, value );
+            if ( name != null && name == "GradeLevel" )
+            {
+                System.Reflection.FieldInfo field = type.GetField( name );
+                if ( field != null )
+                {
+                    DescriptionAttribute attr =
+                            System.Attribute.GetCustomAttribute( field,
+                                typeof( DescriptionAttribute ) ) as DescriptionAttribute;
+                    if ( attr != null )
+                    {
+                        return attr.Description;
+                    }
+                }
+            }
+            return null;
+        }
+    }
 
     #endregion
 
@@ -864,7 +985,6 @@ namespace Rock.Model
 
     public static partial class PersonExtensionMethods
     {
-
         /// <summary>
         /// Gets the Family Members.
         /// </summary>
@@ -884,8 +1004,7 @@ namespace Rock.Model
         public static Person GetSpouse( this Person person )
         {
             return new PersonService().GetSpouse( person );
-        }
-
+        }        
     }
 
     #endregion

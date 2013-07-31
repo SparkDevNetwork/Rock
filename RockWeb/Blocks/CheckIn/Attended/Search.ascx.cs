@@ -53,23 +53,16 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
                 if ( CurrentCheckInState.Kiosk.KioskGroupTypes.Count == 0 )
                 {
-                    // throw error
+                    // display kiosk not configured
+                    return;
                 }
-                else if ( !CurrentCheckInState.Kiosk.HasLocations )
+                else if ( !CurrentCheckInState.Kiosk.HasLocations || !CurrentCheckInState.Kiosk.HasActiveLocations )
                 {
                     DateTimeOffset activeAt = CurrentCheckInState.Kiosk.KioskGroupTypes.Select( g => g.NextActiveTime ).Min();
-                    // not active yet
-                }
-                else if ( !CurrentCheckInState.Kiosk.HasActiveLocations )
-                {
-                    // not available
-                }
-                else
-                {
-                    // active
-                }
+                    // not active yet, display next active time
+                    return;
+                }                                
 
-                //if ( CurrentKioskId != null || UserBackedUp )
                 if ( CurrentCheckInState.CheckIn.SearchType != null || UserBackedUp )
                 {
                     lbAdmin.Visible = false;
@@ -87,7 +80,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
                 CurrentWorkflow = null;
                 SaveState();
-                //LoadLocations();
             }
         }
 
@@ -109,7 +101,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
                 if ( !string.IsNullOrWhiteSpace( tbSearchBox.Text ) )
                 {
-                    if ( tbSearchBox.Text.AsNumeric().Length == tbSearchBox.Text.Length )
+                    int searchNumber;
+                    if ( int.TryParse( tbSearchBox.Text, out searchNumber) )
                     {
                         CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER );
                     }
