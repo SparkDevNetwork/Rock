@@ -15,7 +15,9 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
+//using Rock.ExtensionMethods;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using System.Runtime.InteropServices;
 
@@ -47,13 +49,13 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     LoadAttributeDropDown( ddlAttributeSearch );
                     if ( CurrentCheckInState.CheckIn.Families.Count == 0 )
                     {
-                        familyTitle.InnerText = "No Search Results Found";
+                        familyTitle.InnerText = "No Search Results";
                         lbNext.Enabled = false;
                         lbNext.Visible = false;
                         familyDiv.Visible = false;
                         personDiv.Visible = false;
                         visitorDiv.Visible = false;
-                        nothingFoundMessage.Visible = true;
+                        nothingFoundMessage.Visible = true;                        
                     }
                     else if ( CurrentCheckInState.CheckIn.Families.Count == 1 &&
                              !CurrentCheckInState.CheckIn.ConfirmSingleFamily )
@@ -148,66 +150,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
-        /// Handles the ItemCommand event of the repPerson control.
-        /// </summary>
-        /// <param name="source">The source of the event.</param>
-        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
-        protected void repPerson_ItemCommand( object source, RepeaterCommandEventArgs e )
-        {
-            // *************** TAKE ALL OF THIS OUT TO ALLOW FOR THE TOGGLE *******************
-            //var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-            //if ( family != null )
-            //{
-            //    int id = int.Parse( e.CommandArgument.ToString() );
-            //    var familyMember = family.People.Where( m => m.Person.Id == id ).FirstOrDefault();
-            //    if ( familyMember != null )
-            //    {
-            //        if ( familyMember.Selected )
-            //        {
-            //            familyMember.Selected = false;
-            //            ( (LinkButton)e.Item.FindControl( "lbSelectPerson" ) ).RemoveCssClass( "active" );
-            //        }
-            //        else
-            //        {
-            //            familyMember.Selected = true;
-            //            ( (LinkButton)e.Item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
-            //        }
-            //        SaveState();
-            //    }
-            //}
-        }
-
-        /// <summary>
-        /// Handles the ItemCommand event of the repVisitors control.
-        /// </summary>
-        /// <param name="source">The source of the event.</param>
-        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
-        protected void repVisitors_ItemCommand( object source, RepeaterCommandEventArgs e )
-        {
-            // *************** TAKE ALL OF THIS OUT TO ALLOW FOR THE TOGGLE *******************
-            //var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-            //if ( family != null )
-            //{
-            //    int id = int.Parse( e.CommandArgument.ToString() );
-            //    var familyMember = family.People.Where( m => m.Person.Id == id ).FirstOrDefault();
-            //    if ( familyMember != null )
-            //    {
-            //        if ( familyMember.Selected )
-            //        {
-            //            familyMember.Selected = false;
-            //            ( (LinkButton)e.Item.FindControl( "lbSelectVisitor" ) ).RemoveCssClass( "active" );
-            //        }
-            //        else
-            //        {
-            //            familyMember.Selected = true;
-            //            ( (LinkButton)e.Item.FindControl( "lbSelectVisitor" ) ).AddCssClass( "active" );
-            //        }
-            //        SaveState();
-            //    }
-            //}
-        }
-
-        /// <summary>
         /// Handles the ItemDataBound event of the repPerson control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -252,6 +194,40 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         ( (LinkButton)e.Item.FindControl( "lbSelectVisitor" ) ).AddCssClass( "active" );
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the repAddFamily control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void repAddFamily_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            {
+                var ddlGender = ( (DropDownList)e.Item.FindControl( "ddlGender" ) );
+                ddlGender.BindToEnum( typeof( Gender ), true );
+
+                var ddlAbilityGrade = ( (DropDownList)e.Item.FindControl( "ddlAbilityGrade" ) );
+
+                List<AttributeValue> abilityList;
+                var ability = new AttributeService().GetGlobalAttribute( "AbilityLevel" );
+                if (ability != null )
+                {
+                    abilityList = new AttributeValueService().GetByAttributeId( ability.Id ).ToList();
+                }
+                
+                var gradeList = Enum.GetValues( typeof( GradeLevel ) ).Cast<GradeLevel>()
+                    .Select( gl => gl.GetDescription() );
+
+                var bothList = new { Group = "Ability", Name = "Cuddler", ID = 1 };
+
+                ddlAbilityGrade.DataSource = bothList;
+                ddlAbilityGrade.DataValueField = bothList.ID.ToString();
+                //ddlAbilityGrade.DataGroupField = bothList.Group;
+                ddlAbilityGrade.DataTextField = bothList.Name;
+                ddlAbilityGrade.DataBind();                
             }
         }
 
@@ -305,16 +281,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddFamily_Click( object sender, EventArgs e )
         {
-            // open up a modal window & display the add family panel.
-            for ( var i = 1; i <= 12; i++ )
-            {
-                ( (DataTextBox)FindControl( "tbFirstName" + i.ToString() ) ).Text = "";
-                ( (DataTextBox)FindControl( "tbLastName" + i.ToString() ) ).Text = "";
-                ( (DatePicker)FindControl( "dpDOB" + i.ToString() ) ).Text = "";
-                ( (DataTextBox)FindControl( "tbGrade" + i.ToString() ) ).Text = "";
-            }
-            valSummaryBottom.DataBind();
-            mpeFamily.Show();
+            repAddFamily.DataSource = Enumerable.Repeat( new Person(), 5 );
+            repAddFamily.DataBind();
+            mpeAddFamily.Show();
         }
 
         /// <summary>
@@ -334,74 +303,65 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddFamilySave_Click( object sender, EventArgs e )
         {
-            // Create the family and person data
-            List<Person> familyList = new List<Person>();
-            Group familyGroup = new Group().Clone( false );
-            for ( var i = 1; i <= 12; i++ )
-            {
-                DataTextBox firstName = (DataTextBox)FindControl( "tbFirstName" + i.ToString() );
-                DataTextBox lastName = (DataTextBox)FindControl( "tbLastName" + i.ToString() );
-                DatePicker dob = (DatePicker)FindControl( "dpDOB" + i.ToString() );
-                DataTextBox grade = (DataTextBox)FindControl( "tbGrade" + i.ToString() );
-
-                // if the first name, last name and DOB are not blank for this set of controls, add this person to the family list.
-                if ( firstName.Text != "" && lastName.Text != "" && dob.Text != "" )
-                {
-                    // if this is the first person added, create a family group
-                    if (familyGroup == null)
-                    {
-                        familyGroup = AddFamilyGroup( lastName.Text );
-                    }
-
-                    // add the new person record
-                    // ********************* ADD THIS BACK ********************** //
-                    //var person = AddPerson( firstName.Text, lastName.Text, dob.Text, grade.Text );
-
-                    // add the group member record
-                    //var groupMember = AddGroupMember( familyGroup, person );
-
-                    //familyList.Add( person );
-                }                
-            }
-
-            if ( familyList.Count == 0 )
-            {
-                return;
-            }
-
-            // Set the family up for check in
             var checkInFamily = new CheckInFamily();
-            string subCaption = "";
-            foreach( Person person in familyList )
+            var familyGroup = new Group();            
+
+            foreach ( RepeaterItem item in repAddFamily.Items )
             {
-                var checkInPerson = new CheckInPerson();
-                checkInPerson.Person = person.Clone( false );
-                checkInPerson.Selected = true;
-                checkInFamily.People.Add( checkInPerson );
-                if ( subCaption == "" )
+                var givenName = ( (TextBox)item.FindControl( "tbFirstName" ) ).Text;
+                var lastName = ( (TextBox)item.FindControl( "tbLastName" ) ).Text;
+                var birthDate = ( (DatePicker)item.FindControl( "dpBirthDate" ) ).SelectedDate;
+                var gender = ( (DropDownList)item.FindControl( "ddlGender" ) ).SelectedValueAsInt();
+                var abilityGrade = ( (DropDownList)item.FindControl( "ddlAbilityGrade" ) ).SelectedValue;
+
+                if ( givenName != string.Empty && lastName != string.Empty && birthDate.HasValue
+                    && gender.HasValue && abilityGrade != string.Empty )
                 {
-                    subCaption += person.FirstName;
-                }
-                else
-                {
-                    subCaption += ", " + person.FirstName;
+                    var newPerson = AddPerson( givenName, lastName, birthDate, abilityGrade );
+
+                    if ( familyGroup != null )
+                    {
+                        AddGroupMember( familyGroup, newPerson );
+                        var checkInPerson = new CheckInPerson();
+                        checkInPerson.Person = newPerson;
+                        checkInPerson.Selected = true;
+                        checkInFamily.People.Add( checkInPerson );
+                    }
+                    else
+                    {
+                        var gs = new GroupService();
+                        familyGroup = new Group();
+                        familyGroup.IsSystem = false;
+                        familyGroup.GroupTypeId = new GroupTypeService().Get( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Id;
+                        familyGroup.Name = lastName + " Family";
+                        familyGroup.IsSecurityRole = false;
+                        familyGroup.IsActive = true;
+                        Rock.Data.RockTransactionScope.WrapTransaction( () =>
+                        {
+                            gs.Add( familyGroup, CurrentPersonId );
+                            gs.Save( familyGroup, CurrentPersonId );
+                        } );
+
+                        AddGroupMember( familyGroup, newPerson );
+                    }
                 }
             }
 
             checkInFamily.Group = familyGroup;
-            checkInFamily.Caption = familyList.FirstOrDefault().LastName;
-            checkInFamily.SubCaption = subCaption;
+            //checkInFamily.Caption = familyGroup.Members.Select
+            checkInFamily.SubCaption = familyGroup.Members.SelectMany( gm => gm.Person.FirstName ).ToString();
             checkInFamily.Selected = true;
 
-            CurrentCheckInState.CheckIn.Families.Clear();
+            // don't clear in case there are several "smith" families
+            // CurrentCheckInState.CheckIn.Families.Clear();
             CurrentCheckInState.CheckIn.Families.Add( checkInFamily );
             lvFamily.DataSource = CurrentCheckInState.CheckIn.Families;
             lvFamily.DataBind();
+
             repPerson.DataSource = checkInFamily.People;
             repPerson.DataBind();
-            
-            SaveState();
 
+            SaveState();
         }
 
         /// <summary>
@@ -438,19 +398,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void PreviousButton_Click( object sender, EventArgs e )
         {
-            if ( addFamilyNamesPage2.Visible )
-            {
-                addFamilyNamesPage1.Visible = true;
-                addFamilyNamesPage2.Visible = false;
-                PreviousButton.Visible = false;
-            }
-            else if ( addFamilyNamesPage3.Visible )
-            {
-                addFamilyNamesPage2.Visible = true;
-                addFamilyNamesPage3.Visible = false;
-                MoreButton.Visible = true;
-            }
-            mpeFamily.Show();
+            
+            //PreviousButton.Visible = false;
+            
+            //MoreButton.Visible = true;
+
+            //mpeAddFamily.Show();
         }
 
         /// <summary>
@@ -460,19 +413,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void MoreButton_Click( object sender, EventArgs e )
         {
-            if ( addFamilyNamesPage1.Visible )
-            {
-                addFamilyNamesPage1.Visible = false;
-                addFamilyNamesPage2.Visible = true;
-                PreviousButton.Visible = true;
-            }
-            else if ( addFamilyNamesPage2.Visible )
-            {
-                addFamilyNamesPage2.Visible = false;
-                addFamilyNamesPage3.Visible = true;
-                MoreButton.Visible = false;
-            }
-            mpeFamily.Show();
+            
+            //PreviousButton.Visible = true;
+            
+            //MoreButton.Visible = false;
+            
+            //mpeAddFamily.Show();
         }
 
         /// <summary>
@@ -480,11 +426,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// </summary>
         /// <param name="source">The source of the event.</param>
         /// <param name="args">The <see cref="ServerValidateEventArgs"/> instance containing the event data.</param>
-        protected void cvDOBValidator_ServerValidate( object source, ServerValidateEventArgs args )
+        protected void cvBirthDateValidator_ServerValidate( object source, ServerValidateEventArgs args )
         {
-            // check to see if what is in the field is a date.
-            DateTime someDate;
             args.IsValid = false;
+            DateTime someDate;            
             if ( DateTime.TryParse( args.Value, out someDate ) )
             {
                 args.IsValid = true;
@@ -758,23 +703,23 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// </summary>
         /// <param name="familyLastName">Last name of the family.</param>
         /// <returns></returns>
-        protected Group AddFamilyGroup( string familyLastName )
-        {
-            Group group = new Group().Clone( false );
-            GroupService gs = new GroupService();
-            group.IsSystem = false;
-            group.GroupTypeId = new GroupTypeService().Get( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Id;
-            group.Name = familyLastName + " Family";
-            group.IsSecurityRole = false;
-            group.IsActive = true;
-            Rock.Data.RockTransactionScope.WrapTransaction( () =>
-            {
-                gs.Add( group, CurrentPersonId );
-                gs.Save( group, CurrentPersonId );
-            } );
+        //protected Group AddFamilyGroup( string familyLastName )
+        //{
+        //    Group group = new Group();
+        //    GroupService gs = new GroupService();
+        //    group.IsSystem = false;
+        //    group.GroupTypeId = new GroupTypeService().Get( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Id;
+        //    group.Name = familyLastName + " Family";
+        //    group.IsSecurityRole = false;
+        //    group.IsActive = true;
+        //    Rock.Data.RockTransactionScope.WrapTransaction( () =>
+        //    {
+        //        gs.Add( group, CurrentPersonId );
+        //        gs.Save( group, CurrentPersonId );
+        //    } );
 
-            return group;
-        }
+        //    return group;
+        //}
 
         /// <summary>
         /// Adds a new person.
@@ -1061,5 +1006,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         #endregion
+=======
+        #endregion        
     }
 }
