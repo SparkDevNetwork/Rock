@@ -15,7 +15,6 @@ namespace Rock.BinaryFile
     /// <summary>
     /// Base class for BinaryFile storage components
     /// </summary>
-    [BooleanField( "Active", "Is this service active?", true )]
     public abstract class StorageComponent : Component
     {
         public override bool IsActive
