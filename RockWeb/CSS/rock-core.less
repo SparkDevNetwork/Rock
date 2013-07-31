@@ -3,6 +3,7 @@
 @import "./grid.less";
 @import "./modal.less";
 @import "./persondetails.less";
+@import "./Bootstrap/mixins.less";
 
 // HTML Overrides
 //--------------------------------
@@ -33,11 +34,6 @@ dl
     cursor: pointer;
 }
 
-.actions
-{
-    --margin-top: 18px;
-}
-
 .light {
     font-weight: @font-light-weight;
 }
@@ -55,10 +51,6 @@ a.help {
     margin-left: 6px;
     outline: 0;
     color: @site-header-text-color;
-}
-
-a.help:hover { 
-    text-decoration:none;
 }
 
 // Kendo Overrides
@@ -99,7 +91,6 @@ a.help:hover {
 .html-content-version-label:hover
 {
     color: inherit;
-    text-decoration: none;
 }
 
 .html-content-edit-header 
@@ -119,8 +110,6 @@ span.cke_skin_kama
 {
     padding: 0 !important;
 }
-
-
 
 /* user registration styles */
 .not-me 
