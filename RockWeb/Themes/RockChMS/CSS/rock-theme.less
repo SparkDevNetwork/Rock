@@ -17,7 +17,7 @@
 @import "./rock-global-variables.less";
 @import "./rock-bootstrap-variables.less";
 @import "../../../Css/rock-core.less";
-@import "../../../Css/Kendo/kendo.flat.less";
+
 
 
 // 1. HTML Overrides
@@ -109,6 +109,12 @@ a:hover i[class^="icon-"]
     font-weight: @font-light-weight;
 }
 
+.btn-primary.disabled, .btn-primary[disabled] {
+    color: @button-disabled-text-color;
+    background-color: @button-disabled-background;
+    cursor: not-allowed;
+}
+
 // add 40px padding if in desktop size so tooltips have a bit more space if they are close to the edge
 @media (min-width: 992px)
 {
@@ -128,10 +134,6 @@ html
  background-color: #3a3a3a;  
  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4="); 
 }
-
-
-
-
 
 // 3. Page Header
 // -------------------------
