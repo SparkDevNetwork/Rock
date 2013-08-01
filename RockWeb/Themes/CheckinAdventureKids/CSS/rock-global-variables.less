@@ -10,14 +10,14 @@
 @rockBackgroundColor:    	#e7e7e7;
 @rockCalloutColor:       	#d6d6d6;
 @rockAccentColor:        	#2f2f2f;
-@rockTextColor:          	#515151;
+@site-text-color:          	#515151;
 @rockSecondaryTextColor: 	#7c7c7c;
-@rockLightTextColor: 	    #bbb;
+@site-header-text-color: 	    #bbb;
 @rockPageTitleBackground:   #f3f3f3;
-@rockPageNavBackground:  	#3A3A3A;
+@site-header-background:  	#3A3A3A;
 @rockWidgetBackground:  	#fff;
-@rockModalHeader:           @rockAccentColor;
-@rockModalHeaderTextColor:  @rockLightTextColor;
+@site-modal-header-background:           @rockAccentColor;
+@site-modal-header-text-color:  @site-header-text-color;
 
 @rockSansFontFamilyBold: 	'OpenSansBold', 'Helvetica Neue',Helvetica,Arial,sans-serif; // 'Helvetica Neue',Helvetica,Arial,sans-serif;
 @rockSansFontFamilySemiBold: 	'OpenSansSemibold', 'Helvetica Neue',Helvetica,Arial,sans-serif; // new variable
@@ -30,13 +30,13 @@
 
 // Block Gradient
 
-.block-gradient (@backgroundColor: @rockPageNavBackground) {
+.block-gradient (@backgroundColor: @site-header-background) {
   	background: @backgroundColor;
 	background-image: -moz-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@backgroundColor, 3%));
 	background-image: -ms-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@backgroundColor, 3%));
 	background-image: -webkit-gradient(linear, 0 0, 0 100%, from(lighten(@backgroundColor, 3%)), to(darken(@backgroundColor, 3%)));
 	background-image: -webkit-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@backgroundColor, 3%));
-	background-image: -o-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@rockPageNavBackground, 3%));
+	background-image: -o-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@site-header-background, 3%));
 	background-image: linear-gradient(top, lighten(@backgroundColor, 3%), darken(@backgroundColor, 3%));
 	background-repeat: repeat-x;
     filter: initial;

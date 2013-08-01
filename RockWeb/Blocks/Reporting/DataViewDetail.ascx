@@ -10,9 +10,9 @@
             <div id="pnlEditDetails" runat="server" class="well">
 
                 <fieldset>
-                    <legend>
+                    <h1 class="banner">
                         <asp:Literal ID="lActionTitle" runat="server" />
-                    </legend>
+                    </h1>
 
                     <div class="row-fluid">
                         <div class="span6">
@@ -41,23 +41,23 @@
             <div id="pnlViewDetails" runat="server">
 
                 <fieldset>
-                    <legend>
+                    <h1 class="banner">
                         <asp:Literal ID="lReadOnlyTitle" runat="server" />
-                    </legend>
-                    <div class="well">
-                        <div class="row-fluid">
-                            <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
-                        </div>
-                        <div class="row-fluid">
-                            <asp:Literal ID="lblMainDetails" runat="server" />
-                        </div>
-                        <div class="actions">
-                            <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click" />
-                            <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-mini" OnClick="btnDelete_Click" />
-                            <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-mini pull-right" />
-                            <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
-                        </div>
+                    </h1>
+                    
+                    <div class="row-fluid">
+                        <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                     </div>
+                    <div class="row-fluid">
+                        <asp:Literal ID="lblMainDetails" runat="server" />
+                    </div>
+                    <div class="actions">
+                        <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click" />
+                        <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-mini" OnClick="btnDelete_Click" />
+                        <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-mini pull-right" />
+                        <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
+                    </div>
+
                 </fieldset>
 
                 <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
