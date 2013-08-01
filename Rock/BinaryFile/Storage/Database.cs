@@ -80,7 +80,23 @@ namespace Rock.BinaryFile.Storage
             }
 
             var urlBuilder = new StringBuilder();
-            urlBuilder.AppendFormat( "~/File.ashx?guid={0}", file.FileName );
+            string wsPath;
+
+            switch ( file.MimeType.ToLower() )
+            {
+                case "image/jpeg":
+                case "image/gif":
+                case "image/png":
+                case "image/bmp":
+                    wsPath = "~/Image.ashx";
+                    break;
+                default:
+                    wsPath = "~/File.ashx";
+                    break;
+
+            }
+
+            urlBuilder.AppendFormat( "{0}?guid={1}", wsPath, file.FileName );
 
             if ( height.HasValue )
             {
