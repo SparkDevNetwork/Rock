@@ -35,10 +35,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            CurrentPage.AddScriptLink( this.Page, "~/Blocks/CheckIn/Scripts/geo-min.js" );
-
             if ( !Page.IsPostBack )
             {
+                CurrentPage.AddScriptLink( this.Page, "~/Blocks/CheckIn/Scripts/geo-min.js" );
+
                 bool enableLocationSharing = bool.Parse( GetAttributeValue( "EnableLocationSharing" ) ?? "false" );
                 if ( enableLocationSharing )
                 {
