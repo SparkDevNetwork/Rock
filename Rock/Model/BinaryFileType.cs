@@ -82,6 +82,15 @@ namespace Rock.Model
         [DataMember]
         public string IconCssClass { get; set; }
 
+        /// <summary>
+        /// Gets or sets the storage mode entity type id.
+        /// </summary>
+        /// <value>
+        /// The storage mode entity type id.
+        /// </value>
+        [DataMember]
+        public int? StorageEntityTypeId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -132,6 +141,15 @@ namespace Rock.Model
                 return qry;
             }
         }
+
+        /// <summary>
+        /// Gets or sets the type of the storage mode entity.
+        /// </summary>
+        /// <value>
+        /// The type of the storage mode entity.
+        /// </value>
+        [DataMember]
+        public virtual EntityType StorageEntityType { get; set; }
 
         #endregion
 

@@ -76,6 +76,7 @@ namespace Rock.Model
         {
             get
             {
+
                 Rock.Field.IFieldType result = null;
                 Rock.Web.Cache.AttributeCache attribute = Rock.Web.Cache.AttributeCache.Read( this.AttributeId );
                 if (attribute != null)
@@ -86,7 +87,7 @@ namespace Rock.Model
                   }
                 }
 
-                return result; 
+                return result;
             }
         }
 
@@ -100,14 +101,13 @@ namespace Rock.Model
         {
             if ( FieldType != null )
             {
+
                 return FieldType is Rock.Field.Types.EncryptedFieldType;
             }
-            else
-            {
-                return false;
-            }
+            
+            return false;
         }
-        
+
         /// <summary>
         /// Gets or sets the Attribute.
         /// </summary>
