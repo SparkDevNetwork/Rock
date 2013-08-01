@@ -638,7 +638,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 if ( family != null )
                 {
                     var familyPeople = family.People.Where( f => f.FamilyMember ).ToList();
-                    hfSelectedPerson.Value = string.Join( ",", familyPeople.Select( f => f.Person.Id ) );
+                    hfSelectedPerson.Value = string.Join( ",", familyPeople.Select( f => f.Person.Id ) ) + ",";
                     repPerson.DataSource = familyPeople;
                     repPerson.DataBind();
 
