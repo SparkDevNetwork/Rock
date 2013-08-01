@@ -121,6 +121,11 @@ namespace RockWeb.Blocks.Administration
             imgIconSmall.ImageId = binaryFileType.IconSmallFileId;
             imgIconLarge.ImageId = binaryFileType.IconLargeFileId;
 
+            if ( binaryFileType.StorageEntityType != null )
+            {
+                cpStorageType.SelectedValue = binaryFileType.StorageEntityType.Guid.ToString();
+            }
+
             AttributeService attributeService = new AttributeService();
 
             string qualifierValue = binaryFileType.Id.ToString();
@@ -208,6 +213,17 @@ namespace RockWeb.Blocks.Administration
                 binaryFileType.IconCssClass = tbIconCssClass.Text;
                 binaryFileType.IconSmallFileId = imgIconSmall.ImageId;
                 binaryFileType.IconLargeFileId = imgIconLarge.ImageId;
+
+                if ( !string.IsNullOrWhiteSpace( cpStorageType.SelectedValue ) )
+                {
+                    var entityTypeService = new EntityTypeService();
+                    var storageEntityType = entityTypeService.Get( new Guid( cpStorageType.SelectedValue ) );
+
+                    if ( storageEntityType != null )
+                    {
+                        binaryFileType.StorageEntityTypeId = storageEntityType.Id;
+                    }
+                }
 
                 if ( !binaryFileType.IsValid )
                 {

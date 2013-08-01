@@ -26,6 +26,7 @@ namespace Rock.Web.UI.Controls
 
         private Label lblTitle;
         private HiddenField hfBinaryFileId;
+        private HiddenField hfBinaryFileTypeGuid;
         private HtmlAnchor aFileName;
         private HtmlAnchor aRemove;
         private FileUpload fileUpload;
@@ -41,6 +42,7 @@ namespace Rock.Web.UI.Controls
         {
             lblTitle = new Label();
             hfBinaryFileId = new HiddenField();
+            hfBinaryFileTypeGuid = new HiddenField();
         }
 
         #endregion
@@ -71,6 +73,12 @@ namespace Rock.Web.UI.Controls
             set { hfBinaryFileId.Value = value.ToString(); }
         }
 
+        public Guid BinaryFileTypeGuid
+        {
+            get { return new Guid( hfBinaryFileTypeGuid.Value ); }
+            set { hfBinaryFileId.Value = value.ToString(); }
+        }
+
         #endregion
 
         #region Control Methods
@@ -90,6 +98,9 @@ namespace Rock.Web.UI.Controls
 
             Controls.Add( hfBinaryFileId );
             hfBinaryFileId.ID = "hfBinaryFileId";
+
+            Controls.Add( hfBinaryFileTypeGuid );
+            hfBinaryFileTypeGuid.ID = "hfBinaryFileTypeGuid";
 
             aFileName = new HtmlAnchor();
             Controls.Add( aFileName );
@@ -147,6 +158,7 @@ namespace Rock.Web.UI.Controls
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             hfBinaryFileId.RenderControl( writer );
+            hfBinaryFileTypeGuid.RenderControl( writer );
             aFileName.RenderControl( writer );
             writer.Write( " " );
             aRemove.RenderControl( writer );
