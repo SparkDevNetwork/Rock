@@ -165,6 +165,10 @@
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
+    <Compile Include="BinaryFile\StorageComponent.cs" />
+    <Compile Include="BinaryFile\StorageContainer.cs" />
+    <Compile Include="BinaryFile\Storage\Database.cs" />
+    <Compile Include="BinaryFile\Storage\FileSystem.cs" />
     <Compile Include="Data\MergeFieldAttribute.cs" />
     <Compile Include="Field\Types\ComponentsFieldType.cs" />
     <Compile Include="Field\Types\CategoryFieldType.cs" />
@@ -409,6 +413,14 @@
     <Compile Include="Migrations\201307231337001_AddCampusShortCode.cs" />
     <Compile Include="Migrations\201307231337001_AddCampusShortCode.Designer.cs">
       <DependentUpon>201307231337001_AddCampusShortCode.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307291620553_PageIcons.cs" />
+    <Compile Include="Migrations\201307291620553_PageIcons.Designer.cs">
+      <DependentUpon>201307291620553_PageIcons.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201307302059199_BinaryFileStorageProviders.cs" />
+    <Compile Include="Migrations\201307302059199_BinaryFileStorageProviders.Designer.cs">
+      <DependentUpon>201307302059199_BinaryFileStorageProviders.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
@@ -1021,6 +1033,7 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
+    <Compile Include="Web\UI\Controls\Grid\CheckBoxEditableField.cs" />
     <Compile Include="Web\UI\Controls\Grid\ColorField.cs" />
     <Compile Include="Web\UI\Controls\IRequiredControl.cs" />
     <Compile Include="Web\UI\Controls\LabeledBulletedList.cs" />
@@ -2024,6 +2037,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307231337001_AddCampusShortCode.resx">
       <DependentUpon>201307231337001_AddCampusShortCode.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307291620553_PageIcons.resx">
+      <DependentUpon>201307291620553_PageIcons.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307302059199_BinaryFileStorageProviders.resx">
+      <DependentUpon>201307302059199_BinaryFileStorageProviders.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
