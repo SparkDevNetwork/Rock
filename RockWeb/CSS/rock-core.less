@@ -1,3 +1,33 @@
+@import "components.less";
+@import "pickers.less";
+@import "page-admin.less";
+@import "grid.less";
+@import "modal.less";
+@import "persondetails.less";
+@import "./Bootstrap/mixins.less";
+
+// HTML Overrides
+//--------------------------------
+dl dt
+{
+    font-weight: @font-bold-weight;
+    margin-top: 16px;
+    margin-bottom: 2px;
+}
+
+dl dt:first-child {
+    margin-top: 0;
+}
+
+dl dd {
+    margin-left: 0;
+}
+
+dl
+{
+    margin-bottom: 0;
+}
+
 
 /* global classes */
 .clickable
@@ -5,173 +35,44 @@
     cursor: pointer;
 }
 
-/* Zone Config */
-.zone-instance.outline 
-{
-    border: 1px solid #909090;
-    min-height: 30px;
-    min-width: 120px;
-    position: relative;
-    margin: 1px;
+.light {
+    font-weight: @font-light-weight;
 }
 
-.zone-configuration {
-    background: #272727;
-    border-color: #565656;
-    border-radius: 4px 4px 4px 4px;
-    border-style: solid;
-    border-width: 1px;
-    cursor: pointer;
-    display: none;
-    height: 26px;
-    overflow: hidden;
-    position: absolute;
-    top: 1px;
-    left: 1px;
-    width: 25px;
-    z-index: 40;
-    right:auto;
+.bold {
+    font-weight: @font-light-weight;
 }
 
-.zone-configuration-bar {
-    color: #7F7F7F;
-    display: inline-block;
-    float: left;
-    left: 24px;
-    margin-left: 6px;
-    margin-right: -999em;
-    overflow: hidden;
-    position: absolute;
-}
-
-.zone-configuration-bar span {
-    display: block;
-    float: left;
-    font-size: 10px;
-    padding-right: 20px;
-    margin-top: 4px;
-}
-
-.zone-configuration p {
-    float: left;   
-}
-
-/* Module Config */
-.block-configuration {
-    background: #272727;
-    border-color: #565656;
-    border-radius: 4px 4px 4px 4px;
-    border-style: solid;
-    border-width: 1px;
-    cursor: pointer;
-    display: none;
-    height: 26px;
-    overflow: hidden;
-    position: absolute;
-    top: 2px;
-    width: 26px;
-    z-index: 40;
-}
-
-.block-instance.outline 
-{
-    min-height: 36px;
-    clear: both;
-    display: block;
-    position: relative;
-}
-
-.config-bar > a 
-{
-    text-decoration: none;
-}
-
-.config-bar  a i[class^="icon-"] {
-    float: left;
-    margin-left: 5px;
-    margin-top: 3px;
-    font-size: 18px;
-    color: @rockSecondaryTextColor;
-    margin-right: 10px;
-}
-
-.block-configuration-bar {
-    color: #7F7F7F;
-    display: inline-block;
-    float: left;
-    left: 24px;
-    margin-left: 6px;
-    margin-right: -999em;
-    overflow: hidden;
-    position: absolute;
-}
-
-.block-configuration-bar .btn
-{
-    margin-right: 12px;
-    color: @rockSecondaryTextColor;   
-}
-
-.block-configuration-bar span {
-    display: block;
-    float: left;
-    font-size: 10px;
-    padding-right: 20px;
-    margin-top: 4px;
+.semibold {
+    font-weight: @font-semibold-weight;
 }
 
 /* context help  */
 a.help {
     margin-left: 6px;
     outline: 0;
-    color: @rockLightTextColor;
+    color: @site-header-text-color;
 }
 
-a.help:hover { 
-    text-decoration:none;
-}
+// Kendo Overrides
+//--------------------------------
 
-/* Admin Footer */
-#cms-admin-footer {
-    bottom: 0;
-    height: 20px;
-    z-index: 300;
-    position: fixed;
-    right: 0;
-    margin-right: 25px;
-    background: rgba(210,210,210,.8);
-    border-color: rgba(150,150,150,.8);
-    border-width: 1px 1px 0 1px;
-    border-style: solid;
-    color: #454545;
-    padding: 5px 12px 0 12px;
-    font-size: 80%;
-}
-
-#cms-admin-footer .button-bar {
-    margin-top: -4px;
-    margin-left: 12px;
-    float: right;
-}
-
-#cms-admin-footer .button-bar a 
+.k-treeview .k-in.k-state-hover, 
+.k-treeview .k-in.k-state-selected, 
+.k-treeview .k-in.k-state-focused,
+.k-treeview .k-in
 {
-    background-color: transparent;
-    background-image: none;
-    border: 0;
-}
-
-#cms-admin-footer .btn
-{
-    color: @rockSecondaryTextColor;
-    box-shadow: none;
+    padding: 2px 12px;
+    border: 1px solid transparent;
 }
 
 /* HTML Content */
+/*
 .html-content, .html-content-block, .html-content-block > div {
 	display: inline;
     position: relative;
 }
+    */
 
 .html-content-editor-panel .editor-buttons {
     float: right;
@@ -180,18 +81,17 @@ a.help:hover {
 
 .html-content-version-label 
 {
-    background-color: lighten(@rockModalHeader, 20%);
+    background-color: lighten(@site-modal-header-background, 20%);
     padding: 2px 8px;
     float: left;
     margin: 6px 0 0 16px;
-    .border-radius(@baseBorderRadius);
-    color: @rockModalHeaderTextColor;
+    .border-radius(@site-border-radius);
+    color: @site-modal-header-text-color;
 }
 
 .html-content-version-label:hover
 {
     color: inherit;
-    text-decoration: none;
 }
 
 .html-content-edit-header 
@@ -207,79 +107,9 @@ a.help:hover {
 
 
 /* CK Editor Tweaks */
-span.cke_skin_kama {
-    padding: 0 !important;   
-}
-
-/* Dialog Styling */
-
-.modal-body .scroll-container 
+span.cke_skin_kama
 {
-    width: 720px;
-}
-
-.modal-body .scroll-container .viewport 
-{
-    width: 690px; 
-}
-
-.modal-body.iframe 
-{
-    background: url("../assets/images/ajax-loading.png") center center no-repeat; /* http://preloaders.net/en/popular */
-    overflow: hidden;
-}
-
-.modal-header {
-    min-height: 34px;
-    background-color: @rockModalHeader;  
-    color: @rockModalHeaderTextColor;
-    padding: 5px 15px;
-}
-
-.modal-header h3 
-{
-    float: left;
-}
-
-.modal-backdrop 
-{
-    background-color: #8b8b8b;
-    opacity: 0.7;    
-}
-
-.bootbox.modal {
-    width:500px;
-    left: 50%;
-    margin-left:-250px;
-}
-
-.modal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  z-index: 11000;
-  width: 750px;
-  margin-left: 0px;
-  background-color: @rockBackgroundColor;
-}
-
-
-.modal-body {
-  padding: 8px 12px 12px 12px;
-}
-
-.modal-footer:after {
-  clear: both;
-}
-.modal-footer .btn {
-  float: right;
-  margin-left: 5px;
-}
-
-#modal-popup_iframe {
-    height: 100%;
-    width: 100%;
-    border: 0;
+    padding: 0 !important;
 }
 
 /* user registration styles */
@@ -287,34 +117,6 @@ span.cke_skin_kama {
 {
     margin-left: 21px;
 }
-
-/* security dialog styles */
-.add-user fieldset, .add-role fieldset 
-{
-    border: 1px solid #c4c4c4;
-    border-radius: 4px;   
-    margin-top: 22px;
-}
-
-.add-user legend, .add-role legend
-{
-    font-size: 16px;
-    padding-left: 15px;
-    padding-right: 15px;
-}
-
-.add-user table 
-{
-    margin-top: 10px;   
-}
-
-.add-user table td 
-{
-    padding: 0 10px 6px;   
-}
-
-
-
 
 
 /* jQuery Scrolling Capability */
@@ -396,139 +198,11 @@ span.cke_skin_kama {
     display: none; 
 }
 
-/* widget wrapper*/
-.widget
-{
-    background-color: @rockWidgetBackground;
-    border: 1px solid @tableBorder;
-    border-radius: @baseBorderRadius;
-    margin-bottom: 2em;
-}
-
-.widget h3 
-{
-    font-size: 15px;  
-    line-height: 15px;
-    margin: 0 0 6px 0;
-}
-
-.widget header
-{
-    .make-gradient(@rockHeaderBackground);
-    padding: 6px 15px;
-    border-radius: @baseBorderRadius @baseBorderRadius 0 0 ;
-}
-
-.filter-toogle > span {
-    vertical-align: 20%;
-}
-
-.widget.widget-dark > header
-{
-	.make-gradient(@rockHeaderDarkBackground);
-    color: #fff;
-}
-
-.widget.widget-dark > header .btn-action {
-	.make-gradient(lighten(@rockHeaderDarkBackground, 3%));
-}
 
 
-.widget-content
-{
-    padding: 20px 15px 15px;
-}
 
-/* tooltip */
-.tooltipster-base {
-	border-radius: @baseBorderRadius; 
-	border: 1px solid #cccccc;
-	background: @rockTooltipBackground;
-	color:  @rockTextColor;
-}
 
-.tooltipster-content header img,
-.tooltipster-content header div
-{
-    float: left;
-}
 
-.tooltipster-content header div
-{
-    margin: 4px 0 0 8px;
-    font-family: @rockFontFamilyBold;
-}
-
-.tooltipster-content header small
-{
-    display: block;
-    font-weight: normal;
-    font-family: @rockFontFamilyLight;
-}
-
-.tooltipster-content header:after
-{
-    content: ".";
-    display: block;
-    height: 0;
-    clear: both;
-    visibility: hidden;
-}
-
-.tooltipster-content header
-{
-    background-color: @rockHeaderBackground;
-    margin: -8px -10px 8px -10px;
-    padding: 8px 10px;
-    border-radius: @baseBorderRadius; 
-}
-
-.tooltipster-content strong
-{
-    font-family: @rockFontFamilySemiBold;
-    font-weight: normal;
-}
-
-/* page list as blocks */
-
-.page-list-as-blocks ul 
-{
-    list-style: none;
-}
-
-.page-list-as-blocks li 
-{
-    background-color: @rockPageTitleBackground;
-    border-radius: 6px 6px 6px 6px;
-    border: 1px solid #bbb;
-    float: left;
-    margin: 0 2% 12px 2%;
-    width: 20%;
-    overflow: hidden;
-    color: @rockSecondaryTextColor;
-    text-align: center;
-}
-
-    
-.page-list-as-blocks li a 
-{
-    display: block;
-    color: inherit;
-    height: 65px;
-    padding: 12px;
-}
-
-.page-list-as-blocks li a:hover
-{
-    text-decoration: none;
-}
-
-.page-list-as-blocks h4
-{
-    margin-top: 0;
-    font-size: 14px;
-    margin: 6px 0;
-}
 
 /* error page */
 .error-wrap
@@ -553,635 +227,6 @@ span.cke_skin_kama {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* person detail page -- this needs work... */
-/* global (maybe even move this to RockCore.css) */
-i[class^="icon-"].photo 
-{
-    font-size: 12px;
-}
-
-a.highlight
-{
-    padding: 1px 4px;
-    display: block;
-}
-a.highlight:hover 
-{
-    background: #e7e7e7;
-    border-color: #bbb;
-    border-radius: 0.6em;
-}
-
-/* block global */
-#person-profile 
-{
-    margin-top: -12px;   
-}
-
-/* left column */
-aside.bio div.content
-{
-    background-color: #2f2f2f;
-    color: #bcbcbc;
-    padding: 14% 14% 8% 14%;
-}
-
-aside.bio img 
-{
-    max-width: 98%;
-    padding: 2%;
-    background: #fff;
-}
-
-aside.bio section
-{
-    margin-top: 12px;
-}
-
-aside.bio div span 
-{
-    display: block;
-}
-
-aside.bio em 
-{
-    font-size: 12px;
-    color: #7c7c7c;   
-}
-
-span.member-status, span.campus 
-{
-    float: left;
-    width: 50%;
-}
-
-span.record-status, span.area
-{
-    float: right;
-    width: 50%;
-    text-align: right;
-}
-
-span.record-status.inactive 
-{
-    color: #c45a5a;
-}
-
-aside.bio footer 
-{
-    height: 16px;
-    margin: 0 25px;
-}
-
-aside.bio footer div.left 
-{
-    float: left;
-    width: 0; 
-    height: 0; 
-    border-top: 16px solid #000; 
-    border-left: 25px solid transparent;
-    margin-left: -25px;
-}
-
-aside.bio footer div.right 
-{
-    float: left;
-    width: 0; 
-    height: 0; 
-    border-top: 16px solid #000; 
-    border-right: 25px solid transparent;
-    margin-right: -25px;
-}
-
-aside.bio footer div.center 
-{
-    height: 16px;
-    float: left;
-    width: 100%;
-    background: rgb(96,96,96);
-    background: -moz-linear-gradient(top,  rgba(96,96,96,1) 0%, rgba(214,214,214,1) 100%);
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(96,96,96,1)), color-stop(100%,rgba(214,214,214,1)));
-    background: -webkit-linear-gradient(top,  rgba(96,96,96,1) 0%,rgba(214,214,214,1) 100%);
-    background: -o-linear-gradient(top,  rgba(96,96,96,1) 0%,rgba(214,214,214,1) 100%);
-    background: -ms-linear-gradient(top,  rgba(96,96,96,1) 0%,rgba(214,214,214,1) 100%);
-    background: linear-gradient(to bottom,  rgba(96,96,96,1) 0%,rgba(214,214,214,1) 100%);
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#606060', endColorstr='#d6d6d6',GradientType=0 );
-}
-
-
-
-
-/* bio details */
-
-aside.bio-details 
-{
-    margin: 0 25px;
-    background: #d6d6d6;
-}
-
-aside.bio-details section
-{
-    padding: 0 5%;
-}
-
-aside.bio-details section:last-child
-{
-    padding-bottom: 18px;
-}
-
-aside.bio-details a 
-{
-     color: inherit;  
-}
-
-aside.bio-details section header
-{
-    background: #bbb;
-    padding: 6px 8px;
-    color: #fff;
-    font-weight: bold;
-    margin: 18px -5%;
-}
-
-aside.bio-details section:first-child header
-{
-    margin-top: 0;
-}
-
-aside.bio-details header a 
-{
-    float: right;
-    margin-right: 6px;
-    margin-top: 2px;
-}
-
-aside.bio-details ul 
-{
-    list-style: none;
-    margin: 0; 
-    clear: both;
-}
-
-aside.bio-details .contact-info ul 
-{
-    margin-bottom: 18px;
-}
-
-aside.bio-details .contact-info ul:last-child
-{
-    margin-bottom: 0;
-}
-
-aside.bio-details ul.group-members li 
-{
-    float: left;
-    margin-right: 5px;
-    margin-bottom: 4px;
-    height: 80px;
-    width: 70px;
-    overflow: hidden;   
-}
-
-aside.bio-details ul.group-members li a
-{
-    display: block;
-    border-radius: 0.6em;
-    background: transparent;
-    padding: 6px;
-}
-
-aside.bio-details ul.group-members li a:hover
-{
-    background: #e7e7e7;
-}
-
-aside.bio-details ul.group-members li img 
-{
-    display: block;
-}
-
-aside.bio-details ul.group-members li h4
-{
-    color: #515151;
-    display: block;
-    float: left;
-    font-size: 12px;
-    font-weight: normal;
-    margin-right: 2px;
-    width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;  
-}
-
-aside.bio-details ul.group-members li small 
-{
-    display: block;
-    line-height: 1em;
-}
-
-aside.bio-details ul.group-members li em 
-{
-    font-size: 11px;
-}
-
-aside.bio-details em, aside.bio-details small
-{
-    font-size: 12px;
-    color: #7c7c7c;   
-}
-
-/* contact info */
-aside.bio-details section.contact-info header 
-{
-    margin-top: 0;   
-}
-
-aside.bio-details ul.phone-numbers li a i
-{
-    display: none;
-    float: right;
-    margin-top: 2px;
-}
-
-aside.bio-details ul.emails li 
-{
-    overflow: hidden;
-    text-overflow: ellipsis;
-    cursor: pointer;
-}
-
-aside.bio-details ul.addresses li 
-{
-    margin-bottom: 12px;
-}
-
-aside.bio-details ul.addresses li h4 
-{
-    font-weight: normal;
-    font-size: 11px;
-    color: #7c7c7c;
-}
-
-aside.bio-details ul.addresses li a.map
-{
-    float: left;
-    width: 18px;
-    margin-right: 6px;
-}
-
-aside.bio-details ul.addresses li div.address
-{
-    float: left;
-}
-
-aside.bio-details ul.addresses li div.address span
-{
-    display: block;
-}
-
-
-aside.bio-details ul.addresses li div.address 
-{
-    float: left;
-    margin-right: 12px;   
-}
-
-aside.bio-details ul.addresses li div.actions 
-{
-    display: none;   
-}
-
-
-
-
-/* supplemental info */
-
-aside.supplemental-info section 
-{
-    margin-bottom: 26px;
-}
-
-aside.supplemental-info i[class^="icon-"], aside.bio-details i[class^="icon-"]
-{
-    color: #9e9e9e;
-    font-size: 20px;
-}
-
-aside.supplemental-info header a i[class^="icon-"], aside.bio-details header a i[class^="icon-"]
-{
-    display: block;
-    opacity: 0;
-    -moz-transition: opacity 0.3s ease 0s, color 0.3s ease 0s, background 0.3s ease 0s;
-    -webkit-transition: opacity 0.3s ease 0s, color 0.3s ease 0s, background 0.3s ease 0s;
-}
-
-aside.supplemental-info header:hover a i[class^="icon-"], aside.bio-details header:hover a i[class^="icon-"]
-{
-    opacity: 1;
-    display: block;
-    text-decoration: none;
-}
-
-aside.supplemental-info i[class="icon-user"] 
-{
-    color: #bbb;
-}
-
-aside.supplemental-info span.value 
-{
-     color: #7c7c7c;
-}
-
-aside.supplemental-info section ul 
-{
-    list-style: none;   
-}
-
-aside.supplemental-info em, aside.supplemental-info small 
-{
-    font-size: 12px;
-    color: #7c7c7c;  
-}
-
-aside.supplemental-info section header
-{
-    background: #c3c3c3;
-    padding: 6px 8px;
-    color: #fff;
-    font-weight: bold;
-    border-radius: 0.6em;
-    border: 1px solid #bbb;
-    margin-bottom: 12px;
-}
-
-
-aside.supplemental-info header a 
-{
-    float: right;
-    margin-right: 6px;
-    margin-top: 2px;
-}
-
-
-
-/* Tags */
-.row-fluid .span9.tags-notes-attributes 
-{
-    margin-left: 0 !important; 
-    width: 76.5231% !important;  /* technically this should be 76.9231 */ 
-}
-
-div.tag-span 
-{
-    background-color: #d6d6d6;
-    margin-bottom: 24px;
-    padding: 12px;
-    min-height: 18px !important;
-}
-
-.tag-span h2 
-{
-    float: left;
-    font-size: 14px; 
-    line-height: 18px;
-    margin-top: 0;
-}
-
-.tag-wrap 
-{
-    float: left;
-    width: 90%;   
-}
-
-/* Notes */
-.person-notes
-{
-    padding-left: 2.5641%;
-}
-
-.person-notes header h4
-{
-    float: left;
-    font-size: 24px;
-    color: #515151;
-    margin-top: 2px;
-}
-
-.person-notes header  a.note-add
-{
-    float: right;
-}
-
-.person-notes .note-entry
-{
-    padding: 2.5%;
-    border-radius: 4px;
-    color: #7c7c7c;
-    margin-bottom: 12px;
-    background-color: #d6d6d6;
-}
-
-.person-notes .note-entry textarea
-{
-    width: 95%;
-}
-
-.person-notes-details
-{
-    clear: both;
-}
-
-.note-container
-{
-   width: 100%;
-}
-
-.person-notes article
-{
-    border-radius: 6px;
-    padding: 12px;
-    margin-bottom: 12px;
-}
-
-.person-notes article.users-note //todo need to add a new color for this
-{
-    background: #bbb;  
-}
-
-.person-notes article:last-child
-{
-    margin-bottom: 0;
-}
-
-.person-notes article.alert-info
-{
-    background-color: @rockCalloutColor;
-    color: @rockSecondaryTextColor;
-    border-color: darken(@rockCalloutColor, 15%);
-}
-
-.person-notes article i 
-{
-    font-size: 28px;
-    float: left;
-    width: 28px;
-    margin: 0 12px 0 4px; 
-}
-
-.person-notes article .detail
-{
-    overflow: hidden;
-}
-
-.person-notes article .detail strong
-{
-    display: block;
-}
-
-// notes scroll container classes
-
-#person-notes.scroll-container 
-{
-    width: auto;
-}
-
-.person-notes.scroll-container .viewport 
-{
-    height: 600px;
-}
-
-#person-notes.scroll-container .scrollbar 
-{
-    margin-left: 12px; 
-}
-
-.person-notes article.personal
-{
-    background: #bbb;  
-}
-
-.person-notes article.personal i
-{
-    color: #7c7c7c;
-}
-
-
-
-/* responsive stuff */
-@media (max-width: 1020px) /* remove the padding on the bio-details */
-{
-    .container-fluid 
-    {
-        padding-right: 5px;
-        padding-left: 5px;   
-    }
-    
-    aside.bio footer
-    {
-        display: none;    
-    }
-    
-    aside.bio-details 
-    {
-        margin: 0;    
-    }        
-}
-
-
-/* responsive stuff */
-@media (max-width: 767px) /* orig 767px */
-{
-    .container-fluid 
-    {
-        padding-right: 0;
-        padding-left: 0;   
-    }
-    
-    div.bio-wrap 
-    {
-        background-color: #2f2f2f;
-    }
-    
-    aside.bio 
-    {
-        float: left;
-        width: 30%;
-    }
-    
-    aside.bio footer 
-    {
-        display: none;
-    }
-    
-    aside.bio-details 
-    {
-        float: left;
-        width: 70%; 
-        margin: 0;  
-    }
-    
-    .row-fluid .span9.tags-notes-attributes 
-    {
-        width: 100% !important;
-        margin-top: 12px;   
-    }
-    
-    aside.supplemental-info
-    {
-        margin-top: 12px;
-    }
-    
-    aside.supplemental-info section 
-    {
-        width: 45%;
-        float: left;
-        margin: 0 2.5%;
-    }
-}
 
 /* responsive tweaks */
 @media (max-width: 767px) {
