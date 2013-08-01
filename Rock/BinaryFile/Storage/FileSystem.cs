@@ -20,17 +20,11 @@ namespace Rock.BinaryFile.Storage
     [Export( typeof( StorageComponent ) )]
     [ExportMetadata( "ComponentName", "FileSystem" )]
     [TextField( "Root Path", "Root path where the files will be stored on disk." )]
-    [TextField( "Folder Name", "Optional Folder name to place files on disk.", false )]
     public class FileSystem : StorageComponent
     {
         public string RootPath
         {
             get { return GetAttributeValue( "RootPath" ); }
-        }
-
-        public string FolderName
-        {
-            get { return GetAttributeValue( "FolderName" ); }
         }
 
         /// <summary>
@@ -56,7 +50,7 @@ namespace Rock.BinaryFile.Storage
                 // Set Data to null after successful OS save so the the binary data is not 
                 // written into the database.
                 file.Data = null;
-                file.Url = FolderName;
+                file.Url = RootPath;
                 fileService.Save( file, personId );
             }
         }
@@ -94,16 +88,6 @@ namespace Rock.BinaryFile.Storage
             if ( !RootPath.EndsWith( "/" ) )
             {
                 urlBuilder.Append( "/" );
-            }
-
-            if ( !string.IsNullOrWhiteSpace( FolderName ) )
-            {
-                urlBuilder.Append( FolderName );
-
-                if ( !FolderName.EndsWith( "/" ) )
-                {
-                    urlBuilder.Append( "/" );
-                }
             }
 
             urlBuilder.Append( file.FileName );
