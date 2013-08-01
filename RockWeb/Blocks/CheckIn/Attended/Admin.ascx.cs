@@ -133,6 +133,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var groupTypeIds = new List<int>();
             if ( !string.IsNullOrEmpty( hfParentTypes.Value ) )
             {
+                if ( CurrentKioskId == null )
+                {
+                    CurrentKioskId = hfParentTypes.ValueAsInt();
+                }
                 var kiosk = new DeviceService().Get( (int)CurrentKioskId );
                 var parentGroupTypes = GetAllParentGroupTypes( kiosk );
                 var selectedParentIds = hfParentTypes.Value.SplitDelimitedValues().Select( int.Parse ).ToList();

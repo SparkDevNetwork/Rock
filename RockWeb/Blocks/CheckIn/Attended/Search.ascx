@@ -4,7 +4,7 @@
     function SetKeyEvents() {
         $(document).keyup(function (event) {
             if (event.which == 13) {
-                $('#[id$="lbSearch"]').click();
+                $("[id$='lbSearch']").click();
                 event.preventDefault();
             }
         });
