@@ -859,18 +859,11 @@ namespace Rock.Model
         Female = 2
     }
         
-
     /// <summary>
-    /// Available grade levels
+    /// A person's possible grade levels
     /// </summary>
     public enum GradeLevel
-    {
-        /// <summary>
-        /// Pre-Kindergarten 
-        /// </summary>
-        [Description("Pre-K")]
-        PreK = -1,
-
+    {       
         /// <summary>
         /// Kindergarten
         /// </summary>
@@ -950,7 +943,7 @@ namespace Rock.Model
         Twelfth = 12
     }
 
-    public static class EnumExtensions
+    public static class GradeExtensionMethod
     {
         /// <summary>
         /// Gets the enum description.
@@ -959,16 +952,15 @@ namespace Rock.Model
         /// <returns></returns>
         public static string GetDescription( this Enum value )
         {
-            Type type = value.GetType();
+            var type = value.GetType();
             string name = Enum.GetName( type, value );
-            if ( name != null && name == "GradeLevel" )
+            if ( name != null && type == typeof(GradeLevel) )
             {
                 System.Reflection.FieldInfo field = type.GetField( name );
                 if ( field != null )
                 {
-                    DescriptionAttribute attr =
-                            System.Attribute.GetCustomAttribute( field,
-                                typeof( DescriptionAttribute ) ) as DescriptionAttribute;
+                    var attr = System.Attribute.GetCustomAttribute( field,
+                        typeof( DescriptionAttribute ) ) as DescriptionAttribute;
                     if ( attr != null )
                     {
                         return attr.Description;
