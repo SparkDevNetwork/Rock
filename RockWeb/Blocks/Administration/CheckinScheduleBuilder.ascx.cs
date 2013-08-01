@@ -13,7 +13,6 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -77,7 +76,6 @@ namespace RockWeb.Blocks.Administration
             int? scheduleCategoryId = pCategory.SelectedValueAsInt() ?? Rock.Constants.All.Id;
             if ( scheduleCategoryId != Rock.Constants.All.Id )
             {
-
                 scheduleQry = scheduleQry.Where( a => a.CategoryId == scheduleCategoryId );
             }
             else
@@ -225,17 +223,17 @@ namespace RockWeb.Blocks.Administration
 
             var groupLocationQry = groupLocationService.Queryable();
 
+            int groupTypeId = ddlGroupType.SelectedValueAsInt() ?? Rock.Constants.All.Id;
+            if ( groupTypeId != Rock.Constants.All.Id )
+            {
+                groupLocationQry = groupLocationQry.Where( a => a.Group.GroupTypeId == groupTypeId );
+            }
+
             int parentLocationId = ddlParentLocation.SelectedValueAsInt() ?? Rock.Constants.All.Id;
             if ( parentLocationId != Rock.Constants.All.Id )
             {
                 // open question on whether to also include all descendants instead of just immediate children
                 groupLocationQry = groupLocationQry.Where( a => a.Location.ParentLocationId == parentLocationId );
-            }
-
-            int groupTypeId = ddlParentLocation.SelectedValueAsInt() ?? Rock.Constants.All.Id;
-            if ( groupTypeId != Rock.Constants.All.Id )
-            {
-                groupLocationQry = groupLocationQry.Where( a => a.Group.GroupTypeId == groupTypeId );
             }
 
             var qryList = groupLocationQry.Select( a =>
