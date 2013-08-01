@@ -415,11 +415,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void cvBirthDateValidator_ServerValidate( object source, ServerValidateEventArgs args )
         {
             args.IsValid = false;
-            DateTime someDate;            
+            DateTime someDate;
             if ( DateTime.TryParse( args.Value, out someDate ) )
             {
                 args.IsValid = true;
-            }
+            }       
         }
 
         /// <summary>
@@ -437,47 +437,50 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
                 var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                 if ( family != null )
-                {                    
-                    var checkInPerson = new CheckInPerson();
-                    checkInPerson.Person = new PersonService().Get( personId ).Clone( false );
-                    checkInPerson.Selected = true;
-                    if ( personVisitorType.Value == "Person" )
+                {
+                    if ( hfSelectedPerson.Value.IndexOf( personId.ToString() ) == 0 && hfSelectedVisitor.Value.IndexOf( personId.ToString() ) == 0 )
                     {
-                        // this came from Add Person
-                        var isPersonInFamily = family.People.Any( p => p.Person.Id == checkInPerson.Person.Id );
-                        if ( !isPersonInFamily )
+                        var checkInPerson = new CheckInPerson();
+                        checkInPerson.Person = new PersonService().Get( personId ).Clone( false );
+                        checkInPerson.Selected = true;
+                        if ( personVisitorType.Value == "Person" )
                         {
-                            // because this person is being added to this family, we should make sure his/her groupmember record reflects that.                            
-                            var groupMember = groupMemberService.GetByPersonId( personId ).FirstOrDefault();
-                            groupMember.GroupId = family.Group.Id;
-                            Rock.Data.RockTransactionScope.WrapTransaction( () =>
+                            // this came from Add Person
+                            var isPersonInFamily = family.People.Any( p => p.Person.Id == checkInPerson.Person.Id );
+                            if ( !isPersonInFamily )
                             {
-                                groupMemberService.Save( groupMember, CurrentPersonId );
-                            } );
+                                // because this person is being added to this family, we should make sure his/her groupmember record reflects that.                            
+                                var groupMember = groupMemberService.GetByPersonId( personId ).FirstOrDefault();
+                                groupMember.GroupId = family.Group.Id;
+                                Rock.Data.RockTransactionScope.WrapTransaction( () =>
+                                {
+                                    groupMemberService.Save( groupMember, CurrentPersonId );
+                                } );
 
-                            checkInPerson.FamilyMember = true;
-                            hfSelectedPerson.Value += personId + ",";
+                                checkInPerson.FamilyMember = true;
+                                hfSelectedPerson.Value += personId + ",";
+                            }
                         }
+                        else
+                        {
+                            // this came from Add Visitor
+                            AddVisitorGroupMemberRoles( family, personId );
+
+                            // add the visitor to the checkin group
+                            checkInPerson.FamilyMember = false;
+                            hfSelectedVisitor.Value += personId + ",";
+
+                        }
+
+                        family.People.Add( checkInPerson );
+                        repPerson.DataSource = family.People.Where( p => p.FamilyMember );
+                        repPerson.DataBind();
+
+                        repVisitors.DataSource = family.People.Where( p => !p.FamilyMember );
+                        repVisitors.DataBind();
+
+                        SaveState();
                     }
-                    else
-                    {
-                        // this came from Add Visitor
-                        AddVisitorGroupMemberRoles( family, personId );
-
-                        // add the visitor to the checkin group
-                        checkInPerson.FamilyMember = false;
-                        hfSelectedVisitor.Value += personId + ",";
-
-                    }
-                    
-                    family.People.Add( checkInPerson );
-                    repPerson.DataSource = family.People.Where( p => p.FamilyMember );
-                    repPerson.DataBind();
-
-                    repVisitors.DataSource = family.People.Where( p => !p.FamilyMember );
-                    repVisitors.DataBind();
-
-                    SaveState();
                 }
                 else
                 {
@@ -527,12 +530,14 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         // Add the Person's GroupMember data so that they can be part of the family
                         var groupMember = AddGroupMember( family.Group, person );
                         checkInPerson.FamilyMember = true;
+                        hfSelectedPerson.Value += person.Id + ",";
                     }
                     else
                     {
                         // This is a visitor
                         AddVisitorGroupMemberRoles( family, person.Id );
                         checkInPerson.FamilyMember = false;
+                        hfSelectedVisitor.Value += person.Id + ",";
                     }
                     family.People.Add( checkInPerson );
                     repPerson.DataSource = family.People.Where( p => p.FamilyMember );
@@ -820,7 +825,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         }
                     }
                     people = people.Except( people2 );
-                    //people = people.Where( p => p.GetAttributeValue( "AbilityLevel" ) == ddlAttributeSearch.SelectedValue );
                 }
             }
             return people;
@@ -906,9 +910,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
             // load the attribute drop down with ability levels and grades
 
             // list of ability levels
-            var abilityLevelAttributeId = new AttributeService().Queryable().Where( a => a.Key == "AbilityLevel" ).Select( a => a.Id ).FirstOrDefault();
+            var abilityLevelAttributeId = new AttributeService().Queryable().Where( a => a.Key == "AbilityLevel" && a.Categories.Any( c => c.Name == "CheckIn" ) ).Select( a => a.Id ).FirstOrDefault();
             var abilityLevelList = new AttributeValueService().Queryable().Where( a => a.AttributeId == abilityLevelAttributeId ).Select( a => a.Value ).Distinct().ToList();
-
+            
             // list of grades
             var gradeList = new List<string>();
             string[] grades = { "K", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
@@ -924,7 +928,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             dropDownList.DataSource = dropDownListSource;
             dropDownList.DataBind();
             dropDownList.Items.Insert( 0, "None" );
-
         }
 
         #endregion        
