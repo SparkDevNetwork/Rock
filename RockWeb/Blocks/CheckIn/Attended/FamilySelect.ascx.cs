@@ -193,11 +193,16 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 ddlGender.BindToEnum( typeof( Gender ), true );
 
                 var ddlAbilityGrade = ( (DropDownList)e.Item.FindControl( "ddlAbilityGrade" ) );
-
+                
                 List<AttributeValue> abilityList;
-                var ability = new AttributeService().GetGlobalAttribute( "AbilityLevel" );
-                if (ability != null )
+                var ability = new AttributeService().Queryable().Where( a => a.Name == "AbilityLevel"
+                    && a.Categories.Any( c => c.Name == "Checkin" ) ).FirstOrDefault();
+
+                var abilities = GetAttributeValues( "AbilityLevel" ).Distinct();
+                if ( ability != null )
                 {
+                    //GetAttributeValues( "AbilityLevel" )
+                    
                     abilityList = new AttributeValueService().GetByAttributeId( ability.Id ).ToList();
                 }
                 

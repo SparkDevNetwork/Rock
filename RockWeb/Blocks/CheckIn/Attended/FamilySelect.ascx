@@ -272,41 +272,37 @@
                 <h3>Gender</h3>
             </div>
         </div>
+    
+        <div class="row-fluid attended-checkin-body person">
 
-        <div class="row-fluid">
-            
-            <div class="row-fluid attended-checkin-body person">
-
-                <asp:Repeater ID="repAddFamily" runat="server" OnItemDataBound="repAddFamily_ItemDataBound" >
-                <ItemTemplate>
-                    <div class="row-fluid">
-                        <div class="span3">
-                            <asp:TextBox ID="tbFirstName" runat="server" CssClass="fullBlock" />
-                        </div>
-                        <div class="span3">
-                            <asp:TextBox ID="tbLastName" runat="server" CssClass="fullBlock" />
-                        </div>
-                        <div class="span2">
-                            <Rock:DatePicker ID="dpBirthDate" runat="server" />
-                            <asp:CustomValidator ID="cvBirthDateValidator" runat="server" 
-                                ErrorMessage="Please enter a valid birth date."
-                                CssClass="align-middle" EnableClientScript="true" Display="Dynamic"
-                                ClientValidationFunction="cvBirthDateValidator_ClientValidate"
-                                OnServerValidate="cvBirthDateValidator_ServerValidate" 
-                                ControlToValidate="dpBirthDate" />
-                        </div>
-                        <div class="span2">
-                            <Rock:RockDropDownList ID="ddlAbilityGrade" runat="server" CssClass="fullBlock"  />
-                        </div>
-                        <div class="span2">
-                            <Rock:RockDropDownList ID="ddlGender" runat="server" CssClass="fullBlock" />
-                        </div>      
+            <asp:Repeater ID="repAddFamily" runat="server" OnItemDataBound="repAddFamily_ItemDataBound" >
+            <ItemTemplate>
+                <div class="row-fluid">
+                    <div class="span3">
+                        <asp:TextBox ID="tbFirstName" runat="server" CssClass="fullBlock" />
                     </div>
-                </ItemTemplate>
-                </asp:Repeater>  
+                    <div class="span3">
+                        <asp:TextBox ID="tbLastName" runat="server" CssClass="fullBlock" />
+                    </div>
+                    <div class="span2">
+                        <Rock:DatePicker ID="dpBirthDate" runat="server" />
+                        <asp:CustomValidator ID="cvBirthDateValidator" runat="server" 
+                            ErrorMessage="Please enter a valid birth date."
+                            CssClass="align-middle" EnableClientScript="true" Display="Dynamic"
+                            ClientValidationFunction="cvBirthDateValidator_ClientValidate"
+                            OnServerValidate="cvBirthDateValidator_ServerValidate" 
+                            ControlToValidate="dpBirthDate" />
+                    </div>
+                    <div class="span2">
+                        <Rock:RockDropDownList ID="ddlAbilityGrade" runat="server" CssClass="fullBlock"  />
+                    </div>
+                    <div class="span2">
+                        <Rock:RockDropDownList ID="ddlGender" runat="server" CssClass="fullBlock" />
+                    </div>      
+                </div>
+            </ItemTemplate>
+            </asp:Repeater>  
                               
-            </div>
-
         </div>
 
         <div class="row-fluid attended-checkin-body buttons">
