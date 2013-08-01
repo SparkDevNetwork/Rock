@@ -3,15 +3,14 @@
 <asp:UpdatePanel ID="upCheckinScheduleBuilder" runat="server">
     <ContentTemplate>
         
-        <Rock:GridFilter ID="fGroupLocationSchedule" runat="server">
+        <Rock:GridFilter ID="rFilter" runat="server">
+            <Rock:CategoryPicker ID="pCategory" runat="server" AllowMultiSelect="false" LabelText="Schedule Category" />
             <Rock:GroupTypePicker ID="ddlGroupType" runat="server" />
-            <Rock:CategoryPicker ID="pCategory" runat="server" AllowMultiSelect="false"/>
             <Rock:LabeledDropDownList ID="ddlParentLocation" runat="server" LabelText="Parent Location" />
         </Rock:GridFilter>
 
-        <Rock:Grid ID="gGroupLocationSchedule" runat="server" AllowSorting="true"  >
+        <Rock:Grid ID="gGroupLocationSchedule" runat="server" AllowSorting="true" AllowPaging="false" >
             <Columns>
-                <asp:BoundField DataField="GroupNameLocationName" HeaderText="Checkin" SortExpression="GroupNameLocationName" />
                 <asp:BoundField DataField="GroupName" HeaderText="Group" SortExpression="GroupName" />
                 <asp:BoundField DataField="LocationName" HeaderText="Location" SortExpression="LocationName" />
             </Columns>
