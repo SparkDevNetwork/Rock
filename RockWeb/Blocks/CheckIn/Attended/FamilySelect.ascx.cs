@@ -186,13 +186,13 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
-        /// Handles the ItemDataBound event of the repAddFamily control.
+        /// Handles the ItemDataBound event of the lvAddFamily control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
-        protected void repAddFamily_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        /// <param name="e">The <see cref="ListViewItemEventArgs"/> instance containing the event data.</param>
+        protected void lvAddFamily_ItemDataBound( object sender, ListViewItemEventArgs e )
         {
-            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            if ( e.Item.ItemType == ListViewItemType.DataItem )
             {
                 var ddlGender = ( (DropDownList)e.Item.FindControl( "ddlGender" ) );
                 ddlGender.BindToEnum( typeof( Gender ), true );
@@ -200,26 +200,34 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 var ddlAbilityGrade = ( (DropDownList)e.Item.FindControl( "ddlAbilityGrade" ) );
 
                 //var abilityGradeList = new { Group = string.Empty, Name = string.Empty, ID = 0 };
-                var abilityGradeList = new Dictionary<string, int>();
+                var abilityId = new AttributeService().Queryable().Where( a => a.Key == "AbilityLevel" 
+                    && a.Categories.Any( c => c.Name == "CheckIn" ) ).Select( a => a.Id ).FirstOrDefault();
                 
-                var ability = new AttributeService().Queryable().Where( a => a.Name == "AbilityLevel"
-                    && a.Categories.Any( c => c.Name == "Checkin" ) ).FirstOrDefault();                
-                if ( ability != null )
-                {   
-                    var abilityList = new AttributeValueService().GetByAttributeId( ability.Id ).ToList();
-                    //abilityGradeList.AddRange( abilityList );                    
-                }
-                
+                if ( abilityId != null )
+                {
+                    var abilityList = new AttributeValueService().GetByAttributeId( abilityId )
+                        .Select( av => new ListItem( av.Value ) ).Distinct().ToArray();
+                    ddlAbilityGrade.Items.AddRange( abilityList );
+                }                
+
                 var gradeList = Enum.GetValues( typeof( GradeLevel ) ).Cast<GradeLevel>()
-                    .Select( gl => gl.GetDescription() );
-
-
-                ddlAbilityGrade.DataSource = abilityGradeList.ToList();
-                ddlAbilityGrade.DataValueField = "key";
-                ddlAbilityGrade.DataTextField = "value";
-                //ddlAbilityGrade.DataGroupField = bothList.Group;
-                ddlAbilityGrade.DataBind();                
+                    .Select( gl => new ListItem( gl.GetDescription(), gl.ToString() ) ).ToArray();
+                ddlAbilityGrade.Items.AddRange( gradeList );                
+                
+                //ddlAbilityGrade.DataGroupField = bothList.Group;                
             }
+        }
+
+        /// <summary>
+        /// Handles the PagePropertiesChanging event of the lvAddFamily control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="PagePropertiesChangingEventArgs"/> instance containing the event data.</param>
+        protected void lvAddFamily_PagePropertiesChanging( object sender, PagePropertiesChangingEventArgs e )
+        {
+            dpAddFamily.SetPageProperties( e.StartRowIndex, e.MaximumRows, false );
+            lvAddFamily.DataSource = Enumerable.Repeat( "", 15 ).ToArray();
+            lvAddFamily.DataBind();
         }
 
         /// <summary>
@@ -272,8 +280,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddFamily_Click( object sender, EventArgs e )
         {
-            repAddFamily.DataSource = Enumerable.Repeat( new Person(), 5 );
-            repAddFamily.DataBind();
+            // create 15 person rows
+            lvAddFamily.DataSource = Enumerable.Repeat( "", 15 ).ToArray();
+            lvAddFamily.DataBind();
             mpeAddFamily.Show();
         }
 
@@ -295,9 +304,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void lbAddFamilySave_Click( object sender, EventArgs e )
         {
             var checkInFamily = new CheckInFamily();
-            var familyGroup = new Group();            
+            var familyGroup = new Group();
 
-            foreach ( RepeaterItem item in repAddFamily.Items )
+            foreach ( ListViewItem item in lvAddFamily.Items )
             {
                 var givenName = ( (TextBox)item.FindControl( "tbFirstName" ) ).Text;
                 var lastName = ( (TextBox)item.FindControl( "tbLastName" ) ).Text;
@@ -580,7 +589,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
             if ( family == null )
             {
-                maWarning.Show( "You need to pick a family.", ModalAlertType.Warning );
+                maWarning.Show( "Please pick a family.", ModalAlertType.Warning );
                 return;
             }
 
@@ -608,7 +617,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }
             else
             {
-                maWarning.Show( "You need to pick at least one person.", ModalAlertType.Warning );
+                maWarning.Show( "Please pick at least one person.", ModalAlertType.Warning );
                 return;
             }
         }
@@ -937,6 +946,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             dropDownList.Items.Insert( 0, "None" );
         }
 
-        #endregion        
+        #endregion               
     }
 }
