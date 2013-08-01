@@ -5,7 +5,6 @@
 
     function cvBirthDateValidator_ClientValidate(sender, args) {
         args.IsValid = false;
-        alert(parseDate(args.Value));
         if (parseDate(args.Value) != null) {
             args.IsValid = true;
             return;
@@ -62,12 +61,8 @@
             var buttonId = this.getAttribute('data-id') + ',';
             if (typeof selectedIds == "string" && (selectedIds.indexOf(buttonId) >= 0)) {
                 $('#hfSelectedVisitor').val(selectedIds.replace(buttonId, ''));
-                alert('removing the class');
-                alert('selected visitor = ' + $('#hfSelectedVisitor').val());
             } else {
                 $('#hfSelectedVisitor').val(buttonId + selectedIds);
-                alert('adding the class');
-                alert('selected visitor = ' + $('#hfSelectedVisitor').val());
             }
             return false;
         });
@@ -152,6 +147,7 @@
 
         <div class="span3 add-someone">
             <div class="attended-checkin-body-container last">
+                <h3 id="actions" runat="server">Actions</h3>
                 <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddPerson_Click" Text="Add Person" CausesValidation="false"></asp:LinkButton>
                 <asp:LinkButton ID="lbAddVisitor" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddVisitor_Click" Text="Add Visitor" CausesValidation="false"></asp:LinkButton>                
                 <asp:LinkButton ID="lbAddFamily" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddFamily_Click" Text="Add Family" CausesValidation="false" />
