@@ -72,7 +72,7 @@
 
 </script>
 
-<asp:UpdatePanel ID="upContent" runat="server">
+<asp:UpdatePanel ID="upContent" runat="server" UpdateMode="Conditional">
 <ContentTemplate>
 
     <Rock:ModalAlert ID="maWarning" runat="server" />
@@ -275,10 +275,10 @@
     
         <div class="row-fluid attended-checkin-body person">
 
-            <asp:Repeater ID="repAddFamily" runat="server" OnItemDataBound="repAddFamily_ItemDataBound" >
+            <asp:ListView ID="lvAddFamily" runat="server" OnPagePropertiesChanging="lvAddFamily_PagePropertiesChanging"  OnItemDataBound="lvAddFamily_ItemDataBound">
             <ItemTemplate>
                 <div class="row-fluid">
-                    <div class="span3">
+                    <div class="span2">
                         <asp:TextBox ID="tbFirstName" runat="server" CssClass="fullBlock" />
                     </div>
                     <div class="span3">
@@ -296,19 +296,20 @@
                     <div class="span2">
                         <Rock:RockDropDownList ID="ddlAbilityGrade" runat="server" CssClass="fullBlock"  />
                     </div>
-                    <div class="span2">
+                    <div class="span3">
                         <Rock:RockDropDownList ID="ddlGender" runat="server" CssClass="fullBlock" />
                     </div>      
                 </div>
             </ItemTemplate>
-            </asp:Repeater>  
-                              
+            </asp:ListView>
+            <asp:DataPager ID="dpAddFamily" runat="server" PageSize="5" PagedControlID="lvAddFamily">
+                <Fields>
+                    <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary" />
+                </Fields>
+            </asp:DataPager>
+                                            
         </div>
-
-        <div class="row-fluid attended-checkin-body buttons">
-            <asp:LinkButton ID="PreviousButton" CssClass="btn btn-large btn-primary left-button" runat="server" OnClick="PreviousButton_Click" Text="Previous" Visible="false" />
-            <asp:LinkButton ID="MoreButton" CssClass="btn btn-large btn-primary right-button" runat="server" OnClick="MoreButton_Click" Text="More" />
-        </div>
+        
         <asp:ValidationSummary ID="valSummaryBottom" runat="server" HeaderText="Please Correct the Following:" CssClass="alert alert-error block-message error alert error-modal" />
     </asp:Panel>
 
