@@ -346,10 +346,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
             // don't clear in case there are several "smith" families
             // CurrentCheckInState.CheckIn.Families.Clear();
             CurrentCheckInState.CheckIn.Families.Add( checkInFamily );
-            lvFamily.DataSource = CurrentCheckInState.CheckIn.Families;
+            lvFamily.DataSource = CurrentCheckInState.CheckIn.Families.OrderBy( f => f.Caption ).ToList(); ;
             lvFamily.DataBind();
 
-            repPerson.DataSource = checkInFamily.People;
+            repPerson.DataSource = checkInFamily.People.OrderBy( p => p.Person.FullNameLastFirst ).ToList();
             repPerson.DataBind();
 
             SaveState();
@@ -443,7 +443,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                 if ( family != null )
                 {
-                    if ( hfSelectedPerson.Value.IndexOf( personId.ToString() ) == 0 && hfSelectedVisitor.Value.IndexOf( personId.ToString() ) == 0 )
+                    var selectedPeopleList = ( hfSelectedPerson.Value + hfSelectedVisitor.Value ).SplitDelimitedValues().Select( int.Parse ).ToList();
+                    var alreadyInList = selectedPeopleList.Contains( personId );
+                    if ( !alreadyInList )
                     {
                         var checkInPerson = new CheckInPerson();
                         checkInPerson.Person = new PersonService().Get( personId ).Clone( false );
@@ -478,10 +480,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         }
 
                         family.People.Add( checkInPerson );
-                        repPerson.DataSource = family.People.Where( p => p.FamilyMember );
+                        repPerson.DataSource = family.People.Where( p => p.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
                         repPerson.DataBind();
 
-                        repVisitors.DataSource = family.People.Where( p => !p.FamilyMember );
+                        repVisitors.DataSource = family.People.Where( p => !p.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
                         repVisitors.DataBind();
 
                         SaveState();
@@ -545,10 +547,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         hfSelectedVisitor.Value += person.Id + ",";
                     }
                     family.People.Add( checkInPerson );
-                    repPerson.DataSource = family.People.Where( p => p.FamilyMember );
+                    repPerson.DataSource = family.People.Where( p => p.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
                     repPerson.DataBind();
 
-                    repVisitors.DataSource = family.People.Where( p => !p.FamilyMember );
+                    repVisitors.DataSource = family.People.Where( p => !p.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
                     repVisitors.DataBind();
 
                     SaveState();
@@ -639,10 +641,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 {
                     var familyPeople = family.People.Where( f => f.FamilyMember ).ToList();
                     hfSelectedPerson.Value = string.Join( ",", familyPeople.Select( f => f.Person.Id ) ) + ",";
-                    repPerson.DataSource = familyPeople;
+                    repPerson.DataSource = familyPeople.OrderBy( p => p.Person.FullNameLastFirst ).ToList();
                     repPerson.DataBind();
 
-                    repVisitors.DataSource = family.People.Where( f => !f.FamilyMember ).ToList();
+                    repVisitors.DataSource = family.People.Where( f => !f.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
                     repVisitors.DataBind();
                 }
             }
