@@ -55,6 +55,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         familyDiv.Visible = false;
                         personDiv.Visible = false;
                         visitorDiv.Visible = false;
+                        actions.Visible = false;
                         nothingFoundMessage.Visible = true;                        
                     }
                     else if ( CurrentCheckInState.CheckIn.Families.Count == 1 &&
@@ -317,33 +318,33 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 if ( givenName != string.Empty && lastName != string.Empty && birthDate.HasValue
                     && gender.HasValue && abilityGrade != string.Empty )
                 {
-                    var newPerson = AddPerson( givenName, lastName, birthDate, abilityGrade );
+                    //var newPerson = AddPerson( givenName, lastName, birthDate, abilityGrade );
 
-                    if ( familyGroup != null )
-                    {
-                        AddGroupMember( familyGroup, newPerson );
-                        var checkInPerson = new CheckInPerson();
-                        checkInPerson.Person = newPerson;
-                        checkInPerson.Selected = true;
-                        checkInFamily.People.Add( checkInPerson );
-                    }
-                    else
-                    {
-                        var gs = new GroupService();
-                        familyGroup = new Group();
-                        familyGroup.IsSystem = false;
-                        familyGroup.GroupTypeId = new GroupTypeService().Get( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Id;
-                        familyGroup.Name = lastName + " Family";
-                        familyGroup.IsSecurityRole = false;
-                        familyGroup.IsActive = true;
-                        Rock.Data.RockTransactionScope.WrapTransaction( () =>
-                        {
-                            gs.Add( familyGroup, CurrentPersonId );
-                            gs.Save( familyGroup, CurrentPersonId );
-                        } );
+                    //if ( familyGroup != null )
+                    //{
+                    //    AddGroupMember( familyGroup, newPerson );
+                    //    var checkInPerson = new CheckInPerson();
+                    //    checkInPerson.Person = newPerson;
+                    //    checkInPerson.Selected = true;
+                    //    checkInFamily.People.Add( checkInPerson );
+                    //}
+                    //else
+                    //{
+                    //    var gs = new GroupService();
+                    //    familyGroup = new Group();
+                    //    familyGroup.IsSystem = false;
+                    //    familyGroup.GroupTypeId = new GroupTypeService().Get( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Id;
+                    //    familyGroup.Name = lastName + " Family";
+                    //    familyGroup.IsSecurityRole = false;
+                    //    familyGroup.IsActive = true;
+                    //    Rock.Data.RockTransactionScope.WrapTransaction( () =>
+                    //    {
+                    //        gs.Add( familyGroup, CurrentPersonId );
+                    //        gs.Save( familyGroup, CurrentPersonId );
+                    //    } );
 
-                        AddGroupMember( familyGroup, newPerson );
-                    }
+                    //    AddGroupMember( familyGroup, newPerson );
+                    //}
                 }
             }
 
@@ -583,6 +584,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 return;
             }
 
+            // everybody selected should be in the hidden fields. relink the family members and visitors up to the family.
             family.People.Clear();
             if ( !string.IsNullOrEmpty( hfSelectedPerson.Value ) )
             {
@@ -699,29 +701,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
-        /// Adds the family group.
-        /// </summary>
-        /// <param name="familyLastName">Last name of the family.</param>
-        /// <returns></returns>
-        //protected Group AddFamilyGroup( string familyLastName )
-        //{
-        //    Group group = new Group();
-        //    GroupService gs = new GroupService();
-        //    group.IsSystem = false;
-        //    group.GroupTypeId = new GroupTypeService().Get( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Id;
-        //    group.Name = familyLastName + " Family";
-        //    group.IsSecurityRole = false;
-        //    group.IsActive = true;
-        //    Rock.Data.RockTransactionScope.WrapTransaction( () =>
-        //    {
-        //        gs.Add( group, CurrentPersonId );
-        //        gs.Save( group, CurrentPersonId );
-        //    } );
-
-        //    return group;
-        //}
-
-        /// <summary>
         /// Adds a new person.
         /// </summary>
         /// <param name="firstName">The first name.</param>
@@ -758,13 +737,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
             if ( isAttribute )
             {
                 person.LoadAttributes();
-                var abilityLevelAttributeId = new AttributeService().Queryable().Where( a => a.Key == "AbilityLevel" ).Select( a => a.Id ).FirstOrDefault();
-                person.Attributes.Add( "AbilityLevel", Rock.Web.Cache.AttributeCache.Read( abilityLevelAttributeId ) );
-                person.AttributeValues.Add( "AbilityLevel", new List<Rock.Model.AttributeValue>() );
                 person.SetAttributeValue( "AbilityLevel", attribute );
                 Rock.Attribute.Helper.SaveAttributeValues( person, CurrentPersonId );
             }
-            
+
             return person;
         }
 
@@ -1005,8 +981,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
         }
 
-        #endregion
-=======
         #endregion        
     }
 }
