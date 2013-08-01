@@ -241,7 +241,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     groupMember.GroupRoleId = role.Id;
 
                     var family = new Group();
-                    family.Name = Person.LastName + " Family";
+                    family.Name = Person.LastName;
                     family.GroupTypeId = role.GroupTypeId.Value;
                     family.Members.Add( groupMember );
 

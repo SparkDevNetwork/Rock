@@ -88,13 +88,15 @@
                 <div id="group-viewer" class="row-fluid">
                     
                     <div id="left-column" class="span3">
+
                         <div id="left-column-content">
                             <Rock:Zone ID="LeftContent" runat="server" />
                         </div>
                     </div>
                     <div id="right-column" class="span9">
-                        <a href="#" onclick="javascript: toggleLeftContent() "><span class="badge"><i id="column-hide-icon" class="icon-caret-left"></i></span></a>
-                        <Rock:Zone ID="RightContent" runat="server" />
+                        <div class="panel">
+                            <Rock:Zone ID="RightContent" runat="server" />
+                        </div>
                     </div>
                 </div>
 
@@ -102,24 +104,6 @@
             </div>
         </div>
     </div>
-
-    <script type="text/javascript">
-
-        function toggleLeftContent() {
-            $('#left-column').toggle(0);
-            $('#column-hide-icon').toggleClass('icon-caret-right');
-
-            // change size of right column
-            if ($('#right-column').hasClass('span9')) {
-                $('#right-column').addClass('span11');
-                $('#right-column').removeClass('span9');
-            } else {
-                $('#right-column').addClass('span9');
-                $('#right-column').removeClass('span11');
-            }
-        }
-
-    </script>
 
     <footer class="page-footer">
         <div class="container-fluid">
