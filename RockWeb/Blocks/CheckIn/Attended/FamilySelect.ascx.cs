@@ -193,28 +193,26 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 ddlGender.BindToEnum( typeof( Gender ), true );
 
                 var ddlAbilityGrade = ( (DropDownList)e.Item.FindControl( "ddlAbilityGrade" ) );
-                
-                List<AttributeValue> abilityList;
-                var ability = new AttributeService().Queryable().Where( a => a.Name == "AbilityLevel"
-                    && a.Categories.Any( c => c.Name == "Checkin" ) ).FirstOrDefault();
 
-                var abilities = GetAttributeValues( "AbilityLevel" ).Distinct();
+                //var abilityGradeList = new { Group = string.Empty, Name = string.Empty, ID = 0 };
+                var abilityGradeList = new Dictionary<string, int>();
+                
+                var ability = new AttributeService().Queryable().Where( a => a.Name == "AbilityLevel"
+                    && a.Categories.Any( c => c.Name == "Checkin" ) ).FirstOrDefault();                
                 if ( ability != null )
-                {
-                    //GetAttributeValues( "AbilityLevel" )
-                    
-                    abilityList = new AttributeValueService().GetByAttributeId( ability.Id ).ToList();
+                {   
+                    var abilityList = new AttributeValueService().GetByAttributeId( ability.Id ).ToList();
+                    //abilityGradeList.AddRange( abilityList );                    
                 }
                 
                 var gradeList = Enum.GetValues( typeof( GradeLevel ) ).Cast<GradeLevel>()
                     .Select( gl => gl.GetDescription() );
 
-                var bothList = new { Group = "Ability", Name = "Cuddler", ID = 1 };
 
-                ddlAbilityGrade.DataSource = bothList;
-                ddlAbilityGrade.DataValueField = bothList.ID.ToString();
+                ddlAbilityGrade.DataSource = abilityGradeList.ToList();
+                ddlAbilityGrade.DataValueField = "key";
+                ddlAbilityGrade.DataTextField = "value";
                 //ddlAbilityGrade.DataGroupField = bothList.Group;
-                ddlAbilityGrade.DataTextField = bothList.Name;
                 ddlAbilityGrade.DataBind();                
             }
         }
@@ -305,39 +303,39 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 if ( givenName != string.Empty && lastName != string.Empty && birthDate.HasValue
                     && gender.HasValue && abilityGrade != string.Empty )
                 {
-                    //var newPerson = AddPerson( givenName, lastName, birthDate, abilityGrade );
+                    var newPerson = AddPerson( givenName, lastName, birthDate.ToString(), gender, abilityGrade );
 
-                    //if ( familyGroup != null )
-                    //{
-                    //    AddGroupMember( familyGroup, newPerson );
-                    //    var checkInPerson = new CheckInPerson();
-                    //    checkInPerson.Person = newPerson;
-                    //    checkInPerson.Selected = true;
-                    //    checkInFamily.People.Add( checkInPerson );
-                    //}
-                    //else
-                    //{
-                    //    var gs = new GroupService();
-                    //    familyGroup = new Group();
-                    //    familyGroup.IsSystem = false;
-                    //    familyGroup.GroupTypeId = new GroupTypeService().Get( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Id;
-                    //    familyGroup.Name = lastName + " Family";
-                    //    familyGroup.IsSecurityRole = false;
-                    //    familyGroup.IsActive = true;
-                    //    Rock.Data.RockTransactionScope.WrapTransaction( () =>
-                    //    {
-                    //        gs.Add( familyGroup, CurrentPersonId );
-                    //        gs.Save( familyGroup, CurrentPersonId );
-                    //    } );
+                    if ( familyGroup != null )
+                    {
+                        AddGroupMember( familyGroup, newPerson );
+                        var checkInPerson = new CheckInPerson();
+                        checkInPerson.Person = newPerson;
+                        checkInPerson.Selected = true;
+                        checkInFamily.People.Add( checkInPerson );
+                    }
+                    else
+                    {
+                        var gs = new GroupService();
+                        familyGroup = new Group();
+                        familyGroup.IsSystem = false;
+                        familyGroup.GroupTypeId = new GroupTypeService().Get( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Id;
+                        familyGroup.Name = lastName + " Family";
+                        familyGroup.IsSecurityRole = false;
+                        familyGroup.IsActive = true;
+                        Rock.Data.RockTransactionScope.WrapTransaction( () =>
+                        {
+                            gs.Add( familyGroup, CurrentPersonId );
+                            gs.Save( familyGroup, CurrentPersonId );
+                        } );
 
-                    //    AddGroupMember( familyGroup, newPerson );
-                    //}
+                        AddGroupMember( familyGroup, newPerson );
+                    }
                 }
             }
 
             checkInFamily.Group = familyGroup;
-            //checkInFamily.Caption = familyGroup.Members.Select
-            checkInFamily.SubCaption = familyGroup.Members.SelectMany( gm => gm.Person.FirstName ).ToString();
+            checkInFamily.Caption = familyGroup.Name;
+            checkInFamily.SubCaption = string.Join( ",", familyGroup.Members.Select( gm => gm.Person.FirstName ) );
             checkInFamily.Selected = true;
 
             // don't clear in case there are several "smith" families
@@ -517,7 +515,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 if ( family != null )
                 {
                     // Add the Person record.
-                    var person = AddPerson( tbFirstNameSearch.Text, tbLastNameSearch.Text, dtpDOBSearch.Text, ddlGenderSearch.SelectedValueAsEnum<Gender>(), ddlAttributeSearch.SelectedValue );
+                    var person = AddPerson( tbFirstNameSearch.Text, tbLastNameSearch.Text, dtpDOBSearch.Text, ddlGenderSearch.SelectedValueAsInt(), ddlAttributeSearch.SelectedValue );
 
                     // put the person into place to be checked in.
                     var checkInPerson = new CheckInPerson();
@@ -653,14 +651,17 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="DOB">The DOB.</param>
         /// <param name="gender">The gender</param>
         /// <param name="attribute">The attribute.</param>
-        protected Person AddPerson( string firstName, string lastName, string dob, Gender gender, string attribute )
+        protected Person AddPerson( string firstName, string lastName, string dob, int? gender, string attribute )
         {
             var isAttribute = false;
             Person person = new Person().Clone( false );
             person.GivenName = firstName;
             person.LastName = lastName;
             person.BirthDate = Convert.ToDateTime( dob );
-            person.Gender = gender;
+            if ( gender != null )
+            {
+                person.Gender = (Gender)gender;
+            }            
 
             string[] grades = { "K", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
             if ( Array.IndexOf( grades, attribute ) > 0 )
