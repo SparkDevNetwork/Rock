@@ -34,7 +34,6 @@
     }
 
     function setControlEvents() {
-        //$('.family').change(function () {
         $('.family').unbind('click').on('click', function () {
             $(this).toggleClass('active');
             if ($(this).hasClass('active')) {
