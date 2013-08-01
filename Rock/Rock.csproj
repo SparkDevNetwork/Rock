@@ -418,6 +418,10 @@
     <Compile Include="Migrations\201307312305307_GroupSearchComponent.Designer.cs">
       <DependentUpon>201307312305307_GroupSearchComponent.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201308011900113_PageSettingUpdates.cs" />
+    <Compile Include="Migrations\201308011900113_PageSettingUpdates.Designer.cs">
+      <DependentUpon>201308011900113_PageSettingUpdates.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -2036,6 +2040,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307312305307_GroupSearchComponent.resx">
       <DependentUpon>201307312305307_GroupSearchComponent.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308011900113_PageSettingUpdates.resx">
+      <DependentUpon>201308011900113_PageSettingUpdates.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
