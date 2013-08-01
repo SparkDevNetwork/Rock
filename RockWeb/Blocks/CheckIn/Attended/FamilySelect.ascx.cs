@@ -52,19 +52,14 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         nothingFoundMessage.Visible = false;
                         lvFamily.DataSource = CurrentCheckInState.CheckIn.Families.OrderBy( f => f.Caption ).ToList();
                         lvFamily.DataBind();
-                    }
-                    else if ( CurrentCheckInState.CheckIn.Families.Count == 1 &&
-                             !CurrentCheckInState.CheckIn.ConfirmSingleFamily )
+                    }       
+                    else if ( CurrentCheckInState.CheckIn.Families.Count == 1 )
                     {
-                        if ( UserBackedUp )
-                        {
-                            GoBack();
-                        }
-                        else
-                        {
-                            CurrentCheckInState.CheckIn.Families.FirstOrDefault().Selected = true;
-                            ProcessFamily();
-                        }
+                        nothingFoundMessage.Visible = false;
+                        CurrentCheckInState.CheckIn.Families.First().Selected = true;                        
+                        ProcessFamily();
+                        lvFamily.DataSource = CurrentCheckInState.CheckIn.Families;
+                        lvFamily.DataBind();
                     }
                     else
                     {
@@ -77,6 +72,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         actions.Visible = false;
                         nothingFoundMessage.Visible = true;
                     }
+
+                    SaveState();
                 }
             }
         }
@@ -111,31 +108,39 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Group.Id == id ).FirstOrDefault();
             if ( family != null )
             {
-                if ( family.Selected )
-                {
-                    family.Selected = false;
-                    ( (LinkButton)e.Item.FindControl( "lbSelectFamily" ) ).RemoveCssClass( "active" );
-                    repPerson.DataSource = null;
-                    repPerson.DataBind();
-                }
-                else
+                if ( !family.Selected )
                 {
                     // make sure there are no other families selected
                     CurrentCheckInState.CheckIn.Families.ForEach( f => f.Selected = false );
-
-                    // make sure no other families look like they're selected
-                    foreach ( ListViewDataItem li in lvFamily.Items )
-                    {
-                        ( (LinkButton)li.FindControl( "lbSelectFamily" ) ).RemoveCssClass( "active" );
-                    }
-
+                    
                     // select the clicked on family
-                    family.Selected = true;
-                    ( (LinkButton)e.Item.FindControl( "lbSelectFamily" ) ).AddCssClass( "active" );
+                    family.Selected = true;                    
                     ProcessFamily();
                 }
-                SaveState();
+                else
+                {
+                    family.Selected = false;                    
+                    repPerson.DataSource = null;
+                    repPerson.DataBind();
+                    
+                }
             }
+        }
+
+        /// <summary>
+        /// Handles the DataBound event of the lvFamily control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lvFamily_ItemDataBound( object sender, ListViewItemEventArgs e )
+        {
+            if ( e.Item.ItemType == ListViewItemType.DataItem )
+            {
+                if ( ( (CheckInFamily)e.Item.DataItem ).Selected )
+                {
+                    ( (LinkButton)e.Item.FindControl( "lbSelectFamily" ) ).AddCssClass( "active" );
+                }
+            }            
         }
 
         /// <summary>
