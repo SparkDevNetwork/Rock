@@ -10,7 +10,7 @@
   
 	<xsl:template match="/">
 		<xsl:if test="page/@display-child-pages = 'true' and page/pages[count(page) > 0]">
-      <div class="widget page-list-as-blocks clearfix">
+      <div class="panel page-list-as-blocks clearfix">
         <!--<header>
           <xsl:if test="@icon-css-class != ''">
             <i>
@@ -65,13 +65,8 @@
         </xsl:if>
         
         
-        <h4><xsl:value-of select="@title"/></h4>
+        <h3><xsl:value-of select="@title"/></h3>
       
-        <xsl:if test="@display-description = 'true'">
-          <span>
-              <xsl:value-of disable-output-escaping="yes" select="description"/>
-          </span>
-        </xsl:if>
       
 			<xsl:if test="@display-child-pages = 'true' and pages[count(page) > 0]">
 				<!-- recursive children -->
