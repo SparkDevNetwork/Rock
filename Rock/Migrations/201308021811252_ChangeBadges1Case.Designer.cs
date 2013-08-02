@@ -11,7 +11,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201308021759192_ChangeBadges1Case"; }
+            get { return "201308021811252_ChangeBadges1Case"; }
         }
         
         string IMigrationMetadata.Source
