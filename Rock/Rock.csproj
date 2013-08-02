@@ -434,6 +434,10 @@
     <Compile Include="Migrations\201308021742105_CurrentPersonBlock.Designer.cs">
       <DependentUpon>201308021742105_CurrentPersonBlock.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201308021759192_ChangeBadges1Case.cs" />
+    <Compile Include="Migrations\201308021759192_ChangeBadges1Case.Designer.cs">
+      <DependentUpon>201308021759192_ChangeBadges1Case.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -2064,6 +2068,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201308021742105_CurrentPersonBlock.resx">
       <DependentUpon>201308021742105_CurrentPersonBlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308021759192_ChangeBadges1Case.resx">
+      <DependentUpon>201308021759192_ChangeBadges1Case.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
