@@ -8,7 +8,12 @@ using System;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
+using System.Net;
+using System.Text;
 using System.Web;
+using Rock.BinaryFile;
+using Rock.BinaryFile.Storage;
 
 namespace RockWeb
 {
@@ -32,17 +37,17 @@ namespace RockWeb
         {
             try
             {
-                string anID = context.Request.QueryString[0];
+                var id = context.Request.QueryString[0];
 
-                if ( string.IsNullOrEmpty( anID ) )
+                if ( string.IsNullOrEmpty( id ) )
                 {
                     throw new Exception( "file id must be provided" );
                 }
 
-                int id = -1;
-                Guid guid = new Guid();
+                int fileId;
+                Guid fileGuid = Guid.Empty;
 
-                if ( !( int.TryParse( anID, out id ) || Guid.TryParse( anID, out guid ) ) )
+                if ( !( int.TryParse( id, out fileId ) || Guid.TryParse( id, out fileGuid ) ) )
                 {
                     throw new Exception( "file id key must be a guid or an int" );
                 }
@@ -52,8 +57,8 @@ namespace RockWeb
                 SqlCommand cmd = conn.CreateCommand();
                 cmd.CommandText = "BinaryFile_sp_getByID";
                 cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.Add( new SqlParameter( "@Id", id ) );
-                cmd.Parameters.Add( new SqlParameter( "@Guid", guid ) );
+                cmd.Parameters.Add( new SqlParameter( "@Id", fileId ) );
+                cmd.Parameters.Add( new SqlParameter( "@Guid", fileGuid ) );
 
                 // store our Command to be later retrieved by EndProcessRequest
                 context.Items.Add( "cmd", cmd );
@@ -91,12 +96,42 @@ namespace RockWeb
                 {
                     reader.Read();
                     context.Response.Clear();
-                    context.Response.BinaryWrite( (byte[])reader["Data"] );
-                    context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", reader["FileName"] ) );
-                    context.Response.ContentType = (string)reader["MimeType"];
+                    var fileName = (string) reader["FileName"];
+                    context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", fileName ) );
+                    context.Response.ContentType = (string) reader["MimeType"];
+
+                    var entityTypeName = (string) reader["StorageTypeName"];
+                    var provider = StorageContainer.GetComponent( entityTypeName );
+
+                    if ( provider is Database )
+                    {
+                        context.Response.BinaryWrite( (byte[]) reader["Data"] );
+                    }
+                    else
+                    {
+                        var url = (string) reader["Url"];
+                        var request = WebRequest.Create( url );
+                        var response = request.GetResponse();
+                        var stream = response.GetResponseStream();
+                        var encoding = Encoding.GetEncoding( "utf-8" );
+
+                        if ( stream != null )
+                        {
+                            using ( var sr = new StreamReader( stream, encoding ) )
+                            {
+                                var output = sr.ReadToEnd();
+                                context.Response.BinaryWrite( encoding.GetBytes( output ) );
+                            }
+                        }
+                        else
+                        {
+                            context.Response.StatusCode = 404;
+                            context.Response.StatusDescription = "Unable to find the requested file.";
+                        }
+                    }
+
                     context.Response.Flush();
                     context.Response.End();
-                    reader.Close();
                 }
             }
             catch ( Exception ex )

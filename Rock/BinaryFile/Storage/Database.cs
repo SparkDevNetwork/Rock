@@ -9,7 +9,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Text;
-using Rock.Attribute;
 using Rock.Model;
 
 namespace Rock.BinaryFile.Storage
@@ -28,7 +27,7 @@ namespace Rock.BinaryFile.Storage
         public override void SaveFiles( IEnumerable<Model.BinaryFile> files, int? personId )
         {
             var fileService = new BinaryFileService();
-            
+
             foreach ( var file in files )
             {
                 if ( file.Id == 0 )
@@ -47,7 +46,7 @@ namespace Rock.BinaryFile.Storage
                 fileService.Save( file, personId );
 
                 // Set the URL now that we have a Guid...
-                file.Url = string.Format( "~/File.ashx?guid={0}", file.Guid );
+                file.Url = GetUrl( file );
 
                 // Then save again to persist the URL
                 fileService.Save( file, personId );
@@ -80,22 +79,7 @@ namespace Rock.BinaryFile.Storage
             }
 
             var urlBuilder = new StringBuilder();
-            string wsPath;
-
-            switch ( file.MimeType.ToLower() )
-            {
-                case "image/jpeg":
-                case "image/gif":
-                case "image/png":
-                case "image/bmp":
-                    wsPath = "~/Image.ashx";
-                    break;
-                default:
-                    wsPath = "~/File.ashx";
-                    break;
-
-            }
-
+            string wsPath = GetWebServicePath( file );
             urlBuilder.AppendFormat( "{0}?guid={1}", wsPath, file.FileName );
 
             if ( height.HasValue )
@@ -109,6 +93,21 @@ namespace Rock.BinaryFile.Storage
             }
 
             return urlBuilder.ToString();
+        }
+
+        private string GetWebServicePath( Model.BinaryFile file )
+        {
+            switch ( file.MimeType.ToLower() )
+            {
+                case "image/jpeg":
+                case "image/gif":
+                case "image/png":
+                case "image/bmp":
+                    return "~/Image.ashx";
+                default:
+                    return "~/File.ashx";
+
+            }
         }
     }
 }
