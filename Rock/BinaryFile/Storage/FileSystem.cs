@@ -35,7 +35,7 @@ namespace Rock.BinaryFile.Storage
         public override void SaveFiles( IEnumerable<Model.BinaryFile> files, int? personId )
         {
             var fileService = new BinaryFileService();
-            
+
             foreach ( var file in files )
             {
                 if ( file.Data == null )
@@ -50,7 +50,7 @@ namespace Rock.BinaryFile.Storage
                 // Set Data to null after successful OS save so the the binary data is not 
                 // written into the database.
                 file.Data = null;
-                file.Url = RootPath;
+                file.Url = url;
                 fileService.Save( file, personId );
             }
         }
@@ -100,7 +100,7 @@ namespace Rock.BinaryFile.Storage
             {
                 return path;
             }
-            
+
             if ( path.StartsWith( "http:" ) || path.StartsWith( "https:" ) )
             {
                 return HttpContext.Current.Server.MapPath( path );
