@@ -37,9 +37,9 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
-            if ( entity is BinaryFile )
+            if ( entity is Model.BinaryFile )
             {
-                BinaryFile binaryFile = (BinaryFile)entity;
+               var binaryFile = (Model.BinaryFile) entity;
                 if ( binaryFile.BinaryFileType.Guid != new Guid( SystemGuid.BinaryFiletype.CHECKIN_LABEL ) )
                 {
                     errorMessages.Add( "Binary file is not a check-in label" );

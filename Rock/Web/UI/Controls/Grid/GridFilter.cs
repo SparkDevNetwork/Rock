@@ -123,9 +123,7 @@ Sys.Application.add_load(function () {
             {
                 writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
 
-                writer.RenderBeginTag( HtmlTextWriterTag.Legend );
                 writer.Write( "<h4>Enabled Filters</h4>" );
-                writer.RenderEndTag();
 
                 foreach ( var userPreference in nonEmptyValues )
                 {
@@ -151,9 +149,7 @@ Sys.Application.add_load(function () {
 
             writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
 
-            writer.RenderBeginTag( HtmlTextWriterTag.Legend );
             writer.Write( "<h4>Filter Options</h4>" );
-            writer.RenderEndTag();
 
             base.RenderControl( writer );
 

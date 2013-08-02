@@ -21,9 +21,6 @@
     <link rel="stylesheet" href="../CSS/rock-boot.less">
     <link rel="stylesheet" href="../CSS/rock-boot-responsive.less">
     <link rel="stylesheet" href="../CSS/checkin-theme.less">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.common.min.css") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.bootstrap.min.css") %>"/>
-    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/developer.less") %>">
 
     <script src="<%# ResolveUrl("~/Scripts/fastclick.js") %>" ></script>
 
@@ -41,6 +38,14 @@
         window.addEventListener('load', function () {
             new FastClick(document.body);
         }, false);
+
+        // add quick fade-in effect to the page
+        $(document).ready(function () {
+            $("body").css("display", "none");
+            $("body").fadeIn(400);
+        });
     </script>
+
+    
 </body>
 </html>

@@ -68,6 +68,25 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets all descendents.
+        /// </summary>
+        /// <param name="parentGroupId">The parent group id.</param>
+        /// <returns></returns>
+        public IEnumerable<Group> GetAllDescendents( int parentGroupId )
+        {
+            return Repository.ExecuteQuery( 
+                @"
+                with CTE as (
+                select * from [Group] where [ParentGroupId]={0}
+                union all
+                select [a].* from [Group] [a]
+                inner join CTE pcte on pcte.Id = [a].[ParentGroupId]
+                )
+                select * from CTE
+                ", parentGroupId );
+        }
+
+        /// <summary>
         /// Deletes the specified item.
         /// </summary>
         /// <param name="item">The item.</param>
