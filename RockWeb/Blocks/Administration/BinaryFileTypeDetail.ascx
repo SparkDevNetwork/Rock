@@ -21,6 +21,7 @@
                         <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.BinaryFileType, Rock" PropertyName="IconCssClass" />
                         <Rock:ImageUploader ID="imgIconSmall" runat="server" LabelText="Small Icon Image" />
                         <Rock:ImageUploader ID="imgIconLarge" runat="server" LabelText="Large Icon Image" />
+                        <Rock:ComponentPicker ID="cpStorageType" runat="server" ContainerType="Rock.BinaryFile.StorageContainer, Rock" LabelText="Storage Type" />
                     </div>
                     <div class="span6">
 
