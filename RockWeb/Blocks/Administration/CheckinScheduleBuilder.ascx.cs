@@ -13,6 +13,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -90,7 +91,7 @@ namespace RockWeb.Blocks.Administration
             {
                 string dataFieldName = string.Format( "scheduleField_{0}", item.Id );
 
-                CheckBoxField field = new CheckBoxField { HeaderText = item.Name, DataField = dataFieldName };
+                CheckBoxEditableField field = new CheckBoxEditableField { HeaderText = item.Name, DataField = dataFieldName };
                 gGroupLocationSchedule.Columns.Add( field );
             }
         }
@@ -229,28 +230,29 @@ namespace RockWeb.Blocks.Administration
                 groupLocationQry = groupLocationQry.Where( a => a.Group.GroupTypeId == groupTypeId );
             }
 
-            int parentLocationId = ddlParentLocation.SelectedValueAsInt() ?? Rock.Constants.All.Id;
-            if ( parentLocationId != Rock.Constants.All.Id )
-            {
-                // open question on whether to also include all descendants instead of just immediate children
-                groupLocationQry = groupLocationQry.Where( a => a.Location.ParentLocationId == parentLocationId );
-            }
-
             var qryList = groupLocationQry.Select( a =>
                 new
                 {
                     GroupLocationId = a.Id,
                     GroupName = a.Group.Name,
                     LocationName = a.Location.Name,
-                    ScheduleIdList = a.Schedules.Select( s => s.Id )
+                    ScheduleIdList = a.Schedules.Select( s => s.Id ),
+                    a.LocationId
                 } ).ToList();
+
+            int parentLocationId = ddlParentLocation.SelectedValueAsInt() ?? Rock.Constants.All.Id;
+            if ( parentLocationId != Rock.Constants.All.Id )
+            {
+                var descendantLocationIds = new LocationService().GetAllDescendents(parentLocationId).Select(a => a.Id);
+                qryList = qryList.Where( a => descendantLocationIds.Contains( a.LocationId ) ).ToList();
+            }
 
             // put stuff in a datatable so we can dynamically have columns for each Schedule
             DataTable dataTable = new DataTable();
             dataTable.Columns.Add( "GroupLocationId" );
             dataTable.Columns.Add( "GroupName" );
             dataTable.Columns.Add( "LocationName" );
-            foreach ( var field in gGroupLocationSchedule.Columns.OfType<CheckBoxField>() )
+            foreach ( var field in gGroupLocationSchedule.Columns.OfType<CheckBoxEditableField>() )
             {
                 dataTable.Columns.Add( field.DataField, typeof( bool ) );
             }
@@ -261,7 +263,7 @@ namespace RockWeb.Blocks.Administration
                 dataRow["GroupLocationId"] = row.GroupLocationId;
                 dataRow["GroupName"] = row.GroupName;
                 dataRow["LocationName"] = row.LocationName;
-                foreach ( var field in gGroupLocationSchedule.Columns.OfType<CheckBoxField>() )
+                foreach ( var field in gGroupLocationSchedule.Columns.OfType<CheckBoxEditableField>() )
                 {
                     int scheduleId = int.Parse( field.DataField.Replace( "scheduleField_", string.Empty ) );
                     dataRow[field.DataField] = row.ScheduleIdList.Any( a => a == scheduleId );
@@ -285,8 +287,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            // ToDo
-            //NavigateToParentPage();
+            NavigateToParentPage();
         }
 
         /// <summary>
@@ -300,6 +301,7 @@ namespace RockWeb.Blocks.Administration
             {
                 GroupLocationService groupLocationService = new GroupLocationService();
                 ScheduleService scheduleService = new ScheduleService();
+                
                 RockTransactionScope.WrapTransaction( () =>
                 {
                     var gridViewRows = gGroupLocationSchedule.Rows;
@@ -311,11 +313,11 @@ namespace RockWeb.Blocks.Administration
                         {
                             foreach ( var fieldCell in row.Cells.OfType<DataControlFieldCell>())
                             {
-                                CheckBoxField checkBoxTemplateField = fieldCell.ContainingField as CheckBoxField;
+                                CheckBoxEditableField checkBoxTemplateField = fieldCell.ContainingField as CheckBoxEditableField;
                                 if ( checkBoxTemplateField != null )
                                 {
                                     CheckBox checkBox = fieldCell.Controls[0] as CheckBox;
-                                    string dataField = ( fieldCell.ContainingField as CheckBoxField ).DataField;
+                                    string dataField = ( fieldCell.ContainingField as CheckBoxEditableField ).DataField;
                                     int scheduleId = int.Parse( dataField.Replace( "scheduleField_", string.Empty ) );
 
                                     // update GroupLocationSchedule depending on if the Schedule is Checked or not
@@ -346,7 +348,7 @@ namespace RockWeb.Blocks.Administration
                 } );
             }
 
-            //TODO NavigateToParentPage();
+            NavigateToParentPage();
         }
 
         #endregion
