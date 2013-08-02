@@ -6,8 +6,6 @@
         <asp:Repeater ID="rptrFamilies" runat="server">
             <ItemTemplate>
 
-                <div class="container-fluid">
-
                     <div class="actions" style="display: none;">
                         <asp:HyperLink ID="hlEditFamily" runat="server" CssClass="edit btn btn-mini"><i class="icon-pencil"></i> Edit Family</asp:HyperLink>
                     </div>
@@ -16,7 +14,7 @@
                 
                         <div class="span8 members clearfix">
 
-                            <header><%# Eval("Name") %></header>
+                            <header><%# Eval("Name") %> <span class="light">Family</span></header>
 
                             <ul class="clearfix">
 
@@ -74,8 +72,6 @@
                         </div>
 
                     </div>
-
-                </div>
 
             </ItemTemplate>
         </asp:Repeater>

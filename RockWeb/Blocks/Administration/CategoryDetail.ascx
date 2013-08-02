@@ -10,9 +10,9 @@
             <div id="pnlEditDetails" runat="server" class="well">
 
                 <fieldset>
-                    <legend>
+                    <h1 class="banner">
                         <asp:Literal ID="lActionTitle" runat="server" />
-                    </legend>
+                    </h1>
 
                     <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="Name" />
                     <Rock:CategoryPicker ID="cpParentCategory" runat="server" LabelText="Parent Category" />
@@ -35,10 +35,10 @@
 
             <fieldset id="fieldsetViewDetails" runat="server">
 
-                <legend>
+                <h1 class="banner">
                     <asp:Literal ID="lCategoryIconHtml" runat="server" />&nbsp;
                     <asp:Literal ID="lReadOnlyTitle" runat="server" />
-                </legend>
+                </h1>
                 <asp:Literal ID="lblActiveHtml" runat="server" />
                 <div class="well">
                     <div class="row-fluid">
