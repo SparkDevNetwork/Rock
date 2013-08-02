@@ -35,6 +35,7 @@ namespace RockWeb.Blocks.Cms
     [CustomCheckboxListField( "Audience Primary Secondary", "Primary or Secondary Audience", "1:Primary,2:Secondary", false, "1,2", "Filter", 7 )]
 
     [BooleanField( "Show Debug", "Output XML", false, "Advanced", 8 )]
+    [TextField("CSS File", "Optional CSS file to add to the page for styling.", false, "")]
 
     [ContextAware( typeof(Campus) )]
     public partial class MarketingCampaignAdsXslt : RockBlock
@@ -48,6 +49,10 @@ namespace RockWeb.Blocks.Cms
             base.OnInit( e );
 
             this.AttributesUpdated += MarketingCampaignAdsXslt_AttributesUpdated;
+
+            // add css file to page
+            if (GetAttributeValue("CSSFile").Trim() != string.Empty)
+                CurrentPage.AddCSSLink(Page, ResolveUrl("~/CSS/jquery.tagsinput.css"));
 
             TransformXml();
         }
