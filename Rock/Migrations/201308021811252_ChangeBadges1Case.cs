@@ -20,7 +20,7 @@ namespace Rock.Migrations
         {
             Sql( "UPDATE [Block] SET [Name] = 'Badges 1' WHERE [Guid] = '98A30DD7-8665-4C6D-B1BB-A8380E862A04'" );
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
