@@ -426,6 +426,10 @@
     <Compile Include="Migrations\201308012159011_AddPeoplePage.Designer.cs">
       <DependentUpon>201308012159011_AddPeoplePage.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201308020119039_CheckinAdminPages.cs" />
+    <Compile Include="Migrations\201308020119039_CheckinAdminPages.Designer.cs">
+      <DependentUpon>201308020119039_CheckinAdminPages.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -2050,6 +2054,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201308012159011_AddPeoplePage.resx">
       <DependentUpon>201308012159011_AddPeoplePage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308020119039_CheckinAdminPages.resx">
+      <DependentUpon>201308020119039_CheckinAdminPages.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
