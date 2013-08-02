@@ -245,7 +245,7 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "icon-lock" );
             writer.RenderBeginTag( HtmlTextWriterTag.I );
             writer.RenderEndTag();
-            writer.Write( "Security" );
+            writer.Write( " Security" );
             writer.RenderEndTag();
 
             writer.RenderEndTag();  // settings div
