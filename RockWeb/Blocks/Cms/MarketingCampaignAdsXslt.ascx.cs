@@ -48,29 +48,28 @@ namespace RockWeb.Blocks.Cms
         {
             base.OnInit( e );
 
-            this.AttributesUpdated += MarketingCampaignAdsXslt_AttributesUpdated;
-
             // add css file to page
             if (GetAttributeValue("CSSFile").Trim() != string.Empty)
                 CurrentPage.AddCSSLink(Page, ResolveUrl("~/CSS/jquery.tagsinput.css"));
 
-            TransformXml();
+            // ensure xslt file exists
+            string xsltFile = Server.MapPath(GetAttributeValue("XSLTFile"));
+            if (System.IO.File.Exists( xsltFile ))
+            {
+                TransformXml(xsltFile);
+            }
+            else
+            {
+                string errorMessage = "<div class='alert warning' style='margin: 24px auto 0 auto; max-width: 500px;' ><strong>Warning!</strong><p>The XSLT file required to process the ad list could not be found.</p><p><em>" + xsltFile + "</em></p>";
+                phContent.Controls.Add(new LiteralControl(errorMessage));
+            }
         }
 
-        /// <summary>
-        /// Handles the AttributesUpdated event of the MarketingCampaignAdsXslt control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void MarketingCampaignAdsXslt_AttributesUpdated( object sender, EventArgs e )
-        {
-            TransformXml();
-        }
 
         /// <summary>
         /// Transforms the XML.
         /// </summary>
-        private void TransformXml()
+        private void TransformXml(string xsltFile)
         {
             MarketingCampaignAdService marketingCampaignAdService = new MarketingCampaignAdService();
             var qry = marketingCampaignAdService.Queryable();
@@ -257,9 +256,9 @@ namespace RockWeb.Blocks.Cms
             string showDebugValue = GetAttributeValue( "ShowDebug" ) ?? string.Empty;
             bool showDebug = showDebugValue.Equals( "true", StringComparison.OrdinalIgnoreCase );
 
-            string fileName = GetAttributeValue( "XSLTFile" );
+            
             string outputXml;
-            if ( showDebug || string.IsNullOrWhiteSpace( fileName ) )
+            if ( showDebug || string.IsNullOrWhiteSpace( xsltFile ) )
             {
                 outputXml = HttpUtility.HtmlEncode( doc.ToString() );
             }
@@ -269,7 +268,7 @@ namespace RockWeb.Blocks.Cms
                 TextWriter tw = new StringWriter( sb );
 
                 XslCompiledTransform xslTransformer = new XslCompiledTransform();
-                xslTransformer.Load( Server.MapPath( fileName ) );
+                xslTransformer.Load( xsltFile );
                 xslTransformer.Transform( doc.CreateReader(), null, tw );
                 outputXml = sb.ToString();
             }
