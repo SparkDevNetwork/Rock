@@ -51,6 +51,7 @@
 
     </div>
 
+    <Rock:Zone ID="Content" runat="server" />
 
     <section class="promo-slider container">	
 	  		
@@ -154,7 +155,7 @@
     
 
     <Rock:Zone ID="Zone1" runat="server" />
-    <Rock:Zone ID="Content" runat="server" />
+    
     <Rock:Zone ID="Footer" runat="server" />
 
 
