@@ -223,7 +223,8 @@
                     <asp:BoundField DataField="personAttribute" HeaderText="Ability/Grade" />
                     <asp:TemplateField HeaderText="Add">
                         <ItemTemplate>
-                            <asp:LinkButton ID="lbAdd" runat="server" CssClass="btn ConfirmButtons" CommandName="Add" Text="Add" CommandArgument="<%# ((GridViewRow) Container).RowIndex %>"><i class="icon-plus"></i></asp:LinkButton>
+                            <%--<asp:LinkButton ID="lbAdd" runat="server" CssClass="btn ConfirmButtons" CommandName="Add" Text="Add" CommandArgument="<%# ((GridViewRow) Container).RowIndex %>"><i class="icon-plus"></i></asp:LinkButton>--%>
+                            <asp:LinkButton ID="lbAdd" runat="server" CssClass="btn btn-large btn-primary" CommandName="Add" Text="Add" CommandArgument="<%# ((GridViewRow) Container).RowIndex %>"><i class="icon-plus"></i></asp:LinkButton>
                         </ItemTemplate>
                     </asp:TemplateField>
                 </Columns>
