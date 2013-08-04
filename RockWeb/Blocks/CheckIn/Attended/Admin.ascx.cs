@@ -67,30 +67,25 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
                 phScript.Controls.Add( new LiteralControl( script ) );
 
-                if ( !CurrentKioskId.HasValue )
+                if ( !CurrentKioskId.HasValue || UserBackedUp )
                 {   // #DEBUG, may be the local machine
                     var kiosk = new DeviceService().GetByDeviceName( Environment.MachineName );
                     if ( kiosk != null )
                     {
                         CurrentKioskId = kiosk.Id;
-                        if ( string.IsNullOrWhiteSpace( hfGroupTypes.Value ) )
-                        {
-                            BindGroupTypes();
-                        }
-                        else
-                        {
-                            CurrentGroupTypeIds = hfGroupTypes.Value.SplitDelimitedValues().Select( int.Parse ).ToList();
-                            SaveState();
-                            NavigateToNextPage();
-                        }
-                    }                    
+                        BindGroupTypes();
+                    }
                     else
                     {
                         maWarning.Show( "This device has not been set up for check in.", ModalAlertType.Warning );
                         lbOk.Visible = false;
                         return;
                     }
-                }                
+                }
+                else
+                {
+                    NavigateToNextPage();
+                }
 
                 SaveState();
             }
@@ -133,9 +128,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var groupTypeIds = new List<int>();
             if ( !string.IsNullOrEmpty( hfParentTypes.Value ) )
             {
-                if ( CurrentKioskId == null )
+                if ( CurrentKioskId == null || CurrentKioskId == 0)
                 {
-                    CurrentKioskId = hfParentTypes.ValueAsInt();
+                    CurrentKioskId = hfKiosk.ValueAsInt();
                 }
                 var kiosk = new DeviceService().Get( (int)CurrentKioskId );
                 var parentGroupTypes = GetAllParentGroupTypes( kiosk );
@@ -318,24 +313,24 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="selectedValues">The selected values.</param>
         private void BindGroupTypes( string selectedGroupTypes )
         {           
-            repMinistry.DataSource = null;
-            if ( CurrentKioskId != null )
+            //repMinistry.DataSource = null;
+            if ( CurrentKioskId > 0 )
             {
                 var kiosk = new DeviceService().Get( (int)CurrentKioskId );
                 if ( kiosk != null )
                 {
                     var parentGroupTypes = GetAllParentGroupTypes( kiosk );
-                    
+
                     if ( !string.IsNullOrWhiteSpace( selectedGroupTypes ) )
-                    {   
-                        var selectedChildIds = selectedGroupTypes.SplitDelimitedValues().Select( sgt => Convert.ToInt32( sgt ) ).ToList();
+                    {
+                        var selectedChildIds = selectedGroupTypes.SplitDelimitedValues().Select( sgt => int.Parse( sgt ) ).ToList();
 
                         // get parent types for selected child types
                         var selectedParentIds = parentGroupTypes.Where( pgt => pgt.ChildGroupTypes
                             .Any( cgt => selectedChildIds.Contains( cgt.Id ) ) )
                             .Select( pgt => pgt.Id ).ToList();
 
-                        hfParentTypes.Value = string.Join( ",", selectedParentIds );
+                        hfParentTypes.Value = selectedParentIds.AsDelimited( "," ) + ",";
                     }
 
                     repMinistry.DataSource = parentGroupTypes;
