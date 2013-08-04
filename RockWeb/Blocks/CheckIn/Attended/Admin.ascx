@@ -44,10 +44,10 @@
             </div>
         </div>
 
-        <div class="row-fluid checkin-admin-body">
+        <div class="row-fluid attended-checkin-body">
             <div class="span4"></div>
             <div class="span4">
-                <label class="control-label">Checkin Type(s)</label>
+                <label class="admin-control-label">Checkin Type(s)</label>
                 <asp:Repeater ID="repMinistry" runat="server" OnItemDataBound="repMinistry_ItemDataBound">
                     <ItemTemplate>
                         <asp:Button ID="lbMinistry" runat="server" data-id='<%# Eval("Id") %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" Text='<%# Eval("Name") %>' />

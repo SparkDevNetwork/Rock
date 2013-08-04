@@ -33,7 +33,8 @@
                         <Rock:DeleteField OnClick="gPersonList_Delete" HeaderText="Delete" />
                         <asp:TemplateField HeaderText="Print">
                             <ItemTemplate>
-                                <asp:LinkButton ID="btnPrint" runat="server" CssClass="btn ConfirmButtons" CommandName="Print" Text="Print" CommandArgument="<%# ((GridViewRow) Container).RowIndex %>"><i class="icon-print"></i></asp:LinkButton>
+                                <%--<asp:LinkButton ID="btnPrint" runat="server" CssClass="btn ConfirmButtons" CommandName="Print" Text="Print" CommandArgument="<%# ((GridViewRow) Container).RowIndex %>"><i class="icon-print"></i></asp:LinkButton>--%>
+                                <asp:LinkButton ID="btnPrint" runat="server" CssClass="btn btn-large btn-primary" CommandName="Print" Text="Print" CommandArgument="<%# ((GridViewRow) Container).RowIndex %>"><i class="icon-print"></i></asp:LinkButton>
                             </ItemTemplate> 
                         </asp:TemplateField>
                     </Columns>
