@@ -36,51 +36,54 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            tbSearchBox.Focus();
-            if ( !Page.IsPostBack && CurrentCheckInState != null )
+            if ( !Page.IsPostBack )
             {
-                string script = string.Format( @"
-                <script>
-                    $(document).ready(function (e) {{
-                        if (localStorage) {{
-                            localStorage.checkInKiosk = '{0}';
-                            localStorage.checkInGroupTypes = '{1}';
-                        }}
-                    }});
-                </script>
-                ", CurrentKioskId, CurrentGroupTypeIds.AsDelimited( "," ) );
-                phScript.Controls.Add( new LiteralControl( script ) );
-
-                if ( CurrentCheckInState.Kiosk.KioskGroupTypes.Count == 0 )
+                if ( CurrentKioskId == null || CurrentCheckInState == null || CurrentGroupTypeIds == null )
                 {
-                    // display kiosk not configured
-                    return;
-                }
-                else if ( !CurrentCheckInState.Kiosk.HasLocations || !CurrentCheckInState.Kiosk.HasActiveLocations )
-                {
-                    DateTimeOffset activeAt = CurrentCheckInState.Kiosk.KioskGroupTypes.Select( g => g.NextActiveTime ).Min();
-                    // not active yet, display next active time
-                    return;
-                }                                
-
-                if ( CurrentCheckInState.CheckIn.SearchType != null || UserBackedUp )
-                {
-                    lbAdmin.Visible = false;
-                    lbBack.Visible = true;
-                    if ( !string.IsNullOrWhiteSpace( CurrentCheckInState.CheckIn.SearchValue ) )
-                    {
-                        tbSearchBox.Text = CurrentCheckInState.CheckIn.SearchValue;
-                    }
+                    var queryParams = new Dictionary<string, string>();
+                    queryParams.Add( "back", "true" );
+                    NavigateToLinkedPage( "AdminPage" );
                 }
                 else
                 {
-                    lbAdmin.Visible = true;
-                    lbBack.Visible = false;
-                }
+                    if ( !CurrentCheckInState.Kiosk.HasLocations || !CurrentCheckInState.Kiosk.HasActiveLocations )
+                    {
+                        DateTimeOffset activeAt = CurrentCheckInState.Kiosk.KioskGroupTypes.Select( g => g.NextActiveTime ).Min();
+                        // not active yet, display next active time
+                        return;
+                    }
+                    else if ( CurrentCheckInState.CheckIn.SearchType != null || UserBackedUp )
+                    {
+                        lbAdmin.Visible = false;
+                        lbBack.Visible = true;
+                        if ( !string.IsNullOrWhiteSpace( CurrentCheckInState.CheckIn.SearchValue ) )
+                        {
+                            tbSearchBox.Text = CurrentCheckInState.CheckIn.SearchValue;
+                        }
+                    }
+                    else
+                    {
+                        lbAdmin.Visible = true;
+                        lbBack.Visible = false;
+                    }
 
-                CurrentWorkflow = null;
-                SaveState();
-            }
+                    string script = string.Format( @"
+                    <script>
+                        $(document).ready(function (e) {{
+                            if (localStorage) {{
+                                localStorage.checkInKiosk = '{0}';
+                                localStorage.checkInGroupTypes = '{1}';
+                            }}
+                        }});
+                    </script>
+                    ", CurrentKioskId, CurrentGroupTypeIds.AsDelimited( "," ) );
+                    phScript.Controls.Add( new LiteralControl( script ) );
+
+                    CurrentWorkflow = null;
+                    tbSearchBox.Focus();
+                    SaveState();
+                }
+            }            
         }
 
         #endregion
@@ -94,7 +97,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSearch_Click( object sender, EventArgs e )
         {
-            if ( KioskCurrentlyActive )
+            if ( CurrentCheckInState != null || CurrentCheckInState.Kiosk != null )
             {
                 CurrentCheckInState.CheckIn.UserEnteredSearch = true;
                 CurrentCheckInState.CheckIn.ConfirmSingleFamily = true;
@@ -102,13 +105,13 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 if ( !string.IsNullOrWhiteSpace( tbSearchBox.Text ) )
                 {
                     int searchNumber;
-                    if ( int.TryParse( tbSearchBox.Text, out searchNumber) )
+                    if ( int.TryParse( tbSearchBox.Text, out searchNumber ) )
                     {
                         CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER );
                     }
-                    else 
+                    else
                     {
-                        CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME );                        
+                        CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME );
                     }
 
                     CurrentCheckInState.CheckIn.SearchValue = tbSearchBox.Text;
@@ -122,13 +125,18 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     {
                         string errorMsg = "<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
                         maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
-                    }           
+                    }
                 }
                 else
                 {
                     maWarning.Show( "Please enter something to search for.", ModalAlertType.Warning );
                     return;
-                }               
+                }
+            }
+            else
+            {
+                maWarning.Show( "This kiosk is not currently active.", ModalAlertType.Warning );
+                return;
             }
         }
 
@@ -139,7 +147,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAdmin_Click( object sender, EventArgs e )
         {
-            NavigateToLinkedPage( "AdminPage" );
+            var queryParams = new Dictionary<string, string>();
+            queryParams.Add( "back", "true" );
+            NavigateToLinkedPage( "AdminPage", queryParams );
         }
 
         /// <summary>
