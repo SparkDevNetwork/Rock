@@ -442,6 +442,12 @@ input[type="submit"].btn[disabled="disabled"]
     font-size: 1.571428571428571em;
 }
 
+.grid-table .btn-primary
+{
+	font-size: 1.090909090909091em;     /* 24px font size / 22px base font size */
+	padding-top: 0.5909090909090909em;  /* 13px pad / 22px base font */
+}
+
 .grid-table thead th a, .table th[scope=col]
 {
 	color: @checkinHeaderColor
@@ -531,10 +537,6 @@ input[type="submit"].btn[disabled="disabled"]
     width: 9em !important;
 }
 
-.searchperson input, .searchperson select {
-    width: 100%;
-}
-
 @media screen and (max-width:1240px) {
     input.attended-checkin-keyboard-entry, .keyboard {
         width: 85%;
@@ -547,6 +549,12 @@ input[type="submit"].btn[disabled="disabled"]
 
 @media screen and (max-width:1024px)
 {
+    .attended-checkin-header
+    {
+        margin: 20px auto 10px !important;   /* 45px margin (top & bottom) / 16px font size */
+	    width: 90%;
+    }
+
 	input.attended-checkin-keyboard-entry, .keyboard
 	{
 		width: 90%;
@@ -560,31 +568,20 @@ input[type="submit"].btn[disabled="disabled"]
 
 	.attended-checkin-header h1
 	{
-		font-size: 0.75em;      /* 36px font size / 48px base font size*/
-        margin-top: 0.625em;    /* 30px margin / 48px font size */
+        font-size: 1.714285714285714em;     /* 24px font size / 14px base font size */
+        margin-top: 0.1944444444444444em;    /* 7px margin / 36px font size */
 	}
 
 	.attended-checkin-actions a.btn-primary
 	{
-		font-size: 36px;
-		padding: 28px 26px;
-	}
-
-.attended-checkin-actions a.btn-primary
-{
-    font-size: 3.428571428571429em;     /* 48px font size / 14px base font size */
-    padding: 0.5833333333333333em 0.5416666666666667em;     /* top & bottom = 28px pad / 48px font size, left & right = 26px pad / 48px font size */
-}
-
-	.attended-checkin-body-container .btn-primary
-	{
-		font-size: 16px;
+        font-size: 1.714285714285714em;     /* 24px font size / 14px base font size */
+        padding: 0.5833333333333333em 0.5416666666666667em;     /* top & bottom = 28px pad / 48px font size, left & right = 26px pad / 48px font size */
 	}
 
 	input[type="submit"].btn
 	{
-		font-size: 16px;
-		padding: 10px 15px;
+		font-size: 1em;     /* 14px font size / 14px base font size */
+        padding: 0.7142857142857143em 1.071428571428571em;  /* top & bottom = 10px pad / 14px base font size, left & right = 15px pad / 14px base font size */
 	}
 
 	.btn-primary.disabled, .btn-primary[disabled]
@@ -592,29 +589,20 @@ input[type="submit"].btn[disabled="disabled"]
 		background-color: #b00a0e;
 	}
 
-	.checkin-sub-title
-	{
-		font-size: 16px;
-	}
-
 	.btn .checkin-sub-title
 	{
-		font-size: 16px;
+        font-size: 0.875em;     /* 14px font / 16px base font size */
 		margin-left: 10px;
 	}
 
 	.btn-checkin-select
 	{
-		font-size: 16px;
-	}
-
-	.grid-table
-	{
-		font-size: 16px;
+        font-size: 1em;     /* 14px font size / 14px base font size */
+        padding: 0.5em 0;   /* 7px pad / 14px base font size */
 	}
 
     h3 {
-        font-size: 18px;
+        font-size: 1.285714285714286em;     /* 18px font size / 14px base font size */
     }
 
     .fullBlock {
@@ -625,7 +613,7 @@ input[type="submit"].btn[disabled="disabled"]
         width: 35%;
     }
 
-    .ConfirmButtons
+    /*.ConfirmButtons
     {
 	    width: 10px;
 	    height: 12px;
@@ -635,15 +623,20 @@ input[type="submit"].btn[disabled="disabled"]
     .ConfirmButtons i {
         position: relative;
         top: -40%;
-    }
-
+    }*/
 
     .grid-table {
-        font-size: 14px;
+        font-size: 1em;     /* 14px font size / 14px base font size */
+    }
+
+    .grid-table .btn-primary
+    {
+	    font-size: 1em;     /* 14px font size / 14px base font size */
+	    padding-top: 0.8571428571428571em;  /* 12px pad / 14px base font */
     }
 
     .pagination {
-        margin: 10px 0;
+        margin: 0.7142857142857143em 0;     /* top & bottom = 10px pad / 14px base font size */
     }
 
 }
@@ -677,16 +670,6 @@ input[type="submit"].btn[disabled="disabled"]
         margin: 1%;
     }
 
-	.attended-checkin-header h1
-	{
-		font-size: 24px;
-	}
-
-	.attended-checkin-actions a.btn-primary
-	{
-		font-size: 24px;
-		padding: 28px 26px;
-	}
 }
 
 @media screen and (max-width:640px) {
