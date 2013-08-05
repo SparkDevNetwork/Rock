@@ -221,7 +221,7 @@
                 </Columns>
             </Rock:Grid>
         </div>
-        <div class="row-fluid attended-checkin-body person">
+        <div class="row-fluid attended-checkin-body searchperson">
             <asp:LinkButton ID="lbAddSearchedForPerson" runat="server" Text="None of these, add me as a new [person/visitor]." Visible="false" OnClick="lbAddSearchedForPerson_Click" CausesValidation="false"></asp:LinkButton>
         </div>
     </asp:Panel>
