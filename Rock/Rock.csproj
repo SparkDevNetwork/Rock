@@ -438,6 +438,10 @@
     <Compile Include="Migrations\201308021811252_ChangeBadges1Case.Designer.cs">
       <DependentUpon>201308021811252_ChangeBadges1Case.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201308052350229_RenameLocationTypeField.cs" />
+    <Compile Include="Migrations\201308052350229_RenameLocationTypeField.Designer.cs">
+      <DependentUpon>201308052350229_RenameLocationTypeField.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -2071,6 +2075,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201308021811252_ChangeBadges1Case.resx">
       <DependentUpon>201308021811252_ChangeBadges1Case.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308052350229_RenameLocationTypeField.resx">
+      <DependentUpon>201308052350229_RenameLocationTypeField.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
