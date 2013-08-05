@@ -182,7 +182,7 @@
                 <h3>Ability/Grade</h3>
             </div>
         </div>
-        <div class="row-fluid attended-checkin-body person">
+        <div class="row-fluid attended-checkin-body searchperson">
             <div class="span3">
                 <Rock:DataTextBox ID="tbFirstNameSearch" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
             </div>
