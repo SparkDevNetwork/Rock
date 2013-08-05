@@ -903,26 +903,21 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void LoadAttributeDropDown( DropDownList dropDownList )
         {
             // load the attribute drop down with ability levels and grades
+            var abilityId = new AttributeService().Queryable().Where( a => a.Key == "AbilityLevel"
+                && a.Categories.Any( c => c.Name == "CheckIn" ) ).Select( a => a.Id ).FirstOrDefault();
 
-            // list of ability levels
-            var abilityLevelAttributeId = new AttributeService().Queryable().Where( a => a.Key == "AbilityLevel" && a.Categories.Any( c => c.Name == "CheckIn" ) ).Select( a => a.Id ).FirstOrDefault();
-            var abilityLevelList = new AttributeValueService().Queryable().Where( a => a.AttributeId == abilityLevelAttributeId ).Select( a => a.Value ).Distinct().ToList();
-            
-            // list of grades
-            var gradeList = new List<string>();
-            string[] grades = { "K", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12" };
-            foreach ( var grade in grades )
+            if ( abilityId != null )
             {
-                gradeList.Add( grade );
+                var abilityList = new AttributeValueService().GetByAttributeId( abilityId )
+                    .Select( av => new ListItem( av.Value ) ).Distinct().ToArray();
+                dropDownList.Items.AddRange( abilityList );
             }
 
-            var dropDownListSource = new List<string>();
-            dropDownListSource.AddRange( abilityLevelList );
-            dropDownListSource.AddRange( gradeList );
-            
-            dropDownList.DataSource = dropDownListSource;
-            dropDownList.DataBind();
+            var gradeList = Enum.GetValues( typeof( GradeLevel ) ).Cast<GradeLevel>()
+                .Select( gl => new ListItem( gl.GetDescription(), gl.ToString() ) ).ToArray();
+            dropDownList.Items.AddRange( gradeList );
             dropDownList.Items.Insert( 0, "None" );
+        
         }
 
         #endregion               
