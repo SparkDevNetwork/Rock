@@ -30,7 +30,7 @@
                             <div class="control-group">
                                 <div class="control-label">Enable Check-In</div>
                                 <div class="controls">
-                                    <Rock:NumberBox ID="nbStartOffset" runat="server" ValidationDataType="Integer" CssClass="input-mini" />
+                                    <Rock:NumberBox ID="nbStartOffset" runat="server" NumberType="Integer" CssClass="input-mini" />
                                     Minutes Before Start
                                 </div>
                             </div>
@@ -38,7 +38,7 @@
                             <div class="control-group">
                                 <div class="control-label">Until</div>
                                 <div class="controls">
-                                    <Rock:NumberBox ID="nbEndOffset" runat="server" ValidationDataType="Integer" CssClass="input-mini" />
+                                    <Rock:NumberBox ID="nbEndOffset" runat="server" NumberType="Integer" CssClass="input-mini" />
                                     Minutes After Start
                                 </div>
                             </div>
