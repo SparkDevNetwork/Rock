@@ -166,7 +166,7 @@
             </div>
         </div>
         <div class="row-fluid attended-checkin-body">
-            <div class="span2">
+            <div class="span3">
                 <h3>First Name</h3>
             </div>
             <div class="span3">
@@ -178,12 +178,12 @@
             <div class="span2">
                 <h3>Gender</h3>
             </div>
-            <div class="span3">
+            <div class="span2">
                 <h3>Ability/Grade</h3>
             </div>
         </div>
-        <div class="row-fluid attended-checkin-body searchperson">
-            <div class="span2">
+        <div class="row-fluid attended-checkin-body person">
+            <div class="span3">
                 <Rock:DataTextBox ID="tbFirstNameSearch" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
             </div>
             <div class="span3">
@@ -199,7 +199,7 @@
             <div class="span2">
                 <Rock:DataDropDownList ID="ddlGenderSearch" runat="server" CssClass="fullBlock"></Rock:DataDropDownList>
             </div>
-            <div class="span3">
+            <div class="span2">
                 <Rock:DataDropDownList ID="ddlAttributeSearch" runat="server" CssClass="fullBlock"></Rock:DataDropDownList>
             </div>
         </div>
@@ -221,7 +221,7 @@
                 </Columns>
             </Rock:Grid>
         </div>
-        <div class="row-fluid attended-checkin-body searchperson">
+        <div class="row-fluid attended-checkin-body person">
             <asp:LinkButton ID="lbAddSearchedForPerson" runat="server" Text="None of these, add me as a new [person/visitor]." Visible="false" OnClick="lbAddSearchedForPerson_Click" CausesValidation="false"></asp:LinkButton>
         </div>
     </asp:Panel>
