@@ -262,7 +262,7 @@
             </div>
         </div>
     
-        <div class="row-fluid attended-checkin-body person">
+        <div class="row-fluid attended-checkin-body">
 
             <asp:ListView ID="lvAddFamily" runat="server" OnPagePropertiesChanging="lvAddFamily_PagePropertiesChanging"  OnItemDataBound="lvAddFamily_ItemDataBound">
             <ItemTemplate>
