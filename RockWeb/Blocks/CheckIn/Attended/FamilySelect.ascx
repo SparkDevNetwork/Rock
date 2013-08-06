@@ -74,7 +74,7 @@
             </div>
 
             <div class="span3 attended-checkin-actions">
-                <asp:LinkButton ID="lbNext" CssClass="btn btn-large last btn-primary" runat="server" OnClick="lbNext_Click" Text="Next"/>
+                <asp:LinkButton ID="lbNext" CssClass="btn btn-large last btn-primary" runat="server" OnClick="lbNext_Click" Text="Next" CausesValidation="false" />
             </div>
         </div>
                 
