@@ -17,6 +17,7 @@
             <Rock:LabeledCheckBox ID="labeledCheckBox" runat="server" LabelText="Rock:LabeledCheckBox" />
             <Rock:LabeledCheckBoxList ID="labeledCheckBoxList" runat="server" LabelText="Rock:LabeledCheckBoxList" />
             <Rock:LabeledRadioButtonList ID="labeledRadioButtonList" runat="server" LabelText="Rock:LabeledRadioButtonList" />
+            <Rock:NumberRangeEditor ID="numberRangeEditor" runat="server" LabelText="Rock:NumberRangeEditor" LowerValue="10" UpperValue="25" />
 
             <h4 runat="server">Pickers</h4>
             <Rock:DatePicker ID="datePicker" runat="server" LabelText="Rock:DatePicker" />
@@ -24,6 +25,7 @@
             <Rock:TimePicker ID="timePicker" runat="server" LabelText="Rock:TimePicker" />
             <Rock:MonthYearPicker ID="monthYearPicker" runat="server" LabelText="Rock:MonthYearPicker" OnTextChanged="monthYearPicker_TextChanged" AutoPostBack="true" />
             <Rock:MonthDayPicker ID="monthDayPicker" runat="server" LabelText="Rock:MonthDayPicker" OnTextChanged="monthDayPicker_TextChanged" AutoPostBack="true" />
+            <Rock:DateRangePicker ID="dateRangerPicker" runat="server" LabelText="Rock:DateRangePicker" LowerValue="1/1/2012" UpperValue="12/31/2014" />
 
             <Rock:GroupPicker ID="groupPicker" runat="server" LabelText="Rock:GroupPicker" />
             <Rock:CampusPicker ID="campusPicker" runat="server" LabelText="Rock:CampusPicker" />
