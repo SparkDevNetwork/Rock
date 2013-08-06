@@ -11,9 +11,9 @@ using System.Linq;
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
-    /// Removes any group that does not have any schedules
+    /// Removes any group that does not have any locations
     /// </summary>
-    [Description("Removes any group that does not have any schedules")]
+    [Description( "Removes any group that does not have any locations" )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Remove Empty Groups" )]
     public class RemoveEmptyGroups : CheckInActionComponent
@@ -37,14 +37,11 @@ namespace Rock.Workflow.Action.CheckIn
                     {
                         foreach ( var groupType in person.GroupTypes.ToList() )
                         {
-                            foreach ( var location in groupType.Locations.ToList() )
+                            foreach ( var group in groupType.Groups.ToList() )
                             {
-                                foreach ( var group in location.Groups.ToList() )
+                                if ( group.Locations.Count == 0 )
                                 {
-                                    if ( group.Schedules.Count == 0 )
-                                    {
-                                        location.Groups.Remove( group );
-                                    }
+                                    groupType.Groups.Remove( group );
                                 }
                             }
                         }
@@ -53,7 +50,6 @@ namespace Rock.Workflow.Action.CheckIn
 
                 SetCheckInState( action, checkInState );
                 return true;
-
             }
 
             return false;

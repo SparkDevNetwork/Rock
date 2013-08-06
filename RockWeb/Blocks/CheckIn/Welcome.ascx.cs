@@ -169,7 +169,7 @@ if ($ActiveWhen.text() != '')
 
             foreach ( var groupType in CurrentCheckInState.Kiosk.KioskGroupTypes )
             {
-                foreach ( var location in  groupType.KioskLocations )
+                foreach ( var location in  groupType.KioskGroups.SelectMany( g => g.KioskLocations ).Distinct() )
                 {
                     if ( !locations.Contains( location.Location.Id ) )
                     {

@@ -295,6 +295,7 @@ namespace Rock.CheckIn
             _lastCached = DateTimeOffset.Now;
         }
 
+
         private static void LoadKioskLocations( KioskStatus kioskStatus, Location location )
         {
             var groupLocationService = new GroupLocationService();
@@ -303,7 +304,9 @@ namespace Rock.CheckIn
                 DateTimeOffset nextGroupActiveTime = DateTimeOffset.MaxValue;
 
                 var kioskGroup = new KioskGroup( groupLocation.Group );
+                var kioskLocation = new KioskLocation( groupLocation.Location );
 
+                // Populate each kioskLocation with it's schedules (kioskSchedules)
                 foreach ( var schedule in groupLocation.Schedules.Where( s => s.CheckInStartOffsetMinutes.HasValue ) )
                 {
                     var nextScheduleActiveTime = schedule.GetNextCheckInStartTime( DateTimeOffset.Now );
@@ -312,15 +315,15 @@ namespace Rock.CheckIn
                         nextGroupActiveTime = nextScheduleActiveTime.Value;
                     }
 
-                    if ( schedule.IsCheckInActive )
+                    if ( schedule.IsCheckInActive && kioskLocation != null )
                     {
-                        kioskGroup.KioskSchedules.Add( new KioskSchedule( schedule ) );
+                        kioskLocation.KioskSchedules.Add( new KioskSchedule( schedule ) );
                     }
                 }
 
-                // If the group has any active or future schedules, add the group's group type to the kiosk's 
+                // If the group location has any active OR future schedules, add the group's group type to the kiosk's 
                 // list of group types
-                if ( kioskGroup.KioskSchedules.Count > 0 || nextGroupActiveTime < DateTimeOffset.MaxValue )
+                if ( kioskLocation.KioskSchedules.Count > 0 || nextGroupActiveTime < DateTimeOffset.MaxValue )
                 {
                     kioskGroup.Group.LoadAttributes();
 
@@ -338,18 +341,12 @@ namespace Rock.CheckIn
                         kioskGroupType.NextActiveTime = nextGroupActiveTime;
                     }
 
-                    // If there are active schedules, add the locations to the group type locations
-                    if ( kioskGroup.KioskSchedules.Count > 0 )
+                    // If there are active schedules, add the group to the group type groups
+                    if ( kioskLocation.KioskSchedules.Count > 0 )
                     {
-                        KioskLocation kioskLocation = kioskGroupType.KioskLocations.Where( l => l.Location.Id == location.Id ).FirstOrDefault();
-                        if ( kioskLocation == null )
-                        {
-                            kioskLocation = new KioskLocation( location );
-                            kioskLocation.Location.LoadAttributes();
-                            kioskGroupType.KioskLocations.Add( kioskLocation );
-                        }
-
-                        kioskLocation.KioskGroups.Add( kioskGroup );
+                        kioskLocation.Location.LoadAttributes();
+                        kioskGroup.KioskLocations.Add( kioskLocation );
+                        kioskGroupType.KioskGroups.Add( kioskGroup );
                     }
                 }
             }

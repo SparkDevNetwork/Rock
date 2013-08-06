@@ -26,13 +26,13 @@ namespace Rock.CheckIn
         public Location Location { get; set; }
 
         /// <summary>
-        /// All groups with active schedules
+        /// The schedules that are currently active
         /// </summary>
         /// <value>
-        /// The groups.
+        /// The schedules.
         /// </value>
         [DataMember]
-        public List<KioskGroup> KioskGroups { get; set; }
+        public List<KioskSchedule> KioskSchedules { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KioskLocation" /> class.
@@ -40,7 +40,7 @@ namespace Rock.CheckIn
         public KioskLocation()
             : base()
         {
-            KioskGroups = new List<KioskGroup>();
+            KioskSchedules = new List<KioskSchedule>();
         }
 
         /// <summary>
@@ -51,7 +51,7 @@ namespace Rock.CheckIn
             : base()
         {
             Location = location.Clone( false );
-            KioskGroups = new List<KioskGroup>();
+            KioskSchedules = new List<KioskSchedule>();
         }
 
         /// <summary>
