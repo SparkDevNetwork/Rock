@@ -67,7 +67,7 @@ namespace Rock.Workflow.Action.CheckIn
                                         var locationCheckIns = groupCheckIns.Where( a => a.LocationId == location.Location.Id ).ToList();
                                         if ( locationCheckIns.Any() )
                                         {
-                                            group.LastCheckIn = locationCheckIns.Select( a => a.StartDateTime ).Max();
+                                            location.LastCheckIn = locationCheckIns.Select( a => a.StartDateTime ).Max();
                                         }
 
                                         foreach ( var schedule in location.Schedules )
