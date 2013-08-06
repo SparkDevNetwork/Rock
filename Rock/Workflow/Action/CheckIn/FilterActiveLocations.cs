@@ -47,9 +47,6 @@ namespace Rock.Workflow.Action.CheckIn
                                         group.Locations.Remove( location );
                                     }
                                 }
-
-                                // TBD - should we also remove the group from the grouptype if it now has
-                                // no locations or is that another filters concern?
                             }
                         }
                     }
