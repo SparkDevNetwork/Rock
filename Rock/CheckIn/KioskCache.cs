@@ -303,7 +303,6 @@ namespace Rock.CheckIn
             {
                 DateTimeOffset nextGroupActiveTime = DateTimeOffset.MaxValue;
 
-                var kioskGroup = new KioskGroup( groupLocation.Group );
                 var kioskLocation = new KioskLocation( groupLocation.Location );
 
                 // Populate each kioskLocation with it's schedules (kioskSchedules)
@@ -325,9 +324,8 @@ namespace Rock.CheckIn
                 // list of group types
                 if ( kioskLocation.KioskSchedules.Count > 0 || nextGroupActiveTime < DateTimeOffset.MaxValue )
                 {
-                    kioskGroup.Group.LoadAttributes();
 
-                    KioskGroupType kioskGroupType = kioskStatus.KioskGroupTypes.Where( g => g.GroupType.Id == kioskGroup.Group.GroupTypeId ).FirstOrDefault();
+                    KioskGroupType kioskGroupType = kioskStatus.KioskGroupTypes.Where( g => g.GroupType.Id == groupLocation.Group.GroupTypeId ).FirstOrDefault();
                     if ( kioskGroupType == null )
                     {
                         kioskGroupType = new KioskGroupType( groupLocation.Group.GroupType );
@@ -344,9 +342,16 @@ namespace Rock.CheckIn
                     // If there are active schedules, add the group to the group type groups
                     if ( kioskLocation.KioskSchedules.Count > 0 )
                     {
+                        KioskGroup kioskGroup = kioskGroupType.KioskGroups.Where( g => g.Group.Id == groupLocation.GroupId ).FirstOrDefault();
+                        if ( kioskGroup == null )
+                        {
+                            kioskGroup = new KioskGroup( groupLocation.Group );
+                            kioskGroup.Group.LoadAttributes();
+                            kioskGroupType.KioskGroups.Add( kioskGroup );
+                        }
+
                         kioskLocation.Location.LoadAttributes();
                         kioskGroup.KioskLocations.Add( kioskLocation );
-                        kioskGroupType.KioskGroups.Add( kioskGroup );
                     }
                 }
             }
