@@ -23,17 +23,16 @@
 
         <div class="span12">
             <div class="attended-checkin-body-container">
-                <Rock:Grid ID="gPersonList" runat="server" AllowSorting="true" AllowPaging="false" ShowActionRow="false" OnRowCommand="gPersonList_RowCommand">
+                <Rock:Grid ID="gPersonList" runat="server" AllowSorting="true" AllowPaging="false" ShowActionRow="false" OnRowCommand="gPersonList_RowCommand" DataKeyNames="Id">
                     <Columns>
-                        <asp:BoundField DataField="ListId" Visible="false" />
+                        <asp:BoundField DataField="Id" Visible="false" />
                         <asp:BoundField DataField="Name" HeaderText="Name" />
                         <asp:BoundField DataField="AssignedTo" HeaderText="Assigned To" />
                         <asp:BoundField DataField="Time" HeaderText="Time" />
-                        <Rock:EditValueField OnClick="gPersonList_Edit" HeaderText="Edit" />
-                        <Rock:DeleteField OnClick="gPersonList_Delete" HeaderText="Delete" />
+                        <Rock:EditValueField OnClick="gPersonList_Edit" HeaderText="Edit" ControlStyle-CssClass="btn btn-large btn-primary" />
+                        <Rock:DeleteField OnClick="gPersonList_Delete" HeaderText="Delete" ControlStyle-CssClass="btn btn-large btn-primary" />
                         <asp:TemplateField HeaderText="Print">
                             <ItemTemplate>
-                                <%--<asp:LinkButton ID="btnPrint" runat="server" CssClass="btn ConfirmButtons" CommandName="Print" Text="Print" CommandArgument="<%# ((GridViewRow) Container).RowIndex %>"><i class="icon-print"></i></asp:LinkButton>--%>
                                 <asp:LinkButton ID="btnPrint" runat="server" CssClass="btn btn-large btn-primary" CommandName="Print" Text="Print" CommandArgument="<%# ((GridViewRow) Container).RowIndex %>"><i class="icon-print"></i></asp:LinkButton>
                             </ItemTemplate> 
                         </asp:TemplateField>

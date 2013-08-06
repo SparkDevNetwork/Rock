@@ -1,9 +1,32 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ActivitySelect.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Attended.ActivitySelect" %>
 
-<asp:UpdatePanel ID="upContent" runat="server">
+<script type="text/javascript">
+
+    function setControlEvents() {
+
+        $('.ministry').unbind('click').on('click', function () {
+            $(this).toggleClass('active');
+            var selectedIds = $('#hfSelectedMinistry').val();
+            var buttonId = this.getAttribute('data-id') + ',';
+            if (typeof selectedIds == "string" && (selectedIds.indexOf(buttonId) >= 0)) {
+                $('#hfSelectedMinistry').val(selectedIds.replace(buttonId, ''));
+            } else {
+                $('#hfSelectedMinistry').val(buttonId + selectedIds);
+            }
+            return false;
+        });
+
+    };
+    $(document).ready(function () { setControlEvents(); });
+    Sys.WebForms.PageRequestManager.getInstance().add_endRequest(setControlEvents);
+
+</script>
+
+<asp:UpdatePanel ID="upContent" runat="server" UpdateMode="Conditional">
 <ContentTemplate>
 
     <Rock:ModalAlert ID="maWarning" runat="server" />
+    <asp:HiddenField ID="hfSelectedMinistry" runat="server" ClientIDMode="Static" />
 
     <div class="row-fluid attended-checkin-header">
         <div class="span3 attended-checkin-actions">
@@ -21,16 +44,18 @@
                 
     <div class="row-fluid attended-checkin-body">
 
-        <div class="span3">
+        <asp:UpdatePanel ID="pnlSelectMinistry" runat="server" UpdateMode="Conditional" class="span3">
+        <ContentTemplate>        
             <div class="attended-checkin-body-container">
                 <h3>Ministry</h3>
-                <asp:Repeater ID="rMinistry" runat="server" OnItemCommand="rMinistry_ItemCommand">
+                <asp:Repeater ID="rMinistry" runat="server" OnItemDataBound="rMinistry_ItemDataBound">
                     <ItemTemplate>
-                        <asp:LinkButton ID="lbSelectMinistry" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" />
+                        <asp:LinkButton ID="lbSelectMinistry" runat="server" Text='<%# Container.DataItem.ToString() %>' data-id='<%# Eval("Id") %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select ministry" CausesValidation="false" />
                     </ItemTemplate>
                 </asp:Repeater>
             </div>
-        </div>
+        </ContentTemplate>
+        </asp:UpdatePanel>
 
         <div class="span3">
             <div class="attended-checkin-body-container">

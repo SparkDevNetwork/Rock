@@ -42,17 +42,25 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 if ( !Page.IsPostBack )
                 {
-                    //bool bestFitComplete = ProcessBestFit();
-                    ProcessBestFit();
-                    //if ( bestFitComplete )
-                    //{
-                    gPersonList.DataKeyNames = new string[] { "ListId" };
-                    CreateGridDataSource();
-                    //}
-                    //else
-                    //{
-                    //    //NavigateToPage( Activity Select
-                    //}                    
+                    if ( CurrentCheckInState.CheckIn.Families.All( f => f.People.Count == 0 ) )
+                    {
+                        string errorMsg = "<ul><li>No one in that family is eligible to check-in.</li></ul>";
+                        maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
+                    }
+                    else
+                    {
+                        //bool bestFitComplete = ProcessBestFit();
+                        ProcessBestFit();
+                        //if ( bestFitComplete )
+                        //{
+                        gPersonList.DataKeyNames = new string[] { "Id" };
+                        BindGrid();
+                        //}
+                        //else
+                        //{
+                        //    //NavigateToPage( Activity Select
+                        //}
+                    }
                 }
             }
         }
@@ -60,42 +68,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <summary>
         /// Creates the grid data source.
         /// </summary>
-        protected void CreateGridDataSource()
+        protected void BindGrid()
         {
-            System.Data.DataTable dt = new System.Data.DataTable();
-
-            // add the columns to the datatable
-            var column = new System.Data.DataColumn();
-            column.DataType = System.Type.GetType( "System.String" );
-            column.ColumnName = "ListId";
-            column.ReadOnly = true;
-            dt.Columns.Add( column );
-
-            column = new System.Data.DataColumn();
-            column.DataType = System.Type.GetType( "System.String" );
-            column.ColumnName = "Name";
-            column.ReadOnly = false;
-            dt.Columns.Add( column );
-
-            column = new System.Data.DataColumn();
-            column.DataType = System.Type.GetType( "System.String" );
-            column.ColumnName = "AssignedTo";
-            column.ReadOnly = false;
-            dt.Columns.Add( column );
-
-            column = new System.Data.DataColumn();
-            column.DataType = System.Type.GetType( "System.String" );
-            column.ColumnName = "Time";
-            column.ReadOnly = false;
-            dt.Columns.Add( column );
-
-            // foreach thing selected
-            // add to datasource
-
-            System.Data.DataView dv = new System.Data.DataView( dt );
-            dv.Sort = "Name ASC, Time ASC";
-            System.Data.DataTable dt2 = dv.ToTable();
-            gPersonList.DataSource = dt2;
+            var people = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault().People.Where( p => p.Selected ).ToList();
+            gPersonList.DataSource = people.Select( p => new { p.Person.Id, Name = p.Person.FullName, Time = "", AssignedTo = "" } ).OrderBy( p => p.Name ).ToList();
             gPersonList.DataBind();
 
             gPersonList.CssClass = string.Empty;
@@ -166,8 +142,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void gPersonList_Edit( object sender, RowEventArgs e )
         {
             // throw the user back to the activity select page for the person they want to edit.
-            SaveState();
+            var personId = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
+                .People.Where( p => p.Person.Id == e.RowKeyId ).FirstOrDefault().Person.Id.ToString();
             var queryParams = new Dictionary<string, string>();
+            queryParams.Add( "personId", personId );
             NavigateToLinkedPage( "ActivitySelectPage", queryParams);
         }
 
@@ -179,7 +157,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void gPersonList_Delete( object sender, RowEventArgs e )
         {
             // remove person
-            CreateGridDataSource();
+            CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
+                .People.Where( p => p.Person.Id == e.RowKeyId ).FirstOrDefault().Selected = false;
+            BindGrid();
         }
 
         #endregion
@@ -194,15 +174,16 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var errors = new List<string>();
             if ( ProcessActivity( "Assign Best Fit", out errors ) )
             {
-                if ( CurrentCheckInState.CheckIn.Families.All( f => f.People.Count == 0 ) )
-                {
-                    string errorMsg = "<ul><li>No one in that family is eligible to check-in.</li></ul>";
-                    maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
-                }
-                else
-                {
-                    SaveState();                    
-                }
+                //if ( CurrentCheckInState.CheckIn.Families.All( f => f.People.Count == 0 ) )
+                //{
+                //    string errorMsg = "<ul><li>No one in that family is eligible to check-in.</li></ul>";
+                //    maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
+                //}
+                //else
+                //{
+                //    SaveState();                    
+                //}
+                SaveState();
             }
             else
             {   // not able to assign everyone, please assign manually
@@ -239,32 +220,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             CurrentCheckInState.CheckIn.SearchValue = string.Empty;
             SaveState();
             NavigateToNextPage();
-        }
-
-        /// <summary>
-        /// Gets the parent.
-        /// </summary>
-        /// <param name="childGroupTypeId">The child group type id.</param>
-        /// <param name="parentId">The parent id.</param>
-        /// <returns></returns>
-        protected int GetParent( int childGroupTypeId, int parentId )
-        {
-            GroupType childGroupType = new GroupTypeService().Get( childGroupTypeId );
-            List<int> parentGroupTypes = childGroupType.ParentGroupTypes.Select( a => a.Id ).ToList();
-            foreach ( var parentGroupType in parentGroupTypes )
-            {
-                GroupType theChildGroupType = new GroupTypeService().Get( parentGroupType );
-                if ( theChildGroupType.ParentGroupTypes.Count > 0 )
-                {
-                    parentId = GetParent( theChildGroupType.Id, parentId );
-                }
-                else
-                {
-                    parentId = theChildGroupType.Id;
-                }
-            }
-
-            return parentId;
         }
 
         #endregion
