@@ -3,14 +3,15 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System;
 using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
 {
-    [ToolboxData( "<{0}:NumberRangeEditor runat=server></{0}:NumberRangeEditor>" )]
-    public class NumberRangeEditor : CompositeControl, ILabeledControl, IRequiredControl
+    [ToolboxData( "<{0}:DateRangePicker runat=server></{0}:DateRangePicker>" )]
+    public class DateRangePicker : CompositeControl, ILabeledControl, IRequiredControl
     {
         /// <summary>
         /// The label
@@ -18,14 +19,14 @@ namespace Rock.Web.UI.Controls
         private Literal label;
 
         /// <summary>
-        /// The lower value edit box
+        /// The lower value 
         /// </summary>
-        private NumberBox tbLowerValue;
+        private DatePicker tbLowerValue;
 
         /// <summary>
-        /// The upper value edit box
+        /// The upper value 
         /// </summary>
-        private NumberBox tbUpperValue;
+        private DatePicker tbUpperValue;
 
         /// <summary>
         /// Gets or sets the label text.
@@ -136,15 +137,13 @@ namespace Rock.Web.UI.Controls
             label = new Literal();
             Controls.Add( label );
 
-            tbLowerValue = new NumberBox();
+            tbLowerValue = new DatePicker();
             tbLowerValue.ID = this.ID + "_lower";
-            tbLowerValue.CssClass = "input-small";
 
             Controls.Add( tbLowerValue );
 
-            tbUpperValue = new NumberBox();
+            tbUpperValue = new DatePicker();
             tbUpperValue.ID = this.ID + "_upper";
-            tbUpperValue.CssClass = "input-small";
             Controls.Add( tbUpperValue );
         }
 
@@ -171,8 +170,9 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();
                 }
 
-                // mark as input-xxlarge since we want the 2 inputs to stay on the same line
+                // mark as input-xxlarge since we want the 2 pickers to stay on the same line
                 writer.AddAttribute( "class", "controls input-xxlarge" );
+
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 tbLowerValue.RenderControl( writer );
@@ -194,17 +194,17 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The lower value.
         /// </value>
-        public int? LowerValue {
+        public DateTime? LowerValue {
             get
             {
                 EnsureChildControls();
-                return tbLowerValue.Text.AsInteger();
+                return tbLowerValue.SelectedDate;
             }
 
             set
             {
                 EnsureChildControls();
-                tbLowerValue.Text = value.ToString();
+                tbLowerValue.SelectedDate = value;
             }
         }
 
@@ -214,18 +214,18 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The upper value.
         /// </value>
-        public int? UpperValue
+        public DateTime? UpperValue
         {
             get
             {
                 EnsureChildControls();
-                return tbUpperValue.Text.AsInteger();
+                return tbUpperValue.SelectedDate;
             }
 
             set
             {
                 EnsureChildControls();
-                tbUpperValue.Text = value.ToString();
+                tbUpperValue.SelectedDate = value;
             }
         }
     }
