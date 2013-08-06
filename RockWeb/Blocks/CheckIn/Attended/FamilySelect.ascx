@@ -4,18 +4,10 @@
 <script type="text/javascript">
 
     function cvBirthDateValidator_ClientValidate(sender, args) {
-        args.IsValid = false;
-        var isValidDate = args.Value.match(/^(\d{1,2})[- /.](\d{1,2})[- /.](\d{2,4})$/);
-        if ( isValidDate ) {
-            args.IsValid = true;
-            return;
-        }
+        // check the birthdate against a date regex
+        args.IsValid = args.Value.match(/^(\d{1,2})[- /.](\d{1,2})[- /.](\d{2,4})$/);        
     };
-
-    //function parseDate(str) {
-    //    return str.match(/^(\d{1,2})[- /.](\d{1,2})[- /.](\d{2,4})$/);
-    //};
-       
+   
     function setControlEvents() {
 
         // give user instant feedback, server side object needs to set class though
@@ -149,7 +141,7 @@
 
     </asp:Panel>
 
-    <asp:Panel ID="pnlAddPerson" runat="server" CssClass="add-person">
+    <asp:Panel ID="pnlAddPerson" runat="server" CssClass="add-person" DefaultButton="lbAddPersonSearch">
 
         <Rock:ModalAlert ID="maAddPerson" runat="server" />
         <div class="row-fluid attended-checkin-header">
@@ -174,11 +166,10 @@
                 <Rock:LabeledTextBox ID="tbLastNameSearch" runat="server" CssClass="fullBlock" Required="true" LabelText="Last Name" />
             </div>
             <div class="span2">
-                <Rock:DatePicker ID="dpDOBSearch" runat="server" CssClass="datePickerClass" LabelText="DOB"/>
+                <Rock:DatePicker ID="dpDOBSearch" runat="server" CssClass="datePickerClass" LabelText="DOB" />
                 <asp:CustomValidator ID="cvDOBSearch" runat="server" ErrorMessage="Please enter a valid birth date."
                     CssClass="align-middle" EnableClientScript="true" Display="None"
-                    ClientValidationFunction="cvBirthDateValidator_ClientValidate"
-                    OnServerValidate="cvBirthDateValidator_ServerValidate" ControlToValidate="dpDOBSearch" />
+                    ClientValidationFunction="cvBirthDateValidator_ClientValidate" ControlToValidate="dpDOBSearch" />                    
             </div>
             <div class="span2">
                 <Rock:DataDropDownList ID="ddlGenderSearch" runat="server" CssClass="fullBlock" LabelText="Gender" />
@@ -195,7 +186,7 @@
                     <asp:BoundField DataField="Id" Visible="false" />
                     <asp:BoundField DataField="FirstName" HeaderText="First Name" SortExpression="FirstName"/>
                     <asp:BoundField DataField="LastName" HeaderText="Last Name" SortExpression="LastName" />
-                    <asp:BoundField DataField="BirthDate" HeaderText="DOB" SortExpression="BirthDate" />
+                    <asp:BoundField DataField="BirthDate" HeaderText="DOB" SortExpression="BirthDate" DataFormatString="{0:d}" HtmlEncode="false" />
                     <asp:BoundField DataField="Gender" HeaderText="Gender" SortExpression="Gender" />
                     <asp:BoundField DataField="Attribute" HeaderText="Ability/Grade" SortExpression="Attribute" />
                     <asp:TemplateField HeaderText="Add">
@@ -233,63 +224,65 @@
             <div class="span3 attended-checkin-actions">
                 <asp:LinkButton ID="lbAddFamilySave" CssClass="btn btn-large last btn-primary" runat="server" OnClick="lbAddFamilySave_Click" Text="Save" />
             </div>
-        </div>
-
-        <div class="row-fluid attended-checkin-body">
-            <div class="span2">
-                <h3>First Name</h3>
-            </div>
-            <div class="span3">
-                <h3>Last Name</h3>
-            </div>
-            <div class="span2">
-                <h3>DOB</h3>
-            </div>
-            <div class="span2">
-                <h3>Ability/Grade</h3>
-            </div>
-            <div class="span3">
-                <h3>Gender</h3>
-            </div>
-        </div>
+        </div>        
     
-        <div class="row-fluid attended-checkin-body">
-
-            <asp:ListView ID="lvAddFamily" runat="server" OnPagePropertiesChanging="lvAddFamily_PagePropertiesChanging"  
-                OnItemDataBound="lvAddFamily_ItemDataBound" DataKeyNames="ID">
-            <ItemTemplate>
-                <div class="row-fluid">
-                    <div class="span3">
-                        <asp:TextBox ID="tbFirstName" runat="server" CssClass="fullBlock" />
-                    </div>
-                    <div class="span3">
-                        <asp:TextBox ID="tbLastName" runat="server" CssClass="fullBlock" />
-                    </div>
-                    <div class="span2">
-                        <Rock:DatePicker ID="dpBirthDate" runat="server" />
-                        <asp:CustomValidator ID="cvBirthDateValidator" runat="server" 
-                            ErrorMessage="Please enter a valid birth date."
-                            CssClass="align-middle" EnableClientScript="true" Display="Dynamic"
-                            ClientValidationFunction="cvBirthDateValidator_ClientValidate"
-                            OnServerValidate="cvBirthDateValidator_ServerValidate" 
-                            ControlToValidate="dpBirthDate" />
-                    </div>
-                    <div class="span2">
-                        <Rock:RockDropDownList ID="ddlGender" runat="server" CssClass="fullBlock" />
-                    </div>
-                    <div class="span2">
-                        <Rock:RockDropDownList ID="ddlAbilityGrade" runat="server" CssClass="fullBlock" />
-                    </div>                    
+        <asp:ListView ID="lvAddFamily" runat="server" OnDataBound="lvAddFamily_DataBound"
+            OnPagePropertiesChanging="lvAddFamily_PagePropertiesChanging">
+        <LayoutTemplate>
+            <div class="row-fluid attended-checkin-body">
+                <div class="span3">
+                    <h3>First Name</h3>
                 </div>
-            </ItemTemplate>
-            </asp:ListView>
-            <asp:DataPager ID="dpAddFamily" runat="server" PageSize="5" PagedControlID="lvAddFamily">
-                <Fields>
-                    <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary" />
-                </Fields>
-            </asp:DataPager>
-                                            
-        </div>
+                <div class="span3">
+                    <h3>Last Name</h3>
+                </div>
+                <div class="span2">
+                    <h3>DOB</h3>
+                </div>
+                <div class="span2">
+                    <h3>Gender</h3>
+                </div>
+                <div class="span2">
+                    <h3>Ability/Grade</h3>
+                </div>                
+            </div>
+            <asp:PlaceHolder ID="itemPlaceholder" runat="server" />
+        </LayoutTemplate>
+        <ItemTemplate>
+            <div class="row-fluid attended-checkin-body searchperson">
+                <div class="span3">
+                    <Rock:DataTextBox ID="tbFirstName" runat="server" CssClass="fullBlock" Text='<%# Eval("FirstName") %>'
+                        Required="true" SourceTypeName="Rock.Model.Person, Rock"  />
+                </div>
+                <div class="span3">
+                    <Rock:DataTextBox ID="tbLastName" runat="server" CssClass="fullBlock" Text='<%# Eval("LastName") %>'
+                        Required="true" SourceTypeName="Rock.Model.Person, Rock"  />
+                </div>
+                <div class="span2">
+                    <Rock:DatePicker ID="dpBirthDate" runat="server" Required="true"
+                        SelectedDate='<%# !string.IsNullOrWhiteSpace( Eval("BirthDate").ToString() ) ? Eval("BirthDate") : "" %>' />
+                    <asp:CustomValidator ID="cvBirthDateValidator" runat="server"
+                        ErrorMessage="Please enter a valid birth date."
+                        CssClass="align-middle" EnableClientScript="true" Display="Dynamic"
+                        ClientValidationFunction="cvBirthDateValidator_ClientValidate" ControlToValidate="dpBirthDate" />
+                </div>
+                <div class="span2">
+                    <Rock:LabeledDropDownList ID="ddlGender" runat="server" CssClass="fullBlock" Required="true" AppendDataBoundItems="true"
+                        SelectedValue='<%# !string.IsNullOrWhiteSpace( Eval("Gender").ToString() ) ? Eval("Gender") : 0 %>' />
+                </div>
+                <div class="span2">
+                    <Rock:LabeledDropDownList ID="ddlAbilityGrade" runat="server" CssClass="fullBlock" Required="true" AppendDataBoundItems="true"
+                        SelectedValue='<%# !string.IsNullOrWhiteSpace( Eval("AbilityGrade").ToString() ) ? Eval("AbilityGrade") : 0 %>' />
+                </div>
+            </div>
+        </ItemTemplate>        
+        </asp:ListView>
+
+        <asp:DataPager ID="dpAddFamily" runat="server" PageSize="2" PagedControlID="lvAddFamily">
+            <Fields>
+                <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary" />
+            </Fields>
+        </asp:DataPager>
         
         <asp:ValidationSummary ID="valSummaryBottom" runat="server" HeaderText="Please Correct the Following:" CssClass="alert alert-error block-message error alert error-modal" />
 
