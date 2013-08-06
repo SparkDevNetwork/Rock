@@ -23,7 +23,7 @@ namespace RockWeb.Blocks.Cms
 {
     [IntegerField( "Max Items", "", true, int.MinValue, "", 0 )]
     [DetailPage ("Detail Page", "", false, "", "", 1)]
-    [CustomCheckboxListField("Image Attribute Keys", "The types of images to display",  
+    [CustomCheckboxListField("Image Types", "The types of images to display",  
         "SELECT A.[name] AS [Text], A.[key] AS [Value] FROM [EntityType] E INNER JOIN [attribute] a ON A.[EntityTypeId] = E.[Id] INNER JOIN [FieldType] F ON F.Id = A.[FieldTypeId]	AND F.Guid = '" +
         Rock.SystemGuid.FieldType.IMAGE + "' WHERE E.Name = 'Rock.Model.MarketingCampaignAd' ORDER BY [Key]", false, "", "", 2)]
     [TextField( "XSLT File", "The path to the XSLT File ", true, "~/Assets/XSLT/AdList.xslt", "", 3 )]
@@ -34,9 +34,8 @@ namespace RockWeb.Blocks.Cms
     [DefinedValueField( Rock.SystemGuid.DefinedType.MARKETING_CAMPAIGN_AUDIENCE_TYPE, "Audience", "The Audience", false, "", "Filter", 6 )]
     [CustomCheckboxListField( "Audience Primary Secondary", "Primary or Secondary Audience", "1:Primary,2:Secondary", false, "1,2", "Filter", 7 )]
 
-    [BooleanField( "Show Debug", "Output XML", false, "Advanced", 8 )]
-    [TextField("CSS File", "Optional CSS file to add to the page for styling.", false, "")]
-
+    [BooleanField( "Show Debug", "Output the XML to be transformed.", false, "Advanced", 8 )]
+    
     [ContextAware( typeof(Campus) )]
     public partial class MarketingCampaignAdsXslt : RockBlock
     {
@@ -47,10 +46,6 @@ namespace RockWeb.Blocks.Cms
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
-            // add css file to page
-            if (GetAttributeValue("CSSFile").Trim() != string.Empty)
-                CurrentPage.AddCSSLink(Page, ResolveUrl("~/CSS/jquery.tagsinput.css"));
 
             // ensure xslt file exists
             string xsltFile = Server.MapPath(GetAttributeValue("XSLTFile"));
@@ -134,12 +129,12 @@ namespace RockWeb.Blocks.Cms
                 qry = qry.Where( a => idlist.Contains( a.MarketingCampaignAdTypeId ) );
             }
 
-            // Image Attribute Keys
-            string imageAttributeKeys = GetAttributeValue( "ImageAttributeKeys" );
-            List<string> imageAttributeKeyFilter = null;
-            if ( !string.IsNullOrWhiteSpace( imageAttributeKeys ) )
+            // Image Types
+            string imageTypes = GetAttributeValue( "ImageTypes" );
+            List<string> imageTypeFilter = null;
+            if ( !string.IsNullOrWhiteSpace( imageTypes ) )
             {
-                imageAttributeKeyFilter = imageAttributeKeys.SplitDelimitedValues().ToList();
+                imageTypeFilter = imageTypes.SplitDelimitedValues().ToList();
             }
 
             // Campus Context
@@ -231,9 +226,9 @@ namespace RockWeb.Blocks.Cms
                         // If Block Attributes limit image types, limit images 
                         if ( attribute.FieldType.Guid.Equals( new Guid( Rock.SystemGuid.FieldType.IMAGE ) ) )
                         {
-                            if ( imageAttributeKeyFilter != null )
+                            if ( imageTypeFilter != null )
                             {
-                                if ( !imageAttributeKeyFilter.Contains( attribute.Key ) )
+                                if ( !imageTypeFilter.Contains( attribute.Key ) )
                                 {
                                     // skip to next attribute if this is an image attribute and it doesn't match the image key filter
                                     continue;
@@ -260,17 +255,31 @@ namespace RockWeb.Blocks.Cms
             string outputXml;
             if ( showDebug || string.IsNullOrWhiteSpace( xsltFile ) )
             {
-                outputXml = HttpUtility.HtmlEncode( doc.ToString() );
+                outputXml = "<pre><code>" + HttpUtility.HtmlEncode( doc.ToString() ) + "</code></pre>";
             }
             else
             {
                 StringBuilder sb = new StringBuilder();
                 TextWriter tw = new StringWriter( sb );
 
-                XslCompiledTransform xslTransformer = new XslCompiledTransform();
-                xslTransformer.Load( xsltFile );
-                xslTransformer.Transform( doc.CreateReader(), null, tw );
-                outputXml = sb.ToString();
+                // try compiling the XSLT
+                try
+                {
+                    XslCompiledTransform xslTransformer = new XslCompiledTransform();
+                    xslTransformer.Load(xsltFile);
+                    xslTransformer.Transform(doc.CreateReader(), null, tw);
+                    outputXml = sb.ToString();
+                }
+                catch (Exception ex)
+                {
+                    // xslt compile error
+                    string exMessage = "An excception occurred while compiling the XSLT template.";
+                    
+                    if (ex.InnerException != null)
+                        exMessage += "<br /><em>" + ex.InnerException.Message + "</em>";
+
+                    outputXml = "<div class='alert warning' style='margin: 24px auto 0 auto; max-width: 500px;' ><strong>XSLT Compile Error</strong><p>" + exMessage + "</p></div>";
+                }
             }
 
             phContent.Controls.Clear();
