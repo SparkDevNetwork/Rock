@@ -1054,6 +1054,7 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\DateRangePicker.cs" />
     <Compile Include="Web\UI\Controls\Grid\CheckBoxEditableField.cs" />
     <Compile Include="Web\UI\Controls\Grid\ColorField.cs" />
     <Compile Include="Web\UI\Controls\IRequiredControl.cs" />
