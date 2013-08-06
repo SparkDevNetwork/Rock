@@ -38,11 +38,14 @@ namespace Rock.Workflow.Action.CheckIn
                     {
                         foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
                         {
-                            foreach( var location in groupType.Locations.ToList())
+                            foreach ( var group in groupType.Groups )
                             {
-                                if (!location.Location.IsActive)
+                                foreach ( var location in group.Locations.ToList() )
                                 {
-                                    groupType.Locations.Remove(location);
+                                    if ( !location.Location.IsActive )
+                                    {
+                                        group.Locations.Remove( location );
+                                    }
                                 }
                             }
                         }

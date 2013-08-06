@@ -11,10 +11,10 @@ using System.Linq;
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
-    /// Removes the location's groups for each selected family member that
+    /// Removes the locations and groups for each selected family member that
     /// are not specific to their last name.
     /// </summary>
-    [Description( "Removes the location's groups for each selected family member that are not specific to their last name." )]
+    [Description( "Removes the locations and groups for each selected family member that are not specific to their last name." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Filter Location Groups By LastName" )]
     public class FilterLocationGroupsByLastName : CheckInActionComponent
@@ -42,25 +42,22 @@ namespace Rock.Workflow.Action.CheckIn
                 {
                     char lastInitial = char.Parse( person.Person.LastName.Substring( 0, 1 ).ToUpper() );
 
+                    // Now dig down until we get the "group" because that's where the Lastname letter
+                    // attributes are...
                     foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ).ToList() )
                     {
-                        // Now dig down until we get the "group" because that's where the Lastname letter
-                        // attributes are...
-                        foreach ( var location in groupType.Locations.ToList() )
+                        foreach ( var group in groupType.Groups.ToList() )
                         {
-                            foreach ( var group in location.Groups.ToList() )
+                            string lastNameBeginLetterRange = group.Group.GetAttributeValue( "LastNameBeginLetterRange" ).Trim();
+                            string lastNameEndLetterRange = group.Group.GetAttributeValue( "LastNameEndLetterRange" ).Trim();
+
+                            char rangeStart = ( lastNameBeginLetterRange == "" ) ? 'A' : char.Parse( lastNameBeginLetterRange.ToUpper() );
+                            char rangeEnd = ( lastNameEndLetterRange == "" ) ? 'Z' : char.Parse( lastNameEndLetterRange.ToUpper() );
+
+                            // If the last name is not in range, remove the group
+                            if ( !( lastInitial >= rangeStart && lastInitial <= rangeEnd ) )
                             {
-                                string lastNameBeginLetterRange = group.Group.GetAttributeValue( "LastNameBeginLetterRange" ).Trim();
-                                string lastNameEndLetterRange = group.Group.GetAttributeValue( "LastNameEndLetterRange" ).Trim();
-
-                                char rangeStart = ( lastNameBeginLetterRange == "" ) ? 'A' : char.Parse( lastNameBeginLetterRange.ToUpper() );
-                                char rangeEnd = ( lastNameEndLetterRange == "" ) ? 'Z' : char.Parse( lastNameEndLetterRange.ToUpper() );
-
-                                // If the last name is not in range, remove the group from the location
-                                if ( !( lastInitial >= rangeStart && lastInitial <= rangeEnd ) )
-                                {
-                                    location.Groups.Remove( group );
-                                }
+                                groupType.Groups.Remove( group );
                             }
                         }
                     }

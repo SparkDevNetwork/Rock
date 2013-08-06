@@ -51,14 +51,20 @@ namespace Rock.Workflow.Action.CheckIn
                             var kioskGroupType = checkInState.Kiosk.KioskGroupTypes.Where( g => g.GroupType.Id == groupType.GroupType.Id ).FirstOrDefault();
                             if ( kioskGroupType != null )
                             {
-                                foreach ( var kioskLocation in kioskGroupType.KioskLocations )
+                                foreach ( var group in groupType.Groups.Where( g => g.Selected || loadAll ) )
                                 {
-                                    if ( !groupType.Locations.Any( l => l.Location.Id == kioskLocation.Location.Id ) )
+                                    foreach ( var kioskGroup in kioskGroupType.KioskGroups )
                                     {
-                                        var checkInLocation = new CheckInLocation();
-                                        checkInLocation.Location = kioskLocation.Location.Clone( false );
-                                        checkInLocation.Location.CopyAttributesFrom( kioskLocation.Location );
-                                        groupType.Locations.Add( checkInLocation );
+                                        foreach ( var kioskLocation in kioskGroup.KioskLocations )
+                                        {
+                                            if ( !group.Locations.Any( l => l.Location.Id == kioskLocation.Location.Id ) )
+                                            {
+                                                var checkInLocation = new CheckInLocation();
+                                                checkInLocation.Location = kioskLocation.Location.Clone( false );
+                                                checkInLocation.Location.CopyAttributesFrom( kioskLocation.Location );
+                                                group.Locations.Add( checkInLocation );
+                                            }
+                                        }
                                     }
                                 }
                             }
