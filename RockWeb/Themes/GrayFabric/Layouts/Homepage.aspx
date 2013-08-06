@@ -49,31 +49,9 @@
 
 	  	</header>
 
-    </div>
+        <Rock:Zone ID="PromotionRotator" runat="server" />
 
-    <Rock:Zone ID="Content" runat="server" />
-
-    <section class="promo-slider container">	
-	  		
-	  		<div class="flexslider">
-			  <ul class="slides">
-			    <li>
-			      <a href="#"><img src="./assets/img/mock-header1.jpg" /></a>
-			    </li>
-			    <li>
-			      <a href="#"><img src="./assets/img/mock-header2.jpg" /></a>
-			    </li>
-			    <li>
-			      <a href="#"><img src="./assets/img/mock-header3.jpg" /></a>
-			    </li>
-			    <li>
-			      <a href="#"><img src="./assets/img/mock-header4.jpg" /></a>
-			    </li>
-			  </ul>
-			</div>
-			<img class="slider-shadow" src="./assets/img/slider-shadow.png" />
-
-	  	</section>
+    
 	  </div>
   	  
   	  <div class="separator"></div>	  
