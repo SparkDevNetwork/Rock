@@ -80,7 +80,7 @@
                 
         <div class="row-fluid attended-checkin-body">
             
-            <asp:UpdatePanel ID="pnlUpdateFamily" runat="server" UpdateMode="Conditional" class="span3 family-div">
+            <asp:UpdatePanel ID="pnlSelectFamily" runat="server" UpdateMode="Conditional" class="span3 family-div">
             <ContentTemplate>
                 
                 <div class="attended-checkin-body-container">
@@ -103,7 +103,7 @@
             </ContentTemplate>
             </asp:UpdatePanel>
 
-            <asp:UpdatePanel ID="pnlUpdatePerson" runat="server" UpdateMode="Conditional" class="span3 person-div">
+            <asp:UpdatePanel ID="pnlSelectPerson" runat="server" UpdateMode="Conditional" class="span3 person-div">
             <ContentTemplate>
                 
                 <div class="attended-checkin-body-container">
@@ -118,7 +118,7 @@
             </ContentTemplate>
             </asp:UpdatePanel>
 
-            <asp:UpdatePanel ID="pnlUpdateVisitor" runat="server" UpdateMode="Conditional" class="span3 visitor-div">
+            <asp:UpdatePanel ID="pnlSelectVisitor" runat="server" UpdateMode="Conditional" class="span3 visitor-div">
             <ContentTemplate>
                 
                 <div class="attended-checkin-body-container">
@@ -149,7 +149,7 @@
 
     </asp:Panel>
 
-    <asp:Panel ID="AddPersonPanel" runat="server" CssClass="add-person">
+    <asp:Panel ID="pnlAddPerson" runat="server" CssClass="add-person">
 
         <Rock:ModalAlert ID="maAddPerson" runat="server" />
         <div class="row-fluid attended-checkin-header">
@@ -162,71 +162,62 @@
             </div>
 
             <div class="span3 attended-checkin-actions">
-                <asp:LinkButton ID="lbAddPersonSearch" CssClass="btn btn-large last btn-primary" runat="server" OnClick="lbAddPersonSearch_Click" Text="Search" CausesValidation="false" />
+                <asp:LinkButton ID="lbAddPersonSearch" CssClass="btn btn-large last btn-primary" runat="server" OnClick="lbAddPersonSearch_Click" Text="Search" />
             </div>
         </div>
-        <div class="row-fluid attended-checkin-body">
-            <div class="span3">
-                <h3>First Name</h3>
-            </div>
-            <div class="span3">
-                <h3>Last Name</h3>
-            </div>
-            <div class="span2">
-                <h3>DOB</h3>
-            </div>
-            <div class="span2">
-                <h3>Gender</h3>
-            </div>
-            <div class="span2">
-                <h3>Ability/Grade</h3>
-            </div>
-        </div>
+		<!-- removed row title from here so validation can issue the proper prompts -->
         <div class="row-fluid attended-checkin-body searchperson">
             <div class="span3">
-                <Rock:DataTextBox ID="tbFirstNameSearch" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                <Rock:LabeledTextBox ID="tbFirstNameSearch" runat="server" CssClass="fullBlock" Required="true" LabelText="First Name" />
             </div>
             <div class="span3">
-                <Rock:DataTextBox ID="tbLastNameSearch" runat="server" CssClass="fullBlock"></Rock:DataTextBox>
+                <Rock:LabeledTextBox ID="tbLastNameSearch" runat="server" CssClass="fullBlock" Required="true" LabelText="Last Name" />
             </div>
             <div class="span2">
-                <Rock:DatePicker ID="dtpDOBSearch" runat="server" CssClass="datePickerClass"></Rock:DatePicker>
-                <asp:CustomValidator ID="cvDOBSearch" runat="server" ErrorMessage="The first DOB/Age field is incorrect."
-                    CssClass="align-middle" EnableClientScript="true" Display="None" 
-                    ClientValidationFunction="cvBirthDateValidator_ClientValidate" 
-                    OnServerValidate="cvBirthDateValidator_ServerValidate" ControlToValidate="dtpDOBSearch" />
+                <Rock:DatePicker ID="dpDOBSearch" runat="server" CssClass="datePickerClass" LabelText="DOB"/>
+                <asp:CustomValidator ID="cvDOBSearch" runat="server" ErrorMessage="Please enter a valid birth date."
+                    CssClass="align-middle" EnableClientScript="true" Display="None"
+                    ClientValidationFunction="cvBirthDateValidator_ClientValidate"
+                    OnServerValidate="cvBirthDateValidator_ServerValidate" ControlToValidate="dpDOBSearch" />
             </div>
             <div class="span2">
-                <Rock:DataDropDownList ID="ddlGenderSearch" runat="server" CssClass="fullBlock"></Rock:DataDropDownList>
+                <Rock:DataDropDownList ID="ddlGenderSearch" runat="server" CssClass="fullBlock" LabelText="Gender" />
             </div>
             <div class="span2">
-                <Rock:DataDropDownList ID="ddlAttributeSearch" runat="server" CssClass="fullBlock"></Rock:DataDropDownList>
+                <Rock:DataDropDownList ID="ddlAbilitySearch" runat="server" CssClass="fullBlock" LabelText="Ability/Grade" />
             </div>
         </div>
         <br />
         <div class="row-fluid attended-checkin-body searchperson">
-            <Rock:Grid ID="grdPersonSearchResults" runat="server" AllowPaging="true" OnRowCommand="grdPersonSearchResults_RowCommand" ShowActionRow="false" PageSize="3" DataKeyNames="personId">
+            <Rock:Grid ID="rGridPersonResults" runat="server" OnRowCommand="rGridPersonResults_AddExistingPerson" ShowActionRow="false"
+                PageSize="3" DataKeyNames="Id" AllowPaging="true" AllowSorting="true">
                 <Columns>
-                    <asp:BoundField DataField="personId" Visible="false" />
-                    <asp:BoundField DataField="personFirstName" HeaderText="First Name" />
-                    <asp:BoundField DataField="personLastName" HeaderText="Last Name" />
-                    <asp:BoundField DataField="personDOB" HeaderText="DOB" />
-                    <asp:BoundField DataField="personGender" HeaderText="Gender" />
-                    <asp:BoundField DataField="personAttribute" HeaderText="Ability/Grade" />
+                    <asp:BoundField DataField="Id" Visible="false" />
+                    <asp:BoundField DataField="FirstName" HeaderText="First Name" SortExpression="FirstName"/>
+                    <asp:BoundField DataField="LastName" HeaderText="Last Name" SortExpression="LastName" />
+                    <asp:BoundField DataField="BirthDate" HeaderText="DOB" SortExpression="BirthDate" />
+                    <asp:BoundField DataField="Gender" HeaderText="Gender" SortExpression="Gender" />
+                    <asp:BoundField DataField="Attribute" HeaderText="Ability/Grade" SortExpression="Attribute" />
                     <asp:TemplateField HeaderText="Add">
                         <ItemTemplate>
-                            <asp:LinkButton ID="lbAdd" runat="server" CssClass="btn btn-large btn-primary" CommandName="Add" Text="Add" CommandArgument="<%# ((GridViewRow) Container).RowIndex %>"><i class="icon-plus"></i></asp:LinkButton>
+                            <asp:LinkButton ID="lbAdd" runat="server" CssClass="btn btn-large btn-primary" CommandName="Add" 
+                                Text="Add" CommandArgument="<%# ((GridViewRow) Container).RowIndex %>"><i class="icon-plus"></i>
+                            </asp:LinkButton>
                         </ItemTemplate>
                     </asp:TemplateField>
                 </Columns>
             </Rock:Grid>
         </div>
+
         <div class="row-fluid attended-checkin-body searchperson">
-            <asp:LinkButton ID="lbAddSearchedForPerson" runat="server" Text="None of these, add me as a new [person/visitor]." Visible="false" OnClick="lbAddSearchedForPerson_Click" CausesValidation="false"></asp:LinkButton>
+            <asp:LinkButton ID="lbAddNewPerson" runat="server" Text="None of these, add a new person."
+                CssClass="btn btn-large btn-primary" Visible="false" OnClick="lbAddNewPerson_Click">
+            </asp:LinkButton>
         </div>
     </asp:Panel>
-    <asp:ModalPopupExtender ID="mpePerson" runat="server" TargetControlID="lbOpenPersonPanel" PopupControlID="AddPersonPanel" CancelControlID="lbAddPersonCancel" BackgroundCssClass="modalBackground"></asp:ModalPopupExtender>
-    <asp:LinkButton ID="lbOpenPersonPanel" runat="server" CausesValidation="false"></asp:LinkButton>
+    <asp:ModalPopupExtender ID="mpeAddPerson" runat="server" TargetControlID="hfOpenPersonPanel" PopupControlID="pnlAddPerson" 
+        CancelControlID="lbAddPersonCancel" BackgroundCssClass="modalBackground" />
+    <asp:HiddenField ID="hfOpenPersonPanel" runat="server" />    
 
     <asp:Panel ID="pnlAddFamily" runat="server" CssClass="add-family">
 
@@ -264,10 +255,11 @@
     
         <div class="row-fluid attended-checkin-body">
 
-            <asp:ListView ID="lvAddFamily" runat="server" OnPagePropertiesChanging="lvAddFamily_PagePropertiesChanging"  OnItemDataBound="lvAddFamily_ItemDataBound">
+            <asp:ListView ID="lvAddFamily" runat="server" OnPagePropertiesChanging="lvAddFamily_PagePropertiesChanging"  
+                OnItemDataBound="lvAddFamily_ItemDataBound" DataKeyNames="ID">
             <ItemTemplate>
                 <div class="row-fluid">
-                    <div class="span2">
+                    <div class="span3">
                         <asp:TextBox ID="tbFirstName" runat="server" CssClass="fullBlock" />
                     </div>
                     <div class="span3">
@@ -283,11 +275,11 @@
                             ControlToValidate="dpBirthDate" />
                     </div>
                     <div class="span2">
-                        <Rock:RockDropDownList ID="ddlAbilityGrade" runat="server" CssClass="fullBlock"  />
-                    </div>
-                    <div class="span3">
                         <Rock:RockDropDownList ID="ddlGender" runat="server" CssClass="fullBlock" />
-                    </div>      
+                    </div>
+                    <div class="span2">
+                        <Rock:RockDropDownList ID="ddlAbilityGrade" runat="server" CssClass="fullBlock" />
+                    </div>                    
                 </div>
             </ItemTemplate>
             </asp:ListView>
