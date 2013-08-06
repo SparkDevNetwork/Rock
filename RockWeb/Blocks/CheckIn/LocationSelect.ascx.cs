@@ -40,28 +40,37 @@ namespace RockWeb.Blocks.CheckIn
                             var groupType = person.GroupTypes.Where( g => g.Selected ).FirstOrDefault();
                             if ( groupType != null )
                             {
-                                lGroupTypeName.Text = groupType.ToString();
-
-                                if ( groupType.Locations.Count == 1 )
+                                var group = groupType.Groups.Where( g => g.Selected ).FirstOrDefault();
+                                if ( group != null )
                                 {
-                                    if ( UserBackedUp )
+                                    lGroupName.Text = group.ToString();
+
+                                    if ( group.Locations.Count == 1 )
                                     {
-                                        GoBack();
+                                        if ( UserBackedUp )
+                                        {
+                                            GoBack();
+                                        }
+                                        else
+                                        {
+                                            // only one location so why foreach?
+                                            foreach ( var location in group.Locations )
+                                            {
+                                                location.Selected = true;
+                                            }
+
+                                            ProcessSelection();
+                                        }
                                     }
                                     else
                                     {
-                                        foreach ( var location in groupType.Locations )
-                                        {
-                                            location.Selected = true;
-                                        }
-
-                                        ProcessSelection();
+                                        rSelection.DataSource = group.Locations;
+                                        rSelection.DataBind();
                                     }
                                 }
                                 else
                                 {
-                                    rSelection.DataSource = groupType.Locations;
-                                    rSelection.DataBind();
+                                    GoBack();
                                 }
                             }
                             else
@@ -95,12 +104,16 @@ namespace RockWeb.Blocks.CheckIn
                         var groupType = person.GroupTypes.Where( g => g.Selected ).FirstOrDefault();
                         if ( groupType != null )
                         {
-                            int id = Int32.Parse( e.CommandArgument.ToString() );
-                            var location = groupType.Locations.Where( l => l.Location.Id == id ).FirstOrDefault();
-                            if ( location != null )
+                            var group = groupType.Groups.Where( g => g.Selected ).FirstOrDefault();
+                            if ( group != null )
                             {
-                                location.Selected = true;
-                                ProcessSelection();
+                                int id = Int32.Parse( e.CommandArgument.ToString() );
+                                var location = group.Locations.Where( l => l.Location.Id == id ).FirstOrDefault();
+                                if ( location != null )
+                                {
+                                    location.Selected = true;
+                                    ProcessSelection();
+                                }
                             }
                         }
                     }
@@ -126,8 +139,11 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     foreach ( var groupType in person.GroupTypes )
                     {
-                        groupType.Selected = false;
-                        groupType.Locations = new List<CheckInLocation>();
+                        foreach ( var group in groupType.Groups )
+                        {
+                            group.Selected = false;
+                            group.Locations = new List<CheckInLocation>();
+                        }
                     }
                 }
             }
@@ -140,7 +156,7 @@ namespace RockWeb.Blocks.CheckIn
         private void ProcessSelection()
         {
             var errors = new List<string>();
-            if ( ProcessActivity( "Group Search", out errors ) )
+            if ( ProcessActivity( "Schedule Search", out errors ) )
             {
                 SaveState();
                 NavigateToNextPage();

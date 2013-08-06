@@ -45,13 +45,13 @@ namespace Rock.CheckIn
         public DateTime? LastCheckIn { get; set; }
 
         /// <summary>
-        /// Gets or sets the locations that are available for the current group type
+        /// Gets or sets the groups that are of the current group type
         /// </summary>
         /// <value>
         /// The locations.
         /// </value>
         [DataMember]
-        public List<CheckInLocation> Locations { get; set; }
+        public List<CheckInGroup> Groups { get; set; }
 
         /// <summary>
         /// Gets or sets the labels to be printed after succesful checkin
@@ -68,7 +68,7 @@ namespace Rock.CheckIn
         public CheckInGroupType()
             : base()
         {
-            Locations = new List<CheckInLocation>();
+            Groups = new List<CheckInGroup>();
         }
 
         /// <summary>
@@ -93,7 +93,7 @@ namespace Rock.CheckIn
             dictionary.Add( "GroupType", GroupType );
             dictionary.Add( "Selected", Selected );
             dictionary.Add( "LastCheckIn", LastCheckIn );
-            dictionary.Add( "Locations", Locations );
+            dictionary.Add( "Groups", Groups );
             dictionary.Add( "Labels", Labels );
             return dictionary;
         }
