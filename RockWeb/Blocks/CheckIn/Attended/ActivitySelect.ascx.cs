@@ -504,29 +504,29 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void BindToActivityGrid()
         {
             //var personCheckingIn = CheckInPeopleIds.FirstOrDefault();
-            //System.Data.DataTable dt = new System.Data.DataTable();
-            //Person person = new Person();
+            System.Data.DataTable dt = new System.Data.DataTable();
+            Person person = new Person();
 
-            //// add the columns to the datatable
-            //var column = new System.Data.DataColumn();
-            //column.DataType = System.Type.GetType( "System.String" );
-            //column.ColumnName = "ListId";
-            //column.ReadOnly = true;
-            //dt.Columns.Add( column );
+            // add the columns to the datatable
+            var column = new System.Data.DataColumn();
+            column.DataType = System.Type.GetType( "System.String" );
+            column.ColumnName = "ListId";
+            column.ReadOnly = true;
+            dt.Columns.Add( column );
 
-            //column = new System.Data.DataColumn();
-            //column.DataType = System.Type.GetType( "System.String" );
-            //column.ColumnName = "AssignedTo";
-            //column.ReadOnly = false;
-            //dt.Columns.Add( column );
+            column = new System.Data.DataColumn();
+            column.DataType = System.Type.GetType( "System.String" );
+            column.ColumnName = "AssignedTo";
+            column.ReadOnly = false;
+            dt.Columns.Add( column );
 
-            //column = new System.Data.DataColumn();
-            //column.DataType = System.Type.GetType( "System.String" );
-            //column.ColumnName = "Time";
-            //column.ReadOnly = false;
-            //dt.Columns.Add( column );
+            column = new System.Data.DataColumn();
+            column.DataType = System.Type.GetType( "System.String" );
+            column.ColumnName = "Time";
+            column.ReadOnly = false;
+            dt.Columns.Add( column );
 
-            //var timeAndActivityListIndex = 0;
+            var timeAndActivityListIndex = 0;
             //foreach ( var timeAndActivityList in CheckInTimeAndActivityList )
             //{
             //    var thingCount = 0;
@@ -535,9 +535,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
             //    foreach ( var thing in timeAndActivityList )
             //    {
             //        thingCount++;
-            //        if ( thingCount == 1 ) 
-            //        { 
-            //            person = new PersonService().Get( thing ); 
+            //        if ( thingCount == 1 )
+            //        {
+            //            person = new PersonService().Get( thing );
             //        }
 
             //        if ( thingCount <= timeAndActivityList.Count )
@@ -545,7 +545,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             //            switch ( thingCount )
             //            {
             //                case 1:
-            //                    
+
             //                    row["ListId"] = timeAndActivityListIndex;
             //                    break;
             //                case 2:
@@ -566,20 +566,20 @@ namespace RockWeb.Blocks.CheckIn.Attended
             //    {
             //        dt.Rows.Add( row );
             //    }
-            //        
+
             //    timeAndActivityListIndex++;
             //}
 
-            //System.Data.DataView dv = new System.Data.DataView( dt );
-            //dv.Sort = "Time ASC";
-            //System.Data.DataTable dt2 = dv.ToTable();
-            //gActivityList.DataSource = dt2;
-            //gActivityList.DataBind();
+            System.Data.DataView dv = new System.Data.DataView( dt );
+            dv.Sort = "Time ASC";
+            System.Data.DataTable dt2 = dv.ToTable();
+            gActivityList.DataSource = dt2;
+            gActivityList.DataBind();
 
-            //gActivityList.CssClass = string.Empty;
-            //gActivityList.AddCssClass( "grid-table" );
-            //gActivityList.AddCssClass( "table" );
-            //gActivityList.AddCssClass( "select" );
+            gActivityList.CssClass = string.Empty;
+            gActivityList.AddCssClass( "grid-table" );
+            gActivityList.AddCssClass( "table" );
+            gActivityList.AddCssClass( "select" );
         }
 
         #endregion

@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             if ( !Page.IsPostBack )
             {
-                if ( CurrentKioskId == null || CurrentCheckInState == null || CurrentGroupTypeIds == null )
+                if ( CurrentKioskId == null  || CurrentGroupTypeIds == null )
                 {
                     var queryParams = new Dictionary<string, string>();
                     queryParams.Add( "back", "true" );

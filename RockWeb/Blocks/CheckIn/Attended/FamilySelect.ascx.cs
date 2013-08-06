@@ -180,21 +180,42 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
+        /// Handles the DataBound event of the lvAddFamily control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lvAddFamily_DataBound( object sender, EventArgs e )
+        {
+            foreach ( var item in lvAddFamily.Items )
+            {
+                var ddlGender = ( (DropDownList)item.FindControl( "ddlGender" ) );
+                ddlGender.BindToEnum( typeof( Gender ), true );
+
+                var ddlAbilityGrade = ( (RockDropDownList)item.FindControl( "ddlAbilityGrade" ) );
+                ddlAbilityGrade.DataSource = GetAbilityGradeList();
+                ddlAbilityGrade.DataBind();
+            }
+        }
+
+        /// <summary>
         /// Handles the ItemDataBound event of the lvAddFamily control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="ListViewItemEventArgs"/> instance containing the event data.</param>
         protected void lvAddFamily_ItemDataBound( object sender, ListViewItemEventArgs e )
         {
-            if ( e.Item.ItemType == ListViewItemType.DataItem )
-            {
-                var ddlGender = ( (DropDownList)e.Item.FindControl( "ddlGender" ) );
-                ddlGender.BindToEnum( typeof( Gender ), true );
-
-                var ddlAbilityGrade = ( (RockDropDownList)e.Item.FindControl( "ddlAbilityGrade" ) );
-                ddlAbilityGrade.DataSource = GetAbilityGradeList();
-                ddlAbilityGrade.DataBind();
-            }
+            //if ( e.Item.ItemType == ListViewItemType.DataItem )
+            //{
+            //    var firstName = ( (TextBox)e.Item.FindControl( "tbFirstName" ) );
+            //    var lastName = ( (TextBox)e.Item.FindControl( "tbLastName" ) );
+            //    var birthDate = ( (DatePicker)e.Item.FindControl( "dpBirthDate" ) );
+            //    var ddlGender = ( (DropDownList)e.Item.FindControl( "ddlGender" ) );
+            //    var ddlAbilityGrade = ( (RockDropDownList)e.Item.FindControl( "ddlAbilityGrade" ) );
+                
+            //    ddlGender.BindToEnum( typeof( Gender ), true );
+            //    ddlAbilityGrade.DataSource = GetAbilityGradeList();
+            //    ddlAbilityGrade.DataBind();
+            //}
         }
 
         /// <summary>
@@ -204,9 +225,26 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="PagePropertiesChangingEventArgs"/> instance containing the event data.</param>
         protected void lvAddFamily_PagePropertiesChanging( object sender, PagePropertiesChangingEventArgs e )
         {
+            var newFamilyList = new System.Data.DataTable();
+            if ( ViewState["newFamily"] != null )
+            {
+                newFamilyList = (System.Data.DataTable)ViewState["newFamily"];
+                foreach ( ListViewItem item in lvAddFamily.Items )
+                {
+                    var givenName = ( (TextBox)item.FindControl( "tbFirstName" ) ).Text;
+                    var lastName = ( (TextBox)item.FindControl( "tbLastName" ) ).Text;
+                    var birthDate = ( (DatePicker)item.FindControl( "dpBirthDate" ) ).SelectedDate;
+                    var gender = ( (DropDownList)item.FindControl( "ddlGender" ) ).SelectedValueAsInt();
+                    var abilityGrade = ( (DropDownList)item.FindControl( "ddlAbilityGrade" ) ).SelectedValue;
+
+                    newFamilyList.Rows.Add( givenName, lastName, birthDate, gender, abilityGrade );
+                }
+            }
+
             dpAddFamily.SetPageProperties( e.StartRowIndex, e.MaximumRows, false );
-            lvAddFamily.DataSource = Enumerable.Repeat( "", 15 ).ToArray();
+            lvAddFamily.DataSource = newFamilyList;
             lvAddFamily.DataBind();
+            mpeAddFamily.Show();
         }
 
         /// <summary>
@@ -219,6 +257,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             SetAddPersonFields();
             lblAddPersonHeader.Text = "Add Person";
             personVisitorType.Value = "Person";
+            tbFirstNameSearch.Focus();
             mpeAddPerson.Show();
         }
 
@@ -232,6 +271,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             SetAddPersonFields();
             lblAddPersonHeader.Text = "Add Visitor";
             personVisitorType.Value = "Visitor";
+            tbFirstNameSearch.Focus();
             mpeAddPerson.Show();
         }
 
@@ -259,8 +299,20 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddFamily_Click( object sender, EventArgs e )
         {
-            // create 15 person rows
-            lvAddFamily.DataSource = Enumerable.Repeat<Person>( new Person(), 15 );
+            var newFamilyList = new System.Data.DataTable();
+            newFamilyList.Columns.Add( "FirstName", typeof( System.String ) );
+            newFamilyList.Columns.Add( "LastName", typeof( System.String ) );
+            newFamilyList.Columns.Add( "BirthDate", typeof( DateTime ) );
+            newFamilyList.Columns.Add( "Gender", typeof( Gender ) );
+            newFamilyList.Columns.Add( "AbilityGrade", typeof( System.String ) );
+
+            newFamilyList.Rows.Add( string.Empty, string.Empty, new DateTime(), Gender.Unknown, string.Empty );
+            newFamilyList.Rows.Add( string.Empty, string.Empty, new DateTime(), Gender.Unknown, string.Empty );
+            newFamilyList.Rows.Add( string.Empty, string.Empty, new DateTime(), Gender.Unknown, string.Empty );
+            newFamilyList.Rows.Add( string.Empty, string.Empty, new DateTime(), Gender.Unknown, string.Empty );
+            newFamilyList.Rows.Add( string.Empty, string.Empty, new DateTime(), Gender.Unknown, string.Empty );
+            ViewState["newFamily"] = newFamilyList;
+            lvAddFamily.DataSource = newFamilyList;
             lvAddFamily.DataBind();
             mpeAddFamily.Show();
         }
@@ -363,10 +415,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddPersonSearch_Click( object sender, EventArgs e )
         {
+            var test = dpDOBSearch.SelectedDate;
             lbAddNewPerson.Visible = true;
             rGridPersonResults.PageIndex = 0;
             BindPersonGrid();
             rGridPersonResults.Visible = true;
+            dpDOBSearch.SelectedDate = test;
             mpeAddPerson.Show();
         }
 
@@ -470,7 +524,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddNewPerson_Click( object sender, EventArgs e )
         {
-            if ( string.IsNullOrEmpty( tbFirstNameSearch.Text ) || string.IsNullOrEmpty( tbLastNameSearch.Text ) || string.IsNullOrEmpty( dpDOBSearch.Text ) || ddlGenderSearch.SelectedValueAsInt() == 0)
+            var test = dpDOBSearch.SelectedDate;
+
+            if ( string.IsNullOrEmpty( tbFirstNameSearch.Text ) || string.IsNullOrEmpty( tbLastNameSearch.Text ) || string.IsNullOrEmpty( dpDOBSearch.Text ) || ddlGenderSearch.SelectedValueAsInt() == 0 )
             {
                 mpeAddPerson.Show();
                 string errorMsg = "<ul><li>Please fill out the First Name, Last Name, DOB, and Gender fields.</li></ul>";
@@ -578,8 +634,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// </summary>
         private void GoBack()
         {
-            CurrentCheckInState.CheckIn.Families = new List<CheckInFamily>();
-
             SaveState();
             NavigateToPreviousPage();
         }
@@ -607,6 +661,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     repVisitors.DataBind();
                     pnlSelectVisitor.Update();
                 }
+                SaveState();
             }
             else
             {
@@ -641,16 +696,19 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 ps.Save( person, CurrentPersonId );
             } );
 
-            if ( abilityGroup == "Grade" )
+            if ( !string.IsNullOrWhiteSpace( ability ) )
             {
-                person.Grade = int.Parse( ability );
+                if ( abilityGroup == "Grade" )
+                {
+                    person.Grade = int.Parse( ability );
+                }
+                else if ( abilityGroup == "Ability" )
+                {   
+                    person.SetAttributeValue( "AbilityLevel", ability );
+                    Rock.Attribute.Helper.SaveAttributeValues( person, CurrentPersonId );
+                }
             }
-            else
-            {
-                person.SetAttributeValue( "AbilityLevel", ability );
-                Rock.Attribute.Helper.SaveAttributeValues( person, CurrentPersonId );
-            }
-
+            
             return person;
         }
 
@@ -752,16 +810,18 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             if ( !string.IsNullOrEmpty( dpDOBSearch.Text ) )
             {
-                DateTime someDate;
-                if ( DateTime.TryParse( dpDOBSearch.Text, out someDate ) )
+                DateTime searchDate;
+                if ( DateTime.TryParse( dpDOBSearch.Text, out searchDate ) )
                 {
-                    people = people.Where( p => p.BirthDate == someDate );
+                    people = people.Where( p => p.BirthYear == searchDate.Year 
+                        && p.BirthMonth == searchDate.Month && p.BirthDay == searchDate.Day );
                 }
             }
 
             if ( ddlGenderSearch.SelectedValueAsEnum<Gender>() != 0 )
             {
-                people = people.Where( p => p.Gender == ddlGenderSearch.SelectedValueAsEnum<Gender>() );
+                var gender = ddlGenderSearch.SelectedValueAsEnum<Gender>();
+                people = people.Where( p => p.Gender == gender );
             }
             
             if ( ddlAbilitySearch.SelectedIndex != 0 )
@@ -779,8 +839,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
             }                
 
-            rGridPersonResults.DataSource = people.Select( p => new { p.Id, p.FirstName, p.LastName, p.BirthDate, p.Gender, Attribute = p.GetAttributeValue( "AbilityLevel" ) } )
-                .OrderBy( p => p.LastName ).ThenBy( p => p.FirstName ).ToList();
+            var peopleList = people.OrderBy( p => p.LastName ).ThenBy( p => p.FirstName ).ToList();
+            rGridPersonResults.DataSource = peopleList.Select( p => new { p.Id, p.FirstName, p.LastName, p.BirthDate, p.Gender, Attribute = p.GetAttributeValue( "AbilityLevel" ) } ).ToList();                
             rGridPersonResults.DataBind();  
         }
 
@@ -817,7 +877,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
             dropDownList.Insert( 0, Rock.Constants.None.ListItem );
             return dropDownList;
         }
-
-        #endregion               
+       
+        #endregion                    
+        
     }
 }
