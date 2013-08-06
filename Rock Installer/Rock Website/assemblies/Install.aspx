@@ -192,7 +192,7 @@
 			
 			Configuration rockWebConfig  = System.Web.Configuration.WebConfigurationManager.OpenWebConfiguration("~");
 			rockWebConfig.AppSettings.Settings["PasswordKey"].Value = hexBytes;
-			rockWebConfig.AppSettings.Settings["BaseUrl"].Value = Request.Url.Scheme + @"://" + Request.Url.Host + Request.ApplicationPath;
+            //rockWebConfig.AppSettings.Settings["BaseUrl"].Value = Request.Url.Scheme + @"://" + Request.Url.Host + Request.ApplicationPath;  // not needed removed from web.config per https://github.com/SparkDevNetwork/Rock-ChMS/commit/17b0d30082f0b98bec8bc31d2034fb774690b2e1
 			rockWebConfig.Save();
 			
 			
