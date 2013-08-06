@@ -1058,6 +1058,7 @@
     <Compile Include="Web\UI\Controls\NewFamily\AttributesRow.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\Members.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\MembersRow.cs" />
+    <Compile Include="Web\UI\Controls\NumberRangeEditor.cs" />
     <Compile Include="Web\UI\Controls\PersonProfile\Badge.cs" />
     <Compile Include="Web\UI\Controls\PersonLink.cs" />
     <Compile Include="Web\UI\Controls\HtmlEditor.cs" />
