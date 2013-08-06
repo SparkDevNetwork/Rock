@@ -6,14 +6,14 @@
 * This script will add data for the check-in system.
 * It adds the following GroupTypes, Groups, needed attributes, Locations
 * and Schedules.  These new GroupTypes will be placed under a new top level
-* GroupType called "Weekend Service Check-in Area" and all the groups will be
-* placed under a new top level Group called "Weekend Service Check-in" 
+* GroupType called "Weekly Service Check-in Area" and all the groups will be
+* placed under a new top level Group called "Weekly Service Check-in" 
 * 
 * GROUPTYPE				   ATTRIBUTES
 *     - GROUP			                                  LOCATION           GUID									Inherits From
 * -------------------     --------------------------      ------------------ --------------------------------------	----------------------
-* Weekend Service Check-in Area                                              FEDD389A-616F-4A53-906C-63D8255631C5
-*     - Weekend Service Check-in                                               64F0F121-8E1E-4A24-B706-BA8E921FE623
+* Weekly Service Check-in Area                                              FEDD389A-616F-4A53-906C-63D8255631C5
+*     - Weekly Service Check-in                                               64F0F121-8E1E-4A24-B706-BA8E921FE623
 * 
 * Check in by Age         Ages:	                                             0572A5FE-20A4-4BF1-95CD-C71DB5281392
 * Check in by Grade 	  Grades:                                            4F9565A7-DD5A-41C3-B4E8-13F0B872B10B	Check in by Age
@@ -160,7 +160,7 @@ DECLARE @HSGroupTypeId int
 
 -- Insert the new top level Check-in GroupType
 INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo])
-   VALUES (0, 'Weekend Service Check-in Area', 'FEDD389A-616F-4A53-906C-63D8255631C5', 0, 0, 0, 0)
+   VALUES (0, 'Weekly Service Check-in Area', 'FEDD389A-616F-4A53-906C-63D8255631C5', 0, 0, 0, 0)
 SET @ParentGroupTypeId = SCOPE_IDENTITY()
 
 -- Now insert the all the new GroupTypes under that one...
@@ -214,7 +214,7 @@ DECLARE @JHGroupId int
 DECLARE @HSGroupId int
 
 INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid] )
-   VALUES( 0, @ParentGroupTypeId, 'Weekend Service Check-in', 0, 1, '64F0F121-8E1E-4A24-B706-BA8E921FE623' )
+   VALUES( 0, @ParentGroupTypeId, 'Weekly Service Check-in', 0, 1, '64F0F121-8E1E-4A24-B706-BA8E921FE623' )
 SET @ParentGroupId = SCOPE_IDENTITY()
 
 INSERT INTO [Group] ( [IsSystem],[ParentGroupId],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid] )
