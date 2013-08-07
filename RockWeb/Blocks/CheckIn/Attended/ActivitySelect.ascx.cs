@@ -472,15 +472,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             //CheckedInPeopleIds.Add( personJustCheckedIn );
 
             SaveState();
-
-            //if ( PeopleCheckedIn != CheckInPersonCount )
-            //{
-            //    NavigateToCurrentPage();
-            //}
-            //else
-            //{
-            //    NavigateToNextPage();
-            //}
         }
 
         private void ProcessActivities()
