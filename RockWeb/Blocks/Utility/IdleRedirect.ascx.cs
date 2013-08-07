@@ -21,7 +21,7 @@ namespace RockWeb.Blocks.Utility
         {
             base.OnInit( e );
 
-            CurrentPage.AddScriptLink( this.Page, "~/scripts/idle-timer.min.js" );
+            CurrentPage.AddScriptLink( this.Page, "~/Scripts/idle-timer.min.js" );
         }
         protected override void OnLoad( EventArgs e )
         {
@@ -39,7 +39,6 @@ $(function () {{
         window.location = '{1}';
     }});
 }});
-                
 ", ms, GetAttributeValue( "NewLocation" ) );
             ScriptManager.RegisterStartupScript( Page, this.GetType(), "idle-timeout", script, true );
         }
