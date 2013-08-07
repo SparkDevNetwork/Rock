@@ -48,27 +48,23 @@ namespace Rock.Workflow.Action.CheckIn
                 foreach ( var person in family.People.Where( p => p.Selected && p.Person.LastName.Length > 0 ) )
                 {
                     bool isSNPerson = bool.Parse( person.Person.GetAttributeValue( "IsSpecialNeeds" ) ?? "false" );
-
+                    // Now dig down until we get the "group" because that's where the attribute is..
                     foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ).ToList() )
                     {
-                        // Now dig down until we get the "group" because that's where the attribute is..
-                        foreach ( var location in groupType.Locations.ToList() )
+                        foreach ( var group in groupType.Groups.ToList() )
                         {
-                            foreach ( var group in location.Groups.ToList() )
+                            bool isSNGroup = bool.Parse( group.Group.GetAttributeValue( "IsSpecialNeeds" ) ?? "false" );
+
+                            // If the group is special needs but the person is not, then remove it.
+                            if ( removeSNGroups && isSNGroup && !( isSNPerson ) )
                             {
-                                bool isSNGroup = bool.Parse( group.Group.GetAttributeValue( "IsSpecialNeeds" ) ?? "false" );
+                                groupType.Groups.Remove( group );
+                            }
 
-                                // If the location/group is special needs but the person is not, then remove it.
-                                if ( removeSNGroups && isSNGroup && ! ( isSNPerson ) )
-                                {
-                                    location.Groups.Remove( group );
-                                }
-
-                                // or if the setting is enabled and the person is SN but the group is not.
-                                if ( removeNonSNGroups && isSNPerson && !isSNGroup )
-                                {
-                                    location.Groups.Remove( group );
-                                }
+                            // or if the setting is enabled and the person is SN but the group is not.
+                            if ( removeNonSNGroups && isSNPerson && !isSNGroup )
+                            {
+                                groupType.Groups.Remove( group );
                             }
                         }
                     }

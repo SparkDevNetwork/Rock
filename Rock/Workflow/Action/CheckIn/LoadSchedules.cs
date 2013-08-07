@@ -51,24 +51,24 @@ namespace Rock.Workflow.Action.CheckIn
                              var kioskGroupType = checkInState.Kiosk.KioskGroupTypes.Where( g => g.GroupType.Id == groupType.GroupType.Id ).FirstOrDefault();
                              if ( kioskGroupType != null )
                              {
-                                 foreach ( var location in groupType.Locations.Where( l => l.Selected || loadAll ) )
+                                 foreach ( var group in groupType.Groups.Where( g => g.Selected || loadAll ) )
                                  {
-                                     var kioskLocation = kioskGroupType.KioskLocations.Where( l => l.Location.Id == location.Location.Id ).FirstOrDefault();
-                                     if ( kioskLocation != null )
+                                     foreach ( var location in group.Locations.Where( l => l.Selected || loadAll ) )
                                      {
-                                         foreach ( var group in location.Groups.Where( g => g.Selected || loadAll ) )
+                                         var kioskGroup = kioskGroupType.KioskGroups.Where( g => g.Group.Id == group.Group.Id ).FirstOrDefault();
+                                         if ( kioskGroup != null )
                                          {
-                                             var kioskGroup = kioskLocation.KioskGroups.Where( g => g.Group.Id == group.Group.Id ).FirstOrDefault();
-                                             if ( kioskGroup != null )
+                                             var kioskLocation = kioskGroup.KioskLocations.Where( l => l.Location.Id == location.Location.Id ).FirstOrDefault();
+                                             if ( kioskLocation != null )
                                              {
-                                                 foreach ( var kioskSchedule in kioskGroup.KioskSchedules )
+                                                 foreach ( var kioskSchedule in kioskLocation.KioskSchedules )
                                                  {
-                                                     if ( !group.Schedules.Any( s => s.Schedule.Id == kioskSchedule.Schedule.Id ) )
+                                                     if ( !location.Schedules.Any( s => s.Schedule.Id == kioskSchedule.Schedule.Id ) )
                                                      {
                                                          var checkInSchedule = new CheckInSchedule();
                                                          checkInSchedule.Schedule = kioskSchedule.Schedule.Clone( false );
                                                          checkInSchedule.StartTime = kioskSchedule.StartTime;
-                                                         group.Schedules.Add( checkInSchedule );
+                                                         location.Schedules.Add( checkInSchedule );
                                                      }
                                                  }
                                              }

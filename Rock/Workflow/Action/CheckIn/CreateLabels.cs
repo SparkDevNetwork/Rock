@@ -86,13 +86,17 @@ namespace Rock.Workflow.Action.CheckIn
                                         else if ( label.PrintTo == PrintTo.Location )
                                         {
                                             // Should only be one
-                                            var location = groupType.Locations.Where( l => l.Selected ).FirstOrDefault();
-                                            if ( location != null )
+                                            var group = groupType.Groups.Where( g => g.Selected ).FirstOrDefault();
+                                            if ( group != null )
                                             {
-                                                var device = location.Location.PrinterDevice;
-                                                if ( device != null )
+                                                var location = group.Locations.Where( l => l.Selected ).FirstOrDefault();
+                                                if ( location != null )
                                                 {
-                                                    label.PrinterDeviceId = device.PrinterDeviceId;
+                                                    var device = location.Location.PrinterDevice;
+                                                    if ( device != null )
+                                                    {
+                                                        label.PrinterDeviceId = device.PrinterDeviceId;
+                                                    }
                                                 }
                                             }
                                         }
