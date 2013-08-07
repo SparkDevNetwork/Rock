@@ -450,6 +450,10 @@
     <Compile Include="Migrations\201308071741109_MarketingCampaignAdListFilter.Designer.cs">
       <DependentUpon>201308071741109_MarketingCampaignAdListFilter.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201308072153425_AddAbilityLevels.cs" />
+    <Compile Include="Migrations\201308072153425_AddAbilityLevels.Designer.cs">
+      <DependentUpon>201308072153425_AddAbilityLevels.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -2094,6 +2098,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201308071741109_MarketingCampaignAdListFilter.resx">
       <DependentUpon>201308071741109_MarketingCampaignAdListFilter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308072153425_AddAbilityLevels.resx">
+      <DependentUpon>201308072153425_AddAbilityLevels.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
