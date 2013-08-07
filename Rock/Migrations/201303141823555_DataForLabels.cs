@@ -81,7 +81,7 @@ namespace Rock.Migrations
             AddDefinedValue( "E4D289A9-70FA-4381-913E-2A757AD11147", "Schedule Times", "The schedule(s) that person checked into", "18B24BF8-26DD-43BB-A54D-8B10C57EA740", true );
 
             DeleteDefinedType( "1EBCDB30-A89A-4C14-8580-8289EC2C7742" );
-            AddDefinedType( "Check-in", "CheckIn Search Type", "The ways to search for a family in the check-in application", "1EBCDB30-A89A-4C14-8580-8289EC2C7742" );
+            AddDefinedType( "Check-in", "Check-in Search Type", "The ways to search for a family in the check-in application", "1EBCDB30-A89A-4C14-8580-8289EC2C7742" );
             AddDefinedValue( "1EBCDB30-A89A-4C14-8580-8289EC2C7742", "Phone Number", "Search for family based on phone number", "F3F66040-C50F-4D13-9652-780305FFFE23", true );
             AddDefinedValue( "1EBCDB30-A89A-4C14-8580-8289EC2C7742", "Barcode", "Search for family based on assigned code", "9A66BFCD-0F16-4EAE-BE35-B3FAF4B817BE", true );
 

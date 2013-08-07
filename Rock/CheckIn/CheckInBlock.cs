@@ -20,7 +20,7 @@ namespace Rock.CheckIn
     [LinkedPage("Home Page")]
     [LinkedPage("Next Page")]
     [LinkedPage("Previous Page")]
-    [IntegerField( "Workflow Type Id", "The Id of the workflow type to activate for check-in", false, 0)]
+    [IntegerField( "Workflow Type Id", "The Id of the workflow type to activate for Check-in", false, 0)]
     public abstract class CheckInBlock : RockBlock
     {
         /// <summary>
@@ -34,7 +34,7 @@ namespace Rock.CheckIn
         protected List<int> CurrentGroupTypeIds;
 
         /// <summary>
-        /// The current check in state
+        /// The current check-in state
         /// </summary>
         protected CheckInState CurrentCheckInState;
 
@@ -44,7 +44,7 @@ namespace Rock.CheckIn
         protected Rock.Model.Workflow CurrentWorkflow;
 
         /// <summary>
-        /// Holds cookie names shared across certain checkin blocks.
+        /// Holds cookie names shared across certain check-in blocks.
         /// </summary>
         public struct CheckInCookie
         {
@@ -205,7 +205,7 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Cancels the checkin.
+        /// Cancels the check-in.
         /// </summary>
         protected void CancelCheckin()
         {
@@ -216,7 +216,7 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Navigates to the checkin home page.
+        /// Navigates to the check-in home page.
         /// </summary>
         protected void NavigateToHomePage()
         {

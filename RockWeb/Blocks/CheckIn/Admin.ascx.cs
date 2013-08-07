@@ -19,7 +19,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [Description( "Check-In Administration block" )]
+    [Description( "Check-in Administration block" )]
     [BooleanField( "Allow Manual Setup", "If enabled, the block will allow the kiosk to be setup manually if it was not set via other means.", true )]
     [BooleanField( "Enable Location Sharing", "If enabled, the block will attempt to determine the kiosk's location via location sharing geocode.", false, "Geo Location", 0 )]
     [IntegerField( "Time to Cache Kiosk GeoLocation", "Time in minutes to cache the coordinates of the kiosk. A value of zero (0) means cache forever. Default 20 minutes.", false, 20, "Geo Location", 1 )]
@@ -122,8 +122,8 @@ namespace RockWeb.Blocks.CheckIn
                 }}
                 else {{
                     $(""div.checkin-header h1"").html( ""We're Sorry!"" );
-                    $(""div.checkin-header h1"").after( ""<p>We don't support that kind of device yet. Please check-in using the on-site kiosks.</p>"" );
-                    alert(""We We don't support that kind of device yet. Please check-in using the on-site kiosks."");
+                    $(""div.checkin-header h1"").after( ""<p>We don't support that kind of device yet. Please Check in using the on-site kiosks.</p>"" );
+                    alert(""We We don't support that kind of device yet. Please Check in using the on-site kiosks."");
                 }}
             }}
 

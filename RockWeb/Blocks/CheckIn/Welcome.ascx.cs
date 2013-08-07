@@ -18,9 +18,9 @@ using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [Description( "Check-In Welcome block" )]
+    [Description( "Check-in Welcome block" )]
     [LinkedPage("Family Select Page")]
-    [IntegerField( "Refresh Interval", "How often (seconds) should page automatically query server for new check-in data", false, 10 )]
+    [IntegerField( "Refresh Interval", "How often (seconds) should page automatically query server for new Check-in data", false, 10 )]
     public partial class Welcome : CheckInBlock
     {
         protected override void OnInit( EventArgs e )
