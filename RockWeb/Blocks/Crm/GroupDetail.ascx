@@ -2,6 +2,7 @@
 
 <asp:UpdatePanel ID="upGroupList" runat="server">
     <ContentTemplate>
+
         <asp:Panel ID="pnlDetails" runat="server">
             <asp:HiddenField ID="hfGroupId" runat="server" />
 
@@ -58,36 +59,37 @@
 
             <fieldset id="fieldsetViewDetails" runat="server">
 
-                <legend>
-                    <asp:Literal ID="lGroupIconHtml" runat="server" />&nbsp;
+                <h1 class="banner">
+                    <asp:Literal ID="lGroupIconHtml" runat="server" />
                     <asp:Literal ID="lReadOnlyTitle" runat="server" />
-                </legend>
+                </h1>
                 <asp:Literal ID="lblActiveHtml" runat="server" />
-                <div class="well">
-                    <div class="row-fluid">
-                        <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
-                    </div>
-                    <div class="row-fluid">
-                        <asp:Literal ID="lblMainDetails" runat="server" />
-                    </div>
-                    <div class="attributes">
-                        <asp:PlaceHolder ID="phGroupTypeAttributesReadOnly" runat="server" EnableViewState="false"></asp:PlaceHolder>
-                    </div>
-                    <div class="attributes">
-                        <asp:PlaceHolder ID="phGroupAttributesReadOnly" runat="server" EnableViewState="false"></asp:PlaceHolder>
-                    </div>
-                    <div class="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click" />
-                        <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
-                        <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-mini" OnClick="btnDelete_Click" />
-                    </div>
+                
+                <div class="row-fluid">
+                    <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                 </div>
+                <div class="row-fluid">
+                    <asp:Literal ID="lblMainDetails" runat="server" />
+                </div>
+                <div class="attributes">
+                    <asp:PlaceHolder ID="phGroupTypeAttributesReadOnly" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                </div>
+                <div class="attributes">
+                    <asp:PlaceHolder ID="phGroupAttributesReadOnly" runat="server" EnableViewState="false"></asp:PlaceHolder>
+                </div>
+                <div class="actions">
+                    <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click" />
+                    <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
+                    <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-mini" OnClick="btnDelete_Click" />
+                </div>
+
             </fieldset>
         </asp:Panel>
 
         <asp:Panel ID="pnlGroupMemberAttribute" runat="server" Visible="false">
             <Rock:AttributeEditor ID="edtGroupMemberAttributes" runat="server" OnSaveClick="btnSaveGroupMemberAttribute_Click" OnCancelClick="btnCancelGroupMemberAttribute_Click" />
         </asp:Panel>
+
 
     </ContentTemplate>
 </asp:UpdatePanel>
