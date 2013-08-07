@@ -34,6 +34,7 @@ namespace RockWeb.Blocks.Crm
 
             gGroupMembers.DataKeyNames = new string[] { "Id" };
             gGroupMembers.CommunicateMergeFields = new List<string> { "GroupRole.Name" };
+            gGroupMembers.CommunicatePersonIdField = "PersonId";
             gGroupMembers.Actions.AddClick += gGroupMembers_AddClick;
             gGroupMembers.Actions.ShowAdd = true;
             gGroupMembers.IsDeleteEnabled = true;
@@ -147,13 +148,13 @@ namespace RockWeb.Blocks.Crm
                 new
                 {
                     a.Id,
+                    PersonId = a.PersonId,
                     PersonFirstName = a.Person.FirstName,
                     PersonLastName = a.Person.LastName,
                     PersonFullNameLastFirst = a.Person.FullNameLastFirst,
                     GroupRoleName = a.GroupRole.Name,
                     a.GroupMemberStatus
                 } ).AsQueryable();
-
 
             SortProperty sortProperty = gGroupMembers.SortProperty;
 

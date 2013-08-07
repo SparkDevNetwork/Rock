@@ -252,6 +252,32 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the communicate person id field.
+        /// Default is [Id] of the dataset in the grid
+        /// </summary>
+        /// <value>
+        /// The communicate person id field.
+        /// </value>
+        public string CommunicatePersonIdField
+        {
+            get 
+            { 
+                string personIdField = ViewState["CommunicatePersonIdField"] as string;
+                if (string.IsNullOrWhiteSpace(personIdField))
+                {
+                    personIdField = "Id";
+                }
+
+                return personIdField; 
+            }
+
+            set
+            {
+                ViewState["CommunicatePersonIdField"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the new communication page route.
         /// </summary>
         /// <value>
@@ -409,7 +435,7 @@ namespace Rock.Web.UI.Controls
                             var mergeValues = new Dictionary<string, string>();
                             for ( int i = 0; i < data.Columns.Count; i++ )
                             {
-                                if ( data.Columns[i].ColumnName == "Id" )
+                                if ( data.Columns[i].ColumnName == this.CommunicatePersonIdField )
                                 {
                                     personId = (int)row[i];
                                 }
@@ -437,7 +463,7 @@ namespace Rock.Web.UI.Controls
                         IList data = (IList)this.DataSource;
                         Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
 
-                        PropertyInfo idProp = oType.GetProperty( "Id" );
+                        PropertyInfo idProp = oType.GetProperty( this.CommunicatePersonIdField );
                         if (idProp != null)
                         {
                             foreach ( var item in data )
