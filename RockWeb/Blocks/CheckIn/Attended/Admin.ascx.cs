@@ -200,8 +200,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     }}
                 }});
             </script>
-        ", this.Page.ClientScript.GetPostBackEventReference( lbCheckGeoLocation, "" ) );
-            phScript.Controls.Add( new LiteralControl( geoScript ) );
+            ", this.Page.ClientScript.GetPostBackEventReference( lbCheckGeoLocation, "" ) );
+                phScript.Controls.Add( new LiteralControl( geoScript ) );
         }
 
         /// <summary>
