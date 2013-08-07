@@ -158,13 +158,11 @@ namespace Rock.Model
         /// <summary>
         /// Gets the URL.
         /// </summary>
-        /// <param name="height">The height.</param>
-        /// <param name="width">The width.</param>
         /// <returns></returns>
-        public string GetUrl( int? height = null, int? width = null )
+        public string GetUrl()
         {
             var provider = StorageContainer.GetComponent( StorageEntityType.Name );
-            return provider.GetUrl( this, height, width );
+            return provider.GetUrl( this );
         }
 
         #endregion
