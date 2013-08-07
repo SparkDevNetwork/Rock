@@ -56,14 +56,8 @@
   	  
   	  <div class="separator"></div>	  
   	  
-  	  <section class="promo-secondary container">
-  	  	<ul>
-  	  		<li><a href="#"><img src="./assets/img/mock-promo-sub1.jpg" /></a></li>
-  	  		<li><a href="#"><img src="./assets/img/mock-promo-sub2.jpg" /></a></li>
-  	  		<li><a href="#"><img src="./assets/img/mock-promo-sub3.jpg" /></a></li>
-  	  		<li><a href="#"><img src="./assets/img/mock-promo-sub4.jpg" /></a></li>
-  	  	</ul>
-  	  </section>
+    <Rock:Zone ID="PromotionList" runat="server" />
+  	 
   	  
   	<section class="contact container">
   		<div class="row-fluid">
