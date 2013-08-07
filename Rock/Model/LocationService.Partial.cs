@@ -168,5 +168,23 @@ namespace Rock.Model
             location.GeocodeAttemptedDateTime = DateTime.Now;
         }
 
+        /// <summary>
+        /// Gets all descendents.
+        /// </summary>
+        /// <param name="parentLocationId">The parent location id.</param>
+        /// <returns></returns>
+        public IEnumerable<Location> GetAllDescendents( int parentLocationId )
+        {
+            return Repository.ExecuteQuery(
+                @"
+                with CTE as (
+                select * from [Location] where [ParentLocationId]={0}
+                union all
+                select [a].* from [Location] [a]
+                inner join CTE pcte on pcte.Id = [a].[ParentLocationId]
+                )
+                select * from CTE
+                ", parentLocationId );
+        }
     }
 }

@@ -124,7 +124,7 @@ namespace RockWeb.Blocks.CheckIn
         private void ProcessSelection()
         {
             var errors = new List<string>();
-            if ( ProcessActivity( "Location Search", out errors ) )
+            if ( ProcessActivity( "Group Search", out errors ) )
             {
                 SaveState();
                 NavigateToNextPage();

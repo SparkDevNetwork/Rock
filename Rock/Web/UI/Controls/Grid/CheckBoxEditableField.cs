@@ -1,16 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+using System;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// The ASP:CheckBoxField doesn't work very well for retrieving changed values, especially when the value is changed from True to False (wierd)
-    /// This CheckBoxEditableField works like the ASP:CheckBoxField except it give the CheckBox's IDs so their changed values will consistantly persist on postbacks
+    /// The ASP:CheckBoxField doesn't work very well for retrieving changed values, especially when the value is changed from True to False (weird)
+    /// This CheckBoxEditableField works like the ASP:CheckBoxField except it gives the CheckBox's IDs so their changed values will consistantly persist on postbacks
     /// </summary>
     public class CheckBoxEditableField : TemplateField
     {
@@ -26,6 +27,7 @@ namespace Rock.Web.UI.Controls
             {
                 return ViewState["DataField"] as string;
             }
+
             set
             {
                 ViewState["DataField"] = value;
@@ -74,7 +76,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void checkBox_DataBinding( object sender, EventArgs e )
+        public void checkBox_DataBinding( object sender, EventArgs e )
         {
             CheckBox checkBox = sender as CheckBox;
             GridViewRow gridViewRow = checkBox.NamingContainer as GridViewRow;
@@ -82,7 +84,7 @@ namespace Rock.Web.UI.Controls
             {
                 object dataValue = DataBinder.Eval( gridViewRow.DataItem, DataField );
 
-                checkBox.Checked = ( (Boolean)dataValue );
+                checkBox.Checked = (bool)dataValue;
             }
         }
     }

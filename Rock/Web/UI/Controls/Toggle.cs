@@ -137,7 +137,6 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
 
-            RockPage.AddCSSLink( this.Page, "~/css/bootstrap-switch.css" );
             RockPage.AddScriptLink( this.Page, "~/scripts/jquery.switch.js" );
 
             // Switch does not automatically initialize again after a partial-postback.  This script 

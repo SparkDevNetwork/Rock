@@ -41,7 +41,6 @@ namespace RockWeb.Blocks.Utility
         {
             base.OnLoad( e );
 
-            RockPage.AddCSSLink( Page, "~/css/bootstrap-switch.css" );
             gReport.GridRebind += gReport_GridRebind;
         }
 

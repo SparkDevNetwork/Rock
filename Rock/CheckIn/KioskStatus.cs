@@ -45,7 +45,7 @@ namespace Rock.CheckIn
         {
             get
             {
-                return KioskGroupTypes.Any( g => g.KioskLocations.Any() );
+                return KioskGroupTypes.SelectMany( t => t.KioskGroups ).Any( g => g.KioskLocations.Any() );
             }
         }
 
@@ -59,7 +59,7 @@ namespace Rock.CheckIn
         {
             get
             {
-                return KioskGroupTypes.Any( g => g.KioskLocations.Any( l => l.Location.IsActive ) );
+                return KioskGroupTypes.SelectMany( t => t.KioskGroups ).Any( g => g.KioskLocations.Any( l => l.Location.IsActive ) );
             }
         }
 
