@@ -39,14 +39,13 @@ namespace Rock.CheckIn
         public DateTimeOffset NextActiveTime { get; set; }
 
         /// <summary>
-        /// All locations with active schedules.  Note: the location itself 
-        /// may not be active (i.e. room is closed)
+        /// All groups with active schedules
         /// </summary>
         /// <value>
-        /// The locations.
+        /// The groups.
         /// </value>
         [DataMember]
-        public List<KioskLocation> KioskLocations { get; set; }
+        public List<KioskGroup> KioskGroups { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="KioskGroupType" /> class.
@@ -54,7 +53,7 @@ namespace Rock.CheckIn
         public KioskGroupType()
             : base()
         {
-            KioskLocations = new List<KioskLocation>();
+            KioskGroups = new List<KioskGroup>();
         }
 
         /// <summary>
@@ -65,7 +64,7 @@ namespace Rock.CheckIn
             : base()
         {
             GroupType = groupType.Clone( false );
-            KioskLocations = new List<KioskLocation>();
+            KioskGroups = new List<KioskGroup>();
         }
 
         /// <summary>

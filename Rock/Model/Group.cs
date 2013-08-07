@@ -201,40 +201,6 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
-        /// Determines whether [is ancestor of group] [the specified parent group id].
-        /// </summary>
-        /// <param name="parentGroupId">The parent group id.</param>
-        /// <returns>
-        ///   <c>true</c> if [is ancestor of group] [the specified parent group id]; otherwise, <c>false</c>.
-        /// </returns>
-        public bool IsAncestorOfGroup( int parentGroupId )
-        {
-            HashSet<Guid> ancestorList = new HashSet<Guid>();
-
-            Group parentGroup = this.ParentGroup;
-            while ( parentGroup != null )
-            {
-                if ( ancestorList.Contains( parentGroup.Guid ) )
-                {
-                    throw new GroupParentCircularReferenceException();
-                }
-                else
-                {
-                    ancestorList.Add( parentGroup.Guid );
-                }
-
-                if ( parentGroup.Id.Equals( parentGroupId ) )
-                {
-                    return true;
-                }
-
-                parentGroup = parentGroup.ParentGroup;
-            }
-
-            return false;
-        }
-
-        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>

@@ -58,9 +58,9 @@ namespace Rock.Workflow.Action.CheckIn
 
                             foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
                             {
-                                foreach ( var location in groupType.Locations.Where( l => l.Selected ) )
+                                foreach ( var group in groupType.Groups.Where( g => g.Selected ) )
                                 {
-                                    foreach ( var group in location.Groups.Where( g => g.Selected ) )
+                                    foreach ( var location in group.Locations.Where( l => l.Selected ) )
                                     {
                                         if ( groupType.GroupType.AttendanceRule == AttendanceRule.AddOnCheckIn &&
                                             groupType.GroupType.DefaultGroupRoleId.HasValue &&
@@ -74,7 +74,7 @@ namespace Rock.Workflow.Action.CheckIn
                                             groupMemberService.Save( groupMember, null );
                                         }
 
-                                        foreach ( var schedule in group.Schedules.Where( s => s.Selected ) )
+                                        foreach ( var schedule in location.Schedules.Where( s => s.Selected ) )
                                         {
                                             // Only create one attendance record per day for each person/schedule/group/location
                                             var attendance = attendanceService.Get( startDateTime, location.Location.Id, schedule.Schedule.Id, group.Group.Id, person.Person.Id );

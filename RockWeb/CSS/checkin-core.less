@@ -1,23 +1,15 @@
-﻿/*!
- * Rock Checkin Core
- *
- * Copyright 2013 Spark Development Network
- *
- * 
- */
+﻿/*
+    Used to style the check-in screens
+    
+    1. Bootstrap Overrides
+    2. Global Styles
+    3. Components
+    4. Specific Page Styles
 
-// [Table of Contents]
-// 
-// 1. Bootstrap Overides
-// 2. Global Page Settings
-// 3. Components
-// 4. Page Styles
+*/
 
-
-//
-// 1. Bootstrap Overides
-//
-// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+// 1. Bootstrap Overrides
+// -------------------------
 
 h1, h2, h3 {
 	letter-spacing: -0.03em;
@@ -25,7 +17,7 @@ h1, h2, h3 {
 
 h1 {
 	font-size: 28px;
-    color: @checkinHeaderColor;
+    color: @header-text-color;
 }
 
 .navbar-inner {
@@ -35,7 +27,7 @@ h1 {
 
 .close
 {
-    color: @rockLightTextColor;
+    color: @site-header-text-color;
 }
 
 .btn-mini
@@ -51,12 +43,11 @@ h1 {
 
 .btn
 {
-	.buttonBackground(@checkinButtonBackground, darken(@checkinButtonBackground, 10%) , @grayDark, 0 1px 1px rgba(255,255,255,.75));
-	border-color: @checkinButtonBorderColor;
+	border-color: @checkin-button-border-color;
 	text-shadow:
 		0px -1px 0px rgba(000,000,000,0.6),
 		0px 1px 0px rgba(255,255,255,0.1);
-    color: @checkinButtonColor;
+    .buttonBackground(lighten(@checkin-button-background, 5%), @checkin-button-background, @checkin-button-text-color);
     -webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 1px 0 rgba(0,0,0,.1);
     -moz-box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 1px 0 rgba(0,0,0,.1);
     box-shadow: inset 0 2px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 2px 0 rgba(0,0,0,.1);
@@ -65,35 +56,38 @@ h1 {
 .btn:active,
 .btn:hover
 {
-    color: darken(@checkinButtonColor, 10%);
+    //color: darken(@checkin-button-text-color, 10%);
+    //.buttonBackground( @checkin-button-background, darken(@checkin-button-background, 5%));
+    
+    //background-position: initial;
 }
 
 .btn-primary
 {
-    .buttonBackground(@checkinPrimaryButtonBackground, spin(@checkinPrimaryButtonBackground, 20%));
-	color: @checkinPrimaryButtonColor;
-	border-color: @checkinPrimaryButtonBorderColor;
+    .buttonBackground(@checkin-button-primary-background, spin(@checkin-button-primary-background, 20%));
+	color: @checkin-button-primary-text-color;
+	border-color: @checkin-button-primary-border-color;
 }
 
 .btn-primary:hover,
 .btn-primary:active
 {
-    color: darken(@checkinPrimaryButtonColor, 10%);
+    color: darken(@checkin-button-primary-text-color, 10%);
+    .buttonBackground(spin(@checkin-button-primary-background, 20%), spin(@checkin-button-primary-background, 30%));
 }
+
 
 .btn-checkin-select
 {
-    font-family: @rockSansFontFamilySemiBold;
+    font-weight: @font-semibold-weight;
     font-size: 24px;
     margin-bottom: 20px;
     padding-top: 14px;
     padding-bottom: 14px;
 }
 
-// 
-// 2. Global Page Settings 
-// 
-// < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > 
+// 2. Global Styles
+// -------------------------
 
 // turn off configuration items 
 #cms-admin-footer
@@ -117,12 +111,8 @@ body {
 }
 
 
-//
 // 3. Components
-//
-// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-
-// --------------------------------------
+// -------------------------
 
 // checkin header items
 
@@ -134,23 +124,21 @@ body {
 .checkin-header h1
 {
     font-size: 48px;
-	font-family: @checkinHeaderFontFamily;
-	font-weight: normal;
+	font-weight: @header-font-weight;
 }
 
 .checkin-header .checkin-sub-title
 {
-    color: @checkinSubHeadingColor;
+    color: @subheader-text-color;
 	font-size: 24px;
-    font-family: @checkinSubHeaderFontFamily;
-    font-weight: normal;
+    font-weight: @subheader-font-weight;
     margin-top: 12px;
 }
 
 .btn .checkin-sub-title
 {
     font-size: 20px;
-    font-family: @checkinButtonSubtitleFontFamily;
+    font-weight: @checkin-button-alttext-weight;
     font-weight: normal;
     margin-left: 20px;
 }
@@ -172,7 +160,7 @@ body {
     padding: 20px 48px;
     font-size: 48px;
     line-height: 48px;
-    font-family: @checkinButtonFontFamily;
+    font-weight: @checkin-button-text-weight;
 }
 
 .checkin-body .checkin-actions {
@@ -201,7 +189,7 @@ body {
 .checkin-count h3,
 .checkin-count li
 {
-    color: @checkinBodyColor;
+    color: @checkin-text-color;
 }
 
 .checkin-count-locations, 
@@ -225,7 +213,7 @@ body {
 .checkin-actions a
 {
     font-size: 22px;
-    font-family: @checkinButtonFontFamily; 
+    font-weight: @checkin-button-text-weight; 
     padding: 12px 24px;
 }
 
@@ -248,7 +236,7 @@ body {
 
 .btn-checkbox.active
 {
-    .buttonBackground(@checkinPrimaryButtonBackground, spin(@checkinPrimaryButtonBackground, 20%));
+    .buttonBackground(@checkin-button-primary-background, spin(@checkin-button-primary-background, 20%));
     -webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 1px 0 rgba(0,0,0,.1);
     -moz-box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 1px 0 rgba(0,0,0,.1);
     box-shadow: inset 0 2px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 2px 0 rgba(0,0,0,.1);
@@ -282,14 +270,32 @@ button.btn-checkbox.btn i
 {
     font-size: 22px;
     margin-bottom: 18px;
-	color: @checkinBodyColor;
+	color: @checkin-text-color;
 }
 
-//
-// 4. Page Styles
-//
-// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-// --------------------------------------
+/* Ten Key Keypad */
+.tenkey
+{
+    width: 320px;
+}
+
+.tenkey a.btn {
+    margin: 2px;
+    font-size: 20px;
+    width: 60px;
+    height: 38px;
+    padding-top: 33px;
+}
+
+.tenkey a.digit {
+    font-size: 48px;
+    height: 43px;
+    padding-top: 28px;
+    font-weight: @font-semibold-weight;
+}
+
+// 4. Specific Page Styles
+// -------------------------
 
 // search page
 
@@ -303,7 +309,7 @@ button.btn-checkbox.btn i
 input.checkin-phone-entry
 {
     height: 50px;
-    font-family: @checkinButtonFontFamily;
+    font-weight: @checkin-button-text-weight;
     font-size: 36px;
     padding: 6px 24px;
     width: 272px; // keypad is 320 - padding (24px x 2)
@@ -329,12 +335,3 @@ input.checkin-phone-entry
 
 /***********************  DEVELOPER ADDITIONS BELOW TO BE MOVED BY JON ***********************/
 
-/* Nick Airdo - for check-in to denote when a person is checked in, 
-    or a button choice that is not disabled, but also not recommended for clicking (such as
-    selecting an ability level that a person has already grown beyond).
-    */
-.btn-dimmed
-{
-	/* Jon, change this to something you think works well */
-	opacity: 0.33;
-}

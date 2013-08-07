@@ -1,41 +1,68 @@
-/*!
- * Rock ChMS Theme v 2.0
- *
- * Copyright 2012 Spark Development Network
- *
- * 
- */
+/*
+    Rock ChMS Theme Styles
 
-// [Table of Contents]
-// 
-// 1. Bootstrap Overides
-// 2. Global Page Settings
-// 3. Components
-// 4. Header and Nav
-// 5. Footer
-// 6. Responsive Tweaks
-// 7. Layout Specific Styles
+    1. HTML Overrides
+    2. Bootstrap Overides
+    3. Page Header
+    4. Footer
+    5. Responsive Tweaks
+    6. Layout Specific Styles
 
-//
-// Variables
-// --------------------------------------------------
+*/
+
+
+// Load Master Styles
+// -------------------------
 @import "./rock-global-variables.less";
 @import "./rock-bootstrap-variables.less";
-@import "../../../Css/Less/Vendor/Bootstrap/mixins.less";
 @import "../../../Css/rock-core.less";
-@import "../../../Css/grid.less";
 
-//
-// 1. Bootstrap Overides
-//
-// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+
+
+// 1. HTML Overrides
+// -------------------------
+
+// set window background
+html
+{
+ background-color: #3a3a3a;  
+ background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4="); 
+}
+
+h1 {
+	font-size: 28px;
+}
 
 h1, h2, h3 {
 	letter-spacing: -0.03em;
 }
 
-h1 {
-	font-size: 28px;
+h2, h3, h4
+{
+    font-weight: @font-semibold-weight;
+}
+
+// get rid of dotted box around anchors with focus
+a {
+   outline: 0;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+
+a:hover i[class^="icon-"]
+{
+    text-decoration: none;
+}
+
+// 2. Bootstrap Overrides 
+// ------------------------- 
+
+.btn {
+    background-image: none;
+    box-shadow: none;
 }
 
 .navbar-inner {
@@ -53,7 +80,7 @@ h1 {
 
 .modal-header .close
 {
-    color: @rockLightTextColor;
+    color: @site-header-text-color;
 	opacity: 1;
 	text-shadow: none;
 }
@@ -61,17 +88,51 @@ h1 {
 .nav-pills > .active > a,
 .nav-pills > .active > a:hover
 {
-    background-color: @rockSecondaryTextColor;
+    background-color: @site-accentbold-color;
+    color: @site-accentbold-inverse-color;
 }
 
 .nav-pills > li > a
 {
-    color: @rockTextColor;
+    color: @site-text-color;
+}
+
+.nav-pills > li > a:hover
+{
+    background-color: @site-accent-color;
 }
 
 .btn-mini
 {
     padding: 0 6px;
+}
+
+.dropdown-menu li > a:hover,
+.dropdown-menu li > a:focus,
+.dropdown-submenu:hover > a {
+    background-image: none;
+    background-color: @site-accentbold-color;
+}
+
+.label,
+.badge {
+    font-weight: @font-light-weight;
+}
+
+.btn-primary.disabled, .btn-primary[disabled] {
+    color: @button-disabled-text-color;
+    background-color: @button-disabled-background;
+    cursor: not-allowed;
+}
+
+/* breadcrumbs */
+.breadcrumb {
+	margin: 20px 0 20px;
+	padding: 0;
+}
+
+.breadcrumb i[class^="icon-"] {
+	margin-right: 6px;
 }
 
 // add 40px padding if in desktop size so tooltips have a bit more space if they are close to the edge
@@ -84,52 +145,50 @@ h1 {
     }
 }
 
-//
-// 2. Global Page Settings
-//
-// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+// 3. Page Header
+// -------------------------
 
-// set window background
-html
-{
- background-color: #3a3a3a;  
- background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4="); 
+// page header (logo bar)
+.pageheader .navbar-inner {  
+	border-bottom: 1px solid #121212;
+	padding: 4px 0;
+    filter: initial;
+	background-image: none;
+	background-color: transparent;
 }
 
-
-// get rid of that dotted box around anchors with focus
-a {
-   outline: 0;
+.pageheader .brand {
+	padding: 5px 20px 0 20px;
 }
 
+.pageheader-logo {
+	height: 36px;
+	width: 92.83px
+}
 
-//
-// 3. Components
-//
-// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+.pageheader-collapse {
+	margin-top: 6px;
+}
 
-// --------------------------------------
-// PageNav
-// Desc: Main navigation for the page
+// page nav
 .pagenav {
-	border-top: 1px solid lighten(@rockPageNavBackground, 10%);
+	border-top: 1px solid lighten(@site-header-background, 10%);
 }
 
 .pagenav .navbar-inner {
-	.block-gradient(@rockPageNavBackground);
-	border-bottom: 1px solid darken(@rockPageNavBackground, 10%);
+	.block-gradient(@site-header-background);
+	border-bottom: 1px solid darken(@site-header-background, 10%);
 }
 
 .pagenav ul.nav {
-	border-left: 1px solid lighten(@rockPageNavBackground, 10%);
-    
+	border-left: 1px solid lighten(@site-header-background, 10%);
     width: 100%;
 }
 
 .pagenav .nav > li {
 	height: 67px;
-	border-left: 1px solid darken(@rockPageNavBackground, 10%);
-    border-right: 1px solid lighten(@rockPageNavBackground, 10%);
+	border-left: 1px solid darken(@site-header-background, 10%);
+    border-right: 1px solid lighten(@site-header-background, 10%);
     width: 12.5%; /* set to allow 8 nav items */
 }
 
@@ -139,7 +198,7 @@ a {
 	top: 0;
 	right: 0;
 	bottom: 0;
-	border-right: 1px solid darken(@rockPageNavBackground, 10%);
+	border-right: 1px solid darken(@site-header-background, 10%);
 }
 
 .pagenav.navbar .nav > li > a {
@@ -166,197 +225,16 @@ a {
 	padding: 16px;
 }
 
-.pagenav li a {
-	color: @rockSecondaryTextColor;
-}
-
 .pagenav .dropdown-menu li.divider:last-child
 {
     display: none;
 }
 
-.pagenav-header {
-	font-family: @rockFontFamilyBold;
+.pagenav-subitem-header {
+	font-weight: @font-bold-weight;
 }
 
-
-/* Smart Search 
-   Used in the header to allow people to search for people, groups, etc
-*/
-
-.smart-search {
-	float: right;
-	margin-top: 10px;
-	font-size: 11px;
-	height: 16px;
-	font-size: 12px;
-	background-color: rgba(255, 255, 255, 0.1);
-	border: 1px solid #2c2c2c;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) inset, 0 1px 0 rgba(255, 255, 255, 0.15);
-    height: 26px;
-    border-radius: 15px;
-    padding: 0 6px;
-}
-
-.smart-search:focus {
-	border-color: #595959;
-}
-
-.smart-search input {
-	border: 0;
-	background: transparent;
-	color: @rockLightTextColor;
-	border-radius: 0;
-	width: 150px;
-}
-
-.smart-search input:focus {
-	box-shadow: 0 0 0 0;
-}
-
-.smart-search input:-moz-placeholder {
-    color: darken(@rockLightTextColor, 25%); 
-}
-
-.smart-search input::-moz-placeholder {
-    color: darken(@rockLightTextColor, 25%); 
-}
-
-.smart-search input::-webkit-input-placeholder {
-    color: darken(@rockLightTextColor, 25%); 
-}
-
-.smart-search .nav > li > a {
-	padding: 4px 15px;
-}
-
-.smart-search input::selection {
-	background: #2e2e2e; /* Safari */
-	color: #fff;
-}
-
-.smart-search input::-moz-selection {
-	background: #2e2e2e; /* Firefox */
-	color: #fff;
-}
-
-/* Treeviews */
-
-.treeview {
-	margin-bottom: 20px;
-}
-
-.treeview-actions {
-	width: 100%;
-	text-align: right;
-	padding-right: 12px;
-	margin-bottom: 12px;
-}
-
-#treeview-content {
-	clear: both;
-	overflow: hidden;
-}
-
-.k-state-selected { 
-	background-color: @rockSelectionBackgroundColor !important;
-	border: 1px solid @rockSelectionBorderColor !important;
-	color: @rockTextColor !important;
-	box-shadow: none !important;
-}
-
-.k-state-hover {
-	--background: none !important;
-	border: 1px solid transparent !important;
-	color: #000 !important;
-	background: #b8b9b9 !important; 
-	background: -moz-linear-gradient(top, #b8b9b9 0%, #b8b9b9 100%) !important;
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#b8b9b9), color-stop(100%,#b8b9b9)) !important;
-	background: -webkit-linear-gradient(top, #b8b9b9 0%,#b8b9b9 100%) !important;
-	background: -o-linear-gradient(top, #b8b9b9 0%,#b8b9b9 100%) !important;
-	background: -ms-linear-gradient(top, #b8b9b9 0%,#b8b9b9 100%) !important;
-	background: linear-gradient(to bottom, #b8b9b9 0%,#b8b9b9 100%) !important;
-}
-
-.k-state-hover {
-	background-color: @rockHoverBackgroundColor !important;
-}
-
-// switch 
-.switch span.switch-primary, .switch span.switch-left {
-  color: white;
-  background: #898a8a;
-  background-image: none;
-}
-
-/* breadcrumbs */
-.breadcrumb {
-	background-color: transparent;
-	margin: 20px 0 20px;
-	padding: 0;
-}
-
-.breadcrumb a:hover {
-	text-decoration: none;
-}
-
-.breadcrumb i[class^="icon-"] {
-	margin-right: 6px;
-}
-
-.pageoverview {
-	margin-bottom: 24px;
-}
-
-.pageoverview-icon {
-	float: left;
-}
-
-.pageoverview-description {
-	vertical-align: top;
-	margin-left: 18px;
-	margin-top: 6px;
-	float: left;
-}
-
-
-//
-
-//
-// 4. Header and Nav
-//
-// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
-
-// background for header
-.pageheader .navbar-inner {  
-	border-bottom: 1px solid #121212;
-	padding: 4px 0;
-    filter: initial;
-	background-image: none;
-	background-color: transparent;
-}
-
-.pageheader .brand {
-	padding: 5px 20px 0 20px;
-}
-
-.pageheader-logo {
-	height: 36px;
-	width: 92.83px
-}
-
-.pagetitle .navbar-inner,
-.persondetails-header .navbar-inner {
-	background-color: @rockPageTitleBackground;
-	border-bottom: 1px solid darken(@rockPageTitleBackground, 10%);
-	background-image: none;
-    filter: initial;
-}
-
-.pageheader-collapse {
-	margin-top: 6px;
-}
-
+// page title
 .page-icon
 {
     font-size: 36px;
@@ -364,18 +242,33 @@ a {
     float: left;
 }
 
-//
-// 5. Footer
-//
-// <><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
+.pagetitle .navbar-inner {
+	background-color: @site-pagetitle-background;
+	border-bottom: 1px solid darken(@site-pagetitle-background, 10%);
+	background-image: none;
+    filter: initial;
+}
+
+// switch 
+/*
+ .switch span.switch-primary, .switch span.switch-left {
+  color: white;
+  background: #898a8a;
+  background-image: none;
+}
+    */
+
+// 4. Footer
+// -------------------------
 
 
 .page-footer {
+    margin-top: 24px;
 	padding-top: 24px;
 	min-height: 120px;
-	background-color: @rockPageNavBackground;
+	background-color: @site-footer-background;
 	border-top: 1px solid #000;
-	color: @rockCalloutColor;
+	color: @site-footer-text-color;
 }
 
 @media (max-width: 767px) {
@@ -386,10 +279,8 @@ a {
 	}
 }
 
-// 
-// 6. Responsive Tweaks
-// 
-// < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < >
+// 5. Responsive Tweaks
+// -------------------------
 @media (max-width: 767px) {
 	.pagetitle .navbar-inner {
 		padding: 0 20px 0 20px;
@@ -399,20 +290,30 @@ a {
 		float: left;
 		margin-left: 20px;
 	}
+
+    .pagenav .nav > li,
+	.pagenav ul.nav {
+		border: 0;
+	}	
+	
+	.pagenav .nav > li {
+		width: 33%;
+	}
+	
+	.pagenav ul.nav {
+		width: 100%;
+	}
+	
+	.pagenav .nav > li:last-child:after {
+		border-right: 0;
+	}
 }
 
 
-// 
-// 7. Layout Spefic Styles 
-//
-// < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > < > 
+// 6. Layout Specific Styles
+// -------------------------
 
-.body-content
-{
-    margin-bottom: 24px;
-}
-
-
+// splash screen
 body#splash
 {
     background: none;
@@ -430,20 +331,13 @@ body#splash
 }
 
 body#splash #content-box {
-    background-image: url('../Assets/Images/light-texture.png');
-    .border-radius(@baseBorderRadius);
+    background-color: @site-background-color;
+    .border-radius(@site-border-radius);
 }
 
 #splash .form-actions
 {
     margin-bottom: 0;
-}
-
-@media all and (-webkit-min-device-pixel-ratio: 1.5) {
-  #splash #content-box {
-    background-image: url('../Assets/Images/light-texture@2x.png');
-    background-size: 256px 256px;
-  }
 }
 
 // special styles for the login control 
@@ -452,14 +346,14 @@ body#splash #content-box {
 }
 
 #splash .login .form-actions {
-    .border-radius(@baseBorderRadius);
+    .border-radius(@site-border-radius);
 }
 
 // 2 Column Left
 
 #left-column-content {
 	min-height: 600px;
-	border-right: 1px solid @rockLightTextColor;
+	border-right: 1px solid @site-header-text-color;
 }
 
 @media (max-width: 767px) {
@@ -468,6 +362,4 @@ body#splash #content-box {
 		border-right: 0;
 	}
 }
-
-@import "./rock-theme-responsive.less";
 
