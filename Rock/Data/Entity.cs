@@ -139,6 +139,22 @@ namespace Rock.Data
             }
         }
 
+        /// <summary>
+        /// Gets a URL friendly version of the EncryptedKey.
+        /// </summary>
+        /// <value>
+        /// The URL encoded key.
+        /// </value>
+        [DataMember]
+        public virtual string UrlEncodedKey
+        {
+            get
+            {
+                string encodedKey = System.Web.HttpUtility.UrlEncode( EncryptedKey );
+                return encodedKey.Replace( '%', '!' );
+            }
+        }
+
         #endregion
 
         #region Static Properties

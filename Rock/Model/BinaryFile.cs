@@ -8,8 +8,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-
+using Rock.BinaryFile;
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -102,6 +103,15 @@ namespace Rock.Model
         [DataMember]
         public string Description { get; set; }
 
+        /// <summary>
+        /// Gets or sets the storage entity type id.
+        /// </summary>
+        /// <value>
+        /// The storage entity type id.
+        /// </value>
+        [DataMember]
+        public int? StorageEntityTypeId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -122,6 +132,14 @@ namespace Rock.Model
         /// </value>
         public virtual BinaryFileData Data { get; set; }
 
+        /// <summary>
+        /// Gets or sets the type of the storage entity.
+        /// </summary>
+        /// <value>
+        /// The type of the storage entity.
+        /// </value>
+        public virtual EntityType StorageEntityType { get; set; }
+
         #endregion
 
         #region Methods
@@ -135,6 +153,18 @@ namespace Rock.Model
         public override string ToString()
         {
             return this.FileName;
+        }
+
+        /// <summary>
+        /// Gets the URL.
+        /// </summary>
+        /// <param name="height">The height.</param>
+        /// <param name="width">The width.</param>
+        /// <returns></returns>
+        public string GetUrl( int? height = null, int? width = null )
+        {
+            var provider = StorageContainer.GetComponent( StorageEntityType.Name );
+            return provider.GetUrl( this, height, width );
         }
 
         #endregion

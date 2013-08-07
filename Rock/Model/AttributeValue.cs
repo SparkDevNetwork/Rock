@@ -76,6 +76,7 @@ namespace Rock.Model
         {
             get
             {
+
                 Rock.Field.IFieldType result = null;
                 Rock.Web.Cache.AttributeCache attribute = Rock.Web.Cache.AttributeCache.Read( this.AttributeId );
                 if (attribute != null)
@@ -86,28 +87,10 @@ namespace Rock.Model
                   }
                 }
 
-                return result; 
+                return result;
             }
         }
 
-        /// <summary>
-        /// Determines whether [is encrypted field type].
-        /// </summary>
-        /// <returns>
-        ///   <c>true</c> if [is encrypted field type]; otherwise, <c>false</c>.
-        /// </returns>
-        internal bool IsEncryptedFieldType()
-        {
-            if ( FieldType != null )
-            {
-                return FieldType is Rock.Field.Types.EncryptedFieldType;
-            }
-            else
-            {
-                return false;
-            }
-        }
-        
         /// <summary>
         /// Gets or sets the Attribute.
         /// </summary>
@@ -125,14 +108,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            if ( IsEncryptedFieldType() )
-            {
-                return "**********";
-            }
-            else
-            {
-                return this.Value;
-            }
+            return this.Value;
         }
     }
 
