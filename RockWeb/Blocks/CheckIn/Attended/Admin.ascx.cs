@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 ", this.Page.ClientScript.GetPostBackEventReference( lbRefresh, "" ) );
                 phScript.Controls.Add( new LiteralControl( script ) );
 
-                if ( !CurrentKioskId.HasValue || UserBackedUp )
+                if ( !CurrentKioskId.HasValue || UserBackedUp || CurrentGroupTypeIds == null )
                 {   // #DEBUG, may be the local machine
                     var kiosk = new DeviceService().GetByDeviceName( Environment.MachineName );
                     if ( kiosk != null )
