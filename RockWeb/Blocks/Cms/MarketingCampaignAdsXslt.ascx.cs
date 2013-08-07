@@ -35,6 +35,10 @@ namespace RockWeb.Blocks.Cms
     [CustomCheckboxListField( "Audience Primary Secondary", "Primary or Secondary Audience", "1:Primary,2:Secondary", false, "1,2", "Filter", 7 )]
 
     [BooleanField( "Show Debug", "Output the XML to be transformed.", false, "Advanced", 8 )]
+
+    [IntegerField("Image Width", "", true, int.MinValue, "", 9)]
+    [IntegerField("Image Height", "", true, int.MinValue, "", 10)]
+    
     
     [ContextAware( typeof(Campus) )]
     public partial class MarketingCampaignAdsXslt : RockBlock
@@ -236,7 +240,7 @@ namespace RockWeb.Blocks.Cms
                             }
                         }
 
-                        string valueHtml = attribute.FieldType.Field.FormatValue( this, attributeValue.Value, attribute.QualifierValues, false );
+                        string valueHtml = attribute.FieldType.Field.FormatValue(this, attributeValue.Value, attribute.QualifierValues, false);
                         XElement valueNode = new XElement( "Attribute" );
                         valueNode.Add( new XAttribute( "Key", attribute.Key ) );
                         valueNode.Add( new XAttribute( "Name", attribute.Name ) );
@@ -266,8 +270,14 @@ namespace RockWeb.Blocks.Cms
                 try
                 {
                     XslCompiledTransform xslTransformer = new XslCompiledTransform();
+
+                    // pass in xslt parms
+                    XsltArgumentList xsltArgs = new XsltArgumentList();
+                    xsltArgs.AddParam("application_path", "", HttpRuntime.AppDomainAppVirtualPath);
+                    // todo add theme path JME
+                                        
                     xslTransformer.Load(xsltFile);
-                    xslTransformer.Transform(doc.CreateReader(), null, tw);
+                    xslTransformer.Transform(doc.CreateReader(), xsltArgs, tw);
                     outputXml = sb.ToString();
                 }
                 catch (Exception ex)
