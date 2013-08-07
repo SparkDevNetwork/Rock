@@ -3,12 +3,11 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+
 using System;
 using System.ComponentModel;
 using System.Web.UI;
-
 using Rock.Attribute;
-using Rock.Model;
 using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Utility
@@ -27,22 +26,22 @@ namespace RockWeb.Blocks.Utility
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+            int idleSeconds;
 
-            int idleSeconds = 20;
             if ( !int.TryParse( GetAttributeValue( "IdleSeconds" ), out idleSeconds ) )
                 idleSeconds = 20;
 
             int ms = idleSeconds * 1000;
-
             string script = string.Format( @"
-
+$(function () {{
     $.idleTimer({0});
-    $(document).bind('idle.idleTimer', function(){{
+    $(document).bind('idle.idleTimer', function() {{
         window.location = '{1}';
     }});
+}});
                 
 ", ms, GetAttributeValue( "NewLocation" ) );
-            Page.ClientScript.RegisterClientScriptBlock( this.GetType(), "idle-timeout", script, true );
+            ScriptManager.RegisterStartupScript( Page, this.GetType(), "idle-timeout", script, true );
         }
    }
 }
