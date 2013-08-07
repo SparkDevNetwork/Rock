@@ -22,27 +22,26 @@ namespace RockWeb.Blocks.Utility
         {
             base.OnInit( e );
 
-            CurrentPage.AddScriptLink( this.Page, "~/scripts/idle-timer.min.js" );
+            CurrentPage.AddScriptLink( this.Page, "~/Scripts/idle-timer.min.js" );
         }
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
 
-            int idleSeconds = 20;
+            int idleSeconds = 30;
             if ( !int.TryParse( GetAttributeValue( "IdleSeconds" ), out idleSeconds ) )
-                idleSeconds = 20;
+                idleSeconds = 30;
 
             int ms = idleSeconds * 1000;
 
             string script = string.Format( @"
 
-    $.idleTimer({0});
-    $(document).bind('idle.idleTimer', function(){{
-        window.location = '{1}';
-    }});
-                
-", ms, GetAttributeValue( "NewLocation" ) );
-            Page.ClientScript.RegisterClientScriptBlock( this.GetType(), "idle-timeout", script, true );
+            $.idleTimer({0});
+            $(document).bind('idle.idleTimer', function(){{
+                window.location = '{1}';
+            }});                
+            ", ms, GetAttributeValue( "NewLocation" ) );
+                    Page.ClientScript.RegisterClientScriptBlock( this.GetType(), "idle-timeout", script, true );
         }
    }
 }

@@ -180,45 +180,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
-        /// Handles the DataBound event of the lvAddFamily control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lvAddFamily_DataBound( object sender, EventArgs e )
-        {
-            foreach ( var item in lvAddFamily.Items )
-            {
-                var ddlGender = ( (DropDownList)item.FindControl( "ddlGender" ) );
-                ddlGender.BindToEnum( typeof( Gender ), true );
-
-                var ddlAbilityGrade = ( (RockDropDownList)item.FindControl( "ddlAbilityGrade" ) );
-                ddlAbilityGrade.DataSource = GetAbilityGradeList();
-                ddlAbilityGrade.DataBind();
-            }
-        }
-
-        /// <summary>
-        /// Handles the ItemDataBound event of the lvAddFamily control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="ListViewItemEventArgs"/> instance containing the event data.</param>
-        protected void lvAddFamily_ItemDataBound( object sender, ListViewItemEventArgs e )
-        {
-            //if ( e.Item.ItemType == ListViewItemType.DataItem )
-            //{
-            //    var firstName = ( (TextBox)e.Item.FindControl( "tbFirstName" ) );
-            //    var lastName = ( (TextBox)e.Item.FindControl( "tbLastName" ) );
-            //    var birthDate = ( (DatePicker)e.Item.FindControl( "dpBirthDate" ) );
-            //    var ddlGender = ( (DropDownList)e.Item.FindControl( "ddlGender" ) );
-            //    var ddlAbilityGrade = ( (RockDropDownList)e.Item.FindControl( "ddlAbilityGrade" ) );
-                
-            //    ddlGender.BindToEnum( typeof( Gender ), true );
-            //    ddlAbilityGrade.DataSource = GetAbilityGradeList();
-            //    ddlAbilityGrade.DataBind();
-            //}
-        }
-
-        /// <summary>
         /// Handles the PagePropertiesChanging event of the lvAddFamily control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -306,11 +267,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
             newFamilyList.Columns.Add( "Gender", typeof( Gender ) );
             newFamilyList.Columns.Add( "AbilityGrade", typeof( System.String ) );
 
-            newFamilyList.Rows.Add( string.Empty, string.Empty, new DateTime(), Gender.Unknown, string.Empty );
-            newFamilyList.Rows.Add( string.Empty, string.Empty, new DateTime(), Gender.Unknown, string.Empty );
-            newFamilyList.Rows.Add( string.Empty, string.Empty, new DateTime(), Gender.Unknown, string.Empty );
-            newFamilyList.Rows.Add( string.Empty, string.Empty, new DateTime(), Gender.Unknown, string.Empty );
-            newFamilyList.Rows.Add( string.Empty, string.Empty, new DateTime(), Gender.Unknown, string.Empty );
+            newFamilyList.Rows.Add( string.Empty, string.Empty, new DateTime(), new Gender(), string.Empty );
+            newFamilyList.Rows.Add( string.Empty, string.Empty, new DateTime(), new Gender(), string.Empty );
+            newFamilyList.Rows.Add( string.Empty, string.Empty, new DateTime(), new Gender(), string.Empty );
+            newFamilyList.Rows.Add( string.Empty, string.Empty, new DateTime(), new Gender(), string.Empty );
+            newFamilyList.Rows.Add( string.Empty, string.Empty, new DateTime(), new Gender(), string.Empty );
+
             ViewState["newFamily"] = newFamilyList;
             lvAddFamily.DataSource = newFamilyList;
             lvAddFamily.DataBind();
@@ -876,6 +838,26 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             dropDownList.Insert( 0, Rock.Constants.None.ListItem );
             return dropDownList;
+        }
+
+        /// <summary>
+        /// Handles the DataBinding event of the ddlGender control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void ddlGender_DataBinding( object sender, System.EventArgs e )
+        {
+            //var ddlGender = (DropDownList)sender;
+            //ddlGender.BindToEnum( typeof( Gender ) );
+            //ddlGender.SelectedValue = Eval( "Gender" ).ToString();
+        }
+
+        protected void ddlAbilityGrade_DataBinding( object sender, System.EventArgs e )
+        {
+            //var ddlAbilityGrade = (DropDownList)sender;            
+            //ddlAbilityGrade.DataSource = GetAbilityGradeList();
+            //ddlAbilityGrade.DataBind();
+            //ddlAbilityGrade.SelectedValue = Eval( "AbilityGrade" ).ToString();
         }
        
         #endregion                    
