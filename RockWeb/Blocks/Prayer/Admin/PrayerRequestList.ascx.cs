@@ -264,7 +264,23 @@ namespace RockWeb.Blocks.Prayer
             PrayerRequestService prayerRequestService = new PrayerRequestService();
             SortProperty sortProperty = gPrayerRequests.SortProperty;
 
-            IQueryable<PrayerRequest> prayerRequests = prayerRequestService.Queryable();
+            var prayerRequests = prayerRequestService.Queryable().Select( a =>
+                new
+                {
+                    a.Id,
+                    a.FullName,
+                    CategoryName = a.Category.Name,
+                    a.EnteredDate,
+                    a.Text,
+                    a.FlagCount,
+                    a.IsApproved,
+                    a.CategoryId,
+                    CategoryParentCategoryId = a.Category.ParentCategoryId,
+                    a.IsUrgent,
+                    a.IsPublic,
+                    a.IsActive,
+                    a.AllowComments
+                } );
 
             // Filter by prayer category if one is selected...
             int selectedPrayerCategoryID = All.Id;
@@ -272,7 +288,7 @@ namespace RockWeb.Blocks.Prayer
             if ( selectedPrayerCategoryID != All.Id && selectedPrayerCategoryID != None.Id )
             {
                 prayerRequests = prayerRequests.Where( c => c.CategoryId == selectedPrayerCategoryID
-                    || c.Category.ParentCategoryId == selectedPrayerCategoryID);
+                    || c.CategoryParentCategoryId == selectedPrayerCategoryID);
             }
 
             // Filter by approved/unapproved

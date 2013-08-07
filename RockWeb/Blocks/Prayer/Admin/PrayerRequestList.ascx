@@ -46,8 +46,8 @@
 
             <Rock:Grid ID="gPrayerRequests" runat="server" AllowSorting="true" OnRowSelected="gPrayerRequests_Edit" OnRowDataBound="gPrayerRequests_RowDataBound" >
                 <Columns>
-                    <asp:BoundField DataField="FullName" HeaderText="Name" SortExpression="FirstName" />
-                    <asp:BoundField DataField="Category.Name" HeaderText="Category" SortExpression="Category.Name" />
+                    <asp:BoundField DataField="FullName" HeaderText="Name" SortExpression="FullName" />
+                    <asp:BoundField DataField="CategoryName" HeaderText="Category" SortExpression="CategoryName" />
                     <Rock:DateField DataField="EnteredDate" HeaderText="Entered" SortExpression="EnteredDate"/>
                     <asp:BoundField DataField="Text" HeaderText="Request" SortExpression="Text" />
                     <Rock:BadgeField DataField="FlagCount" HeaderText="Flag Count" SortExpression="FlagCount" ImportantMin="4" WarningMin="2" InfoMin="1" InfoMax="2" />
