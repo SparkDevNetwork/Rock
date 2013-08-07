@@ -36,8 +36,8 @@ namespace RockWeb.Blocks.Cms
 
     [BooleanField( "Show Debug", "Output the XML to be transformed.", false, "Advanced", 8 )]
 
-    [IntegerField("Image Width", "", true, int.MinValue, "", 9)]
-    [IntegerField("Image Height", "", true, int.MinValue, "", 10)]
+    [IntegerField("Image Width", "Width that the image should be resized to. Leave height/width blank to get original size.", false, int.MinValue, "", 9)]
+    [IntegerField("Image Height", "Height that the image should be resized to. Leave height/width blank to get original size.", false, int.MinValue, "", 10)]
     
     
     [ContextAware( typeof(Campus) )]
@@ -221,26 +221,46 @@ namespace RockWeb.Blocks.Cms
 
                 marketingCampaignAd.LoadAttributes();
                 Rock.Attribute.Helper.AddDisplayControls( marketingCampaignAd, phContent );
+                
+                // create image resize width/height from block settings
+                Dictionary<string, Rock.Field.ConfigurationValue> imageConfig = new Dictionary<string, Rock.Field.ConfigurationValue>();
+                if (!string.IsNullOrWhiteSpace(GetAttributeValue("ImageWidth"))
+                    && Int32.Parse(GetAttributeValue("ImageWidth")) != Int16.MinValue)
+                    imageConfig.Add("width", new Rock.Field.ConfigurationValue(GetAttributeValue("ImageWidth")));
+
+                if (!string.IsNullOrWhiteSpace(GetAttributeValue("ImageHeight"))
+                    && Int32.Parse(GetAttributeValue("ImageHeight")) != Int16.MinValue)
+                    imageConfig.Add("height", new Rock.Field.ConfigurationValue(GetAttributeValue("ImageHeight")));
+                
                 foreach ( var item in marketingCampaignAd.Attributes )
                 {
                     AttributeCache attribute = item.Value;
                     List<AttributeValue> attributeValues = marketingCampaignAd.AttributeValues[attribute.Key];
                     foreach ( AttributeValue attributeValue in attributeValues )
                     {
+                        string valueHtml = string.Empty;
+                        
                         // If Block Attributes limit image types, limit images 
-                        if ( attribute.FieldType.Guid.Equals( new Guid( Rock.SystemGuid.FieldType.IMAGE ) ) )
+                        if (attribute.FieldType.Guid.Equals(new Guid(Rock.SystemGuid.FieldType.IMAGE)))
                         {
-                            if ( imageTypeFilter != null )
+                            if (imageTypeFilter != null)
                             {
-                                if ( !imageTypeFilter.Contains( attribute.Key ) )
+                                if (!imageTypeFilter.Contains(attribute.Key))
                                 {
                                     // skip to next attribute if this is an image attribute and it doesn't match the image key filter
                                     continue;
                                 }
+                                else
+                                {
+                                    valueHtml = attribute.FieldType.Field.FormatValue(this, attributeValue.Value, imageConfig, false);
+                                }
                             }
                         }
+                        else
+                        {
+                            valueHtml = attribute.FieldType.Field.FormatValue(this, attributeValue.Value, attribute.QualifierValues, false);
+                        }
 
-                        string valueHtml = attribute.FieldType.Field.FormatValue(this, attributeValue.Value, attribute.QualifierValues, false);
                         XElement valueNode = new XElement( "Attribute" );
                         valueNode.Add( new XAttribute( "Key", attribute.Key ) );
                         valueNode.Add( new XAttribute( "Name", attribute.Name ) );
