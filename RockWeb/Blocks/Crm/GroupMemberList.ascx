@@ -6,7 +6,7 @@
         <div id="pnlGroupMembers" runat="server">
             <h4>Group Members</h4>
             <Rock:ModalAlert ID="mdGridWarning" runat="server" />
-            <Rock:Grid ID="gGroupMembers" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gGroupMembers_Edit" IsPersonList="true">
+            <Rock:Grid ID="gGroupMembers" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gGroupMembers_Edit">
                 <Columns>
                     <asp:BoundField DataField="PersonFirstName" HeaderText="First Name" SortExpression="PersonFirstName" />
                     <asp:BoundField DataField="PersonLastName" HeaderText="Last Name" SortExpression="PersonFullNameLastFirst" />

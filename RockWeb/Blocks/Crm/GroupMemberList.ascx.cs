@@ -34,7 +34,7 @@ namespace RockWeb.Blocks.Crm
 
             gGroupMembers.DataKeyNames = new string[] { "Id" };
             gGroupMembers.CommunicateMergeFields = new List<string> { "GroupRole.Name" };
-            gGroupMembers.CommunicatePersonIdField = "PersonId";
+            gGroupMembers.PersonIdField = "PersonId";
             gGroupMembers.Actions.AddClick += gGroupMembers_AddClick;
             gGroupMembers.Actions.ShowAdd = true;
             gGroupMembers.IsDeleteEnabled = true;
