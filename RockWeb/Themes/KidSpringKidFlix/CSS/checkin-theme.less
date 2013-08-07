@@ -13,11 +13,11 @@
 // regular (weight 'normal' aka 400)
 @font-face {
     font-family: 'OpenSans';
-    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');
-    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.woff') format('woff'),
-         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.ttf') format('truetype'),
-         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.woff') format('woff'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.ttf') format('truetype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
     font-weight: 400;
     font-style: normal;
 }
@@ -25,11 +25,11 @@
 // light (weight 300)
 @font-face {
     font-family: 'OpenSans';
-    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot');
-    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.woff') format('woff'),
-         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.ttf') format('truetype'),
-         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.svg#OpenSansLight') format('svg');
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot');
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.woff') format('woff'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.ttf') format('truetype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.svg#OpenSansLight') format('svg');
     font-weight: 300;
     font-style: normal;
 }
@@ -37,11 +37,11 @@
 // semi-bold (weight 600)
 @font-face {
     font-family: 'OpenSans';
-    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot');
-    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.woff') format('woff'),
-         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.ttf') format('truetype'),
-         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.svg#OpenSansSemibold') format('svg');
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot');
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.woff') format('woff'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.ttf') format('truetype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.svg#OpenSansSemibold') format('svg');
     font-weight: 600;
     font-style: normal;
 }
@@ -49,11 +49,11 @@
 // bold (weight 700)
 @font-face {
     font-family: 'OpenSans';
-    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot');
-    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.woff') format('woff'),
-         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.ttf') format('truetype'),
-         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.svg#OpenSansBold') format('svg');
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot');
+    src: url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.woff') format('woff'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.ttf') format('truetype'),
+         url('../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.svg#OpenSansBold') format('svg');
     font-weight: 700;
     font-style: normal;
 }
@@ -107,31 +107,6 @@
     background-size: 1348px 1024px; // should be 1/2 of the actual
 }
 
-// Button backgrounds
-// ------------------
-//.buttonBackgrounds(@startColor, @endColor, @textColor: #fff, @textShadow: 0 -1px 0 rgba(0,0,0,.25)) {
-  // gradientBar will set the background to a pleasing blend of these, to support IE<=9
-//  .gradientBar(@startColor, @endColor, @textColor, @textShadow);
-//  *background-color: @endColor; /* Darken IE7 buttons by default so they stand out more given they won't have borders */
- // .reset-filter();
-
-  // in these cases the gradient won't cover the background, so we override
-//  &:hover, &:active, &.active, &.disabled, &[disabled] {
-//    color: @textColor;
-//    background-color: @endColor;
-//    *background-color: darken(@endColor, 5%);
-//  }
-  // IE 7 + 8 can't handle box-shadow to show active, so we darken a bit ourselves
-//  &:active,
-//  &.active {
-    //background-color: darken(@endColor, 10%) e("\9");
-	//background-color: #1c1a17;
-	//background-color: #b00a0e;
-    //background-color: #600002;
-//    background-color: #4F0003;
-//  }
-//}
-
 //
 // Imports
 // --------------------------------------------------
@@ -156,17 +131,28 @@ h3 {
 
 .btn-primary
 {
-    //.buttonBackgrounds(@checkinPrimaryButtonBackground, spin(@checkinPrimaryButtonBackground, 10%));
 	color: @checkin-button-primary-text-color;
 	border-color: @checkin-button-primary-border-color;
+    background: @checkin-button-primary-background;
 }
 
-.btn-primary:hover,
-.btn-primary:active
-{
-    color: darken(@checkin-button-text-color, 10%);
+.btn-primary:hover:hover,
+.btn-primary:active:hover,
+.btn-primary:hover:active,
+.btn-primary:active:active,
+.btn-primary:hover.active,
+.btn-primary:active.active,
+.btn-primary:hover.disabled,
+.btn-primary:active.disabled,
+.btn-primary:hover[disabled],
+.btn-primary:active[disabled] {
+    background: darken(@checkin-button-primary-background, 10%);
 }
 
+.btn-primary:hover, .btn-primary:active, .btn-primary.active, .btn-primary.disabled, .btn-primary[disabled] {
+    background: @checkin-button-primary-border-color;
+    background-color: #4f0003;
+}
 .grid-table
 {
 	background: rgba(100, 100, 100, .1);
