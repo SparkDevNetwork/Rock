@@ -143,7 +143,7 @@ namespace Rock.Web.UI.Controls
 
             if ( BinaryFileId != 0 )
             {
-                aFileName.HRef = string.Format( "{0}file.ashx?id={1}", ResolveUrl( "~" ), BinaryFileId );
+                aFileName.HRef = string.Format( "{0}GetFile.ashx?id={1}", ResolveUrl( "~" ), BinaryFileId );
                 aFileName.InnerText = new BinaryFileService().Queryable().Where( f => f.Id == BinaryFileId ).Select( f => f.FileName ).FirstOrDefault();
                 aFileName.Style[HtmlTextWriterStyle.Display] = "inline";
                 aRemove.Style[HtmlTextWriterStyle.Display] = "inline";
@@ -199,7 +199,7 @@ namespace Rock.Web.UI.Controls
                         $fileLink.attr('href','')
                         $fileLink.hide();   
                         $fileLink.text(e.response.FileName);        
-                        $fileLink.attr('href','{4}file.ashx?id=' + e.response.Id);
+                        $fileLink.attr('href','{4}GetFile.ashx?id=' + e.response.Id);
                         $fileLink.show('fast', function() {{ 
                             if ($('#modal-scroll-container').length) {{
                                 $('#modal-scroll-container').tinyscrollbar_update('relative');

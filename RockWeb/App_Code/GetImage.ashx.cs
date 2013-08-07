@@ -22,7 +22,7 @@ namespace RockWeb
     /// <summary>
     /// Handles retrieving file (image) data from storage, with all the bells and whistles.
     /// </summary>
-    public class Image : IHttpHandler
+    public class GetImage : IHttpHandler
     {
         /// <summary>
         /// Enables processing of HTTP Web requests by a custom HttpHandler that implements the <see cref="T:System.Web.IHttpHandler" /> interface.
@@ -58,7 +58,7 @@ namespace RockWeb
                 string physFilePath = context.Request.MapPath( string.Format( "~/Cache/{0}", cacheName ) );
 
                 // Is it cached
-                if ( System.IO.File.Exists( physFilePath ) )
+                if ( File.Exists( physFilePath ) )
                 {
                     // When was file last modified
                     dynamic fileInfo = fileService
@@ -76,7 +76,7 @@ namespace RockWeb
                     file.LastModifiedDateTime = fileInfo.LastModifiedDateTime;
 
                     // Is cached version newer?
-                    if ( !file.LastModifiedDateTime.HasValue || file.LastModifiedDateTime.Value.CompareTo( System.IO.File.GetCreationTime( physFilePath ) ) <= 0 )
+                    if ( !file.LastModifiedDateTime.HasValue || file.LastModifiedDateTime.Value.CompareTo( File.GetCreationTime( physFilePath ) ) <= 0 )
                     {
                         if ( file.Data == null )
                         {
@@ -136,7 +136,7 @@ namespace RockWeb
         {
             try
             {
-                using ( BinaryWriter binWriter = new BinaryWriter( System.IO.File.Open( physFilePath, FileMode.Create ) ) )
+                using ( BinaryWriter binWriter = new BinaryWriter( File.Open( physFilePath, FileMode.Create ) ) )
                 {
                     binWriter.Write( file.Data.Content );
                 }
@@ -154,9 +154,9 @@ namespace RockWeb
             try
             {
                 byte[] data;
-                using ( BinaryReader binReader = new BinaryReader( System.IO.File.Open( physFilePath, FileMode.Open, FileAccess.Read, System.IO.FileShare.Read ) ) )
+                using ( BinaryReader binReader = new BinaryReader( File.Open( physFilePath, FileMode.Open, FileAccess.Read, FileShare.Read ) ) )
                 {
-                    data = System.IO.File.ReadAllBytes( physFilePath );
+                    data = File.ReadAllBytes( physFilePath );
                 }
                 return data;
             }

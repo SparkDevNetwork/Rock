@@ -114,7 +114,7 @@ namespace Rock.Web.UI.Controls
                         $('#{1}').val(e.response.Id);
                         $('#{2}').attr('src','');
                         $('#{2}').hide();             
-                        $('#{2}').attr('src','{4}Image.ashx?id=' + e.response.Id + '&width=50&height=50');
+                        $('#{2}').attr('src','{4}GetImage.ashx?id=' + e.response.Id + '&width=50&height=50');
                         $('#{2}').show('fast', function() {{ 
                             if ($('#modal-scroll-container').length) {{
                                 $('#modal-scroll-container').tinyscrollbar_update('relative');
@@ -178,7 +178,7 @@ namespace Rock.Web.UI.Controls
             if ( ImageId.HasValue )
             {
                 image.Style["display"] = "inline";
-                image.ImageUrl = "~/image.ashx?" + ImageId.Value.ToString() + "&width=50&height=50";
+                image.ImageUrl = "~/GetImage.ashx?" + ImageId.Value.ToString() + "&width=50&height=50";
             }
             else
             {
