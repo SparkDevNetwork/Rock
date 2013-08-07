@@ -141,7 +141,6 @@
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
-    <Compile Include="Attribute\EncryptedFieldAttribute.cs" />
     <Compile Include="Attribute\LocationFieldAttribute.cs" />
     <Compile Include="Attribute\GroupRoleFieldAttribute.cs" />
     <Compile Include="Attribute\MemoFieldAttribute.cs" />
@@ -173,7 +172,6 @@
     <Compile Include="Field\Types\ComponentsFieldType.cs" />
     <Compile Include="Field\Types\CategoryFieldType.cs" />
     <Compile Include="Field\Types\CategoriesFieldType.cs" />
-    <Compile Include="Field\Types\EncryptedFieldType.cs" />
     <Compile Include="Field\Types\LocationFieldType.cs" />
     <Compile Include="Field\Types\GroupRoleFieldType.cs" />
     <Compile Include="Migrations\201305032320163_Communications.cs" />
@@ -414,6 +412,40 @@
     <Compile Include="Migrations\201307302059199_BinaryFileStorageProviders.Designer.cs">
       <DependentUpon>201307302059199_BinaryFileStorageProviders.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201307312305307_GroupSearchComponent.cs" />
+    <Compile Include="Migrations\201307312305307_GroupSearchComponent.Designer.cs">
+      <DependentUpon>201307312305307_GroupSearchComponent.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308011900113_PageSettingUpdates.cs" />
+    <Compile Include="Migrations\201308011900113_PageSettingUpdates.Designer.cs">
+      <DependentUpon>201308011900113_PageSettingUpdates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308012159011_AddPeoplePage.cs" />
+    <Compile Include="Migrations\201308012159011_AddPeoplePage.Designer.cs">
+      <DependentUpon>201308012159011_AddPeoplePage.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308020119039_CheckinAdminPages.cs" />
+    <Compile Include="Migrations\201308020119039_CheckinAdminPages.Designer.cs">
+      <DependentUpon>201308020119039_CheckinAdminPages.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308021742105_CurrentPersonBlock.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Migrations\201308021742105_CurrentPersonBlock.Designer.cs">
+      <DependentUpon>201308021742105_CurrentPersonBlock.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308021811252_ChangeBadges1Case.cs" />
+    <Compile Include="Migrations\201308021811252_ChangeBadges1Case.Designer.cs">
+      <DependentUpon>201308021811252_ChangeBadges1Case.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308052350229_RenameLocationTypeField.cs" />
+    <Compile Include="Migrations\201308052350229_RenameLocationTypeField.Designer.cs">
+      <DependentUpon>201308052350229_RenameLocationTypeField.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308062206216_FlipCheckinClassRelationships.cs" />
+    <Compile Include="Migrations\201308062206216_FlipCheckinClassRelationships.Designer.cs">
+      <DependentUpon>201308062206216_FlipCheckinClassRelationships.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -441,6 +473,7 @@
     </Compile>
     <Compile Include="PersonProfile\IconBadge.cs" />
     <Compile Include="PersonProfile\TextBadge.cs" />
+    <Compile Include="Search\Group\Name.cs" />
     <Compile Include="SystemGuid\EntityType.cs" />
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
     <Compile Include="Web\Cache\CategoryCache.cs" />
@@ -1025,6 +1058,7 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\DateRangePicker.cs" />
     <Compile Include="Web\UI\Controls\Grid\CheckBoxEditableField.cs" />
     <Compile Include="Web\UI\Controls\Grid\ColorField.cs" />
     <Compile Include="Web\UI\Controls\IRequiredControl.cs" />
@@ -1033,6 +1067,7 @@
     <Compile Include="Web\UI\Controls\NewFamily\AttributesRow.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\Members.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\MembersRow.cs" />
+    <Compile Include="Web\UI\Controls\NumberRangeEditor.cs" />
     <Compile Include="Web\UI\Controls\PersonProfile\Badge.cs" />
     <Compile Include="Web\UI\Controls\PersonLink.cs" />
     <Compile Include="Web\UI\Controls\HtmlEditor.cs" />
@@ -2028,6 +2063,30 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307302059199_BinaryFileStorageProviders.resx">
       <DependentUpon>201307302059199_BinaryFileStorageProviders.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201307312305307_GroupSearchComponent.resx">
+      <DependentUpon>201307312305307_GroupSearchComponent.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308011900113_PageSettingUpdates.resx">
+      <DependentUpon>201308011900113_PageSettingUpdates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308012159011_AddPeoplePage.resx">
+      <DependentUpon>201308012159011_AddPeoplePage.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308020119039_CheckinAdminPages.resx">
+      <DependentUpon>201308020119039_CheckinAdminPages.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308021742105_CurrentPersonBlock.resx">
+      <DependentUpon>201308021742105_CurrentPersonBlock.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308021811252_ChangeBadges1Case.resx">
+      <DependentUpon>201308021811252_ChangeBadges1Case.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308052350229_RenameLocationTypeField.resx">
+      <DependentUpon>201308052350229_RenameLocationTypeField.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308062206216_FlipCheckinClassRelationships.resx">
+      <DependentUpon>201308062206216_FlipCheckinClassRelationships.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

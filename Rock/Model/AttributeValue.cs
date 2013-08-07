@@ -92,23 +92,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Determines whether [is encrypted field type].
-        /// </summary>
-        /// <returns>
-        ///   <c>true</c> if [is encrypted field type]; otherwise, <c>false</c>.
-        /// </returns>
-        internal bool IsEncryptedFieldType()
-        {
-            if ( FieldType != null )
-            {
-
-                return FieldType is Rock.Field.Types.EncryptedFieldType;
-            }
-            
-            return false;
-        }
-
-        /// <summary>
         /// Gets or sets the Attribute.
         /// </summary>
         /// <value>
@@ -125,14 +108,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            if ( IsEncryptedFieldType() )
-            {
-                return "**********";
-            }
-            else
-            {
-                return this.Value;
-            }
+            return this.Value;
         }
     }
 
