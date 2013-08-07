@@ -16,7 +16,7 @@ namespace Rock.Web.UI.Controls
     /// Custom DropDownList control that retains options groups after post-back
     /// </summary>
     public class RockDropDownList : DropDownList
-    {        
+    {
         /// <summary>
         /// Saves the current view state of the <see cref="T:System.Web.UI.WebControls.ListControl" /> -derived control and the items it contains.
         /// </summary>

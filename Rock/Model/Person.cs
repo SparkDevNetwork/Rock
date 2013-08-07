@@ -977,6 +977,7 @@ namespace Rock.Model
 
     public static partial class PersonExtensionMethods
     {
+
         /// <summary>
         /// Gets the Family Members.
         /// </summary>
@@ -996,9 +997,10 @@ namespace Rock.Model
         public static Person GetSpouse( this Person person )
         {
             return new PersonService().GetSpouse( person );
-        }        
-    }
+        }
 
+    }
+    
     #endregion
 
 }
