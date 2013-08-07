@@ -8,13 +8,14 @@
 
 using System;
 using System.Collections.Specialized;
-using System.Linq;
 using System.Drawing;
 using System.IO;
+using System.Net;
+using System.Text;
 using System.Web;
 
 using ImageResizer;
-
+using Rock.BinaryFile;
 using Rock.Model;
 
 namespace RockWeb
@@ -31,18 +32,18 @@ namespace RockWeb
         public void ProcessRequest( HttpContext context )
         {
             context.Response.Clear();
+            var queryString = context.Request.QueryString;
 
-            if ( context.Request.QueryString == null || context.Request.QueryString.Count == 0)
+            if ( queryString["id"] == null || queryString["guid"] == null )
             {
-                context.Response.StatusCode = 404;
-                context.Response.End();
-                return;
+                throw new Exception( "file id must be provided" );
             }
 
-            string anID = context.Request.QueryString[0];
-            int id;
+            var id = string.IsNullOrEmpty( queryString["id"] ) ? queryString["id"] : queryString["guid"];
+            int fileId;
+            Guid fileGuid;
 
-            if (!int.TryParse( anID, out id))
+            if ( !int.TryParse( id, out fileId ) || !Guid.TryParse( id, out fileGuid ) )
             {
                 context.Response.StatusCode = 404;
                 context.Response.End();
@@ -51,77 +52,67 @@ namespace RockWeb
 
             try
             {
-                BinaryFileService fileService = new BinaryFileService();
-                Rock.Model.BinaryFile file = null;
-
+                var fileService = new BinaryFileService();
+                var file = fileId > 0 ? fileService.Get( fileId ) : fileService.Get( fileGuid );
                 string cacheName = Uri.EscapeDataString( context.Request.Url.Query );
                 string physFilePath = context.Request.MapPath( string.Format( "~/Cache/{0}", cacheName ) );
+
+                if ( file == null )
+                {
+                    SendNotFound( context );
+                    return;
+                }
 
                 // Is it cached
                 if ( System.IO.File.Exists( physFilePath ) )
                 {
-                    // When was file last modified
-                    dynamic fileInfo = fileService
-                        .Queryable()
-                        .Where( f => f.Id == id )
-                        .Select( f => new
-                        {
-                            MimeType = f.MimeType,
-                            LastModifiedDateTime = f.LastModifiedDateTime
-                        } )
-                        .FirstOrDefault();
-
-                    file = new Rock.Model.BinaryFile();
-                    file.MimeType = fileInfo.MimeType;
-                    file.LastModifiedDateTime = fileInfo.LastModifiedDateTime;
-
                     // Is cached version newer?
-                    if ( !file.LastModifiedDateTime.HasValue || file.LastModifiedDateTime.Value.CompareTo( System.IO.File.GetCreationTime( physFilePath ) ) <= 0 )
+                    if ( !file.LastModifiedDateTime.HasValue ||
+                         file.LastModifiedDateTime.Value.CompareTo( System.IO.File.GetCreationTime( physFilePath ) ) <= 0 )
                     {
-                        if ( file.Data == null )
-                        {
-                            file.Data = new BinaryFileData();
-                        }
-                        file.Data.Content = FetchFromCache( physFilePath );
+                        file.Data = new BinaryFileData { Content = FetchFromCache( physFilePath ) };
                     }
                 }
-
-                if ( file == null || file.Data == null )
+                else
                 {
-                    file = fileService.Get( id );
-
-                    if ( file != null )
-                    {
-                        if ( WantsImageResizing( context ) )
-                            Resize( context, file );
-
-                        Cache( file, physFilePath );
-                    }
+                    file.Data = GetFileContent( file );
                 }
 
-                if ( file == null || file.Data == null )
+                if ( file.Data == null )
                 {
-                    context.Response.StatusCode = 404;
-                    context.Response.End();
+                    SendNotFound( context );
                     return;
                 }
+
+                // If more than 1 query string param is passed in, assume resize is needed
+                if ( queryString.Count > 1 )
+                {
+                    Resize( queryString, file );
+                }
+
+                Cache( file, physFilePath );
 
                 // Post process
                 SendFile( context, file );
             }
-            catch
+            catch ( Exception ex )
             {
+                // TODO: log this error
+                context.Response.StatusCode = 500;
+                context.Response.StatusDescription = ex.Message;
+                context.Response.Flush();
+                context.Response.End();
             }
         }
 
         /// <summary>
         /// Resizes the specified context.
         /// </summary>
-        /// <param name="context">The context.</param>
+        /// <param name="queryString">The query string.</param>
         /// <param name="file">The file.</param>
-        private static void Resize( HttpContext context, Rock.Model.BinaryFile file )
+        private static void Resize( NameValueCollection queryString, BinaryFile file )
         {
-            ResizeSettings settings = new ResizeSettings( context.Request.QueryString );
+            ResizeSettings settings = new ResizeSettings( queryString );
             MemoryStream resizedStream = new MemoryStream();
             ImageBuilder.Current.Build( new MemoryStream( file.Data.Content ), resizedStream, settings );
             file.Data.Content = resizedStream.GetBuffer();
@@ -132,7 +123,7 @@ namespace RockWeb
         /// </summary>
         /// <param name="file">The file.</param>
         /// <param name="physFilePath">The phys file path.</param>
-        private static void Cache( Rock.Model.BinaryFile file, string physFilePath )
+        private static void Cache( BinaryFile file, string physFilePath )
         {
             try
             {
@@ -154,25 +145,20 @@ namespace RockWeb
             try
             {
                 byte[] data;
-                using ( BinaryReader binReader = new BinaryReader( System.IO.File.Open( physFilePath, FileMode.Open, FileAccess.Read, System.IO.FileShare.Read ) ) )
+                using ( new BinaryReader( System.IO.File.Open( physFilePath, FileMode.Open, FileAccess.Read, FileShare.Read ) ) )
                 {
                     data = System.IO.File.ReadAllBytes( physFilePath );
                 }
+
                 return data;
             }
-            catch { /* ok, so we'll just skip using the cache, but TODO: log this */}
+            catch
+            {
+                var log = new ExceptionLog();
+                return null;
+            }
 
-            return null;
-        }
-
-        /// <summary>
-        /// A small utility method to determine if we need to use the ImageResizer.
-        /// </summary>
-        /// <param name="context"></param>
-        /// <returns>True if the request desires image resizing/manipulation; false otherwise.</returns>
-        private static bool WantsImageResizing( HttpContext context )
-        {
-            return context.Request.QueryString.Count > 1;
+            
         }
 
         /// <summary>
@@ -180,12 +166,58 @@ namespace RockWeb
         /// </summary>
         /// <param name="context">The context.</param>
         /// <param name="file">The file.</param>
-        private static void SendFile( HttpContext context, Rock.Model.BinaryFile file )
+        private static void SendFile( HttpContext context, BinaryFile file )
         {
             context.Response.ContentType = file.MimeType;
             context.Response.AddHeader( "content-disposition", "inline;filename=" + file.FileName );
             context.Response.BinaryWrite( file.Data.Content );
             context.Response.Flush();
+        }
+
+        /// <summary>
+        /// Sends 404 status.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        private static void SendNotFound( HttpContext context )
+        {
+            context.Response.StatusCode = 404;
+            context.Response.StatusDescription = "The requested image could not be found.";
+            context.Response.End();
+        }
+
+        /// <summary>
+        /// Gets the content of the file.
+        /// </summary>
+        /// <param name="file">The file.</param>
+        /// <returns></returns>
+        private static BinaryFileData GetFileContent( BinaryFile file )
+        {
+            var entityType = file.StorageEntityType;
+            var container = StorageContainer.GetComponent( entityType.Name );
+
+            if ( container is Rock.BinaryFile.Storage.Database )
+            {
+                return file.Data;
+            }
+
+            var url = container.GetUrl( file );
+            var request = WebRequest.Create( url );
+            var response = request.GetResponse();
+            var stream = response.GetResponseStream();
+            var encoding = Encoding.GetEncoding( "utf-8" );
+
+            if ( stream != null )
+            {
+                using ( var sr = new StreamReader( stream, encoding ) )
+                {
+                    return new BinaryFileData
+                        {
+                            Content = encoding.GetBytes( sr.ReadToEnd() )
+                        };
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -209,7 +241,7 @@ namespace RockWeb
         /// </summary>
         /// <param name="context">HttpContext of current request</param>
         /// <param name="errorMessage">error message text to render</param>
-        private void renderErrorImage( HttpContext context, string errorMessage )
+        private void RenderErrorImage( HttpContext context, string errorMessage )
         {
             context.Response.Clear();
             context.Response.ContentType = "image/jpeg";

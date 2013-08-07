@@ -63,7 +63,7 @@ namespace Rock.BinaryFile
         /// <param name="height">The height.</param>
         /// <param name="width">The width.</param>
         /// <returns></returns>
-        public abstract string GetUrl( Model.BinaryFile file, int? height = null, int? width = null );
+        public abstract string GetUrl( Model.BinaryFile file );
 
         /// <summary>
         /// Gets the type of the entity.

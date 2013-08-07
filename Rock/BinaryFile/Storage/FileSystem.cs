@@ -74,7 +74,7 @@ namespace Rock.BinaryFile.Storage
         /// <param name="height">The height.</param>
         /// <param name="width">The width.</param>
         /// <returns></returns>
-        public override string GetUrl( Model.BinaryFile file, int? height = null, int? width = null )
+        public override string GetUrl( Model.BinaryFile file )
         {
             if ( string.IsNullOrWhiteSpace( file.FileName ) )
             {
