@@ -26,10 +26,10 @@ namespace Rock.CheckIn
         public KioskStatus Kiosk { get; set; }
 
         /// <summary>
-        /// Gets or sets the check in status
+        /// Gets or sets the check-in status
         /// </summary>
         /// <value>
-        /// The check in.
+        /// The check-in.
         /// </value>
         [DataMember]
         public CheckInStatus CheckIn { get; set; }

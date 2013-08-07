@@ -14,7 +14,7 @@ using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [Description( "Check-In Family Search block" )]
+    [Description( "Check-in Family Search block" )]
     [IntegerField( "Minimum Phone Number Length", "Minimum length for phone number searches (defaults to 4).", false, 4 )]
     [IntegerField( "Maximum Phone Number Length", "Maximum length for phone number searches (defaults to 10).", false, 10 )]
     public partial class Search : CheckInBlock
