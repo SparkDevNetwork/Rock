@@ -42,16 +42,18 @@ namespace Rock.Workflow.Action.CheckIn
                             if ( groupType != null )
                             {
                                 groupType.Selected = true;
-                                var location = groupType.Locations.Where( l => l.LastCheckIn == person.LastCheckIn ).FirstOrDefault();
-                                if ( location != null )
+                                var group = groupType.Groups.Where( g => g.LastCheckIn == person.LastCheckIn ).FirstOrDefault();
+                                if ( group != null )
                                 {
-                                    location.Selected = true;
-                                    var group = location.Groups.Where( g => g.LastCheckIn == person.LastCheckIn ).FirstOrDefault();
-                                    if ( group != null )
+                                    group.Selected = true;
+                                    var location = group.Locations.Where( l => l.LastCheckIn == person.LastCheckIn ).FirstOrDefault();
+                                    if ( location != null )
                                     {
-                                        group.Selected = true;
+                                        location.Selected = true;
+
                                     }
                                 }
+                                
                             }
                         }
                         continue;
