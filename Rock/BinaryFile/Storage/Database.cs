@@ -71,7 +71,7 @@ namespace Rock.BinaryFile.Storage
         /// <param name="height">The height.</param>
         /// <param name="width">The width.</param>
         /// <returns></returns>
-        public override string GetUrl( Model.BinaryFile file, int? height = null, int? width = null )
+        public override string GetUrl( Model.BinaryFile file )
         {
             if ( string.IsNullOrWhiteSpace( file.FileName ) )
             {
@@ -80,19 +80,7 @@ namespace Rock.BinaryFile.Storage
 
             var urlBuilder = new StringBuilder();
             string wsPath = GetWebServicePath( file );
-            urlBuilder.AppendFormat( "{0}?guid={1}", wsPath, file.FileName );
-
-            if ( height.HasValue )
-            {
-                urlBuilder.AppendFormat( "&height={0}", height );
-            }
-
-            if ( width.HasValue )
-            {
-                urlBuilder.AppendFormat( "&width={0}", width );
-            }
-
-            return urlBuilder.ToString();
+            return string.Format( "{0}?guid={1}", wsPath, file.FileName );
         }
 
         private string GetWebServicePath( Model.BinaryFile file )
