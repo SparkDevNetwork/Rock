@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="NameAndType">
-  <Comment CommentText="Locations: the locations for this group type.">
-    <Position X="10.673" Y="5.892" Height="0.791" Width="1.012" />
+  <Comment CommentText="Locations: the locations for this group.">
+    <Position X="12" Y="7.75" Height="0.656" Width="1.012" />
   </Comment>
   <Comment CommentText="GroupTypes: the list of group types availble for the person.">
     <Position X="8.931" Y="4.294" Height="0.635" Width="1.7" />
@@ -58,18 +58,8 @@
       <Compartment Name="Methods" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>AAAAAAAAAAABAAAEAAAAAAAAAEAAAAAAAAAAgAAAAAA=</HashCode>
+      <HashCode>AAAAAAAAAAABAAAEAAAAAAAAAAAAAAAEAAAAgAAAAAA=</HashCode>
       <FileName>CheckIn\KioskGroupType.cs</FileName>
-    </TypeIdentifier>
-  </Class>
-  <Class Name="Rock.CheckIn.KioskLocation">
-    <Position X="2.75" Y="6.25" Width="2.5" />
-    <Compartments>
-      <Compartment Name="Methods" Collapsed="true" />
-    </Compartments>
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAEAAIAAAAAAAAAAAAEAAAAAAAAAAA=</HashCode>
-      <FileName>CheckIn\KioskLocation.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Rock.CheckIn.CheckInPerson">
@@ -84,23 +74,13 @@
     <Lollipop Position="0.2" Collapsed="true" />
   </Class>
   <Class Name="Rock.CheckIn.KioskGroup">
-    <Position X="3.75" Y="7.5" Width="2.5" />
+    <Position X="2.75" Y="6" Width="2.5" />
     <Compartments>
       <Compartment Name="Methods" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>AAAAAEAQAAAAAAAEAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <HashCode>AAAAAEAAAAAAAAAEAAAAAAAAAEAAAAAAAAAAAAAAAAA=</HashCode>
       <FileName>CheckIn\KioskGroup.cs</FileName>
-    </TypeIdentifier>
-  </Class>
-  <Class Name="Rock.CheckIn.KioskSchedule">
-    <Position X="5" Y="8.75" Width="2.5" />
-    <Compartments>
-      <Compartment Name="Methods" Collapsed="true" />
-    </Compartments>
-    <TypeIdentifier>
-      <HashCode>AAAAAAAAAAAAAAAEAAAAAAAAAEAAAAAAAAAAAAAAAAA=</HashCode>
-      <FileName>CheckIn\KioskSchedule.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="Rock.CheckIn.CheckInGroupType">
@@ -109,7 +89,7 @@
       <Compartment Name="Methods" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>CAAAAAAAEAAAAAAEABIAAAAAAAAAAAAAAAAAgAAAAAI=</HashCode>
+      <HashCode>CAAAAEAAEAAAAAAEABAAAAAAAAAAAAAAAAAAgAAAAAI=</HashCode>
       <FileName>CheckIn\CheckInGroupType.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.783" Collapsed="true" />
@@ -122,46 +102,65 @@
       <Field Name="_locationTypes" Hidden="true" />
       <Field Name="_parentGroupTypes" Hidden="true" />
       <Field Name="_roles" Hidden="true" />
-      <Field Name="showInGroupList" Hidden="true" />
     </Members>
     <Compartments>
       <Compartment Name="Fields" Collapsed="true" />
       <Compartment Name="Methods" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>wAAAYMAACGAhEBAFABEAAKQAAwAwgAAAgAgBIAAMAAA=</HashCode>
+      <HashCode>0AAAYMAACEAhEBAFABEAAKQgAwAwgAAAhAgBIAAMAAA=</HashCode>
       <FileName>Model\GroupType.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="Rock.CheckIn.CheckInLocation">
-    <Position X="10" Y="6.75" Width="2.25" />
+  <Class Name="Rock.CheckIn.CheckInGroup">
+    <Position X="9.5" Y="6.5" Width="2.5" />
     <Compartments>
       <Compartment Name="Methods" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
       <HashCode>CAAAAEAAAAAAAAAEABIAAAAAAAAAAAAAAAAAAAAAAAI=</HashCode>
-      <FileName>CheckIn\CheckInLocation.cs</FileName>
-    </TypeIdentifier>
-    <Lollipop Position="0.2" Collapsed="true" />
-  </Class>
-  <Class Name="Rock.CheckIn.CheckInGroup">
-    <Position X="11.75" Y="8" Width="2.5" />
-    <Compartments>
-      <Compartment Name="Methods" Collapsed="true" />
-    </Compartments>
-    <TypeIdentifier>
-      <HashCode>CAAAAEAAAAAAAAAEABAAAAAAAEAAAAAAAAAAAAAAAAI=</HashCode>
       <FileName>CheckIn\CheckInGroup.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" Collapsed="true" />
   </Class>
-  <Class Name="Rock.CheckIn.CheckInSchedule">
-    <Position X="13.75" Y="9.5" Width="1.5" />
+  <Class Name="Rock.CheckIn.KioskLocation">
+    <Position X="3.5" Y="7.25" Width="2.5" />
     <Compartments>
       <Compartment Name="Methods" Collapsed="true" />
     </Compartments>
     <TypeIdentifier>
-      <HashCode>CAAAAAAAAAAAAAAEABAAAAAAAEAAAAAAAAAAAAAAAAI=</HashCode>
+      <HashCode>AAAAAAAQAAAAAAAEAAIAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>CheckIn\KioskLocation.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Rock.CheckIn.KioskSchedule">
+    <Position X="4.5" Y="8.25" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAEAAAAAAAAIEAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>CheckIn\KioskSchedule.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Rock.CheckIn.CheckInLocation">
+    <Position X="10.75" Y="8" Width="2.25" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>CAAAAAAAAAAAAAAEABIAAAAAAEAAAAAAAAAAAAAAAAI=</HashCode>
+      <FileName>CheckIn\CheckInLocation.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="Rock.CheckIn.CheckInSchedule">
+    <Position X="12" Y="9.5" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Methods" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>CAAAAAAAAAAAAAAEABAAAAAAIEAAAAAAAAAAAAAAAAI=</HashCode>
       <FileName>CheckIn\CheckInSchedule.cs</FileName>
     </TypeIdentifier>
     <Lollipop Position="0.2" Collapsed="true" />

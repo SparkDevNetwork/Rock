@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 Page.Title = CurrentPage.Title + ": " + Person.FullName;
 
-                lName.Text = Person.FullName;
+                lName.Text = Person.FirstName + " <span class='light'>" + Person.LastName + "</span>";
 
                 if ( Person.PhotoId.HasValue )
                 {

@@ -15,6 +15,7 @@ namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
     /// Loads the groups available for each location.
+    /// TODO: Ask David about whether or not the "Load for all Locations" still makes sense since this now comes before Locations are selected.
     /// </summary>
     [Description("Loads the groups available for each selected (or optionally all) loction(s)")]
     [Export(typeof(ActionComponent))]
@@ -39,11 +40,12 @@ namespace Rock.Workflow.Action.CheckIn
                 loadAll = true;
             }
 
-            bool loadAllLocations = false;
-            if ( bool.TryParse( GetAttributeValue( "IncludeNonSelectedLocations" ), out loadAllLocations ) && loadAllLocations )
-            {
-                loadAllLocations = true;
-            }
+            //TBD  - no longer used.
+            //bool loadAllLocations = false;
+            //if ( bool.TryParse( GetAttributeValue( "IncludeNonSelectedLocations" ), out loadAllLocations ) && loadAllLocations )
+            //{
+            //    loadAllLocations = true;
+            //}
 
             var checkInState = GetCheckInState( action, out errorMessages );
             if ( checkInState != null )
@@ -57,21 +59,14 @@ namespace Rock.Workflow.Action.CheckIn
                             var kioskGroupType = checkInState.Kiosk.KioskGroupTypes.Where( g => g.GroupType.Id == groupType.GroupType.Id ).FirstOrDefault();
                             if ( kioskGroupType != null )
                             {
-                                foreach ( var location in groupType.Locations.Where( l => l.Selected || loadAllLocations || loadAll ) )
+                                foreach ( var kioskGroup in kioskGroupType.KioskGroups )
                                 {
-                                    var kioskLocation = kioskGroupType.KioskLocations.Where( l => l.Location.Id == location.Location.Id ).FirstOrDefault();
-                                    if ( kioskLocation != null )
+                                    if ( !groupType.Groups.Any( g => g.Group.Id == kioskGroup.Group.Id ) )
                                     {
-                                        foreach ( var kioskGroup in kioskLocation.KioskGroups )
-                                        {
-                                            if ( !location.Groups.Any( g => g.Group.Id == kioskGroup.Group.Id ) )
-                                            {
-                                                var checkInGroup = new CheckInGroup();
-                                                checkInGroup.Group = kioskGroup.Group.Clone( false );
-                                                checkInGroup.Group.CopyAttributesFrom( kioskGroup.Group );
-                                                location.Groups.Add( checkInGroup );
-                                            }
-                                        }
+                                        var checkInGroup = new CheckInGroup();
+                                        checkInGroup.Group = kioskGroup.Group.Clone( false );
+                                        checkInGroup.Group.CopyAttributesFrom( kioskGroup.Group );
+                                        groupType.Groups.Add( checkInGroup );
                                     }
                                 }
                             }

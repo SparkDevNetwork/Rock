@@ -208,6 +208,17 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets the model by URL encoded key.
+        /// </summary>
+        /// <param name="encodedKey">The encoded key.</param>
+        /// <returns></returns>
+        public virtual T GetByUrlEncodedKey( string encodedKey )
+        {
+            string key = encodedKey.Replace( '!', '%' );
+            return GetByEncryptedKey( System.Web.HttpUtility.UrlDecode( key ) );
+        }
+
+        /// <summary>
         /// Gets the model by the public un-encrypted key.
         /// </summary>
         /// <param name="publicKey">The public key.</param>
