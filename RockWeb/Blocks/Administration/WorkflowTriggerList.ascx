@@ -5,11 +5,11 @@
         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
         <Rock:Grid ID="gWorkflowTrigger" runat="server" AllowSorting="false" OnRowSelected="gWorkflowTrigger_Edit">
             <Columns>
-                <asp:BoundField DataField="EntityType.FriendlyName" HeaderText="Entity" />
+                <asp:BoundField DataField="EntityTypeFriendlyName" HeaderText="Entity" />
                 <Rock:EnumField DataField="WorkflowTriggerType" HeaderText="Type" />
                 <asp:BoundField DataField="EntityTypeQualifierColumn" HeaderText="Qualifier Column" />
                 <asp:BoundField DataField="EntityTypeQualifierValue" HeaderText="Qualifier Value"  />
-                <asp:BoundField DataField="WorkflowType.Name" HeaderText="Workflow"  />
+                <asp:BoundField DataField="WorkflowTypeName" HeaderText="Workflow"  />
                 <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                 <Rock:DeleteField OnClick="gWorkflowTrigger_Delete" />
             </Columns>

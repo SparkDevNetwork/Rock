@@ -8,9 +8,9 @@
             <Rock:ModalAlert ID="mdGridWarning" runat="server" />
             <Rock:Grid ID="gGroupMembers" runat="server" DisplayType="Full" AllowSorting="true" OnRowSelected="gGroupMembers_Edit" IsPersonList="true">
                 <Columns>
-                    <asp:BoundField DataField="Person.FirstName" HeaderText="First Name" SortExpression="Person.FullName" />
-                    <asp:BoundField DataField="Person.LastName" HeaderText="Last Name" SortExpression="Person.FullNameLastFirst" />
-                    <asp:BoundField DataField="GroupRole.Name" HeaderText="Group Role" SortExpression="GroupRole.Name" />
+                    <asp:BoundField DataField="PersonFirstName" HeaderText="First Name" SortExpression="PersonFirstName" />
+                    <asp:BoundField DataField="PersonLastName" HeaderText="Last Name" SortExpression="PersonFullNameLastFirst" />
+                    <asp:BoundField DataField="GroupRoleName" HeaderText="Group Role" SortExpression="GroupRoleName" />
                     <asp:BoundField DataField="GroupMemberStatus" HeaderText="Member Status" SortExpression="GroupMemberStatus" />
                     <Rock:DeleteField OnClick="DeleteGroupMember_Click" />
                 </Columns>

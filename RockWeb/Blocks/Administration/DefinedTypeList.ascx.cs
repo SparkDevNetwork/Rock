@@ -193,7 +193,15 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void gDefinedType_Bind()
         {
-            var queryable = new DefinedTypeService().Queryable();
+            var queryable = new DefinedTypeService().Queryable().Select( a =>
+                new
+                {
+                    a.Id,
+                    a.Category,
+                    a.Name,
+                    a.Description,
+                    FieldTypeName = a.FieldType.Name
+                } );
 
             string categoryFilter = tFilter.GetUserPreference( "Category" );
             if ( !string.IsNullOrWhiteSpace(categoryFilter) && categoryFilter != Rock.Constants.All.Text )
