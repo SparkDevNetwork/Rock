@@ -347,34 +347,40 @@ input.checkin-phone-entry
 	width: 90%;
 }
 
-.attended-checkin-header h1 {
+.attended-checkin-header h1 
+{
 	text-align: center;
     font-size: 3.4286em;    /* 48px font size / 14px base font size. Rounded from 3.428571428571429 */
-    color: @checkinHeaderColor;
+    color: @header-text-color;
     margin-top: 0.4167em;   /* 20px margin / 48px h1 font size Rounded from 0.4166666666666667*/
 }
 
-.attended-checkin-header .last {
+.attended-checkin-header .last 
+{
 	float: right;
 }
 
 // search page keyboard & keypad
-.keypad {
+.keypad 
+{
     display: none;
 }
 
 .keyboard
 {
 	width: 75%;
-	font-family: @checkinButtonFontFamily;
+	/*font-family: @checkinButtonFontFamily;*/
+    font-weight: @font-semibold-weight;
     margin: 0 auto;
 }
 
-.keyboard .btn {
+.keyboard .btn 
+{
     padding: 0;
 }
 
-.keyboard a.btn {
+.keyboard a.btn 
+{
     font-size: 3em;
     padding: 1%;
     width: 6.5%;
@@ -400,7 +406,8 @@ input.checkin-phone-entry
 	text-align: center;
 }
 
-.admin-control-label {
+.admin-control-label 
+{
     font-size: 1.2857em;     /* 18px font size / 14px base font size. Rounded from 1.285714285714286 */
     text-align: left;
     margin-bottom: .9em;    /* 18px bottom margin / 20px height */
@@ -409,7 +416,8 @@ input.checkin-phone-entry
 input.attended-checkin-keyboard-entry
 {
     height: 3.5714%;    /* 50px height / 14 px base font size. Rounded from 3.571428571428571 */
-    font-family: @checkinButtonFontFamily;
+    /*font-family: @checkinButtonFontFamily;*/
+    font-weight: @font-semibold-weight;
     font-size: 2.5714em; /* 36px font size / 14px base font size. Rounded from 2.571428571428571 */
     padding: .12% 0.8571%;  /* top & bottom = 6px pad / 50px height, left & right = 12px pad / 14 px font size. Rounded from 0.8571428571428571 */
     width: 70%;
@@ -445,7 +453,7 @@ input[type="submit"].btn[disabled="disabled"]
 
 .grid-table thead th a, .table th[scope=col]
 {
-	color: @checkinHeaderColor
+	color: @header-text-color;
 }
 
 .table th, .table td
@@ -456,27 +464,10 @@ input[type="submit"].btn[disabled="disabled"]
 	text-align: center;
 }
 
-.page-size, .item-count {
+.page-size, .item-count 
+{
     display: none;
 }
-
-/*.ConfirmButtons
-{
-	.buttonBackground(@checkinPrimaryButtonBackground, spin(@checkinPrimaryButtonBackground, 20%));
-	width: 28px;
-	height: 30px;
-	padding-top: 13px;
-	font-size: 24px;
-}*/
-
-// need to fix these two items once I can get to the confirmation page
-/*.table td a[title=Delete], .table td a[title=Edit]
-{
-	width: 40px;
-	height: 35px;
-	padding-top: 12px;
-	font-size: 24px;
-}*/
 
 .select
 {
@@ -486,9 +477,10 @@ input[type="submit"].btn[disabled="disabled"]
 .btn .checkin-sub-title
 {
     font-size: 0.8333em;     /* 20px font size / 24px base font size. Rounded from 0.8333333333333333 */
-    font-family: @checkinButtonSubtitleFontFamily;
+    /*font-family: @checkinButtonSubtitleFontFamily;*/
+    font-weight: @subheader-font-weight;
     font-weight: normal;
-    margin: 0.4167em 0.8333em 0 ;   /* top = 10px pad / 24px base font size. Rounded from 0.4166666666666667, left & right = 20px pad / 24px base font size. Rounded from 0.8333333333333333 */
+    margin: 0.4167em 0.8333em 0;   /* top = 10px pad / 24px base font size. Rounded from 0.4166666666666667, left & right = 20px pad / 24px base font size. Rounded from 0.8333333333333333 */
     display: block;
 }
 
@@ -509,7 +501,8 @@ input[type="submit"].btn[disabled="disabled"]
     top: 0;
 }
 
-.add-family, .add-person {
+.add-family, .add-person 
+{
     background: #EEEEEE;
     width: 90%;
     height: 90%;
@@ -519,37 +512,44 @@ input[type="submit"].btn[disabled="disabled"]
     z-index: 10001 !important;
 }
 
-.error-modal {
+.error-modal 
+{
     width: 50%;
     position: relative;
     left: 25%;
 }
 
-.modal {
+.modal 
+{
     z-index: 10002 !important;
 }
 
-.k-datepicker {
+.k-datepicker 
+{
     width: 9em !important;
 }
 
-.person input[type="text"], .person select, .searchperson input[type="text"], .searchperson select {
+.person input[type="text"], .person select, .searchperson input[type="text"], .searchperson select 
+{
     width: 95%;
 }
 
-@media screen and (max-width:1240px) {
-    input.attended-checkin-keyboard-entry, .keyboard {
+@media screen and (max-width:1240px) 
+{
+    input.attended-checkin-keyboard-entry, .keyboard 
+    {
         width: 85%;
     }
 
-    .keyboard a.btn {
+    .keyboard a.btn 
+    {
         font-size: 2.75em;
     }
 
-    h3 {
+    h3 
+    {
         font-size: 1.5714em;     /* 22px font size / 14px base font size. Rounded from 1.571428571428571 */
     }
-
 }
 
 @media screen and (max-width:1024px)
@@ -606,31 +606,23 @@ input[type="submit"].btn[disabled="disabled"]
         padding: 0.5em 0;   /* 7px pad / 14px base font size */
 	}
 
-    h3 {
+    h3 
+    {
         font-size: 1.2857em;     /* 18px font size / 14px base font size. Rounded from 1.285714285714286 */
     }
 
-    .fullBlock {
+    .fullBlock 
+    {
         width: 90%;
     }
 
-    .textInline {
+    .textInline 
+    {
         width: 35%;
     }
 
-    /*.ConfirmButtons
+    .grid-table 
     {
-	    width: 10px;
-	    height: 12px;
-	    font-size: 12px;
-    }
-
-    .ConfirmButtons i {
-        position: relative;
-        top: -40%;
-    }*/
-
-    .grid-table {
         font-size: 1em;     /* 14px font size / 14px base font size */
     }
 
@@ -640,52 +632,62 @@ input[type="submit"].btn[disabled="disabled"]
 	    padding-top: 0.8571em;  /* 12px pad / 14px base font. Rounded from 0.8571428571428571 */
     }
 
-    .pagination {
+    .pagination 
+    {
         margin: 0.7143em 0;     /* top & bottom = 10px pad / 14px base font size. Rounded from 0.7142857142857143 */
     }
-
 }
 
-@media screen and (max-width:980px) {
-    input.attended-checkin-keyboard-entry, .keyboard {
+@media screen and (max-width:980px) 
+{
+    input.attended-checkin-keyboard-entry, .keyboard 
+    {
         width: 95%;
     }
 }
 
-@media screen and (max-width:800px) {
-    .keyboard {
+@media screen and (max-width:800px) 
+{
+    .keyboard 
+    {
         display: none;
     }
 
-    .keypad {
+    .keypad 
+    {
         display: block;
         margin: 0 auto;
         width: 100%;
     }
 
-    .keypad .btn {
+    .keypad .btn 
+    {
         padding: 0;
     }
 
-    .keypad a.btn {
+    .keypad a.btn 
+    {
         font-size: 3em;
         line-height: 1.5em;
         width: 10%;
         padding: 1%;
         margin: 1%;
     }
-
 }
 
-@media screen and (max-width:640px) {
-    .keypad a.btn {
+@media screen and (max-width:640px) 
+{
+    .keypad a.btn 
+    {
         font-size: 2.5em;
         line-height: 1.25em;
     }
 }
 
-@media screen and (max-width:480px) {
-    .keypad a.btn {
+@media screen and (max-width:480px) 
+{
+    .keypad a.btn 
+    {
         font-size: 2em;
         line-height: 1em;
     }
