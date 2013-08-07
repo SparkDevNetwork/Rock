@@ -72,7 +72,7 @@ namespace Rock.Rest.Controllers
             List<Person> sortedPersonList = topQry.ToList();
 
             var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-            string imageUrlFormat = string.Format( "<image src='{0}' />", Path.Combine( appPath, "Image.ashx?id={0}&width=25&height=25" ) );
+            string imageUrlFormat = string.Format( "<image src='{0}' />", Path.Combine( appPath, "GetImage.ashx?id={0}&width=25&height=25" ) );
             string imageNoPhoto = string.Format("<image src='{0}' />", Path.Combine( appPath, "/Assets/images/person-no-photo.jpg" ));
             string itemDetailFormat = @"
 <div class='rock-picker-select-item-details clearfix' style='display: none;'>
@@ -221,7 +221,7 @@ namespace Rock.Rest.Controllers
             if ( person != null )
             {
                 var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-                string imageUrlFormat = Path.Combine( appPath, "Image.ashx?id={0}&width=37&height=37" );
+                string imageUrlFormat = Path.Combine( appPath, "GetImage.ashx?id={0}&width=37&height=37" );
                 string imageNoPhoto = Path.Combine( appPath, "Assets/images/person-no-photo.jpg" );
                 html.AppendFormat( "<header><img src='{0}'/> <div>{1}<small>{2}</small></div></header>",
                     person.PhotoId.HasValue ? string.Format( imageUrlFormat, person.PhotoId.Value ) : imageNoPhoto,

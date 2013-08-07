@@ -305,7 +305,7 @@ namespace RockWeb.Blocks.Crm
             else
             {
                 var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-                string imageUrlFormat = "<img src='" + appPath + "Image.ashx?id={0}&width=50&height=50' />";
+                string imageUrlFormat = "<img src='" + appPath + "GetImage.ashx?id={0}&width=50&height=50' />";
                 if ( group.GroupType.IconLargeFileId != null )
                 {
                     groupIconHtml = string.Format( imageUrlFormat, group.GroupType.IconLargeFileId );
