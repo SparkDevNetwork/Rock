@@ -191,13 +191,13 @@ namespace Rock.Model
         public int? InheritedGroupTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the locations allowed on groups of this type.
+        /// Gets or sets the mode of the location picker used when adding locations to groups of this type
         /// </summary>
         /// <value>
         /// The type of the locations.
         /// </value>
         [DataMember]
-        public LocationType LocationType { get; set; }
+        public LocationPickerMode LocationSelectionMode { get; set; }
 
         #endregion
 
@@ -401,9 +401,10 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// The attendance rule to use when person checks in to a group of this type
+    /// The types of locations that should be allowed to be selected using the location picker
+    /// TODO: Move this enum to the LocationPicker class when created
     /// </summary>
-    public enum LocationType
+    public enum LocationPickerMode
     {
         /// <summary>
         /// Any

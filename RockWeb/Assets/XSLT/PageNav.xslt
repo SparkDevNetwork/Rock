@@ -44,7 +44,7 @@
 	<xsl:template name="secondLevel">
 		<xsl:param name="page"/>
 		
-				<li class="pagenav-header">
+				<li class="pagenav-subitem-header">
 					<xsl:value-of select="@title"/>
 				</li>
 				

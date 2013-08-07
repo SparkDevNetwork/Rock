@@ -82,7 +82,7 @@ namespace Rock.Data
         /// <value>
         /// the Files.
         /// </value>
-        public DbSet<BinaryFile> BinaryFiles { get; set; }
+        public DbSet<Model.BinaryFile> BinaryFiles { get; set; }
 
         /// <summary>
         /// Gets or sets the Files data.

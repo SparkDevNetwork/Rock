@@ -752,12 +752,16 @@ namespace Rock.Attribute
             if ( item.Attributes != null )
                 foreach ( var attribute in item.Attributes )
                 {
-                    Control control = parentControl.FindControl( string.Format( "attribute_field_{0}", attribute.Value.Id.ToString() ) );
+                    Control control = parentControl.FindControl( string.Format( "attribute_field_{0}", attribute.Value.Id ) );
                     if ( control != null )
                     {
-                        var value = new Rock.Model.AttributeValue();
+                        var value = new AttributeValue();
+
+                        // Creating a brand new AttributeValue and setting its Value property.
+                        // The Value prop's setter then queries the AttributeCache passing in the AttributeId, which is 0
+                        // The AttributeCache.Read method returns null
                         value.Value = attribute.Value.FieldType.Field.GetEditValue( control, attribute.Value.QualifierValues );
-                        item.AttributeValues[attribute.Key] = new List<Rock.Model.AttributeValue>() { value };
+                        item.AttributeValues[attribute.Key] = new List<AttributeValue>() { value };
                     }
                 }
         }
