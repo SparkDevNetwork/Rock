@@ -446,6 +446,10 @@
     <Compile Include="Migrations\201308062206216_FlipCheckinClassRelationships.Designer.cs">
       <DependentUpon>201308062206216_FlipCheckinClassRelationships.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201308071741109_MarketingCampaignAdListFilter.cs" />
+    <Compile Include="Migrations\201308071741109_MarketingCampaignAdListFilter.Designer.cs">
+      <DependentUpon>201308071741109_MarketingCampaignAdListFilter.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -2087,6 +2091,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201308062206216_FlipCheckinClassRelationships.resx">
       <DependentUpon>201308062206216_FlipCheckinClassRelationships.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308071741109_MarketingCampaignAdListFilter.resx">
+      <DependentUpon>201308071741109_MarketingCampaignAdListFilter.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
