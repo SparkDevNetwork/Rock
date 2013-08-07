@@ -39,7 +39,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 if ( !Page.IsPostBack )
                 {
                     var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
-                                    .People.Where( p => p.Person.Id == int.Parse( Request.QueryString["personId"] ) ).FirstOrDefault();
+                        .People.Where( p => p.Person.Id == int.Parse( Request.QueryString["personId"] ) ).FirstOrDefault();
                     if ( person != null )
                     {
                         lblPersonName.Text = person.Person.FullName;
