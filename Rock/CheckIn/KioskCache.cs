@@ -256,7 +256,7 @@ namespace Rock.CheckIn
                 var label = new LabelCache();
 
                 label.Guid = file.Guid;
-                label.Url = string.Format( "{0}File.ashx?{1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), file.Id );
+                label.Url = string.Format( "{0}GetFile.ashx?{1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), file.Id );
                 label.MergeFields = new Dictionary<string, string>();
                 label.FileContent = System.Text.Encoding.Default.GetString( file.Data.Content );
 

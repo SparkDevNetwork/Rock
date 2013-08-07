@@ -47,7 +47,7 @@ namespace Rock.BinaryFile.Storage
                 fileService.Save( file, personId );
 
                 // Set the URL now that we have a Guid...
-                file.Url = string.Format( "~/File.ashx?guid={0}", file.Guid );
+                file.Url = string.Format( "~/GetFile.ashx?guid={0}", file.Guid );
 
                 // Then save again to persist the URL
                 fileService.Save( file, personId );
@@ -80,7 +80,7 @@ namespace Rock.BinaryFile.Storage
             }
 
             var urlBuilder = new StringBuilder();
-            urlBuilder.AppendFormat( "~/File.ashx?guid={0}", file.FileName );
+            urlBuilder.AppendFormat( "~/GetFile.ashx?guid={0}", file.FileName );
 
             if ( height.HasValue )
             {

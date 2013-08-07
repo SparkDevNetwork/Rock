@@ -119,7 +119,7 @@ namespace RockWeb
             }
         }
 
-        private static System.Drawing.Image ResizeImage( System.Drawing.Image imgToResize, Size size )
+        private static Image ResizeImage( Image imgToResize, Size size )
         {
             int sourceWidth = imgToResize.Width;
             int sourceHeight = imgToResize.Height;
@@ -133,13 +133,13 @@ namespace RockWeb
             int destHeight = (int)( sourceHeight * nPercent );
 
             Bitmap b = new Bitmap( destWidth, destHeight );
-            Graphics g = Graphics.FromImage( (System.Drawing.Image)b );
+            Graphics g = Graphics.FromImage( (Image)b );
             g.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
             g.DrawImage( imgToResize, 0, 0, destWidth, destHeight );
             g.Dispose();
 
-            return (System.Drawing.Image)b;
+            return (Image)b;
         }
 
         private static Bitmap RoughResize( Bitmap input, int maxWidth, int maxHeight )
@@ -153,13 +153,13 @@ namespace RockWeb
                     // width difference is larger
                     double resizeRatio = maxWidth / (double)input.Width;
                     int newHeight = Convert.ToInt32( input.Height * resizeRatio );
-                    input = (Bitmap)ResizeImage( (System.Drawing.Image)input, new Size( maxWidth, newHeight ) );
+                    input = (Bitmap)ResizeImage( (Image)input, new Size( maxWidth, newHeight ) );
                 }
                 else
                 {
                     double resizeRatio = maxHeight / (double)input.Height;
                     int newWidth = Convert.ToInt32( input.Width * resizeRatio );
-                    input = (Bitmap)ResizeImage( (System.Drawing.Image)input, new Size( newWidth, maxHeight ) );
+                    input = (Bitmap)ResizeImage( (Image)input, new Size( newWidth, maxHeight ) );
                 }
             }
             return input;
