@@ -62,7 +62,7 @@ WHERE [Guid] = '66031C31-B397-4F78-8AB2-389B7D8731AA'
 
 DECLARE @BinaryFileTypeId int
 INSERT INTO [BinaryFileType] (IsSystem, Name, Description, IconCssClass, Guid)
-    VALUES (1, 'Check-In Label', 'Label used for checkin', 'icon-print', 'DE0E5C50-234B-474C-940C-C571F385E65F')
+    VALUES (1, 'Check-in Label', 'Label used for check-in', 'icon-print', 'DE0E5C50-234B-474C-940C-C571F385E65F')
 SET @BinaryFileTypeId = SCOPE_IDENTITY()
 
 -- Get the entitytype for binary file

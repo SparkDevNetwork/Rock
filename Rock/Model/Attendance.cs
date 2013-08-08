@@ -189,7 +189,7 @@ namespace Rock.Model
         public virtual Device Device { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of search used during checkin
+        /// Gets or sets the type of search used during check-in
         /// </summary>
         /// <value>
         /// The search type value.

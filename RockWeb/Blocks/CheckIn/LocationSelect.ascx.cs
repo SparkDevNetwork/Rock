@@ -16,7 +16,7 @@ using Rock.Model;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [Description( "Check-In Location Select block" )]
+    [Description( "Check-in Location Select block" )]
     public partial class LocationSelect : CheckInBlock
     {
         protected override void OnLoad( EventArgs e )

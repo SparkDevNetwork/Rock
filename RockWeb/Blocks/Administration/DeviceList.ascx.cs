@@ -238,7 +238,19 @@ namespace RockWeb.Blocks.Administration
             var deviceService = new DeviceService();
             var sortProperty = gDevice.SortProperty;
 
-            var queryable = deviceService.Queryable();
+            var queryable = deviceService.Queryable().Select( a =>
+                new
+                {
+                    a.Id,
+                    a.Name,
+                    DeviceTypeName = a.DeviceType.Name,
+                    a.IPAddress,
+                    a.PrintToOverride,
+                    a.PrintFrom,
+                    PrinterDeviceName = a.PrinterDevice.Name,
+                    a.PrinterDeviceId,
+                    a.DeviceTypeValueId
+                } );
 
             string name = fDevice.GetUserPreference( "Name" );
             if ( !string.IsNullOrWhiteSpace( name ) )

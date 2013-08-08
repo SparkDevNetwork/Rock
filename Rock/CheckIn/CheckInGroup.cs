@@ -39,7 +39,7 @@ namespace Rock.CheckIn
         /// Gets or sets the last time person checked into this group for any of the schedules
         /// </summary>
         /// <value>
-        /// The last check in.
+        /// The last check-in.
         /// </value>
         [DataMember]
         public DateTime? LastCheckIn { get; set; }

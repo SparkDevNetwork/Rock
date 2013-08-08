@@ -28,7 +28,7 @@
 
                             <Rock:CategoryPicker ID="cpCategory" runat="server" EntityTypeName="Rock.Model.Schedule" LabelText="Category" Required="true" />
                             <div class="control-group">
-                                <div class="control-label">Enable Check-In</div>
+                                <div class="control-label">Enable Check-in</div>
                                 <div class="controls">
                                     <Rock:NumberBox ID="nbStartOffset" runat="server" NumberType="Integer" CssClass="input-mini" />
                                     Minutes Before Start
