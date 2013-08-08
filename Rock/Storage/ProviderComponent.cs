@@ -4,18 +4,16 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
-using System;
 using System.Collections.Generic;
-using Rock.Attribute;
 using Rock.Extension;
 using Rock.Web.Cache;
 
-namespace Rock.BinaryFile
+namespace Rock.Storage
 {
     /// <summary>
     /// Base class for BinaryFile storage components
     /// </summary>
-    public abstract class StorageComponent : Component
+    public abstract class ProviderComponent : Component
     {
         public override bool IsActive
         {
@@ -77,39 +75,9 @@ namespace Rock.BinaryFile
         }
 
         /// <summary>
-        /// Gets the storage.
+        /// Initializes a new instance of the <see cref="ProviderComponent"/> class.
         /// </summary>
-        /// <value>
-        /// The storage.
-        /// </value>
-        public StorageComponent Storage
-        {
-            get
-            {
-                Guid entityTypeGuid = Guid.Empty;
-
-                if ( Guid.TryParse( GetAttributeValue( "StorageContainer" ), out entityTypeGuid ) )
-                {
-                    foreach ( var serviceEntry in StorageContainer.Instance.Components )
-                    {
-                        var component = serviceEntry.Value.Value;
-                        var entityType = EntityTypeCache.Read( component.GetType() );
-
-                        if ( entityType != null && entityType.Guid.Equals( entityTypeGuid ) )
-                        {
-                            return component;
-                        }
-                    }
-                }
-
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="StorageComponent"/> class.
-        /// </summary>
-        public StorageComponent()
+        public ProviderComponent()
         {
             this.LoadAttributes();
         }

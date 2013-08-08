@@ -12,8 +12,8 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Web;
-using Rock.BinaryFile;
-using Rock.BinaryFile.Storage;
+using Rock.Storage;
+using Rock.Storage.Provider;
 
 namespace RockWeb
 {
@@ -101,7 +101,7 @@ namespace RockWeb
                     context.Response.ContentType = (string) reader["MimeType"];
 
                     var entityTypeName = (string) reader["StorageTypeName"];
-                    var provider = StorageContainer.GetComponent( entityTypeName );
+                    var provider = ProviderContainer.GetComponent( entityTypeName );
 
                     if ( provider is Database )
                     {

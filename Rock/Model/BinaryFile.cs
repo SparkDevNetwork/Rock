@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-using Rock.BinaryFile;
+using Rock.Storage;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -161,7 +161,7 @@ namespace Rock.Model
         /// <returns></returns>
         public string GetUrl()
         {
-            var provider = StorageContainer.GetComponent( StorageEntityType.Name );
+            var provider = ProviderContainer.GetComponent( StorageEntityType.Name );
             return provider.GetUrl( this );
         }
 

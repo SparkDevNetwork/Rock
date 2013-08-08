@@ -19,8 +19,7 @@ namespace Rock.Migrations
         public override void Up()
         {
             Sql( @"
-DROP PROCEDURE [BinaryFile_sp_getByID]
-CREATE PROCEDURE [BinaryFile_sp_getByID]
+ALTER PROCEDURE [BinaryFile_sp_getByID]
     @Id int,
     @Guid uniqueidentifier
 AS
@@ -58,6 +57,13 @@ BEGIN
 		WHERE f.[Guid] = @Guid
     END
 END" );
+
+
+            Sql(@"
+UPDATE [EntityType] SET
+    [Name] = REPLACE([Name], 'Rock.BinaryFile.Storage.', 'Rock.Storage.Provider.'),
+    [AssemblyName] = REPLACE([AssemblyName], 'Rock.BinaryFile.Storage.', 'Rock.Storage.Provider.')
+WHERE [Name] LIKE 'Rock.BinaryFile.Storage.%'" );
         }
         
         /// <summary>
@@ -66,8 +72,7 @@ END" );
         public override void Down()
         {
             Sql( @"
-DROP PROCEDURE [BinaryFile_sp_getByID]
-CREATE PROCEDURE [BinaryFile_sp_getByID]
+ALTER PROCEDURE [BinaryFile_sp_getByID]
     @Id int,
     @Guid uniqueidentifier
 AS
@@ -95,6 +100,12 @@ BEGIN
 		WHERE f.[Guid] = @Guid
     END
 END" );
+
+            Sql( @"
+UPDATE [EntityType] SET
+    [Name] = REPLACE([Name], 'Rock.Storage.Provider.', 'Rock.BinaryFile.Storage.'),
+    [AssemblyName] = REPLACE([AssemblyName], 'Rock.Storage.Provider.', 'Rock.BinaryFile.Storage.')
+WHERE [Name] LIKE 'Rock.Storage.Provider.%'" );
         }
     }
 }

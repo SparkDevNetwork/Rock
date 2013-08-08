@@ -15,7 +15,7 @@ using System.Text;
 using System.Web;
 
 using ImageResizer;
-using Rock.BinaryFile;
+using Rock.Storage;
 using Rock.Model;
 
 namespace RockWeb
@@ -193,9 +193,9 @@ namespace RockWeb
         private static BinaryFileData GetFileContent( BinaryFile file )
         {
             var entityType = file.StorageEntityType;
-            var container = StorageContainer.GetComponent( entityType.Name );
+            var container = ProviderContainer.GetComponent( entityType.Name );
 
-            if ( container is Rock.BinaryFile.Storage.Database )
+            if ( container is Rock.Storage.Provider.Database )
             {
                 return file.Data;
             }
