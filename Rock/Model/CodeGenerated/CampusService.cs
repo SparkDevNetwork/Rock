@@ -101,6 +101,7 @@ namespace Rock.Model
                 var target = new Campus();
                 target.IsSystem = source.IsSystem;
                 target.Name = source.Name;
+                target.ShortCode = source.ShortCode;
                 target.LocationId = source.LocationId;
                 target.Id = source.Id;
                 target.Guid = source.Guid;

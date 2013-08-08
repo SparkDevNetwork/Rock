@@ -130,14 +130,23 @@ namespace RockWeb.Blocks.Crm
         {
             GroupRoleService groupRoleService = new GroupRoleService();
             SortProperty sortProperty = gGroupRoles.SortProperty;
+            var qry = groupRoleService.Queryable().Select( a =>
+                new
+                {
+                    a.Id,
+                    a.Name,
+                    a.Description,
+                    GroupTypeName = a.GroupType.Name,
+                    a.IsSystem
+                } );
 
             if ( sortProperty != null )
             {
-                gGroupRoles.DataSource = groupRoleService.Queryable().Sort( sortProperty ).ToList();
+                gGroupRoles.DataSource = qry.Sort( sortProperty ).ToList();
             }
             else
             {
-                gGroupRoles.DataSource = groupRoleService.Queryable().OrderBy( p => p.Name ).ToList();
+                gGroupRoles.DataSource = qry.OrderBy( p => p.Name ).ToList();
             }
 
             gGroupRoles.DataBind();
