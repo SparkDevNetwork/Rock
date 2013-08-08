@@ -9,23 +9,23 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using Rock.Extension;
 
-namespace Rock.BinaryFile
+namespace Rock.Storage
 {
     /// <summary>
     /// MEF Container class for Binary File Storage Components
     /// </summary>
-    public class StorageContainer : Container<StorageComponent, IComponentData>
+    public class ProviderContainer : Container<ProviderComponent, IComponentData>
     {
         /// <summary>
         /// Singleton instance
         /// </summary>
-        private static readonly Lazy<StorageContainer> instance =
-            new Lazy<StorageContainer>( () => new StorageContainer() );
+        private static readonly Lazy<ProviderContainer> instance =
+            new Lazy<ProviderContainer>( () => new ProviderContainer() );
 
         /// <summary>
-        /// Prevents a default instance of the <see cref="StorageContainer"/> class from being created.
+        /// Prevents a default instance of the <see cref="ProviderContainer"/> class from being created.
         /// </summary>
-        private StorageContainer()
+        private ProviderContainer()
         {
             Refresh();
         }
@@ -36,7 +36,7 @@ namespace Rock.BinaryFile
         /// <value>
         /// The instance.
         /// </value>
-        public static StorageContainer Instance
+        public static ProviderContainer Instance
         {
             get { return instance.Value; }
         }
@@ -46,7 +46,7 @@ namespace Rock.BinaryFile
         /// </summary>
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <returns></returns>
-        public static StorageComponent GetComponent( string entityTypeName )
+        public static ProviderComponent GetComponent( string entityTypeName )
         {
             foreach ( var serviceEntry in Instance.Components )
             {
@@ -68,7 +68,7 @@ namespace Rock.BinaryFile
         /// <value>
         /// The MEF components.
         /// </value>
-        [ImportMany( typeof (StorageComponent) )]
-        protected override IEnumerable<Lazy<StorageComponent, IComponentData>> MEFComponents { get; set; }
+        [ImportMany( typeof (ProviderComponent) )]
+        protected override IEnumerable<Lazy<ProviderComponent, IComponentData>> MEFComponents { get; set; }
     }
 }

@@ -164,10 +164,10 @@
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
-    <Compile Include="BinaryFile\StorageComponent.cs" />
-    <Compile Include="BinaryFile\StorageContainer.cs" />
-    <Compile Include="BinaryFile\Storage\Database.cs" />
-    <Compile Include="BinaryFile\Storage\FileSystem.cs" />
+    <Compile Include="Storage\ProviderComponent.cs" />
+    <Compile Include="Storage\ProviderContainer.cs" />
+    <Compile Include="Storage\Provider\Database.cs" />
+    <Compile Include="Storage\Provider\FileSystem.cs" />
     <Compile Include="Data\MergeFieldAttribute.cs" />
     <Compile Include="Field\Types\ComponentsFieldType.cs" />
     <Compile Include="Field\Types\CategoryFieldType.cs" />
@@ -445,6 +445,10 @@
     <Compile Include="Migrations\201308062206216_FlipCheckinClassRelationships.cs" />
     <Compile Include="Migrations\201308062206216_FlipCheckinClassRelationships.Designer.cs">
       <DependentUpon>201308062206216_FlipCheckinClassRelationships.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308072237554_UpdateBinaryFileStoredProc.cs" />
+    <Compile Include="Migrations\201308072237554_UpdateBinaryFileStoredProc.Designer.cs">
+      <DependentUpon>201308072237554_UpdateBinaryFileStoredProc.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
@@ -2087,6 +2091,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201308062206216_FlipCheckinClassRelationships.resx">
       <DependentUpon>201308062206216_FlipCheckinClassRelationships.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308072237554_UpdateBinaryFileStoredProc.resx">
+      <DependentUpon>201308072237554_UpdateBinaryFileStoredProc.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

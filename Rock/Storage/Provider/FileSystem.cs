@@ -8,16 +8,24 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.IO;
 using System.Text;
+using System.Web;
+using Rock.Attribute;
 using Rock.Model;
 
-namespace Rock.BinaryFile.Storage
+namespace Rock.Storage.Provider
 {
-    [Description( "Database-driven document storage" )]
-    [Export( typeof( StorageComponent ) )]
-    [ExportMetadata( "ComponentName", "Database" )]
-    public class Database : StorageComponent
+    [Description( "File System-driven document storage" )]
+    [Export( typeof( ProviderComponent ) )]
+    [ExportMetadata( "ComponentName", "FileSystem" )]
+    [TextField( "Root Path", "Root path where the files will be stored on disk." )]
+    public class FileSystem : ProviderComponent
     {
+        public string RootPath
+        {
+            get { return GetAttributeValue( "RootPath" ); }
+        }
 
         /// <summary>
         /// Saves the files.
@@ -30,25 +38,19 @@ namespace Rock.BinaryFile.Storage
 
             foreach ( var file in files )
             {
-                if ( file.Id == 0 )
-                {
-                    fileService.Add( file, personId );
-                }
-
-                // Since we're expecting a hydrated model, throw if no binary
-                // data is included.
                 if ( file.Data == null )
                 {
                     throw new ArgumentException( "File Data must not be null." );
                 }
 
-                // Save once to persist data...
-                fileService.Save( file, personId );
+                var url = GetUrl( file );
+                var physicalPath = GetPhysicalPath( url );
+                File.WriteAllBytes( physicalPath, file.Data.Content );
 
-                // Set the URL now that we have a Guid...
-                file.Url = GetUrl( file );
-
-                // Then save again to persist the URL
+                // Set Data to null after successful OS save so the the binary data is not 
+                // written into the database.
+                file.Data = null;
+                file.Url = url;
                 fileService.Save( file, personId );
             }
         }
@@ -61,6 +63,7 @@ namespace Rock.BinaryFile.Storage
         public override void RemoveFile( Model.BinaryFile file, int? personId )
         {
             var fileService = new BinaryFileService();
+            File.Delete( HttpContext.Current.Server.MapPath( file.Url ) );
             fileService.Delete( file, personId );
         }
 
@@ -79,23 +82,31 @@ namespace Rock.BinaryFile.Storage
             }
 
             var urlBuilder = new StringBuilder();
-            string wsPath = GetWebServicePath( file );
-            return string.Format( "{0}?guid={1}", wsPath, file.FileName );
+
+            urlBuilder.Append( RootPath );
+
+            if ( !RootPath.EndsWith( "/" ) )
+            {
+                urlBuilder.Append( "/" );
+            }
+
+            urlBuilder.Append( file.FileName );
+            return urlBuilder.ToString();
         }
 
-        private string GetWebServicePath( Model.BinaryFile file )
+        private string GetPhysicalPath( string path )
         {
-            switch ( file.MimeType.ToLower() )
+            if ( path.StartsWith( "C:" ) || path.StartsWith( "\\\\" ) )
             {
-                case "image/jpeg":
-                case "image/gif":
-                case "image/png":
-                case "image/bmp":
-                    return "~/Image.ashx";
-                default:
-                    return "~/File.ashx";
-
+                return path;
             }
+
+            if ( path.StartsWith( "http:" ) || path.StartsWith( "https:" ) )
+            {
+                return HttpContext.Current.Server.MapPath( path );
+            }
+
+            return Path.Combine( AppDomain.CurrentDomain.BaseDirectory, path );
         }
     }
 }
