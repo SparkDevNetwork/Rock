@@ -13,10 +13,10 @@ namespace Rock.Workflow.Action.CheckIn
     /// <summary>
     /// Filters the available groups if one is from the previous attendance
     /// </summary>
-    [Description( "Removes all other grouptypes from each family member except the one they last checked into." )]
+    [Description( "Selects the grouptype for each person based on what they last checked into." )]
     [Export(typeof(ActionComponent))]
-    [ExportMetadata( "ComponentName", "Filter By Last Attended" )]
-    public class FilterByLastAttended : CheckInActionComponent
+    [ExportMetadata( "ComponentName", "Select By Last Attended" )]
+    public class SelectByLastAttended : CheckInActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
