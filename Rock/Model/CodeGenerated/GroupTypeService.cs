@@ -114,6 +114,7 @@ namespace Rock.Model
                 target.AttendancePrintTo = source.AttendancePrintTo;
                 target.DisplayOrder = source.DisplayOrder;
                 target.InheritedGroupTypeId = source.InheritedGroupTypeId;
+                target.LocationSelectionMode = source.LocationSelectionMode;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 
