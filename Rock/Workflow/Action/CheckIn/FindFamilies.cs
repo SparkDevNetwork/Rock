@@ -35,11 +35,7 @@ namespace Rock.Workflow.Action.CheckIn
         /// <exception cref="System.NotImplementedException"></exception>
         public override bool Execute( Model.WorkflowAction action, Data.IEntity entity, out List<string> errorMessages )
         {
-            bool allowNoneFound = false;
-            if ( bool.TryParse( GetAttributeValue( "AllowNoneFound" ), out allowNoneFound ) && allowNoneFound )
-            {
-                allowNoneFound = true;
-            }
+            bool allowNoneFound = GetAttributeValue( "AllowNoneFound" ).AsBoolean();
 
             var checkInState = GetCheckInState( action, out errorMessages );
             if (checkInState != null)
@@ -64,7 +60,7 @@ namespace Rock.Workflow.Action.CheckIn
                         case SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME:
                             {
                                 nameSearch = true;
-                                person = personService.GetByNamePartial( checkInState.CheckIn.SearchValue );
+                                person = personService.GetByFullName( checkInState.CheckIn.SearchValue );
                                 errorMessage = "There are not any families with the selected name";
                                 break;
                             }
