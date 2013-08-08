@@ -20,9 +20,7 @@ namespace Rock.Workflow.Action.CheckIn
     /// </summary>
     [Description("Finds families based on a given search critieria (i.e. phone, barcode, etc)")]
     [Export(typeof(ActionComponent))]
-    [ExportMetadata( "ComponentName", "Find Families" )]
-    [BooleanField( "Allow None Found", "If true, show an error if nothing is returned by the search. Otherwise ignore the error and continue.", false, key: "AllowNoneFound" )]
-    // ************************  WE SHOULD DEFAULT THE ALLOWNONEFOUND TO TRUE WHEN WE FIGURE OUT HOW TO USE THESE ATTRIBUTES *************************** //
+    [ExportMetadata( "ComponentName", "Find Families" )]    
     public class FindFamilies : CheckInActionComponent
     {
         /// <summary>
@@ -35,79 +33,69 @@ namespace Rock.Workflow.Action.CheckIn
         /// <exception cref="System.NotImplementedException"></exception>
         public override bool Execute( Model.WorkflowAction action, Data.IEntity entity, out List<string> errorMessages )
         {
-            bool allowNoneFound = GetAttributeValue( "AllowNoneFound" ).AsBoolean();
-
             var checkInState = GetCheckInState( action, out errorMessages );
             if (checkInState != null)
             {
-                var phoneNumberSearch = false;
-                var nameSearch = false;
-                var personService = new PersonService();
-                var memberService = new GroupMemberService();
-                IEnumerable<Person> person;
-                var errorMessage = "";
-                using ( new Rock.Data.UnitOfWorkScope() )
+                if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER ) ) )
                 {
-                    switch ( checkInState.CheckIn.SearchType.Guid.ToString().ToUpper() )
+                    using ( new Rock.Data.UnitOfWorkScope() )
                     {
-                        case SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER:
+                        var personService = new PersonService();
+                        var memberService = new GroupMemberService();
+
+                        foreach ( var person in personService.GetByPhonePartial( checkInState.CheckIn.SearchValue ) )
+                        {
+                            foreach ( var group in person.Members.Where( m => m.Group.GroupType.Guid == new Guid( SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Select( m => m.Group ) )
                             {
-                                phoneNumberSearch = true;
-                                person = personService.GetByPhonePartial( checkInState.CheckIn.SearchValue );
-                                errorMessage = "There are not any families with the selected phone number";
-                                break;
+                                var family = checkInState.CheckIn.Families.Where( f => f.Group.Id == group.Id ).FirstOrDefault();
+                                if ( family == null )
+                                {
+                                    family = new CheckInFamily();
+                                    family.Group = group.Clone( false );
+                                    family.Group.LoadAttributes();
+                                    family.Caption = group.ToString();
+                                    family.SubCaption = memberService.GetFirstNames( group.Id ).ToList().AsDelimited( ", " );
+                                    checkInState.CheckIn.Families.Add( family );
+                                }
                             }
-                        case SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME:
-                            {
-                                nameSearch = true;
-                                person = personService.GetByFullName( checkInState.CheckIn.SearchValue );
-                                errorMessage = "There are not any families with the selected name";
-                                break;
-                            }
-                        default:
-                            {
-                                person = null;
-                                errorMessages.Add( "Invalid Search Type" );
-                                break;
-                            }
+                        }
                     }
+
+                    SetCheckInState( action, checkInState );
+                    return true;
                 }
-                if ( phoneNumberSearch || nameSearch )
+                else if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME ) ) )
                 {
-                    foreach ( var p in person )
+                    using ( new Rock.Data.UnitOfWorkScope() )
                     {
-                        foreach ( var group in p.Members.Where( m => m.Group.GroupType.Guid == new Guid( SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Select( m => m.Group ) )
+                        var personService = new PersonService();
+                        var memberService = new GroupMemberService();
+                        
+                        foreach ( var person in personService.GetByFullName( checkInState.CheckIn.SearchValue ) )
                         {
-                            var family = checkInState.CheckIn.Families.Where( f => f.Group.Id == group.Id ).FirstOrDefault();
-                            if ( family == null )
+                            foreach ( var group in person.Members.Where( m => m.Group.GroupType.Guid == new Guid( SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Select( m => m.Group ) )
                             {
-                                family = new CheckInFamily();
-                                family.Group = group.Clone( false );
-                                family.Group.LoadAttributes();
-                                family.Caption = group.ToString();
-                                family.SubCaption = memberService.GetFirstNames( group.Id ).ToList().AsDelimited( ", " );
-                                checkInState.CheckIn.Families.Add( family );
+                                var family = checkInState.CheckIn.Families.Where( f => f.Group.Id == group.Id ).FirstOrDefault();
+                                if ( family == null )
+                                {
+                                    family = new CheckInFamily();
+                                    family.Group = group.Clone( false );
+                                    family.Group.LoadAttributes();
+                                    family.Caption = group.ToString();
+                                    family.SubCaption = memberService.GetFirstNames( group.Id ).ToList().AsDelimited( ", " );
+                                    checkInState.CheckIn.Families.Add( family );
+                                }
                             }
                         }
                     }
-                    if ( allowNoneFound )
-                    {
-                        if ( checkInState.CheckIn.Families.Count > 0 )
-                        {
-                            SetCheckInState( action, checkInState );
-                            return true;
-                        }
-                        else
-                        {
-                            errorMessages.Add( errorMessage );
-                        }
-                    }
-                    else
-                    {
-                        SetCheckInState( action, checkInState );
-                        return true;
-                    }
+
+                    SetCheckInState( action, checkInState );
+                    return true;
                 }
+                else
+                {
+                    errorMessages.Add( "Invalid Search Type" );
+                }               
             }
             return false;
         }
