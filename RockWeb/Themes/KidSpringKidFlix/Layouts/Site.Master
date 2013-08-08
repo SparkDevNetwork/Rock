@@ -23,7 +23,7 @@
     <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/KidSpringKidFlix/Css/rock-boot-responsive.less") %>" />
     <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/KidSpringKidFlix/Css/checkin-theme.less") %>" />
     <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.common.min.css") %>" />
-    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/checkin-core.less") %>" />
+    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/checkin-attended.less") %>" />
     <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/developer.less") %>" />
 
     <script src="<%# ResolveUrl("~/Scripts/jquery.js") %>"></script>
