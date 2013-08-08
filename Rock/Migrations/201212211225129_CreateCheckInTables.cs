@@ -7,7 +7,7 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    using System.Data.Spatial;
+    //using System.Data.Spatial;
     
     /// <summary>
     /// 
