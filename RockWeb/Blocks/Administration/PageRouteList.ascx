@@ -6,7 +6,7 @@
         <Rock:Grid ID="gPageRoutes" runat="server" AllowSorting="true" OnRowSelected="gPageRoutes_Edit">
             <Columns>
                 <asp:BoundField DataField="Route" HeaderText="Route" SortExpression="Route" />
-                <asp:BoundField DataField="Page.Name" HeaderText="Page Name" SortExpression="Page.Name" />
+                <asp:BoundField DataField="PageName" HeaderText="Page Name" SortExpression="PageName" />
                 <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                 <Rock:DeleteField OnClick="gPageRoutes_Delete" />
             </Columns>

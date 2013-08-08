@@ -465,7 +465,18 @@ $(document).ready(function() {
         {
             if ( dataView.EntityTypeId.HasValue && dataView.DataViewFilter != null && dataView.DataViewFilter.IsAuthorized( "View", CurrentPerson ) )
             {
-                gReport.IsPersonList = dataView.EntityTypeId == EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
+                
+                bool isPersonDataSet = dataView.EntityTypeId == EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
+
+                if (isPersonDataSet)
+                {
+                    gReport.PersonIdField = "Id";
+                }
+                else
+                {
+                    gReport.PersonIdField = null;
+                }
+
                 gReport.Visible = true;
                 BindGrid( gReport, dataView );
             }

@@ -130,14 +130,22 @@ namespace RockWeb.Blocks.Administration
         {
             MarketingCampaignService marketingCampaignService = new MarketingCampaignService();
             SortProperty sortProperty = gMarketingCampaigns.SortProperty;
+            var qry = marketingCampaignService.Queryable().Select( a =>
+                new
+                {
+                    a.Id,
+                    a.Title,
+                    EventGroupName = a.EventGroup.Name,
+                    a.ContactFullName
+                } );
 
             if ( sortProperty != null )
             {
-                gMarketingCampaigns.DataSource = marketingCampaignService.Queryable().Sort( sortProperty ).ToList();
+                gMarketingCampaigns.DataSource = qry.Sort( sortProperty ).ToList();
             }
             else
             {
-                gMarketingCampaigns.DataSource = marketingCampaignService.Queryable().OrderBy( p => p.Title ).ToList();
+                gMarketingCampaigns.DataSource = qry.OrderBy( p => p.Title ).ToList();
             }
 
             gMarketingCampaigns.DataBind();

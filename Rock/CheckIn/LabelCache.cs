@@ -9,7 +9,7 @@ using System.Collections.Generic;
 namespace Rock.CheckIn
 {
     /// <summary>
-    /// Cached Check in Label
+    /// Cached Check-in Label
     /// </summary>
     public class LabelCache
     {

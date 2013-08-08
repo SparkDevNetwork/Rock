@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -945,6 +946,31 @@ namespace Rock
         {
             return Enum.GetName( eff.GetType(), eff ).SplitCase();
         }
+
+        /// <summary>
+        /// Gets the enum description.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static string GetDescription( this Enum value )
+        {
+            var type = value.GetType();
+            string name = Enum.GetName( type, value );
+            if ( name != null )
+            {
+                System.Reflection.FieldInfo field = type.GetField( name );
+                if ( field != null )
+                {
+                    var attr = System.Attribute.GetCustomAttribute( field,
+                        typeof( DescriptionAttribute ) ) as DescriptionAttribute;
+                    if ( attr != null )
+                    {
+                        return attr.Description;
+                    }
+                }
+            }
+            return null;
+        }        
 
         /// <summary>
         /// Converts to int.

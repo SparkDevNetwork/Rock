@@ -45,6 +45,27 @@ namespace Rock.Web.UI.Controls
             var definedType = DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ) );
             this.DataSource = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => new { Id = v.Name, Value = v.Description } );
             this.DataBind();
+
+            if ( !this.Page.IsPostBack )
+            {
+                string orgLocGuid = GlobalAttributesCache.Read().GetValue( "OrganizationAddress" );
+                if ( !string.IsNullOrWhiteSpace( orgLocGuid ) )
+                {
+                    Guid locGuid = Guid.Empty;
+                    if ( Guid.TryParse( orgLocGuid, out locGuid ) )
+                    {
+                        var location = new Rock.Model.LocationService().Get( locGuid );
+                        if ( location != null )
+                        {
+                            var li = this.Items.FindByValue( location.State );
+                            if ( li != null )
+                            {
+                                li.Selected = true;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>

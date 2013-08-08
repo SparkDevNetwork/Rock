@@ -15,9 +15,9 @@ namespace RockWeb
     /// <summary>
     /// Handles retrieving file data from storage
     /// </summary>
-    public class File : IHttpAsyncHandler
+    public class GetFile : IHttpAsyncHandler
     {
-        public File()
+        public GetFile()
         {
         }
 
