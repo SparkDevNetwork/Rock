@@ -194,20 +194,37 @@ namespace Rock.Model
         /// <returns></returns>
         public IQueryable<Person> GetByFullName( string fullName, bool includeDeceased = false )
         {
+            var names = fullName.SplitDelimitedValues();
+
             string firstName = string.Empty;
             string lastName = string.Empty;
 
-            if ( fullName.Contains( ' ' ) )
+            if ( fullName.Contains( ',' ) )
             {
-                firstName = fullName.Substring( 0, fullName.LastIndexOf( ' ' ) );
-                lastName = fullName.Substring( fullName.LastIndexOf( ' ' ) + 1 );
+                lastName = names.Length >= 1 ? names[0].Trim() : string.Empty;
+                firstName = names.Length >= 2 ? names[1].Trim() : string.Empty;
+            }
+            else if ( fullName.Contains( ' ' ) )
+            {
+                firstName = names.Length >= 1 ? names[0].Trim() : string.Empty;
+                lastName = names.Length >= 2 ? names[1].Trim() : string.Empty;
             }
             else
-                lastName = fullName;
+            {
+                lastName = fullName.Trim();
+            }
 
-            return Queryable(includeDeceased).
-                    Where( p => p.LastName.ToLower().StartsWith( lastName.ToLower() ) &&
-                        ( p.FirstName.ToLower().StartsWith( firstName.ToLower() ) ) );
+            var qry = Queryable( includeDeceased );
+            if ( !string.IsNullOrWhiteSpace( lastName ) )
+            {
+                qry = qry.Where( p => p.LastName.StartsWith( lastName ) );
+            }
+            if ( !string.IsNullOrWhiteSpace( firstName ) )
+            {
+                qry = qry.Where( p => p.FirstName.StartsWith( firstName ) );
+            }
+
+            return qry;
         }
 
         /// <summary>

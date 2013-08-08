@@ -46,8 +46,16 @@ namespace RockWeb.Blocks.CheckIn
                     var errors = new List<string>();
                     if ( ProcessActivity( "Family Search", out errors ) )
                     {
-                        SaveState();
-                        NavigateToNextPage();
+                        if ( CurrentCheckInState.CheckIn.Families.Count > 0 )
+                        {
+                            SaveState();
+                            NavigateToNextPage();
+                        }
+                        else
+                        {
+                            string errorMsg = "<ul><li>There are not any families with the selected phone number</li></ul>";
+                            maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
+                        }
                     }
                     else
                     {
