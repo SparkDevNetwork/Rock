@@ -74,7 +74,6 @@ namespace Rock.Model
         /// </value>
         [MaxLength(45)]
         [DataMember]
-        [AlternateKey]
         public string IPAddress { get; set; }
 
         /// <summary>
