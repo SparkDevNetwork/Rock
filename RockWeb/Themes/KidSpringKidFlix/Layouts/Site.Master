@@ -19,10 +19,16 @@
     <asp:ContentPlaceHolder ID="css" runat="server" />
 
     <!-- Included CSS Files -->
-    <link rel="stylesheet" href="../CSS/rock-boot.less">
-    <link rel="stylesheet" href="../CSS/rock-boot-responsive.less">
-    <link rel="stylesheet" href="../CSS/checkin-theme.less">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/KidSpringKidFlix/Css/rock-boot.less") %>" />
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/KidSpringKidFlix/Css/rock-boot-responsive.less") %>" />
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/KidSpringKidFlix/Css/checkin-theme.less") %>" />
+    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.common.min.css") %>" />
+    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/checkin-core.less") %>" />
+    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/developer.less") %>" />
 
+    <script src="<%# ResolveUrl("~/Scripts/jquery.js") %>"></script>
+    <script src="<%# ResolveUrl("~/Scripts/bootstrap.min.js") %>"></script>
+    <script src="<%# ResolveUrl("~/Scripts/Kendo/kendo.web.min.js") %>"></script>
     <script src="<%# ResolveUrl("~/Scripts/fastclick.js") %>"></script>
 
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
