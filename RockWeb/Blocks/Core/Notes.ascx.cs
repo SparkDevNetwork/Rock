@@ -65,9 +65,27 @@ namespace RockWeb.Blocks.Core
     $('a.add-note').click(function () {
         $(this).parent().siblings('.widget-content').children('.note-entry').slideToggle(""slow"");
     });
+    
     $('a.add-note-cancel').click(function () {
         $(this).parent().siblings('.note').children('textarea').val('');
         $(this).parent().parent().slideToggle(""slow"");
+    });
+
+    $('.persontimeline article').live({
+        mouseenter:
+            function () {
+                var actionsDiv = $('.actions', this);
+                if (actionsDiv.length > 0) {
+                    $(actionsDiv).fadeToggle();
+                }
+            },
+        mouseleave:
+            function () {
+                var actionsDiv = $('.actions', this);
+                if (actionsDiv.length > 0) {
+                    $(actionsDiv).fadeToggle();
+                }
+            }
     });
 ";
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "add-note", script, true );
