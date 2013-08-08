@@ -1,0 +1,45 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true"  %>
+<%@ Import Namespace="System.Web.Optimization" %>
+<!DOCTYPE html>
+
+<html>
+<head runat="server">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta charset="utf-8">
+    <title></title>
+    
+    <!--[if lt IE 9]>
+        <script src="<%# ResolveUrl("~/Themes/GrayFabric/Scripts/html5.js") %>" ></script>
+    <![endif]-->
+
+    <!-- Set the viewport width to device width for mobile -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <asp:ContentPlaceHolder ID="css" runat="server" />
+
+	<!-- Included CSS Files -->
+	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/GrayFabric/Css/site-boot.less") %>"/>
+	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/GrayFabric/Css/site-boot-responsive.less") %>"/>
+	<link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.common.min.css") %>"/>
+	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/GrayFabric/Css/site-theme.less") %>"/>
+	<link rel="stylesheet" href="<%# ResolveUrl("~/CSS/developer.less") %>"/>
+
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
+
+    <!-- Icons -->
+    <link rel="shortcut icon" href="<%# ResolveUrl("~/Assets/Icons/favicon.ico") %>">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="<%# ResolveUrl("~/Assets/Icons/touch-icon-ipad-retina.png") %>">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="<%# ResolveUrl("~/Assets/Icons/touch-icon-iphone-retina.png") %>">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="<%# ResolveUrl("~/Assets/Icons/touch-icon-ipad.png") %>">
+    <link rel="apple-touch-icon-precomposed" href="<%# ResolveUrl("~/Assets/Icons/touch-icon-iphone.png") %>">
+
+</head>
+<body>
+    <form id="form1" runat="server">
+        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+        <asp:ScriptManager ID="sManager" runat="server"/>
+    </form>
+
+    
+</body>
+</html>

@@ -48,5 +48,17 @@ namespace Rock.Model
 
             return kiosk;
         }
+
+        /// <summary>
+        /// Gets the device by IP address.  
+        /// </summary>
+        /// <param name="ipAddress">The ip address.</param>
+        /// <returns></returns>
+        public Device GetByIPAddress( string ipAddress )
+        {
+            // Even though IPAddress is not a unique index, the UI should enforce uniqueness
+            // so that querying by IPaddress will return one result
+            return Repository.FirstOrDefault( d => d.IPAddress == ipAddress );
+        }
     }
 }

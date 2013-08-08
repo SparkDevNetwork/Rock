@@ -32,7 +32,7 @@ namespace Rock.Migrations
 	    SELECT [ID] 
 	    FROM [GroupRole] 
 	    WHERE [GroupTypeId] = @KnownRelationshipGroupType
-	    AND ( [Name] = 'Allow Check-in By' OR [Name] = 'Allow check in by' OR [Guid] = 'FF9869F1-BC56-4410-8A12-CAFC32C62257')
+	    AND ( [Name] = 'Allow Check in By' OR [Name] = 'Allow check in by' OR [Guid] = 'FF9869F1-BC56-4410-8A12-CAFC32C62257')
     )
 
     IF @AllowRoleId IS NOT NULL
@@ -124,7 +124,7 @@ namespace Rock.Migrations
     IF @CanCheckInAttributeId IS NULL
     BEGIN
 	    INSERT INTO [Attribute] ([IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],[Key],[Name],[Description],[Order],[IsGridColumn],[IsMultiValue],[IsRequired],[Guid])
-		    VALUES (1, @BoolFieldType, @EntityTypeId, 'GroupTypeId', CAST(@KnownRelationshipGroupType AS varchar), 'CanCheckin', 'Can Checkin', 'Should this type of known-relationship allow person to check in the related person?', 0, 1, 0, 0, '610A5BE8-8FDE-46AA-8F9D-1AF7F1F23441')
+		    VALUES (1, @BoolFieldType, @EntityTypeId, 'GroupTypeId', CAST(@KnownRelationshipGroupType AS varchar), 'CanCheckin', 'Can Check in', 'Should this type of known-relationship allow person to check in the related person?', 0, 1, 0, 0, '610A5BE8-8FDE-46AA-8F9D-1AF7F1F23441')
 	    SET @CanCheckInAttributeId = SCOPE_IDENTITY()
     END
     ELSE
@@ -157,7 +157,7 @@ namespace Rock.Migrations
 	    WHERE [Id] = @InverseAttributeId
     END
 
-    -- Update 'Can check in' role to allow checkin
+    -- Update 'Can check in' role to allow check in
     IF NOT EXISTS(
 	    SELECT [Id] 
 	    FROM [AttributeValue]

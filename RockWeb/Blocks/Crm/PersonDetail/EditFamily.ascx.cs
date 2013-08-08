@@ -233,7 +233,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         imgPerson.Visible = familyMember.PhotoId.HasValue;
                         if ( familyMember.PhotoId.HasValue )
                         {
-                            imgPerson.ImageUrl = string.Format( "~/image.ashx?id={0}", familyMember.PhotoId );
+                            imgPerson.ImageUrl = string.Format( "~/GetImage.ashx?id={0}", familyMember.PhotoId );
                         }
                     }
 

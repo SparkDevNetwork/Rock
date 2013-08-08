@@ -6,14 +6,14 @@
 * This script will add data for the check-in system.
 * It adds the following GroupTypes, Groups, needed attributes, Locations
 * and Schedules.  These new GroupTypes will be placed under a new top level
-* GroupType called "Weekend Service Check-in Area" and all the groups will be
-* placed under a new top level Group called "Weekend Service Check-in" 
+* GroupType called "Weekly Service Check-in Area" and all the groups will be
+* placed under a new top level Group called "Weekly Service Check-in" 
 * 
 * GROUPTYPE				   ATTRIBUTES
 *     - GROUP			                                  LOCATION           GUID									Inherits From
 * -------------------     --------------------------      ------------------ --------------------------------------	----------------------
-* Weekend Service Check-in Area                                              FEDD389A-616F-4A53-906C-63D8255631C5
-*     - Weekend Service Check-in                                               64F0F121-8E1E-4A24-B706-BA8E921FE623
+* Weekly Service Check-in Area                                              FEDD389A-616F-4A53-906C-63D8255631C5
+*     - Weekly Service Check-in                                               64F0F121-8E1E-4A24-B706-BA8E921FE623
 * 
 * Check in by Age         Ages:	                                             0572A5FE-20A4-4BF1-95CD-C71DB5281392
 * Check in by Grade 	  Grades:                                            4F9565A7-DD5A-41C3-B4E8-13F0B872B10B	Check in by Age
@@ -160,7 +160,7 @@ DECLARE @HSGroupTypeId int
 
 -- Insert the new top level Check-in GroupType
 INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo])
-   VALUES (0, 'Weekend Service Check-in Area', 'FEDD389A-616F-4A53-906C-63D8255631C5', 0, 0, 0, 0)
+   VALUES (0, 'Weekly Service Check-in Area', 'FEDD389A-616F-4A53-906C-63D8255631C5', 0, 0, 0, 0)
 SET @ParentGroupTypeId = SCOPE_IDENTITY()
 
 -- Now insert the all the new GroupTypes under that one...
@@ -214,7 +214,7 @@ DECLARE @JHGroupId int
 DECLARE @HSGroupId int
 
 INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid] )
-   VALUES( 0, @ParentGroupTypeId, 'Weekend Service Check-in', 0, 1, '64F0F121-8E1E-4A24-B706-BA8E921FE623' )
+   VALUES( 0, @ParentGroupTypeId, 'Weekly Service Check-in', 0, 1, '64F0F121-8E1E-4A24-B706-BA8E921FE623' )
 SET @ParentGroupId = SCOPE_IDENTITY()
 
 INSERT INTO [Group] ( [IsSystem],[ParentGroupId],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid] )
@@ -257,7 +257,7 @@ DECLARE @AttributeId int
 
 -- Minimum Age
 INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
-	VALUES ( 0, @DecimalFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @AgeGroupTypeId, 'MinAge', 'Minimum Age', 0, 0, 0, 0, '43511B8F-71D9-423A-85BF-D1CD08C1998E', 'The minimum age required to check into these group types.' )
+	VALUES ( 0, @DecimalFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @AgeGroupTypeId, 'MinAge', 'Minimum Age', 0, 0, 0, 0, '43511B8F-71D9-423A-85BF-D1CD08C1998E', 'The minimum age required to check in to these group types.' )
 SET @AttributeId = SCOPE_IDENTITY()
 
 	INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
@@ -289,7 +289,7 @@ SET @AttributeId = SCOPE_IDENTITY()
 		   
 -- Maximum Age
 INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
-	VALUES ( 0, @DecimalFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @AgeGroupTypeId, 'MaxAge', 'Maximum Age', 1, 0, 0, 0, 'BB85499E-3BD5-4C77-A711-DC4AE7F6115F', 'The maximum age allowed to check into these group types.' )
+	VALUES ( 0, @DecimalFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @AgeGroupTypeId, 'MaxAge', 'Maximum Age', 1, 0, 0, 0, 'BB85499E-3BD5-4C77-A711-DC4AE7F6115F', 'The maximum age allowed to check in to these group types.' )
 SET @AttributeId = SCOPE_IDENTITY()
 
 	INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
@@ -321,7 +321,7 @@ SET @AttributeId = SCOPE_IDENTITY()
 
 -- Minimum Grade
 INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
-	VALUES ( 0, @IntFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @GradeGroupTypeId, 'MinGrade', 'Minimum Grade', 0, 0, 0, 0, 'C7C028C2-6582-45E8-839D-5C4467C6FDF4', 'Defines the lower grade level boundary to check into these group types.' )
+	VALUES ( 0, @IntFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @GradeGroupTypeId, 'MinGrade', 'Minimum Grade', 0, 0, 0, 0, 'C7C028C2-6582-45E8-839D-5C4467C6FDF4', 'Defines the lower grade level boundary to check in to these group types.' )
 SET @AttributeId = SCOPE_IDENTITY()
 
 	INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
@@ -349,7 +349,7 @@ SET @AttributeId = SCOPE_IDENTITY()
 
 -- Maximum Grade		   
 INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
-	VALUES ( 0, @IntFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @GradeGroupTypeId, 'MaxGrade', 'Maximum Grade', 1, 0, 0, 0, 'AD1FECFD-A6B8-4C76-AB5D-B5B91AAAEFA1', 'Defines the upper grade level boundary to check into these group types.' )
+	VALUES ( 0, @IntFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @GradeGroupTypeId, 'MaxGrade', 'Maximum Grade', 1, 0, 0, 0, 'AD1FECFD-A6B8-4C76-AB5D-B5B91AAAEFA1', 'Defines the upper grade level boundary to check in to these group types.' )
 SET @AttributeId = SCOPE_IDENTITY()
 
 	INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
@@ -469,7 +469,7 @@ SET @CampusLocationId = SCOPE_IDENTITY()
 INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid])	VALUES (@CampusLocationId, 'Bldg 1', 1, NEWID())
 SET @BuildingLocationId = SCOPE_IDENTITY()
 
--- Check-in Rooms
+-- Check in Rooms
 INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid])	VALUES (@BuildingLocationId, 'Bunnies', 1, NEWID())
 INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid])	VALUES (@BuildingLocationId, 'Puppies', 1, NEWID())
 INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid])	VALUES (@BuildingLocationId, 'Bears', 1, NEWID())
@@ -672,7 +672,7 @@ BEGIN
 END
 
 INSERT INTO [WorkflowType] (IsSystem, IsActive, Name, [Order], WorkTerm, IsPersisted, LoggingLevel, Guid)
-VALUES (0, 1, 'Children''s Checkin', 0, 'Checkin', 0, 3, '011E9F5A-60D4-4FF5-912A-290881E37EAF')
+VALUES (0, 1, 'Children''s Check-in', 0, 'Check-in', 0, 3, '011E9F5A-60D4-4FF5-912A-290881E37EAF')
 SET @WorkflowTypeId = SCOPE_IDENTITY()
 
 UPDATE AV
@@ -684,7 +684,7 @@ DECLARE @TextFieldTypeId int
 SET @TextFieldTypeId = (SELECT Id FROM FieldType WHERE guid = '9C204CD0-1233-41C5-818A-C5DA439445AA')
 DELETE [Attribute] WHERE guid = '9D2BFE8A-41F3-4A02-B3CF-9193F0C8419E'
 INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, Guid)
-VALUES ( 0, @TextFieldTypeId, @WorkflowEntityTypeId, 'WorkflowTypeId', CAST(@WorkflowTypeId as varchar), 'CheckInState', 'Check In State', 0, 0, 0, 0, '9D2BFE8A-41F3-4A02-B3CF-9193F0C8419E')
+VALUES ( 0, @TextFieldTypeId, @WorkflowEntityTypeId, 'WorkflowTypeId', CAST(@WorkflowTypeId as varchar), 'CheckInState', 'Check-in State', 0, 0, 0, 0, '9D2BFE8A-41F3-4A02-B3CF-9193F0C8419E')
 
 -- Family Search Activity
 DECLARE @WorkflowActivityTypeId int
@@ -713,9 +713,19 @@ SELECT @WorkflowActivityTypeId, 'Remove Empty People', 4, Id, 1, 0, NEWID() FROM
 INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
 SELECT @WorkflowActivityTypeId, 'Update Last Attended', 5, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.CalculateLastAttended'
 
+-- Group Search
+INSERT INTO [WorkflowActivityType] (IsActive, WorkflowTypeId, Name, IsActivatedWithWorkflow, [Order], Guid)
+VALUES (1, @WorkflowTypeId, 'Group Search', 0, 2, NEWID())
+SET @WorkflowActivityTypeId = SCOPE_IDENTITY()
+
+INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
+SELECT @WorkflowActivityTypeId, 'Load Groups', 0, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.LoadGroups'
+INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
+SELECT @WorkflowActivityTypeId, 'Update Last Attended', 2, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.CalculateLastAttended'
+
 -- Location Search
 INSERT INTO [WorkflowActivityType] (IsActive, WorkflowTypeId, Name, IsActivatedWithWorkflow, [Order], Guid)
-VALUES (1, @WorkflowTypeId, 'Location Search', 0, 2, NEWID())
+VALUES (1, @WorkflowTypeId, 'Location Search', 0, 3, NEWID())
 SET @WorkflowActivityTypeId = SCOPE_IDENTITY()
 
 INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
@@ -723,17 +733,9 @@ SELECT @WorkflowActivityTypeId, 'Load Locations', 0, Id, 1, 0, NEWID() FROM Enti
 INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
 SELECT @WorkflowActivityTypeId, 'Filter Active Locations', 1, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.FilterActiveLocations'
 INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
-SELECT @WorkflowActivityTypeId, 'Update Last Attended', 2, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.CalculateLastAttended'
-
--- Group Search
-INSERT INTO [WorkflowActivityType] (IsActive, WorkflowTypeId, Name, IsActivatedWithWorkflow, [Order], Guid)
-VALUES (1, @WorkflowTypeId, 'Group Search', 0, 3, NEWID())
-SET @WorkflowActivityTypeId = SCOPE_IDENTITY()
-
+SELECT @WorkflowActivityTypeId, 'Remove Empty Groups', 2, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.RemoveEmptyGroups'
 INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
-SELECT @WorkflowActivityTypeId, 'Load Groups', 0, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.LoadGroups'
-INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
-SELECT @WorkflowActivityTypeId, 'Update Last Attended', 2, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.CalculateLastAttended'
+SELECT @WorkflowActivityTypeId, 'Update Last Attended', 3, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.CalculateLastAttended'
 
 -- Schedule Search
 INSERT INTO [WorkflowActivityType] (IsActive, WorkflowTypeId, Name, IsActivatedWithWorkflow, [Order], Guid)
