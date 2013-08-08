@@ -256,7 +256,7 @@ namespace Rock.CheckIn
                 var label = new LabelCache();
 
                 label.Guid = file.Guid;
-                label.Url = string.Format( "{0}File.ashx?{1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), file.Id );
+                label.Url = string.Format( "{0}GetFile.ashx?{1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), file.Id );
                 label.MergeFields = new Dictionary<string, string>();
                 label.FileContent = System.Text.Encoding.Default.GetString( file.Data.Content );
 
@@ -295,6 +295,7 @@ namespace Rock.CheckIn
             _lastCached = DateTimeOffset.Now;
         }
 
+
         private static void LoadKioskLocations( KioskStatus kioskStatus, Location location )
         {
             var groupLocationService = new GroupLocationService();
@@ -302,8 +303,9 @@ namespace Rock.CheckIn
             {
                 DateTimeOffset nextGroupActiveTime = DateTimeOffset.MaxValue;
 
-                var kioskGroup = new KioskGroup( groupLocation.Group );
+                var kioskLocation = new KioskLocation( groupLocation.Location );
 
+                // Populate each kioskLocation with it's schedules (kioskSchedules)
                 foreach ( var schedule in groupLocation.Schedules.Where( s => s.CheckInStartOffsetMinutes.HasValue ) )
                 {
                     var nextScheduleActiveTime = schedule.GetNextCheckInStartTime( DateTimeOffset.Now );
@@ -312,19 +314,18 @@ namespace Rock.CheckIn
                         nextGroupActiveTime = nextScheduleActiveTime.Value;
                     }
 
-                    if ( schedule.IsCheckInActive )
+                    if ( schedule.IsCheckInActive && kioskLocation != null )
                     {
-                        kioskGroup.KioskSchedules.Add( new KioskSchedule( schedule ) );
+                        kioskLocation.KioskSchedules.Add( new KioskSchedule( schedule ) );
                     }
                 }
 
-                // If the group has any active or future schedules, add the group's group type to the kiosk's 
+                // If the group location has any active OR future schedules, add the group's group type to the kiosk's 
                 // list of group types
-                if ( kioskGroup.KioskSchedules.Count > 0 || nextGroupActiveTime < DateTimeOffset.MaxValue )
+                if ( kioskLocation.KioskSchedules.Count > 0 || nextGroupActiveTime < DateTimeOffset.MaxValue )
                 {
-                    kioskGroup.Group.LoadAttributes();
 
-                    KioskGroupType kioskGroupType = kioskStatus.KioskGroupTypes.Where( g => g.GroupType.Id == kioskGroup.Group.GroupTypeId ).FirstOrDefault();
+                    KioskGroupType kioskGroupType = kioskStatus.KioskGroupTypes.Where( g => g.GroupType.Id == groupLocation.Group.GroupTypeId ).FirstOrDefault();
                     if ( kioskGroupType == null )
                     {
                         kioskGroupType = new KioskGroupType( groupLocation.Group.GroupType );
@@ -338,18 +339,19 @@ namespace Rock.CheckIn
                         kioskGroupType.NextActiveTime = nextGroupActiveTime;
                     }
 
-                    // If there are active schedules, add the locations to the group type locations
-                    if ( kioskGroup.KioskSchedules.Count > 0 )
+                    // If there are active schedules, add the group to the group type groups
+                    if ( kioskLocation.KioskSchedules.Count > 0 )
                     {
-                        KioskLocation kioskLocation = kioskGroupType.KioskLocations.Where( l => l.Location.Id == location.Id ).FirstOrDefault();
-                        if ( kioskLocation == null )
+                        KioskGroup kioskGroup = kioskGroupType.KioskGroups.Where( g => g.Group.Id == groupLocation.GroupId ).FirstOrDefault();
+                        if ( kioskGroup == null )
                         {
-                            kioskLocation = new KioskLocation( location );
-                            kioskLocation.Location.LoadAttributes();
-                            kioskGroupType.KioskLocations.Add( kioskLocation );
+                            kioskGroup = new KioskGroup( groupLocation.Group );
+                            kioskGroup.Group.LoadAttributes();
+                            kioskGroupType.KioskGroups.Add( kioskGroup );
                         }
 
-                        kioskLocation.KioskGroups.Add( kioskGroup );
+                        kioskLocation.Location.LoadAttributes();
+                        kioskGroup.KioskLocations.Add( kioskLocation );
                     }
                 }
             }

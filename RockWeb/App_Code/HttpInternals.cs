@@ -65,7 +65,7 @@ internal static class HttpInternals
         HttpInternals.StopFileMonitoring();
         DirectoryInfo rockWebPath = new DirectoryInfo(HttpRuntime.AppDomainAppPath);
         
-        System.IO.FileSystemWatcher rockWebFsw = new FileSystemWatcher( rockWebPath.FullName );
+        FileSystemWatcher rockWebFsw = new FileSystemWatcher( rockWebPath.FullName );
         rockWebFsw.NotifyFilter = NotifyFilters.LastWrite;
         rockWebFsw.IncludeSubdirectories = true;
         rockWebFsw.Changed += fsw_Changed;
@@ -73,7 +73,7 @@ internal static class HttpInternals
 
         // also restart if any .cs files are modified in the solution
         var solutionPath = Path.Combine( rockWebPath.Parent.FullName );
-        System.IO.FileSystemWatcher sourceFileFsw = new FileSystemWatcher( solutionPath, "*.cs" );
+        FileSystemWatcher sourceFileFsw = new FileSystemWatcher( solutionPath, "*.cs" );
 
         sourceFileFsw.NotifyFilter = NotifyFilters.LastWrite;
         sourceFileFsw.IncludeSubdirectories = true;

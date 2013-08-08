@@ -76,6 +76,18 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<BinaryFile>().Queryable().Any( a => a.StorageEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, BinaryFile.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<BinaryFileType>().Queryable().Any( a => a.StorageEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, BinaryFileType.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Category>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, Category.FriendlyTypeName );

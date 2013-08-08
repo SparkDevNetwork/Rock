@@ -11,9 +11,9 @@ using System.Linq;
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
-    /// Removes any group type that does not have any locations
+    /// Removes any group type that does not have any groups
     /// </summary>
-    [Description("Removes any group type that does not have any locations")]
+    [Description("Removes any group type that does not have any groups")]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Remove Empty Group Types" )]
     public class RemoveEmptyGroupTypes : CheckInActionComponent
@@ -37,7 +37,7 @@ namespace Rock.Workflow.Action.CheckIn
                     {
                         foreach ( var groupType in person.GroupTypes.ToList() )
                         {
-                            if ( groupType.Locations.Count == 0 )
+                            if ( groupType.Groups.Count == 0 )
                             {
                                 person.GroupTypes.Remove( groupType );
                             }

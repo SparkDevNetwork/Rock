@@ -17,7 +17,30 @@ using Rock.Web.Cache;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
+    /// This control will create a Google map with drawring tools that
+    /// allows the user to define a single point or a polygon which forms a geo-fence
+    /// depending on the <see cref="Rock.Web.UI.Controls.GeoPicker.ManagerDrawingMode.Point"/>.
     /// 
+    /// To use on a page or usercontrol:
+    /// <example>
+    /// <code>
+    ///     <Rock:GeoPicker ID="gpGeoPoint" runat="server" Required="false" LabelText="Geo Point" DrawingMode="Point" />
+    /// </code>
+    /// </example>
+    /// To set an initial value:
+    /// <example>
+    /// <code>
+    ///     gpGeoPoint.SetValue( DbGeography.FromText("POINT(-122.335197 47.646711)") );
+    /// </code>
+    /// </example>
+    /// To access the value after it's been set use the <see cref="SelectedValue"/> property:
+    /// <example>
+    /// <code>
+    ///    DbGeography point = gpGeoPoint.SelectedValue;
+    /// </code>
+    /// </example>
+    /// 
+    /// If you wish to set an appropriate, initial center point you can use the <see cref="CenterPoint"/> property.
     /// </summary>
     public class GeoPicker : CompositeControl, ILabeledControl
     {
@@ -154,7 +177,8 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets the name of the Geography's display name.
+        /// Gets or sets the name of the Geography's display name.  This is what's shown
+        /// to the user before they actually edit the GeoPicker to change its value.
         /// </summary>
         /// <value>
         /// The name of the geography.

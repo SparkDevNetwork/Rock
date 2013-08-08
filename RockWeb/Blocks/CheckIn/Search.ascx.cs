@@ -14,7 +14,7 @@ using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [Description( "Check-In Family Search block" )]
+    [Description( "Check-in Family Search block" )]
     [IntegerField( "Minimum Phone Number Length", "Minimum length for phone number searches (defaults to 4).", false, 4 )]
     [IntegerField( "Maximum Phone Number Length", "Maximum length for phone number searches (defaults to 10).", false, 10 )]
     public partial class Search : CheckInBlock
@@ -46,8 +46,16 @@ namespace RockWeb.Blocks.CheckIn
                     var errors = new List<string>();
                     if ( ProcessActivity( "Family Search", out errors ) )
                     {
-                        SaveState();
-                        NavigateToNextPage();
+                        if ( CurrentCheckInState.CheckIn.Families.Count > 0 )
+                        {
+                            SaveState();
+                            NavigateToNextPage();
+                        }
+                        else
+                        {
+                            string errorMsg = "<ul><li>There are not any families with the selected phone number</li></ul>";
+                            maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
+                        }
                     }
                     else
                     {

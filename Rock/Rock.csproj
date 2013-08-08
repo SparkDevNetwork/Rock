@@ -144,7 +144,6 @@
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
-    <Compile Include="Attribute\EncryptedFieldAttribute.cs" />
     <Compile Include="Attribute\LocationFieldAttribute.cs" />
     <Compile Include="Attribute\GroupRoleFieldAttribute.cs" />
     <Compile Include="Attribute\MemoFieldAttribute.cs" />
@@ -176,7 +175,6 @@
     <Compile Include="Field\Types\ComponentsFieldType.cs" />
     <Compile Include="Field\Types\CategoryFieldType.cs" />
     <Compile Include="Field\Types\CategoriesFieldType.cs" />
-    <Compile Include="Field\Types\EncryptedFieldType.cs" />
     <Compile Include="Field\Types\LocationFieldType.cs" />
     <Compile Include="Field\Types\GroupRoleFieldType.cs" />
     <Compile Include="Migrations\201305032320163_Communications.cs" />
@@ -442,6 +440,30 @@
     <Compile Include="Migrations\201308021811252_ChangeBadges1Case.cs" />
     <Compile Include="Migrations\201308021811252_ChangeBadges1Case.Designer.cs">
       <DependentUpon>201308021811252_ChangeBadges1Case.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308052350229_RenameLocationTypeField.cs" />
+    <Compile Include="Migrations\201308052350229_RenameLocationTypeField.Designer.cs">
+      <DependentUpon>201308052350229_RenameLocationTypeField.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308062206216_FlipCheckinClassRelationships.cs" />
+    <Compile Include="Migrations\201308062206216_FlipCheckinClassRelationships.Designer.cs">
+      <DependentUpon>201308062206216_FlipCheckinClassRelationships.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308071741109_MarketingCampaignAdListFilter.cs" />
+    <Compile Include="Migrations\201308071741109_MarketingCampaignAdListFilter.Designer.cs">
+      <DependentUpon>201308071741109_MarketingCampaignAdListFilter.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308072153425_AddAbilityLevels.cs" />
+    <Compile Include="Migrations\201308072153425_AddAbilityLevels.Designer.cs">
+      <DependentUpon>201308072153425_AddAbilityLevels.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308080403505_UniqueDeviceIPAddress.cs" />
+    <Compile Include="Migrations\201308080403505_UniqueDeviceIPAddress.Designer.cs">
+      <DependentUpon>201308080403505_UniqueDeviceIPAddress.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308081522336_ReverseDeviceIPUnique.cs" />
+    <Compile Include="Migrations\201308081522336_ReverseDeviceIPUnique.Designer.cs">
+      <DependentUpon>201308081522336_ReverseDeviceIPUnique.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
@@ -1055,6 +1077,7 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\DateRangePicker.cs" />
     <Compile Include="Web\UI\Controls\Grid\CheckBoxEditableField.cs" />
     <Compile Include="Web\UI\Controls\Grid\ColorField.cs" />
     <Compile Include="Web\UI\Controls\IRequiredControl.cs" />
@@ -1063,6 +1086,7 @@
     <Compile Include="Web\UI\Controls\NewFamily\AttributesRow.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\Members.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\MembersRow.cs" />
+    <Compile Include="Web\UI\Controls\NumberRangeEditor.cs" />
     <Compile Include="Web\UI\Controls\PersonProfile\Badge.cs" />
     <Compile Include="Web\UI\Controls\PersonLink.cs" />
     <Compile Include="Web\UI\Controls\HtmlEditor.cs" />
@@ -2077,6 +2101,24 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201308021811252_ChangeBadges1Case.resx">
       <DependentUpon>201308021811252_ChangeBadges1Case.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308052350229_RenameLocationTypeField.resx">
+      <DependentUpon>201308052350229_RenameLocationTypeField.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308062206216_FlipCheckinClassRelationships.resx">
+      <DependentUpon>201308062206216_FlipCheckinClassRelationships.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308071741109_MarketingCampaignAdListFilter.resx">
+      <DependentUpon>201308071741109_MarketingCampaignAdListFilter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308072153425_AddAbilityLevels.resx">
+      <DependentUpon>201308072153425_AddAbilityLevels.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308080403505_UniqueDeviceIPAddress.resx">
+      <DependentUpon>201308080403505_UniqueDeviceIPAddress.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308081522336_ReverseDeviceIPUnique.resx">
+      <DependentUpon>201308081522336_ReverseDeviceIPUnique.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

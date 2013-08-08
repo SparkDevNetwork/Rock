@@ -14,9 +14,9 @@ using Rock.Model;
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
-    /// Calculates and updates the LastCheckIn property on checkin objects
+    /// Calculates and updates the LastCheckIn property on check-in objects
     /// </summary>
-    [Description("Calculates and updates the LastCheckIn property on checkin objects")]
+    [Description("Calculates and updates the LastCheckIn property on check-in objects")]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Calculate Last Attended" )]
     public class CalculateLastAttended : CheckInActionComponent
@@ -54,25 +54,25 @@ namespace Rock.Workflow.Action.CheckIn
                             {
                                 groupType.LastCheckIn = groupTypeCheckIns.Select( a => a.StartDateTime ).Max();
 
-                                foreach ( var location in groupType.Locations )
+                                foreach ( var group in groupType.Groups )
                                 {
-                                    var locationCheckIns = groupTypeCheckIns.Where( a => a.LocationId == location.Location.Id ).ToList();
-                                    if ( locationCheckIns.Any() )
+                                    var groupCheckIns = groupTypeCheckIns.Where( a => a.GroupId == group.Group.Id ).ToList();
+                                    if ( groupCheckIns.Any() )
                                     {
-                                        location.LastCheckIn = locationCheckIns.Select( a => a.StartDateTime ).Max();
+                                        group.LastCheckIn = groupCheckIns.Select( a => a.StartDateTime ).Max();
                                     }
 
-                                    foreach ( var group in location.Groups )
+                                    foreach ( var location in group.Locations )
                                     {
-                                        var groupCheckIns = locationCheckIns.Where( a => a.GroupId == group.Group.Id ).ToList();
-                                        if ( groupCheckIns.Any() )
+                                        var locationCheckIns = groupCheckIns.Where( a => a.LocationId == location.Location.Id ).ToList();
+                                        if ( locationCheckIns.Any() )
                                         {
-                                            location.LastCheckIn = groupCheckIns.Select( a => a.StartDateTime ).Max();
+                                            location.LastCheckIn = locationCheckIns.Select( a => a.StartDateTime ).Max();
                                         }
 
-                                        foreach ( var schedule in group.Schedules )
+                                        foreach ( var schedule in location.Schedules )
                                         {
-                                            var scheduleCheckIns = groupCheckIns.Where( a => a.ScheduleId == schedule.Schedule.Id ).ToList();
+                                            var scheduleCheckIns = locationCheckIns.Where( a => a.ScheduleId == schedule.Schedule.Id ).ToList();
                                             if ( scheduleCheckIns.Any() )
                                             {
                                                 schedule.LastCheckIn = scheduleCheckIns.Select( a => a.StartDateTime ).Max();

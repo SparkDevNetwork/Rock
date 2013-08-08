@@ -22,7 +22,7 @@ namespace RockWeb.Blocks.CheckIn
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Check-In Success block" )]
+    [Description( "Check-in Success block" )]
     [LinkedPage("Person Select Page")]
     public partial class Success : CheckInBlock
     {
@@ -60,17 +60,17 @@ namespace RockWeb.Blocks.CheckIn
                     {
                         foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
                         {
-                            foreach ( var location in groupType.Locations.Where( l => l.Selected ) )
+                            foreach ( var group in groupType.Groups.Where( g => g.Selected ) )
                             {
-                                foreach ( var group in location.Groups.Where( g => g.Selected ) )
+                                foreach ( var location in group.Locations.Where( l => l.Selected ) )
                                 {
-                                    foreach ( var schedule in group.Schedules.Where( s => s.Selected ) )
+                                    foreach ( var schedule in location.Schedules.Where( s => s.Selected ) )
                                     {
-                                        var li = new HtmlGenericControl("li");
-                                        li.InnerText = string.Format("{0} was checked into {1} for the {2} at {3}",
-                                            person.ToString(), group.ToString(), location.ToString(), schedule.ToString(), person.SecurityCode);
+                                        var li = new HtmlGenericControl( "li" );
+                                        li.InnerText = string.Format( "{0} was checked into {1} for the {2} at {3}",
+                                            person.ToString(), group.ToString(), location.ToString(), schedule.ToString(), person.SecurityCode );
 
-                                        phResults.Controls.Add(li);
+                                        phResults.Controls.Add( li );
                                     }
                                 }
                             }
@@ -168,7 +168,7 @@ namespace RockWeb.Blocks.CheckIn
                         foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
                         {
                             groupType.Selected = false;
-                            groupType.Locations = new List<CheckInLocation>();
+                            groupType.Groups = new List<CheckInGroup>();
                         }
                     }
                 }
