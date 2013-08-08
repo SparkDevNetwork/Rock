@@ -11,7 +11,7 @@
                 <asp:BoundField DataField="Category" HeaderText="Category" SortExpression="Category" />
                 <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                 <asp:BoundField DataField="Description" HeaderText="Description" SortExpression="Description" />
-                <asp:BoundField DataField="FieldType.Name" HeaderText="Field Type" SortExpression="FieldType.Name" />
+                <asp:BoundField DataField="FieldTypeName" HeaderText="Field Type" SortExpression="FieldTypeName" />
                 <Rock:DeleteField OnClick="gDefinedType_Delete" />
             </Columns>
         </Rock:Grid>

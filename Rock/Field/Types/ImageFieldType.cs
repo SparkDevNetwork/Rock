@@ -29,7 +29,7 @@ namespace Rock.Field.Types
         {
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var imagePath = Path.Combine( parentControl.ResolveUrl( "~" ), "Image.ashx" );
+                var imagePath = Path.Combine( parentControl.ResolveUrl( "~" ), "GetImage.ashx" );
                 int imgSize = 100;
                 if ( condensed )
                 {

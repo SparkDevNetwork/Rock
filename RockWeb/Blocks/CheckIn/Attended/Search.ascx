@@ -2,12 +2,6 @@
 
 <script>        
     function SetKeyEvents() {
-        $(document).keyup(function (event) {
-            if (event.which == 13) {
-                $("[id$='lbSearch']").click();
-                event.preventDefault();
-            }
-        });
         $('.keyboard a.digit').unbind('click').click(function () {
             $name = $("input[id$='tbSearchBox']");
             $name.val($name.val() + $(this).html());

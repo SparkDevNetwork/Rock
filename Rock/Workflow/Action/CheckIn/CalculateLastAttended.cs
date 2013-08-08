@@ -14,9 +14,9 @@ using Rock.Model;
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
-    /// Calculates and updates the LastCheckIn property on checkin objects
+    /// Calculates and updates the LastCheckIn property on check-in objects
     /// </summary>
-    [Description("Calculates and updates the LastCheckIn property on checkin objects")]
+    [Description("Calculates and updates the LastCheckIn property on check-in objects")]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Calculate Last Attended" )]
     public class CalculateLastAttended : CheckInActionComponent

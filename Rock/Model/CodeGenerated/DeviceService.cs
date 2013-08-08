@@ -102,6 +102,7 @@ namespace Rock.Model
                 target.Name = source.Name;
                 target.Description = source.Description;
                 target.DeviceTypeValueId = source.DeviceTypeValueId;
+                target.LocationId = source.LocationId;
                 target.IPAddress = source.IPAddress;
                 target.PrinterDeviceId = source.PrinterDeviceId;
                 target.PrintFrom = source.PrintFrom;

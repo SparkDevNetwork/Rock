@@ -164,7 +164,17 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private void BindGrid()
         {
-            gReport.IsPersonList = Boolean.Parse( GetAttributeValue( "PersonReport" ) );
+            bool personReport = Boolean.Parse( GetAttributeValue( "PersonReport" ) );
+            
+            if (personReport)
+            {
+                gReport.PersonIdField = "Id";
+            }
+            else
+            {
+                gReport.PersonIdField = null;
+            }
+
             gReport.CommunicateMergeFields = GetAttributeValue( "MergeFields" ).SplitDelimitedValues().ToList<string>();
             gReport.Visible = true;
             nbError.Visible = false;
