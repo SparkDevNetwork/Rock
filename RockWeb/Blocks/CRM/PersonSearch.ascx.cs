@@ -48,30 +48,7 @@ namespace RockWeb.Blocks.Crm
                     {
                         case ( "name" ):
 
-                            string fName = string.Empty;
-                            string lName = string.Empty;
-
-                            var names = term.SplitDelimitedValues();
-
-                            bool lastFirst = term.Contains( "," );
-
-                            if ( lastFirst )
-                            {
-                                // last, first
-                                lName = names.Length >= 1 ? names[0] : string.Empty;
-                                fName = names.Length >= 2 ? names[1] : string.Empty;
-                            }
-                            else
-                            {
-                                // first last
-                                fName = names.Length >= 1 ? names[0] : string.Empty;
-                                lName = names.Length >= 2 ? names[1] : string.Empty;
-                            }
-
-                            people = personService.Queryable().
-                                Where( p => ( ( p.FirstName ).StartsWith( fName ) && p.LastName.StartsWith( lName ) ) ).
-                                OrderBy( p => p.LastName ).ThenBy( p => p.FirstName ).
-                                ToList();
+                            people = personService.GetByFullName( term, true ).ToList();
 
                             break;
 
