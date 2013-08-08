@@ -22,7 +22,7 @@
 	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-boot-responsive.less") %>"/>
 	<link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.common.min.css") %>"/>
 	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-theme.less") %>"/>
-	<link rel="stylesheet" href="<%# ResolveUrl("~/CSS/developer.less") %>"/>
+	<link rel="stylesheet" href="<%# ResolveUrl("~/CSS/developer.css") %>"/>
 
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
