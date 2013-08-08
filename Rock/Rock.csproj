@@ -458,6 +458,10 @@
     <Compile Include="Migrations\201308080403505_UniqueDeviceIPAddress.Designer.cs">
       <DependentUpon>201308080403505_UniqueDeviceIPAddress.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201308081522336_ReverseDeviceIPUnique.cs" />
+    <Compile Include="Migrations\201308081522336_ReverseDeviceIPUnique.Designer.cs">
+      <DependentUpon>201308081522336_ReverseDeviceIPUnique.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -2108,6 +2112,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201308080403505_UniqueDeviceIPAddress.resx">
       <DependentUpon>201308080403505_UniqueDeviceIPAddress.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308081522336_ReverseDeviceIPUnique.resx">
+      <DependentUpon>201308081522336_ReverseDeviceIPUnique.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
