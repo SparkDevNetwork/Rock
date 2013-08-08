@@ -68,8 +68,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 phScript.Controls.Add( new LiteralControl( script ) );
 
                 if ( !CurrentKioskId.HasValue || UserBackedUp || CurrentGroupTypeIds == null )
-                {   // #DEBUG, may be the local machine
-                    var kiosk = new DeviceService().GetByDeviceName( Environment.MachineName );
+                {   
+                    // #DEBUG, may be the local machine
+                    var kiosk = new DeviceService().Queryable().Where( d => d.Name == Environment.MachineName ).FirstOrDefault();
                     if ( kiosk != null )
                     {
                         CurrentKioskId = kiosk.Id;
