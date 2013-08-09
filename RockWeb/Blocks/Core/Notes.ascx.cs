@@ -76,14 +76,14 @@ namespace RockWeb.Blocks.Core
             function () {
                 var actionsDiv = $('.actions', this);
                 if (actionsDiv.length > 0) {
-                    $(actionsDiv).fadeToggle();
+                    $(actionsDiv).stop(true, true).fadeIn(""slow"");
                 }
             },
         mouseleave:
             function () {
                 var actionsDiv = $('.actions', this);
                 if (actionsDiv.length > 0) {
-                    $(actionsDiv).fadeToggle();
+                    $(actionsDiv).stop(true, true).fadeOut(""slow"");
                 }
             }
     });
@@ -141,6 +141,9 @@ namespace RockWeb.Blocks.Core
                     var noteEditor = control as NoteEditor;
                     noteEditor.IsPrivate = note.IsPrivate( "View", CurrentPerson );
                     noteEditor.CanEdit = note.IsAuthorized( "Edit", CurrentPerson );
+                    noteEditor.ShowAlertCheckBox = cbAlert.Visible;
+                    noteEditor.ShowPrivateCheckBox = cbPrivate.Visible;
+                    noteEditor.ShowSecurityButton = btnSecurity.Visible;
                 }
             }
         }
