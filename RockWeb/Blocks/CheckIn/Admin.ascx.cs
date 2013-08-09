@@ -90,12 +90,13 @@ namespace RockWeb.Blocks.CheckIn
         private void AttemptKioskMatchByIpOrName()
         {
             // try to find matching kiosk by REMOTE_ADDR (ip/name).
-            var kioskStatus = KioskCache.GetKiosk( Request.ServerVariables["REMOTE_ADDR"], skipReverseLookup: false );
-            if ( kioskStatus != null )
+            var checkInDeviceTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
+            var device = new DeviceService().GetByIPAddress( Request.ServerVariables["REMOTE_ADDR"], checkInDeviceTypeId, false );
+            if ( device != null )
             {
                 ClearMobileCookie();
-                CurrentKioskId = kioskStatus.Device.Id;
-                CurrentGroupTypeIds = GetAllKiosksGroupTypes( kioskStatus.Device ); ;
+                CurrentKioskId = device.Id;
+                CurrentGroupTypeIds = GetAllKiosksGroupTypes( device ); ;
                 CurrentCheckInState = null;
                 CurrentWorkflow = null;
                 SaveState();

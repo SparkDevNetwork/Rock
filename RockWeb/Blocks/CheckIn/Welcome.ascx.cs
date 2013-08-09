@@ -19,7 +19,7 @@ using Rock.Web.Cache;
 namespace RockWeb.Blocks.CheckIn
 {
     [Description( "Check-in Welcome block" )]
-    [LinkedPage("Family Select Page")]
+    [LinkedPage( "Family Select Page" )]
     [IntegerField( "Refresh Interval", "How often (seconds) should page automatically query server for new Check-in data", false, 10 )]
     public partial class Welcome : CheckInBlock
     {
@@ -27,7 +27,7 @@ namespace RockWeb.Blocks.CheckIn
         {
             base.OnInit( e );
 
-            if ( CurrentCheckInState == null)
+            if ( CurrentCheckInState == null )
             {
                 NavigateToPreviousPage();
                 return;
@@ -51,7 +51,7 @@ namespace RockWeb.Blocks.CheckIn
             }}
         }});
     </script>
-", CurrentKioskId, CurrentGroupTypeIds.AsDelimited(",") );
+", CurrentKioskId, CurrentGroupTypeIds.AsDelimited( "," ) );
                 phScript.Controls.Add( new LiteralControl( script ) );
 
                 CurrentWorkflow = null;
@@ -119,14 +119,14 @@ if ($ActiveWhen.text() != '')
             CurrentCheckInState.CheckIn.SearchValue = searchValue;
 
             var errors = new List<string>();
-            if (ProcessActivity("Family Search", out errors))
+            if ( ProcessActivity( "Family Search", out errors ) )
             {
                 SaveState();
-                NavigateToLinkedPage("FamilySelectPage");
+                NavigateToLinkedPage( "FamilySelectPage" );
             }
             else
             {
-                string errorMsg = "<ul><li>" + errors.AsDelimited("</li><li>") + "</li></ul>";
+                string errorMsg = "<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
                 maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
             }
         }
@@ -146,17 +146,17 @@ if ($ActiveWhen.text() != '')
                 return;
             }
 
-            if (CurrentCheckInState.Kiosk.KioskGroupTypes.Count == 0 )
+            if ( CurrentCheckInState.Kiosk.FilteredGroupTypes( CurrentCheckInState.ConfiguredGroupTypes ).Count == 0 )
             {
                 pnlNotActive.Visible = true;
             }
-            else if ( !CurrentCheckInState.Kiosk.HasLocations )
+            else if ( !CurrentCheckInState.Kiosk.HasLocations( CurrentCheckInState.ConfiguredGroupTypes ) )
             {
-                DateTimeOffset activeAt = CurrentCheckInState.Kiosk.KioskGroupTypes.Select( g => g.NextActiveTime ).Min();
+                DateTimeOffset activeAt = CurrentCheckInState.Kiosk.FilteredGroupTypes( CurrentCheckInState.ConfiguredGroupTypes ).Select( g => g.NextActiveTime ).Min();
                 lblActiveWhen.Text = activeAt.ToString();
                 pnlNotActiveYet.Visible = true;
             }
-            else if ( !CurrentCheckInState.Kiosk.HasActiveLocations )
+            else if ( !CurrentCheckInState.Kiosk.HasActiveLocations( CurrentCheckInState.ConfiguredGroupTypes ) )
             {
                 pnlClosed.Visible = true;
             }
@@ -167,19 +167,19 @@ if ($ActiveWhen.text() != '')
 
             List<int> locations = new List<int>();
 
-            foreach ( var groupType in CurrentCheckInState.Kiosk.KioskGroupTypes )
+            foreach ( var groupType in CurrentCheckInState.Kiosk.FilteredGroupTypes( CurrentCheckInState.ConfiguredGroupTypes ) )
             {
-                foreach ( var location in  groupType.KioskGroups.SelectMany( g => g.KioskLocations ).Distinct() )
+                foreach ( var location in groupType.KioskGroups.SelectMany( g => g.KioskLocations ).Distinct() )
                 {
                     if ( !locations.Contains( location.Location.Id ) )
                     {
                         locations.Add( location.Location.Id );
-                        var locationAttendance = Rock.CheckIn.KioskCache.GetLocationAttendance( location.Location.Id );
+                        var locationAttendance = KioskLocationAttendance.Read( location.Location.Id );
 
                         if ( locationAttendance != null )
                         {
                             var lUl = new HtmlGenericControl( "ul" );
-                            lUl.AddCssClass("checkin-count-locations");
+                            lUl.AddCssClass( "checkin-count-locations" );
                             phCounts.Controls.Add( lUl );
 
                             var lLi = new HtmlGenericControl( "li" );
@@ -189,7 +189,7 @@ if ($ActiveWhen.text() != '')
                             foreach ( var groupAttendance in locationAttendance.Groups )
                             {
                                 var gUl = new HtmlGenericControl( "ul" );
-                                gUl.AddCssClass("checkin-count-groups");
+                                gUl.AddCssClass( "checkin-count-groups" );
                                 lLi.Controls.Add( gUl );
 
                                 var gLi = new HtmlGenericControl( "li" );
@@ -199,7 +199,7 @@ if ($ActiveWhen.text() != '')
                                 foreach ( var scheduleAttendance in groupAttendance.Schedules )
                                 {
                                     var sUl = new HtmlGenericControl( "ul" );
-                                    sUl.AddCssClass("checkin-count-schedules");
+                                    sUl.AddCssClass( "checkin-count-schedules" );
                                     gLi.Controls.Add( sUl );
 
                                     var sLi = new HtmlGenericControl( "li" );
@@ -219,8 +219,8 @@ if ($ActiveWhen.text() != '')
         /// <returns>true if the mobile device has expired; false otherwise.</returns>
         private bool IsMobileAndExpiredDevice()
         {
-            if ( Request.Cookies[ CheckInCookie.ISMOBILE] != null
-                && Request.Cookies[ CheckInCookie.DEVICEID ] == null )
+            if ( Request.Cookies[CheckInCookie.ISMOBILE] != null
+                && Request.Cookies[CheckInCookie.DEVICEID] == null )
             {
                 return true;
             }

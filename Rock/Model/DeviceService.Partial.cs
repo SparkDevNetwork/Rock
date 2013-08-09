@@ -7,6 +7,9 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity.Spatial;
 using System.Linq;
+using System.Net.Sockets;
+using System.Text.RegularExpressions;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -37,16 +40,17 @@ namespace Rock.Model
         /// <returns>a single matching Device kiosk or null if nothing was matched</returns>
         public Device GetByGeocode( double latitude, double longitude, int deviceTypeValueId )
         {
-            Device kiosk = null;
+            Device device = null;
             DbGeography aLocation = DbGeography.FromText( string.Format("POINT({0} {1})", longitude, latitude) );
 
-            kiosk = Repository.AsQueryable()
+            device = Repository.AsQueryable()
                 .Where( d => 
                     d.DeviceTypeValueId == deviceTypeValueId &&
                     d.Location != null &&
-                    aLocation.Intersects( d.Location.GeoFence ) ).FirstOrDefault();
+                    aLocation.Intersects( d.Location.GeoFence ) )
+                .FirstOrDefault();
 
-            return kiosk;
+            return device;
         }
 
         /// <summary>
@@ -54,11 +58,54 @@ namespace Rock.Model
         /// </summary>
         /// <param name="ipAddress">The ip address.</param>
         /// <returns></returns>
-        public Device GetByIPAddress( string ipAddress )
+        public Device GetByIPAddress( string ipAddress, int deviceTypeValueId, bool skipReverseLookup = true )
         {
-            // Even though IPAddress is not a unique index, the UI should enforce uniqueness
-            // so that querying by IPaddress will return one result
-            return Repository.FirstOrDefault( d => d.IPAddress == ipAddress );
+            string hostValue = ipAddress;
+
+            if ( !skipReverseLookup )
+            {
+                // Lookup the system's "name" (as seen in the DNS) using the given IP
+                // address because when using DHCP the kiosk may have a different IP from time to time
+                // -- however the fully qualified name should always be the same.
+                try
+                {
+                    hostValue = System.Net.Dns.GetHostEntry( ipAddress ).HostName;
+                }
+                catch ( SocketException )
+                {
+                    // TODO: consider whether we want to log the IP address that caused this error.
+                    // As per http://msdn.microsoft.com/en-us/library/ms143998.aspx it *may* mean 
+                    // a stale DNS record for an IPv4 address that actually belongs to a
+                    // different host was going to be returned (there is a DNS PTR record for
+                    // the IPv4 address, but no DNS A record for the IPv4 address).
+                    hostValue = ipAddress;
+                }
+            }
+
+            Device device = null;
+
+            // If we still have an IPv4 address then try to find it based on IP
+            if ( Regex.IsMatch( hostValue, @"\d+\.\d+\.\d+\.\d+" ) )
+            {
+                // find by IP
+                device = Repository.AsQueryable()
+                    .Where( d =>
+                        d.DeviceTypeValueId == deviceTypeValueId &&
+                        d.IPAddress == hostValue)
+                    .FirstOrDefault();
+            }
+            else
+            {
+                // find by name
+                device = Repository.AsQueryable()
+                    .Where( d =>
+                        d.DeviceTypeValueId == deviceTypeValueId &&
+                        d.Name == hostValue )
+                    .FirstOrDefault();
+            }
+
+            return device;
+
         }
     }
 }
