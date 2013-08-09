@@ -246,8 +246,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             dpDOBSearch.Text = "";
             ddlGenderSearch.BindToEnum( typeof( Gender ) );
             ddlGenderSearch.SelectedIndex = 0;
-            ddlAbilitySearch.DataSource = GetAbilityGradeList();
-            ddlAbilitySearch.DataBind();
+            LoadAbilityGradeList();
             ddlAbilitySearch.SelectedIndex = 0;
             rGridPersonResults.Visible = false;
             lbAddNewPerson.Visible = false;
@@ -810,21 +809,21 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// Gets a list of ability levels and grades.
         /// </summary>
         /// <returns>List Items</returns>
-        protected List<ListItem> GetAbilityGradeList()
+        protected void LoadAbilityGradeList()
         {
-            var dropDownList = new List<ListItem>();
+            ddlAbilitySearch.Items.Clear();
 
-            var abilityId = new AttributeService().Queryable().Where( a => a.Key == "AbilityLevel"
+            int abilityId = new AttributeService().Queryable().Where( a => a.Key == "AbilityLevel"
                 && a.Categories.Any( c => c.Name == "CheckIn" ) ).Select( a => a.Id ).FirstOrDefault();
 
-            if ( abilityId != null )
+            if ( abilityId > 0 )
             {
                 var abilityList = new AttributeValueService().GetByAttributeId( abilityId )
                     .Select( av => new ListItem( av.Value ) ).Distinct().ToList();
                 foreach ( var ability in abilityList )
                 {
                     ability.Attributes.Add( "optiongroup", "Ability" );                    
-                    dropDownList.Add( ability );
+                    ddlAbilitySearch.Items.Add( ability );
                 }                
             }
 
@@ -833,11 +832,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
             foreach ( var grade in gradeList )
             {
                 grade.Attributes.Add( "optiongroup", "Grade" );
-                dropDownList.Add( grade );
-            }                
+                ddlAbilitySearch.Items.Add( grade );
+            }
 
-            dropDownList.Insert( 0, Rock.Constants.None.ListItem );
-            return dropDownList;
+            ddlAbilitySearch.Items.Insert( 0, Rock.Constants.None.ListItem );
         }
 
         /// <summary>
