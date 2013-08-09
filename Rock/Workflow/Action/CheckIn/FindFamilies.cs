@@ -40,7 +40,7 @@ namespace Rock.Workflow.Action.CheckIn
                 {
                     var personService = new PersonService();
                     var memberService = new GroupMemberService();
-                    IEnumerable<Person> people = null;
+                    IQueryable<Person> people = null;
 
                     if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER ) ) )
                     {
@@ -48,7 +48,7 @@ namespace Rock.Workflow.Action.CheckIn
                     }
                     else if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME ) ) )
                     {
-                        people = personService.GetByFullName( checkInState.CheckIn.SearchValue ).ToList();
+                        people = personService.GetByFullName( checkInState.CheckIn.SearchValue );
                     }
                     else
                     {
