@@ -550,7 +550,7 @@
     <Compile Include="CheckIn\CheckInState.cs" />
     <Compile Include="CheckIn\CheckInStatus.cs" />
     <Compile Include="CheckIn\CheckInLabel.cs" />
-    <Compile Include="CheckIn\LabelCache.cs" />
+    <Compile Include="CheckIn\KioskLabel.cs" />
     <Compile Include="CheckIn\KioskLocationAttendance.cs" />
     <Compile Include="CheckIn\KioskGroupAttendance.cs" />
     <Compile Include="CheckIn\KioskScheduleAttendance.cs" />
@@ -558,8 +558,7 @@
     <Compile Include="CheckIn\KioskGroupType.cs" />
     <Compile Include="CheckIn\KioskLocation.cs" />
     <Compile Include="CheckIn\KioskSchedule.cs" />
-    <Compile Include="CheckIn\KioskStatus.cs" />
-    <Compile Include="CheckIn\KioskCache.cs" />
+    <Compile Include="CheckIn\KioskDevice.cs" />
     <Compile Include="Communication\ChannelComponent.cs" />
     <Compile Include="Communication\Channel\Sms.cs" />
     <Compile Include="Communication\Channel\Email.cs" />

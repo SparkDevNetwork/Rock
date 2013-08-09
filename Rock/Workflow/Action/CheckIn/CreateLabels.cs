@@ -149,7 +149,7 @@ namespace Rock.Workflow.Action.CheckIn
                         int fileId = int.MinValue;
                         if ( int.TryParse( attributeValue, out fileId ) )
                         {
-                            var labelCache = KioskCache.GetLabel( fileId );
+                            var labelCache = KioskLabel.Read( fileId );
                             if ( labelCache != null )
                             {
                                 var checkInLabel = new CheckInLabel( labelCache, mergeObjects );

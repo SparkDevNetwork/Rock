@@ -89,7 +89,7 @@ namespace RockWeb.Blocks.CheckIn
 
                                 foreach ( var label in printFromServer )
                                 {
-                                    var labelCache = KioskCache.GetLabel( label.FileId );
+                                    var labelCache = KioskLabel.Read( label.FileId );
                                     if ( labelCache != null )
                                     {
                                         if ( label.PrinterAddress != currentIp )
