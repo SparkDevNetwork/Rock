@@ -51,7 +51,7 @@
             <Rock:FieldTypeList ID="FieldTypeList" runat="server" LabelText="Rock:FieldTypeList" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
             <Rock:FileUploader ID="fup" runat="server" LabelText="Rock:FileUploader" />
             <Rock:ImageUploader ID="imageUploader" runat="server" LabelText="Rock:ImageUploader" />
-            <Rock:NoteEditor ID="noteEditor" runat="server" Caption="Rock:NoteEditor" />
+
             <Rock:NotificationBox ID="notificationBox" runat="server" Title="Rock:NotificationBox" Text="Box Text" />
             <Rock:Badge ID="badge" runat="server" BadgeType="Important" ToolTip="Some Tooltip">Badge</Rock:Badge>
 
@@ -69,8 +69,8 @@
                 <Columns>
                     <Rock:ColorField DataField="DefinedValueColor" ToolTipDataField="DefinedValueTypeName" HeaderText="" />
                     <asp:BoundField DataField="DefinedValueTypeName" HeaderText="Name" SortExpression="DefinedValueTypeName" />
-                    <Rock:DateTimeField DataField="SomeDateTime" HeaderText="DateTime" SortExpression="SomeDateTime"/>
-                    <Rock:BoolField DataField="SomeBoolean" HeaderText="Some Boolean" SortExpression="SomeBoolean"/>
+                    <Rock:DateTimeField DataField="SomeDateTime" HeaderText="DateTime" SortExpression="SomeDateTime" />
+                    <Rock:BoolField DataField="SomeBoolean" HeaderText="Some Boolean" SortExpression="SomeBoolean" />
                 </Columns>
             </Rock:Grid>
 

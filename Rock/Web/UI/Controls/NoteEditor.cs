@@ -89,6 +89,24 @@ namespace Rock.Web.UI.Controls
             set { ViewState["CanEdit"] = value; }
         }
 
+        public bool ShowAlertCheckBox
+        {
+            get { return ViewState["ShowAlertCheckBox"] as bool? ?? false; }
+            set { ViewState["ShowAlertCheckBox"] = value; }
+        }
+
+        public bool ShowPrivateCheckBox
+        {
+            get { return ViewState["ShowPrivateCheckBox"] as bool? ?? false; }
+            set { ViewState["ShowPrivateCheckBox"] = value; }
+        }
+
+        public bool ShowSecurityButton
+        {
+            get { return ViewState["ShowSecurityButton"] as bool? ?? false; }
+            set { ViewState["ShowSecurityButton"] = value; }
+        }
+
         private string ArticleClass
         {
             get
@@ -235,18 +253,30 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "options" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            cbAlert.RenderControl( writer );
-            cbPrivate.RenderControl( writer );
+
+            if ( ShowAlertCheckBox )
+            {
+                cbAlert.RenderControl( writer );
+            }
+
+            if ( ShowPrivateCheckBox )
+            {
+                cbPrivate.RenderControl( writer );
+            }
+
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-mini security" );
-            writer.AddAttribute( HtmlTextWriterAttribute.Type, "button" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Button );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "icon-lock" );
-            writer.RenderBeginTag( HtmlTextWriterTag.I );
-            writer.RenderEndTag();
-            writer.Write( " Security" );
-            writer.RenderEndTag();
+            if ( ShowSecurityButton )
+            {
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-mini security" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Type, "button" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Button );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "icon-lock" );
+                writer.RenderBeginTag( HtmlTextWriterTag.I );
+                writer.RenderEndTag();
+                writer.Write( " Security" );
+                writer.RenderEndTag();
+            }
 
             writer.RenderEndTag();  // settings div
 

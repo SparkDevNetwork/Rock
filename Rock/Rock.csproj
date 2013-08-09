@@ -55,9 +55,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\libs\DotLiquid v1.7.0\NET40\DotLiquid.dll</HintPath>
     </Reference>
-    <Reference Include="EntityFramework, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\EntityFramework.5.0.0\lib\net45\EntityFramework.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.0.0-beta1\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\EntityFramework.6.0.0-beta1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="EPPlus">
       <HintPath>..\libs\EPPlus\EPPlus.dll</HintPath>
@@ -93,7 +97,6 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data.Entity" />
     <Reference Include="System.Data.Entity.Design" />
     <Reference Include="System.Data.Services" />
     <Reference Include="System.Data.Services.Client" />
@@ -477,6 +480,7 @@
     <Compile Include="Model\CodeGenerated\FinancialTransactionRefundService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionScannedCheckService.cs" />
     <Compile Include="Model\BinaryFileData.cs" />
+    <Compile Include="Net\RockRestClient.cs" />
     <Compile Include="Net\RockWebRequest.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -541,7 +545,6 @@
     <Compile Include="Migrations\201305032019044_DateTimeDataTypesSweep.Designer.cs">
       <DependentUpon>201305032019044_DateTimeDataTypesSweep.cs</DependentUpon>
     </Compile>
-    <Compile Include="Net\RockRestClient.cs" />
     <Compile Include="Security\LoginParameters.cs" />
     <Compile Include="CheckIn\CheckInBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
@@ -555,7 +558,7 @@
     <Compile Include="CheckIn\CheckInState.cs" />
     <Compile Include="CheckIn\CheckInStatus.cs" />
     <Compile Include="CheckIn\CheckInLabel.cs" />
-    <Compile Include="CheckIn\LabelCache.cs" />
+    <Compile Include="CheckIn\KioskLabel.cs" />
     <Compile Include="CheckIn\KioskLocationAttendance.cs" />
     <Compile Include="CheckIn\KioskGroupAttendance.cs" />
     <Compile Include="CheckIn\KioskScheduleAttendance.cs" />
@@ -563,8 +566,7 @@
     <Compile Include="CheckIn\KioskGroupType.cs" />
     <Compile Include="CheckIn\KioskLocation.cs" />
     <Compile Include="CheckIn\KioskSchedule.cs" />
-    <Compile Include="CheckIn\KioskStatus.cs" />
-    <Compile Include="CheckIn\KioskCache.cs" />
+    <Compile Include="CheckIn\KioskDevice.cs" />
     <Compile Include="Communication\ChannelComponent.cs" />
     <Compile Include="Communication\Channel\Sms.cs" />
     <Compile Include="Communication\Channel\Email.cs" />
@@ -1512,6 +1514,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
+    <None Include="App.config" />
     <None Include="CheckInStateClassDiagram.cd" />
     <None Include="Service References\MelissaData.AddressCheck\Rock.MelissaData.AddressCheck.ResponseArray.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>

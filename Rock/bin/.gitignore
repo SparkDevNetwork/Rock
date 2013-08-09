@@ -22,7 +22,11 @@
 /Rock.dll
 /Rock.pdb
 /SanitizerProviders.dll
+/EntityFramework.SqlServer.dll
+/EntityFramework.SqlServer.xml
+/Rock.dll.config
 /System.Net.Http.Formatting.dll
 /System.Net.Http.Formatting.xml
 /System.Web.Http.dll
 /System.Web.Http.xml
+
