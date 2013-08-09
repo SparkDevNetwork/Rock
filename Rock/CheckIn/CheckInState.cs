@@ -17,13 +17,36 @@ namespace Rock.CheckIn
     public class CheckInState : DotLiquid.ILiquidizable
     {
         /// <summary>
-        /// Gets or sets the kiosk status
+        /// Gets or sets the device id
+        /// </summary>
+        /// <value>
+        /// The device id.
+        /// </value>
+        [DataMember]
+        public int DeviceId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the configured group types.
+        /// </summary>
+        /// <value>
+        /// The configured group types.
+        /// </value>
+        [DataMember]
+        public List<int> ConfiguredGroupTypes { get; set; }
+
+        /// <summary>
+        /// Gets the kiosk.
         /// </summary>
         /// <value>
         /// The kiosk.
         /// </value>
-        [DataMember]
-        public KioskStatus Kiosk { get; set; }
+        public KioskDevice Kiosk
+        {
+            get
+            {
+                return KioskDevice.Read( DeviceId, ConfiguredGroupTypes );
+            }
+        }
 
         /// <summary>
         /// Gets or sets the check-in status
@@ -38,9 +61,10 @@ namespace Rock.CheckIn
         /// Initializes a new instance of the <see cref="CheckInState" /> class.
         /// </summary>
         /// <param name="kioskStatus">The kiosk status.</param>
-        public CheckInState( KioskStatus kioskStatus )
+        public CheckInState( int deviceId, List<int> configuredGroupTypes )
         {
-            Kiosk = kioskStatus;
+            DeviceId = deviceId;
+            ConfiguredGroupTypes = configuredGroupTypes;
             CheckIn = new CheckInStatus();
         }
 
@@ -62,7 +86,8 @@ namespace Rock.CheckIn
         public object ToLiquid()
         {
             var dictionary = new Dictionary<string, object>();
-            dictionary.Add( "Kiosk", Kiosk );
+            dictionary.Add( "DeviceId", DeviceId );
+            dictionary.Add( "ConfiguredGroupTypes", ConfiguredGroupTypes );
             dictionary.Add( "CheckIn", CheckIn );
             return dictionary;
         }

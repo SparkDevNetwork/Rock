@@ -175,23 +175,6 @@
                 }
         });
 
-        $('.persontimeline article').live({
-            mouseenter:
-                function () {
-                    var actionsDiv = $('.actions', this);
-                    if (actionsDiv.length > 0) {
-                        $(actionsDiv).fadeToggle();
-                    }
-                },
-            mouseleave:
-                function () {
-                    var actionsDiv = $('.actions', this);
-                    if (actionsDiv.length > 0) {
-                        $(actionsDiv).fadeToggle();
-                    }
-                }
-        });
-
         $('.persondetails-header').live({
             mouseenter:
                 function () {
