@@ -36,27 +36,39 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( action, out errorMessages );
             if (checkInState != null)
             {
-                if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER ) ) )
+                using ( new Rock.Data.UnitOfWorkScope() )
                 {
-                    using ( new Rock.Data.UnitOfWorkScope() )
-                    {
-                        var personService = new PersonService();
-                        var memberService = new GroupMemberService();
+                    var personService = new PersonService();
+                    var memberService = new GroupMemberService();
+                    IEnumerable<Person> people = null;
 
-                        foreach ( var person in personService.GetByPhonePartial( checkInState.CheckIn.SearchValue ) )
+                    if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER ) ) )
+                    {
+                        people = personService.GetByPhonePartial( checkInState.CheckIn.SearchValue );
+                    }
+                    else if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME ) ) )
+                    {
+                        people = personService.GetByFullName( checkInState.CheckIn.SearchValue ).ToList();
+                    }
+                    else
+                    {
+                        errorMessages.Add( "Invalid Search Type" );
+                        return false;
+                    }               
+
+                    foreach( var person in people)
+                    {
+                        foreach ( var group in person.Members.Where( m => m.Group.GroupType.Guid == new Guid( SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Select( m => m.Group ) )
                         {
-                            foreach ( var group in person.Members.Where( m => m.Group.GroupType.Guid == new Guid( SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Select( m => m.Group ) )
+                            var family = checkInState.CheckIn.Families.Where( f => f.Group.Id == group.Id ).FirstOrDefault();
+                            if ( family == null )
                             {
-                                var family = checkInState.CheckIn.Families.Where( f => f.Group.Id == group.Id ).FirstOrDefault();
-                                if ( family == null )
-                                {
-                                    family = new CheckInFamily();
-                                    family.Group = group.Clone( false );
-                                    family.Group.LoadAttributes();
-                                    family.Caption = group.ToString();
-                                    family.SubCaption = memberService.GetFirstNames( group.Id ).ToList().AsDelimited( ", " );
-                                    checkInState.CheckIn.Families.Add( family );
-                                }
+                                family = new CheckInFamily();
+                                family.Group = group.Clone( false );
+                                family.Group.LoadAttributes();
+                                family.Caption = group.ToString();
+                                family.SubCaption = memberService.GetFirstNames( group.Id ).ToList().AsDelimited( ", " );
+                                checkInState.CheckIn.Families.Add( family );
                             }
                         }
                     }
@@ -64,39 +76,9 @@ namespace Rock.Workflow.Action.CheckIn
                     SetCheckInState( action, checkInState );
                     return true;
                 }
-                else if ( checkInState.CheckIn.SearchType.Guid.Equals( new Guid( SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME ) ) )
-                {
-                    using ( new Rock.Data.UnitOfWorkScope() )
-                    {
-                        var personService = new PersonService();
-                        var memberService = new GroupMemberService();
-                        
-                        foreach ( var person in personService.GetByFullName( checkInState.CheckIn.SearchValue ) )
-                        {
-                            foreach ( var group in person.Members.Where( m => m.Group.GroupType.Guid == new Guid( SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Select( m => m.Group ) )
-                            {
-                                var family = checkInState.CheckIn.Families.Where( f => f.Group.Id == group.Id ).FirstOrDefault();
-                                if ( family == null )
-                                {
-                                    family = new CheckInFamily();
-                                    family.Group = group.Clone( false );
-                                    family.Group.LoadAttributes();
-                                    family.Caption = group.ToString();
-                                    family.SubCaption = memberService.GetFirstNames( group.Id ).ToList().AsDelimited( ", " );
-                                    checkInState.CheckIn.Families.Add( family );
-                                }
-                            }
-                        }
-                    }
-
-                    SetCheckInState( action, checkInState );
-                    return true;
-                }
-                else
-                {
-                    errorMessages.Add( "Invalid Search Type" );
-                }               
             }
+
+            errorMessages.Add( "Invalid Check-in State" );
             return false;
         }
     }

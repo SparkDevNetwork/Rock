@@ -101,18 +101,15 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// </summary>
         private void AttemptKioskMatchByIpOrName()
         {
-            // don't lock if the IP is invalid
-            var ipAddr = Request.ServerVariables["REMOTE_ADDR"];
-            if ( Regex.IsMatch( ipAddr, @"\d+\.\d+\.\d+\.\d+" ) )
-            {   // try to find matching kiosk by REMOTE_ADDR (ip/name).
-                var kioskStatus = KioskCache.GetKiosk( ipAddr, skipReverseLookup: false );
-                if ( kioskStatus != null )
-                {
-                    ClearMobileCookie();
-                    CurrentKioskId = kioskStatus.Device.Id;
-                    BindGroupTypes( hfGroupTypes.Value );
-                }
-           } 
+            // try to find matching kiosk by REMOTE_ADDR (ip/name).
+            var checkInDeviceTypeId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.DEVICE_TYPE_CHECKIN_KIOSK ).Id;
+            var device = new DeviceService().GetByIPAddress( Request.ServerVariables["REMOTE_ADDR"], checkInDeviceTypeId, false );
+            if ( device != null )
+            {
+                ClearMobileCookie();
+                CurrentKioskId = device.Id;
+                BindGroupTypes( hfGroupTypes.Value );
+            }
         }
 
         #endregion

@@ -46,9 +46,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
                 else
                 {
-                    if ( !CurrentCheckInState.Kiosk.HasLocations || !CurrentCheckInState.Kiosk.HasActiveLocations )
+                    if ( !CurrentCheckInState.Kiosk.HasLocations( CurrentGroupTypeIds ) || !CurrentCheckInState.Kiosk.HasActiveLocations( CurrentGroupTypeIds ) )
                     {
-                        DateTimeOffset activeAt = CurrentCheckInState.Kiosk.KioskGroupTypes.Select( g => g.NextActiveTime ).Min();
+                        DateTimeOffset activeAt = CurrentCheckInState.Kiosk.FilteredGroupTypes( CurrentGroupTypeIds ).Select( g => g.NextActiveTime ).Min();
                         // not active yet, display next active time
                         return;
                     }
