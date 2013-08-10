@@ -268,7 +268,7 @@ namespace RockWeb.Blocks.Prayer
                 new
                 {
                     a.Id,
-                    a.FullName,
+                    FullName = a.FirstName + " " + a.LastName,
                     CategoryName = a.Category.Name,
                     a.EnteredDate,
                     a.Text,
