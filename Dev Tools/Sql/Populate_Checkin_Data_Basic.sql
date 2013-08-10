@@ -456,7 +456,14 @@ END:VCALENDAR', '0', '1439', '05/01/2013', NEWID() )
 --   * the Garage
 ---------------------------------------------------------------------------
 
-DELETE [Location]
+
+DELETE CL
+FROM [Location] PL
+INNER JOIN [Location] CL
+	ON CL.ParentLocationId = PL.Id
+WHERE PL.Name = 'Bldg 1'
+DELETE [Location] WHERE [Name] IN ('Bldg 1', 'Main Campus')
+
 DECLARE @CampusLocationId int
 DECLARE @BuildingLocationId int
 DECLARE @RoomLocationId int
