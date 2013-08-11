@@ -473,6 +473,10 @@
     <Compile Include="Migrations\201308081522336_ReverseDeviceIPUnique.Designer.cs">
       <DependentUpon>201308081522336_ReverseDeviceIPUnique.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201308092211484_FieldTypeUnique.cs" />
+    <Compile Include="Migrations\201308092211484_FieldTypeUnique.Designer.cs">
+      <DependentUpon>201308092211484_FieldTypeUnique.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -2133,6 +2137,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201308081522336_ReverseDeviceIPUnique.resx">
       <DependentUpon>201308081522336_ReverseDeviceIPUnique.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308092211484_FieldTypeUnique.resx">
+      <DependentUpon>201308092211484_FieldTypeUnique.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

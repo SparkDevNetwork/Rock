@@ -46,20 +46,9 @@ namespace RockWeb.Blocks.Finance.Administration
             {
                 rGridBatch.DataKeyNames = new string[] { "id" };
                 rGridBatch.Actions.ShowAdd = true;
-
                 rGridBatch.Actions.AddClick += rGridBatch_Add;
                 rGridBatch.GridRebind += rGridBatch_GridRebind;
                 rGridBatch.GridReorder += rGridBatch_GridReorder;
-
-                var campusService = new CampusService();
-                ddlCampus.DataSource = campusService.Queryable()
-                    .OrderBy( a => a.Name )
-                    .ToDictionary( a => a.Id, a => a.Name );                
-                ddlCampus.DataValueField = "Key";
-                ddlCampus.DataTextField = "Value";
-                ddlCampus.DataBind();
-                ddlCampus.Items.Insert( 0, Rock.Constants.All.Text );
-                ddlStatus.BindToEnum( typeof( BatchStatus ) );
             }
             else
             {
@@ -94,30 +83,12 @@ namespace RockWeb.Blocks.Finance.Administration
         {
             switch ( e.Key )
             {
-                case "Date":
-                    DateTime batchDate = DateTime.Now;
-                    e.Value = batchDate.ToString();
-                    break;
-
                 case "Status":
-                case "Title":
+                    e.Value = e.Value.ConvertToEnum<BatchStatus>().ConvertToString();
                     break;
 
                 case "Campus":
-                    e.Value = ddlCampus.SelectedItem.Text;
-                    break;
-
-                case "Batch Type":
-
-                    int definedValueId = 0;
-                    if ( int.TryParse( e.Value, out definedValueId ) )
-                    {
-                        var definedValue = DefinedValueCache.Read( definedValueId );
-                        if ( definedValue != null )
-                        {
-                            e.Value = definedValue.Name;
-                        }
-                    }
+                    e.Value = CampusCache.Read( int.Parse( e.Value ) ).Name;
                     break;
             }
         }
@@ -131,9 +102,13 @@ namespace RockWeb.Blocks.Finance.Administration
         {
             rFBFilter.SaveUserPreference( "From Date", dtBatchDate.Text );
             rFBFilter.SaveUserPreference( "Title", txtTitle.Text );
-            rFBFilter.SaveUserPreference( "Status", ddlStatus.SelectedValue );
-            rFBFilter.SaveUserPreference( "Campus", ddlCampus.SelectedValue );
-            
+
+            int? statusFilter = ddlStatus.SelectedValueAsInt( false );
+            rFBFilter.SaveUserPreference( "Status", statusFilter.HasValue && statusFilter.Value >= 0 ? statusFilter.ToString() : "" );
+
+            int? campusFilter = ddlCampus.SelectedCampusId;
+            rFBFilter.SaveUserPreference( "Campus", campusFilter.HasValue && campusFilter.Value > 0 ? campusFilter.ToString() : "" ); 
+                        
             BindGrid();
         }
 
@@ -189,14 +164,21 @@ namespace RockWeb.Blocks.Finance.Administration
             if ( !DateTime.TryParse( rFBFilter.GetUserPreference( "From Date" ), out fromDate ) )
             {
                 fromDate = DateTime.Today;
+                rFBFilter.SaveUserPreference( "From Date", fromDate.ToShortDateString() );
             }
             dtBatchDate.Text = fromDate.ToShortDateString();
-            txtTitle.Text = !string.IsNullOrWhiteSpace( rFBFilter.GetUserPreference( "Title" ) ) ?
-                rFBFilter.GetUserPreference( "Title" ) : null;
-            ddlStatus.SelectedValue = !string.IsNullOrWhiteSpace( rFBFilter.GetUserPreference( "Status" ) ) ?
-                rFBFilter.GetUserPreference( "Status" ) : null;
-            ddlCampus.SelectedValue = !string.IsNullOrWhiteSpace( rFBFilter.GetUserPreference( "Campus" ) ) ?
-                rFBFilter.GetUserPreference( "Campus" ) : null;
+
+            string titleFilter = rFBFilter.GetUserPreference( "Title" );
+            txtTitle.Text = !string.IsNullOrWhiteSpace( titleFilter ) ? titleFilter : string.Empty;
+
+            ddlStatus.BindToEnum( typeof( BatchStatus ) );
+            ddlStatus.Items.Insert( 0, Rock.Constants.All.ListItem );
+            ddlStatus.SetValue( rFBFilter.GetUserPreference( "Status" ) );
+
+            var campusi = new CampusService().Queryable().OrderBy( a => a.Name ).ToList();
+            ddlCampus.Campuses = campusi;
+            ddlCampus.Visible = campusi.Any();
+            ddlCampus.SetValue( rFBFilter.GetUserPreference( "Campus" ) );
         }
 
         /// <summary>
@@ -253,7 +235,7 @@ namespace RockWeb.Blocks.Finance.Administration
                 batches = batches.Where( batch => batch.BatchDate >= dtBatchDate.SelectedDate );
             }
 
-            if ( ddlStatus.SelectedIndex > -1 )
+            if ( (ddlStatus.SelectedValueAsInt() ?? 0) > 0 )
             {
                 var batchStatus = ddlStatus.SelectedValueAsEnum<BatchStatus>();
                 batches = batches.Where( Batch => Batch.Status == batchStatus );
@@ -264,10 +246,9 @@ namespace RockWeb.Blocks.Finance.Administration
                 batches = batches.Where( Batch => Batch.Name == txtTitle.Text );
             }
 
-            if ( ddlCampus.SelectedIndex > -1 && ddlCampus.SelectedValue != Rock.Constants.All.Text )
+            if ( ddlCampus.SelectedCampusId.HasValue )
             {
-                int campusId = Convert.ToInt32( ddlCampus.SelectedValue );
-                batches = batches.Where( Batch => Batch.CampusId == campusId );
+                batches = batches.Where( Batch => Batch.CampusId == ddlCampus.SelectedCampusId.Value );
             }
             
             if ( sortProperty != null )
