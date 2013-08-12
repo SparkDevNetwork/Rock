@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Linq;
 using Rock.Extension;
 
 namespace Rock.Storage
@@ -19,8 +20,7 @@ namespace Rock.Storage
         /// <summary>
         /// Singleton instance
         /// </summary>
-        private static readonly Lazy<ProviderContainer> instance =
-            new Lazy<ProviderContainer>( () => new ProviderContainer() );
+        private static readonly Lazy<ProviderContainer> instance = new Lazy<ProviderContainer>( () => new ProviderContainer() );
 
         /// <summary>
         /// Prevents a default instance of the <see cref="ProviderContainer"/> class from being created.
@@ -48,17 +48,9 @@ namespace Rock.Storage
         /// <returns></returns>
         public static ProviderComponent GetComponent( string entityTypeName )
         {
-            foreach ( var serviceEntry in Instance.Components )
-            {
-                var component = serviceEntry.Value.Value;
-
-                if ( component.TypeName == entityTypeName )
-                {
-                    return component;
-                }
-            }
-
-            return null;
+            return Instance.Components
+                .Select( serviceEntry => serviceEntry.Value.Value )
+                .FirstOrDefault( component => component.TypeName == entityTypeName );
         }
 
 

@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Text;
 using Rock.Model;
 
 namespace Rock.Storage.Provider
@@ -24,7 +23,7 @@ namespace Rock.Storage.Provider
         /// </summary>
         /// <param name="files">The files.</param>
         /// <param name="personId"></param>
-        public override void SaveFiles( IEnumerable<Model.BinaryFile> files, int? personId )
+        public override void SaveFiles( IEnumerable<BinaryFile> files, int? personId )
         {
             var fileService = new BinaryFileService();
 
@@ -58,7 +57,7 @@ namespace Rock.Storage.Provider
         /// </summary>
         /// <param name="file">The file.</param>
         /// <param name="personId"></param>
-        public override void RemoveFile( Model.BinaryFile file, int? personId )
+        public override void RemoveFile( BinaryFile file, int? personId )
         {
             var fileService = new BinaryFileService();
             fileService.Delete( file, personId );
@@ -68,34 +67,25 @@ namespace Rock.Storage.Provider
         /// Gets the URL.
         /// </summary>
         /// <param name="file">The file.</param>
-        /// <param name="height">The height.</param>
-        /// <param name="width">The width.</param>
         /// <returns></returns>
-        public override string GetUrl( Model.BinaryFile file )
+        public override string GetUrl( BinaryFile file )
         {
-            if ( string.IsNullOrWhiteSpace( file.FileName ) )
-            {
-                return null;
-            }
+            string wsPath;
 
-            var urlBuilder = new StringBuilder();
-            string wsPath = GetWebServicePath( file );
-            return string.Format( "{0}?guid={1}", wsPath, file.FileName );
-        }
-
-        private string GetWebServicePath( Model.BinaryFile file )
-        {
             switch ( file.MimeType.ToLower() )
             {
                 case "image/jpeg":
                 case "image/gif":
                 case "image/png":
                 case "image/bmp":
-                    return "~/Image.ashx";
+                    wsPath = "~/Image.ashx";
+                    break;
                 default:
-                    return "~/File.ashx";
-
+                    wsPath = "~/File.ashx";
+                    break;
             }
+
+            return string.Format( "{0}?guid={1}", wsPath, file.Guid );
         }
     }
 }
