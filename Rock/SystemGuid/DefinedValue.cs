@@ -22,7 +22,7 @@ namespace Rock.SystemGuid
 
         #endregion
 
-        #region CheckIn Search Type
+        #region Check-in Search Type
          
         /// <summary>
         /// Phone number search type

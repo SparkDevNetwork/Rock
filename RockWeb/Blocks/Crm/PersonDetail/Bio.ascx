@@ -41,7 +41,7 @@
 
     <div class="span4">
         <div class="summary">
-            <div class="tags">
+            <div class="tags clearfix">
                 <Rock:TagList ID="tlPersonTags" runat="server" />
             </div>
             <div class="demographics">

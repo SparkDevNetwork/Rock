@@ -18,7 +18,7 @@ using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [Description( "Check-In Ability Level Select block" )]
+    [Description( "Check-in Ability Level Select block" )]
     public partial class AbilityLevelSelect : CheckInBlock
     {
         private int _personAbilityLevel;

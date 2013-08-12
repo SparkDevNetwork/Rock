@@ -37,18 +37,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 Page.Title = CurrentPage.Title + ": " + Person.FullName;
 
-                lName.Text = Person.FullName;
+                lName.Text = Person.FirstName + " <span class='light'>" + Person.LastName + "</span>";
 
                 if ( Person.PhotoId.HasValue )
                 {
                     var imgLink = new HtmlAnchor();
                     phImage.Controls.Add( imgLink );
-                    imgLink.HRef = "~/image.ashx?" + Person.PhotoId.Value.ToString();
+                    imgLink.HRef = "~/GetImage.ashx?" + Person.PhotoId.Value.ToString();
                     imgLink.Target = "_blank";
 
                     var img = new HtmlImage();
                     imgLink.Controls.Add( img );
-                    img.Src = "~/image.ashx?" + Person.PhotoId.Value.ToString();
+                    img.Src = "~/GetImage.ashx?" + Person.PhotoId.Value.ToString();
                     img.Alt = Person.FullName;
                 }
 

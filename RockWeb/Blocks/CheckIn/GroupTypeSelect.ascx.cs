@@ -16,7 +16,7 @@ using Rock.Model;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [Description( "Check-In Group Type Select block" )]
+    [Description( "Check-in Group Type Select block" )]
     public partial class GroupTypeSelect : CheckInBlock
     {
         protected override void OnLoad( EventArgs e )
@@ -124,7 +124,7 @@ namespace RockWeb.Blocks.CheckIn
         private void ProcessSelection()
         {
             var errors = new List<string>();
-            if ( ProcessActivity( "Location Search", out errors ) )
+            if ( ProcessActivity( "Group Search", out errors ) )
             {
                 SaveState();
                 NavigateToNextPage();

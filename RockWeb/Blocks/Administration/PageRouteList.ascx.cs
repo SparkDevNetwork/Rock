@@ -147,13 +147,22 @@ namespace RockWeb.Blocks.Administration
             PageRouteService pageRouteService = new PageRouteService();
             SortProperty sortProperty = gPageRoutes.SortProperty;
 
+            var qry = pageRouteService.Queryable().Select( a =>
+                new
+                {
+                    a.Id,
+                    a.Route,
+                    PageName = a.Page.Name,
+                    a.IsSystem
+                } );
+
             if ( sortProperty != null )
             {
-                gPageRoutes.DataSource = pageRouteService.Queryable().Sort( sortProperty ).ToList();
+                gPageRoutes.DataSource = qry.Sort( sortProperty ).ToList();
             }
             else
             {
-                gPageRoutes.DataSource = pageRouteService.Queryable().OrderBy( p => p.Route ).ToList();
+                gPageRoutes.DataSource = qry.OrderBy( p => p.Route ).ToList();
             }
 
             gPageRoutes.DataBind();

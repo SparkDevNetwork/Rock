@@ -16,7 +16,7 @@ using Rock.Model;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [Description( "Check-In Family Select Block" )]
+    [Description( "Check-in Family Select Block" )]
     public partial class FamilySelect : CheckInBlock
     {
         protected override void OnLoad( EventArgs e )
@@ -109,7 +109,7 @@ namespace RockWeb.Blocks.CheckIn
             {
                 if ( CurrentCheckInState.CheckIn.Families.All( f => f.People.Count == 0 ) )
                 {
-                    string errorMsg = "<ul><li>No one in that family is eligible to check-in.</li></ul>";
+                    string errorMsg = "<ul><li>No one in that family is eligible to Check-in.</li></ul>";
                     maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
                 }
                 else

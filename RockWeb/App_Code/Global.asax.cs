@@ -338,7 +338,7 @@ namespace RockWeb
 
                             // get email addresses to send to
                             string emailAddressesList = globalAttributesCache.GetValue( "EmailExceptionsList" );
-                            if ( emailAddressesList != null )
+                            if ( !string.IsNullOrWhiteSpace( emailAddressesList ) )
                             {
                                 string[] emailAddresses = emailAddressesList.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
 

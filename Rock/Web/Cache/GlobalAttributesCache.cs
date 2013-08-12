@@ -32,7 +32,7 @@ namespace Rock.Web.Cache
         #region Properties
 
         /// <summary>
-        /// Gets or sets the attribute keys.
+        /// Gets or sets the attribute keys.  Used to iterate all values when merging possible merge fields
         /// </summary>
         /// <value>
         /// The attribute keys.
@@ -58,9 +58,30 @@ namespace Rock.Web.Cache
         /// <returns></returns>
         public string GetValue( string key )
         {
-            if ( AttributeValues != null && AttributeValues.Keys.Contains( key ) )
+            if ( AttributeValues.Keys.Contains( key ) )
+            {
                 return AttributeValues[key].Value;
-            return null;
+            }
+            else
+            {
+                string name = key.SplitCase();
+                string value = string.Empty;
+
+                var attribute = new AttributeService().Get( null, string.Empty, string.Empty, key );
+                if ( attribute != null )
+                {
+                    AttributeKeys.Add( attribute.Id, attribute.Key );
+                    name = attribute.Name;
+
+                    // TODO: Need to add support for multiple values
+                    var attributeValue = new AttributeValueService().GetByAttributeIdAndEntityId( attribute.Id, null ).FirstOrDefault();
+                    value = ( attributeValue != null && !string.IsNullOrEmpty( attributeValue.Value ) ) ? attributeValue.Value : attribute.DefaultValue;
+                }
+
+                // Add value even if attribute name was not found to prevent repeatedly searching db for non-existent attribute
+                AttributeValues.Add( key, new KeyValuePair<string, string>( name, value ) );
+                return value;
+            }
         }
 
         /// <summary>
@@ -74,25 +95,41 @@ namespace Rock.Web.Cache
         {
             if ( saveValue )
             {
-                // Save new value
-                var attributeValueService = new AttributeValueService();
-                var attributeValue = attributeValueService.GetGlobalAttributeValue( key );
-
-                if ( attributeValue == null )
+                using (new Rock.Data.UnitOfWorkScope())
                 {
-                    var attributeService = new AttributeService();
-                    var attribute = attributeService.GetGlobalAttribute( key );
-                    if ( attribute != null )
+                    // Save new value
+                    var attributeValueService = new AttributeValueService();
+                    var attributeValue = attributeValueService.GetGlobalAttributeValue( key );
+
+                    if ( attributeValue == null )
                     {
+                        var attributeService = new AttributeService();
+                        var attribute = attributeService.GetGlobalAttribute( key );
+                        if ( attribute == null )
+                        {
+                            attribute = new Rock.Model.Attribute();
+                            attribute.FieldTypeId = FieldTypeCache.Read(new Guid(SystemGuid.FieldType.TEXT)).Id;
+                            attribute.EntityTypeQualifierColumn = string.Empty;
+                            attribute.EntityTypeQualifierValue = string.Empty;
+                            attribute.Key = key;
+                            attribute.Name = key.SplitCase();
+                            attributeService.Add(attribute, currentPersonId);
+                            attributeService.Save(attribute, currentPersonId);
+
+                            AttributeKeys.Add( attribute.Id, key );
+                        }
+
                         attributeValue = new AttributeValue();
+                        attributeValueService.Add( attributeValue, currentPersonId );
                         attributeValue.IsSystem = false;
                         attributeValue.AttributeId = attribute.Id;
-                        attributeValue.Value = value;
-                        attributeValueService.Save( attributeValue, currentPersonId );
+
+                        if ( !AttributeValues.Keys.Contains( key ) )
+                        {
+                            AttributeValues.Add( key, new KeyValuePair<string, string>( attribute.Name, value ) );
+                        }
                     }
-                }
-                else
-                {
+
                     attributeValue.Value = value;
                     attributeValueService.Save( attributeValue, currentPersonId );
                 }

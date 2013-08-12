@@ -16,7 +16,7 @@ namespace Rock.Workflow.Action.CheckIn
     public abstract class CheckInActionComponent : ActionComponent
     {
         /// <summary>
-        /// Gets the state of the check in.
+        /// Gets the state of the check-in.
         /// </summary>
         /// <param name="action">The action.</param>
         /// <param name="errorMessages">The error messages.</param>
@@ -45,10 +45,10 @@ namespace Rock.Workflow.Action.CheckIn
         }
 
         /// <summary>
-        /// Sets the state of the check in.
+        /// Sets the state of the check-in.
         /// </summary>
         /// <param name="action">The action.</param>
-        /// <param name="checkInState">State of the check in.</param>
+        /// <param name="checkInState">State of the check-in.</param>
         protected void SetCheckInState ( Model.WorkflowAction action, CheckInState checkInState)
         {
             string stateString = checkInState.ToJson();
