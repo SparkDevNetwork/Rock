@@ -12,7 +12,7 @@
             <div class="controls">
                 <asp:Repeater ID="rSelection" runat="server" OnItemCommand="rSelection_ItemCommand">
                     <ItemTemplate>
-                        <asp:LinkButton ID="lbSelect" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Location.Id") %>' CssClass="btn btn-primary btn-large btn-block" />
+                        <asp:LinkButton ID="lbSelect" runat="server" CommandArgument='<%# Eval("Location.Id") %>' CssClass="btn btn-primary btn-large btn-block"><%# Container.DataItem.ToString() %><%# FormatCount( (int)Eval("Location.Id") ) %></asp:LinkButton>
                     </ItemTemplate>
                 </asp:Repeater>
             </div>
