@@ -6,6 +6,7 @@
 
 using System.Collections.Generic;
 using Rock.Extension;
+using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.Storage
@@ -35,9 +36,9 @@ namespace Rock.Storage
         /// </summary>
         /// <param name="file">The file.</param>
         /// <param name="personId">The person id.</param>
-        public virtual void SaveFile( Model.BinaryFile file, int? personId )
+        public virtual void SaveFile( BinaryFile file, int? personId )
         {
-            SaveFiles( new List<Model.BinaryFile> { file }, personId );
+            SaveFiles( new List<BinaryFile> { file }, personId );
         }
 
         /// <summary>
@@ -45,23 +46,21 @@ namespace Rock.Storage
         /// </summary>
         /// <param name="files">The files.</param>
         /// <param name="personId"></param>
-        public abstract void SaveFiles( IEnumerable<Model.BinaryFile> files, int? personId );
+        public abstract void SaveFiles( IEnumerable<BinaryFile> files, int? personId );
 
         /// <summary>
         /// Removes the file.
         /// </summary>
         /// <param name="file">The file.</param>
         /// <param name="personId"></param>
-        public abstract void RemoveFile( Model.BinaryFile file, int? personId );
+        public abstract void RemoveFile( BinaryFile file, int? personId );
 
         /// <summary>
         /// Gets the URL.
         /// </summary>
         /// <param name="file">The file.</param>
-        /// <param name="height">The height.</param>
-        /// <param name="width">The width.</param>
         /// <returns></returns>
-        public abstract string GetUrl( Model.BinaryFile file );
+        public abstract string GetUrl( BinaryFile file );
 
         /// <summary>
         /// Gets the type of the entity.

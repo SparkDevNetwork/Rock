@@ -32,7 +32,7 @@ namespace Rock.Storage.Provider
         /// </summary>
         /// <param name="files">The files.</param>
         /// <param name="personId"></param>
-        public override void SaveFiles( IEnumerable<Model.BinaryFile> files, int? personId )
+        public override void SaveFiles( IEnumerable<BinaryFile> files, int? personId )
         {
             var fileService = new BinaryFileService();
 
@@ -60,7 +60,7 @@ namespace Rock.Storage.Provider
         /// </summary>
         /// <param name="file">The file.</param>
         /// <param name="personId"></param>
-        public override void RemoveFile( Model.BinaryFile file, int? personId )
+        public override void RemoveFile( BinaryFile file, int? personId )
         {
             var fileService = new BinaryFileService();
             File.Delete( HttpContext.Current.Server.MapPath( file.Url ) );
@@ -71,10 +71,8 @@ namespace Rock.Storage.Provider
         /// Gets the URL.
         /// </summary>
         /// <param name="file">The file.</param>
-        /// <param name="height">The height.</param>
-        /// <param name="width">The width.</param>
         /// <returns></returns>
-        public override string GetUrl( Model.BinaryFile file )
+        public override string GetUrl( BinaryFile file )
         {
             if ( string.IsNullOrWhiteSpace( file.FileName ) )
             {

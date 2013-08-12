@@ -22,9 +22,7 @@ namespace RockWeb
     /// </summary>
     public class File : IHttpAsyncHandler
     {
-        public File()
-        {
-        }
+        // TODO: Does security need to be taken into consideration in order to view a file?
 
         /// <summary>
         /// Called to initialize an asynchronous call to the HTTP handler. 
@@ -37,13 +35,14 @@ namespace RockWeb
         {
             try
             {
-                var id = context.Request.QueryString[0];
+                var queryString = context.Request.QueryString;
 
-                if ( string.IsNullOrEmpty( id ) )
+                if ( !( queryString["id"] == null || queryString["guid"] == null ) )
                 {
                     throw new Exception( "file id must be provided" );
                 }
 
+                var id = !string.IsNullOrEmpty( queryString["id"] ) ? queryString["id"] : queryString["guid"];
                 int fileId;
                 Guid fileGuid = Guid.Empty;
 

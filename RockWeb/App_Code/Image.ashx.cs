@@ -8,7 +8,6 @@
 
 using System;
 using System.Collections.Specialized;
-using System.Drawing;
 using System.IO;
 using System.Net;
 using System.Text;
@@ -25,6 +24,8 @@ namespace RockWeb
     /// </summary>
     public class Image : IHttpHandler
     {
+        // TODO: Does security need to be taken into consideration in order to view an image?
+
         /// <summary>
         /// Enables processing of HTTP Web requests by a custom HttpHandler that implements the <see cref="T:System.Web.IHttpHandler" /> interface.
         /// </summary>
@@ -34,19 +35,18 @@ namespace RockWeb
             context.Response.Clear();
             var queryString = context.Request.QueryString;
 
-            if ( queryString["id"] == null || queryString["guid"] == null )
+            if ( !( queryString["id"] == null || queryString["guid"] == null ) )
             {
                 throw new Exception( "file id must be provided" );
             }
 
-            var id = string.IsNullOrEmpty( queryString["id"] ) ? queryString["id"] : queryString["guid"];
+            var id = !string.IsNullOrEmpty( queryString["id"] ) ? queryString["id"] : queryString["guid"];
             int fileId;
-            Guid fileGuid;
+            Guid fileGuid = Guid.Empty;
 
-            if ( !int.TryParse( id, out fileId ) || !Guid.TryParse( id, out fileGuid ) )
+            if ( !( int.TryParse( id, out fileId ) || Guid.TryParse( id, out fileGuid ) ) )
             {
-                context.Response.StatusCode = 404;
-                context.Response.End();
+                SendNotFound( context );
                 return;
             }
 
@@ -158,7 +158,7 @@ namespace RockWeb
                 return null;
             }
 
-            
+
         }
 
         /// <summary>
@@ -230,26 +230,6 @@ namespace RockWeb
             {
                 return false;
             }
-        }
-
-        /// <summary>
-        /// Not Currently Used.
-        /// 
-        /// Utility method to renders an error image to the output stream.
-        /// Not sure if I like this idea, but it would generate the errorMessages
-        /// as an image in red text.
-        /// </summary>
-        /// <param name="context">HttpContext of current request</param>
-        /// <param name="errorMessage">error message text to render</param>
-        private void RenderErrorImage( HttpContext context, string errorMessage )
-        {
-            context.Response.Clear();
-            context.Response.ContentType = "image/jpeg";
-            Bitmap bitmap = new Bitmap( 7 * errorMessage.Length, 30 );    // width based on error message
-            Graphics g = Graphics.FromImage( bitmap );
-            g.FillRectangle( new SolidBrush( Color.LightSalmon ), 0, 0, bitmap.Width, bitmap.Height ); // background
-            g.DrawString( errorMessage, new Font( "Tahoma", 10, FontStyle.Bold ), new SolidBrush( Color.DarkRed ), new PointF( 5, 5 ) );
-            bitmap.Save( context.Response.OutputStream, System.Drawing.Imaging.ImageFormat.Jpeg );
         }
     }
 }
