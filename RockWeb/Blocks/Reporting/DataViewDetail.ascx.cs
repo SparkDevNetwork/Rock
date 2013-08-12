@@ -37,7 +37,6 @@ namespace RockWeb.Blocks.Reporting
         {
             base.OnInit( e );
 
-            RockPage.AddCSSLink( this.Page, "~/css/bootstrap-switch.css" );
             RockPage.AddScriptLink( this.Page, "~/scripts/jquery.switch.js" );
 
             // Switch does not automatically initialize again after a partial-postback.  This script 
@@ -466,7 +465,18 @@ $(document).ready(function() {
         {
             if ( dataView.EntityTypeId.HasValue && dataView.DataViewFilter != null && dataView.DataViewFilter.IsAuthorized( "View", CurrentPerson ) )
             {
-                gReport.IsPersonList = dataView.EntityTypeId == EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
+                
+                bool isPersonDataSet = dataView.EntityTypeId == EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
+
+                if (isPersonDataSet)
+                {
+                    gReport.PersonIdField = "Id";
+                }
+                else
+                {
+                    gReport.PersonIdField = null;
+                }
+
                 gReport.Visible = true;
                 BindGrid( gReport, dataView );
             }

@@ -62,7 +62,6 @@ namespace Rock.Web.UI.Controls
             base.OnInit( e );
 
             RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/jquery.tooltipster.min.js" ) );
-            RockPage.AddCSSLink( Page, ResolveUrl( "~/CSS/tooltipster.css" ) );
         }
 
         /// <summary>

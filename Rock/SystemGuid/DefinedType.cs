@@ -19,7 +19,7 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_CHANNEL = "DC8A841C-E91D-4BD4-A6A7-0DE765308E8F";
 
         /// <summary>
-        /// Guid for checkin search type
+        /// Guid for check-in search type
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE = "1EBCDB30-A89A-4C14-8580-8289EC2C7742";
 

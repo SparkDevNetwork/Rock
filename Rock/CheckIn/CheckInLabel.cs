@@ -100,14 +100,14 @@ namespace Rock.CheckIn
         /// <summary>
         /// Initializes a new instance of the <see cref="CheckInLabel" /> class.
         /// </summary>
-        /// <param name="labelCache">The label cache.</param>
-        public CheckInLabel( LabelCache labelCache, Dictionary<string, object> mergeObjects )
+        /// <param name="kioskLabel">The label.</param>
+        public CheckInLabel( KioskLabel kioskLabel, Dictionary<string, object> mergeObjects )
         {
-            LabelKey = labelCache.Guid.ToString();
-            LabelFile = labelCache.Url;
+            LabelKey = kioskLabel.Guid.ToString();
+            LabelFile = kioskLabel.Url;
 
             MergeFields = new Dictionary<string, string>();
-            foreach ( var item in labelCache.MergeFields )
+            foreach ( var item in kioskLabel.MergeFields )
             {
                 MergeFields.Add( item.Key, item.Value.ResolveMergeFields( mergeObjects ) );
             }

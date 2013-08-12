@@ -34,6 +34,7 @@ namespace RockWeb.Blocks.Crm
 
             gGroupMembers.DataKeyNames = new string[] { "Id" };
             gGroupMembers.CommunicateMergeFields = new List<string> { "GroupRole.Name" };
+            gGroupMembers.PersonIdField = "PersonId";
             gGroupMembers.Actions.AddClick += gGroupMembers_AddClick;
             gGroupMembers.Actions.ShowAdd = true;
             gGroupMembers.IsDeleteEnabled = true;
@@ -68,7 +69,7 @@ namespace RockWeb.Blocks.Crm
             RockTransactionScope.WrapTransaction( () =>
             {
                 GroupMemberService groupMemberService = new GroupMemberService();
-                GroupMember groupMember = groupMemberService.Get( (int)e.RowKeyValue );
+                GroupMember groupMember = groupMemberService.Get( e.RowKeyId );
                 if ( groupMember != null )
                 {
                     string errorMessage;
@@ -78,8 +79,17 @@ namespace RockWeb.Blocks.Crm
                         return;
                     }
 
+                    int groupId = groupMember.GroupId;
+
                     groupMemberService.Delete( groupMember, CurrentPersonId );
                     groupMemberService.Save( groupMember, CurrentPersonId );
+
+                    Group group = new GroupService().Get( groupId );
+                    if ( group.IsSecurityRole )
+                    {
+                        // person removed from SecurityRole, Flush
+                        Rock.Security.Authorization.Flush();
+                    }
                 }
             } );
 
@@ -134,7 +144,17 @@ namespace RockWeb.Blocks.Crm
 
             GroupMemberService groupMemberService = new GroupMemberService();
 
-            var qry = groupMemberService.Queryable().Where( a => a.GroupId.Equals( groupId ) );
+            var qry = groupMemberService.Queryable().Where( a => a.GroupId.Equals( groupId ) ).Select( a =>
+                new
+                {
+                    a.Id,
+                    PersonId = a.PersonId,
+                    PersonFirstName = a.Person.FirstName,
+                    PersonLastName = a.Person.LastName,
+                    PersonFullNameLastFirst = a.Person.FullNameLastFirst,
+                    GroupRoleName = a.GroupRole.Name,
+                    a.GroupMemberStatus
+                } ).AsQueryable();
 
             SortProperty sortProperty = gGroupMembers.SortProperty;
 
@@ -144,7 +164,7 @@ namespace RockWeb.Blocks.Crm
             }
             else
             {
-                gGroupMembers.DataSource = qry.OrderBy( a => a.Person.LastName ).ThenBy( a => a.Person.FirstName ).ToList();
+                gGroupMembers.DataSource = qry.OrderBy( a => a.PersonLastName ).ThenBy( a => a.PersonFirstName ).ToList();
             }
 
             gGroupMembers.DataBind();

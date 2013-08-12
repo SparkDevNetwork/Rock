@@ -1,0 +1,428 @@
+﻿/*
+    Used to manage styles related to the person details page
+    
+    1. Header
+    2. Badge Bar
+    3. Family Bar
+    4. Page Tabs
+    5. Timeline
+    6. Misc Items
+
+*/
+
+
+// 1. Header
+// -------------------------
+.persondetails-header .navbar-inner
+{
+    padding-bottom: 24px;
+}
+
+
+.persondetails-header .navbar-inner {
+	background-color: @site-accentlight-color; 
+	border-bottom: 1px solid darken(@site-accentlight-color, @const-border-darken-amt);
+	background-image: none;
+    filter: initial;
+}
+
+// edit individual button
+.persondetails-header .actions 
+{
+    position: absolute; 
+    right: 12px; 
+    z-order: 99;
+    margin-top: 50px;
+}
+
+
+.persondetails-header .label
+{
+    margin-top: 11px;
+}
+
+// actions dropdown
+.navbar .nav > li > a.persondetails-actions,
+.navbar .nav li.dropdown.open > a.persondetails-actions {
+    color: @site-accentlight-inverse-color;
+    padding-bottom: 6px;
+}
+
+.persondetails .navbar .nav > li > a:hover,
+.persondetails .navbar .nav > li > a:focus
+{
+    color: inherit;
+}
+
+.persondetails .navbar .nav li.dropdown > .dropdown-toggle .caret
+{
+    border-top: 4px solid @site-accentlight-inverse-color;
+}
+
+.persondetails .navbar .nav > li > a:hover .caret,
+.persondetails .navbar .nav > li > a:focus .caret
+{
+    border-top: 4px solid lighten(@site-accentlight-inverse-color, 20%);
+}
+
+.persondetails-header .photo
+{
+    padding: 5px 5px 5px 5px;
+    background-color: #fff;
+    border: 1px solid #bdbdbd;
+    display: table;
+    width: 100%;
+    max-width: 300px;
+}
+
+.persondetails-header .photo img
+{
+    width: 100%;
+}
+
+.persondetails-header .demographics
+{
+    margin-top: 44px;
+}
+
+.persondetails-header .phone
+{
+    margin-bottom: 12px;
+}
+
+// 2. Badge Bar
+// -------------------------
+
+.persondetails-badgebar .navbar-inner
+{
+    background-color: @site-accent-color;
+    background-image: none;
+    box-shadow: none;
+    border: 0;
+    min-height: 50px;
+    border-bottom: 1px solid darken(@site-accent-color, @const-border-darken-amt);
+}
+
+.persondetails-badgebar .badge-group
+{
+    margin: 10px 0;
+}
+
+.persondetails-badgebar .badge-group:last-child
+{
+    text-align: right;
+}
+
+@media (max-width: 767px) {
+	.persondetails-badgebar .badge-group:last-child
+    {
+        text-align: left;
+    }
+}
+
+.persondetails-badgebar .badge
+{
+    background-color: inherit;
+}
+
+// 3. Family Bar
+// -------------------------
+
+.persondetails-familybar .navbar-inner
+{
+    background: @site-accent-color;
+    padding: 12px 0;
+    border-bottom: 1px solid darken(@site-accent-color, @const-border-darken-amt);
+}
+
+.persondetails-familybar .members header
+{
+    font-weight: @font-bold-weight;
+    font-size: 16px;
+    margin-bottom: 12px;
+}
+
+.persondetails-familybar .members ul
+{
+    list-style: none;
+    margin: 6px 0;
+}
+
+.persondetails-familybar .members li
+{
+    float: left;
+    margin-right: 12px;
+    margin-bottom: 12px;
+    min-width: 150px;
+}
+
+.persondetails-familybar .members li a
+{
+    color: #515151;
+}
+
+.persondetails-familybar .members li img
+{
+    float: left;
+    border: 1px solid #fff;
+    max-width: 37px;
+    max-height: 37px;
+}
+
+.persondetails-familybar .member
+{
+    float: left;
+    margin-left: 4px;
+}
+
+.persondetails-familybar .member h4
+{
+    margin: 0;
+    font-size: 14px;
+    font-weight: normal;
+    float: left;
+    max-width: 88px;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.persondetails-familybar .member small
+{
+    display: block;
+    line-height: 16px;
+    margin: 0;
+}
+
+.persondetails-familybar .member small.age
+{
+    display: inline;
+    margin-left: 4px;
+}
+
+.persondetails-familybar .addresses ul
+{
+    list-style: none;
+    margin: 0;
+}
+
+.persondetails-familybar .addresses li
+{
+    display: block;
+    clear: both;
+    margin-bottom: 12px;
+}
+
+.persondetails-familybar .addresses h4
+{
+    margin: 0;
+    font-size: 14px;
+    font-weight: @font-semibold-weight;
+}
+
+.persondetails-familybar .addresses a.map,
+.persondetails-familybar .addresses div.actions,
+.persondetails-familybar .addresses div.address
+{
+    float: left;
+    margin-right: 4px;
+}
+
+.persondetails-familybar .address .actions
+{
+    display: none;
+}
+
+.persondetails-familybar .address .actions a
+{
+    padding: 1px;
+}
+
+.persondetails-familybar .container-fluid > .actions
+{
+    position: absolute; 
+    right: 12px; 
+    z-order: 99;
+}
+
+
+// 4. Page Tabs
+// -------------------------
+
+.pagetabs
+{
+    margin-top: 12px;
+}
+
+.pagetabs .nav
+{
+    margin: 10px 0;
+}
+
+
+// 5. Timeline
+// -------------------------
+
+.persontimeline header h4
+{
+    float: left;
+}
+
+.persontimeline header .btn
+{
+    float: right;
+    margin-top: 6px;
+}
+
+.persontimeline article
+{
+    border-radius: @site-border-radius;
+    border: 1px solid darken(@site-accentlight-color, @const-border-darken-amt);
+    padding: 12px;
+    margin-bottom: 12px;
+    background-color: @site-accentlight-color; 
+}
+
+.persontimeline article .date
+{
+    font-size: 13px;
+    font-weight: @font-light-weight;
+    margin-left: 8px;
+}
+
+.persontimeline article i
+{
+    float: left;
+    color: #a8a8a8;
+    width: 6%;
+    font-size: 20px;
+}
+
+.persontimeline article h5
+{
+    margin-top: 0;
+    margin-bottom: 4px;
+}
+
+.persontimeline article .details
+{
+    float: left;
+    width: 84%;
+}
+
+.persontimeline article .actions
+{
+    float: right;
+    width: 10%;
+}
+
+.persontimeline article .actions i
+{
+    font-size: 14px;
+            
+}
+
+.persontimeline article .actions a
+{
+    float: right;
+    margin-left: 6px;
+}
+
+.persontimelin article:last-child
+{
+    margin-bottom: 0;
+}
+
+.persontimeline article.highlight
+{
+    background-color: @site-error-background;
+    border: 1px solid darken(spin(@site-error-background, -10), 3%);
+    color: @site-error-text;
+}
+
+.persontimeline article.highlight i
+{
+    color: #b94a48;
+}
+
+.persontimeline article.personal
+{
+    background-color: @site-info-background;
+    border: 1px solid darken(spin(@site-info-background, -10), 3%);
+    color: @site-info-text;
+}
+
+.persontimeline article.personal i
+{
+    color: #3a87ad;
+}
+
+.persontimeline .load-more
+{
+    margin: 0 40%;
+    min-width: 120px;
+    width: 20%;
+}
+
+.persontimeline .load-more span
+{
+    margin: 0 12px;
+}
+
+.note-entry
+{
+    background-color: #F3F3F3;
+    border: 1px solid #D3D3D3;
+    border-radius: 4px 4px 4px 4px;
+    margin-bottom: 12px;
+    padding: 6px 6px 0 6px;
+}
+
+.note-entry textarea
+{
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.note-entry .settings .options
+{
+    float: left;
+}
+
+.note-entry .settings .options label
+{
+    float: left;
+    margin-right: 12px;
+    margin-left: 4px;
+}
+
+.note-entry .settings button.security
+{
+    float: right;
+}
+
+.note-entry .actions
+{
+    border-top: 1px solid #D3D3D3;
+    background-color: #ededed;
+    margin: 6px -6px 0 -6px;
+    padding: 6px;
+    text-align: right;
+    padding: 8px 6px;
+    border-radius: 0 0 4px 4px;
+}
+
+// 6. Misc Items
+// -------------------------
+
+.bookmarkattributes ul // todo check if this is needed
+{
+    list-style-type: none;
+    margin-left: 0;
+}
+
+.persondetails small
+{
+    color: lighten(@site-text-color, 20%);
+}

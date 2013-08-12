@@ -11,9 +11,9 @@
             <div id="pnlEditDetails" runat="server" class="well">
 
                 <fieldset>
-                    <legend>
+                    <h1 class="banner">
                         <asp:Literal ID="lActionTitle" runat="server" />
-                    </legend>
+                    </h1>
 
                     <div class="row-fluid">
                         <div class="span6">
@@ -52,46 +52,46 @@
             </div>
 
             <fieldset id="fieldsetViewDetails" runat="server">
-                <legend>
+                <h1 class="banner">
                     <asp:Literal ID="lReadOnlyTitle" runat="server" />
-                </legend>
+                </h1>
                 <asp:Label ID="lblWorkflowTypeInactive" runat="server" CssClass="label label-important pull-right" Text="Inactive" />
-                <div class="well">
-                    <div class="row-fluid">
-                        <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
-                    </div>
-                    <div class="row-fluid">
-                        <div class="span6">
-                            <asp:Literal ID="lblMainDetails" runat="server" />
-                        </div>
-                        <div class="span6">
-                            <asp:Panel ID="pnlAttributeTypes" runat="server">
-                                <Rock:ModalAlert ID="mdGridWarningAttributes" runat="server" />
-                                <Rock:Grid ID="gWorkflowTypeAttributes" runat="server" AllowPaging="false" DisplayType="Light">
-                                    <Columns>
-                                        <asp:BoundField DataField="Name" HeaderText="Workflow Attributes" />
-                                        <Rock:EditField OnClick="gWorkflowTypeAttributes_Edit" />
-                                        <Rock:DeleteField OnClick="gWorkflowTypeAttributes_Delete" />
-                                    </Columns>
-                                </Rock:Grid>
-                            </asp:Panel>
-                        </div>
-                    </div>
-                    <div class="row-fluid">
-                        <a class="workflow-activities-readonly-header" href="#" onclick="javascxript: toggleReadOnlyActivitiesList();">
-                            <asp:Label ID="lblActivitiesReadonlyHeaderLabel" runat="server" Text="Activities" />
-                            <b class="caret"></b>
-                        </a>
-                        <div class="workflow-activities-readonly-list" style="display: none">
 
-                            <asp:Literal ID="lblWorkflowActivitiesReadonly" runat="server" />
-                        </div>
+                <div class="row-fluid">
+                    <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+                </div>
+                <div class="row-fluid">
+                    <div class="span6">
+                        <asp:Literal ID="lblMainDetails" runat="server" />
                     </div>
-                    <hr />
-                    <div class="actions">
-                        <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click" />
+                    <div class="span6">
+                        <asp:Panel ID="pnlAttributeTypes" runat="server">
+                            <Rock:ModalAlert ID="mdGridWarningAttributes" runat="server" />
+                            <Rock:Grid ID="gWorkflowTypeAttributes" runat="server" AllowPaging="false" DisplayType="Light">
+                                <Columns>
+                                    <asp:BoundField DataField="Name" HeaderText="Workflow Attributes" />
+                                    <Rock:EditField OnClick="gWorkflowTypeAttributes_Edit" />
+                                    <Rock:DeleteField OnClick="gWorkflowTypeAttributes_Delete" />
+                                </Columns>
+                            </Rock:Grid>
+                        </asp:Panel>
                     </div>
                 </div>
+                <div class="row-fluid">
+                    <a class="workflow-activities-readonly-header" href="#" onclick="javascxript: toggleReadOnlyActivitiesList();">
+                        <asp:Label ID="lblActivitiesReadonlyHeaderLabel" runat="server" Text="Activities" />
+                        <b class="caret"></b>
+                    </a>
+                    <div class="workflow-activities-readonly-list" style="display: none">
+
+                        <asp:Literal ID="lblWorkflowActivitiesReadonly" runat="server" />
+                    </div>
+                </div>
+                <hr />
+                <div class="actions">
+                    <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click" />
+                </div>
+
             </fieldset>
 
         </asp:Panel>

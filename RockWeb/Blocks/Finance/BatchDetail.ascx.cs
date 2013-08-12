@@ -168,6 +168,7 @@ namespace RockWeb.Blocks.Finance.Administration
                 if ( financialBatchId == 0 )
                 {
                     financialBatch = new Rock.Model.FinancialBatch();
+                    financialBatch.CreatedByPersonId = CurrentPersonId.Value;
                     financialBatchService.Add( financialBatch, CurrentPersonId );
                 }
                 else

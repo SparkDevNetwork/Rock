@@ -5,14 +5,14 @@
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
     <fieldset>
-    <legend><asp:Literal ID="lGroupTypeName" runat="server" /></legend>
+    <legend><asp:Literal ID="lGroupName" runat="server" /></legend>
 
         <div class="control-group">
             <label class="control-label">Select Location</label>
             <div class="controls">
                 <asp:Repeater ID="rSelection" runat="server" OnItemCommand="rSelection_ItemCommand">
                     <ItemTemplate>
-                        <asp:LinkButton ID="lbSelect" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Location.Id") %>' CssClass="btn btn-primary btn-large btn-block" />
+                        <asp:LinkButton ID="lbSelect" runat="server" CommandArgument='<%# Eval("Location.Id") %>' CssClass="btn btn-primary btn-large btn-block"><%# Container.DataItem.ToString() %><%# FormatCount( (int)Eval("Location.Id") ) %></asp:LinkButton>
                     </ItemTemplate>
                 </asp:Repeater>
             </div>

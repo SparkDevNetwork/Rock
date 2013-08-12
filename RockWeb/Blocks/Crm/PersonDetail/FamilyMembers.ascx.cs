@@ -108,7 +108,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         imgPerson.Visible = fm.PhotoId.HasValue;
                         if ( fm.PhotoId.HasValue )
                         {
-                            imgPerson.ImageUrl = string.Format( "~/image.ashx?id={0}", fm.PhotoId );
+                            imgPerson.ImageUrl = string.Format( "~/GetImage.ashx?id={0}", fm.PhotoId );
                         }
                     }
 
@@ -241,7 +241,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     groupMember.GroupRoleId = role.Id;
 
                     var family = new Group();
-                    family.Name = Person.LastName + " Family";
+                    family.Name = Person.LastName;
                     family.GroupTypeId = role.GroupTypeId.Value;
                     family.Members.Add( groupMember );
 

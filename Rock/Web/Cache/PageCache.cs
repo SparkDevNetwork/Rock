@@ -756,7 +756,7 @@ namespace Rock.Web.Cache
                 string iconUrl = string.Empty;
                 if ( this.IconFileId.HasValue )
                 {
-                    iconUrl = string.Format( "{0}/image.ashx?{1}",
+                    iconUrl = string.Format( "{0}/GetImage.ashx?{1}",
                         HttpContext.Current.Request.ApplicationPath,
                         this.IconFileId.Value );
                 }
