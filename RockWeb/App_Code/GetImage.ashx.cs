@@ -55,8 +55,6 @@ namespace RockWeb
                 var fileService = new BinaryFileService();
                 var file = fileId > 0 ? fileService.Get( fileId ) : fileService.Get( fileGuid );
                 string cacheName = Uri.EscapeDataString( context.Request.Url.Query );
-
-                // TODO: Check to see if `file` allows caching before attempting to load it from cache
                 string physFilePath = context.Request.MapPath( string.Format( "~/App_Data/Cache/{0}", cacheName ) );
 
                 if ( file == null )
@@ -66,7 +64,7 @@ namespace RockWeb
                 }
 
                 // Is it cached
-                if ( File.Exists( physFilePath ) )
+                if ( file.AllowCaching && File.Exists( physFilePath ) )
                 {
                     // Is cached version newer?
                     if ( !file.LastModifiedDateTime.HasValue ||
@@ -88,12 +86,10 @@ namespace RockWeb
 
                 // If more than 1 query string param is passed in, assume resize is needed
                 if ( queryString.Count > 1 )
-                {
                     Resize( queryString, file );
-                }
 
-                // TODO: Check to see if `file` allows caching before adding to cache
-                Cache( file, physFilePath );
+                if ( file.AllowCaching )
+                    Cache( file, physFilePath );
 
                 // Post process
                 SendFile( context, file );
