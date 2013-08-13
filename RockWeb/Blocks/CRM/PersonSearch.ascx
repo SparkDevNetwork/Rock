@@ -8,6 +8,12 @@
             DataTextField="FullNameLastFirst" 
             SortExpression="FullNameLastFirst" 
             HeaderText="Person"  />
+        <asp:BoundField
+            DataField="Age"  
+            HeaderText="Age"  />
+        <asp:BoundField
+            DataField="Gender"  
+            HeaderText="Gender"  />
     </Columns>
 </Rock:Grid>
 
