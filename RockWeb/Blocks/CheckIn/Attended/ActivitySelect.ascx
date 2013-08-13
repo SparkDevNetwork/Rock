@@ -16,18 +16,6 @@
         //    return false;
         //});
 
-        //$('.time').unbind('click').on('click', function () {
-        //    $(this).toggleClass('active');
-        //    var selectedIds = $('#hfSelectedTime').val();
-        //    var buttonId = this.getAttribute('data-id') + ',';
-        //    if (typeof selectedIds == "string" && (selectedIds.indexOf(buttonId) >= 0)) {
-        //        $('#hfSelectedTime').val(selectedIds.replace(buttonId, ''));
-        //    } else {
-        //        $('#hfSelectedTime').val(buttonId + selectedIds);
-        //    }
-        //    return false;
-        //});
-        
     };
     $(document).ready(function () { setControlEvents(); });
     Sys.WebForms.PageRequestManager.getInstance().add_endRequest(setControlEvents);
@@ -38,9 +26,6 @@
 <ContentTemplate>
 
     <Rock:ModalAlert ID="maWarning" runat="server" />
-    <asp:HiddenField ID="hfSelectedMinistry" runat="server" ClientIDMode="Static" />
-    <asp:HiddenField ID="hfSelectedTime" runat="server" ClientIDMode="Static" />
-    <asp:HiddenField ID="hfSelectedActivity" runat="server" ClientIDMode="Static" />
 
     <div class="row-fluid attended-checkin-header">
         <div class="span3 attended-checkin-actions">
@@ -62,7 +47,7 @@
         <ContentTemplate>        
             <div class="attended-checkin-body-container">
                 <h3>Ministry</h3>
-                <asp:Repeater ID="rMinistry" runat="server" OnItemCommand="rMinistry_ItemCommand" OnItemDataBound="rMinistry_ItemDataBound">
+                <asp:Repeater ID="rMinistry" runat="server" OnItemCommand="rMinistry_ItemCommand">
                     <ItemTemplate>
                         <asp:LinkButton ID="lbSelectMinistry" runat="server" Text='<%# Container.DataItem.ToString() %>' data-id='<%# Eval("Id") %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select ministry" CausesValidation="false" />
                     </ItemTemplate>
@@ -71,23 +56,25 @@
         </ContentTemplate>
         </asp:UpdatePanel>
 
-        <div class="span3">
+        <asp:UpdatePanel ID="pnlSelectTime" runat="server" UpdateMode="Conditional" class="span3">
+        <ContentTemplate>        
             <div class="attended-checkin-body-container">
                 <h3>Time</h3>
-                <asp:Repeater ID="rTime" runat="server" OnItemCommand="rTime_ItemCommand" OnItemDataBound="rTime_ItemDataBound">
+                <asp:Repeater ID="rTime" runat="server" OnItemCommand="rTime_ItemCommand">
                     <ItemTemplate>
                         <asp:LinkButton ID="lbSelectTime" runat="server" Text='<%# Container.DataItem.ToString() %>' data-id='<%# Eval("Id") %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select time" CausesValidation="false" />
                     </ItemTemplate>
                 </asp:Repeater>
             </div>
             <asp:HiddenField ID="hfTimes" runat="server"></asp:HiddenField>
-        </div>
+        </ContentTemplate>
+        </asp:UpdatePanel>
 
         <asp:UpdatePanel ID="pnlSelectActivity" runat="server" UpdateMode="Conditional" class="span3">
         <ContentTemplate>        
             <div class="attended-checkin-body-container">
                 <h3>Activity</h3>
-                <asp:ListView ID="lvActivity" runat="server" OnPagePropertiesChanging="lvActivity_PagePropertiesChanging" OnItemCommand="lvActivity_ItemCommand" OnItemDataBound="lvActivity_ItemDataBound">
+                <asp:ListView ID="lvActivity" runat="server" OnPagePropertiesChanging="lvActivity_PagePropertiesChanging" OnItemCommand="lvActivity_ItemCommand">
                     <ItemTemplate>
                         <asp:LinkButton ID="lbSelectActivity" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" ></asp:LinkButton>
                     </ItemTemplate>
@@ -112,6 +99,10 @@
                         <Rock:DeleteField OnClick="gActivityList_Delete" />
                     </Columns>
                 </Rock:Grid>
+                <asp:Label ID="grouptype" runat="server"></asp:Label>
+                <asp:Label ID="group" runat="server"></asp:Label>
+                <asp:Label ID="grouplocation" runat="server"></asp:Label>
+                <asp:Label ID="schedule" runat="server"></asp:Label>
             </div>
         </div>
 
