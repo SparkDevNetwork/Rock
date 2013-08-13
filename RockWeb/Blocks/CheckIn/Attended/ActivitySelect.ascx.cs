@@ -26,6 +26,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
     {
         #region Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
@@ -43,13 +47,46 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     if ( person != null )
                     {
                         lblPersonName.Text = person.Person.FullName;
-                        //gActivityList.DataKeyNames = new string[] { "ListId" };
-                        //BindToActivityGrid();
-                        //LoadMinistries(person);
-
-                        rMinistry.DataSource = GetAllParentGroupTypes( CurrentCheckInState.Kiosk.Device );      // this doesn't work. Device Locations = 0
+                        /*
+                        gActivityList.DataKeyNames = new string[] { "ListId" };
+                        BindToActivityGrid();
+                        LoadMinistries(person);
+                        */
+                        
+                        // Load Ministries
+                        var groupTypeList = new List<GroupType>();
+                        groupTypeList.AddRange( CurrentGroupTypeIds.SelectMany( c => new GroupTypeService().Get( c ).ParentGroupTypes ) );
+                        if ( groupTypeList.GroupBy( g => g.Name ).Select( gt => gt.First() ).Count() == 1 )
+                        {
+                            hfSelectedMinistry.Value = groupTypeList.GroupBy( g => g.Name ).Select( gt => gt.First() ).Select( s => s.Id ).FirstOrDefault().ToString() + ",";
+                        }
+                        else
+                        {
+                            // need to get the selected ministry off of what's coming back from the confirm page
+                            // this will be on the person: grouptype selected
+                        }
+                        rMinistry.DataSource = groupTypeList.GroupBy( g => g.Name ).Select( gt => gt.First() );
                         rMinistry.DataBind();
-                    }            
+
+                        // Load Times
+                        var scheduleList = new List<Schedule>();
+                        scheduleList.AddRange( CurrentGroupTypeIds.SelectMany( c => new GroupTypeService().Get( c ).Groups.SelectMany( g => g.GroupLocations.SelectMany( gl => gl.Schedules ) ) ) );
+                        rTime.DataSource = scheduleList.GroupBy( g => g.Name ).Select( s => s.First() );
+                        rTime.DataBind();
+                        // need to get the selected time off of what's coming back from the confirm page
+                        // this will be on the person: grouptype, group, grouplocation, schedule selected
+
+                        // Load Activities
+                        var activityList = new List<Group>();
+                        activityList.AddRange( CurrentGroupTypeIds.SelectMany( c => new GroupTypeService().Get( c ).Groups ) );
+                        lvActivity.DataSource = activityList;
+                        lvActivity.DataBind();
+                        Session["activityList"] = activityList;     // this is for the paging
+                        // need to get the selected activity off of what's coming back from the confirm page
+                        // this will be on the person: grouptype, group selected
+
+                        // Load Selected Grid
+                    }
                     else
                     {
                         GoBack();
@@ -62,30 +99,27 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
         #region Edit Events
 
-        // when you click on a ministry button, you come in here.
+        /// <summary>
+        /// Handles the ItemCommand event of the rMinistry control.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void rMinistry_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
-            if ( KioskCurrentlyActive )
+            int id = int.Parse( e.CommandArgument.ToString() );
+            foreach ( RepeaterItem item in rMinistry.Items )
             {
-                var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-                if ( family != null )
-                {
-                    var person = family.People.Where( p => p.Selected ).FirstOrDefault();
-                    if ( person != null )
-                    {
-                        int id = int.Parse( e.CommandArgument.ToString() );
-                        foreach ( RepeaterItem item in rMinistry.Items )
-                        {
-                            ( (LinkButton)item.FindControl( "lbSelectMinistry" ) ).RemoveCssClass( "active" );
-                        }
-
-                        ( (LinkButton)e.Item.FindControl( "lbSelectMinistry" ) ).AddCssClass( "active" );
-                        rTime.DataBind();
-                        lvActivity.DataBind();
-                        LoadTimes();
-                    }
-                }
+                ( (LinkButton)item.FindControl( "lbSelectMinistry" ) ).RemoveCssClass( "active" );
             }
+
+            ( (LinkButton)e.Item.FindControl( "lbSelectMinistry" ) ).AddCssClass( "active" );
+            hfSelectedMinistry.Value = id.ToString() + ",";
+            var activityList = new List<Group>();
+            activityList.AddRange( new GroupTypeService().Get( id ).Groups.SelectMany( g => g.Groups ).ToList() );
+            lvActivity.DataSource = activityList;
+            lvActivity.DataBind();
+            Session["activityList"] = activityList;     // this is for the paging
+            pnlSelectActivity.Update();
         }
 
         /// <summary>
@@ -95,36 +129,24 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rMinistry_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
-                //if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
-                //{
-                //    if ( familyMemberIds.Contains( ( (CheckInPerson)e.Item.DataItem ).Person.Id ) )
-                //    {
-                //        ( (LinkButton)e.Item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
-                //    }
-                //}
-            //var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
-            //                .People.Where( p => p.Person.Id == int.Parse( Request.QueryString["personId"] ) ).FirstOrDefault();
-            //var groupTypes = person.GroupTypes;
-            //if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
-            //{
-            //    if ( person.GroupTypes.Where( g => g.Selected ).FirstOrDefault() == ((CheckInGroupType)e.Item.DataItem).GroupType )
-            //    {
-            //    }
-            //}
-
-
-
-
-            //var pgtList = kiosk.Locations.Select( l => l.GroupLocations
-            //    .SelectMany( gl => gl.Group.GroupType.ParentGroupTypes ) );
-
-            //return pgtList.Select( gt => gt.First() ).Distinct().ToList();
-
-
-
+            var ministryIds = hfSelectedMinistry.Value.SplitDelimitedValues().Select( int.Parse ).ToList();
+            if ( ministryIds.Count > 0 )
+            {
+                if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+                {
+                    if ( ministryIds.Contains( ((GroupType)e.Item.DataItem).Id ) )
+                    {
+                        ( (LinkButton)e.Item.FindControl( "lbSelectMinistry" ) ).AddCssClass( "active" );
+                    }
+                }
+            }
         }
 
-        // when you click on a time button, you come in here.
+        /// <summary>
+        /// Handles the ItemCommand event of the rTime control.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void rTime_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             int id = int.Parse( e.CommandArgument.ToString() );
@@ -134,18 +156,26 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }
 
             ( (LinkButton)e.Item.FindControl( "lbSelectTime" ) ).AddCssClass( "active" );
-            LoadActivities();
+            hfSelectedTime.Value = id.ToString() + ",";
+        }
 
-            // if there is a currently selected activity for the time period being chosen, then show it as active
-            foreach ( ListViewItem item in lvActivity.Items )
+        /// <summary>
+        /// Handles the ItemDataBound event of the rTime control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rTime_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            var timeIds = hfSelectedTime.Value.SplitDelimitedValues().Select( int.Parse ).ToList();
+            if ( timeIds.Count > 0 )
             {
-            //    foreach ( var timeAndActivityList in CheckInTimeAndActivityList )
-            //    {
-            //        if ( ( timeAndActivityList[0] == CheckInPeopleIds.FirstOrDefault() ) && ( timeAndActivityList[1] == int.Parse( ( (LinkButton)e.Item.FindControl( "lbSelectTime" ) ).CommandArgument ) ) && ( timeAndActivityList[2] == int.Parse( ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).CommandArgument ) ) )
-            //        {
-            //            ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).AddCssClass( "active" );
-            //        }
-            //    }
+                if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+                {
+                    if ( timeIds.Contains( ( (Schedule)e.Item.DataItem ).Id ) )
+                    {
+                        ( (LinkButton)e.Item.FindControl( "lbSelectTime" ) ).AddCssClass( "active" );
+                    }
+                }
             }
         }
 
@@ -169,36 +199,24 @@ namespace RockWeb.Blocks.CheckIn.Attended
             BindToActivityGrid();
         }
 
+        /// <summary>
+        /// Handles the PagePropertiesChanging event of the lvActivity control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="PagePropertiesChangingEventArgs"/> instance containing the event data.</param>
         protected void lvActivity_PagePropertiesChanging( object sender, PagePropertiesChangingEventArgs e )
         {
             // set current page startindex, max rows and rebind to false
             Pager.SetPageProperties( e.StartRowIndex, e.MaximumRows, false );
-            lvActivity.DataSource = Session["activityGroupTypeList"];
+            lvActivity.DataSource = Session["activityList"];
             lvActivity.DataBind();
-
-            // since we have to rebind to the data source errr time they click a button, we have to search for actually selected buttons every time as well. Freaking time hog. Slows things down considerably...especially on large data sets.
-            var timeButtonId = 0;
-            foreach ( RepeaterItem item in rTime.Items )
-            {
-                if ( HasActiveClass( (LinkButton)item.FindControl( "lbSelectTime" ) ) )
-                {
-                    timeButtonId = int.Parse( ( (LinkButton)item.FindControl( "lbSelectTime" ) ).CommandArgument );
-                }
-            }
-
-            // if there is a currently selected activity for the time period being chosen, then show it as active
-            foreach ( ListViewItem item in lvActivity.Items )
-            {
-                //foreach ( var timeAndActivityList in CheckInTimeAndActivityList )
-                //{
-                //    if ( ( timeAndActivityList[0] == CheckInPeopleIds.FirstOrDefault() ) && ( timeAndActivityList[1] == timeButtonId ) && ( timeAndActivityList[2] == int.Parse( ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).CommandArgument ) ) )
-                //    {
-                //        ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).AddCssClass( "active" );
-                //    }
-                //}
-            }
         }
 
+        /// <summary>
+        /// Handles the ItemCommand event of the lvActivity control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="ListViewCommandEventArgs"/> instance containing the event data.</param>
         protected void lvActivity_ItemCommand( object sender, ListViewCommandEventArgs e )
         {
             // every time someone selects an activity, it is automatically saved to the list of check in activities. if the person changes the activity for the same time period, it will check to see if there is an activity already
@@ -212,48 +230,42 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }
 
             ( (LinkButton)e.Item.FindControl( "lbSelectActivity" ) ).AddCssClass( "active" );
-
-            // Step 2: make a copy of the CheckInTimeAndActivityList so that we can iterate through this list, and have the freedom to add & remove items from the actual CheckInTimeAndActivityList without messing up the loops.
-            // there's probably a better way to do this, but I don't know what it is.
-            List<List<int>> ctaList = new List<List<int>>();
-            //foreach ( var ctaListCopy in CheckInTimeAndActivityList )
-            //{
-            //    ctaList.Add( ctaListCopy );
-            //}
-
-            // Step 3: check to see if there are any other activities previously selected at the chosen time for this person. If there are, remove them from the CheckInTimeAndActivityList.
-            int chosenTimeId = 0;
-            foreach ( RepeaterItem timeItem in rTime.Items )
-            {
-                if ( HasActiveClass( (LinkButton)timeItem.FindControl( "lbSelectTime" ) ) )
-                {
-                    chosenTimeId = int.Parse( ( (LinkButton)timeItem.FindControl( "lbSelectTime" ) ).CommandArgument );
-                }
-            }
-
-            foreach ( var timeAndActivityList in ctaList )
-            {
-                //if ( timeAndActivityList[0] == CheckInPeopleIds.FirstOrDefault() && timeAndActivityList[1] == chosenTimeId )
-                //{
-                //    CheckInTimeAndActivityList.Remove( timeAndActivityList );
-                //}
-            }
-
-            // Step 4: now add the currently selected activity to the CheckInTimeAndActivityList
-            //List<int> temp = new List<int>();
-            //temp.Add( CheckInPeopleIds.FirstOrDefault() );
-            //temp.Add( chosenTimeId );
-            //temp.Add( int.Parse( ( (LinkButton)e.Item.FindControl( "lbSelectActivity" ) ).CommandArgument ) );
-            //CheckInTimeAndActivityList.Add( temp );
+            hfSelectedActivity.Value = id.ToString() + ",";
 
             BindToActivityGrid();
         }
 
+        /// <summary>
+        /// Handles the ItemDataBound event of the lvActivity control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="ListViewItemEventArgs"/> instance containing the event data.</param>
+        protected void lvActivity_ItemDataBound( object sender, ListViewItemEventArgs e )
+        {
+            //if ( e.Item.ItemType == ListViewItemType.DataItem )
+            //{
+            //    if ( ( e.Item.DataItem ) )
+            //    {
+            //        ( (LinkButton)e.Item.FindControl( "lbSelectFamily" ) ).AddCssClass( "active" );
+            //    }
+            //}            
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbBack control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbBack_Click( object sender, EventArgs e )
         {
             GoBack();
         }
-                
+
+        /// <summary>
+        /// Handles the Click event of the lbNext control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbNext_Click( object sender, EventArgs e )
         {
             GoNext();   
@@ -264,18 +276,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
         #region Internal Methods 
 
         /// <summary>
-        /// Gets the parent of currently selected group types.
+        /// Loads the ministries.
         /// </summary>
-        /// <param name="kioskDevice">The kiosks's device.</param>
-        /// <returns></returns>
-        private List<GroupType> GetAllParentGroupTypes( Device kiosk )
-        {
-            var pgtList = kiosk.Locations.Select( l => l.GroupLocations
-                .SelectMany( gl => gl.Group.GroupType.ParentGroupTypes ) );
-
-            return pgtList.Select( gt => gt.First() ).Distinct().ToList();
-        }
-
+        /// <param name="person">The person.</param>
         protected void LoadMinistries( Person person )
         {
             // fill the ministry repeater
@@ -341,6 +344,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }
         }
 
+        /// <summary>
+        /// Loads the times.
+        /// </summary>
         protected void LoadTimes()
         {
             // fill the time repeater
@@ -369,6 +375,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }
         }
 
+        /// <summary>
+        /// Loads the activities.
+        /// </summary>
         protected void LoadActivities()
         {
             // fill the activity repeater
@@ -396,6 +405,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
             lvActivity.DataBind();
         }
 
+        /// <summary>
+        /// Gets the parent.
+        /// </summary>
+        /// <param name="childGroupTypeId">The child group type id.</param>
+        /// <param name="parentId">The parent id.</param>
+        /// <returns></returns>
         protected int GetParent( int childGroupTypeId, int parentId )
         {
             GroupType childGroupType = new GroupTypeService().Get( childGroupTypeId );
@@ -416,6 +431,13 @@ namespace RockWeb.Blocks.CheckIn.Attended
             return parentId;
         }
 
+        /// <summary>
+        /// Determines whether [has active class] [the specified webcontrol].
+        /// </summary>
+        /// <param name="webcontrol">The webcontrol.</param>
+        /// <returns>
+        ///   <c>true</c> if [has active class] [the specified webcontrol]; otherwise, <c>false</c>.
+        /// </returns>
         protected bool HasActiveClass( WebControl webcontrol )
         {
             string match = @"\s*\b" + "active" + @"\b";
@@ -430,6 +452,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }
         }
 
+        /// <summary>
+        /// Goes the back.
+        /// </summary>
         private void GoBack()
         {
             foreach ( var family in CurrentCheckInState.CheckIn.Families )
@@ -443,6 +468,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
             NavigateToPreviousPage();
         }
 
+        /// <summary>
+        /// Goes the next.
+        /// </summary>
         private void GoNext()
         {
             // check to see if there are any entries in the CheckInTimeAndActivityList and if not, let the person know.
@@ -474,6 +502,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
             SaveState();
         }
 
+        /// <summary>
+        /// Processes the activities.
+        /// </summary>
         private void ProcessActivities()
         {
             var errors = new List<string>();
