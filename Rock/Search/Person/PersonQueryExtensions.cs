@@ -82,7 +82,7 @@ namespace Rock.Search.Person
             bool lastFirst;
             var peopleQry = qry.QueryByName( searchTerm, out lastFirst );
 
-            var selectQry = peopleQry.Select( p => ( lastFirst ? p.LastName + ", " + ( p.NickName ?? p.GivenName ) : ( p.NickName ?? p.GivenName ) + " " + p.LastName ) );
+            var selectQry = peopleQry.Select( p => ( lastFirst ? p.FullNameLastFirst : p.FullName ) );
 
             if (distinct)
             {
