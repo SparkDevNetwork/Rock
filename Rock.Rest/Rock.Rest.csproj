@@ -97,7 +97,6 @@
     <Compile Include="Controllers\MergeFieldsController.cs" />
     <Compile Include="Controllers\FinancialAccountsController.Partial.cs" />
     <Compile Include="Controllers\GroupsController.Partial.cs" />
-    <Compile Include="Controllers\KiosksController.cs" />
     <Compile Include="Controllers\AttributesController.Partial.cs" />
     <Compile Include="Controllers\BlocksController.Partial.cs" />
     <Compile Include="Controllers\CodeGenerated\AttendancesController.cs" />

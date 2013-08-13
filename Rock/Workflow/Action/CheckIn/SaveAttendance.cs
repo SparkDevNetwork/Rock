@@ -10,6 +10,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.CheckIn;
 using Rock.Model;
 
 namespace Rock.Workflow.Action.CheckIn
@@ -96,7 +97,7 @@ namespace Rock.Workflow.Action.CheckIn
                                             attendance.DidAttend = true;
                                             attendanceService.Save( attendance, null );
 
-                                            Rock.CheckIn.KioskCache.AddAttendance( attendance );
+                                            KioskLocationAttendance.AddAttendance( attendance );
                                         }
                                     }
                                 }

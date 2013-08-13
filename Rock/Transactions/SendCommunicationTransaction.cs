@@ -14,12 +14,12 @@ namespace Rock.Transactions
     public class SendCommunicationTransaction : ITransaction
     {
         /// <summary>
-        /// Gets or sets the communication.
+        /// Gets or sets the communication id
         /// </summary>
         /// <value>
-        /// The communication.
+        /// The communication id.
         /// </value>
-        public Rock.Model.Communication Communication { get; set; }
+        public int CommunicationId { get; set; }
 
         /// <summary>
         /// Gets or sets the person id.
@@ -34,15 +34,17 @@ namespace Rock.Transactions
         /// </summary>
         public void Execute()
         {
-            if ( Communication.Status == CommunicationStatus.Approved )
+            var communication = new CommunicationService().Get( CommunicationId );
+
+            if ( communication != null && communication.Status == CommunicationStatus.Approved )
             {
-                var channel = Communication.Channel;
+                var channel = communication.Channel;
                 if ( channel != null )
                 {
                     var transport = channel.Transport;
                     if ( transport != null )
                     {
-                        transport.Send( Communication, PersonId );
+                        transport.Send( communication, PersonId );
                     }
                 }
             }

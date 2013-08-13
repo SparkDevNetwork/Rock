@@ -22,7 +22,7 @@ namespace RockWeb.Blocks.CheckIn
     /// <summary>
     /// 
     /// </summary>
-    [Description( "Check-In Success block" )]
+    [Description( "Check-in Success block" )]
     [LinkedPage("Person Select Page")]
     public partial class Success : CheckInBlock
     {
@@ -89,7 +89,7 @@ namespace RockWeb.Blocks.CheckIn
 
                                 foreach ( var label in printFromServer )
                                 {
-                                    var labelCache = KioskCache.GetLabel( label.FileId );
+                                    var labelCache = KioskLabel.Read( label.FileId );
                                     if ( labelCache != null )
                                     {
                                         if ( label.PrinterAddress != currentIp )

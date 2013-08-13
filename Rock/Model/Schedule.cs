@@ -113,19 +113,19 @@ namespace Rock.Model
         private string _iCalendarContent;
 
         /// <summary>
-        /// Gets or sets the number of minutes prior to schedule start that check-in should be active
+        /// Gets or sets the number of minutes prior to schedule start that Check-in should be active
         /// </summary>
         /// <value>
-        /// The check in start offset
+        /// The check-in start offset
         /// </value>
         [DataMember]
         public int? CheckInStartOffsetMinutes { get; set; }
 
         /// <summary>
-        /// Gets or sets the number of minutes following schedule start that check-in should be active
+        /// Gets or sets the number of minutes following schedule start that Check-in should be active
         /// </summary>
         /// <value>
-        /// The check in end offset
+        /// The check-in end offset
         /// </value>
         [DataMember]
         public int? CheckInEndOffsetMinutes { get; set; }
@@ -218,7 +218,7 @@ namespace Rock.Model
                         checkInEnd = calEvent.DTStart.AddMinutes( CheckInEndOffsetMinutes.Value );
                     }
 
-                    // If compare is greater than zero, then checkin offset end resulted in an end time in next day, in 
+                    // If compare is greater than zero, then check-in offset end resulted in an end time in next day, in 
                     // which case, don't need to compare time
                     int checkInEndDateCompare = checkInEnd.Date.CompareTo(checkInStart.Date);
 
@@ -282,7 +282,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the next check in start time.
+        /// Gets the next check-in start time.
         /// </summary>
         /// <param name="beginDateTime">The begin date time.</param>
         /// <returns></returns>

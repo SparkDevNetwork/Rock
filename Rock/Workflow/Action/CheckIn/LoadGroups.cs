@@ -56,7 +56,7 @@ namespace Rock.Workflow.Action.CheckIn
                     {
                         foreach ( var groupType in person.GroupTypes.Where( g => g.Selected || loadAll) )
                         {
-                            var kioskGroupType = checkInState.Kiosk.KioskGroupTypes.Where( g => g.GroupType.Id == groupType.GroupType.Id ).FirstOrDefault();
+                            var kioskGroupType = checkInState.Kiosk.FilteredGroupTypes(checkInState.ConfiguredGroupTypes).Where( g => g.GroupType.Id == groupType.GroupType.Id ).FirstOrDefault();
                             if ( kioskGroupType != null )
                             {
                                 foreach ( var kioskGroup in kioskGroupType.KioskGroups )

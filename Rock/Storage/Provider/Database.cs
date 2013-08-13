@@ -78,10 +78,10 @@ namespace Rock.Storage.Provider
                 case "image/gif":
                 case "image/png":
                 case "image/bmp":
-                    wsPath = "~/Image.ashx";
+                    wsPath = "~/GetImage.ashx";
                     break;
                 default:
-                    wsPath = "~/File.ashx";
+                    wsPath = "~/GetFile.ashx";
                     break;
             }
 

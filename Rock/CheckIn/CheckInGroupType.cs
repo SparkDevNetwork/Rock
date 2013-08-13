@@ -39,7 +39,7 @@ namespace Rock.CheckIn
         /// Gets or sets the last time person checked in to any of the Locations for this group type
         /// </summary>
         /// <value>
-        /// The last check in.
+        /// The last check-in.
         /// </value>
         [DataMember]
         public DateTime? LastCheckIn { get; set; }
@@ -54,7 +54,7 @@ namespace Rock.CheckIn
         public List<CheckInGroup> Groups { get; set; }
 
         /// <summary>
-        /// Gets or sets the labels to be printed after succesful checkin
+        /// Gets or sets the labels to be printed after succesful check-in
         /// </summary>
         /// <value>
         /// The labels.
