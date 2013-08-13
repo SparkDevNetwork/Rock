@@ -477,6 +477,10 @@
     <Compile Include="Migrations\201308131210014_ScheduleServiceTimes.Designer.cs">
       <DependentUpon>201308131210014_ScheduleServiceTimes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201308131808402_GroupTypePurpose.cs" />
+    <Compile Include="Migrations\201308131808402_GroupTypePurpose.Designer.cs">
+      <DependentUpon>201308131808402_GroupTypePurpose.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -2140,6 +2144,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201308131210014_ScheduleServiceTimes.resx">
       <DependentUpon>201308131210014_ScheduleServiceTimes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308131808402_GroupTypePurpose.resx">
+      <DependentUpon>201308131808402_GroupTypePurpose.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
