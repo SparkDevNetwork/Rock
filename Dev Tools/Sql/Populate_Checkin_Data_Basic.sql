@@ -61,6 +61,9 @@ SET @GroupEntityTypeId = (SELECT Id FROM [EntityType] WHERE Name = 'Rock.Model.G
 DECLARE @AttributeEntityTypeId INT
 SET @AttributeEntityTypeId = (SELECT Id FROM [EntityType] WHERE Name = 'Rock.Model.Attribute')
 
+DECLARE @GroupTypePurposeCheckinTemplateId INT
+SET @GroupTypePurposeCheckinTemplateId = (select [Id] from [DefinedValue] where [Guid] = '4A406CB0-495B-4795-B788-52BDFDE00B01');
+
 -- Group Type Check-in Category Id
 DECLARE @GroupTypeCheckInCategoryId INT
 SET @GroupTypeCheckInCategoryId = (
@@ -157,8 +160,8 @@ DECLARE @JHGroupTypeId int
 DECLARE @HSGroupTypeId int
 
 -- Insert the new top level Check-in GroupType
-INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo])
-   VALUES (0, 'Weekly Service Check-in Area', 'FEDD389A-616F-4A53-906C-63D8255631C5', 0, 0, 0, 0)
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[GroupTypePurposeValueId])
+   VALUES (0, 'Weekly Service Check-in Area', 'FEDD389A-616F-4A53-906C-63D8255631C5', 0, 0, 0, 0, @GroupTypePurposeCheckinTemplateId)
 SET @ParentGroupTypeId = SCOPE_IDENTITY()
 
 -- Now insert the all the new GroupTypes under that one...
