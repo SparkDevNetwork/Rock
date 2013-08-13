@@ -64,6 +64,12 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<Device>().Queryable().Any( a => a.LocationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, Device.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Location>().Queryable().Any( a => a.ParentLocationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Location.FriendlyTypeName, Location.FriendlyTypeName );

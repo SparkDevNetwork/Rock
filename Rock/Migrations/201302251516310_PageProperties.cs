@@ -26,10 +26,10 @@ DECLARE @SiteId int
 -- Create Checkin Site
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'D47858C0-0E6E-46DC-AE99-8EC84BA5F45F')
 INSERT INTO [Site] (IsSystem, Name, Description, Theme, DefaultPageId, Guid)
-    VALUES (1, 'Checkin', 'The Rock default checkin site', 'CheckinPark', @PageId, '15AEFC01-ACB3-4F5D-B83E-AB3AB7F2A54A')
+    VALUES (1, 'Check-in', 'The Rock default check-in site', 'CheckinPark', @PageId, '15AEFC01-ACB3-4F5D-B83E-AB3AB7F2A54A')
 SET @SiteId = SCOPE_IDENTITY()
 
--- Update Checkin pages to use new site and different layout
+-- Update check-in pages to use new site and different layout
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'CDF2C599-D341-42FD-B7DC-CD402EA96050')
 UPDATE [Page] SET 
     [SiteId] = @SiteId,
@@ -128,7 +128,7 @@ WHERE [Guid] = '5537F375-B652-4603-8E04-119C74414CD7'
 DECLARE @PageId int
 DECLARE @SiteId int
 
--- Update checkin pages to use old site and layout
+-- Update check-in pages to use old site and layout
 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = 'CDF2C599-D341-42FD-B7DC-CD402EA96050')
 SET @SiteId = (SELECT [Id] FROM [Site] WHERE [Guid] = 'C2D29296-6A87-47A9-A753-EE4E9159C4C4')
 UPDATE [Page] SET 
@@ -136,7 +136,7 @@ UPDATE [Page] SET
     [Layout] = 'Default'
 WHERE [ParentPageId] = @PageId
 
--- Delete checkin site
+-- Delete check-in site
 DELETE [Site] WHERE [Guid] = '15AEFC01-ACB3-4F5D-B83E-AB3AB7F2A54A'
 " );
             // Delete Reporting Page

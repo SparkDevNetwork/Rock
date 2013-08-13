@@ -16,7 +16,7 @@
 
     <div class="row-fluid checkin-header">
         <div class="span12">
-            <h1>Check-In Configuration</h1>
+            <h1>Check-in Configuration</h1>
         </div>
     </div>
     

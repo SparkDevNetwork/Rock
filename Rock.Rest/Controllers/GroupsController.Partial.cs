@@ -79,7 +79,7 @@ namespace Rock.Rest.Controllers
             List<TreeViewItem> groupNameList = new List<TreeViewItem>();
 
             var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-            string imageUrlFormat = Path.Combine( appPath, "Image.ashx?id={0}&width=15&height=15" );
+            string imageUrlFormat = Path.Combine( appPath, "GetImage.ashx?id={0}&width=15&height=15" );
 
             GroupTypeService groupTypeService = new GroupTypeService();
 

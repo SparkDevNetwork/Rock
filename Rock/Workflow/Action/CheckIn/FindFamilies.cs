@@ -60,15 +60,8 @@ namespace Rock.Workflow.Action.CheckIn
                         }
                     }
 
-                    if ( checkInState.CheckIn.Families.Count > 0 )
-                    {
-                        SetCheckInState( action, checkInState );
-                        return true;
-                    }
-                    else
-                    {
-                        errorMessages.Add( "There are not any families with the selected phone number" );
-                    }
+                    SetCheckInState( action, checkInState );
+                    return true;
 
                 }
                 else

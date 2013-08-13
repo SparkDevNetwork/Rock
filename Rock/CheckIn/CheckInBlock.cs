@@ -17,10 +17,10 @@ namespace Rock.CheckIn
     /// <summary>
     /// A RockBlock specific to check-in
     /// </summary>
-    [LinkedPage("Home Page")]
-    [LinkedPage("Next Page")]
-    [LinkedPage("Previous Page")]
-    [IntegerField( "Workflow Type Id", "The Id of the workflow type to activate for check-in", false, 0)]
+    [LinkedPage( "Home Page" )]
+    [LinkedPage( "Next Page" )]
+    [LinkedPage( "Previous Page" )]
+    [IntegerField( "Workflow Type Id", "The Id of the workflow type to activate for Check-in", false, 0 )]
     public abstract class CheckInBlock : RockBlock
     {
         /// <summary>
@@ -34,7 +34,7 @@ namespace Rock.CheckIn
         protected List<int> CurrentGroupTypeIds;
 
         /// <summary>
-        /// The current check in state
+        /// The current check-in state
         /// </summary>
         protected CheckInState CurrentCheckInState;
 
@@ -44,7 +44,7 @@ namespace Rock.CheckIn
         protected Rock.Model.Workflow CurrentWorkflow;
 
         /// <summary>
-        /// Holds cookie names shared across certain checkin blocks.
+        /// Holds cookie names shared across certain check-in blocks.
         /// </summary>
         public struct CheckInCookie
         {
@@ -73,8 +73,8 @@ namespace Rock.CheckIn
             {
                 if ( CurrentCheckInState == null ||
                     CurrentCheckInState.Kiosk == null ||
-                    CurrentCheckInState.Kiosk.KioskGroupTypes.Count == 0 ||
-                    !CurrentCheckInState.Kiosk.HasActiveLocations )
+                    CurrentCheckInState.Kiosk.FilteredGroupTypes( CurrentGroupTypeIds ).Count == 0 ||
+                    !CurrentCheckInState.Kiosk.HasActiveLocations( CurrentGroupTypeIds ) )
                 {
                     return false;
                 }
@@ -119,7 +119,7 @@ namespace Rock.CheckIn
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         /// <exception cref="System.Exception"></exception>
-        protected bool ProcessActivity(string activityName, out List<string> errorMessages)
+        protected bool ProcessActivity( string activityName, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 
@@ -162,7 +162,7 @@ namespace Rock.CheckIn
                 }
 
             }
-            
+
             return false;
         }
 
@@ -205,7 +205,7 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Cancels the checkin.
+        /// Cancels the check-in.
         /// </summary>
         protected void CancelCheckin()
         {
@@ -216,7 +216,7 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Navigates to the checkin home page.
+        /// Navigates to the check-in home page.
         /// </summary>
         protected void NavigateToHomePage()
         {
@@ -243,7 +243,7 @@ namespace Rock.CheckIn
 
         private void GetState()
         {
-            if ( Session["CheckInKioskId"] != null)
+            if ( Session["CheckInKioskId"] != null )
             {
                 CurrentKioskId = (int)Session["CheckInKioskId"];
             }
@@ -265,23 +265,10 @@ namespace Rock.CheckIn
                     }
                 }
             }
-            
-            if (CurrentCheckInState == null && CurrentKioskId.HasValue && CurrentGroupTypeIds != null )
-            {
-                var kioskStatus = KioskCache.GetKiosk( CurrentKioskId.Value );
-                if ( kioskStatus != null )
-                {
-                    // Remove any group types that were not selected in the admin configuration
-                    foreach ( var kioskGroupType in kioskStatus.KioskGroupTypes.ToList() )
-                    {
-                        if ( !CurrentGroupTypeIds.Contains( kioskGroupType.GroupType.Id ) )
-                        {
-                            kioskStatus.KioskGroupTypes.Remove( kioskGroupType );
-                        }
-                    }
 
-                    CurrentCheckInState = new CheckInState( kioskStatus );
-                }
+            if ( CurrentCheckInState == null && CurrentKioskId.HasValue )
+            {
+                CurrentCheckInState = new CheckInState( CurrentKioskId.Value, CurrentGroupTypeIds );
             }
         }
     }

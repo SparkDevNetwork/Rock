@@ -10,7 +10,7 @@
             <Rock:DatePicker ID="dtBatchDate" runat="server" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDate" LabelText="Date" />
             <Rock:LabeledTextBox ID="txtTitle" runat="server" LabelText="Title"></Rock:LabeledTextBox>
             <Rock:LabeledDropDownList ID="ddlStatus" runat="server" LabelText="Status" />
-            <Rock:LabeledDropDownList ID="ddlCampus" runat="server" LabelText="Campus" />
+            <Rock:CampusPicker ID="ddlCampus" runat="server" />
         </Rock:GridFilter>
 
         <Rock:Grid ID="rGridBatch" runat="server" OnRowDataBound="rGridBatch_RowDataBound"

@@ -27,6 +27,15 @@ namespace Rock.CheckIn
         public Location Location { get; set; }
 
         /// <summary>
+        /// Gets or sets the current count.
+        /// </summary>
+        /// <value>
+        /// The current count.
+        /// </value>
+        [DataMember]
+        public int CurrentCount { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="CheckInLocation" /> is selected for check-in
         /// </summary>
         /// <value>
@@ -39,7 +48,7 @@ namespace Rock.CheckIn
         /// Gets or sets the last time person checked into any of the groups for this location and group type
         /// </summary>
         /// <value>
-        /// The last check in.
+        /// The last check-in.
         /// </value>
         [DataMember]
         public DateTime? LastCheckIn { get; set; }
@@ -82,6 +91,7 @@ namespace Rock.CheckIn
         {
             var dictionary = new Dictionary<string, object>();
             dictionary.Add( "Location", Location );
+            dictionary.Add( "CurrentCount", CurrentCount );
             dictionary.Add( "Selected", Selected );
             dictionary.Add( "LastCheckIn", LastCheckIn );
             dictionary.Add( "Schedules", Schedules );

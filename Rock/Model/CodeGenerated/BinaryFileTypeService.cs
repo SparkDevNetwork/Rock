@@ -93,6 +93,7 @@ namespace Rock.Model
                 target.IconSmallFileId = source.IconSmallFileId;
                 target.IconLargeFileId = source.IconLargeFileId;
                 target.IconCssClass = source.IconCssClass;
+                target.StorageEntityTypeId = source.StorageEntityTypeId;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

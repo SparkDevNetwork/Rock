@@ -65,9 +65,27 @@ namespace RockWeb.Blocks.Core
     $('a.add-note').click(function () {
         $(this).parent().siblings('.widget-content').children('.note-entry').slideToggle(""slow"");
     });
+    
     $('a.add-note-cancel').click(function () {
         $(this).parent().siblings('.note').children('textarea').val('');
         $(this).parent().parent().slideToggle(""slow"");
+    });
+
+    $('.persontimeline article').live({
+        mouseenter:
+            function () {
+                var actionsDiv = $('.actions', this);
+                if (actionsDiv.length > 0) {
+                    $(actionsDiv).stop(true, true).fadeIn(""slow"");
+                }
+            },
+        mouseleave:
+            function () {
+                var actionsDiv = $('.actions', this);
+                if (actionsDiv.length > 0) {
+                    $(actionsDiv).stop(true, true).fadeOut(""slow"");
+                }
+            }
     });
 ";
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "add-note", script, true );
@@ -123,6 +141,9 @@ namespace RockWeb.Blocks.Core
                     var noteEditor = control as NoteEditor;
                     noteEditor.IsPrivate = note.IsPrivate( "View", CurrentPerson );
                     noteEditor.CanEdit = note.IsAuthorized( "Edit", CurrentPerson );
+                    noteEditor.ShowAlertCheckBox = cbAlert.Visible;
+                    noteEditor.ShowPrivateCheckBox = cbPrivate.Visible;
+                    noteEditor.ShowSecurityButton = btnSecurity.Visible;
                 }
             }
         }
