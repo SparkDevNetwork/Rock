@@ -79,31 +79,41 @@ namespace RockWeb
             
             if ( autoMigrate )
             {
-                Database.SetInitializer( new MigrateDatabaseToLatestVersion<Rock.Data.RockContext, Rock.Migrations.Configuration>() );
+                try
+                {
 
-                // explictly check if the database exists, and force create it if doesn't exist
-                Rock.Data.RockContext rockContext = new Rock.Data.RockContext();
-                if ( !rockContext.Database.Exists() )
-                {
-                    rockContext.Database.Initialize( true );
-                }
-                else
-                {
-                    var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
-                    migrator.Update();
-                }
-                
-                // Migrate any plugins that have pending migrations
-                List<Type> configurationTypeList = Rock.Reflection.FindTypes( typeof( System.Data.Entity.Migrations.DbMigrationsConfiguration ) ).Select( a => a.Value ).ToList();
+                    Database.SetInitializer( new MigrateDatabaseToLatestVersion<Rock.Data.RockContext, Rock.Migrations.Configuration>() );
 
-                foreach ( var configType in configurationTypeList )
-                {
-                    if (configType != typeof(Rock.Migrations.Configuration))
+                    // explictly check if the database exists, and force create it if doesn't exist
+                    Rock.Data.RockContext rockContext = new Rock.Data.RockContext();
+                    if ( !rockContext.Database.Exists() )
                     {
-                        var config = Activator.CreateInstance( configType ) as System.Data.Entity.Migrations.DbMigrationsConfiguration;
-                        System.Data.Entity.Migrations.DbMigrator pluginMigrator = Activator.CreateInstance( typeof( System.Data.Entity.Migrations.DbMigrator ), config ) as System.Data.Entity.Migrations.DbMigrator;
-                        pluginMigrator.Update();
+                        rockContext.Database.Initialize( true );
                     }
+                    else
+                    {
+                        var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
+                        migrator.Update();
+                    }
+
+                    // Migrate any plugins that have pending migrations
+                    List<Type> configurationTypeList = Rock.Reflection.FindTypes( typeof( System.Data.Entity.Migrations.DbMigrationsConfiguration ) ).Select( a => a.Value ).ToList();
+
+                    foreach ( var configType in configurationTypeList )
+                    {
+                        if ( configType != typeof( Rock.Migrations.Configuration ) )
+                        {
+                            var config = Activator.CreateInstance( configType ) as System.Data.Entity.Migrations.DbMigrationsConfiguration;
+                            System.Data.Entity.Migrations.DbMigrator pluginMigrator = Activator.CreateInstance( typeof( System.Data.Entity.Migrations.DbMigrator ), config ) as System.Data.Entity.Migrations.DbMigrator;
+                            pluginMigrator.Update();
+                        }
+                    }
+
+                }
+                catch ( Exception ex )
+                {
+                    // if migrations fail, log error and attempt to continue
+                    LogError( ex, -1, string.Empty, HttpContext.Current );
                 }
 
             }
@@ -181,29 +191,22 @@ namespace RockWeb
         /// <param name="r">The r.</param>
         public void CacheItemRemoved( string k, object v, CacheItemRemovedReason r )
         {
-            //try
-            //{
-                if ( r == CacheItemRemovedReason.Expired )
+            if ( r == CacheItemRemovedReason.Expired )
+            {
+                // call a page on the site to keep IIS alive 
+                if ( !string.IsNullOrWhiteSpace( Global.BaseUrl ) )
                 {
-                    // call a page on the site to keep IIS alive 
-                    if ( !string.IsNullOrWhiteSpace( Global.BaseUrl ) )
-                    {
-                        string url = Global.BaseUrl + "KeepAlive.aspx";
-                        WebRequest request = WebRequest.Create( url );
-                        WebResponse response = request.GetResponse();
-                    }
-
-                    // add cache item again
-                    AddCallBack();
-
-                    // process the transaction queue
-                    DrainTransactionQueue();
+                    string url = Global.BaseUrl + "KeepAlive.aspx";
+                    WebRequest request = WebRequest.Create( url );
+                    WebResponse response = request.GetResponse();
                 }
-            //}
-            //catch ( Exception ex )
-            //{
-            //    WriteToEventLog( string.Format( "Exception in Global.CacheItemRemoved(): {0}", ex.Message ), EventLogEntryType.Error );
-            //}
+
+                // add cache item again
+                AddCallBack();
+
+                // process the transaction queue
+                DrainTransactionQueue();
+            }
         }
 
         /// <summary>
@@ -226,7 +229,7 @@ namespace RockWeb
                 }
                 catch ( Exception ex )
                 {
-                    WriteToEventLog( string.Format( "Exception in Global.DrainTransactionQueue(): {0}", ex.Message ), EventLogEntryType.Error );
+                    LogError( new Exception( string.Format( "Exception in Global.DrainTransactionQueue(): {0}", ex.Message ) ), -1, string.Empty, HttpContext.Current );
                 }
 
                 Global.QueueInUse = false;
@@ -415,37 +418,6 @@ namespace RockWeb
         } 
 
         /// <summary>
-        /// Writes to event log. For debugging and in cases where the logging to the database can't be done
-        /// </summary>
-        /// <param name="message">The message.</param>
-        /// <param name="logType">Type of the log.</param>
-        private void WriteToEventLog( string message, EventLogEntryType logType )
-        {
-            const string logSource = "Rock";
-            try
-            {
-                EventLog.WriteEntry( logSource, message, logType );
-            }
-            finally
-            {
-                string directory = AppDomain.CurrentDomain.BaseDirectory;
-                directory = Path.Combine( directory, "Logs" );
-
-                // check that directory exists
-                if ( !Directory.Exists( directory ) )
-                {
-                    Directory.CreateDirectory( directory );
-                }
-
-                // create full path to the fie
-                string filePath = Path.Combine( directory, "RockLogster.csv" );
-
-                // write to the file
-                System.IO.File.AppendAllText( filePath, string.Format( "{0},{1},\"{2}\"\r\n", DateTimeOffset.Now.ToString(), logType.ConvertToString(), message ) );
-            }
-        }
-
-        /// <summary>
         /// Logs the error to database
         /// </summary>
         /// <param name="ex">The ex.</param>
@@ -528,7 +500,29 @@ namespace RockWeb
             }
             catch ( Exception )
             {
-                WriteToEventLog( string.Format( "Exception in Global.LogError(): {0}", ex.Message ), EventLogEntryType.Error );
+                // If logging the exception fails, write the exception to a file
+                try
+                {
+
+                    string directory = AppDomain.CurrentDomain.BaseDirectory;
+                    directory = Path.Combine( directory, "Logs" );
+
+                    // check that directory exists
+                    if ( !Directory.Exists( directory ) )
+                    {
+                        Directory.CreateDirectory( directory );
+                    }
+
+                    // create full path to the fie
+                    string filePath = Path.Combine( directory, "RockExceptions.csv" );
+
+                    // write to the file
+                    System.IO.File.AppendAllText( filePath, string.Format( "{0},{1},\"{2}\"\r\n", DateTime.Now.ToString(), EventLogEntryType.Error, ex.Message ) );
+                }
+                catch
+                {
+                    // failed to write to database and also failed to write to log file, so there is nowhere to log this error
+                }
             }
         }
 
@@ -559,7 +553,8 @@ namespace RockWeb
                     string shutDownMessage = (string)runtime.GetType().InvokeMember( "_shutDownMessage", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField, null, runtime, null );
                     string shutDownStack = (string)runtime.GetType().InvokeMember( "_shutDownStack", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField, null, runtime, null );
 
-                    WriteToEventLog( String.Format( "shutDownMessage:{0}\r\n\r\n_shutDownStack:\r\n{1}", shutDownMessage, shutDownStack ), EventLogEntryType.Warning );
+                    // send debug info to debug window
+                    System.Diagnostics.Debug.WriteLine( String.Format( "shutDownMessage:{0}\r\n\r\n_shutDownStack:\r\n{1}", shutDownMessage, shutDownStack ));
                 }
             }
             catch
