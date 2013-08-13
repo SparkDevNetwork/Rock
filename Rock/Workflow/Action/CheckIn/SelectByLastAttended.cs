@@ -50,6 +50,11 @@ namespace Rock.Workflow.Action.CheckIn
                                     if ( location != null )
                                     {
                                         location.Selected = true;
+                                        var schedule = location.Schedules.Where( s => s.LastCheckIn == person.LastCheckIn ).FirstOrDefault();
+                                        if ( schedule != null )
+                                        {
+                                            schedule.Selected = true;
+                                        }
 
                                     }
                                 }

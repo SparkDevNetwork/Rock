@@ -46,7 +46,6 @@
 
 </script>
 
-
 <asp:UpdatePanel ID="upContent" runat="server" UpdateMode="Conditional">
 <ContentTemplate>
 
@@ -224,7 +223,7 @@
             </div>
         </div>        
     
-        <asp:ListView ID="lvAddFamily" runat="server" OnPagePropertiesChanging="lvAddFamily_PagePropertiesChanging">
+        <asp:ListView ID="lvAddFamily" runat="server" OnPagePropertiesChanging="lvAddFamily_PagePropertiesChanging" OnItemDataBound="lvAddFamily_ItemDataBound" >
         <LayoutTemplate>
             <div class="row-fluid attended-checkin-body">
                 <div class="span3">
@@ -248,27 +247,25 @@
         <ItemTemplate>
             <div class="row-fluid attended-checkin-body searchperson">
                 <div class="span3">
-                    <Rock:DataTextBox ID="tbFirstName" runat="server" CssClass="fullBlock" Text='<%# Eval("FirstName") %>'
-                        SourceTypeName="Rock.Model.Person, Rock"  />
+                    <Rock:LabeledTextBox ID="tbFirstName" runat="server" CssClass="fullBlock" Text='<%# ((NewPerson)Container.DataItem).FirstName %>' />
                 </div>
                 <div class="span3">
-                    <Rock:DataTextBox ID="tbLastName" runat="server" CssClass="fullBlock" Text='<%# Eval("LastName") %>'
-                        SourceTypeName="Rock.Model.Person, Rock"  />
+                    <Rock:LabeledTextBox ID="tbLastName" runat="server" CssClass="fullBlock" Text='<%# ((NewPerson)Container.DataItem).LastName %>' />
                 </div>
                 <div class="span2">
-                    <Rock:DatePicker ID="dpBirthDate" runat="server" />                    
+                    <Rock:DatePicker ID="dpBirthDate" runat="server" SelectedDate='<%# ((NewPerson)Container.DataItem).BirthDate %>' />
+                </div>
+                <div class="span2">                                        
+                    <Rock:RockDropDownList ID="ddlGender" runat="server" CssClass="fullBlock" 
+                         />
                 </div>
                 <div class="span2">
-                    <Rock:LabeledDropDownList ID="ddlGender" runat="server" CssClass="fullBlock" AppendDataBoundItems="True"
-                        OnDataBinding="ddlGender_DataBinding" />                    
-                </div>
-                <div class="span2">
-                    <Rock:LabeledDropDownList ID="ddlAbilityGrade" runat="server" CssClass="fullBlock" AppendDataBoundItems="True"
-                        OnDataBinding="ddlAbilityGrade_DataBinding" />                    
-                </div>
+                    <Rock:RockDropDownList ID="ddlAbilityGrade" runat="server" CssClass="fullBlock" 
+                         />
+                </div>                
             </div>
         </ItemTemplate>        
-        </asp:ListView>
+        </asp:ListView>        
 
         <div class="row-fluid attended-checkin-body searchperson">
             <asp:DataPager ID="dpAddFamily" runat="server" PageSize="2" PagedControlID="lvAddFamily">
