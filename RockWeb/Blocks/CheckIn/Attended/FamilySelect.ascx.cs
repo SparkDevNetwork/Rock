@@ -180,28 +180,43 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
+        /// Handles the ItemDataBound event of the lvAddFamily control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="ListViewItemEventArgs"/> instance containing the event data.</param>
+        protected void lvAddFamily_ItemDataBound( object sender, ListViewItemEventArgs e )
+        {
+            ((RockDropDownList)e.Item.FindControl( "ddlGender" )).BindToEnum( typeof( Gender ) );            
+            BindAbilityGrade( (RockDropDownList)e.Item.FindControl( "ddlAbilityGrade" ) );            
+        }
+        
+        /// <summary>
         /// Handles the PagePropertiesChanging event of the lvAddFamily control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="PagePropertiesChangingEventArgs"/> instance containing the event data.</param>
         protected void lvAddFamily_PagePropertiesChanging( object sender, PagePropertiesChangingEventArgs e )
         {
-            var newFamilyList = new System.Data.DataTable();
+            var newFamilyList = new List<NewPerson>();
             if ( ViewState["newFamily"] != null )
             {
-                newFamilyList = (System.Data.DataTable)ViewState["newFamily"];
+                newFamilyList = (List<NewPerson>)ViewState["newFamily"];
+                int personOffset = 0;
                 foreach ( ListViewItem item in lvAddFamily.Items )
                 {
-                    var givenName = ( (TextBox)item.FindControl( "tbFirstName" ) ).Text;
-                    var lastName = ( (TextBox)item.FindControl( "tbLastName" ) ).Text;
-                    var birthDate = ( (DatePicker)item.FindControl( "dpBirthDate" ) ).SelectedDate;
-                    var gender = ( (DropDownList)item.FindControl( "ddlGender" ) ).SelectedValueAsInt();
-                    var abilityGrade = ( (DropDownList)item.FindControl( "ddlAbilityGrade" ) ).SelectedValue;
-
-                    newFamilyList.Rows.Add( givenName, lastName, birthDate, gender, abilityGrade );
+                    var rowPerson = new NewPerson();
+                    rowPerson.FirstName = ( (TextBox)item.FindControl( "tbFirstName" ) ).Text;
+                    rowPerson.LastName = ( (TextBox)item.FindControl( "tbLastName" ) ).Text;
+                    rowPerson.BirthDate = ( (DatePicker)item.FindControl( "dpBirthDate" ) ).SelectedDate;
+                    rowPerson.Gender = ( (RockDropDownList)item.FindControl( "ddlGender" ) ).SelectedValueAsEnum<Gender>();
+                    rowPerson.Ability = ( (RockDropDownList)item.FindControl( "ddlAbilityGrade" ) ).SelectedValue;
+                    rowPerson.AbilityGroup = ( (RockDropDownList)item.FindControl( "ddlAbilityGrade" ) ).SelectedItem.Attributes["optiongroup"];
+                    newFamilyList.Insert( (e.StartRowIndex - e.MaximumRows ) + personOffset, rowPerson );
+                    personOffset++;
                 }
             }
 
+            ViewState["newFamily"] = newFamilyList;
             dpAddFamily.SetPageProperties( e.StartRowIndex, e.MaximumRows, false );
             lvAddFamily.DataSource = newFamilyList;
             lvAddFamily.DataBind();
@@ -246,7 +261,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             dpDOBSearch.Text = "";
             ddlGenderSearch.BindToEnum( typeof( Gender ) );
             ddlGenderSearch.SelectedIndex = 0;
-            LoadAbilityGradeList();
+            BindAbilityGrade( ddlAbilitySearch );            
             ddlAbilitySearch.SelectedIndex = 0;
             rGridPersonResults.Visible = false;
             lbAddNewPerson.Visible = false;
@@ -259,18 +274,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddFamily_Click( object sender, EventArgs e )
         {
-            var newFamilyList = new System.Data.DataTable();
-            newFamilyList.Columns.Add( "FirstName", typeof( System.String ) );
-            newFamilyList.Columns.Add( "LastName", typeof( System.String ) );
-            newFamilyList.Columns.Add( "BirthDate", typeof( DateTime ) );
-            newFamilyList.Columns.Add( "Gender", typeof( Gender ) );
-            newFamilyList.Columns.Add( "AbilityGrade", typeof( System.String ) );
+            var newFamilyList = new List<NewPerson>();
 
-            newFamilyList.Rows.Add( string.Empty, string.Empty, new DateTime(), new Gender(), string.Empty );
-            newFamilyList.Rows.Add( string.Empty, string.Empty, new DateTime(), new Gender(), string.Empty );
-            newFamilyList.Rows.Add( string.Empty, string.Empty, new DateTime(), new Gender(), string.Empty );
-            newFamilyList.Rows.Add( string.Empty, string.Empty, new DateTime(), new Gender(), string.Empty );
-            newFamilyList.Rows.Add( string.Empty, string.Empty, new DateTime(), new Gender(), string.Empty );
+            newFamilyList.Add( new NewPerson() );
+            newFamilyList.Add( new NewPerson() );
+            newFamilyList.Add( new NewPerson() );
 
             ViewState["newFamily"] = newFamilyList;
             lvAddFamily.DataSource = newFamilyList;
@@ -297,46 +305,57 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             var checkInFamily = new CheckInFamily();
             var familyGroup = new Group();
+            familyGroup.IsSystem = false;
+            familyGroup.GroupTypeId = new GroupTypeService().Get( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Id;
+            familyGroup.IsSecurityRole = false;
+            familyGroup.IsActive = true;
+            Rock.Data.RockTransactionScope.WrapTransaction( () =>
+            {
+                var gs = new GroupService();
+                gs.Add( familyGroup, CurrentPersonId );
+                gs.Save( familyGroup, CurrentPersonId );
+            } );
+
+            var newFamilyList = (List<NewPerson>)ViewState["newFamily"];
+            foreach ( ListViewItem item in lvAddFamily.Items )
+            {
+                var rowPerson = new NewPerson();
+                rowPerson.FirstName = ( (TextBox)item.FindControl( "tbFirstName" ) ).Text;
+                rowPerson.LastName = ( (TextBox)item.FindControl( "tbLastName" ) ).Text;
+                rowPerson.BirthDate = ( (DatePicker)item.FindControl( "dpBirthDate" ) ).SelectedDate;
+                rowPerson.Gender = ( (RockDropDownList)item.FindControl( "ddlGender" ) ).SelectedValueAsEnum<Gender>();
+                rowPerson.Ability = ( (RockDropDownList)item.FindControl( "ddlAbilityGrade" ) ).SelectedValue;
+                newFamilyList.Add( rowPerson );
+            }
+
+            newFamilyList.ForEach( np => CreatePerson( np.FirstName, np.LastName, np.BirthDate, (int)np.Gender, np.Ability, np.AbilityGroup ) );
 
             foreach ( ListViewItem item in lvAddFamily.Items )
             {
                 var givenName = ( (TextBox)item.FindControl( "tbFirstName" ) ).Text;
                 var lastName = ( (TextBox)item.FindControl( "tbLastName" ) ).Text;
                 var birthDate = ( (DatePicker)item.FindControl( "dpBirthDate" ) ).SelectedDate;
-                var gender = ( (DropDownList)item.FindControl( "ddlGender" ) ).SelectedValueAsInt();
-                var abilityGrade = ( (DropDownList)item.FindControl( "ddlAbilityGrade" ) ).SelectedValue;
-                var abilityGroup = ( (DropDownList)item.FindControl( "ddlAbilityGrade" ) ).SelectedItem.Attributes["optiongroup"];
+                var gender = ( (DropDownList)item.FindControl( "ddlGender" ) ).SelectedValueAsEnum<Gender>();
+                var abilityGrade = ( (RockDropDownList)item.FindControl( "ddlAbilityGrade" ) ).SelectedValue;
+                var abilityGroup = ( (RockDropDownList)item.FindControl( "ddlAbilityGrade" ) ).SelectedItem.Attributes["optiongroup"];
 
-                if ( givenName != string.Empty && lastName != string.Empty && birthDate.HasValue
-                    && gender.HasValue && abilityGrade != string.Empty )
+                if ( givenName != string.Empty && lastName != string.Empty && birthDate.HasValue && gender != Gender.Unknown )
                 {
-                    var newPerson = CreatePerson( givenName, lastName, birthDate.ToString(), gender, abilityGrade, abilityGroup );
+                    var newPerson = CreatePerson( givenName, lastName, birthDate, (int)gender, abilityGrade, abilityGroup );
+                    AddGroupMember( familyGroup, newPerson );
+                    var checkInPerson = new CheckInPerson();
+                    checkInPerson.Person = newPerson;
+                    checkInPerson.Selected = true;
+                    checkInFamily.People.Add( checkInPerson );
 
-                    if ( familyGroup != null )
+                    if ( familyGroup.Name == null )
                     {
-                        AddGroupMember( familyGroup, newPerson );
-                        var checkInPerson = new CheckInPerson();
-                        checkInPerson.Person = newPerson;
-                        checkInPerson.Selected = true;
-                        checkInFamily.People.Add( checkInPerson );
-                    }
-                    else
-                    {
-                        var gs = new GroupService();
-                        familyGroup = new Group();
-                        familyGroup.IsSystem = false;
-                        familyGroup.GroupTypeId = new GroupTypeService().Get( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Id;
                         familyGroup.Name = lastName + " Family";
-                        familyGroup.IsSecurityRole = false;
-                        familyGroup.IsActive = true;
-                        Rock.Data.RockTransactionScope.WrapTransaction( () =>
-                        {
-                            gs.Add( familyGroup, CurrentPersonId );
-                            gs.Save( familyGroup, CurrentPersonId );
-                        } );
-
-                        AddGroupMember( familyGroup, newPerson );
                     }
+                }
+                else
+                {
+                    //person not valid
                 }
             }
 
@@ -498,7 +517,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                 if ( family != null )
                 {                    
-                    var person = CreatePerson( tbFirstNameSearch.Text, tbLastNameSearch.Text, dpDOBSearch.Text, ddlGenderSearch.SelectedValueAsInt(), 
+                    var person = CreatePerson( tbFirstNameSearch.Text, tbLastNameSearch.Text, dpDOBSearch.SelectedDate, (int)ddlGenderSearch.SelectedValueAsEnum<Gender>(),  
                         ddlAbilitySearch.SelectedValue, ddlAbilitySearch.SelectedItem.Attributes["optiongroup"] );
 
                     var checkInPerson = new CheckInPerson();
@@ -639,12 +658,13 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="DOB">The DOB.</param>
         /// <param name="gender">The gender</param>
         /// <param name="attribute">The attribute.</param>
-        protected Person CreatePerson( string firstName, string lastName, string dob, int? gender, string ability, string abilityGroup )
+        protected Person CreatePerson( string firstName, string lastName, DateTime? dob, int? gender, string ability, string abilityGroup )
         {
             Person person = new Person().Clone( false );
             person.GivenName = firstName;
             person.LastName = lastName;
-            person.BirthDate = Convert.ToDateTime( dob );
+            person.BirthDate = dob;            
+            
             if ( gender != null )
             {
                 person.Gender = (Gender)gender;
@@ -788,7 +808,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             if ( ddlAbilitySearch.SelectedIndex != 0 )
             {
                 var optionGroup = ddlAbilitySearch.SelectedItem.Attributes["optiongroup"];
-                if ( optionGroup.Equals( "Group" ) )
+                if ( optionGroup.Equals( "Grade" ) )
                 {
                     var grade = ddlAbilitySearch.SelectedValueAsEnum<GradeLevel>();
                     people = people.Where( p => p.Grade == (int)grade );
@@ -806,59 +826,58 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
-        /// Gets a list of ability levels and grades.
+        /// Binds the dropdown to a list of ability levels and grades.
         /// </summary>
         /// <returns>List Items</returns>
-        protected void LoadAbilityGradeList()
+        protected void BindAbilityGrade( DropDownList thisDDL )
         {
-            ddlAbilitySearch.Items.Clear();
-
-            int abilityId = new AttributeService().Queryable().Where( a => a.Key == "AbilityLevel"
-                && a.Categories.Any( c => c.Name == "CheckIn" ) ).Select( a => a.Id ).FirstOrDefault();
-
-            if ( abilityId > 0 )
+            thisDDL.Items.Clear();            
+            thisDDL.Items.Add( new ListItem( Rock.Constants.None.Text, Rock.Constants.None.Id.ToString() ) );
+            
+            var dtAbility = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL ) );
+            if ( dtAbility != null && dtAbility.DefinedValues.Count > 0  )
             {
-                var abilityList = new AttributeValueService().GetByAttributeId( abilityId )
-                    .Select( av => new ListItem( av.Value ) ).Distinct().ToList();
-                foreach ( var ability in abilityList )
+                foreach ( var ability in dtAbility.DefinedValues.Select( dv => new ListItem( dv.Name, dv.Id.ToString() ) ).ToList() )
                 {
-                    ability.Attributes.Add( "optiongroup", "Ability" );                    
-                    ddlAbilitySearch.Items.Add( ability );
+                    ability.Attributes.Add( "optiongroup", "Ability" );
+                    thisDDL.Items.Add( ability );
                 }                
             }
 
-            var gradeList = Enum.GetValues( typeof( GradeLevel ) ).Cast<GradeLevel>()
-                .Select( gl => new ListItem( gl.GetDescription(), gl.ToString() ) ).ToList();
+            var gradeList = Enum.GetValues( typeof( GradeLevel ) ).Cast<GradeLevel>().OrderBy( gl => (int)gl )
+                .Select( g => new ListItem( g.GetDescription(), g.ToString() ) ).ToList();
             foreach ( var grade in gradeList )
             {
                 grade.Attributes.Add( "optiongroup", "Grade" );
-                ddlAbilitySearch.Items.Add( grade );
+                thisDDL.Items.Add( grade );
             }
-
-            ddlAbilitySearch.Items.Insert( 0, Rock.Constants.None.ListItem );
         }
-
-        /// <summary>
-        /// Handles the DataBinding event of the ddlGender control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
-        protected void ddlGender_DataBinding( object sender, System.EventArgs e )
-        {
-            //var ddlGender = (DropDownList)sender;
-            //ddlGender.BindToEnum( typeof( Gender ) );
-            //ddlGender.SelectedValue = Eval( "Gender" ).ToString();
-        }
-
-        protected void ddlAbilityGrade_DataBinding( object sender, System.EventArgs e )
-        {
-            //var ddlAbilityGrade = (DropDownList)sender;            
-            //ddlAbilityGrade.DataSource = GetAbilityGradeList();
-            //ddlAbilityGrade.DataBind();
-            //ddlAbilityGrade.SelectedValue = Eval( "AbilityGrade" ).ToString();
-        }
-       
-        #endregion                    
+               
+        #endregion       
         
+        #region NewPerson Class
+        [Serializable()]
+        protected class NewPerson
+        {
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
+            public DateTime? BirthDate { get; set; }
+            public Gender Gender { get; set; }
+            public string Ability { get; set; }
+            public string AbilityGroup { get; set; }
+
+            public NewPerson()
+            {
+                FirstName = string.Empty;
+                LastName = string.Empty;
+                BirthDate = new DateTime();
+                Gender = new Gender();
+                Ability = string.Empty;
+                AbilityGroup = string.Empty;
+            }
+        }
+
+        #endregion
+
     }
 }
