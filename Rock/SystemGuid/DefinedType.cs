@@ -144,8 +144,14 @@ namespace Rock.SystemGuid
         public const string PERSON_PHONE_TYPE =  "8345DD45-73C6-4F5E-BEBD-B77FC83F18FD";
 
         /// <summary>
+        /// Guid for a check-in person's ability level
+        /// </summary>
+        public static string PERSON_ABILITY_LEVEL = "7BEEF4D4-0860-4913-9A3D-857634D1BF7C";
+
+        /// <summary>
         /// Guid for the types of Batches (ACH, Visa, MasterCard, Discover, Amex, and PayPal)
         /// </summary>
         public static Guid FINANCIAL_BATCH_TYPE { get { return new Guid( "9e358fbe-2321-4c54-895f-c888e29298ae" ); } }
+               
     }
 }
