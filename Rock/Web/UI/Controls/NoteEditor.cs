@@ -308,7 +308,10 @@ namespace Rock.Web.UI.Controls
             if ( CreatedDateTime.HasValue )
             {
                 writer.Write( " " );
+                writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "timestamp" );
                 writer.Write( CreatedDateTime.Value.ToRelativeDateString( 6 ) );
+                writer.RenderEndTag();
             }
             writer.RenderEndTag();
 
