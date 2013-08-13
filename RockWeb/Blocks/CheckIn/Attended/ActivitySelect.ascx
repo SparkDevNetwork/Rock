@@ -4,18 +4,30 @@
 
     function setControlEvents() {
 
-        $('.ministry').unbind('click').on('click', function () {
-            $(this).toggleClass('active');
-            var selectedIds = $('#hfSelectedMinistry').val();
-            var buttonId = this.getAttribute('data-id') + ',';
-            if (typeof selectedIds == "string" && (selectedIds.indexOf(buttonId) >= 0)) {
-                $('#hfSelectedMinistry').val(selectedIds.replace(buttonId, ''));
-            } else {
-                $('#hfSelectedMinistry').val(buttonId + selectedIds);
-            }
-            return false;
-        });
+        //$('.ministry').unbind('click').on('click', function () {
+        //    $(this).toggleClass('active');
+        //    var selectedIds = $('#hfSelectedMinistry').val();
+        //    var buttonId = this.getAttribute('data-id') + ',';
+        //    if (typeof selectedIds == "string" && (selectedIds.indexOf(buttonId) >= 0)) {
+        //        $('#hfSelectedMinistry').val(selectedIds.replace(buttonId, ''));
+        //    } else {
+        //        $('#hfSelectedMinistry').val(buttonId + selectedIds);
+        //    }
+        //    return false;
+        //});
 
+        //$('.time').unbind('click').on('click', function () {
+        //    $(this).toggleClass('active');
+        //    var selectedIds = $('#hfSelectedTime').val();
+        //    var buttonId = this.getAttribute('data-id') + ',';
+        //    if (typeof selectedIds == "string" && (selectedIds.indexOf(buttonId) >= 0)) {
+        //        $('#hfSelectedTime').val(selectedIds.replace(buttonId, ''));
+        //    } else {
+        //        $('#hfSelectedTime').val(buttonId + selectedIds);
+        //    }
+        //    return false;
+        //});
+        
     };
     $(document).ready(function () { setControlEvents(); });
     Sys.WebForms.PageRequestManager.getInstance().add_endRequest(setControlEvents);
@@ -27,6 +39,8 @@
 
     <Rock:ModalAlert ID="maWarning" runat="server" />
     <asp:HiddenField ID="hfSelectedMinistry" runat="server" ClientIDMode="Static" />
+    <asp:HiddenField ID="hfSelectedTime" runat="server" ClientIDMode="Static" />
+    <asp:HiddenField ID="hfSelectedActivity" runat="server" ClientIDMode="Static" />
 
     <div class="row-fluid attended-checkin-header">
         <div class="span3 attended-checkin-actions">
@@ -48,7 +62,7 @@
         <ContentTemplate>        
             <div class="attended-checkin-body-container">
                 <h3>Ministry</h3>
-                <asp:Repeater ID="rMinistry" runat="server" OnItemDataBound="rMinistry_ItemDataBound">
+                <asp:Repeater ID="rMinistry" runat="server" OnItemCommand="rMinistry_ItemCommand" OnItemDataBound="rMinistry_ItemDataBound">
                     <ItemTemplate>
                         <asp:LinkButton ID="lbSelectMinistry" runat="server" Text='<%# Container.DataItem.ToString() %>' data-id='<%# Eval("Id") %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select ministry" CausesValidation="false" />
                     </ItemTemplate>
@@ -60,19 +74,20 @@
         <div class="span3">
             <div class="attended-checkin-body-container">
                 <h3>Time</h3>
-                <asp:Repeater ID="rTime" runat="server" OnItemCommand="rTime_ItemCommand">
+                <asp:Repeater ID="rTime" runat="server" OnItemCommand="rTime_ItemCommand" OnItemDataBound="rTime_ItemDataBound">
                     <ItemTemplate>
-                        <asp:LinkButton ID="lbSelectTime" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" />
+                        <asp:LinkButton ID="lbSelectTime" runat="server" Text='<%# Container.DataItem.ToString() %>' data-id='<%# Eval("Id") %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select time" CausesValidation="false" />
                     </ItemTemplate>
                 </asp:Repeater>
             </div>
             <asp:HiddenField ID="hfTimes" runat="server"></asp:HiddenField>
         </div>
 
-        <div class="span3">
+        <asp:UpdatePanel ID="pnlSelectActivity" runat="server" UpdateMode="Conditional" class="span3">
+        <ContentTemplate>        
             <div class="attended-checkin-body-container">
                 <h3>Activity</h3>
-                <asp:ListView ID="lvActivity" runat="server" OnPagePropertiesChanging="lvActivity_PagePropertiesChanging" OnItemCommand="lvActivity_ItemCommand">
+                <asp:ListView ID="lvActivity" runat="server" OnPagePropertiesChanging="lvActivity_PagePropertiesChanging" OnItemCommand="lvActivity_ItemCommand" OnItemDataBound="lvActivity_ItemDataBound">
                     <ItemTemplate>
                         <asp:LinkButton ID="lbSelectActivity" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" ></asp:LinkButton>
                     </ItemTemplate>
@@ -83,7 +98,8 @@
                     </Fields>
                 </asp:DataPager>
             </div>
-        </div>
+        </ContentTemplate>
+        </asp:UpdatePanel>
 
         <div class="span3">
             <div class="attended-checkin-body-container">
