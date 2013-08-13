@@ -21,8 +21,8 @@
                 <Rock:PagePicker ID="ppPage" runat="server" LabelText="Page" />
                 <Rock:PersonPicker ID="ppUser" runat="server" LabelText="User" />
                 <Rock:LabeledTextBox ID="txtStatusCode" runat="server" LabelText="Status Code" />
-                <Rock:DateTimePicker ID="dpStartDate" runat="server" LabelText="Start Date" />
-                <Rock:DateTimePicker ID="dpEndDate" runat="server" LabelText="End Date" />
+                <Rock:DatePicker ID="dpStartDate" runat="server"   LabelText="Start Date" />
+                <Rock:DatePicker ID="dpEndDate" runat="server" LabelText="End Date" />
             </Rock:GridFilter>
             <Rock:Grid ID="gExceptionList" runat="server" AllowSorting="true" OnRowSelected="gExceptionList_RowSelected" EmptyDataText="No Exceptions Found">
                 <Columns>
