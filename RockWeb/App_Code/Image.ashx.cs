@@ -55,7 +55,9 @@ namespace RockWeb
                 var fileService = new BinaryFileService();
                 var file = fileId > 0 ? fileService.Get( fileId ) : fileService.Get( fileGuid );
                 string cacheName = Uri.EscapeDataString( context.Request.Url.Query );
-                string physFilePath = context.Request.MapPath( string.Format( "~/Cache/{0}", cacheName ) );
+
+                // TODO: Check to see if `file` allows caching before attempting to load it from cache
+                string physFilePath = context.Request.MapPath( string.Format( "~/App_Data/Cache/{0}", cacheName ) );
 
                 if ( file == null )
                 {
@@ -90,6 +92,7 @@ namespace RockWeb
                     Resize( queryString, file );
                 }
 
+                // TODO: Check to see if `file` allows caching before adding to cache
                 Cache( file, physFilePath );
 
                 // Post process
