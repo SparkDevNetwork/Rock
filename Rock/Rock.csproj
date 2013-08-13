@@ -473,6 +473,10 @@
     <Compile Include="Migrations\201308112230400_FixDataFiltersSetting.Designer.cs">
       <DependentUpon>201308112230400_FixDataFiltersSetting.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201308131210014_ScheduleServiceTimes.cs" />
+    <Compile Include="Migrations\201308131210014_ScheduleServiceTimes.Designer.cs">
+      <DependentUpon>201308131210014_ScheduleServiceTimes.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -502,6 +506,7 @@
     <Compile Include="PersonProfile\IconBadge.cs" />
     <Compile Include="PersonProfile\TextBadge.cs" />
     <Compile Include="Search\Group\Name.cs" />
+    <Compile Include="SystemGuid\Category.cs" />
     <Compile Include="SystemGuid\EntityType.cs" />
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
     <Compile Include="Web\Cache\CategoryCache.cs" />
@@ -2132,6 +2137,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201308112230400_FixDataFiltersSetting.resx">
       <DependentUpon>201308112230400_FixDataFiltersSetting.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308131210014_ScheduleServiceTimes.resx">
+      <DependentUpon>201308131210014_ScheduleServiceTimes.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
