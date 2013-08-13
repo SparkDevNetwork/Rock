@@ -108,6 +108,15 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Group Type Purpose
+
+        /// <summary>
+        /// Group Type Purpose of Check-in Template
+        /// </summary>
+        public const string GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE = "4A406CB0-495B-4795-B788-52BDFDE00B01";
+
+        #endregion
+
         #region Transaction Frequency Type
 
         /// <summary>
