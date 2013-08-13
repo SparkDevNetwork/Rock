@@ -13,7 +13,6 @@
 *     - GROUP			                                  LOCATION           GUID									Inherits From
 * -------------------     --------------------------      ------------------ --------------------------------------	----------------------
 * Weekly Service Check-in Area                                              FEDD389A-616F-4A53-906C-63D8255631C5
-*     - Weekly Service Check-in                                               64F0F121-8E1E-4A24-B706-BA8E921FE623
 * 
 * Check in by Age         Ages:	                                             0572A5FE-20A4-4BF1-95CD-C71DB5281392
 * Check in by Grade 	  Grades:                                            4F9565A7-DD5A-41C3-B4E8-13F0B872B10B	Check in by Age
@@ -36,7 +35,6 @@
 * Check-in Test (Don't Use) Area                                             CAAF4F9B-58B9-45B4-AABC-9188347948B7	
 *     - Check-in Test (Don't Use)                                              CBBBEEE0-DE95-4876-9FEF-5EB68FA67853
 *
-*     
 */
 
 BEGIN TRANSACTION
@@ -94,7 +92,7 @@ UNION ALL SELECT '4F9565A7-DD5A-41C3-B4E8-13F0B872B10B'
 -- Table of all Group Guids
 DECLARE @tGroupGuids TABLE ( [Guid] uniqueidentifier );
 INSERT INTO @tGroupGuids
-SELECT '64F0F121-8E1E-4A24-B706-BA8E921FE623'
+SELECT '64F0F121-8E1E-4A24-B706-BA8E921FE623'				-- (old parent group, no longer added by script)
 UNION ALL SELECT 'DC1A2A83-1B5D-46BC-9E99-4571466827F5'
 UNION ALL SELECT '366001D1-0E60-4AA1-875D-046286E29284'
 UNION ALL SELECT 'FB8AAAA2-9A57-4AA4-8543-10A053C4834F'
@@ -203,7 +201,6 @@ INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @HSGroupTypeId);
 ---------------------------------------------------------------------------
 -- Add the Groups
 ---------------------------------------------------------------------------
-DECLARE @ParentGroupId int
 DECLARE @TestGroupId int
 DECLARE @NurseryGroupId int
 DECLARE @PreschoolGroupId int
@@ -214,39 +211,35 @@ DECLARE @JHGroupId int
 DECLARE @HSGroupId int
 
 INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid] )
-   VALUES( 0, @ParentGroupTypeId, 'Weekly Service Check-in', 0, 1, '64F0F121-8E1E-4A24-B706-BA8E921FE623' )
-SET @ParentGroupId = SCOPE_IDENTITY()
-
-INSERT INTO [Group] ( [IsSystem],[ParentGroupId],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid] )
-   VALUES ( 0, @ParentGroupId, @TestGroupTypeId, 'Check-in Test (Don''t Use)', 0, 1, 'CBBBEEE0-DE95-4876-9FEF-5EB68FA67853' )
+   VALUES ( 0, @TestGroupTypeId, 'Check-in Test (Don''t Use)', 0, 1, 'CBBBEEE0-DE95-4876-9FEF-5EB68FA67853' )
 SET @TestGroupId = SCOPE_IDENTITY()
 
-INSERT INTO [Group] ( [IsSystem],[ParentGroupId],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid] )
-   VALUES ( 0, @ParentGroupId, @NurseryPreschoolGroupTypeId, 'Nursery', 0, 1, 'DC1A2A83-1B5D-46BC-9E99-4571466827F5' )
+INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid] )
+   VALUES ( 0, @NurseryPreschoolGroupTypeId, 'Nursery', 0, 1, 'DC1A2A83-1B5D-46BC-9E99-4571466827F5' )
 SET @NurseryGroupId = SCOPE_IDENTITY()
 
-INSERT INTO [Group] ( [IsSystem],[ParentGroupId],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid] )
-   VALUES ( 0, @ParentGroupId, @NurseryPreschoolGroupTypeId, 'Preschool', 0, 1, '366001D1-0E60-4AA1-875D-046286E29284' )
+INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid] )
+   VALUES ( 0, @NurseryPreschoolGroupTypeId, 'Preschool', 0, 1, '366001D1-0E60-4AA1-875D-046286E29284' )
 SET @PreschoolGroupId = SCOPE_IDENTITY()
 
-INSERT INTO [Group] ( [IsSystem],[ParentGroupId],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid] )
-   VALUES ( 0, @ParentGroupId, @ElementaryGroupTypeId, 'Grades K-1', 0, 1, 'FB8AAAA2-9A57-4AA4-8543-10A053C4834F' )
+INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid] )
+   VALUES ( 0, @ElementaryGroupTypeId, 'Grades K-1', 0, 1, 'FB8AAAA2-9A57-4AA4-8543-10A053C4834F' )
 SET @GradeK1GroupId = SCOPE_IDENTITY()
 
-INSERT INTO [Group] ( [IsSystem],[ParentGroupId],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid] )
-   VALUES ( 0, @ParentGroupId, @ElementaryGroupTypeId, 'Grades 2-3', 0, 1, '24901861-14CF-474F-9FCE-7BA1D6C84BFF' )
+INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid] )
+   VALUES ( 0, @ElementaryGroupTypeId, 'Grades 2-3', 0, 1, '24901861-14CF-474F-9FCE-7BA1D6C84BFF' )
 SET @Grade23GroupId = SCOPE_IDENTITY()
 
-INSERT INTO [Group] ( [IsSystem],[ParentGroupId],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid])
-   VALUES ( 0, @ParentGroupId, @ElementaryGroupTypeId, 'Grades 4-6', 0, 1, '42C408CE-3D69-4D7D-B9EA-41087A8945A6' )
+INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid])
+   VALUES ( 0, @ElementaryGroupTypeId, 'Grades 4-6', 0, 1, '42C408CE-3D69-4D7D-B9EA-41087A8945A6' )
 SET @Grade46GroupId = SCOPE_IDENTITY()
 
-INSERT INTO [Group] ( [IsSystem],[ParentGroupId],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid])
-   VALUES ( 0, @ParentGroupId, @JHGroupTypeId, 'Grades 7-8', 0, 1, '7B99F840-66AB-4C7A-99A2-104D9CC953F7' )
+INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid])
+   VALUES ( 0, @JHGroupTypeId, 'Grades 7-8', 0, 1, '7B99F840-66AB-4C7A-99A2-104D9CC953F7' )
 SET @JHGroupId = SCOPE_IDENTITY()
 
-INSERT INTO [Group] ( [IsSystem],[ParentGroupId],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid])
-   VALUES ( 0, @ParentGroupId, @HSGroupTypeId, 'Grades 9-12', 0, 1, '9B982B2A-24AB-4B82-AB49-84BDB4CF9E5F' )
+INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid])
+   VALUES ( 0, @HSGroupTypeId, 'Grades 9-12', 0, 1, '9B982B2A-24AB-4B82-AB49-84BDB4CF9E5F' )
 SET @HSGroupId = SCOPE_IDENTITY()
 
 
@@ -379,9 +372,12 @@ SET @AttributeId = SCOPE_IDENTITY()
 ---------------------------------------------------------------------------
 -- Create the Schedules
 ---------------------------------------------------------------------------
+-- "Service Times" Check-in Category Id
+DECLARE @ServiceTimesCategoryId INT
+SET @ServiceTimesCategoryId = (SELECT Id FROM Category WHERE [Guid] = '4FECC91B-83F9-4269-AE03-A006F401C47E' )
 
 DELETE [Schedule]
-INSERT INTO [Schedule] ([Name],[iCalendarContent], [CheckInStartOffsetMinutes],[CheckInEndOffsetMinutes],[EffectiveStartDate],[Guid]) VALUES 
+INSERT INTO [Schedule] ([Name],[iCalendarContent], [CheckInStartOffsetMinutes],[CheckInEndOffsetMinutes],[EffectiveStartDate],[Guid],[CategoryId]) VALUES 
     ('4:30',        
 'BEGIN:VCALENDAR
 BEGIN:VEVENT
@@ -389,7 +385,7 @@ DTEND:20130501T173000
 DTSTART:20130501T163000
 RRULE:FREQ=WEEKLY;BYDAY=SA
 END:VEVENT
-END:VCALENDAR', '30', '30', '05/01/2013', NEWID() ),
+END:VCALENDAR', '30', '30', '05/01/2013', NEWID(), @ServiceTimesCategoryId ),
     
     ('6:00',        
 'BEGIN:VCALENDAR
@@ -398,7 +394,7 @@ DTEND:20130501T190000
 DTSTART:20130501T180000
 RRULE:FREQ=WEEKLY;BYDAY=SA
 END:VEVENT
-END:VCALENDAR', '30', '30', '05/01/2013', NEWID() ),
+END:VCALENDAR', '30', '30', '05/01/2013', NEWID(), @ServiceTimesCategoryId ),
 
     ('9:00',        
 'BEGIN:VCALENDAR
@@ -407,7 +403,7 @@ DTEND:20130501T100000
 DTSTART:20130501T090000
 RRULE:FREQ=WEEKLY;BYDAY=SU
 END:VEVENT
-END:VCALENDAR', '30', '30', '05/01/2013', NEWID() ),
+END:VCALENDAR', '30', '30', '05/01/2013', NEWID(), @ServiceTimesCategoryId ),
 
     ('10:30',        
 'BEGIN:VCALENDAR
@@ -416,7 +412,7 @@ DTEND:20130501T113000
 DTSTART:20130501T103000
 RRULE:FREQ=WEEKLY;BYDAY=SU
 END:VEVENT
-END:VCALENDAR', '30', '30', '05/01/2013', NEWID() ),
+END:VCALENDAR', '30', '30', '05/01/2013', NEWID(), @ServiceTimesCategoryId ),
 
     ('12:00',        
 'BEGIN:VCALENDAR
@@ -425,7 +421,7 @@ DTEND:20130501T130000
 DTSTART:20130501T120000
 RRULE:FREQ=WEEKLY;BYDAY=SU
 END:VEVENT
-END:VCALENDAR', '30', '30', '05/01/2013', NEWID() ),
+END:VCALENDAR', '30', '30', '05/01/2013', NEWID(), @ServiceTimesCategoryId ),
 
     ('4:30 (test)',        
 'BEGIN:VCALENDAR
@@ -434,7 +430,7 @@ DTEND:20130501T235900
 DTSTART:20130501T000100
 RRULE:FREQ=DAILY
 END:VEVENT
-END:VCALENDAR', '0', '1439', '05/01/2013', NEWID() ),
+END:VCALENDAR', '0', '1439', '05/01/2013', NEWID(), @ServiceTimesCategoryId ),
 
     ('6:00 (test)',        
 'BEGIN:VCALENDAR
@@ -443,7 +439,7 @@ DTEND:20130501T235900
 DTSTART:20130501T000100
 RRULE:FREQ=DAILY
 END:VEVENT
-END:VCALENDAR', '0', '1439', '05/01/2013', NEWID() )
+END:VCALENDAR', '0', '1439', '05/01/2013', NEWID(), @ServiceTimesCategoryId )
 
 ---------------------------------------------------------------------------
 -- Create Locations
