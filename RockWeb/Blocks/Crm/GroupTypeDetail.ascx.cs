@@ -432,9 +432,8 @@ namespace RockWeb.Blocks.Crm
             GroupTypeService groupTypeService = new GroupTypeService();
             int currentGroupTypeId = int.Parse( hfGroupTypeId.Value );
 
-            // populate dropdown with all grouptypes that aren't already childgroups or the current grouptype
+            // populate dropdown with all grouptypes that aren't already childgroups
             var qry = from gt in groupTypeService.Queryable()
-                      where gt.Id != currentGroupTypeId
                       where !( from cgt in ChildGroupTypesDictionary.Keys
                                select cgt ).Contains( gt.Id )
                       select gt;
