@@ -70,7 +70,7 @@ namespace RockWeb
                 HttpInternals.RockWebFileChangeMonitor();
             }
             
-            // Check if database should be auto-migrated
+            // Check if database should be auto-migrated for the core and plugins
             bool autoMigrate = true;
             if ( !Boolean.TryParse( ConfigurationManager.AppSettings["AutoMigrateDatabase"], out autoMigrate ) )
             {
@@ -92,6 +92,20 @@ namespace RockWeb
                     var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
                     migrator.Update();
                 }
+                
+                // Migrate any plugins that have pending migrations
+                List<Type> configurationTypeList = Rock.Reflection.FindTypes( typeof( System.Data.Entity.Migrations.DbMigrationsConfiguration ) ).Select( a => a.Value ).ToList();
+
+                foreach ( var configType in configurationTypeList )
+                {
+                    if (configType != typeof(Rock.Migrations.Configuration))
+                    {
+                        var config = Activator.CreateInstance( configType ) as System.Data.Entity.Migrations.DbMigrationsConfiguration;
+                        System.Data.Entity.Migrations.DbMigrator pluginMigrator = Activator.CreateInstance( typeof( System.Data.Entity.Migrations.DbMigrator ), config ) as System.Data.Entity.Migrations.DbMigrator;
+                        pluginMigrator.Update();
+                    }
+                }
+
             }
             else
             {
