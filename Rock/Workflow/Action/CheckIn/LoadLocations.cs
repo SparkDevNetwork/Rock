@@ -33,11 +33,11 @@ namespace Rock.Workflow.Action.CheckIn
         /// <exception cref="System.NotImplementedException"></exception>
         public override bool Execute( Model.WorkflowAction action, Data.IEntity entity, out List<string> errorMessages )
         {
-            bool loadAll = false;
-            if ( bool.TryParse( GetAttributeValue( "LoadAll" ), out loadAll ) && loadAll )
-            {
-                loadAll = true;
-            }
+            bool loadAll = true;
+            //if ( bool.TryParse( GetAttributeValue( "LoadAll" ), out loadAll ) && loadAll )
+            //{
+            //    loadAll = true;
+            //}
 
             var checkInState = GetCheckInState( action, out errorMessages );
             if ( checkInState != null )
