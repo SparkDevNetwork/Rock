@@ -1,7 +1,7 @@
 //
 // Variables
 // --------------------------------------------------
-@import "./rock-global-variables.less";
+@import "_checkin-variables.less";
 
 // Global values
 // --------------------------------------------------
@@ -33,29 +33,29 @@
 
 // Scaffolding
 // -------------------------
-@bodyBackground:        @site-background-color;
+@bodyBackground:        @rockBackgroundColor;  // @white
 @textColor:             @site-text-color;  // @grayDark
 
 
 // Links
 // -------------------------
-@linkColor:             @site-link-color;
+@linkColor:             #08c;
 @linkColorHover:        darken(@linkColor, 15%);
 
 
 // Typography
 // -------------------------
-@sansFontFamily:        'OpenSans', 'Helvetica Neue',Helvetica,Arial,sans-serif; 
+@sansFontFamily:        'OpenSans', 'Helvetica Neue',Helvetica,Arial,sans-serif; // 'Helvetica Neue',Helvetica,Arial,sans-serif;
 @serifFontFamily:       Georgia, "Times New Roman", Times, serif;
 @monoFontFamily:        Monaco, Menlo, Consolas, "Courier New", monospace;
 
 @baseFontSize:          14px;
-@baseFontFamily:        @font-family;
+@baseFontFamily:        @sansFontFamily;
 @baseLineHeight:        20px;
-@altFontFamily:         @font-family;
+@altFontFamily:         @serifFontFamily;
 
-@headingsFontFamily:    @font-family; //inherit; // empty to use BS default, @baseFontFamily
-@headingsFontWeight:    @font-bold-weight; //bold;    // instead of browser default, bold
+@headingsFontFamily:    @rockSansFontFamilyBold; //inherit; // empty to use BS default, @baseFontFamily
+@headingsFontWeight:    normal; //bold;    // instead of browser default, bold
 @headingsColor:         inherit; // empty to use BS default, @textColor
 
 
@@ -71,38 +71,38 @@
 @paddingSmall:          2px 10px;  // 26px
 @paddingMini:           1px 6px;   // 24px
 
-@baseBorderRadius:      @site-border-radius;
-@borderRadiusLarge:     @site-border-radius + 2;
-@borderRadiusSmall:     @site-border-radius - 1;
+@baseBorderRadius:      4px;
+@borderRadiusLarge:     6px;
+@borderRadiusSmall:     3px;
 
 
 // Tables
 // -------------------------
 @tableBackground:                   #ffffff; // overall background-color
 @tableBackgroundAccent:             #f9F9F9; // for striping
-@tableBackgroundHover:              @grid-hover-background; // for hover
+@tableBackgroundHover:              #f5f5f5; // for hover
 @tableBorder:                       #ddd; // table and cell border
 
 // Buttons
 // -------------------------
-@btnBackground:                     @button-default-background;
-@btnBackgroundHighlight:            darken(@btnBackground, 10%);
+@btnBackground:                     @white;
+@btnBackgroundHighlight:            darken(@white, 10%);
 @btnBorder:                         #bbb;
 
-@btnPrimaryBackground:              @button-primary-background; 
+@btnPrimaryBackground:              #515151; //@linkColor;
 @btnPrimaryBackgroundHighlight:     spin(@btnPrimaryBackground, 20%);
 
-@btnInfoBackground:                 @button-info-background;
-@btnInfoBackgroundHighlight:        spin(@btnPrimaryBackground, 20%);
+@btnInfoBackground:                 #5bc0de;
+@btnInfoBackgroundHighlight:        #2f96b4;
 
-@btnSuccessBackground:              @button-success-background;
-@btnSuccessBackgroundHighlight:     spin(@btnSuccessBackground, 20%);
+@btnSuccessBackground:              #62c462;
+@btnSuccessBackgroundHighlight:     #51a351;
 
-@btnWarningBackground:              @button-warning-background;
-@btnWarningBackgroundHighlight:     spin(@btnWarningBackground, 20%);
+@btnWarningBackground:              lighten(@orange, 15%);
+@btnWarningBackgroundHighlight:     @orange;
 
-@btnDangerBackground:               @button-danger-background;
-@btnDangerBackgroundHighlight:      spin(@btnDangerBackground, 20%);
+@btnDangerBackground:               #ee5f5b;
+@btnDangerBackgroundHighlight:      #bd362f;
 
 @btnInverseBackground:              #444;
 @btnInverseBackgroundHighlight:     @grayDarker;
