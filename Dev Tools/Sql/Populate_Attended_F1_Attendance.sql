@@ -71,4 +71,3 @@ ON CAST(a.start_date_time as time) = CAST(s.name as time)
 group by l.id, s.id, g.id, p.id, a.start_date_time
 ORDER BY a.start_date_time
 
-

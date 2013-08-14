@@ -23,10 +23,13 @@ SET @PrimaryPhone = (SELECT id FROM DefinedValue WHERE guid = '407E7E45-7B2E-4FC
 --SET @KnownRelationshipGroupRole = (SELECT id FROM GroupRole WHERE Guid = '7BC6C12E-0CD1-4DFD-8D5B-1B35AE714C42')
 
 DECLARE @LocationTypeValueHome int = (select id from DefinedValue where guid = '8C52E53C-2A66-435A-AE6E-5EE307D9A0DC')
-
+DECLARE @GraduationDate date
 DECLARE @GroupId int
 DECLARE @PersonId int
 DECLARE @LocationId int
+
+SELECT @GraduationDate = (replace([DefaultValue], '/', '-' ) + '-') + convert(varchar(4), year(getdate()) + 13)
+FROM Attribute WHERE [Key] = 'GradeTransitionDate'
 
 -- Dubay Family
 SET @GroupId = (SELECT Id FROM [Group] WHERE Guid = '431B7918-447F-40F0-9719-A2DE67910B73')
@@ -60,16 +63,16 @@ VALUES (0, @GroupId, @PersonId, @AdultRole, newid())
 INSERT INTO [PhoneNumber] (IsSystem, PersonId, Number, IsMessagingEnabled, IsUnlisted, Guid, NumberTypeValueId)
 VALUES (0, @PersonId, '4787182631', 1, 0, newid(), @PrimaryPhone)
 
-INSERT INTO [Person] ([IsSystem],[GivenName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId])
-VALUES (0, 'Trae', 'Dubay', 19, 1, 2001, 1, '', 1, 0, NEWID(), @PersonRecordType, @ActiveRecordStatus)
+INSERT INTO [Person] ([IsSystem],[GivenName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId],[GraduationDate])
+VALUES (0, 'Trae', 'Dubay', 19, 1, 2001, 1, '', 1, 0, NEWID(), @PersonRecordType, @ActiveRecordStatus, dateadd(year, -7, @GraduationDate))
 SET @PersonId = SCOPE_IDENTITY()
 INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid)
 VALUES (0, @GroupId, @PersonId, @ChildRole, newid())
 --INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid)
 --VALUES (0, @KnownRelationshipGroup, @PersonId, @KnownRelationshipGroupRole, newid())
 
-INSERT INTO [Person] ([IsSystem],[GivenName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId])
-VALUES (0, 'Aiden', 'Dubay', 9, 3, 2004, 2, '', 1, 0, NEWID(), @PersonRecordType, @ActiveRecordStatus)
+INSERT INTO [Person] ([IsSystem],[GivenName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId], [GraduationDate])
+VALUES (0, 'Aiden', 'Dubay', 9, 3, 2004, 2, '', 1, 0, NEWID(), @PersonRecordType, @ActiveRecordStatus, dateadd(year, -4, @GraduationDate))
 SET @PersonId = SCOPE_IDENTITY()
 INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid)
 VALUES (0, @GroupId, @PersonId, @ChildRole, newid())
@@ -752,16 +755,16 @@ VALUES (0, @GroupId, @PersonId, @AdultRole, newid())
 --INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid)
 --VALUES (0, @KnownRelationshipGroup, @PersonId, @KnownRelationshipGroupRole, newid())
 
-INSERT INTO [Person] ([IsSystem],[GivenName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId])
-VALUES (0, 'Ben', 'Mullikin', 25, 4, 2002, 1, '', 1, 0, NEWID(), @PersonRecordType, @ActiveRecordStatus)
+INSERT INTO [Person] ([IsSystem],[GivenName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId],[GraduationDate])
+VALUES (0, 'Ben', 'Mullikin', 25, 4, 2002, 1, '', 1, 0, NEWID(), @PersonRecordType, @ActiveRecordStatus, dateadd(year, -6, @GraduationDate))
 SET @PersonId = SCOPE_IDENTITY()
 INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid)
 VALUES (0, @GroupId, @PersonId, @ChildRole, newid())
 --INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid)
 --VALUES (0, @KnownRelationshipGroup, @PersonId, @KnownRelationshipGroupRole, newid())
 
-INSERT INTO [Person] ([IsSystem],[GivenName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId])
-VALUES (0, 'Mark', 'Mullikin', 7, 7, 2004, 1, '', 1, 0, NEWID(), @PersonRecordType, @ActiveRecordStatus)
+INSERT INTO [Person] ([IsSystem],[GivenName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId],[GraduationDate])
+VALUES (0, 'Mark', 'Mullikin', 7, 7, 2004, 1, '', 1, 0, NEWID(), @PersonRecordType, @ActiveRecordStatus, dateadd(year, -3, @GraduationDate))
 SET @PersonId = SCOPE_IDENTITY()
 INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid)
 VALUES (0, @GroupId, @PersonId, @ChildRole, newid())
