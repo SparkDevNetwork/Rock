@@ -48,17 +48,7 @@ namespace Rock.Workflow
         /// </summary>
         public ActionComponent()
         {
-            Type type = this.GetType();
-
-            var ActionTypeEntityType = EntityTypeCache.Read( typeof( WorkflowActionType ) );
-            this.EntityType = EntityTypeCache.Read( type );
-
-            using ( new UnitOfWorkScope() )
-            {
-                Rock.Attribute.Helper.UpdateAttributes( type, ActionTypeEntityType.Id, "EntityTypeId", this.EntityType.Id.ToString(), null );
-            }
-
-            this.LoadAttributes();
+            // Override default constructor of Component that loads attributes (not needed for workflow actions, needs to be done by each action)
         }
 
         /// <summary>
@@ -69,6 +59,40 @@ namespace Rock.Workflow
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         public abstract Boolean Execute( WorkflowAction action, IEntity entity, out List<string> errorMessages );
+
+        /// <summary>
+        /// Loads the attributes.
+        /// </summary>
+        /// <exception cref="System.Exception">Workflow Action attributes are saved specific to the current action, which requires that the current action is included in order to load or retrieve values.  Use the LoadAttributes( WorkflowAction action ) method instead.</exception>
+        [Obsolete("Use LoadAttributes( WorkflowAction action ) instead", true)]
+        public void LoadAttributes()
+        {
+            // Compiler should generate error if referencing this method, so exception should never be thrown
+            // but method is needed to "override" the extension method for IHasAttributes objects
+            throw new Exception( "Workflow Action attributes are saved specific to the current action, which requires that the current action is included in order to load or retrieve values.  Use the LoadAttributes( WorkflowAction action ) method instead." );
+        }
+
+        /// <summary>
+        /// Loads the attributes for the action.  The attributes are loaded by the framework prior to executing the action, 
+        /// so typically workflow actions do not need to load the attributes
+        /// </summary>
+        /// <param name="action">The action.</param>
+        public void LoadAttributes( WorkflowAction action )
+        {
+            action.ActionType.LoadAttributes();
+        }
+
+        /// <summary>
+        /// Use GetAttributeValue( WorkflowAction action, string key) instead.  Workflow action attribute values are 
+        /// specific to the action instance (rather than global).  This method will throw an exception
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <returns></returns>
+        /// <exception cref="System.Exception">Workflow Action attributes are saved specific to the current action, which requires that the current action is included in order to load or retrieve values.  Use the GetAttributeValue( WorkflowAction action, string key ) method instead.</exception>
+        public override string GetAttributeValue( string key )
+        {
+            throw new Exception( "Workflow Action attributes are saved specific to the current action, which requires that the current action is included in order to load or retrieve values.  Use the GetAttributeValue( WorkflowAction action, string key ) method instead." );
+        }
 
         /// <summary>
         /// Gets the attribute value for the action
