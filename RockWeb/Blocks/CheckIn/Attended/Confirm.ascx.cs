@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     else
                     {
                         //bool bestFitComplete = ProcessBestFit();
-                        ProcessBestFit();
+                        //ProcessBestFit();
                         //if ( bestFitComplete )
                         //{
                         gPersonList.DataKeyNames = new string[] { "Id" };
@@ -70,8 +70,18 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// </summary>
         protected void BindGrid()
         {
-            var people = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault().People.Where( p => p.Selected ).ToList();
-            gPersonList.DataSource = people.Select( p => new { p.Person.Id, Name = p.Person.FullName, Time = "", AssignedTo = "" } ).OrderBy( p => p.Name ).ToList();
+            var people = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault().People.Where( p => p.Selected ).ToList();            
+            gPersonList.DataSource = 
+                people.Select( p => new { 
+                    Id = p.Person.Id
+                    , Name = p.Person.FullName
+                    , AssignedTo = p.GroupTypes.Where( gt => gt.Selected && gt.Groups.Any( g => g.Selected ) ) 
+                        .Select( gt => gt.Groups.FirstOrDefault().Group.Name ).FirstOrDefault()
+                    , Time = p.GroupTypes.Where( gt => gt.Selected && gt.Groups.Any( g => g.Selected ) 
+                        && gt.Groups.Any( g => g.Selected && g.Locations.Any( l => l.Selected && l.Schedules.Any( s => s.Selected ) ) ) )
+                        .Select( gt => gt.Groups.FirstOrDefault().Locations.FirstOrDefault().Schedules.FirstOrDefault().Schedule.Name ).FirstOrDefault()
+                } )
+                .OrderBy( p => p.Name ).ToList();            
             gPersonList.DataBind();
 
             gPersonList.CssClass = string.Empty;
