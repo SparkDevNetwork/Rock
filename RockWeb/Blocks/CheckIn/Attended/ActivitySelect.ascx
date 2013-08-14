@@ -95,7 +95,7 @@
                     <Columns>
                         <asp:BoundField DataField="ListId" Visible="false" />
                         <asp:BoundField DataField="Time" />
-                        <asp:BoundField DataField="AssignedTo" />
+                        <asp:BoundField DataField="Activity" />
                         <Rock:DeleteField OnClick="gActivityList_Delete" />
                     </Columns>
                 </Rock:Grid>
