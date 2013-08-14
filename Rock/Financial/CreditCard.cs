@@ -13,6 +13,36 @@ namespace Rock.Financial
     public struct CreditCard
     {
         /// <summary>
+        /// The name on card
+        /// </summary>
+        public string NameOnCard;
+
+        /// <summary>
+        /// The last name on card (Only used if gateway provider requires split first name and last name fields
+        /// </summary>
+        public string LastNameOnCard;
+
+        /// <summary>
+        /// The billing street
+        /// </summary>
+        public string BillingStreet;
+
+        /// <summary>
+        /// The billing city
+        /// </summary>
+        public string BillingCity;
+
+        /// <summary>
+        /// The billing state
+        /// </summary>
+        public string BillingState;
+
+        /// <summary>
+        /// The billing zip
+        /// </summary>
+        public string BillingZip;
+
+        /// <summary>
         /// The credit card number
         /// </summary>
         public string Number;
