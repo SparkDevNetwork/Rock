@@ -119,7 +119,19 @@ namespace RockWeb.Blocks.CheckIn.Attended
             rTime.DataBind();
             pnlSelectTime.Update();
             var activityList = new List<Group>();
-            activityList.AddRange( new GroupTypeService().Get( id ).ChildGroupTypes.SelectMany( cgt => cgt.Groups ).ToList() );
+            //activityList.AddRange( new GroupTypeService().Get( id ).ChildGroupTypes.SelectMany( cgt => cgt.Groups ).ToList() );
+            //activityList.AddRange( person.GroupTypes.SelectMany( gt => new GroupTypeService().Get( id ).ChildGroupTypes ) );
+            //activityList.AddRange( person.GroupTypes.Where( gt => new GroupTypeService().Get( id ).ChildGroupTypes == gt.GroupType ) );
+            var childGroupTypes = new GroupTypeService().Get( id ).ChildGroupTypes;
+            foreach ( var groupType in childGroupTypes )
+            {
+                CheckInGroupType cgt = new CheckInGroupType();
+                cgt.GroupType = groupType;
+                if ( person.GroupTypes.Select(gt => gt.GroupType.Id).Contains( cgt.GroupType.Id ) )
+                {
+                    activityList.AddRange( groupType.Groups );
+                }
+            }
             lvActivity.DataSource = activityList;
             lvActivity.DataBind();
             Session["activityList"] = activityList;     // this is for the paging
