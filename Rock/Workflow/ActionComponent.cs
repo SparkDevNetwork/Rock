@@ -95,6 +95,34 @@ namespace Rock.Workflow
         }
 
         /// <summary>
+        /// Always returns 0.  (Ordering of actions is configured through the workflow admin and stored as property of WorkflowActionType)
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        public override int Order
+        {
+            get
+            {
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Always returns true.  (Activating of actions is configured through the workflow admin and stored as a WorkflowActionType)
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
+        public override bool IsActive
+        {
+            get
+            {
+                return true; ;
+            }
+        }
+
+        /// <summary>
         /// Gets the attribute value for the action
         /// </summary>
         /// <param name="action">The action.</param>
