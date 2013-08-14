@@ -4,21 +4,40 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System;
 using System.Collections.Generic;
+
+using Rock.Attribute;
+using Rock.Extension;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Financial
 {
-    public interface IGateway
+    /// <summary>
+    /// Base class for financial provider components
+    /// </summary>
+    public abstract class GatewayComponent : Component
     {
         /// <summary>
+        /// Gets a value indicating whether gateway provider needs first and last name on credit card as two distinct fields.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [split name on card]; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool SplitNameOnCard 
+        {
+            get { return false; }
+        }
+
+        /// <summary>
         /// Charges the specified transaction.
         /// </summary>
         /// <param name="transaction">The transaction.</param>
         /// <param name="creditCard">The credit card.</param>
         /// <param name="testTransaction">if set to <c>true</c> [test transaction].</param>
         /// <returns></returns>
-        FinancialTransaction Charge( FinancialTransaction transaction, CreditCard creditCard, bool testTransaction = false );
+        public abstract FinancialTransaction Charge( FinancialTransaction transaction, CreditCard creditCard, bool testTransaction = false );
 
         /// <summary>
         /// Charges the specified transaction.
@@ -27,7 +46,7 @@ namespace Rock.Financial
         /// <param name="bankAccount">The bank account.</param>
         /// <param name="testTransaction">if set to <c>true</c> [test transaction].</param>
         /// <returns></returns>
-        FinancialTransaction Charge( FinancialTransaction transaction, BankAccount bankAccount, bool testTransaction = false );
+        public abstract FinancialTransaction Charge( FinancialTransaction transaction, BankAccount bankAccount, bool testTransaction = false );
 
         /// <summary>
         /// Creates the scheduled transaction.
@@ -35,7 +54,7 @@ namespace Rock.Financial
         /// <param name="transaction">The transaction.</param>
         /// <param name="creditCard">The credit card.</param>
         /// <returns></returns>
-        FinancialScheduledTransaction CreateScheduledTransaction( FinancialScheduledTransaction transaction, CreditCard creditCard );
+        public abstract FinancialScheduledTransaction CreateScheduledTransaction( FinancialScheduledTransaction transaction, CreditCard creditCard );
 
         /// <summary>
         /// Creates the scheduled transaction.
@@ -43,31 +62,32 @@ namespace Rock.Financial
         /// <param name="transaction">The transaction.</param>
         /// <param name="bankAccount">The bank account.</param>
         /// <returns></returns>
-        FinancialScheduledTransaction CreateScheduledTransaction( FinancialScheduledTransaction transaction, BankAccount bankAccount );
+        public abstract FinancialScheduledTransaction CreateScheduledTransaction( FinancialScheduledTransaction transaction, BankAccount bankAccount );
 
         /// <summary>
         /// Updates the scheduled transaction.
         /// </summary>
         /// <param name="transaction">The transaction.</param>
         /// <returns></returns>
-        FinancialScheduledTransaction UpdateScheduledTransaction( FinancialScheduledTransaction transaction);
+        public abstract FinancialScheduledTransaction UpdateScheduledTransaction( FinancialScheduledTransaction transaction);
 
         /// <summary>
         /// Cancels the scheduled transaction.
         /// </summary>
         /// <param name="transaction">The transaction.</param>
         /// <returns></returns>
-        bool CancelScheduledTransaction( FinancialScheduledTransaction transaction );
+        public abstract bool CancelScheduledTransaction( FinancialScheduledTransaction transaction );
 
         /// <summary>
         /// Processes any post back from the financial gateway.
         /// </summary>
         /// <param name="request">The request.</param>
-        void ProcessPostBack( System.Web.HttpRequest request );
+        public abstract void ProcessPostBack( System.Web.HttpRequest request );
 
         /// <summary>
         /// Downloads any new transactions from the financial gateway
         /// </summary>
-        void DownloadNewTransactions();
+        public abstract void DownloadNewTransactions();
+    
     }
 }
