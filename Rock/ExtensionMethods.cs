@@ -581,9 +581,9 @@ namespace Rock
                     }
                 }
 
-                if ( Math.Round( inSeconds ) == 1 )
+                if ( Math.Round( inSeconds ) < 5 )
                 {
-                    return "1 second ago";
+                    return "just now";
                 }
                 else if ( inMinutes < 1.0 )
                 {

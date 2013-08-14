@@ -352,7 +352,7 @@ namespace RockWeb.Blocks.Core
                             if ( bool.TryParse( GetAttributeValue( "SendWhenApproved" ), out sendNow ) && sendNow )
                             {
                                 var transaction = new Rock.Transactions.SendCommunicationTransaction();
-                                transaction.Communication = communication;
+                                transaction.CommunicationId = communication.Id;
                                 transaction.PersonId = CurrentPersonId;
                                 Rock.Transactions.RockQueue.TransactionQueue.Enqueue( transaction );
                             }
