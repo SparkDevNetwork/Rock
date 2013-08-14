@@ -33,6 +33,7 @@
                         <Rock:LabeledDropDownList ID="ddlAttendancePrintTo" runat="server" LabelText="Attendance Print To" />
                         <Rock:LabeledCheckBox ID="cbAllowMultipleLocations" runat="server" LabelText="Allow Multiple Locations" />
                         <Rock:LabeledDropDownList ID="ddlLocationSelectionMode" runat="server" LabelText="Location Selection Mode" Help="The selection mode to use when adding locations to groups of this type" />
+                        <Rock:LabeledDropDownList ID="ddlGroupTypePurpose" runat="server" LabelText="Purpose" Help="Set this to make this a group type that is for a specific purpose." />
                         <Rock:GroupTypePicker ID="gtpInheritedGroupType" runat="server" LabelText="Inherited Group Type" Help="Group Type to inherit properties and attributes from" AutoPostBack="true" OnSelectedIndexChanged="gtpInheritedGroupType_SelectedIndexChanged" />
                         <div class="control-group">
                             <h5>Group Type Attributes

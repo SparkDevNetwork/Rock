@@ -199,6 +199,16 @@ namespace Rock.Model
         [DataMember]
         public LocationPickerMode LocationSelectionMode { get; set; }
 
+        /// <summary>
+        /// Gets or sets the group type purpose value id.
+        /// </summary>
+        /// <value>
+        /// The group type purpose value id.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.GROUPTYPE_PURPOSE )]
+        public int? GroupTypePurposeValueId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -299,6 +309,15 @@ namespace Rock.Model
         [DataMember]
         public virtual BinaryFile IconLargeFile { get; set; }
 
+        /// <summary>
+        /// Gets or sets the group type purpose value.
+        /// </summary>
+        /// <value>
+        /// The group type purpose value.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue GroupTypePurposeValue { get; set; }
+        
         /// <summary>
         /// Gets the group query.
         /// </summary>

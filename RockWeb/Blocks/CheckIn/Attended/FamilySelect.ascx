@@ -268,7 +268,7 @@
         </asp:ListView>        
 
         <div class="row-fluid attended-checkin-body searchperson">
-            <asp:DataPager ID="dpAddFamily" runat="server" PageSize="2" PagedControlID="lvAddFamily">
+            <asp:DataPager ID="dpAddFamily" runat="server" PageSize="5" PagedControlID="lvAddFamily">
                 <Fields>
                     <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary" />
                 </Fields>
