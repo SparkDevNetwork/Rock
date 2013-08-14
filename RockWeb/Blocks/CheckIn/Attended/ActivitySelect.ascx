@@ -99,10 +99,6 @@
                         <Rock:DeleteField OnClick="gActivityList_Delete" />
                     </Columns>
                 </Rock:Grid>
-                <asp:Label ID="grouptype" runat="server"></asp:Label>
-                <asp:Label ID="group" runat="server"></asp:Label>
-                <asp:Label ID="grouplocation" runat="server"></asp:Label>
-                <asp:Label ID="schedule" runat="server"></asp:Label>
             </div>
         </div>
 

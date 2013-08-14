@@ -201,32 +201,49 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
             .People.Where( p => p.Person.Id == int.Parse( Request.QueryString["personId"] ) ).FirstOrDefault();
 
-            int id = int.Parse( e.CommandArgument.ToString() );
+            int groupId = int.Parse( e.CommandArgument.ToString() );
             foreach ( ListViewDataItem item in lvActivity.Items )
             {
                 ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).RemoveCssClass( "active" );
-                var groupTypeId = int.Parse( Session["ministry"].ToString() );
-                var groupId = int.Parse( ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).CommandArgument );
-                var parentGroupTypeId = new GroupService().Get( groupId ).GroupTypeId;
-                var personGroupType = person.GroupTypes.Where( gt => gt.GroupType.Id == parentGroupTypeId ).FirstOrDefault();
-                var personGroup = personGroupType.Groups.Where( g => g.Group.Id == groupId ).FirstOrDefault();
-                personGroup.Selected = false;
             }
 
+            // want to make sure no other groups/rooms are selected for this particular time
+            int scheduleId = (int)Session["time"];
+            var selectedScheduleGroupList = person.GroupTypes.Where( gt => gt.Groups.Any( g => g.Locations.Any( l => l.Schedules.Any( s => s.Schedule.Id == scheduleId ) ) ) ).ToList();
+            selectedScheduleGroupList.ForEach( gt => gt.Groups.Select( g => g.Selected = false ) );
+                
+            
+
+
+
             ( (LinkButton)e.Item.FindControl( "lbSelectActivity" ) ).AddCssClass( "active" );
-            Session["activity"] = id;
+            Session["activity"] = groupId;
 
 
             // set the appropriate stuff on the person for what's been selected
 
-            var groupType = person.GroupTypes.Where( gt => gt.GroupType.Id == int.Parse( Session["ministry"].ToString() ) ).FirstOrDefault();
-            groupType.Selected = true;
-            var group = groupType.Groups.Where( g => g.Group.Id == int.Parse( Session["activity"].ToString() ) ).FirstOrDefault();
-            group.Selected = true;
-            var groupLocation = group.Locations.FirstOrDefault();
-            groupLocation.Selected = true;
-            var schedule = groupLocation.Schedules.Where( s => s.Schedule.Id == int.Parse( Session["time"].ToString() ) ).FirstOrDefault();
-            schedule.Selected = true;
+            var parentGroupTypeId = (int)Session["ministry"];
+            var childGroupTypeIds = person.GroupTypes.Select( gt => gt.GroupType );
+            var chosenGroupType = new GroupTypeService().Get( new GroupService().Get( groupId ).GroupType.Id );
+            var groupTypeSelected = person.GroupTypes.Where( gt => gt.GroupType.Id == chosenGroupType.Id ).FirstOrDefault();
+            groupTypeSelected.Selected = true;
+            //var chosenGroup = chosenGroupType.Groups.Where( g => g.Id == groupId );
+            var groupSelected = groupTypeSelected.Groups.Select( g => new GroupService().Get(groupId));
+            var groupSelected = groupTypeSelected.Groups.Where( g => g.Group.Id == groupId ).FirstOrDefault();
+            groupSelected.Selected = true;
+            var groupLocationSelected = groupSelected.Locations.FirstOrDefault();
+            groupLocationSelected.Selected = true;
+            var scheduleSelected = groupLocationSelected.Schedules.Where( s => s.Schedule.Id == (int)Session["time"] ).FirstOrDefault();
+            scheduleSelected.Selected = true;
+
+            //var groupType = person.GroupTypes.Where( gt => new GroupTypeService().Get((int)Session["ministry"]).ChildGroupTypes.Any( gt => gt.Id == (int)Session["ministry"] ).FirstOrDefault();
+            //groupType.Selected = true;
+            //var group = groupType.Groups.Where( g => g.Group.Id == int.Parse( Session["activity"].ToString() ) ).FirstOrDefault();
+            //group.Selected = true;
+            //var groupLocation = group.Locations.FirstOrDefault();
+            //groupLocation.Selected = true;
+            //var schedule = groupLocation.Schedules.Where( s => s.Schedule.Id == int.Parse( Session["time"].ToString() ) ).FirstOrDefault();
+            //schedule.Selected = true;
 
 
             BindToActivityGrid();
@@ -519,16 +536,16 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             foreach( var groupType in person.GroupTypes.Where( gt => gt.Selected ) )
             {
-                grouptype.Text += groupType;
+                grouptype1.Text += groupType;
                 foreach ( var Group in groupType.Groups.Where( g => g.Selected ) )
                 {
-                    group.Text += Group;
+                    group1.Text += Group;
                     foreach ( var location in Group.Locations.Where( l => l.Selected ) )
                     {
-                        grouplocation.Text += location;
+                        grouplocation1.Text += location;
                         foreach ( var sched in location.Schedules.Where( s => s.Selected ) )
                         {
-                            schedule.Text += sched;
+                            schedule1.Text += sched;
                         }
                     }
                 }
