@@ -35,7 +35,7 @@ namespace Rock.Workflow.Action.CheckIn
         public override bool Execute( Model.WorkflowAction action, Data.IEntity entity, out List<string> errorMessages )
         {
             bool peopleSelect = false;
-            if ( bool.TryParse( GetAttributeValue( "PeopleSelect" ), out peopleSelect ) && peopleSelect )
+            if ( bool.TryParse( GetAttributeValue( action, "PeopleSelect" ), out peopleSelect ) && peopleSelect )
             {
                 peopleSelect = true;
             }
