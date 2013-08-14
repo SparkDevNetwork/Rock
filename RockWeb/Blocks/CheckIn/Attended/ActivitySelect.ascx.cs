@@ -222,19 +222,19 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             // set the appropriate stuff on the person for what's been selected
 
-            var parentGroupTypeId = (int)Session["ministry"];
-            var childGroupTypeIds = person.GroupTypes.Select( gt => gt.GroupType );
-            var chosenGroupType = new GroupTypeService().Get( new GroupService().Get( groupId ).GroupType.Id );
-            var groupTypeSelected = person.GroupTypes.Where( gt => gt.GroupType.Id == chosenGroupType.Id ).FirstOrDefault();
-            groupTypeSelected.Selected = true;
-            //var chosenGroup = chosenGroupType.Groups.Where( g => g.Id == groupId );
-            var groupSelected = groupTypeSelected.Groups.Select( g => new GroupService().Get(groupId));
-            var groupSelected = groupTypeSelected.Groups.Where( g => g.Group.Id == groupId ).FirstOrDefault();
-            groupSelected.Selected = true;
-            var groupLocationSelected = groupSelected.Locations.FirstOrDefault();
-            groupLocationSelected.Selected = true;
-            var scheduleSelected = groupLocationSelected.Schedules.Where( s => s.Schedule.Id == (int)Session["time"] ).FirstOrDefault();
-            scheduleSelected.Selected = true;
+            //var parentGroupTypeId = (int)Session["ministry"];
+            //var childGroupTypeIds = person.GroupTypes.Select( gt => gt.GroupType );
+            //var chosenGroupType = new GroupTypeService().Get( new GroupService().Get( groupId ).GroupType.Id );
+            //var groupTypeSelected = person.GroupTypes.Where( gt => gt.GroupType.Id == chosenGroupType.Id ).FirstOrDefault();
+            //groupTypeSelected.Selected = true;
+            ////var chosenGroup = chosenGroupType.Groups.Where( g => g.Id == groupId );
+            //var groupSelected = groupTypeSelected.Groups.Select( g => new GroupService().Get(groupId));
+            //var groupSelected = groupTypeSelected.Groups.Where( g => g.Group.Id == groupId ).FirstOrDefault();
+            //groupSelected.Selected = true;
+            //var groupLocationSelected = groupSelected.Locations.FirstOrDefault();
+            //groupLocationSelected.Selected = true;
+            //var scheduleSelected = groupLocationSelected.Schedules.Where( s => s.Schedule.Id == (int)Session["time"] ).FirstOrDefault();
+            //scheduleSelected.Selected = true;
 
             //var groupType = person.GroupTypes.Where( gt => new GroupTypeService().Get((int)Session["ministry"]).ChildGroupTypes.Any( gt => gt.Id == (int)Session["ministry"] ).FirstOrDefault();
             //groupType.Selected = true;
