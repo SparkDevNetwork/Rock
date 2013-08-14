@@ -79,7 +79,7 @@ namespace Rock.Extension
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
-        public string GetAttributeValue( string key )
+        public virtual string GetAttributeValue( string key )
         {
             if ( this.AttributeValues != null &&
                 this.AttributeValues.ContainsKey( key ) &&
@@ -95,7 +95,7 @@ namespace Rock.Extension
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns>A list of values or an empty list if none exists.</string></returns>
-        public List<string> GetAttributeValues( string key )
+        public virtual List<string> GetAttributeValues( string key )
         {
             if ( this.AttributeValues != null &&
                 this.AttributeValues.ContainsKey( key ) &&
