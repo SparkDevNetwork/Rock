@@ -47,12 +47,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     if ( person != null )
                     {
                         lblPersonName.Text = person.Person.FullName;
-                        /*
                         gActivityList.DataKeyNames = new string[] { "ListId" };
+                        /*
                         BindToActivityGrid();
                         LoadMinistries(person);
                         */
-                        
+
                         // Load Ministries
                         var groupTypeList = new List<GroupType>();
                         groupTypeList.AddRange( person.GroupTypes.SelectMany( gt => new GroupTypeService().Get( gt.GroupType.Id ).ParentGroupTypes ) );
