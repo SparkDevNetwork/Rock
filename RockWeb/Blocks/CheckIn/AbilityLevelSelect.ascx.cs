@@ -37,7 +37,7 @@ namespace RockWeb.Blocks.CheckIn
                 if ( !Page.IsPostBack )
                 {
                     //var abilityLevelDtGuid = new Guid( "D8672146-C14F-41E8-A143-242361CECCD3" );
-                    var abilityLevelDtGuid = new Guid( "7BEEF4D4-0860-4913-9A3D-857634D1BF7C" );
+                    var abilityLevelDtGuid = new Guid( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL );
                     
                     var family = CurrentCheckInState.CheckIn.Families.FirstOrDefault( f => f.Selected );
                     if ( family != null )

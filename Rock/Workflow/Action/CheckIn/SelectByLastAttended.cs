@@ -36,7 +36,7 @@ namespace Rock.Workflow.Action.CheckIn
                 {
                     foreach ( var person in family.People.Where( f => f.Selected ) )
                     {
-                        if ( person.LastCheckIn != null && person.GroupTypes.Count > 1 )
+                        if ( person.LastCheckIn != null )
                         {
                             var groupType = person.GroupTypes.Where( g => g.LastCheckIn == person.LastCheckIn ).FirstOrDefault();
                             if ( groupType != null )

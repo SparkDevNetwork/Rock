@@ -11,14 +11,20 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Model;
 
 namespace RockWeb.Blocks.CheckIn
 {
     [Description( "Check-in Location Select block" )]
+    [TextField( "Current Count Format", "How should current count be displayed", false, " Count: {0}" )]
     public partial class LocationSelect : CheckInBlock
     {
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
@@ -91,6 +97,11 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
+        /// <summary>
+        /// Handles the ItemCommand event of the rSelection control.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void rSelection_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             if ( KioskCurrentlyActive )
@@ -121,16 +132,29 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbBack control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbBack_Click( object sender, EventArgs e )
         {
             GoBack();
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbCancel_Click( object sender, EventArgs e )
         {
             CancelCheckin();
         }
 
+        /// <summary>
+        /// Goes the back.
+        /// </summary>
         private void GoBack()
         {
             foreach ( var family in CurrentCheckInState.CheckIn.Families )
@@ -153,6 +177,9 @@ namespace RockWeb.Blocks.CheckIn
             NavigateToPreviousPage();
         }
 
+        /// <summary>
+        /// Processes the selection.
+        /// </summary>
         private void ProcessSelection()
         {
             var errors = new List<string>();
@@ -168,6 +195,22 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
+        /// <summary>
+        /// Formats the count.
+        /// </summary>
+        /// <param name="locationId">The location id.</param>
+        /// <returns></returns>
+        protected string FormatCount( int locationId )
+        {
+            string currentCountFormat = GetAttributeValue( "CurrentCountFormat" );
+            if (!string.IsNullOrWhiteSpace(currentCountFormat) && currentCountFormat.Contains("{0}"))
+            {
+                return string.Format( " <span class='checkin-sub-title'>{0}</span>",
+                    string.Format( currentCountFormat, KioskLocationAttendance.Read( locationId ).CurrentCount ) );
+            }
+
+            return string.Empty;
+        }
 
     }
 }
