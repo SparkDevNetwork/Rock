@@ -536,16 +536,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             foreach( var groupType in person.GroupTypes.Where( gt => gt.Selected ) )
             {
-                grouptype1.Text += groupType;
                 foreach ( var Group in groupType.Groups.Where( g => g.Selected ) )
                 {
-                    group1.Text += Group;
                     foreach ( var location in Group.Locations.Where( l => l.Selected ) )
                     {
-                        grouplocation1.Text += location;
                         foreach ( var sched in location.Schedules.Where( s => s.Selected ) )
                         {
-                            schedule1.Text += sched;
                         }
                     }
                 }
