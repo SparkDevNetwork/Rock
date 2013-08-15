@@ -10,15 +10,16 @@
             HeaderText="Person"  />
         <asp:BoundField
             DataField="Age"  
-            HeaderText="Age"  />
-        <asp:BoundField             
-            HeaderText="Spouse"  />
+            HeaderText="Age"  
+            SortExpression="Age"  />
         <Rock:DefinedValueField
             DataField="PersonStatusValueId"
-            HeaderText="Member Status" />
+            HeaderText="Member Status" 
+            SortExpression="PersonStatusValueId"  />
         <Rock:DefinedValueField
             DataField="RecordStatusValueId"
-            HeaderText="Record Status"  />
+            HeaderText="Record Status"
+            SortExpression="RecordStatusValueId"  />
     </Columns>
 </Rock:Grid>
 
