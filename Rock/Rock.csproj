@@ -485,6 +485,10 @@
     <Compile Include="Migrations\201308142301072_CheckInAdminPages02.Designer.cs">
       <DependentUpon>201308142301072_CheckInAdminPages02.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201308151614282_GroupOrderGroupTypeOrder.cs" />
+    <Compile Include="Migrations\201308151614282_GroupOrderGroupTypeOrder.Designer.cs">
+      <DependentUpon>201308151614282_GroupOrderGroupTypeOrder.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -2154,6 +2158,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201308142301072_CheckInAdminPages02.resx">
       <DependentUpon>201308142301072_CheckInAdminPages02.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308151614282_GroupOrderGroupTypeOrder.resx">
+      <DependentUpon>201308151614282_GroupOrderGroupTypeOrder.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
