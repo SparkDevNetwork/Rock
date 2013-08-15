@@ -54,23 +54,50 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         */
 
                         // Load Ministries
-                        var groupTypeList = new List<GroupType>();
-                        groupTypeList.AddRange( person.GroupTypes.SelectMany( gt => new GroupTypeService().Get( gt.GroupType.Id ).ParentGroupTypes ) );
+                        var groupTypeList = person.GroupTypes.Where( gt => gt.Selected ).SelectMany( gt => new GroupTypeService().Get( gt.GroupType.Id ).ParentGroupTypes ).ToList();
                         rMinistry.DataSource = groupTypeList;
                         rMinistry.DataBind();
 
                         // Load Times
-                        var scheduleList = new List<Schedule>();
-                        scheduleList.AddRange( person.GroupTypes.SelectMany( c => new GroupTypeService().Get( c.GroupType.Id ).Groups.SelectMany( g => g.GroupLocations.SelectMany( gl => gl.Schedules ) ) ) );
+                        var scheduleList = person.GroupTypes.Where( gt => gt.Selected )
+                            .SelectMany( gt => gt.Groups.SelectMany( g => g.Locations.SelectMany( l => l.Schedules ).Select( s => s.Schedule ) ) ).ToList();
                         rTime.DataSource = scheduleList.GroupBy( g => g.Name ).Select( s => s.First() );
                         rTime.DataBind();
 
                         // Load Activities
-                        var activityList = new List<Group>();
-                        activityList.AddRange( person.GroupTypes.SelectMany( gt => gt.Groups.Select( g => g.Group ) ) );
+                        var activityList = person.GroupTypes.Where( gt => gt.Selected ).SelectMany( gt => gt.Groups ).Select( g => g.Group ).ToList();
                         lvActivity.DataSource = activityList;
                         lvActivity.DataBind();
                         Session["activityList"] = activityList;     // this is for the paging
+
+                        // Let's see if we can auto select what's already selected on this person
+                        var ministryId = person.GroupTypes.Where( gt => gt.Selected ).SelectMany( gt => new GroupTypeService().Get( gt.GroupType.Id ).ParentGroupTypes ).FirstOrDefault().Id;
+                        foreach( RepeaterItem item in rMinistry.Items )
+                        {
+                            if ( int.Parse( ( (LinkButton)item.FindControl( "lbSelectMinistry" ) ).CommandArgument ) == ministryId )
+                            {
+                                ( (LinkButton)item.FindControl( "lbSelectMinistry" ) ).AddCssClass( "active" );
+                            }
+                        }
+
+                        var scheduleId = person.GroupTypes.Where( gt => gt.Selected ).FirstOrDefault()
+                            .Groups.Where( g => g.Selected ).FirstOrDefault()
+                            .Locations.Where( l => l.Selected ).FirstOrDefault()
+                            .Schedules.Where( s => s.Selected ).FirstOrDefault().Schedule.Id;
+                        foreach ( RepeaterItem item in rTime.Items )
+                        {
+                            if ( int.Parse( ( (LinkButton)item.FindControl( "lbSelectTime" ) ).CommandArgument ) == scheduleId )
+                            {
+                                ( (LinkButton)item.FindControl( "lbSelectTime" ) ).AddCssClass( "active" );
+                            }
+                        }
+
+
+
+
+
+
+
 
                         // Load Selected Grid
                     }
