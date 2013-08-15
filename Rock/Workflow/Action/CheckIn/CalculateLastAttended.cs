@@ -16,8 +16,8 @@ namespace Rock.Workflow.Action.CheckIn
     /// <summary>
     /// Calculates and updates the LastCheckIn property on check-in objects
     /// </summary>
-    [Description("Calculates and updates the LastCheckIn property on check-in objects")]
-    [Export(typeof(ActionComponent))]
+    [Description( "Calculates and updates the LastCheckIn property on check-in objects" )]
+    [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Calculate Last Attended" )]
     public class CalculateLastAttended : CheckInActionComponent
     {
@@ -29,9 +29,9 @@ namespace Rock.Workflow.Action.CheckIn
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override bool Execute( Model.WorkflowAction action, Data.IEntity entity, out List<string> errorMessages )
+        public override bool Execute( Model.WorkflowAction action, Object entity, out List<string> errorMessages )
         {
-            var checkInState = GetCheckInState( action, out errorMessages );
+            var checkInState = GetCheckInState( entity, out errorMessages );
             if ( checkInState != null )
             {
                 DateTime sixMonthsAgo = DateTime.Today.AddMonths( -6 );
@@ -44,9 +44,9 @@ namespace Rock.Workflow.Action.CheckIn
                         foreach ( var groupType in person.GroupTypes )
                         {
                             var groupTypeCheckIns = attendanceService.Queryable()
-                                .Where( a => 
+                                .Where( a =>
                                     a.PersonId == person.Person.Id &&
-                                    a.Group.GroupTypeId == groupType.GroupType.Id && 
+                                    a.Group.GroupTypeId == groupType.GroupType.Id &&
                                     a.StartDateTime >= sixMonthsAgo )
                                 .ToList();
 
@@ -90,7 +90,6 @@ namespace Rock.Workflow.Action.CheckIn
                     }
                 }
 
-                SetCheckInState( action, checkInState );
                 return true;
 
             }
