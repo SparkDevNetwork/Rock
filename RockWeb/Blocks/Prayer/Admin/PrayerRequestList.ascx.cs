@@ -104,6 +104,7 @@ namespace RockWeb.Blocks.Prayer
 
             base.OnLoad( e );
         }
+
         #endregion
 
         #region Grid Filter
@@ -167,7 +168,7 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e"></param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( FilterSetting.PrayerCategory, cpPrayerCategoryFilter.SelectedValue );
+            rFilter.SaveUserPreference( FilterSetting.PrayerCategory, cpPrayerCategoryFilter.SelectedValue == Rock.Constants.None.IdValue ? string.Empty :  cpPrayerCategoryFilter.SelectedValue  );
             rFilter.SaveUserPreference( FilterSetting.FromDate, dtRequestEnteredDateRangeStartDate.Text );
             rFilter.SaveUserPreference( FilterSetting.ToDate, dtRequestEnteredDateRangeEndDate.Text );
 

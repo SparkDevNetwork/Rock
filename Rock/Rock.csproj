@@ -489,6 +489,10 @@
     <Compile Include="Migrations\201308131808402_GroupTypePurpose.Designer.cs">
       <DependentUpon>201308131808402_GroupTypePurpose.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201308142301072_CheckInAdminPages02.cs" />
+    <Compile Include="Migrations\201308142301072_CheckInAdminPages02.Designer.cs">
+      <DependentUpon>201308142301072_CheckInAdminPages02.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -1178,6 +1182,7 @@
     <Compile Include="Web\UI\IDimmableBlock.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterGroupLocationsByGender.cs" />
     <Compile Include="Workflow\Action\CheckIn\SelectByLastAttended.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterLocationGroupsByAbilityLevel.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterLocationGroupsBySpecialNeeds.cs" />
@@ -2162,6 +2167,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201308131808402_GroupTypePurpose.resx">
       <DependentUpon>201308131808402_GroupTypePurpose.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308142301072_CheckInAdminPages02.resx">
+      <DependentUpon>201308142301072_CheckInAdminPages02.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
