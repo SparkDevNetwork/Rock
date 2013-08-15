@@ -211,7 +211,7 @@ namespace Rock.Model
         /// </summary>
         public BinaryFileConfiguration()
         {
-            this.HasOptional( f => f.BinaryFileType ).WithMany().HasForeignKey( f => f.BinaryFileTypeId ).WillCascadeOnDelete( false );
+            this.HasRequired( f => f.BinaryFileType ).WithMany().HasForeignKey( f => f.BinaryFileTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( f => f.Data ).WithRequired().WillCascadeOnDelete();
         }
     }

@@ -235,8 +235,8 @@ namespace RockWeb.Blocks.Crm
                 cbShowInGroupList.Checked = groupType.ShowInGroupList;
                 cbShowInNavigation.Checked = groupType.ShowInNavigation;
                 tbIconCssClass.Text = groupType.IconCssClass;
-                imgIconSmall.ImageId = groupType.IconSmallFileId;
-                imgIconLarge.ImageId = groupType.IconLargeFileId;
+                imgIconSmall.BinaryFileId = groupType.IconSmallFileId.HasValue ? groupType.IconSmallFileId.Value : None.Id;
+                imgIconLarge.BinaryFileId = groupType.IconLargeFileId.HasValue ? groupType.IconLargeFileId.Value : None.Id;
 
                 cbTakesAttendance.Checked = groupType.TakesAttendance;
                 ddlAttendanceRule.SetValue( (int)groupType.AttendanceRule );
@@ -648,8 +648,8 @@ namespace RockWeb.Blocks.Crm
                 groupType.ShowInGroupList = cbShowInGroupList.Checked;
                 groupType.ShowInNavigation = cbShowInNavigation.Checked;
                 groupType.IconCssClass = tbIconCssClass.Text;
-                groupType.IconSmallFileId = imgIconSmall.ImageId;
-                groupType.IconLargeFileId = imgIconLarge.ImageId;
+                groupType.IconSmallFileId = imgIconSmall.BinaryFileId;
+                groupType.IconLargeFileId = imgIconLarge.BinaryFileId;
                 groupType.TakesAttendance = cbTakesAttendance.Checked;
                 groupType.AttendanceRule = ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>();
                 groupType.AttendancePrintTo = ddlAttendancePrintTo.SelectedValueAsEnum<PrintTo>();
