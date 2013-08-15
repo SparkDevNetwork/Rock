@@ -21,38 +21,18 @@ namespace Rock.Workflow.Action.CheckIn
         /// <param name="action">The action.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        protected CheckInState GetCheckInState( Model.WorkflowAction action, out List<string> errorMessages )
+        protected CheckInState GetCheckInState( Object entity, out List<string> errorMessages )
         {
-            CheckInState state = null;
-
             errorMessages = new List<string>();
 
-            string stateString = action.Activity.Workflow.GetAttributeValue( "CheckInState" );
-            if ( !String.IsNullOrEmpty( stateString ) )
+            if ( entity is CheckInState )
             {
-                state = CheckInState.FromJson( stateString );
-                if ( state == null )
-                {
-                    errorMessages.Add( "Could not deserialize CheckInState" );
-                }
-            }
-            else
-            {
-                errorMessages.Add( "Could not get CheckInState attribute" );
+                return (CheckInState)entity;
             }
 
-            return state;
+            errorMessages.Add( "Could not get CheckInState object" );
+            return null;
         }
 
-        /// <summary>
-        /// Sets the state of the check-in.
-        /// </summary>
-        /// <param name="action">The action.</param>
-        /// <param name="checkInState">State of the check-in.</param>
-        protected void SetCheckInState ( Model.WorkflowAction action, CheckInState checkInState)
-        {
-            string stateString = checkInState.ToJson();
-            action.Activity.Workflow.SetAttributeValue( "CheckInState", stateString );
-        }
     }
 }
