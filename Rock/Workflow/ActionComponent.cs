@@ -41,7 +41,10 @@ namespace Rock.Workflow
         /// <value>
         /// The type of the entity.
         /// </value>
-        public EntityTypeCache EntityType { get; private set; }
+        public EntityTypeCache EntityType 
+        {
+            get { return EntityTypeCache.Read( this.GetType() ); }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ActionComponent" /> class.
@@ -58,7 +61,7 @@ namespace Rock.Workflow
         /// <param name="entity">The entity.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public abstract Boolean Execute( WorkflowAction action, IEntity entity, out List<string> errorMessages );
+        public abstract Boolean Execute( WorkflowAction action, Object entity, out List<string> errorMessages );
 
         /// <summary>
         /// Loads the attributes.
