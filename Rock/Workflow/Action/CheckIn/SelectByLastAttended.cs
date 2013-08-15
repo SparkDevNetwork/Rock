@@ -8,15 +8,14 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
-using Rock.Model;
 
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
     /// Filters the available groups if one is from the previous attendance
     /// </summary>
-    [Description( "Selects the previously attended group/location/schedule for each person without requiring all groups/locations/schedules to be loaded." )]
-    [Export(typeof(ActionComponent))]
+    [Description( "Selects the grouptype for each person based on what they last checked into." )]
+    [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Select By Last Attended" )]
     public class SelectByLastAttended : CheckInActionComponent
     {
@@ -30,32 +29,40 @@ namespace Rock.Workflow.Action.CheckIn
         /// <exception cref="System.NotImplementedException"></exception>
         public override bool Execute( Model.WorkflowAction action, Object entity, out List<string> errorMessages )
         {
-
-           var checkInState = GetCheckInState( entity, out errorMessages );
-
-           if ( checkInState != null )
-           {
-                DateTime sixMonthsAgo = DateTime.Today.AddMonths( -6 );
-                var attendanceService = new AttendanceService();
-
-                foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )
+            var checkInState = GetCheckInState( entity, out errorMessages );
+            if ( checkInState != null )
+            {
+                var family = checkInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
+                if ( family != null )
                 {
-                    foreach ( var person in family.People )
+                    foreach ( var person in family.People.Where( f => f.Selected ) )
                     {
-                        foreach ( var groupType in person.GroupTypes )
+                        if ( person.LastCheckIn != null )
                         {
-                            var groupTypeCheckIns = attendanceService.Queryable()
-                                .Where( a =>
-                                    a.PersonId == person.Person.Id &&
-                                    a.Group.GroupTypeId == groupType.GroupType.Id &&
-                                    a.StartDateTime >= sixMonthsAgo )
-                                .ToList();
-
-                            if ( groupTypeCheckIns.Any() )
+                            var groupType = person.GroupTypes.Where( g => g.LastCheckIn == person.LastCheckIn ).FirstOrDefault();
+                            if ( groupType != null )
                             {
-                                //var lastGroupType = person.GroupTypes.Where( gt => gt.GroupType.Id == groupTypeCheckIns.Select( a => a
+                                groupType.Selected = true;
+                                var group = groupType.Groups.Where( g => g.LastCheckIn == person.LastCheckIn ).FirstOrDefault();
+                                if ( group != null )
+                                {
+                                    group.Selected = true;
+                                    var location = group.Locations.Where( l => l.LastCheckIn == person.LastCheckIn ).FirstOrDefault();
+                                    if ( location != null )
+                                    {
+                                        location.Selected = true;
+                                        var schedule = location.Schedules.Where( s => s.LastCheckIn == person.LastCheckIn ).FirstOrDefault();
+                                        if ( schedule != null )
+                                        {
+                                            schedule.Selected = true;
+                                        }
+
+                                    }
+                                }
+
                             }
                         }
+                        continue;
                     }
                 }
 
