@@ -211,8 +211,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     rowPerson.Gender = ( (RockDropDownList)item.FindControl( "ddlGender" ) ).SelectedValueAsEnum<Gender>();
                     rowPerson.Ability = ( (RockDropDownList)item.FindControl( "ddlAbilityGrade" ) ).SelectedValue;
                     rowPerson.AbilityGroup = ( (RockDropDownList)item.FindControl( "ddlAbilityGrade" ) ).SelectedItem.Attributes["optiongroup"];
-                    newFamilyList[ e.StartRowIndex + personOffset ] = rowPerson;
-                    personOffset++;
+                    newFamilyList[ System.Math.Abs(e.StartRowIndex - e.MaximumRows) + personOffset] = rowPerson;
+                    personOffset++;                    
                     
                     // check if the list should be expanded
                     if ( e.MaximumRows + e.StartRowIndex + personOffset >= newFamilyList.Count )

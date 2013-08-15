@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         Session["activityList"] = activityList;     // this is for the paging
                         
                         // Load Times
-                        var scheduleList = activityList.SelectMany( g => g.Locations.SelectMany( l => l.Schedules ) ) );
+                        var scheduleList = activityList.SelectMany( g => g.Locations.SelectMany( l => l.Schedules ) );
                         rTime.DataSource = scheduleList.Distinct().ToList();
                         rTime.DataBind();
 
