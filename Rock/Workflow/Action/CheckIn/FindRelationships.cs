@@ -31,7 +31,7 @@ namespace Rock.Workflow.Action.CheckIn
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override bool Execute( Model.WorkflowAction action, Data.IEntity entity, out List<string> errorMessages )
+        public override bool Execute( Model.WorkflowAction action, Object entity, out List<string> errorMessages )
         {
             string cacheKey = "Rock.FindRelationships.Roles";
 
@@ -61,7 +61,7 @@ namespace Rock.Workflow.Action.CheckIn
                 cache.Set( cacheKey, roles, cacheItemPolicy );
             }
 
-            var checkInState = GetCheckInState( action, out errorMessages );
+            var checkInState = GetCheckInState( entity, out errorMessages );
             if ( checkInState != null )
             {
                 if ( !roles.Any() )
@@ -101,7 +101,6 @@ namespace Rock.Workflow.Action.CheckIn
                         }
                     }
 
-                    SetCheckInState( action, checkInState );
                     return true;
                 }
                 else

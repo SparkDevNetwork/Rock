@@ -121,7 +121,7 @@ namespace Rock.Model
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         /// <exception cref="System.SystemException"></exception>
-        internal virtual bool Process( IEntity entity, out List<string> errorMessages )
+        internal virtual bool Process( Object entity, out List<string> errorMessages )
         {
             AddSystemLogEntry( "Processing..." );
 
