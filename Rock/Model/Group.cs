@@ -103,6 +103,16 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public bool IsActive { get; set; }
 
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int Order { get; set; }
+
         #endregion
 
         #region Virtual Properties
