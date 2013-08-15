@@ -73,6 +73,35 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         rTime.DataSource = scheduleList.Distinct().ToList();
                         rTime.DataBind();
 
+                        // Let's see if we can auto select what's already selected on this person
+                        var ministryId = person.GroupTypes.Where( gt => gt.Selected ).SelectMany( gt => new GroupTypeService().Get( gt.GroupType.Id ).ParentGroupTypes ).FirstOrDefault().Id;
+                        foreach( RepeaterItem item in rMinistry.Items )
+                        {
+                            if ( int.Parse( ( (LinkButton)item.FindControl( "lbSelectMinistry" ) ).CommandArgument ) == ministryId )
+                            {
+                                ( (LinkButton)item.FindControl( "lbSelectMinistry" ) ).AddCssClass( "active" );
+                            }
+                        }
+
+                        var scheduleId = person.GroupTypes.Where( gt => gt.Selected ).FirstOrDefault()
+                            .Groups.Where( g => g.Selected ).FirstOrDefault()
+                            .Locations.Where( l => l.Selected ).FirstOrDefault()
+                            .Schedules.Where( s => s.Selected ).FirstOrDefault().Schedule.Id;
+                        foreach ( RepeaterItem item in rTime.Items )
+                        {
+                            if ( int.Parse( ( (LinkButton)item.FindControl( "lbSelectTime" ) ).CommandArgument ) == scheduleId )
+                            {
+                                ( (LinkButton)item.FindControl( "lbSelectTime" ) ).AddCssClass( "active" );
+                            }
+                        }
+
+
+
+
+
+
+
+
                         // Load Selected Grid
                     }
                     else
