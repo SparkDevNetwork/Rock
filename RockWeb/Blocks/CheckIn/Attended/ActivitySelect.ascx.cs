@@ -56,44 +56,29 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         /*  The following three logic groups should move into a LoadCheckin() method so they can 
                          *  be reused if need be.  The other Load() methods aren't used anymore so they can be deleted. */
 
-                        // Load Ministries        
-                        var groupTypeList = person.GroupTypes.SelectMany( gt => gt.GroupType.ParentGroupTypes ).ToList();  
-                        // this needs to return CheckInGroupType so we can set the selected value automatically
-                        rMinistry.DataSource = groupTypeList;
-                        rMinistry.DataBind();
+                        LoadCheckin( person );
 
-                        // Load Activities
-                        var activityList = person.GroupTypes.SelectMany( gt => gt.Groups );
-                        lvActivity.DataSource = activityList.ToList();
-                        lvActivity.DataBind();
-                        Session["activityList"] = activityList;     // this is for the paging
-                        
-                        // Load Times
-                        var scheduleList = activityList.SelectMany( g => g.Locations.SelectMany( l => l.Schedules ) );
-                        rTime.DataSource = scheduleList.Distinct().ToList();
-                        rTime.DataBind();
+                        //// Let's see if we can auto select what's already selected on this person
+                        //var ministryId = person.GroupTypes.Where( gt => gt.Selected ).SelectMany( gt => new GroupTypeService().Get( gt.GroupType.Id ).ParentGroupTypes ).FirstOrDefault().Id;
+                        //foreach( RepeaterItem item in rMinistry.Items )
+                        //{
+                        //    if ( int.Parse( ( (LinkButton)item.FindControl( "lbSelectMinistry" ) ).CommandArgument ) == ministryId )
+                        //    {
+                        //        ( (LinkButton)item.FindControl( "lbSelectMinistry" ) ).AddCssClass( "active" );
+                        //    }
+                        //}
 
-                        // Let's see if we can auto select what's already selected on this person
-                        var ministryId = person.GroupTypes.Where( gt => gt.Selected ).SelectMany( gt => new GroupTypeService().Get( gt.GroupType.Id ).ParentGroupTypes ).FirstOrDefault().Id;
-                        foreach( RepeaterItem item in rMinistry.Items )
-                        {
-                            if ( int.Parse( ( (LinkButton)item.FindControl( "lbSelectMinistry" ) ).CommandArgument ) == ministryId )
-                            {
-                                ( (LinkButton)item.FindControl( "lbSelectMinistry" ) ).AddCssClass( "active" );
-                            }
-                        }
-
-                        var scheduleId = person.GroupTypes.Where( gt => gt.Selected ).FirstOrDefault()
-                            .Groups.Where( g => g.Selected ).FirstOrDefault()
-                            .Locations.Where( l => l.Selected ).FirstOrDefault()
-                            .Schedules.Where( s => s.Selected ).FirstOrDefault().Schedule.Id;
-                        foreach ( RepeaterItem item in rTime.Items )
-                        {
-                            if ( int.Parse( ( (LinkButton)item.FindControl( "lbSelectTime" ) ).CommandArgument ) == scheduleId )
-                            {
-                                ( (LinkButton)item.FindControl( "lbSelectTime" ) ).AddCssClass( "active" );
-                            }
-                        }
+                        //var scheduleId = person.GroupTypes.Where( gt => gt.Selected ).FirstOrDefault()
+                        //    .Groups.Where( g => g.Selected ).FirstOrDefault()
+                        //    .Locations.Where( l => l.Selected ).FirstOrDefault()
+                        //    .Schedules.Where( s => s.Selected ).FirstOrDefault().Schedule.Id;
+                        //foreach ( RepeaterItem item in rTime.Items )
+                        //{
+                        //    if ( int.Parse( ( (LinkButton)item.FindControl( "lbSelectTime" ) ).CommandArgument ) == scheduleId )
+                        //    {
+                        //        ( (LinkButton)item.FindControl( "lbSelectTime" ) ).AddCssClass( "active" );
+                        //    }
+                        //}
 
 
 
@@ -152,6 +137,22 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
+        /// Handles the ItemDataBound event of the rMinistry control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Web.UI.WebControls.RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rMinistry_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            {
+                if ( ( (CheckInGroup)e.Item.DataItem ).Selected )
+                {
+                    ( (LinkButton)e.Item.FindControl( "lbSelectMinistry" ) ).AddCssClass( "active" );
+                }
+            }
+        }
+
+        /// <summary>
         /// Handles the ItemCommand event of the rTime control.
         /// </summary>
         /// <param name="source">The source of the event.</param>
@@ -199,22 +200,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 if ( ( (CheckInSchedule)e.Item.DataItem ).Selected )
                 {
                     ( (LinkButton)e.Item.FindControl( "lbSelectTime" ) ).AddCssClass( "active" );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Handles the ItemDataBound event of the rMinistry control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.Web.UI.WebControls.RepeaterItemEventArgs"/> instance containing the event data.</param>
-        protected void rMinistry_ItemDataBound( object sender, RepeaterItemEventArgs e )
-        {
-            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
-            {
-                if ( ( (CheckInGroup)e.Item.DataItem ).Selected )
-                {
-                    ( (LinkButton)e.Item.FindControl( "lbSelectMinistry" ) ).AddCssClass( "active" );
                 }
             }
         }
@@ -315,134 +300,36 @@ namespace RockWeb.Blocks.CheckIn.Attended
         #region Internal Methods 
 
         /// <summary>
-        /// Loads the ministries.
+        /// Loads the checkin.
         /// </summary>
         /// <param name="person">The person.</param>
-        //protected void LoadMinistries( Person person )
-        //{
-        //    // fill the ministry repeater
-        //    List<GroupType> groupTypeList = new List<GroupType>();
-        //    foreach ( var groupType in CurrentGroupTypeIds )
-        //    {
-        //        GroupType groupTypeSelected = new GroupTypeService().Get( groupType );
-        //        groupTypeList.Add( groupTypeSelected );
-        //    }
+        protected void LoadCheckin( CheckInPerson person )
+        {
+            // Load Ministries        
+            // this needs to return CheckInGroupType so we can set the selected value automatically
+            var checkInGroupTypeList = new List<CheckInGroupType>();
+            foreach( var groupType in person.GroupTypes.SelectMany( gt => gt.GroupType.ParentGroupTypes ) )
+            {
+                CheckInGroupType checkInGroupType = new CheckInGroupType();
+                checkInGroupType.GroupType = groupType;
+                checkInGroupTypeList.Add( checkInGroupType );
+            }
+            //var groupTypeList = person.GroupTypes.SelectMany( gt => gt.GroupType.ParentGroupTypes ).ToList();
+            //rMinistry.DataSource = groupTypeList;
+            rMinistry.DataSource = checkInGroupTypeList;
+            rMinistry.DataBind();
 
-        //    rMinistry.DataSource = groupTypeList;
-        //    rMinistry.DataBind();
+            // Load Activities
+            var activityList = person.GroupTypes.SelectMany( gt => gt.Groups );
+            lvActivity.DataSource = activityList.ToList();
+            lvActivity.DataBind();
+            Session["activityList"] = activityList;     // this is for the paging
 
-        //    // if there are already activities that are selected for this person, load up the first one in the list
-        //    if ( gActivityList.Rows.Count > 0 )
-        //    {
-        //        var row = gActivityList.Rows[0];
-        //        var cell = row.Cells[2];
-        //        GroupTypeService gts = new GroupTypeService();
-        //        var groupTypeId = gts.Queryable().Where( a => a.Name == cell.Text ).Select( a => a.Id );
-        //        var parentId = GetParent( groupTypeId.FirstOrDefault(), 0 );
-        //        foreach ( RepeaterItem item in rMinistry.Items )
-        //        {
-        //            if ( int.Parse( ( (LinkButton)item.FindControl( "lbSelectMinistry" ) ).CommandArgument ) == parentId )
-        //            {
-        //                ( (LinkButton)item.FindControl( "lbSelectMinistry" ) ).AddCssClass( "active" );
-        //            }
-        //        }
-
-        //        LoadTimes();
-        //        var groupType = gts.Get( parentId );
-        //        Schedule s = new Schedule();
-        //        foreach ( var group in groupType.Groups )
-        //        {
-        //            foreach ( var groupLocation in group.GroupLocations )
-        //            {
-        //                foreach ( var schedule in groupLocation.Schedules )
-        //                {
-        //                    if ( schedule.Name == row.Cells[1].Text )
-        //                    {
-        //                        s = schedule;
-        //                    }
-        //                }
-        //            }
-        //        }
-
-        //        foreach ( RepeaterItem item in rTime.Items )
-        //        {
-        //            if ( int.Parse( ( (LinkButton)item.FindControl( "lbSelectTime" ) ).CommandArgument ) == s.Id )
-        //            {
-        //                ( (LinkButton)item.FindControl( "lbSelectTime" ) ).AddCssClass( "active" );
-        //            }
-        //        }
-
-        //        LoadActivities();
-        //        foreach ( ListViewItem item in lvActivity.Items )
-        //        {
-        //            if ( int.Parse( ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).CommandArgument ) == groupTypeId.FirstOrDefault() )
-        //            {
-        //                ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).AddCssClass( "active" );
-        //            }
-        //        }
-        //    }
-        //}
-
-        /// <summary>
-        /// Loads the times.
-        /// </summary>
-        //protected void LoadTimes()
-        //{
-        //    // fill the time repeater
-        //    foreach ( var groupType in CurrentGroupTypeIds )
-        //    {
-        //        List<Schedule> scheduleList = new List<Schedule>();
-        //        GroupType gt = new GroupType();
-        //        GroupTypeService gts = new GroupTypeService();
-        //        gt = gts.Get( groupType );
-        //        foreach ( var group in gt.Groups )
-        //        {
-        //            foreach ( var groupLocation in group.GroupLocations )
-        //            {
-        //                foreach ( var schedule in groupLocation.Schedules )
-        //                {
-        //                    if ( !scheduleList.Contains( schedule ) )
-        //                    {
-        //                        scheduleList.Add( schedule );
-        //                    }
-        //                }
-        //            }
-        //        }
-
-        //        rTime.DataSource = scheduleList;
-        //        rTime.DataBind();
-        //    }
-        //}
-
-        /// <summary>
-        /// Loads the activities.
-        /// </summary>
-        //protected void LoadActivities()
-        //{
-        //    // fill the activity repeater
-        //    var parentId = 0;
-        //    foreach ( RepeaterItem item in rMinistry.Items )
-        //    {
-        //        if ( HasActiveClass( (LinkButton)item.FindControl( "lbSelectMinistry" ) ) )
-        //        {
-        //            parentId = int.Parse( ( (LinkButton)item.FindControl( "lbSelectMinistry" ) ).CommandArgument );
-        //        }
-        //    }
-
-        //    List<GroupType> activityGroupTypeList = new List<GroupType>();
-        //    //foreach ( var activityGroupType in CurrentRoomGroupTypes )
-        //    //{
-        //    //    var parent = GetParent( activityGroupType.Id, 0 );
-        //    //    if ( parentId == parent )
-        //    //    {
-        //    //        activityGroupTypeList.Add( activityGroupType );
-        //    //    }
-        //    //}
-
-        //    Session["activityGroupTypeList"] = activityGroupTypeList;
-        //    lvActivity.DataSource = activityGroupTypeList;
-        //    lvActivity.DataBind();
-        //}
+            // Load Times
+            var scheduleList = activityList.SelectMany( g => g.Locations.SelectMany( l => l.Schedules ) );
+            rTime.DataSource = scheduleList.Distinct().ToList();
+            rTime.DataBind();
+        }
 
         /// <summary>
         /// Determines whether [has active class] [the specified webcontrol].
