@@ -73,7 +73,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var service = new PersonService();
             var person = service.Get( Person.Id );
 
-            person.PhotoId = imgPhoto.ImageId;
+            person.PhotoId = imgPhoto.BinaryFileId;
             person.GivenName = tbGivenName.Text;
             person.NickName = tbNickName.Text;
             person.MiddleName = tbMiddleName.Text;
@@ -148,7 +148,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </summary>
         private void ShowDetails()
         {
-            imgPhoto.ImageId = Person.PhotoId;
+            imgPhoto.BinaryFileId = Person.PhotoId.HasValue ? Person.PhotoId.Value : Rock.Constants.None.Id;
             tbGivenName.Text = Person.GivenName;
             tbNickName.Text = Person.NickName;
             tbMiddleName.Text = Person.MiddleName;
@@ -168,7 +168,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 foreach(var phoneNumberType in phoneNumberTypes.DefinedValues)
                 {
-                    var phoneNumber = Person.PhoneNumbers.Where( n => n.NumberTypeValueId == phoneNumberType.Id).FirstOrDefault();
+                    var phoneNumber = Person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberType.Id );
                     if (phoneNumber == null)
                     {
                         var numberType = new DefinedValue();

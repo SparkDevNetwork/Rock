@@ -26,14 +26,15 @@ namespace RockWeb
         /// Saves the data.
         /// </summary>
         /// <param name="context">The context.</param>
-        /// <param name="inputStream">The input stream.</param>
+        /// <param name="uploadedFile"></param>
         /// <param name="file">The file.</param>
-        public override void SaveData( HttpContext context, Stream inputStream, BinaryFile file )
+        /// <param name="fileType"></param>
+        public override void SaveData( HttpContext context, HttpPostedFile uploadedFile, BinaryFile file, BinaryFileType fileType)
         {
             // Check to see if we should flip the image.
             try
             {
-                Bitmap bmp = new Bitmap( inputStream );
+                Bitmap bmp = new Bitmap( uploadedFile.InputStream );
                 var exif = new EXIFextractor( ref bmp, "\n" );
                 if ( exif["Orientation"] != null )
                 {

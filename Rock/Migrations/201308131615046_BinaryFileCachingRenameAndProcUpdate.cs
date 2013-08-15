@@ -67,6 +67,8 @@ UPDATE [EntityType] SET
     [Name] = REPLACE([Name], 'Rock.BinaryFile.Storage.', 'Rock.Storage.Provider.'),
     [AssemblyName] = REPLACE([AssemblyName], 'Rock.BinaryFile.Storage.', 'Rock.Storage.Provider.')
 WHERE [Name] LIKE 'Rock.BinaryFile.Storage.%'" );
+
+            AddBlockAttributeValue( "8966CAFE-D8FC-4703-8960-17CB5807A3B8", "259AF14D-0214-4BE4-A7BF-40423EA07C99", "Rock.Storage.ProviderContainer, Rock" );
         }
         
         /// <summary>
@@ -113,6 +115,8 @@ UPDATE [EntityType] SET
     [Name] = REPLACE([Name], 'Rock.Storage.Provider.', 'Rock.BinaryFile.Storage.'),
     [AssemblyName] = REPLACE([AssemblyName], 'Rock.Storage.Provider.', 'Rock.BinaryFile.Storage.')
 WHERE [Name] LIKE 'Rock.Storage.Provider.%'" );
+
+            AddBlockAttributeValue( "8966CAFE-D8FC-4703-8960-17CB5807A3B8", "259AF14D-0214-4BE4-A7BF-40423EA07C99", "Rock.BinaryFile.StorageContainer, Rock" );
         }
     }
 }

@@ -6,12 +6,15 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.ServiceModel.Web;
+using System.Text;
 using System.Web;
 using System.Web.SessionState;
 
 using Rock;
 using Rock.Model;
+using Rock.Storage;
 
 namespace RockWeb
 {
@@ -19,7 +22,6 @@ namespace RockWeb
     /// Handles retrieving file data from storage
     /// </summary>
     public class FileUploader : IHttpHandler, IRequiresSessionState
-
     {
         /// <summary>
         /// Gets a value indicating whether another request can use the <see cref="T:System.Web.IHttpHandler" /> instance.
@@ -46,48 +48,58 @@ namespace RockWeb
 
             try
             {
-                HttpPostedFile uploadedFile = null;
                 HttpFileCollection hfc = context.Request.Files;
-                foreach ( string fk in hfc.AllKeys )
-                {
-                    uploadedFile = hfc[fk];
-                    break;
-                }
+                HttpPostedFile uploadedFile = hfc.AllKeys.Select( fk => hfc[fk] ).FirstOrDefault();
 
                 // No file or no data?  No good.
                 if ( uploadedFile == null || uploadedFile.ContentLength == 0 )
                 {
+                    // TODO: Is there a better response we could send than a 200?
                     context.Response.Write( "0" );
                     return;
                 }
 
                 BinaryFileService fileService = new BinaryFileService();
-                Rock.Model.BinaryFile cmsFile = null;
+                var id = context.Request.QueryString["fileId"];
+                BinaryFile file = null;
+                BinaryFileType fileType = null;
 
-                // was an ID given? if so, fetch that file and replace it with the new one
-                if ( context.Request.QueryString.Count > 0 )
+                if ( !string.IsNullOrEmpty( id ) )
                 {
-                    string anID = context.Request.QueryString[0];
-                    int id;
-                    cmsFile = ( int.TryParse( anID, out id ) ) ? fileService.Get( id ) : fileService.GetByEncryptedKey( anID );
+                    int fileId;
+                    file = int.TryParse( id, out fileId ) ? fileService.Get( fileId ) : fileService.GetByEncryptedKey( id );
                 }
 
-                if (cmsFile == null)
+                if ( file == null )
                 {
                     // ...otherwise create a new Cms File
-                    cmsFile = new Rock.Model.BinaryFile();
-                    cmsFile.IsTemporary = true;
-                    fileService.Add( cmsFile, null );
+                    file = new BinaryFile { IsTemporary = true };
+                    fileService.Add( file, null );
                 }
 
-                cmsFile.MimeType = uploadedFile.ContentType;
-                cmsFile.FileName = Path.GetFileName( uploadedFile.FileName );
-                SaveData( context, uploadedFile.InputStream, cmsFile );
+                // Check to see if BinaryFileType info was sent
+                BinaryFileTypeService fileTypeService = new BinaryFileTypeService();
+                var guid = context.Request.QueryString["fileTypeGuid"];
 
-                fileService.Save( cmsFile, null );
+                if ( !string.IsNullOrEmpty( guid ) )
+                {
+                    Guid fileTypeGuid;
+                    fileType = Guid.TryParse( guid, out fileTypeGuid ) ? fileTypeService.Get( fileTypeGuid ) : fileTypeService.GetByEncryptedKey( guid );
+                }
+                else if ( file.BinaryFileType != null )
+                {
+                    fileType = file.BinaryFileType;
+                }
 
-                cmsFile.Data = null;
-                context.Response.Write( new { Id = cmsFile.Id, FileName = cmsFile.FileName }.ToJson() );
+                // If we're dealing with a new BinaryFile and a BinaryFileType Guid was passed in,
+                // set its Id before the BinaryFile gets saved to the DB.
+                if ( file.BinaryFileType == null && fileType != null )
+                {
+                    file.BinaryFileTypeId = fileType.Id;
+                }
+
+                SaveData( context, uploadedFile, file, fileType );
+                context.Response.Write( new { Id = file.Id, FileName = file.FileName }.ToJson() );
 
             }
             catch ( Exception ex )
@@ -99,20 +111,25 @@ namespace RockWeb
         /// <summary>
         /// Saves the data.
         /// </summary>
-        /// <param name="context">The context.</param>
-        /// <param name="inputStream">The input stream.</param>
+        /// <param name="context">The current HTTP context.</param>
+        /// <param name="uploadedFile">The file that was uploaded</param>
         /// <param name="file">The file.</param>
-        public virtual void SaveData( HttpContext context,  Stream inputStream, BinaryFile file )
+        /// <param name="fileType">The file type.</param>
+        public virtual void SaveData( HttpContext context, HttpPostedFile uploadedFile, BinaryFile file, BinaryFileType fileType )
         {
-            using ( MemoryStream ms = new MemoryStream() )
+            var provider = fileType != null
+                ? ProviderContainer.GetComponent( fileType.StorageEntityType.Name )
+                : ProviderContainer.DefaultComponent;
+            file.MimeType = uploadedFile.ContentType;
+            file.FileName = Path.GetFileName( uploadedFile.FileName );
+
+            using ( var sr = new StreamReader( uploadedFile.InputStream ) )
             {
-                inputStream.CopyTo( ms );
-                if ( file.Data == null )
-                {
-                    file.Data = new BinaryFileData();
-                }
-                file.Data.Content = ms.ToArray();
+                var encoding = Encoding.GetEncoding( "utf-8" );
+                file.Data = new BinaryFileData { Content = encoding.GetBytes( sr.ReadToEnd() ) };
             }
+
+            provider.SaveFile( file, null );
         }
     }
 }
