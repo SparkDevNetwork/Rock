@@ -39,6 +39,12 @@ namespace Rock.Workflow.Action.CheckIn
             {
                 DateTime startDateTime = DateTime.Now;
 
+                int securityCodeLength = 3;
+                if ( !int.TryParse( GetAttributeValue( action, "SecurityCodeLength" ), out securityCodeLength ) )
+                {
+                    securityCodeLength = 3;
+                }
+
                 using ( var uow = new Rock.Data.UnitOfWorkScope() )
                 {
                     var attendanceCodeService = new AttendanceCodeService();
@@ -49,11 +55,6 @@ namespace Rock.Workflow.Action.CheckIn
                     {
                         foreach ( var person in family.People.Where( p => p.Selected ) )
                         {
-                            int securityCodeLength = 3;
-                            if ( !int.TryParse( GetAttributeValue( action, "SecurityCodeLength" ), out securityCodeLength ) )
-                            {
-                                securityCodeLength = 3;
-                            }
                             var attendanceCode = attendanceCodeService.GetNew( securityCodeLength );
                             person.SecurityCode = attendanceCode.Code;
 

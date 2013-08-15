@@ -22,6 +22,8 @@ namespace RockWeb.Blocks.Prayer
 {
     [ContextAware(typeof(PrayerRequest))]
     [TextField( "Note Type", "The note type name associated with the context entity to use (If it doesn't exist it will be created. Default is 'Prayer Comment').", false, "Prayer Comment", "Behavior", 0, "NoteType" )]
+    [TextField( "Title", "The title of the notes/comments section.", false, "Comments", "Behavior", 1 )]
+
     public partial class PrayerCommentDetail : RockBlock, IDetailBlock
     {
         #region Private BlockType Attributes
@@ -41,6 +43,7 @@ namespace RockWeb.Blocks.Prayer
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+            btnAddNote.Click += btnAddNote_Click;
         }
 
         /// <summary>
@@ -51,16 +54,17 @@ namespace RockWeb.Blocks.Prayer
         {
             base.OnLoad( e );
             string noteId = PageParameter( PrayerCommentKeyParameter );
-            
+
+            RegisterScripts();
             if ( !Page.IsPostBack )
             {
+                lTitle.Text = GetAttributeValue( "Title" );
+
                 if ( !string.IsNullOrWhiteSpace( noteId ) )
                 {
                     // Set up to scroll to the top of the given note...
                     string script = string.Format(
-                        @"$(document).ready(function() {{
-                            $(""html, body"").animate({{scrollTop: $(""[rel='{0}']"").offset().top}}, {{ duration: 'slow', easing: 'swing'}});
-                        }});", noteId );
+                        @"$('html, body').animate({{scrollTop: $(""[rel='{0}']"").offset().top}}, {{ duration: 'slow', easing: 'swing'}});", noteId );
 
                     this.Page.ClientScript.RegisterStartupScript( this.GetType(), string.Format( "scroll-to-comment-{0}", this.ClientID ), script, true );
 
@@ -71,6 +75,7 @@ namespace RockWeb.Blocks.Prayer
                     fieldsetEditDetails.Visible = false;
                 }
             }
+
             contextEntity = this.ContextEntity();
 
             if ( contextEntity != null )
@@ -88,6 +93,74 @@ namespace RockWeb.Blocks.Prayer
             {
                 ShowEditDetails(prayerComment); 
             }
+
+
+        }
+
+        private void RegisterScripts()
+        {
+            // script for handling the "+add" note button.
+            string script = @"
+    $('a.add-note').click(function () {
+        $(this).parent().siblings('.widget-content').children('.note-entry').slideToggle(""slow"");
+    });
+    
+    $('a.add-note-cancel').click(function () {
+        $(this).parent().siblings('.note').children('textarea').val('');
+        $(this).parent().parent().slideToggle(""slow"");
+    });
+
+    $('.persontimeline article').live({
+        mouseenter:
+            function () {
+                var actionsDiv = $('.actions', this);
+                if (actionsDiv.length > 0) {
+                    $(actionsDiv).stop(true, true).fadeIn(""slow"");
+                }
+            },
+        mouseleave:
+            function () {
+                var actionsDiv = $('.actions', this);
+                if (actionsDiv.length > 0) {
+                    $(actionsDiv).stop(true, true).fadeOut(""slow"");
+                }
+            }
+    });
+";
+            ScriptManager.RegisterStartupScript( Page, Page.GetType(), "add-note", script, true );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnAddNote control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        void btnAddNote_Click( object sender, EventArgs e )
+        {
+            var service = new NoteService();
+
+            var note = new Note();
+            note.IsSystem = false;
+            note.IsAlert = false;
+            note.NoteTypeId = noteType.Id;
+            note.EntityId = contextEntity.Id;
+            note.CreationDateTime = DateTime.Now;
+            note.Text = tbNewNote.Text;
+            note.Caption = CurrentPerson.FullName;
+
+            if ( noteType.Sources != null )
+            {
+                var source = noteType.Sources.DefinedValues.FirstOrDefault();
+                if ( source != null )
+                {
+                    note.SourceTypeValueId = source.Id;
+                }
+            }
+
+            service.Add( note, CurrentPersonId );
+            service.Save( note, CurrentPersonId );
+
+            ShowNotes();
         }
 
         private void GetNoteType()
@@ -113,10 +186,6 @@ namespace RockWeb.Blocks.Prayer
 
         private void ShowNotes()
         {
-            //tbNewNote.Text = string.Empty;
-            //cbAlert.Checked = false;
-            //cbPrivate.Checked = false;
-
             phNotesBefore.Controls.Clear();
             phNotesAfter.Controls.Clear();
 
@@ -186,46 +255,6 @@ namespace RockWeb.Blocks.Prayer
             {
                 return;
             }
-
-            //PrayerRequest prayerRequest;
-
-            //if ( !itemKeyValue.Equals( 0 ) )
-            //{
-            //    prayerRequest = new PrayerRequestService().Get( itemKeyValue );
-            //}
-            //else
-            //{
-            //    prayerRequest = new PrayerRequest { Id = 0, IsActive = true, IsApproved = true, AllowComments = true };
-            //}
-
-            //hfPrayerRequestId.Value = prayerRequest.Id.ToString();
-
-            //// render UI based on Authorized and IsSystem
-            //bool readOnly = false;
-
-            //nbEditModeMessage.Text = string.Empty;
-            //if ( !IsUserAuthorized( "Edit" ) )
-            //{
-            //    readOnly = true;
-            //    nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( PrayerRequest.FriendlyTypeName );
-            //}
-
-            //if ( readOnly )
-            //{
-            //    //btnEdit.Visible = false;
-            //    ShowReadonlyDetails( prayerRequest );
-            //}
-            //else
-            //{
-            //    if ( prayerRequest.Id > 0 )
-            //    {
-            //        ShowReadonlyDetails( prayerRequest );
-            //    }
-            //    else
-            //    {
-            //        ShowEditDetails( prayerRequest );
-            //    }
-            //}
         }
         #endregion
 
@@ -234,17 +263,6 @@ namespace RockWeb.Blocks.Prayer
         private void ShowReadonlyDetails( PrayerRequest prayerRequest )
         {
             SetEditMode( false );
-
-            //litFullName.Text = prayerRequest.FullName;
-            //litCategory.Text = prayerRequest.Category.Name;
-            //litRequest.Text = HttpUtility.HtmlEncode( prayerRequest.Text );
-
-            //ShowStatus( prayerRequest, this.CurrentPerson, litFlaggedMessageRO );
-            //ShowPrayerCount( prayerRequest, litPrayerCountRO );
-
-            //litStatus.Text = ( ! prayerRequest.IsApproved ?? false ) ? "<dt><span class='label label-important'>unapproved</span></dt>" : "";
-            //litUrgent.Text = ( prayerRequest.IsUrgent ?? false ) ? "<dt><span class='label label-info'><i class='icon-exclamation-sign'></i> urgent</span></dt>" : "";
-
         }
 
         private void ShowEditDetails( Note prayerComment )
@@ -260,6 +278,10 @@ namespace RockWeb.Blocks.Prayer
             tbText.Attributes.Add( "rel", prayerComment.Id.ToString() );
         }
 
+        /// <summary>
+        /// Sets the edit mode.
+        /// </summary>
+        /// <param name="enableEdit">if set to <c>true</c> [enable edit].</param>
         private void SetEditMode(bool enableEdit)
         {
             fieldsetEditDetails.Visible = enableEdit;
