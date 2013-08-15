@@ -38,11 +38,6 @@ namespace RockWeb.Blocks.Administration
             rFilter.DisplayFilterValue += rFilter_DisplayFilterValue;
             BindFilter();
 
-            if ( !Page.IsPostBack )
-            {
-                AddScheduleColumns();
-            }
-
             gGroupLocationSchedule.DataKeyNames = new string[] { "GroupLocationId" };
             gGroupLocationSchedule.Actions.ShowAdd = false;
             gGroupLocationSchedule.IsDeleteEnabled = false;
@@ -55,6 +50,8 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
+            AddScheduleColumns();
+            
             if ( !Page.IsPostBack )
             {
                 BindGrid();
@@ -85,14 +82,31 @@ namespace RockWeb.Blocks.Administration
                 scheduleQry = scheduleQry.Where( a => a.CategoryId == null );
             }
 
+            // clear out any existing schedule columns and add the ones that match the current filter setting
             var scheduleList = scheduleQry.OrderBy( a => a.Name ).Select( a => new { a.Id, a.Name } ).ToList();
 
+            var checkBoxEditableFields = gGroupLocationSchedule.Columns.OfType<CheckBoxEditableField>().ToList();
+            foreach ( var field in checkBoxEditableFields )
+            {
+                gGroupLocationSchedule.Columns.Remove( field );
+            }
+            
             foreach ( var item in scheduleList )
             {
                 string dataFieldName = string.Format( "scheduleField_{0}", item.Id );
 
                 CheckBoxEditableField field = new CheckBoxEditableField { HeaderText = item.Name, DataField = dataFieldName };
                 gGroupLocationSchedule.Columns.Add( field );
+            }
+
+            if ( !scheduleList.Any() )
+            {
+                nbNotification.Text = "No schedules found for the selected schedule category. Try choosing a different schedule category in the filter options.";
+                nbNotification.Visible = true;
+            }
+            else
+            {
+                nbNotification.Visible = false;
             }
         }
 
