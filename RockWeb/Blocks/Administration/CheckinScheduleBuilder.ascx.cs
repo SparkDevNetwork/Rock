@@ -98,6 +98,16 @@ namespace RockWeb.Blocks.Administration
                 CheckBoxEditableField field = new CheckBoxEditableField { HeaderText = item.Name, DataField = dataFieldName };
                 gGroupLocationSchedule.Columns.Add( field );
             }
+
+            if ( !scheduleList.Any() )
+            {
+                nbNotification.Text = "No schedules found for the selected schedule category. Try choosing a different schedule category in the filter options.";
+                nbNotification.Visible = true;
+            }
+            else
+            {
+                nbNotification.Visible = false;
+            }
         }
 
         #endregion

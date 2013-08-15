@@ -9,6 +9,7 @@
             <Rock:LabeledDropDownList ID="ddlParentLocation" runat="server" LabelText="Parent Location" />
         </Rock:GridFilter>
 
+        <Rock:NotificationBox ID="nbNotification" runat="server" NotificationBoxType="Warning" />
         <Rock:Grid ID="gGroupLocationSchedule" runat="server" AllowSorting="true" AllowPaging="false" >
             <Columns>
                 <asp:BoundField DataField="GroupName" HeaderText="Group" SortExpression="GroupName" />
