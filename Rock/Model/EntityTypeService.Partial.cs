@@ -96,6 +96,34 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Returns the entities as a grouped collection of listitems with the 
+        /// "CommonGets the entity list items.
+        /// </summary>
+        /// <returns></returns>
+        public List<System.Web.UI.WebControls.ListItem> GetEntityListItems()
+        {
+            var items = new List<System.Web.UI.WebControls.ListItem>();
+
+            var entities = GetEntities().OrderBy( e => e.FriendlyName ).ToList();
+
+            foreach ( var entity in entities.Where( t => t.IsCommon ) )
+            {
+                var li = new System.Web.UI.WebControls.ListItem( entity.FriendlyName, entity.Id.ToString() );
+                li.Attributes.Add( "optiongroup", "Common" );
+                items.Add( li );
+            }
+
+            foreach ( var entity in entities )
+            {
+                var li = new System.Web.UI.WebControls.ListItem( entity.FriendlyName, entity.Id.ToString() );
+                li.Attributes.Add( "optiongroup", "All" );
+                items.Add( li );
+            }
+
+            return items;
+        }
+
+        /// <summary>
         /// Gets a list of ISecured entities (all models) that have not yet been registered and adds them
         /// as an entity type.
         /// </summary>
