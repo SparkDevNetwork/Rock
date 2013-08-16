@@ -275,10 +275,20 @@ $(document).ready(function() {
         {
             var entityTypeService = new EntityTypeService();
 
+            ddlEntityType.Items.Clear();
+            ddlEntityType.Items.Add( new ListItem( string.Empty, string.Empty ) );
+            new EntityTypeService().GetEntityListItems().ForEach( l => ddlEntityType.Items.Add( l ) );
+
+            BindDataTransformations();
+        }
+
+        public void BindDataTransformations()
+        {
             ddlTransform.Items.Clear();
-            if ( dataView.EntityTypeId.HasValue )
+            int? entityTypeId = ddlEntityType.SelectedValueAsInt();
+            if ( entityTypeId.HasValue )
             {
-                var filteredEntityType = EntityTypeCache.Read( dataView.EntityTypeId.Value );
+                var filteredEntityType = EntityTypeCache.Read( entityTypeId.Value );
                 foreach ( var component in DataTransformContainer.GetComponentsByTransformedEntityName( filteredEntityType.Name ).OrderBy( c => c.Title ) )
                 {
                     var transformEntityType = EntityTypeCache.Read( component.TypeName );
@@ -287,10 +297,6 @@ $(document).ready(function() {
                 }
             }
             ddlTransform.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
-
-            ddlEntityType.Items.Clear();
-            ddlEntityType.Items.Add( new ListItem( string.Empty, string.Empty ) );
-            new EntityTypeService().GetEntityListItems().ForEach( l => ddlEntityType.Items.Add( l ) );
         }
 
         /// <summary>
@@ -716,6 +722,7 @@ $(document).ready(function() {
         {
             var dataViewFilter = new DataViewFilter();
             dataViewFilter.ExpressionType = FilterExpressionType.GroupAll;
+            BindDataTransformations();
             CreateFilterControl( ddlEntityType.SelectedValueAsInt(), dataViewFilter, false );
         }
 
