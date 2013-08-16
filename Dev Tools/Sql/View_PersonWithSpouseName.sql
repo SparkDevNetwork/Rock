@@ -18,6 +18,7 @@ with AdultFamilyMembersCTE as
 
 select 
    [p].*, 
+   [spouse].[Id] [SpouseNamePersonId],
    [spouse].[FullNameLastFirst] [SpouseName] 
 from Person [p]
 left outer join [AdultFamilyMembersCTE] [pa]
@@ -26,5 +27,6 @@ left outer join [AdultFamilyMembersCTE] [spouse]
 on [spouse].GroupId = pa.GroupId
 and [spouse].PersonId != pa.PersonId
 and [spouse].Gender != pa.Gender
-
+--and [Person].MaritalStatusValueId = (select Id from DefinedValue where Guid = 'ToDo: MarriedGuid') 
+--and [Spouse].MaritalStatusValueId = (select Id from DefinedValue where Guid = 'ToDo: MarriedGuid') 
 
