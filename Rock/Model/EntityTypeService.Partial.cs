@@ -116,7 +116,7 @@ namespace Rock.Model
             foreach ( var entity in entities )
             {
                 var li = new System.Web.UI.WebControls.ListItem( entity.FriendlyName, entity.Id.ToString() );
-                li.Attributes.Add( "optiongroup", "All" );
+                li.Attributes.Add( "optiongroup", "All Entities" );
                 items.Add( li );
             }
 
