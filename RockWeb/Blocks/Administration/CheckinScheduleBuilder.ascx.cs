@@ -50,8 +50,6 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            AddScheduleColumns();
-
             if ( !Page.IsPostBack )
             {
                 BindGrid();
@@ -71,7 +69,7 @@ namespace RockWeb.Blocks.Administration
             var scheduleQry = scheduleService.Queryable().Where( a => a.CheckInStartOffsetMinutes != null );
 
             // limit Schedules to the Category from the Filter
-            int? scheduleCategoryId = pCategory.SelectedValueAsInt() ?? Rock.Constants.All.Id;
+            int scheduleCategoryId = rFilter.GetUserPreference( "Category" ).AsInteger() ?? Rock.Constants.All.Id;
             if ( scheduleCategoryId != Rock.Constants.All.Id )
             {
                 scheduleQry = scheduleQry.Where( a => a.CategoryId == scheduleCategoryId );
@@ -162,7 +160,7 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        #region Grid Events
+        #region Grid/Filter Events
 
         /// <summary>
         /// Handles the ApplyFilterClick event of the rFilter control.
@@ -256,6 +254,8 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         protected void BindGrid()
         {
+            AddScheduleColumns();
+            
             var groupLocationService = new GroupLocationService();
 
             var groupLocationQry = groupLocationService.Queryable();
