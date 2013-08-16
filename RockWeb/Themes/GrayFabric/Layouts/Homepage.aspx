@@ -24,27 +24,6 @@
 			</div>
 	  		
            <Rock:Zone ID="Navigation" runat="server" />
-	  		<div class="navbar">
-	  			<div class="navbar-inner">
-			  		<!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-					<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-					</a>
-			  		
-			  		<div class="nav-collapse collapse">
-			  		<ul class="nav">
-			  			<li><a href="#">Home</a></li>
-			  			<li class="divider-vertical"></li>
-			  			<li><a href="#">About</a></li>
-			  			<li class="divider-vertical"></li>
-			  			<li><a href="#">Contact</a></li>
-			  			<li class="divider-vertical"></li>
-			  		</ul>
-			  		</div>
-	  			</div>
-	  		</div>
 
 	  	</header>
 
