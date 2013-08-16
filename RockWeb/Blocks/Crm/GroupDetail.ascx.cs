@@ -698,7 +698,7 @@ namespace RockWeb.Blocks.Crm
 
             hfGroupId.SetValue( group.Id );
             lGroupIconHtml.Text = groupIconHtml;
-            lReadOnlyTitle.Text = group.Name;
+            lReadOnlyTitle.Text = group.Name.FormatAsHtmlTitle();
             string activeHtmlFormat = "<span class='label {0} pull-right' >{1}</span>";
             if ( group.IsActive )
             {

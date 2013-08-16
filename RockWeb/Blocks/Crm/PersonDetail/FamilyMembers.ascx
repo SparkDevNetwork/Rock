@@ -14,7 +14,7 @@
                 
                         <div class="span8 members clearfix">
 
-                            <header><%# Eval("Name") %> <span class="light">Family</span></header>
+                            <header class="title"><span class="first-word"><%# Eval("Name") %></span> Family</header>
 
                             <ul class="clearfix">
 
