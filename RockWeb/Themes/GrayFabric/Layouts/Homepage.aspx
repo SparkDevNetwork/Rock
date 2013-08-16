@@ -1,5 +1,4 @@
-﻿<%@ Page ValidateRequest="false" Language="C#" MasterPageFile="Site.Master" 
-    AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
+﻿<%@ Page ValidateRequest="false" Language="C#" MasterPageFile="Site.Master" AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
     <link href="/Themes/GrayFabric/Css/flexslider.css" rel="stylesheet">
