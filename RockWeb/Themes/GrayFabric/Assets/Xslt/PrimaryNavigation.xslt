@@ -19,7 +19,7 @@
                             <xsl:attribute name="href">
                                 <xsl:value-of select="@url"/>
                             </xsl:attribute>
-                            <xsl:value-of select="@title"/>
+                            <xsl:value-of select="@titleddd"/>
                         </a>
                    </li>
 				</xsl:for-each>

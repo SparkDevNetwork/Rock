@@ -24,9 +24,9 @@
 			  	<div class="span3 my-account">My Account</div>
 			</div>
 	  		
+           <Rock:Zone ID="Navigation" runat="server" />
 	  		<div class="navbar">
 	  			<div class="navbar-inner">
-			  		
 			  		<!-- .btn-navbar is used as the toggle for collapsed navbar content -->
 					<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
 						<span class="icon-bar"></span>
