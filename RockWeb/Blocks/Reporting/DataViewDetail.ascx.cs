@@ -271,7 +271,7 @@ $(document).ready(function() {
         /// <summary>
         /// Loads the drop downs.
         /// </summary>
-        private void LoadDropDowns(DataView dataView)
+        private void LoadDropDowns( DataView dataView )
         {
             var entityTypeService = new EntityTypeService();
 
@@ -288,13 +288,9 @@ $(document).ready(function() {
             }
             ddlTransform.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
 
-            // Get all entities
-            ddlEntityType.DataSource = entityTypeService.GetEntities()
-                .OrderBy( e => e.FriendlyName )
-                .ToList();
-            ddlEntityType.DataBind();
-
-            ddlEntityType.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
+            ddlEntityType.Items.Clear();
+            ddlEntityType.Items.Add( new ListItem( string.Empty, string.Empty ) );
+            new EntityTypeService().GetEntityListItems().ForEach( l => ddlEntityType.Items.Add( l ) );
         }
 
         /// <summary>
@@ -356,7 +352,7 @@ $(document).ready(function() {
                 readOnly = true;
                 nbEditModeMessage.Text = "INFO: This Data View contains a filter that you do not have access to view.";
             }
-            
+
             if ( dataView.IsSystem )
             {
                 readOnly = true;
@@ -465,10 +461,10 @@ $(document).ready(function() {
         {
             if ( dataView.EntityTypeId.HasValue && dataView.DataViewFilter != null && dataView.DataViewFilter.IsAuthorized( "View", CurrentPerson ) )
             {
-                
+
                 bool isPersonDataSet = dataView.EntityTypeId == EntityTypeCache.Read( typeof( Rock.Model.Person ) ).Id;
 
-                if (isPersonDataSet)
+                if ( isPersonDataSet )
                 {
                     gReport.PersonIdField = "Id";
                 }
@@ -493,7 +489,7 @@ $(document).ready(function() {
         /// <param name="filter">The filter.</param>
         private void ShowPreview( DataView dataView )
         {
-            if (BindGrid(gPreview, dataView))
+            if ( BindGrid( gPreview, dataView ) )
             {
                 modalPreview.Show();
             }
@@ -509,11 +505,11 @@ $(document).ready(function() {
             pnlViewDetails.Visible = !editable;
         }
 
-        private bool BindGrid( Grid grid, DataView dataView)
+        private bool BindGrid( Grid grid, DataView dataView )
         {
             var errors = new List<string>();
-            grid.DataSource = dataView.BindGrid(grid, out errors, true);
-            if (grid.DataSource != null)
+            grid.DataSource = dataView.BindGrid( grid, out errors, true );
+            if ( grid.DataSource != null )
             {
                 if ( errors.Any() )
                 {
@@ -601,7 +597,7 @@ $(document).ready(function() {
             }
         }
 
-        private void CreateFilterControl( int? filteredEntityTypeId,  DataViewFilter filter, bool setSelection )
+        private void CreateFilterControl( int? filteredEntityTypeId, DataViewFilter filter, bool setSelection )
         {
             phFilters.Controls.Clear();
             if ( filter != null && filteredEntityTypeId.HasValue )
