@@ -10,6 +10,7 @@
     7. Tags - component that allows you to tag entities
     8. Switch - uses the Bootstrap Switch component
     9. Smart Searh - search at th top of the page for searching people, groups, etc.
+    10. Title - markup for styling header titles
 
 */
 
@@ -44,6 +45,10 @@
     font-size: @banner-font-size;
     padding: @banner-padding;
     margin: 0 0 12px;
+}
+
+.banner .first-word {
+    font-weight: @banner-firstword-weight;
 }
 
 // 3. Treeview
@@ -916,3 +921,14 @@ div.tagsinput div
 	background: @smartsearch-input-selection-background; /* Firefox */
 	color: @smartsearch-input-selection-text-color;
 }
+
+// 10. Titles
+// ------------------------
+.title {
+    font-weight: @title-default-weight;
+}
+
+.title .first-word {
+    font-weight: @title-firstword-weight;
+}
+
