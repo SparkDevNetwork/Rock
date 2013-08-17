@@ -28,7 +28,10 @@ namespace RockWeb.Blocks.Prayer
         /// The prayer comment key parameter seen in the QueryString
         /// </summary>
         private static readonly string PrayerCommentKeyParameter = "noteId";
-
+        /// <summary>
+        /// The prayer request key parameter seen in the QueryString
+        /// </summary>
+        private static readonly string PrayerrequestKeyParameter = "prayerRequestId";
         /// <summary>
         /// The block instance configured group category id.  This causes only comments for the appropriate root/group-level category to be seen.
         /// </summary>
@@ -88,7 +91,7 @@ namespace RockWeb.Blocks.Prayer
             gPrayerComments.Actions.ShowAdd = false;
             gPrayerComments.IsDeleteEnabled = canAddEditDelete;
 
-            gPrayerComments.DataKeyNames = new string[] { "id" };
+            gPrayerComments.DataKeyNames = new string[] { "id", "entityid" };
             gPrayerComments.GridRebind += gPrayerComments_GridRebind;
         }
 
@@ -163,23 +166,13 @@ namespace RockWeb.Blocks.Prayer
         }
 
         /// <summary>
-        /// Handles the Add event of the gPrayerComments control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        protected void gPrayerComments_Add( object sender, EventArgs e )
-        {
-            NavigateToDetailPage( PrayerCommentKeyParameter, 0 );
-        }
-
-        /// <summary>
         /// Handles the Edit event of the gPrayerComments control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gPrayerComments_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( PrayerCommentKeyParameter, (int)e.RowKeyValue );
+            NavigateToDetailPage( PrayerCommentKeyParameter, (int)e.RowKeyValues["id"], PrayerrequestKeyParameter, (int)e.RowKeyValues["entityid"] );
         }
 
         /// <summary>
@@ -191,10 +184,10 @@ namespace RockWeb.Blocks.Prayer
         {
             bool failure = true;
 
-            if ( e.RowKeyValue != null )
+            if ( e.RowKeyValues != null )
             {
                 NoteService noteService = new NoteService();
-                Note prayerComment = noteService.Get( (int)e.RowKeyValue );
+                Note prayerComment = noteService.Get( (int)e.RowKeyValues["id"] );
 
                 if ( prayerComment != null )
                 {
@@ -231,7 +224,7 @@ namespace RockWeb.Blocks.Prayer
             RockTransactionScope.WrapTransaction( () =>
             {
                 NoteService noteService = new NoteService();
-                Note note = noteService.Get( (int)e.RowKeyValue );
+                Note note = noteService.Get( (int)e.RowKeyValues["id"] );
 
                 if ( note != null )
                 {

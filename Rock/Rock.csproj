@@ -473,6 +473,30 @@
     <Compile Include="Migrations\201308112230400_FixDataFiltersSetting.Designer.cs">
       <DependentUpon>201308112230400_FixDataFiltersSetting.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201308131210014_ScheduleServiceTimes.cs" />
+    <Compile Include="Migrations\201308131210014_ScheduleServiceTimes.Designer.cs">
+      <DependentUpon>201308131210014_ScheduleServiceTimes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308131808402_GroupTypePurpose.cs" />
+    <Compile Include="Migrations\201308131808402_GroupTypePurpose.Designer.cs">
+      <DependentUpon>201308131808402_GroupTypePurpose.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308142301072_CheckInAdminPages02.cs" />
+    <Compile Include="Migrations\201308142301072_CheckInAdminPages02.Designer.cs">
+      <DependentUpon>201308142301072_CheckInAdminPages02.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308151614282_GroupOrderGroupTypeOrder.cs" />
+    <Compile Include="Migrations\201308151614282_GroupOrderGroupTypeOrder.Designer.cs">
+      <DependentUpon>201308151614282_GroupOrderGroupTypeOrder.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308161802304_EntityIsCommon.cs" />
+    <Compile Include="Migrations\201308161802304_EntityIsCommon.Designer.cs">
+      <DependentUpon>201308161802304_EntityIsCommon.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308162243140_DataTransformations.cs" />
+    <Compile Include="Migrations\201308162243140_DataTransformations.Designer.cs">
+      <DependentUpon>201308162243140_DataTransformations.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -502,6 +526,7 @@
     <Compile Include="PersonProfile\IconBadge.cs" />
     <Compile Include="PersonProfile\TextBadge.cs" />
     <Compile Include="Search\Group\Name.cs" />
+    <Compile Include="SystemGuid\Category.cs" />
     <Compile Include="SystemGuid\EntityType.cs" />
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
     <Compile Include="Web\Cache\CategoryCache.cs" />
@@ -1161,9 +1186,10 @@
     <Compile Include="Web\UI\IDimmableBlock.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
-    <Compile Include="Workflow\Action\CheckIn\FilterLocationGroupsByAbilityLevel.cs" />
-    <Compile Include="Workflow\Action\CheckIn\FilterLocationGroupsBySpecialNeeds.cs" />
-    <Compile Include="Workflow\Action\CheckIn\FilterLocationGroupsByLastName.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGender.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterGroupsByAbilityLevel.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterGroupsBySpecialNeeds.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterGroupsByLastName.cs" />
     <Compile Include="Workflow\Action\CheckIn\CreateLabels.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterByGrade.cs" />
     <Compile Include="Workflow\Action\CheckIn\RemoveEmptyPeople.cs" />
@@ -2132,6 +2158,24 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201308112230400_FixDataFiltersSetting.resx">
       <DependentUpon>201308112230400_FixDataFiltersSetting.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308131210014_ScheduleServiceTimes.resx">
+      <DependentUpon>201308131210014_ScheduleServiceTimes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308131808402_GroupTypePurpose.resx">
+      <DependentUpon>201308131808402_GroupTypePurpose.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308142301072_CheckInAdminPages02.resx">
+      <DependentUpon>201308142301072_CheckInAdminPages02.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308151614282_GroupOrderGroupTypeOrder.resx">
+      <DependentUpon>201308151614282_GroupOrderGroupTypeOrder.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308161802304_EntityIsCommon.resx">
+      <DependentUpon>201308161802304_EntityIsCommon.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308162243140_DataTransformations.resx">
+      <DependentUpon>201308162243140_DataTransformations.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
