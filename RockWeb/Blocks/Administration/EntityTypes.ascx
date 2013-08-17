@@ -9,6 +9,7 @@
                 <Columns>
                     <asp:BoundField DataField="Name" HeaderText="Entity Type" SortExpression="Name" />
                     <asp:BoundField DataField="FriendlyName" HeaderText="Friendly Name" SortExpression="FriendlyName" />
+                    <Rock:BoolField DataField="IsCommon" HeaderText="Common" SortExpression="IsCommon" />
                     <asp:TemplateField>
                         <HeaderStyle CssClass="span1" />
                         <ItemStyle HorizontalAlign="Center"/>
@@ -30,6 +31,7 @@
                 <legend><asp:Literal ID="lActionTitle" runat="server" /></legend>
                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.EntityType, Rock" PropertyName="Name" LabelText="Entity Type Name" />
                 <Rock:DataTextBox ID="tbFriendlyName" runat="server" SourceTypeName="Rock.Model.EntityType, Rock" PropertyName="FriendlyName" LabelText="Friendly Name" />
+                <Rock:LabeledCheckBox ID="cbCommon" runat="server" Text="Common" Help="There are various places that a user is prompted for an entity type.  'Common' entities will be listed first for the user to easily find them" />
             </fieldset>
 
             <div class="actions" id="pnlEditDetailsActions" runat="server">

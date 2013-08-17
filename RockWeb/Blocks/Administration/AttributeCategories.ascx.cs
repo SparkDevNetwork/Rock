@@ -40,11 +40,7 @@ namespace RockWeb.Blocks.Administration
             // Load Entity Type Filter
             ddlEntityType.Items.Add( new ListItem( "All", "" ) );
             ddlEntityType.Items.Add( new ListItem( "None (Global Attributes)", "None" ) );
-            foreach ( var entityType in new EntityTypeService()
-                .GetEntities().OrderBy( t => t.FriendlyName ).ThenBy( t => t.Name ) )
-            {
-                ddlEntityType.Items.Add( new ListItem( entityType.FriendlyName, entityType.Id.ToString() ) );
-            }
+            new EntityTypeService().GetEntityListItems().ForEach( l => ddlEntityType.Items.Add( l ) );
 
             _canConfigure = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
 

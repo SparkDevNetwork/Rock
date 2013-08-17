@@ -18,11 +18,16 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+            UpdateEntityType("Rock.Model.Schedule", "0B2C38A7-D79C-4F85-9757-F1B045D32C8A");
             Sql( string.Format( @"
+
+    DECLARE @EntityTypeId int
+    SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Guid] = '0B2C38A7-D79C-4F85-9757-F1B045D32C8A')
+
     IF NOT EXISTS (SELECT [Id] FROM [Category] WHERE [Guid] = '{0}')
         INSERT INTO [Category] ([IsSystem], [EntityTypeId], [EntityTypeQualifierColumn], [EntityTypeQualifierValue], [Name], [Guid])
-            VALUES (1, {1}, '', '', 'Service Times', '{0}')
-", Rock.SystemGuid.Category.SCHEDULE_SERVICE_TIMES, Rock.Web.Cache.EntityTypeCache.Read( "Rock.Model.Schedule" ).Id ) );
+            VALUES (1, @EntityTypeId, '', '', 'Service Times', '{0}')
+", Rock.SystemGuid.Category.SCHEDULE_SERVICE_TIMES ) );
         }
         
         /// <summary>

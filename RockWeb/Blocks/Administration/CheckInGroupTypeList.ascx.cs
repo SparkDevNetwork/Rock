@@ -13,6 +13,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -88,7 +89,7 @@ namespace RockWeb.Blocks.Crm
             var qry = groupTypeService.Queryable();
 
             // limit to show only GroupTypes that have a group type purpose of Checkin Template
-            var groupTypePurposeCheckInTemplateId = new DefinedValueService().GetByGuid( new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ) ).Id;
+            int groupTypePurposeCheckInTemplateId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ) ).Id;
             qry = qry.Where( a => a.GroupTypePurposeValueId == groupTypePurposeCheckInTemplateId );
 
             if ( sortProperty != null )
