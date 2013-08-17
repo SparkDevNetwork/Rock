@@ -493,6 +493,10 @@
     <Compile Include="Migrations\201308161802304_EntityIsCommon.Designer.cs">
       <DependentUpon>201308161802304_EntityIsCommon.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201308162243140_DataTransformations.cs" />
+    <Compile Include="Migrations\201308162243140_DataTransformations.Designer.cs">
+      <DependentUpon>201308162243140_DataTransformations.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -2168,6 +2172,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201308161802304_EntityIsCommon.resx">
       <DependentUpon>201308161802304_EntityIsCommon.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308162243140_DataTransformations.resx">
+      <DependentUpon>201308162243140_DataTransformations.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
