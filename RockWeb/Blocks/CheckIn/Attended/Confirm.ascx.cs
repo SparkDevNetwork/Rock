@@ -53,7 +53,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         //ProcessBestFit();
                         //if ( bestFitComplete )
                         //{
-                        gPersonList.DataKeyNames = new string[] { "Id" };
                         BindGrid();
                         //}
                         //else
@@ -70,20 +69,42 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// </summary>
         protected void BindGrid()
         {
-            var people = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault().People.Where( p => p.Selected ).ToList();            
-            gPersonList.DataSource = 
-                people.Select( p => new { 
-                    Id = p.Person.Id
-                    , Name = p.Person.FullName
-                    , AssignedTo = p.GroupTypes.Where( gt => gt.Selected && gt.Groups.Any( g => g.Selected ) ) 
-                        .Select( gt => gt.Groups.FirstOrDefault().Group.Name ).FirstOrDefault()
-                    , Time = p.GroupTypes.Where( gt => gt.Selected && gt.Groups.Any( g => g.Selected ) 
-                        && gt.Groups.Any( g => g.Selected && g.Locations.Any( l => l.Selected && l.Schedules.Any( s => s.Selected ) ) ) )
-                        .Select( gt => gt.Groups.FirstOrDefault().Locations.FirstOrDefault().Schedules.FirstOrDefault().Schedule.Name ).FirstOrDefault()
-                } )
-                .OrderBy( p => p.Name ).ToList();            
-            gPersonList.DataBind();
+            var selectedPeopleList = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault().People.Where( p => p.Selected ).ToList();
+            var checkInGrid = new System.Data.DataTable();
+            checkInGrid.Columns.Add( "Id", typeof(int) );
+            checkInGrid.Columns.Add( "Name", typeof(string) );
+            checkInGrid.Columns.Add( "AssignedTo", typeof(string) );
+            checkInGrid.Columns.Add( "Time", typeof(string) );
 
+            foreach ( var person in selectedPeopleList )
+            {
+                int personId = person.Person.Id;
+                string personName = person.Person.FullName;
+                var groupList = person.GroupTypes.Where( gt => gt.Selected )
+                    .SelectMany( gt => gt.Groups ).Where( g => g.Selected ).ToList();
+                var otherList = groupList.Select( g => new
+                    {
+                        Id = personId,
+                        Name = personName,
+                        AssignedTo = g.Group.Name,
+                        Time = g.Locations.Where( l => l.Selected )
+                          .Where( l => l.Schedules.Any( s => s.Selected ) )
+                          .SelectMany( l => l.Schedules.Select( s => s.Schedule.Name ) ).FirstOrDefault()
+                    } ).ToList();
+
+                if ( groupList.Any() )
+                {
+                    checkInGrid.Rows.Add( otherList.ToArray() );
+                }
+                else
+                {
+                    checkInGrid.Rows.Add( personId, personName, string.Empty, string.Empty );        
+                }              
+            }
+
+            gPersonList.DataSource = checkInGrid;
+            gPersonList.DataBind();
+            
             gPersonList.CssClass = string.Empty;
             gPersonList.AddCssClass( "grid-table" );
             gPersonList.AddCssClass( "table" );

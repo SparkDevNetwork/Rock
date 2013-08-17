@@ -1182,8 +1182,8 @@
     <Compile Include="Web\UI\IDimmableBlock.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
-    <Compile Include="Workflow\Action\CheckIn\FilterGroupLocationsByGender.cs" />
     <Compile Include="Workflow\Action\CheckIn\SelectByLastAttended.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGender.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterLocationGroupsByAbilityLevel.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterLocationGroupsBySpecialNeeds.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterLocationGroupsByLastName.cs" />
