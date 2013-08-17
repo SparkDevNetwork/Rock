@@ -81,7 +81,7 @@ namespace RockWeb.Blocks.Administration
             }
 
             // clear out any existing schedule columns and add the ones that match the current filter setting
-            var scheduleList = scheduleQry.OrderBy( a => a.Name ).Select( a => new { a.Id, a.Name } ).ToList();
+            var scheduleList = scheduleQry.ToList().OrderBy( a => a.ToString() ).ToList();
 
             var checkBoxEditableFields = gGroupLocationSchedule.Columns.OfType<CheckBoxEditableField>().ToList();
             foreach ( var field in checkBoxEditableFields )
@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.Administration
             {
                 string dataFieldName = string.Format( "scheduleField_{0}", item.Id );
 
-                CheckBoxEditableField field = new CheckBoxEditableField { HeaderText = item.Name, DataField = dataFieldName };
+                CheckBoxEditableField field = new CheckBoxEditableField { HeaderText = item.ToString(), DataField = dataFieldName };
                 gGroupLocationSchedule.Columns.Add( field );
             }
 
