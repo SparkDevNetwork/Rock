@@ -16,10 +16,10 @@ namespace Rock.Workflow.Action.CheckIn
     /// Removes the locations and groups for each selected family member
     /// if the person's ability level does not match the groups.
     /// </summary>
-    [Description( "Removes the locations and groups for each selected family member if the person's ability level does not match the groups." )]
+    [Description( "Removes the groups for each selected family member if the person's ability level does not match the groups." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Filter Location Groups By Ability Level" )]
-    public class FilterLocationGroupsByAbilityLevel : CheckInActionComponent
+    [ExportMetadata( "ComponentName", "Filter Groups By Ability Level" )]
+    public class FilterGroupsByAbilityLevel : CheckInActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -49,14 +49,12 @@ namespace Rock.Workflow.Action.CheckIn
                         continue;
                     }
 
-                    // Now dig down until we get the "group" because that's where the attribute is..
                     foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ).ToList() )
                     {
                         foreach ( var group in groupType.Groups.ToList() )
                         {
-                            // If the group has abilities but the person's ability is
-                            // not in that list, then remove the group.
-                            if ( ! group.Group.GetAttributeValues( "AbilityLevel" ).Any( a => a.Contains( personAbilityLevel ) ) )
+                            var groupAttributes = group.Group.GetAttributeValues( "AbilityLevel" );
+                            if ( groupAttributes.Any() && !groupAttributes.Contains( personAbilityLevel ) )
                             {
                                 groupType.Groups.Remove( group );
                             }
