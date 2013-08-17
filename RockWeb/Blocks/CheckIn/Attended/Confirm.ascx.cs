@@ -80,10 +80,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 int personId = person.Person.Id;
                 string personName = person.Person.FullName;
-                var groupList = person.GroupTypes.Where( gt => gt.Selected )
-                    .SelectMany( gt => gt.Groups ).Where( g => g.Selected ).ToList();
-                var otherList = groupList.Select( g => new
-                    {
+                var assignments = person.GroupTypes.Where( gt => gt.Selected )
+                    .SelectMany( gt => gt.Groups ).Where( g => g.Selected )
+                    .Select( g => new {
                         Id = personId,
                         Name = personName,
                         AssignedTo = g.Group.Name,
@@ -92,14 +91,15 @@ namespace RockWeb.Blocks.CheckIn.Attended
                           .SelectMany( l => l.Schedules.Select( s => s.Schedule.Name ) ).FirstOrDefault()
                     } ).ToList();
 
-                if ( groupList.Any() )
+                foreach ( var assignment in assignments )
                 {
-                    checkInGrid.Rows.Add( otherList.ToArray() );
+                    checkInGrid.Rows.Add( assignment.Id, assignment.Name, assignment.AssignedTo, assignment.Time );
                 }
-                else
+
+                if ( !assignments.Any() )
                 {
-                    checkInGrid.Rows.Add( personId, personName, string.Empty, string.Empty );        
-                }              
+                    checkInGrid.Rows.Add( personId, personName, string.Empty, string.Empty );   
+                }                        
             }
 
             gPersonList.DataSource = checkInGrid;
