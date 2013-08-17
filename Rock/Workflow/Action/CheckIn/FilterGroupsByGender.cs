@@ -17,8 +17,8 @@ namespace Rock.Workflow.Action.CheckIn
     /// </summary>
     [Description( "Removes the groups from each family member that are not specific to gender." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Filter By Grade" )]
-    public class FilterGroupLocationsByGender : CheckInActionComponent
+    [ExportMetadata( "ComponentName", "Filter Groups By Gender" )]
+    public class FilterGroupsByGender : CheckInActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -38,17 +38,17 @@ namespace Rock.Workflow.Action.CheckIn
                 {
                     foreach ( var person in family.People.Where( p => p.Selected ) )
                     {
-                        Gender personsGender = person.Person.Gender;
+                        string personsGender = person.Person.Gender.ToString( "d" );
 
                         foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ).ToList() )
                         {
                             foreach ( var group in groupType.Groups.ToList() )
                             {
                                 var groupAttributes = group.Group.GetAttributeValues( "Gender" );
-                                //if ( !group.Group.GetAttributeValues( "Gender" ).Any( a => a.Contains( personsGender ) ) )
-                                //{
-                                //    groupType.Groups.Remove( group );
-                                //}
+                                if ( groupAttributes.Any() && !groupAttributes.Contains( personsGender ) )
+                                {
+                                    groupType.Groups.Remove( group );
+                                }
                             }
                         }
                         
