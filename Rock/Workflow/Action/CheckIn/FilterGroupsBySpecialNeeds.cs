@@ -17,12 +17,12 @@ namespace Rock.Workflow.Action.CheckIn
     /// if the person is not "special needs".  The filter can ALSO be configured to 
     /// remove normal (non-special needs) groups when the person is "special needs".
     /// </summary>
-    [Description( "Removes the location's groups for each selected family member that are not specific to their special needs attribute." )]
+    [Description( "Removes the groups for each selected family member that are not specific to their special needs attribute." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Filter Location Groups By Special Needs" )]
+    [ExportMetadata( "ComponentName", "Filter Groups By Special Needs" )]
     [BooleanField( "Remove Special Needs Groups", "If set to true, special-needs groups will be removed if the person is NOT special needs. This basically prevents non-special-needs kids from getting put into special needs classes.  Default true.", true, key: "RemoveSpecialNeedsGroups" )]
     [BooleanField( "Remove Non-Special Needs Groups", "If set to true, non-special-needs groups will be removed if the person is special needs.  This basically prevents special needs kids from getting put into regular classes.  Default false.", false, key: "RemoveNonSpecialNeedsGroups" )]
-    public class FilterLocationGroupsBySpecialNeeds : CheckInActionComponent
+    public class FilterGroupsBySpecialNeeds : CheckInActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -49,7 +49,6 @@ namespace Rock.Workflow.Action.CheckIn
                 foreach ( var person in family.People.Where( p => p.Selected && p.Person.LastName.Length > 0 ) )
                 {
                     bool isSNPerson = bool.Parse( person.Person.GetAttributeValue( "IsSpecialNeeds" ) ?? "false" );
-                    // Now dig down until we get the "group" because that's where the attribute is..
                     foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ).ToList() )
                     {
                         foreach ( var group in groupType.Groups.ToList() )
