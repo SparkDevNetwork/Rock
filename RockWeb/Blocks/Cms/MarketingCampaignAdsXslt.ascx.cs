@@ -22,7 +22,7 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Cms
 {
     [IntegerField( "Max Items", "", true, int.MinValue, "", 0 )]
-    [DetailPage ("Detail Page", "", false, "", "", 1)]
+    [LinkedPage ("Detail Page", "", false, "", "", 1)]
     [CustomCheckboxListField("Image Types", "The types of images to display",  
         "SELECT A.[name] AS [Text], A.[key] AS [Value] FROM [EntityType] E INNER JOIN [attribute] a ON A.[EntityTypeId] = E.[Id] INNER JOIN [FieldType] F ON F.Id = A.[FieldTypeId]	AND F.Guid = '" +
         Rock.SystemGuid.FieldType.IMAGE + "' WHERE E.Name = 'Rock.Model.MarketingCampaignAd' ORDER BY [Key]", false, "", "", 2)]
