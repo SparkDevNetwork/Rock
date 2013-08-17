@@ -23,16 +23,14 @@
     border: @panel-border-size solid @panel-border-color;
     background-color: @panel-background;
     padding: @panel-padding;
+
+    h4 {
+        margin: 48px 0 6px;
+    }
 }
 
-.panel h4
-{
-    margin: 48px 0 20px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid darken(@panel-background, 8%);
-}
 
-// 2. Panel
+// 2. Banner
 // -------------------------
 
 .banner
@@ -45,11 +43,24 @@
     font-size: @banner-font-size;
     padding: @banner-padding;
     margin: 0 0 12px;
+    .clearfix;
+
+    h1 {
+        float: left;
+        margin: 0;
+
+        .first-word {
+            font-weight: @banner-firstword-weight;
+        }
+    }
+
+    .label {
+        float: right;
+        background-color: lighten(@banner-background, 5%);
+        margin-top: 16px;
+    }
 }
 
-.banner .first-word {
-    font-weight: @banner-firstword-weight;
-}
 
 // 3. Treeview
 // -------------------------
