@@ -16,6 +16,8 @@ SET @ChildRole = (SELECT id FROM GroupRole WHERE guid = 'C8B1814F-6AA7-4055-B2D7
 DECLARE @PrimaryPhone int
 SET @PrimaryPhone = (SELECT id FROM DefinedValue WHERE guid = '407E7E45-7B2E-4FCD-9605-ECB1339F2453')
 
+DECLARE @AbilityAttributeId int
+SET @AbilityAttributeId = (SELECT id FROM Attribute WHERE guid = '4ABF0BF2-49BA-4363-9D85-AC48A0F7E92A')
 --DECLARE @KnownRelationshipGroup int
 --SET @KnownRelationshipGroup = (SELECT id FROM [Group] WHERE [Name] = 'Relationships')
 
@@ -260,6 +262,8 @@ VALUES (0, 'Wyatt', 'Barden', 27, 12, 2011, 1, '', 1, 0, NEWID(), @PersonRecordT
 SET @PersonId = SCOPE_IDENTITY()
 INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid)
 VALUES (0, @GroupId, @PersonId, @ChildRole, newid())
+INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], Value, Guid)
+VALUES (0, @AbilityAttributeId, @Personid, 0, 'Toddler', NEWID() )
 --INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid)
 --VALUES (0, @KnownRelationshipGroup, @PersonId, @KnownRelationshipGroupRole, newid())
 
