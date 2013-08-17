@@ -15,10 +15,10 @@ namespace Rock.Workflow.Action.CheckIn
     /// Removes the locations and groups for each selected family member that
     /// are not specific to their last name.
     /// </summary>
-    [Description( "Removes the locations and groups for each selected family member that are not specific to their last name." )]
+    [Description( "Removes the groups for each selected family member that are not specific to their last name." )]
     [Export( typeof( ActionComponent ) )]
-    [ExportMetadata( "ComponentName", "Filter Location Groups By LastName" )]
-    public class FilterLocationGroupsByLastName : CheckInActionComponent
+    [ExportMetadata( "ComponentName", "Filter Groups By LastName" )]
+    public class FilterGroupsByLastName : CheckInActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -42,9 +42,6 @@ namespace Rock.Workflow.Action.CheckIn
                 foreach ( var person in family.People.Where( p => p.Selected && p.Person.LastName.Length > 0 ) )
                 {
                     char lastInitial = char.Parse( person.Person.LastName.Substring( 0, 1 ).ToUpper() );
-
-                    // Now dig down until we get the "group" because that's where the Lastname letter
-                    // attributes are...
                     foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ).ToList() )
                     {
                         foreach ( var group in groupType.Groups.ToList() )
