@@ -585,15 +585,6 @@ namespace RockWeb.Blocks.Crm
         /// <param name="group">The group.</param>
         private void ShowEditDetails( Group group )
         {
-            if ( group.Id > 0 )
-            {
-                lActionTitle.Text = ActionTitle.Edit( Group.FriendlyTypeName );
-            }
-            else
-            {
-                lActionTitle.Text = ActionTitle.Add( Group.FriendlyTypeName );
-            }
-
             SetEditMode( true );
 
             tbName.Text = group.Name;
@@ -698,7 +689,7 @@ namespace RockWeb.Blocks.Crm
 
             hfGroupId.SetValue( group.Id );
             lGroupIconHtml.Text = groupIconHtml;
-            lReadOnlyTitle.Text = group.Name.FormatAsHtmlTitle();
+            lReadOnlyTitle.Text = group.Name;//.FormatAsHtmlTitle();
             string activeHtmlFormat = "<span class='label {0} pull-right' >{1}</span>";
             if ( group.IsActive )
             {
@@ -709,9 +700,10 @@ namespace RockWeb.Blocks.Crm
                 lblActiveHtml.Text = string.Format( activeHtmlFormat, "label-important", "Inactive" );
             }
 
-            DescriptionList descriptionList = new DescriptionList()
-                .Add( "Group Type", group.GroupType.Name )
-                .Add( "Group Description", group.Description );
+            lGroupType.Text = group.GroupType.Name;
+            lGroupDescription.Text = group.Description;
+            
+            DescriptionList descriptionList = new DescriptionList();
 
             if ( group.ParentGroup != null )
             {
