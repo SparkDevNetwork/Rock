@@ -50,8 +50,6 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
-            AddScheduleColumns();
-            
             if ( !Page.IsPostBack )
             {
                 BindGrid();
@@ -71,7 +69,7 @@ namespace RockWeb.Blocks.Administration
             var scheduleQry = scheduleService.Queryable().Where( a => a.CheckInStartOffsetMinutes != null );
 
             // limit Schedules to the Category from the Filter
-            int? scheduleCategoryId = pCategory.SelectedValueAsInt() ?? Rock.Constants.All.Id;
+            int scheduleCategoryId = rFilter.GetUserPreference( "Category" ).AsInteger() ?? Rock.Constants.All.Id;
             if ( scheduleCategoryId != Rock.Constants.All.Id )
             {
                 scheduleQry = scheduleQry.Where( a => a.CategoryId == scheduleCategoryId );
@@ -90,7 +88,7 @@ namespace RockWeb.Blocks.Administration
             {
                 gGroupLocationSchedule.Columns.Remove( field );
             }
-            
+
             foreach ( var item in scheduleList )
             {
                 string dataFieldName = string.Format( "scheduleField_{0}", item.Id );
@@ -123,14 +121,26 @@ namespace RockWeb.Blocks.Administration
             ddlGroupType.Items.Clear();
             ddlGroupType.Items.Add( Rock.Constants.All.ListItem );
 
+            // populate the GroupType DropDownList only with GroupTypes with GroupTypePurpose of Checkin Template
+            int groupTypePurposeCheckInTemplateId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE ) ).Id;
+
             GroupTypeService groupTypeService = new GroupTypeService();
-            var groupTypeList = groupTypeService.Queryable().ToList();
+            var groupTypeList = groupTypeService.Queryable()
+                .Where( a => a.GroupTypePurposeValueId == groupTypePurposeCheckInTemplateId )
+                .ToList();
             foreach ( var groupType in groupTypeList )
             {
                 ddlGroupType.Items.Add( new ListItem( groupType.Name, groupType.Id.ToString() ) );
             }
 
             ddlGroupType.SetValue( rFilter.GetUserPreference( "Group Type" ) );
+
+            // hide the GroupType filter if this page has a groupTypeId parameter
+            int? groupTypeIdPageParam = this.PageParameter( "groupTypeId" ).AsInteger( false );
+            if ( groupTypeIdPageParam.HasValue )
+            {
+                ddlGroupType.Visible = false;
+            }
 
             var filterCategory = new CategoryService().Get( rFilter.GetUserPreference( "Category" ).AsInteger() ?? 0 );
             pCategory.SetValue( filterCategory );
@@ -150,7 +160,7 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
-        #region Grid Events
+        #region Grid/Filter Events
 
         /// <summary>
         /// Handles the ApplyFilterClick event of the rFilter control.
@@ -159,9 +169,9 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( "Group Type", ddlGroupType.SelectedValue );
-            rFilter.SaveUserPreference( "Category", pCategory.SelectedValue );
-            rFilter.SaveUserPreference( "Parent Location", ddlParentLocation.SelectedValue );
+            rFilter.SaveUserPreference( "Group Type", ddlGroupType.SelectedValueAsId().ToString() );
+            rFilter.SaveUserPreference( "Category", pCategory.SelectedValueAsId().ToString() );
+            rFilter.SaveUserPreference( "Parent Location", ddlParentLocation.SelectedValueAsId().ToString() );
 
             BindGrid();
         }
@@ -174,48 +184,58 @@ namespace RockWeb.Blocks.Administration
         private void rFilter_DisplayFilterValue( object sender, Rock.Web.UI.Controls.GridFilter.DisplayFilterValueArgs e )
         {
             int itemId = e.Value.AsInteger() ?? 0;
-            if ( itemId == Rock.Constants.All.Id )
+            switch ( e.Key )
             {
-                e.Value = Rock.Constants.All.Text;
-            }
-            else if ( itemId == Rock.Constants.None.Id )
-            {
-                e.Value = Rock.Constants.None.TextHtml;
-            }
-            else
-            {
-                switch ( e.Key )
-                {
-                    case "Group Type":
+                case "Group Type":
 
-                        var groupType = new GroupTypeService().Get( itemId );
-                        if ( groupType != null )
-                        {
-                            e.Value = groupType.Name;
-                        }
+                    int? groupTypeIdPageParam = this.PageParameter( "groupTypeId" ).AsInteger( false );
 
-                        break;
+                    //// we only use the GroupType from the filter in cases where there isn't a PageParam of groupTypeId
+                    // but just in case the filter wants to display the GroupName, override the itemId with the groupTypeId PageParam
+                    if ( groupTypeIdPageParam.HasValue )
+                    {
+                        itemId = groupTypeIdPageParam.Value;
+                    }
 
-                    case "Category":
+                    var groupType = new GroupTypeService().Get( itemId );
+                    if ( groupType != null )
+                    {
+                        e.Value = groupType.Name;
+                    }
+                    else
+                    {
+                        e.Value = Rock.Constants.All.Text;
+                    }
 
-                        var category = new CategoryService().Get( itemId );
-                        if ( category != null )
-                        {
-                            e.Value = category.Name;
-                        }
+                    break;
 
-                        break;
+                case "Category":
 
-                    case "Parent Location":
+                    var category = new CategoryService().Get( itemId );
+                    if ( category != null )
+                    {
+                        e.Value = category.Name;
+                    }
+                    else
+                    {
+                        e.Value = Rock.Constants.All.Text;
+                    }
 
-                        var location = new LocationService().Get( itemId );
-                        if ( location != null )
-                        {
-                            e.Value = location.Name;
-                        }
+                    break;
 
-                        break;
-                }
+                case "Parent Location":
+
+                    var location = new LocationService().Get( itemId );
+                    if ( location != null )
+                    {
+                        e.Value = location.Name;
+                    }
+                    else
+                    {
+                        e.Value = Rock.Constants.All.Text;
+                    }
+
+                    break;
             }
         }
 
@@ -234,14 +254,28 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         protected void BindGrid()
         {
+            AddScheduleColumns();
+            
             var groupLocationService = new GroupLocationService();
 
             var groupLocationQry = groupLocationService.Queryable();
+            int groupTypeId;
 
-            int groupTypeId = ddlGroupType.SelectedValueAsInt() ?? Rock.Constants.All.Id;
+            // if this page has a PageParam for groupTypeId use that to limit which groupTypeId to see. Otherwise, use the groupTypeId specified in the filter
+            int? groupTypeIdPageParam = this.PageParameter( "groupTypeId" ).AsInteger( false );
+            if ( groupTypeIdPageParam.HasValue )
+            {
+                groupTypeId = groupTypeIdPageParam ?? Rock.Constants.All.Id;
+            }
+            else
+            {
+                groupTypeId = ddlGroupType.SelectedValueAsInt() ?? Rock.Constants.All.Id;
+            }
+
             if ( groupTypeId != Rock.Constants.All.Id )
             {
-                groupLocationQry = groupLocationQry.Where( a => a.Group.GroupTypeId == groupTypeId );
+                // filter to groups that either are of the GroupType or are of a GroupType that has the selected GroupType as a parent
+                groupLocationQry = groupLocationQry.Where( a => a.Group.GroupType.Id == groupTypeId || a.Group.GroupType.ParentGroupTypes.Select( p => p.Id ).Contains( groupTypeId ) );
             }
 
             var qryList = groupLocationQry.Select( a =>
@@ -257,7 +291,7 @@ namespace RockWeb.Blocks.Administration
             int parentLocationId = ddlParentLocation.SelectedValueAsInt() ?? Rock.Constants.All.Id;
             if ( parentLocationId != Rock.Constants.All.Id )
             {
-                var descendantLocationIds = new LocationService().GetAllDescendents(parentLocationId).Select(a => a.Id);
+                var descendantLocationIds = new LocationService().GetAllDescendents( parentLocationId ).Select( a => a.Id );
                 qryList = qryList.Where( a => descendantLocationIds.Contains( a.LocationId ) ).ToList();
             }
 
@@ -315,7 +349,7 @@ namespace RockWeb.Blocks.Administration
             {
                 GroupLocationService groupLocationService = new GroupLocationService();
                 ScheduleService scheduleService = new ScheduleService();
-                
+
                 RockTransactionScope.WrapTransaction( () =>
                 {
                     var gridViewRows = gGroupLocationSchedule.Rows;
@@ -325,7 +359,7 @@ namespace RockWeb.Blocks.Administration
                         GroupLocation groupLocation = groupLocationService.Get( groupLocationId );
                         if ( groupLocation != null )
                         {
-                            foreach ( var fieldCell in row.Cells.OfType<DataControlFieldCell>())
+                            foreach ( var fieldCell in row.Cells.OfType<DataControlFieldCell>() )
                             {
                                 CheckBoxEditableField checkBoxTemplateField = fieldCell.ContainingField as CheckBoxEditableField;
                                 if ( checkBoxTemplateField != null )

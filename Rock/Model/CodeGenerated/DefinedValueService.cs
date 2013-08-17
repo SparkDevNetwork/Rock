@@ -108,6 +108,12 @@ namespace Rock.Model
             
             // ignoring GroupLocation,GroupLocationTypeValueId 
  
+            if ( new Service<GroupType>().Queryable().Any( a => a.GroupTypePurposeValueId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, GroupType.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<Location>().Queryable().Any( a => a.LocationTypeValueId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DefinedValue.FriendlyTypeName, Location.FriendlyTypeName );
