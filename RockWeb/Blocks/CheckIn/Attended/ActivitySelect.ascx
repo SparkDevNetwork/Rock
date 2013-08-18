@@ -49,7 +49,7 @@
                 <h3>Ministry</h3>
                 <asp:Repeater ID="rMinistry" runat="server" OnItemCommand="rMinistry_ItemCommand" OnItemDataBound="rMinistry_ItemDataBound">
                     <ItemTemplate>
-                        <asp:LinkButton ID="lbSelectMinistry" runat="server" Text='<%# Container.DataItem.ToString() %>' data-id='<%# Eval("Id") %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select ministry" CausesValidation="false" />
+                        <asp:LinkButton ID="lbSelectMinistry" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("GroupType.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select ministry" CausesValidation="false" />
                     </ItemTemplate>
                 </asp:Repeater>
             </div>
@@ -62,7 +62,7 @@
                 <h3>Time</h3>
                 <asp:Repeater ID="rTime" runat="server" OnItemCommand="rTime_ItemCommand" OnItemDataBound="rTime_ItemDataBound">
                     <ItemTemplate>
-                        <asp:LinkButton ID="lbSelectTime" runat="server" Text='<%# Container.DataItem.ToString() %>' data-id='<%# Eval("Id") %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select time" CausesValidation="false" />
+                        <asp:LinkButton ID="lbSelectTime" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Schedule.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select time" CausesValidation="false" />
                     </ItemTemplate>
                 </asp:Repeater>
             </div>
@@ -76,7 +76,7 @@
                 <h3>Activity</h3>
                 <asp:ListView ID="lvActivity" runat="server" OnPagePropertiesChanging="lvActivity_PagePropertiesChanging" OnItemCommand="lvActivity_ItemCommand" OnItemDataBound="lvActivity_ItemDataBound">
                     <ItemTemplate>
-                        <asp:LinkButton ID="lbSelectActivity" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" ></asp:LinkButton>
+                        <asp:LinkButton ID="lbSelectActivity" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Group.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" ></asp:LinkButton>
                     </ItemTemplate>
                 </asp:ListView>
                 <asp:DataPager ID="Pager" runat="server" PageSize="6" PagedControlID="lvActivity">
@@ -93,10 +93,10 @@
                 <h3>Selected</h3>
                 <Rock:Grid ID="gActivityList" runat="server" AllowSorting="true" AllowPaging="false" ShowActionRow="false" ShowHeader="false" CssClass="select">
                     <Columns>
-                        <asp:BoundField DataField="ListId" Visible="false" />
+                        <%--<asp:BoundField DataField="ListId" Visible="false" />--%>
                         <asp:BoundField DataField="Time" />
                         <asp:BoundField DataField="Activity" />
-                        <Rock:DeleteField OnClick="gActivityList_Delete" />
+                        <Rock:DeleteField OnClick="gActivityList_Delete" ControlStyle-CssClass="btn btn-large btn-primary" />
                     </Columns>
                 </Rock:Grid>
             </div>
