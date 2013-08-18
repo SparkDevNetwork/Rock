@@ -109,11 +109,17 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="System.Web.UI.WebControls.RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rMinistry_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
+            var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
+                .People.Where( p => p.Person.Id == int.Parse( Request.QueryString["personId"] ) ).FirstOrDefault();
+            var selectedGroupTypeId = person.GroupTypes.Where( gt => gt.Selected ).Select( gt => gt.GroupType.Id ).FirstOrDefault();
             if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
             {
-                if ( ( (CheckInGroupType)e.Item.DataItem ).Selected )
+                foreach ( var childGroupType in ( (CheckInGroupType)e.Item.DataItem ).GroupType.ChildGroupTypes )
                 {
-                    ( (LinkButton)e.Item.FindControl( "lbSelectMinistry" ) ).AddCssClass( "active" );
+                    if ( childGroupType.Id == selectedGroupTypeId )
+                    {
+                        ( (LinkButton)e.Item.FindControl( "lbSelectMinistry" ) ).AddCssClass( "active" );
+                    }
                 }
             }
         }
@@ -145,11 +151,28 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="System.Web.UI.WebControls.RepeaterItemEventArgs"/> instance containing the event data.</param>
         protected void rTime_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
+            var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
+                .People.Where( p => p.Person.Id == int.Parse( Request.QueryString["personId"] ) ).FirstOrDefault();
+            //var selectedGroupType = person.GroupTypes.Where( gt => gt.Selected );
+            //var selectedGroup = selectedGroupType.SelectMany( gt => gt.Groups.Where( g => g.Selected ) );
+            //var selectedLocation = selectedGroup.SelectMany( g => g.Locations.Where( l => l.Selected ) );
+            //var selectedSchedule = selectedLocation.SelectMany( l => l.Schedules.Where( s => s.Selected ) );
+            //var selectedScheduleId = selectedSchedule.Select( s => s.Schedule.Id ).FirstOrDefault();
+            var ssid = person.GroupTypes.Where( gt => gt.Selected )
+                .SelectMany( gt => gt.Groups.Where( g => g.Selected ) )
+                    .SelectMany( g => g.Locations.Where( l => l.Selected ) )
+                        .SelectMany( l => l.Schedules.Where( s => s.Selected ) )
+                            .Select( s => s.Schedule.Id ).FirstOrDefault();
             if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
             {
-                if ( ( (CheckInSchedule)e.Item.DataItem ).Selected )
+                //if ( ( (CheckInSchedule)e.Item.DataItem ).Selected )
+                //{
+                //    ( (LinkButton)e.Item.FindControl( "lbSelectTime" ) ).AddCssClass( "active" );
+                //}
+                if ( ( (CheckInSchedule)e.Item.DataItem ).Schedule.Id == ssid )
                 {
                     ( (LinkButton)e.Item.FindControl( "lbSelectTime" ) ).AddCssClass( "active" );
+                    Session["time"] = ssid;
                 }
             }
         }
@@ -194,6 +217,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             .People.Where( p => p.Person.Id == int.Parse( Request.QueryString["personId"] ) ).FirstOrDefault();
 
             int groupId = int.Parse( e.CommandArgument.ToString() );
+
             foreach ( ListViewDataItem item in lvActivity.Items )
             {
                 ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).RemoveCssClass( "active" );
@@ -201,6 +225,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             // want to make sure no other groups/rooms are selected for this particular time
             int scheduleId = (int)Session["time"];
+
             var selectedScheduleGroupList = person.GroupTypes.Where( gt => gt.Groups.Any( g => g.Locations
                 .Any( l => l.Schedules.Any( s => s.Schedule.Id == scheduleId ) ) ) ).ToList();
             selectedScheduleGroupList.ForEach( gt => gt.Groups.Select( g => g.Selected = false ) );
@@ -213,7 +238,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
             chosenGroupType.Selected = true;
             var chosenGroup = chosenGroupType.Groups.Where( g => g.Group.Id == groupId ).FirstOrDefault();
             chosenGroup.Selected = true;
-            var chosenLocation = chosenGroup.Locations.FirstOrDefault();
+            //var chosenLocation = chosenGroup.Locations.FirstOrDefault();
+            var chosenLocation = chosenGroup.Locations.Where( l => l.Location.Name == chosenGroup.Group.Name ).FirstOrDefault();
             chosenLocation.Selected = true;
             var chosenSchedule = chosenLocation.Schedules.Where( s => s.Schedule.Id == scheduleId ).FirstOrDefault();
             chosenSchedule.Selected = true;            
@@ -280,15 +306,13 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             // Load Ministries        
             var checkInGroupTypeList = new List<CheckInGroupType>();
-            foreach( var groupType in person.GroupTypes.SelectMany( gt => gt.GroupType.ParentGroupTypes ) )
-            //foreach( var groupType in person.GroupTypes.SelectMany( gt => new GroupTypeService().Get( gt.GroupType.Id ).ParentGroupTypes ) )
+            //foreach( var groupType in person.GroupTypes.SelectMany( gt => gt.GroupType.ParentGroupTypes ) )
+            foreach( var groupType in person.GroupTypes.SelectMany( gt => new GroupTypeService().Get( gt.GroupType.Id ).ParentGroupTypes ) )
             {
                 CheckInGroupType checkInGroupType = new CheckInGroupType();
                 checkInGroupType.GroupType = groupType;
                 checkInGroupTypeList.Add( checkInGroupType );
             }
-            //var groupTypeList = person.GroupTypes.SelectMany( gt => gt.GroupType.ParentGroupTypes ).ToList();
-            //rMinistry.DataSource = groupTypeList;
             rMinistry.DataSource = checkInGroupTypeList;
             rMinistry.DataBind();
 
@@ -404,19 +428,26 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
             .People.Where( p => p.Person.Id == int.Parse( Request.QueryString["personId"] ) ).FirstOrDefault();
 
-            gActivityList.DataSource = person.GroupTypes.Select( gt => new
-            {
-                Time = gt.Groups.Where( g => g.Selected && g.Locations.Any( l => l.Selected && l.Schedules.Any( s => s.Selected ) ) )
-                    .Select( g => g.Locations.FirstOrDefault().Schedules.FirstOrDefault().Schedule.Name ).FirstOrDefault()
-                ,
-                Activity = gt.Groups.Where( g => g.Selected ).Select( g => g.Group.Name ).FirstOrDefault()
-            } )
-            .OrderBy( gt => gt.Time ).ToList();
+            var activityGrid = new System.Data.DataTable();
+            activityGrid.Columns.Add( "Time", typeof( string ) );
+            activityGrid.Columns.Add( "Activity", typeof( string ) );
+
+            gActivityList.DataSource = person.GroupTypes.Where( gt => gt.Selected )
+                .SelectMany( gt => gt.Groups ).Where( g => g.Selected )
+                .Select( g => new
+                {
+                    Activity = g.Group.Name,
+                    Time = g.Locations.Where( l => l.Selected )
+                        .Where( l => l.Schedules.Any( s => s.Selected ) )
+                        .SelectMany( l => l.Schedules.Select( s => s.Schedule.Name ) ).FirstOrDefault()
+                } ).ToList();
             gActivityList.DataBind();
             gActivityList.CssClass = string.Empty;
             gActivityList.AddCssClass( "grid-table" );
             gActivityList.AddCssClass( "table" );
-            
+            pnlSelectedGrid.Update();
+
+            //.OrderBy( gt => gt.Time ).ToList();
         }
 
         #endregion
