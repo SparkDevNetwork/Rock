@@ -22,18 +22,19 @@
 <asp:UpdatePanel ID="upContent" runat="server" UpdateMode="Conditional">
 <ContentTemplate>
 
-        <asp:PlaceHolder ID="phScript" runat="server"></asp:PlaceHolder>
-        <asp:HiddenField ID="hfLatitude" runat="server" />
-        <asp:HiddenField ID="hfLongitude" runat="server" />
-        <asp:HiddenField ID="hfKiosk" runat="server" />
-        <asp:HiddenField ID="hfGroupTypes" runat="server" />
-        <asp:HiddenField ID="hfParentTypes" runat="server" Value="" ClientIDMode="static"/>
-        <span style="display: none">
-            <asp:LinkButton ID="lbRefresh" runat="server" OnClick="lbRefresh_Click"></asp:LinkButton>
-            <asp:LinkButton ID="lbCheckGeoLocation" runat="server" OnClick="lbCheckGeoLocation_Click"></asp:LinkButton>
-        </span>
-        <Rock:ModalAlert ID="maWarning" runat="server" />
+    <asp:PlaceHolder ID="phScript" runat="server"></asp:PlaceHolder>
+    <asp:HiddenField ID="hfLatitude" runat="server" />
+    <asp:HiddenField ID="hfLongitude" runat="server" />
+    <asp:HiddenField ID="hfKiosk" runat="server" />
+    <asp:HiddenField ID="hfGroupTypes" runat="server" />
+    <asp:HiddenField ID="hfParentTypes" runat="server" Value="" ClientIDMode="static"/>
+    <span style="display: none">
+        <asp:LinkButton ID="lbRefresh" runat="server" OnClick="lbRefresh_Click"></asp:LinkButton>
+        <asp:LinkButton ID="lbCheckGeoLocation" runat="server" OnClick="lbCheckGeoLocation_Click"></asp:LinkButton>
+    </span>
+    <Rock:ModalAlert ID="maWarning" runat="server" />
 
+    <asp:Panel ID="pnlAdmin" runat="server" DefaultButton="lbOk">
         <div class="row-fluid attended-checkin-header">
             <div class="span3 attended-checkin-actions"></div>
             <div class="span6">
@@ -62,6 +63,7 @@
                 <a id="lbRetry" runat="server" class="btn btn-primary" visible="false" href="javascript:window.location.href=window.location.href">Retry</a>
             </div>
         </div>
+    </asp:Panel>
 
 </ContentTemplate>
 </asp:UpdatePanel>

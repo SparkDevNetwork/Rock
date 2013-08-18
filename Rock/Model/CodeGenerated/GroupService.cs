@@ -101,6 +101,7 @@ namespace Rock.Model
                 target.Description = source.Description;
                 target.IsSecurityRole = source.IsSecurityRole;
                 target.IsActive = source.IsActive;
+                target.Order = source.Order;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

@@ -114,12 +114,11 @@ namespace RockWeb.Blocks.Administration
                     ddlAttrEntityType.Items.Clear();
                     ddlAttrEntityType.Items.Add( new ListItem( "None (Global Attribute)", None.IdValue ) );
 
-                    foreach ( var entityType in new EntityTypeService()
-                        .GetEntities().OrderBy( t => t.FriendlyName ).ThenBy( t => t.Name ) )
+                    new EntityTypeService().GetEntityListItems().ForEach( l =>
                     {
-                        ddlEntityType.Items.Add( new ListItem( entityType.FriendlyName, entityType.Id.ToString() ) );
-                        ddlAttrEntityType.Items.Add( new ListItem( entityType.FriendlyName, entityType.Id.ToString() ) );
-                    }
+                        ddlEntityType.Items.Add( l );
+                        ddlAttrEntityType.Items.Add( l );
+                    } );
                 }
 
                 BindFilter();

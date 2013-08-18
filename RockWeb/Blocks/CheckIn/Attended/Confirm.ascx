@@ -23,7 +23,7 @@
 
         <div class="span12">
             <div class="attended-checkin-body-container">
-                <Rock:Grid ID="gPersonList" runat="server" AllowSorting="true" AllowPaging="false" ShowActionRow="false" OnRowCommand="gPersonList_RowCommand" DataKeyNames="Id">
+                <Rock:Grid ID="gPersonList" runat="server" AllowSorting="true" AllowPaging="false" ShowActionRow="false" OnRowCommand="gPersonList_RowCommand" DataKeyNames="Id,AssignedTo" >
                     <Columns>
                         <asp:BoundField DataField="Id" Visible="false" />
                         <asp:BoundField DataField="Name" HeaderText="Name" />
