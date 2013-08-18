@@ -82,8 +82,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
             pnlSelectMinistry.Update();
 
             // rebind the schedule list
-            //var scheduleList = person.GroupTypes.Where( gt => gt.GroupType.ParentGroupTypes.Select( pgt => pgt.Id ).Contains( groupTypeId ) )
-            //    .SelectMany( gt => gt.Groups.SelectMany( g => g.Locations.SelectMany( l => l.Schedules ) ) ).ToList();
+            var scheduleList = person.GroupTypes.Where( gt => gt.GroupType.ParentGroupTypes.Select( pgt => pgt.Id ).Contains( groupTypeId ) )
+                .SelectMany( gt => gt.Groups.SelectMany( g => g.Locations.SelectMany( l => l.Schedules ) ) ).ToList();
 
             //var scheduleList = new GroupTypeService().Get( groupTypeId ).ChildGroupTypes.SelectMany( c => c.Groups.SelectMany( g => g.GroupLocations.SelectMany( gl => gl.Schedules ) ) );
             //var blah = person.GroupTypes.Select( gt => new GroupTypeService().Get( groupTypeId ).ChildGroupTypes.SelectMany( c => c.Groups.SelectMany( g => g.GroupLocations.SelectMany( gl => gl.Schedules ) ) ) ).ToList();
