@@ -175,13 +175,14 @@ namespace Rock.Model
         public PrintTo AttendancePrintTo { get; set; }
 
         /// <summary>
-        /// Gets or sets the display order.
+        /// Gets or sets the order.
         /// </summary>
         /// <value>
-        /// The display order.
+        /// The order.
         /// </value>
-        [DataMember]
-        public int DisplayOrder { get; set; }
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int Order { get; set; }
 
         /// <summary>
         /// Gets or sets the inherited group type id.

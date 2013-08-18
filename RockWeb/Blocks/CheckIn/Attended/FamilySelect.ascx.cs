@@ -356,7 +356,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             // don't clear in case there are several "smith" families
             // CurrentCheckInState.CheckIn.Families.Clear();
             CurrentCheckInState.CheckIn.Families.Add( checkInFamily );
-            lvFamily.DataSource = CurrentCheckInState.CheckIn.Families.OrderBy( f => f.Caption ).ToList(); ;
+            lvFamily.DataSource = CurrentCheckInState.CheckIn.Families.OrderBy( f => f.Caption ).ToList();
             lvFamily.DataBind();
             pnlSelectFamily.Update();
 
@@ -603,6 +603,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// </summary>
         private void GoBack()
         {
+            // reset checkin state 
+            if ( CurrentCheckInState != null && CurrentCheckInState.CheckIn != null )
+            {
+                CurrentCheckInState.CheckIn.Families = new List<CheckInFamily>();
+            }
+
             SaveState();
             NavigateToPreviousPage();
         }

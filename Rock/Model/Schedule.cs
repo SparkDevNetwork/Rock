@@ -8,8 +8,9 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.IO;
-using System.Runtime.Serialization;
 using System.Linq;
+using System.Runtime.Serialization;
+using DDay.iCal;
 using Rock.Data;
 
 namespace Rock.Model
@@ -204,25 +205,25 @@ namespace Rock.Model
 
                 var calEvent = this.GetCalenderEvent();
 
-                if (calEvent != null && calEvent.DTStart != null)
+                if ( calEvent != null && calEvent.DTStart != null )
                 {
-                    var checkInStart = calEvent.DTStart.AddMinutes(0 - CheckInStartOffsetMinutes.Value);
-                    if (DateTimeOffset.Now.TimeOfDay.TotalSeconds < checkInStart.TimeOfDay.TotalSeconds)
+                    var checkInStart = calEvent.DTStart.AddMinutes( 0 - CheckInStartOffsetMinutes.Value );
+                    if ( DateTimeOffset.Now.TimeOfDay.TotalSeconds < checkInStart.TimeOfDay.TotalSeconds )
                     {
                         return false;
                     }
 
                     var checkInEnd = calEvent.DTEnd;
-                    if (CheckInEndOffsetMinutes.HasValue)
+                    if ( CheckInEndOffsetMinutes.HasValue )
                     {
                         checkInEnd = calEvent.DTStart.AddMinutes( CheckInEndOffsetMinutes.Value );
                     }
 
                     // If compare is greater than zero, then check-in offset end resulted in an end time in next day, in 
                     // which case, don't need to compare time
-                    int checkInEndDateCompare = checkInEnd.Date.CompareTo(checkInStart.Date);
+                    int checkInEndDateCompare = checkInEnd.Date.CompareTo( checkInStart.Date );
 
-                    if (checkInEndDateCompare < 0)
+                    if ( checkInEndDateCompare < 0 )
                     {
                         // End offset is prior to start (Would have required a neg number entered)
                         return false;
@@ -331,6 +332,68 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// To the friendly schedule text.
+        /// </summary>
+        /// <returns></returns>
+        public string ToFriendlyScheduleText()
+        {
+            string result = this.Name;
+
+            DDay.iCal.Event calendarEvent = this.GetCalenderEvent();
+            if ( calendarEvent != null )
+            {
+                string startTimeText = calendarEvent.DTStart.Value.TimeOfDay.ToTimeString();
+                if ( calendarEvent.RecurrenceRules.Any() )
+                {
+                    // some sort of recurring schedule
+
+                    IRecurrencePattern rrule = calendarEvent.RecurrenceRules[0];
+                    switch ( rrule.Frequency )
+                    {
+                        case FrequencyType.Daily:
+                            result = "Daily";
+
+                            if ( rrule.Interval > 1 )
+                            {
+                                result += string.Format( " every {0} days", rrule.Interval );
+                            }
+
+                            result += " at " + startTimeText;
+
+                            break;
+
+                        case FrequencyType.Weekly:
+
+                            var dayNameList = rrule.ByDay.Select( a => a.DayOfWeek.ConvertToString() ).ToList().AsDelimited( "," );
+
+                            result = dayNameList + " at " + startTimeText;
+
+                            // TODO
+
+                            break;
+
+                        case FrequencyType.Monthly:
+
+                            // TODO
+                            break;
+
+                        default:
+                            // Unexpected type of recurring, fallback to Specific Dates
+                            // TODO
+                            break;
+                    }
+                }
+                else
+                {
+                    // one time event
+                    // TODO
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -338,7 +401,7 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.Name;
+            return this.ToFriendlyScheduleText();
         }
 
         #endregion
