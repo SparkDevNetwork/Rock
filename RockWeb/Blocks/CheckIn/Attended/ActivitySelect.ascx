@@ -62,7 +62,8 @@
                 <h3>Time</h3>
                 <asp:Repeater ID="rTime" runat="server" OnItemCommand="rTime_ItemCommand" OnItemDataBound="rTime_ItemDataBound">
                     <ItemTemplate>
-                        <asp:LinkButton ID="lbSelectTime" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Schedule.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select time" CausesValidation="false" />
+                        <%--<asp:LinkButton ID="lbSelectTime" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Schedule.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select time" CausesValidation="false" />--%>
+                        <asp:LinkButton ID="lbSelectTime" runat="server" Text='<%# Eval("Schedule.Name") %>' CommandArgument='<%# Eval("Schedule.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select time" CausesValidation="false" />
                     </ItemTemplate>
                 </asp:Repeater>
             </div>
@@ -88,7 +89,8 @@
         </ContentTemplate>
         </asp:UpdatePanel>
 
-        <div class="span3">
+        <asp:UpdatePanel ID="pnlSelectedGrid" runat="server" UpdateMode="Conditional" class="span3">
+        <ContentTemplate>        
             <div class="attended-checkin-body-container">
                 <h3>Selected</h3>
                 <Rock:Grid ID="gActivityList" runat="server" AllowSorting="true" AllowPaging="false" ShowActionRow="false" ShowHeader="false" CssClass="select">
@@ -100,7 +102,8 @@
                     </Columns>
                 </Rock:Grid>
             </div>
-        </div>
+        </ContentTemplate>
+        </asp:UpdatePanel>
 
     </div>   
 
