@@ -178,7 +178,7 @@ namespace Rock.Web.UI.Controls
             {
                 return null;
             }
-            
+
             int result = int.Parse( ItemId );
             if ( noneAsNull )
             {
@@ -187,6 +187,34 @@ namespace Rock.Web.UI.Controls
                     return null;
                 }
             }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Returns the value of the currently selected item.
+        /// It will return NULL if either <see cref="T:Rock.Constants.None"/> or <see cref="T:Rock.Constants.All"/> is selected. />
+        /// </summary>
+        /// <returns></returns>
+        public int? SelectedValueAsId()
+        {
+            if ( string.IsNullOrWhiteSpace( ItemId ) )
+            {
+                return null;
+            }
+
+            int result = int.Parse( ItemId );
+
+            if ( result == Constants.None.Id )
+            {
+                return null;
+            }
+
+            if ( result == Constants.All.Id )
+            {
+                return null;
+            }
+
             return result;
         }
 
@@ -288,7 +316,7 @@ namespace Rock.Web.UI.Controls
             {
                 if ( ViewState["Required"] != null )
                     return (bool)ViewState["Required"];
-                
+
                 return false;
             }
             set

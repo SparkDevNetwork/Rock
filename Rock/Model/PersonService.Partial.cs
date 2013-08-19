@@ -319,9 +319,24 @@ namespace Rock.Model
         /// <returns></returns>
         public Person GetSpouse( Person person )
         {
+            // Spouse is determined if all these conditions are met
+            // 1) Adult in the same family as Person (GroupType = Family, GroupRole = Adult, and in same Group)
+            // 2) Opposite Gender as Person
+            // 3) Both Persons are Married
+            
             Guid adultGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT );
+            Guid marriedGuid = new Guid(Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED);
+            int marriedDefinedValueId = new DefinedValueService().Queryable().First(a => a.Guid == marriedGuid).Id;
+
+            if ( person.MaritalStatusValueId != marriedDefinedValueId )
+            {
+                return null;
+            }
+
             return GetFamilyMembers(person)
-                .Where( m => m.GroupRole.Guid == adultGuid && m.Person.Gender != person.Gender )
+                .Where( m => m.GroupRole.Guid == adultGuid)
+                .Where( m => m.Person.Gender != person.Gender )
+                .Where( m => m.Person.MaritalStatusValueId == marriedDefinedValueId)
                 .Select( m => m.Person )
                 .FirstOrDefault();
         }

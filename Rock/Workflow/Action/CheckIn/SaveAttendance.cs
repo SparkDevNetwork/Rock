@@ -32,12 +32,18 @@ namespace Rock.Workflow.Action.CheckIn
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override bool Execute( Model.WorkflowAction action, Data.IEntity entity, out List<string> errorMessages )
+        public override bool Execute( Model.WorkflowAction action, Object entity, out List<string> errorMessages )
         {
-            var checkInState = GetCheckInState( action, out errorMessages );
+            var checkInState = GetCheckInState( entity, out errorMessages );
             if ( checkInState != null )
             {
                 DateTime startDateTime = DateTime.Now;
+
+                int securityCodeLength = 3;
+                if ( !int.TryParse( GetAttributeValue( action, "SecurityCodeLength" ), out securityCodeLength ) )
+                {
+                    securityCodeLength = 3;
+                }
 
                 using ( var uow = new Rock.Data.UnitOfWorkScope() )
                 {
@@ -49,11 +55,6 @@ namespace Rock.Workflow.Action.CheckIn
                     {
                         foreach ( var person in family.People.Where( p => p.Selected ) )
                         {
-                            int securityCodeLength = 3;
-                            if ( !int.TryParse( GetAttributeValue( action, "SecurityCodeLength" ), out securityCodeLength ) )
-                            {
-                                securityCodeLength = 3;
-                            }
                             var attendanceCode = attendanceCodeService.GetNew( securityCodeLength );
                             person.SecurityCode = attendanceCode.Code;
 
@@ -106,7 +107,6 @@ namespace Rock.Workflow.Action.CheckIn
                     }
                 }
 
-                SetCheckInState( action, checkInState );
                 return true;
 
             }
