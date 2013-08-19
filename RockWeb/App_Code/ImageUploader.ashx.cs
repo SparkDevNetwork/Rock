@@ -14,6 +14,7 @@ using System.Web;
 using Goheer.EXIF;
 
 using Rock.Model;
+using Rock.Storage;
 
 namespace RockWeb
 {
@@ -52,16 +53,25 @@ namespace RockWeb
                     bmp = resizedBmp;
                 }
 
-                using ( MemoryStream stream = new MemoryStream() )
+                using ( var stream = new MemoryStream() )
                 {
                     bmp.Save( stream, ContentTypeToImageFormat( file.MimeType ) );
+
                     if ( file.Data == null )
                     {
                         file.Data = new BinaryFileData();
                     }
+
                     file.Data.Content = stream.ToArray();
-                    stream.Close();
                 }
+
+                // Use provider to persist file
+                var provider = fileType != null
+                    ? ProviderContainer.GetComponent( fileType.StorageEntityType.Name )
+                    : ProviderContainer.DefaultComponent;
+                file.FileName = Path.GetFileName( uploadedFile.FileName );
+                provider.SaveFile( file, null );
+
             }
             catch
             {
