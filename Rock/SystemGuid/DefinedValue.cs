@@ -154,6 +154,16 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Person Marital Status
+
+        /// <summary>
+        /// Marital Status of Married
+        /// Note:  Single is also a DefinedValue for Marital Status but it is not IsSystem, so we won't include it as a const
+        /// </summary>
+        public const string PERSON_MARITAL_STATUS_MARRIED = "5FE5A540-7D9F-433E-B47E-4229D1472248";
+
+        #endregion
+
         #region Person Phone Type
 
         /// <summary>
