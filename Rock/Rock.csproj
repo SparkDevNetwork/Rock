@@ -497,6 +497,10 @@
     <Compile Include="Migrations\201308162243140_DataTransformations.Designer.cs">
       <DependentUpon>201308162243140_DataTransformations.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201308191700532_AddMaritalStatusDefinedValues.cs" />
+    <Compile Include="Migrations\201308191700532_AddMaritalStatusDefinedValues.Designer.cs">
+      <DependentUpon>201308191700532_AddMaritalStatusDefinedValues.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -2176,6 +2180,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201308162243140_DataTransformations.resx">
       <DependentUpon>201308162243140_DataTransformations.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308191700532_AddMaritalStatusDefinedValues.resx">
+      <DependentUpon>201308191700532_AddMaritalStatusDefinedValues.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
