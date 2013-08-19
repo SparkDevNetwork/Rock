@@ -35,12 +35,12 @@
                     },
                     success: function (e) {
                         var $el = isImage ? $('#' + options.imgThumbnail) : $('#' + options.aFileName);
-                        if (e.operation === 'upload' && e.response) {
+                        if (e.operation === 'upload' && e.response.toString() !== '0') {
                             $('#' + options.hfFileId).val(e.response.Id);
                             $el.hide();
 
                             if (isImage) {
-                                $el.attr('src', '/GetImage/ashx?id=' + e.response.ID + '&width=50&height=50');
+                                $el.attr('src', '/GetImage.ashx?id=' + e.response.Id + '&width=50&height=50');
                             } else {
                                 $el.text(e.response.FileName).attr('href', '/GetFile.ashx?id=' + e.response.Id);
                             }

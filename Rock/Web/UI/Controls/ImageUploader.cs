@@ -35,7 +35,7 @@ namespace Rock.Web.UI.Controls
         Bindable( true ),
         Category( "Data" ),
         DefaultValue( "" ),
-        Description( "Image Id" )
+        Description( "BinaryFile Id" )
         ]
         public int BinaryFileId
         {
@@ -58,6 +58,12 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The binary file type GUID.
         /// </value>
+        [
+        Bindable( true ),
+        Category( "Data" ),
+        DefaultValue( "" ),
+        Description( "BinaryFileType Guid" )
+        ]
         public Guid BinaryFileTypeGuid
         {
             get
@@ -109,59 +115,6 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
             EnsureChildControls();
-
-//            string script = string.Format(
-//@"
-//    $(document).ready(function() {{
-//
-//        function ConfigureImageUploader{0}(sender, args) {{
-//            $('#{0}').kendoUpload({{
-//                multiple: false,
-//                showFileList: false,
-//                async: {{
-//                    saveUrl: '{4}ImageUploader.ashx'
-//                }},
-//
-//                success: function(e) {{
-//
-//                    if (e.operation == 'upload' && e.response != '0') {{
-//                        $('#{1}').val(e.response.Id);
-//                        $('#{2}').attr('src','');
-//                        $('#{2}').hide();             
-//                        $('#{2}').attr('src','{4}GetImage.ashx?id=' + e.response.Id + '&width=50&height=50');
-//                        $('#{2}').show('fast', function() {{ 
-//                            if ($('#modal-scroll-container').length) {{
-//                                $('#modal-scroll-container').tinyscrollbar_update('relative');
-//                            }}
-//                        }});
-//                        $('#{3}').show('fast');
-//                    }}
-//
-//                }}
-//            }});
-//
-//            $('#{3}').click( function(){{
-//                $(this).hide('fast');
-//                $('#{1}').val('0');
-//                $('#{2}').attr('src','')
-//                $('#{2}').hide('fast', function() {{ 
-//                    if ($('#modal-scroll-container').length) {{
-//                        $('#modal-scroll-container').tinyscrollbar_update('relative');
-//                    }}
-//                }});
-//            }});
-//
-//        }}
-//
-//        // configure imgThumbnail uploaders         
-//        ConfigureImageUploader{0}(null, null);
-//    }});
-//        ",
-//                            fileUpload.ClientID,
-//                            hfBinaryFileId.ClientID,
-//                            imgThumbnail.ClientID,
-//                            aRemove.ClientID,
-//                            ResolveUrl( "~" ) );
 
             var script = string.Format( @"
 Rock.controls.fileUploader.initialize({{
