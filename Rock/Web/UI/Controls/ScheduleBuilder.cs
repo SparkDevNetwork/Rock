@@ -81,15 +81,6 @@ namespace Rock.Web.UI.Controls
         private LinkButton _btnSaveSchedule;
         private LinkButton _btnCancelSchedule;
 
-        // consts
-        private readonly Dictionary<string, int> nthNames = new Dictionary<string, int> { 
-            {"First", 1}, 
-            {"Second", 2}, 
-            {"Third", 3}, 
-            {"Fourth", 4}, 
-            {"Last", -1} 
-        };
-
         private const string iCalendarContentEmptyEvent = @"
 BEGIN:VCALENDAR
 VERSION:2.0
@@ -188,6 +179,7 @@ END:VCALENDAR
                 EnsureChildControls();
                 return _label.Text;
             }
+
             set
             {
                 EnsureChildControls();
@@ -864,9 +856,9 @@ END:VCALENDAR
             _ddlMonthlyNth.CssClass = "input-small";
 
             _ddlMonthlyNth.Items.Add( string.Empty );
-            foreach ( var nth in nthNames )
+            foreach ( var nth in Rock.Model.Schedule.NthNames )
             {
-                _ddlMonthlyNth.Items.Add( new ListItem( nth.Key, nth.Value.ToString() ) );
+                _ddlMonthlyNth.Items.Add( new ListItem( nth.Value, nth.Key.ToString() ) );
             }
 
             _ddlMonthlyDayName.ClientIDMode = ClientIDMode.Static;
