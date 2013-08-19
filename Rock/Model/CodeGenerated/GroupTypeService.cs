@@ -104,6 +104,7 @@ namespace Rock.Model
                 target.GroupMemberTerm = source.GroupMemberTerm;
                 target.DefaultGroupRoleId = source.DefaultGroupRoleId;
                 target.AllowMultipleLocations = source.AllowMultipleLocations;
+                target.ParentGroupTypes = source.ParentGroupTypes;
                 target.ShowInGroupList = source.ShowInGroupList;
                 target.ShowInNavigation = source.ShowInNavigation;
                 target.IconSmallFileId = source.IconSmallFileId;
