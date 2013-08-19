@@ -70,7 +70,7 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 Guid guid;
-                return Guid.TryParse( hfBinaryFileTypeGuid.Value, out guid ) ? guid : Guid.Empty;
+                return Guid.TryParse( hfBinaryFileTypeGuid.Value, out guid ) ? guid : new Guid( SystemGuid.BinaryFiletype.DEFAULT );
             }
 
             set 
@@ -170,13 +170,8 @@ Rock.controls.fileUploader.initialize({{
             }
 
             imgThumbnail.RenderControl( writer );
+
             hfBinaryFileId.RenderControl( writer );
-
-            if ( string.IsNullOrWhiteSpace( hfBinaryFileTypeGuid.Value ) )
-            {
-                throw new Exception( "BinaryFileTypeGuid must be set." );
-            }
-
             hfBinaryFileTypeGuid.RenderControl( writer );
             aRemove.RenderControl( writer );
 
@@ -209,8 +204,12 @@ Rock.controls.fileUploader.initialize({{
             lblTitle.AssociatedControlID = imgThumbnail.ID;
 
             hfBinaryFileId = new HiddenField();
-            hfBinaryFileId.ID = "hf";
+            hfBinaryFileId.ID = "hfBinaryFileId";
             Controls.Add( hfBinaryFileId );
+
+            hfBinaryFileTypeGuid = new HiddenField();
+            hfBinaryFileTypeGuid.ID = "hfBinaryFileTypeGuid";
+            Controls.Add( hfBinaryFileTypeGuid );
 
             aRemove = new HtmlAnchor();
             aRemove.ID = "rmv";

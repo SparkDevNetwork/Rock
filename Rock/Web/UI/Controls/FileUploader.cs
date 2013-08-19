@@ -95,7 +95,7 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 Guid guid;
-                return Guid.TryParse( hfBinaryFileTypeGuid.Value, out guid ) ? guid : Guid.Empty;
+                return Guid.TryParse( hfBinaryFileTypeGuid.Value, out guid ) ? guid : new Guid( SystemGuid.BinaryFiletype.DEFAULT );
             }
 
             set
@@ -183,11 +183,6 @@ namespace Rock.Web.UI.Controls
             }
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            if ( string.IsNullOrWhiteSpace( hfBinaryFileTypeGuid.Value ) )
-            {
-                throw new Exception( "BinaryFileTypeGuid must be set." );
-            }
 
             hfBinaryFileId.RenderControl( writer );
             hfBinaryFileTypeGuid.RenderControl( writer );
