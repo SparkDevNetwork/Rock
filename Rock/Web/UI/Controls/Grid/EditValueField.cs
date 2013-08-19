@@ -24,6 +24,8 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
+            this.HeaderStyle.CssClass = "grid-col-command";
+            this.ItemStyle.CssClass = "grid-col-command";
         }
 
         /// <summary>
@@ -85,7 +87,7 @@ namespace Rock.Web.UI.Controls
             {
                 LinkButton lbEditValue = new LinkButton();
                 lbEditValue.ToolTip = "Edit";
-                lbEditValue.CssClass = "btn btn-mini";
+                lbEditValue.CssClass = "btn";
 
                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
                 buttonIcon.Attributes.Add( "class", "icon-pencil" );

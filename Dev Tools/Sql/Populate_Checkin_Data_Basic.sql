@@ -18,13 +18,13 @@
 * Check in by Grade 	  Grades:                                            4F9565A7-DD5A-41C3-B4E8-13F0B872B10B	Check in by Age
 *
 * Nursery/Preschool Area                                					 CADB2D12-7836-44BC-8EEA-3C6AB22FD5E8	Check in by Age
-*     - Nursery           Ages: 0-3                       Bunnies              DC1A2A83-1B5D-46BC-9E99-4571466827F5
-*     - Preschool         Ages: 2.5-5.99                  Puppies              366001D1-0E60-4AA1-875D-046286E29284
+*     - Nursery           Ages: 0-3                       Bunnies Room         DC1A2A83-1B5D-46BC-9E99-4571466827F5
+*     - Preschool         Ages: 2.5-5.99                  Puppies Room         366001D1-0E60-4AA1-875D-046286E29284
 *
 * Elementary Area                                                            E3C8F7D6-5CEB-43BB-802F-66C3E734049E	Check in by Grade
-*     - Grades K-1        Ages: 4.75-8.75   Grades: K-1   Bears                FB8AAAA2-9A57-4AA4-8543-10A053C4834F
-*     - Grades 2-3        Ages: 6-10.99     Grades: 2-3   Bobcats              24901861-14CF-474F-9FCE-7BA1D6C84BFF
-*     - Grades 4-6        Ages: 8-13.99     Grades: 4-6   Outpost              42C408CE-3D69-4D7D-B9EA-41087A8945A6
+*     - Grades K-1        Ages: 4.75-8.75   Grades: K-1   Bears   Room         FB8AAAA2-9A57-4AA4-8543-10A053C4834F
+*     - Grades 2-3        Ages: 6-10.99     Grades: 2-3   Bobcats Room         24901861-14CF-474F-9FCE-7BA1D6C84BFF
+*     - Grades 4-6        Ages: 8-13.99     Grades: 4-6   Outpost Room         42C408CE-3D69-4D7D-B9EA-41087A8945A6
 *
 * Jr High Area																7A17235B-69AD-439B-BAB0-1A0A472DB96F	Check in by Grade
 *     - Grades 7-8        Ages: 12-15 Grades: 7-8         the Warehouse        7B99F840-66AB-4C7A-99A2-104D9CC953F7
@@ -60,6 +60,9 @@ SET @GroupEntityTypeId = (SELECT Id FROM [EntityType] WHERE Name = 'Rock.Model.G
 -- Attribute Entity Type
 DECLARE @AttributeEntityTypeId INT
 SET @AttributeEntityTypeId = (SELECT Id FROM [EntityType] WHERE Name = 'Rock.Model.Attribute')
+
+DECLARE @GroupTypePurposeCheckinTemplateId INT
+SET @GroupTypePurposeCheckinTemplateId = (select [Id] from [DefinedValue] where [Guid] = '4A406CB0-495B-4795-B788-52BDFDE00B01');
 
 -- Group Type Check-in Category Id
 DECLARE @GroupTypeCheckInCategoryId INT
@@ -157,8 +160,8 @@ DECLARE @JHGroupTypeId int
 DECLARE @HSGroupTypeId int
 
 -- Insert the new top level Check-in GroupType
-INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo])
-   VALUES (0, 'Weekly Service Check-in Area', 'FEDD389A-616F-4A53-906C-63D8255631C5', 0, 0, 0, 0)
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[GroupTypePurposeValueId])
+   VALUES (0, 'Weekly Service Check-in Area', 'FEDD389A-616F-4A53-906C-63D8255631C5', 0, 0, 0, 0, @GroupTypePurposeCheckinTemplateId)
 SET @ParentGroupTypeId = SCOPE_IDENTITY()
 
 -- Now insert the all the new GroupTypes under that one...
@@ -473,11 +476,11 @@ INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid])	VALUES (
 SET @BuildingLocationId = SCOPE_IDENTITY()
 
 -- Check in Rooms
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid])	VALUES (@BuildingLocationId, 'Bunnies', 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid])	VALUES (@BuildingLocationId, 'Puppies', 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid])	VALUES (@BuildingLocationId, 'Bears', 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid])	VALUES (@BuildingLocationId, 'Bobcats', 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid])	VALUES (@BuildingLocationId, 'Outpost', 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid])	VALUES (@BuildingLocationId, 'Bunnies Room', 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid])	VALUES (@BuildingLocationId, 'Puppies Room', 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid])	VALUES (@BuildingLocationId, 'Bears Room', 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid])	VALUES (@BuildingLocationId, 'Bobcats Room', 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid])	VALUES (@BuildingLocationId, 'Outpost Room', 1, NEWID())
 INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid])	VALUES (@BuildingLocationId, 'the Warehouse', 1, NEWID())
 INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid])	VALUES (@BuildingLocationId, 'the Garage', 1, NEWID())
 
@@ -548,19 +551,19 @@ WHERE C.Name = 'Main Campus'
 DELETE [GroupLocation]
 
 	INSERT INTO [GroupLocation] (GroupId, LocationId, Guid)
-	 SELECT @NurseryGroupId, L.Id, NEWID() FROM Location L WHERE L.Name = 'Bunnies'
+	 SELECT @NurseryGroupId, L.Id, NEWID() FROM Location L WHERE L.Name = 'Bunnies Room'
 
 	INSERT INTO [GroupLocation] (GroupId, LocationId, Guid)
-	 SELECT @PreschoolGroupId, L.Id, NEWID() FROM Location L WHERE L.Name = 'Puppies'
+	 SELECT @PreschoolGroupId, L.Id, NEWID() FROM Location L WHERE L.Name = 'Puppies Room'
 	 
 	INSERT INTO [GroupLocation] (GroupId, LocationId, Guid)
-	 SELECT @GradeK1GroupId, L.Id, NEWID() FROM Location L WHERE L.Name = 'Bears'
+	 SELECT @GradeK1GroupId, L.Id, NEWID() FROM Location L WHERE L.Name = 'Bears Room'
 
 	INSERT INTO [GroupLocation] (GroupId, LocationId, Guid)
-	 SELECT @Grade23GroupId, L.Id, NEWID() FROM Location L WHERE L.Name = 'Bobcats'
+	 SELECT @Grade23GroupId, L.Id, NEWID() FROM Location L WHERE L.Name = 'Bobcats Room'
 	 
 	INSERT INTO [GroupLocation] (GroupId, LocationId, Guid)
-	 SELECT @Grade46GroupId, L.Id, NEWID() FROM Location L WHERE L.Name = 'Outpost'  
+	 SELECT @Grade46GroupId, L.Id, NEWID() FROM Location L WHERE L.Name = 'Outpost Room'  
 
 	INSERT INTO [GroupLocation] (GroupId, LocationId, Guid)
 	 SELECT @JHGroupId, L.Id, NEWID() FROM Location L WHERE L.Name = 'the Warehouse' 
@@ -685,9 +688,7 @@ INNER JOIN Attribute A ON A.Id = AV.AttributeId
 WHERE A.[Key] = 'WorkflowTypeId'
 DECLARE @TextFieldTypeId int
 SET @TextFieldTypeId = (SELECT Id FROM FieldType WHERE guid = '9C204CD0-1233-41C5-818A-C5DA439445AA')
-DELETE [Attribute] WHERE guid = '9D2BFE8A-41F3-4A02-B3CF-9193F0C8419E'
-INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, Guid)
-VALUES ( 0, @TextFieldTypeId, @WorkflowEntityTypeId, 'WorkflowTypeId', CAST(@WorkflowTypeId as varchar), 'CheckInState', 'Check-in State', 0, 0, 0, 0, '9D2BFE8A-41F3-4A02-B3CF-9193F0C8419E')
+DELETE [Attribute] WHERE guid = '9D2BFE8A-41F3-4A02-B3CF-9193F0C8419E'	-- old attribute, no longer added by script
 
 -- Family Search Activity
 DECLARE @WorkflowActivityTypeId int

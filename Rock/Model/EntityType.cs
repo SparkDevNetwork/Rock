@@ -73,6 +73,16 @@ namespace Rock.Model
         [DataMember]
         public bool IsSecured { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this entity type is a commonly used entity.
+        /// If so, it will grouped at the top by the entity type picker control
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is common; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool IsCommon { get; set; }
+
         #endregion
 
         #region virtual Properties
