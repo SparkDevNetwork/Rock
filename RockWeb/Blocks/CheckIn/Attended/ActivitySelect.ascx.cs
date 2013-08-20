@@ -48,7 +48,18 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     {
                         lblPersonName.Text = person.Person.FullName;
                         //gActivityList.DataKeyNames = new string[] { "ListId" };
-                        LoadCheckin( person );
+
+                        // #TODO: Convert this to use GroupTypeCache when implemented.
+                        var groupTypeService = new GroupTypeService();
+                        foreach ( var checkInGroupType in person.GroupTypes )
+                        {
+                            checkInGroupType.GroupType.ParentGroupTypes = groupTypeService.Get( checkInGroupType.GroupType.Id ).ParentGroupTypes;
+                        }
+
+                        BindGroupTypes( person );
+                        BindSchedules( person );
+                        BindLocations( person );
+                        BindSelectedGrid();
                     }
                     else
                     {
@@ -63,203 +74,181 @@ namespace RockWeb.Blocks.CheckIn.Attended
         #region Edit Events
 
         /// <summary>
-        /// Handles the ItemCommand event of the rMinistry control.
+        /// Handles the ItemCommand event of the rGroupType control.
         /// </summary>
         /// <param name="source">The source of the event.</param>
         /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
-        protected void rMinistry_ItemCommand( object source, RepeaterCommandEventArgs e )
+        protected void rGroupType_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
                 .People.Where( p => p.Person.Id == int.Parse( Request.QueryString["personId"] ) ).FirstOrDefault();
-            int groupTypeId = int.Parse( e.CommandArgument.ToString() );
-            foreach ( RepeaterItem item in rMinistry.Items )
+
+            foreach ( RepeaterItem item in rGroupType.Items )
             {
-                ( (LinkButton)item.FindControl( "lbSelectMinistry" ) ).RemoveCssClass( "active" );
+                ( (LinkButton)item.FindControl( "lbSelectGroupType" ) ).RemoveCssClass( "active" );
             }
 
-            ( (LinkButton)e.Item.FindControl( "lbSelectMinistry" ) ).AddCssClass( "active" );
-            Session["ministry"] = groupTypeId;
-            pnlSelectMinistry.Update();
-
-            // rebind the schedule list
-            var scheduleList = person.GroupTypes.Where( gt => gt.GroupType.ParentGroupTypes.Select( pgt => pgt.Id ).Contains( groupTypeId ) )
-                .SelectMany( gt => gt.Groups.SelectMany( g => g.Locations.SelectMany( l => l.Schedules ) ) ).ToList();
-
-            //var scheduleList = new GroupTypeService().Get( groupTypeId ).ChildGroupTypes.SelectMany( c => c.Groups.SelectMany( g => g.GroupLocations.SelectMany( gl => gl.Schedules ) ) );
-            //var blah = person.GroupTypes.Select( gt => new GroupTypeService().Get( groupTypeId ).ChildGroupTypes.SelectMany( c => c.Groups.SelectMany( g => g.GroupLocations.SelectMany( gl => gl.Schedules ) ) ) ).ToList();
-
-
-            rTime.DataSource = scheduleList.Distinct().ToList();
-            rTime.DataBind();
-            pnlSelectTime.Update();
-
-            // rebind the activity list
-            var activityList = person.GroupTypes.Where( gt => gt.GroupType.ParentGroupTypes.Select( pgt => pgt.Id ).Contains( groupTypeId ) )
-                .SelectMany( gt => gt.Groups ).ToList();
-            lvActivity.DataSource = activityList;
-            lvActivity.DataBind();
-            Session["activityList"] = activityList;     // this is for the paging
-            pnlSelectActivity.Update(); 
+            ( (LinkButton)e.Item.FindControl( "lbSelectGroupType" ) ).AddCssClass( "active" );
+            pnlSelectGroupType.Update();
+            
+            Session["groupType"] = int.Parse( e.CommandArgument.ToString() );
+            BindSchedules( person );
+            BindLocations( person );            
         }
 
         /// <summary>
-        /// Handles the ItemDataBound event of the rMinistry control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.Web.UI.WebControls.RepeaterItemEventArgs"/> instance containing the event data.</param>
-        protected void rMinistry_ItemDataBound( object sender, RepeaterItemEventArgs e )
-        {
-            var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
-                .People.Where( p => p.Person.Id == int.Parse( Request.QueryString["personId"] ) ).FirstOrDefault();
-            var selectedGroupTypeId = person.GroupTypes.Where( gt => gt.Selected ).Select( gt => gt.GroupType.Id ).FirstOrDefault();
-            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
-            {
-                foreach ( var childGroupType in ( (CheckInGroupType)e.Item.DataItem ).GroupType.ChildGroupTypes )
-                {
-                    if ( childGroupType.Id == selectedGroupTypeId )
-                    {
-                        ( (LinkButton)e.Item.FindControl( "lbSelectMinistry" ) ).AddCssClass( "active" );
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Handles the ItemCommand event of the rTime control.
+        /// Handles the ItemCommand event of the rSchedule control.
         /// </summary>
         /// <param name="source">The source of the event.</param>
         /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
-        protected void rTime_ItemCommand( object source, RepeaterCommandEventArgs e )
+        protected void rSchedule_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
             .People.Where( p => p.Person.Id == int.Parse( Request.QueryString["personId"] ) ).FirstOrDefault();
 
-            int id = int.Parse( e.CommandArgument.ToString() );
-            foreach ( RepeaterItem item in rTime.Items )
+            foreach ( RepeaterItem item in rSchedule.Items )
             {
-                ( (LinkButton)item.FindControl( "lbSelectTime" ) ).RemoveCssClass( "active" );
+                ( (LinkButton)item.FindControl( "lbSelectSchedule" ) ).RemoveCssClass( "active" );
             }
 
-            ( (LinkButton)e.Item.FindControl( "lbSelectTime" ) ).AddCssClass( "active" );
-            Session["time"] = id;
+            ( (LinkButton)e.Item.FindControl( "lbSelectSchedule" ) ).AddCssClass( "active" );
+            pnlSelectSchedule.Update();
+            Session["schedule"] = int.Parse( e.CommandArgument.ToString() );
+            BindLocations( person );
         }
 
         /// <summary>
-        /// Handles the ItemDataBound event of the rTime control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.Web.UI.WebControls.RepeaterItemEventArgs"/> instance containing the event data.</param>
-        protected void rTime_ItemDataBound( object sender, RepeaterItemEventArgs e )
-        {
-            var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
-                .People.Where( p => p.Person.Id == int.Parse( Request.QueryString["personId"] ) ).FirstOrDefault();
-            //var selectedGroupType = person.GroupTypes.Where( gt => gt.Selected );
-            //var selectedGroup = selectedGroupType.SelectMany( gt => gt.Groups.Where( g => g.Selected ) );
-            //var selectedLocation = selectedGroup.SelectMany( g => g.Locations.Where( l => l.Selected ) );
-            //var selectedSchedule = selectedLocation.SelectMany( l => l.Schedules.Where( s => s.Selected ) );
-            //var selectedScheduleId = selectedSchedule.Select( s => s.Schedule.Id ).FirstOrDefault();
-            var ssid = person.GroupTypes.Where( gt => gt.Selected )
-                .SelectMany( gt => gt.Groups.Where( g => g.Selected ) )
-                    .SelectMany( g => g.Locations.Where( l => l.Selected ) )
-                        .SelectMany( l => l.Schedules.Where( s => s.Selected ) )
-                            .Select( s => s.Schedule.Id ).FirstOrDefault();
-            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
-            {
-                //if ( ( (CheckInSchedule)e.Item.DataItem ).Selected )
-                //{
-                //    ( (LinkButton)e.Item.FindControl( "lbSelectTime" ) ).AddCssClass( "active" );
-                //}
-                if ( ( (CheckInSchedule)e.Item.DataItem ).Schedule.Id == ssid )
-                {
-                    ( (LinkButton)e.Item.FindControl( "lbSelectTime" ) ).AddCssClass( "active" );
-                    Session["time"] = ssid;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Handles the ItemDataBound event of the lvActivity control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="System.Web.UI.WebControls.ListViewItemEventArgs"/> instance containing the event data.</param>
-        protected void lvActivity_ItemDataBound( object sender, ListViewItemEventArgs e )
-        {
-            if ( e.Item.ItemType == ListViewItemType.DataItem )
-            {
-                if ( ( (CheckInGroup)e.Item.DataItem ).Selected )
-                {
-                    ( (LinkButton)e.Item.FindControl( "lbSelectActivity" ) ).AddCssClass( "active" );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Handles the PagePropertiesChanging event of the lvActivity control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="PagePropertiesChangingEventArgs"/> instance containing the event data.</param>
-        protected void lvActivity_PagePropertiesChanging( object sender, PagePropertiesChangingEventArgs e )
-        {
-            // set current page startindex, max rows and rebind to false
-            Pager.SetPageProperties( e.StartRowIndex, e.MaximumRows, false );
-            lvActivity.DataSource = Session["activityList"];
-            lvActivity.DataBind();
-        }
-
-        /// <summary>
-        /// Handles the ItemCommand event of the lvActivity control.
+        /// Handles the ItemCommand event of the lvLocation control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="ListViewCommandEventArgs"/> instance containing the event data.</param>
-        protected void lvActivity_ItemCommand( object sender, ListViewCommandEventArgs e )
+        protected void lvLocation_ItemCommand( object sender, ListViewCommandEventArgs e )
         {
             var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
             .People.Where( p => p.Person.Id == int.Parse( Request.QueryString["personId"] ) ).FirstOrDefault();
 
-            int groupId = int.Parse( e.CommandArgument.ToString() );
-
-            foreach ( ListViewDataItem item in lvActivity.Items )
+            foreach ( ListViewDataItem item in lvLocation.Items )
             {
                 ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).RemoveCssClass( "active" );
             }
 
-            // want to make sure no other groups/rooms are selected for this particular time
-            int scheduleId = (int)Session["time"];
-
-            var selectedScheduleGroupList = person.GroupTypes.Where( gt => gt.Groups.Any( g => g.Locations
-                .Any( l => l.Schedules.Any( s => s.Schedule.Id == scheduleId ) ) ) ).ToList();
-            selectedScheduleGroupList.ForEach( gt => gt.Groups.Select( g => g.Selected = false ) );
-
             ( (LinkButton)e.Item.FindControl( "lbSelectActivity" ) ).AddCssClass( "active" );
-            Session["activity"] = groupId;
+            pnlSelectLocation.Update();
+
+            int scheduleId = (int)Session["schedule"];
+            var selectedGroups = person.GroupTypes.SelectMany( gt => gt.Groups.Where( g => g.Selected && g.Locations.Any( l => l.Schedules.Any( s => s.Schedule.Id == scheduleId ) ) ) ).ToList();
+            selectedGroups.ForEach( g => g.Selected = false );
+
+            int groupId = int.Parse( e.CommandArgument.ToString() );
 
             // set the appropriate stuff on the person for what's been selected
             var chosenGroupType = person.GroupTypes.Where( gt => gt.Groups.Any( g => g.Group.Id == groupId ) ).FirstOrDefault();
             chosenGroupType.Selected = true;
             var chosenGroup = chosenGroupType.Groups.Where( g => g.Group.Id == groupId ).FirstOrDefault();
             chosenGroup.Selected = true;
-            //var chosenLocation = chosenGroup.Locations.FirstOrDefault();
             var chosenLocation = chosenGroup.Locations.Where( l => l.Location.Name == chosenGroup.Group.Name ).FirstOrDefault();
             chosenLocation.Selected = true;
             var chosenSchedule = chosenLocation.Schedules.Where( s => s.Schedule.Id == scheduleId ).FirstOrDefault();
-            chosenSchedule.Selected = true;            
-
-            BindToGrid();
+            chosenSchedule.Selected = true;
+            
+            Session["activity"] = groupId;
+            BindSelectedGrid();
         }
 
+        
+        /// <summary>
+        /// Handles the ItemDataBound event of the rGroupTypes control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Web.UI.WebControls.RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rGroupType_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            {
+                var checkInParentGroupType = (CheckInGroupType)e.Item.DataItem;
+                var lbSelectGroupType = (LinkButton)e.Item.FindControl( "lbSelectGroupType" );
+                lbSelectGroupType.CommandArgument = checkInParentGroupType.GroupType.Id.ToString();
+                lbSelectGroupType.Text = checkInParentGroupType.GroupType.Name;
+                if ( checkInParentGroupType.Selected == true )
+                {
+                    lbSelectGroupType.AddCssClass( "active" );                    
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rSchedule control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Web.UI.WebControls.RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rSchedule_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {            
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            {         
+                var checkInSchedule = (CheckInSchedule)e.Item.DataItem;
+                var lbSelectSchedule = (LinkButton)e.Item.FindControl( "lbSelectSchedule" );
+                lbSelectSchedule.CommandArgument = checkInSchedule.Schedule.Id.ToString();
+                lbSelectSchedule.Text = checkInSchedule.Schedule.Name;
+
+                if ( checkInSchedule.Selected == true )
+                {
+                    lbSelectSchedule.AddCssClass( "active" );
+                    Session["schedule"] = checkInSchedule.Schedule.Id;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the lvLocation control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="ListViewItemEventArgs"/> instance containing the event data.</param>
+        protected void lvLocation_ItemDataBound( object sender, ListViewItemEventArgs e )
+        {
+            if ( e.Item.ItemType == ListViewItemType.DataItem )
+            {
+                var checkInLocation = (CheckInLocation)e.Item.DataItem;
+                var lbSelectLocation = ( (LinkButton)e.Item.FindControl( "lbSelectLocation" ) );
+                lbSelectLocation.CommandArgument = checkInLocation.Location.Id.ToString();
+                lbSelectLocation.Text = checkInLocation.Location.Name;
+
+                if ( checkInLocation.Selected )
+                {
+                    lbSelectLocation.AddCssClass( "active" );
+                }
+                else
+                {
+                    lbSelectLocation.RemoveCssClass( "active " );
+                }               
+            }
+        }
+
+        /// <summary>
+        /// Handles the PagePropertiesChanging event of the lvLocation control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="PagePropertiesChangingEventArgs"/> instance containing the event data.</param>
+        protected void lvLocation_PagePropertiesChanging( object sender, PagePropertiesChangingEventArgs e )
+        {
+            // set current page startindex, max rows and rebind to false
+            Pager.SetPageProperties( e.StartRowIndex, e.MaximumRows, false );
+            lvLocation.DataSource = Session["activityList"];
+            lvLocation.DataBind();
+        }
+        
         /// <summary>
         /// Handles the Delete event of the gCheckInList control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
-        protected void gActivityList_Delete( object sender, RowEventArgs e )
+        protected void gSelectedList_Delete( object sender, RowEventArgs e )
         {
             // Delete an item. Remove the selected attribute from the time and schedule
             var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
             .People.Where( p => p.Person.Id == int.Parse( Request.QueryString["personId"] ) ).FirstOrDefault();
 
             int index = e.RowIndex;
-            var row = gActivityList.Rows[index];
+            var row = gSelectedList.Rows[index];
             var timeId = int.Parse( row.Cells[0].ID );
             var activityId = int.Parse( row.Cells[1].ID );
 
@@ -271,7 +260,85 @@ namespace RockWeb.Blocks.CheckIn.Attended
             selectedGroup.Selected = false;
             selectedSchedule.Selected = false;
 
-            BindToGrid();
+            BindSelectedGrid();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbAddNoteCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbAddNoteCancel_Click( object sender, EventArgs e )
+        {
+
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbAddNoteSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbAddNoteSave_Click( object sender, EventArgs e )
+        {
+            var note = new Note().Clone( false );
+            note.IsSystem = false;
+            note.NoteTypeId = 0;        // FIX THIS!!!!!!
+            note.EntityId = this.ContextEntity().Id;      // FIX THIS!!!!!!
+            note.SourceTypeValueId = 0;     // FIX THIS!!!!!!
+            note.Caption = "";      // FIX THIS!!!!!!
+            note.IsAlert = false;
+            note.Text = tbNote.Text;
+            note.CreationDateTime = DateTime.Now;
+            Rock.Data.RockTransactionScope.WrapTransaction( () =>
+            {
+                var ns = new NoteService();
+                ns.Add( note, CurrentPersonId );
+                ns.Save( note, CurrentPersonId );
+            } );
+
+            //var service = new NoteService();
+
+            //var note = new Note();
+            //note.IsSystem = false;
+            //note.NoteTypeId = noteType.Id;
+            //note.EntityId = contextEntity.Id;
+            //note.CreationDateTime = DateTime.Now;
+            //note.Caption = cbPrivate.Checked ? "You - Personal Note" : CurrentPerson.FullName;
+            //note.IsAlert = cbAlert.Checked;
+            //note.Text = tbNewNote.Text;
+
+            //if ( noteType.Sources != null )
+            //{
+            //    var source = noteType.Sources.DefinedValues.FirstOrDefault();
+            //    if ( source != null )
+            //    {
+            //        note.SourceTypeValueId = source.Id;
+            //    }
+            //}
+
+            //service.Add( note, CurrentPersonId );
+            //service.Save( note, CurrentPersonId );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbAddNote control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbAddNote_Click( object sender, EventArgs e )
+        {
+            tbNote.Text = "";
+            mpeAddNote.Show();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbAddTag control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbAddTag_Click( object sender, EventArgs e )
+        {
+
         }
 
         /// <summary>
@@ -299,131 +366,141 @@ namespace RockWeb.Blocks.CheckIn.Attended
         #region Internal Methods 
 
         /// <summary>
-        /// Loads the checkin.
+        /// Binds the group types.
         /// </summary>
         /// <param name="person">The person.</param>
-        protected void LoadCheckin( CheckInPerson person )
+        protected void BindGroupTypes( CheckInPerson person )
         {
-            // Load Ministries        
+            // get a list of all of the possible parent group types to display under "Group Type" on this page.
             var checkInGroupTypeList = new List<CheckInGroupType>();
-            //foreach( var groupType in person.GroupTypes.SelectMany( gt => gt.GroupType.ParentGroupTypes ) )
-            foreach( var groupType in person.GroupTypes.SelectMany( gt => new GroupTypeService().Get( gt.GroupType.Id ).ParentGroupTypes ) )
+            foreach( var parentGroupType in person.GroupTypes.SelectMany( gt => gt.GroupType.ParentGroupTypes ) )
             {
                 CheckInGroupType checkInGroupType = new CheckInGroupType();
-                checkInGroupType.GroupType = groupType;
+                checkInGroupType.GroupType = parentGroupType;
                 checkInGroupTypeList.Add( checkInGroupType );
             }
-            rMinistry.DataSource = checkInGroupTypeList;
-            rMinistry.DataBind();
 
-            // Load Activities
-            var activityList = person.GroupTypes.SelectMany( gt => gt.Groups ).ToList();
-            lvActivity.DataSource = activityList;
-            lvActivity.DataBind();
-            Session["activityList"] = activityList;     // this is for the paging
-
-            // Load Times
-            var scheduleList = activityList.SelectMany( g => g.Locations.SelectMany( l => l.Schedules ) ).ToList();
-            //rTime.DataSource = scheduleList.Distinct().ToList();
-            rTime.DataSource = scheduleList.GroupBy( g => g.Schedule.Name ).Select( s => s.First() );
-            rTime.DataBind();
-
-            BindToGrid();
+            // this marks the parent group type as "selected" on the person. We need this because...
+            var selectedGroupTypeId = person.GroupTypes.Where( gt => gt.Selected ).Select( gt => gt.GroupType.Id ).FirstOrDefault();
+            if ( selectedGroupTypeId != null )
+            {
+                var selectedParentType = checkInGroupTypeList.Where( gt => gt.GroupType.ChildGroupTypes.Any( cgt => cgt.Id == selectedGroupTypeId ) ).FirstOrDefault();
+                selectedParentType.Selected = true;
+            }
+            
+            // bind the parent group type list to the repeater and update the panel.
+            rGroupType.DataSource = checkInGroupTypeList;
+            rGroupType.DataBind();
+            pnlSelectGroupType.Update();
         }
 
         /// <summary>
-        /// Determines whether [has active class] [the specified webcontrol].
+        /// Binds the schedules.
         /// </summary>
-        /// <param name="webcontrol">The webcontrol.</param>
-        /// <returns>
-        ///   <c>true</c> if [has active class] [the specified webcontrol]; otherwise, <c>false</c>.
-        /// </returns>
-        protected bool HasActiveClass( WebControl webcontrol )
-        {
-            string match = @"\s*\b" + "active" + @"\b";
-            string css = webcontrol.CssClass;
-            if ( System.Text.RegularExpressions.Regex.IsMatch( css, match, System.Text.RegularExpressions.RegexOptions.IgnoreCase ) )
+        /// <param name="person">The person.</param>
+        protected void BindSchedules( CheckInPerson person )
+        {            
+            int groupTypeId;
+            IQueryable<CheckInGroupType> groupTypeList = person.GroupTypes.AsQueryable();
+            List<CheckInSchedule> scheduleList = new List<CheckInSchedule>();
+
+            if ( Int32.TryParse( (string)Session["groupType"], out groupTypeId ) && groupTypeId > 0 )
             {
-                return true;
+                // you end up in here if you select a different group type
+                groupTypeList = groupTypeList.Where( gt => gt.GroupType.ParentGroupTypes.Any( pgt => pgt.Id == groupTypeId ) );
             }
             else
             {
-                return false;
+                // you end up in here when the page first loads
+                groupTypeList = groupTypeList.Where( gt => gt.Selected );
+
+                // we've got to further shorten the list of all the possible schedules that could show up
+                if ( groupTypeList.Any( gtl => gtl.Groups.Any( g => g.Locations.Any( l => l.Selected ) ) ) )
+                {
+                    // if there are any locations already selected, pick the schedules for just that location.
+                    // this makes sure that the list of schedules shown on the page is the one with the selected schedule in it.
+                    // otherwise you might get a list of schedules and nothing will show as chosen.
+                    scheduleList = groupTypeList.SelectMany( gt => gt.Groups.SelectMany( g => g.Locations.Where( l => l.Selected ).SelectMany( l => l.Schedules ) ) ).ToList();
+                }
+                else
+                {
+                    // if there aren't any locations already selected, pick the first list of schedules you come to.
+                    scheduleList = groupTypeList.SelectMany( gt => gt.Groups.SelectMany( g => g.Locations.Select( l => l.Schedules ).FirstOrDefault() ) ).ToList();
+                }
             }
+
+            // groupTypeList to distinct or something
+            //rSchedule.DataSource = groupTypeList.SelectMany( gt => gt.Groups.SelectMany( g => g.Locations.SelectMany( l => l.Schedules ) ) ).ToList();
+            rSchedule.DataSource = scheduleList;
+            rSchedule.DataBind();
+            pnlSelectSchedule.Update();
         }
 
         /// <summary>
-        /// Goes the back.
+        /// Binds the locations.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        protected void BindLocations( CheckInPerson person )
+        {
+            int groupTypeId;
+            IQueryable<CheckInGroupType> groupTypeList = person.GroupTypes.AsQueryable();
+            List<CheckInLocation> locationList = new List<CheckInLocation>();
+
+            if ( Int32.TryParse( (string)Session["groupType"], out groupTypeId ) && groupTypeId > 0 )
+            {
+                // you end up in here if you select a different schedule
+                var scheduleId = (int)Session["schedule"];
+                // need to get the locations based off of the schedule Id. i'm still thinking we might have the problem with the 
+                // locations not being specific to a schedule, but we've got to get that list of locations in here to figure that out. 
+                var blah = person.GroupTypes.Where( gt => gt.Selected).Where( gt => gt.Groups.SelectMany( g => g.Locations.SelectMany( l => l.Schedules.SelectMany( s => s.Schedule.Id == scheduleId ) ) ) )
+                    .SelectMany( gt => gt.Groups.SelectMany( g => g.Locations ) ).ToList();
+            }
+            else
+            {
+                // you end up in here when the page first loads
+                groupTypeList = groupTypeList.Where( gtl => gtl.Selected );
+
+                // we've got to further shorten the list of all the possible locations that could show up
+                if ( groupTypeList.Any( gtl => gtl.Groups.Any( g => g.Selected ) ) )
+                {
+                    locationList = groupTypeList.SelectMany( gt => gt.Groups.Where( g => g.Selected ).SelectMany( g => g.Locations ) ).ToList();
+                }
+                else
+                {
+                    locationList = groupTypeList.SelectMany( gt => gt.Groups.Select( g => g.Locations ).FirstOrDefault() ).ToList();
+                }
+            }
+
+            //.GroupBy( l => l.Location.Id ).Select( g => g.First() )
+            lvLocation.DataSource = locationList;
+            lvLocation.DataBind();
+            Session["activityList"] = locationList;     // this is for the paging
+            pnlSelectLocation.Update();
+        }
+                
+        /// <summary>
+        /// Goes back to the confirmation page hopefully with no changes.
         /// </summary>
         private void GoBack()
         {
-            //foreach ( var family in CurrentCheckInState.CheckIn.Families )
-            //{
-            //    family.Selected = false;
-            //    family.People = new List<CheckInPerson>();
-            //}
-
-            SaveState();
-
+            //SaveState();
             NavigateToPreviousPage();
         }
 
         /// <summary>
-        /// Goes the next.
+        /// Goes to the confirmation page with changes.
         /// </summary>
         private void GoNext()
         {
-            // check to see if there are any entries in the CheckInTimeAndActivityList and if not, let the person know.
-            var thereIsAnActivity = false;
-            //foreach ( var timeAndActivityList in CheckInTimeAndActivityList )
-            //{
-            //    if ( timeAndActivityList[0] == CheckInPeopleIds.FirstOrDefault() )
-            //    {
-            //        thereIsAnActivity = true;
-            //    }
-            //}
-
-            if ( !thereIsAnActivity )
-            {
-                maWarning.Show( "You should probably choose an activity for this person before moving on.", ModalAlertType.Warning );
-                return;
-            }
-
-            // Increment the counter of number of people checked in. 
-            //PeopleCheckedIn++;
-
-            // Remove the person just checked in on this page from the list of those needing to be checked in.
-            //var personJustCheckedIn = CheckInPeopleIds.FirstOrDefault();
-            //CheckInPeopleIds.Remove( personJustCheckedIn );
-
-            // Add the person just checked in to the list of those that were checked in.
-            //CheckedInPeopleIds.Add( personJustCheckedIn );
-
             SaveState();
+            NavigateToNextPage();            
         }
 
-        /// <summary>
-        /// Processes the activities.
-        /// </summary>
-        private void ProcessActivities()
-        {
-            var errors = new List<string>();
-
-            if ( ProcessActivity( "Activity Search", out errors ) )
-            {
-                SaveState();
-            }
-            else
-            {
-                string errorMsg = "<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
-                maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
-            }
-        }
 
         /// <summary>
-        /// Binds to grid.
+        /// Binds the selected items to the grid.
         /// </summary>
-        protected void BindToGrid()
+        protected void BindSelectedGrid()
         {
             var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
             .People.Where( p => p.Person.Id == int.Parse( Request.QueryString["personId"] ) ).FirstOrDefault();
@@ -432,7 +509,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             activityGrid.Columns.Add( "Time", typeof( string ) );
             activityGrid.Columns.Add( "Activity", typeof( string ) );
 
-            gActivityList.DataSource = person.GroupTypes.Where( gt => gt.Selected )
+            gSelectedList.DataSource = person.GroupTypes.Where( gt => gt.Selected )
                 .SelectMany( gt => gt.Groups ).Where( g => g.Selected )
                 .Select( g => new
                 {
@@ -441,10 +518,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         .Where( l => l.Schedules.Any( s => s.Selected ) )
                         .SelectMany( l => l.Schedules.Select( s => s.Schedule.Name ) ).FirstOrDefault()
                 } ).ToList();
-            gActivityList.DataBind();
-            gActivityList.CssClass = string.Empty;
-            gActivityList.AddCssClass( "grid-table" );
-            gActivityList.AddCssClass( "table" );
+            gSelectedList.DataBind();
+            gSelectedList.CssClass = string.Empty;
+            gSelectedList.AddCssClass( "grid-table" );
+            gSelectedList.AddCssClass( "table" );
             pnlSelectedGrid.Update();
 
             //.OrderBy( gt => gt.Time ).ToList();
@@ -452,5 +529,5 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
         #endregion
 
-    }
+}
 }

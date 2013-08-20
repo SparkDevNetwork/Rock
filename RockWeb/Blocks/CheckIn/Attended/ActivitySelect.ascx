@@ -1,4 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ActivitySelect.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Attended.ActivitySelect" %>
+<%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="asp" %>
 
 <script type="text/javascript">
 
@@ -43,44 +44,42 @@
                 
     <div class="row-fluid attended-checkin-body">
 
-        <asp:UpdatePanel ID="pnlSelectMinistry" runat="server" UpdateMode="Conditional" class="span3">
+        <asp:UpdatePanel ID="pnlSelectGroupType" runat="server" UpdateMode="Conditional" class="span3">
         <ContentTemplate>        
             <div class="attended-checkin-body-container">
-                <h3>Ministry</h3>
-                <asp:Repeater ID="rMinistry" runat="server" OnItemCommand="rMinistry_ItemCommand" OnItemDataBound="rMinistry_ItemDataBound">
+                <h3>GroupType</h3>
+                <asp:Repeater ID="rGroupType" runat="server" OnItemCommand="rGroupType_ItemCommand" OnItemDataBound="rGroupType_ItemDataBound">
                     <ItemTemplate>
-                        <asp:LinkButton ID="lbSelectMinistry" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("GroupType.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select ministry" CausesValidation="false" />
+                        <asp:LinkButton ID="lbSelectGroupType" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select ministry" CausesValidation="false" />
                     </ItemTemplate>
                 </asp:Repeater>
             </div>
         </ContentTemplate>
         </asp:UpdatePanel>
 
-        <asp:UpdatePanel ID="pnlSelectTime" runat="server" UpdateMode="Conditional" class="span3">
+        <asp:UpdatePanel ID="pnlSelectSchedule" runat="server" UpdateMode="Conditional" class="span3">
         <ContentTemplate>        
             <div class="attended-checkin-body-container">
-                <h3>Time</h3>
-                <asp:Repeater ID="rTime" runat="server" OnItemCommand="rTime_ItemCommand" OnItemDataBound="rTime_ItemDataBound">
+                <h3>Schedule</h3>
+                <asp:Repeater ID="rSchedule" runat="server" OnItemCommand="rSchedule_ItemCommand" OnItemDataBound="rSchedule_ItemDataBound">
                     <ItemTemplate>
-                        <%--<asp:LinkButton ID="lbSelectTime" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Schedule.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select time" CausesValidation="false" />--%>
-                        <asp:LinkButton ID="lbSelectTime" runat="server" Text='<%# Eval("Schedule.Name") %>' CommandArgument='<%# Eval("Schedule.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select time" CausesValidation="false" />
+                        <asp:LinkButton ID="lbSelectSchedule" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select time" CausesValidation="false" />
                     </ItemTemplate>
                 </asp:Repeater>
             </div>
-            <asp:HiddenField ID="hfTimes" runat="server"></asp:HiddenField>
         </ContentTemplate>
         </asp:UpdatePanel>
 
-        <asp:UpdatePanel ID="pnlSelectActivity" runat="server" UpdateMode="Conditional" class="span3">
+        <asp:UpdatePanel ID="pnlSelectLocation" runat="server" UpdateMode="Conditional" class="span3">
         <ContentTemplate>        
             <div class="attended-checkin-body-container">
-                <h3>Activity</h3>
-                <asp:ListView ID="lvActivity" runat="server" OnPagePropertiesChanging="lvActivity_PagePropertiesChanging" OnItemCommand="lvActivity_ItemCommand" OnItemDataBound="lvActivity_ItemDataBound">
+                <h3>Location</h3>
+                <asp:ListView ID="lvLocation" runat="server" OnPagePropertiesChanging="lvLocation_PagePropertiesChanging" OnItemCommand="lvLocation_ItemCommand" OnItemDataBound="lvLocation_ItemDataBound">
                     <ItemTemplate>
-                        <asp:LinkButton ID="lbSelectActivity" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Group.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" ></asp:LinkButton>
+                        <asp:LinkButton ID="lbSelectLocation" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" ></asp:LinkButton>
                     </ItemTemplate>
                 </asp:ListView>
-                <asp:DataPager ID="Pager" runat="server" PageSize="6" PagedControlID="lvActivity">
+                <asp:DataPager ID="Pager" runat="server" PageSize="6" PagedControlID="lvLocation">
                     <Fields>
                         <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary" />
                     </Fields>
@@ -93,17 +92,46 @@
         <ContentTemplate>        
             <div class="attended-checkin-body-container">
                 <h3>Selected</h3>
-                <Rock:Grid ID="gActivityList" runat="server" AllowSorting="true" AllowPaging="false" ShowActionRow="false" ShowHeader="false" CssClass="select">
+                <Rock:Grid ID="gSelectedList" runat="server" AllowSorting="true" AllowPaging="false" ShowActionRow="false" ShowHeader="false" CssClass="select">
                     <Columns>
                         <%--<asp:BoundField DataField="ListId" Visible="false" />--%>
                         <asp:BoundField DataField="Time" />
                         <asp:BoundField DataField="Activity" />
-                        <Rock:DeleteField OnClick="gActivityList_Delete" ControlStyle-CssClass="btn btn-large btn-primary" />
+                        <Rock:DeleteField OnClick="gSelectedList_Delete" ControlStyle-CssClass="btn btn-large btn-primary" />
                     </Columns>
                 </Rock:Grid>
+                <asp:LinkButton ID="lbAddNote" runat="server" Text="Add a Note" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddNote_Click" CausesValidation="false" ></asp:LinkButton>
+                <asp:LinkButton ID="lbAddTag" runat="server" Text="Add a Tag" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddTag_Click" CausesValidation="false" ></asp:LinkButton>
             </div>
         </ContentTemplate>
         </asp:UpdatePanel>
+
+        <asp:Panel ID="pnlAddNote" runat="server" CssClass="add-note" DefaultButton="lbAddNote">
+            <Rock:ModalAlert ID="maAddNote" runat="server" />
+            <div class="row-fluid attended-checkin-header">
+                <div class="span3 attended-checkin-actions">
+                    <asp:LinkButton ID="lbAddNoteCancel" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddNoteCancel_Click" Text="Cancel" CausesValidation="false"/>
+                </div>
+
+                <div class="span6">
+                    <h1>Add Note</h1>
+                </div>
+
+                <div class="span3 attended-checkin-actions">
+                    <asp:LinkButton ID="lbAddNoteSave" CssClass="btn btn-large last btn-primary" runat="server" OnClick="lbAddNoteSave_Click" Text="Save" />
+                </div>
+            </div>
+		
+            <div class="row-fluid attended-checkin-body addnote">
+                <div class="span12">
+                    <Rock:LabeledTextBox ID="tbNote" runat="server" TextMode="MultiLine" CssClass="fullWidth" Rows="3" />
+                </div>
+            </div>
+            <br />
+        </asp:Panel>
+        <asp:ModalPopupExtender ID="mpeAddNote" runat="server" TargetControlID="hfOpenNotePanel" PopupControlID="pnlAddNote" 
+            CancelControlID="lbAddNoteCancel" BackgroundCssClass="modalBackground" />
+        <asp:HiddenField ID="hfOpenNotePanel" runat="server" />    
 
     </div>   
 
