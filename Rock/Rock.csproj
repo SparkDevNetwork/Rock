@@ -167,6 +167,10 @@
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
+    <Compile Include="Migrations\201308192335432_BinaryFileCachingRenameAndProcUpdate.cs" />
+    <Compile Include="Migrations\201308192335432_BinaryFileCachingRenameAndProcUpdate.Designer.cs">
+      <DependentUpon>201308192335432_BinaryFileCachingRenameAndProcUpdate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Storage\ProviderComponent.cs" />
     <Compile Include="Storage\ProviderContainer.cs" />
     <Compile Include="Storage\Provider\Database.cs" />
@@ -2183,6 +2187,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201308191700532_AddMaritalStatusDefinedValues.resx">
       <DependentUpon>201308191700532_AddMaritalStatusDefinedValues.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308192335432_BinaryFileCachingRenameAndProcUpdate.resx">
+      <DependentUpon>201308192335432_BinaryFileCachingRenameAndProcUpdate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
