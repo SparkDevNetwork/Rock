@@ -535,6 +535,8 @@
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
     <Compile Include="Web\Cache\CategoryCache.cs" />
     <Compile Include="Web\DescriptionList.cs" />
+    <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinGroupEditor.cs" />
+    <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinGroupTypeEditor.cs" />
     <Compile Include="Web\UI\Controls\Communication\ChannelControl.cs" />
     <Compile Include="Data\IgnoreModelErrorsAttribute.cs" />
     <Compile Include="Migrations\201304190037528_BinaryFileTypeContributionImage.cs" />
@@ -1188,6 +1190,7 @@
     <Compile Include="Web\UI\BreadCrumb.cs" />
     <Compile Include="Web\UI\IDetailBlock.cs" />
     <Compile Include="Web\UI\IDimmableBlock.cs" />
+    <Compile Include="Web\UI\ViewStateList.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGender.cs" />
@@ -1210,7 +1213,6 @@
     <Compile Include="Workflow\Action\CheckIn\FindRelationships.cs" />
     <Compile Include="Workflow\Action\CheckIn\FindFamilyMembers.cs" />
     <Compile Include="Workflow\Action\CheckIn\FindFamilies.cs" />
-    <Compile Include="Web\UI\ViewStateList.cs" />
     <Compile Include="Workflow\Action\ParseZebraLabel.cs" />
     <Compile Include="Workflow\TriggerCache.cs" />
     <Compile Include="Model\WorkflowTriggerService.Partial.cs" />
