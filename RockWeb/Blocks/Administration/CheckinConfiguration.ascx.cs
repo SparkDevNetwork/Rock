@@ -16,29 +16,6 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     public partial class CheckinConfiguration : RockBlock
     {
-        /// <summary>
-        /// Handles the Click event of the lbAddCheckinArea control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbAddCheckinArea_Click( object sender, EventArgs e )
-        {
-            int parentGroupTypeId = this.PageParameter("groupTypeid").AsInteger() ?? 0;
-            GroupType parentGroupType = new GroupTypeService().Get(parentGroupTypeId);
-            
-            // CheckinArea is GroupType entity
-            GroupType checkinArea = new GroupType();
-            checkinArea.Guid = Guid.NewGuid();
-            checkinArea.IsSystem = false;
-            checkinArea.TakesAttendance = true;
-            checkinArea.AttendanceRule = AttendanceRule.AddOnCheckIn;
-            checkinArea.AttendancePrintTo = PrintTo.Default;
-            checkinArea.ParentGroupTypes = new List<GroupType>();
-            checkinArea.ParentGroupTypes.Add( parentGroupType );
-
-            CreateGroupTypeEditorControls( checkinArea );
-        }
-
         #region ViewState and Dynamic Controls
 
         /// <summary>
@@ -85,7 +62,7 @@ namespace RockWeb.Blocks.Administration
 
             foreach ( var groupType in groupTypeViewStateList )
             {
-                CreateGroupTypeEditorControls( groupType, groupType.Guid.Equals( activeGroupTypeGuid ?? Guid.Empty ) );
+                CreateGroupTypeEditorControls( groupType, phCheckinGroupTypes, groupType.Guid.Equals( activeGroupTypeGuid ?? Guid.Empty ) );
             }
         }
 
@@ -94,15 +71,109 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         /// <param name="groupType">Type of the group.</param>
         /// <param name="forceContentVisible">if set to <c>true</c> [force content visible].</param>
-        private void CreateGroupTypeEditorControls( GroupType groupType, bool forceContentVisible = false )
+        private void CreateGroupTypeEditorControls( GroupType groupType, Control parentControl, bool forceContentVisible = false )
         {
             CheckinGroupTypeEditor groupTypeEditor = new CheckinGroupTypeEditor();
             groupTypeEditor.ID = "GroupTypeEditor_" + groupType.Guid.ToString( "N" );
             groupTypeEditor.SetGroupType( groupType );
+            groupTypeEditor.AddGroupClick += groupTypeEditor_AddGroupClick;
+            groupTypeEditor.AddGroupTypeClick += groupTypeEditor_AddGroupTypeClick;
 
             //TODO
 
-            phCheckinGroupTypes.Controls.Add( groupTypeEditor );
+            parentControl.Controls.Add( groupTypeEditor );
+
+            foreach ( var childGroup in groupType.Groups )
+            {
+                CreateGroupEditorControls( childGroup, groupTypeEditor, false );
+            }
+
+            foreach ( var childGroupType in groupType.ChildGroupTypes )
+            {
+                CreateGroupTypeEditorControls( childGroupType, groupTypeEditor, false );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbAddCheckinArea control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbAddCheckinArea_Click( object sender, EventArgs e )
+        {
+            int parentGroupTypeId = this.PageParameter( "groupTypeid" ).AsInteger() ?? 0;
+            GroupType parentGroupType = new GroupTypeService().Get( parentGroupTypeId );
+
+            // CheckinArea is GroupType entity
+            GroupType checkinArea = new GroupType();
+            checkinArea.Guid = Guid.NewGuid();
+            checkinArea.IsSystem = false;
+            checkinArea.TakesAttendance = true;
+            checkinArea.AttendanceRule = AttendanceRule.AddOnCheckIn;
+            checkinArea.AttendancePrintTo = PrintTo.Default;
+            checkinArea.ParentGroupTypes = new List<GroupType>();
+            checkinArea.ParentGroupTypes.Add( parentGroupType );
+
+            CreateGroupTypeEditorControls( checkinArea, phCheckinGroupTypes );
+        }
+        
+        /// <summary>
+        /// Handles the AddGroupTypeClick event of the groupTypeEditor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void groupTypeEditor_AddGroupTypeClick( object sender, EventArgs e )
+        {
+            CheckinGroupTypeEditor parentEditor = sender as CheckinGroupTypeEditor;
+            
+            // CheckinArea is GroupType entity
+            GroupType checkinArea = new GroupType();
+            checkinArea.Guid = Guid.NewGuid();
+            checkinArea.IsSystem = false;
+            checkinArea.TakesAttendance = true;
+            checkinArea.AttendanceRule = AttendanceRule.AddOnCheckIn;
+            checkinArea.AttendancePrintTo = PrintTo.Default;
+            checkinArea.ParentGroupTypes = new List<GroupType>();
+            checkinArea.ParentGroupTypes.Add( parentEditor.GetCheckinGroupType() );
+
+            CreateGroupTypeEditorControls( checkinArea, parentEditor );
+        }
+
+        /// <summary>
+        /// Handles the AddGroupClick event of the groupTypeEditor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void groupTypeEditor_AddGroupClick( object sender, EventArgs e )
+        {
+            CheckinGroupTypeEditor parentGroupTypeEditor = sender as CheckinGroupTypeEditor;
+            
+            Group checkinGroup = new Group();
+            checkinGroup.Guid = Guid.NewGuid();
+            checkinGroup.IsActive = true;
+            checkinGroup.IsSystem = false;
+
+            // set GroupType by Guid (just in case the parent groupType hasn't been added to the database yet)
+            checkinGroup.GroupType = new GroupType { Guid = parentGroupTypeEditor.GroupTypeGuid };
+
+            CreateGroupEditorControls(checkinGroup, parentGroupTypeEditor);
+        }
+
+        /// <summary>
+        /// Creates the group editor controls.
+        /// </summary>
+        /// <param name="group">The group.</param>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="forceContentVisible">if set to <c>true</c> [force content visible].</param>
+        private void CreateGroupEditorControls( Group group, Control parentControl, bool forceContentVisible = false )
+        {
+            CheckinGroupEditor groupEditor = new CheckinGroupEditor();
+            groupEditor.ID = "GroupEditor_" + group.Guid.ToString( "N" );
+            groupEditor.Group = group;
+
+            //TODO
+
+            parentControl.Controls.Add( groupEditor );
         }
 
         #endregion
@@ -114,7 +185,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-
+            //TODO
         }
 
         /// <summary>
@@ -124,7 +195,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-
+            //TODO
         }
     }
 }
