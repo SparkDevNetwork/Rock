@@ -13,14 +13,14 @@
             },
             _configure = function (options) {
                 var isImage = options.fileType === 'image',
-                    wsUrl = isImage ? '/ImageUploader.ashx' : '/FileUploader.ashx?';
+                    wsUrl = isImage ? '/ImageUploader.ashx?' : '/FileUploader.ashx?';
                 
                 if (options.fileId) {
                     wsUrl += 'fileId=' + options.fileId;
                 }
 
                 if (options.fileTypeGuid) {
-                    if (!/fileId/.test(wsUrl)) {
+                    if (/fileId/.test(wsUrl)) {
                         wsUrl += '&';
                     }
                     
