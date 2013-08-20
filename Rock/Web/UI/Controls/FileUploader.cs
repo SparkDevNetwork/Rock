@@ -208,6 +208,8 @@ namespace Rock.Web.UI.Controls
 
         private void RegisterStartupScript()
         {
+            var postBackScript = this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "FileUploaded" ), true );
+            postBackScript = postBackScript.Replace( '\'', '"' );
             var script = string.Format( @"
 Rock.controls.fileUploader.initialize({{
     controlId: '{0}',
@@ -225,7 +227,7 @@ Rock.controls.fileUploader.initialize({{
                 hfBinaryFileId.ClientID,
                 aFileName.ClientID,
                 aRemove.ClientID,
-                this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "FileUploaded" ), true ) );
+                postBackScript );
             ScriptManager.RegisterStartupScript( fileUpload, fileUpload.GetType(), "KendoImageScript_" + this.ID, script, true );
         }
 
