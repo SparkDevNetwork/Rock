@@ -25,6 +25,8 @@ namespace Rock.Web.UI.Controls
         private DataTextBox tbGroupTypeName;
 
         private LinkButton lbAddCheckinGroup;
+        
+        private LinkButton lbAddCheckinGroupType;
 
         public bool ForceContentVisible { private get; set; }
 
@@ -81,6 +83,20 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
         }
 
         /// <summary>
+        /// Gets the group type unique identifier.
+        /// </summary>
+        /// <value>
+        /// The group type unique identifier.
+        /// </value>
+        public Guid GroupTypeGuid
+        {
+            get
+            {
+                return new Guid( hfGroupTypeGuid.Value );
+            }
+        }
+
+        /// <summary>
         /// Gets the type of the checkin group.
         /// </summary>
         /// <returns></returns>
@@ -90,18 +106,25 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
             GroupType result = new GroupType();
             result.Guid = new Guid( hfGroupTypeGuid.Value );
             result.Name = tbGroupTypeName.Text;
-            result.Groups = new List<Group>();
-            //int order = 0;
 
-            /*
-            foreach ( WorkflowActionTypeEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionTypeEditor>() )
+            result.ChildGroupTypes = new List<GroupType>();
+            int childGroupTypeOrder = 0;
+            foreach ( CheckinGroupTypeEditor checkinGroupTypeEditor in this.Controls.OfType<CheckinGroupTypeEditor>() )
             {
-                WorkflowActionType workflowActionType = workflowActionTypeEditor.WorkflowActionType;
-                workflowActionType.Order = order++;
-                result.ActionTypes.Add( workflowActionType );
+                GroupType childGroupType = checkinGroupTypeEditor.GetCheckinGroupType();
+                childGroupType.Order = childGroupTypeOrder++;
+                result.ChildGroupTypes.Add( childGroupType );
             }
-            */
 
+            result.Groups = new List<Group>();
+            int childGroupOrder = 0;
+            foreach ( CheckinGroupEditor checkinGroupEditor in this.Controls.OfType<CheckinGroupEditor>() )
+            {
+                Group childGroup = checkinGroupEditor.Group;
+                childGroup.Order = childGroupOrder++;
+                result.Groups.Add( childGroup );
+            }
+            
             return result;
         }
 
@@ -139,24 +162,32 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
 
             tbGroupTypeName = new DataTextBox();
             tbGroupTypeName.ID = this.ID + "_tbGroupTypeName";
-            tbGroupTypeName.LabelText = "Name";
+            tbGroupTypeName.LabelText = "Check-in Area Name";
 
             // set label when they exit the edit field
             tbGroupTypeName.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", lblGroupTypeName.ID );
             tbGroupTypeName.SourceTypeName = "Rock.Model.GroupType, Rock";
             tbGroupTypeName.PropertyName = "Name";
 
+            lbAddCheckinGroupType = new LinkButton();
+            lbAddCheckinGroupType.ID = this.ID + "_lblbAddCheckinGroupType";
+            lbAddCheckinGroupType.CssClass = "btn btn-mini btn-primary";
+            lbAddCheckinGroupType.Click += lbAddCheckinGroupType_Click;
+            lbAddCheckinGroupType.CausesValidation = false;
+            lbAddCheckinGroupType.Controls.Add( new LiteralControl { Text = "<i class='icon-plus'></i> Add Sub-Area" } );
+            
             lbAddCheckinGroup = new LinkButton();
-            lbAddCheckinGroup.ID = this.ID + "_lbAddGroup";
-            lbAddCheckinGroup.CssClass = "btn btn-mini";
+            lbAddCheckinGroup.ID = this.ID + "_lbAddCheckinGroup";
+            lbAddCheckinGroup.CssClass = "btn btn-mini btn-primary";
             lbAddCheckinGroup.Click += lbAddGroup_Click;
             lbAddCheckinGroup.CausesValidation = false;
             lbAddCheckinGroup.Controls.Add( new LiteralControl { Text = "<i class='icon-plus'></i> Add Check-in Group" } );
-
+            
             Controls.Add( hfGroupTypeGuid );
             Controls.Add( lblGroupTypeName );
             Controls.Add( tbGroupTypeName );
             Controls.Add( lbDeleteGroupType );
+            Controls.Add( lbAddCheckinGroupType );
             Controls.Add( lbAddCheckinGroup );
         }
 
@@ -166,7 +197,6 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget widget-dark checkin-grouptype" );
             writer.AddAttribute( "data-key", hfGroupTypeGuid.Value );
             writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ID + "_section" );
@@ -190,9 +220,10 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.RenderBeginTag( HtmlTextWriterTag.Span );
+            lbAddCheckinGroupType.RenderControl( writer );
+            writer.WriteLine();
             lbAddCheckinGroup.RenderControl( writer );
-            writer.RenderEndTag();
+            writer.WriteLine();
 
             writer.WriteLine( "<a class='btn btn-mini checkin-grouptype-reorder'><i class='icon-reorder'></i></a>" );
             writer.WriteLine( "<a class='btn btn-mini'><i class='checkin-grouptype-state icon-chevron-down'></i></a>" );
@@ -267,7 +298,7 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             foreach ( CheckinGroupTypeEditor checkinGroupTypeEditor in this.Controls.OfType<CheckinGroupTypeEditor>())
             {
-
+                checkinGroupTypeEditor.RenderControl( writer );
             }
 
             foreach ( CheckinGroupEditor checkinGroupEditor in this.Controls.OfType<CheckinGroupEditor>())
@@ -277,7 +308,6 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
 
             // checkin-group-list div
             writer.RenderEndTag();
-
 
             // widget-content div
             writer.RenderEndTag();
@@ -313,6 +343,19 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
         }
 
         /// <summary>
+        /// Handles the Click event of the lbAddCheckinGroupType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbAddCheckinGroupType_Click( object sender, EventArgs e )
+        {
+            if ( AddGroupTypeClick != null )
+            {
+                AddGroupTypeClick( this, e );
+            }
+        }
+
+        /// <summary>
         /// Occurs when [delete group type click].
         /// </summary>
         public event EventHandler DeleteGroupTypeClick;
@@ -321,5 +364,10 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
         /// Occurs when [add group click].
         /// </summary>
         public event EventHandler AddGroupClick;
+
+        /// <summary>
+        /// Occurs when [add group type click].
+        /// </summary>
+        public event EventHandler AddGroupTypeClick;
     }
 }
