@@ -121,11 +121,19 @@ namespace Rock.Web.UI.Controls
             rangeValidator.Type = NumberType;
             rangeValidator.MinimumValue = this.MinimumValue;
             rangeValidator.MaximumValue = this.MaximumValue;
+            string dataTypeText = string.Empty;
 
             int minValue = MinimumValue.AsInteger() ?? int.MinValue;
             int maxValue = MaximumValue.AsInteger() ?? int.MaxValue;
 
             string rangeMessageFormat = null;
+
+            if ( rangeValidator.Type == ValidationDataType.Integer )
+            {
+                // if they are in the valid range, but not an integer, they'll see this message
+                rangeMessageFormat = "{0} must be an integer";
+            }
+
             if ( minValue > int.MinValue)
             {
                 rangeMessageFormat = "{0} must be at least " + MinimumValue;
