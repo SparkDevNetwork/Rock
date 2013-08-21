@@ -11,6 +11,8 @@
     8. Switch - uses the Bootstrap Switch component
     9. Smart Searh - search at th top of the page for searching people, groups, etc.
     10. Title - markup for styling header titles
+    11. Notifications - additional styles to the Bootstrap notifications
+    12. Labels - additional label defintions that extend Boostrap labels (eg label-campus)
 
 */
 
@@ -24,7 +26,7 @@
     background-color: @panel-background;
     padding: @panel-padding;
 
-    h4 {
+    > h4 {
         margin: 48px 0 6px;
     }
 }
@@ -56,8 +58,8 @@
 
     .label {
         float: right;
-        background-color: lighten(@banner-background, 5%);
         margin-top: 16px;
+        margin-left: 6px;
     }
 }
 
@@ -922,3 +924,21 @@ div.tagsinput div
     font-weight: @title-firstword-weight;
 }
 
+// 11. Notifications
+// -------------------------
+
+.alert-info h4:before {
+    content: "\f05a";
+    font-family: FontAwesome;
+}
+
+// 12. Labels
+// -------------------------
+
+.label-campus {
+    background-color: @label-campus;
+}
+
+.label-type {
+    background-color: @label-type;
+}

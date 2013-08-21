@@ -52,6 +52,16 @@ a.help {
     color: @site-header-text-color;
 }
 
+/* form styles - not enough yet for it's own file */
+fieldset .actions {
+    margin-top: 36px;
+}
+
+.panel legend {
+    border-color: @site-accent-color;
+}
+
+
 // Kendo Overrides
 //--------------------------------
 
@@ -62,52 +72,6 @@ a.help {
 {
     padding: 2px 12px;
     border: 1px solid transparent;
-}
-
-/* HTML Content */
-/*
-.html-content, .html-content-block, .html-content-block > div {
-	display: inline;
-    position: relative;
-}
-    */
-
-.html-content-editor-panel .editor-buttons {
-    float: right;
-    margin-top: 6px;
-}
-
-.html-content-version-label 
-{
-    background-color: lighten(@site-modal-header-background, 20%);
-    padding: 2px 8px;
-    float: left;
-    margin: 6px 0 0 16px;
-    .border-radius(@site-border-radius);
-    color: @site-modal-header-text-color;
-}
-
-.html-content-version-label:hover
-{
-    color: inherit;
-}
-
-.html-content-edit-header 
-{
-    padding: 6px 16px 0 16px;
-}
-
-.html-content-approve 
-{
-    float: right;
-    margin-top: 4px;
-}
-
-
-/* CK Editor Tweaks */
-span.cke_skin_kama
-{
-    padding: 0 !important;
 }
 
 /* user registration styles */

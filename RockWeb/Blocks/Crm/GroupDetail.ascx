@@ -11,7 +11,10 @@
                     <asp:Literal ID="lGroupIconHtml" runat="server" />
                     <asp:Literal ID="lReadOnlyTitle" runat="server" />
                 </h1>
-                <div class="label"><asp:Literal ID="lGroupType" runat="server"></asp:Literal></div>
+
+                <asp:Literal ID="lblActiveHtml" runat="server" />
+                <div class="label label-type"><asp:Literal ID="lGroupType" runat="server"></asp:Literal></div>
+                <div class="label label-campus"><asp:Literal ID="lCampus" runat="server"></asp:Literal></div>
             </div>
 
             <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
@@ -68,19 +71,22 @@
                     <div class="attributes">
                         <asp:PlaceHolder ID="phGroupAttributes" runat="server" EnableViewState="false"></asp:PlaceHolder>
                     </div>
+
+                    <div class="actions">
+                        <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
+                    </div>
+
                 </fieldset>
 
-                <div class="actions">
-                    <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
-                </div>
+                
 
             </div>
 
             <fieldset id="fieldsetViewDetails" runat="server">
 
 
-                <asp:Literal ID="lblActiveHtml" runat="server" />
+                
                 
                 <p class="description"><asp:Literal ID="lGroupDescription" runat="server"></asp:Literal></p>
 
