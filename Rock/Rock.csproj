@@ -144,6 +144,7 @@
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
+    <Compile Include="Attribute\IntegerRangeFieldAttribute.cs" />
     <Compile Include="Attribute\DateRangeFieldAttribute.cs" />
     <Compile Include="Attribute\DecimalRangeFieldAttribute.cs" />
     <Compile Include="Attribute\LocationFieldAttribute.cs" />
@@ -169,6 +170,7 @@
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
+    <Compile Include="Field\Types\IntegerRangeFieldType.cs" />
     <Compile Include="Field\Types\DateRangeFieldType.cs" />
     <Compile Include="Field\Types\DecimalRangeFieldType.cs" />
     <Compile Include="Migrations\201308192335432_BinaryFileCachingRenameAndProcUpdate.cs" />
@@ -178,6 +180,10 @@
     <Compile Include="Migrations\201308212212453_RangeAttributeFieldTypes.cs" />
     <Compile Include="Migrations\201308212212453_RangeAttributeFieldTypes.Designer.cs">
       <DependentUpon>201308212212453_RangeAttributeFieldTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308212336197_IntegerRangeFieldType.cs" />
+    <Compile Include="Migrations\201308212336197_IntegerRangeFieldType.Designer.cs">
+      <DependentUpon>201308212336197_IntegerRangeFieldType.cs</DependentUpon>
     </Compile>
     <Compile Include="Storage\ProviderComponent.cs" />
     <Compile Include="Storage\ProviderContainer.cs" />
@@ -2203,6 +2209,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201308212212453_RangeAttributeFieldTypes.resx">
       <DependentUpon>201308212212453_RangeAttributeFieldTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308212336197_IntegerRangeFieldType.resx">
+      <DependentUpon>201308212336197_IntegerRangeFieldType.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
