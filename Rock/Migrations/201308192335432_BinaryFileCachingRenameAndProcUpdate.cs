@@ -94,9 +94,16 @@ UPDATE BinaryFile
 SET BinaryFileTypeId = @BinaryFileTypeId
 WHERE BinaryFileTypeId IS NULL" );
 
+            // Remove index on BinaryFile.BinaryFileId, change it to not nullable, re-add index
             DropIndex( "dbo.BinaryFile", new[] { "BinaryFileTypeId" } );
             AlterColumn( "dbo.BinaryFile", "BinaryFileTypeId", c => c.Int( nullable: false ) );
             CreateIndex( "dbo.BinaryFile", "BinaryFileTypeId", false );
+
+            // Move default save location to App_Data so files are not publicly addressable
+            Sql( @"
+UPDATE AttributeValue
+SET [Value] = '~/App_Data/Uploads'
+WHERE [Guid] = '04C9E6AF-F109-41DA-8353-C4E01FAF6963'" );
         }
         
         /// <summary>
@@ -150,6 +157,11 @@ WHERE [Name] LIKE 'Rock.Storage.Provider.%'" );
 
             AddBlockAttributeValue( "8966CAFE-D8FC-4703-8960-17CB5807A3B8", "259AF14D-0214-4BE4-A7BF-40423EA07C99", "Rock.BinaryFile.StorageContainer, Rock" );
             Sql( @"DELETE BinaryFileType WHERE [Guid] = 'C1142570-8CD6-4A20-83B1-ACB47C1CD377'" );
+
+            Sql( @"
+UPDATE AttributeValue
+SET [Value] = '~/Assets/Uploads'
+WHERE [Guid] = '04C9E6AF-F109-41DA-8353-C4E01FAF6963'" );
         }
     }
 }
