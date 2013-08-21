@@ -500,7 +500,7 @@ namespace RockWeb.Blocks.Crm
                 group = new Group { Id = 0, IsActive = true, ParentGroupId = parentGroupId };
             }
 
-            if ( group == null )
+            if ( group == null ) 
             {
                 return;
             }
@@ -585,6 +585,12 @@ namespace RockWeb.Blocks.Crm
         /// <param name="group">The group.</param>
         private void ShowEditDetails( Group group )
         {
+
+            if (group.Id == 0)
+            {
+                lReadOnlyTitle.Text = ActionTitle.Add(Group.FriendlyTypeName);
+            }
+                       
             SetEditMode( true );
 
             tbName.Text = group.Name;
@@ -710,9 +716,14 @@ namespace RockWeb.Blocks.Crm
                 descriptionList.Add( "Parent Group", group.ParentGroup.Name );
             }
 
-            if ( group.Campus != null )
+            if (group.Campus != null)
             {
-                descriptionList.Add( "Campus", group.Campus.Name );
+                lCampus.Visible = true;
+                lCampus.Text = group.Campus.Name;
+            }
+            else
+            {
+                lCampus.Visible = false;
             }
 
             lblMainDetails.Text = descriptionList.Html;
