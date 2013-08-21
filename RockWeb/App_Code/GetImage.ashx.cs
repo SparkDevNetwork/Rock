@@ -191,7 +191,7 @@ namespace RockWeb
         /// <returns></returns>
         private static BinaryFileData GetFileContent( BinaryFile file )
         {
-            var entityType = file.StorageEntityType;
+            var entityType = file.StorageEntityType ?? file.BinaryFileType.StorageEntityType;
             var container = ProviderContainer.GetComponent( entityType.Name );
 
             if ( container is Rock.Storage.Provider.Database )
@@ -207,7 +207,7 @@ namespace RockWeb
 
             if ( stream != null )
             {
-                using ( var sr = new StreamReader( stream, encoding ) )
+                using ( var sr = new StreamReader( stream ) )
                 {
                     return new BinaryFileData
                         {

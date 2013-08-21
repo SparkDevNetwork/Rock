@@ -123,11 +123,17 @@ namespace RockWeb
             file.MimeType = uploadedFile.ContentType;
             file.FileName = Path.GetFileName( uploadedFile.FileName );
 
-            using ( var sr = new StreamReader( uploadedFile.InputStream ) )
-            {
-                var encoding = Encoding.GetEncoding( "utf-8" );
-                file.Data = new BinaryFileData { Content = encoding.GetBytes( sr.ReadToEnd() ) };
-            }
+            var bytes = new byte[uploadedFile.ContentLength];
+            uploadedFile.InputStream.Read( bytes, 0, uploadedFile.ContentLength );
+            file.Data = new BinaryFileData { Content = bytes };
+
+            //Convert.ToBase64String( uploadedFile.InputStream )
+
+            //using ( var sr = new StreamReader( uploadedFile.InputStream ) )
+            //{
+            //    var encoding = Encoding.GetEncoding( "utf-8" );
+            //    file.Data = new BinaryFileData { Content = encoding.GetBytes( sr.ReadToEnd() ) };
+            //}
 
             provider.SaveFile( file, null );
         }
