@@ -198,20 +198,32 @@ namespace RockWeb
             {
                 return file.Data;
             }
-
+            
             var url = container.GetUrl( file );
-            var request = WebRequest.Create( url );
-            var response = request.GetResponse();
-            var stream = response.GetResponseStream();
-            var encoding = Encoding.GetEncoding( "utf-8" );
+            Stream stream;
+
+            if ( url.StartsWith( "~/" ) )
+            {
+                var path = HttpContext.Current.Server.MapPath( url );
+                var fileInfo = new FileInfo( path );
+                stream = fileInfo.Open( FileMode.Open, FileAccess.Read );
+            }
+            else
+            {
+                var request = WebRequest.Create( url );
+                var response = request.GetResponse();
+                stream = response.GetResponseStream();
+            }
 
             if ( stream != null )
             {
-                using ( var sr = new StreamReader( stream ) )
+                using ( var memoryStream = new MemoryStream() )
                 {
+                    stream.CopyTo( memoryStream );
+                    stream.Close();
                     return new BinaryFileData
                         {
-                            Content = encoding.GetBytes( sr.ReadToEnd() )
+                            Content = memoryStream.ToArray()
                         };
                 }
             }

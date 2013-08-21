@@ -35,6 +35,9 @@ namespace RockWeb
             // Check to see if we should flip the image.
             try
             {
+                file.FileName = Path.GetFileName( uploadedFile.FileName );
+                file.MimeType = uploadedFile.ContentType;
+
                 Bitmap bmp = new Bitmap( uploadedFile.InputStream );
                 var exif = new EXIFextractor( ref bmp, "\n" );
                 if ( exif["Orientation"] != null )
@@ -69,11 +72,10 @@ namespace RockWeb
                 var provider = fileType != null
                     ? ProviderContainer.GetComponent( fileType.StorageEntityType.Name )
                     : ProviderContainer.DefaultComponent;
-                file.FileName = Path.GetFileName( uploadedFile.FileName );
                 provider.SaveFile( file, null );
 
             }
-            catch
+            catch ( Exception ex )
             {
                 // TODO: Log unable to rotate and/or resize.
             }
