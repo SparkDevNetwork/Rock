@@ -4,31 +4,16 @@
 @import "_page-admin.less";
 @import "_grid.less";
 @import "_modal.less";
+@import "_forms.less";
 @import "_persondetails.less";
+@import "_scroll.less";
+
 @import "./Bootstrap/mixins.less";
 @import "./Kendo/kendo.flat.less";
 
 // HTML Overrides
 //--------------------------------
-dl dt
-{
-    font-weight: @font-bold-weight;
-    margin-top: 16px;
-    margin-bottom: 2px;
-}
 
-dl dt:first-child {
-    margin-top: 0;
-}
-
-dl dd {
-    margin-left: 0;
-}
-
-dl
-{
-    margin-bottom: 0;
-}
 
 /* bootstrap overrides */
 .controls textarea {
@@ -130,91 +115,6 @@ span.cke_skin_kama
 {
     margin-left: 21px;
 }
-
-
-/* jQuery Scrolling Capability */
-.scroll-container 
-{ 
-    width: 520px; 
-    clear: both; 
-}
-
-.scroll-container .thumb 
-{
-    margin-left: -6px;
-    background-color: #ccc;
-}
-
-.scroll-container .thumb:hover
-{
-    background-color: #bbb;
-}
-
-
-.scroll-container .viewport 
-{ 
-    width: 500px;  
-    overflow: hidden; 
-    position: relative; 
-    height: 380px;
-}
-
-.scroll-container .overview 
-{ 
-    list-style: none; 
-    position: absolute; 
-    left: 0; 
-    top: 0; 
-}
-
-
-.scroll-container .scrollbar 
-{ 
-    position: relative; 
-    float: right; 
-    width: 15px; 
-}
-
-.scroll-container .track 
-{ 
-    height: 100%; 
-    position: relative;  
-    width: 0;
-    background-color: #ddd;
-    border-radius: 4px;  
-    border-left: 1px solid #aaa;
-    border-right: 1px solid #fff;
-    padding: 0; 
-}
-
-.scroll-container .thumb 
-{ 
-    height: 20px; 
-    width: 13px; 
-    cursor: pointer; 
-    overflow: hidden; 
-    position: absolute; 
-    top: 0;
-    border-radius: 120px;
-}
-
-.scroll-container .thumb .end 
-{ 
-    overflow: hidden; 
-    height: 5px; 
-    width: 13px; 
-    background-color: transparent; 
-}
-
-.scroll-container .disable
-{ 
-    display: none; 
-}
-
-
-
-
-
 
 
 /* error page */
