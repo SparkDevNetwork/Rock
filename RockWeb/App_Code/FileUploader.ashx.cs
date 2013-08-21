@@ -64,17 +64,17 @@ namespace RockWeb
                 BinaryFile file = null;
                 BinaryFileType fileType = null;
 
+                // Attempt to find file by an Id or Guid passed in
                 if ( !string.IsNullOrEmpty( id ) )
                 {
                     int fileId;
                     file = int.TryParse( id, out fileId ) ? fileService.Get( fileId ) : fileService.GetByEncryptedKey( id );
                 }
 
+                // ...otherwise create a new BinaryFile
                 if ( file == null )
                 {
-                    // ...otherwise create a new Cms File
-                    file = new BinaryFile { IsTemporary = true };
-                    fileService.Add( file, null );
+                    file = new BinaryFile();
                 }
 
                 // Check to see if BinaryFileType info was sent

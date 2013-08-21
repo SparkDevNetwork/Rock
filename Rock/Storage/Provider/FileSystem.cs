@@ -51,6 +51,12 @@ namespace Rock.Storage.Provider
                 // written into the database.
                 file.Data = null;
                 file.Url = url;
+
+                if ( file.Id == 0 )
+                {
+                    fileService.Add( file, personId );
+                }
+
                 fileService.Save( file, personId );
             }
         }
@@ -99,7 +105,7 @@ namespace Rock.Storage.Provider
                 return path;
             }
 
-            if ( path.StartsWith( "http:" ) || path.StartsWith( "https:" ) )
+            if ( path.StartsWith( "http:" ) || path.StartsWith( "https:" ) || path.StartsWith( "/" ) || path.StartsWith( "~" ) )
             {
                 return HttpContext.Current.Server.MapPath( path );
             }
