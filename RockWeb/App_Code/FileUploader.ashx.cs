@@ -8,7 +8,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.ServiceModel.Web;
-using System.Text;
 using System.Web;
 using System.Web.SessionState;
 
