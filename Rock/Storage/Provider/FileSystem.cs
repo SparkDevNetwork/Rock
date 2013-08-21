@@ -45,6 +45,13 @@ namespace Rock.Storage.Provider
 
                 var url = GetUrl( file );
                 var physicalPath = GetPhysicalPath( url );
+                var subPath = physicalPath.Replace( file.FileName, string.Empty );
+
+                if ( !Directory.Exists( subPath ) )
+                {
+                    Directory.CreateDirectory( subPath );
+                }
+
                 File.WriteAllBytes( physicalPath, file.Data.Content );
 
                 // Set Data to null after successful OS save so the the binary data is not 
