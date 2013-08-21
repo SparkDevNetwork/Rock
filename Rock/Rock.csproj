@@ -144,6 +144,8 @@
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
+    <Compile Include="Attribute\DateRangeFieldAttribute.cs" />
+    <Compile Include="Attribute\DecimalRangeFieldAttribute.cs" />
     <Compile Include="Attribute\LocationFieldAttribute.cs" />
     <Compile Include="Attribute\GroupRoleFieldAttribute.cs" />
     <Compile Include="Attribute\MemoFieldAttribute.cs" />
@@ -167,9 +169,15 @@
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
+    <Compile Include="Field\Types\DateRangeFieldType.cs" />
+    <Compile Include="Field\Types\DecimalRangeFieldType.cs" />
     <Compile Include="Migrations\201308192335432_BinaryFileCachingRenameAndProcUpdate.cs" />
     <Compile Include="Migrations\201308192335432_BinaryFileCachingRenameAndProcUpdate.Designer.cs">
       <DependentUpon>201308192335432_BinaryFileCachingRenameAndProcUpdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308212212453_RangeAttributeFieldTypes.cs" />
+    <Compile Include="Migrations\201308212212453_RangeAttributeFieldTypes.Designer.cs">
+      <DependentUpon>201308212212453_RangeAttributeFieldTypes.cs</DependentUpon>
     </Compile>
     <Compile Include="Storage\ProviderComponent.cs" />
     <Compile Include="Storage\ProviderContainer.cs" />
@@ -2192,6 +2200,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201308192335432_BinaryFileCachingRenameAndProcUpdate.resx">
       <DependentUpon>201308192335432_BinaryFileCachingRenameAndProcUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308212212453_RangeAttributeFieldTypes.resx">
+      <DependentUpon>201308212212453_RangeAttributeFieldTypes.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
