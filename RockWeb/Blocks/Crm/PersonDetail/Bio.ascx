@@ -5,7 +5,7 @@
 </div>
 <div class="row-fluid">
 	<div class="span6">
-		<h1><asp:Literal ID="lName" runat="server" /></h1>
+		<h1 class="title"><asp:Literal ID="lName" runat="server" /></h1>
 	</div>
     <div class="span6 labels">
 

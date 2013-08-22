@@ -10,6 +10,9 @@
     7. Tags - component that allows you to tag entities
     8. Switch - uses the Bootstrap Switch component
     9. Smart Searh - search at th top of the page for searching people, groups, etc.
+    10. Title - markup for styling header titles
+    11. Notifications - additional styles to the Bootstrap notifications
+    12. Labels - additional label defintions that extend Boostrap labels (eg label-campus)
 
 */
 
@@ -22,16 +25,14 @@
     border: @panel-border-size solid @panel-border-color;
     background-color: @panel-background;
     padding: @panel-padding;
+
+    > h4 {
+        margin: 48px 0 6px;
+    }
 }
 
-.panel h4
-{
-    margin: 48px 0 20px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid darken(@panel-background, 8%);
-}
 
-// 2. Panel
+// 2. Banner
 // -------------------------
 
 .banner
@@ -44,7 +45,25 @@
     font-size: @banner-font-size;
     padding: @banner-padding;
     margin: 0 0 12px;
+    .clearfix;
+
+    h1 {
+        float: left;
+        margin: 0;
+        font-weight: @banner-font-weight;
+
+        .first-word {
+            font-weight: @banner-firstword-weight;
+        }
+    }
+
+    .label {
+        float: right;
+        margin-top: 16px;
+        margin-left: 6px;
+    }
 }
+
 
 // 3. Treeview
 // -------------------------
@@ -104,27 +123,24 @@
 // 4. Widget
 // -------------------------
 
-.widget
-{
+.widget {
     background-color: @site-background-color;
     border: 1px solid darken(@site-accentlight-color, @const-border-darken-amt);
     border-radius: @site-border-radius;
     margin-bottom: 2em;
-}
 
-.widget h3 
-{
-    font-size: 15px;  
-    line-height: 15px;
-    margin: 0 0 6px 0;
-}
+    h3 {
+        font-size: 15px;  
+        line-height: 15px;
+        margin: 0 0 6px 0;
+    }
 
-.widget header
-{
-    background-color: @widget-header-background;
-    color: @widget-header-text-color;
-    padding: 6px 15px;
-    border-radius: @site-border-radius @site-border-radius 0 0 ;
+    header {
+        background-color: @widget-header-background;
+        color: @widget-header-text-color;
+        padding: 6px 15px;
+        border-radius: @site-border-radius @site-border-radius 0 0 ;
+    }
 }
 
 .filter-toogle > span {
@@ -135,10 +151,6 @@
 {
 	background-color: @widget-header-background-dark;
     color: @widget-header-text-color-dark;
-}
-
-.widget.widget-dark > header .btn-action {
-	//.make-gradient(lighten(@rockHeaderDarkBackground, 3%));
 }
 
 
@@ -449,43 +461,36 @@
 // 6. Pagelist
 // -------------------------
 
-.page-list-as-blocks ul 
-{
-    list-style: none;
-}
-
-.page-list-as-blocks li 
-{
-    background-color: @pagelist-background;
-    border-radius: @site-border-radius;
-    border: 1px solid #bbb;
-    float: left;
-    margin: 0 2% 12px 2%;
-    width: 20%;
-    overflow: hidden;
-    color: @pagelist-text-color;
-    text-align: center;
-}
-
+.page-list-as-blocks {
     
-.page-list-as-blocks li a 
-{
-    display: block;
-    color: inherit;
-    height: 65px;
-    padding: 12px;
-}
+    h3 {
+        margin-top: 0;
+        font-size: 14px;
+        margin: 6px 0;
+    }
+    
+    ul {
+        list-style: none;
 
-.page-list-as-blocks li a:hover
-{
-    text-decoration: none;
-}
+        li {
+            background-color: @pagelist-background;
+            border-radius: @site-border-radius;
+            border: 1px solid #bbb;
+            float: left;
+            margin: 0 2% 12px 2%;
+            width: 20%;
+            overflow: hidden;
+            color: @pagelist-text-color;
+            text-align: center;
 
-.page-list-as-blocks h3
-{
-    margin-top: 0;
-    font-size: 14px;
-    margin: 6px 0;
+            a {
+                display: block;
+                color: inherit;
+                height: 65px;
+                padding: 12px;
+            }
+        }
+    }
 }
 
 // 7. Tags
@@ -507,47 +512,40 @@ div.tagsinput span.tag
 	position: relative;
 	font-size: 11px;
 	margin-bottom: 6px;
-}
-
-div.tagsinput span.tag 
-{
-	margin-left: 20px;
+    margin-left: 20px;
 	padding: 0 10px 0 12px;
 	background: @tag-background;
 	color: @tag-text-color;
 	text-decoration: none;	
 	border-bottom-right-radius: @tag-border-radius;
-	border-top-right-radius: @tag-border-radius;	
-} 
+	border-top-right-radius: @tag-border-radius;
 
-div.tagsinput span.tag:before /* tag point */
-{
-	content: "";
-	float: left;
-	position: absolute;
-	top: 0;
-	left: -9px;
-	width: 0;
-	height: 0;
-	border-color: transparent @tag-background transparent transparent;
-	border-style: solid;
-	border-width: 9px 9px 9px 0;		
+    &:before {       /* tag point */
+	    content: "";
+	    float: left;
+	    position: absolute;
+	    top: 0;
+	    left: -9px;
+	    width: 0;
+	    height: 0;
+	    border-color: transparent @tag-background transparent transparent;
+	    border-style: solid;
+	    border-width: 9px 9px 9px 0;		
+    }
+
+    &:after {         /* tag dot */
+	    content: "";
+	    position: absolute;
+	    top: 7px;
+	    left: 0;
+	    float: left;
+	    width: 4px;
+	    height: 4px;
+	    border-radius: 2px;
+	    background: @tag-dot-color;
+	    box-shadow: -1px -1px 2px @tag-background;
+    }
 }
-
-div.tagsinput span.tag:after /* tag dot */
-{
-	content: "";
-	position: absolute;
-	top: 7px;
-	left: 0;
-	float: left;
-	width: 4px;
-	height: 4px;
-	border-radius: 2px;
-	background: @tag-dot-color;
-	box-shadow: -1px -1px 2px @tag-background;
-}
-
 
 div.tagsinput span.tag.personal 
 {
@@ -915,4 +913,33 @@ div.tagsinput div
 .smart-search input::-moz-selection {
 	background: @smartsearch-input-selection-background; /* Firefox */
 	color: @smartsearch-input-selection-text-color;
+}
+
+// 10. Titles
+// ------------------------
+.title {
+    font-weight: @title-default-weight;
+}
+
+.title .first-word {
+    font-weight: @title-firstword-weight;
+}
+
+// 11. Notifications
+// -------------------------
+
+.alert-info h4:before {
+    content: "\f05a";
+    font-family: FontAwesome;
+}
+
+// 12. Labels
+// -------------------------
+
+.label-campus {
+    background-color: @label-campus;
+}
+
+.label-type {
+    background-color: @label-type;
 }

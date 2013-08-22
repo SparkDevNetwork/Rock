@@ -458,12 +458,14 @@ namespace RockWeb.Blocks.Administration
             if ( !IsUserAuthorized( "Edit" ) )
             {
                 readOnly = true;
+                nbEditModeMessage.Heading = "Information";
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( WorkflowType.FriendlyTypeName );
             }
 
             if ( workflowType.IsSystem )
             {
                 readOnly = true;
+                nbEditModeMessage.Heading = "Information";
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlySystem( WorkflowType.FriendlyTypeName );
             }
 
@@ -494,13 +496,9 @@ namespace RockWeb.Blocks.Administration
         /// <param name="workflowType">Type of the workflow.</param>
         private void ShowEditDetails( WorkflowType workflowType )
         {
-            if ( workflowType.Id > 0 )
+            if ( workflowType.Id == 0 )
             {
-                lActionTitle.Text = ActionTitle.Edit( WorkflowType.FriendlyTypeName );
-            }
-            else
-            {
-                lActionTitle.Text = ActionTitle.Add( WorkflowType.FriendlyTypeName );
+                lReadOnlyTitle.Text = ActionTitle.Add( WorkflowType.FriendlyTypeName );
             }
 
             SetEditMode( true );
@@ -536,15 +534,13 @@ namespace RockWeb.Blocks.Administration
             lblWorkflowTypeInactive.Visible = workflowType.IsActive == false;
             lblActivitiesReadonlyHeaderLabel.Text = string.Format( "<strong>Activities</strong> ({0})", workflowType.ActivityTypes.Count() );
 
-            DescriptionList descriptionList = new DescriptionList()
-                .Add("Description", workflowType.Description);
-
             if ( workflowType.Category != null )
             {
-                descriptionList.Add("Category", workflowType.Category.Name );
+                lWorkflowTypeCategory.Text = workflowType.Category.Name;
+                //descriptionList.Add("Category", workflowType.Category.Name );
             }
 
-            lblMainDetails.Text = descriptionList.Html;
+            lWorkflowTypeDescription.Text = workflowType.Description;
 
             if ( workflowType.ActivityTypes.Count > 0 )
             {

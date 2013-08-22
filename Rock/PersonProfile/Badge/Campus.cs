@@ -44,7 +44,7 @@ namespace Rock.PersonProfile.Badge
         /// <returns></returns>
         public override BadgeType GetBadgeType( Person person )
         {
-            return BadgeType.Info;
+            return BadgeType.Campus;
         }
 
         /// <summary>
