@@ -144,6 +144,9 @@
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
+    <Compile Include="Attribute\IntegerRangeFieldAttribute.cs" />
+    <Compile Include="Attribute\DateRangeFieldAttribute.cs" />
+    <Compile Include="Attribute\DecimalRangeFieldAttribute.cs" />
     <Compile Include="Attribute\LocationFieldAttribute.cs" />
     <Compile Include="Attribute\GroupRoleFieldAttribute.cs" />
     <Compile Include="Attribute\MemoFieldAttribute.cs" />
@@ -167,10 +170,25 @@
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
-    <Compile Include="BinaryFile\StorageComponent.cs" />
-    <Compile Include="BinaryFile\StorageContainer.cs" />
-    <Compile Include="BinaryFile\Storage\Database.cs" />
-    <Compile Include="BinaryFile\Storage\FileSystem.cs" />
+    <Compile Include="Field\Types\IntegerRangeFieldType.cs" />
+    <Compile Include="Field\Types\DateRangeFieldType.cs" />
+    <Compile Include="Field\Types\DecimalRangeFieldType.cs" />
+    <Compile Include="Migrations\201308192335432_BinaryFileCachingRenameAndProcUpdate.cs" />
+    <Compile Include="Migrations\201308192335432_BinaryFileCachingRenameAndProcUpdate.Designer.cs">
+      <DependentUpon>201308192335432_BinaryFileCachingRenameAndProcUpdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308212212453_RangeAttributeFieldTypes.cs" />
+    <Compile Include="Migrations\201308212212453_RangeAttributeFieldTypes.Designer.cs">
+      <DependentUpon>201308212212453_RangeAttributeFieldTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308212336197_IntegerRangeFieldType.cs" />
+    <Compile Include="Migrations\201308212336197_IntegerRangeFieldType.Designer.cs">
+      <DependentUpon>201308212336197_IntegerRangeFieldType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Storage\ProviderComponent.cs" />
+    <Compile Include="Storage\ProviderContainer.cs" />
+    <Compile Include="Storage\Provider\Database.cs" />
+    <Compile Include="Storage\Provider\FileSystem.cs" />
     <Compile Include="Data\MergeFieldAttribute.cs" />
     <Compile Include="Field\Types\ComponentsFieldType.cs" />
     <Compile Include="Field\Types\CategoryFieldType.cs" />
@@ -505,6 +523,10 @@
     <Compile Include="Migrations\201308162243140_DataTransformations.Designer.cs">
       <DependentUpon>201308162243140_DataTransformations.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201308191700532_AddMaritalStatusDefinedValues.cs" />
+    <Compile Include="Migrations\201308191700532_AddMaritalStatusDefinedValues.Designer.cs">
+      <DependentUpon>201308191700532_AddMaritalStatusDefinedValues.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -539,6 +561,8 @@
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
     <Compile Include="Web\Cache\CategoryCache.cs" />
     <Compile Include="Web\DescriptionList.cs" />
+    <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinGroupEditor.cs" />
+    <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinGroupTypeEditor.cs" />
     <Compile Include="Web\UI\Controls\Communication\ChannelControl.cs" />
     <Compile Include="Data\IgnoreModelErrorsAttribute.cs" />
     <Compile Include="Migrations\201304190037528_BinaryFileTypeContributionImage.cs" />
@@ -1192,6 +1216,7 @@
     <Compile Include="Web\UI\BreadCrumb.cs" />
     <Compile Include="Web\UI\IDetailBlock.cs" />
     <Compile Include="Web\UI\IDimmableBlock.cs" />
+    <Compile Include="Web\UI\ViewStateList.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
     <Compile Include="Workflow\Action\CheckIn\SelectByLastAttended.cs" />
@@ -1215,7 +1240,6 @@
     <Compile Include="Workflow\Action\CheckIn\FindRelationships.cs" />
     <Compile Include="Workflow\Action\CheckIn\FindFamilyMembers.cs" />
     <Compile Include="Workflow\Action\CheckIn\FindFamilies.cs" />
-    <Compile Include="Web\UI\ViewStateList.cs" />
     <Compile Include="Workflow\Action\ParseZebraLabel.cs" />
     <Compile Include="Workflow\TriggerCache.cs" />
     <Compile Include="Model\WorkflowTriggerService.Partial.cs" />
@@ -2191,6 +2215,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201308162243140_DataTransformations.resx">
       <DependentUpon>201308162243140_DataTransformations.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308191700532_AddMaritalStatusDefinedValues.resx">
+      <DependentUpon>201308191700532_AddMaritalStatusDefinedValues.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308192335432_BinaryFileCachingRenameAndProcUpdate.resx">
+      <DependentUpon>201308192335432_BinaryFileCachingRenameAndProcUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308212212453_RangeAttributeFieldTypes.resx">
+      <DependentUpon>201308212212453_RangeAttributeFieldTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308212336197_IntegerRangeFieldType.resx">
+      <DependentUpon>201308212336197_IntegerRangeFieldType.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
