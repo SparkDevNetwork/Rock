@@ -15,6 +15,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.Web;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -413,7 +414,7 @@ namespace RockWeb.Blocks.Administration
             MarketingCampaignAudiencesState = new ViewStateList<MarketingCampaignAudience>();
             foreach ( var item in marketingCampaign.MarketingCampaignAudiences.ToList() )
             {
-                MarketingCampaignAudiencesState.Add( new MarketingCampaignAudience { Id = item.Id, AudienceTypeValue = item.AudienceTypeValue, IsPrimary = item.IsPrimary, AudienceTypeValueId = item.AudienceTypeValueId } );
+                MarketingCampaignAudiencesState.Add( new MarketingCampaignAudience { Id = item.Id, IsPrimary = item.IsPrimary, AudienceTypeValueId = item.AudienceTypeValueId } );
             }
 
             BindMarketingCampaignAudiencesGrid();
@@ -582,10 +583,10 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void BindMarketingCampaignAudiencesGrid()
         {
-            gMarketingCampaignAudiencesPrimary.DataSource = MarketingCampaignAudiencesState.Where( a => a.IsPrimary ).OrderBy( a => a.AudienceTypeValue.Name ).ToList();
+            gMarketingCampaignAudiencesPrimary.DataSource = MarketingCampaignAudiencesState.Where( a => a.IsPrimary ).OrderBy( a => DefinedValueCache.Read(a.AudienceTypeValueId).Name ).ToList();
             gMarketingCampaignAudiencesPrimary.DataBind();
 
-            gMarketingCampaignAudiencesSecondary.DataSource = MarketingCampaignAudiencesState.Where( a => !a.IsPrimary ).OrderBy( a => a.AudienceTypeValue.Name ).ToList();
+            gMarketingCampaignAudiencesSecondary.DataSource = MarketingCampaignAudiencesState.Where( a => !a.IsPrimary ).OrderBy( a => DefinedValueCache.Read( a.AudienceTypeValueId ).Name ).ToList();
             gMarketingCampaignAudiencesSecondary.DataBind();
         }
 
@@ -599,7 +600,6 @@ namespace RockWeb.Blocks.Administration
             int audienceTypeValueId = int.Parse( ddlMarketingCampaignAudiences.SelectedValue );
             MarketingCampaignAudience marketingCampaignAudience = new MarketingCampaignAudience();
             marketingCampaignAudience.AudienceTypeValueId = audienceTypeValueId;
-            marketingCampaignAudience.AudienceTypeValue = new DefinedValueService().Get( audienceTypeValueId );
             marketingCampaignAudience.IsPrimary = hfMarketingCampaignAudienceIsPrimary.Value.FromTrueFalse();
 
             MarketingCampaignAudiencesState.Add( marketingCampaignAudience.Clone() as MarketingCampaignAudience );

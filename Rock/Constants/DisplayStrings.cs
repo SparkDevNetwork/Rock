@@ -174,7 +174,7 @@ namespace Rock.Constants
         /// <returns></returns>
         public static string ReadOnlySystem( string itemFriendlyName )
         {
-            return string.Format( "INFO: This is a read-only system {0}.", itemFriendlyName.ToLower() );
+            return string.Format( "This is a read-only system {0}.", itemFriendlyName.ToLower() );
         }
 
         /// <summary>
@@ -184,7 +184,7 @@ namespace Rock.Constants
         /// <returns></returns>
         public static string ReadOnlyEditActionNotAllowed( string itemFriendlyName )
         {
-            return string.Format( "INFO: You do not have access to edit this {0}.", itemFriendlyName.ToLower() );
+            return string.Format( "You do not have access to edit this {0}.", itemFriendlyName.ToLower() );
         }
     }
 }

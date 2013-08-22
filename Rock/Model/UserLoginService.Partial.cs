@@ -248,24 +248,6 @@ namespace Rock.Model
             return null;
         }
 
-        private ExternalAuthenticationComponent GetExternalComponent( string serviceName )
-        {
-            foreach ( var serviceEntry in ExternalAuthenticationContainer.Instance.Components )
-            {
-                var component = serviceEntry.Value.Value;
-                string componentName = component.GetType().FullName;
-                if (
-                    componentName == serviceName &&
-                    component.AttributeValues.ContainsKey( "Active" ) &&
-                    bool.Parse( component.AttributeValues["Active"][0].Value )
-                )
-                {
-                    return component;
-                }
-            }
-            return null;
-        }
-
         #region Static Methods
 
         /// <summary>

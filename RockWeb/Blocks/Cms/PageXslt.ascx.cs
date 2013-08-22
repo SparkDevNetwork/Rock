@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
 using System.Text;
+using System.Web;
 using System.Web.UI;
 using System.Xml.Linq;
 using System.Xml.Xsl;
@@ -23,6 +24,8 @@ namespace RockWeb.Blocks.Cms
     [TextField("CSS File", "Optional CSS file to add to the page for styling.", false, "")]
     [BooleanField( "Include Current Parameters", "Flag indicating if current page's parameters should be used when building url for child pages", false )]
     [BooleanField( "Include Current QueryString", "Flag indicating if current page's QueryString should be used when building url for child pages", false )]
+    [BooleanField("Show Debug", "Output the XML to be transformed.", false, "Advanced", 1)]
+
     public partial class PageXslt : Rock.Web.UI.RockBlock
     {
         private static readonly string ROOT_PAGE = "RootPage";
@@ -35,14 +38,17 @@ namespace RockWeb.Blocks.Cms
             base.OnInit( e );
 
             this.AttributesUpdated += PageXslt_AttributesUpdated;
-            //this.AddAttributeUpdateTrigger( upContent );
-            //upContent.ContentTemplateContainer.Controls.Add( )
+
+            // add css file to page
+            if (GetAttributeValue( "CSSFile" ).Trim() != string.Empty)
+                CurrentPage.AddCSSLink( Page, ResolveUrl("~/CSS/jquery.tagsinput.css"));  //todo why is this hardcoding? JME
 
             // add css file to page
             if (GetAttributeValue( "CSSFile" ).Trim() != string.Empty)
                 CurrentPage.AddCSSLink( Page, ResolveUrl("~/CSS/jquery.tagsinput.css"));
 
             TransformXml();
+
         }
 
         void PageXslt_AttributesUpdated( object sender, EventArgs e )
@@ -52,44 +58,88 @@ namespace RockWeb.Blocks.Cms
 
         private void TransformXml()
         {
-            XslCompiledTransform xslTransformer = new XslCompiledTransform();
-            xslTransformer.Load( Server.MapPath( GetAttributeValue( "XSLTFile" ) ) );
-
-            Rock.Web.Cache.PageCache rootPage = null;
-
-            Guid pageGuid = Guid.Empty;
-            if ( Guid.TryParse( GetAttributeValue( ROOT_PAGE ), out pageGuid ) )
+            string outputXml = string.Empty;
+            
+            // ensure xslt file exists
+            string xsltFile = Server.MapPath(GetAttributeValue("XSLTFile"));
+            if (System.IO.File.Exists(xsltFile))
             {
-                rootPage = Rock.Web.Cache.PageCache.Read( pageGuid );
-            }
+                // try compiling the XSLT
+                try
+                {
+                    XslCompiledTransform xslTransformer = new XslCompiledTransform();
+                    xslTransformer.Load(xsltFile);
 
-            if ( rootPage == null )
+                    Rock.Web.Cache.PageCache rootPage = null;
+
+                    Guid pageGuid = Guid.Empty;
+                    if (Guid.TryParse(GetAttributeValue(ROOT_PAGE), out pageGuid))
+                    {
+                        rootPage = Rock.Web.Cache.PageCache.Read(pageGuid);
+                    }
+
+                    if (rootPage == null)
+                    {
+                        rootPage = CurrentPage;
+                    }
+
+                    int levelsDeep = Convert.ToInt32(GetAttributeValue(NUM_LEVELS));
+
+                    Dictionary<string, string> pageParameters = null;
+                    if (GetAttributeValue("IncludeCurrentParameters").AsBoolean())
+                    {
+                        pageParameters = CurrentPageReference.Parameters;
+                    }
+
+                    NameValueCollection queryString = null;
+                    if (GetAttributeValue("IncludeCurrentQueryString").AsBoolean())
+                    {
+                        queryString = CurrentPageReference.QueryString;
+                    }
+
+                    XDocument pageXml = rootPage.MenuXml(levelsDeep, CurrentPerson, CurrentPage, pageParameters, queryString);
+
+                    // if debug the output the xml
+                    string showDebugValue = GetAttributeValue("ShowDebug") ?? string.Empty;
+                    bool showDebug = showDebugValue.Equals("true", StringComparison.OrdinalIgnoreCase);
+
+                    if (showDebug || string.IsNullOrWhiteSpace(xsltFile))
+                    {
+                        outputXml = "<pre><code>" + HttpUtility.HtmlEncode(pageXml.ToString()) + "</code></pre>";
+                    }
+                    else
+                    {
+                        // transform xml
+                        StringBuilder sb = new StringBuilder();
+                        TextWriter tw = new StringWriter(sb);
+
+                        xslTransformer.Transform(pageXml.CreateReader(), null, tw);
+
+                        outputXml = sb.ToString();
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    // xslt compile error
+                    string exMessage = "An excception occurred while compiling the XSLT template.";
+
+                    if (ex.InnerException != null)
+                        exMessage += "<br /><em>" + ex.InnerException.Message + "</em>";
+
+                    outputXml = "<div class='alert warning' style='margin: 24px auto 0 auto; max-width: 500px;' ><strong>XSLT Compile Error</strong><p>" + exMessage + "</p></div>";
+                }
+            }
+            else
             {
-                rootPage = CurrentPage;
+                string errorMessage = "<div class='alert warning' style='margin: 24px auto 0 auto; max-width: 500px;' ><strong>Warning!</strong><p>The XSLT file required to process the page list could not be found.</p><p><em>" + xsltFile + "</em></p>";
+                phContent.Controls.Add(new LiteralControl(errorMessage));
             }
-
-            int levelsDeep = Convert.ToInt32( GetAttributeValue( NUM_LEVELS ) );
-
-            Dictionary<string, string> pageParameters = null;
-            if ( GetAttributeValue( "IncludeCurrentParameters" ).AsBoolean() )
-            {
-                pageParameters = CurrentPageReference.Parameters;
-            }
-
-            NameValueCollection queryString = null;
-            if ( GetAttributeValue( "IncludeCurrentQueryString" ).AsBoolean() )
-            {
-                queryString = CurrentPageReference.QueryString;
-            }
-
-            XDocument pageXml = rootPage.MenuXml( levelsDeep, CurrentPerson, CurrentPage, pageParameters, queryString );
-
-            StringBuilder sb = new StringBuilder();
-            TextWriter tw = new StringWriter( sb );
-            xslTransformer.Transform( pageXml.CreateReader(), null, tw );
 
             phContent.Controls.Clear();
-            phContent.Controls.Add( new LiteralControl( sb.ToString() ) );
+
+            phContent.Controls.Add(new LiteralControl(outputXml));
+
         }
     }
 }

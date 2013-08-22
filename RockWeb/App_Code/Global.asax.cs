@@ -67,6 +67,7 @@ namespace RockWeb
         {
             if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
             {
+                System.Diagnostics.Debug.WriteLine( string.Format( "Application_Start: {0}", DateTime.Now ) );
                 HttpInternals.RockWebFileChangeMonitor();
             }
             
@@ -551,10 +552,9 @@ namespace RockWeb
                 if ( runtime != null )
                 {
                     string shutDownMessage = (string)runtime.GetType().InvokeMember( "_shutDownMessage", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField, null, runtime, null );
-                    string shutDownStack = (string)runtime.GetType().InvokeMember( "_shutDownStack", BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetField, null, runtime, null );
 
                     // send debug info to debug window
-                    System.Diagnostics.Debug.WriteLine( String.Format( "shutDownMessage:{0}\r\n\r\n_shutDownStack:\r\n{1}", shutDownMessage, shutDownStack ));
+                    System.Diagnostics.Debug.WriteLine( String.Format( "shutDownMessage:{0}", shutDownMessage ));
                 }
             }
             catch
