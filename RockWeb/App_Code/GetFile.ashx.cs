@@ -109,17 +109,28 @@ namespace RockWeb
                     else
                     {
                         var url = (string) reader["Url"];
-                        var request = WebRequest.Create( url );
-                        var response = request.GetResponse();
-                        var stream = response.GetResponseStream();
-                        var encoding = Encoding.GetEncoding( "utf-8" );
+                        Stream stream;
+
+                        if ( url.StartsWith( "~/" ) )
+                        {
+                            var path = context.Server.MapPath( url );
+                            var fileInfo = new FileInfo( path );
+                            stream = fileInfo.Open( FileMode.Open, FileAccess.Read );
+                        }
+                        else
+                        {
+                            var request = WebRequest.Create( url );
+                            var response = request.GetResponse();
+                            stream = response.GetResponseStream();
+                        }
 
                         if ( stream != null )
                         {
-                            using ( var sr = new StreamReader( stream, encoding ) )
+                            using ( var memoryStream = new MemoryStream() )
                             {
-                                var output = sr.ReadToEnd();
-                                context.Response.BinaryWrite( encoding.GetBytes( output ) );
+                                stream.CopyTo( memoryStream );
+                                stream.Close();
+                                context.Response.BinaryWrite( memoryStream.ToArray() );
                             }
                         }
                         else
