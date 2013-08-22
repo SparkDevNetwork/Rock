@@ -1,3 +1,22 @@
+/* !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+	Populate All FellowshipOne People & Groups
+
+This script imports all the people and groups that are in FellowshipOne's SQL database.
+There is another script to import people attendance once this script is run.
+
+The following assumptions or actions are made:
+
+1. Source database is named F1
+2. Current database is RockChMS
+3. Households or people with a ".", "?", or "_" in their name are excluded. 
+4. Person roles are assigned by their age: 19+ is an adult, otherwise a child
+5. FellowshipOne database ID's are stored as a person's attribute after the import finishes.
+6. Person graduation dates are calculated if a grade can be found in the location name 
+	where they checked in. If not, the graduation date is 18 + birth date.
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
+
 ----------------------------------------------------------
 -- Set up necessary Person attributes and properties
 ----------------------------------------------------------
@@ -57,9 +76,9 @@ DECLARE @GroupAttributeID int
 ------------------------------------------------------------
 MERGE INTO [Attribute] A
 USING (
-	VALUES ( 0,	@IntFieldType,	@PersonEntityID, 'IndividualID',	'IndividualID',	'F1 Individual ID',	0,	0,	0,	0,	'0F9C847B-4302-421E-9980-51E4772E80F5')	
-	, (0,	@IntFieldType,	@PersonEntityID,	'HouseholdID',	'HouseholdID',	'F1 Household ID',	0,	0,	0,	0,	'CAB397A9-5E72-4970-AF27-E60967FD6D58')
-	, (0, @IntFieldType, @GroupEntityID, 'HouseholdID', 'HouseholdID', 'F1 Household ID', 0, 0, 0, 0, '1DF676F2-A1C9-4534-9F59-8ABCBDD1CDD3')
+	VALUES ( 0,	@IntFieldType,	@PersonEntityID, 'IndividualID',	'IndividualID',	'A person''s FellowshipOne individual_ID',	0,	0,	0,	0,	'0F9C847B-4302-421E-9980-51E4772E80F5')	
+	, (0,	@IntFieldType,	@PersonEntityID,	'HouseholdID',	'HouseholdID',	'A person''s FellowshipOne household ID',	0,	0,	0,	0,	'CAB397A9-5E72-4970-AF27-E60967FD6D58')
+	, (0, @IntFieldType, @GroupEntityID, 'HouseholdID', 'HouseholdID', 'A group''s FellowshipOne household ID', 0, 0, 0, 0, '1DF676F2-A1C9-4534-9F59-8ABCBDD1CDD3')
 ) AS E (IsSystem,	FieldTypeId,	EntityTypeId,	[Key], Name, [Description], [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid])
 ON A.[Guid] = E.[Guid]
 WHEN NOT MATCHED THEN
@@ -74,24 +93,19 @@ SELECT @GroupAttributeID = [ID] FROM [Attribute] WHERE [Guid] = '1DF676F2-A1C9-4
 -- Add Group for each Household in F1
 ------------------------------------------------------------
 
-IF EXISTS( SELECT * FROM SYS.TABLES WHERE NAME = 'InsertedGroups' )
-BEGIN
-	DROP TABLE #InsertedGroups
-END
-
 CREATE TABLE #InsertedGroups (
 	HouseholdID int
 	, GroupID int
-	, GroupName nvarchar(max) 
+	, GroupName nvarchar(500) 
 );
 
 MERGE [Group] AS G
 USING (		
-	SELECT DISTINCT Household_ID, Household_Name
+	SELECT DISTINCT Household_ID, RIGHT(Household_Name, CHARINDEX(' ', REVERSE(Household_Name)) - 1) + ' Family'
 	FROM F1.dbo.Individual_Household
 	WHERE Household_Name not like '%[_.?]%'
 ) AS source (HouseholdID, GroupName)
-ON source.GroupName = G.Name
+ON 0 = 1
 WHEN NOT MATCHED THEN
 	INSERT ( IsSystem, GroupTypeId, Name, IsSecurityRole, IsActive, [Guid] )
 	VALUES ( 0, @FamilyGroupType, GroupName, 0, 0, NEWID() )
@@ -101,15 +115,11 @@ INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], Value, [
 SELECT 0, @GroupAttributeID, GroupID, 0, HouseholdID, NEWID()
 FROM #InsertedGroups IG
 
+DROP TABLE #InsertedGroups
+
 ------------------------------------------------------------
 -- Add Person for each Individual in F1
 ------------------------------------------------------------
-
-IF EXISTS( SELECT * FROM SYS.TABLES WHERE NAME = 'InsertedGroups' )
-BEGIN
-	DROP TABLE #InsertedPeople
-END
-
 CREATE TABLE #InsertedPeople (
 	HouseholdID int
 	, IndividualID int
@@ -123,17 +133,13 @@ USING (
 	FROM F1.dbo.Individual_Household i
 	WHERE Household_Name not like '%[_.?]%'	
 ) AS source ( HouseholdID, IndividualID, FirstName, NickName, MiddleName, LastName, Gender, birthdate )
-ON P.FirstName = source.FirstName
-AND P.LastName = source.LastName
-AND p.birthyear = YEAR(source.birthdate)
-AND p.birthmonth = MONTH(source.birthdate)
-AND p.birthday = DAY(source.birthdate)
+ON 0 = 1
 WHEN NOT MATCHED THEN
 	INSERT ( IsSystem, GivenName, NickName, MiddleName, LastName, BirthDay, BirthMonth, BirthYear, Gender, DoNotEmail, SystemNote, [Guid],[RecordTypeValueId],[RecordStatusValueId] )
 	VALUES ( 0, FirstName, NickName, MiddleName, LastName, day(birthdate), month(birthdate), year(birthdate)
 	, CASE Gender WHEN 'Male' THEN 1 WHEN 'Female' THEN 2 ELSE 0 END
 	, 0, 'Imported from FellowshipOne', NEWID(), @PersonRecordType, @ActiveRecordStatus )
-	OUTPUT source.HouseholdID, source.IndividualID, source.BirthDate INTO #InsertedPeople;
+	OUTPUT source.HouseholdID, source.IndividualID, Inserted.Id, source.BirthDate INTO #InsertedPeople;
 
 INSERT [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], Value, [Guid])
 SELECT 0, @IndividualAttributeID, PersonId, 0, IndividualID, NEWID()
@@ -143,12 +149,13 @@ INSERT [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], Value, [Guid]
 SELECT 0, @HouseholdAttributeID, PersonId, 0, HouseholdID, NEWID()
 FROM #InsertedPeople
 
+DROP TABLE #InsertedPeople
+
 ------------------------------------------------------------
 -- Add Person group memberships 
 ------------------------------------------------------------
 ;WITH F1GroupMembers AS (
-	SELECT Household_Name
-	, Household_ID
+	SELECT Household_ID
 	, Individual_ID
 	, CASE WHEN (Household_Position = 'Head' OR Household_Position = 'Spouse')
 		AND DATEDIFF(YEAR, Date_Of_Birth, @NextGradeTransitionDate ) >= 19
@@ -161,6 +168,7 @@ FROM #InsertedPeople
 	ELSE @AdultRole
 	END as PersonRole 
 	FROM F1.dbo.individual_household
+	WHERE Household_Name not like '%[_.?]%'	
 )
 INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid)
 SELECT 0, Household.EntityID, Individual.EntityId, FGM.PersonRole, NEWID()
@@ -214,6 +222,7 @@ INNER JOIN RankedContactInformation RCI
 	FROM F1.dbo.Attendance A
 	INNER JOIN F1.dbo.Individual_Household IH
 	ON A.Individual_ID = IH.Individual_ID
+	AND Household_Name not like '%[_.?]%'	
 	INNER JOIN F1.dbo.RLC R
 	ON A.RLC_ID = R.RLC_ID
 )
@@ -236,16 +245,16 @@ INNER JOIN RankedContactInformation RCI
 	WHERE PATINDEX('%[1-9]%', Location) > 0
 )
 UPDATE P
-SET GraduationDate = CASE 
+SET GraduationDate = CASE
 	WHEN LAG.CheckInGrade IS NOT NULL
-	THEN -- calculate by check-in grade 
+	THEN -- calculate by check-in grade
 		DATEADD(year, (12 - LAG.CheckInGrade) - DATEDIFF(year, LAG.CheckInDate, @NextGradeTransitionDate), @NextGradeTransitionDate)
 	ELSE -- calculate by age (approximate)
 		DATEADD(year, 18 - datediff(year, LAA.BirthDate, @NextGradeTransitionDate), @NextGradeTransitionDate )
 END
 FROM Person P
 INNER JOIN AttributeValue AV
-ON AV.AttributeId = 592
+ON AV.AttributeId = @IndividualAttributeID
 AND P.Id = AV.EntityId
 INNER JOIN LastAttendedAge LAA
 ON AV.Value = LAA.Individual_ID
