@@ -198,6 +198,8 @@ namespace Rock.Model
                 return fullName.ToString();
             }
 
+            // TODO: Private set currently not needed, but not possible to remove without a migration. 
+            // Consider removing during migration flattening.
             private set { }
         }
 
@@ -214,6 +216,8 @@ namespace Rock.Model
                 return string.IsNullOrEmpty( NickName ) ? GivenName : NickName;
             }
 
+            // TODO: Private set currently not needed, but not possible to remove without a migration. 
+            // Consider removing during migration flattening.
             private set { }
         }
 
@@ -237,6 +241,8 @@ namespace Rock.Model
                 return fullName.ToString();
             }
 
+            // TODO: Private set currently not needed, but not possible to remove without a migration. 
+            // Consider removing during migration flattening.
             private set { }
         }
 
