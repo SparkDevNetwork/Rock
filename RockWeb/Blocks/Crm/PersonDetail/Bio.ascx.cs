@@ -36,8 +36,25 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( Person != null )
             {
                 Page.Title = CurrentPage.Title + ": " + Person.FullName;
+                var fullName = new StringBuilder();
 
-                lName.Text = Person.FirstName + " <span class='light'>" + Person.LastName + "</span>";
+                if ( Person.TitleValue != null )
+                    fullName.AppendFormat( "<span class=\"light\">{0}</span> ", Person.TitleValue.Name );
+
+                fullName.AppendFormat( "{0} <span class=\"light\">{1}", Person.FirstName, Person.LastName );
+
+                if ( Person.SuffixValue != null )
+                    fullName.AppendFormat( " {0}", Person.SuffixValue.Name );
+
+                fullName.Append( "</span>" );
+                lName.Text = fullName.ToString();
+
+                //lName.Text = Person.FirstName + " <span class='light'>" + Person.LastName + "</span>";
+
+                //if ( Person.SuffixValue != null )
+                //{
+                //    lName.Text += " " + Person.SuffixValue.Name;
+                //}
 
                 if ( Person.PhotoId.HasValue )
                 {
