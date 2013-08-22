@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web.Routing;
 using System.Web.UI.WebControls;
+using System.Text.RegularExpressions;
 
 using DotLiquid;
 using Newtonsoft.Json;
@@ -299,6 +300,7 @@ namespace Rock
 
             return false;
         }
+        
         /// <summary>
         /// Attempts to convert string to integer.  Returns null if unsuccessful.
         /// </summary>
@@ -346,6 +348,23 @@ namespace Rock
             Template template = Template.Parse( content );
 
             return template.Render( Hash.FromDictionary( mergeObjects ) );
+        }
+
+        /// <summary>
+        /// Converts string to a HTML title "<span class='first-word'>first-word</span> rest of string"
+        /// </summary>
+        /// <param name="str">The STR.</param>
+        /// <returns></returns>
+        public static string FormatAsHtmlTitle(this string str)
+        {
+
+            // split first word from rest of string
+            Match m = Regex.Match(str, @"(\w*) (\w.*)");
+
+            if (m.Success)
+                return "<span class='first-word'>" + m.Groups[1] + " </span>" + m.Groups[2];
+            else
+                return str;
         }
 
         #endregion
@@ -899,6 +918,7 @@ namespace Rock
         /// <summary>
         /// Returns the Value as Int or null if Value is <see cref="T:Rock.Constants.None"/>
         /// </summary>
+        /// <param name="listControl">The list control.</param>
         /// <param name="NoneAsNull">if set to <c>true</c>, will return Null if SelectedValue = <see cref="T:Rock.Constants.None" /> </param>
         /// <returns></returns>
         public static int? SelectedValueAsInt( this ListControl listControl, bool NoneAsNull = true )
@@ -919,6 +939,29 @@ namespace Rock
             {
                 return int.Parse( listControl.SelectedValue );
             }
+        }
+
+        /// <summary>
+        /// Returns the value of the currently selected item.
+        /// It will return NULL if either <see cref="T:Rock.Constants.None"/> or <see cref="T:Rock.Constants.All"/> is selected.
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <returns></returns>
+        public static int? SelectedValueAsId( this ListControl listControl )
+        {
+            int? result = SelectedValueAsInt( listControl );
+
+            if ( result == Rock.Constants.All.Id )
+            {
+                return null;
+            }
+
+            if ( result == Rock.Constants.None.Id )
+            {
+                return null;
+            }
+
+            return result;
         }
 
         /// <summary>

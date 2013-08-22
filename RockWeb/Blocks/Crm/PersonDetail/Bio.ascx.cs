@@ -5,17 +5,13 @@
 //
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Web.UI;
 using System.Web.UI.HtmlControls;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Model;
 using Rock.Web.UI;
-using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -23,7 +19,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     /// The main Person Profile blockthe main information about a peron 
     /// </summary>
     [ComponentsField( "Rock.PersonProfile.BadgeContainer, Rock", "Badges" )]
-    public partial class Bio : Rock.Web.UI.PersonBlock
+    public partial class Bio : PersonBlock
     {
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -36,19 +32,24 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( Person != null )
             {
                 Page.Title = CurrentPage.Title + ": " + Person.FullName;
+                var fullName = new StringBuilder();
 
-                lName.Text = Person.FirstName + " <span class='light'>" + Person.LastName + "</span>";
+                if ( Person.SuffixValue != null )
+                    fullName.AppendFormat( " {0}", Person.SuffixValue.Name );
+
+                fullName.Append( "</span>" );
+                lName.Text = Person.FullName.FormatAsHtmlTitle();
 
                 if ( Person.PhotoId.HasValue )
                 {
                     var imgLink = new HtmlAnchor();
                     phImage.Controls.Add( imgLink );
-                    imgLink.HRef = "~/GetImage.ashx?" + Person.PhotoId.Value.ToString();
+                    imgLink.HRef = "~/GetImage.ashx?id=" + Person.PhotoId.Value.ToString();
                     imgLink.Target = "_blank";
 
                     var img = new HtmlImage();
                     imgLink.Controls.Add( img );
-                    img.Src = "~/GetImage.ashx?" + Person.PhotoId.Value.ToString();
+                    img.Src = "~/GetImage.ashx?id=" + Person.PhotoId.Value.ToString();
                     img.Alt = Person.FullName;
                 }
 

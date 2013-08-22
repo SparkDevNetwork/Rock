@@ -108,7 +108,7 @@
 	
     
 </script>
-
+<!DOCTYPE html>
 <html>
 	<head>
 		<title>Rock ChMS Installer...</title>

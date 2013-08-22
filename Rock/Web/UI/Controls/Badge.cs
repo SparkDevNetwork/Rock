@@ -111,5 +111,15 @@ namespace Rock.Web.UI.Controls
         /// Inverse
         /// </summary>
         Inverse,
+
+        /// <summary>
+        /// Campus
+        /// </summary>
+        Campus,
+
+        /// <summary>
+        /// Type
+        /// </summary>
+        Type,
     };
 }

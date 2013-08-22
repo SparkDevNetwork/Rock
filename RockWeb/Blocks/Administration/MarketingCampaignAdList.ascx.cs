@@ -330,13 +330,13 @@ namespace RockWeb.Blocks.Administration
             // Priority Range
             if ( pPriorityRange.LowerValue.HasValue )
             {
-                int lowerValue = pPriorityRange.LowerValue.Value;
+                int lowerValue = (int)pPriorityRange.LowerValue.Value;
                 qry = qry.Where( a => a.Priority >= lowerValue );
             }
 
             if ( pPriorityRange.UpperValue.HasValue )
             {
-                int upperValue = pPriorityRange.UpperValue.Value;
+                int upperValue = (int)pPriorityRange.UpperValue.Value;
                 qry = qry.Where( a => a.Priority <= upperValue );
             }
 

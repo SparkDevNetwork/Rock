@@ -159,7 +159,10 @@
     
     void EnvNext_Click(Object sender, EventArgs e)
     {
-    	// download install file
+    	// set server timeout to 15 mins
+        Server.ScriptTimeout = 900;
+        
+        // download install file
     	bool downloadSuccessful = false;
     	string checkMessages = string.Empty;
     	downloadSuccessful = DownloadFile(rockInstallFile, Server.MapPath(".") + @"\RockInstall.zip", out checkMessages);
@@ -227,7 +230,7 @@
 	
     
 </script>
-
+<!DOCTYPE html>
 <html>
 	<head>
 		<title>Rock ChMS Installer...</title>

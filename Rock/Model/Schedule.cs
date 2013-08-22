@@ -4,12 +4,14 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.IO;
-using System.Runtime.Serialization;
 using System.Linq;
+using System.Runtime.Serialization;
+using DDay.iCal;
 using Rock.Data;
 
 namespace Rock.Model
@@ -204,25 +206,25 @@ namespace Rock.Model
 
                 var calEvent = this.GetCalenderEvent();
 
-                if (calEvent != null && calEvent.DTStart != null)
+                if ( calEvent != null && calEvent.DTStart != null )
                 {
-                    var checkInStart = calEvent.DTStart.AddMinutes(0 - CheckInStartOffsetMinutes.Value);
-                    if (DateTimeOffset.Now.TimeOfDay.TotalSeconds < checkInStart.TimeOfDay.TotalSeconds)
+                    var checkInStart = calEvent.DTStart.AddMinutes( 0 - CheckInStartOffsetMinutes.Value );
+                    if ( DateTimeOffset.Now.TimeOfDay.TotalSeconds < checkInStart.TimeOfDay.TotalSeconds )
                     {
                         return false;
                     }
 
                     var checkInEnd = calEvent.DTEnd;
-                    if (CheckInEndOffsetMinutes.HasValue)
+                    if ( CheckInEndOffsetMinutes.HasValue )
                     {
                         checkInEnd = calEvent.DTStart.AddMinutes( CheckInEndOffsetMinutes.Value );
                     }
 
                     // If compare is greater than zero, then check-in offset end resulted in an end time in next day, in 
                     // which case, don't need to compare time
-                    int checkInEndDateCompare = checkInEnd.Date.CompareTo(checkInStart.Date);
+                    int checkInEndDateCompare = checkInEnd.Date.CompareTo( checkInStart.Date );
 
-                    if (checkInEndDateCompare < 0)
+                    if ( checkInEndDateCompare < 0 )
                     {
                         // End offset is prior to start (Would have required a neg number entered)
                         return false;
@@ -331,6 +333,107 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the Friendly Text of the Calendar Event.
+        /// For example, "Every 3 days at 10:30am", "Monday, Wednesday, Friday at 5:00pm", "Saturday at 4:30pm"
+        /// </summary>
+        /// <returns></returns>
+        public string ToFriendlyScheduleText()
+        {
+            // init the result to just the schedule name just in case we can't figure out the FriendlyText
+            string result = this.Name;
+
+            DDay.iCal.Event calendarEvent = this.GetCalenderEvent();
+            if ( calendarEvent != null )
+            {
+                string startTimeText = calendarEvent.DTStart.Value.TimeOfDay.ToTimeString();
+                if ( calendarEvent.RecurrenceRules.Any() )
+                {
+                    // some type of recurring schedule
+
+                    IRecurrencePattern rrule = calendarEvent.RecurrenceRules[0];
+                    switch ( rrule.Frequency )
+                    {
+                        case FrequencyType.Daily:
+                            result = "Daily";
+
+                            if ( rrule.Interval > 1 )
+                            {
+                                result += string.Format( " every {0} days", rrule.Interval );
+                            }
+
+                            result += " at " + startTimeText;
+
+                            break;
+
+                        case FrequencyType.Weekly:
+
+                            result = rrule.ByDay.Select( a => a.DayOfWeek.ConvertToString() ).ToList().AsDelimited( "," );
+
+                            if ( rrule.Interval > 1 )
+                            {
+                                result += string.Format( " every {0} weeks", rrule.Interval );
+                            }
+
+                            result += " at " + startTimeText;
+
+                            break;
+
+                        case FrequencyType.Monthly:
+
+                            if ( rrule.ByMonthDay.Count > 0 )
+                            {
+                                // Day X of every X Months (we only support one day in the ByMonthDay list)
+                                int monthDay = rrule.ByMonthDay[0];
+                                result = string.Format( "Day {0} of every ", monthDay );
+                                if ( rrule.Interval > 1 )
+                                {
+                                    result += string.Format("{0} months", rrule.Interval);
+                                }
+                                else
+                                {
+                                    result += "month";
+                                }
+
+                                result += " at " + startTimeText;
+                            }
+                            else if ( rrule.ByDay.Count > 0 )
+                            {
+                                // The Nth <DayOfWeekName> (we only support one day in the ByDay list)
+                                IWeekDay bydate = rrule.ByDay[0];
+                                if ( NthNames.ContainsKey( bydate.Offset ) )
+                                {
+                                    result = string.Format( "The {0} {1} of every month", NthNames[bydate.Offset], bydate.DayOfWeek.ConvertToString() );
+                                }
+                                else
+                                {
+                                    // unsupported case (just show the name)
+                                }
+
+                                result += " at " + startTimeText;
+                            }
+                            else
+                            {
+                                // unsupported case (just show the name)
+                            }
+
+                            break;
+
+                        default:
+                            // some other type of recurring type (probably specific dates).  Just return the Name of the schedule
+                            
+                            break;
+                    }
+                }
+                else
+                {
+                    // Just return the Name of the schedule
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -338,8 +441,23 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return this.Name;
+            return this.ToFriendlyScheduleText();
         }
+
+        #endregion
+
+        #region consts
+
+        /// <summary>
+        /// The "nth" names for DayName of Month (First, Secord, Third, Forth, Last)
+        /// </summary>
+        public static readonly Dictionary<int, string> NthNames = new Dictionary<int, string> { 
+            {1, "First"}, 
+            {2, "Second"}, 
+            {3, "Third"}, 
+            {4, "Fourth"}, 
+            {-1, "Last"} 
+        };
 
         #endregion
     }

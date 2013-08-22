@@ -29,15 +29,36 @@ namespace Rock.Field.Types
         {
             if ( !string.IsNullOrWhiteSpace( value ) )
             {
-                var imagePath = Path.Combine( parentControl.ResolveUrl( "~" ), "GetImage.ashx" );
-                int imgSize = 100;
-                if ( condensed )
+                var imagePath = Path.Combine(parentControl.ResolveUrl("~"), "GetImage.ashx");
+
+                // create querystring parms
+                string queryParms = string.Empty;
+                if (condensed)
                 {
-                    imgSize = 50;
+                    queryParms = "&width=100"; // for grids hardcode to 100px wide
+                }
+                else
+                {
+                    // determine image size parameters
+                    // width
+                    if (configurationValues != null &&
+                        configurationValues.ContainsKey("width") &&
+                        !String.IsNullOrWhiteSpace(configurationValues["width"].Value))
+                    {
+                        queryParms = "&width=" + configurationValues["width"].Value;
+                    }
+
+                    // height
+                    if (configurationValues != null &&
+                        configurationValues.ContainsKey("height") &&
+                        !String.IsNullOrWhiteSpace(configurationValues["height"].Value))
+                    {
+                        queryParms += "&height=" + configurationValues["height"].Value;
+                    }
                 }
 
-                string imageUrlFormat = "<img src='" + imagePath + "?id={0}&width={1}&height={1}' />";
-                return string.Format( imageUrlFormat, value, imgSize );
+                string imageUrlFormat = "<img src='" + imagePath + "?id={0}{1}' />";
+                return string.Format(imageUrlFormat, value, queryParms);
             }
             else
             {
@@ -67,7 +88,7 @@ namespace Rock.Field.Types
         {
             if ( control != null && control is Rock.Web.UI.Controls.ImageUploader )
             {
-                int? imageId = ( (Rock.Web.UI.Controls.ImageUploader)control ).ImageId;
+                int? imageId = ( (Rock.Web.UI.Controls.ImageUploader)control ).BinaryFileId;
                 return imageId.HasValue ? imageId.Value.ToString() : string.Empty;
             }
             return null;
@@ -86,11 +107,11 @@ namespace Rock.Field.Types
                 int imageId = 0;
                 if ( Int32.TryParse( value, out imageId ) )
                 {
-                    ( (Rock.Web.UI.Controls.ImageUploader)control ).ImageId = imageId;
+                    ( (Rock.Web.UI.Controls.ImageUploader)control ).BinaryFileId = imageId;
                 }
                 else
                 {
-                    ( (Rock.Web.UI.Controls.ImageUploader)control ).ImageId = null;
+                    ( (Rock.Web.UI.Controls.ImageUploader)control ).BinaryFileId = Constants.None.Id;
                 }
             }
         }

@@ -135,19 +135,12 @@ namespace Rock.CheckIn
                         CurrentWorkflow = Rock.Model.Workflow.Activate( workflowType, CurrentCheckInState.Kiosk.Device.Name );
                     }
 
-                    CurrentWorkflow.SetAttributeValue( "CheckInState", CurrentCheckInState.ToJson() );
-
                     var activityType = workflowType.ActivityTypes.Where( a => a.Name == activityName ).FirstOrDefault();
                     if ( activityType != null )
                     {
                         WorkflowActivity.Activate( activityType, CurrentWorkflow );
-                        if ( CurrentWorkflow.Process( out errorMessages ) )
+                        if ( CurrentWorkflow.Process( CurrentCheckInState, out errorMessages ) )
                         {
-                            string stateString = CurrentWorkflow.GetAttributeValue( "CheckInState" );
-                            if ( !String.IsNullOrEmpty( stateString ) )
-                            {
-                                CurrentCheckInState = CheckInState.FromJson( stateString );
-                            }
                             return true;
                         }
                     }
@@ -189,13 +182,17 @@ namespace Rock.CheckIn
                 Session.Remove( "CheckInGroupTypeIds" );
             }
 
+            if ( CurrentCheckInState != null )
+            {
+                Session["CheckInState"] = CurrentCheckInState;
+            }
+            else
+            {
+                Session.Remove( "CheckInState" );
+            }
+
             if ( CurrentWorkflow != null )
             {
-                if ( CurrentCheckInState != null )
-                {
-                    CurrentWorkflow.SetAttributeValue( "CheckInState", CurrentCheckInState.ToJson() );
-                }
-
                 Session["CheckInWorkflow"] = CurrentWorkflow;
             }
             else
@@ -253,17 +250,14 @@ namespace Rock.CheckIn
                 CurrentGroupTypeIds = Session["CheckInGroupTypeIds"] as List<int>;
             }
 
+            if ( Session["CheckInState"] != null )
+            {
+                CurrentCheckInState = Session["CheckInState"] as CheckInState;
+            }
+
             if ( Session["CheckInWorkflow"] != null )
             {
                 CurrentWorkflow = Session["CheckInWorkflow"] as Rock.Model.Workflow;
-                if ( CurrentWorkflow != null )
-                {
-                    string stateString = CurrentWorkflow.GetAttributeValue( "CheckInState" );
-                    if ( !String.IsNullOrEmpty( stateString ) )
-                    {
-                        CurrentCheckInState = CheckInState.FromJson( stateString );
-                    }
-                }
             }
 
             if ( CurrentCheckInState == null && CurrentKioskId.HasValue )
