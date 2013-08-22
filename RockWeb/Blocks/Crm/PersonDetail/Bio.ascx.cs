@@ -34,17 +34,11 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 Page.Title = CurrentPage.Title + ": " + Person.FullName;
                 var fullName = new StringBuilder();
 
-                // TODO: Does Title belong in this heading?
-                //if ( Person.TitleValue != null )
-                //    fullName.AppendFormat( "<span class=\"light\">{0}</span> ", Person.TitleValue.Name );
-
-                fullName.AppendFormat( "{0} <span class=\"light\">{1}", Person.FirstName, Person.LastName );
-
                 if ( Person.SuffixValue != null )
                     fullName.AppendFormat( " {0}", Person.SuffixValue.Name );
 
                 fullName.Append( "</span>" );
-                lName.Text = fullName.ToString();
+                lName.Text = Person.FullName.FormatAsHtmlTitle();
 
                 if ( Person.PhotoId.HasValue )
                 {
