@@ -85,29 +85,30 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
         /// <value>
         /// The group.
         /// </value>
-        public Group Group
+        public Group GetGroup()
         {
-            get
-            {
-                EnsureChildControls();
-                Group result = new Group();
-                result.Guid = new Guid( hfGroupGuid.Value );
-                result.Name = tbGroupName.Text;
-                result.LoadAttributes();
-                Rock.Attribute.Helper.GetEditValues( phGroupAttributes, result );
-                return result;
-            }
+            EnsureChildControls();
+            Group result = new Group();
+            result.Guid = new Guid( hfGroupGuid.Value );
+            result.Name = tbGroupName.Text;
+            result.LoadAttributes();
+            Rock.Attribute.Helper.GetEditValues( phGroupAttributes, result );
+            return result;
+        }
 
-            set
-            {
-                EnsureChildControls();
-                hfGroupGuid.Value = value.Guid.ToString();
-                tbGroupName.Text = value.Name;
+        /// <summary>
+        /// Sets the group.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        public void SetGroup( Group value )
+        {
+            EnsureChildControls();
+            hfGroupGuid.Value = value.Guid.ToString();
+            tbGroupName.Text = value.Name;
 
-                value.LoadAttributes();
-                phGroupAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( value, phGroupAttributes, true, new List<string>() { "Active", "Order" } );
-            }
+            value.LoadAttributes();
+            phGroupAttributes.Controls.Clear();
+            Rock.Attribute.Helper.AddEditControls( value, phGroupAttributes, true, new List<string>() { "Active", "Order" } );
         }
 
         /// <summary>
@@ -197,7 +198,9 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget-content" );
 
-            bool forceContentVisible = !Group.IsValid || ForceContentVisible;
+            Group group = this.GetGroup();
+
+            bool forceContentVisible = !group.IsValid || ForceContentVisible;
 
             if ( !forceContentVisible )
             {
