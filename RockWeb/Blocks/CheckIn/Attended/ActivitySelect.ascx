@@ -106,7 +106,7 @@
         </ContentTemplate>
         </asp:UpdatePanel>
 
-        <asp:Panel ID="pnlAddNote" runat="server" CssClass="add-note" DefaultButton="lbAddNote">
+        <asp:Panel ID="pnlAddNote" runat="server" CssClass="add-note" DefaultButton="lbAddNoteSave">
             <Rock:ModalAlert ID="maAddNote" runat="server" />
             <div class="row-fluid attended-checkin-header">
                 <div class="span3 attended-checkin-actions">

@@ -129,29 +129,30 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             foreach ( ListViewDataItem item in lvLocation.Items )
             {
-                ( (LinkButton)item.FindControl( "lbSelectActivity" ) ).RemoveCssClass( "active" );
+                ( (LinkButton)item.FindControl( "lbSelectLocation" ) ).RemoveCssClass( "active" );
             }
 
-            ( (LinkButton)e.Item.FindControl( "lbSelectActivity" ) ).AddCssClass( "active" );
+            ( (LinkButton)e.Item.FindControl( "lbSelectLocation" ) ).AddCssClass( "active" );
             pnlSelectLocation.Update();
 
             int scheduleId = (int)Session["schedule"];
-            var selectedGroups = person.GroupTypes.SelectMany( gt => gt.Groups.Where( g => g.Selected && g.Locations.Any( l => l.Schedules.Any( s => s.Schedule.Id == scheduleId ) ) ) ).ToList();
-            selectedGroups.ForEach( g => g.Selected = false );
+            //var selectedGroups = person.GroupTypes.SelectMany( gt => gt.Groups.Where( g => g.Selected && g.Locations.Any( l => l.Schedules.Any( s => s.Schedule.Id == scheduleId ) ) ) ).ToList();
+            //selectedGroups.ForEach( g => g.Selected = false );
 
-            int groupId = int.Parse( e.CommandArgument.ToString() );
+            int locationId = int.Parse( e.CommandArgument.ToString() );
 
             // set the appropriate stuff on the person for what's been selected
-            var chosenGroupType = person.GroupTypes.Where( gt => gt.Groups.Any( g => g.Group.Id == groupId ) ).FirstOrDefault();
+            var chosenGroupType = person.GroupTypes.Where( gt => gt.Groups.Any( g => g.Locations.Any( l => l.Location.Id == locationId ) ) ).FirstOrDefault();
             chosenGroupType.Selected = true;
-            var chosenGroup = chosenGroupType.Groups.Where( g => g.Group.Id == groupId ).FirstOrDefault();
+            var chosenGroup = chosenGroupType.Groups.Where( g => g.Group.Name == g.Locations.Where( l => l.Location.Id == locationId ).Select( l => l.Location.Name ).FirstOrDefault() ).FirstOrDefault();
+            //var chosenGroup = chosenGroupType.Groups.Where( g => g.Locations.Any( l => l.Location.Id == locationId ) ).FirstOrDefault();
             chosenGroup.Selected = true;
-            var chosenLocation = chosenGroup.Locations.Where( l => l.Location.Name == chosenGroup.Group.Name ).FirstOrDefault();
+            var chosenLocation = chosenGroup.Locations.Where( l => l.Location.Id == locationId ).FirstOrDefault();
             chosenLocation.Selected = true;
             var chosenSchedule = chosenLocation.Schedules.Where( s => s.Schedule.Id == scheduleId ).FirstOrDefault();
             chosenSchedule.Selected = true;
             
-            Session["activity"] = groupId;
+            Session["location"] = locationId;
             BindSelectedGrid();
         }
 
@@ -171,7 +172,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 lbSelectGroupType.Text = checkInParentGroupType.GroupType.Name;
                 if ( checkInParentGroupType.Selected == true )
                 {
-                    lbSelectGroupType.AddCssClass( "active" );                    
+                    lbSelectGroupType.AddCssClass( "active" );
+                    Session["groupType"] = checkInParentGroupType.GroupType.Id;
                 }
             }
         }
@@ -215,6 +217,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 if ( checkInLocation.Selected )
                 {
                     lbSelectLocation.AddCssClass( "active" );
+                    Session["location"] = checkInLocation.Location.Id;
                 }
                 else
                 {
@@ -328,6 +331,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void lbAddNote_Click( object sender, EventArgs e )
         {
             tbNote.Text = "";
+            lbAddNoteCancel.Text = "Blah";
             mpeAddNote.Show();
         }
 
@@ -404,30 +408,48 @@ namespace RockWeb.Blocks.CheckIn.Attended
             IQueryable<CheckInGroupType> groupTypeList = person.GroupTypes.AsQueryable();
             List<CheckInSchedule> scheduleList = new List<CheckInSchedule>();
 
-            if ( Int32.TryParse( (string)Session["groupType"], out groupTypeId ) && groupTypeId > 0 )
+            groupTypeId = (int)Session["groupType"];
+            groupTypeList = groupTypeList.Where( gt => gt.GroupType.ParentGroupTypes.Any( pgt => pgt.Id == groupTypeId ) );
+            // we've got to further shorten the list of all the possible schedules that could show up
+            if ( groupTypeList.Any( gtl => gtl.Groups.Any( g => g.Locations.Any( l => l.Selected ) ) ) )
             {
-                // you end up in here if you select a different group type
-                groupTypeList = groupTypeList.Where( gt => gt.GroupType.ParentGroupTypes.Any( pgt => pgt.Id == groupTypeId ) );
+                // if there are any locations already selected, pick the schedules for just that location.
+                // this makes sure that the list of schedules shown on the page is the one with the selected schedule in it.
+                // otherwise you might get a list of schedules and nothing will show as chosen.
+                scheduleList = groupTypeList.SelectMany( gt => gt.Groups.SelectMany( g => g.Locations.Where( l => l.Selected ).SelectMany( l => l.Schedules ) ) ).ToList();
             }
             else
             {
-                // you end up in here when the page first loads
-                groupTypeList = groupTypeList.Where( gt => gt.Selected );
-
-                // we've got to further shorten the list of all the possible schedules that could show up
-                if ( groupTypeList.Any( gtl => gtl.Groups.Any( g => g.Locations.Any( l => l.Selected ) ) ) )
-                {
-                    // if there are any locations already selected, pick the schedules for just that location.
-                    // this makes sure that the list of schedules shown on the page is the one with the selected schedule in it.
-                    // otherwise you might get a list of schedules and nothing will show as chosen.
-                    scheduleList = groupTypeList.SelectMany( gt => gt.Groups.SelectMany( g => g.Locations.Where( l => l.Selected ).SelectMany( l => l.Schedules ) ) ).ToList();
-                }
-                else
-                {
-                    // if there aren't any locations already selected, pick the first list of schedules you come to.
-                    scheduleList = groupTypeList.SelectMany( gt => gt.Groups.SelectMany( g => g.Locations.Select( l => l.Schedules ).FirstOrDefault() ) ).ToList();
-                }
+                // if there aren't any locations already selected, pick the first list of schedules you come to.
+                scheduleList = groupTypeList.SelectMany( gt => gt.Groups.SelectMany( g => g.Locations.Select( l => l.Schedules ).FirstOrDefault() ) ).ToList();
             }
+
+
+
+            //if ( Int32.TryParse( Session["groupType"].ToString(), out groupTypeId ) && groupTypeId > 0 )
+            //{
+            //    // you end up in here if you select a different group type
+            //    groupTypeList = groupTypeList.Where( gt => gt.GroupType.ParentGroupTypes.Any( pgt => pgt.Id == groupTypeId ) );
+            //}
+            //else
+            //{
+            //    // you end up in here when the page first loads
+            //    groupTypeList = groupTypeList.Where( gt => gt.Selected );
+            //}
+
+            //// we've got to further shorten the list of all the possible schedules that could show up
+            //if ( groupTypeList.Any( gtl => gtl.Groups.Any( g => g.Locations.Any( l => l.Selected ) ) ) )
+            //{
+            //    // if there are any locations already selected, pick the schedules for just that location.
+            //    // this makes sure that the list of schedules shown on the page is the one with the selected schedule in it.
+            //    // otherwise you might get a list of schedules and nothing will show as chosen.
+            //    scheduleList = groupTypeList.SelectMany( gt => gt.Groups.SelectMany( g => g.Locations.Where( l => l.Selected ).SelectMany( l => l.Schedules ) ) ).ToList();
+            //}
+            //else
+            //{
+            //    // if there aren't any locations already selected, pick the first list of schedules you come to.
+            //    scheduleList = groupTypeList.SelectMany( gt => gt.Groups.SelectMany( g => g.Locations.Select( l => l.Schedules ).FirstOrDefault() ) ).ToList();
+            //}
 
             // groupTypeList to distinct or something
             //rSchedule.DataSource = groupTypeList.SelectMany( gt => gt.Groups.SelectMany( g => g.Locations.SelectMany( l => l.Schedules ) ) ).ToList();
@@ -446,14 +468,16 @@ namespace RockWeb.Blocks.CheckIn.Attended
             IQueryable<CheckInGroupType> groupTypeList = person.GroupTypes.AsQueryable();
             List<CheckInLocation> locationList = new List<CheckInLocation>();
 
-            if ( Int32.TryParse( (string)Session["groupType"], out groupTypeId ) && groupTypeId > 0 )
+            if ( Int32.TryParse( Session["groupType"].ToString(), out groupTypeId ) && groupTypeId > 0 )
             {
                 // you end up in here if you select a different schedule
                 var scheduleId = (int)Session["schedule"];
                 // need to get the locations based off of the schedule Id. i'm still thinking we might have the problem with the 
                 // locations not being specific to a schedule, but we've got to get that list of locations in here to figure that out. 
-                var blah = person.GroupTypes.Where( gt => gt.Selected).Where( gt => gt.Groups.SelectMany( g => g.Locations.SelectMany( l => l.Schedules.SelectMany( s => s.Schedule.Id == scheduleId ) ) ) )
-                    .SelectMany( gt => gt.Groups.SelectMany( g => g.Locations ) ).ToList();
+                locationList = person.GroupTypes.Where( gt => gt.Selected )
+                    .SelectMany( gt => gt.Groups )
+                    .SelectMany( g => g.Locations.Where( l => l.Schedules.Any( s => s.Schedule.Id == scheduleId ) ) )
+                    .ToList();
             }
             else
             {
@@ -511,12 +535,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             gSelectedList.DataSource = person.GroupTypes.Where( gt => gt.Selected )
                 .SelectMany( gt => gt.Groups ).Where( g => g.Selected )
-                .Select( g => new
+                .SelectMany( g => g.Locations ).Where( l => l.Selected )
+                .Select( l => new
                 {
-                    Activity = g.Group.Name,
-                    Time = g.Locations.Where( l => l.Selected )
-                        .Where( l => l.Schedules.Any( s => s.Selected ) )
-                        .SelectMany( l => l.Schedules.Select( s => s.Schedule.Name ) ).FirstOrDefault()
+                    Activity = l.Location.Name,
+                    Time = l.Schedules.Where( s => s.Selected ).Select( s => s.Schedule.Name ).FirstOrDefault()
                 } ).ToList();
             gSelectedList.DataBind();
             gSelectedList.CssClass = string.Empty;
