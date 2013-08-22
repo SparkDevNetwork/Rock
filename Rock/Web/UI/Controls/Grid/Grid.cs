@@ -39,19 +39,6 @@ namespace Rock.Web.UI.Controls
         #region Properties
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is person list.  If so, 
-        /// the data source should have an Id field/property that is a person Id
-        /// </summary>
-        /// <value>
-        /// <c>true</c> if this instance is person list; otherwise, <c>false</c>.
-        /// </value>
-        public virtual bool IsPersonList
-        {
-            get { return this.ViewState["IsPersonList"] as bool? ?? false; }
-            set { ViewState["IsPersonList"] = value; }
-        }
-
-        /// <summary>
         /// Gets or sets a value indicating whether [delete enabled].
         /// </summary>
         /// <value>
@@ -252,6 +239,32 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the Person Id field.
+        /// Default is NULL, which indicates that this grid does not reference Person records
+        /// </summary>
+        /// <value>
+        /// The Person Id field.
+        /// </value>
+        public string PersonIdField
+        {
+            get 
+            {
+                string personIdField = ViewState["PersonIdField"] as string;
+                if (string.IsNullOrWhiteSpace(personIdField))
+                {
+                    personIdField = null;
+                }
+
+                return personIdField; 
+            }
+
+            set
+            {
+                ViewState["PersonIdField"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the new communication page route.
         /// </summary>
         /// <value>
@@ -374,7 +387,7 @@ namespace Rock.Web.UI.Controls
         {
             OnGridRebind( e );
 
-            if ( IsPersonList )
+            if ( !string.IsNullOrWhiteSpace(PersonIdField) )
             {
                 // Set Sender
                 var rockPage = Page as RockPage;
@@ -409,7 +422,7 @@ namespace Rock.Web.UI.Controls
                             var mergeValues = new Dictionary<string, string>();
                             for ( int i = 0; i < data.Columns.Count; i++ )
                             {
-                                if ( data.Columns[i].ColumnName == "Id" )
+                                if ( data.Columns[i].ColumnName == this.PersonIdField )
                                 {
                                     personId = (int)row[i];
                                 }
@@ -437,7 +450,7 @@ namespace Rock.Web.UI.Controls
                         IList data = (IList)this.DataSource;
                         Type oType = data.GetType().GetProperty( "Item" ).PropertyType;
 
-                        PropertyInfo idProp = oType.GetProperty( "Id" );
+                        PropertyInfo idProp = oType.GetProperty( this.PersonIdField );
                         if (idProp != null)
                         {
                             foreach ( var item in data )

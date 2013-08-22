@@ -224,7 +224,7 @@ namespace Rock.Web.UI.Controls.Communication
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Target, "_blank" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Href,
-                    string.Format( "{0}File.ashx?{1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), attachment.Key ) );
+                    string.Format( "{0}GetFile.ashx?{1}", System.Web.VirtualPathUtility.ToAbsolute( "~" ), attachment.Key ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
                 writer.Write( attachment.Value );
                 writer.RenderEndTag();
@@ -274,7 +274,7 @@ namespace Rock.Web.UI.Controls.Communication
             attachmentList.Add( fuAttachments.BinaryFileId.ToString() );
             hfAttachments.Value = attachmentList.AsDelimited( "," );
 
-            fuAttachments.BinaryFileId = 0;
+            fuAttachments.BinaryFileId = null;
 
             Attachments = GetAttachments();
         }

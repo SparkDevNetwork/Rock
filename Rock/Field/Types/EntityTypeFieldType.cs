@@ -50,16 +50,8 @@ namespace Rock.Field.Types
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
             DropDownList dropDownList = new DropDownList { ID = id }; 
-
-            var service = new EntityTypeService();
-            var entityTypes = new EntityTypeService().GetEntities();
-
-            dropDownList.Items.Add( new ListItem("None (Global)", "") );
-            foreach ( var entityType in entityTypes.OrderBy( e => e.FriendlyName ).ThenBy( e => e.Name ))
-            {
-                dropDownList.Items.Add( new ListItem( entityType.FriendlyName, entityType.Name ) );
-            }
-
+            dropDownList.Items.Add( new ListItem( "None (Global)", "") );
+            new EntityTypeService().GetEntityListItems().ForEach( l => dropDownList.Items.Add( l ) );
             return dropDownList;
         }
 

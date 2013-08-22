@@ -44,8 +44,18 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool ShowCommunicate
         {
-            get { return ViewState["ShowCommunicate"] as bool? ?? ParentGrid.IsPersonList; }
-            set { ViewState["ShowCommunicate"] = value; }
+            get 
+            { 
+                // if the Grid has the PersonIdField set, default ShowCommunicate to True
+                bool hasPersonIdField = !string.IsNullOrWhiteSpace(ParentGrid.PersonIdField);
+                
+                return ViewState["ShowCommunicate"] as bool? ?? hasPersonIdField; 
+            }
+            
+            set 
+            { 
+                ViewState["ShowCommunicate"] = value; 
+            }
         }
 
         /// <summary>

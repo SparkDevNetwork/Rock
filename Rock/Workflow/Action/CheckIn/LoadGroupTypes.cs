@@ -3,6 +3,7 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -29,29 +30,31 @@ namespace Rock.Workflow.Action.CheckIn
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override bool Execute( Model.WorkflowAction action, Data.IEntity entity, out List<string> errorMessages )
+        public override bool Execute( Model.WorkflowAction action, Object entity, out List<string> errorMessages )
         {
-            var checkInState = GetCheckInState( action, out errorMessages );
+            var checkInState = GetCheckInState( entity, out errorMessages );
             if ( checkInState != null )
             {
                 foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )
                 {
                     foreach ( var person in family.People )
                     {
-                        foreach ( var kioskGroupType in checkInState.Kiosk.KioskGroupTypes.Where( g => g.KioskLocations.Any( l => l.Location.IsActive) ))
+                        foreach ( var kioskGroupType in checkInState.Kiosk.FilteredGroupTypes( checkInState.ConfiguredGroupTypes ) )
                         {
-                            if ( !person.GroupTypes.Any( g => g.GroupType.Id == kioskGroupType.GroupType.Id ) )
+                            if ( kioskGroupType.KioskGroups.SelectMany( g => g.KioskLocations ).Any( l => l.Location.IsActive ) )
                             {
-                                var checkinGroupType = new CheckInGroupType();
-                                checkinGroupType.GroupType = kioskGroupType.GroupType.Clone( false );
-                                checkinGroupType.GroupType.CopyAttributesFrom( kioskGroupType.GroupType );
-                                person.GroupTypes.Add( checkinGroupType );
+                                if ( !person.GroupTypes.Any( g => g.GroupType.Id == kioskGroupType.GroupType.Id ) )
+                                {
+                                    var checkinGroupType = new CheckInGroupType();
+                                    checkinGroupType.GroupType = kioskGroupType.GroupType.Clone( false );
+                                    checkinGroupType.GroupType.CopyAttributesFrom( kioskGroupType.GroupType );
+                                    person.GroupTypes.Add( checkinGroupType );
+                                }
                             }
                         }
                     }
                 }
 
-                SetCheckInState( action, checkInState );
                 return true;
             }
 

@@ -31,9 +31,9 @@ namespace Rock.Workflow.Action.CheckIn
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override bool Execute( Model.WorkflowAction action, Data.IEntity entity, out List<string> errorMessages )
+        public override bool Execute( Model.WorkflowAction action, Object entity, out List<string> errorMessages )
         {
-            var checkInState = GetCheckInState( action, out errorMessages );
+            var checkInState = GetCheckInState( entity, out errorMessages );
 
             var labels = new List<CheckInLabel>();
             
@@ -86,13 +86,17 @@ namespace Rock.Workflow.Action.CheckIn
                                         else if ( label.PrintTo == PrintTo.Location )
                                         {
                                             // Should only be one
-                                            var location = groupType.Locations.Where( l => l.Selected ).FirstOrDefault();
-                                            if ( location != null )
+                                            var group = groupType.Groups.Where( g => g.Selected ).FirstOrDefault();
+                                            if ( group != null )
                                             {
-                                                var device = location.Location.PrinterDevice;
-                                                if ( device != null )
+                                                var location = group.Locations.Where( l => l.Selected ).FirstOrDefault();
+                                                if ( location != null )
                                                 {
-                                                    label.PrinterDeviceId = device.PrinterDeviceId;
+                                                    var device = location.Location.PrinterDevice;
+                                                    if ( device != null )
+                                                    {
+                                                        label.PrinterDeviceId = device.PrinterDeviceId;
+                                                    }
                                                 }
                                             }
                                         }
@@ -122,7 +126,6 @@ namespace Rock.Workflow.Action.CheckIn
                     }
                 }
 
-                SetCheckInState( action, checkInState );
                 return true;
 
             }
@@ -145,7 +148,7 @@ namespace Rock.Workflow.Action.CheckIn
                         int fileId = int.MinValue;
                         if ( int.TryParse( attributeValue, out fileId ) )
                         {
-                            var labelCache = KioskCache.GetLabel( fileId );
+                            var labelCache = KioskLabel.Read( fileId );
                             if ( labelCache != null )
                             {
                                 var checkInLabel = new CheckInLabel( labelCache, mergeObjects );

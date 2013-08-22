@@ -104,6 +104,7 @@ namespace RockWeb.Blocks.Prayer
 
             base.OnLoad( e );
         }
+
         #endregion
 
         #region Grid Filter
@@ -167,7 +168,7 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e"></param>
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFilter.SaveUserPreference( FilterSetting.PrayerCategory, cpPrayerCategoryFilter.SelectedValue );
+            rFilter.SaveUserPreference( FilterSetting.PrayerCategory, cpPrayerCategoryFilter.SelectedValue == Rock.Constants.None.IdValue ? string.Empty :  cpPrayerCategoryFilter.SelectedValue  );
             rFilter.SaveUserPreference( FilterSetting.FromDate, dtRequestEnteredDateRangeStartDate.Text );
             rFilter.SaveUserPreference( FilterSetting.ToDate, dtRequestEnteredDateRangeEndDate.Text );
 
@@ -264,7 +265,23 @@ namespace RockWeb.Blocks.Prayer
             PrayerRequestService prayerRequestService = new PrayerRequestService();
             SortProperty sortProperty = gPrayerRequests.SortProperty;
 
-            IQueryable<PrayerRequest> prayerRequests = prayerRequestService.Queryable();
+            var prayerRequests = prayerRequestService.Queryable().Select( a =>
+                new
+                {
+                    a.Id,
+                    FullName = a.FirstName + " " + a.LastName,
+                    CategoryName = a.Category.Name,
+                    a.EnteredDate,
+                    a.Text,
+                    a.FlagCount,
+                    a.IsApproved,
+                    a.CategoryId,
+                    CategoryParentCategoryId = a.Category.ParentCategoryId,
+                    a.IsUrgent,
+                    a.IsPublic,
+                    a.IsActive,
+                    a.AllowComments
+                } );
 
             // Filter by prayer category if one is selected...
             int selectedPrayerCategoryID = All.Id;
@@ -272,7 +289,7 @@ namespace RockWeb.Blocks.Prayer
             if ( selectedPrayerCategoryID != All.Id && selectedPrayerCategoryID != None.Id )
             {
                 prayerRequests = prayerRequests.Where( c => c.CategoryId == selectedPrayerCategoryID
-                    || c.Category.ParentCategoryId == selectedPrayerCategoryID);
+                    || c.CategoryParentCategoryId == selectedPrayerCategoryID);
             }
 
             // Filter by approved/unapproved

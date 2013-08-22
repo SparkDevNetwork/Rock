@@ -11,14 +11,20 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Model;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [Description( "Check-In Location Select block" )]
+    [Description( "Check-in Location Select block" )]
+    [TextField( "Current Count Format", "How should current count be displayed", false, " Count: {0}" )]
     public partial class LocationSelect : CheckInBlock
     {
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
@@ -40,28 +46,37 @@ namespace RockWeb.Blocks.CheckIn
                             var groupType = person.GroupTypes.Where( g => g.Selected ).FirstOrDefault();
                             if ( groupType != null )
                             {
-                                lGroupTypeName.Text = groupType.ToString();
-
-                                if ( groupType.Locations.Count == 1 )
+                                var group = groupType.Groups.Where( g => g.Selected ).FirstOrDefault();
+                                if ( group != null )
                                 {
-                                    if ( UserBackedUp )
+                                    lGroupName.Text = group.ToString();
+
+                                    if ( group.Locations.Count == 1 )
                                     {
-                                        GoBack();
+                                        if ( UserBackedUp )
+                                        {
+                                            GoBack();
+                                        }
+                                        else
+                                        {
+                                            // only one location so why foreach?
+                                            foreach ( var location in group.Locations )
+                                            {
+                                                location.Selected = true;
+                                            }
+
+                                            ProcessSelection();
+                                        }
                                     }
                                     else
                                     {
-                                        foreach ( var location in groupType.Locations )
-                                        {
-                                            location.Selected = true;
-                                        }
-
-                                        ProcessSelection();
+                                        rSelection.DataSource = group.Locations;
+                                        rSelection.DataBind();
                                     }
                                 }
                                 else
                                 {
-                                    rSelection.DataSource = groupType.Locations;
-                                    rSelection.DataBind();
+                                    GoBack();
                                 }
                             }
                             else
@@ -82,6 +97,11 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
+        /// <summary>
+        /// Handles the ItemCommand event of the rSelection control.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void rSelection_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             if ( KioskCurrentlyActive )
@@ -95,12 +115,16 @@ namespace RockWeb.Blocks.CheckIn
                         var groupType = person.GroupTypes.Where( g => g.Selected ).FirstOrDefault();
                         if ( groupType != null )
                         {
-                            int id = Int32.Parse( e.CommandArgument.ToString() );
-                            var location = groupType.Locations.Where( l => l.Location.Id == id ).FirstOrDefault();
-                            if ( location != null )
+                            var group = groupType.Groups.Where( g => g.Selected ).FirstOrDefault();
+                            if ( group != null )
                             {
-                                location.Selected = true;
-                                ProcessSelection();
+                                int id = Int32.Parse( e.CommandArgument.ToString() );
+                                var location = group.Locations.Where( l => l.Location.Id == id ).FirstOrDefault();
+                                if ( location != null )
+                                {
+                                    location.Selected = true;
+                                    ProcessSelection();
+                                }
                             }
                         }
                     }
@@ -108,16 +132,29 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbBack control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbBack_Click( object sender, EventArgs e )
         {
             GoBack();
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbCancel_Click( object sender, EventArgs e )
         {
             CancelCheckin();
         }
 
+        /// <summary>
+        /// Goes the back.
+        /// </summary>
         private void GoBack()
         {
             foreach ( var family in CurrentCheckInState.CheckIn.Families )
@@ -126,8 +163,11 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     foreach ( var groupType in person.GroupTypes )
                     {
-                        groupType.Selected = false;
-                        groupType.Locations = new List<CheckInLocation>();
+                        foreach ( var group in groupType.Groups )
+                        {
+                            group.Selected = false;
+                            group.Locations = new List<CheckInLocation>();
+                        }
                     }
                 }
             }
@@ -137,10 +177,13 @@ namespace RockWeb.Blocks.CheckIn
             NavigateToPreviousPage();
         }
 
+        /// <summary>
+        /// Processes the selection.
+        /// </summary>
         private void ProcessSelection()
         {
             var errors = new List<string>();
-            if ( ProcessActivity( "Group Search", out errors ) )
+            if ( ProcessActivity( "Schedule Search", out errors ) )
             {
                 SaveState();
                 NavigateToNextPage();
@@ -152,6 +195,22 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
+        /// <summary>
+        /// Formats the count.
+        /// </summary>
+        /// <param name="locationId">The location id.</param>
+        /// <returns></returns>
+        protected string FormatCount( int locationId )
+        {
+            string currentCountFormat = GetAttributeValue( "CurrentCountFormat" );
+            if (!string.IsNullOrWhiteSpace(currentCountFormat) && currentCountFormat.Contains("{0}"))
+            {
+                return string.Format( " <span class='checkin-sub-title'>{0}</span>",
+                    string.Format( currentCountFormat, KioskLocationAttendance.Read( locationId ).CurrentCount ) );
+            }
+
+            return string.Empty;
+        }
 
     }
 }

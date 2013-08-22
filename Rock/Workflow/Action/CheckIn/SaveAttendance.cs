@@ -10,6 +10,7 @@ using System.ComponentModel.Composition;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.CheckIn;
 using Rock.Model;
 
 namespace Rock.Workflow.Action.CheckIn
@@ -31,12 +32,18 @@ namespace Rock.Workflow.Action.CheckIn
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override bool Execute( Model.WorkflowAction action, Data.IEntity entity, out List<string> errorMessages )
+        public override bool Execute( Model.WorkflowAction action, Object entity, out List<string> errorMessages )
         {
-            var checkInState = GetCheckInState( action, out errorMessages );
+            var checkInState = GetCheckInState( entity, out errorMessages );
             if ( checkInState != null )
             {
                 DateTime startDateTime = DateTime.Now;
+
+                int securityCodeLength = 3;
+                if ( !int.TryParse( GetAttributeValue( action, "SecurityCodeLength" ), out securityCodeLength ) )
+                {
+                    securityCodeLength = 3;
+                }
 
                 using ( var uow = new Rock.Data.UnitOfWorkScope() )
                 {
@@ -48,19 +55,14 @@ namespace Rock.Workflow.Action.CheckIn
                     {
                         foreach ( var person in family.People.Where( p => p.Selected ) )
                         {
-                            int securityCodeLength = 3;
-                            if ( !int.TryParse( GetAttributeValue( action, "SecurityCodeLength" ), out securityCodeLength ) )
-                            {
-                                securityCodeLength = 3;
-                            }
                             var attendanceCode = attendanceCodeService.GetNew( securityCodeLength );
                             person.SecurityCode = attendanceCode.Code;
 
                             foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ) )
                             {
-                                foreach ( var location in groupType.Locations.Where( l => l.Selected ) )
+                                foreach ( var group in groupType.Groups.Where( g => g.Selected ) )
                                 {
-                                    foreach ( var group in location.Groups.Where( g => g.Selected ) )
+                                    foreach ( var location in group.Locations.Where( l => l.Selected ) )
                                     {
                                         if ( groupType.GroupType.AttendanceRule == AttendanceRule.AddOnCheckIn &&
                                             groupType.GroupType.DefaultGroupRoleId.HasValue &&
@@ -74,7 +76,7 @@ namespace Rock.Workflow.Action.CheckIn
                                             groupMemberService.Save( groupMember, null );
                                         }
 
-                                        foreach ( var schedule in group.Schedules.Where( s => s.Selected ) )
+                                        foreach ( var schedule in location.Schedules.Where( s => s.Selected ) )
                                         {
                                             // Only create one attendance record per day for each person/schedule/group/location
                                             var attendance = attendanceService.Get( startDateTime, location.Location.Id, schedule.Schedule.Id, group.Group.Id, person.Person.Id );
@@ -96,7 +98,7 @@ namespace Rock.Workflow.Action.CheckIn
                                             attendance.DidAttend = true;
                                             attendanceService.Save( attendance, null );
 
-                                            Rock.CheckIn.KioskCache.AddAttendance( attendance );
+                                            KioskLocationAttendance.AddAttendance( attendance );
                                         }
                                     }
                                 }
@@ -105,7 +107,6 @@ namespace Rock.Workflow.Action.CheckIn
                     }
                 }
 
-                SetCheckInState( action, checkInState );
                 return true;
 
             }

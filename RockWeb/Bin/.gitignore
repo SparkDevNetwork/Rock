@@ -28,6 +28,7 @@
 /System.Spatial.xml
 /System.Web.Http.OData.dll
 /System.Web.Http.OData.xml
+/EntityFramework.SqlServer.dll
+/EntityFramework.SqlServer.xml
 /DDay.iCal.dll
 /System.Web.Optimization.dll
-

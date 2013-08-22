@@ -43,6 +43,10 @@ namespace RockWeb.Blocks.Cms
             if (GetAttributeValue( "CSSFile" ).Trim() != string.Empty)
                 CurrentPage.AddCSSLink( Page, ResolveUrl("~/CSS/jquery.tagsinput.css"));  //todo why is this hardcoding? JME
 
+            // add css file to page
+            if (GetAttributeValue( "CSSFile" ).Trim() != string.Empty)
+                CurrentPage.AddCSSLink( Page, ResolveUrl("~/CSS/jquery.tagsinput.css"));
+
             TransformXml();
 
         }

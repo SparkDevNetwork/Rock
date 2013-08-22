@@ -199,8 +199,8 @@ namespace RockWeb.Blocks.Administration
             category.Name = tbName.Text;
             category.ParentCategoryId = cpParentCategory.SelectedValueAsInt();
             category.IconCssClass = tbIconCssClass.Text;
-            category.IconSmallFileId = imgIconSmall.ImageId;
-            category.IconLargeFileId = imgIconLarge.ImageId;
+            category.IconSmallFileId = imgIconSmall.BinaryFileId;
+            category.IconLargeFileId = imgIconLarge.BinaryFileId;
 
             if ( !Page.IsValid )
             {
@@ -360,8 +360,8 @@ namespace RockWeb.Blocks.Administration
             lblEntityTypeQualifierValue.Visible = !string.IsNullOrWhiteSpace( category.EntityTypeQualifierValue );
             lblEntityTypeQualifierValue.Text = category.EntityTypeQualifierValue;
             tbIconCssClass.Text = category.IconCssClass;
-            imgIconSmall.ImageId = category.IconSmallFileId;
-            imgIconLarge.ImageId = category.IconLargeFileId;
+            imgIconSmall.BinaryFileId = category.IconSmallFileId.HasValue ? category.IconSmallFileId.Value : None.Id;
+            imgIconLarge.BinaryFileId = category.IconLargeFileId.HasValue ? category.IconLargeFileId.Value : None.Id;
         }
 
         /// <summary>
@@ -380,7 +380,7 @@ namespace RockWeb.Blocks.Administration
             else
             {
                 var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-                string imageUrlFormat = "<img src='" + appPath + "Image.ashx?id={0}&width=50&height=50' />";
+                string imageUrlFormat = "<img src='" + appPath + "GetImage.ashx?id={0}&width=50&height=50' />";
                 if ( category.IconLargeFileId != null )
                 {
                     categoryIconHtml = string.Format( imageUrlFormat, category.IconLargeFileId );
