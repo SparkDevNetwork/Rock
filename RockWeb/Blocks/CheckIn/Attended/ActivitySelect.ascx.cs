@@ -277,46 +277,23 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
-        /// Gets the type of the note.
-        /// </summary>
-        //private void GetNoteType(NoteType noteType)
-        //{
-        //    string noteTypeName = GetAttributeValue( "NoteType" );
-
-        //    var service = new NoteTypeService();
-        //    noteType = service.Get( contextEntity.TypeId, noteTypeName );
-
-        //    // If a note type with the specified name does not exist for the context entity type, create one
-        //    if ( noteType == null )
-        //    {
-        //        noteType = new NoteType();
-        //        noteType.IsSystem = false;
-        //        noteType.EntityTypeId = contextEntity.TypeId;
-        //        noteType.EntityTypeQualifierColumn = string.Empty;
-        //        noteType.EntityTypeQualifierValue = string.Empty;
-        //        noteType.Name = noteTypeName;
-        //        service.Add( noteType, CurrentPersonId );
-        //        service.Save( noteType, CurrentPersonId );
-        //    }
-
-        //    lTitle.Text = noteType.Name;
-        //}
-
-        /// <summary>
         /// Handles the Click event of the lbAddNoteSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddNoteSave_Click( object sender, EventArgs e )
         {
+            // now that we have some context, let's do something
             var note = new Note().Clone( false );
             var noteType = new NoteType().Clone( false );
-            // GetNoteType( noteType );
+            // need to get the note type...
+            NoteTypeService noteTypeService = new NoteTypeService();
+            //noteType = noteTypeService.Get(  );    // need to add a check in note noteType? And then get the Id of that type so that we can use it here.
             note.IsSystem = false;
-            note.NoteTypeId = 0;        // FIX THIS!!!!!!
-            note.EntityId = this.ContextEntity().Id;      // FIX THIS!!!!!!
-            note.SourceTypeValueId = 0;     // FIX THIS!!!!!!
-            note.Caption = "";      // FIX THIS!!!!!!
+            //note.NoteTypeId = noteType.Id;
+            //note.EntityId = contextEntity.Id;      // FIX THIS!!!!!!
+            //note.SourceTypeValueId = 0;     // FIX THIS!!!!!!
+            //note.Caption = "";      // FIX THIS!!!!!!
             note.IsAlert = false;
             note.Text = tbNote.Text;
             note.CreationDateTime = DateTime.Now;
@@ -327,6 +304,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 ns.Save( note, CurrentPersonId );
             } );
 
+            // from Notes.ascx.cs
             //var service = new NoteService();
 
             //var note = new Note();
@@ -363,13 +341,34 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
+        /// Handles the Click event of the lbAddTagCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbAddTagCancel_Click( object sender, EventArgs e )
+        {
+
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbAddTagSave control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbAddTagSave_Click( object sender, EventArgs e )
+        {
+
+        }
+
+        /// <summary>
         /// Handles the Click event of the lbAddTag control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddTag_Click( object sender, EventArgs e )
         {
-
+            tbTag.Text = "";
+            mpeAddTag.Show();
         }
 
         /// <summary>
