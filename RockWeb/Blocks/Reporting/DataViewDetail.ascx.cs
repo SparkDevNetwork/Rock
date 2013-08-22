@@ -278,8 +278,6 @@ $(document).ready(function() {
             ddlEntityType.Items.Clear();
             ddlEntityType.Items.Add( new ListItem( string.Empty, string.Empty ) );
             new EntityTypeService().GetEntityListItems().ForEach( l => ddlEntityType.Items.Add( l ) );
-
-            BindDataTransformations();
         }
 
         public void BindDataTransformations()
@@ -417,9 +415,11 @@ $(document).ready(function() {
 
             tbName.Text = dataView.Name;
             tbDescription.Text = dataView.Description;
-            ddlTransform.SetValue( dataView.TransformEntityTypeId ?? 0 );
             ddlEntityType.SetValue( dataView.EntityTypeId );
             cpCategory.SetValue( dataView.CategoryId );
+
+            BindDataTransformations();
+            ddlTransform.SetValue( dataView.TransformEntityTypeId ?? 0 );
 
             CreateFilterControl( dataView.EntityTypeId, dataView.DataViewFilter, true );
         }

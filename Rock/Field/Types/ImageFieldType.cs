@@ -67,7 +67,7 @@ namespace Rock.Field.Types
         {
             if ( control != null && control is Rock.Web.UI.Controls.ImageUploader )
             {
-                int? imageId = ( (Rock.Web.UI.Controls.ImageUploader)control ).ImageId;
+                int? imageId = ( (Rock.Web.UI.Controls.ImageUploader)control ).BinaryFileId;
                 return imageId.HasValue ? imageId.Value.ToString() : string.Empty;
             }
             return null;
@@ -86,11 +86,11 @@ namespace Rock.Field.Types
                 int imageId = 0;
                 if ( Int32.TryParse( value, out imageId ) )
                 {
-                    ( (Rock.Web.UI.Controls.ImageUploader)control ).ImageId = imageId;
+                    ( (Rock.Web.UI.Controls.ImageUploader)control ).BinaryFileId = imageId;
                 }
                 else
                 {
-                    ( (Rock.Web.UI.Controls.ImageUploader)control ).ImageId = null;
+                    ( (Rock.Web.UI.Controls.ImageUploader)control ).BinaryFileId = Constants.None.Id;
                 }
             }
         }
