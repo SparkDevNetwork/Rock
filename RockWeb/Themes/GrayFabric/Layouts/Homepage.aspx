@@ -5,7 +5,7 @@
 
     <!-- band to provide gray bar at the top of the page -->
     <div id="band">
-	  </div>
+	</div>
 
     <div class="container">
 	  	<header>
@@ -16,6 +16,7 @@
                         <asp:Image ID="imgLogo" runat="server" ImageUrl="~/Themes/GrayFabric/Assets/Images/rocksolidchurchlogo.svg" CssClass="logo" />
                     </asp:HyperLink>
 			  	</div>
+                <Rock:Zone ID="Heading" Name="Header" runat="server" />
 			  	<div class="span3 service-times">
 			  		<i class="icon-time"></i> <span class="bold">Service Times</span>
 				  	<br><span class="light">Sunday 9am, 10:30am and Noon</span>
@@ -100,7 +101,7 @@
     
 
 
-    <Rock:Zone ID="Heading" Name="Header" runat="server" />
+    
     <Rock:Zone ID="Menu" runat="server" />	
     
 

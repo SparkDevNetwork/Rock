@@ -187,11 +187,11 @@ namespace RockWeb.Blocks.Cms
                 string detailPageGuid = GetAttributeValue( "DetailPage" );
                 if ( !string.IsNullOrWhiteSpace( detailPageGuid ) )
                 {
-                    Rock.Model.Page detailPage = new PageService().Get( new Guid( "detailPageGuid" ) );
+                    Rock.Model.Page detailPage = new PageService().Get( new Guid( detailPageGuid ) );
                     if ( detailPage != null )
                     {
                         Dictionary<string, string> queryString = new Dictionary<string, string>();
-                        queryString.Add( "marketingCampaignAd", marketingCampaignAd.Id.ToString() );
+                        queryString.Add( "ad", marketingCampaignAd.Id.ToString() );
                         detailPageUrl = new PageReference( detailPage.Id, 0, queryString ).BuildUrl();
                     }
                 }

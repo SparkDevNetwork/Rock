@@ -588,7 +588,11 @@ namespace RockWeb.Blocks.Crm
 
             if (group.Id == 0)
             {
-                lReadOnlyTitle.Text = ActionTitle.Add(Group.FriendlyTypeName);
+                lReadOnlyTitle.Text = ActionTitle.Add(Group.FriendlyTypeName).FormatAsHtmlTitle();
+            }
+            else
+            {
+                lReadOnlyTitle.Text = group.Name.FormatAsHtmlTitle();
             }
                        
             SetEditMode( true );
@@ -695,7 +699,7 @@ namespace RockWeb.Blocks.Crm
 
             hfGroupId.SetValue( group.Id );
             lGroupIconHtml.Text = groupIconHtml;
-            lReadOnlyTitle.Text = group.Name;//.FormatAsHtmlTitle();
+            lReadOnlyTitle.Text = group.Name.FormatAsHtmlTitle();
             string activeHtmlFormat = "<span class='label {0} pull-right' >{1}</span>";
             if ( group.IsActive )
             {
