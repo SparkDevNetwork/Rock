@@ -63,6 +63,7 @@ END" );
 
             // Rename `Rock.BinaryFile` namespace to `Rock.Storage`
             Sql( @"
+DELETE [EntityType] WHERE [AssemblyName] LIKE 'Rock.Storage.Provider.%'
 UPDATE [EntityType] SET
     [Name] = REPLACE([Name], 'Rock.BinaryFile.Storage.', 'Rock.Storage.Provider.'),
     [AssemblyName] = REPLACE([AssemblyName], 'Rock.BinaryFile.Storage.', 'Rock.Storage.Provider.')

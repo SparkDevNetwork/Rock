@@ -115,6 +115,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE = "4A406CB0-495B-4795-B788-52BDFDE00B01";
 
+        /// <summary>
+        /// Group Type Purpose of Check-in Filter
+        /// </summary>
+        public const string GROUPTYPE_PURPOSE_CHECKIN_FILTER = "6BCED84C-69AD-4F5A-9197-5C0F9C02DD34";
+
         #endregion
 
         #region Transaction Frequency Type

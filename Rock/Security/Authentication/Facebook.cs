@@ -21,12 +21,24 @@ namespace Rock.Security.ExternalAuthentication
     /// Authenticates a user using Facebook
     /// </summary>
     [Description( "Facebook Authentication Provider" )]
-    [Export( typeof( ExternalAuthenticationComponent ) )]
+    [Export( typeof( AuthenticationComponent ) )]
     [ExportMetadata( "ComponentName", "Facebook" )]
     [TextField( "App ID", "The Facebook App ID" )]
     [TextField( "App Secret", "The Facebook App Secret" )]
-    public class Facebook : ExternalAuthenticationComponent
+    public class Facebook : AuthenticationComponent
     {
+        /// <summary>
+        /// Determines if user is directed to another site (i.e. Facebook, Gmail, Twitter, etc) to confirm approval of using
+        /// that site's credentials for authentication.
+        /// </summary>
+        /// <value>
+        /// The requires remote authentication.
+        /// </value>
+        public override bool RequiresRemoteAuthentication
+        {
+            get { return true; }
+        }
+
         /// <summary>
         /// Tests the Http Request to determine if authentication should be tested by this
         /// authentication provider.
@@ -197,6 +209,16 @@ namespace Rock.Security.ExternalAuthentication
         {
             Uri uri = new Uri( request.Url.ToString() );
             return uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + uri.LocalPath;
+        }
+
+        public override bool Authenticate( UserLogin user, string password )
+        {
+            throw new NotImplementedException();
+        }
+
+        public override string EncodePassword( UserLogin user, string password )
+        {
+            throw new NotImplementedException();
         }
     }
 }

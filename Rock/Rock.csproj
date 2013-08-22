@@ -185,6 +185,14 @@
     <Compile Include="Migrations\201308212336197_IntegerRangeFieldType.Designer.cs">
       <DependentUpon>201308212336197_IntegerRangeFieldType.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201308221639318_RemoveExternalAuthentication.cs" />
+    <Compile Include="Migrations\201308221639318_RemoveExternalAuthentication.Designer.cs">
+      <DependentUpon>201308221639318_RemoveExternalAuthentication.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308221817445_GroupTypePurposeCheckinFilter.cs" />
+    <Compile Include="Migrations\201308221817445_GroupTypePurposeCheckinFilter.Designer.cs">
+      <DependentUpon>201308221817445_GroupTypePurposeCheckinFilter.cs</DependentUpon>
+    </Compile>
     <Compile Include="Storage\ProviderComponent.cs" />
     <Compile Include="Storage\ProviderContainer.cs" />
     <Compile Include="Storage\Provider\Database.cs" />
@@ -1383,10 +1391,8 @@
     <Compile Include="Security\AdditionalActionsAttribute.cs" />
     <Compile Include="Security\Authentication\ActiveDirectory.cs" />
     <Compile Include="Security\Authentication\Database.cs" />
-    <Compile Include="Security\ExternalAuthenticationComponent.cs" />
-    <Compile Include="Security\ExternalAuthenticationContainer.cs" />
     <Compile Include="Security\Encryption.cs" />
-    <Compile Include="Security\ExternalAuthentication\Facebook.cs">
+    <Compile Include="Security\Authentication\Facebook.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Security\GlobalDefault.cs" />
@@ -2212,6 +2218,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201308212336197_IntegerRangeFieldType.resx">
       <DependentUpon>201308212336197_IntegerRangeFieldType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308221639318_RemoveExternalAuthentication.resx">
+      <DependentUpon>201308221639318_RemoveExternalAuthentication.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308221817445_GroupTypePurposeCheckinFilter.resx">
+      <DependentUpon>201308221817445_GroupTypePurposeCheckinFilter.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
