@@ -277,6 +277,32 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
+        /// Gets the type of the note.
+        /// </summary>
+        //private void GetNoteType(NoteType noteType)
+        //{
+        //    string noteTypeName = GetAttributeValue( "NoteType" );
+
+        //    var service = new NoteTypeService();
+        //    noteType = service.Get( contextEntity.TypeId, noteTypeName );
+
+        //    // If a note type with the specified name does not exist for the context entity type, create one
+        //    if ( noteType == null )
+        //    {
+        //        noteType = new NoteType();
+        //        noteType.IsSystem = false;
+        //        noteType.EntityTypeId = contextEntity.TypeId;
+        //        noteType.EntityTypeQualifierColumn = string.Empty;
+        //        noteType.EntityTypeQualifierValue = string.Empty;
+        //        noteType.Name = noteTypeName;
+        //        service.Add( noteType, CurrentPersonId );
+        //        service.Save( noteType, CurrentPersonId );
+        //    }
+
+        //    lTitle.Text = noteType.Name;
+        //}
+
+        /// <summary>
         /// Handles the Click event of the lbAddNoteSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -284,6 +310,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void lbAddNoteSave_Click( object sender, EventArgs e )
         {
             var note = new Note().Clone( false );
+            var noteType = new NoteType().Clone( false );
+            // GetNoteType( noteType );
             note.IsSystem = false;
             note.NoteTypeId = 0;        // FIX THIS!!!!!!
             note.EntityId = this.ContextEntity().Id;      // FIX THIS!!!!!!
@@ -331,7 +359,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void lbAddNote_Click( object sender, EventArgs e )
         {
             tbNote.Text = "";
-            lbAddNoteCancel.Text = "Blah";
             mpeAddNote.Show();
         }
 
