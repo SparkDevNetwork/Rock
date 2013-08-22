@@ -39,19 +39,19 @@ namespace Rock.CheckIn
         /// Gets or sets the last time person checked into this group for any of the schedules
         /// </summary>
         /// <value>
-        /// The last check in.
+        /// The last check-in.
         /// </value>
         [DataMember]
         public DateTime? LastCheckIn { get; set; }
 
         /// <summary>
-        /// Gets or sets the schedules that are available for the current group
+        /// Gets or sets the locations that are available for the current group
         /// </summary>
         /// <value>
-        /// The schedules.
+        /// The locations.
         /// </value>
         [DataMember]
-        public List<CheckInSchedule> Schedules { get; set; }
+        public List<CheckInLocation> Locations { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CheckInGroup" /> class.
@@ -59,7 +59,7 @@ namespace Rock.CheckIn
         public CheckInGroup()
             : base()
         {
-            Schedules = new List<CheckInSchedule>();
+            Locations = new List<CheckInLocation>();
         }
 
         /// <summary>
@@ -84,7 +84,7 @@ namespace Rock.CheckIn
             dictionary.Add( "Group", Group );
             dictionary.Add( "Selected", Selected );
             dictionary.Add( "LastCheckIn", LastCheckIn );
-            dictionary.Add( "Schedules", Schedules );
+            dictionary.Add( "Locations", Locations );
             return dictionary;
         }
     }

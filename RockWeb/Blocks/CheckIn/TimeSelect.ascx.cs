@@ -16,7 +16,7 @@ using Rock.Model;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [Description( "Check-In Time Select block" )]
+    [Description( "Check-in Time Select block" )]
     public partial class TimeSelect : CheckInBlock
     {
         protected override void OnLoad( EventArgs e )
@@ -40,18 +40,18 @@ namespace RockWeb.Blocks.CheckIn
                             var groupType = person.GroupTypes.Where( g => g.Selected ).FirstOrDefault();
                             if ( groupType != null )
                             {
-                                var location = groupType.Locations.Where( l => l.Selected ).FirstOrDefault();
-                                if ( location != null )
+                                var group = groupType.Groups.Where( g => g.Selected ).FirstOrDefault();
+                                if ( group != null )
                                 {
-                                    var group = location.Groups.Where( g => g.Selected ).FirstOrDefault();
-                                    if ( group != null )
+                                    var location = group.Locations.Where( l => l.Selected ).FirstOrDefault();
+                                    if ( location != null )
                                     {
                                         lTitle.Text = person.ToString();
                                         lSubTitle.Text = group.ToString();
 
-                                        if ( group.Schedules.Count == 1 )
+                                        if ( location.Schedules.Count == 1 )
                                         {
-                                            foreach ( var schedule in group.Schedules )
+                                            foreach ( var schedule in location.Schedules )
                                             {
                                                 schedule.Selected = true;
                                             }
@@ -81,7 +81,7 @@ namespace RockWeb.Blocks.CheckIn
 ", hfTimes.ClientID );
                                             Page.ClientScript.RegisterClientScriptBlock( this.GetType(), "SelectTime", script );
 
-                                            rSelection.DataSource = group.Schedules.OrderBy( s => s.StartTime );
+                                            rSelection.DataSource = location.Schedules.OrderBy( s => s.StartTime );
                                             rSelection.DataBind();
                                         }
                                     }
@@ -126,16 +126,16 @@ namespace RockWeb.Blocks.CheckIn
                         var groupType = person.GroupTypes.Where( g => g.Selected ).FirstOrDefault();
                         if ( groupType != null )
                         {
-                            var location = groupType.Locations.Where( l => l.Selected ).FirstOrDefault();
-                            if ( location != null )
+                            var group = groupType.Groups.Where( g => g.Selected ).FirstOrDefault();
+                            if ( group != null )
                             {
-                                var group = location.Groups.Where( g => g.Selected ).FirstOrDefault();
-                                if ( group != null )
+                                var location = group.Locations.Where( l => l.Selected ).FirstOrDefault();
+                                if ( location != null )
                                 {
                                     foreach( var scheduleId in hfTimes.Value.SplitDelimitedValues())
                                     {
                                         int id = Int32.Parse( scheduleId );
-                                        var schedule = group.Schedules.Where( s => s.Schedule.Id == id).FirstOrDefault();
+                                        var schedule = location.Schedules.Where( s => s.Schedule.Id == id).FirstOrDefault();
                                         if (schedule != null)
                                         {
                                             schedule.Selected = true;
@@ -169,12 +169,12 @@ namespace RockWeb.Blocks.CheckIn
                 {
                     foreach ( var groupType in person.GroupTypes )
                     {
-                        foreach ( var location in groupType.Locations )
+                        foreach ( var group in groupType.Groups )
                         {
-                            foreach ( var group in location.Groups )
+                            foreach ( var location in group.Locations )
                             {
-                                group.Selected = false;
-                                group.Schedules = new List<CheckInSchedule>();
+                                location.Selected = false;
+                                location.Schedules = new List<CheckInSchedule>();
                             }
                         }
                     }

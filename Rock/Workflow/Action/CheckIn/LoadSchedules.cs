@@ -3,6 +3,7 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -31,44 +32,45 @@ namespace Rock.Workflow.Action.CheckIn
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override bool Execute( Model.WorkflowAction action, Data.IEntity entity, out List<string> errorMessages )
+        public override bool Execute( Model.WorkflowAction action, Object entity, out List<string> errorMessages )
         {
-            bool loadAll = false;
-            if ( bool.TryParse( GetAttributeValue( "LoadAll" ), out loadAll ) && loadAll )
+            var checkInState = GetCheckInState( entity, out errorMessages );
+            if ( checkInState != null )
             {
-                loadAll = true;
-            }
 
-            var checkInState = GetCheckInState( action, out errorMessages );
-             if ( checkInState != null )
-             {
+                bool loadAll = false;
+                if ( bool.TryParse( GetAttributeValue( action, "LoadAll" ), out loadAll ) && loadAll )
+                {
+                    loadAll = true;
+                }
+
                  foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )
                  {
                      foreach ( var person in family.People.Where( p => p.Selected ) )
                      {
                          foreach ( var groupType in person.GroupTypes.Where( g => g.Selected || loadAll ) )
                          {
-                             var kioskGroupType = checkInState.Kiosk.KioskGroupTypes.Where( g => g.GroupType.Id == groupType.GroupType.Id ).FirstOrDefault();
+                             var kioskGroupType = checkInState.Kiosk.FilteredGroupTypes( checkInState.ConfiguredGroupTypes ) .Where( g => g.GroupType.Id == groupType.GroupType.Id ).FirstOrDefault();
                              if ( kioskGroupType != null )
                              {
-                                 foreach ( var location in groupType.Locations.Where( l => l.Selected || loadAll ) )
+                                 foreach ( var group in groupType.Groups.Where( g => g.Selected || loadAll ) )
                                  {
-                                     var kioskLocation = kioskGroupType.KioskLocations.Where( l => l.Location.Id == location.Location.Id ).FirstOrDefault();
-                                     if ( kioskLocation != null )
+                                     foreach ( var location in group.Locations.Where( l => l.Selected || loadAll ) )
                                      {
-                                         foreach ( var group in location.Groups.Where( g => g.Selected || loadAll ) )
+                                         var kioskGroup = kioskGroupType.KioskGroups.Where( g => g.Group.Id == group.Group.Id ).FirstOrDefault();
+                                         if ( kioskGroup != null )
                                          {
-                                             var kioskGroup = kioskLocation.KioskGroups.Where( g => g.Group.Id == group.Group.Id ).FirstOrDefault();
-                                             if ( kioskGroup != null )
+                                             var kioskLocation = kioskGroup.KioskLocations.Where( l => l.Location.Id == location.Location.Id ).FirstOrDefault();
+                                             if ( kioskLocation != null )
                                              {
-                                                 foreach ( var kioskSchedule in kioskGroup.KioskSchedules )
+                                                 foreach ( var kioskSchedule in kioskLocation.KioskSchedules )
                                                  {
-                                                     if ( !group.Schedules.Any( s => s.Schedule.Id == kioskSchedule.Schedule.Id ) )
+                                                     if ( !location.Schedules.Any( s => s.Schedule.Id == kioskSchedule.Schedule.Id ) )
                                                      {
                                                          var checkInSchedule = new CheckInSchedule();
                                                          checkInSchedule.Schedule = kioskSchedule.Schedule.Clone( false );
                                                          checkInSchedule.StartTime = kioskSchedule.StartTime;
-                                                         group.Schedules.Add( checkInSchedule );
+                                                         location.Schedules.Add( checkInSchedule );
                                                      }
                                                  }
                                              }
@@ -80,7 +82,6 @@ namespace Rock.Workflow.Action.CheckIn
                      }
                  }
 
-                 SetCheckInState( action, checkInState );
                  return true;
              }
 

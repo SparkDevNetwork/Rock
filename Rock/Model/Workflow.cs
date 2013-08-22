@@ -221,7 +221,7 @@ namespace Rock.Model
         /// <param name="entity">The entity.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public virtual bool Process( IEntity entity, out List<string> errorMessages )
+        public virtual bool Process( Object entity, out List<string> errorMessages )
         {
             AddSystemLogEntry( "Processing..." );
 
@@ -286,7 +286,7 @@ namespace Rock.Model
         /// <param name="entity">The entity.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        private bool ProcessActivity( DateTime processStartTime, IEntity entity, out List<string> errorMessages )
+        private bool ProcessActivity( DateTime processStartTime, Object entity, out List<string> errorMessages )
         {
             if ( this.IsActive )
             {

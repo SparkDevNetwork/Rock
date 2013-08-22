@@ -84,7 +84,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
         /// </value>
-        public virtual bool IsValid
+        public override bool IsValid
         {
             get
             {
@@ -93,30 +93,22 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="NumberBox" /> class.
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
-        public NumberBox()
+        protected override void CreateChildControls()
         {
+            base.CreateChildControls();
+
             rangeValidator = new RangeValidator();
-        }
-
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( System.EventArgs e )
-        {
-            base.OnInit( e );
-
-            rangeValidator.ControlToValidate = this.ID;
             rangeValidator.ID = this.ID + "_RV";
+            rangeValidator.ControlToValidate = this.ID;
             rangeValidator.Display = ValidatorDisplay.Dynamic;
             rangeValidator.CssClass = "validation-error help-inline";
-            rangeValidator.ErrorMessage = "Numerical value is required";
+            
             rangeValidator.Type = System.Web.UI.WebControls.ValidationDataType.Integer;
             rangeValidator.MinimumValue = int.MinValue.ToString();
             rangeValidator.MaximumValue = int.MaxValue.ToString();
-            rangeValidator.Enabled = false;
+
             Controls.Add( rangeValidator );
         }
 
@@ -126,25 +118,22 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         protected override void RenderDataValidator( HtmlTextWriter writer )
         {
-            if ( NumberType == ValidationDataType.Double )
-            {
-                rangeValidator.MinimumValue = !string.IsNullOrEmpty( MinimumValue )
-                    ? MinimumValue : Convert.ToDouble( "9e-300" ).ToString( "F0" );  // allows up to 300 digits
-                rangeValidator.MaximumValue = !string.IsNullOrEmpty( MaximumValue )
-                    ? MaximumValue : Convert.ToDouble( "9e300" ).ToString( "F0" );   // allows up to 300 digits
-            }
-            else if (NumberType == ValidationDataType.Integer)
-            {
-                rangeValidator.MinimumValue = !string.IsNullOrEmpty( MinimumValue )
-                    ? MinimumValue : int.MinValue.ToString();
-                rangeValidator.MaximumValue = !string.IsNullOrEmpty( MaximumValue )
-                    ? MaximumValue : int.MaxValue.ToString();
-            }   
+            rangeValidator.Type = NumberType;
+            rangeValidator.MinimumValue = this.MinimumValue;
+            rangeValidator.MaximumValue = this.MaximumValue;
+            string dataTypeText = string.Empty;
 
             int minValue = MinimumValue.AsInteger() ?? int.MinValue;
             int maxValue = MaximumValue.AsInteger() ?? int.MaxValue;
 
             string rangeMessageFormat = null;
+
+            if ( rangeValidator.Type == ValidationDataType.Integer )
+            {
+                // if they are in the valid range, but not an integer, they'll see this message
+                rangeMessageFormat = "{0} must be an integer";
+            }
+
             if ( minValue > int.MinValue)
             {
                 rangeMessageFormat = "{0} must be at least " + MinimumValue;
@@ -165,7 +154,7 @@ namespace Rock.Web.UI.Controls
                 rangeValidator.ErrorMessage = string.Format( rangeMessageFormat, string.IsNullOrWhiteSpace(FieldName) ? "Value" : FieldName );
             }
 
-            rangeValidator.Enabled = true;
+            rangeValidator.ValidationGroup = this.ValidationGroup;
             rangeValidator.RenderControl( writer );
         }
     }

@@ -58,13 +58,8 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void LoadDropDowns()
         {
-            var entityTypeService = new EntityTypeService();
-            entityTypeService.RegisterEntityTypes( Server.MapPath( "~" ) );
-            List<EntityType> entityTypes = entityTypeService.GetEntities().OrderBy( w => w.FriendlyName ).ToList();
-            ddlEntityType.DataValueField = "Id";
-            ddlEntityType.DataTextField = "FriendlyName";
-            ddlEntityType.DataSource = entityTypes;
-            ddlEntityType.DataBind();
+            ddlEntityType.Items.Clear();
+            new EntityTypeService().GetEntityListItems().ForEach( l => ddlEntityType.Items.Add( l ) );
 
             ddlWorkflowType.Items.Clear();
             ddlWorkflowType.Items.Add( new ListItem( string.Empty, string.Empty));

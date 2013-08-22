@@ -55,9 +55,13 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\libs\DotLiquid v1.7.0\NET40\DotLiquid.dll</HintPath>
     </Reference>
-    <Reference Include="EntityFramework, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\EntityFramework.5.0.0\lib\net45\EntityFramework.dll</HintPath>
+      <HintPath>..\packages\EntityFramework.6.0.0-beta1\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\EntityFramework.6.0.0-beta1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="EPPlus">
       <HintPath>..\libs\EPPlus\EPPlus.dll</HintPath>
@@ -93,7 +97,6 @@
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
     <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="System.Data.Entity" />
     <Reference Include="System.Data.Entity.Design" />
     <Reference Include="System.Data.Services" />
     <Reference Include="System.Data.Services.Client" />
@@ -141,7 +144,9 @@
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
-    <Compile Include="Attribute\EncryptedFieldAttribute.cs" />
+    <Compile Include="Attribute\IntegerRangeFieldAttribute.cs" />
+    <Compile Include="Attribute\DateRangeFieldAttribute.cs" />
+    <Compile Include="Attribute\DecimalRangeFieldAttribute.cs" />
     <Compile Include="Attribute\LocationFieldAttribute.cs" />
     <Compile Include="Attribute\GroupRoleFieldAttribute.cs" />
     <Compile Include="Attribute\MemoFieldAttribute.cs" />
@@ -165,15 +170,37 @@
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
-    <Compile Include="BinaryFile\StorageComponent.cs" />
-    <Compile Include="BinaryFile\StorageContainer.cs" />
-    <Compile Include="BinaryFile\Storage\Database.cs" />
-    <Compile Include="BinaryFile\Storage\FileSystem.cs" />
+    <Compile Include="Field\Types\IntegerRangeFieldType.cs" />
+    <Compile Include="Field\Types\DateRangeFieldType.cs" />
+    <Compile Include="Field\Types\DecimalRangeFieldType.cs" />
+    <Compile Include="Migrations\201308192335432_BinaryFileCachingRenameAndProcUpdate.cs" />
+    <Compile Include="Migrations\201308192335432_BinaryFileCachingRenameAndProcUpdate.Designer.cs">
+      <DependentUpon>201308192335432_BinaryFileCachingRenameAndProcUpdate.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308212212453_RangeAttributeFieldTypes.cs" />
+    <Compile Include="Migrations\201308212212453_RangeAttributeFieldTypes.Designer.cs">
+      <DependentUpon>201308212212453_RangeAttributeFieldTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308212336197_IntegerRangeFieldType.cs" />
+    <Compile Include="Migrations\201308212336197_IntegerRangeFieldType.Designer.cs">
+      <DependentUpon>201308212336197_IntegerRangeFieldType.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308221639318_RemoveExternalAuthentication.cs" />
+    <Compile Include="Migrations\201308221639318_RemoveExternalAuthentication.Designer.cs">
+      <DependentUpon>201308221639318_RemoveExternalAuthentication.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308221817445_GroupTypePurposeCheckinFilter.cs" />
+    <Compile Include="Migrations\201308221817445_GroupTypePurposeCheckinFilter.Designer.cs">
+      <DependentUpon>201308221817445_GroupTypePurposeCheckinFilter.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Storage\ProviderComponent.cs" />
+    <Compile Include="Storage\ProviderContainer.cs" />
+    <Compile Include="Storage\Provider\Database.cs" />
+    <Compile Include="Storage\Provider\FileSystem.cs" />
     <Compile Include="Data\MergeFieldAttribute.cs" />
     <Compile Include="Field\Types\ComponentsFieldType.cs" />
     <Compile Include="Field\Types\CategoryFieldType.cs" />
     <Compile Include="Field\Types\CategoriesFieldType.cs" />
-    <Compile Include="Field\Types\EncryptedFieldType.cs" />
     <Compile Include="Field\Types\LocationFieldType.cs" />
     <Compile Include="Field\Types\GroupRoleFieldType.cs" />
     <Compile Include="Migrations\201305032320163_Communications.cs" />
@@ -440,6 +467,66 @@
     <Compile Include="Migrations\201308021811252_ChangeBadges1Case.Designer.cs">
       <DependentUpon>201308021811252_ChangeBadges1Case.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201308052350229_RenameLocationTypeField.cs" />
+    <Compile Include="Migrations\201308052350229_RenameLocationTypeField.Designer.cs">
+      <DependentUpon>201308052350229_RenameLocationTypeField.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308062206216_FlipCheckinClassRelationships.cs" />
+    <Compile Include="Migrations\201308062206216_FlipCheckinClassRelationships.Designer.cs">
+      <DependentUpon>201308062206216_FlipCheckinClassRelationships.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308071741109_MarketingCampaignAdListFilter.cs" />
+    <Compile Include="Migrations\201308071741109_MarketingCampaignAdListFilter.Designer.cs">
+      <DependentUpon>201308071741109_MarketingCampaignAdListFilter.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308072153425_AddAbilityLevels.cs" />
+    <Compile Include="Migrations\201308072153425_AddAbilityLevels.Designer.cs">
+      <DependentUpon>201308072153425_AddAbilityLevels.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308080403505_UniqueDeviceIPAddress.cs" />
+    <Compile Include="Migrations\201308080403505_UniqueDeviceIPAddress.Designer.cs">
+      <DependentUpon>201308080403505_UniqueDeviceIPAddress.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308081522336_ReverseDeviceIPUnique.cs" />
+    <Compile Include="Migrations\201308081522336_ReverseDeviceIPUnique.Designer.cs">
+      <DependentUpon>201308081522336_ReverseDeviceIPUnique.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308092211484_FieldTypeUnique.cs" />
+    <Compile Include="Migrations\201308092211484_FieldTypeUnique.Designer.cs">
+      <DependentUpon>201308092211484_FieldTypeUnique.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308112230400_FixDataFiltersSetting.cs" />
+    <Compile Include="Migrations\201308112230400_FixDataFiltersSetting.Designer.cs">
+      <DependentUpon>201308112230400_FixDataFiltersSetting.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308131210014_ScheduleServiceTimes.cs" />
+    <Compile Include="Migrations\201308131210014_ScheduleServiceTimes.Designer.cs">
+      <DependentUpon>201308131210014_ScheduleServiceTimes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308131808402_GroupTypePurpose.cs" />
+    <Compile Include="Migrations\201308131808402_GroupTypePurpose.Designer.cs">
+      <DependentUpon>201308131808402_GroupTypePurpose.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308142301072_CheckInAdminPages02.cs" />
+    <Compile Include="Migrations\201308142301072_CheckInAdminPages02.Designer.cs">
+      <DependentUpon>201308142301072_CheckInAdminPages02.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308151614282_GroupOrderGroupTypeOrder.cs" />
+    <Compile Include="Migrations\201308151614282_GroupOrderGroupTypeOrder.Designer.cs">
+      <DependentUpon>201308151614282_GroupOrderGroupTypeOrder.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308161802304_EntityIsCommon.cs" />
+    <Compile Include="Migrations\201308161802304_EntityIsCommon.Designer.cs">
+      <DependentUpon>201308161802304_EntityIsCommon.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308162243140_DataTransformations.cs" />
+    <Compile Include="Migrations\201308162243140_DataTransformations.Designer.cs">
+      <DependentUpon>201308162243140_DataTransformations.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201308191700532_AddMaritalStatusDefinedValues.cs" />
+    <Compile Include="Migrations\201308191700532_AddMaritalStatusDefinedValues.Designer.cs">
+      <DependentUpon>201308191700532_AddMaritalStatusDefinedValues.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
@@ -447,6 +534,7 @@
     <Compile Include="Model\CodeGenerated\FinancialTransactionRefundService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialTransactionScannedCheckService.cs" />
     <Compile Include="Model\BinaryFileData.cs" />
+    <Compile Include="Net\RockRestClient.cs" />
     <Compile Include="Net\RockWebRequest.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -468,10 +556,13 @@
     <Compile Include="PersonProfile\IconBadge.cs" />
     <Compile Include="PersonProfile\TextBadge.cs" />
     <Compile Include="Search\Group\Name.cs" />
+    <Compile Include="SystemGuid\Category.cs" />
     <Compile Include="SystemGuid\EntityType.cs" />
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
     <Compile Include="Web\Cache\CategoryCache.cs" />
     <Compile Include="Web\DescriptionList.cs" />
+    <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinGroupEditor.cs" />
+    <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinGroupTypeEditor.cs" />
     <Compile Include="Web\UI\Controls\Communication\ChannelControl.cs" />
     <Compile Include="Data\IgnoreModelErrorsAttribute.cs" />
     <Compile Include="Migrations\201304190037528_BinaryFileTypeContributionImage.cs" />
@@ -511,7 +602,6 @@
     <Compile Include="Migrations\201305032019044_DateTimeDataTypesSweep.Designer.cs">
       <DependentUpon>201305032019044_DateTimeDataTypesSweep.cs</DependentUpon>
     </Compile>
-    <Compile Include="Net\RockRestClient.cs" />
     <Compile Include="Security\LoginParameters.cs" />
     <Compile Include="CheckIn\CheckInBlock.cs">
       <SubType>ASPXCodeBehind</SubType>
@@ -525,7 +615,7 @@
     <Compile Include="CheckIn\CheckInState.cs" />
     <Compile Include="CheckIn\CheckInStatus.cs" />
     <Compile Include="CheckIn\CheckInLabel.cs" />
-    <Compile Include="CheckIn\LabelCache.cs" />
+    <Compile Include="CheckIn\KioskLabel.cs" />
     <Compile Include="CheckIn\KioskLocationAttendance.cs" />
     <Compile Include="CheckIn\KioskGroupAttendance.cs" />
     <Compile Include="CheckIn\KioskScheduleAttendance.cs" />
@@ -533,8 +623,7 @@
     <Compile Include="CheckIn\KioskGroupType.cs" />
     <Compile Include="CheckIn\KioskLocation.cs" />
     <Compile Include="CheckIn\KioskSchedule.cs" />
-    <Compile Include="CheckIn\KioskStatus.cs" />
-    <Compile Include="CheckIn\KioskCache.cs" />
+    <Compile Include="CheckIn\KioskDevice.cs" />
     <Compile Include="Communication\ChannelComponent.cs" />
     <Compile Include="Communication\Channel\Sms.cs" />
     <Compile Include="Communication\Channel\Email.cs" />
@@ -1052,6 +1141,7 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\DateRangePicker.cs" />
     <Compile Include="Web\UI\Controls\Grid\CheckBoxEditableField.cs" />
     <Compile Include="Web\UI\Controls\Grid\ColorField.cs" />
     <Compile Include="Web\UI\Controls\IRequiredControl.cs" />
@@ -1060,6 +1150,7 @@
     <Compile Include="Web\UI\Controls\NewFamily\AttributesRow.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\Members.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\MembersRow.cs" />
+    <Compile Include="Web\UI\Controls\NumberRangeEditor.cs" />
     <Compile Include="Web\UI\Controls\PersonProfile\Badge.cs" />
     <Compile Include="Web\UI\Controls\PersonLink.cs" />
     <Compile Include="Web\UI\Controls\HtmlEditor.cs" />
@@ -1125,11 +1216,13 @@
     <Compile Include="Web\UI\BreadCrumb.cs" />
     <Compile Include="Web\UI\IDetailBlock.cs" />
     <Compile Include="Web\UI\IDimmableBlock.cs" />
+    <Compile Include="Web\UI\ViewStateList.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
-    <Compile Include="Workflow\Action\CheckIn\FilterLocationGroupsByAbilityLevel.cs" />
-    <Compile Include="Workflow\Action\CheckIn\FilterLocationGroupsBySpecialNeeds.cs" />
-    <Compile Include="Workflow\Action\CheckIn\FilterLocationGroupsByLastName.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGender.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterGroupsByAbilityLevel.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterGroupsBySpecialNeeds.cs" />
+    <Compile Include="Workflow\Action\CheckIn\FilterGroupsByLastName.cs" />
     <Compile Include="Workflow\Action\CheckIn\CreateLabels.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterByGrade.cs" />
     <Compile Include="Workflow\Action\CheckIn\RemoveEmptyPeople.cs" />
@@ -1146,7 +1239,6 @@
     <Compile Include="Workflow\Action\CheckIn\FindRelationships.cs" />
     <Compile Include="Workflow\Action\CheckIn\FindFamilyMembers.cs" />
     <Compile Include="Workflow\Action\CheckIn\FindFamilies.cs" />
-    <Compile Include="Web\UI\ViewStateList.cs" />
     <Compile Include="Workflow\Action\ParseZebraLabel.cs" />
     <Compile Include="Workflow\TriggerCache.cs" />
     <Compile Include="Model\WorkflowTriggerService.Partial.cs" />
@@ -1299,10 +1391,8 @@
     <Compile Include="Security\AdditionalActionsAttribute.cs" />
     <Compile Include="Security\Authentication\ActiveDirectory.cs" />
     <Compile Include="Security\Authentication\Database.cs" />
-    <Compile Include="Security\ExternalAuthenticationComponent.cs" />
-    <Compile Include="Security\ExternalAuthenticationContainer.cs" />
     <Compile Include="Security\Encryption.cs" />
-    <Compile Include="Security\ExternalAuthentication\Facebook.cs">
+    <Compile Include="Security\Authentication\Facebook.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Security\GlobalDefault.cs" />
@@ -1479,6 +1569,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
+    <None Include="App.config" />
     <None Include="CheckInStateClassDiagram.cd" />
     <None Include="Service References\MelissaData.AddressCheck\Rock.MelissaData.AddressCheck.ResponseArray.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>
@@ -2073,6 +2164,66 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201308021811252_ChangeBadges1Case.resx">
       <DependentUpon>201308021811252_ChangeBadges1Case.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308052350229_RenameLocationTypeField.resx">
+      <DependentUpon>201308052350229_RenameLocationTypeField.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308062206216_FlipCheckinClassRelationships.resx">
+      <DependentUpon>201308062206216_FlipCheckinClassRelationships.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308071741109_MarketingCampaignAdListFilter.resx">
+      <DependentUpon>201308071741109_MarketingCampaignAdListFilter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308072153425_AddAbilityLevels.resx">
+      <DependentUpon>201308072153425_AddAbilityLevels.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308080403505_UniqueDeviceIPAddress.resx">
+      <DependentUpon>201308080403505_UniqueDeviceIPAddress.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308081522336_ReverseDeviceIPUnique.resx">
+      <DependentUpon>201308081522336_ReverseDeviceIPUnique.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308092211484_FieldTypeUnique.resx">
+      <DependentUpon>201308092211484_FieldTypeUnique.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308112230400_FixDataFiltersSetting.resx">
+      <DependentUpon>201308112230400_FixDataFiltersSetting.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308131210014_ScheduleServiceTimes.resx">
+      <DependentUpon>201308131210014_ScheduleServiceTimes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308131808402_GroupTypePurpose.resx">
+      <DependentUpon>201308131808402_GroupTypePurpose.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308142301072_CheckInAdminPages02.resx">
+      <DependentUpon>201308142301072_CheckInAdminPages02.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308151614282_GroupOrderGroupTypeOrder.resx">
+      <DependentUpon>201308151614282_GroupOrderGroupTypeOrder.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308161802304_EntityIsCommon.resx">
+      <DependentUpon>201308161802304_EntityIsCommon.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308162243140_DataTransformations.resx">
+      <DependentUpon>201308162243140_DataTransformations.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308191700532_AddMaritalStatusDefinedValues.resx">
+      <DependentUpon>201308191700532_AddMaritalStatusDefinedValues.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308192335432_BinaryFileCachingRenameAndProcUpdate.resx">
+      <DependentUpon>201308192335432_BinaryFileCachingRenameAndProcUpdate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308212212453_RangeAttributeFieldTypes.resx">
+      <DependentUpon>201308212212453_RangeAttributeFieldTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308212336197_IntegerRangeFieldType.resx">
+      <DependentUpon>201308212336197_IntegerRangeFieldType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308221639318_RemoveExternalAuthentication.resx">
+      <DependentUpon>201308221639318_RemoveExternalAuthentication.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308221817445_GroupTypePurposeCheckinFilter.resx">
+      <DependentUpon>201308221817445_GroupTypePurposeCheckinFilter.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

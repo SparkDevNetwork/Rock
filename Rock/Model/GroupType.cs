@@ -175,13 +175,14 @@ namespace Rock.Model
         public PrintTo AttendancePrintTo { get; set; }
 
         /// <summary>
-        /// Gets or sets the display order.
+        /// Gets or sets the order.
         /// </summary>
         /// <value>
-        /// The display order.
+        /// The order.
         /// </value>
-        [DataMember]
-        public int DisplayOrder { get; set; }
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int Order { get; set; }
 
         /// <summary>
         /// Gets or sets the inherited group type id.
@@ -191,13 +192,23 @@ namespace Rock.Model
         public int? InheritedGroupTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the locations allowed on groups of this type.
+        /// Gets or sets the mode of the location picker used when adding locations to groups of this type
         /// </summary>
         /// <value>
         /// The type of the locations.
         /// </value>
         [DataMember]
-        public LocationType LocationType { get; set; }
+        public LocationPickerMode LocationSelectionMode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group type purpose value id.
+        /// </summary>
+        /// <value>
+        /// The group type purpose value id.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.GROUPTYPE_PURPOSE )]
+        public int? GroupTypePurposeValueId { get; set; }
 
         #endregion
 
@@ -300,6 +311,15 @@ namespace Rock.Model
         public virtual BinaryFile IconLargeFile { get; set; }
 
         /// <summary>
+        /// Gets or sets the group type purpose value.
+        /// </summary>
+        /// <value>
+        /// The group type purpose value.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue GroupTypePurposeValue { get; set; }
+        
+        /// <summary>
         /// Gets the group query.
         /// </summary>
         /// <value>
@@ -401,9 +421,10 @@ namespace Rock.Model
     }
 
     /// <summary>
-    /// The attendance rule to use when person checks in to a group of this type
+    /// The types of locations that should be allowed to be selected using the location picker
+    /// TODO: Move this enum to the LocationPicker class when created
     /// </summary>
-    public enum LocationType
+    public enum LocationPickerMode
     {
         /// <summary>
         /// Any

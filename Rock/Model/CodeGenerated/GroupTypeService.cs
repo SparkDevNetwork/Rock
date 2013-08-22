@@ -112,8 +112,10 @@ namespace Rock.Model
                 target.TakesAttendance = source.TakesAttendance;
                 target.AttendanceRule = source.AttendanceRule;
                 target.AttendancePrintTo = source.AttendancePrintTo;
-                target.DisplayOrder = source.DisplayOrder;
+                target.Order = source.Order;
                 target.InheritedGroupTypeId = source.InheritedGroupTypeId;
+                target.LocationSelectionMode = source.LocationSelectionMode;
+                target.GroupTypePurposeValueId = source.GroupTypePurposeValueId;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

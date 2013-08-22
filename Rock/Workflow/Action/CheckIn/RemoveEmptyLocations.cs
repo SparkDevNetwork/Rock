@@ -3,6 +3,7 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -11,9 +12,9 @@ using System.Linq;
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
-    /// Removes any location that does not have any groups
+    /// Removes locations (from groups) if the location has no schedule.
     /// </summary>
-    [Description("Removes any location that does not have any groups")]
+    [Description( "Removes locations (from groups) if the location has no schedule." )]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Remove Empty Locations" )]
     public class RemoveEmptyLocations : CheckInActionComponent
@@ -26,9 +27,9 @@ namespace Rock.Workflow.Action.CheckIn
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override bool Execute( Model.WorkflowAction action, Data.IEntity entity, out List<string> errorMessages )
+        public override bool Execute( Model.WorkflowAction action, Object entity, out List<string> errorMessages )
         {
-            var checkInState = GetCheckInState( action, out errorMessages );
+            var checkInState = GetCheckInState( entity, out errorMessages );
             if ( checkInState != null )
             {
                 foreach ( var family in checkInState.CheckIn.Families.ToList() )
@@ -37,18 +38,20 @@ namespace Rock.Workflow.Action.CheckIn
                     {
                         foreach ( var groupType in person.GroupTypes.ToList() )
                         {
-                            foreach ( var location in groupType.Locations.ToList() )
+                            foreach ( var group in groupType.Groups.ToList() )
                             {
-                                if ( location.Groups.Count == 0 )
+                                foreach ( var location in group.Locations.ToList() )
                                 {
-                                    groupType.Locations.Remove( location );
+                                    if ( location.Schedules.Count == 0 )
+                                    {
+                                        group.Locations.Remove( location );
+                                    }
                                 }
                             }
                         }
                     }
                 }
 
-                SetCheckInState( action, checkInState );
                 return true;
 
             }

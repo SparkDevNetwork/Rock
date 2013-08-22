@@ -19,7 +19,7 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_CHANNEL = "DC8A841C-E91D-4BD4-A6A7-0DE765308E8F";
 
         /// <summary>
-        /// Guid for checkin search type
+        /// Guid for check-in search type
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE = "1EBCDB30-A89A-4C14-8580-8289EC2C7742";
 
@@ -82,6 +82,11 @@ namespace Rock.SystemGuid
         /// Guid for Financial Transaction Type
         /// </summary>
         public const string FINANCIAL_TRANSACTION_TYPE = "FFF62A4B-5D88-4DEB-AF8F-8E6178E41FE5";
+
+        /// <summary>
+        /// Guid for GroupType Purpose
+        /// </summary>
+        public const string GROUPTYPE_PURPOSE = "B23F1E45-BC26-4E82-BEB3-9B191FE5CCC3";
         
         /// <summary>
         /// Guid for the types of Locations (such as Home, Main Office, etc)

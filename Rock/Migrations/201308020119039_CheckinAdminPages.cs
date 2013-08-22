@@ -21,9 +21,9 @@ namespace Rock.Migrations
             AddPage( "550A898C-EDEA-48B5-9C58-B20EC13AF13B", "Check-in", "", "Default", "FB0A7D8A-F9F4-4081-B15B-7970D20698E3", "" );
             AddPage( "FB0A7D8A-F9F4-4081-B15B-7970D20698E3", "Schedule Builder", "", "Default", "F9B48E2A-7D49-45B6-AA88-D731AD887B0F", "icon-calendar" );
 
-            AddBlockType( "Administration - Checkin Schedule Builder", "", "~/Blocks/Administration/CheckinScheduleBuilder.ascx", "8CDB6E8D-A8DF-4144-99F8-7F78CC1AF7E4" );
+            AddBlockType( "Administration - Check-in Schedule Builder", "", "~/Blocks/Administration/CheckinScheduleBuilder.ascx", "8CDB6E8D-A8DF-4144-99F8-7F78CC1AF7E4" );
 
-            AddBlock( "F9B48E2A-7D49-45B6-AA88-D731AD887B0F", "8CDB6E8D-A8DF-4144-99F8-7F78CC1AF7E4", "Checkin Schedule Builder", "", "Content", 0, "282B34B6-354F-41F3-97A2-16DEC1B657E0" );
+            AddBlock( "F9B48E2A-7D49-45B6-AA88-D731AD887B0F", "8CDB6E8D-A8DF-4144-99F8-7F78CC1AF7E4", "Check-in Schedule Builder", "", "Content", 0, "282B34B6-354F-41F3-97A2-16DEC1B657E0" );
             AddBlock( "FB0A7D8A-F9F4-4081-B15B-7970D20698E3", "F49AD5F8-1E45-41E7-A88E-8CD285815BD9", "Page Xslt Transformation", "", "Content", 0, "77D37F89-F305-4E0E-950C-AA1F0F926580" );
 
             // Attrib Value for Block:Page Xslt Transformation, Attribute:Root Page, Page:Check-in
@@ -58,9 +58,9 @@ Update [Page] set [Order] = 5 where [Guid] = '7F1F4130-CB98-473B-9DE1-7A886D2283
         public override void Down()
         {
             DeleteBlock( "77D37F89-F305-4E0E-950C-AA1F0F926580" ); // Page Xslt Transformation
-            DeleteBlock( "282B34B6-354F-41F3-97A2-16DEC1B657E0" ); // Checkin Schedule Builder
+            DeleteBlock( "282B34B6-354F-41F3-97A2-16DEC1B657E0" ); // Check-in Schedule Builder
 
-            DeleteBlockType( "8CDB6E8D-A8DF-4144-99F8-7F78CC1AF7E4" ); // Administration - Checkin Schedule Builder
+            DeleteBlockType( "8CDB6E8D-A8DF-4144-99F8-7F78CC1AF7E4" ); // Administration - Check-in Schedule Builder
 
             DeletePage( "F9B48E2A-7D49-45B6-AA88-D731AD887B0F" ); // Schedule Builder
             DeletePage( "FB0A7D8A-F9F4-4081-B15B-7970D20698E3" ); // Check-in

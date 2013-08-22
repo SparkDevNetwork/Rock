@@ -14,6 +14,7 @@ using System.Web;
 using Goheer.EXIF;
 
 using Rock.Model;
+using Rock.Storage;
 
 namespace RockWeb
 {
@@ -26,14 +27,18 @@ namespace RockWeb
         /// Saves the data.
         /// </summary>
         /// <param name="context">The context.</param>
-        /// <param name="inputStream">The input stream.</param>
+        /// <param name="uploadedFile"></param>
         /// <param name="file">The file.</param>
-        public override void SaveData( HttpContext context, Stream inputStream, BinaryFile file )
+        /// <param name="fileType"></param>
+        public override void SaveData( HttpContext context, HttpPostedFile uploadedFile, BinaryFile file, BinaryFileType fileType)
         {
             // Check to see if we should flip the image.
             try
             {
-                Bitmap bmp = new Bitmap( inputStream );
+                file.FileName = Path.GetFileName( uploadedFile.FileName );
+                file.MimeType = uploadedFile.ContentType;
+
+                Bitmap bmp = new Bitmap( uploadedFile.InputStream );
                 var exif = new EXIFextractor( ref bmp, "\n" );
                 if ( exif["Orientation"] != null )
                 {
@@ -51,18 +56,26 @@ namespace RockWeb
                     bmp = resizedBmp;
                 }
 
-                using ( MemoryStream stream = new MemoryStream() )
+                using ( var stream = new MemoryStream() )
                 {
                     bmp.Save( stream, ContentTypeToImageFormat( file.MimeType ) );
+
                     if ( file.Data == null )
                     {
                         file.Data = new BinaryFileData();
                     }
+
                     file.Data.Content = stream.ToArray();
-                    stream.Close();
                 }
+
+                // Use provider to persist file
+                var provider = fileType != null
+                    ? ProviderContainer.GetComponent( fileType.StorageEntityType.Name )
+                    : ProviderContainer.DefaultComponent;
+                provider.SaveFile( file, null );
+
             }
-            catch
+            catch ( Exception )
             {
                 // TODO: Log unable to rotate and/or resize.
             }
@@ -119,7 +132,7 @@ namespace RockWeb
             }
         }
 
-        private static System.Drawing.Image ResizeImage( System.Drawing.Image imgToResize, Size size )
+        private static Image ResizeImage( Image imgToResize, Size size )
         {
             int sourceWidth = imgToResize.Width;
             int sourceHeight = imgToResize.Height;
@@ -133,13 +146,13 @@ namespace RockWeb
             int destHeight = (int)( sourceHeight * nPercent );
 
             Bitmap b = new Bitmap( destWidth, destHeight );
-            Graphics g = Graphics.FromImage( (System.Drawing.Image)b );
+            Graphics g = Graphics.FromImage( (Image)b );
             g.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
             g.DrawImage( imgToResize, 0, 0, destWidth, destHeight );
             g.Dispose();
 
-            return (System.Drawing.Image)b;
+            return (Image)b;
         }
 
         private static Bitmap RoughResize( Bitmap input, int maxWidth, int maxHeight )
@@ -153,13 +166,13 @@ namespace RockWeb
                     // width difference is larger
                     double resizeRatio = maxWidth / (double)input.Width;
                     int newHeight = Convert.ToInt32( input.Height * resizeRatio );
-                    input = (Bitmap)ResizeImage( (System.Drawing.Image)input, new Size( maxWidth, newHeight ) );
+                    input = (Bitmap)ResizeImage( (Image)input, new Size( maxWidth, newHeight ) );
                 }
                 else
                 {
                     double resizeRatio = maxHeight / (double)input.Height;
                     int newWidth = Convert.ToInt32( input.Width * resizeRatio );
-                    input = (Bitmap)ResizeImage( (System.Drawing.Image)input, new Size( newWidth, maxHeight ) );
+                    input = (Bitmap)ResizeImage( (Image)input, new Size( newWidth, maxHeight ) );
                 }
             }
             return input;

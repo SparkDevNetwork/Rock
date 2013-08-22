@@ -5,17 +5,13 @@
 //
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Web.UI;
 using System.Web.UI.HtmlControls;
 
 using Rock;
 using Rock.Attribute;
-using Rock.Model;
 using Rock.Web.UI;
-using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -23,7 +19,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
     /// The main Person Profile blockthe main information about a peron 
     /// </summary>
     [ComponentsField( "Rock.PersonProfile.BadgeContainer, Rock", "Badges" )]
-    public partial class Bio : Rock.Web.UI.PersonBlock
+    public partial class Bio : PersonBlock
     {
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -36,19 +32,30 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( Person != null )
             {
                 Page.Title = CurrentPage.Title + ": " + Person.FullName;
+                var fullName = new StringBuilder();
 
-                lName.Text = Person.FullName.FormatAsHtmlTitle();
+                // TODO: Does Title belong in this heading?
+                //if ( Person.TitleValue != null )
+                //    fullName.AppendFormat( "<span class=\"light\">{0}</span> ", Person.TitleValue.Name );
+
+                fullName.AppendFormat( "{0} <span class=\"light\">{1}", Person.FirstName, Person.LastName );
+
+                if ( Person.SuffixValue != null )
+                    fullName.AppendFormat( " {0}", Person.SuffixValue.Name );
+
+                fullName.Append( "</span>" );
+                lName.Text = fullName.ToString();
 
                 if ( Person.PhotoId.HasValue )
                 {
                     var imgLink = new HtmlAnchor();
                     phImage.Controls.Add( imgLink );
-                    imgLink.HRef = "~/image.ashx?" + Person.PhotoId.Value.ToString();
+                    imgLink.HRef = "~/GetImage.ashx?id=" + Person.PhotoId.Value.ToString();
                     imgLink.Target = "_blank";
 
                     var img = new HtmlImage();
                     imgLink.Controls.Add( img );
-                    img.Src = "~/image.ashx?" + Person.PhotoId.Value.ToString();
+                    img.Src = "~/GetImage.ashx?id=" + Person.PhotoId.Value.ToString();
                     img.Alt = Person.FullName;
                 }
 

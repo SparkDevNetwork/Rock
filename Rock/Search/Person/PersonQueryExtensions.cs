@@ -24,44 +24,38 @@ namespace Rock.Search.Person
         /// <returns></returns>
         public static IOrderedQueryable<Rock.Model.Person> QueryByName( this IQueryable<Rock.Model.Person> qry, string searchTerm, out bool lastFirst )
         {
-            string fName = string.Empty;
-            string lName = string.Empty;
-
             var names = searchTerm.SplitDelimitedValues();
-            int termCount = names.Count();
 
-            if ( termCount == 1 )
+            string firstName = string.Empty;
+            string lastName = string.Empty;
+
+            if ( searchTerm.Contains( ',' ) )
             {
                 lastFirst = true;
+                lastName = names.Length >= 1 ? names[0].Trim() : string.Empty;
+                firstName = names.Length >= 2 ? names[1].Trim() : string.Empty;
+            }
+            else if ( searchTerm.Contains( ' ' ) )
+            {
+                lastFirst = false;
+                firstName = names.Length >= 1 ? names[0].Trim() : string.Empty;
+                lastName = names.Length >= 2 ? names[1].Trim() : string.Empty;
             }
             else
             {
-                lastFirst = searchTerm.Contains( "," );
-            }
-            
-
-            if ( lastFirst )
-            {
-                // last, first
-                lName = names.Length >= 1 ? names[0] : string.Empty;
-                fName = names.Length >= 2 ? names[1] : string.Empty;
-            }
-            else
-            {
-                // first last
-                fName = names.Length >= 1 ? names[0] : string.Empty;
-                lName = names.Length >= 2 ? names[1] : string.Empty;
+                lastFirst = true;
+                lastName = searchTerm.Trim();
             }
 
-            if ( termCount == 1 )
+            if ( !string.IsNullOrWhiteSpace( lastName ) )
             {
-                qry = qry.Where( p => p.LastName.StartsWith( lName ) );
+                qry = qry.Where( p => p.LastName.StartsWith( lastName ) );
             }
-            else
+            if ( !string.IsNullOrWhiteSpace( firstName ) )
             {
-                qry = qry.Where( p => ( ( p.FirstName ).StartsWith( fName ) && p.LastName.StartsWith( lName ) ) );
+                qry = qry.Where( p => p.FirstName.StartsWith( firstName ) );
             }
-
+      
             IOrderedQueryable<Rock.Model.Person> result;
 
             if ( lastFirst )
@@ -88,7 +82,7 @@ namespace Rock.Search.Person
             bool lastFirst;
             var peopleQry = qry.QueryByName( searchTerm, out lastFirst );
 
-            var selectQry = peopleQry.Select( p => ( lastFirst ? p.LastName + ", " + ( p.NickName ?? p.GivenName ) : ( p.NickName ?? p.GivenName ) + " " + p.LastName ) );
+            var selectQry = peopleQry.Select( p => ( lastFirst ? p.FullNameLastFirst : p.FullName ) );
 
             if (distinct)
             {

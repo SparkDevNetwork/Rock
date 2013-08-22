@@ -21,7 +21,7 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     [DetailPage]
     public partial class WorkflowTriggerList : RockBlock
-    { 
+    {
         #region Control Methods
 
         /// <summary>
@@ -131,8 +131,19 @@ namespace RockWeb.Blocks.Administration
         {
             gWorkflowTrigger.DataSource = new WorkflowTriggerService().Queryable()
                 .OrderBy( w => w.EntityType.Name )
-                .ThenBy( w => w.EntityTypeQualifierColumn)
-                .ThenBy( w => w.EntityTypeQualifierValue).ToList();
+                .ThenBy( w => w.EntityTypeQualifierColumn )
+                .ThenBy( w => w.EntityTypeQualifierValue ).Select( a =>
+                    new
+                        {
+                            a.Id,
+                            EntityTypeFriendlyName = a.EntityType.FriendlyName,
+                            a.WorkflowTriggerType,
+                            a.EntityTypeQualifierColumn,
+                            a.EntityTypeQualifierValue,
+                            WorkflowTypeName = a.WorkflowType.Name,
+                            a.IsSystem
+                        } ).ToList();
+            
             gWorkflowTrigger.DataBind();
         }
 

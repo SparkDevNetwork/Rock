@@ -599,9 +599,9 @@ namespace Rock
                     }
                 }
 
-                if ( Math.Round( inSeconds ) == 1 )
+                if ( Math.Round( inSeconds ) < 5 )
                 {
-                    return "1 second ago";
+                    return "just now";
                 }
                 else if ( inMinutes < 1.0 )
                 {
@@ -918,6 +918,7 @@ namespace Rock
         /// <summary>
         /// Returns the Value as Int or null if Value is <see cref="T:Rock.Constants.None"/>
         /// </summary>
+        /// <param name="listControl">The list control.</param>
         /// <param name="NoneAsNull">if set to <c>true</c>, will return Null if SelectedValue = <see cref="T:Rock.Constants.None" /> </param>
         /// <returns></returns>
         public static int? SelectedValueAsInt( this ListControl listControl, bool NoneAsNull = true )
@@ -938,6 +939,29 @@ namespace Rock
             {
                 return int.Parse( listControl.SelectedValue );
             }
+        }
+
+        /// <summary>
+        /// Returns the value of the currently selected item.
+        /// It will return NULL if either <see cref="T:Rock.Constants.None"/> or <see cref="T:Rock.Constants.All"/> is selected.
+        /// </summary>
+        /// <param name="listControl">The list control.</param>
+        /// <returns></returns>
+        public static int? SelectedValueAsId( this ListControl listControl )
+        {
+            int? result = SelectedValueAsInt( listControl );
+
+            if ( result == Rock.Constants.All.Id )
+            {
+                return null;
+            }
+
+            if ( result == Rock.Constants.None.Id )
+            {
+                return null;
+            }
+
+            return result;
         }
 
         /// <summary>

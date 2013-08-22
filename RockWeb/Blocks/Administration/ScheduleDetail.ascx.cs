@@ -371,18 +371,21 @@ namespace RockWeb.Blocks.Administration
             string occurrenceText = string.Empty;
             if ( calendarEvent != null )
             {
-                var occurrences = calendarEvent.GetOccurrences( DateTime.Now.Date, DateTime.Now.Date.AddYears( 1 ) );
-                if (occurrences.Any())
+                if ( calendarEvent.DTStart != null )
                 {
-                    var occurrence = occurrences[0];
-                    
-                    if ( occurrence.Period.StartTime.Value.Date.Equals( occurrence.Period.EndTime.Value.Date ) )
+                    var occurrences = calendarEvent.GetOccurrences( DateTime.Now.Date, DateTime.Now.Date.AddYears( 1 ) );
+                    if ( occurrences.Any() )
                     {
-                        occurrenceText += string.Format( "{0} - {1} to {2} ( {3} hours)", occurrence.Period.StartTime.Value.Date.ToShortDateString(), occurrence.Period.StartTime.Value.TimeOfDay.ToTimeString(), occurrence.Period.EndTime.Value.TimeOfDay.ToTimeString(), occurrence.Period.Duration.TotalHours.ToString( "#0.00" ) );
-                    }
-                    else
-                    {
-                        occurrenceText += string.Format( "<li>{0} to {1} ( {2} hours) </li>", occurrence.Period.StartTime.Value.ToString( "g" ), occurrence.Period.EndTime.Value.ToString( "g" ), occurrence.Period.Duration.TotalHours.ToString( "#0.00" ) );
+                        var occurrence = occurrences[0];
+
+                        if ( occurrence.Period.StartTime.Value.Date.Equals( occurrence.Period.EndTime.Value.Date ) )
+                        {
+                            occurrenceText += string.Format( "{0} - {1} to {2} ( {3} hours)", occurrence.Period.StartTime.Value.Date.ToShortDateString(), occurrence.Period.StartTime.Value.TimeOfDay.ToTimeString(), occurrence.Period.EndTime.Value.TimeOfDay.ToTimeString(), occurrence.Period.Duration.TotalHours.ToString( "#0.00" ) );
+                        }
+                        else
+                        {
+                            occurrenceText += string.Format( "<li>{0} to {1} ( {2} hours) </li>", occurrence.Period.StartTime.Value.ToString( "g" ), occurrence.Period.EndTime.Value.ToString( "g" ), occurrence.Period.Duration.TotalHours.ToString( "#0.00" ) );
+                        }
                     }
                 }
             }
@@ -394,12 +397,12 @@ namespace RockWeb.Blocks.Administration
 
             if ( schedule.CheckInStartOffsetMinutes.HasValue )
             {
-                descriptionList.Add( "Checkin Starts", schedule.CheckInStartOffsetMinutes.Value.ToString() + " minutes before start of schedule" );
+                descriptionList.Add( "Check-in Starts", schedule.CheckInStartOffsetMinutes.Value.ToString() + " minutes before start of schedule" );
             }
 
             if ( schedule.CheckInEndOffsetMinutes.HasValue )
             {
-                descriptionList.Add(  "Checkin Ends", schedule.CheckInEndOffsetMinutes.Value.ToString() + " minutes after start of schedule" );
+                descriptionList.Add(  "Check-in Ends", schedule.CheckInEndOffsetMinutes.Value.ToString() + " minutes after start of schedule" );
             }
 
             lblMainDetails.Text = descriptionList.Html;

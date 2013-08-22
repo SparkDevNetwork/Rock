@@ -8,7 +8,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
-using Rock.BinaryFile;
+using Rock.Storage;
 using Rock.Data;
 using Rock.Web.Cache;
 
@@ -112,6 +112,15 @@ namespace Rock.Model
         [DataMember]
         public int? StorageEntityTypeId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to allow caching.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if caching is allowed; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowCaching { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -158,13 +167,11 @@ namespace Rock.Model
         /// <summary>
         /// Gets the URL.
         /// </summary>
-        /// <param name="height">The height.</param>
-        /// <param name="width">The width.</param>
         /// <returns></returns>
-        public string GetUrl( int? height = null, int? width = null )
+        public string GetUrl()
         {
-            var provider = StorageContainer.GetComponent( StorageEntityType.Name );
-            return provider.GetUrl( this, height, width );
+            var provider = ProviderContainer.GetComponent( StorageEntityType.Name );
+            return provider.GetUrl( this );
         }
 
         #endregion
@@ -204,7 +211,7 @@ namespace Rock.Model
         /// </summary>
         public BinaryFileConfiguration()
         {
-            this.HasOptional( f => f.BinaryFileType ).WithMany().HasForeignKey( f => f.BinaryFileTypeId ).WillCascadeOnDelete( false );
+            this.HasRequired( f => f.BinaryFileType ).WithMany().HasForeignKey( f => f.BinaryFileTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( f => f.Data ).WithRequired().WillCascadeOnDelete();
         }
     }
