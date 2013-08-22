@@ -11,6 +11,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
 using System.Web;
 
 using Rock.Data;
@@ -184,11 +185,20 @@ namespace Rock.Model
         {
             get
             {
-                return FirstName + " " + LastName;
+                var fullName = new StringBuilder();
+
+                if ( TitleValue != null )
+                    fullName.AppendFormat( "{0} ", TitleValue.Name );
+
+                fullName.AppendFormat( "{0} {1}", FirstName, LastName );
+
+                if ( SuffixValue != null )
+                    fullName.AppendFormat( " {0}", SuffixValue.Name );
+
+                return fullName.ToString();
             }
-            private set
-            {
-            }
+
+            private set { }
         }
 
         /// <summary>
