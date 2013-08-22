@@ -8,16 +8,14 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Text;
-using Rock.Attribute;
 using Rock.Model;
 
-namespace Rock.BinaryFile.Storage
+namespace Rock.Storage.Provider
 {
     [Description( "Database-driven document storage" )]
-    [Export( typeof( StorageComponent ) )]
+    [Export( typeof( ProviderComponent ) )]
     [ExportMetadata( "ComponentName", "Database" )]
-    public class Database : StorageComponent
+    public class Database : ProviderComponent
     {
 
         /// <summary>
@@ -25,10 +23,10 @@ namespace Rock.BinaryFile.Storage
         /// </summary>
         /// <param name="files">The files.</param>
         /// <param name="personId"></param>
-        public override void SaveFiles( IEnumerable<Model.BinaryFile> files, int? personId )
+        public override void SaveFiles( IEnumerable<BinaryFile> files, int? personId )
         {
             var fileService = new BinaryFileService();
-            
+
             foreach ( var file in files )
             {
                 if ( file.Id == 0 )
@@ -47,7 +45,7 @@ namespace Rock.BinaryFile.Storage
                 fileService.Save( file, personId );
 
                 // Set the URL now that we have a Guid...
-                file.Url = string.Format( "~/GetFile.ashx?guid={0}", file.Guid );
+                file.Url = GetUrl( file );
 
                 // Then save again to persist the URL
                 fileService.Save( file, personId );
@@ -59,7 +57,7 @@ namespace Rock.BinaryFile.Storage
         /// </summary>
         /// <param name="file">The file.</param>
         /// <param name="personId"></param>
-        public override void RemoveFile( Model.BinaryFile file, int? personId )
+        public override void RemoveFile( BinaryFile file, int? personId )
         {
             var fileService = new BinaryFileService();
             fileService.Delete( file, personId );
@@ -69,30 +67,25 @@ namespace Rock.BinaryFile.Storage
         /// Gets the URL.
         /// </summary>
         /// <param name="file">The file.</param>
-        /// <param name="height">The height.</param>
-        /// <param name="width">The width.</param>
         /// <returns></returns>
-        public override string GetUrl( Model.BinaryFile file, int? height = null, int? width = null )
+        public override string GetUrl( BinaryFile file )
         {
-            if ( string.IsNullOrWhiteSpace( file.FileName ) )
+            string wsPath;
+
+            switch ( file.MimeType.ToLower() )
             {
-                return null;
+                case "image/jpeg":
+                case "image/gif":
+                case "image/png":
+                case "image/bmp":
+                    wsPath = "~/GetImage.ashx";
+                    break;
+                default:
+                    wsPath = "~/GetFile.ashx";
+                    break;
             }
 
-            var urlBuilder = new StringBuilder();
-            urlBuilder.AppendFormat( "~/GetFile.ashx?guid={0}", file.FileName );
-
-            if ( height.HasValue )
-            {
-                urlBuilder.AppendFormat( "&height={0}", height );
-            }
-
-            if ( width.HasValue )
-            {
-                urlBuilder.AppendFormat( "&width={0}", width );
-            }
-
-            return urlBuilder.ToString();
+            return string.Format( "{0}?guid={1}", wsPath, file.Guid );
         }
     }
 }

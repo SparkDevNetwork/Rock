@@ -8,7 +8,12 @@ using System;
 using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
+using System.IO;
+using System.Net;
+using System.Text;
 using System.Web;
+using Rock.Storage;
+using Rock.Storage.Provider;
 
 namespace RockWeb
 {
@@ -17,9 +22,7 @@ namespace RockWeb
     /// </summary>
     public class GetFile : IHttpAsyncHandler
     {
-        public GetFile()
-        {
-        }
+        // TODO: Does security need to be taken into consideration in order to view a file?
 
         /// <summary>
         /// Called to initialize an asynchronous call to the HTTP handler. 
@@ -32,17 +35,18 @@ namespace RockWeb
         {
             try
             {
-                string anID = context.Request.QueryString[0];
+                var queryString = context.Request.QueryString;
 
-                if ( string.IsNullOrEmpty( anID ) )
+                if ( !( queryString["id"] == null || queryString["guid"] == null ) )
                 {
                     throw new Exception( "file id must be provided" );
                 }
 
-                int id = -1;
-                Guid guid = new Guid();
+                var id = !string.IsNullOrEmpty( queryString["id"] ) ? queryString["id"] : queryString["guid"];
+                int fileId;
+                Guid fileGuid = Guid.Empty;
 
-                if ( !( int.TryParse( anID, out id ) || Guid.TryParse( anID, out guid ) ) )
+                if ( !( int.TryParse( id, out fileId ) || Guid.TryParse( id, out fileGuid ) ) )
                 {
                     throw new Exception( "file id key must be a guid or an int" );
                 }
@@ -52,8 +56,8 @@ namespace RockWeb
                 SqlCommand cmd = conn.CreateCommand();
                 cmd.CommandText = "BinaryFile_sp_getByID";
                 cmd.CommandType = CommandType.StoredProcedure;
-                cmd.Parameters.Add( new SqlParameter( "@Id", id ) );
-                cmd.Parameters.Add( new SqlParameter( "@Guid", guid ) );
+                cmd.Parameters.Add( new SqlParameter( "@Id", fileId ) );
+                cmd.Parameters.Add( new SqlParameter( "@Guid", fileGuid ) );
 
                 // store our Command to be later retrieved by EndProcessRequest
                 context.Items.Add( "cmd", cmd );
@@ -91,12 +95,53 @@ namespace RockWeb
                 {
                     reader.Read();
                     context.Response.Clear();
-                    context.Response.BinaryWrite( (byte[])reader["Data"] );
-                    context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", reader["FileName"] ) );
-                    context.Response.ContentType = (string)reader["MimeType"];
+                    var fileName = (string) reader["FileName"];
+                    context.Response.AddHeader( "content-disposition", string.Format( "inline;filename={0}", fileName ) );
+                    context.Response.ContentType = (string) reader["MimeType"];
+
+                    var entityTypeName = (string) reader["StorageTypeName"];
+                    var provider = ProviderContainer.GetComponent( entityTypeName );
+
+                    if ( provider is Database )
+                    {
+                        context.Response.BinaryWrite( (byte[]) reader["Data"] );
+                    }
+                    else
+                    {
+                        var url = (string) reader["Url"];
+                        Stream stream;
+
+                        if ( url.StartsWith( "~/" ) )
+                        {
+                            var path = context.Server.MapPath( url );
+                            var fileInfo = new FileInfo( path );
+                            stream = fileInfo.Open( FileMode.Open, FileAccess.Read );
+                        }
+                        else
+                        {
+                            var request = WebRequest.Create( url );
+                            var response = request.GetResponse();
+                            stream = response.GetResponseStream();
+                        }
+
+                        if ( stream != null )
+                        {
+                            using ( var memoryStream = new MemoryStream() )
+                            {
+                                stream.CopyTo( memoryStream );
+                                stream.Close();
+                                context.Response.BinaryWrite( memoryStream.ToArray() );
+                            }
+                        }
+                        else
+                        {
+                            context.Response.StatusCode = 404;
+                            context.Response.StatusDescription = "Unable to find the requested file.";
+                        }
+                    }
+
                     context.Response.Flush();
                     context.Response.End();
-                    reader.Close();
                 }
             }
             catch ( Exception ex )
