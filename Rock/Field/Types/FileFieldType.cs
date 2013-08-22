@@ -45,7 +45,7 @@ namespace Rock.Field.Types
             {
                 var fileSelector = (Rock.Web.UI.Controls.FileUploader)control;
 
-                return fileSelector.BinaryFileId != 0 ? fileSelector.BinaryFileId.ToString() : string.Empty;
+                return fileSelector.BinaryFileId.ToString();
             }
             return null;
         }

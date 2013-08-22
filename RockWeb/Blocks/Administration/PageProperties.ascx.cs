@@ -153,7 +153,7 @@ namespace RockWeb.Blocks.Administration
                 tbPageTitle.Text = _page.Title;
                 ppParentPage.SetValue( pageService.Get( page.ParentPageId ?? 0 ) );
                 ddlLayout.Text = _page.Layout;
-                imgIcon.BinaryFileId = page.IconFileId.HasValue ? page.IconFileId.Value : Rock.Constants.None.Id;
+                imgIcon.BinaryFileId = page.IconFileId;
                 tbIconCssClass.Text = _page.IconCssClass;
 
                 cbPageTitle.Checked = _page.PageDisplayTitle;

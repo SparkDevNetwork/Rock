@@ -243,8 +243,8 @@ namespace RockWeb.Blocks.Crm
                 cbShowInGroupList.Checked = groupType.ShowInGroupList;
                 cbShowInNavigation.Checked = groupType.ShowInNavigation;
                 tbIconCssClass.Text = groupType.IconCssClass;
-                imgIconSmall.BinaryFileId = groupType.IconSmallFileId.HasValue ? groupType.IconSmallFileId.Value : None.Id;
-                imgIconLarge.BinaryFileId = groupType.IconLargeFileId.HasValue ? groupType.IconLargeFileId.Value : None.Id;
+                imgIconSmall.BinaryFileId = groupType.IconSmallFileId;
+                imgIconLarge.BinaryFileId = groupType.IconLargeFileId;
 
                 cbTakesAttendance.Checked = groupType.TakesAttendance;
                 ddlAttendanceRule.SetValue( (int)groupType.AttendanceRule );

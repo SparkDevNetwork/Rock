@@ -74,12 +74,21 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The binary file id.
         /// </value>
-        public int BinaryFileId
+        public int? BinaryFileId
         {
             get
             {
                 EnsureChildControls();
-                return hfBinaryFileId.ValueAsInt();
+                int? result = hfBinaryFileId.ValueAsInt();
+                if ( result > 0 )
+                {
+                    return result;
+                }
+                else
+                {
+                    // BinaryFileId of 0 means no file, so just return null instead
+                    return null;
+                }
             }
 
             set
@@ -167,7 +176,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
             }
 
-            if ( BinaryFileId != 0 )
+            if ( BinaryFileId != null )
             {
                 aFileName.HRef = string.Format( "{0}GetFile.ashx?id={1}", ResolveUrl( "~" ), BinaryFileId );
                 aFileName.InnerText = new BinaryFileService().Queryable().Where( f => f.Id == BinaryFileId ).Select( f => f.FileName ).FirstOrDefault();
