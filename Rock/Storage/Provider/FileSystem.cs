@@ -14,23 +14,17 @@ using System.Web;
 using Rock.Attribute;
 using Rock.Model;
 
-namespace Rock.BinaryFile.Storage
+namespace Rock.Storage.Provider
 {
     [Description( "File System-driven document storage" )]
-    [Export( typeof( StorageComponent ) )]
+    [Export( typeof( ProviderComponent ) )]
     [ExportMetadata( "ComponentName", "FileSystem" )]
     [TextField( "Root Path", "Root path where the files will be stored on disk." )]
-    [TextField( "Folder Name", "Optional Folder name to place files on disk.", false )]
-    public class FileSystem : StorageComponent
+    public class FileSystem : ProviderComponent
     {
         public string RootPath
         {
             get { return GetAttributeValue( "RootPath" ); }
-        }
-
-        public string FolderName
-        {
-            get { return GetAttributeValue( "FolderName" ); }
         }
 
         /// <summary>
@@ -38,10 +32,10 @@ namespace Rock.BinaryFile.Storage
         /// </summary>
         /// <param name="files">The files.</param>
         /// <param name="personId"></param>
-        public override void SaveFiles( IEnumerable<Model.BinaryFile> files, int? personId )
+        public override void SaveFiles( IEnumerable<BinaryFile> files, int? personId )
         {
             var fileService = new BinaryFileService();
-            
+
             foreach ( var file in files )
             {
                 if ( file.Data == null )
@@ -51,12 +45,25 @@ namespace Rock.BinaryFile.Storage
 
                 var url = GetUrl( file );
                 var physicalPath = GetPhysicalPath( url );
+                var subPath = physicalPath.Replace( file.FileName, string.Empty );
+
+                if ( !Directory.Exists( subPath ) )
+                {
+                    Directory.CreateDirectory( subPath );
+                }
+
                 File.WriteAllBytes( physicalPath, file.Data.Content );
 
                 // Set Data to null after successful OS save so the the binary data is not 
                 // written into the database.
                 file.Data = null;
-                file.Url = FolderName;
+                file.Url = url;
+
+                if ( file.Id == 0 )
+                {
+                    fileService.Add( file, personId );
+                }
+
                 fileService.Save( file, personId );
             }
         }
@@ -66,7 +73,7 @@ namespace Rock.BinaryFile.Storage
         /// </summary>
         /// <param name="file">The file.</param>
         /// <param name="personId"></param>
-        public override void RemoveFile( Model.BinaryFile file, int? personId )
+        public override void RemoveFile( BinaryFile file, int? personId )
         {
             var fileService = new BinaryFileService();
             File.Delete( HttpContext.Current.Server.MapPath( file.Url ) );
@@ -77,10 +84,8 @@ namespace Rock.BinaryFile.Storage
         /// Gets the URL.
         /// </summary>
         /// <param name="file">The file.</param>
-        /// <param name="height">The height.</param>
-        /// <param name="width">The width.</param>
         /// <returns></returns>
-        public override string GetUrl( Model.BinaryFile file, int? height = null, int? width = null )
+        public override string GetUrl( BinaryFile file )
         {
             if ( string.IsNullOrWhiteSpace( file.FileName ) )
             {
@@ -96,16 +101,6 @@ namespace Rock.BinaryFile.Storage
                 urlBuilder.Append( "/" );
             }
 
-            if ( !string.IsNullOrWhiteSpace( FolderName ) )
-            {
-                urlBuilder.Append( FolderName );
-
-                if ( !FolderName.EndsWith( "/" ) )
-                {
-                    urlBuilder.Append( "/" );
-                }
-            }
-
             urlBuilder.Append( file.FileName );
             return urlBuilder.ToString();
         }
@@ -116,8 +111,8 @@ namespace Rock.BinaryFile.Storage
             {
                 return path;
             }
-            
-            if ( path.StartsWith( "http:" ) || path.StartsWith( "https:" ) )
+
+            if ( path.StartsWith( "http:" ) || path.StartsWith( "https:" ) || path.StartsWith( "/" ) || path.StartsWith( "~" ) )
             {
                 return HttpContext.Current.Server.MapPath( path );
             }

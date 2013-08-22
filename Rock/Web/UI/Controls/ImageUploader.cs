@@ -3,6 +3,8 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+
+using System;
 using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -16,11 +18,12 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:ImageUploader runat=server></{0}:ImageUploader>" )]
     public class ImageUploader : CompositeControl, ILabeledControl
     {
-        private Label label;
-        private Image image;
-        private HiddenField hiddenField;
+        private Label lblTitle;
+        private Image imgThumbnail;
+        private HiddenField hfBinaryFileId;
+        private HiddenField hfBinaryFileTypeGuid;
         private FileUpload fileUpload;
-        private HtmlAnchor htmlAnchor;
+        private HtmlAnchor aRemove;
 
         /// <summary>
         /// Gets or sets a value indicating whether [display required indicator].
@@ -32,57 +35,84 @@ namespace Rock.Web.UI.Controls
         Bindable( true ),
         Category( "Data" ),
         DefaultValue( "" ),
-        Description( "Image Id" )
+        Description( "BinaryFile Id" )
         ]
-        public int? ImageId
-        {
+        public int? BinaryFileId
+        { 
             get
             {
                 EnsureChildControls();
-
-                int id = 0;
-                if ( int.TryParse( hiddenField.Value, out id ) )
+                int? result = hfBinaryFileId.ValueAsInt();
+                if ( result > 0 )
                 {
-                    if ( id > 0 )
-                    {
-                        return id;
-                    }
+                    return result;
                 }
-
-                return null;
+                else
+                {
+                    // BinaryFileId of 0 means no file, so just return null instead
+                    return null;
+                }
             }
 
             set
             {
                 EnsureChildControls();
-                hiddenField.Value = value.HasValue ? value.Value.ToString() : string.Empty;
+                hfBinaryFileId.Value = value.ToString();
             }
         }
 
         /// <summary>
-        /// Gets or sets the label text.
+        /// Gets or sets the binary file type GUID.
         /// </summary>
         /// <value>
-        /// The label text.
+        /// The binary file type GUID.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Data" ),
+        DefaultValue( "" ),
+        Description( "BinaryFileType Guid" )
+        ]
+        public Guid BinaryFileTypeGuid
+        {
+            get
+            {
+                EnsureChildControls();
+                Guid guid;
+                return Guid.TryParse( hfBinaryFileTypeGuid.Value, out guid ) ? guid : new Guid( SystemGuid.BinaryFiletype.DEFAULT );
+            }
+
+            set 
+            { 
+                EnsureChildControls();
+                hfBinaryFileTypeGuid.Value = value.ToString();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the lblTitle text.
+        /// </summary>
+        /// <value>
+        /// The lblTitle text.
         /// </value>
         [
         Bindable( true ),
         Category( "Appearance" ),
         DefaultValue( "" ),
-        Description( "The text for the label." )
+        Description( "The text for the lblTitle." )
         ]
         public string LabelText
         {
             get
             {
                 EnsureChildControls();
-                return label.Text;
+                return lblTitle.Text;
             }
 
             set
             {
                 EnsureChildControls();
-                label.Text = value;
+                lblTitle.Text = value;
             }
         }
 
@@ -90,70 +120,32 @@ namespace Rock.Web.UI.Controls
         /// Raises the <see cref="E:System.Web.UI.Control.Init"/> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs"/> object that contains the event data.</param>
-        protected override void OnInit( System.EventArgs e )
+        protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-
             EnsureChildControls();
 
-            string script = string.Format(
-@"
-    $(document).ready(function() {{
-
-        function ConfigureImageUploader{0}(sender, args) {{
-            $('#{0}').kendoUpload({{
-                multiple: false,
-                showFileList: false,
-                async: {{
-                    saveUrl: '{4}ImageUploader.ashx'
-                }},
-
-                success: function(e) {{
-
-                    if (e.operation == 'upload' && e.response != '0') {{
-                        $('#{1}').val(e.response.Id);
-                        $('#{2}').attr('src','');
-                        $('#{2}').hide();             
-                        $('#{2}').attr('src','{4}GetImage.ashx?id=' + e.response.Id + '&width=50&height=50');
-                        $('#{2}').show('fast', function() {{ 
-                            if ($('#modal-scroll-container').length) {{
-                                $('#modal-scroll-container').tinyscrollbar_update('relative');
-                            }}
-                        }});
-                        $('#{3}').show('fast');
-                    }}
-
-                }}
-            }});
-
-            $('#{3}').click( function(){{
-                $(this).hide('fast');
-                $('#{1}').val('0');
-                $('#{2}').attr('src','')
-                $('#{2}').hide('fast', function() {{ 
-                    if ($('#modal-scroll-container').length) {{
-                        $('#modal-scroll-container').tinyscrollbar_update('relative');
-                    }}
-                }});
-            }});
-
-        }}
-
-        // configure image uploaders         
-        ConfigureImageUploader{0}(null, null);
-    }});
-        ",
-                            fileUpload.ClientID,
-                            hiddenField.ClientID,
-                            image.ClientID,
-                            htmlAnchor.ClientID,
-                            ResolveUrl( "~" ) );
-
+            var script = string.Format( @"
+Rock.controls.fileUploader.initialize({{
+    controlId: '{0}',
+    fileId: '{1}',
+    fileTypeGuid: '{2}',
+    hfFileId: '{3}',
+    imgThumbnail: '{4}',
+    aRemove: '{5}',
+    fileType: 'image'
+}});",
+                fileUpload.ClientID,
+                BinaryFileId,
+                BinaryFileTypeGuid,
+                hfBinaryFileId.ClientID,
+                imgThumbnail.ClientID,
+                aRemove.ClientID );
             ScriptManager.RegisterStartupScript( fileUpload, fileUpload.GetType(), "KendoImageScript_" + this.ID, script, true );
         }
 
         /// <summary>
-        /// Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
+        /// Renders a lblTitle and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         public override void RenderControl( HtmlTextWriter writer )
@@ -165,30 +157,34 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "control-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                label.AddCssClass( "control-label" );
-                label.RenderControl( writer );
+                lblTitle.AddCssClass( "control-lblTitle" );
+                lblTitle.RenderControl( writer );
 
                 writer.AddAttribute( "class", "controls" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
             }
             
-            writer.AddAttribute( "class", "rock-image" );
+            writer.AddAttribute( "class", "rock-imgThumbnail" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            if ( ImageId.HasValue )
+            if ( BinaryFileId != null )
             {
-                image.Style["display"] = "inline";
-                image.ImageUrl = "~/GetImage.ashx?" + ImageId.Value.ToString() + "&width=50&height=50";
+                imgThumbnail.Style["display"] = "inline";
+                imgThumbnail.ImageUrl = "~/GetImage.ashx?id=" + BinaryFileId.ToString() + "&width=50&height=50";
+                aRemove.Style[HtmlTextWriterStyle.Display] = "inline";
             }
             else
             {
-                image.Style["display"] = "none";
-                image.ImageUrl = string.Empty;
+                imgThumbnail.Style["display"] = "none";
+                imgThumbnail.ImageUrl = string.Empty;
+                aRemove.Style[HtmlTextWriterStyle.Display] = "none";
             }
 
-            image.RenderControl( writer );
-            hiddenField.RenderControl( writer );
-            htmlAnchor.RenderControl( writer );
+            imgThumbnail.RenderControl( writer );
+
+            hfBinaryFileId.RenderControl( writer );
+            hfBinaryFileTypeGuid.RenderControl( writer );
+            aRemove.RenderControl( writer );
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             fileUpload.Attributes["name"] = string.Format( "{0}[]", base.ID );
@@ -209,24 +205,28 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void CreateChildControls()
         {
-            label = new Label();
-            Controls.Add( label );
+            lblTitle = new Label();
+            Controls.Add( lblTitle );
             
-            image = new Image();
-            image.ID = "img";
-            Controls.Add( image );
+            imgThumbnail = new Image();
+            imgThumbnail.ID = "img";
+            Controls.Add( imgThumbnail );
 
-            label.AssociatedControlID = image.ID;
+            lblTitle.AssociatedControlID = imgThumbnail.ID;
 
-            hiddenField = new HiddenField();
-            hiddenField.ID = "hf";
-            Controls.Add( hiddenField );
+            hfBinaryFileId = new HiddenField();
+            hfBinaryFileId.ID = "hfBinaryFileId";
+            Controls.Add( hfBinaryFileId );
 
-            htmlAnchor = new HtmlAnchor();
-            htmlAnchor.ID = "rmv";
-            htmlAnchor.InnerText = "Remove";
-            htmlAnchor.Attributes["class"] = "remove-image";
-            Controls.Add( htmlAnchor );
+            hfBinaryFileTypeGuid = new HiddenField();
+            hfBinaryFileTypeGuid.ID = "hfBinaryFileTypeGuid";
+            Controls.Add( hfBinaryFileTypeGuid );
+
+            aRemove = new HtmlAnchor();
+            aRemove.ID = "rmv";
+            aRemove.InnerText = "Remove";
+            aRemove.Attributes["class"] = "remove-imgThumbnail";
+            Controls.Add( aRemove );
 
             fileUpload = new FileUpload();
             fileUpload.ID = "fu";
@@ -248,7 +248,7 @@ namespace Rock.Web.UI.Controls
             {
                 base.Enabled = value;
                 fileUpload.Visible = value;
-                htmlAnchor.Visible = value;
+                aRemove.Visible = value;
             }
         }
     }

@@ -4,8 +4,6 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -57,8 +55,17 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string LabelText
         {
-            get { return lblTitle.Text; }
-            set { lblTitle.Text = value; }
+            get
+            {
+                EnsureChildControls();
+                return lblTitle.Text;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                lblTitle.Text = value;
+            }
         }
 
         /// <summary>
@@ -67,16 +74,44 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The binary file id.
         /// </value>
-        public int BinaryFileId
+        public int? BinaryFileId
         {
-            get { return hfBinaryFileId.ValueAsInt(); }
-            set { hfBinaryFileId.Value = value.ToString(); }
+            get
+            {
+                EnsureChildControls();
+                int? result = hfBinaryFileId.ValueAsInt();
+                if ( result > 0 )
+                {
+                    return result;
+                }
+                else
+                {
+                    // BinaryFileId of 0 means no file, so just return null instead
+                    return null;
+                }
+            }
+
+            set
+            {
+                EnsureChildControls();
+                hfBinaryFileId.Value = value.ToString();
+            }
         }
 
         public Guid BinaryFileTypeGuid
         {
-            get { return new Guid( hfBinaryFileTypeGuid.Value ); }
-            set { hfBinaryFileId.Value = value.ToString(); }
+            get
+            {
+                EnsureChildControls();
+                Guid guid;
+                return Guid.TryParse( hfBinaryFileTypeGuid.Value, out guid ) ? guid : new Guid( SystemGuid.BinaryFiletype.DEFAULT );
+            }
+
+            set
+            {
+                EnsureChildControls();
+                hfBinaryFileTypeGuid.Value = value.ToString();
+            }
         }
 
         #endregion
@@ -141,7 +176,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
             }
 
-            if ( BinaryFileId != 0 )
+            if ( BinaryFileId != null )
             {
                 aFileName.HRef = string.Format( "{0}GetFile.ashx?id={1}", ResolveUrl( "~" ), BinaryFileId );
                 aFileName.InnerText = new BinaryFileService().Queryable().Where( f => f.Id == BinaryFileId ).Select( f => f.FileName ).FirstOrDefault();
@@ -157,6 +192,7 @@ namespace Rock.Web.UI.Controls
             }
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
             hfBinaryFileId.RenderControl( writer );
             hfBinaryFileTypeGuid.RenderControl( writer );
             aFileName.RenderControl( writer );
@@ -181,63 +217,26 @@ namespace Rock.Web.UI.Controls
 
         private void RegisterStartupScript()
         {
-            string script = string.Format(
-@"
-        function ConfigureFileUploaders(sender, args) {{
-            $('#{0}').kendoUpload({{
-                multiple: false,
-                showFileList: false,
-                async: {{
-                    saveUrl: '{4}FileUploader.ashx?' + $('#{1}').val()
-                }},
-
-                success: function(e) {{
-
-                    if (e.operation == 'upload' && e.response ) {{
-                        $('#{1}').val(e.response.Id);
-                        var $fileLink = $('#{2}');
-                        $fileLink.attr('href','')
-                        $fileLink.hide();   
-                        $fileLink.text(e.response.FileName);        
-                        $fileLink.attr('href','{4}GetFile.ashx?id=' + e.response.Id);
-                        $fileLink.show('fast', function() {{ 
-                            if ($('#modal-scroll-container').length) {{
-                                $('#modal-scroll-container').tinyscrollbar_update('relative');
-                            }}
-                        }});
-                        $('#{3}').show('fast');
-                        {5};
-                    }}
-
-                }}
-            }});
-
-            $('#{3}').click( function(e){{
-                $(this).hide('fast');
-                $('#{1}').val('0');
-                var $fileLink = $('#{2}');
-                $fileLink.attr('href','')
-                $fileLink.hide('fast', function() {{ 
-                    if ($('#modal-scroll-container').length) {{
-                        $('#modal-scroll-container').tinyscrollbar_update('relative');
-                    }}
-                }});
-                return false;
-            }});
-
-        }}
-
-        // configure file uploaders         
-        ConfigureFileUploaders(null, null);
-  
-        ",
-                            fileUpload.ClientID,        // 0
-                            hfBinaryFileId.ClientID,    // 1
-                            aFileName.ClientID,         // 2
-                            aRemove.ClientID,           // 3
-                            ResolveUrl( "~" ),          // 4
-                            this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "FileUploaded" ), true ) );    // 5
-
+            var postBackScript = this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "FileUploaded" ), true );
+            postBackScript = postBackScript.Replace( '\'', '"' );
+            var script = string.Format( @"
+Rock.controls.fileUploader.initialize({{
+    controlId: '{0}',
+    fileId: '{1}',
+    fileTypeGuid: '{2}',
+    hfFileId: '{3}',
+    aFileName: '{4}',
+    aRemove: '{5}',
+    postbackScript: '{6}',
+    fileType: 'file'
+}});", 
+                fileUpload.ClientID,
+                BinaryFileId,
+                BinaryFileTypeGuid,
+                hfBinaryFileId.ClientID,
+                aFileName.ClientID,
+                aRemove.ClientID,
+                postBackScript );
             ScriptManager.RegisterStartupScript( fileUpload, fileUpload.GetType(), "KendoImageScript_" + this.ID, script, true );
         }
 
