@@ -140,5 +140,33 @@
         CancelControlID="lbAddNoteCancel" BackgroundCssClass="modalBackground" />
     <asp:HiddenField ID="hfOpenNotePanel" runat="server" />    
 
+    <!-- Add Tag Panel -->
+    <asp:Panel ID="pnlAddTag" runat="server" CssClass="add-tag" DefaultButton="lbAddTagSave">
+        <Rock:ModalAlert ID="maAddTag" runat="server" />
+        <div class="row-fluid attended-checkin-header">
+            <div class="span3 attended-checkin-actions">
+                <asp:LinkButton ID="lbAddTagCancel" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddTagCancel_Click" Text="Cancel" CausesValidation="false"/>
+            </div>
+
+            <div class="span6">
+                <h1>Add Tag</h1>
+            </div>
+
+            <div class="span3 attended-checkin-actions">
+                <asp:LinkButton ID="lbAddTagSave" CssClass="btn btn-large last btn-primary" runat="server" OnClick="lbAddTagSave_Click" Text="Save" />
+            </div>
+        </div>
+		
+        <div class="row-fluid attended-checkin-body addnote">
+            <div class="span12">
+                <Rock:LabeledTextBox ID="tbTag" runat="server" TextMode="MultiLine" CssClass="fullWidth" Rows="3" />
+            </div>
+        </div>
+        <br />
+    </asp:Panel>
+    <asp:ModalPopupExtender ID="mpeAddTag" runat="server" TargetControlID="hfOpenTagPanel" PopupControlID="pnlAddTag" 
+        CancelControlID="lbAddTagCancel" BackgroundCssClass="modalBackground" />
+    <asp:HiddenField ID="hfOpenTagPanel" runat="server" />    
+
 </ContentTemplate>
 </asp:UpdatePanel>
