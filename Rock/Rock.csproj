@@ -1383,10 +1383,8 @@
     <Compile Include="Security\AdditionalActionsAttribute.cs" />
     <Compile Include="Security\Authentication\ActiveDirectory.cs" />
     <Compile Include="Security\Authentication\Database.cs" />
-    <Compile Include="Security\ExternalAuthenticationComponent.cs" />
-    <Compile Include="Security\ExternalAuthenticationContainer.cs" />
     <Compile Include="Security\Encryption.cs" />
-    <Compile Include="Security\ExternalAuthentication\Facebook.cs">
+    <Compile Include="Security\Authentication\Facebook.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Security\GlobalDefault.cs" />
