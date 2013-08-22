@@ -185,6 +185,10 @@
     <Compile Include="Migrations\201308212336197_IntegerRangeFieldType.Designer.cs">
       <DependentUpon>201308212336197_IntegerRangeFieldType.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201308221639318_RemoveExternalAuthentication.cs" />
+    <Compile Include="Migrations\201308221639318_RemoveExternalAuthentication.Designer.cs">
+      <DependentUpon>201308221639318_RemoveExternalAuthentication.cs</DependentUpon>
+    </Compile>
     <Compile Include="Storage\ProviderComponent.cs" />
     <Compile Include="Storage\ProviderContainer.cs" />
     <Compile Include="Storage\Provider\Database.cs" />
@@ -2210,6 +2214,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201308212336197_IntegerRangeFieldType.resx">
       <DependentUpon>201308212336197_IntegerRangeFieldType.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308221639318_RemoveExternalAuthentication.resx">
+      <DependentUpon>201308221639318_RemoveExternalAuthentication.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
