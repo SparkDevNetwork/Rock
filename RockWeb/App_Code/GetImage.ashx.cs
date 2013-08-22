@@ -10,7 +10,6 @@ using System;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net;
-using System.Text;
 using System.Web;
 
 using ImageResizer;
@@ -96,7 +95,7 @@ namespace RockWeb
             }
             catch ( Exception ex )
             {
-                // TODO: log this error
+                ExceptionLogService.LogException( ex, context ); 
                 context.Response.StatusCode = 500;
                 context.Response.StatusDescription = ex.Message;
                 context.Response.Flush();
@@ -124,14 +123,10 @@ namespace RockWeb
         /// <param name="physFilePath">The phys file path.</param>
         private static void Cache( BinaryFile file, string physFilePath )
         {
-            try
+            using ( BinaryWriter binWriter = new BinaryWriter( File.Open( physFilePath, FileMode.Create ) ) )
             {
-                using ( BinaryWriter binWriter = new BinaryWriter( File.Open( physFilePath, FileMode.Create ) ) )
-                {
-                    binWriter.Write( file.Data.Content );
-                }
+                binWriter.Write( file.Data.Content );
             }
-            catch { /* do nothing, not critical if this fails, although TODO: log */ }
         }
 
         /// <summary>
@@ -153,7 +148,6 @@ namespace RockWeb
             }
             catch
             {
-                var log = new ExceptionLog();
                 return null;
             }
 
