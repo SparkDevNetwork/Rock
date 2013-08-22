@@ -75,7 +75,7 @@ namespace RockWeb
                 provider.SaveFile( file, null );
 
             }
-            catch ( Exception ex )
+            catch ( Exception )
             {
                 // TODO: Log unable to rotate and/or resize.
             }

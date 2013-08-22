@@ -37,12 +37,21 @@ namespace Rock.Web.UI.Controls
         DefaultValue( "" ),
         Description( "BinaryFile Id" )
         ]
-        public int BinaryFileId
-        {
+        public int? BinaryFileId
+        { 
             get
             {
                 EnsureChildControls();
-                return hfBinaryFileId.ValueAsInt();
+                int? result = hfBinaryFileId.ValueAsInt();
+                if ( result > 0 )
+                {
+                    return result;
+                }
+                else
+                {
+                    // BinaryFileId of 0 means no file, so just return null instead
+                    return null;
+                }
             }
 
             set
@@ -158,15 +167,17 @@ Rock.controls.fileUploader.initialize({{
             writer.AddAttribute( "class", "rock-imgThumbnail" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            if ( BinaryFileId > 0 )
+            if ( BinaryFileId != null )
             {
                 imgThumbnail.Style["display"] = "inline";
                 imgThumbnail.ImageUrl = "~/GetImage.ashx?id=" + BinaryFileId.ToString() + "&width=50&height=50";
+                aRemove.Style[HtmlTextWriterStyle.Display] = "inline";
             }
             else
             {
                 imgThumbnail.Style["display"] = "none";
                 imgThumbnail.ImageUrl = string.Empty;
+                aRemove.Style[HtmlTextWriterStyle.Display] = "none";
             }
 
             imgThumbnail.RenderControl( writer );

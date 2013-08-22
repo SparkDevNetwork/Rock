@@ -148,7 +148,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </summary>
         private void ShowDetails()
         {
-            imgPhoto.BinaryFileId = Person.PhotoId.HasValue ? Person.PhotoId.Value : Rock.Constants.None.Id;
+            imgPhoto.BinaryFileId = Person.PhotoId;
             tbGivenName.Text = Person.GivenName;
             tbNickName.Text = Person.NickName;
             tbMiddleName.Text = Person.MiddleName;
