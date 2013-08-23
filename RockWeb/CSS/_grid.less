@@ -1,110 +1,102 @@
 ﻿/*
     Used to manage styles related to Rock's internal grid component
     
-    1. 
-    2. 
+    1. Bootstrap Overrides
+    2. Filter
+    3. Column Header
+    4. Footer
+    5. Light Style - Used for small grids
+    5. Disabled Styles - Used when the entire grid should be shown in a disabled state
 
 */
 
 
-// x. Bootstrap Overrides
+// 1. Bootstrap Overrides
 // -------------------------
 .table-hover tbody tr:hover td,
-.table-hover tbody tr:hover th
-{
+.table-hover tbody tr:hover th {
     cursor: pointer;
 }
 
-.grid-table th a:hover
-{
+.grid-table th a:hover {
     text-decoration: none;
 }
 
-td[align=center] 
-{
+td[align=center] {
     text-align: center;
 }
 
-.grid-table a.minimal i
-{
+.grid-table a.minimal i {
     text-decoration: none;
     color: @site-text-color;
 }
 
 
-// x. Filter
+// 2. Filter
 // -------------------------
-.grid-filter 
-{
+.grid-filter {
     background-color: @grid-filter-background;
     border-radius: @site-border-radius;
     padding: 0 0 12px 6px;
 	margin-bottom: -10px;
+
+    header {
+        margin: 0 0 -4px -6px;
+        border-radius: @site-border-radius @site-border-radius 0 0;
+        padding: 4px;
+        cursor: pointer;
+        height: 22px;
+
+        div {
+            float: right;
+        }
+
+        h3 {
+            font-size: 12px;
+            margin: 0 2px 0 2px;
+            line-height: 16px;
+            display: inline;
+	        font-weight: @font-light-weight;
+        }
+
+        i {
+            color: lighten(@site-text-color, 20%);
+        }
+
+        fieldset {
+            margin-bottom: 0;
+        }
+    }
+
+     h4 {
+        margin: 12px 0 20px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid darken(@grid-filter-background, 8%);
+    }
 }
 
-.grid-filter header {
-    margin: 0 0 -4px -6px;
-    border-radius: @site-border-radius @site-border-radius 0 0;
-    padding: 4px;
-    cursor: pointer;
-    height: 22px;
-}
-
-.grid-filter header div {
-    float: right;
-}
-
-.grid-filter header h3 {
-    font-size: 12px;
-    margin: 0 2px 0 2px;
-    line-height: 16px;
-    display: inline;
-	font-weight: @font-light-weight;
-}
-
-.grid-filter header i {
-    color: lighten(@site-text-color, 20%);
-}
-
-.grid-filter fieldset 
-{
-    margin-bottom: 0;
-}
-
-.grid-filter h4
-{
-    margin: 12px 0 20px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid darken(@grid-filter-background, 8%);
-}
-
-.grid-filter +  div .grid-table 
-{
+.grid-filter +  div .grid-table {
     margin-top: -12px;   
 }
 
-.grid-filter-entry
-{
+.grid-filter-entry {
     margin-bottom: 12px;
+
+    .control-group {
+        width: 350px;
+        float: left;
+    }
 }
 
-.grid-filter-entry .control-group
-{
-    width: 350px;
-    float: left;
-}
-
- .grid-filter-entry legend + .control-group
- {
+ .grid-filter-entry legend + .control-group {
      margin-top: 0;
  }
 
-.grid-filter-overview fieldset
-{
+.grid-filter-overview fieldset {
     margin-bottom: 12px;
 }
 
-// x. Column Header
+// 3. Column Header
 // -------------------------
 
 .table thead th  {
@@ -116,33 +108,28 @@ td[align=center]
     vertical-align: middle;
 }
 
-.table-bordered th a
-{
+.table-bordered th a {
     color: @site-accentbold-inverse-color;
     display: block;
 }
 
 
 // sorting
-.grid-table thead th.ascending a::before
-{
+.grid-table thead th.ascending a::before {
     padding-right: 5px;
 	content: "\f0d8";
 	font-family: FontAwesome; 
 }
 
-.grid-table thead th.descending a::before
-{
+.grid-table thead th.descending a::before {
     padding-right: 5px;
 	content: "\f0d7";
 	font-family: FontAwesome; 
 }
 
-
-// x. Footer
+// 4. Footer
 // -------------------------
 
- 
 .grid-table tfoot td.grid-footer  {
 	background: none;
     background-color: @grid-footer-background;
@@ -152,23 +139,20 @@ td[align=center]
 }
 
 // pagination
-.grid-table .pagination
-{
+.grid-table .pagination {
     margin: 0;
+
+    a {
+        color: @site-text-color;
+    }
 }
 
-.grid-table .pagination a
-{
-    color: @site-text-color;
-}
-
-.grid-table .page-navigation
-{
+.grid-table .page-navigation {
     float: right;
 }
 
-.grid-table .pagination ul > li > a, .pagination ul > li > span
-{
+.grid-table .pagination ul > li > a, 
+.pagination ul > li > span {
     font-size: 11px;
     padding: 4px 12px;
 }
@@ -177,8 +161,7 @@ td[align=center]
 	float: left
 }
 
-.grid-table .item-count
-{
+.grid-table .item-count {
     float: left;
     font-size: 11px;
     margin-left: 10px;
@@ -190,30 +173,24 @@ td[align=center]
 	text-align: right;
 }
 
-.grid-table tfoot td .btn
-{
+.grid-table tfoot td .btn {
     margin-left: 8px;
 }
 
-
-
-// x. Light style
+// 5. Light Style
 // -------------------------
 
-.table-light thead th
-{
+.table-light thead th {
     background-color: inherit;
     color: @site-text-color;
     font-weight: @font-bold-weight;
 }
 
-.table-light tfoot td 
-{
+.table-light tfoot td {
     background-color: inherit;
 }
 
-.table-light tfoot td .grid-actions a
-{
+.table-light tfoot td .grid-actions a {
     border-radius: 0;
     border-style: none;
     border-width: 0;
@@ -221,22 +198,19 @@ td[align=center]
     border-color: none;
 }
 
-// x. Disabled Styles
+// 5. Disabled Styles
 // -------------------------
-.grid-table.aspNetDisabled
-{
+.grid-table.aspNetDisabled {
     opacity: 0.5;
 }
 
 .grid-table.aspNetDisabled.table-hover tbody tr:hover th,
-.grid-table.aspNetDisabled.table-hover tbody tr:hover td
-{
+.grid-table.aspNetDisabled.table-hover tbody tr:hover td {
     background-color: inherit;
     cursor: default;
 }
 
-.grid-table.aspNetDisabled a
-{
+.grid-table.aspNetDisabled a {
     cursor: default;
 }
 

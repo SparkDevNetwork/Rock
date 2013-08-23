@@ -120,7 +120,7 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
             int childGroupOrder = 0;
             foreach ( CheckinGroupEditor checkinGroupEditor in this.Controls.OfType<CheckinGroupEditor>() )
             {
-                Group childGroup = checkinGroupEditor.Group;
+                Group childGroup = checkinGroupEditor.GetGroup();
                 childGroup.Order = childGroupOrder++;
                 result.Groups.Add( childGroup );
             }

@@ -500,7 +500,7 @@ namespace RockWeb.Blocks.Crm
                 group = new Group { Id = 0, IsActive = true, ParentGroupId = parentGroupId };
             }
 
-            if ( group == null )
+            if ( group == null ) 
             {
                 return;
             }
@@ -585,15 +585,16 @@ namespace RockWeb.Blocks.Crm
         /// <param name="group">The group.</param>
         private void ShowEditDetails( Group group )
         {
-            if ( group.Id > 0 )
+
+            if (group.Id == 0)
             {
-                lActionTitle.Text = ActionTitle.Edit( Group.FriendlyTypeName );
+                lReadOnlyTitle.Text = ActionTitle.Add(Group.FriendlyTypeName).FormatAsHtmlTitle();
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( Group.FriendlyTypeName );
+                lReadOnlyTitle.Text = group.Name.FormatAsHtmlTitle();
             }
-
+                       
             SetEditMode( true );
 
             tbName.Text = group.Name;
@@ -698,7 +699,7 @@ namespace RockWeb.Blocks.Crm
 
             hfGroupId.SetValue( group.Id );
             lGroupIconHtml.Text = groupIconHtml;
-            lReadOnlyTitle.Text = group.Name;
+            lReadOnlyTitle.Text = group.Name.FormatAsHtmlTitle();
             string activeHtmlFormat = "<span class='label {0} pull-right' >{1}</span>";
             if ( group.IsActive )
             {
@@ -709,18 +710,24 @@ namespace RockWeb.Blocks.Crm
                 lblActiveHtml.Text = string.Format( activeHtmlFormat, "label-important", "Inactive" );
             }
 
-            DescriptionList descriptionList = new DescriptionList()
-                .Add( "Group Type", group.GroupType.Name )
-                .Add( "Group Description", group.Description );
+            lGroupType.Text = group.GroupType.Name;
+            lGroupDescription.Text = group.Description;
+            
+            DescriptionList descriptionList = new DescriptionList();
 
             if ( group.ParentGroup != null )
             {
                 descriptionList.Add( "Parent Group", group.ParentGroup.Name );
             }
 
-            if ( group.Campus != null )
+            if (group.Campus != null)
             {
-                descriptionList.Add( "Campus", group.Campus.Name );
+                lCampus.Visible = true;
+                lCampus.Text = group.Campus.Name;
+            }
+            else
+            {
+                lCampus.Visible = false;
             }
 
             lblMainDetails.Text = descriptionList.Html;

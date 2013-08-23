@@ -6,7 +6,7 @@
 using System;
 using System.Web.UI;
 
-namespace RockWeb.Themes.GrayFabric.Layouts
+namespace RockWeb.Themes.RockChMS.Layouts
 {
     public partial class Dialog : Rock.Web.UI.DialogMasterPage
     {
