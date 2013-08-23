@@ -6,27 +6,48 @@
         <asp:Panel ID="pnlDetails" runat="server" Visible="false">
             <asp:HiddenField ID="hfWorkflowTypeId" runat="server" />
 
+            <div class="banner">
+                <h1>
+                    <asp:Literal ID="lReadOnlyTitle" runat="server" />
+                </h1>
+
+                <asp:Label ID="lblWorkflowTypeInactive" runat="server" CssClass="label label-important pull-right" Text="Inactive" />
+                <div class="label">
+                    <asp:Literal ID="lWorkflowTypeCategory" runat="server"></asp:Literal>
+                </div> 
+            </div>
+            
             <asp:ValidationSummary ID="vsDetails" runat="server" CssClass="alert alert-error" />
 
-            <div id="pnlEditDetails" runat="server" class="well">
+            <div id="pnlEditDetails" runat="server">
 
                 <fieldset>
-                    <h1 class="banner">
-                        <asp:Literal ID="lActionTitle" runat="server" />
-                    </h1>
 
                     <div class="row-fluid">
                         <div class="span6">
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Name" />
-                            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
-                            <Rock:DataTextBox ID="tbWorkTerm" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="WorkTerm" LabelText="Work Term" />
-                            <Rock:LabeledDropDownList ID="ddlLoggingLevel" runat="server" LabelText="Logging Level" />
-                            <Rock:LabeledCheckBox ID="cbIsActive" runat="server" LabelText="Active" />
                         </div>
                         <div class="span6">
+                            <Rock:LabeledCheckBox ID="cbIsActive" runat="server" Text="Active" />
+                            
+                        </div>
+                    </div>
+
+                    <div class="row-fluid">
+                        <div class="span12">
+                            <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
+                        </div>
+                    </div>
+
+                     <div class="row-fluid">
+                        <div class="span6">
+                            <Rock:DataTextBox ID="tbWorkTerm" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="WorkTerm" LabelText="Work Term" />
+                            <Rock:LabeledDropDownList ID="ddlLoggingLevel" Help="The level you would like to audit.  Start and stop times can be logged for each workflow, workflow activity, or activity action." runat="server" LabelText="Logging Level" />
+                        </div>
+                         <div class="span6">
                             <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" LabelText="Category" EntityTypeName="Rock.Model.WorkflowType" />
                             <Rock:DataTextBox ID="tbProcessingInterval" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="ProcessingIntervalSeconds" LabelText="Processing Interval (seconds)" />
-                            <Rock:LabeledCheckBox ID="cbIsPersisted" runat="server" LabelText="Persisted" />
+                            <Rock:LabeledCheckBox ID="cbIsPersisted" runat="server" Text="Persisted" />
                             <Rock:DataTextBox ID="tbOrder" runat="server" CssClass="input-mini" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Order" LabelText="Order" Required="true" />
                         </div>
                     </div>
@@ -52,17 +73,22 @@
             </div>
 
             <fieldset id="fieldsetViewDetails" runat="server">
-                <h1 class="banner">
-                    <asp:Literal ID="lReadOnlyTitle" runat="server" />
-                </h1>
-                <asp:Label ID="lblWorkflowTypeInactive" runat="server" CssClass="label label-important pull-right" Text="Inactive" />
+
+                <p class="description"><asp:Literal ID="lWorkflowTypeDescription" runat="server"></asp:Literal></p>
 
                 <div class="row-fluid">
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                 </div>
                 <div class="row-fluid">
                     <div class="span6">
-                        <asp:Literal ID="lblMainDetails" runat="server" />
+                        <a class="workflow-activities-readonly-header" href="#" onclick="javascxript: toggleReadOnlyActivitiesList();">
+                            <asp:Label ID="lblActivitiesReadonlyHeaderLabel" runat="server" Text="Activities" />
+                            <b class="caret"></b>
+                        </a>
+                        
+                        <div class="workflow-activities-readonly-list" style="display: none">
+                            <asp:Literal ID="lblWorkflowActivitiesReadonly" runat="server" />
+                        </div>
                     </div>
                     <div class="span6">
                         <asp:Panel ID="pnlAttributeTypes" runat="server">
@@ -77,19 +103,9 @@
                         </asp:Panel>
                     </div>
                 </div>
-                <div class="row-fluid">
-                    <a class="workflow-activities-readonly-header" href="#" onclick="javascxript: toggleReadOnlyActivitiesList();">
-                        <asp:Label ID="lblActivitiesReadonlyHeaderLabel" runat="server" Text="Activities" />
-                        <b class="caret"></b>
-                    </a>
-                    <div class="workflow-activities-readonly-list" style="display: none">
 
-                        <asp:Literal ID="lblWorkflowActivitiesReadonly" runat="server" />
-                    </div>
-                </div>
-                <hr />
                 <div class="actions">
-                    <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-mini" OnClick="btnEdit_Click" />
+                    <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
                 </div>
 
             </fieldset>

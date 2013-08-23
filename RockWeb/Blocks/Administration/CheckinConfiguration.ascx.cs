@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.WebControls;
-using Rock.Model;
-using Rock.Web.UI;
 using Rock;
+using Rock.Constants;
+using Rock.Model;
+using Rock.Web.Cache;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
@@ -14,8 +14,34 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// 
     /// </summary>
-    public partial class CheckinConfiguration : RockBlock
+    public partial class CheckinConfiguration : RockBlock, IDetailBlock
     {
+        #region Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            if ( !Page.IsPostBack )
+            {
+                string itemId = PageParameter( "groupTypeId" );
+                if ( !string.IsNullOrWhiteSpace( itemId ) )
+                {
+                    ShowDetail( "groupTypeId", int.Parse( itemId ) );
+                }
+                else
+                {
+                    pnlDetails.Visible = false;
+                }
+            }
+        }
+
+        #endregion
+
         #region ViewState and Dynamic Controls
 
         /// <summary>
@@ -27,7 +53,7 @@ namespace RockWeb.Blocks.Administration
         protected override object SaveViewState()
         {
             var groupTypeList = new List<GroupType>();
-            foreach (var checkinGroupTypeEditor in phCheckinGroupTypes.Controls.OfType<CheckinGroupTypeEditor>().ToList())
+            foreach ( var checkinGroupTypeEditor in phCheckinGroupTypes.Controls.OfType<CheckinGroupTypeEditor>().ToList() )
             {
                 var groupType = checkinGroupTypeEditor.GetCheckinGroupType();
                 groupTypeList.Add( groupType );
@@ -83,12 +109,12 @@ namespace RockWeb.Blocks.Administration
 
             parentControl.Controls.Add( groupTypeEditor );
 
-            foreach ( var childGroup in groupType.Groups )
+            foreach ( var childGroup in groupType.Groups.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
                 CreateGroupEditorControls( childGroup, groupTypeEditor, false );
             }
 
-            foreach ( var childGroupType in groupType.ChildGroupTypes )
+            foreach ( var childGroupType in groupType.ChildGroupTypes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
                 CreateGroupTypeEditorControls( childGroupType, groupTypeEditor, false );
             }
@@ -116,7 +142,7 @@ namespace RockWeb.Blocks.Administration
 
             CreateGroupTypeEditorControls( checkinArea, phCheckinGroupTypes );
         }
-        
+
         /// <summary>
         /// Handles the AddGroupTypeClick event of the groupTypeEditor control.
         /// </summary>
@@ -125,7 +151,7 @@ namespace RockWeb.Blocks.Administration
         protected void groupTypeEditor_AddGroupTypeClick( object sender, EventArgs e )
         {
             CheckinGroupTypeEditor parentEditor = sender as CheckinGroupTypeEditor;
-            
+
             // CheckinArea is GroupType entity
             GroupType checkinArea = new GroupType();
             checkinArea.Guid = Guid.NewGuid();
@@ -147,7 +173,7 @@ namespace RockWeb.Blocks.Administration
         protected void groupTypeEditor_AddGroupClick( object sender, EventArgs e )
         {
             CheckinGroupTypeEditor parentGroupTypeEditor = sender as CheckinGroupTypeEditor;
-            
+
             Group checkinGroup = new Group();
             checkinGroup.Guid = Guid.NewGuid();
             checkinGroup.IsActive = true;
@@ -156,7 +182,7 @@ namespace RockWeb.Blocks.Administration
             // set GroupType by Guid (just in case the parent groupType hasn't been added to the database yet)
             checkinGroup.GroupType = new GroupType { Guid = parentGroupTypeEditor.GroupTypeGuid };
 
-            CreateGroupEditorControls(checkinGroup, parentGroupTypeEditor);
+            CreateGroupEditorControls( checkinGroup, parentGroupTypeEditor );
         }
 
         /// <summary>
@@ -169,7 +195,7 @@ namespace RockWeb.Blocks.Administration
         {
             CheckinGroupEditor groupEditor = new CheckinGroupEditor();
             groupEditor.ID = "GroupEditor_" + group.Guid.ToString( "N" );
-            groupEditor.Group = group;
+            groupEditor.SetGroup( group );
 
             //TODO
 
@@ -196,6 +222,56 @@ namespace RockWeb.Blocks.Administration
         protected void btnCancel_Click( object sender, EventArgs e )
         {
             //TODO
+        }
+
+        /// <summary>
+        /// Shows the detail.
+        /// </summary>
+        /// <param name="itemKey">The item key.</param>
+        /// <param name="itemKeyValue">The item key value.</param>
+        public void ShowDetail( string itemKey, int itemKeyValue )
+        {
+            // hide the details panel until we verify the page params are good and that the user has edit access
+            pnlDetails.Visible = false;
+
+            if ( itemKey != "groupTypeId" )
+            {
+                return;
+            }
+
+            GroupTypeService groupTypeService = new GroupTypeService();
+            GroupType parentGroupType = groupTypeService.Get( itemKeyValue );
+
+            if ( parentGroupType == null )
+            {
+                pnlDetails.Visible = false;
+                return;
+            }
+
+            nbEditModeMessage.Text = string.Empty;
+            if ( !IsUserAuthorized( "Edit" ) )
+            {
+                // this UI doesn't have a ReadOnly mode, so just show a message and keep the Detail panel hidden
+                nbEditModeMessage.Heading = "Information";
+                nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( "check-in configuration" );
+                return;
+            }
+
+            pnlDetails.Visible = true;
+
+            // limit to child group types that are not Templates
+            int[] templateGroupTypes = new int[] {
+                DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE).Id, 
+                DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_FILTER).Id
+            };
+
+            List<GroupType> checkinGroupTypes = parentGroupType.ChildGroupTypes.Where( a => !templateGroupTypes.Contains( a.GroupTypePurposeValueId ?? 0 ) ).ToList();
+
+            // Load the Controls
+            foreach ( GroupType groupType in checkinGroupTypes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+            {
+                CreateGroupTypeEditorControls( groupType, phCheckinGroupTypes );
+            }
         }
     }
 }

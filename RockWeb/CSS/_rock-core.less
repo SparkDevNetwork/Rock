@@ -1,0 +1,114 @@
+@import "_components.less";
+@import "_pickers.less";
+@import "_block-specific.less";
+@import "_page-admin.less";
+@import "_grid.less";
+@import "_modal.less";
+@import "_forms.less";
+@import "_persondetails.less";
+@import "_scroll.less";
+
+@import "./Bootstrap/mixins.less";
+@import "./Kendo/kendo.flat.less";
+
+// HTML Overrides
+//--------------------------------
+
+
+/* bootstrap overrides */
+.controls textarea {
+    -webkit-box-sizing: border-box;
+	-moz-box-sizing: border-box;
+	box-sizing: border-box;
+	width: 100%;
+}
+
+.control-label {
+    font-weight: @font-semibold-weight;
+}
+
+/* global classes */
+.clickable
+{
+    cursor: pointer;
+}
+
+.light {
+    font-weight: @font-light-weight;
+}
+
+.bold {
+    font-weight: @font-light-weight;
+}
+
+.semibold {
+    font-weight: @font-semibold-weight;
+}
+
+/* context help  */
+a.help {
+    margin-left: 6px;
+    outline: 0;
+    color: @site-header-text-color;
+}
+
+/* form styles - not enough yet for it's own file */
+fieldset .actions {
+    margin-top: 36px;
+}
+
+.panel legend {
+    border-color: @site-accent-color;
+}
+
+
+// Kendo Overrides
+//--------------------------------
+
+.k-treeview .k-in.k-state-hover, 
+.k-treeview .k-in.k-state-selected, 
+.k-treeview .k-in.k-state-focused,
+.k-treeview .k-in
+{
+    padding: 2px 12px;
+    border: 1px solid transparent;
+}
+
+/* user registration styles */
+.not-me 
+{
+    margin-left: 21px;
+}
+
+
+/* error page */
+.error-wrap
+{
+    padding: 12px;
+    overflow: hidden;
+}
+
+.exception-type
+{
+    margin-top: 12px;
+}
+
+/* data views */
+.filter-toogle .switch {
+	margin: 0 6px;
+}
+
+/* security window */
+.security-inherited {
+	margin-top: 12px;
+}
+
+
+
+/* responsive tweaks */
+@media (max-width: 767px) {
+	.page-list-as-blocks li 
+	{
+		width: 28%;
+	}
+}

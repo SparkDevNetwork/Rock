@@ -41,7 +41,16 @@ namespace Rock.Workflow.Action.CheckIn
 
                         foreach ( var groupType in person.GroupTypes.ToList() )
                         {
-                            string minAgeValue = groupType.GroupType.GetAttributeValue( "MinAge" );
+                            string ageRange = groupType.GroupType.GetAttributeValue( "AgeRange" ) ?? string.Empty;
+                            string[] ageRangePair = ageRange.Split( new char[] { ',' }, StringSplitOptions.None );
+                            string minAgeValue = null;
+                            string maxAgeValue = null;
+                            if ( ageRangePair.Length == 2 )
+                            {
+                                minAgeValue = ageRangePair[0];
+                                maxAgeValue = ageRangePair[1];
+                            }
+                            
                             if ( minAgeValue != null )
                             {
                                 double minAge = 0;
@@ -55,7 +64,6 @@ namespace Rock.Workflow.Action.CheckIn
                                 }
                             }
 
-                            string maxAgeValue = groupType.GroupType.GetAttributeValue( "MaxAge" );
                             if ( maxAgeValue != null )
                             {
                                 double maxAge = 0;

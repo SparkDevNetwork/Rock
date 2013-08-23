@@ -64,6 +64,9 @@ SET @AttributeEntityTypeId = (SELECT Id FROM [EntityType] WHERE Name = 'Rock.Mod
 DECLARE @GroupTypePurposeCheckinTemplateId INT
 SET @GroupTypePurposeCheckinTemplateId = (select [Id] from [DefinedValue] where [Guid] = '4A406CB0-495B-4795-B788-52BDFDE00B01');
 
+DECLARE @GroupTypePurposeCheckinFilterId INT
+SET @GroupTypePurposeCheckinFilterId = (select [Id] from [DefinedValue] where [Guid] = '6BCED84C-69AD-4F5A-9197-5C0F9C02DD34');
+
 -- Group Type Check-in Category Id
 DECLARE @GroupTypeCheckInCategoryId INT
 SET @GroupTypeCheckInCategoryId = (
@@ -165,13 +168,13 @@ INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[Tak
 SET @ParentGroupTypeId = SCOPE_IDENTITY()
 
 -- Now insert the all the new GroupTypes under that one...
-INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo])
-   VALUES (0, 'Check in by Age', '0572A5FE-20A4-4BF1-95CD-C71DB5281392', 0, 0, 0, 0)
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[GroupTypePurposeValueId])
+   VALUES (0, 'Check in by Age', '0572A5FE-20A4-4BF1-95CD-C71DB5281392', 0, 0, 0, 0, @GroupTypePurposeCheckinFilterId)
 SET @AgeGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @AgeGroupTypeId);
 
-INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[InheritedGroupTypeId])
-   VALUES (0, 'Check in by Grade', '4F9565A7-DD5A-41C3-B4E8-13F0B872B10B', 0, 0, 0, 0, @AgeGroupTypeId)
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[InheritedGroupTypeId],[GroupTypePurposeValueId])
+   VALUES (0, 'Check in by Grade', '4F9565A7-DD5A-41C3-B4E8-13F0B872B10B', 0, 0, 0, 0, @AgeGroupTypeId, @GroupTypePurposeCheckinFilterId)
 SET @GradeGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @GradeGroupTypeId);
 
