@@ -30,6 +30,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DotLiquid">
+      <HintPath>..\libs\DotLiquid v1.7.0\NET40\DotLiquid.dll</HintPath>
+    </Reference>
     <Reference Include="Payflow_dotNET_2.0">
       <HintPath>..\libs\PayFlow\Payflow_dotNET_2.0.dll</HintPath>
     </Reference>
