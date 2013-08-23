@@ -2,6 +2,10 @@
 
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
+        <div class="row-fluid">
+            <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+        </div>
+
         <asp:Panel ID="pnlDetails" runat="server">
 
             <asp:ValidationSummary ID="vsDetails" runat="server" CssClass="alert alert-error" />

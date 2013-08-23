@@ -7,9 +7,9 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title>Oops...</title>
 
-    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Css/rock-boot.less") %>" />
-    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Css/rock-boot-responsive.less") %>" />
-    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Css/rock-theme.less") %>" />
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Css/bootstrap.less") %>" />
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Css/bootstrap-responsive.less") %>" />
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Css/site-theme.less") %>" />
 
     <script src="<%= ResolveUrl("~/Scripts/jquery.js") %>" >
     <script>
