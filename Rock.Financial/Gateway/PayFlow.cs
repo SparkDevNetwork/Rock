@@ -65,14 +65,17 @@ namespace Rock.Financial.Gateway
             var ppResponse = ppTransaction.SubmitTransaction();
 
             if (ppResponse != null)
+            {
+                TransactionResponse txnResponse = ppResponse.TransactionResponse;
+                if (txnResponse != null)
+                {
+                    // Check response
+                    Rock.Model.FinancialTransaction rockTransaction = new Model.FinancialTransaction();
+                    return rockTransaction;
+                }
+            }
 
-
-            ppInvoice.TaxAmt = transaction
-
-            var ppParams = new Dictionary<string, string>();
-            ppParams.Add("TENDER", "C");
-            ppParams.Add("
-            throw new NotImplementedException();
+            return null;
         }
 
         public override Model.FinancialTransaction Charge( Model.FinancialTransaction transaction, BankAccount bankAccount, bool testTransaction = false )
@@ -110,6 +113,5 @@ namespace Rock.Financial.Gateway
             throw new NotImplementedException();
         }
 
-        private string 
     }
 }
