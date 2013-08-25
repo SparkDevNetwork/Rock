@@ -158,17 +158,17 @@
                 }
         });
 
-        $('.persondetails-familybar').live({
+        $('.persondetails-family').live({
             mouseenter:
                 function () {
-                    var actionsDiv = $('.container-fluid > .actions', this);
+                    var actionsDiv = $(' > .actions', this);
                     if (actionsDiv.length > 0) {
                         $(actionsDiv).fadeToggle();
                     }
                 },
             mouseleave:
                 function () {
-                    var actionsDiv = $('.container-fluid > .actions', this);
+                    var actionsDiv = $(' > .actions', this);
                     if (actionsDiv.length > 0) {
                         $(actionsDiv).fadeToggle();
                     }
