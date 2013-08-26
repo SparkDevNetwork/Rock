@@ -51,11 +51,10 @@ namespace Rock.Workflow.Action.CheckIn
                         {
                             if ( kioskGroupType.KioskGroups.SelectMany( g => g.KioskLocations ).Any( l => l.Location.IsActive ) )
                             {
-                                char[] delimiter = { ',' };
                                 bool personIsQualified = true;
-
                                 if ( filterAge || filterGrade )
                                 {
+                                    char[] delimiter = { ',' };
                                     double? personAge = person.Person.AgePrecise;
                                     string ageAttribute = kioskGroupType.GroupType.GetAttributeValue( "AgeRange" ) ?? string.Empty;
                                     int? personGrade = person.Person.Grade;                                    
