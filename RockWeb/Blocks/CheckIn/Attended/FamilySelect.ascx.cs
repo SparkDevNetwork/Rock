@@ -85,30 +85,28 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             int id = int.Parse( e.CommandArgument.ToString() );
             var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Group.Id == id ).FirstOrDefault();
+            
+            foreach ( ListViewDataItem li in lvFamily.Items )
+            {
+                ( (LinkButton)li.FindControl( "lbSelectFamily" ) ).RemoveCssClass( "active" );
+            }
 
             if ( !family.Selected )
             {
                 CurrentCheckInState.CheckIn.Families.ForEach( f => f.Selected = false );
-                family.Selected = true;
-                ProcessFamily();
-
-                foreach ( ListViewDataItem li in lvFamily.Items )
-                {
-                    ( (LinkButton)li.FindControl( "lbSelectFamily" ) ).RemoveCssClass( "active" );
-                }
                 ( (LinkButton)e.Item.FindControl( "lbSelectFamily" ) ).AddCssClass( "active" );
+                family.Selected = true;
+                ProcessFamily();                                
             }
             else
             {
+                family.Selected = false;               
                 repPerson.DataSource = null;
-                repPerson.DataBind();
-                pnlSelectPerson.Update();
-                family.Selected = false;
-                foreach ( ListViewDataItem li in lvFamily.Items )
-                {
-                    ( (LinkButton)li.FindControl( "lbSelectFamily" ) ).RemoveCssClass( "active" );
-                }
+                repPerson.DataBind();                                
             }
+
+            pnlSelectPerson.Update();
+            pnlSelectVisitor.Update();
         }
 
         /// <summary>
@@ -627,21 +625,24 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                 if ( family != null )
-                {
+                {   
+                    IEnumerable<CheckInPerson> memberDataSource = null;
+                    IEnumerable<CheckInPerson> visitorDataSource = null;
                     if ( family.People.Where( f => f.FamilyMember ).Count() > 0 )
                     {
                         hfSelectedPerson.Value = string.Join( ",", family.People.Select( f => f.Person.Id ) ) + ",";
-                        repPerson.DataSource = family.People.Where( f => f.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst );
-                        repPerson.DataBind();
-                        pnlSelectPerson.Update();
+                        memberDataSource = family.People.Where( f => f.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst );
                     }
 
                     if ( family.People.Where( f => !f.FamilyMember ).Count() > 0 )
                     {
-                        repVisitors.DataSource = family.People.Where( f => !f.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst );
-                        repVisitors.DataBind();
-                        pnlSelectVisitor.Update();
+                        visitorDataSource = family.People.Where( f => !f.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst );
                     }
+
+                    repPerson.DataSource = memberDataSource;
+                    repPerson.DataBind();
+                    repVisitors.DataSource = visitorDataSource;
+                    repVisitors.DataBind();
                 }
             }
             else
