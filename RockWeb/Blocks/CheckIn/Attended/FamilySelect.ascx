@@ -77,7 +77,8 @@
                 
                 <div class="attended-checkin-body-container">
                     <h3>Families</h3>
-                    <asp:ListView ID="lvFamily" runat="server" OnPagePropertiesChanging="lvFamily_PagePropertiesChanging" OnItemCommand="lvFamily_ItemCommand" OnItemDataBound="lvFamily_ItemDataBound" >
+                    <asp:ListView ID="lvFamily" runat="server" OnPagePropertiesChanging="lvFamily_PagePropertiesChanging" 
+                        OnItemCommand="lvFamily_ItemCommand" OnItemDataBound="lvFamily_ItemDataBound" >
                     <ItemTemplate>                            
                             <asp:LinkButton ID="lbSelectFamily" runat="server" data-selected='<%# Eval("Selected") %>' CommandArgument='<%# Eval("Group.Id") %>'
                                 CssClass="btn btn-primary btn-large btn-block btn-checkin-select family" CausesValidation="false">
@@ -256,12 +257,10 @@
                     <Rock:DatePicker ID="dpBirthDate" runat="server" SelectedDate='<%# ((NewPerson)Container.DataItem).BirthDate %>' />
                 </div>
                 <div class="span2">                                        
-                    <Rock:RockDropDownList ID="ddlGender" runat="server" CssClass="fullBlock" 
-                         />
+                    <Rock:RockDropDownList ID="ddlGender" runat="server" CssClass="fullBlock" />
                 </div>
                 <div class="span2">
-                    <Rock:RockDropDownList ID="ddlAbilityGrade" runat="server" CssClass="fullBlock" 
-                         />
+                    <Rock:RockDropDownList ID="ddlAbilityGrade" runat="server" CssClass="fullBlock" />
                 </div>                
             </div>
         </ItemTemplate>        
