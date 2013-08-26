@@ -78,7 +78,7 @@ namespace Rock.Model
         /// <param name="isParent">if set to <c>true</c> [is parent].</param>
         private static void LogExceptions( Exception ex, ExceptionLog log, bool isParent )
         {
-            // First attempt to log exception to the database...
+            // First, attempt to log exception to the database.
             try
             {
                 ExceptionLog exceptionLog;
@@ -145,7 +145,7 @@ namespace Rock.Model
                     string filePath = Path.Combine( directory, "RockExceptions.csv" );
 
                     // write to the file
-                    System.IO.File.AppendAllText( filePath, string.Format( "{0},{1},\"{2}\"\r\n", DateTime.Now.ToString(), EventLogEntryType.Error, ex.Message ) );
+                    File.AppendAllText( filePath, string.Format( "{0},{1},\"{2}\"\r\n", DateTime.Now.ToString(), EventLogEntryType.Error, ex.Message ) );
                 }
                 catch
                 {
@@ -170,34 +170,46 @@ namespace Rock.Model
 
             StringBuilder cookies = new StringBuilder();
             var cookieList = request.Cookies;
-            cookies.Append( "<table class=\"cookies exception-table\">" );
 
-            foreach ( string cookie in cookieList )
+            if ( cookieList.Count > 0 )
             {
-                var httpCookie = cookieList[cookie];
-                if ( httpCookie != null )
-                    cookies.Append( "<tr><td><b>" + cookie + "</b></td><td>" + httpCookie.Value + "</td></tr>" );
+                cookies.Append( "<table class=\"cookies exception-table\">" );
+
+                foreach ( string cookie in cookieList )
+                {
+                    var httpCookie = cookieList[cookie];
+                    if ( httpCookie != null )
+                        cookies.Append( "<tr><td><b>" + cookie + "</b></td><td>" + httpCookie.Value + "</td></tr>" );
+                }
+
+                cookies.Append( "</table>" );
             }
-
-            cookies.Append( "</table>" );
-
+            
             StringBuilder formItems = new StringBuilder();
             var form = request.Form;
-            formItems.Append( "<table class=\"form-items exception-table\">" );
 
-            foreach ( string formItem in form )
-                formItems.Append( "<tr><td><b>" + formItem + "</b></td><td>" + form[formItem] + "</td></tr>" );
+            if ( request.Form.Count > 0 )
+            {
+                formItems.Append( "<table class=\"form-items exception-table\">" );
 
-            formItems.Append( "</table>" );
+                foreach ( string formItem in form )
+                    formItems.Append( "<tr><td><b>" + formItem + "</b></td><td>" + form[formItem] + "</td></tr>" );
+
+                formItems.Append( "</table>" );
+            }
 
             StringBuilder serverVars = new StringBuilder();
             var serverVarList = request.ServerVariables;
-            serverVars.Append( "<table class=\"server-variables exception-table\">" );
 
-            foreach ( string serverVar in serverVarList )
-                serverVars.Append( "<tr><td><b>" + serverVar + "</b></td><td>" + serverVarList[serverVar] + "</td></tr>" );
+            if ( serverVarList.Count > 0 )
+            {
+                serverVars.Append( "<table class=\"server-variables exception-table\">" );
 
-            serverVars.Append( "</table>" );
+                foreach ( string serverVar in serverVarList )
+                    serverVars.Append( "<tr><td><b>" + serverVar + "</b></td><td>" + serverVarList[serverVar] + "</td></tr>" );
+
+                serverVars.Append( "</table>" );
+            }
 
             return new ExceptionLog
                 {
