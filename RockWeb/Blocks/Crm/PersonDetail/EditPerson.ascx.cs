@@ -7,15 +7,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Attribute;
 using Rock.Model;
-using Rock.Web.UI;
 using Rock.Web.Cache;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
@@ -33,6 +28,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.OnInit( e );
 
+            ddlTitle.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_TITLE ) ), true );
+            ddlSuffix.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_SUFFIX ) ), true );
             rblMaritalStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_MARITAL_STATUS ) ) );
             rblStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_STATUS ) ) );
             ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
@@ -73,11 +70,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             var service = new PersonService();
             var person = service.Get( Person.Id );
 
-            person.PhotoId = imgPhoto.ImageId;
+            person.PhotoId = imgPhoto.BinaryFileId;
+            person.TitleValueId = ddlTitle.SelectedValueAsInt();
             person.GivenName = tbGivenName.Text;
             person.NickName = tbNickName.Text;
             person.MiddleName = tbMiddleName.Text;
             person.LastName = tbLastName.Text;
+            person.SuffixValueId = ddlSuffix.SelectedValueAsInt();
             person.BirthDate = dpBirthDate.SelectedDate;
             person.AnniversaryDate = dpAnniversaryDate.SelectedDate;
             person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
@@ -98,10 +97,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     if ( !string.IsNullOrWhiteSpace( tbPhone.Text ) )
                     {
-                        int phoneNumberTypeId = int.MinValue;
+                        int phoneNumberTypeId;
                         if ( int.TryParse( hfPhoneType.Value, out phoneNumberTypeId ) )
                         {
-                            var phoneNumber = person.PhoneNumbers.Where( n => n.NumberTypeValueId == phoneNumberTypeId ).FirstOrDefault();
+                            var phoneNumber = person.PhoneNumbers.FirstOrDefault(n => n.NumberTypeValueId == phoneNumberTypeId);
                             if ( phoneNumber == null )
                             {
                                 phoneNumber = new PhoneNumber { NumberTypeValueId = phoneNumberTypeId };
@@ -119,7 +118,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             // Remove any blank numbers
             person.PhoneNumbers
-                .Where( n => !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) )
+                .Where( n => n.NumberTypeValueId.HasValue && !phoneNumberTypeIds.Contains( n.NumberTypeValueId.Value ) )
                 .ToList()
                 .ForEach( n => person.PhoneNumbers.Remove( n ) );
 
@@ -148,11 +147,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// </summary>
         private void ShowDetails()
         {
-            imgPhoto.ImageId = Person.PhotoId;
+            imgPhoto.BinaryFileId = Person.PhotoId;
+            ddlTitle.SelectedValue = Person.TitleValueId.HasValue ? Person.TitleValueId.Value.ToString() : string.Empty;
             tbGivenName.Text = Person.GivenName;
             tbNickName.Text = Person.NickName;
             tbMiddleName.Text = Person.MiddleName;
             tbLastName.Text = Person.LastName;
+            ddlSuffix.SelectedValue = Person.SuffixValueId.HasValue ? Person.SuffixValueId.Value.ToString() : string.Empty;
             dpBirthDate.SelectedDate = Person.BirthDate;
             dpAnniversaryDate.SelectedDate = Person.AnniversaryDate;
             rblGender.SelectedValue = Person.Gender.ConvertToString();
@@ -168,7 +169,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 foreach(var phoneNumberType in phoneNumberTypes.DefinedValues)
                 {
-                    var phoneNumber = Person.PhoneNumbers.Where( n => n.NumberTypeValueId == phoneNumberType.Id).FirstOrDefault();
+                    var phoneNumber = Person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberType.Id );
                     if (phoneNumber == null)
                     {
                         var numberType = new DefinedValue();

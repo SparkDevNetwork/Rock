@@ -54,6 +54,90 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+
+        /// <summary>
+        /// Gets or sets the type of the number.
+        /// </summary>
+        /// <value>
+        /// The type of the number.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The NumberType (Decimal or Integer) for the Controls" )
+        ]
+        public ValidationDataType NumberType
+        {
+            get
+            {
+                EnsureChildControls();
+                return tbLowerValue.NumberType;
+            }
+
+            set 
+            {
+                EnsureChildControls();
+                tbLowerValue.NumberType = value;
+                tbUpperValue.NumberType = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the minimum value that either number can be
+        /// </summary>
+        /// <value>
+        /// The minimum value.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The minimum value that either number can be" )
+        ]
+        public string MinimumValue
+        {
+            get {
+                EnsureChildControls();
+                return tbLowerValue.MinimumValue; 
+            }
+
+            set {
+                EnsureChildControls();
+                tbLowerValue.MinimumValue = value;
+                tbUpperValue.MinimumValue = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the maximum value that either number can be
+        /// </summary>
+        /// <value>
+        /// The maximum value.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The maximum value that either number can be" )
+        ]
+        public string MaximumValue
+        {
+            get
+            {
+                EnsureChildControls();
+                return tbLowerValue.MaximumValue;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                tbLowerValue.MaximumValue = value;
+                tbUpperValue.MaximumValue = value;
+            }
+
+        }
+
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="IRequiredControl" /> is required.
         /// </summary>
@@ -70,19 +154,15 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                if ( ViewState["Required"] != null )
-                {
-                    return (bool)ViewState["Required"];
-                }
-                else
-                {
-                    return false;
-                }
+                EnsureChildControls();
+                return tbLowerValue.Required;
             }
 
             set
             {
-                ViewState["Required"] = value;
+                EnsureChildControls();
+                tbLowerValue.Required = value;
+                tbUpperValue.Required = value;
             }
         }
 
@@ -94,6 +174,12 @@ namespace Rock.Web.UI.Controls
         /// </value>
         /// <exception cref="System.NotImplementedException">
         /// </exception>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The required error message.  If blank, the LabelName name will be used" )
+        ]
         public string RequiredErrorMessage
         {
             get
@@ -194,11 +280,18 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The lower value.
         /// </value>
-        public int? LowerValue {
+        public decimal? LowerValue {
             get
             {
                 EnsureChildControls();
-                return tbLowerValue.Text.AsInteger();
+
+                decimal result;
+                if (decimal.TryParse(tbLowerValue.Text, out result))
+                {
+                    return result;
+                }
+
+                return null;
             }
 
             set
@@ -214,12 +307,19 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The upper value.
         /// </value>
-        public int? UpperValue
+        public decimal? UpperValue
         {
             get
             {
                 EnsureChildControls();
-                return tbUpperValue.Text.AsInteger();
+
+                decimal result;
+                if (decimal.TryParse(tbUpperValue.Text, out result))
+                {
+                    return result;
+                }
+
+                return null;
             }
 
             set

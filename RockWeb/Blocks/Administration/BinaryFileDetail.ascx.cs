@@ -277,7 +277,7 @@ namespace RockWeb.Blocks.Administration
             using (new Rock.Data.UnitOfWorkScope() )
             {
                 var binaryFileService = new BinaryFileService();
-                var binaryFile = binaryFileService.Get(fsFile.BinaryFileId);
+                var binaryFile = binaryFileService.Get(fsFile.BinaryFileId.Value);
                 if ( binaryFile != null )
                 {
                     if ( !String.IsNullOrWhiteSpace( tbName.Text ) )

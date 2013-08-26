@@ -148,6 +148,20 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Transforms the specified source.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="transformation">The transformation.</param>
+        /// <param name="sortProperty">The sort property.</param>
+        /// <returns></returns>
+        public IQueryable<T> Transform( IQueryable<T> source, Rock.Reporting.DataTransformComponent<T> transformation, Rock.Web.UI.Controls.SortProperty sortProperty = null )
+        {
+            var paramExpression = Expression.Parameter( source.ElementType, "p" );
+            var whereExpression = transformation.GetExpression( source, paramExpression );
+            return Get( paramExpression, whereExpression, sortProperty );
+        }
+
+        /// <summary>
         /// Gets the list.
         /// </summary>
         /// <param name="parameterExpression">The parameter expression.</param>

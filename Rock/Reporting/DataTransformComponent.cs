@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 using Rock.Extension;
@@ -55,7 +56,14 @@ namespace Rock.Reporting
         /// <param name="whereExpression">The where expression.</param>
         /// <returns></returns>
         public abstract Expression GetExpression( object service, Expression parameterExpression, Expression whereExpression );
-
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    public abstract class DataTransformComponent<T> : DataTransformComponent 
+    {
+        public abstract Expression GetExpression ( IQueryable<T> query, Expression parameterExpression);
+    }
 }

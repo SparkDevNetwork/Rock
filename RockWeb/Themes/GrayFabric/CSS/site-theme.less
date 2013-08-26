@@ -9,9 +9,9 @@
 
 // Load Master Styles
 // -------------------------
-@import "site-global-variables.less";
-@import "site-bootstrap-variables.less";
-@import "../../../Css/rock-core.less";
+@import "_site-variables.less";
+@import "_bootstrap-variables.less";
+@import "../../../Css/_rock-core.less";
 
 
 
@@ -28,6 +28,16 @@
 
 .right-align {
 	text-align: right;
+}
+
+.bold
+{
+    font-weight: @font-bold-weight;
+}
+
+a:hover
+{
+    text-decoration: none;
 }
 
 // 2. Master Page Styles
@@ -164,7 +174,7 @@ header .navbar .divider-vertical {
 }
 
 .promo-secondary a:after {
-	content: url('../img/sub-promo-shadow.png');
+	content: url('../Assets/Images/sub-promo-shadow.png');
 	display:block;
     position:relative;
     bottom: 0;
