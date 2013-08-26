@@ -5,11 +5,9 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
-using Rock.Data;
 
 namespace Rock.Model
 {
@@ -60,23 +58,75 @@ namespace Rock.Model
         /// <param name="personId">The person id.</param>
         public static void LogException( Exception ex, HttpContext context, int? pageId = null, int? siteId = null, int? personId = null, int? parentId = null )
         {
+            // Populate the initial ExceptionLog with data from HttpContext.
+            var parentLog = PopulateException( ex, context, pageId, siteId, personId, parentId );
+
             // Spin off a new thread to handle the real logging work so the UI is not blocked.
-            Task.Run( () => LogExceptions( ex, context, pageId, siteId, personId ) );
+            Task.Run( () => LogExceptions( ex, parentLog, true ) );
         }
 
-        private static void LogExceptions( Exception ex, HttpContext context, int? pageId, int? siteId, int? personId, int? parentId = null )
+        /// <summary>
+        /// Recursively logs exception and any children.
+        /// </summary>
+        /// <param name="ex">The System.Exception to log.</param>
+        /// <param name="log">The parent ExceptionLog.</param>
+        /// <param name="isParent">if set to <c>true</c> [is parent].</param>
+        private static void LogExceptions( Exception ex, ExceptionLog log, bool isParent )
         {
-            var exceptionLog = PopulateException( ex, context, pageId, siteId, personId, parentId );
+            ExceptionLog exceptionLog;
+
+            // If this is a recursive call and not the originating exception being logged,
+            // attempt to clone the initial one, and populate it with Exception Type and Message
+            // from the inner excetpion, while retaining the contextual information from where
+            // the exception originated.
+            if ( !isParent )
+            {
+                exceptionLog = log.Clone() as ExceptionLog;
+
+                if ( exceptionLog != null )
+                {
+                    // Populate with inner exception type, message and update whether or not there is an inner exception.
+                    exceptionLog.ExceptionType = ex.GetType().ToString();
+                    exceptionLog.Description = ex.Message;
+                    exceptionLog.HasInnerException = ex.InnerException != null;
+                    
+                    // Ensure EF properly recognizes this as a new record.
+                    exceptionLog.Id = 0;
+                    exceptionLog.Guid = Guid.NewGuid();
+                    exceptionLog.ParentId = log.Id;
+                }
+            }
+            else
+            {
+                exceptionLog = log;
+            }
+
+            // The only reason this should happen is if the `log.Clone()` operation failed. Compiler sugar.
+            if ( exceptionLog == null )
+            {
+                return;
+            }
+
             var exceptionLogService = new ExceptionLogService();
-            exceptionLogService.Add( exceptionLog, personId );
-            exceptionLogService.Save( exceptionLog, personId );
+            exceptionLogService.Add( exceptionLog, exceptionLog.CreatedByPersonId );
+            exceptionLogService.Save( exceptionLog, exceptionLog.CreatedByPersonId );
 
             if ( exceptionLog.HasInnerException.GetValueOrDefault( false ) )
             {
-                LogExceptions( ex.InnerException, context, pageId, siteId, personId, exceptionLog.Id );
+                LogExceptions( ex.InnerException, exceptionLog, false );
             }
         }
 
+        /// <summary>
+        /// Populates the ExceptionLog model with information from HttpContext and Exception.
+        /// </summary>
+        /// <param name="ex">The ex.</param>
+        /// <param name="context">The context.</param>
+        /// <param name="pageId">The page id.</param>
+        /// <param name="siteId">The site id.</param>
+        /// <param name="personId">The person id.</param>
+        /// <param name="parentId">The parent id.</param>
+        /// <returns></returns>
         private static ExceptionLog PopulateException( Exception ex, HttpContext context, int? pageId, int? siteId, int? personId, int? parentId )
         {
             var request = context.Request;
@@ -98,8 +148,8 @@ namespace Rock.Model
                     cookie.Expires.ToString() );
             }
 
-            var serverVars = request.ServerVariables;
             var serverVarsString = new StringBuilder();
+            var serverVars = request.ServerVariables;
 
             for ( int i = 0; i < serverVars.Count; i++ )
             {
@@ -113,8 +163,8 @@ namespace Rock.Model
                 serverVarsString.AppendFormat( "'{0}'|", variable );
             }
 
-            var form = request.Form;
             var formString = new StringBuilder();
+            var form = request.Form;
 
             for ( int i = 0; i < form.Count; i++ )
             {
