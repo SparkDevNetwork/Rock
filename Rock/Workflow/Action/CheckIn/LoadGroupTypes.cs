@@ -9,6 +9,8 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock;
+using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Model;
 
@@ -20,6 +22,8 @@ namespace Rock.Workflow.Action.CheckIn
     [Description("Loads the group types allowed for each person in a family")]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Load Group Types" )]
+    [BooleanField( "Filter Age", "By default all group types are loaded for members of the selected family.  Select this option to only load grouptypes for people who qualify by age.", false )]
+    [BooleanField( "Filter Grade", "By default all group types are loaded for members of the selected family.  Select this option to only load grouptypes for people who qualify by grade.", false )]
     public class LoadGroupTypes : CheckInActionComponent
     {
         /// <summary>
@@ -35,6 +39,11 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( entity, out errorMessages );
             if ( checkInState != null )
             {
+                bool filterAge = false;
+                bool.TryParse( GetAttributeValue( action, "FilterAge" ), out filterAge );
+                bool filterGrade = false;                
+                bool.TryParse( GetAttributeValue( action, "FilterGrade" ), out filterGrade );
+
                 foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )
                 {
                     foreach ( var person in family.People )
@@ -43,7 +52,30 @@ namespace Rock.Workflow.Action.CheckIn
                         {
                             if ( kioskGroupType.KioskGroups.SelectMany( g => g.KioskLocations ).Any( l => l.Location.IsActive ) )
                             {
-                                if ( !person.GroupTypes.Any( g => g.GroupType.Id == kioskGroupType.GroupType.Id ) )
+                                char[] delimiter = { ',' };
+                                bool personIsQualified = true;
+
+                                if ( filterAge || filterGrade )
+                                {
+                                    double? personAge = person.Person.AgePrecise;
+                                    string ageAttribute = kioskGroupType.GroupType.GetAttributeValue( "AgeRange" ) ?? string.Empty;
+                                    int? personGrade = person.Person.Grade;                                    
+                                    string gradeAttribute = kioskGroupType.GroupType.GetAttributeValue( "GradeRange" ) ?? string.Empty;
+
+                                    if ( personIsQualified && !string.IsNullOrWhiteSpace( ageAttribute ) && personAge.HasValue )
+                                    {
+                                        List<double?> ageRange = ageAttribute.Split( delimiter, StringSplitOptions.None ).Select( s => ParseNullable<double?>( s ) ).ToList();
+                                        personIsQualified = ( personAge >= ageRange.First() && personAge <= ageRange.Last() );
+                                    }
+
+                                    if ( personIsQualified && !string.IsNullOrWhiteSpace( gradeAttribute ) && personGrade.HasValue )
+                                    {
+                                        List<int?> gradeRange = ageAttribute.Split( delimiter, StringSplitOptions.None ).Select( s => ParseNullable<int?>( s ) ).ToList();
+                                        personIsQualified = ( personGrade >= gradeRange.First() && personGrade <= gradeRange.Last() );
+                                    }                                   
+                                }
+                                
+                                if ( personIsQualified && !person.GroupTypes.Any( g => g.GroupType.Id == kioskGroupType.GroupType.Id ) )
                                 {
                                     var checkinGroupType = new CheckInGroupType();
                                     checkinGroupType.GroupType = kioskGroupType.GroupType.Clone( false );
@@ -60,5 +92,19 @@ namespace Rock.Workflow.Action.CheckIn
 
             return false;
         }
-    }
+
+        /// <summary>
+        /// Parses the nullable type.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static T ParseNullable<T>( object value )
+        {
+            var converter = System.ComponentModel.TypeDescriptor.GetConverter( typeof( T ) );
+            return converter.IsValid( value.ToString() )
+                ? (T)converter.ConvertFrom( value.ToString() )
+                : default( T );
+        }
+    }    
 }
