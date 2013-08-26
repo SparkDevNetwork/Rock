@@ -88,7 +88,7 @@
 
                     <asp:LinkButton CssClass="btn btn-warning" ID="lbPackageUninstall" 
                         Text="<i class='icon-remove'></i> &nbsp; Uninstall" runat="server" 
-                        CommandName="uninstall" OnCommand="lbPackageUninstall_Click" />
+                        CommandName="uninstall" OnCommand="lbPackageUninstall_Click" OnClientClick="$(this).button('loading')" data-loading-text="Uninstalling..."/>
  
                     <Rock:Grid runat="server" DisplayType="Light" ID="gvPackageVersions" DataKeyNames="Id,Version" GridLines="None" AutoGenerateColumns="false"
                      onrowdatabound="gvPackageVersions_RowDataBound" onrowcommand="gvPackageVersions_RowCommand">
@@ -98,8 +98,8 @@
                         <asp:TemplateField ShowHeader="False" ItemStyle-VerticalAlign="Top" >
                             <ItemTemplate>
                                 <i runat="server" ID="iInstalledIcon" visible="false" class="icon-ok" title="this version is installed"></i>
-                                <asp:LinkButton CssClass="btn" ID="lbInstall" CommandName="Install" Text="<i class='icon-download-alt'></i> &nbsp; Install" runat="server" />
-                                <asp:LinkButton CssClass="btn btn-primary" ID="lbUpdate" CommandName="Update" Visible="false" Text="<i class='icon-download-alt'></i> &nbsp; Update" runat="server" />
+                                <asp:LinkButton CssClass="btn" ID="lbInstall" CommandName="Install" Text="<i class='icon-download-alt'></i> &nbsp; Install" OnClientClick="$(this).button('loading')" data-loading-text="Installing..." runat="server" />
+                                <asp:LinkButton CssClass="btn btn-primary" ID="lbUpdate" CommandName="Update" Visible="false" Text="<i class='icon-download-alt'></i> &nbsp; Update" OnClientClick="$(this).button('loading')" data-loading-text="Updating..." runat="server" />
                             </ItemTemplate>
                         </asp:TemplateField> 
                     </Columns>

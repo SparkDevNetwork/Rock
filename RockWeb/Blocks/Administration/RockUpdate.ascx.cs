@@ -6,19 +6,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
-using System.Web.UI;
-using System.Web.UI.WebControls;
-using Rock.Security;
-using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
-using System.IO;
 using System.Text;
 using System.Reflection;
-using System.Diagnostics;
 
 using Rock.Services.NuGet;
 using Rock.Web.Cache;
+
 using NuGet;
 
 namespace RockWeb.Blocks.Administration
@@ -29,6 +24,9 @@ namespace RockWeb.Blocks.Administration
         private string rockPackageId = "RockUpdate";
         private string rockCoreVersionAssembly = "Rock.dll"; 
 
+        /// <summary>
+        /// Obtains a WebProjectManager from the Global "PackageSourceUrl" Attribute.
+        /// </summary>
         protected WebProjectManager NuGetService
         {
             get
@@ -45,6 +43,12 @@ namespace RockWeb.Blocks.Administration
         }
 
         #region Event Handlers
+
+        /// <summary>
+        /// Invoked on page load.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         protected void Page_Load( object sender, EventArgs e )
         {
             DisplayRockVersion();
@@ -54,39 +58,54 @@ namespace RockWeb.Blocks.Administration
             }
         }
 
+        /// <summary>
+        /// Handles the clicking of the Install button.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         protected void btnInstall_Click( object sender, EventArgs e )
         {
-            WriteAppOffline();
-            try
-            {
-                InstallFirstRockPackage();
-                btnInstall.CssClass = "btn btn-primary disabled";
-                btnInstall.Text = "Installed";
-                badge.Visible = false;
-                litRockVersion.Text = "";
-            }
-            catch ( Exception ex )
-            {
-                nbErrors.Visible = true;
-                nbErrors.Text = string.Format( "Something went wrong.  Although the errors were written to the error log, here they are for your perusal:<br/>{0}", ex.Message );
-            }
-            RemoveAppOffline();
+            UpdateOrInstall( isUpdate: false );
         }
 
+        /// <summary>
+        /// Handles the clicking of the Update button.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         protected void btnUpdate_Click( object sender, EventArgs e )
+        {
+            UpdateOrInstall( isUpdate: true);
+        }
+
+        /// <summary>
+        /// Wraps the install or update process in some guarded code while putting the app in "offline"
+        /// mode and then back "online" when it's complete.
+        /// </summary>
+        /// <param name="isUpdate"></param>
+        private void UpdateOrInstall( bool isUpdate)
         {
             WriteAppOffline();
             try
             {
-                UpdateRockPackage();
-                btnUpdate.CssClass = "btn btn-primary disabled";
-                btnUpdate.Text = "Installed";
+                if ( ! isUpdate )
+                {
+                    InstallFirstRockPackage();
+                    btnInstall.CssClass = "btn btn-primary disabled";
+                    btnInstall.Text = "Installed";
+                }
+                else
+                {
+                    UpdateRockPackage();
+                    btnUpdate.CssClass = "btn btn-primary disabled";
+                    btnUpdate.Text = "Installed";
+                }
                 badge.Visible = false;
                 litRockVersion.Text = "";
             }
             catch ( Exception ex )
             {
-                // TODO do something smart...and minimally tell the admin the update failed.
+                // TODO Log the error and do something smart
                 nbErrors.Visible = true;
                 nbErrors.Text = string.Format( "Something went wrong.  Although the errors were written to the error log, here they are for your perusal:<br/>{0}", ex.Message );
             }
@@ -95,13 +114,83 @@ namespace RockWeb.Blocks.Administration
 
         #endregion
 
+        /// <summary>
+        /// Installs the first RockPackage.
+        /// </summary>
+        protected void InstallFirstRockPackage()
+        {
+            IEnumerable<string> errors = Enumerable.Empty<string>();
+            var package = NuGetService.SourceRepository.FindPackage( rockPackageId );
+
+            try
+            {
+                if ( package != null )
+                {
+                    errors = NuGetService.InstallPackage( package );
+                    nbSuccess.Text = ConvertCRLFtoBR( System.Web.HttpUtility.HtmlEncode( package.ReleaseNotes ) );
+                    nbSuccess.Text += "<p><b>NOTE:</b> Any database changes will take effect at the next page load.</p>";
+                }
+            }
+            catch ( InvalidOperationException ex )
+            {
+                errors.Concat( new[] { string.Format( "There is a problem with {0}: {1}", System.Web.HttpUtility.HtmlEncode( package.Title ), ex.Message ) } );
+            }
+
+            if ( errors != null && errors.Count() > 0 )
+            {
+                nbErrors.Visible = true;
+                nbErrors.Text = errors.Aggregate( new StringBuilder( "<ul>" ), ( sb, s ) => sb.AppendFormat( "<li>{0}</li>", s ) ).Append( "</ul>" ).ToString();
+            }
+            else
+            {
+                nbSuccess.Visible = true;
+            }
+        }
+
+        /// <summary>
+        /// Updates an existing RockPackage.
+        /// </summary>
+        protected void UpdateRockPackage()
+        {
+            IEnumerable<string> errors = Enumerable.Empty<string>();
+            var installed = NuGetService.GetInstalledPackage( rockPackageId );
+
+            try
+            {
+                var update = NuGetService.GetUpdate( installed );
+                errors = NuGetService.UpdatePackage( update );
+                nbSuccess.Text = ConvertCRLFtoBR( System.Web.HttpUtility.HtmlEncode( update.ReleaseNotes ) );
+                nbSuccess.Text += "<p><b>NOTE:</b> Any database changes will take effect at the next page load.</p>";
+            }
+            catch ( InvalidOperationException ex )
+            {
+                errors.Concat( new[] { string.Format( "There is a problem with {0}: {1}", System.Web.HttpUtility.HtmlEncode( installed.Title ), ex.Message ) } );
+            }
+
+            if ( errors != null && errors.Count() > 0 )
+            {
+                nbErrors.Visible = true;
+                nbErrors.Text = errors.Aggregate( new StringBuilder( "<ul>" ), ( sb, s ) => sb.AppendFormat( "<li>{0}</li>", s ) ).Append( "</ul>" ).ToString();
+            }
+            else
+            {
+                nbSuccess.Visible = true;
+            }
+        }
+
+        /// <summary>
+        /// Fetches and displays the rockCoreVersionAssembly assembly's ProductVersion.
+        /// </summary>
         protected void DisplayRockVersion()
         {
             Assembly rockDLL = Assembly.LoadFrom( System.IO.Path.Combine( this.Request.PhysicalApplicationPath, "bin", rockCoreVersionAssembly ) );
             FileVersionInfo rockDLLfvi = FileVersionInfo.GetVersionInfo( rockDLL.Location );
-            litRockVersion.Text = string.Format( "<b>Current Rock Version: </b> {0}", rockDLLfvi.ProductVersion );
+            litRockVersion.Text = string.Format( "<b>Current Version: </b> {0}", rockDLLfvi.ProductVersion );
         }
 
+        /// <summary>
+        /// Checks to see if any updates are availble for the installed or not-yet-installed package.
+        /// </summary>
         protected void CheckForUpdate()
         {
             try
@@ -117,10 +206,10 @@ namespace RockWeb.Blocks.Administration
                         btnInstall.Visible = true;
                         divPackage.Visible = true;
                         badge.Visible = true;
-                        litPackageTitle.Text = package.Title;
-                        litPackageDescription.Text = ( package.Description != null ) ? package.Description : package.Summary ; 
+                        litPackageTitle.Text = System.Web.HttpUtility.HtmlEncode( package.Title );
+                        litPackageDescription.Text = System.Web.HttpUtility.HtmlEncode( ( package.Description != null ) ? package.Description : package.Summary ) ; 
                         btnInstall.Text += string.Format( " to version {0}", package.Version );
-                        litReleaseNotes.Text = ConvertCRLFtoBR( package.ReleaseNotes );
+                        litReleaseNotes.Text = ConvertCRLFtoBR( System.Web.HttpUtility.HtmlEncode( package.ReleaseNotes ) );
                     }
                 }
                 else
@@ -136,10 +225,10 @@ namespace RockWeb.Blocks.Administration
                         btnUpdate.Visible = true;
                         divPackage.Visible = true;
                         badge.Visible = true;
-                        litPackageTitle.Text = latestPackage.Title;
-                        litPackageDescription.Text = ( latestPackage.Description != null ) ? latestPackage.Description : latestPackage.Summary; 
+                        litPackageTitle.Text = System.Web.HttpUtility.HtmlEncode( latestPackage.Title );
+                        litPackageDescription.Text = System.Web.HttpUtility.HtmlEncode( ( latestPackage.Description != null ) ? latestPackage.Description : latestPackage.Summary ); 
                         btnUpdate.Text += string.Format( " to version {0}", latestPackage.Version );
-                        litReleaseNotes.Text = ConvertCRLFtoBR( latestPackage.ReleaseNotes );
+                        litReleaseNotes.Text = ConvertCRLFtoBR( System.Web.HttpUtility.HtmlEncode( latestPackage.ReleaseNotes ) );
                     }
                 }
             }
@@ -148,66 +237,12 @@ namespace RockWeb.Blocks.Administration
                 litMessage.Text = string.Format( "<div class='alert alert-error'>There is a problem with the packaging system. {0}</p>", ex.Message );
             }
         }
-   
-        protected void InstallFirstRockPackage()
-        {
-            IEnumerable<string> errors = Enumerable.Empty<string>();
-            var package = NuGetService.SourceRepository.FindPackage( rockPackageId );
 
-            try
-            {
-                if ( package != null )
-                {
-                    errors = NuGetService.InstallPackage( package );
-                    nbSuccess.Text = ConvertCRLFtoBR( package.ReleaseNotes );
-                    //IEnumerable<IPackage> packagesRequiringLicenseAcceptance = NuGetService.GetPackagesRequiringLicenseAcceptance(package);
-                }
-            }
-            catch ( InvalidOperationException ex )
-            {
-                errors.Concat( new[] { string.Format( "There is a problem with {0}: {1}", package.Title, ex.Message ) } );
-            }
-
-            if ( errors != null && errors.Count() > 0 )
-            {
-                nbErrors.Visible = true;
-                nbErrors.Text = errors.Aggregate( new StringBuilder( "<ul>" ), ( sb, s ) => sb.AppendFormat( "<li>{0}</li>", s ) ).Append( "</ul>" ).ToString();
-            }
-            else
-            {
-                nbSuccess.Visible = true;
-            }
-        }
-        
-        protected void UpdateRockPackage()
-        {
-            IEnumerable<string> errors = Enumerable.Empty<string>();
-
-            var installed = NuGetService.GetInstalledPackage( rockPackageId );
-
-            try
-            {
-                var update = NuGetService.GetUpdate( installed );
-                errors = NuGetService.UpdatePackage( update );
-                nbSuccess.Text = ConvertCRLFtoBR( update.ReleaseNotes );
-            }
-            catch ( InvalidOperationException ex )
-            {
-                errors.Concat( new[] { string.Format( "There is a problem with {0}: {1}", installed.Title, ex.Message ) } );
-            }
-
-            if ( errors != null && errors.Count() > 0 )
-            {
-                nbErrors.Visible = true;
-                nbErrors.Text = errors.Aggregate( new StringBuilder( "<ul>" ), ( sb, s ) => sb.AppendFormat( "<li>{0}</li>", s ) ).Append( "</ul>" ).ToString();
-            }
-            else
-            {
-                nbSuccess.Visible = true;
-            }
-
-        }
-
+        /// <summary>
+        /// Converts CR (Carriage Return) LF (Line Feed) to HTML breaks (br).
+        /// </summary>
+        /// <param name="somestring">a string that contains CR LF</param>
+        /// <returns>the string with CRLF replaced with BR</returns>
         private string ConvertCRLFtoBR( string somestring )
         {
             if ( somestring == null )
@@ -215,70 +250,14 @@ namespace RockWeb.Blocks.Administration
                 return "";
             }
 
-            string x = somestring.Replace( Environment.NewLine, "<br />" );
-            x = x.Replace( "\x0A", "<br />" );
+            string x = somestring.Replace( Environment.NewLine, "<br/>" );
+            x = x.Replace( "\x0A", "<br/>" );
             return x;
         }
 
-        #region OLD
-        protected void btnUpdate_Click_ORIG( object sender, EventArgs e )
-        {
-            WriteAppOffline();
-            try
-            {
-                System.Threading.Thread.Sleep( 8000 );
-
-                StringBuilder sb = new StringBuilder();
-                sb.Append( "<ol>" );
-
-                Assembly assembly = Assembly.GetExecutingAssembly();
-                FileVersionInfo fvi = FileVersionInfo.GetVersionInfo( assembly.Location );
-                string version = fvi.FileVersion;
-
-                sb.AppendFormat( "<li>GetExecutingAssembly file '{0}'</li>", fvi.FileName );
-                sb.AppendFormat( "<li>GetExecutingAssembly assembly name file version '{0}'</li>", AssemblyName.GetAssemblyName( assembly.Location ).Version.ToString() );
-
-                var root = this.Request.PhysicalApplicationPath;
-                var sourceFile = System.IO.Path.Combine( root, "Rock.dll" );
-                var destFile = System.IO.Path.Combine( root, "bin", "Rock.dll" );
-
-                FileInfo destFileInfo = new FileInfo( destFile );
-                FileInfo sourceFileInfo = new FileInfo( sourceFile );
-
-                Assembly rockDLL = Assembly.LoadFrom( destFile );
-                FileVersionInfo rockDLLfvi = FileVersionInfo.GetVersionInfo( rockDLL.Location );
-                sb.AppendFormat( "<li>Rock.DLL ({0}) FileVersion: {1}</li>", rockDLL.Location, rockDLLfvi.FileVersion );
-
-
-                sb.AppendFormat( "<li>destination file ({0}) 'last write' time: {1}</li>", destFile, destFileInfo.LastWriteTime.ToString() );
-                sb.AppendFormat( "<li>source file ({0}) 'last write' time: {1}</li>", sourceFile, sourceFileInfo.LastWriteTime.ToString() );
-                sb.AppendFormat( "<li>copying source file '{0}' to destination file '{1}'</li>", sourceFile, destFile );
-
-                System.IO.File.Copy( sourceFile, destFile, true );
-
-                destFileInfo = new FileInfo( destFile );
-
-                sb.AppendFormat( "<li>current destination file ({0}) 'last write' time: {1}</li>", destFile, destFileInfo.LastWriteTime.ToString() );
-
-                rockDLL = Assembly.LoadFrom( destFile );
-                rockDLLfvi = FileVersionInfo.GetVersionInfo( rockDLL.Location );
-                sb.AppendFormat( "<li>Rock.DLL ({0}) FileVersion: {1}</li>", rockDLL.Location, rockDLLfvi.FileVersion );
-
-                sb.Append( "</ol>" );
-                litMessage.Text = sb.ToString();
-
-                DisplayRockVersion();
-            }
-            catch ( Exception )
-            {
-                // TODO do something smart...and minimally tell the admin the update failed.
-            }
-
-            RemoveAppOffline();
-        }
-
-        #endregion
-
+        /// <summary>
+        /// Removes the app_offline.htm file so the app can be used again.
+        /// </summary>
         private void RemoveAppOffline()
         {
             var root = this.Request.PhysicalApplicationPath;
@@ -286,6 +265,9 @@ namespace RockWeb.Blocks.Administration
             System.IO.File.Delete( file );
         }
 
+        /// <summary>
+        /// Simply creates an app_offline.htm file so no one else can hit the app.
+        /// </summary>
         private void WriteAppOffline()
         {
             var root = this.Request.PhysicalApplicationPath;
