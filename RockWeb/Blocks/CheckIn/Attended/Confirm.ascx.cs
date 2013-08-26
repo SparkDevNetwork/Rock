@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// </summary>
         protected void BindGrid()
         {
-            var selectedPeopleList = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault().People.Where( p => p.Selected ).ToList();
+            var selectedPeopleList = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault().People.Where( p => p.Selected ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
             var checkInGrid = new System.Data.DataTable();
             checkInGrid.Columns.Add( "Id", typeof(int) );
             checkInGrid.Columns.Add( "Name", typeof(string) );
