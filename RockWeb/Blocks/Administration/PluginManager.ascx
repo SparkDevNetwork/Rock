@@ -2,8 +2,7 @@
 
 <asp:UpdateProgress id="updateProgress" runat="server">
 		<ProgressTemplate>
-		    <div id="updateProgress">
-                <img src="<%= CurrentTheme %>/Assets/Images/waiting.gif" alt="Loading ..." title="Loading ...">
+		    <div id="updateProgress"> <i class="icon-spinner icon-spin"></i> 
 		    </div>
 		</ProgressTemplate>
 </asp:UpdateProgress>
@@ -15,8 +14,8 @@
             <div class="row">
                 <div class="span9">
                     <ul class="nav nav-pills">
-                        <li runat="server" id="liInstalled"><asp:LinkButton id="btnInstalled" CssClass="btn-large" runat="server" Text="Installed" onclick="btnInstalled_Click" /></li>
-                        <li runat="server" id="liAvailable"><asp:LinkButton id="btnAvailable" CssClass="btn-large" runat="server" Text="Available" onclick="btnAvailable_Click" /></li>
+                        <li runat="server" id="liInstalled"><asp:LinkButton id="btnInstalled" CssClass="btn-large" runat="server" Text="Installed" onclick="btnInstalled_Click" OnClientClick="$(this).button('loading')" /></li>
+                        <li runat="server" id="liAvailable"><asp:LinkButton id="btnAvailable" CssClass="btn-large" runat="server" Text="Available" onclick="btnAvailable_Click" OnClientClick="$(this).button('loading')" /></li>
                     </ul>
                 </div>
                 <div class="span3">
@@ -30,21 +29,30 @@
                 onrowdatabound="gPackageList_RowDataBound" DataKeyNames="Id,Version" GridLines="none"
                 onrowcommand="gPackageList_RowCommand" >
                     <Columns>
-                        <asp:ImageField DataImageUrlField="IconUrl" NullImageUrl="http://quarry.rockchms.com/Content/Images/packageDefaultIcon1.png" ItemStyle-VerticalAlign="Top" ItemStyle-Width="80" ItemStyle-Height="80" AlternateText="Plugin Icon"></asp:ImageField>
+                        <asp:TemplateField ItemStyle-VerticalAlign="Top">
+                            <ItemTemplate>
+                                <ul class="unstyled">
+                                    <li><asp:Image runat="server" ID="imgIconUrl" alt="Plugin Icon" width="80" height="80" ImageUrl="http://quarry.rockchms.com/Content/Images/packageDefaultIcon1.png"  /></li>
+                                    <li><a runat="server" id="lProjectUrl" href="#">Project Site</a></li>
+                                </ul>
+                            </ItemTemplate>
+                        </asp:TemplateField>
                         <asp:TemplateField ShowHeader="False" ItemStyle-VerticalAlign="Top" >
                             <ItemTemplate>
                                 <h3><asp:LinkButton runat="server" ID="lbView" CommandName="view"><%# Eval("Title") %></asp:LinkButton></h3>
                                 <p>by <asp:Literal runat="server" ID="lblAuthors"></asp:Literal></p>
-                                <p><asp:Literal runat="server" ID="lblVersion" Visible="false" Text="Version "></asp:Literal>
+                                <p>
+                                    <asp:Literal runat="server" ID="lblItemError"></asp:Literal>
+                                    <asp:Literal runat="server" ID="lblVersion" Visible="false" Text="Version "></asp:Literal>
                                     <asp:Literal runat="server" ID="lblLatestVersion" Visible="false" Text="Latest Version "></asp:Literal>
                                     <asp:Literal runat="server" ID="lblInstalledVersion"  Visible="false" Text="Installed Version "></asp:Literal>
                                 </p>
                                 <div>
-                                    <p><%# Eval("Description") %></p>
+                                    <p><%# Eval("Summary") %></p>
                                 </div>
                                 <asp:LinkButton CssClass="btn" ID="lbCommand" runat="server" />
                                 <asp:LinkButton CssClass="btn btn-primary" ID="lbUpdate" CommandName="update" Text="Update" runat="server" /> &nbsp;
-                                <a runat="server" id="lProjectUrl" href="#">Project Website</a>
+                                
                             </ItemTemplate>
                         </asp:TemplateField>
                     </Columns>
@@ -80,9 +88,9 @@
 
                     <asp:LinkButton CssClass="btn btn-warning" ID="lbPackageUninstall" 
                         Text="<i class='icon-remove'></i> &nbsp; Uninstall" runat="server" 
-                        CommandName="uninstall" OnCommand="lbPackageUninstall_Click" />
-
-                    <asp:GridView runat="server" ID="gvPackageVersions" DataKeyNames="Id,Version" GridLines="None" AutoGenerateColumns="false"
+                        CommandName="uninstall" OnCommand="lbPackageUninstall_Click" OnClientClick="$(this).button('loading')" data-loading-text="Uninstalling..."/>
+ 
+                    <Rock:Grid runat="server" DisplayType="Light" ID="gvPackageVersions" DataKeyNames="Id,Version" GridLines="None" AutoGenerateColumns="false"
                      onrowdatabound="gvPackageVersions_RowDataBound" onrowcommand="gvPackageVersions_RowCommand">
                     <Columns>
                         <asp:BoundField HeaderText="Version" DataField="Version" />
@@ -90,12 +98,12 @@
                         <asp:TemplateField ShowHeader="False" ItemStyle-VerticalAlign="Top" >
                             <ItemTemplate>
                                 <i runat="server" ID="iInstalledIcon" visible="false" class="icon-ok" title="this version is installed"></i>
-                                <asp:LinkButton CssClass="btn" ID="lbInstall" CommandName="Install" Text="<i class='icon-download-alt'></i> &nbsp; Install" runat="server" />
-                                <asp:LinkButton CssClass="btn btn-primary" ID="lbUpdate" CommandName="Update" Visible="false" Text="<i class='icon-download-alt'></i> &nbsp; Update" runat="server" />
+                                <asp:LinkButton CssClass="btn" ID="lbInstall" CommandName="Install" Text="<i class='icon-download-alt'></i> &nbsp; Install" OnClientClick="$(this).button('loading')" data-loading-text="Installing..." runat="server" />
+                                <asp:LinkButton CssClass="btn btn-primary" ID="lbUpdate" CommandName="Update" Visible="false" Text="<i class='icon-download-alt'></i> &nbsp; Update" OnClientClick="$(this).button('loading')" data-loading-text="Updating..." runat="server" />
                             </ItemTemplate>
                         </asp:TemplateField> 
                     </Columns>
-                    </asp:GridView>
+                    </Rock:Grid>
                 </div>
             </div>
         </div>
