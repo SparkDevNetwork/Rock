@@ -188,7 +188,7 @@ namespace Rock.Model
             StringBuilder formItems = new StringBuilder();
             var formList = request.Form;
 
-            if ( formList > 0 )
+            if ( formList.Count > 0 )
             {
                 formItems.Append( "<table class=\"form-items exception-table\">" );
 
