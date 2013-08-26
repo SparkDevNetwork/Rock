@@ -17,7 +17,6 @@ using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Security
 {
-    [BooleanField( "Enable Facebook Login", "Enables the user to login using Facebook.  This assumes that the site is configured with both a Facebook App Id and Secret.", false )]
     public partial class Login : Rock.Web.UI.RockBlock
     {
         /// <summary>
@@ -30,10 +29,11 @@ namespace RockWeb.Blocks.Security
             pnlMessage.Visible = false;
 
             // Look for active external authentication providers
-            foreach ( var serviceEntry in ExternalAuthenticationContainer.Instance.Components )
+            foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
             {
                 var component = serviceEntry.Value.Value;
-                if ( component.AttributeValues.ContainsKey( "Active" ) && bool.Parse( component.AttributeValues["Active"][0].Value ) )
+
+                if (component.IsActive && component.RequiresRemoteAuthentication)
                 {
                     string loginTypeName = component.GetType().Name;
 
@@ -94,11 +94,7 @@ namespace RockWeb.Blocks.Security
                         var component = serviceEntry.Value.Value;
                         string componentName = component.GetType().FullName;
 
-                        if (
-                            userLogin.ServiceName == componentName &&
-                            component.AttributeValues.ContainsKey( "Active" ) &&
-                            bool.Parse( component.AttributeValues["Active"][0].Value )
-                        )
+                        if (component.IsActive && !component.RequiresRemoteAuthentication && userLogin.ServiceName == componentName )
                         {
                             if ( component.Authenticate( userLogin, tbPassword.Text ) )
                             {
@@ -129,10 +125,10 @@ namespace RockWeb.Blocks.Security
             {
                 LinkButton lb = (LinkButton)sender;
 
-                foreach ( var serviceEntry in ExternalAuthenticationContainer.Instance.Components )
+                foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
                 {
                     var component = serviceEntry.Value.Value;
-                    if ( !component.AttributeValues.ContainsKey( "Active" ) || bool.Parse( component.AttributeValues["Active"][0].Value ) )
+                    if (component.IsActive && component.RequiresRemoteAuthentication)
                     {
                         string loginTypeName = component.GetType().Name;
                         if ( lb.ID == "lb" + loginTypeName + "Login" )

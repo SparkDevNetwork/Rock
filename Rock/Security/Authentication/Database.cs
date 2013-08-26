@@ -27,6 +27,18 @@ namespace Rock.Security.Authentication
         private static byte[] encryptionKey;
 
         /// <summary>
+        /// Determines if user is directed to another site (i.e. Facebook, Gmail, Twitter, etc) to confirm approval of using
+        /// that site's credentials for authentication.
+        /// </summary>
+        /// <value>
+        /// The requires remote authentication.
+        /// </value>
+        public override bool RequiresRemoteAuthentication
+        {
+            get { return false; }
+        }
+
+        /// <summary>
         /// Initializes the <see cref="Database" /> class.
         /// </summary>
         /// <exception cref="System.Configuration.ConfigurationErrorsException">Authentication requires a 'PasswordKey' app setting</exception>
@@ -71,6 +83,26 @@ namespace Rock.Security.Authentication
             for ( int i = 0; i < returnBytes.Length; i++ )
                 returnBytes[i] = Convert.ToByte( hexString.Substring( i * 2, 2 ), 16 );
             return returnBytes;
+        }
+
+        public override bool Authenticate( HttpRequest request, out string userName, out string returnUrl )
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Uri GenerateLoginUrl( HttpRequest request )
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool IsReturningFromAuthentication( HttpRequest request )
+        {
+            throw new NotImplementedException();
+        }
+
+        public override string ImageUrl()
+        {
+            throw new NotImplementedException();
         }
     }
 }

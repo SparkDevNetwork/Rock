@@ -8,6 +8,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
@@ -56,7 +57,7 @@ namespace Rock.Model
         {
             get
             {
-                return ( AudienceTypeValue != null ? AudienceTypeValue.Name : string.Empty );
+                return ( AudienceTypeValueId > 0 ? DefinedValueCache.Read(AudienceTypeValueId).Name : string.Empty );
             }
         }
 

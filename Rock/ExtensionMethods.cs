@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web.Routing;
 using System.Web.UI.WebControls;
+using System.Text.RegularExpressions;
 
 using DotLiquid;
 using Newtonsoft.Json;
@@ -299,6 +300,7 @@ namespace Rock
 
             return false;
         }
+        
         /// <summary>
         /// Attempts to convert string to integer.  Returns null if unsuccessful.
         /// </summary>
@@ -346,6 +348,23 @@ namespace Rock
             Template template = Template.Parse( content );
 
             return template.Render( Hash.FromDictionary( mergeObjects ) );
+        }
+
+        /// <summary>
+        /// Converts string to a HTML title "<span class='first-word'>first-word</span> rest of string"
+        /// </summary>
+        /// <param name="str">The STR.</param>
+        /// <returns></returns>
+        public static string FormatAsHtmlTitle(this string str)
+        {
+
+            // split first word from rest of string
+            Match m = Regex.Match(str, @"(\w*) (\w.*)");
+
+            if (m.Success)
+                return "<span class='first-word'>" + m.Groups[1] + " </span>" + m.Groups[2];
+            else
+                return str;
         }
 
         #endregion

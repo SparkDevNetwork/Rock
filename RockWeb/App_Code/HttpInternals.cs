@@ -88,6 +88,8 @@ internal static class HttpInternals
     /// <param name="e">The <see cref="FileSystemEventArgs"/> instance containing the event data.</param>
     static void sourceFileFsw_Changed( object sender, FileSystemEventArgs e )
     {
+        // send debug info to debug window
+        System.Diagnostics.Debug.WriteLine( string.Format( "Initiate shutdown due to .cs source file change: {0}", e.FullPath ) );
         HostingEnvironment.InitiateShutdown();
     }
 
@@ -100,8 +102,8 @@ internal static class HttpInternals
     {
         FileInfo fileInfo = new FileInfo( e.FullPath );
 
-        string[] extensionIgnoreFilter = new string[] { ".csv", ".ignore2" };
-        string[] dirIgnoreFilter = new string[] { "Cache", "Logs" };
+        string[] extensionIgnoreFilter = new string[] { ".csv", ".ignore2", ".nupkg" };
+        string[] dirIgnoreFilter = new string[] { "Cache", "Logs", "App_Data" };
 
         if ( fileInfo.Attributes.HasFlag( FileAttributes.Directory ) )
         {
@@ -122,6 +124,7 @@ internal static class HttpInternals
         {
             if ( !dirIgnoreFilter.Contains( fileInfo.Name ) )
             {
+                System.Diagnostics.Debug.WriteLine( string.Format( "Initiate shutdown due to RockWeb file change: {0}", e.FullPath ) );
                 HostingEnvironment.InitiateShutdown();
             }
         }

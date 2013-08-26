@@ -24,6 +24,8 @@ using Rock.Model;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
+using Rock.Reporting.DataTransform.Person;
+
 namespace RockWeb.Blocks.Utility
 {
     /// <summary>
@@ -31,7 +33,7 @@ namespace RockWeb.Blocks.Utility
     /// </summary>
     [Description( "Block to execute a linq command and display the result (if any)." )]
     public partial class LinqGrid : RockBlock
-    { 
+    {
         #region Control Methods
 
         /// <summary>
@@ -62,15 +64,10 @@ namespace RockWeb.Blocks.Utility
             gReport.CreatePreviewColumns( typeof( Person ) );
 
             var service = new PersonService();
+            var people = service.Queryable().Where( p => p.LastName == "Turner" );
+            var parents = service.Transform(people, new Rock.Reporting.DataTransform.Person.ParentTransform());
 
-            IQueryable<int> Ids = service.Queryable().Where( p => p.LastName == "Turner" ).Select( p => p.Id );
-
-            var txfrm = service.Queryable()
-                .Where( p => p.Members.Where( a => a.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ) )
-                    .Any( a => a.Group.Members.Any( c => c.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) ) &&
-                         Ids.Contains( c.Person.Id ) ) ) );
-                    
-            gReport.DataSource = txfrm.ToList();
+            gReport.DataSource = parents.ToList();
             gReport.DataBind();
         }
 

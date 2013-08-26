@@ -6,15 +6,17 @@
         <asp:Repeater ID="rptrFamilies" runat="server">
             <ItemTemplate>
 
+                <div class="persondetails-family">
+
                     <div class="actions" style="display: none;">
                         <asp:HyperLink ID="hlEditFamily" runat="server" CssClass="edit btn btn-mini"><i class="icon-pencil"></i> Edit Family</asp:HyperLink>
                     </div>
 
                     <div class="row-fluid">
-                
+
                         <div class="span8 members clearfix">
 
-                            <header><%# Eval("Name") %> <span class="light">Family</span></header>
+                            <header class="title"><span class="first-word"><%# Eval("Name") %></span> Family</header>
 
                             <ul class="clearfix">
 
@@ -45,7 +47,7 @@
                                     <ItemTemplate>
                                         <li class="address clearfix">
                                             <h4><%# FormatAddressType(Eval("LocationTypeValue.Name")) %></h4>
-                                            <a id="aMap" runat="server" title="Map This Address" class="map" target="_blank" >
+                                            <a id="aMap" runat="server" title="Map This Address" class="map" target="_blank">
                                                 <i class="icon-map-marker"></i>
                                             </a>
                                             <div class="address">
@@ -60,8 +62,7 @@
                                                 <asp:LinkButton ID="lbStandardize" runat="server">
                                                     <i class="icon-magic"></i>
                                                 </asp:LinkButton>
-                                                <a title="Address Standardized" href="../Blocks/Crm/PersonDetail/#">
-                                                </a>
+                                                <a title="Address Standardized" href="../Blocks/Crm/PersonDetail/#"></a>
                                             </div>
                                         </li>
                                     </ItemTemplate>
@@ -72,6 +73,8 @@
                         </div>
 
                     </div>
+
+                </div>
 
             </ItemTemplate>
         </asp:Repeater>
