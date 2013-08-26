@@ -5,6 +5,8 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
@@ -58,11 +60,14 @@ namespace Rock.Model
         /// <param name="personId">The person id.</param>
         public static void LogException( Exception ex, HttpContext context, int? pageId = null, int? siteId = null, int? personId = null, int? parentId = null )
         {
-            // Populate the initial ExceptionLog with data from HttpContext.
-            var parentLog = PopulateException( ex, context, pageId, siteId, personId, parentId );
+            // Populate the initial ExceptionLog with data from HttpContext. Must capture initial
+            // HttpContext details before spinning off new thread, because the current context will
+            // not be the same within the context of the new thread.
+            var exceptionLog = PopulateExceptionLog( ex, context, pageId, siteId, personId, parentId );
 
-            // Spin off a new thread to handle the real logging work so the UI is not blocked.
-            Task.Run( () => LogExceptions( ex, parentLog, true ) );
+            // Spin off a new thread to handle the real logging work so the UI is not blocked whilst
+            // recursively writing to the database.
+            Task.Run( () => LogExceptions( ex, exceptionLog, true ) );
         }
 
         /// <summary>
@@ -73,47 +78,79 @@ namespace Rock.Model
         /// <param name="isParent">if set to <c>true</c> [is parent].</param>
         private static void LogExceptions( Exception ex, ExceptionLog log, bool isParent )
         {
-            ExceptionLog exceptionLog;
-
-            // If this is a recursive call and not the originating exception being logged,
-            // attempt to clone the initial one, and populate it with Exception Type and Message
-            // from the inner excetpion, while retaining the contextual information from where
-            // the exception originated.
-            if ( !isParent )
+            // First attempt to log exception to the database...
+            try
             {
-                exceptionLog = log.Clone() as ExceptionLog;
+                ExceptionLog exceptionLog;
 
-                if ( exceptionLog != null )
+                // If this is a recursive call and not the originating exception being logged,
+                // attempt to clone the initial one, and populate it with Exception Type and Message
+                // from the inner excetpion, while retaining the contextual information from where
+                // the exception originated.
+                if ( !isParent )
                 {
-                    // Populate with inner exception type, message and update whether or not there is an inner exception.
-                    exceptionLog.ExceptionType = ex.GetType().ToString();
-                    exceptionLog.Description = ex.Message;
-                    exceptionLog.HasInnerException = ex.InnerException != null;
-                    
-                    // Ensure EF properly recognizes this as a new record.
-                    exceptionLog.Id = 0;
-                    exceptionLog.Guid = Guid.NewGuid();
-                    exceptionLog.ParentId = log.Id;
+                    exceptionLog = log.Clone() as ExceptionLog;
+
+                    if ( exceptionLog != null )
+                    {
+                        // Populate with inner exception type, message and update whether or not there is another inner exception.
+                        exceptionLog.ExceptionType = ex.GetType().ToString();
+                        exceptionLog.Description = ex.Message;
+                        exceptionLog.HasInnerException = ex.InnerException != null;
+
+                        // Ensure EF properly recognizes this as a new record.
+                        exceptionLog.Id = 0;
+                        exceptionLog.Guid = Guid.NewGuid();
+                        exceptionLog.ParentId = log.Id;
+                    }
+                }
+                else
+                {
+                    exceptionLog = log;
+                }
+
+                // The only reason this should happen is if the `log.Clone()` operation failed. Compiler sugar.
+                if ( exceptionLog == null )
+                {
+                    return;
+                }
+
+                // Write ExceptionLog record to database.
+                var exceptionLogService = new ExceptionLogService();
+                exceptionLogService.Add( exceptionLog, exceptionLog.CreatedByPersonId );
+                exceptionLogService.Save( exceptionLog, exceptionLog.CreatedByPersonId );
+
+                // Recurse if inner exception is found
+                if ( exceptionLog.HasInnerException.GetValueOrDefault( false ) )
+                {
+                    LogExceptions( ex.InnerException, exceptionLog, false );
                 }
             }
-            else
+            catch ( Exception )
             {
-                exceptionLog = log;
-            }
+                // If logging the exception fails, write the exception to a file
+                try
+                {
 
-            // The only reason this should happen is if the `log.Clone()` operation failed. Compiler sugar.
-            if ( exceptionLog == null )
-            {
-                return;
-            }
+                    string directory = AppDomain.CurrentDomain.BaseDirectory;
+                    directory = Path.Combine( directory, "Logs" );
 
-            var exceptionLogService = new ExceptionLogService();
-            exceptionLogService.Add( exceptionLog, exceptionLog.CreatedByPersonId );
-            exceptionLogService.Save( exceptionLog, exceptionLog.CreatedByPersonId );
+                    // check that directory exists
+                    if ( !Directory.Exists( directory ) )
+                    {
+                        Directory.CreateDirectory( directory );
+                    }
 
-            if ( exceptionLog.HasInnerException.GetValueOrDefault( false ) )
-            {
-                LogExceptions( ex.InnerException, exceptionLog, false );
+                    // create full path to the fie
+                    string filePath = Path.Combine( directory, "RockExceptions.csv" );
+
+                    // write to the file
+                    System.IO.File.AppendAllText( filePath, string.Format( "{0},{1},\"{2}\"\r\n", DateTime.Now.ToString(), EventLogEntryType.Error, ex.Message ) );
+                }
+                catch
+                {
+                    // failed to write to database and also failed to write to log file, so there is nowhere to log this error
+                }
             }
         }
 
@@ -127,56 +164,40 @@ namespace Rock.Model
         /// <param name="personId">The person id.</param>
         /// <param name="parentId">The parent id.</param>
         /// <returns></returns>
-        private static ExceptionLog PopulateException( Exception ex, HttpContext context, int? pageId, int? siteId, int? personId, int? parentId )
+        private static ExceptionLog PopulateExceptionLog( Exception ex, HttpContext context, int? pageId, int? siteId, int? personId, int? parentId )
         {
             var request = context.Request;
-            var cookies = request.Cookies;
-            var cookieString = new StringBuilder();
 
-            for ( int i = 0; i < cookies.Count; i++ )
+            StringBuilder cookies = new StringBuilder();
+            var cookieList = request.Cookies;
+            cookies.Append( "<table class=\"cookies exception-table\">" );
+
+            foreach ( string cookie in cookieList )
             {
-                var cookie = cookies[i];
-
-                if ( cookie == null )
-                {
-                    continue;
-                }
-
-                cookieString.AppendFormat( "Name: '{0}', Value: '{1}', Expires: '{2}'|",
-                    cookie.Name,
-                    cookie.Value,
-                    cookie.Expires.ToString() );
+                var httpCookie = cookieList[cookie];
+                if ( httpCookie != null )
+                    cookies.Append( "<tr><td><b>" + cookie + "</b></td><td>" + httpCookie.Value + "</td></tr>" );
             }
 
-            var serverVarsString = new StringBuilder();
-            var serverVars = request.ServerVariables;
+            cookies.Append( "</table>" );
 
-            for ( int i = 0; i < serverVars.Count; i++ )
-            {
-                var variable = serverVars[i];
-
-                if ( variable == null )
-                {
-                    continue;
-                }
-
-                serverVarsString.AppendFormat( "'{0}'|", variable );
-            }
-
-            var formString = new StringBuilder();
+            StringBuilder formItems = new StringBuilder();
             var form = request.Form;
+            formItems.Append( "<table class=\"form-items exception-table\">" );
 
-            for ( int i = 0; i < form.Count; i++ )
-            {
-                var formVar = form[i];
+            foreach ( string formItem in form )
+                formItems.Append( "<tr><td><b>" + formItem + "</b></td><td>" + form[formItem] + "</td></tr>" );
 
-                if ( formVar == null )
-                {
-                    continue;
-                }
+            formItems.Append( "</table>" );
 
-                formString.AppendFormat( "'{0}'|", formVar );
-            }
+            StringBuilder serverVars = new StringBuilder();
+            var serverVarList = request.ServerVariables;
+            serverVars.Append( "<table class=\"server-variables exception-table\">" );
+
+            foreach ( string serverVar in serverVarList )
+                serverVars.Append( "<tr><td><b>" + serverVar + "</b></td><td>" + serverVarList[serverVar] + "</td></tr>" );
+
+            serverVars.Append( "</table>" );
 
             return new ExceptionLog
                 {
@@ -184,7 +205,7 @@ namespace Rock.Model
                     PageId = pageId,
                     ParentId = parentId,
                     CreatedByPersonId = personId,
-                    Cookies = cookieString.ToString(),
+                    Cookies = cookies.ToString(),
                     HasInnerException = ex.InnerException != null,
                     StatusCode = context.Response.StatusCode.ToString(),
                     ExceptionType = ex.GetType().ToString(),
@@ -192,9 +213,9 @@ namespace Rock.Model
                     Source = ex.Source,
                     StackTrace = ex.StackTrace,
                     PageUrl = request.Url.ToString(),
-                    ServerVariables = serverVarsString.ToString(),
+                    ServerVariables = serverVars.ToString(),
                     QueryString = request.Url.Query,
-                    Form = formString.ToString(),
+                    Form = formItems.ToString(),
                     Guid = Guid.NewGuid(),
                     ExceptionDateTime = DateTime.Now
                 };
