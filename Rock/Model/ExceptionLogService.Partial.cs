@@ -186,14 +186,14 @@ namespace Rock.Model
             }
             
             StringBuilder formItems = new StringBuilder();
-            var form = request.Form;
+            var formList = request.Form;
 
-            if ( request.Form.Count > 0 )
+            if ( formList > 0 )
             {
                 formItems.Append( "<table class=\"form-items exception-table\">" );
 
-                foreach ( string formItem in form )
-                    formItems.Append( "<tr><td><b>" + formItem + "</b></td><td>" + form[formItem] + "</td></tr>" );
+                foreach ( string formItem in formList )
+                    formItems.Append( "<tr><td><b>" + formItem + "</b></td><td>" + formList[formItem] + "</td></tr>" );
 
                 formItems.Append( "</table>" );
             }
