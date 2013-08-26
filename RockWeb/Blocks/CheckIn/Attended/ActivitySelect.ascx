@@ -58,6 +58,24 @@
             </ContentTemplate>
             </asp:UpdatePanel>
 
+            <asp:UpdatePanel ID="pnlSelectLocation" runat="server" UpdateMode="Conditional" class="span3">
+            <ContentTemplate>        
+                <div class="attended-checkin-body-container">
+                    <h3>Location</h3>
+                    <asp:ListView ID="lvLocation" runat="server" OnPagePropertiesChanging="lvLocation_PagePropertiesChanging" OnItemCommand="lvLocation_ItemCommand" OnItemDataBound="lvLocation_ItemDataBound">
+                        <ItemTemplate>
+                            <asp:LinkButton ID="lbSelectLocation" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" ></asp:LinkButton>
+                        </ItemTemplate>
+                    </asp:ListView>
+                    <asp:DataPager ID="Pager" runat="server" PageSize="7" PagedControlID="lvLocation">
+                        <Fields>
+                            <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary" />
+                        </Fields>
+                    </asp:DataPager>
+                </div>
+            </ContentTemplate>
+            </asp:UpdatePanel>
+
             <asp:UpdatePanel ID="pnlSelectSchedule" runat="server" UpdateMode="Conditional" class="span3">
             <ContentTemplate>        
                 <div class="attended-checkin-body-container">
@@ -71,34 +89,18 @@
             </ContentTemplate>
             </asp:UpdatePanel>
 
-            <asp:UpdatePanel ID="pnlSelectLocation" runat="server" UpdateMode="Conditional" class="span3">
-            <ContentTemplate>        
-                <div class="attended-checkin-body-container">
-                    <h3>Location</h3>
-                    <asp:ListView ID="lvLocation" runat="server" OnPagePropertiesChanging="lvLocation_PagePropertiesChanging" OnItemCommand="lvLocation_ItemCommand" OnItemDataBound="lvLocation_ItemDataBound">
-                        <ItemTemplate>
-                            <asp:LinkButton ID="lbSelectLocation" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" ></asp:LinkButton>
-                        </ItemTemplate>
-                    </asp:ListView>
-                    <asp:DataPager ID="Pager" runat="server" PageSize="6" PagedControlID="lvLocation">
-                        <Fields>
-                            <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary" />
-                        </Fields>
-                    </asp:DataPager>
-                </div>
-            </ContentTemplate>
-            </asp:UpdatePanel>
-
             <div class="span3">
                 <div class="attended-checkin-body-container">
                     <h3>Selected</h3>
                     <asp:UpdatePanel ID="pnlSelectedGrid" runat="server" UpdateMode="Conditional">
                     <ContentTemplate>        
-                        <Rock:Grid ID="gSelectedList" runat="server" AllowSorting="true" AllowPaging="false" ShowActionRow="false" ShowHeader="false" CssClass="select">
+                        <Rock:Grid ID="gSelectedList" runat="server" AllowSorting="true" AllowPaging="false" ShowActionRow="false" ShowHeader="false" CssClass="select" DataKeyNames="LocationId, ScheduleId">
                             <Columns>
                                 <%--<asp:BoundField DataField="ListId" Visible="false" />--%>
-                                <asp:BoundField DataField="Time" />
-                                <asp:BoundField DataField="Activity" />
+                                <asp:BoundField DataField="Schedule" />
+                                <asp:BoundField DataField="Location" />
+                                <asp:BoundField DataField="LocationId" Visible="false" />
+                                <asp:BoundField DataField="ScheduleId" Visible="false" />
                                 <Rock:DeleteField OnClick="gSelectedList_Delete" ControlStyle-CssClass="btn btn-large btn-primary" />
                             </Columns>
                         </Rock:Grid>
