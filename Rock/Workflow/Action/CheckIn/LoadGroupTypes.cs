@@ -9,7 +9,6 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
-using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Model;
@@ -64,13 +63,15 @@ namespace Rock.Workflow.Action.CheckIn
 
                                     if ( personIsQualified && !string.IsNullOrWhiteSpace( ageAttribute ) && personAge.HasValue )
                                     {
-                                        List<double?> ageRange = ageAttribute.Split( delimiter, StringSplitOptions.None ).Select( s => ParseNullable<double?>( s ) ).ToList();
+                                        List<double?> ageRange = ageAttribute.Split( delimiter, StringSplitOptions.None )
+                                            .Select( s => ExtensionMethods.ParseNullable<double?>( s ) ).ToList();
                                         personIsQualified = ( personAge >= ageRange.First() && personAge <= ageRange.Last() );
                                     }
 
                                     if ( personIsQualified && !string.IsNullOrWhiteSpace( gradeAttribute ) && personGrade.HasValue )
                                     {
-                                        List<int?> gradeRange = ageAttribute.Split( delimiter, StringSplitOptions.None ).Select( s => ParseNullable<int?>( s ) ).ToList();
+                                        List<int?> gradeRange = ageAttribute.Split( delimiter, StringSplitOptions.None )
+                                            .Select( s => ExtensionMethods.ParseNullable<int?>( s ) ).ToList();
                                         personIsQualified = ( personGrade >= gradeRange.First() && personGrade <= gradeRange.Last() );
                                     }                                   
                                 }
@@ -91,20 +92,6 @@ namespace Rock.Workflow.Action.CheckIn
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Parses the nullable type.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static T ParseNullable<T>( object value )
-        {
-            var converter = System.ComponentModel.TypeDescriptor.GetConverter( typeof( T ) );
-            return converter.IsValid( value.ToString() )
-                ? (T)converter.ConvertFrom( value.ToString() )
-                : default( T );
-        }
+        }        
     }    
 }

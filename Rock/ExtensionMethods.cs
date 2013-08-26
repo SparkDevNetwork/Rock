@@ -117,6 +117,20 @@ namespace Rock
             }
         }
 
+        /// <summary>
+        /// Parses the nullable type.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static T ParseNullable<T>( object value )
+        {
+            var converter = System.ComponentModel.TypeDescriptor.GetConverter( typeof( T ) );
+            return converter.IsValid( value.ToString() )
+                ? (T)converter.ConvertFrom( value.ToString() )
+                : default( T );
+        }
+
         #endregion
 
         #region String Extensions
