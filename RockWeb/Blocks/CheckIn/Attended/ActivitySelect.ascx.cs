@@ -46,6 +46,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 {
                     var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
                         .People.Where( p => p.Person.Id == int.Parse( Request.QueryString["personId"] ) ).FirstOrDefault();
+                    ViewState["originalPerson"] = person.ToJson();      // we need this in case the user decides to go "back". 
                     if ( person != null )
                     {
                         lblPersonName.Text = person.Person.FullName;
@@ -142,13 +143,15 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var groups = groupType.SelectMany( gt => gt.Groups ).ToList();
             var locations = groups.SelectMany( g => g.Locations ).ToList();
             var schedules = locations.SelectMany( l => l.Schedules ).Where( s => s.Schedule.Id == scheduleId ).ToList();
-            var locationsSelectedForThisTime = locations.Where( l => l.Schedules.Any( s => s.Schedule.Id == scheduleId && s.Selected ) ).ToList();
-            locationsSelectedForThisTime.ForEach( l => l.Selected = false );
-            schedules.ForEach( s => s.Selected = false );
 
-            
-            
-            
+            // clear out any locations that are currently selected for the chosen schedule. 
+            var locationsToClear = locations.Where( l => l.Schedules.Any( s => s.Schedule.Id == scheduleId && s.Selected ) ).ToList();
+            locationsToClear.ForEach( l => l.Selected = false );
+            // clear out any groups where all the locations are not selected.
+            var groupsToClear = groups.Where( g => g.Locations.All( l => l.Selected == false ) ).ToList();
+            groupsToClear.ForEach( g => g.Selected = false );
+            // clear out all the schedules before picking the selected one below.
+            schedules.ForEach( s => s.Selected = false );
             
             var chosenGroupType = person.GroupTypes.Where( gt => gt.Groups.Any( g => g.Locations.Any( l => l.Location.Id == locationId ) ) ).FirstOrDefault();
             chosenGroupType.Selected = true;
@@ -159,7 +162,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             chosenLocation.Schedules.ForEach( s => s.Selected = false );
             var chosenSchedule = chosenLocation.Schedules.Where( s => s.Schedule.Id == scheduleId ).FirstOrDefault();
             chosenSchedule.Selected = true;
-
 
             BindSelectedGrid();
         }
@@ -324,7 +326,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var dataKeyValues = gSelectedList.DataKeys[index].Values;
             var locationId = int.Parse( dataKeyValues["LocationId"].ToString() );
             var scheduleId = int.Parse( dataKeyValues["ScheduleId"].ToString() );
-            //int personId = int.Parse( rGridPersonResults.DataKeys[index].Value.ToString() );
 
             var selectedGroupType = person.GroupTypes.Where( gt => gt.Selected ).FirstOrDefault();
             var selectedGroup = selectedGroupType.Groups.Where( g => g.Selected ).FirstOrDefault();
@@ -679,6 +680,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
         private void GoBack()
         {
             //SaveState();
+            var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
+                .People.Where( p => p.Person.Id == int.Parse( Request.QueryString["personId"] ) ).FirstOrDefault();
+            var checkInPerson = Newtonsoft.Json.JsonConvert.DeserializeObject( ViewState["originalPerson"].ToString(), typeof( CheckInPerson ) ) as CheckInPerson;
+            person.GroupTypes = checkInPerson.GroupTypes;
+            SaveState();
             NavigateToPreviousPage();
         }
 
@@ -710,7 +716,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 {
                     Location = l.Location.Name,
                     Schedule = l.Schedules.Where( s => s.Selected ).Select( s => s.Schedule.Name ).FirstOrDefault(),
-                    StartTime = l.Schedules.Where( s => s.Selected ).Select( s => s.StartTime ).FirstOrDefault(),
+                    StartTime = Convert.ToDateTime( l.Schedules.Where( s => s.Selected ).Select( s => s.StartTime ).FirstOrDefault() ).TimeOfDay,
                     LocationId = l.Location.Id.ToString(),
                     ScheduleId = l.Schedules.Where( s => s.Selected ).Select( s => s.Schedule.Id ).FirstOrDefault().ToString()
                 } ).OrderBy( gt => gt.StartTime ).ToList();
