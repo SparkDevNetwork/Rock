@@ -46,7 +46,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 {
                     var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
                         .People.Where( p => p.Person.Id == int.Parse( Request.QueryString["personId"] ) ).FirstOrDefault();
-                    //Session["originalPerson"] = person.ToJson();      // we need this in case the user decides to go "back". 
                     if ( person != null )
                     {
                         lblPersonName.Text = person.Person.FullName;
@@ -315,7 +314,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gSelectedList_Delete( object sender, RowEventArgs e )
         {
-            // Delete an item. Remove the selected attribute from the time and schedule
+            // Delete an item. Remove the selected attribute from the group, location and schedule
             var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
             .People.Where( p => p.Person.Id == int.Parse( Request.QueryString["personId"] ) ).FirstOrDefault();
 
@@ -682,10 +681,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             //SaveState();
             var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
                 .People.Where( p => p.Person.Id == int.Parse( Request.QueryString["personId"] ) ).FirstOrDefault();
-            //var checkInPerson = Newtonsoft.Json.JsonConvert.DeserializeObject( Session["originalPerson"].ToString(), typeof( CheckInPerson ) ) as CheckInPerson;
-            //person.GroupTypes = checkInPerson.GroupTypes;
             //SaveState();
-            //Session["originalPerson"] = null;
             NavigateToPreviousPage();
         }
 
@@ -695,7 +691,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
         private void GoNext()
         {
             SaveState();
-            //Session["originalPerson"] = null;
             NavigateToNextPage();            
         }
 
