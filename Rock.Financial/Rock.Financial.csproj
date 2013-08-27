@@ -33,8 +33,8 @@
     <Reference Include="DotLiquid">
       <HintPath>..\libs\DotLiquid v1.7.0\NET40\DotLiquid.dll</HintPath>
     </Reference>
-    <Reference Include="Payflow_dotNET_2.0">
-      <HintPath>..\libs\PayFlow\Payflow_dotNET_2.0.dll</HintPath>
+    <Reference Include="Payflow_dotNET">
+      <HintPath>..\libs\PayFlow\Payflow_dotNET.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -56,6 +56,10 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy /Y "$(TargetDir)$(ProjectName).dll" "$(SolutionDir)RockWeb\Bin\$(ProjectName).dll"
+copy /Y "$(TargetDir)Payflow_dotNET.dll" "$(SolutionDir)RockWeb\Bin\Payflow_dotNET.dll"</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
