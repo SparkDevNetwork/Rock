@@ -492,15 +492,23 @@ namespace Rock.Web.UI
                     // Create a javascript object to store information about the current page for client side scripts to use
                     Page.Trace.Warn( "Creating JS objects" );
                     string script = string.Format( @"
+    Rock.settings.initialize({{ 
+        siteId: {0},
+        pageId: {1}, 
+        layout: '{2}',
+        baseUrl: '{3}' 
+    }});
+
     var rock = {{ 
-        siteId:{0},
-        pageId:{1}, 
-        layout:'{2}',
-        baseUrl:'{3}' 
+        siteId: {0},
+        pageId: {1}, 
+        layout: '{2}',
+        baseUrl: '{3}' 
     }};
 ",
                         CurrentPage.SiteId.Value, CurrentPage.Id, CurrentPage.Layout, AppPath );
-                    this.Page.ClientScript.RegisterStartupScript( this.GetType(), "rock-js-object", script, true );
+                    //this.Page.ClientScript.RegisterStartupScript( this.GetType(), "rock-js-object", script, true );
+                    ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "rock-js-object", script, true );
 
                     // Add config elements
                     if ( CurrentPage.IncludeAdminFooter )
