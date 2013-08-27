@@ -16,7 +16,7 @@ namespace Rock.Financial.Gateway
     [TextField("PayPal Partner", "", true, "", "", 1, "Partner")]
     [TextField("PayPal Merchant Login", "", true, "", "", 1, "Vendor")]
     [TextField("PayPal User", "", true, "", "", 2, "User")]
-    [TextField("PayPal Password", "", true, "", "", 3, "User")]
+    [TextField("PayPal Password", "", true, "", "", 3, "Password")]
     [CustomRadioListField("Mode", "Mode to use for transactions", "Live,Test", true, "Live", "", 4)]
     public class PayFlow : GatewayComponent
     {
@@ -35,9 +35,11 @@ namespace Rock.Financial.Gateway
             }
         }
 
-        public override Model.FinancialTransaction Charge( Model.FinancialTransaction transaction, CreditCard creditCard, bool testTransaction = false )
+        public override Model.FinancialTransaction Charge( Model.FinancialTransaction transaction, CreditCard creditCard, out string errorMessage  )
         {
-            var ppConnection = new PayflowConnectionData();
+            errorMessage = string.Empty;
+
+            var ppConnection = new PayflowConnectionData( GatewayUrl );
             
             var ppBillingInfo = new BillTo();
             ppBillingInfo.Street = creditCard.BillingStreet;
@@ -61,7 +63,7 @@ namespace Rock.Financial.Gateway
                 GetAttributeValue("Partner"),
                 GetAttributeValue("Password"));
 
-            var ppTransaction = new CreditTransaction(ppUersInfo, ppInvoice, ppCardTender, PayflowUtility.RequestId);
+            var ppTransaction = new SaleTransaction( ppUersInfo, ppInvoice, ppCardTender, PayflowUtility.RequestId );
             var ppResponse = ppTransaction.SubmitTransaction();
 
             if (ppResponse != null)
@@ -69,16 +71,23 @@ namespace Rock.Financial.Gateway
                 TransactionResponse txnResponse = ppResponse.TransactionResponse;
                 if (txnResponse != null)
                 {
-                    // Check response
-                    Rock.Model.FinancialTransaction rockTransaction = new Model.FinancialTransaction();
-                    return rockTransaction;
+                    if ( txnResponse.Result == 0 ) // Success
+                    {
+                        Rock.Model.FinancialTransaction rockTransaction = new Model.FinancialTransaction();
+                        rockTransaction.TransactionCode = txnResponse.Pnref;
+                        return rockTransaction;
+                    }
+                    else
+                    {
+                        errorMessage = string.Format( "[{0}] {1}", txnResponse.Result, txnResponse.RespMsg );
+                    }
                 }
             }
 
             return null;
         }
 
-        public override Model.FinancialTransaction Charge( Model.FinancialTransaction transaction, BankAccount bankAccount, bool testTransaction = false )
+        public override Model.FinancialTransaction Charge( Model.FinancialTransaction transaction, BankAccount bankAccount )
         {
             throw new NotImplementedException();
         }
