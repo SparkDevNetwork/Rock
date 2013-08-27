@@ -31,9 +31,9 @@ namespace Rock.PersonProfile
         /// </summary>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public virtual BadgeType GetBadgeType( Person person )
+        public virtual string GetBadgeType( Person person )
         {
-            return BadgeType.None;
+            return string.Empty;
         }
 
         /// <summary>
@@ -45,14 +45,14 @@ namespace Rock.PersonProfile
             if ( Person != null )
             {
                 string text = GetText( Person );
-                BadgeType badgeType = GetBadgeType( Person );
+                string badgeType = GetBadgeType( Person );
 
                 if ( !string.IsNullOrWhiteSpace( text ) )
                 {
                     string css = "label";
-                    if ( badgeType != BadgeType.None )
+                    if ( !string.IsNullOrWhiteSpace( badgeType ) )
                     {
-                        css += " label-" + badgeType.ConvertToString().ToLower();
+                        css += " label-" + badgeType.ToLower();
                     }
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, css );
                     writer.RenderBeginTag( HtmlTextWriterTag.Span );

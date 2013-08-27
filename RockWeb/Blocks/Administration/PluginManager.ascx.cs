@@ -165,17 +165,17 @@ namespace RockWeb.Blocks.Administration
                 case ViewMode.Installed:
                     liInstalled.AddCssClass( "active" );
                     liAvailable.RemoveCssClass( "active" );
-                    gPackageList.DataSource = InstalledPackages.ToList();
+                    gPackageList.DataSource = InstalledPackages.Where( p => ! p.Id.StartsWith( "RockUpdate") ).ToList();
                     break;
                 case ViewMode.Available:
                     liInstalled.RemoveCssClass( "active" );
                     liAvailable.AddCssClass( "active" );
-                    gPackageList.DataSource = AvailablePackages.ToList();
+                    gPackageList.DataSource = AvailablePackages.Where( p => !p.Id.StartsWith( "RockUpdate" ) ).ToList();
                     break;
                 case ViewMode.Search:
                     liInstalled.RemoveCssClass( "active" );
                     liAvailable.RemoveCssClass( "active" );
-                    gPackageList.DataSource = NuGetService.GetLatestRemotePackages( txtSearch.Text, includeAllVersions: false ).ToList();
+                    gPackageList.DataSource = NuGetService.GetLatestRemotePackages( txtSearch.Text, includeAllVersions: false ).Where( p => !p.Id.StartsWith( "RockUpdate" ) ).ToList();
                     break;
                 default:
                     break;
@@ -212,11 +212,16 @@ namespace RockWeb.Blocks.Administration
                 LinkButton lbUpdate = e.Row.FindControl( "lbUpdate" ) as LinkButton;
                 LinkButton lbView = e.Row.FindControl( "lbView" ) as LinkButton;
                 HtmlAnchor link = e.Row.FindControl( "lProjectUrl" ) as HtmlAnchor;
-                HtmlImage imgIcon = e.Row.FindControl( "imgIcon" ) as HtmlImage;
                 Literal lblAuthors = e.Row.FindControl( "lblAuthors" ) as Literal;
                 Literal lblVersion = e.Row.FindControl( "lblVersion" ) as Literal;
                 Literal lblLatestVersion = e.Row.FindControl( "lblLatestVersion" ) as Literal;
                 Literal lblInstalledVersion = e.Row.FindControl( "lblInstalledVersion" ) as Literal;
+                
+                if ( package.IconUrl != null )
+                {
+                    Image imgIconUrl = e.Row.FindControl( "imgIconUrl" ) as Image;
+                    imgIconUrl.ImageUrl = package.IconUrl.ToString(); ;
+                }
 
                 lblAuthors.Text = string.Join( ",", package.Authors );
 
@@ -242,15 +247,23 @@ namespace RockWeb.Blocks.Administration
                         lblInstalledVersion.Visible = true;
                         lblInstalledVersion.Text += theInstalledPackage.Version;
 
-                        // Checking "IsLatestVersion" does not work because of what's discussed here:
-                        // http://nuget.codeplex.com/discussions/279837
-                        // if ( !installedPackage.IsLatestVersion )...
-                        var latestPackage = NuGetService.GetUpdate( package );
-                        if ( latestPackage != null )
+                        try
                         {
-                            lbUpdate.Visible = true;
-                            lblLatestVersion.Visible = true;
-                            lblLatestVersion.Text += latestPackage.Version;
+                            // Checking "IsLatestVersion" does not work because of what's discussed here:
+                            // http://nuget.codeplex.com/discussions/279837
+                            // if ( !installedPackage.IsLatestVersion )...
+                            var latestPackage = NuGetService.GetUpdate( package );
+                            if ( latestPackage != null )
+                            {
+                                lbUpdate.Visible = true;
+                                lblLatestVersion.Visible = true;
+                                lblLatestVersion.Text += latestPackage.Version;
+                            }
+                        }
+                        catch ( InvalidOperationException ex )
+                        {
+                            Literal lblItemError = e.Row.FindControl( "lblItemError" ) as Literal;
+                            lblItemError.Text = string.Format( "<p class='text-error'>We're having a problem... {0}</p>", ex.Message );
                         }
                     }
 
@@ -311,7 +324,7 @@ namespace RockWeb.Blocks.Administration
             lDescription.Text = package.Description;
             lTags.Text = package.Tags;
             lDependencies.Text = ( package.DependencySets.Count() == 0 ) ? "This plugin has no dependencies." : 
-                package.DependencySets.Aggregate( new StringBuilder( "<ul>" ), ( sb, s ) => sb.AppendFormat( "<li>{0}</li>", s ) ).Append( "</ul>" ).ToString();
+                package.DependencySets.Aggregate( new StringBuilder( "<ul>" ), ( sb, s ) => sb.AppendFormat( "<li>{0}</li>", s.ToString() ) ).Append( "</ul>" ).ToString();
 
             lbPackageUninstall.CommandArgument = packageId;
             lbPackageUninstall.Visible = NuGetService.IsPackageInstalled( package, anyVersion: true );
@@ -336,6 +349,10 @@ namespace RockWeb.Blocks.Administration
                     LinkButton lbInstall = e.Row.FindControl( "lbInstall" ) as LinkButton;
                     LinkButton lbUpdate = e.Row.FindControl( "lbUpdate" ) as LinkButton;
                     HtmlGenericControl iInstalledIcon = e.Row.FindControl( "iInstalledIcon" ) as HtmlGenericControl;
+                    if ( e.Row.RowIndex == 0 )
+                    {
+                        lbInstall.AddCssClass( "btn-primary" );
+                    }
 
                     lbInstall.CommandArgument = lbUpdate.CommandArgument = e.Row.RowIndex.ToString();
 
@@ -396,8 +413,15 @@ namespace RockWeb.Blocks.Administration
                 case "update":
                     {
                         var installed = NuGetService.GetInstalledPackage( packageId );
-                        var update = NuGetService.GetUpdate( installed );
-                        errors = NuGetService.UpdatePackage( update );
+                        try
+                        {
+                            var update = NuGetService.GetUpdate( installed );
+                            errors = NuGetService.UpdatePackage( update );
+                        }
+                        catch ( InvalidOperationException ex )
+                        {
+                            errors.Concat( new[] { string.Format( "There is a problem with {0}: {1}", installed.Title, ex.Message ) } );
+                        }
                     }
                     break;
             }

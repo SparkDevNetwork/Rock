@@ -19,6 +19,7 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:GridFilter runat=server></{0}:GridFilter>" )]
     public class GridFilter : PlaceHolder, INamingContainer
     {
+        private HiddenField hfVisible;
         private LinkButton lbFilter;
         private Dictionary<string, string> _userPreferences;
 
@@ -50,6 +51,12 @@ Sys.Application.add_load(function () {
 
     $('div.grid-filter header').click(function () {
         $('i.toggle-filter', this).toggleClass('icon-chevron-down icon-chevron-up');
+        var $hf = $('input', this).first();
+        if($hf.val() != 'true') {
+            $hf.val('true');
+        } else {
+            $hf.val('false');
+        }
         $(this).siblings('div').slideToggle();
     });
 
@@ -66,6 +73,10 @@ Sys.Application.add_load(function () {
         protected override void CreateChildControls()
         {
             base.CreateChildControls();
+
+            hfVisible = new HiddenField();
+            Controls.Add( hfVisible );
+            hfVisible.ID = "hfVisible";
 
             lbFilter = new LinkButton();
             Controls.Add( lbFilter );
@@ -84,6 +95,8 @@ Sys.Application.add_load(function () {
         /// <param name="e">The <see cref="System.EventArgs" /> instance containing the event data.</param>
         protected void lbFilter_Click( object sender, System.EventArgs e )
         {
+            hfVisible.Value = "false";
+
             if ( ApplyFilterClick != null )
             {
                 ApplyFilterClick( sender, e );
@@ -96,6 +109,8 @@ Sys.Application.add_load(function () {
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
+            bool visible = hfVisible.Value == "true";
+
             writer.AddAttribute( "class", "grid-filter" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
@@ -107,7 +122,9 @@ Sys.Application.add_load(function () {
             writer.Write( "Filter Options" );
             writer.RenderEndTag();
 
-            writer.AddAttribute( "class", "icon-chevron-down toggle-filter" );
+            hfVisible.RenderControl( writer );
+
+            writer.AddAttribute( "class", visible ? "icon-chevron-up toggle-filter" : "icon-chevron-down toggle-filter" );
             writer.RenderBeginTag( HtmlTextWriterTag.I );
             writer.RenderEndTag();
 
@@ -116,6 +133,10 @@ Sys.Application.add_load(function () {
 
             // Filter Overview
             writer.AddAttribute( "class", "grid-filter-overview" );
+            if ( visible )
+            {
+                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+            }
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             var nonEmptyValues = _userPreferences.Where( v => !string.IsNullOrEmpty( v.Value ) ).ToList();
@@ -132,9 +153,13 @@ Sys.Application.add_load(function () {
                     {
                         DisplayFilterValue( this, args );
                     }
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    writer.Write( string.Format( "{0}: {1}", args.Key, args.Value ) );
-                    writer.RenderEndTag();
+
+                    if ( !string.IsNullOrWhiteSpace( args.Value ) )
+                    {
+                        writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                        writer.Write( string.Format( "{0}: {1}", args.Key, args.Value ) );
+                        writer.RenderEndTag();
+                    }
                 }
 
                 writer.RenderEndTag();
@@ -144,7 +169,10 @@ Sys.Application.add_load(function () {
 
             // Filter Entry
             writer.AddAttribute( "class", "grid-filter-entry" );
-            writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+            if ( !visible )
+            {
+                writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
+            }
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
@@ -174,7 +202,7 @@ Sys.Application.add_load(function () {
             {
                 foreach ( Control child in Controls )
                 {
-                    if ( child != lbFilter )
+                    if ( child != lbFilter && child != hfVisible )
                     {
                         child.RenderControl( writer );
                     }

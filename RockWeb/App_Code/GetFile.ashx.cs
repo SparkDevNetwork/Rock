@@ -10,8 +10,8 @@ using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using System.Net;
-using System.Text;
 using System.Web;
+using Rock.Model;
 using Rock.Storage;
 using Rock.Storage.Provider;
 
@@ -70,12 +70,11 @@ namespace RockWeb
             }
             catch ( Exception ex )
             {
-                // TODO: log this error
+                ExceptionLogService.LogException( ex, context );
                 context.Response.StatusCode = 500;
                 context.Response.StatusDescription = ex.Message;
                 context.Response.End();
-                // to avoid compilation errors
-                throw;
+                return null;
             }
         }
 
@@ -146,7 +145,7 @@ namespace RockWeb
             }
             catch ( Exception ex )
             {
-                // TODO: log this error
+                ExceptionLogService.LogException( ex, context );
                 context.Response.StatusCode = 500;
                 context.Response.StatusDescription = ex.Message;
                 context.Response.Flush();
