@@ -44,6 +44,7 @@ namespace Rock.Model
         /// <value>
         /// The priority.
         /// </value>
+        [MergeField]
         [DataMember]
         public int Priority { get; set; }
 
@@ -53,6 +54,7 @@ namespace Rock.Model
         /// <value>
         /// The marketing campaign ad status.
         /// </value>
+        [MergeField]
         [DataMember]
         public MarketingCampaignAdStatus MarketingCampaignAdStatus { get; set; }
 
@@ -71,6 +73,7 @@ namespace Rock.Model
         /// <value>
         /// The start date.
         /// </value>
+        [MergeField]
         [DataMember]
         [Column( TypeName = "Date" )]
         public DateTime StartDate { get; set; }
@@ -81,6 +84,7 @@ namespace Rock.Model
         /// <value>
         /// The end date.
         /// </value>
+        [MergeField]
         [DataMember]
         [Column( TypeName = "Date" )]
         public DateTime EndDate { get; set; }
@@ -91,7 +95,8 @@ namespace Rock.Model
         /// <value>
         /// The URL.
         /// </value>
-        [MaxLength(2000)]
+        [MergeField]
+        [MaxLength( 2000 )]
         [DataMember]
         public string Url { get; set; }
 
@@ -101,6 +106,7 @@ namespace Rock.Model
         /// <value>
         /// The marketing campaign.
         /// </value>
+        [MergeField]
         [DataMember]
         public virtual MarketingCampaign MarketingCampaign { get; set; }
 
@@ -110,6 +116,7 @@ namespace Rock.Model
         /// <value>
         /// The type of the marketing campaign ad.
         /// </value>
+        [MergeField]
         [DataMember]
         public virtual MarketingCampaignAdType MarketingCampaignAdType { get; set; }
     }

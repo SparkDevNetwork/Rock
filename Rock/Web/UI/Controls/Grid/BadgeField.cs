@@ -201,9 +201,9 @@ namespace Rock.Web.UI.Controls
             }
 
             string css = "badge";
-            if ( eventArg.BadgeType != BadgeType.None )
+            if( !string.IsNullOrWhiteSpace( eventArg.BadgeType ) )
             {
-                css += " badge-" + eventArg.BadgeType.ConvertToString().ToLower();
+                css += " badge-" + eventArg.BadgeType.ToLower();
             }
 
             string fieldValue = base.FormatDataValue( eventArg.FieldValue, encode );
@@ -220,19 +220,19 @@ namespace Rock.Web.UI.Controls
 
             if ( ImportantMin <= count && count <= ImportantMax )
             {
-                e.BadgeType = BadgeType.Important;
+                e.BadgeType = "Important";
             }
             else if ( WarningMin <= count && count <= WarningMax )
             {
-                e.BadgeType = BadgeType.Warning;
+                e.BadgeType = "Warning";
             }
             else if ( SuccessMin <= count && count <= SuccessMax )
             {
-                e.BadgeType = BadgeType.Success;
+                e.BadgeType = "Success";
             }
             else if ( InfoMin <= count && count <= InfoMax )
             {
-                e.BadgeType = BadgeType.Info;
+                e.BadgeType = "Info";
             }
         }
         
@@ -263,12 +263,12 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The type of the badge.
         /// </value>
-        public BadgeType BadgeType { get; set; }
+        public string BadgeType { get; set; }
 
         public BadgeRowEventArgs(object fieldValue)
         {
             FieldValue = fieldValue;
-            BadgeType = BadgeType.None;
+            BadgeType = string.Empty;
         }
     }
 }

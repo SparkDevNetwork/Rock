@@ -41,7 +41,16 @@ namespace Rock.Workflow.Action.CheckIn
 
                         foreach ( var groupType in person.GroupTypes.ToList() )
                         {
-                            string minGradeValue = groupType.GroupType.GetAttributeValue( "MinGrade" );
+                            string gradeRange = groupType.GroupType.GetAttributeValue( "GradeRange" ) ?? string.Empty;
+                            string[] gradeRangePair = gradeRange.Split( new char[] { ',' }, StringSplitOptions.None );
+                            string minGradeValue = null;
+                            string maxGradeValue = null;
+                            if ( gradeRangePair.Length == 2 )
+                            {
+                                minGradeValue = gradeRangePair[0];
+                                maxGradeValue = gradeRangePair[1];
+                            }
+                            
                             // if the group type specifies a min grade then the person's grade MUST match
                             if ( minGradeValue != null )
                             {
@@ -56,8 +65,7 @@ namespace Rock.Workflow.Action.CheckIn
                                     }
                                 }
                             }
-
-                            string maxGradeValue = groupType.GroupType.GetAttributeValue( "MaxGrade" );
+                            
                             // if the group type specifies a min grade then the person's grade MUST match
                             if ( maxGradeValue != null )
                             {

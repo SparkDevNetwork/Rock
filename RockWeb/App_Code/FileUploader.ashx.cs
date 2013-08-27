@@ -103,6 +103,7 @@ namespace RockWeb
             }
             catch ( Exception ex )
             {
+                ExceptionLogService.LogException( ex, context );
                 context.Response.Write( "err:" + ex.Message + "<br>" + ex.StackTrace );
             }
         }

@@ -912,6 +912,15 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Logs the exception.
+        /// </summary>
+        /// <param name="ex">The System.Exception to log.</param>
+        public void LogException( Exception ex )
+        {
+            ExceptionLogService.LogException( ex, Context, CurrentPage.Id, CurrentPage.SiteId, CurrentPersonId );
+        }
+
+        /// <summary>
         /// Gets the control list. 
         /// http://stackoverflow.com/questions/7362482/c-sharp-get-all-web-controls-on-page
         /// </summary>
