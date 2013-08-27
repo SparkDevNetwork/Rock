@@ -80,15 +80,25 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 int personId = person.Person.Id;
                 string personName = person.Person.FullName;
+                //var assignments = person.GroupTypes.Where( gt => gt.Selected )
+                //    .SelectMany( gt => gt.Groups ).Where( g => g.Selected )
+                //    .Select( g => new {
+                //        Id = personId,
+                //        Name = personName,
+                //        AssignedTo = g.Group.Name,
+                //        Time = g.Locations.Where( l => l.Selected )
+                //          .Where( l => l.Schedules.Any( s => s.Selected ) )
+                //          .SelectMany( l => l.Schedules.Select( s => s.Schedule.Name ) ).FirstOrDefault()
+                //    } ).ToList();
                 var assignments = person.GroupTypes.Where( gt => gt.Selected )
                     .SelectMany( gt => gt.Groups ).Where( g => g.Selected )
-                    .Select( g => new {
+                    .SelectMany( g => g.Locations ).Where( l => l.Selected )
+                    .Select( l => new
+                    {
                         Id = personId,
                         Name = personName,
-                        AssignedTo = g.Group.Name,
-                        Time = g.Locations.Where( l => l.Selected )
-                          .Where( l => l.Schedules.Any( s => s.Selected ) )
-                          .SelectMany( l => l.Schedules.Select( s => s.Schedule.Name ) ).FirstOrDefault()
+                        AssignedTo = l.Location.Name,
+                        Time = l.Schedules.Where( s => s.Selected ).Select( s => s.Schedule.Name ).FirstOrDefault()
                     } ).ToList();
 
                 foreach ( var assignment in assignments )
@@ -188,9 +198,31 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void gPersonList_Delete( object sender, RowEventArgs e )
         {
             // remove person
-            CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
-                .People.Where( p => p.Person.Id == e.RowKeyId ).FirstOrDefault().Selected = false;
+            //CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
+            //    .People.Where( p => p.Person.Id == e.RowKeyId ).FirstOrDefault().Selected = false;
+            //BindGrid();
+
+            // just remove the one particular item selected.
+            var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
+                .People.Where( p => p.Person.Id == e.RowKeyId ).FirstOrDefault();
+
+            int index = e.RowIndex;
+            var row = gPersonList.Rows[index];
+            var dataKeyValues = gPersonList.DataKeys[index].Values;
+            var id = int.Parse( dataKeyValues["Id"].ToString() );
+            var assignedTo = dataKeyValues["AssignedTo"].ToString();
+
+            var selectedGroupType = person.GroupTypes.Where( gt => gt.Selected ).FirstOrDefault();
+            var selectedGroup = selectedGroupType.Groups.Where( g => g.Selected && g.Group.Name == assignedTo ).FirstOrDefault();
+            var selectedLocation = selectedGroup.Locations.Where( l => l.Selected && l.Location.Name == assignedTo ).FirstOrDefault();
+            var selectedSchedule = selectedLocation.Schedules.Where( s => s.Selected ).FirstOrDefault();
+
+            selectedGroup.Selected = false;
+            selectedLocation.Selected = false;
+            selectedSchedule.Selected = false;
+
             BindGrid();
+
         }
 
         #endregion
