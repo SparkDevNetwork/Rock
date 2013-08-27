@@ -125,7 +125,7 @@ namespace Rock
         /// <returns></returns>
         public static T ParseNullable<T>( object value )
         {
-            var converter = System.ComponentModel.TypeDescriptor.GetConverter( typeof( T ) );
+            var converter = TypeDescriptor.GetConverter( typeof( T ) );
             return converter.IsValid( value.ToString() )
                 ? (T)converter.ConvertFrom( value.ToString() )
                 : default( T );
