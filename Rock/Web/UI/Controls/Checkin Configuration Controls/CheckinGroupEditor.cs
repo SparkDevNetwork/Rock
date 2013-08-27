@@ -20,6 +20,8 @@ namespace Rock.Web.UI.Controls
     public class CheckinGroupEditor : CompositeControl
     {
         private HiddenField hfGroupGuid;
+        private HiddenField hfGroupId;
+        private HiddenField hfGroupTypeId;
         private Label lblGroupName;
         private LinkButton lbDeleteGroup;
 
@@ -89,7 +91,10 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
         {
             EnsureChildControls();
             Group result = new Group();
+            
+            result.Id = hfGroupTypeId.ValueAsInt();
             result.Guid = new Guid( hfGroupGuid.Value );
+            result.GroupTypeId = hfGroupTypeId.ValueAsInt();
             result.Name = tbGroupName.Text;
             result.LoadAttributes();
             Rock.Attribute.Helper.GetEditValues( phGroupAttributes, result );
@@ -103,12 +108,19 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
         public void SetGroup( Group value )
         {
             EnsureChildControls();
+
+            //// NOTE:  A Group that was added will have an Id since it hasn't been saved to the database. 
+            //// So, we'll use Guid to uniquely identify in this Control since that'll work in both Saved and Unsaved cases.
+            //// If it is saved, we do need the Id so that Attributes will work
+
             hfGroupGuid.Value = value.Guid.ToString();
+            hfGroupId.Value = value.Id.ToString();
+            hfGroupTypeId.Value = value.GroupTypeId.ToString();
             tbGroupName.Text = value.Name;
 
             value.LoadAttributes();
             phGroupAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( value, phGroupAttributes, true, new List<string>() { "Active", "Order" } );
+            Rock.Attribute.Helper.AddEditControls( value, phGroupAttributes, true );
         }
 
         /// <summary>
@@ -120,6 +132,12 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
 
             hfGroupGuid = new HiddenField();
             hfGroupGuid.ID = this.ID + "_hfGroupGuid";
+
+            hfGroupId = new HiddenField();
+            hfGroupId.ID = this.ID + "_hfGroupId";
+            
+            hfGroupTypeId = new HiddenField();
+            hfGroupTypeId.ID = this.ID + "_hfGroupTypeId";
 
             lblGroupName = new Label();
             lblGroupName.ClientIDMode = ClientIDMode.Static;
@@ -148,6 +166,8 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             phGroupAttributes.ID = this.ID + "_phGroupAttributes";
 
             Controls.Add( hfGroupGuid );
+            Controls.Add( hfGroupId );
+            Controls.Add( hfGroupTypeId );
             Controls.Add( lblGroupName );
             Controls.Add( tbGroupName );
             Controls.Add( phGroupAttributes );

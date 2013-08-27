@@ -104,8 +104,26 @@ namespace RockWeb.Blocks.Administration
             groupTypeEditor.SetGroupType( groupType );
             groupTypeEditor.AddGroupClick += groupTypeEditor_AddGroupClick;
             groupTypeEditor.AddGroupTypeClick += groupTypeEditor_AddGroupTypeClick;
+            groupTypeEditor.DeleteCheckinLabelClick += groupTypeEditor_DeleteCheckinLabelClick;
+            groupTypeEditor.AddCheckinLabelClick += groupTypeEditor_AddCheckinLabelClick;
 
-            //TODO
+            BinaryFileService binaryFileService = new BinaryFileService();
+
+            Dictionary<int, string> checkinFileList = new Dictionary<int, string>();
+
+            Guid binaryFileFieldTypeGuid = new Guid( Rock.SystemGuid.FieldType.BINARY_FILE );
+
+            foreach ( var attributeValue in groupType.GetAttributeValues( "Labels" ) )
+            {
+                int binaryFileId = attributeValue.AsInteger() ?? 0;
+                var binaryFile = binaryFileService.Get( binaryFileId );
+                if ( binaryFile != null )
+                {
+                    checkinFileList.Add( binaryFile.Id, binaryFile.FileName );
+                }
+            }
+
+            groupTypeEditor.CheckinLabels = checkinFileList;
 
             parentControl.Controls.Add( groupTypeEditor );
 
@@ -118,6 +136,28 @@ namespace RockWeb.Blocks.Administration
             {
                 CreateGroupTypeEditorControls( childGroupType, groupTypeEditor, false );
             }
+        }
+
+        /// <summary>
+        /// Handles the AddCheckinLabelClick event of the groupTypeEditor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void groupTypeEditor_AddCheckinLabelClick( object sender, EventArgs e )
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Handles the DeleteCheckinLabelClick event of the groupTypeEditor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void groupTypeEditor_DeleteCheckinLabelClick( object sender, RowEventArgs e )
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
