@@ -33,7 +33,14 @@
   	<div id="content" class="container"> 
         <h1 class="page-title"><Rock:PageTitle ID="PageTitle" runat="server" /></h1>
 
-  	    <Rock:Zone ID="Content" runat="server" />
+  	    <div class="row-fluid">
+            <div class="span3">
+                <Rock:Zone ID="Sidebar" runat="server" />
+            </div>
+            <div class="span9">
+                <Rock:Zone ID="Main" runat="server" />
+            </div>
+        </div>
     </div>
   	
 
