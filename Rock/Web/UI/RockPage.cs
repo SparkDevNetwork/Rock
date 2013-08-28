@@ -492,15 +492,15 @@ namespace Rock.Web.UI
                     // Create a javascript object to store information about the current page for client side scripts to use
                     Page.Trace.Warn( "Creating JS objects" );
                     string script = string.Format( @"
-    var rock = {{ 
-        siteId:{0},
-        pageId:{1}, 
-        layout:'{2}',
-        baseUrl:'{3}' 
-    }};
-",
+    Rock.settings.initialize({{ 
+        siteId: {0},
+        pageId: {1}, 
+        layout: '{2}',
+        baseUrl: '{3}' 
+    }});",
                         CurrentPage.SiteId.Value, CurrentPage.Id, CurrentPage.Layout, AppPath );
-                    this.Page.ClientScript.RegisterStartupScript( this.GetType(), "rock-js-object", script, true );
+                    //this.Page.ClientScript.RegisterStartupScript( this.GetType(), "rock-js-object", script, true );
+                    ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "rock-js-object", script, true );
 
                     // Add config elements
                     if ( CurrentPage.IncludeAdminFooter )
@@ -909,6 +909,15 @@ namespace Rock.Web.UI
                     dimmableBlock.SetDimmed( dimmed );
                 }
             }
+        }
+
+        /// <summary>
+        /// Logs the exception.
+        /// </summary>
+        /// <param name="ex">The System.Exception to log.</param>
+        public void LogException( Exception ex )
+        {
+            ExceptionLogService.LogException( ex, Context, CurrentPage.Id, CurrentPage.SiteId, CurrentPersonId );
         }
 
         /// <summary>

@@ -5,10 +5,11 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -20,11 +21,14 @@ namespace Rock.Web.UI.Controls
     public class CheckinGroupEditor : CompositeControl
     {
         private HiddenField hfGroupGuid;
+        private HiddenField hfGroupId;
+        private HiddenField hfGroupTypeId;
         private Label lblGroupName;
         private LinkButton lbDeleteGroup;
 
         private DataTextBox tbGroupName;
         private PlaceHolder phGroupAttributes;
+        private Grid gLocations;
 
         public bool ForceContentVisible { get; set; }
 
@@ -57,6 +61,50 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
 ";
 
             ScriptManager.RegisterStartupScript( hfGroupGuid, hfGroupGuid.GetType(), "CheckinGroupEditorScript", script, true );
+
+            CreateGroupAttributeControls();
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            if ( Page.IsPostBack )
+            {
+                HandleGridEvents();
+            }
+        }
+
+        /// <summary>
+        /// Handles the grid events.
+        /// </summary>
+        private void HandleGridEvents()
+        {
+            // manually wireup the grid events since they don't seem to do it automatically 
+            string eventTarget = Page.Request.Params["__EVENTTARGET"];
+            List<string> controlIds = eventTarget.Split( new char[] { '$' } ).ToList();
+            int gridControlIndex = controlIds.IndexOf( gLocations.ClientID );
+            if ( gridControlIndex > -1 )
+            {
+                EnsureChildControls();
+                string lblAddControlId = controlIds.Last();
+                var lblAdd = gLocations.Actions.FindControl( lblAddControlId );
+                if ( lblAdd != null )
+                {
+                    AddLocation_Click( this, new EventArgs() );
+                }
+                else
+                {
+                    // rowIndex is determined by the numeric suffix of the control id after the Grid, subtract 2 (one for the header, and another to convert from 0 to 1 based index)
+                    int rowIndex = controlIds[gridControlIndex + 1].AsNumeric().AsInteger().Value - 2;
+                    RowEventArgs rowEventArgs = new RowEventArgs( rowIndex, this.Locations[rowIndex].LocationId.ToString() );
+                    DeleteLocation_Click( this, rowEventArgs );
+                }
+            }
         }
 
         /// <summary>
@@ -80,6 +128,50 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        [Serializable]
+        public class LocationGridItem
+        {
+            /// <summary>
+            /// Gets or sets the location unique identifier.
+            /// </summary>
+            /// <value>
+            /// The location unique identifier.
+            /// </value>
+            [DataMember]
+            public int LocationId { get; set; }
+
+            /// <summary>
+            /// Gets or sets the name.
+            /// </summary>
+            /// <value>
+            /// The name.
+            /// </value>
+            [DataMember]
+            public string Name { get; set; }
+        }
+
+        /// <summary>
+        /// Gets or sets the locations.
+        /// </summary>
+        /// <value>
+        /// The locations.
+        /// </value>
+        public List<LocationGridItem> Locations
+        {
+            get
+            {
+                return ViewState["Locations"] as List<LocationGridItem>;
+            }
+
+            set
+            {
+                ViewState["Locations"] = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets the group.
         /// </summary>
         /// <value>
@@ -89,9 +181,33 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
         {
             EnsureChildControls();
             Group result = new Group();
+
+            result.Id = hfGroupTypeId.ValueAsInt();
             result.Guid = new Guid( hfGroupGuid.Value );
+            result.GroupTypeId = hfGroupTypeId.ValueAsInt();
+
+            // get the current InheritedGroupTypeId from the Parent Editor just in case it hasn't been saved to the database
+            CheckinGroupTypeEditor checkinGroupTypeEditor = this.Parent as CheckinGroupTypeEditor;
+            if ( checkinGroupTypeEditor != null )
+            {
+                result.GroupType = new GroupType();
+                result.GroupType.Id = result.GroupTypeId;
+                result.GroupType.InheritedGroupTypeId = checkinGroupTypeEditor.InheritedGroupTypeId;
+            }
+
             result.Name = tbGroupName.Text;
             result.LoadAttributes();
+
+            // populate groupLocations with whatever is currently in the grid, with just enough info to repopulate it and save it later
+            result.GroupLocations = new List<GroupLocation>();
+            foreach ( var item in this.Locations )
+            {
+                var groupLocation = new GroupLocation();
+                groupLocation.LocationId = item.LocationId;
+                groupLocation.Location = new Location { Name = item.Name };
+                result.GroupLocations.Add( groupLocation );
+            }
+
             Rock.Attribute.Helper.GetEditValues( phGroupAttributes, result );
             return result;
         }
@@ -103,12 +219,15 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
         public void SetGroup( Group value )
         {
             EnsureChildControls();
-            hfGroupGuid.Value = value.Guid.ToString();
-            tbGroupName.Text = value.Name;
 
-            value.LoadAttributes();
-            phGroupAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( value, phGroupAttributes, true, new List<string>() { "Active", "Order" } );
+            //// NOTE:  A Group that was added will have an Id since it hasn't been saved to the database. 
+            //// So, we'll use Guid to uniquely identify in this Control since that'll work in both Saved and Unsaved cases.
+            //// If it is saved, we do need the Id so that Attributes will work
+
+            hfGroupGuid.Value = value.Guid.ToString();
+            hfGroupId.Value = value.Id.ToString();
+            hfGroupTypeId.Value = value.GroupTypeId.ToString();
+            tbGroupName.Text = value.Name;
         }
 
         /// <summary>
@@ -120,6 +239,12 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
 
             hfGroupGuid = new HiddenField();
             hfGroupGuid.ID = this.ID + "_hfGroupGuid";
+
+            hfGroupId = new HiddenField();
+            hfGroupId.ID = this.ID + "_hfGroupId";
+
+            hfGroupTypeId = new HiddenField();
+            hfGroupTypeId.ID = this.ID + "_hfGroupTypeId";
 
             lblGroupName = new Label();
             lblGroupName.ClientIDMode = ClientIDMode.Static;
@@ -148,10 +273,74 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             phGroupAttributes.ID = this.ID + "_phGroupAttributes";
 
             Controls.Add( hfGroupGuid );
+            Controls.Add( hfGroupId );
+            Controls.Add( hfGroupTypeId );
             Controls.Add( lblGroupName );
             Controls.Add( tbGroupName );
             Controls.Add( phGroupAttributes );
+
+            // Locations Grid
+            CreateLocationsGrid();
+            
             Controls.Add( lbDeleteGroup );
+        }
+
+        /// <summary>
+        /// Creates the locations grid.
+        /// </summary>
+        private void CreateLocationsGrid()
+        {
+            gLocations = new Grid();
+
+            // make the ID static so we can handle Postbacks from the Add and Delete actions
+            gLocations.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+            gLocations.ID = this.ClientID + "_gCheckinLabels";
+
+            gLocations.DisplayType = GridDisplayType.Light;
+            gLocations.ShowActionRow = true;
+            gLocations.RowItemText = "Location";
+            gLocations.Actions.ShowAdd = true;
+
+            //// Handle AddClick manually in OnLoad()
+            gLocations.Actions.AddClick += AddLocation_Click;
+
+            gLocations.DataKeyNames = new string[] { "LocationId" };
+            gLocations.Columns.Add( new BoundField { DataField = "Name", HeaderText = "Name" } );
+
+            DeleteField deleteField = new DeleteField();
+
+            //// handle manually in OnLoad()
+            deleteField.Click += DeleteLocation_Click;
+
+            gLocations.Columns.Add( deleteField );
+
+            Controls.Add( gLocations );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the DeleteLocation control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void DeleteLocation_Click( object sender, RowEventArgs e )
+        {
+            if ( DeleteLocationClick != null )
+            {
+                DeleteLocationClick( sender, e );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the AddLocation control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void AddLocation_Click( object sender, EventArgs e )
+        {
+            if ( AddLocationClick != null )
+            {
+                AddLocationClick( sender, e );
+            }
         }
 
         /// <summary>
@@ -210,17 +399,63 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            // action edit fields
+            // make two span6 columns: Left Column for Name and Attributes. Right Column for Locations Grid
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row-fluid" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            // edit fields
             tbGroupName.RenderControl( writer );
 
-            // action attributes
+            // attributes
             phGroupAttributes.RenderControl( writer );
+
+            writer.RenderEndTag();
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            // Locations grid
+            writer.WriteLine( "<h3>Locations</h3>" );
+            gLocations.DataSource = this.Locations;
+            gLocations.DataBind();
+            gLocations.RenderControl( writer );
+
+            // span6
+            writer.RenderEndTag();
+
+            // rowfluid
+            writer.RenderEndTag();
 
             // widget-content div
             writer.RenderEndTag();
 
             // article tag
             writer.RenderEndTag();
+        }
+
+        /// <summary>
+        /// Creates the group attribute controls.
+        /// </summary>
+        public void CreateGroupAttributeControls()
+        {
+            Group fakeGroup = new Group();
+            fakeGroup.Id = hfGroupId.ValueAsInt();
+            fakeGroup.GroupTypeId = hfGroupTypeId.ValueAsInt();
+
+            // get the current InheritedGroupTypeId from the Parent Editor just in case it hasn't been saved to the database
+            CheckinGroupTypeEditor checkinGroupTypeEditor = this.Parent as CheckinGroupTypeEditor;
+            if ( checkinGroupTypeEditor != null )
+            {
+                fakeGroup.GroupType = new GroupType();
+                fakeGroup.GroupType.Id = fakeGroup.GroupTypeId;
+                fakeGroup.GroupType.InheritedGroupTypeId = checkinGroupTypeEditor.InheritedGroupTypeId;
+            }
+
+            fakeGroup.LoadAttributes();
+            phGroupAttributes.Controls.Clear();
+            Rock.Attribute.Helper.AddEditControls( fakeGroup, phGroupAttributes, true );
         }
 
         /// <summary>
@@ -240,5 +475,15 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
         /// Occurs when [delete group click].
         /// </summary>
         public event EventHandler DeleteGroupClick;
+
+        /// <summary>
+        /// Occurs when [delete location click].
+        /// </summary>
+        public event EventHandler<RowEventArgs> DeleteLocationClick;
+
+        /// <summary>
+        /// Occurs when [add location click].
+        /// </summary>
+        public event EventHandler AddLocationClick;
     }
 }
