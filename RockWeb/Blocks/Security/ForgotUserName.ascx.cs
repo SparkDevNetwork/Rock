@@ -16,6 +16,7 @@ namespace RockWeb.Blocks.Security
     [TextField( "Heading Caption", "", false, "Enter your email address below and we'll send you your account user name", "Captions", 0 )]
     [TextField( "Invalid Email Caption", "", false, "There are not any accounts for the email address you entered", "Captions", 1 )]
     [TextField( "Success Caption", "", false, "Your user name has been sent to the email address you entered", "Captions", 2 )]
+    [LinkedPage( "Confirmation Page", "Page for user to confirm their account (if blank will use 'ConfirmAccount' page route)" )]
     public partial class ForgotUserName : Rock.Web.UI.RockBlock
     {
         #region Overridden RockPage Methods
@@ -43,7 +44,10 @@ namespace RockWeb.Blocks.Security
         protected void btnSend_Click( object sender, EventArgs e )
         {
             var mergeObjects = new Dictionary<string, object>();
-            mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
+
+            string confirmUrl = GetAttributeValue( "ConfirmationPage" );
+            confirmUrl = string.IsNullOrWhiteSpace( confirmUrl ) ? "ConfirmAccount" : "Page/" + confirmUrl.Trim();
+            mergeObjects.Add( "ConfirmAccountUrl", RootPath + confirmUrl );
 
             var personDictionaries = new List<IDictionary<string, object>>();
 
