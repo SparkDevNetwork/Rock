@@ -104,12 +104,11 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
                 }
                 else
                 {
-
+                    // rowIndex is determined by the numeric suffix of the control id after the Grid, subtract 2 (one for the header, and another to convert from 0 to 1 based index)
                     int rowIndex = controlIds[gridControlIndex + 1].AsNumeric().AsInteger().Value - 2;
                     RowEventArgs rowEventArgs = new RowEventArgs( rowIndex, this.CheckinLabels[rowIndex].AttributeKey );
                     DeleteCheckinLabel_Click( this, rowEventArgs );
                 }
-
             }
         }
 
@@ -376,10 +375,10 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
         private void CreateCheckinLabelsGrid()
         {
             gCheckinLabels = new Grid();
+            
+            // make the ID static so we can handle Postbacks from the Add and Delete actions
             gCheckinLabels.ClientIDMode = System.Web.UI.ClientIDMode.Static;
             gCheckinLabels.ID = this.ClientID + "_gCheckinLabels";
-            gCheckinLabels.Actions.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-            gCheckinLabels.Actions.ID = gCheckinLabels.ClientID + "_actions";
             gCheckinLabels.DisplayType = GridDisplayType.Light;
             gCheckinLabels.ShowActionRow = true;
             gCheckinLabels.RowItemText = "Label";
@@ -528,7 +527,7 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            // make two span6 columns: Left Column for Name and Attributes. Right Column for Labels
+            // make two span6 columns: Left Column for Name and Attributes. Right Column for Labels Grid
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row-fluid" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
@@ -539,7 +538,7 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
             ddlGroupTypeInheritFrom.RenderControl( writer );
             tbGroupTypeName.RenderControl( writer );
 
-            //// attributes 
+            // attributes 
             phGroupTypeAttributes.RenderControl( writer );
 
             writer.RenderEndTag();
@@ -552,11 +551,13 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
             gCheckinLabels.DataBind();
             gCheckinLabels.RenderControl( writer );
 
+            // span6
             writer.RenderEndTag();
+
+            // rowfluid
             writer.RenderEndTag();
 
             // groups
-
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "checkin-group-list" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             foreach ( CheckinGroupTypeEditor checkinGroupTypeEditor in this.Controls.OfType<CheckinGroupTypeEditor>() )
