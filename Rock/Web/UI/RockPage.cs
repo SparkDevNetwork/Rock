@@ -497,15 +497,7 @@ namespace Rock.Web.UI
         pageId: {1}, 
         layout: '{2}',
         baseUrl: '{3}' 
-    }});
-
-    var rock = {{ 
-        siteId: {0},
-        pageId: {1}, 
-        layout: '{2}',
-        baseUrl: '{3}' 
-    }};
-",
+    }});",
                         CurrentPage.SiteId.Value, CurrentPage.Id, CurrentPage.Layout, AppPath );
                     //this.Page.ClientScript.RegisterStartupScript( this.GetType(), "rock-js-object", script, true );
                     ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "rock-js-object", script, true );
