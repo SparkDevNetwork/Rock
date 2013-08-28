@@ -327,13 +327,16 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var scheduleId = int.Parse( dataKeyValues["ScheduleId"].ToString() );
 
             var selectedGroupType = person.GroupTypes.Where( gt => gt.Selected ).FirstOrDefault();
-            var selectedGroup = selectedGroupType.Groups.Where( g => g.Selected ).FirstOrDefault();
+            var selectedGroup = selectedGroupType.Groups.Where( g => g.Selected && g.Group.Name == g.Locations.Where( l => l.Location.Id == locationId ).Select( l => l.Location.Name ).FirstOrDefault() ).FirstOrDefault();
             var selectedLocation = selectedGroup.Locations.Where( l => l.Selected && l.Location.Id == locationId).FirstOrDefault();
             var selectedSchedule = selectedLocation.Schedules.Where( s => s.Selected && s.Schedule.Id == scheduleId ).FirstOrDefault();
 
             selectedGroup.Selected = false;
             selectedLocation.Selected = false;
             selectedSchedule.Selected = false;
+
+            BindLocations( person );
+            BindSchedules( person );
 
             BindSelectedGrid();
         }
@@ -355,35 +358,37 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddNoteSave_Click( object sender, EventArgs e )
         {
-            // get the entity type for Person
-            EntityTypeService entityTypeService = new EntityTypeService();
-            var personEntity = entityTypeService.Get( "Rock.Model.Person" );
-            var noteTypeService = new NoteTypeService();
-            var noteType = noteTypeService.Get( personEntity.Id, "Timeline" );
-
-            var note = new Note().Clone( false );
-            note.IsSystem = false;
-            note.NoteTypeId = noteType.Id;
-            note.EntityId = personEntity.Id;
-            if ( noteType.Sources != null )
+            if ( !string.IsNullOrEmpty( tbNote.Text ) )
             {
-                var source = noteType.Sources.DefinedValues.FirstOrDefault();
-                if ( source != null )
+                // get the entity type for Person
+                EntityTypeService entityTypeService = new EntityTypeService();
+                var personEntity = entityTypeService.Get( "Rock.Model.Person" );
+                var noteTypeService = new NoteTypeService();
+                var noteType = noteTypeService.Get( personEntity.Id, "Timeline" );
+
+                var note = new Note().Clone( false );
+                note.IsSystem = false;
+                note.NoteTypeId = noteType.Id;
+                note.EntityId = personEntity.Id;
+                if ( noteType.Sources != null )
                 {
-                    note.SourceTypeValueId = source.Id;
+                    var source = noteType.Sources.DefinedValues.FirstOrDefault();
+                    if ( source != null )
+                    {
+                        note.SourceTypeValueId = source.Id;
+                    }
                 }
+                note.Caption = "";
+                note.IsAlert = false;
+                note.Text = tbNote.Text;
+                note.CreationDateTime = DateTime.Now;
+                Rock.Data.RockTransactionScope.WrapTransaction( () =>
+                {
+                    var ns = new NoteService();
+                    ns.Add( note, CurrentPersonId );
+                    ns.Save( note, CurrentPersonId );
+                } );
             }
-            note.Caption = "";
-            note.IsAlert = false;
-            note.Text = tbNote.Text;
-            note.CreationDateTime = DateTime.Now;
-            Rock.Data.RockTransactionScope.WrapTransaction( () =>
-            {
-                var ns = new NoteService();
-                ns.Add( note, CurrentPersonId );
-                ns.Save( note, CurrentPersonId );
-            } );
-
 
             // from Notes.ascx.cs
             //var service = new NoteService();
