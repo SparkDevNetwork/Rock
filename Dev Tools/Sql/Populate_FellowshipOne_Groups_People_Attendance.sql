@@ -9,11 +9,12 @@ The following assumptions or actions are made:
 
 1. Source database is named F1
 2. Current database is RockChMS
-3. The Populate_FellowshipOne_HelperFunctions has already been run
-4. Households or people with a ".", "?", or "_" in their name are excluded. 
-5. Person roles are assigned by their age: 19+ is an adult, otherwise a child
-6. FellowshipOne database ID's are stored as a person's attribute after the import finishes.
-7. Person graduation dates are calculated if a grade can be found in the location name 
+3. The Populate_FellowshipOne_HelperFunctions has been run
+4. Either a checkin workflow or migration has been run to add CheckIn properties
+5. Households or people with a ".", "?", or "_" in their name are excluded. 
+6. Person roles are assigned by their age: 19+ is an adult, otherwise a child
+7. FellowshipOne database ID's are stored as a person's attribute after the import finishes.
+8. Person graduation dates are calculated if a grade can be found in the location name 
 	where they checked in. If not, the graduation date is 18 + birth date.
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
@@ -194,7 +195,6 @@ LEFT JOIN AttributeValue AS Individual
 CREATE TABLE #InsertedVisitors (
 	HouseholdID int
 	, IndividualID int
-	, PersonID int	
 	, CanCheckInGroupID int
 );
 
@@ -231,7 +231,7 @@ INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid)
 SELECT 0, IV.CanCheckInGroupID, AV.EntityId, @CanCheckInRole, NEWID()
 FROM #InsertedVisitors IV
 INNER JOIN AttributeValue AS AV
-	ON AV.AttributeId = @HouseholdAttributeID
+	ON AV.AttributeId = @IndividualAttributeID
 	AND AV.Value = IV.IndividualID
 
 --select * from #InsertedVisitors
@@ -331,3 +331,32 @@ WHERE DATEDIFF(YEAR, LAA.BirthDate, @NextGradeTransitionDate ) <= 19
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 
 
+------------------------------------------------------------
+-- Add Person attendance
+------------------------------------------------------------
+;WITH F1Attendance AS (
+	SELECT A.Individual_ID AS 'IndividualID'
+	, A.Start_Date_Time AS 'ScheduleDate'
+	, A.Check_In_Time AS 'CheckInTime'
+	, R.RLC_Name AS 'GroupName'
+	, A.CheckedInAs	
+	FROM F1.dbo.Attendance A
+	INNER JOIN F1.dbo.RLC R
+	ON A.RLC_ID = R.RLC_ID
+)
+INSERT Attendance (LocationId, ScheduleId, GroupId, PersonId, StartDateTime, Note, DidAttend, [Guid])
+SELECT L.Id, S.Id, G.Id, P.Id, ISNULL(F.CheckInTime, F.ScheduleDate), 'Imported from F1', 1, NEWID()
+FROM Person P
+INNER JOIN AttributeValue AV
+	ON AV.AttributeId = @IndividualAttributeID
+	AND AV.EntityId = P.Id
+INNER JOIN F1Attendance F
+	ON F.IndividualID = AV.Value
+INNER JOIN [Group] G
+	ON F.GroupName = G.Name
+INNER JOIN Location L
+	ON F.GroupName = L.Name
+INNER JOIN Schedule S
+	ON CAST(F.ScheduleDate as time) = CAST(S.Name as time)
+GROUP BY L.Id, S.Id, G.Id, P.Id, ISNULL(F.CheckInTime, F.ScheduleDate)
+ORDER BY ISNULL(F.CheckInTime, F.ScheduleDate)
