@@ -107,28 +107,28 @@ namespace RockWeb.Blocks.Administration
             groupTypeEditor.DeleteCheckinLabelClick += groupTypeEditor_DeleteCheckinLabelClick;
             groupTypeEditor.AddCheckinLabelClick += groupTypeEditor_AddCheckinLabelClick;
 
+            List<string> labelAttributeKeys = CheckinGroupTypeEditor.GetCheckinLabelAttributes( groupType ).Select( a => a.Key ).ToList();
             BinaryFileService binaryFileService = new BinaryFileService();
+            groupTypeEditor.CheckinLabels = new List<CheckinGroupTypeEditor.CheckinLabelAttributeInfo>();
 
-            Dictionary<int, string> checkinFileList = new Dictionary<int, string>();
-
-            Guid binaryFileFieldTypeGuid = new Guid( Rock.SystemGuid.FieldType.BINARY_FILE );
-
-            foreach ( var attributeValue in groupType.GetAttributeValues( "Labels" ) )
+            foreach ( string key in labelAttributeKeys )
             {
+                var attributeValue = groupType.GetAttributeValue( key );
                 int binaryFileId = attributeValue.AsInteger() ?? 0;
                 var binaryFile = binaryFileService.Get( binaryFileId );
                 if ( binaryFile != null )
                 {
-                    checkinFileList.Add( binaryFile.Id, binaryFile.FileName );
+                    groupTypeEditor.CheckinLabels.Add( new CheckinGroupTypeEditor.CheckinLabelAttributeInfo { AttributeKey = key, BinaryFileId = binaryFileId, FileName = binaryFile.FileName } );
                 }
             }
-
-            groupTypeEditor.CheckinLabels = checkinFileList;
 
             parentControl.Controls.Add( groupTypeEditor );
 
             foreach ( var childGroup in groupType.Groups.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
+                // get the GroupType from the control just in case it the InheritedFrom changed
+                childGroup.GroupType = groupTypeEditor.GetCheckinGroupType();
+                
                 CreateGroupEditorControls( childGroup, groupTypeEditor, false );
             }
 
@@ -179,6 +179,7 @@ namespace RockWeb.Blocks.Administration
             checkinArea.AttendancePrintTo = PrintTo.Default;
             checkinArea.ParentGroupTypes = new List<GroupType>();
             checkinArea.ParentGroupTypes.Add( parentGroupType );
+            checkinArea.LoadAttributes();
 
             CreateGroupTypeEditorControls( checkinArea, phCheckinGroupTypes );
         }
@@ -201,6 +202,7 @@ namespace RockWeb.Blocks.Administration
             checkinArea.AttendancePrintTo = PrintTo.Default;
             checkinArea.ParentGroupTypes = new List<GroupType>();
             checkinArea.ParentGroupTypes.Add( parentEditor.GetCheckinGroupType() );
+            checkinArea.LoadAttributes();
 
             CreateGroupTypeEditorControls( checkinArea, parentEditor );
         }
@@ -236,10 +238,11 @@ namespace RockWeb.Blocks.Administration
             CheckinGroupEditor groupEditor = new CheckinGroupEditor();
             groupEditor.ID = "GroupEditor_" + group.Guid.ToString( "N" );
             groupEditor.SetGroup( group );
+            parentControl.Controls.Add( groupEditor );
 
             //TODO
 
-            parentControl.Controls.Add( groupEditor );
+            
         }
 
         #endregion
@@ -310,6 +313,7 @@ namespace RockWeb.Blocks.Administration
             // Load the Controls
             foreach ( GroupType groupType in checkinGroupTypes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
+                groupType.LoadAttributes();
                 CreateGroupTypeEditorControls( groupType, phCheckinGroupTypes );
             }
         }

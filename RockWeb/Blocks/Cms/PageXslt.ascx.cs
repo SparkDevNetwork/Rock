@@ -58,7 +58,7 @@ namespace RockWeb.Blocks.Cms
 
         private void TransformXml()
         {
-            string outputXml = string.Empty;
+            string outputString = string.Empty;
             
             // ensure xslt file exists
             string xsltFile = Server.MapPath(GetAttributeValue("XSLTFile"));
@@ -105,7 +105,7 @@ namespace RockWeb.Blocks.Cms
 
                     if (showDebug || string.IsNullOrWhiteSpace(xsltFile))
                     {
-                        outputXml = "<pre><code>" + HttpUtility.HtmlEncode(pageXml.ToString()) + "</code></pre>";
+                        outputString = "<pre><code>" + HttpUtility.HtmlEncode(pageXml.ToString()) + "</code></pre>";
                     }
                     else
                     {
@@ -115,7 +115,7 @@ namespace RockWeb.Blocks.Cms
 
                         xslTransformer.Transform(pageXml.CreateReader(), null, tw);
 
-                        outputXml = sb.ToString();
+                        outputString = sb.ToString();
                     }
 
                 }
@@ -127,18 +127,17 @@ namespace RockWeb.Blocks.Cms
                     if (ex.InnerException != null)
                         exMessage += "<br /><em>" + ex.InnerException.Message + "</em>";
 
-                    outputXml = "<div class='alert warning' style='margin: 24px auto 0 auto; max-width: 500px;' ><strong>XSLT Compile Error</strong><p>" + exMessage + "</p></div>";
+                    outputString = "<div class='alert warning' style='margin: 24px auto 0 auto; max-width: 500px;' ><strong>XSLT Compile Error</strong><p>" + exMessage + "</p></div>";
                 }
             }
             else
             {
-                string errorMessage = "<div class='alert warning' style='margin: 24px auto 0 auto; max-width: 500px;' ><strong>Warning!</strong><p>The XSLT file required to process the page list could not be found.</p><p><em>" + xsltFile + "</em></p>";
-                phContent.Controls.Add(new LiteralControl(errorMessage));
+                outputString = "<div class='alert warning' style='margin: 24px auto 0 auto; max-width: 500px;' ><strong>Warning!</strong><p>The XSLT file required to process the page list could not be found.</p><p><em>" + xsltFile + "</em></p>";
             }
 
             phContent.Controls.Clear();
 
-            phContent.Controls.Add(new LiteralControl(outputXml));
+            phContent.Controls.Add(new LiteralControl(outputString));
 
         }
     }
