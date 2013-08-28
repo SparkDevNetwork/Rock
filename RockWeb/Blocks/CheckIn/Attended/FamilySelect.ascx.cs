@@ -23,7 +23,6 @@ using System.Runtime.InteropServices;
 namespace RockWeb.Blocks.CheckIn.Attended
 {
     [Description( "Attended Check-In Family Select Block" )]
-    [LinkedPage( "Activity Select Page" )]
     public partial class FamilySelect : CheckInBlock
     {
         #region Control Methods
@@ -50,16 +49,16 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         var familyList = CurrentCheckInState.CheckIn.Families.OrderBy( f => f.Caption ).ToList();
                         if ( !UserBackedUp )
                         {
-                            familyList.FirstOrDefault().Selected = true;
-                            ProcessFamily();
+                            familyList.FirstOrDefault().Selected = true;                            
                         }
 
+                        ProcessFamily();
                         lvFamily.DataSource = familyList;
                         lvFamily.DataBind();
                     }
                     else
                     {
-                        familyTitle.InnerText = "No Search Results";
+                        lblFamilyTitle.InnerText = "No Search Results";
                         lbNext.Enabled = false;
                         lbNext.Visible = false;
                         pnlSelectFamily.Visible = false;
@@ -101,8 +100,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
             else
             {
                 family.Selected = false;               
-                repPerson.DataSource = null;
-                repPerson.DataBind();                                
+                lvPerson.DataSource = null;
+                lvPerson.DataBind();
+                lvVisitor.DataSource = null;
+                lvVisitor.DataBind();  
             }
 
             pnlSelectPerson.Update();
@@ -116,8 +117,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="PagePropertiesChangingEventArgs"/> instance containing the event data.</param>
         protected void lvFamily_PagePropertiesChanging( object sender, PagePropertiesChangingEventArgs e )
         {
-            // set current page startindex, max rows and rebind to false
-            dpPager.SetPageProperties( e.StartRowIndex, e.MaximumRows, false );
+            dpFamilyPager.SetPageProperties( e.StartRowIndex, e.MaximumRows, false );
 
             // rebind List View
             lvFamily.DataSource = CurrentCheckInState.CheckIn.Families.OrderBy( f => f.Caption ).ToList();
@@ -142,43 +142,35 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
-        /// Handles the ItemDataBound event of the repPerson control.
+        /// Handles the ItemDataBound event of the lvPerson control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
-        protected void repPerson_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        protected void lvPerson_ItemDataBound( object sender, ListViewItemEventArgs e )
         {
-            var familyMemberIds = hfSelectedPerson.Value.SplitDelimitedValues().Select( int.Parse ).ToList();
-            if ( familyMemberIds.Count > 0 )
+            if ( e.Item.ItemType == ListViewItemType.DataItem )
             {
-                if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+                if ( ( (CheckInPerson)e.Item.DataItem ).Selected )
                 {
-                    if ( familyMemberIds.Contains( ( (CheckInPerson)e.Item.DataItem ).Person.Id ) )
-                    {
-                        ( (LinkButton)e.Item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
-                    }
+                    ( (LinkButton)e.Item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
                 }
             }
         }
 
         /// <summary>
-        /// Handles the ItemDataBound event of the repVisitors control.
+        /// Handles the ItemDataBound event of the lvVisitor control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
-        protected void repVisitors_ItemDataBound( object sender, RepeaterItemEventArgs e )
-        {
-            var visitorIds = hfSelectedVisitor.Value.SplitDelimitedValues().Select( int.Parse ).ToList();
-            if ( visitorIds.Count > 0 )
+        protected void lvVisitor_ItemDataBound( object sender, ListViewItemEventArgs e )
+        {            
+            if ( e.Item.ItemType == ListViewItemType.DataItem )
             {
-                if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+                if ( ( (CheckInPerson)e.Item.DataItem ).Selected )
                 {
-                    if ( visitorIds.Contains( ( (CheckInPerson)e.Item.DataItem ).Person.Id ) )
-                    {
-                        ( (LinkButton)e.Item.FindControl( "lbSelectVisitor" ) ).AddCssClass( "active" );
-                    }
+                    ( (LinkButton)e.Item.FindControl( "lbSelectVisitor" ) ).AddCssClass( "active" );
                 }
-            }
+            }            
         }
 
         /// <summary>
@@ -232,6 +224,38 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
+        /// Handles the PagePropertiesChanging event of the dpPerson control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="PagePropertiesChangingEventArgs"/> instance containing the event data.</param>
+        protected void lvPerson_PagePropertiesChanging( object sender, PagePropertiesChangingEventArgs e )
+        {
+            dpPersonPager.SetPageProperties( e.StartRowIndex, e.MaximumRows, false );
+
+            // rebind List View
+            lvPerson.DataSource = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
+                .People.Where( f => f.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
+            lvPerson.DataBind();
+            pnlSelectPerson.Update();
+        }
+
+        /// <summary>
+        /// Handles the PagePropertiesChanging event of the dpVisitor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="PagePropertiesChangingEventArgs"/> instance containing the event data.</param>
+        protected void lvVisitor_PagePropertiesChanging( object sender, PagePropertiesChangingEventArgs e )
+        {
+            dpVisitorPager.SetPageProperties( e.StartRowIndex, e.MaximumRows, false );
+
+            // rebind List View
+            lvVisitor.DataSource = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
+                .People.Where( f => !f.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
+            lvVisitor.DataBind();
+            pnlSelectVisitor.Update();
+        }
+
+        /// <summary>
         /// Handles the Click event of the lbAddPerson control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -276,6 +300,84 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
+        /// Handles the Click event of the lbAddSearchedForPerson control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbAddNewPerson_Click( object sender, EventArgs e )
+        {
+            var test = dpDOBSearch.SelectedDate;
+
+            if ( string.IsNullOrEmpty( tbFirstNameSearch.Text ) || string.IsNullOrEmpty( tbLastNameSearch.Text ) || string.IsNullOrEmpty( dpDOBSearch.Text ) || ddlGenderSearch.SelectedValueAsInt() == 0 )
+            {
+                mpeAddPerson.Show();
+                string errorMsg = "<ul><li>Please fill out the First Name, Last Name, DOB, and Gender fields.</li></ul>";
+                maAddPerson.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
+            }
+            else
+            {
+                var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
+                if ( family != null )
+                {
+                    var person = CreatePerson( tbFirstNameSearch.Text, tbLastNameSearch.Text, dpDOBSearch.SelectedDate, (int)ddlGenderSearch.SelectedValueAsEnum<Gender>(),
+                        ddlAbilitySearch.SelectedValue, ddlAbilitySearch.SelectedItem.Attributes["optiongroup"] );
+
+                    var checkInPerson = new CheckInPerson();
+                    checkInPerson.Person = person.Clone( false );
+                    checkInPerson.Selected = true;
+
+                    if ( personVisitorType.Value == "Person" )
+                    {   // Family Member
+                        var groupMember = AddGroupMember( family.Group, person );
+                        checkInPerson.FamilyMember = true;
+                        hfSelectedPerson.Value += person.Id + ",";
+                    }
+                    else
+                    {   // Visitor
+                        AddVisitorGroupMemberRoles( family, person.Id );
+                        checkInPerson.FamilyMember = false;
+                        hfSelectedVisitor.Value += person.Id + ",";
+                    }
+
+                    family.People.Add( checkInPerson );
+                    lvPerson.DataSource = family.People.Where( p => p.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
+                    lvPerson.DataBind();
+                    pnlSelectPerson.Update();
+
+                    lvVisitor.DataSource = family.People.Where( p => !p.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
+                    lvVisitor.DataBind();
+                    pnlSelectVisitor.Update();                    
+                }
+            }
+        }
+     
+        /// <summary>
+        /// Handles the Click event of the lbAddPersonSearch control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbAddPersonSearch_Click( object sender, EventArgs e )
+        {
+            var test = dpDOBSearch.SelectedDate;
+            lbAddNewPerson.Visible = true;
+            rGridPersonResults.PageIndex = 0;
+            BindPersonGrid();
+            rGridPersonResults.Visible = true;
+            dpDOBSearch.SelectedDate = test;
+            mpeAddPerson.Show();
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbAddPersonCancel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbAddPersonCancel_Click( object sender, EventArgs e )
+        {
+            // if we need to do anything when we cancel this modal window...this would be the place to do it.
+        }
+
+        /// <summary>
         /// Handles the Click event of the lbAddFamily control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -288,16 +390,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             lvAddFamily.DataSource = newFamilyList;
             lvAddFamily.DataBind();
             mpeAddFamily.Show();
-        }
-
-        /// <summary>
-        /// Handles the Click event of the lbAddFamilyCancel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbAddFamilyCancel_Click( object sender, EventArgs e )
-        {
-            // if we need to clear out anything when we cancel the modal...this would be the place to do it.
         }
 
         /// <summary>
@@ -362,39 +454,21 @@ namespace RockWeb.Blocks.CheckIn.Attended
             lvFamily.DataBind();
             pnlSelectFamily.Update();
 
-            repPerson.DataSource = checkInFamily.People.OrderBy( p => p.Person.FullNameLastFirst ).ToList();
-            repPerson.DataBind();
-            pnlSelectPerson.Update();
-
-            //SaveState();
+            lvPerson.DataSource = checkInFamily.People.OrderBy( p => p.Person.FullNameLastFirst ).ToList();
+            lvPerson.DataBind();
+            pnlSelectPerson.Update();            
         }
 
         /// <summary>
-        /// Handles the Click event of the lbAddPersonCancel control.
+        /// Handles the Click event of the lbAddFamilyCancel control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbAddPersonCancel_Click( object sender, EventArgs e )
+        protected void lbAddFamilyCancel_Click( object sender, EventArgs e )
         {
-            // if we need to do anything when we cancel this modal window...this would be the place to do it.
+            // if we need to clear out anything when we cancel the modal...this would be the place to do it.
         }
-
-        /// <summary>
-        /// Handles the Click event of the lbAddPersonSearch control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbAddPersonSearch_Click( object sender, EventArgs e )
-        {
-            var test = dpDOBSearch.SelectedDate;
-            lbAddNewPerson.Visible = true;
-            rGridPersonResults.PageIndex = 0;
-            BindPersonGrid();
-            rGridPersonResults.Visible = true;
-            dpDOBSearch.SelectedDate = test;
-            mpeAddPerson.Show();
-        }
-
+           
         /// <summary>
         /// Handles the ServerValidate event of the cvDOBValidator control.
         /// </summary>
@@ -463,15 +537,13 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         }
 
                         family.People.Add( checkInPerson );
-                        repPerson.DataSource = family.People.Where( p => p.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
-                        repPerson.DataBind();
+                        lvPerson.DataSource = family.People.Where( p => p.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
+                        lvPerson.DataBind();
                         pnlSelectPerson.Update();
 
-                        repVisitors.DataSource = family.People.Where( p => !p.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
-                        repVisitors.DataBind();
-                        pnlSelectVisitor.Update();
-
-                        //SaveState();
+                        lvVisitor.DataSource = family.People.Where( p => !p.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
+                        lvVisitor.DataBind();
+                        pnlSelectVisitor.Update();                        
                     }
                 }
                 else
@@ -485,60 +557,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 mpeAddPerson.Show();
                 BindPersonGrid();
-            }
-        }
-
-        /// <summary>
-        /// Handles the Click event of the lbAddSearchedForPerson control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbAddNewPerson_Click( object sender, EventArgs e )
-        {
-            var test = dpDOBSearch.SelectedDate;
-
-            if ( string.IsNullOrEmpty( tbFirstNameSearch.Text ) || string.IsNullOrEmpty( tbLastNameSearch.Text ) || string.IsNullOrEmpty( dpDOBSearch.Text ) || ddlGenderSearch.SelectedValueAsInt() == 0 )
-            {
-                mpeAddPerson.Show();
-                string errorMsg = "<ul><li>Please fill out the First Name, Last Name, DOB, and Gender fields.</li></ul>";
-                maAddPerson.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
-            }
-            else
-            {
-                var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-                if ( family != null )
-                {
-                    var person = CreatePerson( tbFirstNameSearch.Text, tbLastNameSearch.Text, dpDOBSearch.SelectedDate, (int)ddlGenderSearch.SelectedValueAsEnum<Gender>(),
-                        ddlAbilitySearch.SelectedValue, ddlAbilitySearch.SelectedItem.Attributes["optiongroup"] );
-
-                    var checkInPerson = new CheckInPerson();
-                    checkInPerson.Person = person.Clone( false );
-                    checkInPerson.Selected = true;
-
-                    if ( personVisitorType.Value == "Person" )
-                    {   // Family Member
-                        var groupMember = AddGroupMember( family.Group, person );
-                        checkInPerson.FamilyMember = true;
-                        hfSelectedPerson.Value += person.Id + ",";
-                    }
-                    else
-                    {   // Visitor
-                        AddVisitorGroupMemberRoles( family, person.Id );
-                        checkInPerson.FamilyMember = false;
-                        hfSelectedVisitor.Value += person.Id + ",";
-                    }
-
-                    family.People.Add( checkInPerson );
-                    repPerson.DataSource = family.People.Where( p => p.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
-                    repPerson.DataBind();
-                    pnlSelectPerson.Update();
-
-                    repVisitors.DataSource = family.People.Where( p => !p.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
-                    repVisitors.DataBind();
-                    pnlSelectVisitor.Update();
-
-                    //SaveState();
-                }
             }
         }
 
@@ -573,8 +591,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 family.People.ForEach( p => p.Selected = false );
                 foreach ( var person in family.People.Where( p => selectedPeopleIds.Contains( p.Person.Id ) ).ToList() )
                 {
-                    person.Selected = true;
-                    person.GroupTypes.ForEach( g => g.Selected = true );
+                    person.Selected = true;                    
                 }
 
                 var errors = new List<string>();
@@ -625,24 +642,26 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                 if ( family != null )
-                {   
+                {
                     IEnumerable<CheckInPerson> memberDataSource = null;
                     IEnumerable<CheckInPerson> visitorDataSource = null;
-                    if ( family.People.Where( f => f.FamilyMember ).Count() > 0 )
+                    var familyMembers = family.People.Where( f => f.FamilyMember ).ToList();
+                    if ( familyMembers.Count() > 0 )
                     {
-                        hfSelectedPerson.Value = string.Join( ",", family.People.Select( f => f.Person.Id ) ) + ",";
-                        memberDataSource = family.People.Where( f => f.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst );
+                        familyMembers.ForEach( p => p.Selected = true );
+                        hfSelectedPerson.Value = string.Join( ",", familyMembers.Select( f => f.Person.Id ) ) + ",";
+                        memberDataSource = familyMembers.OrderBy( p => p.Person.FullNameLastFirst ).ToList();
                     }
 
                     if ( family.People.Where( f => !f.FamilyMember ).Count() > 0 )
                     {
-                        visitorDataSource = family.People.Where( f => !f.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst );
+                        visitorDataSource = family.People.Where( f => !f.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
                     }
 
-                    repPerson.DataSource = memberDataSource;
-                    repPerson.DataBind();
-                    repVisitors.DataSource = visitorDataSource;
-                    repVisitors.DataBind();
+                    lvPerson.DataSource = memberDataSource;
+                    lvPerson.DataBind();
+                    lvVisitor.DataSource = visitorDataSource;
+                    lvVisitor.DataBind();
                 }
             }
             else
@@ -650,7 +669,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 string errorMsg = "<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
                 maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
             }
-        }
+        }        
 
         /// <summary>
         /// Adds a new person.
@@ -769,7 +788,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 Person.CreateCheckinRelationship( familyMember.Person.Id, personId, CurrentPersonId );
             }
         }
-
+        
         /// <summary>
         /// Binds the person search results grid.
         /// </summary>
@@ -887,5 +906,5 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
         #endregion
 
-    }
+}
 }

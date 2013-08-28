@@ -52,19 +52,14 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         // not active yet, display next active time
                         return;
                     }
-                    else if ( CurrentCheckInState.CheckIn.SearchType != null || UserBackedUp )
+                    else if ( CurrentCheckInState.CheckIn.SearchType != null || CurrentCheckInState.CheckIn.Families.Count > 0)
                     {
-                        lbAdmin.Visible = false;
-                        lbBack.Visible = true;
                         if ( !string.IsNullOrWhiteSpace( CurrentCheckInState.CheckIn.SearchValue ) )
                         {
                             tbSearchBox.Text = CurrentCheckInState.CheckIn.SearchValue;
                         }
-                    }
-                    else
-                    {
-                        lbAdmin.Visible = true;
-                        lbBack.Visible = false;
+                        lbAdmin.Visible = false;
+                        lbBack.Visible = true;
                     }
 
                     string script = string.Format( @"
@@ -97,8 +92,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSearch_Click( object sender, EventArgs e )
         {
-            if ( CurrentCheckInState != null || CurrentCheckInState.Kiosk != null )
+            if ( CurrentCheckInState != null && CurrentCheckInState.Kiosk != null )
             {
+                CurrentCheckInState.CheckIn.Families.Clear();
                 CurrentCheckInState.CheckIn.UserEnteredSearch = true;
                 CurrentCheckInState.CheckIn.ConfirmSingleFamily = true;
 
