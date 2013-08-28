@@ -238,11 +238,44 @@ namespace RockWeb.Blocks.Administration
             CheckinGroupEditor groupEditor = new CheckinGroupEditor();
             groupEditor.ID = "GroupEditor_" + group.Guid.ToString( "N" );
             groupEditor.SetGroup( group );
-            parentControl.Controls.Add( groupEditor );
+            groupEditor.Locations = group.GroupLocations
+                .Select( a =>
+                    new CheckinGroupEditor.LocationGridItem()
+                        {
+                            LocationId = a.LocationId,
+                            Name = a.Location.Name
+                        })
+                        .OrderBy( o => o.Name )
+                        .ToList();
 
-            //TODO
-
+            groupEditor.AddLocationClick += groupEditor_AddLocationClick;
+            groupEditor.DeleteLocationClick += groupEditor_DeleteLocationClick;
             
+            parentControl.Controls.Add( groupEditor );
+        }
+
+        /// <summary>
+        /// Handles the DeleteLocationClick event of the groupEditor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void groupEditor_DeleteLocationClick( object sender, RowEventArgs e )
+        {
+            // TODO
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Handles the AddLocationClick event of the groupEditor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void groupEditor_AddLocationClick( object sender, EventArgs e )
+        {
+            // TODO
+            throw new NotImplementedException();
         }
 
         #endregion
