@@ -166,6 +166,24 @@ namespace Rock.Model
         /// <returns></returns>
         private static ExceptionLog PopulateExceptionLog( Exception ex, HttpContext context, int? pageId, int? siteId, int? personId, int? parentId )
         {
+            if ( context == null )
+            {
+                return new ExceptionLog
+                    {
+                        SiteId = siteId,
+                        PageId = pageId,
+                        ParentId = parentId,
+                        CreatedByPersonId = personId,
+                        HasInnerException = ex.InnerException != null,
+                        ExceptionType = ex.GetType().ToString(),
+                        Description = ex.Message,
+                        Source = ex.Source,
+                        StackTrace = ex.StackTrace,
+                        Guid = Guid.NewGuid(),
+                        ExceptionDateTime = DateTime.Now
+                    };
+            }
+
             var request = context.Request;
 
             StringBuilder cookies = new StringBuilder();
