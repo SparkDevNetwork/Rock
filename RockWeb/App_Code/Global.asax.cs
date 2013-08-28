@@ -423,8 +423,10 @@ namespace RockWeb
         /// <param name="context">The context.</param>
         private void LogError( Exception ex, HttpContext context )
         {
-            var siteId = Int32.Parse( context.Items["Rock:SiteId"].ToString() );
-            var pageId = Int32.Parse( context.Items["Rock:PageId"].ToString() );
+            var pid = context.Items["Rock:PageId"];
+            int? pageId = pid != null ? int.Parse( pid.ToString() ) : (int?) null;
+            var sid = context.Items["Rock:SiteId"];
+            int? siteId = sid != null ? int.Parse( sid.ToString() ) : (int?) null;
             var user = UserLoginService.GetCurrentUser();
             var personId = user != null ? user.PersonId : null;
             ExceptionLogService.LogException( ex, context, pageId, siteId, personId );
