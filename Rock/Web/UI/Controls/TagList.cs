@@ -117,10 +117,14 @@ namespace Rock.Web.UI.Controls
                         sb.Append( "^personal" );
                 }
 
+                writer.AddAttribute( "class", "tag-wrap" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                
                 var input = new HtmlGenericControl( "input" );
                 input.ID = this.ID;
-                input.Attributes.Add("value", sb.ToString());
-                input.RenderControl(writer);
+                input.Attributes.Add( "value", sb.ToString() );
+                input.RenderControl( writer );
+                writer.RenderEndTag();
 
                 var script = string.Format( @"
 Rock.controls.tagList.initialize({{

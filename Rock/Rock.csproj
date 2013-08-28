@@ -1165,7 +1165,7 @@
     <Compile Include="Web\UI\Controls\Pickers\MonthYearPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\CampusPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DateTimePicker.cs" />
-    <Compile Include="Web\UI\Controls\TagLists.cs" />
+    <Compile Include="Web\UI\Controls\TagList.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DatePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\TimePicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\MergeFieldPicker.cs" />

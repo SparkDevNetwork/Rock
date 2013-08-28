@@ -50,8 +50,8 @@
         };
 
         TagList.prototype.addTag = function (tagName) {
-            // `addTag` is invoked by verifyTag on an instance of a `TagList` object.
-            // `this` is the current instance in scope.
+            // `addTag` is invoked by `verifyTag` on an instance of a `TagList` object.
+            // `this` is the current TagList instance in scope.
             var tagList = this,
                 restUrl = Rock.settings.get('baseUrl') + 'api/taggeditems' 
             restUrl += '/' + tagList.entityTypeId;
@@ -118,19 +118,25 @@
                 autoCompleteUrl += '/' + this.entityQualifierValue;
             }
 
+            console.log(autoCompleteUrl);
+
             $('ul.ui-autocomplete').css({ 'width': '300px' });
 
             $('#' + this.controlId).tagsInput({
                 autocomplete_url: function (request, response) {
+                    console.log('auto complete?');
+                    console.log(request);
+                    console.log(response);
                     $.ajax({
                         url: autoCompleteUrl,
                         dataType: 'json',
                         success: function (data, status, xhr) {
                             response($.map(data, function (item) {
+                                console.log(item);
                                 return {
                                     value: item.Name,
                                     class: !item.OwnerId ? 'system' : 'personal'
-                                }
+                                };
                             }));
                         },
                         error: function (xhr, status, error) {
