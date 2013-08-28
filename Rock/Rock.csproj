@@ -177,7 +177,6 @@
     <Compile Include="Migrations\201308232058045_CreateDatabase.Designer.cs">
       <DependentUpon>201308232058045_CreateDatabase.cs</DependentUpon>
     </Compile>
-    <Content Include="Migrations\ManualSchemaChanges.txt" />
     <Compile Include="Storage\ProviderComponent.cs" />
     <Compile Include="Storage\ProviderContainer.cs" />
     <Compile Include="Storage\Provider\Database.cs" />
