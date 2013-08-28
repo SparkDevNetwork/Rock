@@ -303,7 +303,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             // set current page startindex, max rows and rebind to false
             Pager.SetPageProperties( e.StartRowIndex, e.MaximumRows, false );
-            lvLocation.DataSource = Session["activityList"];
+            lvLocation.DataSource = Session["locationList"];
             lvLocation.DataBind();
         }
         
@@ -671,10 +671,20 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }
             var locationList = selectedGroup.Locations.ToList();
             lvLocation.DataSource = locationList;
+
+            var selectedLocation = locationList.Where( l => l.Selected ).FirstOrDefault();
+            var selectedLocationPlaceInList = locationList.IndexOf( locationList.Where( l => l.Selected ).FirstOrDefault() ) + 1;
+            var pageSize = this.Pager.PageSize;     // this is the page size of the pager.
+            var pageToGoTo = ( selectedLocationPlaceInList / pageSize );
+            if ( selectedLocationPlaceInList % pageSize != 0 )
+            {
+                pageToGoTo++;
+            }
+            this.Pager.SetPageProperties( ( pageToGoTo - 1 ) * this.Pager.PageSize, this.Pager.MaximumRows, false );
+
             lvLocation.DataBind();
             Session["locationList"] = locationList;
             pnlSelectLocation.Update();
-
 
         }
                 
