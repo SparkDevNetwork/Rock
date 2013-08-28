@@ -59,6 +59,8 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
 ";
 
             ScriptManager.RegisterStartupScript( hfGroupGuid, hfGroupGuid.GetType(), "CheckinGroupEditorScript", script, true );
+
+            CreateGroupAttributeControls();
         }
 
         /// <summary>
@@ -91,12 +93,23 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
         {
             EnsureChildControls();
             Group result = new Group();
-            
+
             result.Id = hfGroupTypeId.ValueAsInt();
             result.Guid = new Guid( hfGroupGuid.Value );
             result.GroupTypeId = hfGroupTypeId.ValueAsInt();
+
+            // get the current InheritedGroupTypeId from the Parent Editor just in case it hasn't been saved to the database
+            CheckinGroupTypeEditor checkinGroupTypeEditor = this.Parent as CheckinGroupTypeEditor;
+            if ( checkinGroupTypeEditor != null )
+            {
+                result.GroupType = new GroupType();
+                result.GroupType.Id = result.GroupTypeId;
+                result.GroupType.InheritedGroupTypeId = checkinGroupTypeEditor.InheritedGroupTypeId;
+            }
+
             result.Name = tbGroupName.Text;
             result.LoadAttributes();
+
             Rock.Attribute.Helper.GetEditValues( phGroupAttributes, result );
             return result;
         }
@@ -117,10 +130,6 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             hfGroupId.Value = value.Id.ToString();
             hfGroupTypeId.Value = value.GroupTypeId.ToString();
             tbGroupName.Text = value.Name;
-
-            value.LoadAttributes();
-            phGroupAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( value, phGroupAttributes, true );
         }
 
         /// <summary>
@@ -135,7 +144,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
 
             hfGroupId = new HiddenField();
             hfGroupId.ID = this.ID + "_hfGroupId";
-            
+
             hfGroupTypeId = new HiddenField();
             hfGroupTypeId.ID = this.ID + "_hfGroupTypeId";
 
@@ -241,6 +250,29 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
 
             // article tag
             writer.RenderEndTag();
+        }
+
+        /// <summary>
+        /// Creates the group attribute controls.
+        /// </summary>
+        public void CreateGroupAttributeControls()
+        {
+            Group fakeGroup = new Group();
+            fakeGroup.Id = hfGroupId.ValueAsInt();
+            fakeGroup.GroupTypeId = hfGroupTypeId.ValueAsInt();
+
+            // get the current InheritedGroupTypeId from the Parent Editor just in case it hasn't been saved to the database
+            CheckinGroupTypeEditor checkinGroupTypeEditor = this.Parent as CheckinGroupTypeEditor;
+            if ( checkinGroupTypeEditor != null )
+            {
+                fakeGroup.GroupType = new GroupType();
+                fakeGroup.GroupType.Id = fakeGroup.GroupTypeId;
+                fakeGroup.GroupType.InheritedGroupTypeId = checkinGroupTypeEditor.InheritedGroupTypeId;
+            }
+
+            fakeGroup.LoadAttributes();
+            phGroupAttributes.Controls.Clear();
+            Rock.Attribute.Helper.AddEditControls( fakeGroup, phGroupAttributes, true );
         }
 
         /// <summary>
