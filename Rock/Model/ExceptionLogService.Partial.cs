@@ -166,24 +166,28 @@ namespace Rock.Model
         /// <returns></returns>
         private static ExceptionLog PopulateExceptionLog( Exception ex, HttpContext context, int? pageId, int? siteId, int? personId, int? parentId )
         {
+            var exceptionLog = new ExceptionLog
+                {
+                    SiteId = siteId,
+                    PageId = pageId,
+                    ParentId = parentId,
+                    CreatedByPersonId = personId,
+                    HasInnerException = ex.InnerException != null,
+                    ExceptionType = ex.GetType().ToString(),
+                    Description = ex.Message,
+                    Source = ex.Source,
+                    StackTrace = ex.StackTrace,
+                    Guid = Guid.NewGuid(),
+                    ExceptionDateTime = DateTime.Now
+                };
+
+            // If current HttpContext is null, return early.
             if ( context == null )
             {
-                return new ExceptionLog
-                    {
-                        SiteId = siteId,
-                        PageId = pageId,
-                        ParentId = parentId,
-                        CreatedByPersonId = personId,
-                        HasInnerException = ex.InnerException != null,
-                        ExceptionType = ex.GetType().ToString(),
-                        Description = ex.Message,
-                        Source = ex.Source,
-                        StackTrace = ex.StackTrace,
-                        Guid = Guid.NewGuid(),
-                        ExceptionDateTime = DateTime.Now
-                    };
+                return exceptionLog;
             }
 
+            // If current HttpContext is available, populate its information as well.
             var request = context.Request;
 
             StringBuilder cookies = new StringBuilder();
@@ -229,26 +233,13 @@ namespace Rock.Model
                 serverVars.Append( "</table>" );
             }
 
-            return new ExceptionLog
-                {
-                    SiteId = siteId,
-                    PageId = pageId,
-                    ParentId = parentId,
-                    CreatedByPersonId = personId,
-                    Cookies = cookies.ToString(),
-                    HasInnerException = ex.InnerException != null,
-                    StatusCode = context.Response.StatusCode.ToString(),
-                    ExceptionType = ex.GetType().ToString(),
-                    Description = ex.Message,
-                    Source = ex.Source,
-                    StackTrace = ex.StackTrace,
-                    PageUrl = request.Url.ToString(),
-                    ServerVariables = serverVars.ToString(),
-                    QueryString = request.Url.Query,
-                    Form = formItems.ToString(),
-                    Guid = Guid.NewGuid(),
-                    ExceptionDateTime = DateTime.Now
-                };
+            exceptionLog.Cookies = cookies.ToString();
+            exceptionLog.StatusCode = context.Response.StatusCode.ToString();
+            exceptionLog.PageUrl = request.Url.ToString();
+            exceptionLog.ServerVariables = serverVars.ToString();
+            exceptionLog.QueryString = request.Url.Query;
+            exceptionLog.Form = formItems.ToString();
+            return exceptionLog;
         }
     }
 }
