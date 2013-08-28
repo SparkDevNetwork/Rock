@@ -88,6 +88,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     NavigateToNextPage();
                 }
 
+                lbOk.Focus();
                 SaveState();
             }
             else

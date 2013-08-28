@@ -61,8 +61,7 @@ namespace Rock.Workflow.Action.CheckIn
                                 }
 
                             }
-                        }
-                        continue;
+                        }                        
                     }
                 }
 

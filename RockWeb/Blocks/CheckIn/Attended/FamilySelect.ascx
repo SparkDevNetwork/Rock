@@ -7,7 +7,7 @@
         // give user instant feedback, server side object needs to set class though
         $('.family').unbind('click').on('click', function () {
             $('.family').removeClass('active');
-            $(this).toggleClass('active');
+            $(this).addClass('active');
         });
 
         $('.person').unbind('click').on('click', function () {
@@ -51,8 +51,6 @@
 
     <Rock:ModalAlert ID="maWarning" runat="server" />
     <asp:HiddenField ID="personVisitorType" runat="server" />
-    <asp:HiddenField ID="hfSelectedPerson" runat="server" ClientIDMode="Static" />
-    <asp:HiddenField ID="hfSelectedVisitor" runat="server" ClientIDMode="Static" />
         
     <asp:Panel ID="pnlFamilySelect" runat="server">
 
@@ -61,8 +59,8 @@
                 <asp:LinkButton ID="lbBack" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbBack_Click" Text="Back" CausesValidation="false"/>
             </div>
 
-            <div class="span6">
-                <h1 id="familyTitle" runat="server">Search Results</h1>
+            <div class="span6">                
+                <h1 id="lblFamilyTitle" runat="server">Search Results</h1>
             </div>
 
             <div class="span3 attended-checkin-actions">
@@ -84,9 +82,9 @@
                                 CssClass="btn btn-primary btn-large btn-block btn-checkin-select family" CausesValidation="false">
                                 <%# Eval("Caption") %><br /><span class='checkin-sub-title'><%# Eval("SubCaption") %></span>
                             </asp:LinkButton>
-                    </ItemTemplate>
+                    </ItemTemplate>                    
                     </asp:ListView>
-                    <asp:DataPager ID="dpPager" runat="server" PageSize="5" PagedControlID="lvFamily">
+                    <asp:DataPager ID="dpFamilyPager" runat="server" PageSize="5" PagedControlID="lvFamily">
                         <Fields>
                             <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary" />
                         </Fields>
@@ -98,14 +96,26 @@
 
             <asp:UpdatePanel ID="pnlSelectPerson" runat="server" UpdateMode="Conditional" class="span3 person-div">
             <ContentTemplate>
-                
+                <asp:HiddenField ID="hfSelectedPerson" runat="server" ClientIDMode="Static" />
+
                 <div class="attended-checkin-body-container">
-                    <h3>People</h3>
-                    <asp:Repeater ID="repPerson" runat="server" OnItemDataBound="repPerson_ItemDataBound">
-                        <ItemTemplate>
-                            <asp:LinkButton ID="lbSelectPerson" runat="server" Text='<%# Container.DataItem.ToString() %>' data-id='<%# Eval("Person.Id") %>' CommandArgument='<%# Eval("Person.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select person" CausesValidation="false" />
-                        </ItemTemplate>
-                    </asp:Repeater>
+                    <h3>People</h3>                    
+                    <asp:ListView ID="lvPerson" runat="server" OnItemDataBound="lvPerson_ItemDataBound" OnPagePropertiesChanging="lvPerson_PagePropertiesChanging" >
+                        <ItemTemplate>                            
+                            <asp:LinkButton ID="lbSelectPerson" runat="server" Text='<%# Container.DataItem.ToString() %>' data-id='<%# Eval("Person.Id") %>' 
+                                CommandArgument='<%# Eval("Person.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select person" CausesValidation="false" />
+                        </ItemTemplate>    
+                        <EmptyDataTemplate>
+                            <div runat="server" class="nothing-found-message">
+                                <asp:Label ID="lblPersonTitle" runat="server" Text="No one in this family is eligible to check-in." />
+                            </div>                            
+                        </EmptyDataTemplate>              
+                    </asp:ListView>
+                    <asp:DataPager ID="dpPersonPager" runat="server" PageSize="5" PagedControlID="lvPerson">
+                        <Fields>
+                            <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary" />
+                        </Fields>
+                    </asp:DataPager>
                 </div>
                 
             </ContentTemplate>
@@ -113,14 +123,21 @@
 
             <asp:UpdatePanel ID="pnlSelectVisitor" runat="server" UpdateMode="Conditional" class="span3 visitor-div">
             <ContentTemplate>
-                
+                <asp:HiddenField ID="hfSelectedVisitor" runat="server" ClientIDMode="Static" />
+
                 <div class="attended-checkin-body-container">
                     <h3>Visitors</h3>
-                    <asp:Repeater ID="repVisitors" runat="server" OnItemDataBound="repVisitors_ItemDataBound">
+                    <asp:ListView ID="lvVisitor" runat="server" OnItemDataBound="lvVisitor_ItemDataBound" OnPagePropertiesChanging="lvVisitor_PagePropertiesChanging">
                         <ItemTemplate>
-                            <asp:LinkButton ID="lbSelectVisitor" runat="server" Text='<%# Container.DataItem.ToString() %>' data-id='<%# Eval("Person.Id") %>' CommandArgument='<%# Eval("Person.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select visitor" CausesValidation="false" />
+                            <asp:LinkButton ID="lbSelectVisitor" runat="server" Text='<%# Container.DataItem.ToString() %>' data-id='<%# Eval("Person.Id") %>' 
+                                CommandArgument='<%# Eval("Person.Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select visitor" CausesValidation="false" />
                         </ItemTemplate>
-                    </asp:Repeater>
+                    </asp:ListView>
+                    <asp:DataPager ID="dpVisitorPager" runat="server" PageSize="5" PagedControlID="lvVisitor">
+                        <Fields>
+                            <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary" />
+                        </Fields>
+                    </asp:DataPager>
                 </div>
                 
             </ContentTemplate>
