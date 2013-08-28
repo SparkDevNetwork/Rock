@@ -17,7 +17,7 @@
                     type: 'GET',
                     contentType: 'application/json',
                     dataType: 'json',
-                    url: rock.baseUrl + 'api/blocks/' + blockId,
+                    url: Rock.settings.get('baseUrl') + 'api/blocks/' + blockId,
                     success: function (getData, status, xhr) {
 
                         // Update the new zone
@@ -27,11 +27,11 @@
                         if ($('#block-move-Location_0').attr('checked') == 'checked') {
                             getData.SiteId = null;
                             getData.Layout = null;
-                            getData.PageId = rock.pageId;
+                            getData.PageId = Rock.settings.get('pageId');
                         }
                         else {
-                            getData.SiteId = rock.siteId;
-                            getData.Layout = rock.layout;
+                            getData.SiteId = Rock.settings.get('siteId');
+                            getData.Layout = Rock.settings.get('layout');
                             getData.PageId = null;
                         }
 
@@ -41,7 +41,7 @@
                             contentType: 'application/json',
                             dataType: 'json',
                             data: JSON.stringify(getData),
-                            url: rock.baseUrl + 'api/blocks/move/' + blockId,
+                            url: Rock.settings.get('baseUrl') + 'api/blocks/move/' + blockId,
                             success: function (data, status, xhr) {
 
                                 // Get a reference to the block instance's container div
@@ -109,7 +109,7 @@
                             type: 'DELETE',
                             contentType: 'application/json',
                             dataType: 'json',
-                            url: rock.baseUrl + 'api/blocks/' + blockId,
+                            url: Rock.settings.get('baseUrl') + 'api/blocks/' + blockId,
                             success: function (data, status, xhr) {
 
                                 // Remove the block instance's container div
