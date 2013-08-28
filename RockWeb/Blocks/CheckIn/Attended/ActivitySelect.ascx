@@ -67,7 +67,7 @@
                             <asp:LinkButton ID="lbSelectLocation" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" ></asp:LinkButton>
                         </ItemTemplate>
                     </asp:ListView>
-                    <asp:DataPager ID="Pager" runat="server" PageSize="7" PagedControlID="lvLocation">
+                    <asp:DataPager ID="Pager" runat="server" PageSize="5" PagedControlID="lvLocation">
                         <Fields>
                             <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary" />
                         </Fields>
