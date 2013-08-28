@@ -17,12 +17,15 @@ namespace Rock.Web.UI
     /// </summary>
     /// <typeparam name="T"></typeparam>
     [Serializable]
-    public class ViewStateList<T> : IEnumerable<T> where T : Model<T>, new()
+    public sealed class ViewStateList<T> : IEnumerable<T> where T : Model<T>, new()
     {
         /// <summary>
         /// 
         /// </summary>
         private string internalListJson;
+
+        [NonSerialized]
+        private List<T> _cachedList;
 
         /// <summary>
         /// Gets the list.
@@ -30,9 +33,37 @@ namespace Rock.Web.UI
         /// <returns></returns>
         private ReadOnlyCollection<T> GetList()
         {
-            List<T> result = JsonConvert.DeserializeObject<List<T>>( internalListJson );
+            List<T> result;
+
+            if ( _cachedList != null )
+            {
+                result = _cachedList;
+            }
+            else
+            {
+
+                result = JsonConvert.DeserializeObject<List<T>>( internalListJson );
+                _cachedList = result;
+            }
 
             return new ReadOnlyCollection<T>( result );
+        }
+
+        /// <summary>
+        /// Serializes the list.
+        /// </summary>
+        /// <param name="list">The list.</param>
+        private void SerializeList( List<T> list )
+        {
+            System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
+
+            internalListJson = JsonConvert.SerializeObject( list, Formatting.None,
+                new JsonSerializerSettings()
+                {
+                    ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+                } );
+
+            _cachedList = list;
         }
 
         /// <summary>
@@ -40,7 +71,7 @@ namespace Rock.Web.UI
         /// </summary>
         public ViewStateList()
         {
-            internalListJson = ( new List<T>() ).ToJson();
+            SerializeList( new List<T>() );
         }
 
         /// <summary>
@@ -73,7 +104,7 @@ namespace Rock.Web.UI
         {
             var list = GetList().ToList();
             list.RemoveEntity( id );
-            internalListJson = list.ToJson();
+            SerializeList( list );
         }
 
         /// <summary>
@@ -84,7 +115,7 @@ namespace Rock.Web.UI
         {
             var list = GetList().ToList();
             list.RemoveEntity( guid );
-            internalListJson = list.ToJson();
+            SerializeList( list );
         }
 
         /// <summary>
@@ -95,7 +126,7 @@ namespace Rock.Web.UI
         {
             var list = GetList().ToList();
             list.Add( item as T );
-            internalListJson = list.ToJson();
+            SerializeList( list );
         }
 
         /// <summary>
@@ -106,7 +137,7 @@ namespace Rock.Web.UI
         {
             var list = GetList().ToList();
             items.ForEach( a => list.Add( a as T ) );
-            internalListJson = list.ToJson();
+            SerializeList( list );
         }
 
         /// <summary>
@@ -118,7 +149,7 @@ namespace Rock.Web.UI
             var list = GetList().ToList();
             items.Reverse();
             items.ForEach( a => list.Insert( 0, a as T ) );
-            internalListJson = list.ToJson();
+            SerializeList( list );
         }
 
         /// <summary>
@@ -126,10 +157,7 @@ namespace Rock.Web.UI
         /// </summary>
         public void Clear()
         {
-            var list = GetList().ToList();
-            list.Clear();
-            internalListJson = list.ToJson();
+            SerializeList( new List<T>() );
         }
-
     }
 }

@@ -763,6 +763,15 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
+        /// Logs the exception.
+        /// </summary>
+        /// <param name="ex">The System.Exception to log.</param>
+        public void LogException( Exception ex )
+        {
+            ExceptionLogService.LogException( ex, Context, CurrentPage.Id, CurrentPage.SiteId, CurrentPersonId );
+        }
+
+        /// <summary>
         /// Contents the updated.
         /// </summary>
         protected virtual void ContentUpdated()

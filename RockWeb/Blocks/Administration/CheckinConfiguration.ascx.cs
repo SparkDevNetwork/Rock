@@ -104,13 +104,31 @@ namespace RockWeb.Blocks.Administration
             groupTypeEditor.SetGroupType( groupType );
             groupTypeEditor.AddGroupClick += groupTypeEditor_AddGroupClick;
             groupTypeEditor.AddGroupTypeClick += groupTypeEditor_AddGroupTypeClick;
+            groupTypeEditor.DeleteCheckinLabelClick += groupTypeEditor_DeleteCheckinLabelClick;
+            groupTypeEditor.AddCheckinLabelClick += groupTypeEditor_AddCheckinLabelClick;
 
-            //TODO
+            List<string> labelAttributeKeys = CheckinGroupTypeEditor.GetCheckinLabelAttributes( groupType ).Select( a => a.Key ).ToList();
+            BinaryFileService binaryFileService = new BinaryFileService();
+            groupTypeEditor.CheckinLabels = new List<CheckinGroupTypeEditor.CheckinLabelAttributeInfo>();
+
+            foreach ( string key in labelAttributeKeys )
+            {
+                var attributeValue = groupType.GetAttributeValue( key );
+                int binaryFileId = attributeValue.AsInteger() ?? 0;
+                var binaryFile = binaryFileService.Get( binaryFileId );
+                if ( binaryFile != null )
+                {
+                    groupTypeEditor.CheckinLabels.Add( new CheckinGroupTypeEditor.CheckinLabelAttributeInfo { AttributeKey = key, BinaryFileId = binaryFileId, FileName = binaryFile.FileName } );
+                }
+            }
 
             parentControl.Controls.Add( groupTypeEditor );
 
             foreach ( var childGroup in groupType.Groups.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
+                // get the GroupType from the control just in case it the InheritedFrom changed
+                childGroup.GroupType = groupTypeEditor.GetCheckinGroupType();
+                
                 CreateGroupEditorControls( childGroup, groupTypeEditor, false );
             }
 
@@ -118,6 +136,28 @@ namespace RockWeb.Blocks.Administration
             {
                 CreateGroupTypeEditorControls( childGroupType, groupTypeEditor, false );
             }
+        }
+
+        /// <summary>
+        /// Handles the AddCheckinLabelClick event of the groupTypeEditor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void groupTypeEditor_AddCheckinLabelClick( object sender, EventArgs e )
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Handles the DeleteCheckinLabelClick event of the groupTypeEditor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void groupTypeEditor_DeleteCheckinLabelClick( object sender, RowEventArgs e )
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -139,6 +179,7 @@ namespace RockWeb.Blocks.Administration
             checkinArea.AttendancePrintTo = PrintTo.Default;
             checkinArea.ParentGroupTypes = new List<GroupType>();
             checkinArea.ParentGroupTypes.Add( parentGroupType );
+            checkinArea.LoadAttributes();
 
             CreateGroupTypeEditorControls( checkinArea, phCheckinGroupTypes );
         }
@@ -161,6 +202,7 @@ namespace RockWeb.Blocks.Administration
             checkinArea.AttendancePrintTo = PrintTo.Default;
             checkinArea.ParentGroupTypes = new List<GroupType>();
             checkinArea.ParentGroupTypes.Add( parentEditor.GetCheckinGroupType() );
+            checkinArea.LoadAttributes();
 
             CreateGroupTypeEditorControls( checkinArea, parentEditor );
         }
@@ -196,10 +238,44 @@ namespace RockWeb.Blocks.Administration
             CheckinGroupEditor groupEditor = new CheckinGroupEditor();
             groupEditor.ID = "GroupEditor_" + group.Guid.ToString( "N" );
             groupEditor.SetGroup( group );
+            groupEditor.Locations = group.GroupLocations
+                .Select( a =>
+                    new CheckinGroupEditor.LocationGridItem()
+                        {
+                            LocationId = a.LocationId,
+                            Name = a.Location.Name
+                        })
+                        .OrderBy( o => o.Name )
+                        .ToList();
 
-            //TODO
-
+            groupEditor.AddLocationClick += groupEditor_AddLocationClick;
+            groupEditor.DeleteLocationClick += groupEditor_DeleteLocationClick;
+            
             parentControl.Controls.Add( groupEditor );
+        }
+
+        /// <summary>
+        /// Handles the DeleteLocationClick event of the groupEditor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void groupEditor_DeleteLocationClick( object sender, RowEventArgs e )
+        {
+            // TODO
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// Handles the AddLocationClick event of the groupEditor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void groupEditor_AddLocationClick( object sender, EventArgs e )
+        {
+            // TODO
+            throw new NotImplementedException();
         }
 
         #endregion
@@ -270,6 +346,7 @@ namespace RockWeb.Blocks.Administration
             // Load the Controls
             foreach ( GroupType groupType in checkinGroupTypes.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
             {
+                groupType.LoadAttributes();
                 CreateGroupTypeEditorControls( groupType, phCheckinGroupTypes );
             }
         }

@@ -117,95 +117,30 @@ namespace Rock.Web.UI.Controls
                         sb.Append( "^personal" );
                 }
 
+                writer.AddAttribute( "class", "tag-wrap" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                
                 var input = new HtmlGenericControl( "input" );
                 input.ID = this.ID;
-                input.Attributes.Add("value", sb.ToString());
-                input.RenderControl(writer);
+                input.Attributes.Add( "value", sb.ToString() );
+                input.RenderControl( writer );
+                writer.RenderEndTag();
 
-                string script = string.Format( @"
-
-    $('ul.ui-autocomplete').css('width', '300px');
-
-    $('#{5}').tagsInput({{
-        'autocomplete_url': function( request, response ) {{
-            $.ajax({{
-                url: rock.baseUrl + 'api/tags/availablenames/{0}/{1}/{2}{3}{4}',
-                dataType: 'json',
-                success: function(data, status, xhr){{ 
-                    response($.map(data, function (item) {{
-                        return {{
-                            value: item.Name,
-                            class: item.OwnerId == null || item.OwnerId == '' ? 'system' : 'personal'
-                        }}
-                    }}))
-                }},
-                error: function(xhr, status, error) {{
-                    alert('availablenames status: ' + status + ' [' + error + ']: ' + xhr.reponseText);
-                }}
-            }});
-        }},
-        autoCompleteAppendTo: 'div.tag-wrap',
-        autoCompleteMessages: {{
-            noResults: function () {{ }},
-            results: function () {{ }}
-        }},
-        'height': 'auto',
-        'width': '100%',
-        'interactive': true,
-        'defaultText': 'add tag',
-        'removeWithBackspace': false,
-        'onAddTag': {5}_verifyTag,
-        'onRemoveTag': {5}_RemoveTag,
-        'enableDelete': true
-    }});
-
-    function {5}_verifyTag(tagName) {{
-        $.ajax({{
-            type: 'GET',
-            url: rock.baseUrl + 'api/tags/{0}/{1}/' + tagName + '{3}{4}',
-            statusCode: {{
-                404: function () {{
-                        var r = confirm(""A tag called '"" + tagName + ""' does not exist. Do you want to create a new personal tag?"");
-                        if (r == true) {{
-                            {5}_AddTag(tagName);
-                        }}
-                        else {{
-                            // remove tag
-                            $('#{5}').removeTag(tagName);
-                        }}
-                    }},
-                200: function (data, status, xhr) {{
-                        {5}_AddTag(tagName);
-                    }}
-            }},
-        }});
-    }}
-
-    function {5}_AddTag(tagName) {{
-        $.ajax({{
-            type: 'POST',
-            url: rock.baseUrl + 'api/taggeditems/{0}/{1}/{2}/' + tagName + '{3}{4}',
-            error: function (xhr, status, error) {{
-                alert('AddTag() status: ' + status + ' [' + error + ']: ' + xhr.responseText);
-            }}
-        }});
-    }}
-
-    function {5}_RemoveTag(tagName) {{
-        $.ajax({{
-            type: 'DELETE',
-            url: rock.baseUrl + 'api/taggeditems/{0}/{1}/{2}/' + tagName + '{3}{4}',
-            error: function (xhr, status, error) {{
-                alert('RemoveTag() status: ' + status + ' [' + error + ']: ' + xhr.responseText);
-            }}
-        }});
-    }}
-
-",
-    EntityTypeId, rockPage.CurrentPersonId, EntityGuid.ToString(),
-    string.IsNullOrWhiteSpace( EntityQualifierColumn ) ? "" : "/" + EntityQualifierColumn,
-    string.IsNullOrWhiteSpace( EntityQualifierValue ) ? "" : "/" + EntityQualifierValue,
-    this.ID);
+                var script = string.Format( @"
+Rock.controls.tagList.initialize({{
+    controlId: '{0}',
+    entityTypeId: '{1}',
+    currentPersonId: '{2}',
+    entityGuid: '{3}',
+    entityQualifierColumn: '{4}',
+    entityQualifierValue: '{5}'
+}});",
+                    this.ID,
+                    EntityTypeId,
+                    rockPage.CurrentPersonId,
+                    EntityGuid.ToString(),
+                    string.IsNullOrWhiteSpace( EntityQualifierColumn ) ? string.Empty : EntityQualifierColumn,
+                    string.IsNullOrWhiteSpace( EntityQualifierValue ) ? string.Empty : EntityQualifierValue );
                 ScriptManager.RegisterStartupScript(this, this.GetType(), "tag_picker_" + this.ID, script, true);
             }
         }

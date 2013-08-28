@@ -15,7 +15,7 @@
                     type: 'GET',
                     contentType: 'application/json',
                     dataType: 'json',
-                    url: rock.baseUrl + 'api/userlogins/available/' + escape($(this).val()),
+                    url: Rock.settings.get('baseUrl') + 'api/userlogins/available/' + escape($(this).val()),
                     success: function (getData, status, xhr) {
 
                         if (getData) {
