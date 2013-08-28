@@ -122,7 +122,7 @@ namespace RockWeb.Blocks.Cms
             if ( !string.IsNullOrWhiteSpace( campuses ) )
             {
                 List<int> idlist = campuses.SplitDelimitedValues().Select( a => int.Parse( a ) ).ToList();
-                qry = qry.Where( a => a.MarketingCampaign.MarketingCampaignCampuses.Any( x => idlist.Contains( x.Id ) ) );
+                qry = qry.Where( a => a.MarketingCampaign.MarketingCampaignCampuses.Any( x => idlist.Contains( x.CampusId ) ) );
             }
 
             // Ad Types
