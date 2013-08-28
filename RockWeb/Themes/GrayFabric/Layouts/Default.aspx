@@ -3,7 +3,7 @@
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
 
     <!-- band to provide gray bar at the top of the page -->
-    <div id="band">
+    <div id="band" class="insidepage">
 	</div>
 
     <div class="container">
@@ -30,8 +30,11 @@
     </div>
   	  
   	  
-  	 
-  	<Rock:Zone ID="Content" runat="server" />
+  	<div id="content" class="container"> 
+        <h1 class="page-title"><Rock:PageTitle ID="PageTitle" runat="server" /></h1>
+
+  	    <Rock:Zone ID="Content" runat="server" />
+    </div>
   	
 
 
