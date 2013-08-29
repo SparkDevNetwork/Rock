@@ -832,7 +832,17 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 if ( optionGroup.Equals( "Grade" ) )
                 {
                     var grade = ddlAbilitySearch.SelectedValueAsEnum<GradeLevel>();
-                    people = people.Where( p => p.Grade == (int)grade );
+                    if ( grade != null && (int)grade <= 12 )
+                    {
+                        DateTime transitionDate, graduationDate;
+                        var globalAttributes = GlobalAttributesCache.Read();
+                        if ( DateTime.TryParse( globalAttributes.GetValue( "GradeTransitionDate" ), out transitionDate ) )
+                        {
+                            int gradeFactorReactor = ( DateTime.Now < transitionDate ) ? 12 : 13;
+                            graduationDate = DateTime.Now.AddYears( gradeFactorReactor - (int)grade );
+                            people = people.Where( p => p.GraduationDate == graduationDate );
+                        }
+                    }
                 }
                 else
                 {
@@ -842,7 +852,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }
 
             var peopleList = people.OrderBy( p => p.LastName ).ThenBy( p => p.FirstName ).ToList();
-            rGridPersonResults.DataSource = peopleList.Select( p => new { p.Id, p.FirstName, p.LastName, p.BirthDate, p.Gender, Attribute = p.GetAttributeValue( "AbilityLevel" ) } ).ToList();
+            rGridPersonResults.DataSource = peopleList.Select( p => new { p.Id, p.FirstName, p.LastName, p.BirthDate, p.Age, p.Gender, Attribute = p.GetAttributeValue( "AbilityLevel" ) } ).ToList();
             rGridPersonResults.DataBind();
         }
 
@@ -853,6 +863,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void BindAbilityGrade( DropDownList thisDDL )
         {
             thisDDL.Items.Clear();
+            thisDDL.DataTextField = "Text";
+            thisDDL.DataValueField = "Value";
             thisDDL.Items.Add( new ListItem( Rock.Constants.None.Text, Rock.Constants.None.Id.ToString() ) );
 
             var dtAbility = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL ) );
@@ -866,7 +878,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }
 
             var gradeList = Enum.GetValues( typeof( GradeLevel ) ).Cast<GradeLevel>().OrderBy( gl => (int)gl )
-                .Select( g => new ListItem( g.GetDescription(), g.ToString() ) ).ToList();
+                .Select( g => new ListItem( g.GetDescription(), g.ConvertToString() ) ).ToList();
             foreach ( var grade in gradeList )
             {
                 grade.Attributes.Add( "optiongroup", "Grade" );

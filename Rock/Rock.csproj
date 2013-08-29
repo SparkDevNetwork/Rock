@@ -1219,6 +1219,7 @@
     <Compile Include="Web\UI\ViewStateList.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
+    <Compile Include="Workflow\Action\CheckIn\SelectByBestFit.cs" />
     <Compile Include="Workflow\Action\CheckIn\SelectByLastAttended.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGender.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByAbilityLevel.cs" />
