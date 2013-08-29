@@ -163,43 +163,43 @@ DECLARE @JHGroupTypeId int
 DECLARE @HSGroupTypeId int
 
 -- Insert the new top level Check-in GroupType
-INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[GroupTypePurposeValueId])
-   VALUES (0, 'Weekly Service Check-in Area', 'FEDD389A-616F-4A53-906C-63D8255631C5', 0, 0, 0, 0, @GroupTypePurposeCheckinTemplateId)
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[GroupTypePurposeValueId],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode])
+   VALUES (0, 'Weekly Service Check-in Area', 'FEDD389A-616F-4A53-906C-63D8255631C5', 0, 0, 0, 0, @GroupTypePurposeCheckinTemplateId, 0,0,0,0)
 SET @ParentGroupTypeId = SCOPE_IDENTITY()
 
 -- Now insert the all the new GroupTypes under that one...
-INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[GroupTypePurposeValueId])
-   VALUES (0, 'Check in by Age', '0572A5FE-20A4-4BF1-95CD-C71DB5281392', 0, 0, 0, 0, @GroupTypePurposeCheckinFilterId)
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[GroupTypePurposeValueId],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode])
+   VALUES (0, 'Check in by Age', '0572A5FE-20A4-4BF1-95CD-C71DB5281392', 0, 0, 0, 0, @GroupTypePurposeCheckinFilterId, 0,0,0,0)
 SET @AgeGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @AgeGroupTypeId);
 
-INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[InheritedGroupTypeId],[GroupTypePurposeValueId])
-   VALUES (0, 'Check in by Grade', '4F9565A7-DD5A-41C3-B4E8-13F0B872B10B', 0, 0, 0, 0, @AgeGroupTypeId, @GroupTypePurposeCheckinFilterId)
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[InheritedGroupTypeId],[GroupTypePurposeValueId],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode])
+   VALUES (0, 'Check in by Grade', '4F9565A7-DD5A-41C3-B4E8-13F0B872B10B', 0, 0, 0, 0, @AgeGroupTypeId, @GroupTypePurposeCheckinFilterId, 0,0,0,0)
 SET @GradeGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @GradeGroupTypeId);
 
-INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo])
-   VALUES (0, 'Check-in Test (Don''t Use) Area', 'CAAF4F9B-58B9-45B4-AABC-9188347948B7', 1, 1, 0, 0)
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode])
+   VALUES (0, 'Check-in Test (Don''t Use) Area', 'CAAF4F9B-58B9-45B4-AABC-9188347948B7', 1, 1, 0, 0, 0,0,0,0)
 SET @TestGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @TestGroupTypeId);
 
-INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[InheritedGroupTypeId])
-   VALUES (0, 'Nursery/Preschool Area', 'CADB2D12-7836-44BC-8EEA-3C6AB22FD5E8', 1, 1, 0, 0, @AgeGroupTypeId)
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[InheritedGroupTypeId],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode])
+   VALUES (0, 'Nursery/Preschool Area', 'CADB2D12-7836-44BC-8EEA-3C6AB22FD5E8', 1, 1, 0, 0, @AgeGroupTypeId, 0,0,0,0)
 SET @NurseryPreschoolGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @NurseryPreschoolGroupTypeId);
 
-INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[InheritedGroupTypeId])
-   VALUES (0, 'Elementary Area', 'E3C8F7D6-5CEB-43BB-802F-66C3E734049E', 1, 1, 0, 0, @GradeGroupTypeId)
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[InheritedGroupTypeId],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode])
+   VALUES (0, 'Elementary Area', 'E3C8F7D6-5CEB-43BB-802F-66C3E734049E', 1, 1, 0, 0, @GradeGroupTypeId, 0,0,0,0)
 SET @ElementaryGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @ElementaryGroupTypeId);
 
-INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[InheritedGroupTypeId])
-   VALUES (0, 'Jr High Area', '7A17235B-69AD-439B-BAB0-1A0A472DB96F', 1, 1, 0, 0, @GradeGroupTypeId)
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[InheritedGroupTypeId],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode])
+   VALUES (0, 'Jr High Area', '7A17235B-69AD-439B-BAB0-1A0A472DB96F', 1, 1, 0, 0, @GradeGroupTypeId, 0,0,0,0)
 SET @JHGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @JHGroupTypeId);
 
-INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[InheritedGroupTypeId])
-   VALUES (0, 'High School Area', '9A88743B-F336-4404-B877-2A623689195D', 1, 1, 0, 0, @GradeGroupTypeId)
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[InheritedGroupTypeId],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode])
+   VALUES (0, 'High School Area', '9A88743B-F336-4404-B877-2A623689195D', 1, 1, 0, 0, @GradeGroupTypeId, 0,0,0,0)
 SET @HSGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @HSGroupTypeId);
 
@@ -216,36 +216,36 @@ DECLARE @Grade46GroupId int
 DECLARE @JHGroupId int
 DECLARE @HSGroupId int
 
-INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid] )
-   VALUES ( 0, @TestGroupTypeId, 'Check-in Test (Don''t Use)', 0, 1, 'CBBBEEE0-DE95-4876-9FEF-5EB68FA67853' )
+INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid],[Order] )
+   VALUES ( 0, @TestGroupTypeId, 'Check-in Test (Don''t Use)', 0, 1, 'CBBBEEE0-DE95-4876-9FEF-5EB68FA67853',0 )
 SET @TestGroupId = SCOPE_IDENTITY()
 
-INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid] )
-   VALUES ( 0, @NurseryPreschoolGroupTypeId, 'Nursery', 0, 1, 'DC1A2A83-1B5D-46BC-9E99-4571466827F5' )
+INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid],[Order] )
+   VALUES ( 0, @NurseryPreschoolGroupTypeId, 'Nursery', 0, 1, 'DC1A2A83-1B5D-46BC-9E99-4571466827F5',0 )
 SET @NurseryGroupId = SCOPE_IDENTITY()
 
-INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid] )
-   VALUES ( 0, @NurseryPreschoolGroupTypeId, 'Preschool', 0, 1, '366001D1-0E60-4AA1-875D-046286E29284' )
+INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid],[Order] )
+   VALUES ( 0, @NurseryPreschoolGroupTypeId, 'Preschool', 0, 1, '366001D1-0E60-4AA1-875D-046286E29284',0 )
 SET @PreschoolGroupId = SCOPE_IDENTITY()
 
-INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid] )
-   VALUES ( 0, @ElementaryGroupTypeId, 'Grades K-1', 0, 1, 'FB8AAAA2-9A57-4AA4-8543-10A053C4834F' )
+INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid],[Order] )
+   VALUES ( 0, @ElementaryGroupTypeId, 'Grades K-1', 0, 1, 'FB8AAAA2-9A57-4AA4-8543-10A053C4834F',0 )
 SET @GradeK1GroupId = SCOPE_IDENTITY()
 
-INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid] )
-   VALUES ( 0, @ElementaryGroupTypeId, 'Grades 2-3', 0, 1, '24901861-14CF-474F-9FCE-7BA1D6C84BFF' )
+INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid],[Order] )
+   VALUES ( 0, @ElementaryGroupTypeId, 'Grades 2-3', 0, 1, '24901861-14CF-474F-9FCE-7BA1D6C84BFF',0 )
 SET @Grade23GroupId = SCOPE_IDENTITY()
 
-INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid])
-   VALUES ( 0, @ElementaryGroupTypeId, 'Grades 4-6', 0, 1, '42C408CE-3D69-4D7D-B9EA-41087A8945A6' )
+INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid],[Order])
+   VALUES ( 0, @ElementaryGroupTypeId, 'Grades 4-6', 0, 1, '42C408CE-3D69-4D7D-B9EA-41087A8945A6',0 )
 SET @Grade46GroupId = SCOPE_IDENTITY()
 
-INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid])
-   VALUES ( 0, @JHGroupTypeId, 'Grades 7-8', 0, 1, '7B99F840-66AB-4C7A-99A2-104D9CC953F7' )
+INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid],[Order])
+   VALUES ( 0, @JHGroupTypeId, 'Grades 7-8', 0, 1, '7B99F840-66AB-4C7A-99A2-104D9CC953F7',0 )
 SET @JHGroupId = SCOPE_IDENTITY()
 
-INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid])
-   VALUES ( 0, @HSGroupTypeId, 'Grades 9-12', 0, 1, '9B982B2A-24AB-4B82-AB49-84BDB4CF9E5F' )
+INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Guid],[Order])
+   VALUES ( 0, @HSGroupTypeId, 'Grades 9-12', 0, 1, '9B982B2A-24AB-4B82-AB49-84BDB4CF9E5F',0 )
 SET @HSGroupId = SCOPE_IDENTITY()
 
 
@@ -410,21 +410,21 @@ DECLARE @BuildingLocationId int
 DECLARE @RoomLocationId int
 
 -- Main Campus "Location"
-INSERT INTO [Location] ([Guid], [Name], [IsActive])	VALUES (NEWID(), 'Main Campus', 1)
+INSERT INTO [Location] ([Guid], [Name], [IsActive], [IsLocation])	VALUES (NEWID(), 'Main Campus', 1, 0)
 SET @CampusLocationId = SCOPE_IDENTITY()
 
 -- Main building
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid])	VALUES (@CampusLocationId, 'Bldg 1', 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid], [IsLocation])	VALUES (@CampusLocationId, 'Bldg 1', 1, NEWID(), 0)
 SET @BuildingLocationId = SCOPE_IDENTITY()
 
 -- Check in Rooms
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid])	VALUES (@BuildingLocationId, 'Bunnies Room', 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid])	VALUES (@BuildingLocationId, 'Puppies Room', 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid])	VALUES (@BuildingLocationId, 'Bears Room', 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid])	VALUES (@BuildingLocationId, 'Bobcats Room', 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid])	VALUES (@BuildingLocationId, 'Outpost Room', 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid])	VALUES (@BuildingLocationId, 'the Warehouse', 1, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid])	VALUES (@BuildingLocationId, 'the Garage', 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid], [IsLocation])	VALUES (@BuildingLocationId, 'Bunnies Room', 1, NEWID(), 0)
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid], [IsLocation])	VALUES (@BuildingLocationId, 'Puppies Room', 1, NEWID(), 0)
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid], [IsLocation])	VALUES (@BuildingLocationId, 'Bears Room', 1, NEWID(), 0)
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid], [IsLocation])	VALUES (@BuildingLocationId, 'Bobcats Room', 1, NEWID(), 0)
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid], [IsLocation])	VALUES (@BuildingLocationId, 'Outpost Room', 1, NEWID(), 0)
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid], [IsLocation])	VALUES (@BuildingLocationId, 'the Warehouse', 1, NEWID(), 0)
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [Guid], [IsLocation])	VALUES (@BuildingLocationId, 'the Garage', 1, NEWID(), 0)
 
 
 DELETE [DeviceLocation]
@@ -492,30 +492,30 @@ WHERE C.Name = 'Main Campus'
 ---------------------------------------------------------------------------
 DELETE [GroupLocation]
 
-	INSERT INTO [GroupLocation] (GroupId, LocationId, Guid)
-	 SELECT @NurseryGroupId, L.Id, NEWID() FROM Location L WHERE L.Name = 'Bunnies Room'
+	INSERT INTO [GroupLocation] (GroupId, LocationId, Guid, [IsMailing], [IsLocation])
+	 SELECT @NurseryGroupId, L.Id, NEWID(), 0, 0 FROM Location L WHERE L.Name = 'Bunnies Room'
 
-	INSERT INTO [GroupLocation] (GroupId, LocationId, Guid)
-	 SELECT @PreschoolGroupId, L.Id, NEWID() FROM Location L WHERE L.Name = 'Puppies Room'
+	INSERT INTO [GroupLocation] (GroupId, LocationId, Guid, [IsMailing], [IsLocation])
+	 SELECT @PreschoolGroupId, L.Id, NEWID(), 0, 0 FROM Location L WHERE L.Name = 'Puppies Room'
 	 
-	INSERT INTO [GroupLocation] (GroupId, LocationId, Guid)
-	 SELECT @GradeK1GroupId, L.Id, NEWID() FROM Location L WHERE L.Name = 'Bears Room'
+	INSERT INTO [GroupLocation] (GroupId, LocationId, Guid, [IsMailing], [IsLocation])
+	 SELECT @GradeK1GroupId, L.Id, NEWID(), 0, 0 FROM Location L WHERE L.Name = 'Bears Room'
 
-	INSERT INTO [GroupLocation] (GroupId, LocationId, Guid)
-	 SELECT @Grade23GroupId, L.Id, NEWID() FROM Location L WHERE L.Name = 'Bobcats Room'
+	INSERT INTO [GroupLocation] (GroupId, LocationId, Guid, [IsMailing], [IsLocation])
+	 SELECT @Grade23GroupId, L.Id, NEWID(), 0, 0 FROM Location L WHERE L.Name = 'Bobcats Room'
 	 
-	INSERT INTO [GroupLocation] (GroupId, LocationId, Guid)
-	 SELECT @Grade46GroupId, L.Id, NEWID() FROM Location L WHERE L.Name = 'Outpost Room'  
+	INSERT INTO [GroupLocation] (GroupId, LocationId, Guid, [IsMailing], [IsLocation])
+	 SELECT @Grade46GroupId, L.Id, NEWID(), 0, 0 FROM Location L WHERE L.Name = 'Outpost Room'  
 
-	INSERT INTO [GroupLocation] (GroupId, LocationId, Guid)
-	 SELECT @JHGroupId, L.Id, NEWID() FROM Location L WHERE L.Name = 'the Warehouse' 
+	INSERT INTO [GroupLocation] (GroupId, LocationId, Guid, [IsMailing], [IsLocation])
+	 SELECT @JHGroupId, L.Id, NEWID(), 0, 0 FROM Location L WHERE L.Name = 'the Warehouse' 
 	 
-	INSERT INTO [GroupLocation] (GroupId, LocationId, Guid)
-	 SELECT @HSGroupId, L.Id, NEWID() FROM Location L WHERE L.Name = 'the Garage' 
+	INSERT INTO [GroupLocation] (GroupId, LocationId, Guid, [IsMailing], [IsLocation])
+	 SELECT @HSGroupId, L.Id, NEWID(), 0, 0 FROM Location L WHERE L.Name = 'the Garage' 
 	 
 	-- Add Test group to each location
-	INSERT INTO [GroupLocation] (GroupId, LocationId, Guid)
-	 SELECT @TestGroupId, L.Id, NEWID() FROM Location L WHERE L.ParentLocationId = @BuildingLocationId
+	INSERT INTO [GroupLocation] (GroupId, LocationId, Guid, [IsMailing], [IsLocation])
+	 SELECT @TestGroupId, L.Id, NEWID(), 0, 0 FROM Location L WHERE L.ParentLocationId = @BuildingLocationId
 
 ---------------------------------------------------------------------------
 -- Add Group Locations to Schedules
