@@ -9,6 +9,8 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
+using Rock.Model;
+
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
@@ -81,7 +83,10 @@ namespace Rock.Workflow.Action.CheckIn
                                     var location = group.Locations.Where( l => l.Selected ).FirstOrDefault();
                                     if ( location == null )
                                     {
-                                        location = group.Locations.FirstOrDefault();
+                                        // this works when a group is only meeting at one location
+                                        
+                                        var groupLocations = new GroupLocationService
+                                        //location = group.Locations.Where( l => group.Group.GroupLocations.Any( gl => gl.LocationId == l.Location.Id ) ).FirstOrDefault();                                        
                                     }
 
                                     if ( location != null && location.Schedules.Count > 0 )
