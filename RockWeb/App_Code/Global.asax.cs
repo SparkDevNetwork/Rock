@@ -281,8 +281,15 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_Error( object sender, EventArgs e )
         {
-            // log error
             HttpContext context = HttpContext.Current;
+
+            // If the current context is null, there's nothing that can be done. Just return.
+            if ( context == null )
+            {
+                return;
+            }
+
+            // log error
             var ex = Context.Server.GetLastError();
 
             if ( ex != null )
@@ -302,7 +309,6 @@ namespace RockWeb
                     // something really bad is occurring stop logging errors as we're in an infinate loop
                     logException = false;
                 }
-
 
                 if ( logException )
                 {
@@ -328,16 +334,15 @@ namespace RockWeb
 
                         // determine error page based on the site
                         SiteService service = new SiteService();
-                        Site site = null;
                         string siteName = string.Empty;
 
                         if ( context.Items["Rock:SiteId"] != null )
                         {
-                            int siteId = Int32.Parse( context.Items["Rock:SiteId"].ToString() );
+                            int siteId;
+                            Int32.TryParse( context.Items["Rock:SiteId"].ToString(), out siteId );
 
                             // load site
-                            site = service.Get( siteId );
-
+                            Site site = service.Get( siteId );
                             siteName = site.Name;
                             errorPage = site.ErrorPage;
                         }
@@ -354,10 +359,10 @@ namespace RockWeb
 
                             // get email addresses to send to
                             string emailAddressesList = globalAttributesCache.GetValue( "EmailExceptionsList" );
+
                             if ( !string.IsNullOrWhiteSpace( emailAddressesList ) )
                             {
                                 string[] emailAddresses = emailAddressesList.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-
                                 var recipients = new Dictionary<string, Dictionary<string, object>>();
 
                                 foreach ( string emailAddress in emailAddresses )
