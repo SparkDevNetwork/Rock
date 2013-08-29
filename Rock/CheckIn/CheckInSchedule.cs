@@ -12,7 +12,7 @@ using Rock.Model;
 namespace Rock.CheckIn
 {
     /// <summary>
-    /// A shedule options for the current check-in
+    /// A schedule options for the current check-in
     /// </summary>
     [DataContract]
     public class CheckInSchedule : DotLiquid.ILiquidizable
