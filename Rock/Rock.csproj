@@ -193,6 +193,11 @@
     <Compile Include="Migrations\201308221817445_GroupTypePurposeCheckinFilter.Designer.cs">
       <DependentUpon>201308221817445_GroupTypePurposeCheckinFilter.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201308281644108_FinancialGateway.cs" />
+    <Compile Include="Migrations\201308281644108_FinancialGateway.Designer.cs">
+      <DependentUpon>201308281644108_FinancialGateway.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Model\FinancialPersonSavedAccountService.Partial.cs" />
     <Compile Include="Storage\ProviderComponent.cs" />
     <Compile Include="Storage\ProviderContainer.cs" />
     <Compile Include="Storage\Provider\Database.cs" />
@@ -1019,7 +1024,6 @@
     <Compile Include="Model\CodeGenerated\DeviceService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialBatchService.cs" />
-    <Compile Include="Model\CodeGenerated\FinancialGatewayService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPledgeService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialScheduledTransactionDetailService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialScheduledTransactionService.cs" />
@@ -1351,9 +1355,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\FinancialAccount.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Model\FinancialGateway.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\FinancialPledge.cs">
@@ -2225,6 +2226,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201308221817445_GroupTypePurposeCheckinFilter.resx">
       <DependentUpon>201308221817445_GroupTypePurposeCheckinFilter.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201308281644108_FinancialGateway.resx">
+      <DependentUpon>201308281644108_FinancialGateway.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

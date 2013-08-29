@@ -41,7 +41,7 @@ namespace Rock.Model
         /// The gateway id.
         /// </value>
         [DataMember]
-        public int? GatewayId { get; set; }
+        public int? GatewayEntityTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -103,7 +103,7 @@ namespace Rock.Model
         /// The gateway.
         /// </value>
         [DataMember]
-        public virtual FinancialGateway Gateway { get; set; }
+        public virtual EntityType GatewayEntityType { get; set; }
 
         #endregion
 
@@ -138,7 +138,7 @@ namespace Rock.Model
         public FinancialPersonSavedAccountConfiguration()
         {
             this.HasRequired( t => t.Person ).WithMany().HasForeignKey( t => t.PersonId ).WillCascadeOnDelete( true );
-            this.HasOptional( t => t.Gateway ).WithMany().HasForeignKey( t => t.GatewayId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.GatewayEntityType ).WithMany().HasForeignKey( t => t.GatewayEntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 
