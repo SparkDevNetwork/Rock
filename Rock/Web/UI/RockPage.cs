@@ -499,7 +499,6 @@ namespace Rock.Web.UI
         baseUrl: '{3}' 
     }});",
                         CurrentPage.SiteId.Value, CurrentPage.Id, CurrentPage.Layout, AppPath );
-                    //this.Page.ClientScript.RegisterStartupScript( this.GetType(), "rock-js-object", script, true );
                     ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "rock-js-object", script, true );
 
                     // Add config elements
