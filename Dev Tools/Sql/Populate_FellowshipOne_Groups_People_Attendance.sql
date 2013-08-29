@@ -19,6 +19,8 @@ The following assumptions or actions are made:
 
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! */
 
+BEGIN TRANSACTION
+
 ----------------------------------------------------------
 -- Set up necessary Person attributes and properties
 ----------------------------------------------------------
@@ -360,3 +362,5 @@ INNER JOIN Schedule S
 	ON CAST(F.ScheduleDate as time) = CAST(S.Name as time)
 GROUP BY L.Id, S.Id, G.Id, P.Id, ISNULL(F.CheckInTime, F.ScheduleDate)
 ORDER BY ISNULL(F.CheckInTime, F.ScheduleDate)
+
+COMMIT
