@@ -31,22 +31,17 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Charges the specified transaction.
+        /// Initiates a credit-card sale transaction.  If succesful, a transaction id is returned
         /// </summary>
-        /// <param name="transaction">The transaction.</param>
         /// <param name="creditCard">The credit card.</param>
-        /// <param name="testTransaction">if set to <c>true</c> [test transaction].</param>
+        /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public abstract FinancialTransaction Charge( FinancialTransaction transaction, CreditCard creditCard, bool testTransaction = false );
+        public abstract string Charge( CreditCard creditCard, out string errorMessage);
 
         /// <summary>
-        /// Charges the specified transaction.
+        /// Initiates an ach sale transaction.  If succesful, a transaction id is returned
         /// </summary>
-        /// <param name="transaction">The transaction.</param>
-        /// <param name="bankAccount">The bank account.</param>
-        /// <param name="testTransaction">if set to <c>true</c> [test transaction].</param>
-        /// <returns></returns>
-        public abstract FinancialTransaction Charge( FinancialTransaction transaction, BankAccount bankAccount, bool testTransaction = false );
+        public abstract string Charge( BankAccount bankAccount, out string errorMessage );
 
         /// <summary>
         /// Creates the scheduled transaction.

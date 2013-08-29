@@ -13,6 +13,11 @@ namespace Rock.Financial
     public class CreditCard
     {
         /// <summary>
+        /// Gets or sets the amount.
+        /// </summary>
+        public decimal Amount { get; set; }
+
+        /// <summary>
         /// The name on card
         /// </summary>
         public string NameOnCard { get; set; }
@@ -66,7 +71,8 @@ namespace Rock.Financial
         /// Initializes a new instance of the <see cref="CreditCard"/> class.
         /// </summary>
         public CreditCard()
-        {
+        { 
+            Amount = 0;
             NameOnCard = string.Empty;
             LastNameOnCard = string.Empty;
             BillingStreet = string.Empty;
@@ -85,7 +91,8 @@ namespace Rock.Financial
         /// <param name="number">The number.</param>
         /// <param name="code">The code.</param>
         /// <param name="expirationDate">The expiration date.</param>
-        public CreditCard( string number, string code, DateTime expirationDate ) : this()
+        public CreditCard( string number, string code, DateTime expirationDate )
+            : this()
         {
             Number = number;
             Code = code;
@@ -96,7 +103,8 @@ namespace Rock.Financial
         /// Initializes a new instance of the <see cref="CreditCard" /> struct.
         /// </summary>
         /// <param name="swipeInfo">The swipe info.</param>
-        public CreditCard( string swipeInfo ) : this()
+        public CreditCard( string swipeInfo )
+            : this()
         {
             SwipeInfo = swipeInfo;
         }

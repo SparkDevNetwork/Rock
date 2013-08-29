@@ -9,8 +9,21 @@ namespace Rock.Financial
     /// <summary>
     /// Information about a bank account that is passed to financial gateway
     /// </summary>
-    public struct BankAccount
+    public class BankAccount
     {
+        /// <summary>
+        /// Gets or sets the amount.
+        /// </summary>
+        public decimal Amount { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the bank.
+        /// </summary>
+        /// <value>
+        /// The name of the bank.
+        /// </value>
+        public string BankName { get; set; }
+
         /// <summary>
         /// The account number
         /// </summary>
@@ -27,13 +40,26 @@ namespace Rock.Financial
         public BankAccountType AccountType;
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="BankAccount"/> class.
+        /// </summary>
+        public BankAccount()
+        {
+            Amount = 0;
+            AccountNumber = string.Empty;
+            RoutingNumber = string.Empty;
+            AccountType = BankAccountType.Checking;
+        }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="BankAccount" /> struct.
         /// </summary>
         /// <param name="accountNumber">The account number.</param>
         /// <param name="routingNumber">The routing number.</param>
         /// <param name="accountType">Type of the account.</param>
         public BankAccount( string accountNumber, string routingNumber, BankAccountType accountType )
+            : this()
         {
+            Amount = 0;
             AccountNumber = accountNumber;
             RoutingNumber = routingNumber;
             AccountType = accountType;

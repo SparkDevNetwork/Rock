@@ -88,7 +88,7 @@ namespace Rock.Model
         /// The gateway id.
         /// </value>
         [DataMember]
-        public int? GatewayId { get; set; }
+        public int? GatewayEntityTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction code.
@@ -139,7 +139,7 @@ namespace Rock.Model
         /// The gateway.
         /// </value>
         [DataMember]
-        public virtual FinancialGateway Gateway { get; set; }
+        public virtual EntityType GatewayEntityType { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction frequency value.
@@ -186,7 +186,7 @@ namespace Rock.Model
         public FinancialScheduledTransactionConfiguration()
         {
             this.HasRequired( t => t.AuthorizedPerson ).WithMany().HasForeignKey( t => t.AuthorizedPersonId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.Gateway ).WithMany().HasForeignKey( t => t.GatewayId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.GatewayEntityType ).WithMany().HasForeignKey( t => t.GatewayEntityTypeId ).WillCascadeOnDelete( false );
             this.HasRequired( t => t.TransactionFrequencyValue ).WithMany().HasForeignKey( t => t.TransactionFrequencyValueId ).WillCascadeOnDelete( false );
         }
     }

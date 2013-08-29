@@ -136,20 +136,6 @@ namespace Rock.SystemGuid
 
         #endregion
 
-        #region Transaction Payment Type
-
-        /// <summary>
-        /// Credit Card
-        /// </summary>
-        public const string TRANSACTION_PAYMENT_TYPE_CREDIT_CARD = "09412338-AAAA-4644-BA2A-4CADBE653468";
-
-        /// <summary>
-        /// Checking/ACH 
-        /// </summary>
-        public const string TRANSACTION_PAYMENT_TYPE_CHECKING = "FFAD975C-7504-418F-8959-30BD0C62CD30";
-        
-        #endregion
-
         #region Note Type
 
         /// <summary>

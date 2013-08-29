@@ -87,7 +87,7 @@ namespace Rock.Model
                 target.EndDate = source.EndDate;
                 target.NumberOfPayments = source.NumberOfPayments;
                 target.IsActive = source.IsActive;
-                target.GatewayId = source.GatewayId;
+                target.GatewayEntityTypeId = source.GatewayEntityTypeId;
                 target.TransactionCode = source.TransactionCode;
                 target.CardReminderDate = source.CardReminderDate;
                 target.LastRemindedDate = source.LastRemindedDate;

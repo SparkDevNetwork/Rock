@@ -18,7 +18,6 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            CreateIndex( "dbo.Device", "IPAddress", true );        
         }
         
         /// <summary>
@@ -26,7 +25,6 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
-            DropIndex( "dbo.Device", new[] { "IPAddress" } );
         }
     }
 }

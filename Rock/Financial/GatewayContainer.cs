@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+
 using Rock.Extension;
 
 namespace Rock.Financial
@@ -44,17 +45,25 @@ namespace Rock.Financial
         /// <summary>
         /// Gets the component with the matching Entity Type Name.
         /// </summary>
-        /// <param name="entityTypeName">Name of the entity type.</param>
+        /// <param name="entityTypeName">Name or Guid of the entity type.</param>
         /// <returns></returns>
-        public static GatewayComponent GetComponent( string entityTypeName )
+        public static GatewayComponent GetComponent( string entityType )
         {
             foreach ( var serviceEntry in Instance.Components )
             {
                 var component = serviceEntry.Value.Value;
 
-                if ( component.TypeName == entityTypeName )
+                if ( component.TypeName.Equals( entityType, StringComparison.OrdinalIgnoreCase ) ||
+                    component.TypeGuid.ToString().Equals( entityType, StringComparison.OrdinalIgnoreCase ) )
                 {
-                    return component;
+                    if ( component.IsActive )
+                    {
+                        return component;
+                    }
+                    else
+                    {
+                        break;
+                    }
                 }
             }
 
