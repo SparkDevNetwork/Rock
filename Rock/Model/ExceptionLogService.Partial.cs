@@ -5,7 +5,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -89,7 +88,7 @@ namespace Rock.Model
                 // the exception originated.
                 if ( !isParent )
                 {
-                    exceptionLog = log.Clone() as ExceptionLog;
+                    exceptionLog = log.Clone( false );
 
                     if ( exceptionLog != null )
                     {
@@ -131,21 +130,16 @@ namespace Rock.Model
                 // If logging the exception fails, write the exception to a file
                 try
                 {
-
                     string directory = AppDomain.CurrentDomain.BaseDirectory;
-                    directory = Path.Combine( directory, "Logs" );
+                    directory = Path.Combine( directory, "App_Data", "Logs" );
 
-                    // check that directory exists
                     if ( !Directory.Exists( directory ) )
                     {
                         Directory.CreateDirectory( directory );
                     }
 
-                    // create full path to the fie
                     string filePath = Path.Combine( directory, "RockExceptions.csv" );
-
-                    // write to the file
-                    File.AppendAllText( filePath, string.Format( "{0},{1},\"{2}\"\r\n", DateTime.Now.ToString(), EventLogEntryType.Error, ex.Message ) );
+                    File.AppendAllText( filePath, string.Format( "{0},{1},\"{2}\"\r\n", DateTime.Now.ToString(), ex.GetType(), ex.Message ) );
                 }
                 catch
                 {
