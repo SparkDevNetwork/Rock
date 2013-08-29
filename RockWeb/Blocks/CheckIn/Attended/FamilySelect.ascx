@@ -4,7 +4,7 @@
 <script type="text/javascript">
 
     function setControlEvents() {
-        // give user instant feedback, server side object needs to set class though
+
         $('.family').unbind('click').on('click', function () {
             $('.family').removeClass('active');
             $(this).addClass('active');
@@ -195,13 +195,14 @@
         </div>
         <br />
         <div class="row-fluid attended-checkin-body searchperson">
-            <Rock:Grid ID="rGridPersonResults" runat="server" OnRowCommand="rGridPersonResults_AddExistingPerson" ShowActionRow="false"
-                PageSize="3" DataKeyNames="Id" AllowPaging="true" AllowSorting="true">
+            <Rock:Grid ID="rGridPersonResults" runat="server" OnRowCommand="rGridPersonResults_AddExistingPerson" 
+                ShowActionRow="false" PageSize="3" DataKeyNames="Id" AllowPaging="true" AllowSorting="true">
                 <Columns>
                     <asp:BoundField DataField="Id" Visible="false" />
                     <asp:BoundField DataField="FirstName" HeaderText="First Name" SortExpression="FirstName"/>
                     <asp:BoundField DataField="LastName" HeaderText="Last Name" SortExpression="LastName" />
                     <asp:BoundField DataField="BirthDate" HeaderText="DOB" SortExpression="BirthDate" DataFormatString="{0:d}" HtmlEncode="false" />
+                    <asp:BoundField DataField="Age" HeaderText="Age" SortExpression="Age" />
                     <asp:BoundField DataField="Gender" HeaderText="Gender" SortExpression="Gender" />
                     <asp:BoundField DataField="Attribute" HeaderText="Ability/Grade" SortExpression="Attribute" />
                     <asp:TemplateField HeaderText="Add">
