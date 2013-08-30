@@ -138,7 +138,31 @@ namespace Rock.PayFlowPro
             reportParams.Add( "start_date", startDate.ToString( "yyyy-MM-dd HH:mm:ss" ) );
             reportParams.Add( "end_date", endDate.ToString( "yyyy-MM-dd HH:mm:ss" ) );
 
-            return reportingApi.GetReport( "RecurringBillingReport", reportParams, out errorMessage );
+            DataTable dt = reportingApi.GetReport( "RecurringBillingReport", reportParams, out errorMessage );
+            if ( dt != null )
+            {
+                reportParams = new Dictionary<string,string>();
+                reportParams.Add("transaction_id", string.Empty);
+
+                dt.Columns.Add( "Amount" );
+                foreach ( DataRow row in dt.Rows )
+                {
+                    reportParams["transaction_id"] = row["Transaction ID"].ToString();
+                    DataTable dtTxn = reportingApi.GetReport( "TransactionIDSearch", reportParams, out errorMessage );
+                    if ( dtTxn != null && dtTxn.Rows.Count == 1 )
+                    {
+                        row["Amount"] = dtTxn.Rows[0]["Amount"];
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+
+                return dt;
+            }
+
+            return null;
         }
 
         #region PayFlowPro Helper Methods

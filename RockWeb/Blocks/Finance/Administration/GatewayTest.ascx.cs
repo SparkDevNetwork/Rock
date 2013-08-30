@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Finance.Administration
     public partial class GatewayTest : Rock.Web.UI.RockBlock
     {
         protected bool FluidLayout = false;
-
+        private bool _showRepeatingOptions = false;
         private GatewayComponent _ccGateway;
         private GatewayComponent _achGateway;
 
@@ -120,26 +120,20 @@ namespace RockWeb.Blocks.Finance.Administration
                 bool allowScheduled = false;
                 if ( bool.TryParse( GetAttributeValue( "AllowScheduled" ), out allowScheduled ) && allowScheduled )
                 {
+                    _showRepeatingOptions = true;
+                    var oneTimeFrequency = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME );
                     divRepeatingPayments.Visible = true;
+
                     btnFrequency.DataSource = supportedFrequencies;
                     btnFrequency.DataBind();
 
-                    // If the 'Weekly' value is supported, default to that, otherwise just default to first option
-                    int? weeklyValue = supportedFrequencies
-                        .Where( f =>
-                            f.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY ) ) )
-                        .Select( f => f.Id )
-                        .FirstOrDefault();
-                    if ( weeklyValue != null )
+                    // If gateway didn't specifically support one-time, add it anyway for immediate gifts
+                    if ( !supportedFrequencies.Where( f => f.Id == oneTimeFrequency.Id ).Any() )
                     {
-                        btnFrequency.SelectedValue = weeklyValue.Value.ToString();
+                        btnFrequency.Items.Insert( 0, new ListItem( oneTimeFrequency.Name, oneTimeFrequency.Id.ToString() ) );
                     }
-                    else
-                    {
-                        btnFrequency.Items[0].Selected = true;
-                    }
-
-                    dtpStartDate.SelectedDate = DateTime.Today.AddDays( 1 );
+                    btnFrequency.SelectedValue = oneTimeFrequency.Id.ToString();
+                    dtpStartDate.SelectedDate = DateTime.Today;
                 };
 
             }
@@ -185,8 +179,8 @@ namespace RockWeb.Blocks.Finance.Administration
             errorBox.Visible = false;
             pnlReport.Visible = false;
 
-            // Show schedule based on if setup automated giving is selected
-            divSchedule.Style[HtmlTextWriterStyle.Display] = cbRepeating.Checked ? "block" : "none";
+            // Set the frequency date label based on if 'One Time' is selected or not
+            dtpStartDate.LabelText = btnFrequency.Items[0].Selected ? "When" : "First Gift";
 
             // If there are both CC and ACH options, set the active tab based on the hidden field value that tracks the active tag
             if ( phPills.Visible )
@@ -241,11 +235,6 @@ namespace RockWeb.Blocks.Finance.Administration
             }
         }
 
-        protected void btnFrequency_SelectionChanged( object sender, EventArgs e )
-        {
-
-        }
-
         protected void btnNext_Click( object sender, EventArgs e )
         {
             string errorMessage = string.Empty;
@@ -254,12 +243,34 @@ namespace RockWeb.Blocks.Finance.Administration
             FinancialTransaction transaction = null;
             FinancialScheduledTransaction scheduledTransaction = null;
 
-            if ( cbRepeating.Checked )
+            // Figure out if this is a one-time transaction or a future scheduled transaction
+            bool repeating = _showRepeatingOptions;
+            if ( repeating )
             {
-                scheduledTransaction = new FinancialScheduledTransaction();
-                scheduledTransaction.TransactionFrequencyValueId = btnFrequency.SelectedValueAsId().Value;
-                scheduledTransaction.StartDate = dtpStartDate.SelectedDate.Value;
+                // If a one-time gift was selected for today's date, then treat as a onetime immediate transaction (not scheduled)
+                int oneTimeFrequencyId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;
+                if ( btnFrequency.SelectedValue == oneTimeFrequencyId.ToString() &&
+                    dtpStartDate.SelectedDate == DateTime.Today )
+                {
+                    repeating = false;
+                }
+            }
 
+            if ( repeating )
+            {
+                if ( dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate > DateTime.Today )
+                {
+                    scheduledTransaction = new FinancialScheduledTransaction();
+                    scheduledTransaction.TransactionFrequencyValueId = btnFrequency.SelectedValueAsId().Value;
+                    scheduledTransaction.StartDate = dtpStartDate.SelectedDate.Value;
+                }
+                else
+                {
+                    errorBox.Text = "First Gift must be a future date";
+                    errorBox.Title = "Payment Error";
+                    errorBox.NotificationBoxType = NotificationBoxType.Error;
+                    errorBox.Visible = true;
+                }
             }
             else
             {
@@ -288,7 +299,7 @@ namespace RockWeb.Blocks.Finance.Administration
                     cc.BillingZip = txtZip.Text;
                 }
 
-                if ( cbRepeating.Checked )
+                if ( repeating )
                 {
                     scheduledTransaction.GatewayEntityTypeId = _ccGateway.TypeId;
                     success = _ccGateway.CreateScheduledTransaction( scheduledTransaction, cc, out errorMessage );
@@ -305,7 +316,7 @@ namespace RockWeb.Blocks.Finance.Administration
                 ach.Amount = 0.02M;
                 ach.BankName = txtBankName.Text;
 
-                if ( cbRepeating.Checked )
+                if ( repeating )
                 {
                     scheduledTransaction.GatewayEntityTypeId = _achGateway.TypeId;
                     success = _ccGateway.CreateScheduledTransaction( scheduledTransaction, ach, out errorMessage );
@@ -319,7 +330,7 @@ namespace RockWeb.Blocks.Finance.Administration
 
             if ( success )
             {
-                if ( cbRepeating.Checked )
+                if ( repeating )
                 {
                     errorBox.Text = "Profile ID: " + scheduledTransaction.TransactionCode;
                 }
@@ -400,8 +411,19 @@ namespace RockWeb.Blocks.Finance.Administration
         {
             CurrentPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/jquery.creditCardTypeDetector.js" ) );
 
+            int oneTimeFrequencyId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;
+
             string script = string.Format( @"
     Sys.Application.add_load(function () {{
+
+        $('#ButtonDropDown_btnFrequency .dropdown-menu a').click( function () {{
+            var $lbl = $(this).parents('div.control-group').next().children('div.control-label');
+            if ($(this).attr('data-id') == '{2}') {{
+                $lbl.html('When');
+            }} else {{
+                $lbl.html('First Gift');
+            }};
+        }});
 
         // Save the state of the selected pill to a hidden field so that state can 
         // be preserved through postback
@@ -434,7 +456,7 @@ namespace RockWeb.Blocks.Finance.Administration
         }});
  
     }});
-", divCCPaymentInfo.ClientID, hfPaymentTab.ClientID );
+", divCCPaymentInfo.ClientID, hfPaymentTab.ClientID, oneTimeFrequencyId );
 
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
         }
