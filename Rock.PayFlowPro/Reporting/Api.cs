@@ -1,16 +1,20 @@
-﻿using System;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Data;
 using System.Net;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
-using System.Data;
 
 namespace Rock.PayFlowPro.Reporting
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class Api
     {
         public string User { get; set; }
@@ -28,46 +32,69 @@ namespace Rock.PayFlowPro.Reporting
             Test = test;
         }
 
+        public DataTable GetSearch( string searchName, Dictionary<string, string> reportParameters, out string errorMessage )
+        {
+            // Run a search
+            var response = SendRequest( new SearchRequest( searchName, reportParameters ).ToXmlElement(), out errorMessage );
+            if ( response != null )
+            {
+                var searchResponse = new SearchResponse( response );
+                if ( searchResponse != null )
+                {
+                    return GetData( searchResponse.ReportId, out errorMessage );
+                }
+            }
+
+            return null;
+        }
+
         public DataTable GetReport( string reportName, Dictionary<string, string> reportParameters, out string errorMessage )
         {
-            errorMessage = string.Empty;
-
-            // Request the report
+            // Request a report
             var response = SendRequest( new ReportRequest( reportName, reportParameters ).ToXmlElement(), out errorMessage );
             if ( response != null )
             {
                 var reportResponse = new ReportResponse( response );
-
-                // Request the Metadata
-                response = SendRequest( new MetaDataRequest( reportResponse.ReportId ).ToXmlElement(), out errorMessage );
-                if ( response != null )
+                if ( reportResponse != null )
                 {
-                    var metaData = new MetaDataResponse( response );
-                    {
-                        DataTable dt = new DataTable();
-                        metaData.Columns.ForEach( c => dt.Columns.Add( c ) );
+                    return GetData( reportResponse.ReportId, out errorMessage );
+                }
+            }
 
-                        for ( int pageNum = 1; pageNum <= metaData.PageCount; pageNum++ )
+            return null;
+        }
+
+        private DataTable GetData( string reportId, out string errorMessage )
+        {
+            // Request the Metadata
+            var metaDataResponse = SendRequest( new MetaDataRequest( reportId ).ToXmlElement(), out errorMessage );
+            if ( metaDataResponse != null )
+            {
+                var metaData = new MetaDataResponse( metaDataResponse );
+                {
+                    DataTable dt = new DataTable();
+                    metaData.Columns.ForEach( c => dt.Columns.Add( c ) );
+
+                    for ( int pageNum = 1; pageNum <= metaData.PageCount; pageNum++ )
+                    {
+                        // Get each page of the data
+                        var dataResponse = SendRequest( new DataRequest( reportId, pageNum ).ToXmlElement(), out errorMessage );
+                        if ( dataResponse != null )
                         {
-                            // Get each page of the data
-                            response = SendRequest( new DataRequest( reportResponse.ReportId, pageNum ).ToXmlElement(), out errorMessage );
-                            if ( response != null )
+                            var data = new DataResponse( dataResponse );
+                            foreach ( var row in data.Rows )
                             {
-                                var data = new DataResponse( response );
-                                foreach ( var row in data.Rows )
+                                var dataRow = dt.NewRow();
+                                for ( int colNum = 0; colNum < metaData.ColumnCount; colNum++ )
                                 {
-                                    var dataRow = dt.NewRow();
-                                    for ( int colNum = 0; colNum < metaData.ColumnCount; colNum++ )
-                                    {
-                                        dataRow[colNum] = row[colNum];
-                                    }
-                                    dt.Rows.Add(dataRow);
+                                    dataRow[colNum] = row[colNum];
                                 }
+                                dt.Rows.Add( dataRow );
                             }
                         }
-
-                        return dt;
                     }
+
+                    return dt;
                 }
             }
 
@@ -100,8 +127,8 @@ namespace Rock.PayFlowPro.Reporting
                 using ( XmlReader reader = XmlReader.Create( stream ) )
                 {
                     response = XDocument.Load( reader );
-                    var status = new RequestResponse(response);
-                    if (status.Code != "100")
+                    var status = new RequestResponse( response );
+                    if ( status.Code != "100" )
                     {
                         errorMessage = status.Message;
                         response = null;
