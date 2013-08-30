@@ -13,12 +13,9 @@
                         <div class="form-horizontal">
                             <fieldset>
                                 <div id="divRepeatingPayments" runat="server" visible="false">
-                                    <Rock:LabeledCheckBox ID="cbRepeating" runat="server" LabelText=" " Text="Setup Automated Giving" CssClass="toggle-input" />
-                                    <div id="divSchedule" runat="server" class="toggle-content">
-                                        <Rock:ButtonDropDownList ID="btnFrequency" runat="server" CssClass="btn btn-primary" LabelText="Frequency"
-                                            AutoPostBack="true" OnSelectionChanged="btnFrequency_SelectionChanged" DataTextField="Name" DataValueField="Id"  />
-                                        <Rock:DatePicker ID="dtpStartDate" runat="server" LabelText="First Payment" />
-                                    </div>
+                                    <Rock:ButtonDropDownList ID="btnFrequency" runat="server" CssClass="btn btn-primary" LabelText="Frequency"
+                                        DataTextField="Name" DataValueField="Id"  />
+                                    <Rock:DatePicker ID="dtpStartDate" runat="server" LabelText="First Payment" />
                                 </div>
                             </fieldset>
                         </div>
