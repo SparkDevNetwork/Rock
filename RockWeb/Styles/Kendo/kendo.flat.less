@@ -12,9 +12,9 @@
 @fallback-texture: url('textures/highlight.png');
 
 /* Widget Base Styles */
-@widget-text-color: @site-text-color;
+@widget-text-color: @text-color;
 @widget-background-color: #fff;
-@widget-border-color: @button-primary-background;
+@widget-border-color: @btn-primary-bg;
 
 //No gradients
 @widget-gradient: none;
@@ -27,18 +27,18 @@
 @active-shadow: none;
 
 /* Hover State */
-@hover-background-color: darken(@button-primary-background, @const-border-darken-amt);
-@hover-border-color: darken(@button-primary-background, @const-border-darken-amt + 10%);
+@hover-background-color: darken(@btn-primary-bg, @const-border-darken-amt);
+@hover-border-color: darken(@btn-primary-bg, @const-border-darken-amt + 10%);
 @hover-text-color: #ffffff;
 
 /* Selects, Dropdowns */
-@select-background-color: @button-primary-background;
+@select-background-color: @btn-primary-bg;
 @select-border-color: @hover-border-color;
 @select-hover-background-color: @hover-background-color;
 @select-group-background-color: @select-background-color;
 
 /* Buttons */
-@button-background-color: @button-primary-background;
+@button-background-color: @btn-primary-bg;
 @button-text-color: #ffffff;
 
 /* Group Base Styles */
@@ -48,7 +48,7 @@
 /* Content */
 @content-background-color: @widget-background-color;
 
-@selected-background-color: @button-primary-background;
+@selected-background-color: @btn-primary-bg;
 @selected-border-color: @selected-background-color;
 @selected-text-color: #ffffff;
 
@@ -129,16 +129,16 @@
 @calendar-footer-active-background: #10c4b2; 
 @calendar-group-background-color: #ffffff;
 
-@button-border-color: darken(@button-primary-background, @const-border-darken-amt);
+@button-border-color: darken(@btn-primary-bg, @const-border-darken-amt);
 @menu-border-color: #363940;
 @tabstrip-items-border: #363940;
 @tabstrip-active-background: @widget-background-color;
 @tabstrip-tabs-color: #ffffff;
 @form-widget-color: #ffffff;
-@drop-down-border-color: darken(@button-primary-background, @const-border-darken-amt);
-@drop-down-hover-border-color: darken(@button-primary-background, @const-border-darken-amt + 10%);
-@drop-down-focused-border-color: darken(@button-primary-background, @const-border-darken-amt + 10%);
-@drop-down-background: @button-primary-background;
+@drop-down-border-color: darken(@btn-primary-bg, @const-border-darken-amt);
+@drop-down-hover-border-color: darken(@btn-primary-bg, @const-border-darken-amt + 10%);
+@drop-down-focused-border-color: darken(@btn-primary-bg, @const-border-darken-amt + 10%);
+@drop-down-background: @btn-primary-bg;
 @drop-down-text-color: #fff;
 @secondary-border-color: #63656a;
 @secondary-text-color: #fff;
