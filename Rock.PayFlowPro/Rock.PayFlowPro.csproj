@@ -50,6 +50,8 @@
     <Compile Include="Gateway.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reporting\Api.cs" />
+    <Compile Include="Reporting\SearchResponse.cs" />
+    <Compile Include="Reporting\SearchRequest.cs" />
     <Compile Include="Reporting\ResultRequest.cs" />
     <Compile Include="Reporting\ResultResponse.cs" />
     <Compile Include="Reporting\DataResponse.cs" />

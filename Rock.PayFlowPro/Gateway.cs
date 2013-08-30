@@ -8,13 +8,11 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data;
-using System.Net;
-using System.Text;
-using System.Xml;
-using System.Xml.Linq;
+
 using PayPal.Payments.Common.Utility;
 using PayPal.Payments.DataObjects;
 using PayPal.Payments.Transactions;
+
 using Rock.Attribute;
 using Rock.Financial;
 using Rock.Model;
@@ -126,7 +124,7 @@ namespace Rock.PayFlowPro
             throw new NotImplementedException();
         }
 
-        public override DataTable DownloadNewTransactions( DateTime startDate, DateTime endDate, out string errorMessage  )
+        public override DataTable DownloadNewTransactions( DateTime startDate, DateTime endDate, out string errorMessage )
         {
             var reportingApi = new Reporting.Api(
                 GetAttributeValue( "User" ),
@@ -134,21 +132,24 @@ namespace Rock.PayFlowPro
                 GetAttributeValue( "Partner" ),
                 GetAttributeValue( "Password" ) );
 
-            var reportParams = new Dictionary<string,string>();
+            var reportParams = new Dictionary<string, string>();
             reportParams.Add( "start_date", startDate.ToString( "yyyy-MM-dd HH:mm:ss" ) );
             reportParams.Add( "end_date", endDate.ToString( "yyyy-MM-dd HH:mm:ss" ) );
 
             DataTable dt = reportingApi.GetReport( "RecurringBillingReport", reportParams, out errorMessage );
             if ( dt != null )
             {
-                reportParams = new Dictionary<string,string>();
-                reportParams.Add("transaction_id", string.Empty);
+                // The Recurring Billing Report items does not include the amounts for each transaction, so need 
+                // to do a transactionIDSearch to get the amount for each transaction
+
+                reportParams = new Dictionary<string, string>();
+                reportParams.Add( "transaction_id", string.Empty );
 
                 dt.Columns.Add( "Amount" );
                 foreach ( DataRow row in dt.Rows )
                 {
                     reportParams["transaction_id"] = row["Transaction ID"].ToString();
-                    DataTable dtTxn = reportingApi.GetReport( "TransactionIDSearch", reportParams, out errorMessage );
+                    DataTable dtTxn = reportingApi.GetSearch( "TransactionIDSearch", reportParams, out errorMessage );
                     if ( dtTxn != null && dtTxn.Rows.Count == 1 )
                     {
                         row["Amount"] = dtTxn.Rows[0]["Amount"];
