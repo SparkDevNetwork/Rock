@@ -884,6 +884,15 @@ namespace Rock.Model
 
     public static partial class PersonExtensionMethods
     {
+        /// <summary>
+        /// Gets the families.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public static IQueryable<Group> GetFamilies( this Person person )
+        {
+            return new PersonService().GetFamilies( person );
+        }
 
         /// <summary>
         /// Gets the Family Members.

@@ -12,7 +12,14 @@
                         <legend>Contribution Information</legend>
                         <div class="form-horizontal">
                             <fieldset>
-
+                                <div id="divRepeatingPayments" runat="server" visible="false">
+                                    <Rock:LabeledCheckBox ID="cbRepeating" runat="server" LabelText=" " Text="Setup Automated Giving" CssClass="toggle-input" />
+                                    <div id="divSchedule" runat="server" class="toggle-content">
+                                        <Rock:ButtonDropDownList ID="btnFrequency" runat="server" CssClass="btn btn-primary" LabelText="Frequency"
+                                            AutoPostBack="true" OnSelectionChanged="btnFrequency_SelectionChanged" DataTextField="Name" DataValueField="Id"  />
+                                        <Rock:DatePicker ID="dtpStartDate" runat="server" LabelText="First Payment" />
+                                    </div>
+                                </div>
                             </fieldset>
                         </div>
                     </div>
@@ -71,7 +78,7 @@
                         <div id="divNewCard" runat="server" class="radio-content">
                             <Rock:LabeledTextBox ID="txtCardFirstName" runat="server" LabelText="First Name on Card" CssClass="input-small" Visible="false"></Rock:LabeledTextBox>
                             <Rock:LabeledTextBox ID="txtCardLastName" runat="server" LabelText="Last Name on Card" CssClass="input-small" Visible="false"></Rock:LabeledTextBox>
-                            <Rock:LabeledTextBox ID="txtCardName" runat="server" LabelText="Name on Card" CssClass="input-large" Visible="false"></Rock:LabeledTextBox>
+                            <Rock:LabeledTextBox ID="txtCardName" runat="server" LabelText="Name on Card" CssClass="input-large" Visible="false" ></Rock:LabeledTextBox>
                             <Rock:LabeledTextBox ID="txtCreditCard" runat="server" LabelText="Credit Card #" MaxLength="19" CssClass="credit-card input-large" />
                             <ul class="card-logos" >
                                 <li class="card-visa"></li>
@@ -88,7 +95,7 @@
                                     <div class="control-label">&nbsp;</div>
                                     <div class="controls">
                                         <asp:TextBox ID="txtBillingCity" runat="server" CssClass="input-small" /> ,&nbsp;
-                                        <Rock:StateDropDownList ID="txtBillingState" runat="server" UseAbbreviation="true" CssClass="input-mini" />&nbsp;
+                                        <Rock:StateDropDownList ID="ddlBillingState" runat="server" UseAbbreviation="true" CssClass="input-mini" />&nbsp;
                                         <asp:TextBox ID="txtBillingZip" runat="server" CssClass="input-small" />
                                     </div>
                                 </div>
@@ -124,7 +131,12 @@
 
         <div class="actions">
             <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnNext_Click" />
+            <asp:LinkButton ID="btnTest" runat="server" Text="Download Report" CssClass="btn" OnClick="btnTest_Click" />
         </div>
+
+        <asp:Panel ID="pnlReport" runat="server" Visible="false">
+            <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
+        </asp:Panel>
 
     </ContentTemplate>
 </asp:UpdatePanel>

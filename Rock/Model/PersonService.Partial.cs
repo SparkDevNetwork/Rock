@@ -244,6 +244,21 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets the families.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public IQueryable<Group> GetFamilies( Person person )
+        {
+            Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+
+            return new GroupMemberService().Queryable()
+                .Where( m => m.PersonId == person.Id && m.Group.GroupType.Guid == familyGuid )
+                .Select( m => m.Group )
+                .Distinct();
+        }
+
+        /// <summary>
         /// Gets the family members.
         /// </summary>
         /// <param name="person">The person.</param>
@@ -258,6 +273,21 @@ namespace Rock.Model
                 .SelectMany( m => m.Group.Members)
                 .Where( fm => includeSelf || fm.PersonId != person.Id)
                 .Distinct();
+        }
+
+        /// <summary>
+        /// Gets the first location.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="locationTypeValueId">The location type value id.</param>
+        /// <returns></returns>
+        public Location GetFirstLocation( Person person, int locationTypeValueId )
+        {
+            return GetFamilies( person )
+                .SelectMany( g => g.GroupLocations )
+                .Where( gl => gl.GroupLocationTypeValueId == locationTypeValueId )
+                .Select( gl => gl.Location )
+                .FirstOrDefault();
         }
 
         #endregion

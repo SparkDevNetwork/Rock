@@ -49,6 +49,16 @@
   <ItemGroup>
     <Compile Include="Gateway.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Reporting\Api.cs" />
+    <Compile Include="Reporting\ResultRequest.cs" />
+    <Compile Include="Reporting\ResultResponse.cs" />
+    <Compile Include="Reporting\DataResponse.cs" />
+    <Compile Include="Reporting\DataRequest.cs" />
+    <Compile Include="Reporting\MetaDataResponse.cs" />
+    <Compile Include="Reporting\MetaDataRequest.cs" />
+    <Compile Include="Reporting\ReportResponse.cs" />
+    <Compile Include="Reporting\RequestResponse.cs" />
+    <Compile Include="Reporting\ReportRequest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Rock\Rock.csproj">
@@ -59,6 +69,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy /Y "$(TargetDir)$(ProjectName).dll" "$(SolutionDir)RockWeb\Plugins\$(ProjectName).dll"
+copy /Y "$(TargetDir)$(ProjectName).pdb" "$(SolutionDir)RockWeb\Plugins\$(ProjectName).pdb"
 copy /Y "$(TargetDir)Payflow_dotNET.dll" "$(SolutionDir)RockWeb\Plugins\Payflow_dotNET.dll"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -127,12 +127,42 @@ namespace Rock.SystemGuid
         /// <summary>
         /// One Time
         /// </summary>
-        public const string TRANSACTION_FREQUENCY_TYPE_ONE_TIME = "82614683-7FB4-4F16-9087-6F85945A7B16";
+        public const string TRANSACTION_FREQUENCY_ONE_TIME = "82614683-7FB4-4F16-9087-6F85945A7B16";
 
         /// <summary>
-        /// One Time (Future)
+        /// Weekly
         /// </summary>
-        public const string TRANSACTION_FREQUENCY_TYPE_ONE_TIME_FUTURE = "A5A12067-322E-44A4-94C4-561312F9913C";
+        public const string TRANSACTION_FREQUENCY_WEEKLY = "35711E44-131B-4534-B0B2-F0A749292362";
+
+        /// <summary>
+        /// Every two weeks
+        /// </summary>
+        public const string TRANSACTION_FREQUENCY_BIWEEKLY = "72990023-0D43-4554-8D32-28461CAB8920";
+
+        /// <summary>
+        /// Twice a month
+        /// </summary>
+        public const string TRANSACTION_FREQUENCY_TWICEMONTHLY = "791C863D-2600-445B-98F8-3E5B66A3DEC4";
+
+        /// <summary>
+        /// Monthly
+        /// </summary>
+        public const string TRANSACTION_FREQUENCY_MONTHLY = "1400753C-A0F9-4A45-8A1D-81C98450BD1F";
+
+        /// <summary>
+        /// Monthly
+        /// </summary>
+        public const string TRANSACTION_FREQUENCY_QUARTERLY = "BF08EA03-C52A-4364-B142-12EBCA7CA14A";
+
+        /// <summary>
+        /// Twice a year (every 6 months)
+        /// </summary>
+        public const string TRANSACTION_FREQUENCY_TWICEYEARLY = "691BB8AB-5F96-4E88-847C-CB970D9E87FA";
+
+        /// <summary>
+        /// Yearly
+        /// </summary>
+        public const string TRANSACTION_FREQUENCY_YEARLY = "AC88C37A-901E-4CBB-947B-11348C208192";
 
         #endregion
 

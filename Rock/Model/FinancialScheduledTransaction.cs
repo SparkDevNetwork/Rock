@@ -41,7 +41,7 @@ namespace Rock.Model
         /// The transaction frequency value id.
         /// </value>
         [DataMember]
-        [DefinedValue( SystemGuid.DefinedType.FINANCIAL_TRANSACTION_FREQUENCY )]
+        [DefinedValue( SystemGuid.DefinedType.FINANCIAL_FREQUENCY )]
         public int TransactionFrequencyValueId { get; set; }
 
         /// <summary>
