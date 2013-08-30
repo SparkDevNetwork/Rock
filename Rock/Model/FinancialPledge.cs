@@ -57,7 +57,7 @@ namespace Rock.Model
         /// The frequency type id.
         /// </value>
         [DataMember]
-        [DefinedValue( SystemGuid.DefinedType.FINANCIAL_PLEDGE_FREQUENCY )]
+        [DefinedValue( SystemGuid.DefinedType.FINANCIAL_FREQUENCY )]
         public int? PledgeFrequencyValueId { get; set; }
 
         /// <summary>

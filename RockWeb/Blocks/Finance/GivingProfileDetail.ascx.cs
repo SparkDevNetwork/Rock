@@ -279,8 +279,8 @@ Thank you for your generosity! You just gave a total of {{ TotalContribution }} 
         {
             SaveAmounts();
             
-            if ( btnFrequency.SelectedValueAsInt() != DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TYPE_ONE_TIME_FUTURE ).Id
-                && btnFrequency.SelectedValueAsInt() != DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TYPE_ONE_TIME ).Id )
+            if ( btnFrequency.SelectedValueAsInt() != DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id
+                && btnFrequency.SelectedValueAsInt() != 0 )
             {
                 if ( divRecurrence.Visible != true )
                 {
@@ -293,7 +293,7 @@ Thank you for your generosity! You just gave a total of {{ TotalContribution }} 
                     divLimitGifts.Visible = true;
                 }
             }
-            else if ( btnFrequency.SelectedValueAsInt() == DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TYPE_ONE_TIME_FUTURE ).Id )
+            else if ( btnFrequency.SelectedValueAsInt() == DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id )
             {
                 if ( divRecurrence.Visible != true )
                 {
@@ -559,7 +559,7 @@ Thank you for your generosity! You just gave a total of {{ TotalContribution }} 
 
             // #TODO test card through gateway 
 
-            if ( btnFrequency.SelectedIndex > -1 && btnFrequency.SelectedValueAsInt() != DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TYPE_ONE_TIME ).Id )
+            if ( btnFrequency.SelectedIndex > -1 && btnFrequency.SelectedValueAsInt() > 0 )
             {
                 using ( new UnitOfWorkScope() )
                 {
@@ -786,12 +786,14 @@ Thank you for your generosity! You just gave a total of {{ TotalContribution }} 
         /// </summary>
         protected void BindFrequencies()
         {
-            var frequencyTypes = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_FREQUENCY ) );
+            var frequencyTypes = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY ) );
             if ( frequencyTypes != null )
             {
                 btnFrequency.BindToDefinedType( frequencyTypes );
-                btnFrequency.SelectedValue = btnFrequency.Items[0].Value;
-            }            
+            }
+
+            btnFrequency.Items.Insert( 0, new ListItem( "Now", "0" ) );
+            btnFrequency.SelectedValue = btnFrequency.Items[0].Value;
         }
         
         /// <summary>
