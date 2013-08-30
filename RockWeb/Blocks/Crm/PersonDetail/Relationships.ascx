@@ -40,7 +40,7 @@
             <Rock:ModalDialog ID="modalAddPerson" runat="server" Title="Add Relationship" Content-Height="380">
                 <Content>
 
-                    <div id="divExistingPerson" runat="server" class="tab-pane active">
+                    <div id="divExistingPerson" runat="server">
                         <fieldset>
                             <Rock:GroupRolePicker ID="grpRole" runat="server" LabelText="Relationship Type" Required="true" />
                             <Rock:PersonPicker2 ID="ppPerson" runat="server" />

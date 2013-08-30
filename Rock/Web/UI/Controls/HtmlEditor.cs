@@ -163,7 +163,7 @@ namespace Rock.Web.UI.Controls
 
         $('#btnSelect_{0}').click(function (e) {{
 
-            var url = rock.baseUrl + 'api/MergeFields/' +  $('#hfItemId_{0}').val();
+            var url = Rock.settings.get('baseUrl') + 'api/MergeFields/' +  $('#hfItemId_{0}').val();
             
             $.get(url, function(data) {{ 
 

@@ -118,25 +118,22 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         protected override void RenderDataValidator( HtmlTextWriter writer )
         {
-            if ( NumberType == ValidationDataType.Double )
-            {
-                rangeValidator.MinimumValue = !string.IsNullOrEmpty( MinimumValue )
-                    ? MinimumValue : Convert.ToDouble( "9e-300" ).ToString( "F0" );  // allows up to 300 digits
-                rangeValidator.MaximumValue = !string.IsNullOrEmpty( MaximumValue )
-                    ? MaximumValue : Convert.ToDouble( "9e300" ).ToString( "F0" );   // allows up to 300 digits
-            }
-            else if (NumberType == ValidationDataType.Integer)
-            {
-                rangeValidator.MinimumValue = !string.IsNullOrEmpty( MinimumValue )
-                    ? MinimumValue : int.MinValue.ToString();
-                rangeValidator.MaximumValue = !string.IsNullOrEmpty( MaximumValue )
-                    ? MaximumValue : int.MaxValue.ToString();
-            }   
+            rangeValidator.Type = NumberType;
+            rangeValidator.MinimumValue = this.MinimumValue;
+            rangeValidator.MaximumValue = this.MaximumValue;
+            string dataTypeText = string.Empty;
 
             int minValue = MinimumValue.AsInteger() ?? int.MinValue;
             int maxValue = MaximumValue.AsInteger() ?? int.MaxValue;
 
             string rangeMessageFormat = null;
+
+            if ( rangeValidator.Type == ValidationDataType.Integer )
+            {
+                // if they are in the valid range, but not an integer, they'll see this message
+                rangeMessageFormat = "{0} must be an integer";
+            }
+
             if ( minValue > int.MinValue)
             {
                 rangeMessageFormat = "{0} must be at least " + MinimumValue;

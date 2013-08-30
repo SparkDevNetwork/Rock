@@ -95,7 +95,7 @@ namespace Rock.Web.UI.Controls
         functionBefore: function(origin, continueTooltip) {
             continueTooltip();
             if (origin.data('ajax') !== 'cached') {
-                var url = rock.baseUrl + 'api/People/PopupHtml/' +  origin.attr('personId');
+                var url = Rock.settings.get('baseUrl') + 'api/People/PopupHtml/' +  origin.attr('personId');
                 $.get(
                     url,
                     function(data) {

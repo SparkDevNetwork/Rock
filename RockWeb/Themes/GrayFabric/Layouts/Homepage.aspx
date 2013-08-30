@@ -1,12 +1,11 @@
-﻿<%@ Page ValidateRequest="false" Language="C#" MasterPageFile="Site.Master" 
-    AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
+﻿<%@ Page ValidateRequest="false" Language="C#" MasterPageFile="Site.Master" AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
     <link href="/Themes/GrayFabric/Css/flexslider.css" rel="stylesheet">
 
     <!-- band to provide gray bar at the top of the page -->
-    <div id="band">
-	  </div>
+    <div id="band" class="homepage">
+	</div>
 
     <div class="container">
 	  	<header>
@@ -17,6 +16,7 @@
                         <asp:Image ID="imgLogo" runat="server" ImageUrl="~/Themes/GrayFabric/Assets/Images/rocksolidchurchlogo.svg" CssClass="logo" />
                     </asp:HyperLink>
 			  	</div>
+                <Rock:Zone ID="Heading" Name="Header" runat="server" />
 			  	<div class="span3 service-times">
 			  		<i class="icon-time"></i> <span class="bold">Service Times</span>
 				  	<br><span class="light">Sunday 9am, 10:30am and Noon</span>
@@ -24,67 +24,19 @@
 			  	<div class="span3 my-account">My Account</div>
 			</div>
 	  		
-	  		<div class="navbar">
-	  			<div class="navbar-inner">
-			  		
-			  		<!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-					<a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-						<span class="icon-bar"></span>
-					</a>
-			  		
-			  		<div class="nav-collapse collapse">
-			  		<ul class="nav">
-			  			<li><a href="#">Home</a></li>
-			  			<li class="divider-vertical"></li>
-			  			<li><a href="#">About</a></li>
-			  			<li class="divider-vertical"></li>
-			  			<li><a href="#">Contact</a></li>
-			  			<li class="divider-vertical"></li>
-			  		</ul>
-			  		</div>
-	  			</div>
-	  		</div>
+           <Rock:Zone ID="Navigation" runat="server" />
 
 	  	</header>
 
-    </div>
+        <Rock:Zone ID="PromotionRotator" runat="server" />
 
-
-    <section class="promo-slider container">	
-	  		
-	  		<div class="flexslider">
-			  <ul class="slides">
-			    <li>
-			      <a href="#"><img src="./assets/img/mock-header1.jpg" /></a>
-			    </li>
-			    <li>
-			      <a href="#"><img src="./assets/img/mock-header2.jpg" /></a>
-			    </li>
-			    <li>
-			      <a href="#"><img src="./assets/img/mock-header3.jpg" /></a>
-			    </li>
-			    <li>
-			      <a href="#"><img src="./assets/img/mock-header4.jpg" /></a>
-			    </li>
-			  </ul>
-			</div>
-			<img class="slider-shadow" src="./assets/img/slider-shadow.png" />
-
-	  	</section>
+    
 	  </div>
   	  
   	  <div class="separator"></div>	  
   	  
-  	  <section class="promo-secondary container">
-  	  	<ul>
-  	  		<li><a href="#"><img src="./assets/img/mock-promo-sub1.jpg" /></a></li>
-  	  		<li><a href="#"><img src="./assets/img/mock-promo-sub2.jpg" /></a></li>
-  	  		<li><a href="#"><img src="./assets/img/mock-promo-sub3.jpg" /></a></li>
-  	  		<li><a href="#"><img src="./assets/img/mock-promo-sub4.jpg" /></a></li>
-  	  	</ul>
-  	  </section>
+    <Rock:Zone ID="PromotionList" runat="server" />
+  	 
   	  
   	<section class="contact container">
   		<div class="row-fluid">
@@ -149,12 +101,12 @@
     
 
 
-    <Rock:Zone ID="Heading" Name="Header" runat="server" />
+    
     <Rock:Zone ID="Menu" runat="server" />	
     
 
     <Rock:Zone ID="Zone1" runat="server" />
-    <Rock:Zone ID="Content" runat="server" />
+    
     <Rock:Zone ID="Footer" runat="server" />
 
 

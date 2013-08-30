@@ -148,6 +148,20 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Transforms the specified source.
+        /// </summary>
+        /// <param name="source">The source.</param>
+        /// <param name="transformation">The transformation.</param>
+        /// <param name="sortProperty">The sort property.</param>
+        /// <returns></returns>
+        public IQueryable<T> Transform( IQueryable<T> source, Rock.Reporting.DataTransformComponent<T> transformation, Rock.Web.UI.Controls.SortProperty sortProperty = null )
+        {
+            var paramExpression = Expression.Parameter( source.ElementType, "p" );
+            var whereExpression = transformation.GetExpression( source, paramExpression );
+            return Get( paramExpression, whereExpression, sortProperty );
+        }
+
+        /// <summary>
         /// Gets the list.
         /// </summary>
         /// <param name="parameterExpression">The parameter expression.</param>
@@ -194,6 +208,26 @@ namespace Rock.Data
                 return false;
             }
             return true;
+        }
+
+        /// <summary>
+        /// Gets entities from a list of ids.
+        /// </summary>
+        /// <param name="ids">The ids.</param>
+        /// <returns></returns>
+        public virtual IEnumerable<T> GetByIds( List<int> ids)
+        {
+            return this.Queryable().Where( t => ids.Contains( t.Id ) ).ToList();
+        }
+
+        /// <summary>
+        /// Gets entities from a list of guids
+        /// </summary>
+        /// <param name="guids">The guids.</param>
+        /// <returns></returns>
+        public virtual IEnumerable<T> GetByGuids( List<Guid> guids )
+        {
+            return this.Queryable().Where( t => guids.Contains( t.Guid ) ).ToList();
         }
 
         /// <summary>

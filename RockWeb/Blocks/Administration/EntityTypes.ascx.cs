@@ -43,8 +43,6 @@ public partial class EntityTypes : RockBlock
             gEntityTypes.RowSelected += gEntityTypes_EditRow;
             gEntityTypes.GridRebind += gEntityTypes_GridRebind;
             gEntityTypes.RowDataBound += gEntityTypes_RowDataBound;
-
-
         }
     }
 
@@ -176,6 +174,7 @@ public partial class EntityTypes : RockBlock
         EntityType entityType = entityTypeService.Get( int.Parse( hfEntityTypeId.Value ) );
 
         entityType.FriendlyName = tbFriendlyName.Text;
+        entityType.IsCommon = cbCommon.Checked;
 
         entityTypeService.Save( entityType, CurrentPersonId );
 
@@ -235,6 +234,7 @@ public partial class EntityTypes : RockBlock
             hfEntityTypeId.Value = entityType.Id.ToString();
             tbName.Text = entityType.Name;
             tbFriendlyName.Text = entityType.FriendlyName;
+            cbCommon.Checked = entityType.IsCommon;
         }
         else
         {
@@ -242,6 +242,7 @@ public partial class EntityTypes : RockBlock
             hfEntityTypeId.Value = 0.ToString();
             tbName.Text = string.Empty;
             tbFriendlyName.Text = string.Empty;
+            cbCommon.Checked = false;
         }
 
         tbName.Enabled = !entityType.IsEntity;
