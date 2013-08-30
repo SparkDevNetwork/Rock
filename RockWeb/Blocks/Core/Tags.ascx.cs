@@ -61,7 +61,7 @@ namespace RockWeb.Blocks.Core
         $('#person-tags').tagsInput({{
             'autocomplete_url': function( request, response ) {{
                 $.ajax({{
-                    url: rock.baseUrl + 'api/tags/availablenames/{0}/{1}/{2}{3}{4}',
+                    url: Rock.settings.get('baseUrl') + 'api/tags/availablenames/{0}/{1}/{2}{3}{4}',
                     dataType: 'json',
                     success: function(data, status, xhr){{ 
                         response($.map(data, function (item) {{
@@ -95,7 +95,7 @@ namespace RockWeb.Blocks.Core
     function verifyTag(tagName) {{
         $.ajax({{
             type: 'GET',
-            url: rock.baseUrl + 'api/tags/{0}/{1}/' + tagName + '{3}{4}',
+            url: Rock.settings.get('baseUrl') + 'api/tags/{0}/{1}/' + tagName + '{3}{4}',
             statusCode: {{
                 404: function () {{
                         var r = confirm(""A tag called '"" + tagName + ""' does not exist. Do you want to create a new personal tag?"");
@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Core
     function AddTag(tagName) {{
         $.ajax({{
             type: 'POST',
-            url: rock.baseUrl + 'api/taggeditems/{0}/{1}/{2}/' + tagName + '{3}{4}',
+            url: Rock.settings.get('baseUrl') + 'api/taggeditems/{0}/{1}/{2}/' + tagName + '{3}{4}',
             error: function (xhr, status, error) {{
                 alert('AddTag() status: ' + status + ' [' + error + ']: ' + xhr.responseText);
             }}
@@ -127,7 +127,7 @@ namespace RockWeb.Blocks.Core
     function RemoveTag(tagName) {{
         $.ajax({{
             type: 'DELETE',
-            url: rock.baseUrl + 'api/taggeditems/{0}/{1}/{2}/' + tagName + '{3}{4}',
+            url: Rock.settings.get('baseUrl') + 'api/taggeditems/{0}/{1}/{2}/' + tagName + '{3}{4}',
             error: function (xhr, status, error) {{
                 alert('RemoveTag() status: ' + status + ' [' + error + ']: ' + xhr.responseText);
             }}

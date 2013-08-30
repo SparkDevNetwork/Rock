@@ -8,7 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
-
+using System.Web.UI.WebControls;
 using Rock;
 using Rock.Constants;
 using Rock.Data;
@@ -16,7 +16,6 @@ using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-
 using Attribute = Rock.Model.Attribute;
 
 namespace RockWeb.Blocks.Crm
@@ -184,6 +183,15 @@ namespace RockWeb.Blocks.Crm
             gtpInheritedGroupType.GroupTypes = new GroupTypeService().Queryable()
                 .Where( g => g.Id != groupTypeId)
                 .ToList();
+
+            var groupTypePurposeList = new DefinedValueService().GetByDefinedTypeGuid(new Guid(Rock.SystemGuid.DefinedType.GROUPTYPE_PURPOSE)).OrderBy(a => a.Name).ToList();
+            
+            ddlGroupTypePurpose.Items.Clear();
+            ddlGroupTypePurpose.Items.Add( Rock.Constants.None.ListItem );
+            foreach ( var item in groupTypePurposeList )
+            {
+                ddlGroupTypePurpose.Items.Add(new ListItem(item.Name, item.Id.ToString()));
+            }
         }
 
         /// <summary>
@@ -235,13 +243,14 @@ namespace RockWeb.Blocks.Crm
                 cbShowInGroupList.Checked = groupType.ShowInGroupList;
                 cbShowInNavigation.Checked = groupType.ShowInNavigation;
                 tbIconCssClass.Text = groupType.IconCssClass;
-                imgIconSmall.ImageId = groupType.IconSmallFileId;
-                imgIconLarge.ImageId = groupType.IconLargeFileId;
+                imgIconSmall.BinaryFileId = groupType.IconSmallFileId;
+                imgIconLarge.BinaryFileId = groupType.IconLargeFileId;
 
                 cbTakesAttendance.Checked = groupType.TakesAttendance;
                 ddlAttendanceRule.SetValue( (int)groupType.AttendanceRule );
                 ddlAttendancePrintTo.SetValue( (int)groupType.AttendancePrintTo );
                 ddlLocationSelectionMode.SetValue( (int)groupType.LocationSelectionMode );
+                ddlGroupTypePurpose.SetValue( groupType.GroupTypePurposeValueId );
                 cbAllowMultipleLocations.Checked = groupType.AllowMultipleLocations;
                 gtpInheritedGroupType.SelectedGroupTypeId = groupType.InheritedGroupTypeId;
                 groupType.ChildGroupTypes.ToList().ForEach( a => ChildGroupTypesDictionary.Add( a.Id, a.Name ) );
@@ -313,6 +322,7 @@ namespace RockWeb.Blocks.Crm
             ddlAttendanceRule.Enabled = !readOnly;
             ddlAttendancePrintTo.Enabled = !readOnly;
             ddlLocationSelectionMode.Enabled = !readOnly;
+            ddlGroupTypePurpose.Enabled = !readOnly;
             cbAllowMultipleLocations.Enabled = !readOnly;
             gtpInheritedGroupType.Enabled = !readOnly;
             gGroupTypeAttributes.Enabled = !readOnly;
@@ -422,9 +432,8 @@ namespace RockWeb.Blocks.Crm
             GroupTypeService groupTypeService = new GroupTypeService();
             int currentGroupTypeId = int.Parse( hfGroupTypeId.Value );
 
-            // populate dropdown with all grouptypes that aren't already childgroups or the current grouptype
+            // populate dropdown with all grouptypes that aren't already childgroups
             var qry = from gt in groupTypeService.Queryable()
-                      where gt.Id != currentGroupTypeId
                       where !( from cgt in ChildGroupTypesDictionary.Keys
                                select cgt ).Contains( gt.Id )
                       select gt;
@@ -648,12 +657,13 @@ namespace RockWeb.Blocks.Crm
                 groupType.ShowInGroupList = cbShowInGroupList.Checked;
                 groupType.ShowInNavigation = cbShowInNavigation.Checked;
                 groupType.IconCssClass = tbIconCssClass.Text;
-                groupType.IconSmallFileId = imgIconSmall.ImageId;
-                groupType.IconLargeFileId = imgIconLarge.ImageId;
+                groupType.IconSmallFileId = imgIconSmall.BinaryFileId;
+                groupType.IconLargeFileId = imgIconLarge.BinaryFileId;
                 groupType.TakesAttendance = cbTakesAttendance.Checked;
                 groupType.AttendanceRule = ddlAttendanceRule.SelectedValueAsEnum<AttendanceRule>();
                 groupType.AttendancePrintTo = ddlAttendancePrintTo.SelectedValueAsEnum<PrintTo>();
                 groupType.LocationSelectionMode = ddlLocationSelectionMode.SelectedValueAsEnum<LocationPickerMode>();
+                groupType.GroupTypePurposeValueId = ddlGroupTypePurpose.SelectedValueAsInt();
                 groupType.AllowMultipleLocations = cbAllowMultipleLocations.Checked;
                 groupType.InheritedGroupTypeId = gtpInheritedGroupType.SelectedGroupTypeId;
 

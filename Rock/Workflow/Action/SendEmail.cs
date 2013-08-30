@@ -3,9 +3,11 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -31,7 +33,7 @@ namespace Rock.Workflow.Action
         /// <param name="entity">The entity.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
-        public override bool Execute( WorkflowAction action, IEntity entity, out List<string> errorMessages )
+        public override bool Execute( WorkflowAction action, Object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
 

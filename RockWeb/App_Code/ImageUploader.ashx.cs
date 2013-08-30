@@ -14,6 +14,7 @@ using System.Web;
 using Goheer.EXIF;
 
 using Rock.Model;
+using Rock.Storage;
 
 namespace RockWeb
 {
@@ -26,14 +27,18 @@ namespace RockWeb
         /// Saves the data.
         /// </summary>
         /// <param name="context">The context.</param>
-        /// <param name="inputStream">The input stream.</param>
+        /// <param name="uploadedFile"></param>
         /// <param name="file">The file.</param>
-        public override void SaveData( HttpContext context, Stream inputStream, BinaryFile file )
+        /// <param name="fileType"></param>
+        public override void SaveData( HttpContext context, HttpPostedFile uploadedFile, BinaryFile file, BinaryFileType fileType)
         {
             // Check to see if we should flip the image.
             try
             {
-                Bitmap bmp = new Bitmap( inputStream );
+                file.FileName = Path.GetFileName( uploadedFile.FileName );
+                file.MimeType = uploadedFile.ContentType;
+
+                Bitmap bmp = new Bitmap( uploadedFile.InputStream );
                 var exif = new EXIFextractor( ref bmp, "\n" );
                 if ( exif["Orientation"] != null )
                 {
@@ -51,20 +56,28 @@ namespace RockWeb
                     bmp = resizedBmp;
                 }
 
-                using ( MemoryStream stream = new MemoryStream() )
+                using ( var stream = new MemoryStream() )
                 {
                     bmp.Save( stream, ContentTypeToImageFormat( file.MimeType ) );
+
                     if ( file.Data == null )
                     {
                         file.Data = new BinaryFileData();
                     }
+
                     file.Data.Content = stream.ToArray();
-                    stream.Close();
                 }
+
+                // Use provider to persist file
+                var provider = fileType != null
+                    ? ProviderContainer.GetComponent( fileType.StorageEntityType.Name )
+                    : ProviderContainer.DefaultComponent;
+                provider.SaveFile( file, null );
+
             }
-            catch
+            catch ( Exception ex )
             {
-                // TODO: Log unable to rotate and/or resize.
+                ExceptionLogService.LogException( ex, context );
             }
         }
 

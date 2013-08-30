@@ -3,6 +3,7 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -26,9 +27,9 @@ namespace Rock.Workflow.Action.CheckIn
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
-        public override bool Execute( Model.WorkflowAction action, Data.IEntity entity, out List<string> errorMessages )
+        public override bool Execute( Model.WorkflowAction action, Object entity, out List<string> errorMessages )
         {
-            var checkInState = GetCheckInState( action, out errorMessages );
+            var checkInState = GetCheckInState( entity, out errorMessages );
             if ( checkInState != null )
             {
                 var family = checkInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
@@ -40,7 +41,16 @@ namespace Rock.Workflow.Action.CheckIn
 
                         foreach ( var groupType in person.GroupTypes.ToList() )
                         {
-                            string minAgeValue = groupType.GroupType.GetAttributeValue( "MinAge" );
+                            string ageRange = groupType.GroupType.GetAttributeValue( "AgeRange" ) ?? string.Empty;
+                            string[] ageRangePair = ageRange.Split( new char[] { ',' }, StringSplitOptions.None );
+                            string minAgeValue = null;
+                            string maxAgeValue = null;
+                            if ( ageRangePair.Length == 2 )
+                            {
+                                minAgeValue = ageRangePair[0];
+                                maxAgeValue = ageRangePair[1];
+                            }
+                            
                             if ( minAgeValue != null )
                             {
                                 double minAge = 0;
@@ -54,7 +64,6 @@ namespace Rock.Workflow.Action.CheckIn
                                 }
                             }
 
-                            string maxAgeValue = groupType.GroupType.GetAttributeValue( "MaxAge" );
                             if ( maxAgeValue != null )
                             {
                                 double maxAge = 0;
@@ -71,7 +80,6 @@ namespace Rock.Workflow.Action.CheckIn
                     }
                 }
 
-                SetCheckInState( action, checkInState );
                 return true;
 
             }

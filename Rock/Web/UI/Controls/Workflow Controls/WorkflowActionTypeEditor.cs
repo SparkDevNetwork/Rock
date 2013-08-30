@@ -116,7 +116,17 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
                 ddlEntityType.SetValue( value.EntityTypeId );
                 cbIsActionCompletedOnSuccess.Checked = value.IsActionCompletedOnSuccess;
                 cbIsActivityCompletedOnSuccess.Checked = value.IsActivityCompletedOnSuccess;
-                value.LoadAttributes();
+
+                var action = EntityTypeCache.Read( value.EntityTypeId );
+                if ( action != null )
+                {
+                    using ( new Rock.Data.UnitOfWorkScope() )
+                    {
+                        Rock.Attribute.Helper.UpdateAttributes( action.GetEntityType(), value.TypeId, "EntityTypeId", value.EntityTypeId.ToString(), null );
+                    }
+                    value.LoadAttributes();
+                }
+
                 phActionAttributes.Controls.Clear();
                 Rock.Attribute.Helper.AddEditControls( value, phActionAttributes, true, new List<string>() { "Active", "Order" } );
             }

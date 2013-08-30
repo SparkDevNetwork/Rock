@@ -175,13 +175,14 @@ namespace Rock.Model
         public PrintTo AttendancePrintTo { get; set; }
 
         /// <summary>
-        /// Gets or sets the display order.
+        /// Gets or sets the order.
         /// </summary>
         /// <value>
-        /// The display order.
+        /// The order.
         /// </value>
-        [DataMember]
-        public int DisplayOrder { get; set; }
+        [Required]
+        [DataMember( IsRequired = true )]
+        public int Order { get; set; }
 
         /// <summary>
         /// Gets or sets the inherited group type id.
@@ -198,6 +199,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public LocationPickerMode LocationSelectionMode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the group type purpose value id.
+        /// </summary>
+        /// <value>
+        /// The group type purpose value id.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.GROUPTYPE_PURPOSE )]
+        public int? GroupTypePurposeValueId { get; set; }
 
         #endregion
 
@@ -299,6 +310,15 @@ namespace Rock.Model
         [DataMember]
         public virtual BinaryFile IconLargeFile { get; set; }
 
+        /// <summary>
+        /// Gets or sets the group type purpose value.
+        /// </summary>
+        /// <value>
+        /// The group type purpose value.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue GroupTypePurposeValue { get; set; }
+        
         /// <summary>
         /// Gets the group query.
         /// </summary>
