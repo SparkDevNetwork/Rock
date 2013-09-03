@@ -181,6 +181,10 @@
     <Compile Include="Migrations\201308291631419_FixAbilityLevelAttribute.Designer.cs">
       <DependentUpon>201308291631419_FixAbilityLevelAttribute.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201309032043048_FixBinaryFileTypeCaching.cs" />
+    <Compile Include="Migrations\201309032043048_FixBinaryFileTypeCaching.Designer.cs">
+      <DependentUpon>201309032043048_FixBinaryFileTypeCaching.cs</DependentUpon>
+    </Compile>
     <Compile Include="Storage\ProviderComponent.cs" />
     <Compile Include="Storage\ProviderContainer.cs" />
     <Compile Include="Storage\Provider\Database.cs" />
@@ -979,6 +983,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201308291631419_FixAbilityLevelAttribute.resx">
       <DependentUpon>201308291631419_FixAbilityLevelAttribute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201309032043048_FixBinaryFileTypeCaching.resx">
+      <DependentUpon>201309032043048_FixBinaryFileTypeCaching.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
