@@ -488,13 +488,28 @@ namespace RockWeb.Blocks.Administraton
             ExceptionLog exception = exceptionService.Get( exceptionId );
 
             //set the summary fields for the base exception
-            hfBaseExceptionID.Value = exceptionId.ToString();
-            lblSite.Text = exception.Site.Name;
-            lblPage.Text = exception.Page.Name;
-            lblType.Text = exception.ExceptionType;
+            if ( exception != null )
+            {
+                hfBaseExceptionID.Value = exceptionId.ToString();
 
-            //Load the occurrences for the selected exception
-            BindExceptionOccurrenceGrid( exception );
+                var descriptionList = new Rock.Web.DescriptionList();
+                if ( exception.Site != null )
+                {
+                    descriptionList.Add( "Site", exception.Site.Name );
+                }
+                if ( exception.Page != null )
+                {
+                    descriptionList.Add( "Page", exception.Page.Name );
+                }
+                if ( !string.IsNullOrEmpty( exception.ExceptionType ) )
+                {
+                    descriptionList.Add( "Type", exception.ExceptionType );
+                }
+                lblMainDetails.Text = descriptionList.Html;
+
+                //Load the occurrences for the selected exception
+                BindExceptionOccurrenceGrid( exception );
+            }
         }
 
         /// <summary>
