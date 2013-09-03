@@ -358,12 +358,12 @@ namespace Rock
         {
 
             // split first word from rest of string
-            Match m = Regex.Match(str, @"(\w*) (\w.*)");
+            int endOfFirstWord = str.IndexOf(" ");
 
-            if (m.Success)
-                return "<span class='first-word'>" + m.Groups[1] + " </span>" + m.Groups[2];
+            if (endOfFirstWord != -1)
+                return "<span class='first-word'>" + str.Substring(0, endOfFirstWord) + " </span> " + str.Substring(endOfFirstWord, str.Length - endOfFirstWord);
             else
-                return str;
+                return "<span class='first-word'>" + str + " </span>";
         }
 
         #endregion

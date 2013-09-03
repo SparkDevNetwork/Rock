@@ -249,10 +249,15 @@ namespace RockWeb.Blocks.Administration
             var baseException = new ExceptionLogService().Get( itemKeyValue );
 
             //set fields
-            lblSite.Text = baseException.Site.Name;
-            lblPage.Text = baseException.Page.Name;
-            hlPageLink.NavigateUrl = string.Format( "~{0}", baseException.PageUrl );
+            if ( baseException == null )
+            {
+                return;
+            }
 
+            lblSite.Text = baseException.Site != null ? baseException.Site.Name : string.Empty;
+            lblPage.Text = baseException.Page != null ? baseException.Site.Name : string.Empty;
+
+            hlPageLink.NavigateUrl = string.Format( "~{0}", baseException.PageUrl );
 
             if ( baseException.CreatedByPersonId == null || baseException.CreatedByPersonId == 0 )
             {
