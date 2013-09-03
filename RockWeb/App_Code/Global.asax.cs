@@ -36,6 +36,9 @@ namespace RockWeb
     /// </summary>
     public class Global : System.Web.HttpApplication
     {
+
+        #region Fields
+
         /// <summary>
         /// global Quartz scheduler for jobs 
         /// </summary>
@@ -53,6 +56,8 @@ namespace RockWeb
 
         // cache callback object
         private static CacheItemRemovedCallback OnCacheRemove = null;
+
+        #endregion
 
         #region Asp.Net Events
 
@@ -112,7 +117,7 @@ namespace RockWeb
                 catch ( Exception ex )
                 {
                     // if migrations fail, log error and attempt to continue
-                    LogError( ex, HttpContext.Current );
+                    LogError( ex, null );
                 }
 
             }
@@ -228,7 +233,7 @@ namespace RockWeb
                 }
                 catch ( Exception ex )
                 {
-                    LogError( new Exception( string.Format( "Exception in Global.DrainTransactionQueue(): {0}", ex.Message ) ), HttpContext.Current );
+                    LogError( new Exception( string.Format( "Exception in Global.DrainTransactionQueue(): {0}", ex.Message ) ), null );
                 }
 
                 Global.QueueInUse = false;
@@ -800,5 +805,6 @@ namespace RockWeb
         }
 
         #endregion
+
     }
 }

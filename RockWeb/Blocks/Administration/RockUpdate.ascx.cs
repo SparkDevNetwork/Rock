@@ -12,6 +12,7 @@ using System.Text;
 using System.Reflection;
 
 using Rock.Services.NuGet;
+using Rock.VersionInfo;
 using Rock.Web.Cache;
 
 using NuGet;
@@ -21,8 +22,7 @@ namespace RockWeb.Blocks.Administration
     public partial class RockUpdate : Rock.Web.UI.RockBlock
     {
         WebProjectManager nuGetService = null;
-        private string rockPackageId = "RockUpdate";
-        private string rockCoreVersionAssembly = "Rock.dll"; 
+        private string rockPackageId = "RockChMS";
 
         /// <summary>
         /// Obtains a WebProjectManager from the Global "PackageSourceUrl" Attribute.
@@ -179,13 +179,11 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
-        /// Fetches and displays the rockCoreVersionAssembly assembly's ProductVersion.
+        /// Fetches and displays the official Rock product version.
         /// </summary>
         protected void DisplayRockVersion()
         {
-            Assembly rockDLL = Assembly.LoadFrom( System.IO.Path.Combine( this.Request.PhysicalApplicationPath, "bin", rockCoreVersionAssembly ) );
-            FileVersionInfo rockDLLfvi = FileVersionInfo.GetVersionInfo( rockDLL.Location );
-            litRockVersion.Text = string.Format( "<b>Current Version: </b> {0}", rockDLLfvi.ProductVersion );
+            litRockVersion.Text = string.Format( "<b>Current Version: </b> {0}", VersionInfo.GetRockProductVersion() );
         }
 
         /// <summary>
