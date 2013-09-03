@@ -9,7 +9,7 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 
-using Rock.Model;
+using Rock.CheckIn;
 
 namespace Rock.Workflow.Action.CheckIn
 {
@@ -39,15 +39,41 @@ namespace Rock.Workflow.Action.CheckIn
                 {
                     foreach ( var person in family.People.Where( f => f.Selected ) )
                     {   
-                        // if the person already has something selected, we won't change it                        
+                        // if the person already has something selected, don't change it                        
                         char[] delimiter = { ',' };                        
-                        if ( person.GroupTypes.Count > 0 )
+                        if ( person.GroupTypes.Any() )
                         {
-                            var groupType = person.GroupTypes.Where( gt => gt.Selected ).FirstOrDefault();
-                            if ( groupType == null )
+                            CheckInGroupType groupType;
+                            if ( person.GroupTypes.Count > 1 )
                             {
-                                groupType = person.GroupTypes.FirstOrDefault();                                
+                                var gradeFilter = person.GroupTypes.Where( g => g.GroupType.Attributes.ContainsKey( "GradeRange" ) )
+                                    .Select( g => new
+                                        {  
+                                            GroupType = g, 
+                                            GradeRange = g.GroupType.GetAttributeValue( "GradeRange" ).Split( delimiter, StringSplitOptions.None )
+                                        } ).ToList();
+                                groupType = gradeFilter.Where( g => ExtensionMethods.ParseNullable<int?>( g.GradeRange.First() ) <= person.Person.Grade
+                                        && ExtensionMethods.ParseNullable<int?>( g.GradeRange.Last() ) >= person.Person.Grade )
+                                        //.Aggregate( 
+                                        .Select( g => g.GroupType ).FirstOrDefault();
+
+                                var ageFilter = person.GroupTypes.Where( g => g.GroupType.Attributes.ContainsKey( "AgeRange" ) )
+                                    .Select( g => new
+                                        {  
+                                            GroupType = g, 
+                                            AgeRange = g.GroupType.GetAttributeValue( "AgeRange" ).Split( delimiter, StringSplitOptions.None )
+                                        } ).ToList();
+                                groupType = ageFilter.Where( g => ExtensionMethods.ParseNullable<int?>( g.AgeRange.First() ) <= person.Person.Age
+                                        && ExtensionMethods.ParseNullable<int?>( g.AgeRange.Last() ) >= person.Person.Age )
+                                        //.Aggregate( 
+                                        .Select( g => g.GroupType ).FirstOrDefault();
+
                             }
+                            else 
+                            {   // only one option is left
+                                groupType = person.GroupTypes.FirstOrDefault();
+                            }
+                            
 
                             if ( groupType != null && groupType.Groups.Count > 0 )
                             {
@@ -63,6 +89,7 @@ namespace Rock.Workflow.Action.CheckIn
                                         } ).ToList();
                                     var groupMatchGrade = gradeGroups.Where( g => ExtensionMethods.ParseNullable<int?>( g.GradeRange.First() ) <= person.Person.Grade
                                             && ExtensionMethods.ParseNullable<int?>( g.GradeRange.Last() ) >= person.Person.Grade )
+                                            //.Aggregate( 
                                             .Select( g => g.Group ).FirstOrDefault();
 
                                     var ageGroups = groupType.Groups.Where( g => g.Group.Attributes.ContainsKey( "AgeRange" ) ).Select( g => new
@@ -72,10 +99,12 @@ namespace Rock.Workflow.Action.CheckIn
                                         } ).ToList();
                                     var groupMatchAge = ageGroups.Where( g => ExtensionMethods.ParseNullable<int?>( g.AgeRange.First() ) <= person.Person.Age
                                             && ExtensionMethods.ParseNullable<int?>( g.AgeRange.Last() ) >= person.Person.Age )
+                                            //.Aggregate(
                                             .Select( g => g.Group ).FirstOrDefault();
 
                                     group = groupMatchGrade ?? groupMatchAge;                                     
                                 }
+                                
 
                                 if ( group != null && group.Locations.Count > 0 )
                                 {
