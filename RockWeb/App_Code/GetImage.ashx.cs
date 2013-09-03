@@ -62,8 +62,10 @@ namespace RockWeb
                     return;
                 }
 
+                var fileType = file.BinaryFileType;
+
                 // Is it cached
-                if ( file.AllowCaching && File.Exists( physFilePath ) )
+                if ( fileType.AllowCaching && File.Exists( physFilePath ) )
                 {
                     // Is cached version newer?
                     if ( !file.LastModifiedDateTime.HasValue ||
@@ -87,7 +89,7 @@ namespace RockWeb
                 if ( queryString.Count > 1 )
                     Resize( queryString, file );
 
-                if ( file.AllowCaching )
+                if ( fileType.AllowCaching )
                     Cache( file, physFilePath );
 
                 // Post process

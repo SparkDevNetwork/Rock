@@ -91,6 +91,15 @@ namespace Rock.Model
         [DataMember]
         public int? StorageEntityTypeId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to allow caching on any BinaryFile child models.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if caching is allowed; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool AllowCaching { get; set; }
+
         #endregion
 
         #region Virtual Properties
