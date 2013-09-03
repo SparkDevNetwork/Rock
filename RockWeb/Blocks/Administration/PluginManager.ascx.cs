@@ -30,7 +30,8 @@ namespace RockWeb.Blocks.Administration
     {
         #region Fields
         WebProjectManager nuGetService = null;
-
+        private string rockPackageId = "RockChMS";
+        private string rockUpdatePackageIdPrefix = "RockUpdate";
         /// <summary>
         /// Gets or sets the current view mode.
         /// </summary>
@@ -165,17 +166,17 @@ namespace RockWeb.Blocks.Administration
                 case ViewMode.Installed:
                     liInstalled.AddCssClass( "active" );
                     liAvailable.RemoveCssClass( "active" );
-                    gPackageList.DataSource = InstalledPackages.Where( p => ! p.Id.StartsWith( "RockUpdate") ).ToList();
+                    gPackageList.DataSource = InstalledPackages.Where( p => !p.Id.StartsWith( rockUpdatePackageIdPrefix ) || p.Id != rockPackageId ).ToList();
                     break;
                 case ViewMode.Available:
                     liInstalled.RemoveCssClass( "active" );
                     liAvailable.AddCssClass( "active" );
-                    gPackageList.DataSource = AvailablePackages.Where( p => !p.Id.StartsWith( "RockUpdate" ) ).ToList();
+                    gPackageList.DataSource = AvailablePackages.Where( p => !p.Id.StartsWith( rockUpdatePackageIdPrefix ) || p.Id != rockPackageId ).ToList();
                     break;
                 case ViewMode.Search:
                     liInstalled.RemoveCssClass( "active" );
                     liAvailable.RemoveCssClass( "active" );
-                    gPackageList.DataSource = NuGetService.GetLatestRemotePackages( txtSearch.Text, includeAllVersions: false ).Where( p => !p.Id.StartsWith( "RockUpdate" ) ).ToList();
+                    gPackageList.DataSource = NuGetService.GetLatestRemotePackages( txtSearch.Text, includeAllVersions: false ).Where( p => !p.Id.StartsWith( rockUpdatePackageIdPrefix ) || p.Id != rockPackageId ).ToList();
                     break;
                 default:
                     break;

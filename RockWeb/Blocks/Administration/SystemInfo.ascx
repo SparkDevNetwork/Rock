@@ -36,7 +36,7 @@
 <div class="tabContent" >
 
     <div id="version-info">
-        Rock Version Info will eventually go here!
+        Rock Version:  <asp:Literal ID="lRockVersion" runat="server"></asp:Literal>
         <p>Executing Location: <asp:Literal ID="lExecLocation" runat="server"></asp:Literal></p>
     </div>
 
