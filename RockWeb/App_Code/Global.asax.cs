@@ -347,8 +347,10 @@ namespace RockWeb
                             errorPage = site.ErrorPage;
                         }
 
-                        // store exception in session
-                        Session["Exception"] = ex;
+                        // Attempt to store exception in session. Session state may not be available
+                        // within the context of an HTTP handler or the REST API.
+                        try { Session["Exception"] = ex; }
+                        catch ( HttpException ) { }
 
                         // email notifications if 500 error
                         if ( status == "500" )
@@ -362,7 +364,7 @@ namespace RockWeb
 
                             if ( !string.IsNullOrWhiteSpace( emailAddressesList ) )
                             {
-                                string[] emailAddresses = emailAddressesList.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+                                string[] emailAddresses = emailAddressesList.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
                                 var recipients = new Dictionary<string, Dictionary<string, object>>();
 
                                 foreach ( string emailAddress in emailAddresses )
