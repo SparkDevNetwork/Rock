@@ -150,9 +150,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             if ( e.Item.ItemType == ListViewItemType.DataItem )
             {
-                if ( ( (CheckInPerson)e.Item.DataItem ).Selected )
+                var person = (CheckInPerson)e.Item.DataItem;
+                if ( person.Selected )
                 {
-                    ( (LinkButton)e.Item.FindControl( "lbSelectPerson" ) ).AddCssClass( "active" );
+                    var lbSelectPerson = ( (LinkButton)e.Item.FindControl( "lbSelectPerson" ) );
+                    lbSelectPerson.AddCssClass( "active" );
+                    lbSelectPerson.CommandArgument = person.Person.Id.ToString();
                 }
             }
         }
@@ -166,9 +169,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {            
             if ( e.Item.ItemType == ListViewItemType.DataItem )
             {
-                if ( ( (CheckInPerson)e.Item.DataItem ).Selected )
+                var person = (CheckInPerson)e.Item.DataItem;
+                if ( person.Selected )
                 {
-                    ( (LinkButton)e.Item.FindControl( "lbSelectVisitor" ) ).AddCssClass( "active" );
+                    var lbSelectVisitor = ( (LinkButton)e.Item.FindControl( "lbSelectVisitor" ) );
+                    lbSelectVisitor.AddCssClass( "active" );
+                    lbSelectVisitor.CommandArgument = person.Person.Id.ToString();
                 }
             }            
         }
