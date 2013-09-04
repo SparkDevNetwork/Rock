@@ -942,6 +942,22 @@ namespace Rock.Web.UI
             }
         }
 
+        /// <summary>
+        /// Adds a history point to the ScriptManager.
+        /// Note: ScriptManager's EnableHistory property must be set to True
+        /// </summary>
+        /// <param name="key">The key to use for the history point</param>
+        /// <param name="state">any state information to store for the history point</param>
+        /// <param name="title">The title to be used by the browser</param>
+        public void AddHistory(string key, string state, string title)
+        {
+            if (ScriptManager.GetCurrent(Page) != null)
+            {
+                ScriptManager sManager = ScriptManager.GetCurrent(Page);
+                sManager.AddHistoryPoint(key, state, title);
+            }
+        }
+
         #endregion
 
         #region Cms Admin Content

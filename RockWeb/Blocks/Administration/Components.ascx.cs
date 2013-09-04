@@ -287,6 +287,10 @@ namespace RockWeb.Blocks.Administration
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         protected void ShowEdit( int serviceId )
         {
+            // set edit history marker
+            this.AddHistory("edit", "", "Hey YOU!");
+            //sManager.Navigate += new EventHandler<HistoryEventArgs>(scriptManager_Navigate);
+            
             ViewState["serviceId"] = serviceId;
             phProperties.Controls.Clear();
             LoadEditControls();
@@ -294,6 +298,11 @@ namespace RockWeb.Blocks.Administration
             lProperties.Text = _container.Dictionary[serviceId].Key + " Properties";
 
             SetEditMode( true );
+        }
+
+        protected void scriptManager_Navigate(object sender, HistoryEventArgs e)
+        {
+            string test = "";
         }
 
         /// <summary>
