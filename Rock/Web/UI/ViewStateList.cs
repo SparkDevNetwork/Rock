@@ -41,7 +41,6 @@ namespace Rock.Web.UI
             }
             else
             {
-
                 result = JsonConvert.DeserializeObject<List<T>>( internalListJson );
                 _cachedList = result;
             }
@@ -55,9 +54,9 @@ namespace Rock.Web.UI
         /// <param name="list">The list.</param>
         private void SerializeList( List<T> list )
         {
-            System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
-
-            internalListJson = JsonConvert.SerializeObject( list, Formatting.None,
+            internalListJson = JsonConvert.SerializeObject( 
+                list, 
+                Formatting.None,
                 new JsonSerializerSettings()
                 {
                     ReferenceLoopHandling = ReferenceLoopHandling.Ignore
