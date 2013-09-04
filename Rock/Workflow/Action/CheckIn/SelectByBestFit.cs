@@ -82,28 +82,31 @@ namespace Rock.Workflow.Action.CheckIn
                                 var group = groupType.Groups.Where( g => g.Selected ).FirstOrDefault();
                                 if ( group == null )
                                 {   
-                                    // find the closest group by Age or Grade attribute
-                                    var gradeGroups = groupType.Groups.Where( g => g.Group.Attributes.ContainsKey( "GradeRange" ) ).Select( g => new
-                                        {  
+                                    // find the closest group by grade 
+                                    var gradeGroups = groupType.Groups.Where( g => g.Group.Attributes.ContainsKey( "GradeRange" ) ).Select( g => 
+                                        new {  
                                             Group = g, 
                                             GradeRange = g.Group.GetAttributeValue( "GradeRange" ).Split( delimiter, StringSplitOptions.None )
+                                                .Select( av => ExtensionMethods.ParseNullable<int?>( av ) )
                                         } ).ToList();
-                                    var groupMatchGrade = gradeGroups.Where( g => ExtensionMethods.ParseNullable<int?>( g.GradeRange.First() ) <= person.Person.Grade
-                                            && ExtensionMethods.ParseNullable<int?>( g.GradeRange.Last() ) >= person.Person.Grade )
-                                            //.Aggregate( 
-                                            .Select( g => g.Group ).FirstOrDefault();
+                                    
+                                    var groupMatchGrade = gradeGroups.Aggregate( ( x, y ) => Math.Abs( Convert.ToDouble( x.GradeRange.First() - person.Person.Grade ) )
+                                            < Math.Abs( Convert.ToDouble( y.GradeRange.First() - person.Person.Grade ) ) ? x : y )
+                                                .Group;
 
-                                    var ageGroups = groupType.Groups.Where( g => g.Group.Attributes.ContainsKey( "AgeRange" ) ).Select( g => new
-                                        {
+                                    // find the closest group by age 
+                                    var ageGroups = groupType.Groups.Where( g => g.Group.Attributes.ContainsKey( "AgeRange" ) ).Select( g => 
+                                        new {
                                             Group = g,
                                             AgeRange = g.Group.GetAttributeValue( "AgeRange" ).Split( delimiter, StringSplitOptions.None )
+                                                .Select( av => ExtensionMethods.ParseNullable<double?>( av ) )
                                         } ).ToList();
-                                    var groupMatchAge = ageGroups.Where( g => ExtensionMethods.ParseNullable<int?>( g.AgeRange.First() ) <= person.Person.Age
-                                            && ExtensionMethods.ParseNullable<int?>( g.AgeRange.Last() ) >= person.Person.Age )
-                                            //.Aggregate(
-                                            .Select( g => g.Group ).FirstOrDefault();
+                                                                                                                                                
+                                    var groupMatchAge = ageGroups.Aggregate( ( x, y ) => Math.Abs( Convert.ToDouble( x.AgeRange.First() - person.Person.Age ) )
+                                            < Math.Abs( Convert.ToDouble( y.AgeRange.First() - person.Person.Age ) ) ? x : y )
+                                                .Group;
 
-                                    group = groupMatchGrade ?? groupMatchAge;                                     
+                                    group = groupMatchGrade ?? groupMatchAge;
                                 }                                
 
                                 if ( group != null && group.Locations.Count > 0 )
