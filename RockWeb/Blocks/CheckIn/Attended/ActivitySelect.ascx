@@ -161,7 +161,7 @@
 		
         <div class="row-fluid attended-checkin-body addnote">
             <div class="span12">
-                <Rock:LabeledTextBox ID="tbTag" runat="server" TextMode="MultiLine" CssClass="fullWidth" Rows="3" />
+                <Rock:LabeledDropDownList ID="ddlTags" runat="server" LabelText="Select a Tag: "></Rock:LabeledDropDownList>
             </div>
         </div>
         <br />

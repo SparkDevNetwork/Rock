@@ -57,6 +57,29 @@ namespace RockWeb.Blocks.CheckIn.Attended
                             checkInGroupType.GroupType.ParentGroupTypes = groupTypeService.Get( checkInGroupType.GroupType.Id ).ParentGroupTypes;
                         }
 
+                        ddlTags.Items.Clear();
+                        ddlTags.Items.Add( new ListItem( Rock.Constants.None.Text, Rock.Constants.None.Id.ToString() ) );
+                        //ListItem[] foodAllergies = { new ListItem( "Milk" ), new ListItem( "Eggs" ), new ListItem( "Peanuts" ), new ListItem( "Tree Nuts" ), new ListItem( "Fish" ), new ListItem( "Shellfish" ), new ListItem( "Soy" ), new ListItem( "Wheat" ) };
+                        //foodAllergies.ToList();
+                        //foreach( var foodAllergy in foodAllergies )
+                        //{
+                        //    foodAllergy.Attributes.Add( "optiongroup", "Allergies" );
+                        //    ddlTags.Items.Add( foodAllergy );
+                        //}
+
+                        DefinedTypeService definedTypeService = new DefinedTypeService();
+                        DefinedValueService definedValueService = new DefinedValueService();
+                        var definedType = definedTypeService.Queryable().Where( d => d.Name == "Allergy Tags" ).FirstOrDefault();
+                        var definedValueList = definedValueService.GetByDefinedTypeId( definedType.Id ).Select( d => new ListItem(d.Name, d.Id.ToString() ) ).ToList();
+                        
+                        foreach ( var allergy in definedValueList )
+                        {
+                            allergy.Attributes.Add( "optiongroup", "Allergies" );
+                            ddlTags.Items.Add( allergy );
+                        }
+                        //ddlTags.DataSource = foodAllergies;
+                        //ddlTags.DataBind();
+
                         BindGroupTypes( person );
                         BindLocations( person );
                         BindSchedules( person );
@@ -139,7 +162,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
             
             var chosenGroupType = person.GroupTypes.Where( gt => gt.Groups.Any( g => g.Locations.Any( l => l.Location.Id == locationId ) ) ).FirstOrDefault();
             chosenGroupType.Selected = true;
-            var chosenGroup = chosenGroupType.Groups.Where( g => g.Group.Name == g.Locations.Where( l => l.Location.Id == locationId ).Select( l => l.Location.Name ).FirstOrDefault() ).FirstOrDefault();
+            GroupLocationService groupLocationService = new GroupLocationService();
+            var groupLocationGroupId = groupLocationService.GetByLocation( locationId ).Select( l => l.GroupId ).FirstOrDefault();
+            var chosenGroup = chosenGroupType.Groups.Where( g => g.Group.Id == groupLocationGroupId ).FirstOrDefault();
             chosenGroup.Selected = true;
             var chosenLocation = chosenGroup.Locations.Where( l => l.Location.Id == locationId ).FirstOrDefault();
             chosenLocation.Selected = true;
@@ -271,7 +296,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var scheduleId = int.Parse( dataKeyValues["ScheduleId"].ToString() );
 
             var selectedGroupType = person.GroupTypes.Where( gt => gt.Selected ).FirstOrDefault();
-            var selectedGroup = selectedGroupType.Groups.Where( g => g.Selected && g.Group.Name == g.Locations.Where( l => l.Location.Id == locationId ).Select( l => l.Location.Name ).FirstOrDefault() ).FirstOrDefault();
+            GroupLocationService groupLocationService = new GroupLocationService();
+            var groupLocationGroupId = groupLocationService.GetByLocation( locationId ).Select( l => l.GroupId ).FirstOrDefault();
+            var selectedGroup = selectedGroupType.Groups.Where( g => g.Selected && g.Group.Id == groupLocationGroupId ).FirstOrDefault();
             var selectedLocation = selectedGroup.Locations.Where( l => l.Selected && l.Location.Id == locationId).FirstOrDefault();
             var selectedSchedule = selectedLocation.Schedules.Where( s => s.Selected && s.Schedule.Id == scheduleId ).FirstOrDefault();
 
@@ -315,7 +342,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 note.EntityId = personEntity.Id;
                 if ( noteType.Sources != null )
                 {
-                    var source = noteType.Sources.DefinedValues.FirstOrDefault();
+                    var source = noteType.Sources.DefinedValues.Where( dv => dv.Name == "Check In Note" ).FirstOrDefault();
                     if ( source != null )
                     {
                         note.SourceTypeValueId = source.Id;
@@ -362,6 +389,34 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddTagSave_Click( object sender, EventArgs e )
         {
+            //using ( new Rock.Data.UnitOfWorkScope() )
+            //{
+            //    var tagService = new TagService();
+            //    var taggedItemService = new TaggedItemService();
+
+            //    var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name );
+            //    if ( tag == null )
+            //    {
+            //        tag = new Tag();
+            //        tag.EntityTypeId = entityTypeId;
+            //        tag.EntityTypeQualifierColumn = entityQualifier;
+            //        tag.EntityTypeQualifierValue = entityQualifierValue;
+            //        tag.OwnerId = ownerId;
+            //        tag.Name = name;
+            //        tagService.Add( tag, user.PersonId );
+            //        tagService.Save( tag, user.PersonId );
+            //    }
+
+            //    var taggedItem = taggedItemService.Get( tag.Id, entityGuid );
+            //    if ( taggedItem == null )
+            //    {
+            //        taggedItem = new TaggedItem();
+            //        taggedItem.TagId = tag.Id;
+            //        taggedItem.EntityGuid = entityGuid;
+            //        taggedItemService.Add( taggedItem, user.PersonId );
+            //        taggedItemService.Save( taggedItem, user.PersonId );
+            //    }
+            //}
         }
 
         /// <summary>
@@ -371,7 +426,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddTag_Click( object sender, EventArgs e )
         {
-            tbTag.Text = string.Empty;
+            
             mpeAddTag.Show();
         }
 
@@ -442,7 +497,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
             if ( locationList.Any( l => l.Location.Id == locationId ) )
             {
                 selectedGroupType = person.GroupTypes.Where( gt => gt.Selected ).FirstOrDefault();
-                selectedGroup = selectedGroupType.Groups.Where( g => g.Group.Name == g.Locations.Where( l => l.Location.Id == locationId ).Select( l => l.Location.Name ).FirstOrDefault() ).FirstOrDefault();
+                GroupLocationService groupLocationService = new GroupLocationService();
+                var groupLocationGroupId = groupLocationService.GetByLocation( locationId ).Select( l => l.GroupId ).FirstOrDefault();
+                selectedGroup = selectedGroupType.Groups.Where( g => g.Group.Id == groupLocationGroupId ).FirstOrDefault();
                 selectedLocation = selectedGroup.Locations.Where( l => l.Location.Id == locationId ).FirstOrDefault();
             }
             else
@@ -489,15 +546,18 @@ namespace RockWeb.Blocks.CheckIn.Attended
             lvLocation.DataSource = locationList;
 
             var selectedLocation = locationList.Where( l => l.Selected ).FirstOrDefault();
-            var selectedLocationPlaceInList = locationList.IndexOf( locationList.Where( l => l.Selected ).FirstOrDefault() ) + 1;
-            var pageSize = this.Pager.PageSize;
-            var pageToGoTo = selectedLocationPlaceInList / pageSize;
-            if ( selectedLocationPlaceInList % pageSize != 0 )
+            if ( selectedLocation != null )
             {
-                pageToGoTo++;
-            }
+                var selectedLocationPlaceInList = locationList.IndexOf( locationList.Where( l => l.Selected ).FirstOrDefault() ) + 1;
+                var pageSize = this.Pager.PageSize;
+                var pageToGoTo = selectedLocationPlaceInList / pageSize;
+                if ( selectedLocationPlaceInList % pageSize != 0 )
+                {
+                    pageToGoTo++;
+                }
 
-            this.Pager.SetPageProperties( ( pageToGoTo - 1 ) * this.Pager.PageSize, this.Pager.MaximumRows, false );
+                this.Pager.SetPageProperties( ( pageToGoTo - 1 ) * this.Pager.PageSize, this.Pager.MaximumRows, false );
+            }
 
             lvLocation.DataBind();
             Session["locationList"] = locationList;
@@ -517,8 +577,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// </summary>
         private void GoNext()
         {
+            var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
+            var originalPerson = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
+                .People.Where( p => p.SecurityCode == "0000" ).FirstOrDefault();
+            family.People.Remove( originalPerson );
             SaveState();
-            NavigateToNextPage();            
+            NavigateToNextPage();
         }
 
         /// <summary>
