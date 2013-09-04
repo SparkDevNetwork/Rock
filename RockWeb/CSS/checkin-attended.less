@@ -185,11 +185,22 @@ input[type="submit"].btn[disabled="disabled"]
 {
     background: #EEEEEE;
     width: 50%;
-    height: 30%;
+    /*height: 30%;*/
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
     border-radius: 10px;
     z-index: 10001 !important;
+}
+
+.add-note a.btn-primary, .add-tag a.btn-primary
+{
+    font-size: 2em;
+}
+
+.add-note h1, .add-tag h1 
+{
+    font-size: 2.5em;
+    margin-top: .25em;
 }
 
 .fullWidth {
@@ -225,6 +236,7 @@ h3 {
 
 @media screen and (max-width:1240px) 
 {
+
     input.attended-checkin-keyboard-entry, .keyboard 
     {
         width: 85%;
@@ -238,6 +250,11 @@ h3 {
     h3 
     {
         font-size: 1.5714em;     /* 22px font size / 14px base font size. Rounded from 1.571428571428571 */
+    }
+
+    .grid-table 
+    {
+        font-size: 1.25em;     /* 14px font size / 14px base font size */
     }
 }
 
