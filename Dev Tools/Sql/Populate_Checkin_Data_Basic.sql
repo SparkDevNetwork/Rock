@@ -461,7 +461,7 @@ DECLARE @BuildingLocationId int
 DECLARE @RoomLocationId int
 
 -- Main Campus "Location"
-INSERT INTO [Location] ([Guid], [Name], [IsActive],[IsLocation]) VALUES (NEWID(), 'Main Campus', 1, 0)
+INSERT INTO [Location] ([Guid], [Name], [IsActive],[IsLocation]) VALUES (NEWID(), 'Main Campus', 1, 1)
 SET @CampusLocationId = SCOPE_IDENTITY()
 
 -- Main building
@@ -469,14 +469,14 @@ INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [G
 SET @BuildingLocationId = SCOPE_IDENTITY()
 
 -- Check in Rooms
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation],[Guid]) VALUES (@BuildingLocationId, 'Bunnies Room', 1, 0, NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation],[Guid]) VALUES (@BuildingLocationId, 'Kittens Room', 1, 0,NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation],[Guid]) VALUES (@BuildingLocationId, 'Puppies Room', 1, 0,NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation],[Guid]) VALUES (@BuildingLocationId, 'Bears Room', 1, 0,NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation],[Guid]) VALUES (@BuildingLocationId, 'Bobcats Room', 1, 0,NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation],[Guid]) VALUES (@BuildingLocationId, 'Outpost Room', 1, 0,NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation],[Guid]) VALUES (@BuildingLocationId, 'the Warehouse', 1, 0,NEWID())
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation],[Guid]) VALUES (@BuildingLocationId, 'the Garage', 1, 0,NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation],[Guid]) VALUES (@BuildingLocationId, 'Bunnies Room', 1, 1, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation],[Guid]) VALUES (@BuildingLocationId, 'Kittens Room', 1, 1,NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation],[Guid]) VALUES (@BuildingLocationId, 'Puppies Room', 1, 1,NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation],[Guid]) VALUES (@BuildingLocationId, 'Bears Room', 1, 1,NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation],[Guid]) VALUES (@BuildingLocationId, 'Bobcats Room', 1, 1,NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation],[Guid]) VALUES (@BuildingLocationId, 'Outpost Room', 1, 1,NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation],[Guid]) VALUES (@BuildingLocationId, 'the Warehouse', 1, 1,NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation],[Guid]) VALUES (@BuildingLocationId, 'the Garage', 1, 1,NEWID())
 
 DELETE [DeviceLocation]
 DELETE [Device]
