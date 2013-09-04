@@ -57,33 +57,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
                             checkInGroupType.GroupType.ParentGroupTypes = groupTypeService.Get( checkInGroupType.GroupType.Id ).ParentGroupTypes;
                         }
 
-                        ddlTags.Items.Clear();
-                        ddlTags.Items.Add( new ListItem( Rock.Constants.None.Text, Rock.Constants.None.Id.ToString() ) );
-                        //ListItem[] foodAllergies = { new ListItem( "Milk" ), new ListItem( "Eggs" ), new ListItem( "Peanuts" ), new ListItem( "Tree Nuts" ), new ListItem( "Fish" ), new ListItem( "Shellfish" ), new ListItem( "Soy" ), new ListItem( "Wheat" ) };
-                        //foodAllergies.ToList();
-                        //foreach( var foodAllergy in foodAllergies )
-                        //{
-                        //    foodAllergy.Attributes.Add( "optiongroup", "Allergies" );
-                        //    ddlTags.Items.Add( foodAllergy );
-                        //}
-
-                        DefinedTypeService definedTypeService = new DefinedTypeService();
-                        DefinedValueService definedValueService = new DefinedValueService();
-                        var definedType = definedTypeService.Queryable().Where( d => d.Name == "Allergies" ).FirstOrDefault();
-                        var definedValueList = definedValueService.GetByDefinedTypeId( definedType.Id ).Select( d => new ListItem(d.Name, d.Id.ToString() ) ).ToList();
-                        
-                        foreach ( var allergy in definedValueList )
-                        {
-                            allergy.Attributes.Add( "optiongroup", "Allergies" );
-                            ddlTags.Items.Add( allergy );
-                        }
-                        //ddlTags.DataSource = foodAllergies;
-                        //ddlTags.DataBind();
-
                         BindGroupTypes( person );
                         BindLocations( person );
                         BindSchedules( person );
                         BindSelectedGrid();
+                        BindTagOptions();
                     }
                     else
                     {
@@ -389,34 +367,46 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddTagSave_Click( object sender, EventArgs e )
         {
-            //using ( new Rock.Data.UnitOfWorkScope() )
-            //{
-            //    var tagService = new TagService();
-            //    var taggedItemService = new TaggedItemService();
+            if ( ddlTags.SelectedIndex > 0 )
+            {
+                using ( new Rock.Data.UnitOfWorkScope() )
+                {
+                    var tagService = new TagService();
+                    var taggedItemService = new TaggedItemService();
+                    var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
+                        .People.Where( p => p.Person.Id == int.Parse( Request.QueryString["personId"] ) ).FirstOrDefault();
 
-            //    var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name );
-            //    if ( tag == null )
-            //    {
-            //        tag = new Tag();
-            //        tag.EntityTypeId = entityTypeId;
-            //        tag.EntityTypeQualifierColumn = entityQualifier;
-            //        tag.EntityTypeQualifierValue = entityQualifierValue;
-            //        tag.OwnerId = ownerId;
-            //        tag.Name = name;
-            //        tagService.Add( tag, user.PersonId );
-            //        tagService.Save( tag, user.PersonId );
-            //    }
+                    var entityTypeId = person.Person.TypeId;
+                    var entityQualifier = string.Empty;
+                    var entityQualifierValue = string.Empty;
+                    var entityGuid = person.Person.Guid;
+                    var ownerId = CurrentPersonId;
+                    var name = ddlTags.SelectedItem.Text;
 
-            //    var taggedItem = taggedItemService.Get( tag.Id, entityGuid );
-            //    if ( taggedItem == null )
-            //    {
-            //        taggedItem = new TaggedItem();
-            //        taggedItem.TagId = tag.Id;
-            //        taggedItem.EntityGuid = entityGuid;
-            //        taggedItemService.Add( taggedItem, user.PersonId );
-            //        taggedItemService.Save( taggedItem, user.PersonId );
-            //    }
-            //}
+                    var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name );
+                    if ( tag == null )
+                    {
+                        tag = new Tag();
+                        tag.EntityTypeId = entityTypeId;
+                        tag.EntityTypeQualifierColumn = entityQualifier;
+                        tag.EntityTypeQualifierValue = entityQualifierValue;
+                        tag.OwnerId = ownerId;
+                        tag.Name = name;
+                        tagService.Add( tag, ownerId );
+                        tagService.Save( tag, ownerId );
+                    }
+
+                    var taggedItem = taggedItemService.Get( tag.Id, entityGuid );
+                    if ( taggedItem == null )
+                    {
+                        taggedItem = new TaggedItem();
+                        taggedItem.TagId = tag.Id;
+                        taggedItem.EntityGuid = entityGuid;
+                        taggedItemService.Add( taggedItem, ownerId );
+                        taggedItemService.Save( taggedItem, ownerId );
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -577,10 +567,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// </summary>
         private void GoNext()
         {
-            var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-            var originalPerson = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
-                .People.Where( p => p.SecurityCode == "0000" ).FirstOrDefault();
-            family.People.Remove( originalPerson );
             SaveState();
             NavigateToNextPage();
         }
@@ -613,6 +599,24 @@ namespace RockWeb.Blocks.CheckIn.Attended
             gSelectedList.AddCssClass( "grid-table" );
             gSelectedList.AddCssClass( "table" );
             pnlSelectedGrid.Update();
+        }
+
+        /// <summary>
+        /// Binds the tag options.
+        /// </summary>
+        protected void BindTagOptions()
+        {
+            ddlTags.Items.Clear();
+            ddlTags.Items.Add( new ListItem( Rock.Constants.None.Text, Rock.Constants.None.Id.ToString() ) );
+            DefinedTypeService definedTypeService = new DefinedTypeService();
+            DefinedValueService definedValueService = new DefinedValueService();
+            var definedType = definedTypeService.Queryable().Where( d => d.Name == "Allergies" ).FirstOrDefault();
+            var definedValueList = definedValueService.GetByDefinedTypeId( definedType.Id ).Select( d => new ListItem( d.Name, d.Id.ToString() ) ).OrderBy( d => d.Text ).ToList();
+            foreach ( var allergy in definedValueList )
+            {
+                allergy.Attributes.Add( "optiongroup", "Allergies" );
+                ddlTags.Items.Add( allergy );
+            }
         }
 
         #endregion
