@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
                         DefinedTypeService definedTypeService = new DefinedTypeService();
                         DefinedValueService definedValueService = new DefinedValueService();
-                        var definedType = definedTypeService.Queryable().Where( d => d.Name == "Allergy Tags" ).FirstOrDefault();
+                        var definedType = definedTypeService.Queryable().Where( d => d.Name == "Allergies" ).FirstOrDefault();
                         var definedValueList = definedValueService.GetByDefinedTypeId( definedType.Id ).Select( d => new ListItem(d.Name, d.Id.ToString() ) ).ToList();
                         
                         foreach ( var allergy in definedValueList )
