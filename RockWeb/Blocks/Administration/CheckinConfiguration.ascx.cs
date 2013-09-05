@@ -135,6 +135,7 @@ namespace RockWeb.Blocks.Administration
             groupTypeEditor.AddGroupTypeClick += groupTypeEditor_AddGroupTypeClick;
             groupTypeEditor.DeleteCheckinLabelClick += groupTypeEditor_DeleteCheckinLabelClick;
             groupTypeEditor.AddCheckinLabelClick += groupTypeEditor_AddCheckinLabelClick;
+            groupTypeEditor.DeleteGroupTypeClick += groupTypeEditor_DeleteGroupTypeClick;
             groupTypeEditor.CheckinLabels = null;
 
             if ( GroupTypeCheckinLabelAttributesState.ContainsKey( groupType.Guid ) )
@@ -177,6 +178,17 @@ namespace RockWeb.Blocks.Administration
             {
                 CreateGroupTypeEditorControls( childGroupType, groupTypeEditor, false );
             }
+        }
+
+        /// <summary>
+        /// Handles the DeleteGroupTypeClick event of the groupTypeEditor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        void groupTypeEditor_DeleteGroupTypeClick( object sender, EventArgs e )
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -269,8 +281,20 @@ namespace RockWeb.Blocks.Administration
 
             groupEditor.AddLocationClick += groupEditor_AddLocationClick;
             groupEditor.DeleteLocationClick += groupEditor_DeleteLocationClick;
+            groupEditor.DeleteGroupClick += groupEditor_DeleteGroupClick;
 
             parentControl.Controls.Add( groupEditor );
+        }
+
+        /// <summary>
+        /// Handles the DeleteGroupClick event of the groupEditor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        void groupEditor_DeleteGroupClick( object sender, EventArgs e )
+        {
+            throw new NotImplementedException();
         }
 
         #endregion
@@ -473,7 +497,81 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            //TODO
+            GroupTypeService groupTypeService = new GroupTypeService();
+            GroupService groupService = new GroupService();
+
+            int parentGroupTypeId = hfParentGroupTypeId.ValueAsInt();
+
+            var groupTypeUIList = new List<GroupType>();
+            foreach ( var checkinGroupTypeEditor in phCheckinGroupTypes.Controls.OfType<CheckinGroupTypeEditor>().ToList() )
+            {
+                var groupType = checkinGroupTypeEditor.GetCheckinGroupType();
+                GroupTypeCheckinLabelAttributesState.Add( checkinGroupTypeEditor.GroupTypeGuid, checkinGroupTypeEditor.CheckinLabels );
+                groupTypeUIList.Add( groupType );
+            }
+
+            var groupTypeDBList = new List<GroupType>();
+
+            // limit to child group types that are not Templates
+            int[] templateGroupTypes = new int[] {
+                DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE).Id, 
+                DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_FILTER).Id
+            };
+
+            var groupTypesToDelete = new List<GroupType>();
+            var groupsToDelete = new List<Group>();
+
+            foreach (GroupType groupTypeUI in groupTypeUIList)
+            {
+                GroupType groupTypeDB = groupTypeService.Get( groupTypeUI.Guid );
+                if ( groupTypeDB == null )
+                {
+                    groupTypeDB = new GroupType();
+                    groupTypeDB.Guid = groupTypeUI.Guid;
+                }
+
+                groupTypeDB.Name = groupTypeUI.Name;
+                groupTypeDB.InheritedGroupTypeId = groupTypeUI.InheritedGroupTypeId;
+                
+                // delete non-template childgrouptypes that were deleted in this ui
+                foreach (var childGroupTypeDB in groupTypeDB.ChildGroupTypes)
+                {
+                    if (!templateGroupTypes.Contains(childGroupTypeDB.GroupTypePurposeValueId ?? 0))
+                    {
+                        if (!groupTypeUI.ChildGroupTypes.Select(a => a.Guid).Contains(childGroupTypeDB.Guid))
+                        {
+                            // TODO Delete GroupType and its Group and ChildGroupTypes recursively
+                        }
+                    }
+                }
+
+                foreach (var childGroup in groupTypeDB.Groups)
+                {
+                    if (!groupTypeUI.Groups.Select(a => a.Guid).Contains(childGroup.Guid))
+                    {
+                        // TODO Delete Group
+                    }
+                }
+
+                // add/update Groups of each GroupType
+                foreach (var childGroupUI in groupTypeUI.Groups)
+                {
+                    var childGroupDB = groupService.Get(childGroupUI.Guid);
+                    if (childGroupDB == null)
+                    {
+                        childGroupDB = new Group();
+                    }
+                }
+
+                // groupTypeDB.ChildGroupTypes
+
+                // groupTypeDBList.Add( groupTypeDB );
+            }
+
+
+
+
+
         }
 
         /// <summary>
@@ -509,6 +607,8 @@ namespace RockWeb.Blocks.Administration
                 pnlDetails.Visible = false;
                 return;
             }
+
+            hfParentGroupTypeId.Value = parentGroupType.Id.ToString();
 
             nbEditModeMessage.Text = string.Empty;
             if ( !IsUserAuthorized( "Edit" ) )
