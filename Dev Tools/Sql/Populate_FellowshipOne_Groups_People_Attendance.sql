@@ -117,8 +117,8 @@ USING (
 ) AS source (HouseholdID, GroupName)
 ON 0 = 1
 WHEN NOT MATCHED THEN
-	INSERT ( IsSystem, GroupTypeId, Name, IsSecurityRole, IsActive, [Guid] )
-	VALUES ( 0, @FamilyGroupType, GroupName, 0, 0, NEWID() )
+	INSERT ( IsSystem, GroupTypeId, Name, IsSecurityRole, IsActive, [Order], [Guid] )
+	VALUES ( 0, @FamilyGroupType, GroupName, 0, 0, 0, NEWID() )
 	OUTPUT source.HouseholdID, Inserted.Id, Inserted.Name INTO #InsertedGroups;
 
 INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], Value, [Guid])
@@ -181,8 +181,8 @@ DROP TABLE #InsertedPeople
 	AND LEN(Last_Name) > 1
 	AND Household_Position <> 'Visitor' 		
 )
-INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid)
-SELECT 0, Household.EntityID, Individual.EntityId, FGM.PersonRole, NEWID()
+INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, GroupMemberStatus, Guid)
+SELECT 0, Household.EntityID, Individual.EntityId, FGM.PersonRole, 1, NEWID()
 FROM F1FamilyMembers FGM
 LEFT JOIN AttributeValue AS Household
 	ON Household.AttributeId = @GroupAttributeID
@@ -213,14 +213,14 @@ USING (
 ) AS source (HouseholdID, IndividualID, GroupName)
 ON 0 = 1
 WHEN NOT MATCHED THEN
-	INSERT ( IsSystem, GroupTypeId, Name, IsSecurityRole, IsActive, [Guid] )
-	VALUES ( 0, @KnownRelationshipsGroupType, GroupName, 0, 0, NEWID() )
+	INSERT ( IsSystem, GroupTypeId, Name, IsSecurityRole, IsActive, [Order], [Guid] )
+	VALUES ( 0, @KnownRelationshipsGroupType, GroupName, 0, 0, 0, NEWID() )
 	OUTPUT source.HouseholdID, source.IndividualID, Inserted.Id
 	INTO #InsertedVisitors ( HouseholdID, IndividualID, CanCheckInGroupID );
 
 -- Add household members with Owner role
-INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid)
-SELECT 0, IV.CanCheckInGroupID, GM.PersonId, @OwnerKnownRelationshipsRole, NEWID()
+INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, GroupMemberStatus, Guid)
+SELECT 0, IV.CanCheckInGroupID, GM.PersonId, @OwnerKnownRelationshipsRole, 1, NEWID()
 FROM #InsertedVisitors IV
 INNER JOIN AttributeValue AV
 	ON AV.AttributeId = @HouseholdAttributeID
@@ -229,8 +229,8 @@ INNER JOIN GroupMember GM
 	ON GM.PersonId = AV.EntityId
 
 -- Add visitor as member of the group with CanCheckIn role
-INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid)
-SELECT 0, IV.CanCheckInGroupID, AV.EntityId, @CanCheckInRole, NEWID()
+INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, GroupMemberStatus, Guid)
+SELECT 0, IV.CanCheckInGroupID, AV.EntityId, @CanCheckInRole, 1, NEWID()
 FROM #InsertedVisitors IV
 INNER JOIN AttributeValue AS AV
 	ON AV.AttributeId = @IndividualAttributeID
