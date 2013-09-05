@@ -363,7 +363,7 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
 
             // Check-in Labels grid
             CreateCheckinLabelsGrid();
-            
+
             Controls.Add( lbDeleteGroupType );
             Controls.Add( lbAddCheckinGroupType );
             Controls.Add( lbAddCheckinGroup );
@@ -375,7 +375,7 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
         private void CreateCheckinLabelsGrid()
         {
             gCheckinLabels = new Grid();
-            
+
             // make the ID static so we can handle Postbacks from the Add and Delete actions
             gCheckinLabels.ClientIDMode = System.Web.UI.ClientIDMode.Static;
             gCheckinLabels.ID = this.ClientID + "_gCheckinLabels";
@@ -395,7 +395,7 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
 
             //// handle manually in OnLoad()
             //// deleteField.Click += DeleteCheckinLabel_Click;
-            
+
             gCheckinLabels.Columns.Add( deleteField );
 
             Controls.Add( gCheckinLabels );
