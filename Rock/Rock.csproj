@@ -405,14 +405,6 @@
     <Compile Include="Migrations\201307162011096_GroupMemberUniqueMemberRole.Designer.cs">
       <DependentUpon>201307162011096_GroupMemberUniqueMemberRole.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201307170308438_AttendedCheckin.cs" />
-    <Compile Include="Migrations\201307170308438_AttendedCheckin.Designer.cs">
-      <DependentUpon>201307170308438_AttendedCheckin.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201307170312469_AddAttendedCheckInSite.cs" />
-    <Compile Include="Migrations\201307170312469_AddAttendedCheckInSite.Designer.cs">
-      <DependentUpon>201307170312469_AddAttendedCheckInSite.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\201307171913426_AddGroupTypeRoute.cs" />
     <Compile Include="Migrations\201307171913426_AddGroupTypeRoute.Designer.cs">
       <DependentUpon>201307171913426_AddGroupTypeRoute.cs</DependentUpon>
@@ -2129,12 +2121,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307162011096_GroupMemberUniqueMemberRole.resx">
       <DependentUpon>201307162011096_GroupMemberUniqueMemberRole.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201307170308438_AttendedCheckin.resx">
-      <DependentUpon>201307170308438_AttendedCheckin.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201307170312469_AddAttendedCheckInSite.resx">
-      <DependentUpon>201307170312469_AddAttendedCheckInSite.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201307171913426_AddGroupTypeRoute.resx">
       <DependentUpon>201307171913426_AddGroupTypeRoute.cs</DependentUpon>
