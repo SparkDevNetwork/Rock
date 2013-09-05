@@ -24,8 +24,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
 {
     [Description( "Attended Check-In Search block" )]
     [LinkedPage( "Admin Page" )]
-    [IntegerField( "Minimum Phone Number Length", "Minimum length for phone number searches (defaults to 4).", false, 4 )]
-    [IntegerField( "Maximum Phone Number Length", "Maximum length for phone number searches (defaults to 10).", false, 10 )]
+    [IntegerField( "Minimum Text Length", "Minimum length for text searches (defaults to 4).", false, 4 )]
+    [IntegerField( "Maximum Text Length", "Maximum length for text searches (defaults to 20).", false, 20 )]
     public partial class Search : CheckInBlock
     {
         #region Control Methods
@@ -98,7 +98,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 CurrentCheckInState.CheckIn.UserEnteredSearch = true;
                 CurrentCheckInState.CheckIn.ConfirmSingleFamily = true;
 
-                if ( !string.IsNullOrWhiteSpace( tbSearchBox.Text ) )
+                int minLength = int.Parse( GetAttributeValue( "MinimumTextLength" ) );
+                int maxLength = int.Parse( GetAttributeValue( "MaximumTextLength" ) );
+                if ( tbSearchBox.Text.Length >= minLength && tbSearchBox.Text.Length <= maxLength )
                 {
                     int searchNumber;
                     if ( int.TryParse( tbSearchBox.Text, out searchNumber ) )
@@ -125,7 +127,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
                 else
                 {
-                    maWarning.Show( "Please enter something to search for.", ModalAlertType.Warning );
+                    string errorMsg = ( tbSearchBox.Text.Length > maxLength )
+                        ? string.Format( "<ul><li>Please enter no more than {0} characters</li></ul>", maxLength )
+                        : string.Format( "<ul><li>Please enter at least {0} characters</li></ul>", minLength );
+
+                    maWarning.Show( errorMsg, ModalAlertType.Warning );
                     return;
                 }
             }
