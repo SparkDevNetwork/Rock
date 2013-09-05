@@ -5,6 +5,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -497,81 +498,197 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            GroupTypeService groupTypeService = new GroupTypeService();
-            GroupService groupService = new GroupService();
-
-            int parentGroupTypeId = hfParentGroupTypeId.ValueAsInt();
-
-            var groupTypeUIList = new List<GroupType>();
-            foreach ( var checkinGroupTypeEditor in phCheckinGroupTypes.Controls.OfType<CheckinGroupTypeEditor>().ToList() )
+            using ( new UnitOfWorkScope() )
             {
-                var groupType = checkinGroupTypeEditor.GetCheckinGroupType();
-                GroupTypeCheckinLabelAttributesState.Add( checkinGroupTypeEditor.GroupTypeGuid, checkinGroupTypeEditor.CheckinLabels );
-                groupTypeUIList.Add( groupType );
+                GroupTypeService groupTypeService = new GroupTypeService();
+                GroupService groupService = new GroupService();
+                AttributeService attributeService = new AttributeService();
+
+                int parentGroupTypeId = hfParentGroupTypeId.ValueAsInt();
+
+                var groupTypeUIList = new List<GroupType>();
+
+                foreach ( var checkinGroupTypeEditor in phCheckinGroupTypes.Controls.OfType<CheckinGroupTypeEditor>().ToList() )
+                {
+                    var groupType = checkinGroupTypeEditor.GetCheckinGroupType();
+                    groupTypeUIList.Add( groupType );
+                }
+
+                var groupTypeDBList = new List<GroupType>();
+
+                var groupTypesToDelete = new List<GroupType>();
+                var groupsToDelete = new List<Group>();
+
+                var groupTypesToAddUpdate = new List<GroupType>();
+                var groupsToAddUpdate = new List<Group>();
+
+                GroupType parentGroupTypeDB = groupTypeService.Get( parentGroupTypeId );
+                GroupType parentGroupTypeUI = parentGroupTypeDB.Clone( false );
+                parentGroupTypeUI.ChildGroupTypes = groupTypeUIList;
+
+                PopulateDeleteLists( groupTypesToDelete, groupsToDelete, parentGroupTypeDB, parentGroupTypeUI );
+                PopulateAddUpdateLists( groupTypesToAddUpdate, groupsToAddUpdate, parentGroupTypeUI );
+
+                int binaryFileFieldTypeID = new FieldTypeService().Get( new Guid( Rock.SystemGuid.FieldType.BINARY_FILE ) ).Id;
+                int binaryFileTypeId = new BinaryFileTypeService().Get( new Guid( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL ) ).Id;
+
+                RockTransactionScope.WrapTransaction( () =>
+                {
+
+                    // delete in reverse order to get deepest child items first
+                    groupsToDelete.Reverse();
+                    foreach ( var groupToDelete in groupsToDelete )
+                    {
+                        groupService.Delete( groupToDelete, this.CurrentPersonId );
+                    }
+
+                    // delete in reverse order to get deepest child items first
+                    groupTypesToDelete.Reverse();
+                    foreach ( var groupTypeToDelete in groupTypesToDelete )
+                    {
+                        groupTypeService.Delete( groupTypeToDelete, this.CurrentPersonId );
+                    }
+
+                    // Add/Update grouptypes and groups that are in the UI
+                    foreach ( GroupType groupTypeUI in groupTypesToAddUpdate )
+                    {
+                        GroupType groupTypeDB = groupTypeService.Get( groupTypeUI.Guid );
+                        if ( groupTypeDB == null )
+                        {
+                            groupTypeDB = new GroupType();
+                            groupTypeDB.Id = 0;
+                            groupTypeDB.Guid = groupTypeUI.Guid;
+                        }
+
+                        groupTypeDB.Name = groupTypeUI.Name;
+                        groupTypeDB.Order = groupTypeUI.Order;
+                        groupTypeDB.InheritedGroupTypeId = groupTypeUI.InheritedGroupTypeId;
+
+                        groupTypeDB.Attributes = groupTypeUI.Attributes;
+                        groupTypeDB.AttributeValues = groupTypeUI.AttributeValues;
+
+                        // rebuild the CheckinLabel attributes from the UI (brute-force)
+                        foreach ( var labelAttributeDB in CheckinGroupTypeEditor.GetCheckinLabelAttributes( groupTypeDB ) )
+                        {
+                            var attribute = attributeService.Get( labelAttributeDB.Value.Guid );
+                            attributeService.Delete( attribute, this.CurrentPersonId );
+                        }
+
+                        foreach ( var checkinLabelAttributeInfo in GroupTypeCheckinLabelAttributesState[groupTypeUI.Guid] )
+                        {
+                            var attribute = new Rock.Model.Attribute();
+                            attribute.Guid = Guid.NewGuid();
+                            attribute.FieldTypeId = binaryFileFieldTypeID;
+                            attribute.EntityTypeQualifierColumn = "BinaryFileTypeId";
+                            attribute.EntityTypeQualifierValue = binaryFileTypeId.ToString();
+                            attribute.DefaultValue = checkinLabelAttributeInfo.BinaryFileId.ToString();
+                            attribute.Key = checkinLabelAttributeInfo.AttributeKey;
+                            attributeService.Add( attribute, this.CurrentPersonId );
+                            attributeService.Save( attribute, this.CurrentPersonId );
+                        }
+
+                        if ( groupTypeDB.Id == 0 )
+                        {
+                            groupTypeService.Add( groupTypeDB, this.CurrentPersonId );
+                        }
+
+                        groupTypeService.Save( groupTypeDB, this.CurrentPersonId );
+
+                        Rock.Attribute.Helper.SaveAttributeValues( groupTypeDB, this.CurrentPersonId );
+                    }
+
+                    // Add/Update Groups
+                    foreach ( var groupUI in groupsToAddUpdate )
+                    {
+                        Group groupDB = groupService.Get( groupUI.Guid );
+                        if ( groupDB == null )
+                        {
+                            groupDB = new Group();
+                            groupDB.Guid = groupUI.Guid;
+                        }
+
+                        groupDB.Name = groupUI.Name;
+                        groupDB.GroupLocations = groupUI.GroupLocations;
+                        groupDB.Order = groupUI.Order;
+                        groupDB.Attributes = groupUI.Attributes;
+                        groupDB.AttributeValues = groupUI.AttributeValues;
+
+                        if ( groupDB.Id == 0 )
+                        {
+                            groupService.Add( groupDB, this.CurrentPersonId );
+                        }
+
+                        groupService.Save( groupDB, this.CurrentPersonId );
+                        Rock.Attribute.Helper.SaveAttributeValues( groupDB, this.CurrentPersonId );
+                    }
+
+                    // ToDo - Parent/ChildGroupTypes
+
+                } );
             }
 
-            var groupTypeDBList = new List<GroupType>();
+            // TODO - Navigate
+        }
 
+        /// <summary>
+        /// Populates the delete lists (recursive)
+        /// </summary>
+        /// <param name="groupTypesToDelete">The group types to delete.</param>
+        /// <param name="groupsToDelete">The groups to delete.</param>
+        /// <param name="groupTypeDB">The group type DB.</param>
+        /// <param name="groupTypeUI">The group type UI.</param>
+        private static void PopulateDeleteLists( List<GroupType> groupTypesToDelete, List<Group> groupsToDelete, GroupType groupTypeDB, GroupType groupTypeUI )
+        {
             // limit to child group types that are not Templates
             int[] templateGroupTypes = new int[] {
                 DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE).Id, 
                 DefinedValueCache.Read(Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_FILTER).Id
             };
 
-            var groupTypesToDelete = new List<GroupType>();
-            var groupsToDelete = new List<Group>();
-
-            foreach (GroupType groupTypeUI in groupTypeUIList)
+            // delete non-template childgrouptypes that were deleted in this ui
+            foreach ( var childGroupTypeDB in groupTypeDB.ChildGroupTypes )
             {
-                GroupType groupTypeDB = groupTypeService.Get( groupTypeUI.Guid );
-                if ( groupTypeDB == null )
+                if ( !templateGroupTypes.Contains( childGroupTypeDB.GroupTypePurposeValueId ?? 0 ) )
                 {
-                    groupTypeDB = new GroupType();
-                    groupTypeDB.Guid = groupTypeUI.Guid;
-                }
-
-                groupTypeDB.Name = groupTypeUI.Name;
-                groupTypeDB.InheritedGroupTypeId = groupTypeUI.InheritedGroupTypeId;
-                
-                // delete non-template childgrouptypes that were deleted in this ui
-                foreach (var childGroupTypeDB in groupTypeDB.ChildGroupTypes)
-                {
-                    if (!templateGroupTypes.Contains(childGroupTypeDB.GroupTypePurposeValueId ?? 0))
+                    GroupType childGroupTypeUI = null;
+                    if ( groupTypeUI != null )
                     {
-                        if (!groupTypeUI.ChildGroupTypes.Select(a => a.Guid).Contains(childGroupTypeDB.Guid))
+                        childGroupTypeUI = groupTypeUI.ChildGroupTypes.FirstOrDefault( a => a.Guid == childGroupTypeDB.Guid );
+                    }
+
+                    PopulateDeleteLists( groupTypesToDelete, groupsToDelete, childGroupTypeDB, childGroupTypeUI );
+
+                    if ( childGroupTypeUI == null )
+                    {
+                        groupTypesToDelete.Add( childGroupTypeDB );
+
+                        foreach ( var group in childGroupTypeDB.Groups )
                         {
-                            // TODO Delete GroupType and its Group and ChildGroupTypes recursively
+                            groupsToDelete.Add( group );
                         }
                     }
                 }
-
-                foreach (var childGroup in groupTypeDB.Groups)
-                {
-                    if (!groupTypeUI.Groups.Select(a => a.Guid).Contains(childGroup.Guid))
-                    {
-                        // TODO Delete Group
-                    }
-                }
-
-                // add/update Groups of each GroupType
-                foreach (var childGroupUI in groupTypeUI.Groups)
-                {
-                    var childGroupDB = groupService.Get(childGroupUI.Guid);
-                    if (childGroupDB == null)
-                    {
-                        childGroupDB = new Group();
-                    }
-                }
-
-                // groupTypeDB.ChildGroupTypes
-
-                // groupTypeDBList.Add( groupTypeDB );
             }
+        }
 
-
-
-
-
+        /// <summary>
+        /// Populates the add update lists.
+        /// </summary>
+        /// <param name="groupTypesToAddUpdate">The group types to add update.</param>
+        /// <param name="groupsToAddUpdate">The groups to add update.</param>
+        /// <param name="groupTypeUI">The group type UI.</param>
+        private static void PopulateAddUpdateLists( List<GroupType> groupTypesToAddUpdate, List<Group> groupsToAddUpdate, GroupType groupTypeUI )
+        {
+            // delete non-template childgrouptypes that were deleted in this ui
+            foreach ( var childGroupTypeUI in groupTypeUI.ChildGroupTypes )
+            {
+                PopulateAddUpdateLists( groupTypesToAddUpdate, groupsToAddUpdate, childGroupTypeUI );
+                groupTypesToAddUpdate.Add( childGroupTypeUI );
+                foreach ( var groupUI in childGroupTypeUI.Groups )
+                {
+                    groupsToAddUpdate.Add( groupUI );
+                }
+            }
         }
 
         /// <summary>
