@@ -154,6 +154,11 @@ namespace Rock.SystemGuid
         public static string PERSON_ABILITY_LEVEL = "7BEEF4D4-0860-4913-9A3D-857634D1BF7C";
 
         /// <summary>
+        /// Guid for potential types of allergies
+        /// </summary>
+        public const string PERSON_ALLERGY_TYPE = "50F984FE-1CCF-4645-997E-A5610F3E5FFE";
+
+        /// <summary>
         /// Guid for the types of Batches (ACH, Visa, MasterCard, Discover, Amex, and PayPal)
         /// </summary>
         public static Guid FINANCIAL_BATCH_TYPE { get { return new Guid( "9e358fbe-2321-4c54-895f-c888e29298ae" ); } }
