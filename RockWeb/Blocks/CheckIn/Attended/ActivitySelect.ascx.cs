@@ -16,6 +16,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using System.Collections;
@@ -61,7 +62,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         BindLocations( person );
                         BindSchedules( person );
                         BindSelectedGrid();
-                        BindTagOptions();
+                        BindTagDropDown();
                     }
                     else
                     {
@@ -416,7 +417,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddTag_Click( object sender, EventArgs e )
         {
-            
             mpeAddTag.Show();
         }
 
@@ -602,20 +602,20 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
-        /// Binds the tag options.
+        /// Binds the tag drop down list.
         /// </summary>
-        protected void BindTagOptions()
+        protected void BindTagDropDown()
         {
             ddlTags.Items.Clear();
             ddlTags.Items.Add( new ListItem( Rock.Constants.None.Text, Rock.Constants.None.Id.ToString() ) );
-            DefinedTypeService definedTypeService = new DefinedTypeService();
-            DefinedValueService definedValueService = new DefinedValueService();
-            var definedType = definedTypeService.Queryable().Where( d => d.Name == "Allergies" ).FirstOrDefault();
-            var definedValueList = definedValueService.GetByDefinedTypeId( definedType.Id ).Select( d => new ListItem( d.Name, d.Id.ToString() ) ).OrderBy( d => d.Text ).ToList();
-            foreach ( var allergy in definedValueList )
+            var dtAllergy = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_ALLERGY_TYPE ) );
+            if ( dtAllergy != null && dtAllergy.DefinedValues.Count > 0 )
             {
-                allergy.Attributes.Add( "optiongroup", "Allergies" );
-                ddlTags.Items.Add( allergy );
+                foreach ( var allergy in dtAllergy.DefinedValues.Select( dv => new ListItem( dv.Name, dv.Id.ToString() ) ).OrderBy( d => d.Text ).ToList() )
+                {
+                    allergy.Attributes.Add( "optiongroup", "Allergies" );
+                    ddlTags.Items.Add( allergy );
+                }
             }
         }
 
