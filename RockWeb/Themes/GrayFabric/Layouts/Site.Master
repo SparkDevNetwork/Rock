@@ -18,11 +18,11 @@
     <asp:ContentPlaceHolder ID="css" runat="server" />
 
 	<!-- Included CSS Files -->
-	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/GrayFabric/Css/site-boot.less") %>"/>
-	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/GrayFabric/Css/site-boot-responsive.less") %>"/>
+	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/GrayFabric/Css/bootstrap.less") %>"/>
+	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/GrayFabric/Css/bootstrap-responsive.less") %>"/>
 	<link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.common.min.css") %>"/>
 	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/GrayFabric/Css/site-theme.less") %>"/>
-	<link rel="stylesheet" href="<%# ResolveUrl("~/CSS/developer.less") %>"/>
+	<link rel="stylesheet" href="<%# ResolveUrl("~/CSS/developer.css") %>"/>
 
     <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 

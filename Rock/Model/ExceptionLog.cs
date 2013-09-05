@@ -101,6 +101,7 @@ namespace Rock.Model
         /// <value>
         /// Whether the exception has an inner exception..
         /// </value>
+        // TODO: Consider making non-nullable when reviewing migration flattening.
         [DataMember]
         public bool? HasInnerException { get; set; }
         

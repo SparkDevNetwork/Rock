@@ -1,4 +1,4 @@
-﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Dialog.master.cs" Inherits="RockWeb.Themes.GrayFabric.Layouts.Dialog" %>
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Dialog.master.cs" Inherits="RockWeb.Themes.RockChMS.Layouts.Dialog" %>
 <%@ Import Namespace="System.Web.Optimization" %>
 <!DOCTYPE html>
 <html>
@@ -12,11 +12,11 @@
 
     <asp:ContentPlaceHolder ID="css" runat="server" />
 
-    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-boot.less") %>"/>
-	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-boot-responsive.less") %>"/>
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/bootstrap.less") %>"/>
+	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/bootstap-responsive.less") %>"/>
 	<link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.common.min.css") %>"/>
-	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/rock-theme.less") %>"/>
-	<link rel="stylesheet" href="<%# ResolveUrl("~/CSS/developer.less") %>"/>
+	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/site-theme.less") %>"/>
+	<link rel="stylesheet" href="<%# ResolveUrl("~/CSS/developer.css") %>"/>
 
     <style>
         html, body 

@@ -211,6 +211,26 @@ namespace Rock.Data
         }
 
         /// <summary>
+        /// Gets entities from a list of ids.
+        /// </summary>
+        /// <param name="ids">The ids.</param>
+        /// <returns></returns>
+        public virtual IEnumerable<T> GetByIds( List<int> ids)
+        {
+            return this.Queryable().Where( t => ids.Contains( t.Id ) ).ToList();
+        }
+
+        /// <summary>
+        /// Gets entities from a list of guids
+        /// </summary>
+        /// <param name="guids">The guids.</param>
+        /// <returns></returns>
+        public virtual IEnumerable<T> GetByGuids( List<Guid> guids )
+        {
+            return this.Queryable().Where( t => guids.Contains( t.Guid ) ).ToList();
+        }
+
+        /// <summary>
         /// Gets the model by the public encrypted key.
         /// </summary>
         /// <param name="encryptedKey">The encrypted key.</param>

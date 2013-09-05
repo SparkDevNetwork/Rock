@@ -12,6 +12,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
 using System.Web;
 
 using Rock.Data;
@@ -47,7 +48,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Record Type Id.
         /// </summary>
@@ -57,7 +58,7 @@ namespace Rock.Model
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.PERSON_RECORD_TYPE )]
         public int? RecordTypeValueId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Record Status Id.
         /// </summary>
@@ -67,7 +68,7 @@ namespace Rock.Model
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.PERSON_RECORD_STATUS )]
         public int? RecordStatusValueId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Record Status Reason Id.
         /// </summary>
@@ -77,7 +78,7 @@ namespace Rock.Model
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON )]
         public int? RecordStatusReasonValueId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Person Status Id.
         /// </summary>
@@ -96,9 +97,9 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MergeField]
-        public bool? IsDeceased 
+        public bool? IsDeceased
         {
-            get 
+            get
             {
                 return _isDeceased;
             }
@@ -125,7 +126,7 @@ namespace Rock.Model
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.PERSON_TITLE )]
         public int? TitleValueId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Given Name.
         /// </summary>
@@ -185,11 +186,22 @@ namespace Rock.Model
         {
             get
             {
-                return FirstName + " " + LastName;
+                var fullName = new StringBuilder();
+
+                if ( TitleValue != null && !string.IsNullOrWhiteSpace( TitleValue.Name ) )
+                    fullName.AppendFormat( "{0} ", TitleValue.Name );
+
+                fullName.AppendFormat( "{0} {1}", FirstName, LastName );
+
+                if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Name ) )
+                    fullName.AppendFormat( " {0}", SuffixValue.Name );
+
+                return fullName.ToString();
             }
-            private set
-            {
-            }
+
+            // TODO: Private set currently not needed, but not possible to remove without a migration. 
+            // Consider removing during migration flattening.
+            private set { }
         }
 
         /// <summary>
@@ -204,9 +216,10 @@ namespace Rock.Model
             {
                 return string.IsNullOrEmpty( NickName ) ? GivenName : NickName;
             }
-            private set
-            {
-            }
+
+            // TODO: Private set currently not needed, but not possible to remove without a migration. 
+            // Consider removing during migration flattening.
+            private set { }
         }
 
         /// <summary>
@@ -219,13 +232,21 @@ namespace Rock.Model
         {
             get
             {
-                return LastName + ", " + FirstName;
+                var fullName = new StringBuilder();
+                fullName.Append( LastName );
+
+                if ( SuffixValue != null && !string.IsNullOrWhiteSpace( SuffixValue.Name ) )
+                    fullName.AppendFormat( " {0}", SuffixValue.Name );
+
+                fullName.AppendFormat( ", {0}", FirstName );
+                return fullName.ToString();
             }
-            private set
-            {
-            }
+
+            // TODO: Private set currently not needed, but not possible to remove without a migration. 
+            // Consider removing during migration flattening.
+            private set { }
         }
-        
+
         /// <summary>
         /// Gets or sets the Suffix Id.
         /// </summary>
@@ -235,7 +256,7 @@ namespace Rock.Model
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.PERSON_SUFFIX )]
         public int? SuffixValueId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Photo Id.
         /// </summary>
@@ -244,7 +265,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public int? PhotoId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Birth Day.
         /// </summary>
@@ -254,7 +275,7 @@ namespace Rock.Model
         [DataMember]
         [MergeField]
         public int? BirthDay { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Birth Month.
         /// </summary>
@@ -264,7 +285,7 @@ namespace Rock.Model
         [DataMember]
         [MergeField]
         public int? BirthMonth { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Birth Year.
         /// </summary>
@@ -274,7 +295,7 @@ namespace Rock.Model
         [DataMember]
         [MergeField]
         public int? BirthYear { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Gender.
         /// </summary>
@@ -296,7 +317,7 @@ namespace Rock.Model
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.PERSON_MARITAL_STATUS )]
         public int? MaritalStatusValueId { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Anniversary Date.
         /// </summary>
@@ -307,7 +328,7 @@ namespace Rock.Model
         [MergeField]
         [Column( TypeName = "Date" )]
         public DateTime? AnniversaryDate { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Graduation Date.
         /// </summary>
@@ -318,7 +339,7 @@ namespace Rock.Model
         [MergeField]
         [Column( TypeName = "Date" )]
         public DateTime? GraduationDate { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Email.
         /// </summary>
@@ -330,7 +351,7 @@ namespace Rock.Model
         [Previewable]
         [MergeField]
         public string Email { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Email Is Active.
         /// </summary>
@@ -339,7 +360,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public bool? IsEmailActive { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Email Note.
         /// </summary>
@@ -350,7 +371,7 @@ namespace Rock.Model
         [DataMember]
         [MergeField]
         public string EmailNote { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Do Not Email.
         /// </summary>
@@ -361,7 +382,7 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         [MergeField]
         public bool DoNotEmail { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the System Note.
         /// </summary>
@@ -372,7 +393,7 @@ namespace Rock.Model
         [DataMember]
         [MergeField]
         public string SystemNote { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Viewed Count.
         /// </summary>
@@ -395,7 +416,7 @@ namespace Rock.Model
         [DataMember]
         [MergeField]
         public virtual ICollection<UserLogin> Users { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Email Templates.
         /// </summary>
@@ -404,7 +425,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual ICollection<EmailTemplate> EmailTemplates { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Phone Numbers.
         /// </summary>
@@ -414,7 +435,7 @@ namespace Rock.Model
         [DataMember]
         [MergeField]
         public virtual ICollection<PhoneNumber> PhoneNumbers { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Members.
         /// </summary>
@@ -449,7 +470,7 @@ namespace Rock.Model
         [DataMember]
         [MergeField]
         public virtual DefinedValue MaritalStatusValue { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Person Status.
         /// </summary>
@@ -459,7 +480,7 @@ namespace Rock.Model
         [DataMember]
         [MergeField]
         public virtual DefinedValue PersonStatusValue { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Record Status.
         /// </summary>
@@ -469,7 +490,7 @@ namespace Rock.Model
         [DataMember]
         [MergeField]
         public virtual DefinedValue RecordStatusValue { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Record Status Reason.
         /// </summary>
@@ -479,7 +500,7 @@ namespace Rock.Model
         [DataMember]
         [MergeField]
         public virtual DefinedValue RecordStatusReasonValue { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Record Type.
         /// </summary>
@@ -489,7 +510,7 @@ namespace Rock.Model
         [DataMember]
         [MergeField]
         public virtual DefinedValue RecordTypeValue { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Suffix.
         /// </summary>
@@ -499,7 +520,7 @@ namespace Rock.Model
         [DataMember]
         [MergeField]
         public virtual DefinedValue SuffixValue { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the Title.
         /// </summary>
@@ -624,7 +645,7 @@ namespace Rock.Model
                     DateTime today = DateTime.Today;
                     int years = today.Year - bday.Year;
                     if ( bday > today.AddYears( -years ) ) years--;
-                    
+
                     // Calculate days between last and next bday (differs on leap years).
                     DateTime lastBday = bday.AddYears( years );
                     DateTime nextBday = lastBday.AddYears( 1 );
@@ -661,7 +682,7 @@ namespace Rock.Model
                     // Use the GradeTransitionDate (aka grade promotion date) to figure out what grade their in
                     DateTime transitionDate;
                     var globalAttributes = GlobalAttributesCache.Read();
-                    if ( ! DateTime.TryParse( globalAttributes.GetValue( "GradeTransitionDate" ), out transitionDate ) )
+                    if ( !DateTime.TryParse( globalAttributes.GetValue( "GradeTransitionDate" ), out transitionDate ) )
                     {
                         return null;
                     }
@@ -680,7 +701,7 @@ namespace Rock.Model
                     if ( DateTime.TryParse( globalAttributes.GetValue( "GradeTransitionDate" ), out transitionDate ) )
                     {
                         int gradeFactorReactor = ( DateTime.Now < transitionDate ) ? 12 : 13;
-                        GraduationDate = DateTime.Now.AddYears( gradeFactorReactor - value.Value);
+                        GraduationDate = DateTime.Now.AddYears( gradeFactorReactor - value.Value );
                     }
                 }
                 else
@@ -725,13 +746,13 @@ namespace Rock.Model
         /// <returns></returns>
         public override Dictionary<string, object> ToDictionary()
         {
-            var dictionary =  base.ToDictionary();
+            var dictionary = base.ToDictionary();
             dictionary.Add( "BirthDate", BirthDate );
             dictionary.Add( "Age", AgePrecise );
             dictionary.Add( "DaysToBirthday", DaysToBirthday );
             return dictionary;
         }
- 
+
         #endregion
 
         #region Methods
@@ -758,34 +779,33 @@ namespace Rock.Model
         /// </summary>
         /// <param name="personId">The person id.</param>
         /// <param name="relatedPersonId">The related person id.</param>
-        /// <param name="curreontPersonId">The current person id.</param>
-        public static void CreateCheckinRelationship(int personId, int relatedPersonId, int? currentPersonId)
+        /// <param name="currentPersonId">The current person id.</param>
+        public static void CreateCheckinRelationship( int personId, int relatedPersonId, int? currentPersonId )
         {
-            using ( new UnitOfWorkScope())
+            using ( new UnitOfWorkScope() )
             {
                 var groupMemberService = new GroupMemberService();
                 var knownRelationshipGroup = groupMemberService.Queryable()
                     .Where( m =>
                         m.PersonId == personId &&
-                        m.GroupRole.Guid.Equals( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
+                        m.GroupRole.Guid.Equals( new Guid( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER ) ) )
                     .Select( m => m.Group )
                     .FirstOrDefault();
 
                 if ( knownRelationshipGroup != null )
                 {
                     int? canCheckInRoleId = new GroupRoleService().Queryable()
-                        .Where( r => 
-                            r.Guid.Equals(new Guid(Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN)))
-                        .Select( r => r.Id)
+                        .Where( r =>
+                            r.Guid.Equals( new Guid( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN ) ) )
+                        .Select( r => r.Id )
                         .FirstOrDefault();
                     if ( canCheckInRoleId.HasValue )
                     {
                         var canCheckInMember = groupMemberService.Queryable()
-                            .Where( m =>
+                            .FirstOrDefault( m =>
                                 m.GroupId == knownRelationshipGroup.Id &&
                                 m.PersonId == relatedPersonId &&
-                                m.GroupRoleId == canCheckInRoleId.Value )
-                            .FirstOrDefault();
+                                m.GroupRoleId == canCheckInRoleId.Value );
 
                         if ( canCheckInMember == null )
                         {
@@ -823,13 +843,13 @@ namespace Rock.Model
         /// </summary>
         public PersonConfiguration()
         {
-            this.HasOptional( p => p.MaritalStatusValue ).WithMany().HasForeignKey( p => p.MaritalStatusValueId ).WillCascadeOnDelete(false);
-            this.HasOptional( p => p.PersonStatusValue ).WithMany().HasForeignKey( p => p.PersonStatusValueId ).WillCascadeOnDelete(false);
-            this.HasOptional( p => p.RecordStatusValue ).WithMany().HasForeignKey( p => p.RecordStatusValueId ).WillCascadeOnDelete(false);
-            this.HasOptional( p => p.RecordStatusReasonValue ).WithMany().HasForeignKey( p => p.RecordStatusReasonValueId ).WillCascadeOnDelete(false);
-            this.HasOptional( p => p.RecordTypeValue ).WithMany().HasForeignKey( p => p.RecordTypeValueId ).WillCascadeOnDelete(false);
-            this.HasOptional( p => p.SuffixValue ).WithMany().HasForeignKey( p => p.SuffixValueId ).WillCascadeOnDelete(false);
-            this.HasOptional( p => p.TitleValue ).WithMany().HasForeignKey( p => p.TitleValueId ).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.MaritalStatusValue ).WithMany().HasForeignKey( p => p.MaritalStatusValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.PersonStatusValue ).WithMany().HasForeignKey( p => p.PersonStatusValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.RecordStatusValue ).WithMany().HasForeignKey( p => p.RecordStatusValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.RecordStatusReasonValue ).WithMany().HasForeignKey( p => p.RecordStatusReasonValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.RecordTypeValue ).WithMany().HasForeignKey( p => p.RecordTypeValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.SuffixValue ).WithMany().HasForeignKey( p => p.SuffixValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.TitleValue ).WithMany().HasForeignKey( p => p.TitleValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Photo ).WithMany().HasForeignKey( p => p.PhotoId ).WillCascadeOnDelete( false );
         }
     }

@@ -3,15 +3,21 @@
 
     1. Reusable Classes
     2. Master Page Styles
+    3. Header
+    4. Homepage Layout
+    5. Inside Page Layout
+    6. Footer
+    7. Responsive Logic
+    8. Retina 
 
 */
 
 
 // Load Master Styles
 // -------------------------
-@import "site-global-variables.less";
-@import "site-bootstrap-variables.less";
-@import "../../../Css/rock-core.less";
+@import "_site-variables.less";
+@import "_bootstrap-variables.less";
+@import "../../../Css/_rock-core.less";
 
 
 
@@ -30,6 +36,24 @@
 	text-align: right;
 }
 
+.bold
+{
+    font-weight: @font-bold-weight;
+}
+
+a:hover
+{
+    text-decoration: none;
+}
+
+.title-image {
+    width: 100%;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #c9c9c9;
+}
+
 // 2. Master Page Styles
 // -------------------------
 
@@ -40,7 +64,6 @@ body {
 }
 
 #band {
-	height: 300px;
 	width: 100%;
 	position: absolute;
 	top: 0;
@@ -55,6 +78,14 @@ body {
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#c8c6c6', endColorstr='#7a7a7a',GradientType=0 );
 	z-index: -1;
 	border-bottom: 1px solid #bebebe;
+
+    &.homepage {
+        height: 300px;
+    }
+
+    &.insidepage {
+        height: 115px;
+    }
 }
 
 
@@ -117,6 +148,7 @@ header .navbar-inner {
 header .navbar .nav > li > a {
 	color: #e6e4e4;
 	text-shadow: 0 1px 0 rgba(0,0,0, 0.8);
+    font-weight: @font-semibold-weight;
 }
 
 header .navbar .nav > li:hover > a {
@@ -129,7 +161,7 @@ header .navbar .divider-vertical {
 }
 
 
-// 4. Homepage Promotions
+// 4. Homepage Layout
 // -------------------------
 
 .promo-slider {
@@ -164,7 +196,7 @@ header .navbar .divider-vertical {
 }
 
 .promo-secondary a:after {
-	content: url('../img/sub-promo-shadow.png');
+	content: url('../Assets/Images/sub-promo-shadow.png');
 	display:block;
     position:relative;
     bottom: 0;
@@ -172,8 +204,7 @@ header .navbar .divider-vertical {
     overflow: hidden;
 }
 
-// 5. Homepage Contact Info
-// -------------------------
+/* contact info */
 
 section.contact {
 	margin-top: 40px;
@@ -218,8 +249,13 @@ section.contact .traditional .info .bold {
 	font-size: 18px;
 }
 
+// 5. Inside Page Layout
+// -------------------------
 
-
+#content {
+    margin-top: 48px;
+    color: @site-text-color;
+}
 
 
 // 6. Footer

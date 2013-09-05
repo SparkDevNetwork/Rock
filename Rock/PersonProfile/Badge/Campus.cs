@@ -42,9 +42,9 @@ namespace Rock.PersonProfile.Badge
         /// </summary>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public override BadgeType GetBadgeType( Person person )
+        public override string GetBadgeType( Person person )
         {
-            return BadgeType.Info;
+            return "Campus";
         }
 
         /// <summary>

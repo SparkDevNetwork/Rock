@@ -10,7 +10,6 @@ using System;
 using System.Collections.Specialized;
 using System.IO;
 using System.Net;
-using System.Text;
 using System.Web;
 
 using ImageResizer;
@@ -63,8 +62,10 @@ namespace RockWeb
                     return;
                 }
 
+                var fileType = file.BinaryFileType;
+
                 // Is it cached
-                if ( file.AllowCaching && File.Exists( physFilePath ) )
+                if ( fileType.AllowCaching && File.Exists( physFilePath ) )
                 {
                     // Is cached version newer?
                     if ( !file.LastModifiedDateTime.HasValue ||
@@ -88,7 +89,7 @@ namespace RockWeb
                 if ( queryString.Count > 1 )
                     Resize( queryString, file );
 
-                if ( file.AllowCaching )
+                if ( fileType.AllowCaching )
                     Cache( file, physFilePath );
 
                 // Post process
@@ -96,7 +97,7 @@ namespace RockWeb
             }
             catch ( Exception ex )
             {
-                // TODO: log this error
+                ExceptionLogService.LogException( ex, context ); 
                 context.Response.StatusCode = 500;
                 context.Response.StatusDescription = ex.Message;
                 context.Response.Flush();
@@ -124,14 +125,10 @@ namespace RockWeb
         /// <param name="physFilePath">The phys file path.</param>
         private static void Cache( BinaryFile file, string physFilePath )
         {
-            try
+            using ( BinaryWriter binWriter = new BinaryWriter( File.Open( physFilePath, FileMode.Create ) ) )
             {
-                using ( BinaryWriter binWriter = new BinaryWriter( File.Open( physFilePath, FileMode.Create ) ) )
-                {
-                    binWriter.Write( file.Data.Content );
-                }
+                binWriter.Write( file.Data.Content );
             }
-            catch { /* do nothing, not critical if this fails, although TODO: log */ }
         }
 
         /// <summary>
@@ -153,7 +150,6 @@ namespace RockWeb
             }
             catch
             {
-                var log = new ExceptionLog();
                 return null;
             }
 

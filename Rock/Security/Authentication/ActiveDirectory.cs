@@ -24,6 +24,18 @@ namespace Rock.Security.Authentication
     public class ActiveDirectory : AuthenticationComponent
     {
         /// <summary>
+        /// Determines if user is directed to another site (i.e. Facebook, Gmail, Twitter, etc) to confirm approval of using
+        /// that site's credentials for authentication.
+        /// </summary>
+        /// <value>
+        /// The requires remote authentication.
+        /// </value>
+        public override bool RequiresRemoteAuthentication
+        {
+            get { return false; }
+        }
+
+        /// <summary>
         /// Authenticates the specified user name and password
         /// </summary>
         /// <param name="user">The user.</param>
@@ -51,6 +63,26 @@ namespace Rock.Security.Authentication
         public override string EncodePassword( UserLogin user, string password )
         {
             return null;
+        }
+
+        public override bool Authenticate( System.Web.HttpRequest request, out string userName, out string returnUrl )
+        {
+            throw new NotImplementedException();
+        }
+
+        public override Uri GenerateLoginUrl( System.Web.HttpRequest request )
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool IsReturningFromAuthentication( System.Web.HttpRequest request )
+        {
+            throw new NotImplementedException();
+        }
+
+        public override string ImageUrl()
+        {
+            throw new NotImplementedException();
         }
     }
 }

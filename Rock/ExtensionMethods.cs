@@ -14,10 +14,8 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web.Routing;
 using System.Web.UI.WebControls;
-
 using DotLiquid;
 using Newtonsoft.Json;
-
 using Rock.Data;
 using Rock.Model;
 
@@ -314,6 +312,7 @@ namespace Rock
 
             return false;
         }
+        
         /// <summary>
         /// Attempts to convert string to integer.  Returns null if unsuccessful.
         /// </summary>
@@ -361,6 +360,23 @@ namespace Rock
             Template template = Template.Parse( content );
 
             return template.Render( Hash.FromDictionary( mergeObjects ) );
+        }
+
+        /// <summary>
+        /// Converts string to a HTML title "<span class='first-word'>first-word</span> rest of string"
+        /// </summary>
+        /// <param name="str">The STR.</param>
+        /// <returns></returns>
+        public static string FormatAsHtmlTitle(this string str)
+        {
+
+            // split first word from rest of string
+            int endOfFirstWord = str.IndexOf(" ");
+
+            if (endOfFirstWord != -1)
+                return "<span class='first-word'>" + str.Substring(0, endOfFirstWord) + " </span> " + str.Substring(endOfFirstWord, str.Length - endOfFirstWord);
+            else
+                return "<span class='first-word'>" + str + " </span>";
         }
 
         #endregion
@@ -752,6 +768,43 @@ namespace Rock
                 parentControl = parentControl.Parent;
             }
             return null;
+        }
+
+        /// <summary>
+        /// Gets all controls of Type recursively
+        /// http://stackoverflow.com/questions/7362482/c-sharp-get-all-web-controls-on-page
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="controlCollection">The control collection.</param>
+        /// <param name="resultCollection">The result collection.</param>
+        private static void GetControlListRecursive<T>( this System.Web.UI.ControlCollection controlCollection, List<T> resultCollection ) where T : System.Web.UI.Control
+        {
+            foreach ( System.Web.UI.Control control in controlCollection )
+            {
+                if ( control is T )
+                {
+                    resultCollection.Add( (T)control );
+                }
+
+                if ( control.HasControls() )
+                {
+                    GetControlListRecursive( control.Controls, resultCollection );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets all controls of Type recursively
+        /// http://stackoverflow.com/questions/7362482/c-sharp-get-all-web-controls-on-page
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="control">The control.</param>
+        /// <returns></returns>
+        public static List<T> ControlsOfTypeRecursive<T>( this System.Web.UI.Control control ) where T : System.Web.UI.Control
+        {
+            List<T> result = new List<T>();
+            GetControlListRecursive<T>( control.Controls, result );
+            return result;
         }
 
         #endregion

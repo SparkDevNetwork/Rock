@@ -1,0 +1,229 @@
+
+// Fonts
+// -------------------------
+
+// regular (weight 'normal' aka 400)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.woff') format('woff'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.ttf') format('truetype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
+    font-weight: 400;
+    font-style: normal;
+}
+
+// light (weight 300)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot');
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.woff') format('woff'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.ttf') format('truetype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.svg#OpenSansLight') format('svg');
+    font-weight: 300;
+    font-style: normal;
+}
+
+// semi-bold (weight 600)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot');
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.woff') format('woff'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.ttf') format('truetype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.svg#OpenSansSemibold') format('svg');
+    font-weight: 600;
+    font-style: normal;
+}
+
+// bold (weight 700)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot');
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.woff') format('woff'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.ttf') format('truetype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.svg#OpenSansBold') format('svg');
+    font-weight: 700;
+    font-style: normal;
+}
+
+
+
+// Global Values
+// --------------------------------------------------
+
+@const-border-darken-amt: 10%; /* creates a border color by darkening the background by this amount */
+
+@site-text-color:           #989898;
+@site-link-color:           #ecf2f5;
+
+@site-background-color: #f4f4f4;
+
+@site-header-background:     #3A3A3A;
+@site-header-text-color: #bbb;
+
+@site-footer-background: @site-header-background;
+@site-footer-text-color: @site-header-text-color;
+
+@site-modal-header-background: @site-header-background;
+@site-modal-header-text-color: @site-header-text-color;
+
+@site-border-radius: 4px;
+@site-accentbold-color: #779cb1;
+@site-accentbold-inverse-color: #ecf0f3;
+@site-accent-color: #d9e1e8;
+@site-accent-inverse-color: @site-text-color;
+@site-accentlight-color: #e7ecf0;
+@site-accentlight-inverse-color: @site-text-color;
+@site-pagetitle-background: #c7cacd;
+
+@site-error-text: #b94a48;
+@site-error-background: #f2dede;
+
+@site-warning-text: #c09853;
+@site-warning-background: #fcf8e3;
+
+@site-success-text: #468847;
+@site-success-background: #f2dede;
+
+@site-info-text: @site-accentlight-inverse-color;
+@site-info-background: @site-accentlight-color;
+
+
+// Font Variables
+@font-family:           'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+@font-light-weight:     300;
+@font-bold-weight:      700;
+@font-semibold-weight:  600;
+
+
+// Buttons
+// -------------------------
+@button-default-background: #fff;
+@button-primary-background: @site-accentbold-color;
+@button-info-background: #5bc0de;
+@button-success-background: #62c462;
+@button-warning-background: #f89406;
+@button-danger-background: #ee5f5b;
+
+@button-disabled-background: red;
+@button-disabled-text-color: #fff;
+
+// Grid
+// -------------------------
+@grid-filter-background: #d9e1e8;
+
+@grid-column-header-background: @site-accentbold-color;
+@grid-column-header-font-color: @site-accentbold-inverse-color;
+@grid-column-header-font-size: 14px;
+
+@grid-hover-background: @site-accentlight-color;
+
+@grid-footer-background: #d9e1e8;
+@grid-footer-font-color: #444;
+@grid-footer-font-size: 10px;
+@grid-footer-font-weight: 300;
+
+
+
+// Components
+// -------------------------
+
+/* admin bar */
+@adminbar-background: @site-accentbold-color;
+@adminbar-text-color: @site-accentbold-inverse-color;
+
+/* tooltip */
+@tooltip-header-background: @site-accent-color;
+@tooltip-header-text-color: @site-accent-inverse-color;
+@tooltip-background: @site-background-color;
+
+/* widget */
+@widget-header-background: @site-accentlight-color;
+@widget-header-text-color: @site-accentlight-inverse-color;
+@widget-header-background-dark: @site-accentbold-color;
+@widget-header-text-color-dark: @site-accentbold-inverse-color;
+
+/* panel */
+@panel-border-radius: 4px;
+@panel-background: @site-accentlight-color;
+@panel-border-color: darken(@panel-background, 10%);
+@panel-border-size: 1px;
+@panel-padding: 20px;
+
+// titles
+@title-firstword-weight: @font-bold-weight;
+@title-default-weight: @font-light-weight;
+
+/* banner */
+@banner-font-color: @site-accentbold-inverse-color;
+@banner-font-weight: @title-default-weight;
+@banner-firstword-weight: @title-firstword-weight;
+@banner-font-size: 24px;
+@banner-background: @site-accentbold-color;
+@banner-border-radius: 0;
+@banner-border-color: transparent;  
+@banner-border-size: 0;  
+@banner-padding: 4px 12px;
+
+/* treeview */
+@tree-selected-background: @site-accentbold-color;
+@tree-selected-color: @site-accentbold-inverse-color;
+@tree-hover-background: @site-accentlight-color;
+@tree-hover-color: @site-text-color;
+
+/* page list */
+@pagelist-background: @site-accent-color;
+@pagelist-text-color: @site-accent-inverse-color;
+
+/* tags */
+@tag-background: #c4ced6;
+@tag-text-color: @site-accentbold-inverse-color;
+@tag-border-radius: @site-border-radius;
+@tag-dot-color: #d6d6d6;
+@tag-background-alt: #aec2d4;
+
+/* smart search */
+@smartsearch-background: rgba(255, 255, 255, 0.1);
+@smartsearch-border-color: #2c2c2c;
+@smartsearch-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) inset, 0 1px 0 rgba(255, 255, 255, 0.15);
+@smartsearch-input-text-color: @site-header-text-color;
+@smartsearch-input-selection-background: #2e2e2e; 
+@smartsearch-input-selection-text-color: #fff; 
+
+// labels
+@label-campus: #83758f;
+@label-type: lighten(@banner-background, 5%);
+
+
+// Mixins
+// --------------------------------------------------
+
+// Block Gradient
+
+.block-gradient (@backgroundColor: @site-header-background) {
+  	background: @backgroundColor;
+	background-image: -moz-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@backgroundColor, 3%));
+	background-image: -ms-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@backgroundColor, 3%));
+	background-image: -webkit-gradient(linear, 0 0, 0 100%, from(lighten(@backgroundColor, 3%)), to(darken(@backgroundColor, 3%)));
+	background-image: -webkit-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@backgroundColor, 3%));
+	background-image: -o-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@site-header-background, 3%));
+	background-image: linear-gradient(top, lighten(@backgroundColor, 3%), darken(@backgroundColor, 3%));
+	background-repeat: repeat-x;
+    filter: initial;
+}
+
+.make-gradient(@baseColor: #fff) {
+	background: @baseColor;
+	background:-moz-linear-gradient(top, darken( @baseColor, 3%) 0%, @baseColor 100%); /* FF3.6+ */
+	background:-webkit-gradient(linear, left top, left bottom, color-stop(0%,darken( @baseColor, 3%)), color-stop(100%,@baseColor)); /* Chrome,Safari4+ */
+	background:-webkit-linear-gradient(top, darken( @baseColor, 3%) 0%,@baseColor 100%); /* Chrome10+,Safari5.1+ */
+	background:-o-linear-gradient(top, darken( @baseColor, 3%) 0%,@baseColor 100%); /* Opera11.10+ */
+	background:-ms-linear-gradient(top, darken( @baseColor, 3%) 0%,@baseColor 100%); /* IE10+ */
+	background:linear-gradient(top, darken( @baseColor, 3%) 0%,@baseColor 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='darken( @baseColor, 3%)', endColorstr='@baseColor');
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr='darken( @baseColor, 3%)', endColorstr='@baseColor')";
+}
