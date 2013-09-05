@@ -221,6 +221,14 @@ namespace RockWeb.Blocks.CheckIn.Attended
             selectedLocation.Selected = false;
             selectedSchedule.Selected = false;
 
+            // if there are no groups selected anymore, unselect the group type and the person
+            selectedGroup = person.GroupTypes.Where( gt => gt.Selected ).FirstOrDefault().Groups.Where( g => g.Selected ).FirstOrDefault();
+            if ( selectedGroup == null )
+            {
+                selectedGroupType.Selected = false;
+                person.Selected = false;
+            }
+
             BindGrid();
 
         }
