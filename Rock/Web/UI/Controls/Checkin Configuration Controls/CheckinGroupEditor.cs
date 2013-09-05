@@ -23,7 +23,7 @@ namespace Rock.Web.UI.Controls
         private HiddenField hfGroupGuid;
         private HiddenField hfGroupId;
         private HiddenField hfGroupTypeId;
-        private Label lblGroupName;
+        private Literal lblGroupName;
         private LinkButton lbDeleteGroup;
 
         private DataTextBox tbGroupName;
@@ -260,7 +260,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             hfGroupTypeId = new HiddenField();
             hfGroupTypeId.ID = this.ID + "_hfGroupTypeId";
 
-            lblGroupName = new Label();
+            lblGroupName = new Literal();
             lblGroupName.ClientIDMode = ClientIDMode.Static;
             lblGroupName.ID = this.ID + "_lblGroupName";
 

@@ -21,7 +21,7 @@ namespace Rock.Web.UI.Controls
     {
         private HiddenField hfGroupTypeGuid;
         private HiddenField hfGroupTypeId;
-        private Label lblGroupTypeName;
+        private Literal lblGroupTypeName;
         private LinkButton lbDeleteGroupType;
 
         private LabeledDropDownList ddlGroupTypeInheritFrom;
@@ -304,7 +304,7 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
             hfGroupTypeId = new HiddenField();
             hfGroupTypeId.ID = this.ID + "_hfGroupTypeId";
 
-            lblGroupTypeName = new Label();
+            lblGroupTypeName = new Literal();
             lblGroupTypeName.ClientIDMode = ClientIDMode.Static;
             lblGroupTypeName.ID = this.ID + "_lblGroupTypeName";
 
