@@ -35,17 +35,10 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The type of the badge.
         /// </value>
-        public BadgeType BadgeType
+        public string BadgeType
         {
-            get
-            {
-                string s = ViewState["BadgeType"] as string;
-                return s == null ? BadgeType.None : s.ConvertToEnum<BadgeType>();
-            }
-            set
-            {
-                ViewState["BadgeType"] = value.ConvertToString();
-            }
+            get { return ViewState["BadgeType"] as string ?? string.Empty; }
+            set { ViewState["BadgeType"] = value; }
         }
 
         /// <summary>
@@ -57,9 +50,9 @@ namespace Rock.Web.UI.Controls
             if ( this.Visible )
             {
                 string css = "badge";
-                if ( BadgeType != BadgeType.None )
+                if ( !string.IsNullOrWhiteSpace(BadgeType))
                 {
-                    css += " badge-" + BadgeType.ConvertToString().ToLower();
+                    css += " badge-" + BadgeType.ToLower();
                 }
 
                 writer.AddAttribute( "class", css );
@@ -77,39 +70,4 @@ namespace Rock.Web.UI.Controls
         }
     }
 
-    /// <summary>
-    /// The type of notification box to display
-    /// </summary>
-    public enum BadgeType
-    {
-        /// <summary>
-        /// None
-        /// </summary>
-        None,
-
-        /// <summary>
-        /// Success
-        /// </summary>
-        Success,
-
-        /// <summary>
-        /// Warning
-        /// </summary>
-        Warning,
-
-        /// <summary>
-        /// Important
-        /// </summary>
-        Important,
-
-        /// <summary>
-        /// Info
-        /// </summary>
-        Info,
-
-        /// <summary>
-        /// Inverse
-        /// </summary>
-        Inverse,
-    };
 }

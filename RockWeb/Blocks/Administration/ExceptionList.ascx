@@ -36,31 +36,12 @@
             </Rock:Grid>
         </asp:Panel>
         <asp:Panel ID="pnlExceptionOccurrences" runat="server" CssClass="well" Visible="false">
-            <div class="exception-occurrence-summary">
-                <asp:HiddenField ID="hfBaseExceptionID" runat="server" />
-                <fieldset>
-                    <legend>
-                        <h4>Exception Occurrences</h4>
-                    </legend>
-                    <div class="row-fluid" >
-                        <div class="span12">
-                            <asp:LinkButton ID="btnReturnToExceptionList" runat="server" CssClass="btn exceptionReturnToListButton" OnClick="btnReturnToExceptionList_Click"><i class="icon-angle-left"></i>&nbsp; Return to List</asp:LinkButton>
-                        </div>
-                    </div>
-                    <div>
-                        Site:
-                        <asp:Label ID="lblSite" runat="server" />
-                    </div>
-                    <div>
-                        Page:
-                        <asp:Label ID="lblPage" runat="server" />
-                    </div>
-                    <div>
-                        Type:
-                        <asp:Label ID="lblType" runat="server" />
-                    </div>
-                </fieldset>
+            <asp:HiddenField ID="hfBaseExceptionID" runat="server" />
+            <div class="banner">
+                <h1><span class='first-word'>Exception </span> Occurrences</h1>
             </div>
+            <asp:LinkButton ID="btnReturnToExceptionList" runat="server" CssClass="btn exceptionReturnToListButton" OnClick="btnReturnToExceptionList_Click"><i class="icon-angle-left"></i>&nbsp; Return to List</asp:LinkButton>
+            <asp:Literal ID="lblMainDetails" runat="server" />
             <Rock:Grid ID="gExceptionOccurrences" runat="server" AllowSorting="true">
                 <Columns>
                     <Rock:DateTimeField DataField="ExceptionDateTime" HeaderText="Date" SortExpression="ExceptionDateTime" />

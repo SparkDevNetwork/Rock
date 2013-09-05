@@ -5,10 +5,7 @@
 //
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Web.UI;
-using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -53,7 +50,7 @@ namespace RockWeb.Blocks.Administration
         {
             base.OnInit( e );
 
-            gBinaryFileAttributes.DataKeyNames = new string[] { "Guid" };
+            gBinaryFileAttributes.DataKeyNames = new[] { "Guid" };
             gBinaryFileAttributes.Actions.ShowAdd = true;
             gBinaryFileAttributes.Actions.AddClick += gBinaryFileAttributes_Add;
             gBinaryFileAttributes.GridRebind += gBinaryFileAttributes_GridRebind;
@@ -99,7 +96,7 @@ namespace RockWeb.Blocks.Administration
             }
 
             pnlDetails.Visible = true;
-            BinaryFileType binaryFileType = null;
+            BinaryFileType binaryFileType;
 
             if ( !itemKeyValue.Equals( 0 ) )
             {
@@ -120,6 +117,7 @@ namespace RockWeb.Blocks.Administration
             tbIconCssClass.Text = binaryFileType.IconCssClass;
             imgIconSmall.BinaryFileId = binaryFileType.IconSmallFileId;
             imgIconLarge.BinaryFileId = binaryFileType.IconLargeFileId;
+            cbAllowCaching.Checked = binaryFileType.AllowCaching;
 
             if ( binaryFileType.StorageEntityType != null )
             {
@@ -164,7 +162,8 @@ namespace RockWeb.Blocks.Administration
             imgIconLarge.Enabled = !readOnly;
             imgIconSmall.Enabled = !readOnly;
             gBinaryFileAttributes.Enabled = !readOnly;
-
+            cbAllowCaching.Enabled = !readOnly;
+            cpStorageType.Enabled = !readOnly;
             btnSave.Visible = !readOnly;
 
         }
@@ -213,6 +212,7 @@ namespace RockWeb.Blocks.Administration
                 binaryFileType.IconCssClass = tbIconCssClass.Text;
                 binaryFileType.IconSmallFileId = imgIconSmall.BinaryFileId;
                 binaryFileType.IconLargeFileId = imgIconLarge.BinaryFileId;
+                binaryFileType.AllowCaching = cbAllowCaching.Checked;
 
                 if ( !string.IsNullOrWhiteSpace( cpStorageType.SelectedValue ) )
                 {
@@ -242,11 +242,11 @@ namespace RockWeb.Blocks.Administration
 
                         // delete BinaryFileAttributes that are no longer configured in the UI
                         string qualifierValue = binaryFileType.Id.ToString();
-                        var BinaryFileAttributesQry = attributeService.GetByEntityTypeId( new BinaryFile().TypeId ).AsQueryable()
+                        var binaryFileAttributesQry = attributeService.GetByEntityTypeId( new BinaryFile().TypeId ).AsQueryable()
                             .Where( a => a.EntityTypeQualifierColumn.Equals( "BinaryFileTypeId", StringComparison.OrdinalIgnoreCase )
                             && a.EntityTypeQualifierValue.Equals( qualifierValue ) );
 
-                        var deletedBinaryFileAttributes = from attr in BinaryFileAttributesQry
+                        var deletedBinaryFileAttributes = from attr in binaryFileAttributesQry
                                                           where !( from d in BinaryFileAttributesState
                                                                    select d.Guid ).Contains( attr.Guid )
                                                           select attr;
@@ -270,10 +270,10 @@ namespace RockWeb.Blocks.Administration
                                 qualifierService.Save( oldQualifier, CurrentPersonId );
                             }
 
-                            Attribute attribute = BinaryFileAttributesQry.FirstOrDefault( a => a.Guid.Equals( attributeState.Guid ) );
+                            Attribute attribute = binaryFileAttributesQry.FirstOrDefault( a => a.Guid.Equals( attributeState.Guid ) );
                             if ( attribute == null )
                             {
-                                attribute = attributeState.Clone() as Rock.Model.Attribute;
+                                attribute = attributeState.Clone() as Attribute;
                                 attributeService.Add( attribute, CurrentPersonId );
                             }
                             else
@@ -381,7 +381,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnSaveBinaryFileAttribute_Click( object sender, EventArgs e )
         {
-            Rock.Model.Attribute attribute = new Rock.Model.Attribute();
+            Attribute attribute = new Attribute();
             edtBinaryFileAttributes.GetAttributeProperties( attribute );
 
             // Controls will show warnings

@@ -26,6 +26,7 @@ namespace Rock.Model
         /// <value>
         /// The title.
         /// </value>
+        [MergeField]
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
@@ -46,6 +47,7 @@ namespace Rock.Model
         /// <value>
         /// The contact email.
         /// </value>
+        [MergeField]
         [MaxLength( 254 )]
         [DataMember]
         public string ContactEmail { get; set; }
@@ -56,6 +58,7 @@ namespace Rock.Model
         /// <value>
         /// The contact phone number.
         /// </value>
+        [MergeField]
         [MaxLength( 20 )]
         [DataMember]
         public string ContactPhoneNumber { get; set; }
@@ -66,6 +69,7 @@ namespace Rock.Model
         /// <value>
         /// The full name of the contact.
         /// </value>
+        [MergeField]
         [MaxLength( 152 )]
         [DataMember]
         public string ContactFullName { get; set; }
@@ -85,6 +89,7 @@ namespace Rock.Model
         /// <value>
         /// The contact person.
         /// </value>
+        [MergeField]
         [DataMember]
         public virtual Person ContactPerson { get; set; }
 
@@ -94,6 +99,7 @@ namespace Rock.Model
         /// <value>
         /// The event group.
         /// </value>
+        [MergeField]
         [DataMember]
         public virtual Group EventGroup { get; set; }
 

@@ -114,6 +114,16 @@ namespace Rock.Services.NuGet
         }
 
         /// <summary>
+        /// Gets a package for the given id from the source repository.
+        /// </summary>
+        /// <param name="packageId">the Id of a package</param>
+        /// <returns>a package</returns>
+        public IPackage GetRemotePackage( string packageId )
+        {
+            return SourceRepository.FindPackage( packageId );
+        }
+
+        /// <summary>
         /// Installs and adds a package reference to the project
         /// </summary>
         /// <returns>Warnings encountered when installing the package.</returns>
