@@ -36,13 +36,13 @@ td[align=center] {
 // -------------------------
 .grid-filter {
     background-color: @grid-filter-background;
-    border-radius: @site-border-radius;
+    border-radius: @border-radius-base;
     padding: 0 0 12px 6px;
 	margin-bottom: -10px;
 
     header {
         margin: 0 0 -4px -6px;
-        border-radius: @site-border-radius @site-border-radius 0 0;
+        border-radius: @border-radius-base @border-radius-base 0 0;
         padding: 4px;
         cursor: pointer;
         height: 22px;
@@ -56,7 +56,7 @@ td[align=center] {
             margin: 0 2px 0 2px;
             line-height: 16px;
             display: inline;
-	        font-weight: @font-light-weight;
+	        font-weight: @font-weight-light;
         }
 
         i {
@@ -183,7 +183,7 @@ td[align=center] {
 .table-light thead th {
     background-color: inherit;
     color: @text-color;
-    font-weight: @font-bold-weight;
+    font-weight: @font-weight-bold;
 }
 
 .table-light tfoot td {

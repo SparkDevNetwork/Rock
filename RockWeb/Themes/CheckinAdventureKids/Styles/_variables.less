@@ -4,24 +4,24 @@
 
 // Font Variables
 @font-family-base:           'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-@font-light-weight:     300;
-@font-bold-weight:      700;
-@font-semibold-weight:  600;
+@font-weight-light:     300;
+@font-weight-bold:      700;
+@font-weight-semibold:  600;
 
 @checkin-text-color:    #92724C;
 
 @header-text-color:     #54412b;
-@header-font-weight:    @font-bold-weight;
+@header-font-weight:    @font-weight-bold;
 
 @subheader-text-color:      #54412b;
-@subheader-font-weight:     @font-light-weight;
+@subheader-font-weight:     @font-weight-light;
 
 // Button Styles
 @checkin-button-text-color:     #92724c;
 @checkin-button-border-color:   #91876f;
 @checkin-button-background:     #ecdebf;
-@checkin-button-text-weight:    @font-bold-weight;
-@checkin-button-alttext-weight: @font-light-weight;
+@checkin-button-text-weight:    @font-weight-bold;
+@checkin-button-alttext-weight: @font-weight-light;
 
 @checkin-button-primary-text-color:    #fff;
 @checkin-button-primary-border-color:   #361c1b;
@@ -37,12 +37,12 @@
 @rockAccentColor:        	#2f2f2f;
 @text-color:          	#515151;
 @rockSecondaryTextColor: 	#7c7c7c;
-@site-header-text-color: 	    #bbb;
+@header-text-color: 	    #bbb;
 @rockPageTitleBackground:   #f3f3f3;
-@site-header-background:  	#3A3A3A;
+@header-bg:  	#3A3A3A;
 @rockWidgetBackground:  	#fff;
-@site-modal-header-background:           @rockAccentColor;
-@site-modal-header-text-color:  @site-header-text-color;
+@modal-header-bg:           @rockAccentColor;
+@modal-header-text-color:  @header-text-color;
 
 @rockSansFontFamilyBold: 	'OpenSansBold', 'Helvetica Neue',Helvetica,Arial,sans-serif; // 'Helvetica Neue',Helvetica,Arial,sans-serif;
 @rockSansFontFamilySemiBold: 	'OpenSansSemibold', 'Helvetica Neue',Helvetica,Arial,sans-serif; // new variable
@@ -55,13 +55,13 @@
 
 // Block Gradient
 
-.block-gradient (@backgroundColor: @site-header-background) {
+.block-gradient (@backgroundColor: @header-bg) {
   	background: @backgroundColor;
 	background-image: -moz-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@backgroundColor, 3%));
 	background-image: -ms-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@backgroundColor, 3%));
 	background-image: -webkit-gradient(linear, 0 0, 0 100%, from(lighten(@backgroundColor, 3%)), to(darken(@backgroundColor, 3%)));
 	background-image: -webkit-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@backgroundColor, 3%));
-	background-image: -o-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@site-header-background, 3%));
+	background-image: -o-linear-gradient(top, lighten(@backgroundColor, 3%), darken(@header-bg, 3%));
 	background-image: linear-gradient(top, lighten(@backgroundColor, 3%), darken(@backgroundColor, 3%));
 	background-repeat: repeat-x;
     filter: initial;
