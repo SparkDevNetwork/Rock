@@ -96,7 +96,7 @@ h1, h2, h3 {
 
 h2, h3, h4
 {
-    font-weight: @font-semibold-weight;
+    font-weight: @font-weight-semibold;
 }
 
 // get rid of dotted box around anchors with focus
@@ -137,7 +137,7 @@ a:hover i[class^="icon-"]
 
 .modal-header .close
 {
-    color: @site-header-text-color;
+    color: @header-text-color;
 	opacity: 1;
 	text-shadow: none;
 }
@@ -156,7 +156,7 @@ a:hover i[class^="icon-"]
 
 .nav-pills > li > a:hover
 {
-    background-color: @site-accent-color;
+    background-color: @accent-color;
 }
 
 .btn-mini
@@ -173,7 +173,7 @@ a:hover i[class^="icon-"]
 
 .label,
 .badge {
-    font-weight: @font-light-weight;
+    font-weight: @font-weight-light;
 }
 
 .btn-primary.disabled, .btn-primary[disabled] {
@@ -229,23 +229,23 @@ a:hover i[class^="icon-"]
 
 // page nav
 .pagenav {
-	border-top: 1px solid lighten(@site-header-background, 10%);
+	border-top: 1px solid lighten(@header-bg, 10%);
 }
 
 .pagenav .navbar-inner {
-	.block-gradient(@site-header-background);
-	border-bottom: 1px solid darken(@site-header-background, 10%);
+	.block-gradient(@header-bg);
+	border-bottom: 1px solid darken(@header-bg, 10%);
 }
 
 .pagenav ul.nav {
-	border-left: 1px solid lighten(@site-header-background, 10%);
+	border-left: 1px solid lighten(@header-bg, 10%);
     width: 100%;
 }
 
 .pagenav .nav > li {
 	height: 67px;
-	border-left: 1px solid darken(@site-header-background, 10%);
-    border-right: 1px solid lighten(@site-header-background, 10%);
+	border-left: 1px solid darken(@header-bg, 10%);
+    border-right: 1px solid lighten(@header-bg, 10%);
     width: 12.5%; /* set to allow 8 nav items */
 }
 
@@ -255,7 +255,7 @@ a:hover i[class^="icon-"]
 	top: 0;
 	right: 0;
 	bottom: 0;
-	border-right: 1px solid darken(@site-header-background, 10%);
+	border-right: 1px solid darken(@header-bg, 10%);
 }
 
 .pagenav.navbar .nav > li > a {
@@ -288,7 +288,7 @@ a:hover i[class^="icon-"]
 }
 
 .pagenav-subitem-header {
-	font-weight: @font-bold-weight;
+	font-weight: @font-weight-bold;
 }
 
 // page title
@@ -323,9 +323,9 @@ a:hover i[class^="icon-"]
     margin-top: 24px;
 	padding-top: 24px;
 	min-height: 120px;
-	background-color: @site-footer-background;
+	background-color: @footer-bg;
 	border-top: 1px solid #000;
-	color: @site-footer-text-color;
+	color: @footer-text-color;
 }
 
 @media (max-width: 767px) {
@@ -389,7 +389,7 @@ body#splash
 
 body#splash #content-box {
     background-color: @body-bg;
-    .border-radius(@site-border-radius);
+    .border-radius(@border-radius-base);
 }
 
 #splash .form-actions
@@ -403,14 +403,14 @@ body#splash #content-box {
 }
 
 #splash .login .form-actions {
-    .border-radius(@site-border-radius);
+    .border-radius(@border-radius-base);
 }
 
 // 2 Column Left
 
 #left-column-content {
 	min-height: 600px;
-	border-right: 1px solid @site-header-text-color;
+	border-right: 1px solid @header-text-color;
 }
 
 @media (max-width: 767px) {
