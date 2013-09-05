@@ -101,7 +101,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
                 {
                     // rowIndex is determined by the numeric suffix of the control id after the Grid, subtract 2 (one for the header, and another to convert from 0 to 1 based index)
                     int rowIndex = controlIds[gridControlIndex + 1].AsNumeric().AsInteger().Value - 2;
-                    RowEventArgs rowEventArgs = new RowEventArgs( rowIndex, this.Locations[rowIndex].LocationId.ToString() );
+                    RowEventArgs rowEventArgs = new RowEventArgs( rowIndex, this.Locations[rowIndex].LocationId );
                     DeleteLocation_Click( this, rowEventArgs );
                 }
             }
@@ -168,6 +168,20 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             set
             {
                 ViewState["Locations"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the group unique identifier.
+        /// </summary>
+        /// <value>
+        /// The group unique identifier.
+        /// </value>
+        public Guid GroupGuid
+        {
+            get
+            {
+                return new Guid( hfGroupGuid.Value );
             }
         }
 
@@ -281,7 +295,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
 
             // Locations Grid
             CreateLocationsGrid();
-            
+
             Controls.Add( lbDeleteGroup );
         }
 

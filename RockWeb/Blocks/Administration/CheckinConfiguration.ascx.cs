@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 using Rock;
 using Rock.Constants;
 using Rock.Model;
@@ -45,6 +46,31 @@ namespace RockWeb.Blocks.Administration
         #region ViewState and Dynamic Controls
 
         /// <summary>
+        /// ViewState of CheckinLabels per GroupType
+        /// </summary>
+        /// <value>
+        /// The state of the group type checkin label attributes.
+        /// </value>
+        public Dictionary<Guid, List<CheckinGroupTypeEditor.CheckinLabelAttributeInfo>> GroupTypeCheckinLabelAttributesState
+        {
+            get
+            {
+                Dictionary<Guid, List<CheckinGroupTypeEditor.CheckinLabelAttributeInfo>> result = ViewState["GroupTypeCheckinLabelAttributes"] as Dictionary<Guid, List<CheckinGroupTypeEditor.CheckinLabelAttributeInfo>>;
+                if ( result == null )
+                {
+                    result = new Dictionary<Guid, List<CheckinGroupTypeEditor.CheckinLabelAttributeInfo>>();
+                }
+
+                return result;
+            }
+
+            set
+            {
+                ViewState["GroupTypeCheckinLabelAttributes"] = value;
+            }
+        }
+
+        /// <summary>
         /// Saves any user control view-state changes that have occurred since the last page postback.
         /// </summary>
         /// <returns>
@@ -52,10 +78,13 @@ namespace RockWeb.Blocks.Administration
         /// </returns>
         protected override object SaveViewState()
         {
+            GroupTypeCheckinLabelAttributesState = new Dictionary<Guid, List<CheckinGroupTypeEditor.CheckinLabelAttributeInfo>>();
+
             var groupTypeList = new List<GroupType>();
             foreach ( var checkinGroupTypeEditor in phCheckinGroupTypes.Controls.OfType<CheckinGroupTypeEditor>().ToList() )
             {
                 var groupType = checkinGroupTypeEditor.GetCheckinGroupType();
+                GroupTypeCheckinLabelAttributesState.Add( checkinGroupTypeEditor.GroupTypeGuid, checkinGroupTypeEditor.CheckinLabels );
                 groupTypeList.Add( groupType );
             }
 
@@ -106,19 +135,31 @@ namespace RockWeb.Blocks.Administration
             groupTypeEditor.AddGroupTypeClick += groupTypeEditor_AddGroupTypeClick;
             groupTypeEditor.DeleteCheckinLabelClick += groupTypeEditor_DeleteCheckinLabelClick;
             groupTypeEditor.AddCheckinLabelClick += groupTypeEditor_AddCheckinLabelClick;
+            groupTypeEditor.CheckinLabels = null;
 
-            List<string> labelAttributeKeys = CheckinGroupTypeEditor.GetCheckinLabelAttributes( groupType ).Select( a => a.Key ).ToList();
-            BinaryFileService binaryFileService = new BinaryFileService();
-            groupTypeEditor.CheckinLabels = new List<CheckinGroupTypeEditor.CheckinLabelAttributeInfo>();
-
-            foreach ( string key in labelAttributeKeys )
+            if ( GroupTypeCheckinLabelAttributesState.ContainsKey( groupType.Guid ) )
             {
-                var attributeValue = groupType.GetAttributeValue( key );
-                int binaryFileId = attributeValue.AsInteger() ?? 0;
-                var binaryFile = binaryFileService.Get( binaryFileId );
-                if ( binaryFile != null )
+                groupTypeEditor.CheckinLabels = GroupTypeCheckinLabelAttributesState[groupType.Guid];
+            }
+
+            if ( groupTypeEditor.CheckinLabels == null )
+            {
+                // load CheckInLabels from Database if they haven't been set yet
+                groupTypeEditor.CheckinLabels = new List<CheckinGroupTypeEditor.CheckinLabelAttributeInfo>();
+
+                groupType.LoadAttributes();
+                List<string> labelAttributeKeys = CheckinGroupTypeEditor.GetCheckinLabelAttributes( groupType ).Select( a => a.Key ).ToList();
+                BinaryFileService binaryFileService = new BinaryFileService();
+
+                foreach ( string key in labelAttributeKeys )
                 {
-                    groupTypeEditor.CheckinLabels.Add( new CheckinGroupTypeEditor.CheckinLabelAttributeInfo { AttributeKey = key, BinaryFileId = binaryFileId, FileName = binaryFile.FileName } );
+                    var attributeValue = groupType.GetAttributeValue( key );
+                    int binaryFileId = attributeValue.AsInteger() ?? 0;
+                    var binaryFile = binaryFileService.Get( binaryFileId );
+                    if ( binaryFile != null )
+                    {
+                        groupTypeEditor.CheckinLabels.Add( new CheckinGroupTypeEditor.CheckinLabelAttributeInfo { AttributeKey = key, BinaryFileId = binaryFileId, FileName = binaryFile.FileName } );
+                    }
                 }
             }
 
@@ -128,7 +169,7 @@ namespace RockWeb.Blocks.Administration
             {
                 // get the GroupType from the control just in case it the InheritedFrom changed
                 childGroup.GroupType = groupTypeEditor.GetCheckinGroupType();
-                
+
                 CreateGroupEditorControls( childGroup, groupTypeEditor, false );
             }
 
@@ -136,28 +177,6 @@ namespace RockWeb.Blocks.Administration
             {
                 CreateGroupTypeEditorControls( childGroupType, groupTypeEditor, false );
             }
-        }
-
-        /// <summary>
-        /// Handles the AddCheckinLabelClick event of the groupTypeEditor control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        protected void groupTypeEditor_AddCheckinLabelClick( object sender, EventArgs e )
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Handles the DeleteCheckinLabelClick event of the groupTypeEditor control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        protected void groupTypeEditor_DeleteCheckinLabelClick( object sender, RowEventArgs e )
-        {
-            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -244,14 +263,153 @@ namespace RockWeb.Blocks.Administration
                         {
                             LocationId = a.LocationId,
                             Name = a.Location.Name
-                        })
+                        } )
                         .OrderBy( o => o.Name )
                         .ToList();
 
             groupEditor.AddLocationClick += groupEditor_AddLocationClick;
             groupEditor.DeleteLocationClick += groupEditor_DeleteLocationClick;
-            
+
             parentControl.Controls.Add( groupEditor );
+        }
+
+        #endregion
+
+        #region CheckinLabel Add/Delete
+
+        /// <summary>
+        /// Handles the AddCheckinLabelClick event of the groupTypeEditor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void groupTypeEditor_AddCheckinLabelClick( object sender, EventArgs e )
+        {
+            CheckinGroupTypeEditor checkinGroupTypeEditor = sender as CheckinGroupTypeEditor;
+
+            // set a hidden field value for the GroupType Guid so we know which GroupType to add the label to
+            hfAddCheckinLabelGroupTypeGuid.Value = checkinGroupTypeEditor.GroupTypeGuid.ToString();
+
+            Guid binaryFileTypeCheckinLabelGuid = new Guid( Rock.SystemGuid.BinaryFiletype.CHECKIN_LABEL );
+
+            var binaryFileService = new BinaryFileService();
+
+            ddlCheckinLabel.Items.Clear();
+            var list = binaryFileService.Queryable().Where( a => a.BinaryFileType.Guid.Equals( binaryFileTypeCheckinLabelGuid ) ).OrderBy( a => a.FileName ).ToList();
+
+            foreach ( var item in list )
+            {
+                // add checkinlabels to dropdownlist if they aren't already a checkin label for this grouptype
+                if ( !checkinGroupTypeEditor.CheckinLabels.Select( a => a.BinaryFileId ).Contains( item.Id ) )
+                {
+                    ddlCheckinLabel.Items.Add( new ListItem( item.FileName, item.Id.ToString() ) );
+                }
+            }
+
+            // only enable the Add button if there are labels that can be added
+            btnAddCheckinLabel.Enabled = ( ddlCheckinLabel.Items.Count > 0 );
+
+            pnlCheckinLabelPicker.Visible = true;
+            pnlDetails.Visible = false;
+        }
+
+        /// <summary>
+        /// Handles the DeleteCheckinLabelClick event of the groupTypeEditor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void groupTypeEditor_DeleteCheckinLabelClick( object sender, RowEventArgs e )
+        {
+            CheckinGroupTypeEditor checkinGroupTypeEditor = sender as CheckinGroupTypeEditor;
+            string attributeKey = e.RowKeyValue as string;
+
+            var label = checkinGroupTypeEditor.CheckinLabels.FirstOrDefault( a => a.AttributeKey == attributeKey );
+            checkinGroupTypeEditor.CheckinLabels.Remove( label );
+            checkinGroupTypeEditor.ForceContentVisible = true;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnAddCheckinLabel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnAddCheckinLabel_Click( object sender, EventArgs e )
+        {
+            var groupTypeEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupTypeEditor>().FirstOrDefault( a => a.GroupTypeGuid == new Guid( hfAddCheckinLabelGroupTypeGuid.Value ) );
+            groupTypeEditor.ForceContentVisible = true;
+
+            var checkinLabelAttributeInfo = new CheckinGroupTypeEditor.CheckinLabelAttributeInfo();
+            checkinLabelAttributeInfo.BinaryFileId = ddlCheckinLabel.SelectedValueAsInt() ?? 0;
+            checkinLabelAttributeInfo.FileName = ddlCheckinLabel.SelectedItem.Text;
+
+            // have the attribute key just be the filename without spaces, but make sure it is not a duplicate
+            string attributeKey = checkinLabelAttributeInfo.FileName.Replace( " ", string.Empty );
+            checkinLabelAttributeInfo.AttributeKey = attributeKey;
+            int duplicateInc = 1;
+            while ( groupTypeEditor.CheckinLabels.Select( a => a.AttributeKey ).Contains( attributeKey + duplicateInc.ToString() ) )
+            {
+                // append number to end until it isn't a duplicate
+                checkinLabelAttributeInfo.AttributeKey += attributeKey + duplicateInc.ToString();
+                duplicateInc++;
+            }
+
+            groupTypeEditor.CheckinLabels.Add( checkinLabelAttributeInfo );
+
+            pnlCheckinLabelPicker.Visible = false;
+            pnlDetails.Visible = true;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancelAddCheckinLabel control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCancelAddCheckinLabel_Click( object sender, EventArgs e )
+        {
+            var groupTypeEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupTypeEditor>().FirstOrDefault( a => a.GroupTypeGuid == new Guid( hfAddCheckinLabelGroupTypeGuid.Value ) );
+            groupTypeEditor.ForceContentVisible = true;
+
+            pnlCheckinLabelPicker.Visible = false;
+            pnlDetails.Visible = true;
+        }
+
+        #endregion
+
+        #region Location Add/Delete
+
+        /// <summary>
+        /// Handles the AddLocationClick event of the groupEditor control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void groupEditor_AddLocationClick( object sender, EventArgs e )
+        {
+            CheckinGroupEditor checkinGroupEditor = sender as CheckinGroupEditor;
+
+            // set a hidden field value for the Group Guid so we know which Group to add the location to
+            hfAddLocationGroupGuid.Value = checkinGroupEditor.GroupGuid.ToString();
+
+            var locationService = new LocationService();
+
+            ddlLocation.Items.Clear();
+            var list = locationService.Queryable().Where( a => a.IsLocation ).OrderBy( a => a.Name );
+
+            foreach ( var item in list )
+            {
+                // add locations to dropdownlist if they aren't already a location for this group
+                if ( !checkinGroupEditor.Locations.Select( a => a.LocationId ).Contains( item.Id ) )
+                {
+                    ddlLocation.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
+                }
+            }
+
+            // only enable the Add button if there are labels that can be added
+            btnAddLocation.Enabled = ( ddlLocation.Items.Count > 0 );
+
+            pnlLocationPicker.Visible = true;
+            pnlDetails.Visible = false;
         }
 
         /// <summary>
@@ -262,20 +420,48 @@ namespace RockWeb.Blocks.Administration
         /// <exception cref="System.NotImplementedException"></exception>
         protected void groupEditor_DeleteLocationClick( object sender, RowEventArgs e )
         {
-            // TODO
-            throw new NotImplementedException();
+            CheckinGroupEditor checkinGroupEditor = sender as CheckinGroupEditor;
+            checkinGroupEditor.ForceContentVisible = true;
+            ( checkinGroupEditor.Parent as CheckinGroupTypeEditor ).ForceContentVisible = true;
+
+            var location = checkinGroupEditor.Locations.FirstOrDefault( a => a.LocationId == e.RowKeyId );
+            checkinGroupEditor.Locations.Remove( location );
         }
 
         /// <summary>
-        /// Handles the AddLocationClick event of the groupEditor control.
+        /// Handles the Click event of the btnAddLocation control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        protected void groupEditor_AddLocationClick( object sender, EventArgs e )
+        protected void btnAddLocation_Click( object sender, EventArgs e )
         {
-            // TODO
-            throw new NotImplementedException();
+            CheckinGroupEditor checkinGroupEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupEditor>().FirstOrDefault( a => a.GroupGuid == new Guid( hfAddLocationGroupGuid.Value ) );
+            checkinGroupEditor.ForceContentVisible = true;
+            ( checkinGroupEditor.Parent as CheckinGroupTypeEditor ).ForceContentVisible = true;
+
+            CheckinGroupEditor.LocationGridItem gridItem = new CheckinGroupEditor.LocationGridItem();
+            gridItem.LocationId = ddlLocation.SelectedValueAsId() ?? 0;
+            gridItem.Name = ddlLocation.SelectedItem.Text;
+
+            checkinGroupEditor.Locations.Add( gridItem );
+
+            pnlLocationPicker.Visible = false;
+            pnlDetails.Visible = true;
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnCancelAddLocation control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnCancelAddLocation_Click( object sender, EventArgs e )
+        {
+            CheckinGroupEditor checkinGroupEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupEditor>().FirstOrDefault( a => a.GroupGuid == new Guid( hfAddLocationGroupGuid.Value ) );
+            checkinGroupEditor.ForceContentVisible = true;
+            ( checkinGroupEditor.Parent as CheckinGroupTypeEditor ).ForceContentVisible = true;
+
+            pnlLocationPicker.Visible = false;
+            pnlDetails.Visible = true;
         }
 
         #endregion
