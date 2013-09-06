@@ -23,7 +23,7 @@ namespace Rock.Web.UI.Controls
         private HiddenField hfGroupGuid;
         private HiddenField hfGroupId;
         private HiddenField hfGroupTypeId;
-        private Label lblGroupName;
+        private Literal lblGroupName;
         private LinkButton lbDeleteGroup;
 
         private DataTextBox tbGroupName;
@@ -101,7 +101,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
                 {
                     // rowIndex is determined by the numeric suffix of the control id after the Grid, subtract 2 (one for the header, and another to convert from 0 to 1 based index)
                     int rowIndex = controlIds[gridControlIndex + 1].AsNumeric().AsInteger().Value - 2;
-                    RowEventArgs rowEventArgs = new RowEventArgs( rowIndex, this.Locations[rowIndex].LocationId.ToString() );
+                    RowEventArgs rowEventArgs = new RowEventArgs( rowIndex, this.Locations[rowIndex].LocationId );
                     DeleteLocation_Click( this, rowEventArgs );
                 }
             }
@@ -168,6 +168,20 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             set
             {
                 ViewState["Locations"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the group unique identifier.
+        /// </summary>
+        /// <value>
+        /// The group unique identifier.
+        /// </value>
+        public Guid GroupGuid
+        {
+            get
+            {
+                return new Guid( hfGroupGuid.Value );
             }
         }
 
@@ -246,7 +260,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             hfGroupTypeId = new HiddenField();
             hfGroupTypeId.ID = this.ID + "_hfGroupTypeId";
 
-            lblGroupName = new Label();
+            lblGroupName = new Literal();
             lblGroupName.ClientIDMode = ClientIDMode.Static;
             lblGroupName.ID = this.ID + "_lblGroupName";
 
@@ -281,7 +295,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
 
             // Locations Grid
             CreateLocationsGrid();
-            
+
             Controls.Add( lbDeleteGroup );
         }
 
