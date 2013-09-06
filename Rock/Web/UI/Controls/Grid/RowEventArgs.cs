@@ -80,11 +80,11 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RowEventArgs"/> class.
+        /// Initializes a new instance of the <see cref="RowEventArgs" /> class.
         /// </summary>
         /// <param name="rowIndex">Index of the row.</param>
-        /// <param name="grid">The grid.</param>
-        public RowEventArgs( int rowIndex, string rowKeyValue )
+        /// <param name="rowKeyValue">The row key value.</param>
+        public RowEventArgs( int rowIndex, object rowKeyValue )
         {
             RowIndex = rowIndex;
             RowKeyValue = rowKeyValue;

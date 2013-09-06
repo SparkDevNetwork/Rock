@@ -21,6 +21,7 @@ using Rock.Model;
 using Rock.Transactions;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using Rock;
 using Page = System.Web.UI.Page;
 
 namespace Rock.Web.UI
@@ -603,7 +604,7 @@ namespace Rock.Web.UI
                                         blockControl = (RockBlock)( (PartialCachingControl)control ).CachedControl;
                                     }
                                 }
-
+                                
                                 // If the current control is a block, set it's properties
                                 if ( blockControl != null )
                                 {
@@ -709,15 +710,23 @@ namespace Rock.Web.UI
                     // Add the page admin footer if the user is authorized to edit the page
                     if ( CurrentPage.IncludeAdminFooter && canAdministratePage )
                     {
-                        Page.Trace.Warn( "Adding adming footer to page" );
+                        Page.Trace.Warn( "Adding admin footer to page" );
+
+                        // put Adminfooter into an UpdatePanel and call Update() on it so it gets updated on both Full and Partial Postbacks
+                        UpdatePanel upAdminFooter = new UpdatePanel();
+                        upAdminFooter.ID = "upAdminFooter";
+                        upAdminFooter.UpdateMode = UpdatePanelUpdateMode.Conditional;
+                        this.Form.Controls.Add( upAdminFooter );
+
                         HtmlGenericControl adminFooter = new HtmlGenericControl( "div" );
                         adminFooter.ID = "cms-admin-footer";
+                        upAdminFooter.ContentTemplateContainer.Controls.Add( adminFooter );
+                        upAdminFooter.Update();
                         adminFooter.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-                        this.Form.Controls.Add( adminFooter );
 
                         phLoadTime = new PlaceHolder();
                         adminFooter.Controls.Add( phLoadTime );
-
+                        
                         HtmlGenericControl buttonBar = new HtmlGenericControl( "div" );
                         adminFooter.Controls.Add( buttonBar );
                         buttonBar.Attributes.Add( "class", "button-bar" );
@@ -836,7 +845,6 @@ namespace Rock.Web.UI
             }
         }
 
-
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.PreRender"/> event.
         /// </summary>
@@ -894,9 +902,7 @@ namespace Rock.Web.UI
         {
             get
             {
-                List<RockBlock> result = new List<RockBlock>();
-                GetControlList<RockBlock>( this.Controls, result );
-                return result;
+                return this.ControlsOfTypeRecursive<RockBlock>();
             }
         }
 
@@ -923,45 +929,6 @@ namespace Rock.Web.UI
         public void LogException( Exception ex )
         {
             ExceptionLogService.LogException( ex, Context, CurrentPage.Id, CurrentPage.SiteId, CurrentPersonId );
-        }
-
-        /// <summary>
-        /// Gets the control list. 
-        /// http://stackoverflow.com/questions/7362482/c-sharp-get-all-web-controls-on-page
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="controlCollection">The control collection.</param>
-        /// <param name="resultCollection">The result collection.</param>
-        private void GetControlList<T>( ControlCollection controlCollection, List<T> resultCollection ) where T : Control
-        {
-            foreach ( Control control in controlCollection )
-            {
-                if ( control is T )
-                {
-                    resultCollection.Add( (T)control );
-                }
-
-                if ( control.HasControls() )
-                {
-                    GetControlList( control.Controls, resultCollection );
-                }
-            }
-        }
-
-        /// <summary>
-        /// Adds a history point to the ScriptManager.
-        /// Note: ScriptManager's EnableHistory property must be set to True
-        /// </summary>
-        /// <param name="key">The key to use for the history point</param>
-        /// <param name="state">any state information to store for the history point</param>
-        /// <param name="title">The title to be used by the browser</param>
-        public void AddHistory(string key, string state, string title)
-        {
-            if (ScriptManager.GetCurrent(Page) != null)
-            {
-                ScriptManager sManager = ScriptManager.GetCurrent(Page);
-                sManager.AddHistoryPoint(key, state, title);
-            }
         }
 
         #endregion
@@ -1524,32 +1491,26 @@ namespace Rock.Web.UI
         //    }
         //}
 
-        protected void scriptManager_Navigate(object sender, HistoryEventArgs e)
+        /// <summary>
+        /// Adds a history point to the ScriptManager.
+        /// Note: ScriptManager's EnableHistory property must be set to True
+        /// </summary>
+        /// <param name="key">The key to use for the history point</param>
+        /// <param name="state">any state information to store for the history point</param>
+        /// <param name="title">The title to be used by the browser</param>
+        public void AddHistory(string key, string state, string title)
         {
-            if (PageNavigate != null)
+            if (ScriptManager.GetCurrent(Page) != null)
             {
-                PageNavigate(this, e);
+                ScriptManager sManager = ScriptManager.GetCurrent(Page);
+                sManager.AddHistoryPoint(key, state, title);
             }
         }
-
-        /// <summary>
-        /// Occurs when the ScriptManager detects a history change. This allows UpdatePanels to work when the
-        /// browser's back button is pressed.
-        /// </summary>
-        public event PageNavigateEventHandler PageNavigate;
 
         #endregion
     }
 
-
     #region Event Argument Classes
-
-    /// <summary>
-    /// Delegate used for the ScriptManager's Navigate Event
-    /// </summary>
-    /// <param name="sender">The sender.</param>
-    /// <param name="e">The <see cref="System.Web.UI.HistoryEventArgs"/> instance containing the history data.</param>
-    public delegate void PageNavigateEventHandler(object sender, HistoryEventArgs e);
 
     /// <summary>
     /// Event Argument used when block instance properties are updated
