@@ -42,6 +42,14 @@ namespace RockWeb.Blocks.Administration
 
             _isAuthorizedToConfigure = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
 
+            // wire up page naviagte
+            RockPage page = Page as RockPage;
+
+            if (page != null)
+            {
+                page.PageNavigate += page_PageNavigate;
+            }
+
             Type containerType = Type.GetType( GetAttributeValue( "ComponentContainer" ) );
             if ( containerType != null )
             {
@@ -77,6 +85,16 @@ namespace RockWeb.Blocks.Administration
             }
             else
                 DisplayError( "Could not get the type of the specified Manged Component Container" );
+        }
+
+        /// <summary>
+        /// Handles the history state to allow the back button to work in the update panel.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.Web.UI.HistoryEventArgs"/> instance containing the history data.</param>
+        void page_PageNavigate(object sender, HistoryEventArgs e)
+        {
+            SetEditMode(false);
         }
 
         protected override void LoadViewState( object savedState )
@@ -287,6 +305,9 @@ namespace RockWeb.Blocks.Administration
         /// <param name="setValues">if set to <c>true</c> [set values].</param>
         protected void ShowEdit( int serviceId )
         {
+            // set edit history marker
+            this.AddHistory("edit", "", "Edit " + _container.Dictionary[serviceId].Key);
+            
             ViewState["serviceId"] = serviceId;
             phProperties.Controls.Clear();
             LoadEditControls();
@@ -295,6 +316,7 @@ namespace RockWeb.Blocks.Administration
 
             SetEditMode( true );
         }
+
 
         /// <summary>
         /// Sets the edit mode.
