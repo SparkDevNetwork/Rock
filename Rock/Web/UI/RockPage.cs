@@ -318,6 +318,12 @@ namespace Rock.Web.UI
                 Page.Form.Controls.AddAt( 0, _scriptManager );
             }
 
+            // enable history on the ScriptManager
+            _scriptManager.EnableHistory = true;
+
+            // wire up navigation event
+            _scriptManager.Navigate += new EventHandler<HistoryEventArgs>(scriptManager_Navigate);
+
             // Add library and UI bundles during init, that way theme developers will only
             // need to worry about registering any custom scripts or script bundles they need
             _scriptManager.Scripts.Add( new ScriptReference { Name = "WebFormsBundle" } );
@@ -925,6 +931,22 @@ namespace Rock.Web.UI
             ExceptionLogService.LogException( ex, Context, CurrentPage.Id, CurrentPage.SiteId, CurrentPersonId );
         }
 
+        /// <summary>
+        /// Adds a history point to the ScriptManager.
+        /// Note: ScriptManager's EnableHistory property must be set to True
+        /// </summary>
+        /// <param name="key">The key to use for the history point</param>
+        /// <param name="state">any state information to store for the history point</param>
+        /// <param name="title">The title to be used by the browser</param>
+        public void AddHistory(string key, string state, string title)
+        {
+            if (ScriptManager.GetCurrent(Page) != null)
+            {
+                ScriptManager sManager = ScriptManager.GetCurrent(Page);
+                sManager.AddHistoryPoint(key, state, title);
+            }
+        }
+
         #endregion
 
         #region Cms Admin Content
@@ -1485,10 +1507,31 @@ namespace Rock.Web.UI
         //    }
         //}
 
+        protected void scriptManager_Navigate(object sender, HistoryEventArgs e)
+        {
+            if (PageNavigate != null)
+            {
+                PageNavigate(this, e);
+            }
+        }
+
+        /// <summary>
+        /// Occurs when the ScriptManager detects a history change. This allows UpdatePanels to work when the
+        /// browser's back button is pressed.
+        /// </summary>
+        public event PageNavigateEventHandler PageNavigate;
+
         #endregion
     }
 
     #region Event Argument Classes
+
+    /// <summary>
+    /// Delegate used for the ScriptManager's Navigate Event
+    /// </summary>
+    /// <param name="sender">The sender.</param>
+    /// <param name="e">The <see cref="System.Web.UI.HistoryEventArgs"/> instance containing the history data.</param>
+    public delegate void PageNavigateEventHandler(object sender, HistoryEventArgs e);
 
     /// <summary>
     /// Event Argument used when block instance properties are updated

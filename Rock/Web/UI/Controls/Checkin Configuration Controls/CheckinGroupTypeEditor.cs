@@ -34,7 +34,33 @@ namespace Rock.Web.UI.Controls
 
         private LinkButton lbAddCheckinGroupType;
 
-        public bool ForceContentVisible { private get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether [force content visible].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [force content visible]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ForceContentVisible { 
+            private get
+            {
+                return _forceContentVisible;
+            }
+
+            set
+            {
+                _forceContentVisible = value;
+                if ( _forceContentVisible )
+                {
+                    CheckinGroupTypeEditor parentGroupTypeEditor = this.Parent as CheckinGroupTypeEditor;
+                    while ( parentGroupTypeEditor != null )
+                    {
+                        parentGroupTypeEditor.ForceContentVisible = true;
+                        parentGroupTypeEditor = parentGroupTypeEditor.Parent as CheckinGroupTypeEditor;
+                    }
+                }
+            }
+        }
+        private bool _forceContentVisible;
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.

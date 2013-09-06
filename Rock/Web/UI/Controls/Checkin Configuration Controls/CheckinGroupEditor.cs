@@ -30,7 +30,34 @@ namespace Rock.Web.UI.Controls
         private PlaceHolder phGroupAttributes;
         private Grid gLocations;
 
-        public bool ForceContentVisible { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether [force content visible].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [force content visible]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ForceContentVisible
+        {
+            private get
+            {
+                return _forceContentVisible;
+            }
+
+            set
+            {
+                _forceContentVisible = value;
+                if ( _forceContentVisible )
+                {
+                    CheckinGroupTypeEditor parentGroupTypeEditor = this.Parent as CheckinGroupTypeEditor;
+                    while ( parentGroupTypeEditor != null )
+                    {
+                        parentGroupTypeEditor.ForceContentVisible = true;
+                        parentGroupTypeEditor = parentGroupTypeEditor.Parent as CheckinGroupTypeEditor;
+                    }
+                }
+            }
+        }
+        private bool _forceContentVisible;
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -206,6 +233,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             {
                 result.GroupType = new GroupType();
                 result.GroupType.Id = result.GroupTypeId;
+                result.GroupType.Guid = checkinGroupTypeEditor.GroupTypeGuid;
                 result.GroupType.InheritedGroupTypeId = checkinGroupTypeEditor.InheritedGroupTypeId;
             }
 
@@ -218,7 +246,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             {
                 var groupLocation = new GroupLocation();
                 groupLocation.LocationId = item.LocationId;
-                groupLocation.Location = new Location { Name = item.Name };
+                groupLocation.Location = new Location { Id = item.LocationId, Name = item.Name };
                 result.GroupLocations.Add( groupLocation );
             }
 
