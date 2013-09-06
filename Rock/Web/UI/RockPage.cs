@@ -931,6 +931,22 @@ namespace Rock.Web.UI
             ExceptionLogService.LogException( ex, Context, CurrentPage.Id, CurrentPage.SiteId, CurrentPersonId );
         }
 
+        /// <summary>
+        /// Adds a history point to the ScriptManager.
+        /// Note: ScriptManager's EnableHistory property must be set to True
+        /// </summary>
+        /// <param name="key">The key to use for the history point</param>
+        /// <param name="state">any state information to store for the history point</param>
+        /// <param name="title">The title to be used by the browser</param>
+        public void AddHistory(string key, string state, string title)
+        {
+            if (ScriptManager.GetCurrent(Page) != null)
+            {
+                ScriptManager sManager = ScriptManager.GetCurrent(Page);
+                sManager.AddHistoryPoint(key, state, title);
+            }
+        }
+
         #endregion
 
         #region Cms Admin Content
@@ -1491,21 +1507,19 @@ namespace Rock.Web.UI
         //    }
         //}
 
-        /// <summary>
-        /// Adds a history point to the ScriptManager.
-        /// Note: ScriptManager's EnableHistory property must be set to True
-        /// </summary>
-        /// <param name="key">The key to use for the history point</param>
-        /// <param name="state">any state information to store for the history point</param>
-        /// <param name="title">The title to be used by the browser</param>
-        public void AddHistory(string key, string state, string title)
+        protected void scriptManager_Navigate(object sender, HistoryEventArgs e)
         {
-            if (ScriptManager.GetCurrent(Page) != null)
+            if (PageNavigate != null)
             {
-                ScriptManager sManager = ScriptManager.GetCurrent(Page);
-                sManager.AddHistoryPoint(key, state, title);
+                PageNavigate(this, e);
             }
         }
+
+        /// <summary>
+        /// Occurs when the ScriptManager detects a history change. This allows UpdatePanels to work when the
+        /// browser's back button is pressed.
+        /// </summary>
+        public event PageNavigateEventHandler PageNavigate;
 
         #endregion
     }
