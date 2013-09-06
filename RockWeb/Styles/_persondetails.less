@@ -20,8 +20,8 @@
 
 
 .persondetails-header .navbar-inner {
-	background-color: @site-accentlight-color; 
-	border-bottom: 1px solid darken(@site-accentlight-color, @const-border-darken-amt);
+	background-color: @accent-light-color; 
+	border-bottom: 1px solid darken(@accent-light-color, @const-border-darken-amt);
 	background-image: none;
     filter: initial;
 }
@@ -44,7 +44,7 @@
 // actions dropdown
 .navbar .nav > li > a.persondetails-actions,
 .navbar .nav li.dropdown.open > a.persondetails-actions {
-    color: @site-accentlight-inverse-color;
+    color: @accent-light-text-color;
     padding-bottom: 6px;
 }
 
@@ -56,13 +56,13 @@
 
 .persondetails .navbar .nav li.dropdown > .dropdown-toggle .caret
 {
-    border-top: 4px solid @site-accentlight-inverse-color;
+    border-top: 4px solid @accent-light-text-color;
 }
 
 .persondetails .navbar .nav > li > a:hover .caret,
 .persondetails .navbar .nav > li > a:focus .caret
 {
-    border-top: 4px solid lighten(@site-accentlight-inverse-color, 20%);
+    border-top: 4px solid lighten(@accent-light-text-color, 20%);
 }
 
 .persondetails-header .photo
@@ -275,10 +275,10 @@
 .persontimeline article
 {
     border-radius: @border-radius-base;
-    border: 1px solid darken(@site-accentlight-color, @const-border-darken-amt);
+    border: 1px solid darken(@accent-light-color, @const-border-darken-amt);
     padding: 12px;
     margin-bottom: 12px;
-    background-color: @site-accentlight-color; 
+    background-color: @accent-light-color; 
 }
 
 .persontimeline article .date

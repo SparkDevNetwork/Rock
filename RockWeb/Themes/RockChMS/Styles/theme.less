@@ -122,19 +122,6 @@ a:hover i[class^="icon-"]
     box-shadow: none;
 }
 
-.navbar-inner {
-	padding: 0;
-}
-
-.pageheader
-{
-    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4=");
-}
-
-.pageheader.navbar .nav a {
-    font-size: 11px;
-}
-
 .modal-header .close
 {
     color: @header-text-color;
@@ -145,8 +132,8 @@ a:hover i[class^="icon-"]
 .nav-pills > .active > a,
 .nav-pills > .active > a:hover
 {
-    background-color: @site-accentbold-color;
-    color: @site-accentbold-inverse-color;
+    background-color: @accent-bold-color;
+    color: @accent-bold-text-color;
 }
 
 .nav-pills > li > a
@@ -168,7 +155,7 @@ a:hover i[class^="icon-"]
 .dropdown-menu li > a:focus,
 .dropdown-submenu:hover > a {
     background-image: none;
-    background-color: @site-accentbold-color;
+    background-color: @accent-bold-color;
 }
 
 .label,
@@ -206,12 +193,15 @@ a:hover i[class^="icon-"]
 // -------------------------
 
 // page header (logo bar)
-.pageheader .navbar-inner {  
-	border-bottom: 1px solid #121212;
-	padding: 4px 0;
-    filter: initial;
-	background-image: none;
-	background-color: transparent;
+.pageheader
+{
+    padding: 12px 0;
+    border-bottom: 1px solid #121212;
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4=");
+} 
+
+.pageheader.navbar .nav a {
+    font-size: 11px;
 }
 
 .pageheader .brand {
@@ -229,51 +219,51 @@ a:hover i[class^="icon-"]
 
 // page nav
 .pagenav {
-	border-top: 1px solid lighten(@header-bg, 10%);
+    border-top: 1px solid lighten(@header-bg, 10%);
+    .block-gradient(@header-bg);
+    border-bottom: 1px solid darken(@header-bg, 10%);
+
+    .nav {
+        border-left: 1px solid lighten(@header-bg, 10%);
+        width: 100%;
+
+        > li {
+            height: 67px;
+            border-left: 1px solid darken(@header-bg, 10%);
+            border-right: 1px solid lighten(@header-bg, 10%);
+            width: 12.5%; /* set to allow 8 nav items */
+            &:last-child:after { /* add the final shadow to the last nav element */
+                content: " ";
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                border-right: 1px solid darken(@header-bg, 10%);
+            }
+
+            a {
+                padding: 4px 15px;
+                text-align: center;
+                font-size: 11px;
+                color: @header-text-color;
+
+                .caret {
+                    display: block;
+                    margin: 0 auto;
+                    border-bottom-color: @header-text-color;
+                    border-top-color: @header-text-color;
+                }
+
+                i[class^='icon-'] {
+                    display: block;
+                    margin: 6px auto 2px;
+                    font-size: 18px;
+                }
+            }
+        }
+    }
 }
 
-.pagenav .navbar-inner {
-	.block-gradient(@header-bg);
-	border-bottom: 1px solid darken(@header-bg, 10%);
-}
-
-.pagenav ul.nav {
-	border-left: 1px solid lighten(@header-bg, 10%);
-    width: 100%;
-}
-
-.pagenav .nav > li {
-	height: 67px;
-	border-left: 1px solid darken(@header-bg, 10%);
-    border-right: 1px solid lighten(@header-bg, 10%);
-    width: 12.5%; /* set to allow 8 nav items */
-}
-
-.pagenav .nav > li:last-child:after { /* add the final shadow to the last nav element */
-	content: " ";
-	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	border-right: 1px solid darken(@header-bg, 10%);
-}
-
-.pagenav.navbar .nav > li > a {
-	padding: 4px 15px;
-	text-align: center;
-	font-size: 11px;
-}
-
-.pagenav-item i[class^='icon-'] {
-	display: block;
-	margin: 6px auto 2px;
-	font-size: 18px;
-}
-
-.navbar .dropdown-toggle.pagenav-item .caret {
-	display: block;
-	margin: 2px auto 0 auto;
-}
 
 .pagenav .dropdown-menu {
 	margin: 0;
@@ -300,8 +290,8 @@ a:hover i[class^="icon-"]
 }
 
 .pagetitle .navbar-inner {
-	background-color: @site-pagetitle-background;
-	border-bottom: 1px solid darken(@site-pagetitle-background, 10%);
+	background-color: @pagetitle-bg;
+	border-bottom: 1px solid darken(@pagetitle-bg, 10%);
 	background-image: none;
     filter: initial;
 }
@@ -344,8 +334,8 @@ a:hover i[class^="icon-"]
 	}
 
 	.smart-search {
-		float: left;
-		margin-left: 20px;
+		--float: left;
+		--margin-left: 20px;
 	}
 
     .pagenav .nav > li,

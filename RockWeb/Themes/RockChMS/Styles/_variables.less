@@ -6,13 +6,16 @@
 
 @body-bg: #f4f4f4;
 
-@state-info-text: @site-accentlight-inverse-color;
-@state-info-bg: @site-accentlight-color;
+@state-info-text: @accent-light-text-color;
+@state-info-bg: @accent-light-color;
+
+@navbar-margin-bottom: 0;
+@nav-link-hover-bg: transparent;
 
 // Buttons
 // -------------------------
 @btn-default-bg: #fff;
-@btn-primary-bg: @site-accentbold-color;
+@btn-primary-bg: @accent-bold-color;
 @btn-info-bg: #5bc0de;
 @btn-success-bg: #62c462;
 @btn-warning-bg: #f89406;
@@ -32,6 +35,12 @@
 @font-weight-bold:      700;
 @font-weight-semibold:  600;
 
+/* panel */
+@panel-bg: @accent-light-color;
+@panel-border-color: darken(@panel-bg, 10%);
+@panel-border-size: 1px;
+@panel-padding: 20px;
+
 
 // Global Values
 // --------------------------------------------------
@@ -47,92 +56,82 @@
 @modal-header-bg: @header-bg;
 @modal-header-text-color: @header-text-color;
 
-// left off here
-
-@site-accentbold-color: #779cb1;
-@site-accentbold-inverse-color: #ecf0f3;
 @accent-color: #d9e1e8;
-@site-accent-inverse-color: @text-color;
-@site-accentlight-color: #e7ecf0;
-@site-accentlight-inverse-color: @text-color;
-@site-pagetitle-background: #c7cacd;
+@accent-text-color: @text-color;
+@accent-light-color: #e7ecf0;
+@accent-light-text-color: @text-color;
+@accent-bold-color: #779cb1;
+@accent-bold-text-color: #ecf0f3;
+
+@pagetitle-bg: #c7cacd;
 
 // Grid
 // -------------------------
-@grid-filter-background: #d9e1e8;
+@grid-filter-bg: #d9e1e8;
 
-@grid-column-header-background: @site-accentbold-color;
-@grid-column-header-font-color: @site-accentbold-inverse-color;
+@grid-column-header-bg: @accent-bold-color;
+@grid-column-header-text-color: @accent-bold-text-color;
 @grid-column-header-font-size: 14px;
 
-@grid-hover-background: @site-accentlight-color;
+@grid-hover-bg: @accent-light-color;
 
-@grid-footer-background: #d9e1e8;
-@grid-footer-font-color: #444;
+@grid-footer-bg: #d9e1e8;
+@grid-footer-text-color: #444;
 @grid-footer-font-size: 10px;
 @grid-footer-font-weight: 300;
-
-
 
 // Components
 // -------------------------
 
 /* admin bar */
-@adminbar-background: @site-accentbold-color;
-@adminbar-text-color: @site-accentbold-inverse-color;
+@adminbar-bg: @accent-bold-color;
+@adminbar-text-color: @accent-bold-text-color;
 
 /* tooltip */
-@tooltip-header-background: @accent-color;
-@tooltip-header-text-color: @site-accent-inverse-color;
-@tooltip-background: @body-bg;
+@tooltip-header-bg: @accent-color;
+@tooltip-header-text-color: @accent-text-color;
+@tooltip-bg: @body-bg;
 
 /* widget */
-@widget-header-background: @site-accentlight-color;
-@widget-header-text-color: @site-accentlight-inverse-color;
-@widget-header-background-dark: @site-accentbold-color;
-@widget-header-text-color-dark: @site-accentbold-inverse-color;
-
-/* panel */
-@panel-border-radius: 4px;
-@panel-background: @site-accentlight-color;
-@panel-border-color: darken(@panel-background, 10%);
-@panel-border-size: 1px;
-@panel-padding: 20px;
+@widget-header-bg: @accent-light-color;
+@widget-header-text-color: @accent-light-text-color;
+@widget-header-bg-dark: @accent-bold-color;
+@widget-header-text-color-dark: @accent-bold-text-color;
 
 // titles
 @title-firstword-weight: @font-weight-bold;
 @title-default-weight: @font-weight-light;
 
 /* banner */
-@banner-font-color: @site-accentbold-inverse-color;
+@banner-text-color: @accent-bold-text-color;
 @banner-font-weight: @title-default-weight;
 @banner-firstword-weight: @title-firstword-weight;
 @banner-font-size: 24px;
-@banner-background: @site-accentbold-color;
+@banner-bg: @accent-bold-color;
 @banner-border-radius: 0;
 @banner-border-color: transparent;  
 @banner-border-size: 0;  
 @banner-padding: 4px 12px;
 
 /* treeview */
-@tree-selected-background: @site-accentbold-color;
-@tree-selected-color: @site-accentbold-inverse-color;
-@tree-hover-background: @site-accentlight-color;
+@tree-selected-bg: @accent-bold-color;
+@tree-selected-color: @accent-bold-text-color;
+@tree-hover-bg: @accent-light-color;
 @tree-hover-color: @text-color;
 
 /* page list */
-@pagelist-background: @accent-color;
-@pagelist-text-color: @site-accent-inverse-color;
+@pagelist-bg: @accent-color;
+@pagelist-text-color: @accent-text-color;
 
 /* tags */
-@tag-background: #c4ced6;
-@tag-text-color: @site-accentbold-inverse-color;
+@tag-bg: #c4ced6;
+@tag-text-color: @accent-bold-text-color;
 @tag-border-radius: @border-radius-base;
 @tag-dot-color: #d6d6d6;
-@tag-background-alt: #aec2d4;
+@tag-bg-alt: #aec2d4;
 
 /* smart search */
-@smartsearch-background: rgba(255, 255, 255, 0.1);
+@smartsearch-bg: rgba(255, 255, 255, .1);
 @smartsearch-border-color: #2c2c2c;
 @smartsearch-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) inset, 0 1px 0 rgba(255, 255, 255, 0.15);
 @smartsearch-input-text-color: @header-text-color;
@@ -141,7 +140,7 @@
 
 // labels
 @label-campus: #83758f;
-@label-type: lighten(@banner-background, 5%);
+@label-type: lighten(@banner-bg, 5%);
 
 
 
