@@ -4,19 +4,13 @@
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
     
     <!-- Page Header -->
-		<header class="navbar navbar-static-top pageheader">
-			<div class="navbar-inner">
-				<div class="container-fluid">
-					<div class="row-fluid">
-						<div class="span2 clearfix">
-	
-                            <asp:HyperLink ID="HyperLink1" runat="server" CssClass="brand" NavigateUrl="~" ToolTip="Rock ChMS">
-                                <asp:Image ID="Image1" runat="server" AlternateText="Rock ChMS" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="pageheader-logo" />
-                            </asp:HyperLink>
-					
-						</div>
+		<header class="navbar navbar-default navbar-static-top pageheader" role="navigation">
+				<div class="navbar-header">
+                    <asp:HyperLink ID="HyperLink1" runat="server" CssClass="brand" NavigateUrl="~" ToolTip="Rock ChMS">
+                        <asp:Image ID="Image1" runat="server" AlternateText="Rock ChMS" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="pageheader-logo" />
+                    </asp:HyperLink>
 						
-						<div class="span10 clearfix">	
+							
 							
 							<div class="pageheader-collapse pull-right">
 								<a class="btn btn-navbar" data-target=".nav-collapse" data-toggle="collapse">
@@ -33,21 +27,11 @@
 							</div> <!-- collapse container -->
 							
 							<Rock:SearchField ID="searchField" runat="server" />
-						</div> <!-- end column -->
-					</div> <!-- end row -->
-
-				</div> <!-- end container -->
-			</div> <!-- end navbar-inner -->
+					</div> <!-- end navbar-header -->
 		</header>
 		
 		<nav class="navbar navbar-static-top pagenav">
-			<div class="navbar-inner">
-				<div class="container-fluid">
-					
-                    <Rock:Zone ID="Menu" runat="server" />										
-					
-				</div>
-			</div>
+            <Rock:Zone ID="Menu" runat="server" />										
 		</nav>
 		
 		<div class="navbar navbar-static-top pagetitle">

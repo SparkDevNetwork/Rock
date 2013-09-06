@@ -35,7 +35,7 @@ td[align=center] {
 // 2. Filter
 // -------------------------
 .grid-filter {
-    background-color: @grid-filter-background;
+    background-color: @grid-filter-bg;
     border-radius: @border-radius-base;
     padding: 0 0 12px 6px;
 	margin-bottom: -10px;
@@ -71,7 +71,7 @@ td[align=center] {
      h4 {
         margin: 12px 0 20px;
         padding-bottom: 8px;
-        border-bottom: 1px solid darken(@grid-filter-background, 8%);
+        border-bottom: 1px solid darken(@grid-filter-bg, 8%);
     }
 }
 
@@ -101,15 +101,15 @@ td[align=center] {
 
 .table thead th  {
 	background: none;
-    background-color: @grid-column-header-background;
+    background-color: @grid-column-header-bg;
 	font-size: @grid-column-header-font-size;
-	color: @site-accentbold-inverse-color;
+	color: @accent-bold-text-color;
     font-weight: 300;
     vertical-align: middle;
 }
 
 .table-bordered th a {
-    color: @site-accentbold-inverse-color;
+    color: @accent-bold-text-color;
     display: block;
 }
 
@@ -132,9 +132,9 @@ td[align=center] {
 
 .grid-table tfoot td.grid-footer  {
 	background: none;
-    background-color: @grid-footer-background;
+    background-color: @grid-footer-bg;
 	@grid-footer-font-size: 10px;
-	color: @grid-footer-font-color;
+	color: @grid-footer-text-color;
     font-weight: @grid-footer-font-weight;
 }
 
