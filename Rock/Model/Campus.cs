@@ -13,19 +13,23 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Campus POCO Entity.
+    /// Represents a physical or virtual Campus/Site for a church or ministry where worship services and other events are held.  
     /// </summary>
+    /// <example>
+    /// Three campuses for Christ's Church of the Valley: Peoria, Scottsdale and Surprise.
+    /// </example>
     [Table( "Campus" )]
     [DataContract]
     public partial class Campus : Model<Campus>
     {
         #region Entity Properties
 
+
         /// <summary>
-        /// Gets or sets the System.
+        /// Gets or sets a flag indicating if the Campus is a part of the RockChMS system/framework. 
         /// </summary>
         /// <value>
-        /// System indicates whether or not the campus is part of the core framework/system.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if this Block is part of the RockChMS core system/framework, otherwise is <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
