@@ -42,6 +42,14 @@ namespace RockWeb.Blocks.Administration
 
             _isAuthorizedToConfigure = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
 
+            // wire up page naviagte
+            RockPage page = Page as RockPage;
+
+            if (page != null)
+            {
+                page.PageNavigate += page_PageNavigate;
+            }
+
             Type containerType = Type.GetType( GetAttributeValue( "ComponentContainer" ) );
             if ( containerType != null )
             {
@@ -77,6 +85,11 @@ namespace RockWeb.Blocks.Administration
             }
             else
                 DisplayError( "Could not get the type of the specified Manged Component Container" );
+        }
+
+        void page_PageNavigate(object sender, HistoryEventArgs e)
+        {
+            string test = "test";
         }
 
         protected override void LoadViewState( object savedState )
@@ -300,10 +313,6 @@ namespace RockWeb.Blocks.Administration
             SetEditMode( true );
         }
 
-        protected void scriptManager_Navigate(object sender, HistoryEventArgs e)
-        {
-            string test = "";
-        }
 
         /// <summary>
         /// Sets the edit mode.
