@@ -40,6 +40,60 @@ namespace RockWeb.Blocks.Administration
                     pnlDetails.Visible = false;
                 }
             }
+
+            // handle sort events
+            string postbackArgs = Request.Params["__EVENTARGUMENT"];
+            if ( !string.IsNullOrWhiteSpace( postbackArgs ) )
+            {
+                string[] nameValue = postbackArgs.Split( new char[] { ':' } );
+                if ( nameValue.Count() == 2 )
+                {
+                    string eventParam = nameValue[0];
+                    if ( eventParam.Equals( "re-order-grouptype" ) || eventParam.Equals( "re-order-group" ) )
+                    {
+                        string[] values = nameValue[1].Split( new char[] { ';' } );
+                        if ( values.Count() == 2 )
+                        {
+                            SortGroupTypeListContents( eventParam, values );
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sorts the group type list contents.
+        /// </summary>
+        /// <param name="eventParam">The event parameter.</param>
+        /// <param name="values">The values.</param>
+        private void SortGroupTypeListContents( string eventParam, string[] values )
+        {
+            if ( eventParam.Equals( "re-order-grouptype" ) )
+            {
+                var allCheckinGroupTypeEditors = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupTypeEditor>();
+                Guid groupTypeGuid = new Guid( values[0]);
+                int newIndex = int.Parse(values[1]);
+                
+                CheckinGroupTypeEditor sortedGroupTypeEditor = allCheckinGroupTypeEditors.FirstOrDefault(a => a.GroupTypeGuid.Equals(groupTypeGuid));
+                if (sortedGroupTypeEditor != null)
+                {
+                    var siblingGroupTypes = allCheckinGroupTypeEditors.Where( a => a.ParentGroupTypeEditor == sortedGroupTypeEditor.ParentGroupTypeEditor ).ToList();
+                    Control parentControl = sortedGroupTypeEditor.Parent;
+                    parentControl.Controls.Remove( sortedGroupTypeEditor );
+                    if ( newIndex >= siblingGroupTypes.Count() )
+                    {
+                        parentControl.Controls.Add( sortedGroupTypeEditor );
+                    }
+                    else
+                    {
+                        parentControl.Controls.AddAt( newIndex, sortedGroupTypeEditor );
+                    }
+                }
+            }
+            else if ( eventParam.Equals( "re-order-group" ) )
+            {
+                var allCheckinGroupEditors = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupEditor>();
+            }
         }
 
         #endregion
@@ -79,8 +133,17 @@ namespace RockWeb.Blocks.Administration
         /// </returns>
         protected override object SaveViewState()
         {
-            // save all the base grouptypes (along with their children) to viewstate
+            SaveGroupTypeControlsToViewState();
 
+            return base.SaveViewState();
+        }
+
+        /// <summary>
+        /// Saves the state of the group type controls to viewstate.
+        /// </summary>
+        private void SaveGroupTypeControlsToViewState()
+        {
+            // save all the base grouptypes (along with their children) to viewstate
             var groupTypeList = new List<GroupType>();
             foreach ( var checkinGroupTypeEditor in phCheckinGroupTypes.Controls.OfType<CheckinGroupTypeEditor>() )
             {
@@ -99,8 +162,6 @@ namespace RockWeb.Blocks.Administration
             {
                 GroupTypeCheckinLabelAttributesState.Add( checkinGroupTypeEditor.GroupTypeGuid, checkinGroupTypeEditor.CheckinLabels );
             }
-
-            return base.SaveViewState();
         }
 
         /// <summary>
