@@ -18,13 +18,13 @@ namespace Rock.Model
 {
 
     /// <summary>
-    /// Represents an implementation of a <see cref="BlockType"/> in RockChMS. A block can be implemented on a Site's template layout and appear on 
+    /// Represents an implementation of a <see cref="Rock.Model.BlockType"/> in RockChMS. A block can be implemented on a Site's template layout and appear on 
     /// all pages on the site that uses that template or on an individual page.  
     /// 
     /// An example of a Block being implemented on a layout template would be an implementation of a HTML Content Block Type in the footer zone of a layout that contains the site's copyright notice.  
-    /// This Block will show on all <see cref="Page">pages</see> of the <see cref="Site"/> that uses the layout.
+    /// This Block will show on all <see cref="Rock.Model.Page">Pages</see> of the <see cref="Rock.Model.Site"/> that uses the layout.
     /// 
-    /// An example of a Block being implemented on a page would be the New Account <see cref="BlockType"/> being implemented on the New Account page.
+    /// An example of a Block being implemented on a page would be the New Account <see cref="Rock.Model.BlockType"/> being implemented on the New Account page.
     /// </summary>
     [Table( "Block" )]
     [DataContract]
@@ -47,12 +47,12 @@ namespace Rock.Model
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id <see cref="Page"/> that this Block belongs to. This property is nullable and will only be populated
-        /// if the Block is implemented on a <see cref="Page"/>.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Page"/> that this Block is implemented on. This property is nullable and will only be populated
+        /// if the Block is implemented on a <see cref="Rock.Model.Page"/>.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int"/> that represents the Id of the <see cref="Page"/> that this Block is implemented on.  This value will be null if this Block is implemented 
-        /// as part of a <see cref="Site"/> layout template.
+        /// An <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Page"/> that this Block is implemented on.  This value will be null if this Block is implemented 
+        /// as part of a <see cref="Rock.Model.Site"/> layout template.
         /// </value>
         /// <example>
         /// 1
@@ -61,11 +61,11 @@ namespace Rock.Model
         public int? PageId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Site"/> that this Block is implemented on. This property is nullable and will only be populated
-        /// if the Block is implmeneted as part of a <see cref="Site"/> layout template, and is used in conjunction with the Layout name property.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Site"/> that this Block is implemented on. This property is nullable and will only be populated
+        /// if the Block is implemented as part of a <see cref="Rock.Model.Site"/> layout template. This property is used in conjunction with the Layout name property.
         /// </summary>
         /// <value>
-        /// An <see cref="Integer"/> that represents the Id of the <see cref="Site"/> that this Block is implmeneted on. This value will be null if this Block is implemented on a page.
+        /// An <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Site"/> that this Block is implmeneted on. This value will be null if this Block is implemented on a page.
         /// </value>
         /// <example>
         ///  1 
@@ -85,10 +85,10 @@ namespace Rock.Model
         public string Layout { get; set; }
         
         /// <summary>
-        /// Gets or sets the Id of the <see cref="BlockType"/> that this Block is implementing. This property is required.
+        /// Gets or sets the Id of the <see cref="System.Rock.BlockType"/> that this Block is implementing. This property is required.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int"/> that represents the <see cref="BlockType"/> that this Block is implementing.
+        /// An <see cref="System.Int32"/> that represents the <see cref="System.Rock.BlockType"/> that this Block is implementing.
         /// </value>
         /// <example>
         /// 4
@@ -113,11 +113,11 @@ namespace Rock.Model
         
         /// <summary>
         /// Gets or sets the order that this Block appears in the <see cref="Page"/>/Layout zone that the Block is implmented in.  Blocks are 
-        /// displayed/rendered in Ascending (1,2,3,...) order. The lower the number the higher in the Zone the Block will appear.  <see cref="Page"/> Blocks have
-        /// priority over <see cref="Site"/> layout Blocks, so they will appear higher in the Zone than <see cref="Site"/>/Layout Blocks. This property is required
+        /// displayed/rendered in Ascending (1,2,3,...) order. The lower the number the higher in the Zone the Block will appear.  <see cref="Rock.Model.Page"/> Blocks have
+        /// priority over <see cref=""/> layout Blocks, so they will appear higher in the Zone than <see cref="Rock.Model.Site"/>/Layout Blocks. This property is required
         /// </summary>
         /// <value>
-        /// A <see cref="System.Int"/> that represents the display order of the Block in a <see cref="Page"/>/Layout Zone.
+        /// A <see cref="System.Int32"/> that represents the display order of the Block in a <see cref="Rock.Model.Page"/>/Layout Zone.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
@@ -138,7 +138,7 @@ namespace Rock.Model
         /// Gets or sets the length of time (in minutes) that the Block's data is cached. This property is required.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int"/> that represents the amout of time that the Block's data is cached.
+        /// An <see cref="System.Int32"/> that represents the amout of time that the Block's data is cached.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
@@ -149,27 +149,27 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="BlockType"/> entity that this Block is implementing.
+        /// Gets or sets the <see cref="Rock.Model.BlockType"/> entity that this Block is implementing.
         /// </summary>
         /// <value>
-        /// The <see cref="BlockType"/> that that is being implmeneted by this Block.
+        /// The <see cref="Rock.Model.BlockType"/> that that is being implmeneted by this Block.
         /// </value>
         [DataMember]
         public virtual BlockType BlockType { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Page"/> entity that this Block is implemented on. This property will be null if this Block is being implmeneted on as part of a Site Layout.
+        /// Gets or sets the <see cref="Rock.Model.Page"/> entity that this Block is implemented on. This property will be null if this Block is being implmeneted on as part of a Site Layout.
         /// </summary>
         /// <value>
-        /// The <see cref="Page"/> entity that this Blcok is being implmeneted on. This value will be null if the Block is implemented as part of a <see cref="Site"/> Layout.
+        /// The <see cref="System.Model.Page"/> entity that this Blcok is being implmeneted on. This value will be null if the Block is implemented as part of a <see cref="Rock.Model.Site"/> Layout.
         /// </value>
         [DataMember]
         public virtual Page Page { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Site"/> that this Layout Block is being implemented on. This property will be null if this Block is implemented as part of a <see cref="Page"/>.
+        /// Gets or sets the <see cref="Rock.Model.Site"/> that this Layout Block is being implemented on. This property will be null if this Block is implemented as part of a <see cref="Rock.Model.Page"/>.
         /// </summary>
-        /// <value>The <see cref="Site"/> that this Layout Block is being implemented on. This property will be null if this Block is being implmented as part a <see cref="Page"/> </value>
+        /// <value>The <see cref="Rock.Model.Site"/> that this Layout Block is being implemented on. This property will be null if this Block is being implmented as part a <see cref="Rock.Model.Page"/> </value>
         [DataMember]
         public virtual Site Site { get; set; }
 
@@ -177,7 +177,7 @@ namespace Rock.Model
         /// Gets the location where this Block is being implmeneted on.  
         /// </summary>
         /// <value>
-        /// The location where this Block is being implemented on. <c>BlockLocation.Page</c> if the PageId is not null, otherwise <c>BlockLocation.Layout</c>
+        /// The <see cref="Rock.Model.BlockLocation"/> where this Block is being implemented on. <c>BlockLocation.Page</c> if the PageId is not null, otherwise <c>BlockLocation.Layout</c>
         /// </value>
         /// <example>
         /// <c>BlockLocation.Page</c>
@@ -215,10 +215,10 @@ namespace Rock.Model
         #region Public Methods
         
         /// <summary>
-        /// Returns a <see cref="string"/> that represents this instance.
+        /// Returns a <see cref="System.String"/> that represents this instance.
         /// </summary>
         /// <returns>
-        /// A <see cref="string"/> that represents this instance. Returns the Name of the Block
+        /// A <see cref="System.String"/> that represents this instance. Returns the Name of the Block
         /// </returns>
         public override string ToString()
         {
