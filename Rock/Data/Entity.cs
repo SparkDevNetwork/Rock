@@ -15,9 +15,9 @@ using Newtonsoft.Json;
 namespace Rock.Data
 {
     /// <summary>
-    /// Base class that all models need to inherit from
+    /// Represents an entity object and is the base class for all model objects to inherit from
     /// </summary>
-    /// <typeparam name="T"></typeparam>
+    /// <typeparam name="T">The Type entity that is being referenced <example>Entity&lt;Person&gt;</example></typeparam>
     [DataContract]
     public abstract class Entity<T> : IEntity, DotLiquid.ILiquidizable
         where T : Entity<T>, new()
@@ -25,17 +25,35 @@ namespace Rock.Data
         #region Entity Properties
 
         /// <summary>
-        /// The Id
+        /// Gets or sets the value of the identifier.  This value is the primary field/key for the entity object.  This value is system and database
+        /// dependant, and is not guranteed to be unique. This id should only be used to identify an object internally to a single implementation 
+        /// of RockChMS since this value has a very high probability of not being consistant in an external implementation of RockChMS.  
         /// </summary>
+        /// <example>
+        /// 1
+        /// </example>
+        /// <value>
+        /// Primary and system dependant <see cref="String.Int"/> based identity/key of an entity object in RockChMS.  
+        /// </value>
         [Key]
         [DataMember]
         public int Id { get; set; }
 
         /// <summary>
-        /// Gets or 
+        /// Gets or sets a <see cref="System.Guid"/> value that is a guaranteed unique identifier for the entity object.  This value 
+        /// is an alternate key for the object, and should be used when interacting with external systems and when comparing and syncronizing
+        /// objects across across datastores or external /implmentations of RockChMS
         /// </summary>
+        /// <example>
+        /// BEC8FBCC-0DCB-41C7-871B-BD7FECAF74B3
+        /// </example>
+        /// <remarks>
+        /// A good place for a Guid to be used is when comparing or syncing data across two implementations of RockChMS. For example, if you 
+        /// were creating a <see cref="Block"/> with a data migration that adds/remove a new defined value object to the database. You would want to 
+        /// search based on the Guid because it would be guaranteed to be unique across all implementations of RockChMS. 
+        /// </remarks>
         /// <value>
-        /// The GUID.
+        /// A <see cref="System.Guid"/> value that will uniquely identify the entity/object across all implmentations of RockChMS.
         /// </value>
         [AlternateKey]
         [DataMember]
@@ -51,11 +69,15 @@ namespace Rock.Data
         #region Virtual Properties
 
         /// <summary>
-        /// Gets the type id.
+        /// Gets the <see cref="EntityType"/> Id for the Entity object type in RockChMS. If an <see cref="EntityType"/> is not found
+        /// for the object type it will be created
         /// </summary>
         /// <value>
-        /// The type id.
+        /// An <see cref="System.Int"/> that represents the identifier for the current Entity object type. 
         /// </value>
+        /// <example>
+        /// The EntityTypeId for <see cref="Page"/> is 2.  
+        /// </example>
         public virtual int TypeId
         {
             get
@@ -71,6 +93,9 @@ namespace Rock.Data
         /// <value>
         /// The name of the entity type.
         /// </value>
+        /// <example>
+        /// The TypeName for the <see cref="Page"/> Entity Type is Rock.Model.Page.
+        /// </example>
         [NotMapped]
         public virtual string TypeName 
         {
@@ -81,10 +106,10 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Gets the context key.
+        /// Gets an URLEncoded encrypted string/key that represents the entity object
         /// </summary>
         /// <value>
-        /// The context key.
+        /// An encrypted <see cref="System.String"/> that represents the entity object.
         /// </value>
         [NotMapped]
         public virtual string ContextKey
@@ -100,7 +125,7 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Gets the validation results.
+        /// Gets the validation results for the entity
         /// </summary>
         [NotMapped]
         public virtual List<ValidationResult> ValidationResults
@@ -113,8 +138,11 @@ namespace Rock.Data
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        ///   A <see cref="System.Boolean"/> that is <c>true</c> if this instance is valid; otherwise, <c>false</c>.
         /// </value>
+        /// <example>
+        ///     <!--TODO-->
+        /// </example>
         [NotMapped]
         public virtual bool IsValid
         {
@@ -127,8 +155,14 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Gets a publicly viewable unique key for the model.
+        /// Gets a publicly viewable unique key for the entity.
         /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> that represents a viewable version of the entity's unique key.
+        /// </value>
+        /// <example>
+        ///     <!--TODO-->
+        /// </example>
         [NotMapped]
         public virtual string EncryptedKey
         {
@@ -140,11 +174,14 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Gets a URL friendly version of the EncryptedKey.
+        /// Gets a URL friendly version of the EncryptedKey for the entity.
         /// </summary>
         /// <value>
-        /// The URL encoded key.
+        /// A <see cref="System.String"/> that represents a URL friendly version of the entity's unqiue key.
         /// </value>
+        /// <example>
+        /// <!--TODO-->
+        /// </example>
         [DataMember]
         public virtual string UrlEncodedKey
         {
@@ -160,10 +197,10 @@ namespace Rock.Data
         #region Static Properties
 
         /// <summary>
-        /// Gets the name of the entity type friendly.
+        /// Gets the entity object type's friendly name
         /// </summary>
         /// <value>
-        /// The name of the entity type friendly.
+        /// A <see cref="System.String"/> that represents the entity object type's friendly name.
         /// </value>
         [NotMapped]
         public static string FriendlyTypeName
@@ -182,7 +219,9 @@ namespace Rock.Data
         /// <summary>
         /// Creates a deep copy of this instance
         /// </summary>
-        /// <returns></returns>
+        /// <returns>
+        /// A copy of the entity
+        /// </returns>
         public virtual IEntity Clone()
         {
             var json = this.ToJson();
@@ -190,9 +229,11 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Converts object to dictionary.
+        /// Creates a dictionary containing the majority of the entity object's properties. The only properties that are excluded
+        /// are the Id, Guid and Order.  
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A <see cref="System.Collections.Generic.Dictionary"/> that represents the current entity object. Each <see cref="System.Collections.Generic.KeyValuePair"/> includes the property
+        /// name as the key and the property value as the value.</returns>
         public virtual Dictionary<string, object> ToDictionary()
         {
             var dictionary = new Dictionary<string, object>();
@@ -209,9 +250,11 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Froms the dictionary.
+        /// Populates the current entity object with the contents of the current entity object. 
         /// </summary>
-        /// <param name="properties">The properties.</param>
+        /// <param name="properties">A <see cref="System.Collections.Generic.Dictionary"/> that contains <see cref="System.Collections.Generic.KeyValuePair">KeyValuePairs</see> 
+        /// of representing properties.
+        /// </param>
         public virtual void FromDictionary( Dictionary<string, object> properties )
         {
             Type type = this.GetType();
@@ -227,9 +270,9 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Converts object to dictionary for DotLiquid.
+        /// Creates a DotLiquid compatible dictionary that represents the current entity object. 
         /// </summary>
-        /// <returns></returns>
+        /// <returns>DotLiquid compatable dictionary.</returns>
         public virtual object ToLiquid()
         {
             var dictionary = new Dictionary<string, object>();
