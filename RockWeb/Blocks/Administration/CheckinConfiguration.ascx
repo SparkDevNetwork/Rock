@@ -19,7 +19,7 @@
                     </span>
                 </legend>
                 <div class="row-fluid checkin-grouptype-list">
-                    <asp:PlaceHolder ID="phCheckinGroupTypes" runat="server" />
+                    <asp:PlaceHolder ID="phCheckinGroupTypes" runat="server" EnableViewState="false" />
                 </div>
             </fieldset>
 

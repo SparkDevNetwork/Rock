@@ -228,6 +228,20 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
         }
 
         /// <summary>
+        /// Gets the parent group type editor.
+        /// </summary>
+        /// <value>
+        /// The parent group type editor.
+        /// </value>
+        public CheckinGroupTypeEditor ParentGroupTypeEditor
+        {
+            get
+            {
+                return this.Parent as CheckinGroupTypeEditor;
+            }
+        }
+
+        /// <summary>
         /// Gets the inherited group type unique identifier.
         /// </summary>
         /// <value>
@@ -584,13 +598,19 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
             writer.RenderEndTag();
 
             // groups
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "checkin-group-list" );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "checkin-grouptype-list" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             foreach ( CheckinGroupTypeEditor checkinGroupTypeEditor in this.Controls.OfType<CheckinGroupTypeEditor>() )
             {
                 checkinGroupTypeEditor.RenderControl( writer );
             }
 
+            // checkin-grouptype-list div
+            writer.RenderEndTag();
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "checkin-group-list" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             foreach ( CheckinGroupEditor checkinGroupEditor in this.Controls.OfType<CheckinGroupEditor>() )
             {
                 checkinGroupEditor.RenderControl( writer );
