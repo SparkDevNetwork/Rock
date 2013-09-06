@@ -1527,6 +1527,13 @@ namespace Rock.Web.UI
     #region Event Argument Classes
 
     /// <summary>
+    /// Delegate used for the ScriptManager's Navigate Event
+    /// </summary>
+    /// <param name="sender">The sender.</param>
+    /// <param name="e">The <see cref="System.Web.UI.HistoryEventArgs"/> instance containing the history data.</param>
+    public delegate void PageNavigateEventHandler(object sender, HistoryEventArgs e);
+
+    /// <summary>
     /// Event Argument used when block instance properties are updated
     /// </summary>
     internal class BlockAttributesUpdatedEventArgs : EventArgs
