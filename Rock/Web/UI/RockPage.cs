@@ -1533,7 +1533,8 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Occurs when [grid reorder].
+        /// Occurs when the ScriptManager detects a history change. This allows UpdatePanels to work when the
+        /// browser's back button is pressed.
         /// </summary>
         public event PageNavigateEventHandler PageNavigate;
 
@@ -1544,10 +1545,10 @@ namespace Rock.Web.UI
     #region Event Argument Classes
 
     /// <summary>
-    /// Delegate used for xxxxxx
+    /// Delegate used for the ScriptManager's Navigate Event
     /// </summary>
     /// <param name="sender">The sender.</param>
-    /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+    /// <param name="e">The <see cref="System.Web.UI.HistoryEventArgs"/> instance containing the history data.</param>
     public delegate void PageNavigateEventHandler(object sender, HistoryEventArgs e);
 
     /// <summary>
