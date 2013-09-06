@@ -317,6 +317,12 @@ namespace Rock.Web.UI
                 Page.Form.Controls.AddAt( 0, _scriptManager );
             }
 
+            // enable history on the ScriptManager
+            _scriptManager.EnableHistory = true;
+
+            // wire up navigation event
+            _scriptManager.Navigate += new EventHandler<HistoryEventArgs>(scriptManager_Navigate);
+
             // Add library and UI bundles during init, that way theme developers will only
             // need to worry about registering any custom scripts or script bundles they need
             _scriptManager.Scripts.Add( new ScriptReference { Name = "WebFormsBundle" } );
@@ -1518,10 +1524,31 @@ namespace Rock.Web.UI
         //    }
         //}
 
+        protected void scriptManager_Navigate(object sender, HistoryEventArgs e)
+        {
+            if (PageNavigate != null)
+            {
+                PageNavigate(this, e);
+            }
+        }
+
+        /// <summary>
+        /// Occurs when [grid reorder].
+        /// </summary>
+        public event PageNavigateEventHandler PageNavigate;
+
         #endregion
     }
 
+
     #region Event Argument Classes
+
+    /// <summary>
+    /// Delegate used for xxxxxx
+    /// </summary>
+    /// <param name="sender">The sender.</param>
+    /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+    public delegate void PageNavigateEventHandler(object sender, HistoryEventArgs e);
 
     /// <summary>
     /// Event Argument used when block instance properties are updated
