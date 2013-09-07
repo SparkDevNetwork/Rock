@@ -71,11 +71,11 @@ namespace RockWeb.Blocks.Administration
             if ( eventParam.Equals( "re-order-grouptype" ) )
             {
                 var allCheckinGroupTypeEditors = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupTypeEditor>();
-                Guid groupTypeGuid = new Guid( values[0]);
-                int newIndex = int.Parse(values[1]);
-                
-                CheckinGroupTypeEditor sortedGroupTypeEditor = allCheckinGroupTypeEditors.FirstOrDefault(a => a.GroupTypeGuid.Equals(groupTypeGuid));
-                if (sortedGroupTypeEditor != null)
+                Guid groupTypeGuid = new Guid( values[0] );
+                int newIndex = int.Parse( values[1] );
+
+                CheckinGroupTypeEditor sortedGroupTypeEditor = allCheckinGroupTypeEditors.FirstOrDefault( a => a.GroupTypeGuid.Equals( groupTypeGuid ) );
+                if ( sortedGroupTypeEditor != null )
                 {
                     var siblingGroupTypes = allCheckinGroupTypeEditors.Where( a => a.ParentGroupTypeEditor == sortedGroupTypeEditor.ParentGroupTypeEditor ).ToList();
                     Control parentControl = sortedGroupTypeEditor.Parent;
@@ -185,7 +185,7 @@ namespace RockWeb.Blocks.Administration
 
             foreach ( var groupType in groupTypeViewStateList )
             {
-                CreateGroupTypeEditorControls( groupType, phCheckinGroupTypes);
+                CreateGroupTypeEditorControls( groupType, phCheckinGroupTypes );
             }
         }
 
@@ -193,7 +193,7 @@ namespace RockWeb.Blocks.Administration
         /// Creates the group type editor controls.
         /// </summary>
         /// <param name="groupType">Type of the group.</param>
-        private void CreateGroupTypeEditorControls( GroupType groupType, Control parentControl)
+        private void CreateGroupTypeEditorControls( GroupType groupType, Control parentControl )
         {
             CheckinGroupTypeEditor groupTypeEditor = new CheckinGroupTypeEditor();
             groupTypeEditor.ID = "GroupTypeEditor_" + groupType.Guid.ToString( "N" );
@@ -254,8 +254,44 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void groupTypeEditor_DeleteGroupTypeClick( object sender, EventArgs e )
         {
+            GroupTypeService groupTypeService = new GroupTypeService();
             CheckinGroupTypeEditor groupTypeEditor = sender as CheckinGroupTypeEditor;
+            GroupType groupType = groupTypeService.Get( groupTypeEditor.GroupTypeGuid );
+            if ( groupType != null )
+            {
+                // Warn if this GroupType or any of its child grouptypes (recursive) is being used as an Inherited Group Type. Probably shouldn't happen, but just in case
+                if ( IsInheritedGroupTypeRecursive( groupType ) )
+                {
+                    nbDeleteWarning.Text = "WARNING - Cannot delete. This group type or one of its child group types is assigned as an inherited group type.";
+                    nbDeleteWarning.Visible = true;
+                    return;
+                }
+            }
+
             groupTypeEditor.Parent.Controls.Remove( groupTypeEditor );
+        }
+
+        /// <summary>
+        /// Determines whether [is inherited group type recursive] [the specified group type].
+        /// </summary>
+        /// <param name="groupType">Type of the group.</param>
+        /// <returns></returns>
+        private static bool IsInheritedGroupTypeRecursive( GroupType groupType )
+        {
+            if ( new GroupTypeService().Queryable().Any( a => a.InheritedGroupType.Guid == groupType.Guid ) )
+            {
+                return true;
+            }
+
+            foreach ( var childGroupType in groupType.ChildGroupTypes )
+            {
+                if ( IsInheritedGroupTypeRecursive( childGroupType ) )
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -363,6 +399,19 @@ namespace RockWeb.Blocks.Administration
         protected void groupEditor_DeleteGroupClick( object sender, EventArgs e )
         {
             CheckinGroupEditor groupEditor = sender as CheckinGroupEditor;
+            GroupService groupService = new GroupService();
+            Group groupDB = groupService.Get( groupEditor.GroupGuid );
+            if ( groupDB != null )
+            {
+                string errorMessage;
+                if ( !groupService.CanDelete( groupDB, out errorMessage ) )
+                {
+                    nbDeleteWarning.Text = "WARNING - Cannot Delete: " + errorMessage;
+                    nbDeleteWarning.Visible = true;
+                    return;
+                }
+            }
+
             groupEditor.Parent.Controls.Remove( groupEditor );
         }
 
@@ -562,6 +611,8 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSave_Click( object sender, EventArgs e )
         {
+            bool hasValidationErrors = false;
+
             using ( new UnitOfWorkScope() )
             {
                 GroupTypeService groupTypeService = new GroupTypeService();
@@ -639,8 +690,17 @@ namespace RockWeb.Blocks.Administration
                             groupTypeService.Add( groupTypeDB, this.CurrentPersonId );
                         }
 
+                        if ( !groupTypeDB.IsValid )
+                        {
+                            hasValidationErrors = true;
+                            CheckinGroupTypeEditor groupTypeEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupTypeEditor>().First( a => a.GroupTypeGuid == groupTypeDB.Guid );
+                            groupTypeEditor.ForceContentVisible = true;
+
+                            return;
+                        }
+
                         groupTypeService.Save( groupTypeDB, this.CurrentPersonId );
-                        
+
                         Rock.Attribute.Helper.SaveAttributeValues( groupTypeDB, this.CurrentPersonId );
 
                         // get fresh from database to make sure we have Id so we can update the CheckinLabel Attributes
@@ -666,6 +726,16 @@ namespace RockWeb.Blocks.Administration
                             attribute.DefaultValue = checkinLabelAttributeInfo.BinaryFileId.ToString();
                             attribute.Key = checkinLabelAttributeInfo.AttributeKey;
                             attribute.Name = checkinLabelAttributeInfo.FileName;
+
+                            if ( !attribute.IsValid )
+                            {
+                                hasValidationErrors = true;
+                                CheckinGroupTypeEditor groupTypeEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupTypeEditor>().First( a => a.GroupTypeGuid == groupTypeDB.Guid );
+                                groupTypeEditor.ForceContentVisible = true;
+
+                                return;
+                            }
+
                             attributeService.Add( attribute, this.CurrentPersonId );
                             attributeService.Save( attribute, this.CurrentPersonId );
                         }
@@ -714,12 +784,23 @@ namespace RockWeb.Blocks.Administration
                             groupService.Add( groupDB, this.CurrentPersonId );
                         }
 
+                        if ( !groupDB.IsValid )
+                        {
+                            hasValidationErrors = true;
+                            hasValidationErrors = true;
+                            CheckinGroupEditor groupEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupEditor>().First( a => a.GroupGuid == groupDB.Guid );
+                            groupEditor.ForceContentVisible = true;
+
+                            return;
+                        }
+
                         groupService.Save( groupDB, this.CurrentPersonId );
+
                         Rock.Attribute.Helper.SaveAttributeValues( groupDB, this.CurrentPersonId );
                     }
 
                     /* now that we have all the grouptypes saved, now lets go back and save them again with the current UI ChildGroupTypes */
-                    
+
                     // save main parentGroupType with current UI ChildGroupTypes
                     parentGroupTypeDB.ChildGroupTypes = new List<GroupType>();
                     parentGroupTypeDB.ChildGroupTypes.Clear();
@@ -748,7 +829,10 @@ namespace RockWeb.Blocks.Administration
                 } );
             }
 
-            NavigateToParentPage();
+            if ( !hasValidationErrors )
+            {
+                NavigateToParentPage();
+            }
         }
 
         /// <summary>

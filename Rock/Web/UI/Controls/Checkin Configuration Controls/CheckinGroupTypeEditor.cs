@@ -354,6 +354,7 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
             lbDeleteGroupType.CssClass = "btn btn-mini btn-danger";
             lbDeleteGroupType.Click += lbDeleteGroupType_Click;
             lbDeleteGroupType.Controls.Add( new LiteralControl { Text = "<i class='icon-remove'></i>" } );
+            lbDeleteGroupType.Attributes["onclick"] = string.Format( "javascript: return Rock.controls.grid.confirmDelete(event, '{0}');", "group type" );
 
             ddlGroupTypeInheritFrom = new LabeledDropDownList();
             ddlGroupTypeInheritFrom.ID = this.ID + "_ddlGroupTypeInheritFrom";
