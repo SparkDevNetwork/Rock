@@ -4,6 +4,7 @@
     <ContentTemplate>
         <div class="row-fluid">
             <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+            <Rock:NotificationBox ID="nbDeleteWarning" runat="server" NotificationBoxType="Warning" />
         </div>
 
         <asp:Panel ID="pnlDetails" runat="server">
