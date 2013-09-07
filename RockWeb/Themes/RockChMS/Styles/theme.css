@@ -1,4 +1,4 @@
-﻿/*!
+/*!
  *  Font Awesome 3.2.1
  *  the iconic font designed for Bootstrap
  *  ------------------------------------------------------------------------------
@@ -52,7 +52,7 @@
 /* makes the font 33% larger relative to the icon container */
 .icon-large:before {
   vertical-align: -10%;
-  font-size: 1.3333333333333332em;
+  font-size: 1.3333333333333333em;
 }
 /* makes sure icons active on rollover in links */
 a [class^="icon-"],
@@ -4817,7 +4817,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .nav > li > a:hover,
 .nav > li > a:focus {
   text-decoration: none;
-  background-color: #eeeeee;
+  background-color: transparent;
 }
 .nav > li.disabled > a {
   color: #999999;
@@ -4832,7 +4832,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .nav .open > a,
 .nav .open > a:hover,
 .nav .open > a:focus {
-  background-color: #eeeeee;
+  background-color: transparent;
   border-color: #437b9b;
 }
 .nav .nav-divider {
@@ -8283,8 +8283,8 @@ div.tagsinput div {
   background-image: -o-linear-gradient(bottom, #ee5f5b, #bd362f);
   background-image: linear-gradient(bottom, #ee5f5b, #bd362f);
 }
-.smart-search {
-  float: right;
+.smartsearch {
+  width: 290px;
   margin-top: 10px;
   font-size: 11px;
   height: 16px;
@@ -8295,38 +8295,41 @@ div.tagsinput div {
   border-radius: 15px;
   padding: 0 6px;
 }
-.smart-search:focus {
+.smartsearch:focus {
   border-color: #595959;
 }
-.smart-search input {
+.smartsearch input {
   border: 0;
   background: transparent;
   color: #ffffff;
   border-radius: 0;
   width: 150px;
+  margin: 2px 0 0 6px;
 }
-.smart-search input:focus {
+.smartsearch input:focus {
   box-shadow: 0 0 0 0;
 }
-.smart-search input:-moz-placeholder {
+.smartsearch .dropdown-menu {
+  font-size: 11px;
+  right: 0;
+  left: auto;
+}
+.smartsearch input:-moz-placeholder {
   color: #bfbfbf;
 }
-.smart-search input::-moz-placeholder {
+.smartsearch input::-webkit-input-placeholder {
   color: #bfbfbf;
 }
-.smart-search input::-webkit-input-placeholder {
-  color: #bfbfbf;
-}
-.smart-search .nav > li > a {
+.smartsearch .nav > li > a {
   padding: 4px 15px;
 }
-.smart-search input::selection {
+.smartsearch input::selection {
   background: #2e2e2e;
   /* Safari */
 
   color: #ffffff;
 }
-.smart-search input::-moz-selection {
+.smartsearch input::-moz-selection {
   background: #2e2e2e;
   /* Firefox */
 
@@ -8460,6 +8463,17 @@ div.tagsinput div {
 /* CK Editor Tweaks */
 span.cke_skin_kama {
   padding: 0 !important;
+}
+.loginstatus {
+  width: 160px;
+}
+.loginstatus .dropdown-toggle {
+  text-align: right;
+  font-size: 11px;
+}
+.loginstatus .dropdown-menu {
+  right: 0;
+  font-size: 11px;
 }
 /*
     Used to manage styles related to the CMS admin UI for on page editing
@@ -10514,6 +10528,9 @@ a:hover {
 a:hover i[class^="icon-"] {
   text-decoration: none;
 }
+.navbar {
+  position: static;
+}
 .btn {
   background-image: none;
   box-shadow: none;
@@ -10567,23 +10584,39 @@ a:hover i[class^="icon-"] {
     padding-right: 40px;
   }
 }
+.pageheader a,
+.pagenav a {
+  color: #ffffff;
+}
+.pageheader .caret,
+.pagenav .caret {
+  border-bottom-color: #ffffff;
+  border-top-color: #ffffff;
+  margin-left: 6px;
+}
+.pageheader .dropdown-menu a,
+.pagenav .dropdown-menu a {
+  color: #515151;
+}
+.pageheader .dropdown-menu a:hover,
+.pagenav .dropdown-menu a:hover {
+  color: #ecf0f3;
+}
 .pageheader {
   padding: 12px 0;
   border-bottom: 1px solid #121212;
   background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4=");
 }
-.pageheader.navbar .nav a {
-  font-size: 11px;
-}
-.pageheader .brand {
-  padding: 5px 20px 0 20px;
-}
-.pageheader-logo {
+.pageheader .pageheader-logo {
   height: 36px;
   width: 92.83px;
 }
-.pageheader-collapse {
-  margin-top: 6px;
+.pageheader .smartsearch,
+.pageheader .loginstatus {
+  float: right;
+}
+.pageheader .loginstatus {
+  margin-top: 4px;
 }
 .pagenav {
   border-top: 1px solid #545454;
@@ -10620,19 +10653,19 @@ a:hover i[class^="icon-"] {
   bottom: 0;
   border-right: 1px solid #212121;
 }
-.pagenav .nav > li a {
+.pagenav .nav > li > a {
   padding: 4px 15px;
   text-align: center;
   font-size: 11px;
   color: #ffffff;
 }
-.pagenav .nav > li a .caret {
+.pagenav .nav > li > a .caret {
   display: block;
   margin: 0 auto;
   border-bottom-color: #ffffff;
   border-top-color: #ffffff;
 }
-.pagenav .nav > li a i[class^='icon-'] {
+.pagenav .nav > li > a i[class^='icon-'] {
   display: block;
   margin: 6px auto 2px;
   font-size: 18px;

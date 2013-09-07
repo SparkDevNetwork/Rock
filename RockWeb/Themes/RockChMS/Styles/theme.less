@@ -117,6 +117,10 @@ a:hover i[class^="icon-"]
 // 2. Bootstrap Overrides 
 // ------------------------- 
 
+.navbar {
+    position: static; // default is relative which causes the dropdowns to go under the other navbars dispite having a higher z-index
+}
+
 .btn {
     background-image: none;
     box-shadow: none;
@@ -192,30 +196,50 @@ a:hover i[class^="icon-"]
 // 3. Page Header
 // -------------------------
 
+// common header styles
+.pageheader,
+.pagenav {
+    a {
+        color: @header-text-color;
+    }
+
+    .caret {
+        border-bottom-color: @header-text-color;
+        border-top-color: @header-text-color;
+        margin-left: 6px;
+    }
+
+    .dropdown-menu a {
+        color: @text-color;
+
+        &:hover {
+            color: @accent-bold-text-color;
+        }
+    }
+}
+
+
 // page header (logo bar)
 .pageheader
 {
     padding: 12px 0;
     border-bottom: 1px solid #121212;
     background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4=");
+
+    .pageheader-logo {
+	    height: 36px;
+	    width: 92.83px
+    }
+
+    .smartsearch, 
+    .loginstatus {
+        float: right;
+    }
+
+    .loginstatus {
+        margin-top: 4px;
+    }
 } 
-
-.pageheader.navbar .nav a {
-    font-size: 11px;
-}
-
-.pageheader .brand {
-	padding: 5px 20px 0 20px;
-}
-
-.pageheader-logo {
-	height: 36px;
-	width: 92.83px
-}
-
-.pageheader-collapse {
-	margin-top: 6px;
-}
 
 // page nav
 .pagenav {
@@ -232,6 +256,7 @@ a:hover i[class^="icon-"]
             border-left: 1px solid darken(@header-bg, 10%);
             border-right: 1px solid lighten(@header-bg, 10%);
             width: 12.5%; /* set to allow 8 nav items */
+            
             &:last-child:after { /* add the final shadow to the last nav element */
                 content: " ";
                 position: absolute;
@@ -241,7 +266,7 @@ a:hover i[class^="icon-"]
                 border-right: 1px solid darken(@header-bg, 10%);
             }
 
-            a {
+            > a {
                 padding: 4px 15px;
                 text-align: center;
                 font-size: 11px;

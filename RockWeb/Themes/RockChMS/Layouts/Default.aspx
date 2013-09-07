@@ -4,59 +4,41 @@
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
     
     <!-- Page Header -->
-		<header class="navbar navbar-default navbar-static-top pageheader" role="navigation">
-				<div class="navbar-header">
-                    <asp:HyperLink ID="HyperLink1" runat="server" CssClass="brand" NavigateUrl="~" ToolTip="Rock ChMS">
-                        <asp:Image ID="Image1" runat="server" AlternateText="Rock ChMS" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="pageheader-logo" />
-                    </asp:HyperLink>
-						
-							
-							
-							<div class="pageheader-collapse pull-right">
-								<a class="btn btn-navbar" data-target=".nav-collapse" data-toggle="collapse">
-									<span class="icon-bar"></span>
-									<span class="icon-bar"></span>
-									<span class="icon-bar"></span>
-								</a>
-						
-								<div class="nav-collapse collapse">
-									
-									<Rock:Zone ID="Heading" Name="Header" runat="server" />
-									
-								</div>
-							</div> <!-- collapse container -->
-							
-							<Rock:SearchField ID="searchField" runat="server" />
-					</div> <!-- end navbar-header -->
+		<header class="navbar navbar-static-top pageheader" role="navigation">
+            <div class="container">
+				<div class="row">
+                    <div class="col-md-6">
+                        <asp:HyperLink ID="HyperLink1" runat="server" CssClass="brand" NavigateUrl="~" ToolTip="Rock ChMS">
+                            <asp:Image ID="Image1" runat="server" AlternateText="Rock ChMS" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="pageheader-logo" />
+                        </asp:HyperLink>
+					</div>
+                    <div class="col-md-6">
+                        <Rock:Zone ID="Heading" Name="Header" runat="server" />				
+					    <Rock:SearchField ID="searchField" runat="server" />
+					</div>
+                </div>
 		</header>
 		
 		<nav class="navbar navbar-static-top pagenav">
-            <Rock:Zone ID="Menu" runat="server" />										
+            <div class="container">
+                <Rock:Zone ID="Menu" runat="server" />
+            </div>									
 		</nav>
 		
 		<div class="navbar navbar-static-top pagetitle">
-			<div class="navbar-inner">
-				<div class="container-fluid">
-					<div class="row-fluid">
-						<div class="span6">
-							<Rock:PageIcon ID="PageIcon" runat="server" /> <h1><Rock:PageTitle ID="PageTitle" runat="server" /></h1> <Rock:Zone ID="PageTitleBar" runat="server" />  
-						</div>
-                        <div class="span6">
-                            <Rock:Zone ID="Zone1" runat="server" />
-                        </div>
-					</div>
+			<div class="row">
+				<div class="col-md-6">
+					<Rock:PageIcon ID="PageIcon" runat="server" /> <h1><Rock:PageTitle ID="PageTitle" runat="server" /></h1> <Rock:Zone ID="PageTitleBar" runat="server" />  
 				</div>
+                <div class="col-md-6">
+                    <Rock:Zone ID="Zone1" runat="server" />
+                </div>
 			</div>
 		</div>
 		
-		<div class="container-fluid body-content">
-			<div class="row-fluid">
-				<div class="span12">
-                       
+		<div class="body-content container">
+            
                     <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
-
-                    
-                       
 
                     <!-- display any ajax error messages here (use with ajax-client-error-handler.js) -->
                     <div class="alert alert-error ajax-error" style="display:none">
@@ -65,8 +47,6 @@
                     </div>
 
                     <Rock:Zone ID="Content" runat="server" />
-				</div>
-			</div>
 		</div>
 		
 		<footer class="page-footer">

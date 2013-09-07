@@ -859,8 +859,8 @@ div.tagsinput div
 // 9. Smart Search
 // ------------------------
 
-.smart-search {
-	float: right;
+.smartsearch {
+	width: 290px;
 	margin-top: 10px;
 	font-size: 11px;
 	height: 16px;
@@ -870,46 +870,49 @@ div.tagsinput div
     height: 26px;
     border-radius: 15px;
     padding: 0 6px;
+
+    &:focus {
+        border-color: #595959;
+    }
+
+    input {
+	    border: 0;
+	    background: transparent;
+	    color: @smartsearch-input-text-color;
+	    border-radius: 0;
+	    width: 150px;
+        margin: 2px 0 0 6px;
+
+        &:focus {
+            box-shadow: 0 0 0 0;
+        }
+    }
+    .dropdown-menu {
+        font-size: 11px;
+        right: 0;
+        left: auto;
+    }
 }
 
-.smart-search:focus {
-	border-color: #595959;
-}
-
-.smart-search input {
-	border: 0;
-	background: transparent;
-	color: @smartsearch-input-text-color;
-	border-radius: 0;
-	width: 150px;
-}
-
-.smart-search input:focus {
-	box-shadow: 0 0 0 0;
-}
-
-.smart-search input:-moz-placeholder {
+.smartsearch input:-moz-placeholder {
     color: darken(@smartsearch-input-text-color, 25%); 
 }
 
-.smart-search input::-moz-placeholder {
+
+.smartsearch input::-webkit-input-placeholder {
     color: darken(@smartsearch-input-text-color, 25%); 
 }
 
-.smart-search input::-webkit-input-placeholder {
-    color: darken(@smartsearch-input-text-color, 25%); 
-}
-
-.smart-search .nav > li > a {
+.smartsearch .nav > li > a {
 	padding: 4px 15px;
 }
 
-.smart-search input::selection {
+.smartsearch input::selection {
 	background: @smartsearch-input-selection-background; /* Safari */
 	color: @smartsearch-input-selection-text-color;
 }
 
-.smart-search input::-moz-selection {
+.smartsearch input::-moz-selection {
 	background: @smartsearch-input-selection-background; /* Firefox */
 	color: @smartsearch-input-selection-text-color;
 }

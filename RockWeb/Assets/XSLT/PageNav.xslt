@@ -24,7 +24,7 @@
             </a>
               <!-- only display the children if true -->
               <xsl:if test="@display-child-pages = 'true' and pages[count(page) > 0]">
-                <ul class="dropdown-menu" role="menu">
+                <ul class="dropdown-menu">
                   <!-- second level children -->
                   <xsl:for-each select="pages/page">
                     <xsl:call-template name="secondLevel">
