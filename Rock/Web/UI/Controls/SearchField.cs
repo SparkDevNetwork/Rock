@@ -35,9 +35,9 @@ namespace Rock.Web.UI.Controls
 
 
         // change selection when picked
-        $('.smart-search .dropdown-menu a').click(function () {{
+        $('.smartsearch .dropdown-menu a').click(function () {{
             var text = $(this).html();
-            $('.smart-search .dropdown a.dropdown-toggle span').html(text);
+            $('.smartsearch .dropdown a.dropdown-toggle span').html(text);
             $('#{1}_hSearchFilter').val($(this).parent().attr('key'));
         }});
 
@@ -60,7 +60,7 @@ namespace Rock.Web.UI.Controls
                 }});
             }},
             minLength: 2,
-            appendTo: 'div.smart-search',
+            appendTo: 'div.smartsearch',
             messages: {{
               noResults: function () {{ }},
               results: function () {{ }}
@@ -101,7 +101,7 @@ namespace Rock.Web.UI.Controls
                         hfFilter.Value = service.Key.ToString();
                 }
 
-            writer.AddAttribute( "class", "smart-search" );
+            writer.AddAttribute( "class", "smartsearch" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             base.RenderControl( writer );
