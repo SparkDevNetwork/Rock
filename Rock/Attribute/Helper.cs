@@ -260,27 +260,26 @@ namespace Rock.Attribute
             var inheritedGroupTypeIds = new List<int>();
             if ( entity is Group || entity is GroupType)
             {
-                int? groupTypeId = null;
+                //int? groupTypeId = null;
+                GroupType groupType = null;
+                var groupTypeService = new GroupTypeService();
 
                 if ( entity is Group )
                 {
-                    groupTypeId = ( (Group)entity ).GroupTypeId;
+                    groupType = ( (Group)entity ).GroupType ?? groupTypeService.Get( ( (Group)entity ).GroupTypeId );
                 }
                 else
                 {
-                    groupTypeId = ( (GroupType)entity ).Id;
+                    groupType = ( (GroupType)entity );
                 }
 
-                var groupTypeService = new GroupTypeService();
+                
 
-                while ( groupTypeId.HasValue )
+                while ( groupType != null )
                 {
-                    inheritedGroupTypeIds.Add( groupTypeId.Value );
+                    inheritedGroupTypeIds.Add( groupType.Id );
 
-                    groupTypeId = groupTypeService.Queryable()
-                    .Where( t => t.Id == groupTypeId.Value )
-                    .Select( t => t.InheritedGroupTypeId )
-                    .FirstOrDefault();
+                    groupType = groupType.InheritedGroupType ?? groupTypeService.Get( groupType.InheritedGroupTypeId ?? 0 );
                 }
 
             }
