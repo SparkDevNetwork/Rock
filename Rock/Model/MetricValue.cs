@@ -99,6 +99,15 @@ namespace Rock.Model
         public int Order { get; set; }
 
         /// <summary>
+        /// Gets or sets the campus id.
+        /// </summary>
+        /// <value>
+        /// The campus id.
+        /// </value>
+        [DataMember]
+        public int? CampusId { get; set; }
+
+        /// <summary>
         /// Gets or sets the metric.
         /// </summary>
         /// <value>
@@ -106,6 +115,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Metric Metric { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Campus.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Campus"/> object.
+        /// </value>
+        [DataMember]
+        public virtual Campus Campus { get; set; }
 
         /// <summary>
         /// Gets the parent authority.
