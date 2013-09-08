@@ -15,6 +15,7 @@ using System.Runtime.Caching;
 using System.Reflection;
 
 using Rock.Web.UI.Controls;
+using Rock.VersionInfo;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -24,6 +25,7 @@ namespace RockWeb.Blocks.Administration
         {
             base.OnInit( e );
 
+            lRockVersion.Text = VersionInfo.GetRockProductVersion();
             lExecLocation.Text = Assembly.GetExecutingAssembly().Location;
 
             var cache = MemoryCache.Default;

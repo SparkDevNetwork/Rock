@@ -624,6 +624,17 @@ namespace Rock.Web.UI
             this.RockPage().DimOtherBlocks( this, dimmed );
         }
 
+        /// <summary>
+        /// Adds a history point to the ScriptManager
+        /// </summary>
+        /// <param name="key">The key to use for the history point</param>
+        /// <param name="state">any state information to store for the history point</param>
+        /// <param name="title">The title to be used by the browser</param>
+        public void AddHistory(string key, string state, string title)
+        {
+            ((RockPage)this.Page).AddHistory(key, state, title);
+        }
+
         #region User Preferences
 
         /// <summary>
@@ -760,6 +771,15 @@ namespace Rock.Web.UI
         public virtual List<BreadCrumb> GetBreadCrumbs( PageReference pageReference )
         {
             return new List<BreadCrumb>();
+        }
+
+        /// <summary>
+        /// Logs the exception.
+        /// </summary>
+        /// <param name="ex">The System.Exception to log.</param>
+        public void LogException( Exception ex )
+        {
+            ExceptionLogService.LogException( ex, Context, CurrentPage.Id, CurrentPage.SiteId, CurrentPersonId );
         }
 
         /// <summary>

@@ -44,7 +44,7 @@ public partial class SiteMap : RockBlock
     {
         var sb = new StringBuilder();
 
-        sb.AppendFormat( "<li data-expanded='false'><i class=\"icon-file-alt\"></i><a href='{0}'>{1}</a>{2}", new PageReference( Page.Id ).BuildUrl(), Page.Name, Environment.NewLine );
+        sb.AppendFormat( "<li data-expanded='false'><i class=\"icon-file-alt\">&nbsp;</i> <a href='{0}'>{1}</a>{2}", new PageReference( Page.Id ).BuildUrl(), Page.Name, Environment.NewLine );
 
         if ( Page.Pages.Any() || Page.Blocks.Any() )
         {
@@ -77,7 +77,7 @@ public partial class SiteMap : RockBlock
     {
         var blockPropertyUrl = ResolveUrl( string.Format( "~/BlockProperties/{0}?t=Block Properties", block.Id ) );
 
-        return string.Format( "<i class=\"icon-th-large\"></i> <a href=\"javascript: Rock.controls.modal.show($(this), '{0}')\" title=\"Block Properties\"><i class=\"icon-cog\"></i></a>",
+        return string.Format( "<i class=\"icon-th-large\">&nbsp;</i> <a href=\"javascript: Rock.controls.modal.show($(this), '{0}')\" title=\"Block Properties\"><i class=\"icon-cog\"></i>&nbsp;</a>",
             blockPropertyUrl );
     }
 }

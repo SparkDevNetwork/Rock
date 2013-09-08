@@ -61,9 +61,7 @@ namespace Rock.Rest.Controllers
         public Tag Get( int entityTypeId, int ownerId, string name, string entityQualifier, string entityQualifierValue )
         {
             var service = new TagService();
-            var tag = service.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId )
-                .Where( t => t.Name == name)
-                .FirstOrDefault();
+            var tag = service.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId ).FirstOrDefault(t => t.Name == name);
 
             if ( tag != null )
                 return tag;

@@ -13,13 +13,11 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Reflection;
-using System.Text;
 using System.Web;
 using System.Web.Caching;
 using System.Web.Http;
 using System.Web.Optimization;
 using System.Web.Routing;
-using DotLiquid;
 using Quartz;
 using Quartz.Impl;
 using Quartz.Impl.Matchers;
@@ -38,6 +36,9 @@ namespace RockWeb
     /// </summary>
     public class Global : System.Web.HttpApplication
     {
+
+        #region Fields
+
         /// <summary>
         /// global Quartz scheduler for jobs 
         /// </summary>
@@ -55,6 +56,8 @@ namespace RockWeb
 
         // cache callback object
         private static CacheItemRemovedCallback OnCacheRemove = null;
+
+        #endregion
 
         #region Asp.Net Events
 
@@ -114,7 +117,7 @@ namespace RockWeb
                 catch ( Exception ex )
                 {
                     // if migrations fail, log error and attempt to continue
-                    LogError( ex, -1, string.Empty, HttpContext.Current );
+                    LogError( ex, null );
                 }
 
             }
@@ -230,7 +233,7 @@ namespace RockWeb
                 }
                 catch ( Exception ex )
                 {
-                    LogError( new Exception( string.Format( "Exception in Global.DrainTransactionQueue(): {0}", ex.Message ) ), -1, string.Empty, HttpContext.Current );
+                    LogError( new Exception( string.Format( "Exception in Global.DrainTransactionQueue(): {0}", ex.Message ) ), null );
                 }
 
                 Global.QueueInUse = false;
@@ -283,9 +286,16 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_Error( object sender, EventArgs e )
         {
+            HttpContext context = HttpContext.Current;
+
+            // If the current context is null, there's nothing that can be done. Just return.
+            if ( context == null )
+            {
+                return;
+            }
+
             // log error
-            System.Web.HttpContext context = HttpContext.Current;
-            System.Exception ex = Context.Server.GetLastError();
+            var ex = Context.Server.GetLastError();
 
             if ( ex != null )
             {
@@ -305,7 +315,6 @@ namespace RockWeb
                     logException = false;
                 }
 
-
                 if ( logException )
                 {
                     string status = "500";
@@ -323,29 +332,30 @@ namespace RockWeb
 
                     if ( status == "500" || track404 )
                     {
-                        LogError( ex, -1, status, context );
+                        LogError( ex, context );
                         context.Server.ClearError();
 
                         string errorPage = string.Empty;
 
                         // determine error page based on the site
                         SiteService service = new SiteService();
-                        Site site = null;
                         string siteName = string.Empty;
 
                         if ( context.Items["Rock:SiteId"] != null )
                         {
-                            int siteId = Int32.Parse( context.Items["Rock:SiteId"].ToString() );
+                            int siteId;
+                            Int32.TryParse( context.Items["Rock:SiteId"].ToString(), out siteId );
 
                             // load site
-                            site = service.Get( siteId );
-
+                            Site site = service.Get( siteId );
                             siteName = site.Name;
                             errorPage = site.ErrorPage;
                         }
 
-                        // store exception in session
-                        Session["Exception"] = ex;
+                        // Attempt to store exception in session. Session state may not be available
+                        // within the context of an HTTP handler or the REST API.
+                        try { Session["Exception"] = ex; }
+                        catch ( HttpException ) { }
 
                         // email notifications if 500 error
                         if ( status == "500" )
@@ -356,10 +366,10 @@ namespace RockWeb
 
                             // get email addresses to send to
                             string emailAddressesList = globalAttributesCache.GetValue( "EmailExceptionsList" );
+
                             if ( !string.IsNullOrWhiteSpace( emailAddressesList ) )
                             {
-                                string[] emailAddresses = emailAddressesList.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-
+                                string[] emailAddresses = emailAddressesList.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
                                 var recipients = new Dictionary<string, Dictionary<string, object>>();
 
                                 foreach ( string emailAddress in emailAddresses )
@@ -376,7 +386,7 @@ namespace RockWeb
                         }
 
                         // redirect to error page
-                        if ( errorPage != null && errorPage != string.Empty )
+                        if ( !string.IsNullOrEmpty( errorPage ) )
                         {
                             Response.Redirect( errorPage + errorQueryParm, false );
                             Context.ApplicationInstance.CompleteRequest();
@@ -416,115 +426,36 @@ namespace RockWeb
             }
 
             return message;
-        } 
+        }
 
         /// <summary>
         /// Logs the error to database
         /// </summary>
         /// <param name="ex">The ex.</param>
-        /// <param name="parentException">The parent exception.</param>
-        /// <param name="status">The status.</param>
         /// <param name="context">The context.</param>
-        private void LogError( Exception ex, int parentException, string status, System.Web.HttpContext context )
+        private void LogError( Exception ex, HttpContext context )
         {
-            try
+            int? pageId;
+            int? siteId;
+            int? personId;
+
+            if ( context == null )
             {
-                // get the current user
-                Rock.Model.UserLogin userLogin = Rock.Model.UserLoginService.GetCurrentUser();
-
-                // save the exception info to the db
-                ExceptionLogService service = new ExceptionLogService();
-                ExceptionLog exceptionLog = new ExceptionLog(); ;
-
-                exceptionLog.ParentId = parentException;
-                exceptionLog.ExceptionDateTime = DateTime.Now;
-
-                if ( ex.InnerException != null )
-                    exceptionLog.HasInnerException = true;
-
-                exceptionLog.Description = ex.Message;
-                exceptionLog.StackTrace = ex.StackTrace;
-                exceptionLog.Source = ex.Source;
-                exceptionLog.StatusCode = status;
-
-                if ( context.Items["Rock:SiteId"] != null )
-                    exceptionLog.SiteId = Int32.Parse( context.Items["Rock:SiteId"].ToString() );
-
-                if ( context.Items["Rock:PageId"] != null )
-                    exceptionLog.PageId = Int32.Parse( context.Items["Rock:PageId"].ToString() );
-
-                exceptionLog.ExceptionType = ex.GetType().Name;
-                exceptionLog.PageUrl = context.Request.RawUrl;
-
-                exceptionLog.QueryString = context.Request.QueryString.ToString();
-
-                // write cookies
-                StringBuilder cookies = new StringBuilder();
-                cookies.Append( "<table class=\"cookies\">" );
-
-                foreach ( string cookie in context.Request.Cookies )
-                    cookies.Append( "<tr><td><b>" + cookie + "</b></td><td>" + context.Request.Cookies[cookie].Value + "</td></tr>" );
-
-                cookies.Append( "</table>" );
-                exceptionLog.Cookies = cookies.ToString();
-
-                // write form items
-                StringBuilder formItems = new StringBuilder();
-                cookies.Append( "<table class=\"formItems\">" );
-
-                foreach ( string formItem in context.Request.Form )
-                    cookies.Append( "<tr><td><b>" + formItem + "</b></td><td>" + context.Request.Form[formItem].ToString() + "</td></tr>" );
-
-                cookies.Append( "</table>" );
-                exceptionLog.Form = formItems.ToString();
-
-                // write server vars
-                StringBuilder serverVars = new StringBuilder();
-                serverVars.Append("<table class=\"server-variables\">");
-
-                foreach ( string serverVar in context.Request.ServerVariables )
-                    serverVars.Append( "<tr><td><b>" + serverVar + "</b></td><td>" + context.Request.ServerVariables[serverVar].ToString() + "</td></tr>" );
-
-                serverVars.Append( "</table>" );
-                exceptionLog.ServerVariables = serverVars.ToString();
-
-                if ( userLogin != null )
-                    exceptionLog.CreatedByPersonId = userLogin.PersonId;
-
-                service.Add( exceptionLog, null );
-                service.Save( exceptionLog, null );
-
-                //  log inner exceptions
-                if ( ex.InnerException != null )
-                    LogError( ex.InnerException, exceptionLog.Id, status, context );
-
+                pageId = null;
+                siteId = null;
+                personId = null;
             }
-            catch ( Exception )
+            else
             {
-                // If logging the exception fails, write the exception to a file
-                try
-                {
-
-                    string directory = AppDomain.CurrentDomain.BaseDirectory;
-                    directory = Path.Combine( directory, "Logs" );
-
-                    // check that directory exists
-                    if ( !Directory.Exists( directory ) )
-                    {
-                        Directory.CreateDirectory( directory );
-                    }
-
-                    // create full path to the fie
-                    string filePath = Path.Combine( directory, "RockExceptions.csv" );
-
-                    // write to the file
-                    System.IO.File.AppendAllText( filePath, string.Format( "{0},{1},\"{2}\"\r\n", DateTime.Now.ToString(), EventLogEntryType.Error, ex.Message ) );
-                }
-                catch
-                {
-                    // failed to write to database and also failed to write to log file, so there is nowhere to log this error
-                }
+                var pid = context.Items["Rock:PageId"];
+                pageId = pid != null ? int.Parse( pid.ToString() ) : (int?) null;
+                var sid = context.Items["Rock:SiteId"];
+                siteId = sid != null ? int.Parse( sid.ToString() ) : (int?) null;
+                var user = UserLoginService.GetCurrentUser();
+                personId = user != null ? user.PersonId : null;
             }
+
+            ExceptionLogService.LogException( ex, context, pageId, siteId, personId );
         }
 
         /// <summary>
@@ -874,5 +805,6 @@ namespace RockWeb
         }
 
         #endregion
+
     }
 }
