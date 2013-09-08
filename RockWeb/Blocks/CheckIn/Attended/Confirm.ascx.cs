@@ -75,6 +75,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             checkInGrid.Columns.Add( "Name", typeof(string) );
             checkInGrid.Columns.Add( "AssignedTo", typeof(string) );
             checkInGrid.Columns.Add( "Time", typeof(string) );
+            checkInGrid.Columns.Add( "LocationId", typeof( int ) );
 
             foreach ( var person in selectedPeopleList )
             {
@@ -98,17 +99,18 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         Id = personId,
                         Name = personName,
                         AssignedTo = l.Location.Name,
-                        Time = l.Schedules.Where( s => s.Selected ).Select( s => s.Schedule.Name ).FirstOrDefault()
+                        Time = l.Schedules.Where( s => s.Selected ).Select( s => s.Schedule.Name ).FirstOrDefault(),
+                        LocationId = l.Location.Id.ToString()
                     } ).ToList();
 
                 foreach ( var assignment in assignments )
                 {
-                    checkInGrid.Rows.Add( assignment.Id, assignment.Name, assignment.AssignedTo, assignment.Time );
+                    checkInGrid.Rows.Add( assignment.Id, assignment.Name, assignment.AssignedTo, assignment.Time, assignment.LocationId );
                 }
 
                 if ( !assignments.Any() )
                 {
-                    checkInGrid.Rows.Add( personId, personName, string.Empty, string.Empty );   
+                    checkInGrid.Rows.Add( personId, personName, string.Empty, string.Empty, 0 );   
                 }                        
             }
 
@@ -183,10 +185,16 @@ namespace RockWeb.Blocks.CheckIn.Attended
         protected void gPersonList_Edit( object sender, RowEventArgs e )
         {
             // throw the user back to the activity select page for the person they want to edit.
+            int index = e.RowIndex;
+            var row = gPersonList.Rows[index];
+            var dataKeyValues = gPersonList.DataKeys[index].Values;
+            var locationId = dataKeyValues["LocationId"].ToString();
             var personId = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
                 .People.Where( p => p.Person.Id == e.RowKeyId ).FirstOrDefault().Person.Id.ToString();
+            //var blah = row["AssignedTo"];
             var queryParams = new Dictionary<string, string>();
             queryParams.Add( "personId", personId );
+            queryParams.Add( "locationId", locationId);
             NavigateToLinkedPage( "ActivitySelectPage", queryParams);
         }
 

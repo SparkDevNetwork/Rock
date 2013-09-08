@@ -133,7 +133,7 @@
 		
         <div class="row-fluid attended-checkin-body addnote">
             <div class="span12">
-                <Rock:LabeledTextBox ID="tbNote" runat="server" TextMode="MultiLine" CssClass="fullWidth" Rows="3" />
+                <Rock:LabeledTextBox ID="tbNote" runat="server" CssClass="fullWidth" MaxLength="40" />
             </div>
         </div>
         <br />
@@ -161,7 +161,7 @@
 		
         <div class="row-fluid attended-checkin-body addnote">
             <div class="span12">
-                <Rock:LabeledDropDownList ID="ddlTags" runat="server" LabelText="Select a Tag: "></Rock:LabeledDropDownList>
+                <Rock:LabeledDropDownList ID="ddlTags" runat="server"></Rock:LabeledDropDownList>
             </div>
         </div>
         <br />
