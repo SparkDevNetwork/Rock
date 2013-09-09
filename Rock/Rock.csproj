@@ -189,6 +189,10 @@
     <Compile Include="Migrations\201309051352582_AttendedCheckin.Designer.cs">
       <DependentUpon>201309051352582_AttendedCheckin.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201309070045381_CheckinConfigUI.cs" />
+    <Compile Include="Migrations\201309070045381_CheckinConfigUI.Designer.cs">
+      <DependentUpon>201309070045381_CheckinConfigUI.cs</DependentUpon>
+    </Compile>
     <Compile Include="Storage\ProviderComponent.cs" />
     <Compile Include="Storage\ProviderContainer.cs" />
     <Compile Include="Storage\Provider\Database.cs" />
@@ -995,6 +999,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201309051352582_AttendedCheckin.resx">
       <DependentUpon>201309051352582_AttendedCheckin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201309070045381_CheckinConfigUI.resx">
+      <DependentUpon>201309070045381_CheckinConfigUI.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

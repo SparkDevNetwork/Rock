@@ -4,6 +4,7 @@
     <ContentTemplate>
         <div class="row-fluid">
             <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
+            <Rock:NotificationBox ID="nbDeleteWarning" runat="server" NotificationBoxType="Warning" />
         </div>
 
         <asp:Panel ID="pnlDetails" runat="server">
@@ -19,7 +20,7 @@
                     </span>
                 </legend>
                 <div class="row-fluid checkin-grouptype-list">
-                    <asp:PlaceHolder ID="phCheckinGroupTypes" runat="server" />
+                    <asp:PlaceHolder ID="phCheckinGroupTypes" runat="server" EnableViewState="false" />
                 </div>
             </fieldset>
 
