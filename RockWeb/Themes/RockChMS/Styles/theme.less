@@ -8,9 +8,8 @@
 // -------------------------
 @import "../../../Styles/FontAwesome/font-awesome.less";
 @import "../../../Styles/Bootstrap/bootstrap.less"; 
-@import "_variables.less";
 @import "../../../Styles/_rock-core.less";
-
+@import "_variables.less";
 
 // Fonts
 // -------------------------
@@ -118,7 +117,7 @@ a:hover i[class^="icon-"]
 // ------------------------- 
 
 .navbar {
-    position: static; // default is relative which causes the dropdowns to go under the other navbars dispite having a higher z-index
+    position: static; // default is relative which causes the dropdowns to go under the other navbars dispite having a higher z-index - JME 9/9/2013
 }
 
 .modal-header .close
@@ -148,13 +147,6 @@ a:hover i[class^="icon-"]
 .btn-mini
 {
     padding: 0 6px;
-}
-
-.dropdown-menu li > a:hover,
-.dropdown-menu li > a:focus,
-.dropdown-submenu:hover > a {
-    background-image: none;
-    background-color: @accent-bold-color;
 }
 
 .label,
@@ -192,55 +184,44 @@ a:hover i[class^="icon-"]
 // -------------------------
 
 // common header styles
-.pageheader,
-.pagenav {
-    a {
-        color: @header-text-color;
+header {
+    
+    .dropdown-menu li > a:hover,
+    .dropdown-menu li > a:focus,
+    .dropdown-submenu:hover > a {
+        background-image: none;
+        background-color: @accent-bold-color;
+        color: #fff;
+    }
+    
+    .nav .caret {
+        border-top-color: @navbar-default-link-color;
+        border-bottom-color: @navbar-default-link-color;
     }
 
-    .caret {
-        border-bottom-color: @header-text-color;
-        border-top-color: @header-text-color;
-        margin-left: 6px;
-    }
-
-    .dropdown-menu a {
-        color: @text-color;
-
-        &:hover {
-            color: @accent-bold-text-color;
-        }
+    .nav a:hover .caret {
+        border-top-color: @navbar-default-link-hover-color;
+        border-bottom-color: @navbar-default-link-hover-color;
     }
 }
 
-
-// page header (logo bar)
-.pageheader
-{
-    padding: 12px 0;
+// brand bar
+.brandbar {
     border-bottom: 1px solid #121212;
     background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4=");
 
-    .pageheader-logo {
+    .brandbar-logo {
 	    height: 36px;
 	    width: 92.83px
     }
-
-    .smartsearch, 
-    .loginstatus {
-        float: right;
-    }
-
-    .loginstatus {
-        margin-top: 4px;
-    }
-} 
+}
 
 // page nav
 .pagenav {
     border-top: 1px solid lighten(@header-bg, 10%);
-    .block-gradient(@header-bg);
     border-bottom: 1px solid darken(@header-bg, 10%);
+    
+    .block-gradient(@header-bg);
 
     .nav {
         border-left: 1px solid lighten(@header-bg, 10%);
@@ -270,8 +251,6 @@ a:hover i[class^="icon-"]
                 .caret {
                     display: block;
                     margin: 0 auto;
-                    border-bottom-color: @header-text-color;
-                    border-top-color: @header-text-color;
                 }
 
                 i[class^='icon-'] {
@@ -282,38 +261,32 @@ a:hover i[class^="icon-"]
             }
         }
     }
+
+    .dropdown-menu 
+    {
+	    left: -2px;
+        width: 240px;
+    }
 }
 
-
-.pagenav .dropdown-menu {
-	margin: 0;
-	border-top: 0;
-	border-radius: 0 0 6px 6px;
-	padding: 16px;
-}
-
-.pagenav .dropdown-menu li.divider:last-child
-{
-    display: none;
-}
-
-.pagenav-subitem-header {
-	font-weight: @font-weight-bold;
-}
 
 // page title
-.page-icon
-{
-    font-size: 36px;
-    margin: 12px 12px 0 0;
-    float: left;
-}
-
-.pagetitle .navbar-inner {
+.pagetitle {
 	background-color: @pagetitle-bg;
 	border-bottom: 1px solid darken(@pagetitle-bg, 10%);
 	background-image: none;
     filter: initial;
+
+    h1 {
+        margin: 12px 0 0 0;
+    }
+
+    .page-icon
+    {
+        font-size: 36px;
+        margin-right: 12px;
+        float: left;
+    }
 }
 
 // switch 
@@ -348,33 +321,6 @@ a:hover i[class^="icon-"]
 
 // 5. Responsive Tweaks
 // -------------------------
-@media (max-width: 767px) {
-	.pagetitle .navbar-inner {
-		padding: 0 20px 0 20px;
-	}
-
-	.smart-search {
-		--float: left;
-		--margin-left: 20px;
-	}
-
-    .pagenav .nav > li,
-	.pagenav ul.nav {
-		border: 0;
-	}	
-	
-	.pagenav .nav > li {
-		width: 33%;
-	}
-	
-	.pagenav ul.nav {
-		width: 100%;
-	}
-	
-	.pagenav .nav > li:last-child:after {
-		border-right: 0;
-	}
-}
 
 
 // 6. Layout Specific Styles
