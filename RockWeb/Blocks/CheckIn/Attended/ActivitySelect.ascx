@@ -161,7 +161,7 @@
 		
         <div class="row-fluid attended-checkin-body addnote">
             <div class="span12">
-                <Rock:LabeledDropDownList ID="ddlTags" runat="server"></Rock:LabeledDropDownList>
+
             </div>
         </div>
         <br />

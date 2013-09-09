@@ -387,7 +387,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddTagSave_Click( object sender, EventArgs e )
         {
-            if ( ddlTags.SelectedIndex > 0 )
+            foreach ( var tagId in tpTags.SelectedTagIds )
             {
                 using ( new Rock.Data.UnitOfWorkScope() )
                 {
@@ -401,7 +401,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     var entityQualifierValue = string.Empty;
                     var entityGuid = person.Person.Guid;
                     var ownerId = CurrentPersonId;
-                    var name = ddlTags.SelectedItem.Text;
+                    var definedValue = DefinedValueCache.Read( tagId );
+                    var name = definedValue.Name;
 
                     var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name );
                     if ( tag == null )
@@ -425,7 +426,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         taggedItemService.Add( taggedItem, ownerId );
                         taggedItemService.Save( taggedItem, ownerId );
                     }
-                }
+                }                
             }
         }
 
@@ -436,6 +437,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddTag_Click( object sender, EventArgs e )
         {
+            tpTags.ClearSelection();
             mpeAddTag.Show();
         }
 
@@ -678,17 +680,43 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// </summary>
         protected void BindTagDropDown()
         {
-            ddlTags.Items.Clear();
-            ddlTags.Items.Add( new ListItem( Rock.Constants.None.Text, Rock.Constants.None.Id.ToString() ) );
+            //ddlTags.Items.Clear();
+            //ddlTags.Items.Add( new ListItem( Rock.Constants.None.Text, Rock.Constants.None.Id.ToString() ) );
+            //var dtAllergy = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_ALLERGY_TYPE ) );
+            //if ( dtAllergy != null && dtAllergy.DefinedValues.Count > 0 )
+            //{
+            //    foreach ( var allergy in dtAllergy.DefinedValues.Select( dv => new ListItem( dv.Name, dv.Id.ToString() ) ).OrderBy( d => d.Text ).ToList() )
+            //    {
+            //        allergy.Attributes.Add( "optiongroup", "Allergies" );
+            //        ddlTags.Items.Add( allergy );
+            //    }
+            //}
+
+            //cblTags.Items.Clear();
+            //cblTags.LabelText = "Allergies";
+            //if ( dtAllergy != null && dtAllergy.DefinedValues.Count > 0 )
+            //{
+            //    foreach ( var allergy in dtAllergy.DefinedValues.Select( dv => new ListItem( dv.Name, dv.Id.ToString() ) ).OrderBy( d => d.Text ).ToList() )
+            //    {
+            //        cblTags.Items.Add( allergy );
+            //    }
+            //}
+
+            List<Tag> tagList = new List<Tag>();
             var dtAllergy = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_ALLERGY_TYPE ) );
-            if ( dtAllergy != null && dtAllergy.DefinedValues.Count > 0 )
+            var blah = dtAllergy.DefinedValues.OrderBy( d => d.Name ).ToList();
+            foreach ( var b in blah )
             {
-                foreach ( var allergy in dtAllergy.DefinedValues.Select( dv => new ListItem( dv.Name, dv.Id.ToString() ) ).OrderBy( d => d.Text ).ToList() )
-                {
-                    allergy.Attributes.Add( "optiongroup", "Allergies" );
-                    ddlTags.Items.Add( allergy );
-                }
+                Tag someTag = new Tag();
+                someTag.Name = b.Name;
+                someTag.Id = b.Id;
+                tagList.Add( someTag );
             }
+            tpTags.LabelText = "Allergies";
+            tpTags.RepeatLayout = RepeatLayout.Flow;
+            tpTags.RepeatColumns = 3;
+            tpTags.RepeatDirection = RepeatDirection.Horizontal;
+            tpTags.Tags = tagList;
         }
 
         #endregion
