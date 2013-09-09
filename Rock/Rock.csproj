@@ -193,6 +193,10 @@
     <Compile Include="Migrations\201309091516108_AddWorkflowActionAttributes.Designer.cs">
       <DependentUpon>201309091516108_AddWorkflowActionAttributes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201309091746562_AddAttendedCheckinPages.cs" />
+    <Compile Include="Migrations\201309091746562_AddAttendedCheckinPages.Designer.cs">
+      <DependentUpon>201309091746562_AddAttendedCheckinPages.cs</DependentUpon>
+    </Compile>
     <Compile Include="Storage\ProviderComponent.cs" />
     <Compile Include="Storage\ProviderContainer.cs" />
     <Compile Include="Storage\Provider\Database.cs" />
@@ -1002,6 +1006,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201309091516108_AddWorkflowActionAttributes.resx">
       <DependentUpon>201309091516108_AddWorkflowActionAttributes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201309091746562_AddAttendedCheckinPages.resx">
+      <DependentUpon>201309091746562_AddAttendedCheckinPages.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
