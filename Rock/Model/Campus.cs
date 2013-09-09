@@ -26,7 +26,7 @@ namespace Rock.Model
 
 
         /// <summary>
-        /// Gets or sets a flag indicating if the Campus is a part of the RockChMS system/framework. 
+        /// Gets or sets a flag indicating if the Campus is a part of the RockChMS system/framework. This property is required.
         /// </summary>
         /// <value>
         /// A <see cref="System.Boolean"/> that is <c>true</c> if this Block is part of the RockChMS core system/framework, otherwise is <c>false</c>.
@@ -36,10 +36,10 @@ namespace Rock.Model
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name of the Campus. This property is required.
         /// </summary>
         /// <value>
-        /// Given Name.
+        /// A <see cref="System.String"/> that represents the Campus name.
         /// </value>
         [Required]
         [MaxLength( 100 )]
@@ -48,20 +48,21 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the campus abbreviation/short code.
+        /// Gets or sets an optional short code identifier for the campus.
         /// </summary>
         /// <value>
-        /// Short Code.
+        /// A <see cref="System.String"/> value that represents a short code identifier for a campus. If the campus does not have a ShortCode
+        /// this value is null.
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
         public string ShortCode { get; set; }
 
         /// <summary>
-        /// Gets or sets the location id.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Location"/> that is associated with this campus. 
         /// </summary>
         /// <value>
-        /// The location id.
+        /// A <see cref="System.Int32"/> that represents the Id of the (physical) location of the campus. If none exists, this value is null.
         /// </value>
         [DataMember]
         public int? LocationId { get; set; }
@@ -71,10 +72,10 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the location.
+        /// Gets or sets the <see cref="Rock.Model.Location"/> entity that is associated with this campus.
         /// </summary>
         /// <value>
-        /// The location.
+        /// The <see cref="Rock.Model.Location"/> that is associated with this campus.
         /// </value>
         [DataMember]
         public virtual Location Location { get; set; }
@@ -84,10 +85,10 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
-        /// Returns a <see cref="System.String"/> that represents this instance.
+        /// Returns a <see cref="System.String"/> containing the Location's Name that represents this instance.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String"/> that represents this instance.
+        /// A <see cref="System.String"/> containing the Location's Name that represents this instance.
         /// </returns>
         public override string ToString()
         {

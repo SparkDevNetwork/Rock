@@ -13,15 +13,16 @@ using System.Web;
 namespace Rock.Model
 {
     /// <summary>
-    /// Exception Log POCO Service class
+    /// The data access/service class for <see cref="Rock.Model.ExceptionLog"/> entity type objects.
     /// </summary>
     public partial class ExceptionLogService 
     {
         /// <summary>
-        /// Gets Exception Logs by Parent Id
+        /// Gets a collection of <see cref="Rock.Model.ExceptionLog"/> entities by the Id of their Parent exceptionId. 
+        /// Under most instances, only one child <see cref="Rock.Model.ExceptionLog"/> entity will be returned in the collection.
         /// </summary>
-        /// <param name="parentId">Parent Id.</param>
-        /// <returns>An enumerable list of ExceptionLog objects.</returns>
+        /// <param name="parentId">An <see cref="System.Int32"/> containing the Id of the parent ExceptionLog entity to search by.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.ExceptionLog" /> entities who's Parent ExceptionId matches the provided value..</returns>
         public IEnumerable<ExceptionLog> GetByParentId( int? parentId )
         {
             return Repository.Find( t => ( t.ParentId == parentId || ( parentId == null && t.ParentId == null ) ) );
@@ -38,10 +39,10 @@ namespace Rock.Model
         //}
         
         /// <summary>
-        /// Gets Exception Logs by Site Id
+        /// Gets a collection of <see cref="Rock.Model.ExceptionLog"/> entities by the Id of the <see cref="Rock.Model.Site"/> that they occurred on.
         /// </summary>
-        /// <param name="siteId">Site Id.</param>
-        /// <returns>An enumerable list of ExceptionLog objects.</returns>
+        /// <param name="siteId">An <see cref="String.Int32"/> containing the Id of the <see cref="Rock.Model.Site"/> to search by.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.ExceptionLog"/> entities who's SiteId matches the provided value.</returns>
         public IEnumerable<ExceptionLog> GetBySiteId( int? siteId )
         {
             return Repository.Find( t => ( t.SiteId == siteId || ( siteId == null && t.SiteId == null ) ) );
@@ -49,14 +50,15 @@ namespace Rock.Model
 
 
         /// <summary>
-        /// Public static method to log an exception, serves as an interface to log asynchronously.
+        /// Logs new <see cref="Rock.Model.ExceptionLog"/> entities.  This method serves as an interface to asynchronously log exceptions.
         /// </summary>
-        /// <param name="ex">The ex.</param>
-        /// <param name="context">The context.</param>
-        /// <param name="pageId">The page id.</param>
-        /// <param name="siteId">The site id.</param>
-        /// <param name="parentId">The parent id.</param>
-        /// <param name="personId">The person id.</param>
+        /// <param name="ex">A <see cref="System.Exception"/> object to log.</param>
+        /// <param name="context">The <see cref="System.Web.HttpContext"/></param>
+        /// <param name="pageId">A <see cref="System.Int32"/> containing the Id of the <see cref="Rock.Model.Page"/> that the exception occurred on.
+        ///     This parameter is nullable..</param>
+        /// <param name="siteId">A <see cref="System.Int32"/> containing the Id of the <see cref="Rock.Model.site"/> that the exception occurred on.</param>
+        /// <param name="parentId">The Id of the exception's parent <see cref="Rock.Model.ExceptionLog"/> entity.</param>
+        /// <param name="personId">The Id of the <see cref="Rock.Model.Person"/> that caused the exception.</param>
         public static void LogException( Exception ex, HttpContext context, int? pageId = null, int? siteId = null, int? personId = null, int? parentId = null )
         {
             // Populate the initial ExceptionLog with data from HttpContext. Must capture initial
@@ -72,9 +74,11 @@ namespace Rock.Model
         /// <summary>
         /// Recursively logs exception and any children.
         /// </summary>
-        /// <param name="ex">The System.Exception to log.</param>
-        /// <param name="log">The parent ExceptionLog.</param>
-        /// <param name="isParent">if set to <c>true</c> [is parent].</param>
+        /// <param name="ex">The <see cref="System.Exception"/> to log.</param>
+        /// <param name="log">The parent <see cref="Rock.Model.ExceptionLog"/> of the exception being logged. This value is nullable.</param>
+        /// <param name="isParent">A <see cref="System.Boolean"/> flag indicating if this Exception is a parent exception. This value is 
+        ///     <c>true</c> if the exception that is being logged is a parent exception, otherwise <c>false</c>/
+        /// </param>
         private static void LogExceptions( Exception ex, ExceptionLog log, bool isParent )
         {
             // First, attempt to log exception to the database.
@@ -149,14 +153,20 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Populates the ExceptionLog model with information from HttpContext and Exception.
+        /// Populates the <see cref="Rock.Model.ExceptionLog"/> entity with the exception data.
         /// </summary>
-        /// <param name="ex">The ex.</param>
-        /// <param name="context">The context.</param>
-        /// <param name="pageId">The page id.</param>
-        /// <param name="siteId">The site id.</param>
-        /// <param name="personId">The person id.</param>
-        /// <param name="parentId">The parent id.</param>
+        /// <param name="ex">The <see cref="System.Exception"/> to log.</param>
+        /// <param name="context">The <see cref="System.Web.HttpContext"/>.</param>
+        /// <param name="pageId">An <see cref="System.Int32"/> containing the Id of the <see cref="Rock.Model.Page"/> where the exception occurred.
+        ///     This value is nullable.
+        /// </param>
+        /// <param name="siteId">An <see cref="System.Int32"/> containing the Id the <see cref="Rock.Model.Site"/> where the exception occurred.
+        ///     This value is nullable.
+        /// </param>
+        /// <param name="personId">The Id of the <see cref="Rock.Model.Person"/> who was logged in when the exception occurred. If the anonymous 
+        /// user was logged in or if the exception was caused by an job/process this will be null..</param>
+        /// <param name="parentId">The Id of the Exception's parent <see cref="Rock.Model.ExceptionLog"/> entity. If this exception does not have an 
+        /// outer/parent exception this value will be null.</param>
         /// <returns></returns>
         private static ExceptionLog PopulateExceptionLog( Exception ex, HttpContext context, int? pageId, int? siteId, int? personId, int? parentId )
         {
