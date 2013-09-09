@@ -9,18 +9,13 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI;
 using Rock.Web.UI.Controls;
-using System.Collections;
-using System.Runtime.InteropServices;
 
 namespace RockWeb.Blocks.CheckIn.Attended
 {
@@ -65,8 +60,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         BindGroupTypes( person );
                         BindLocations( person );
                         BindSchedules( person );
-                        BindSelectedGrid();
-                        BindTagDropDown();
+                        BindSelectedGrid();                        
                     }
                     else
                     {
@@ -371,6 +365,34 @@ namespace RockWeb.Blocks.CheckIn.Attended
             mpeAddNote.Show();
         }
 
+
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptAddTag control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptAddTag_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
+            {                
+                var tag = (KeyValuePair<int, string>)e.Item.DataItem;
+                var lbTagName = (LinkButton)e.Item.FindControl( "lbTagName" );
+                lbTagName.Text = tag.Value;
+
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the lbAddTag control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void lbAddTag_Click( object sender, EventArgs e )
+        {
+            BindTags();
+            mpeAddTag.Show();
+        }
+
         /// <summary>
         /// Handles the Click event of the lbAddTagCancel control.
         /// </summary>
@@ -387,58 +409,47 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddTagSave_Click( object sender, EventArgs e )
         {
-            foreach ( var tagId in tpTags.SelectedTagIds )
-            {
-                using ( new Rock.Data.UnitOfWorkScope() )
-                {
-                    var tagService = new TagService();
-                    var taggedItemService = new TaggedItemService();
-                    var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
-                        .People.Where( p => p.Person.Id == int.Parse( Request.QueryString["personId"] ) ).FirstOrDefault();
+            //foreach ( var tagId in tpTags.SelectedTagIds )
+            //{
+            //    using ( new Rock.Data.UnitOfWorkScope() )
+            //    {
+            //        var tagService = new TagService();
+            //        var taggedItemService = new TaggedItemService();
+            //        var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
+            //            .People.Where( p => p.Person.Id == int.Parse( Request.QueryString["personId"] ) ).FirstOrDefault();
 
-                    var entityTypeId = person.Person.TypeId;
-                    var entityQualifier = string.Empty;
-                    var entityQualifierValue = string.Empty;
-                    var entityGuid = person.Person.Guid;
-                    var ownerId = CurrentPersonId;
-                    var definedValue = DefinedValueCache.Read( tagId );
-                    var name = definedValue.Name;
+            //        var entityTypeId = person.Person.TypeId;
+            //        var entityQualifier = string.Empty;
+            //        var entityQualifierValue = string.Empty;
+            //        var entityGuid = person.Person.Guid;
+            //        var ownerId = CurrentPersonId;
+            //        var definedValue = DefinedValueCache.Read( tagId );
+            //        var name = definedValue.Name;
 
-                    var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name );
-                    if ( tag == null )
-                    {
-                        tag = new Tag();
-                        tag.EntityTypeId = entityTypeId;
-                        tag.EntityTypeQualifierColumn = entityQualifier;
-                        tag.EntityTypeQualifierValue = entityQualifierValue;
-                        tag.OwnerId = ownerId;
-                        tag.Name = name;
-                        tagService.Add( tag, ownerId );
-                        tagService.Save( tag, ownerId );
-                    }
+            //        var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name );
+            //        if ( tag == null )
+            //        {
+            //            tag = new Tag();
+            //            tag.EntityTypeId = entityTypeId;
+            //            tag.EntityTypeQualifierColumn = entityQualifier;
+            //            tag.EntityTypeQualifierValue = entityQualifierValue;
+            //            tag.OwnerId = ownerId;
+            //            tag.Name = name;
+            //            tagService.Add( tag, ownerId );
+            //            tagService.Save( tag, ownerId );
+            //        }
 
-                    var taggedItem = taggedItemService.Get( tag.Id, entityGuid );
-                    if ( taggedItem == null )
-                    {
-                        taggedItem = new TaggedItem();
-                        taggedItem.TagId = tag.Id;
-                        taggedItem.EntityGuid = entityGuid;
-                        taggedItemService.Add( taggedItem, ownerId );
-                        taggedItemService.Save( taggedItem, ownerId );
-                    }
-                }                
-            }
-        }
-
-        /// <summary>
-        /// Handles the Click event of the lbAddTag control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbAddTag_Click( object sender, EventArgs e )
-        {
-            tpTags.ClearSelection();
-            mpeAddTag.Show();
+            //        var taggedItem = taggedItemService.Get( tag.Id, entityGuid );
+            //        if ( taggedItem == null )
+            //        {
+            //            taggedItem = new TaggedItem();
+            //            taggedItem.TagId = tag.Id;
+            //            taggedItem.EntityGuid = entityGuid;
+            //            taggedItemService.Add( taggedItem, ownerId );
+            //            taggedItemService.Save( taggedItem, ownerId );
+            //        }
+            //    }                
+            //}
         }
 
         /// <summary>
@@ -516,7 +527,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var selectedGroup = new CheckInGroup();
             if ( groupList.Any( gl => gl.Selected ) )
             {
-                //selectedGroup = groupList.Where( gl => gl.Selected ).FirstOrDefault();
                 var locationId = int.Parse( Request.QueryString["locationId"] );
                 GroupLocationService groupLocationService = new GroupLocationService();
                 var groupLocationGroupId = groupLocationService.GetByLocation( locationId ).Select( l => l.GroupId ).FirstOrDefault();
@@ -534,7 +544,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var locationList = selectedGroup.Locations.ToList();
             lvLocation.DataSource = locationList;
 
-            //var selectedLocation = locationList.Where( l => l.Selected ).FirstOrDefault();
             var selectedLocation = locationList.Where( l => l.Selected && l.Location.Id == int.Parse( Request.QueryString["locationId"] ) ).FirstOrDefault();
             if ( selectedLocation == null )
             {
@@ -630,8 +639,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
                 groupType.Selected = false;
             }
-            
-
 
             NavigateToPreviousPage();
         }
@@ -676,49 +683,23 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
-        /// Binds the tag drop down list.
+        /// Binds the tag repeater to a list of allergies.
         /// </summary>
-        protected void BindTagDropDown()
+        protected void BindTags()
         {
-            //ddlTags.Items.Clear();
-            //ddlTags.Items.Add( new ListItem( Rock.Constants.None.Text, Rock.Constants.None.Id.ToString() ) );
-            //var dtAllergy = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_ALLERGY_TYPE ) );
-            //if ( dtAllergy != null && dtAllergy.DefinedValues.Count > 0 )
-            //{
-            //    foreach ( var allergy in dtAllergy.DefinedValues.Select( dv => new ListItem( dv.Name, dv.Id.ToString() ) ).OrderBy( d => d.Text ).ToList() )
-            //    {
-            //        allergy.Attributes.Add( "optiongroup", "Allergies" );
-            //        ddlTags.Items.Add( allergy );
-            //    }
-            //}
-
-            //cblTags.Items.Clear();
-            //cblTags.LabelText = "Allergies";
-            //if ( dtAllergy != null && dtAllergy.DefinedValues.Count > 0 )
-            //{
-            //    foreach ( var allergy in dtAllergy.DefinedValues.Select( dv => new ListItem( dv.Name, dv.Id.ToString() ) ).OrderBy( d => d.Text ).ToList() )
-            //    {
-            //        cblTags.Items.Add( allergy );
-            //    }
-            //}
-
-            List<Tag> tagList = new List<Tag>();
-            var dtAllergy = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_ALLERGY_TYPE ) );
-            var blah = dtAllergy.DefinedValues.OrderBy( d => d.Name ).ToList();
-            foreach ( var b in blah )
+            var tagList = new Dictionary<int, string>();
+            var allergyList = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_ALLERGY_TYPE ) );
+            if ( allergyList != null && allergyList.DefinedValues.Count > 0 )
             {
-                Tag someTag = new Tag();
-                someTag.Name = b.Name;
-                someTag.Id = b.Id;
-                tagList.Add( someTag );
+                tagList = allergyList.DefinedValues.OrderBy( d => d.Name ).ToDictionary( k => k.Id, v => v.Name );                
             }
-            tpTags.LabelText = "Allergies";
-            tpTags.RepeatLayout = RepeatLayout.Flow;
-            tpTags.RepeatColumns = 3;
-            tpTags.RepeatDirection = RepeatDirection.Horizontal;
-            tpTags.Tags = tagList;
+
+            // add medical stuff here?
+
+            rptAddTag.DataSource = tagList;
+            rptAddTag.DataBind();
         }
 
-        #endregion
-    }
+        #endregion        
+}
 }

@@ -96,7 +96,6 @@
                     <ContentTemplate>        
                         <Rock:Grid ID="gSelectedList" runat="server" AllowSorting="true" AllowPaging="false" ShowActionRow="false" ShowHeader="false" CssClass="select" DataKeyNames="LocationId, ScheduleId">
                             <Columns>
-                                <%--<asp:BoundField DataField="ListId" Visible="false" />--%>
                                 <asp:BoundField DataField="Schedule" />
                                 <asp:BoundField DataField="Location" />
                                 <asp:BoundField DataField="LocationId" Visible="false" />
@@ -110,7 +109,6 @@
                     <asp:LinkButton ID="lbAddTag" runat="server" Text="Add a Tag" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddTag_Click" CausesValidation="false" ></asp:LinkButton>
                 </div>
             </div>
-
         </div>   
     </asp:Panel>
 
@@ -136,7 +134,7 @@
                 <Rock:LabeledTextBox ID="tbNote" runat="server" CssClass="fullWidth" MaxLength="40" />
             </div>
         </div>
-        <br />
+
     </asp:Panel>
     <asp:ModalPopupExtender ID="mpeAddNote" runat="server" TargetControlID="hfOpenNotePanel" PopupControlID="pnlAddNote" 
         CancelControlID="lbAddNoteCancel" BackgroundCssClass="modalBackground" />
@@ -151,7 +149,7 @@
             </div>
 
             <div class="span6">
-                <h1>Add Tag</h1>
+                <h1>Add Allergy/Medical</h1>
             </div>
 
             <div class="span3 attended-checkin-actions">
@@ -159,12 +157,17 @@
             </div>
         </div>
 		
-        <div class="row-fluid attended-checkin-body addnote">
-            <div class="span12">
-
-            </div>
-        </div>
-        <br />
+        <asp:Repeater ID="rptAddTag" runat="server" OnItemDataBound="rptAddTag_ItemDataBound">
+            <HeaderTemplate>
+                
+            </HeaderTemplate>
+            <ItemTemplate>
+                <div class="span4">
+                    <asp:LinkButton ID="lbTagName" CssClass="btn btn-large last btn-primary" runat="server" />
+                </div>
+            </ItemTemplate>
+        </asp:Repeater>
+        
     </asp:Panel>
     <asp:ModalPopupExtender ID="mpeAddTag" runat="server" TargetControlID="hfOpenTagPanel" PopupControlID="pnlAddTag" 
         CancelControlID="lbAddTagCancel" BackgroundCssClass="modalBackground" />
