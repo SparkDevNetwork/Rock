@@ -1,9 +1,8 @@
-/*!
- * Rock ChMS Adventure Kids Checkin Theme
- *
- * Copyright 2013 Spark Development Network
- *
- * 
+/*
+     
+     Rock ChMS Park Check-in Theme
+     Crafted by: Spark Development Network
+
  */
 
 
@@ -95,9 +94,7 @@
 // Mix-ins
 // --------------------------------------------------
 .checkinBackground () {
-  	/*background: #85b11c url('../Assets/Images/background.jpg') top right no-repeat fixed;*/
-	background: #ffffff url('../Assets/Images/background.jpg') no-repeat fixed bottom right;
-	//background-size: 50%;
+	background: #ffffff url('../Assets/Images/background_kidflix.jpg') no-repeat fixed bottom right;
     background-size: 35%;
 }
 
@@ -111,15 +108,29 @@
 // Imports
 // --------------------------------------------------
 
-@import "./rock-bootstrap-variables.less";
+@import "_bootstrap-variables.less";
 @import "../../../Css/Bootstrap/mixins.less";
-@import "../../../Css/checkin-core.less";
+@import "../../../Css/_checkin-core.less";
 @import "../../../Css/checkin-attended.less";
 
-
 //
-// Custom Overides
+// Custom Overrides
 // --------------------------------------------------
+
+.checkin-count h3,
+.checkin-count li {
+	color: #4c4c4b;
+}
+
+.btn
+{
+    text-shadow: 1px 1px rgba(255, 255, 255, 0.75);
+}
+
+.btn-primary
+{
+    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
+}
 
 .checkin-count h3,
 .checkin-count li {
@@ -158,4 +169,3 @@ h3 {
 {
 	background: rgba(100, 100, 100, .1);
 }
-
