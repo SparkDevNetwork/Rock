@@ -297,6 +297,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             lbDeleteGroup.ID = this.ID + "_lbDeleteGroup";
             lbDeleteGroup.CssClass = "btn btn-mini btn-danger";
             lbDeleteGroup.Click += lbDeleteGroup_Click;
+            lbDeleteGroup.Attributes["onclick"] = string.Format( "javascript: return Rock.controls.grid.confirmDelete(event, '{0}');", "group" );
 
             var iDelete = new HtmlGenericControl( "i" );
             lbDeleteGroup.Controls.Add( iDelete );
