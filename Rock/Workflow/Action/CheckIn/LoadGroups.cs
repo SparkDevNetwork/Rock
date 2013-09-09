@@ -20,7 +20,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Description("Loads the groups available for each selected (or optionally all) location(s)")]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Load Groups" )]
-    [BooleanField( "Load All", "By default groups are only loaded for the selected person, group type, and location.  Select this option to load groups for all the loaded people, group types, and locations." )]    public class LoadGroups : CheckInActionComponent
+    [BooleanField( "Load All", "By default groups are only loaded for the selected person, group type, and location.  Select this option to load groups for all the loaded people and group types." )]    public class LoadGroups : CheckInActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
