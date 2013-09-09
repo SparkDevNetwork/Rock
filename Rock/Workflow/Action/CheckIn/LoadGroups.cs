@@ -16,14 +16,11 @@ namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
     /// Loads the groups available for each location.
-    /// TODO: Ask David about whether or not the "Load for all Locations" still makes sense since this now comes before Locations are selected.
     /// </summary>
-    [Description("Loads the groups available for each selected (or optionally all) loction(s)")]
+    [Description("Loads the groups available for each selected (or optionally all) location(s)")]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Load Groups" )]
-    [BooleanField( "Load All", "By default groups are only loaded for the selected person, group type, and location.  Select this option to load groups for all the loaded people, group types, and locations." )]
-    [BooleanField( "Load for all Locations", "If 'Load All' is not selected, this option can be used to load groups for all locations, including those for non-selected locations.", false, key: "IncludeNonSelectedLocations" )]
-    public class LoadGroups : CheckInActionComponent
+    [BooleanField( "Load All", "By default groups are only loaded for the selected person, group type, and location.  Select this option to load groups for all the loaded people and group types." )]    public class LoadGroups : CheckInActionComponent
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -38,18 +35,12 @@ namespace Rock.Workflow.Action.CheckIn
             var checkInState = GetCheckInState( entity, out errorMessages );
             if ( checkInState != null )
             {
+
                 bool loadAll = false;
                 if ( bool.TryParse( GetAttributeValue( action, "LoadAll" ), out loadAll ) && loadAll )
                 {
                     loadAll = true;
-                }
-
-                //TBD  - no longer used.
-                //bool loadAllLocations = false;
-                //if ( bool.TryParse( GetAttributeValue( "IncludeNonSelectedLocations" ), out loadAllLocations ) && loadAllLocations )
-                //{
-                //    loadAllLocations = true;
-                //}
+                }               
 
                 foreach ( var family in checkInState.CheckIn.Families.Where( f => f.Selected ) )
                 {
