@@ -111,8 +111,8 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( "class", "dropdown" );
             writer.RenderBeginTag( HtmlTextWriterTag.Li );
-            
-            writer.AddAttribute( "class", "dropdown-toggle" );
+
+            writer.AddAttribute("class", "dropdown-toggle navbar-link");
             writer.AddAttribute( "data-toggle", "dropdown" );
             writer.RenderBeginTag( HtmlTextWriterTag.A);
 

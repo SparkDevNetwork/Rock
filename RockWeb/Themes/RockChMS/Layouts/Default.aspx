@@ -4,37 +4,57 @@
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
     
     <!-- Page Header -->
-		<header class="navbar navbar-static-top pageheader" role="navigation">
+	<header>
+        
+        <!-- Brand Bar -->
+        <div class="navbar navbar-default navbar-static-top brandbar" role="navigation">
             <div class="container">
-				<div class="row">
-                    <div class="col-md-6">
-                        <asp:HyperLink ID="HyperLink1" runat="server" CssClass="brand" NavigateUrl="~" ToolTip="Rock ChMS">
-                            <asp:Image ID="Image1" runat="server" AlternateText="Rock ChMS" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="pageheader-logo" />
-                        </asp:HyperLink>
-					</div>
-                    <div class="col-md-6">
-                        <Rock:Zone ID="Heading" Name="Header" runat="server" />				
+				<div class="navbar-header">
+                    
+                    <asp:HyperLink ID="HyperLink1" runat="server" CssClass="navbar-brand" NavigateUrl="~" ToolTip="Rock ChMS">
+                        <asp:Image ID="Image1" runat="server" AlternateText="Rock ChMS" ImageUrl="~/Assets/Images/rock-logo.svg" CssClass="brandbar-logo" />
+                    </asp:HyperLink>
+                    
+                    <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".pageheader-collapse">
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </button>
+
+				</div>	
+                <div class="navbar-collapse collapse pageheader-collapse">   
+                    <div class="navbar-right navbar-text">
+                        <Rock:Zone ID="Heading" Name="Header" runat="server" />
+                    </div>
+                    <div class="navbar-right navbar-text">				
 					    <Rock:SearchField ID="searchField" runat="server" />
-					</div>
-                </div>
-		</header>
-		
+                    </div>
+				</div>	
+            </div>
+        </div>
+
+        <!-- Main Navigation -->
 		<nav class="navbar navbar-static-top pagenav">
             <div class="container">
                 <Rock:Zone ID="Menu" runat="server" />
             </div>									
 		</nav>
 		
+        <!-- Page Title -->
 		<div class="navbar navbar-static-top pagetitle">
-			<div class="row">
-				<div class="col-md-6">
-					<Rock:PageIcon ID="PageIcon" runat="server" /> <h1><Rock:PageTitle ID="PageTitle" runat="server" /></h1> <Rock:Zone ID="PageTitleBar" runat="server" />  
-				</div>
-                <div class="col-md-6">
-                    <Rock:Zone ID="Zone1" runat="server" />
-                </div>
-			</div>
+			<div class="container">
+                <div class="row">
+				    <div class="col-md-6">
+					    <Rock:PageIcon ID="PageIcon" runat="server" /> <h1><Rock:PageTitle ID="PageTitle" runat="server" /></h1> <Rock:Zone ID="PageTitleBar" runat="server" />  
+				    </div>
+                    <div class="col-md-6">
+                        <Rock:Zone ID="Zone1" runat="server" />
+                    </div>
+			    </div>
+            </div>
 		</div>
+
+    </header>
 		
 		<div class="body-content container">
             

@@ -1,7 +1,7 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="LoginStatus.ascx.cs" Inherits="RockWeb.Blocks.Security.LoginStatus" %>
 <ul class="nav loginstatus">
     <li class="dropdown">
-        <a class="dropdown-toggle" href="#" data-toggle="dropdown">
+        <a class="dropdown-toggle navbar-link" href="#" data-toggle="dropdown">
             <i class="icon-user"></i>
             <asp:PlaceHolder ID="phHello" runat="server"><asp:Literal ID="lHello" runat="server" /></asp:PlaceHolder>
             <b class="caret"></b>
