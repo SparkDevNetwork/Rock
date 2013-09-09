@@ -34,7 +34,33 @@ namespace Rock.Web.UI.Controls
 
         private LinkButton lbAddCheckinGroupType;
 
-        public bool ForceContentVisible { private get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether [force content visible].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [force content visible]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ForceContentVisible { 
+            private get
+            {
+                return _forceContentVisible;
+            }
+
+            set
+            {
+                _forceContentVisible = value;
+                if ( _forceContentVisible )
+                {
+                    CheckinGroupTypeEditor parentGroupTypeEditor = this.Parent as CheckinGroupTypeEditor;
+                    while ( parentGroupTypeEditor != null )
+                    {
+                        parentGroupTypeEditor.ForceContentVisible = true;
+                        parentGroupTypeEditor = parentGroupTypeEditor.Parent as CheckinGroupTypeEditor;
+                    }
+                }
+            }
+        }
+        private bool _forceContentVisible;
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -202,6 +228,20 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
         }
 
         /// <summary>
+        /// Gets the parent group type editor.
+        /// </summary>
+        /// <value>
+        /// The parent group type editor.
+        /// </value>
+        public CheckinGroupTypeEditor ParentGroupTypeEditor
+        {
+            get
+            {
+                return this.Parent as CheckinGroupTypeEditor;
+            }
+        }
+
+        /// <summary>
         /// Gets the inherited group type unique identifier.
         /// </summary>
         /// <value>
@@ -314,6 +354,7 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
             lbDeleteGroupType.CssClass = "btn btn-mini btn-danger";
             lbDeleteGroupType.Click += lbDeleteGroupType_Click;
             lbDeleteGroupType.Controls.Add( new LiteralControl { Text = "<i class='icon-remove'></i>" } );
+            lbDeleteGroupType.Attributes["onclick"] = string.Format( "javascript: return Rock.controls.grid.confirmDelete(event, '{0}');", "group type" );
 
             ddlGroupTypeInheritFrom = new LabeledDropDownList();
             ddlGroupTypeInheritFrom.ID = this.ID + "_ddlGroupTypeInheritFrom";
@@ -558,13 +599,19 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
             writer.RenderEndTag();
 
             // groups
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "checkin-group-list" );
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "checkin-grouptype-list" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             foreach ( CheckinGroupTypeEditor checkinGroupTypeEditor in this.Controls.OfType<CheckinGroupTypeEditor>() )
             {
                 checkinGroupTypeEditor.RenderControl( writer );
             }
 
+            // checkin-grouptype-list div
+            writer.RenderEndTag();
+
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "checkin-group-list" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             foreach ( CheckinGroupEditor checkinGroupEditor in this.Controls.OfType<CheckinGroupEditor>() )
             {
                 checkinGroupEditor.RenderControl( writer );
