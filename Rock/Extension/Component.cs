@@ -108,7 +108,7 @@ namespace Rock.Extension
         }
 
         /// <summary>
-        /// Sets the first value of an attribute key.
+        /// Sets the first value of an attribute key in memory.  Note, this will not persist value to database
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
