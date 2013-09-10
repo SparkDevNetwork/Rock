@@ -82,7 +82,7 @@
 html
 {
  background-color: #3a3a3a;  
- background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4="); 
+ //background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4="); 
 }
 
 h1 {
@@ -106,7 +106,6 @@ a {
 a:hover {
     text-decoration: none;
 }
-
 
 a:hover i[class^="icon-"]
 {
@@ -154,6 +153,7 @@ a:hover i[class^="icon-"]
     font-weight: @font-weight-light;
 }
 
+// todo - needed in bs3?
 .btn-primary.disabled, .btn-primary[disabled] {
     color: @btn-disabled-color;
     background-color: @btn-disabled-bg;
@@ -311,13 +311,7 @@ header {
 	color: @footer-text-color;
 }
 
-@media (max-width: 767px) {
-	.page-footer {
-		margin-left: -20px;
-		margin-right: -20px;
-		padding: 0 20px 0 20px;
-	}
-}
+
 
 // 5. Responsive Tweaks
 // -------------------------

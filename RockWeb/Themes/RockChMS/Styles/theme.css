@@ -1,4 +1,4 @@
-﻿/*!
+/*!
  *  Font Awesome 3.2.1
  *  the iconic font designed for Bootstrap
  *  ------------------------------------------------------------------------------
@@ -52,7 +52,7 @@
 /* makes the font 33% larger relative to the icon container */
 .icon-large:before {
   vertical-align: -10%;
-  font-size: 1.3333333333333332em;
+  font-size: 1.3333333333333333em;
 }
 /* makes sure icons active on rollover in links */
 a [class^="icon-"],
@@ -5358,8 +5358,8 @@ textarea.input-group-sm > .input-group-btn > .btn {
   }
 }
 .navbar-default {
-  background-color: #f8f8f8;
-  border-color: #e7e7e7;
+  background-color: #3a3a3a;
+  border-color: #292929;
 }
 .navbar-default .navbar-brand {
   color: #bbbbbb;
@@ -5384,7 +5384,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .navbar-default .navbar-nav > .active > a:hover,
 .navbar-default .navbar-nav > .active > a:focus {
   color: #555555;
-  background-color: #e7e7e7;
+  background-color: #292929;
 }
 .navbar-default .navbar-nav > .disabled > a,
 .navbar-default .navbar-nav > .disabled > a:hover,
@@ -5404,7 +5404,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 }
 .navbar-default .navbar-collapse,
 .navbar-default .navbar-form {
-  border-color: #e6e6e6;
+  border-color: #282828;
 }
 .navbar-default .navbar-nav > .dropdown > a:hover .caret,
 .navbar-default .navbar-nav > .dropdown > a:focus .caret {
@@ -5414,7 +5414,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .navbar-default .navbar-nav > .open > a,
 .navbar-default .navbar-nav > .open > a:hover,
 .navbar-default .navbar-nav > .open > a:focus {
-  background-color: #e7e7e7;
+  background-color: #292929;
   color: #555555;
 }
 .navbar-default .navbar-nav > .open > a .caret,
@@ -5440,7 +5440,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
   .navbar-default .navbar-nav .open .dropdown-menu > .active > a:hover,
   .navbar-default .navbar-nav .open .dropdown-menu > .active > a:focus {
     color: #555555;
-    background-color: #e7e7e7;
+    background-color: #292929;
   }
   .navbar-default .navbar-nav .open .dropdown-menu > .disabled > a,
   .navbar-default .navbar-nav .open .dropdown-menu > .disabled > a:hover,
@@ -7500,7 +7500,7 @@ td.visible-print {
 /*
     Used to manage styles related to reusable components / widgets.
     
-    1. Panel - used to visually link related content items together
+    xBS3 1. Panel - used to visually link related content items together
     2. Banner - used as the primary heading for a page or large section
     3. Treeview - additional styles for the kendo treeview
     4. Widget - reusable box wrapper for content
@@ -7514,15 +7514,6 @@ td.visible-print {
     12. Labels - additional label defintions that extend Boostrap labels (eg label-campus)
 
 */
-.panel {
-  border-radius: 4px;
-  border: 1px solid #c8d3dc;
-  background-color: #e7ecf0;
-  padding: 20px;
-}
-.panel > h4 {
-  margin: 48px 0 6px;
-}
 .banner {
   color: #ecf0f3;
   background-color: #779cb1;
@@ -10507,7 +10498,6 @@ fieldset .actions {
 */
 html {
   background-color: #3a3a3a;
-  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4=");
 }
 h1 {
   font-size: 28px;
@@ -10682,13 +10672,6 @@ header .nav a:hover .caret {
   background-color: #3a3a3a;
   border-top: 1px solid #000;
   color: #bbbbbb;
-}
-@media (max-width: 767px) {
-  .page-footer {
-    margin-left: -20px;
-    margin-right: -20px;
-    padding: 0 20px 0 20px;
-  }
 }
 body#splash {
   background: none;
