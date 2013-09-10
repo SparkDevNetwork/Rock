@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -15,7 +16,6 @@ using System.Web.Routing;
 using System.Web.UI.WebControls;
 using DotLiquid;
 using Newtonsoft.Json;
-using Rock.Data;
 using Rock.Model;
 
 namespace Rock
@@ -112,6 +112,20 @@ namespace Rock
                     return SplitCase( type.Name );
                 }
             }
+        }
+
+        /// <summary>
+        /// Parses the nullable type.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static T ParseNullable<T>( object value )
+        {
+            var converter = TypeDescriptor.GetConverter( typeof( T ) );
+            return converter.IsValid( value.ToString() )
+                ? (T)converter.ConvertFrom( value.ToString() )
+                : default( T );
         }
 
         #endregion
@@ -817,7 +831,7 @@ namespace Rock
         /// <param name="className">Name of the class.</param>
         public static void RemoveCssClass( this System.Web.UI.WebControls.WebControl webControl, string className )
         {
-            string match = @"\s*\b" + className + "\b";
+            string match = @"\s*\b" + className + @"\b";
             string css = webControl.CssClass;
 
             if ( Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
@@ -1021,6 +1035,31 @@ namespace Rock
         {
             return Enum.GetName( eff.GetType(), eff ).SplitCase();
         }
+
+        /// <summary>
+        /// Gets the enum description.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static string GetDescription( this Enum value )
+        {
+            var type = value.GetType();
+            string name = Enum.GetName( type, value );
+            if ( name != null )
+            {
+                System.Reflection.FieldInfo field = type.GetField( name );
+                if ( field != null )
+                {
+                    var attr = System.Attribute.GetCustomAttribute( field,
+                        typeof( DescriptionAttribute ) ) as DescriptionAttribute;
+                    if ( attr != null )
+                    {
+                        return attr.Description;
+                    }
+                }
+            }
+            return null;
+        }        
 
         /// <summary>
         /// Converts to int.

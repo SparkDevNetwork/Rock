@@ -40,7 +40,7 @@ namespace Rock.Workflow.Action.CheckIn
                     {
                         string personsGender = person.Person.Gender.ToString( "d" );
 
-                        foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ).ToList() )
+                        foreach ( var groupType in person.GroupTypes.ToList() )
                         {
                             foreach ( var group in groupType.Groups.ToList() )
                             {
