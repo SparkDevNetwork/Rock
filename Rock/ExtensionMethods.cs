@@ -113,21 +113,7 @@ namespace Rock
                 }
             }
         }
-
-        /// <summary>
-        /// Parses the nullable type.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public static T ParseNullable<T>( object value )
-        {
-            var converter = TypeDescriptor.GetConverter( typeof( T ) );
-            return converter.IsValid( value.ToString() )
-                ? (T)converter.ConvertFrom( value.ToString() )
-                : default( T );
-        }
-
+        
         #endregion
 
         #region String Extensions
@@ -376,6 +362,20 @@ namespace Rock
                 return "<span class='first-word'>" + str.Substring(0, endOfFirstWord) + " </span> " + str.Substring(endOfFirstWord, str.Length - endOfFirstWord);
             else
                 return "<span class='first-word'>" + str + " </span>";
+        }
+
+        /// <summary>
+        /// Converts the value to Type, or if unsuccessful, returns the default value of Type.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static T AsType<T>( this string value )
+        {
+            var converter = TypeDescriptor.GetConverter( typeof( T ) );
+            return converter.IsValid( value )
+                ? (T)converter.ConvertFrom( value )
+                : default( T );
         }
 
         #endregion
