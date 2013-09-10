@@ -23,7 +23,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "http://localhost
 	ProjectSection(WebsiteProperties) = preProject
 		UseIISExpress = "true"
 		TargetFrameworkMoniker = ".NETFramework,Version%3Dv4.5"
-		ProjectReferences = "{8F8C2A79-24F4-4157-8B99-45F75FA85799}|Rock.dll;{AEF8823B-E45B-4B35-A4D0-C08C1196D017}|Quartz.dll;{b89dfd33-ce93-44e1-8616-c31acdfe89cb}|Rock.Rest.dll;"
+		ProjectReferences = "{8F8C2A79-24F4-4157-8B99-45F75FA85799}|Rock.dll;{AEF8823B-E45B-4B35-A4D0-C08C1196D017}|Quartz.dll;{b89dfd33-ce93-44e1-8616-c31acdfe89cb}|Rock.Rest.dll;{381a2fc8-6f4f-4b66-a9b4-14932d43b76a}|Rock.Version.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/RockWeb"
 		Debug.AspNetCompiler.PhysicalPath = "RockWeb\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\RockWeb\"
@@ -41,6 +41,8 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "http://localhost
 		SlnRelativePath = "RockWeb\"
 		DefaultWebSiteLanguage = "Visual C#"
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Version", "Rock.Version\Rock.Version.csproj", "{381A2FC8-6F4F-4B66-A9B4-14932D43B76A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.PayFlowPro", "Rock.PayFlowPro\Rock.PayFlowPro.csproj", "{05F3587D-86DD-4CF3-A80A-D8CF598E1FD1}"
 EndProject
@@ -117,6 +119,16 @@ Global
 		{3ADB92E5-342B-458D-B779-369FC8A66CF6}.Release|Mixed Platforms.ActiveCfg = Debug|Any CPU
 		{3ADB92E5-342B-458D-B779-369FC8A66CF6}.Release|Mixed Platforms.Build.0 = Debug|Any CPU
 		{3ADB92E5-342B-458D-B779-369FC8A66CF6}.Release|x86.ActiveCfg = Debug|Any CPU
+		{381A2FC8-6F4F-4B66-A9B4-14932D43B76A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{381A2FC8-6F4F-4B66-A9B4-14932D43B76A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{381A2FC8-6F4F-4B66-A9B4-14932D43B76A}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{381A2FC8-6F4F-4B66-A9B4-14932D43B76A}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{381A2FC8-6F4F-4B66-A9B4-14932D43B76A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{381A2FC8-6F4F-4B66-A9B4-14932D43B76A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{381A2FC8-6F4F-4B66-A9B4-14932D43B76A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{381A2FC8-6F4F-4B66-A9B4-14932D43B76A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{381A2FC8-6F4F-4B66-A9B4-14932D43B76A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{381A2FC8-6F4F-4B66-A9B4-14932D43B76A}.Release|x86.ActiveCfg = Release|Any CPU
 		{05F3587D-86DD-4CF3-A80A-D8CF598E1FD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{05F3587D-86DD-4CF3-A80A-D8CF598E1FD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{05F3587D-86DD-4CF3-A80A-D8CF598E1FD1}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU

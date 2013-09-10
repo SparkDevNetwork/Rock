@@ -385,10 +385,11 @@ namespace RockWeb.Blocks.Administration
         {
             using ( new UnitOfWorkScope() )
             {
+                Rock.Model.Attribute attribute = null;
+
                 RockTransactionScope.WrapTransaction( () =>
                 {
                     var attributeService = new AttributeService();
-                    Rock.Model.Attribute attribute = null;
 
                     // remove old qualifier values in case they changed
                     if ( edtAttribute.AttributeId.HasValue )
@@ -429,10 +430,19 @@ namespace RockWeb.Blocks.Administration
                         return;
                     }
 
-                    Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
                     attributeService.Save( attribute, CurrentPersonId );
 
                 } );
+
+                if ( attribute != null )
+                {
+                    Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
+                    if ( !_entityTypeId.HasValue && _entityQualifierColumn == string.Empty && _entityQualifierValue == string.Empty && !_entityId.HasValue )
+                    {
+                        Rock.Web.Cache.GlobalAttributesCache.Flush();
+                    }
+                }
+
             }
 
             BindGrid();

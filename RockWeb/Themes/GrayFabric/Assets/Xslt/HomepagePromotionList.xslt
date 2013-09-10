@@ -11,7 +11,7 @@
           <li>
               <a>
                 <xsl:attribute name="href">
-                  <xsl:value-of select="@Url"/>
+                  <xsl:value-of select="@DetailPageUrl"/>
                 </xsl:attribute>
 
                 <xsl:for-each select="./Attributes/Attribute[@Key='PromotionImage']" >

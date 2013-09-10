@@ -36,6 +36,9 @@ namespace RockWeb
     /// </summary>
     public class Global : System.Web.HttpApplication
     {
+
+        #region Fields
+
         /// <summary>
         /// global Quartz scheduler for jobs 
         /// </summary>
@@ -53,6 +56,8 @@ namespace RockWeb
 
         // cache callback object
         private static CacheItemRemovedCallback OnCacheRemove = null;
+
+        #endregion
 
         #region Asp.Net Events
 
@@ -112,7 +117,7 @@ namespace RockWeb
                 catch ( Exception ex )
                 {
                     // if migrations fail, log error and attempt to continue
-                    LogError( ex, HttpContext.Current );
+                    LogError( ex, null );
                 }
 
             }
@@ -228,7 +233,7 @@ namespace RockWeb
                 }
                 catch ( Exception ex )
                 {
-                    LogError( new Exception( string.Format( "Exception in Global.DrainTransactionQueue(): {0}", ex.Message ) ), HttpContext.Current );
+                    LogError( new Exception( string.Format( "Exception in Global.DrainTransactionQueue(): {0}", ex.Message ) ), null );
                 }
 
                 Global.QueueInUse = false;
@@ -281,8 +286,15 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_Error( object sender, EventArgs e )
         {
-            // log error
             HttpContext context = HttpContext.Current;
+
+            // If the current context is null, there's nothing that can be done. Just return.
+            if ( context == null )
+            {
+                return;
+            }
+
+            // log error
             var ex = Context.Server.GetLastError();
 
             if ( ex != null )
@@ -302,7 +314,6 @@ namespace RockWeb
                     // something really bad is occurring stop logging errors as we're in an infinate loop
                     logException = false;
                 }
-
 
                 if ( logException )
                 {
@@ -328,22 +339,23 @@ namespace RockWeb
 
                         // determine error page based on the site
                         SiteService service = new SiteService();
-                        Site site = null;
                         string siteName = string.Empty;
 
                         if ( context.Items["Rock:SiteId"] != null )
                         {
-                            int siteId = Int32.Parse( context.Items["Rock:SiteId"].ToString() );
+                            int siteId;
+                            Int32.TryParse( context.Items["Rock:SiteId"].ToString(), out siteId );
 
                             // load site
-                            site = service.Get( siteId );
-
+                            Site site = service.Get( siteId );
                             siteName = site.Name;
                             errorPage = site.ErrorPage;
                         }
 
-                        // store exception in session
-                        Session["Exception"] = ex;
+                        // Attempt to store exception in session. Session state may not be available
+                        // within the context of an HTTP handler or the REST API.
+                        try { Session["Exception"] = ex; }
+                        catch ( HttpException ) { }
 
                         // email notifications if 500 error
                         if ( status == "500" )
@@ -354,10 +366,10 @@ namespace RockWeb
 
                             // get email addresses to send to
                             string emailAddressesList = globalAttributesCache.GetValue( "EmailExceptionsList" );
+
                             if ( !string.IsNullOrWhiteSpace( emailAddressesList ) )
                             {
-                                string[] emailAddresses = emailAddressesList.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-
+                                string[] emailAddresses = emailAddressesList.Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
                                 var recipients = new Dictionary<string, Dictionary<string, object>>();
 
                                 foreach ( string emailAddress in emailAddresses )
@@ -423,10 +435,26 @@ namespace RockWeb
         /// <param name="context">The context.</param>
         private void LogError( Exception ex, HttpContext context )
         {
-            var siteId = Int32.Parse( context.Items["Rock:SiteId"].ToString() );
-            var pageId = Int32.Parse( context.Items["Rock:PageId"].ToString() );
-            var user = UserLoginService.GetCurrentUser();
-            var personId = user != null ? user.PersonId : null;
+            int? pageId;
+            int? siteId;
+            int? personId;
+
+            if ( context == null )
+            {
+                pageId = null;
+                siteId = null;
+                personId = null;
+            }
+            else
+            {
+                var pid = context.Items["Rock:PageId"];
+                pageId = pid != null ? int.Parse( pid.ToString() ) : (int?) null;
+                var sid = context.Items["Rock:SiteId"];
+                siteId = sid != null ? int.Parse( sid.ToString() ) : (int?) null;
+                var user = UserLoginService.GetCurrentUser();
+                personId = user != null ? user.PersonId : null;
+            }
+
             ExceptionLogService.LogException( ex, context, pageId, siteId, personId );
         }
 
@@ -777,5 +805,6 @@ namespace RockWeb
         }
 
         #endregion
+
     }
 }
