@@ -3,6 +3,8 @@
 <asp:UpdatePanel ID="upPayment" runat="server">
     <ContentTemplate>
 
+        <asp:PlaceHolder ID="phSelection" runat="server">
+
         <% if (FluidLayout) { %>
             <div class="row-fluid">
                 <div class="span6">
@@ -52,6 +54,7 @@
             </div>
         <% } %>
 
+        </asp:PlaceHolder>
 
         <asp:Panel ID="pnlPaymentInfo" runat="server" class="well">
 
@@ -124,9 +127,9 @@
             </div>
         </asp:Panel>
 
-        <Rock:NotificationBox ID="errorBox" runat="server" Visible="false"></Rock:NotificationBox>
+        <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false"></Rock:NotificationBox>
 
-        <div class="actions">
+        <div id="divActions" runat="server" class="actions">
             <asp:LinkButton ID="btnNext" runat="server" Text="Next" CssClass="btn btn-primary" OnClick="btnNext_Click" />
             <asp:LinkButton ID="btnTest" runat="server" Text="Download Report" CssClass="btn" OnClick="btnTest_Click" />
         </div>

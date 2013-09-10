@@ -106,69 +106,62 @@ namespace RockWeb.Blocks.Finance.Administration
 
                 divCCPaymentInfo.Visible = ccEnabled;
                 divACHPaymentInfo.Visible = achEnabled;
-            }
-            else
-            {
-                pnlPaymentInfo.Visible = false;
-                errorBox.Text = "Please check the configuration of this block and make sure a valid Credit Card and/or ACH Finacial Gateway has been selected.";
-                errorBox.NotificationBoxType = NotificationBoxType.Error;
-                errorBox.Visible = true;
-            }
 
-            if ( supportedFrequencies.Any() )
-            {
-                bool allowScheduled = false;
-                if ( bool.TryParse( GetAttributeValue( "AllowScheduled" ), out allowScheduled ) && allowScheduled )
+                if ( supportedFrequencies.Any() )
                 {
-                    _showRepeatingOptions = true;
-                    var oneTimeFrequency = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME );
-                    divRepeatingPayments.Visible = true;
-
-                    btnFrequency.DataSource = supportedFrequencies;
-                    btnFrequency.DataBind();
-
-                    // If gateway didn't specifically support one-time, add it anyway for immediate gifts
-                    if ( !supportedFrequencies.Where( f => f.Id == oneTimeFrequency.Id ).Any() )
+                    bool allowScheduled = false;
+                    if ( bool.TryParse( GetAttributeValue( "AllowScheduled" ), out allowScheduled ) && allowScheduled )
                     {
-                        btnFrequency.Items.Insert( 0, new ListItem( oneTimeFrequency.Name, oneTimeFrequency.Id.ToString() ) );
-                    }
-                    btnFrequency.SelectedValue = oneTimeFrequency.Id.ToString();
-                    dtpStartDate.SelectedDate = DateTime.Today;
-                };
+                        _showRepeatingOptions = true;
+                        var oneTimeFrequency = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME );
+                        divRepeatingPayments.Visible = true;
 
+                        btnFrequency.DataSource = supportedFrequencies;
+                        btnFrequency.DataBind();
+
+                        // If gateway didn't specifically support one-time, add it anyway for immediate gifts
+                        if ( !supportedFrequencies.Where( f => f.Id == oneTimeFrequency.Id ).Any() )
+                        {
+                            btnFrequency.Items.Insert( 0, new ListItem( oneTimeFrequency.Name, oneTimeFrequency.Id.ToString() ) );
+                        }
+                        btnFrequency.SelectedValue = oneTimeFrequency.Id.ToString();
+                        dtpStartDate.SelectedDate = DateTime.Today;
+                    };
+
+                }
+
+                // Display Options
+                bool display = false;
+                txtEmail.Visible = bool.TryParse( GetAttributeValue( "DisplayEmail" ), out display ) && display;
+                txtPhone.Visible = bool.TryParse( GetAttributeValue( "DisplayPhone" ), out display ) && display;
+                FluidLayout = GetAttributeValue( "LayoutStyle" ) == "Fluid";
+
+                BindSavedAccounts();
+
+                if ( rblSavedCC.Items.Count > 0 )
+                {
+                    rblSavedCC.Items[0].Selected = true;
+                    rblSavedCC.Visible = true;
+                    divNewCard.Style[HtmlTextWriterStyle.Display] = "none";
+                }
+                else
+                {
+                    rblSavedCC.Visible = false;
+                    divNewCard.Style[HtmlTextWriterStyle.Display] = "block";
+                }
+
+                RegisterScript();
+
+                // Temp values for testing...
+                txtCardName.Text = "David R Turner";
+                txtCreditCard.Text = "5105105105105100";
+                mypExpiration.SelectedDate = new DateTime( 2014, 1, 1 );
+                txtCVV.Text = "023";
+
+                txtBankName.Text = "Test Bank";
+                txtRoutingNumber.Text = "111111118";
+                txtAccountNumber.Text = "1111111111";
             }
-
-            // Display Options
-            bool display = false;
-            txtEmail.Visible = bool.TryParse( GetAttributeValue( "DisplayEmail" ), out display ) && display;
-            txtPhone.Visible = bool.TryParse( GetAttributeValue( "DisplayPhone" ), out display ) && display;
-            FluidLayout = GetAttributeValue( "LayoutStyle" ) == "Fluid";
-
-            BindSavedAccounts();
-
-            if ( rblSavedCC.Items.Count > 0 )
-            {
-                rblSavedCC.Items[0].Selected = true;
-                rblSavedCC.Visible = true;
-                divNewCard.Style[HtmlTextWriterStyle.Display] = "none";
-            }
-            else
-            {
-                rblSavedCC.Visible = false;
-                divNewCard.Style[HtmlTextWriterStyle.Display] = "block";
-            }
-
-            RegisterScript();
-
-            // Temp values for testing...
-            txtCardName.Text = "David R Turner";
-            txtCreditCard.Text = "5105105105105100";
-            mypExpiration.SelectedDate = new DateTime( 2014, 1, 1 );
-            txtCVV.Text = "023";
-
-            txtBankName.Text = "Test Bank";
-            txtRoutingNumber.Text = "111111118";
-            txtAccountNumber.Text = "1111111111";
         }
 
         protected override void OnLoad( EventArgs e )
@@ -176,63 +169,81 @@ namespace RockWeb.Blocks.Finance.Administration
             base.OnLoad( e );
 
             // Hide the error box on every postback
-            errorBox.Visible = false;
+            nbMessage.Visible = false;
             pnlReport.Visible = false;
 
-            // Set the frequency date label based on if 'One Time' is selected or not
-            dtpStartDate.LabelText = btnFrequency.Items[0].Selected ? "When" : "First Gift";
-
-            // If there are both CC and ACH options, set the active tab based on the hidden field value that tracks the active tag
-            if ( phPills.Visible )
+            if ( _ccGateway != null || _achGateway != null )
             {
-                if ( hfPaymentTab.Value == "ACH" )
+                phSelection.Visible = true;
+                pnlPaymentInfo.Visible = true;
+                divActions.Visible = true;
+
+                // Set the frequency date label based on if 'One Time' is selected or not
+                if ( btnFrequency.Items.Count > 0 )
                 {
-                    liCreditCard.RemoveCssClass( "active" );
-                    liACH.AddCssClass( "active" );
-                    divCCPaymentInfo.RemoveCssClass( "active" );
-                    divACHPaymentInfo.AddCssClass( "active" );
+                    dtpStartDate.LabelText = btnFrequency.Items[0].Selected ? "When" : "First Gift";
                 }
-                else
+
+                // If there are both CC and ACH options, set the active tab based on the hidden field value that tracks the active tag
+                if ( phPills.Visible )
                 {
-                    liCreditCard.AddCssClass( "active" );
-                    liACH.RemoveCssClass( "active" );
-                    divCCPaymentInfo.AddCssClass( "active" );
-                    divACHPaymentInfo.RemoveCssClass( "active" );
-                }
-            }
-
-            // Show or Hide the Credit card entry panel based on if a saved account exists and it's selected or not.
-            divNewCard.Style[HtmlTextWriterStyle.Display] = ( rblSavedCC.Items.Count > 0 && rblSavedCC.Items[0].Selected ) ? "none" : "block";
-
-            // Show billing address based on if billing address checkbox is checked
-            divBillingAddress.Style[HtmlTextWriterStyle.Display] = cbBillingAddress.Checked ? "block" : "none";
-
-            if ( !Page.IsPostBack )
-            {
-                // Set personal information if there is a currently logged in person
-                if ( CurrentPerson != null )
-                {
-                    txtFirstName.Text = CurrentPerson.FirstName;
-                    txtLastName.Text = CurrentPerson.LastName;
-                    txtEmail.Text = CurrentPerson.Email;
-
-                    Guid addressTypeGuid = Guid.Empty;
-                    if ( !Guid.TryParse( GetAttributeValue( "AddressType" ), out addressTypeGuid ) )
+                    if ( hfPaymentTab.Value == "ACH" )
                     {
-                        addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_HOME );
+                        liCreditCard.RemoveCssClass( "active" );
+                        liACH.AddCssClass( "active" );
+                        divCCPaymentInfo.RemoveCssClass( "active" );
+                        divACHPaymentInfo.AddCssClass( "active" );
                     }
-
-                    var address = new PersonService().GetFirstLocation( CurrentPerson, DefinedValueCache.Read( addressTypeGuid ).Id );
-                    if ( address != null )
+                    else
                     {
-                        txtStreet.Text = address.Street1;
-                        txtCity.Text = address.City;
-                        ddlState.SelectedValue = address.State;
-                        txtZip.Text = address.Zip;
+                        liCreditCard.AddCssClass( "active" );
+                        liACH.RemoveCssClass( "active" );
+                        divCCPaymentInfo.AddCssClass( "active" );
+                        divACHPaymentInfo.RemoveCssClass( "active" );
                     }
                 }
 
+                // Show or Hide the Credit card entry panel based on if a saved account exists and it's selected or not.
+                divNewCard.Style[HtmlTextWriterStyle.Display] = ( rblSavedCC.Items.Count > 0 && rblSavedCC.Items[0].Selected ) ? "none" : "block";
+
+                // Show billing address based on if billing address checkbox is checked
+                divBillingAddress.Style[HtmlTextWriterStyle.Display] = cbBillingAddress.Checked ? "block" : "none";
+
+                if ( !Page.IsPostBack )
+                {
+                    // Set personal information if there is a currently logged in person
+                    if ( CurrentPerson != null )
+                    {
+                        txtFirstName.Text = CurrentPerson.FirstName;
+                        txtLastName.Text = CurrentPerson.LastName;
+                        txtEmail.Text = CurrentPerson.Email;
+
+                        Guid addressTypeGuid = Guid.Empty;
+                        if ( !Guid.TryParse( GetAttributeValue( "AddressType" ), out addressTypeGuid ) )
+                        {
+                            addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_HOME );
+                        }
+
+                        var address = new PersonService().GetFirstLocation( CurrentPerson, DefinedValueCache.Read( addressTypeGuid ).Id );
+                        if ( address != null )
+                        {
+                            txtStreet.Text = address.Street1;
+                            txtCity.Text = address.City;
+                            ddlState.SelectedValue = address.State;
+                            txtZip.Text = address.Zip;
+                        }
+                    }
+
+                }
             }
+            else
+            {
+                phSelection.Visible = false;
+                pnlPaymentInfo.Visible = false;
+                divActions.Visible = false;
+                ShowMessage( NotificationBoxType.Error, "Configuration Error", "Please check the configuration of this block and make sure a valid Credit Card and/or ACH Finacial Gateway has been selected." );
+            }
+            
         }
 
         protected void btnNext_Click( object sender, EventArgs e )
@@ -266,10 +277,7 @@ namespace RockWeb.Blocks.Finance.Administration
                 }
                 else
                 {
-                    errorBox.Text = "First Gift must be a future date";
-                    errorBox.Title = "Payment Error";
-                    errorBox.NotificationBoxType = NotificationBoxType.Error;
-                    errorBox.Visible = true;
+                    ShowMessage( NotificationBoxType.Error, "Payment Error", "First Gift must be a future date" );
                 }
             }
             else
@@ -330,24 +338,22 @@ namespace RockWeb.Blocks.Finance.Administration
 
             if ( success )
             {
+                string message = string.Empty;
+
                 if ( repeating )
                 {
-                    errorBox.Text = "Profile ID: " + scheduledTransaction.TransactionCode;
+                    message = "Profile ID: " + scheduledTransaction.TransactionCode;
                 }
                 else
                 {
-                    errorBox.Text = "Transaction Code: " + transaction.TransactionCode;
+                    message = "Transaction Code: " + transaction.TransactionCode;
                 }
-                errorBox.Title = "Success";
-                errorBox.NotificationBoxType = NotificationBoxType.Success;
-                errorBox.Visible = true;
+
+                ShowMessage( NotificationBoxType.Success, "Success", message );
             }
             else
             {
-                errorBox.Text = errorMessage;
-                errorBox.Title = "Payment Error";
-                errorBox.NotificationBoxType = NotificationBoxType.Error;
-                errorBox.Visible = true;
+                ShowMessage( NotificationBoxType.Error, "Payment Error", errorMessage );
             }
         }
 
@@ -461,6 +467,14 @@ namespace RockWeb.Blocks.Finance.Administration
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
         }
 
+        private void ShowMessage(NotificationBoxType type, string title, string text)
+        {
+            nbMessage.Text = text;
+            nbMessage.Title = title;
+            nbMessage.NotificationBoxType = type;
+            nbMessage.Visible = true;
+        }
+
         protected void btnTest_Click( object sender, EventArgs e )
         {
             string errorMessage = string.Empty;
@@ -476,10 +490,7 @@ namespace RockWeb.Blocks.Finance.Administration
             }
             else
             {
-                errorBox.Text = errorMessage;
-                errorBox.Title = "Report Error";
-                errorBox.NotificationBoxType = NotificationBoxType.Error;
-                errorBox.Visible = true;
+                ShowMessage( NotificationBoxType.Error, "Report Error", errorMessage );
             }
         }
     }
