@@ -44,8 +44,15 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     Session["location"] = null;
                     Session["locationList"] = null;
                     Session["schedule"] = null;
-                    var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
-                        .People.Where( p => p.Person.Id == int.Parse( Request.QueryString["personId"] ) ).FirstOrDefault();
+                    CheckInPerson person = null;
+                    int personId;                    
+                    
+                    if ( int.TryParse( Request.QueryString["personId"], out personId ) )
+                    {
+                        person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
+                            .People.Where( p => p.Person.Id == personId ).FirstOrDefault();
+                    }
+
                     if ( person != null )
                     {
                         lblPersonName.Text = person.Person.FullName;
@@ -367,89 +374,49 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
 
         /// <summary>
-        /// Handles the ItemDataBound event of the rptAddTag control.
+        /// Handles the ItemDataBound event of the rptAddCondition control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
-        protected void rptAddTag_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        protected void rptAddCondition_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             if ( e.Item.ItemType == ListItemType.Item || e.Item.ItemType == ListItemType.AlternatingItem )
             {                
-                var tag = (KeyValuePair<int, string>)e.Item.DataItem;
-                var lbTagName = (LinkButton)e.Item.FindControl( "lbTagName" );
-                lbTagName.Text = tag.Value;
+                var condition = (KeyValuePair<int, string>)e.Item.DataItem;
+                var lbConditionName = (LinkButton)e.Item.FindControl( "lbConditionName" );
+                lbConditionName.Text = condition.Value;
 
             }
         }
 
         /// <summary>
-        /// Handles the Click event of the lbAddTag control.
+        /// Handles the Click event of the lbAddCondition control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbAddTag_Click( object sender, EventArgs e )
+        protected void lbAddCondition_Click( object sender, EventArgs e )
         {
-            BindTags();
-            mpeAddTag.Show();
+            BindConditions();
+            mpeAddCondition.Show();
         }
 
         /// <summary>
-        /// Handles the Click event of the lbAddTagCancel control.
+        /// Handles the Click event of the lbAddConditionCancel control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbAddTagCancel_Click( object sender, EventArgs e )
+        protected void lbAddConditionCancel_Click( object sender, EventArgs e )
         {
         }
 
         /// <summary>
-        /// Handles the Click event of the lbAddTagSave control.
+        /// Handles the Click event of the lbAddConditionSave control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbAddTagSave_Click( object sender, EventArgs e )
+        protected void lbAddConditionSave_Click( object sender, EventArgs e )
         {
-            //foreach ( var tagId in tpTags.SelectedTagIds )
-            //{
-            //    using ( new Rock.Data.UnitOfWorkScope() )
-            //    {
-            //        var tagService = new TagService();
-            //        var taggedItemService = new TaggedItemService();
-            //        var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
-            //            .People.Where( p => p.Person.Id == int.Parse( Request.QueryString["personId"] ) ).FirstOrDefault();
-
-            //        var entityTypeId = person.Person.TypeId;
-            //        var entityQualifier = string.Empty;
-            //        var entityQualifierValue = string.Empty;
-            //        var entityGuid = person.Person.Guid;
-            //        var ownerId = CurrentPersonId;
-            //        var definedValue = DefinedValueCache.Read( tagId );
-            //        var name = definedValue.Name;
-
-            //        var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name );
-            //        if ( tag == null )
-            //        {
-            //            tag = new Tag();
-            //            tag.EntityTypeId = entityTypeId;
-            //            tag.EntityTypeQualifierColumn = entityQualifier;
-            //            tag.EntityTypeQualifierValue = entityQualifierValue;
-            //            tag.OwnerId = ownerId;
-            //            tag.Name = name;
-            //            tagService.Add( tag, ownerId );
-            //            tagService.Save( tag, ownerId );
-            //        }
-
-            //        var taggedItem = taggedItemService.Get( tag.Id, entityGuid );
-            //        if ( taggedItem == null )
-            //        {
-            //            taggedItem = new TaggedItem();
-            //            taggedItem.TagId = tag.Id;
-            //            taggedItem.EntityGuid = entityGuid;
-            //            taggedItemService.Add( taggedItem, ownerId );
-            //            taggedItemService.Save( taggedItem, ownerId );
-            //        }
-            //    }                
-            //}
+            
         }
 
         /// <summary>
@@ -683,21 +650,32 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
-        /// Binds the tag repeater to a list of allergies.
+        /// Binds the repeater to a list of conditions.
         /// </summary>
-        protected void BindTags()
-        {
-            var tagList = new Dictionary<int, string>();
+        protected void BindConditions()
+        {   
+            var conditionList = new Dictionary<int, string>();
             var allergyList = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_ALLERGY_TYPE ) );
             if ( allergyList != null && allergyList.DefinedValues.Count > 0 )
             {
-                tagList = allergyList.DefinedValues.OrderBy( d => d.Name ).ToDictionary( k => k.Id, v => v.Name );                
+                //var allergyList = person.GetAttributeValues( "Allergy" );
+                foreach ( var allergyValue in allergyList.DefinedValues.ToList() )
+                {
+                    // if person has this condition
+                    // allergyValue.Attributes.Add["Selected"];
+                    conditionList.Add( allergyValue.Id, allergyValue.Name );                    
+                }
+                
             }
 
             // add medical stuff here?
+            // Asthma
+            // Anemia
+            // Croup
+            // Diabetes
 
-            rptAddTag.DataSource = tagList;
-            rptAddTag.DataBind();
+            rptCondition.DataSource = conditionList;
+            rptCondition.DataBind();
         }
 
         #endregion        

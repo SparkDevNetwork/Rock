@@ -105,8 +105,8 @@
                         </Rock:Grid>
                     </ContentTemplate>
                     </asp:UpdatePanel>
-                    <asp:LinkButton ID="lbAddNote" runat="server" Text="Add a Note" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddNote_Click" CausesValidation="false" ></asp:LinkButton>
-                    <asp:LinkButton ID="lbAddTag" runat="server" Text="Add a Tag" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddTag_Click" CausesValidation="false" ></asp:LinkButton>
+                    <asp:LinkButton ID="lbAddCondition" runat="server" Text="Add an Allergy" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddCondition_Click" CausesValidation="false" />
+                    <asp:LinkButton ID="lbAddNote" runat="server" Text="Add a Note" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddNote_Click" CausesValidation="false" />                    
                 </div>
             </div>
         </div>   
@@ -140,12 +140,12 @@
         CancelControlID="lbAddNoteCancel" BackgroundCssClass="modalBackground" />
     <asp:HiddenField ID="hfOpenNotePanel" runat="server" />    
 
-    <!-- Add Tag Panel -->
-    <asp:Panel ID="pnlAddTag" runat="server" CssClass="add-tag" DefaultButton="lbAddTagSave">
-        <Rock:ModalAlert ID="maAddTag" runat="server" />
+    <!-- Add Condition Panel -->
+    <asp:Panel ID="pnlAddCondition" runat="server" CssClass="add-condition" DefaultButton="lbAddConditionSave">
+        <Rock:ModalAlert ID="maAddCondition" runat="server" />
         <div class="row-fluid attended-checkin-header">
             <div class="span3 attended-checkin-actions">
-                <asp:LinkButton ID="lbAddTagCancel" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddTagCancel_Click" Text="Cancel" CausesValidation="false"/>
+                <asp:LinkButton ID="lbAddConditionCancel" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddConditionCancel_Click" Text="Cancel" CausesValidation="false"/>
             </div>
 
             <div class="span6">
@@ -153,25 +153,25 @@
             </div>
 
             <div class="span3 attended-checkin-actions">
-                <asp:LinkButton ID="lbAddTagSave" CssClass="btn btn-large last btn-primary" runat="server" OnClick="lbAddTagSave_Click" Text="Save" />
+                <asp:LinkButton ID="lbAddConditionSave" CssClass="btn btn-large last btn-primary" runat="server" OnClick="lbAddConditionSave_Click" Text="Save" />
             </div>
         </div>
 		
-        <asp:Repeater ID="rptAddTag" runat="server" OnItemDataBound="rptAddTag_ItemDataBound">
+        <asp:Repeater ID="rptCondition" runat="server" OnItemDataBound="rptAddCondition_ItemDataBound">
             <HeaderTemplate>
                 
             </HeaderTemplate>
             <ItemTemplate>
                 <div class="span4">
-                    <asp:LinkButton ID="lbTagName" CssClass="btn btn-large last btn-primary" runat="server" />
+                    <asp:LinkButton ID="lbConditionName" CssClass="btn btn-large last btn-primary" runat="server" />
                 </div>
             </ItemTemplate>
         </asp:Repeater>
         
     </asp:Panel>
-    <asp:ModalPopupExtender ID="mpeAddTag" runat="server" TargetControlID="hfOpenTagPanel" PopupControlID="pnlAddTag" 
-        CancelControlID="lbAddTagCancel" BackgroundCssClass="modalBackground" />
-    <asp:HiddenField ID="hfOpenTagPanel" runat="server" />    
+    <asp:ModalPopupExtender ID="mpeAddCondition" runat="server" TargetControlID="hfOpenConditionPanel" PopupControlID="pnlAddCondition" 
+        CancelControlID="lbAddConditionCancel" BackgroundCssClass="modalBackground" />
+    <asp:HiddenField ID="hfConditionPanel" runat="server" />    
 
 </ContentTemplate>
 </asp:UpdatePanel>
