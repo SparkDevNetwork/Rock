@@ -139,6 +139,8 @@ namespace Rock.PayFlowPro
             DataTable dt = reportingApi.GetReport( "RecurringBillingReport", reportParams, out errorMessage );
             if ( dt != null )
             {
+                var txns = new List<FinancialTransaction>();
+
                 // The Recurring Billing Report items does not include the amounts for each transaction, so need 
                 // to do a transactionIDSearch to get the amount for each transaction
 
@@ -152,6 +154,15 @@ namespace Rock.PayFlowPro
                     DataTable dtTxn = reportingApi.GetSearch( "TransactionIDSearch", reportParams, out errorMessage );
                     if ( dtTxn != null && dtTxn.Rows.Count == 1 )
                     {
+                        decimal amount = decimal.MinValue;
+                        if ( decimal.TryParse( dtTxn.Rows[0]["Amount"].ToString(), out amount ) )
+                        {
+                            var txn = new FinancialTransaction();
+                            txn.Amount = amount;
+                            txn.TransactionCode = row["Transaction ID"].ToString();
+                            txns.Add( txn );
+                        }
+
                         row["Amount"] = dtTxn.Rows[0]["Amount"];
                     }
                     else
