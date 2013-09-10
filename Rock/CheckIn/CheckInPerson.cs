@@ -36,7 +36,16 @@ namespace Rock.CheckIn
         public bool FamilyMember { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="CheckInPerson" /> is selected for check-in.
+        /// Gets or sets a value indicating whether this <see cref="CheckInPerson" /> was pre-selected by a check-in action.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if preselected; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool PreSelected { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="CheckInPerson" /> was selected for check-in.
         /// </summary>
         /// <value>
         ///   <c>true</c> if selected; otherwise, <c>false</c>.
@@ -75,7 +84,7 @@ namespace Rock.CheckIn
         /// Initializes a new instance of the <see cref="CheckInPerson" /> class.
         /// </summary>
         public CheckInPerson()
-            : base() 
+            : base()
         {
             GroupTypes = new List<CheckInGroupType>();
         }
@@ -99,12 +108,13 @@ namespace Rock.CheckIn
         public object ToLiquid()
         {
             var dictionary = new Dictionary<string, object>();
-            dictionary.Add("Person", Person);
-            dictionary.Add("FamilyMember", FamilyMember);
-            dictionary.Add("Selected", Selected);
-            dictionary.Add("LastCheckIn", LastCheckIn);
-            dictionary.Add("SecurityCode", SecurityCode);
-            dictionary.Add("GroupTypes", GroupTypes);
+            dictionary.Add( "Person", Person );
+            dictionary.Add( "FamilyMember", FamilyMember );
+            dictionary.Add( "PreSelected", PreSelected );
+            dictionary.Add( "Selected", Selected );
+            dictionary.Add( "LastCheckIn", LastCheckIn );
+            dictionary.Add( "SecurityCode", SecurityCode );
+            dictionary.Add( "GroupTypes", GroupTypes );
             return dictionary;
         }
     }
