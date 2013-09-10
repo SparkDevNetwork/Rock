@@ -80,6 +80,24 @@ namespace Rock.Tests.Model
                 Assert.True( Person.GraduationDate.Value.Year == DateTime.Now.Year );
             }
 
+            [Test]
+            [TestMethod]
+            [TestCategory( "Rock.Model.Person" )]
+            public void ShouldSetGraduationDateToGradeTransitionDate()
+            {
+                InitGlobalAttributesCache();
+
+                DateTime lastMonth = DateTime.Now.AddMonths( -1 ).AddDays( -DateTime.Now.Day+1 );
+                SetGradeTransitionDateGlobalAttribute( lastMonth.Month, lastMonth.Day );
+
+                var Person = new Person();
+                Person.Grade = 11;
+                System.Diagnostics.Debug.WriteLine( "Person's Graduation Date: " + Person.GraduationDate.Value.ToShortDateString() );
+                System.Diagnostics.Debug.WriteLine( "GradeTransitionDate: " + lastMonth.ToShortDateString() );
+                Assert.True( Person.GraduationDate.Value.Month == lastMonth.Month );
+                Assert.True( Person.GraduationDate.Value.Day == lastMonth.Day );
+            }
+
             private static void InitGlobalAttributesCache()
             {
                 DateTime today = DateTime.Now;
