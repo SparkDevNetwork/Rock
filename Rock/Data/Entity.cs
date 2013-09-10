@@ -217,10 +217,10 @@ namespace Rock.Data
         #region Methods
 
         /// <summary>
-        /// Creates a deep copy of this instance
+        /// Creates a deep copy of this entity object, including all child objects.
         /// </summary>
         /// <returns>
-        /// A copy of the entity
+        /// A complete copy of the entity object
         /// </returns>
         public virtual IEntity Clone()
         {
