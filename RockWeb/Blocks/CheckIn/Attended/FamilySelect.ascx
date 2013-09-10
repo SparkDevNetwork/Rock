@@ -190,7 +190,7 @@
                 <Rock:LabeledTextBox ID="tbLastNameSearch" runat="server" CssClass="fullBlock" LabelText="Last Name" />
             </div>
             <div class="span2">
-                <Rock:DatePicker ID="dpDOBSearch" runat="server" CssClass="datePicker" LabelText="DOB" />                
+                <Rock:DatePicker ID="dpDOBSearch" runat="server" LabelText="DOB" />                
             </div>
             <div class="span2">
                 <Rock:DataDropDownList ID="ddlGenderSearch" runat="server" CssClass="fullBlock" LabelText="Gender" />
@@ -211,7 +211,7 @@
                     <asp:BoundField DataField="Age" HeaderText="Age" SortExpression="Age" />
                     <asp:BoundField DataField="Gender" HeaderText="Gender" SortExpression="Gender" />
                     <asp:BoundField DataField="Attribute" HeaderText="Ability/Grade" SortExpression="Attribute" />
-                    <asp:TemplateField HeaderText="Add">
+                    <asp:TemplateField>
                         <ItemTemplate>
                             <asp:LinkButton ID="lbAdd" runat="server" CssClass="btn btn-large btn-primary" CommandName="Add" 
                                 Text="Add" CommandArgument="<%# ((GridViewRow) Container).RowIndex %>"><i class="icon-plus"></i>
