@@ -13,46 +13,49 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Block Type POCO Service class
+    /// The data access/service class for <see cref="Rock.Model.BlockType"/> entity type objects, and extends the functionality of <see cref="Rock.Model.Service"/>
     /// </summary>
     public partial class BlockTypeService 
     {
+
         /// <summary>
-        /// Gets Block Type by Guid
+        /// Gets a <see cref="Rock.Model.BlockType"/> by it's Guid.
         /// </summary>
-        /// <param name="guid">Guid.</param>
-        /// <returns>Block Type object.</returns>
+        /// <param name="guid"><see cref="System.Guid"/> identifier  fitler to search by.</param>
+        /// <returns>The <see cref="Rock.BlockType"/> that has a Guid that matches the provided value, if none are found returns null. </returns>
         public BlockType GetByGuid( Guid guid )
         {
             return Repository.FirstOrDefault( t => t.Guid == guid );
         }
 
+
         /// <summary>
-        /// Gets Blocks by Name
+        /// Gets a collection of <see cref="Rock.Model.BlockType"/> entities by Name
         /// </summary>
-        /// <param name="name">Name.</param>
-        /// <returns>An enumerable list of Block Type objects.</returns>
+        /// <param name="name">A <see cref="System.String"/> containing the Name filter to search for. </param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.BlockType"/> entities who's Name property matches the search criteria.</returns>
         public IEnumerable<BlockType> GetByName( string name )
         {
             return Repository.Find( t => t.Name == name );
         }
-        
+
+
         /// <summary>
-        /// Gets Blocks by Path
+        /// Gets a collection of <see cref="Rock.Model.BlockType" /> entities by path.
         /// </summary>
-        /// <param name="path">Path.</param>
-        /// <returns>An enumerable list of Block Type objects.</returns>
+        /// <param name="path">A <see cref="System.String"/> containing the path to search for.</param>
+        /// <returns>A collection of <see cref="Rock.Model.BlockType"/> entities who's Path property matches the search criteria.</returns>
         public IEnumerable<BlockType> GetByPath( string path )
         {
             return Repository.Find( t => t.Path == path );
         }
 
         /// <summary>
-        /// Registers any block types that have not yet been registered in the service.
+        /// Registers any block types that are not currently registered in RockChMS.
         /// </summary>
-        /// <param name="physWebAppPath">the physical path of the web application</param>
-        /// <param name="page">The page.</param>
-        /// <param name="currentPersonId">The current person id.</param>
+        /// <param name="physWebAppPath">A <see cref="System.String"/> containing the physical path to RockChMS on the server.</param>
+        /// <param name="page">The <see cref="System.Web.UI.Page"/>.</param>
+        /// <param name="currentPersonId">A <see cref="System.Int32"/> that contains the Id of the currently logged on <see cref="Rock.Model.Person"/>.</param>
         public void RegisterBlockTypes( string physWebAppPath, System.Web.UI.Page page, int? currentPersonId )
         {
             // Dictionary for block types.  Key is path, value is friendly name
@@ -106,6 +109,12 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Finds all the <see cref="Rock.Model.BlockType">BlockTypes</see> within a given path.
+        /// </summary>
+        /// <param name="physWebAppPath">The physical web application path.</param>
+        /// <param name="list">A <see cref="System.Collection.Generic.Dictionary"/> containing all the <see cref="BlockTypes">BlockTypes</see> that have been found.</param>
+        /// <param name="folder">A <see cref="System.String"/> containing the subdirectory to to search through.</param>
         private static void FindAllBlocksInPath( string physWebAppPath, Dictionary<string, string> list, string folder )
         {
             // Determine the physical path (it will be something like "C:\blahblahblah\Blocks\" or "C:\blahblahblah\Plugins\")
