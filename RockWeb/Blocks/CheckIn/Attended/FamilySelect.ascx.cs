@@ -708,12 +708,13 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 if ( abilityGroup == "Grade" )
                 {
-                    person.Grade = int.Parse( ability );
+                    person.Grade = (int)ability.ConvertToEnum<GradeLevel>();
                 }
                 else if ( abilityGroup == "Ability" )
                 {
+                    person.LoadAttributes();
                     person.SetAttributeValue( "AbilityLevel", ability );
-                    Rock.Attribute.Helper.SaveAttributeValues( person, CurrentPersonId );
+                    Rock.Attribute.Helper.SaveAttributeValues( person, person.Id );
                 }
             }
 
@@ -832,6 +833,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 people = people.Where( p => p.Gender == gender );
             }
 
+            // get the list of people so we can filter by grade and ability level
+            var peopleList = people.OrderBy( p => p.LastName ).ThenBy( p => p.FirstName ).ToList();
+
             if ( ddlAbilitySearch.SelectedIndex != 0 )
             {
                 var optionGroup = ddlAbilitySearch.SelectedItem.Attributes["optiongroup"];
@@ -845,20 +849,21 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         if ( DateTime.TryParse( globalAttributes.GetValue( "GradeTransitionDate" ), out transitionDate ) )
                         {
                             int gradeFactorReactor = ( DateTime.Now < transitionDate ) ? 12 : 13;
-                            graduationDate = DateTime.Now.AddYears( gradeFactorReactor - (int)grade );
-                            people = people.Where( p => p.GraduationDate == graduationDate );
+                            graduationDate = transitionDate.AddYears( gradeFactorReactor - (int)grade );
+                            peopleList = peopleList.Where( p => p.GraduationDate == graduationDate ).ToList();
                         }
                     }
                 }
-                else
+                else if ( optionGroup.Equals( "Ability" ) )
                 {
                     var ability = ddlAbilitySearch.SelectedValue;
-                    people = people.Where( p => p.GetAttributeValue( "AbilityLevel" ).Contains( ability ) );
+                    peopleList = peopleList.Where( p => p.GetAttributeValue( "AbilityLevel" ).Contains( ability ) ).ToList();                    
                 }
             }
-
-            var peopleList = people.OrderBy( p => p.LastName ).ThenBy( p => p.FirstName ).ToList();
-            rGridPersonResults.DataSource = peopleList.Select( p => new { p.Id, p.FirstName, p.LastName, p.BirthDate, p.Age, p.Gender, Attribute = p.GetAttributeValue( "AbilityLevel" ) } ).ToList();
+            
+            rGridPersonResults.DataSource = peopleList.Select( p => new { 
+                p.Id, p.FirstName, p.LastName, p.BirthDate, p.Age, p.Gender, Attribute = p.GetAttributeValue( "AbilityLevel" ) 
+            } ).ToList();
             rGridPersonResults.DataBind();
         }
 
@@ -915,7 +920,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 FirstName = string.Empty;
                 LastName = string.Empty;
-                //BirthDate = new DateTime();
+                BirthDate = new DateTime?();
                 Gender = new Gender();
                 Ability = string.Empty;
                 AbilityGroup = string.Empty;
