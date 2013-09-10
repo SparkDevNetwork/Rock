@@ -44,7 +44,7 @@ namespace Rock.Workflow.Action.CheckIn
                 {
                     person.Person.LoadAttributes();
                     string personAbilityLevel = person.Person.GetAttributeValue( "AbilityLevel" );
-                    if ( personAbilityLevel == null )
+                    if ( string.IsNullOrWhiteSpace( personAbilityLevel ) )
                     {
                         continue;
                     }

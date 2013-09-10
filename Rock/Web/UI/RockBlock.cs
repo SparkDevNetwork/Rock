@@ -476,7 +476,7 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Sets the attribute value.
+        /// Sets the value of an attribute key in memory. Once values have been set, use the <see cref="SaveAttributeValues(int?)" /> method to save all values to database 
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
