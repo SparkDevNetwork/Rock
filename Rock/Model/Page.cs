@@ -371,10 +371,10 @@ namespace Rock.Model
         private ICollection<PageRoute> _pageRoutes;
 
         /// <summary>
-        /// Gets or sets the Page Contexts.
+        /// Gets or sets a collection of <see cref="Rock.Model.PageContext" /> entities that are used on this page.
         /// </summary>
         /// <value>
-        /// Collection of Page Contexts.
+        /// A collection of <see cref="Rock.Model.PageContext"/> entities that are used on the page. 
         /// </value>
         [DataMember]
         public virtual ICollection<PageContext> PageContexts
