@@ -539,8 +539,6 @@
     <Compile Include="Workflow\Action\CheckIn\FindRelationships.cs" />
     <Compile Include="Workflow\Action\CheckIn\FindFamilyMembers.cs" />
     <Compile Include="Workflow\Action\CheckIn\FindFamilies.cs" />
-    <Compile Include="Workflow\Action\CheckIn\SelectByBestFit.cs" />
-    <Compile Include="Workflow\Action\CheckIn\SelectByLastAttended.cs" />
     <Compile Include="Workflow\Action\ParseZebraLabel.cs" />
     <Compile Include="Workflow\TriggerCache.cs" />
     <Compile Include="Model\WorkflowTriggerService.Partial.cs" />
