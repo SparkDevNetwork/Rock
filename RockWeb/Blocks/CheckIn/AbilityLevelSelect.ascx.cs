@@ -21,7 +21,7 @@ namespace RockWeb.Blocks.CheckIn
     [Description( "Check-in Ability Level Select block" )]
     public partial class AbilityLevelSelect : CheckInBlock
     {
-        private int _personAbilityLevel;
+        private string _personAbilityLevelGuid;
         private bool _shouldLowlight = true;
 
         protected override void OnLoad( EventArgs e )
@@ -47,12 +47,14 @@ namespace RockWeb.Blocks.CheckIn
                         {
                             lPersonName.Text = person.ToString();
                             person.Person.LoadAttributes();
-                            Int32.TryParse( person.Person.GetAttributeValue( "AbilityLevel" ), out _personAbilityLevel );
+                            _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" );
 
                             var abilityLevelDType = DefinedTypeCache.Read( abilityLevelDtGuid );
 
                             if ( abilityLevelDType != null )
                             {
+                                // TODO -- remove ability levels that are lower (ordered) than the person's current
+                                // ability level.
                                 rSelection.DataSource = abilityLevelDType.DefinedValues.ToList();
                                 rSelection.DataBind();
                             }
@@ -76,16 +78,19 @@ namespace RockWeb.Blocks.CheckIn
                     var person = family.People.Where( p => p.Selected ).FirstOrDefault();
                     if ( person != null )
                     {
-                        int selectedAbilityLevelId = Int32.Parse( e.CommandArgument.ToString() );
+                        string selectedAbilityLevelGuid = e.CommandArgument.ToString();
+                        //person.Person.LoadAttributes();
+                        _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" );
+
                         // Only save the ability level if it's changed
-                        if ( _personAbilityLevel != selectedAbilityLevelId )
+                        if ( _personAbilityLevelGuid != selectedAbilityLevelGuid )
                         {
                             // Need to load a fully hydrated person because the person.Person is only a clone.
                             Person p = new PersonService().Get( person.Person.Id );
                             if ( p != null )
                             {
                                 p.LoadAttributes();
-                                p.SetAttributeValue( "AbilityLevel", selectedAbilityLevelId.ToString() );
+                                p.SetAttributeValue( "AbilityLevel", selectedAbilityLevelGuid );
                                 Rock.Attribute.Helper.SaveAttributeValues( p, CurrentPersonId );
                             }
                         }
@@ -125,17 +130,26 @@ namespace RockWeb.Blocks.CheckIn
         {
             var dvalue = e.Item.DataItem as CachedModel<DefinedValue>;
 
-            // turn off lowlight once we hit the person's ability level or if their level is not yet set.
-            if ( _shouldLowlight && ( _personAbilityLevel == 0 || dvalue.Id == _personAbilityLevel ) )
+            // Once we've hit the person's ability level -OR- if their level is not yet set, 
+            // we stop lowlighting/disabling the buttons. 
+            if ( _shouldLowlight && ( _personAbilityLevelGuid == "" || dvalue.Guid.ToString() == _personAbilityLevelGuid ) )
             {
                 _shouldLowlight = false;
             }
 
-            // lowlight/disable buttons when _lowlight has been enabled.
+            // Otherwise... we dim out the button so it appears that it can't be selected.
+            // But it is still selectable to deal with the small case when someone accidentally (?)
+            // selected the wrong option.
             if ( _shouldLowlight )
             {
                 var linkButton = e.Item.FindControl( "lbSelect" ) as LinkButton;
                 linkButton.AddCssClass( "btn-dimmed" );
+            }
+
+            if ( dvalue.Guid.ToString() == _personAbilityLevelGuid )
+            {
+                var linkButton = e.Item.FindControl( "lbSelect" ) as LinkButton;
+                linkButton.Text = string.Format( "{0} {1}", "<i class='icon-check-sign'> </i>", linkButton.Text );
             }
         }
     }
