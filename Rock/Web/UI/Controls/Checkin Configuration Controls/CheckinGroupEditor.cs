@@ -88,8 +88,6 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
 ";
 
             ScriptManager.RegisterStartupScript( hfGroupGuid, hfGroupGuid.GetType(), "CheckinGroupEditorScript", script, true );
-
-            CreateGroupAttributeControls();
         }
 
         /// <summary>
@@ -270,6 +268,8 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             hfGroupId.Value = value.Id.ToString();
             hfGroupTypeId.Value = value.GroupTypeId.ToString();
             tbGroupName.Text = value.Name;
+
+            CreateGroupAttributeControls( value );
         }
 
         /// <summary>
@@ -297,7 +297,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             lbDeleteGroup.ID = this.ID + "_lbDeleteGroup";
             lbDeleteGroup.CssClass = "btn btn-mini btn-danger";
             lbDeleteGroup.Click += lbDeleteGroup_Click;
-            lbDeleteGroup.Attributes["onclick"] = string.Format( "javascript: return Rock.controls.grid.confirmDelete(event, '{0}');", "group" );
+            lbDeleteGroup.Attributes["onclick"] = string.Format( "javascript: return Rock.controls.grid.confirmDelete(event, '{0}', '{1}');", "group", "Once saved, you will lose all attendance data." );
 
             var iDelete = new HtmlGenericControl( "i" );
             lbDeleteGroup.Controls.Add( iDelete );
@@ -481,24 +481,24 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
         /// <summary>
         /// Creates the group attribute controls.
         /// </summary>
-        public void CreateGroupAttributeControls()
+        public void CreateGroupAttributeControls(Group group)
         {
-            Group fakeGroup = new Group();
-            fakeGroup.Id = hfGroupId.ValueAsInt();
-            fakeGroup.GroupTypeId = hfGroupTypeId.ValueAsInt();
-
             // get the current InheritedGroupTypeId from the Parent Editor just in case it hasn't been saved to the database
             CheckinGroupTypeEditor checkinGroupTypeEditor = this.Parent as CheckinGroupTypeEditor;
             if ( checkinGroupTypeEditor != null )
             {
-                fakeGroup.GroupType = new GroupType();
-                fakeGroup.GroupType.Id = fakeGroup.GroupTypeId;
-                fakeGroup.GroupType.InheritedGroupTypeId = checkinGroupTypeEditor.InheritedGroupTypeId;
+                group.GroupType = new GroupType();
+                group.GroupType.Id = group.GroupTypeId;
+                group.GroupType.InheritedGroupTypeId = checkinGroupTypeEditor.InheritedGroupTypeId;
             }
 
-            fakeGroup.LoadAttributes();
+            if ( group.Attributes == null )
+            {
+                group.LoadAttributes();
+            }
+
             phGroupAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( fakeGroup, phGroupAttributes, true );
+            Rock.Attribute.Helper.AddEditControls( group, phGroupAttributes, true );
         }
 
         /// <summary>
