@@ -12,9 +12,9 @@ using System.Linq;
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
-    /// Filters the available groups if one is from the previous attendance
+    /// Selects the available grouptype, group, location and schedule if it matches their previous attendance
     /// </summary>
-    [Description( "Selects the grouptype for each person based on what they last checked into." )]
+    [Description( "Selects the grouptype, group, location and schedule for each person based on what they last checked into." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Select By Last Attended" )]
     public class SelectByLastAttended : CheckInActionComponent
