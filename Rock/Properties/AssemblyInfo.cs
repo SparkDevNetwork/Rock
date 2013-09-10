@@ -15,7 +15,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Spark Development Network")]
 [assembly: AssemblyProduct("Rock")]
-[assembly: AssemblyCopyright("Copyright © Spark Development Network 2013")]
+[assembly: AssemblyCopyright("Copyright © Spark Development Network 2011")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

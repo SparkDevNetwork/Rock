@@ -4,7 +4,7 @@
     <link href="/Themes/GrayFabric/Css/flexslider.css" rel="stylesheet">
 
     <!-- band to provide gray bar at the top of the page -->
-    <div id="band">
+    <div id="band" class="homepage">
 	</div>
 
     <div class="container">

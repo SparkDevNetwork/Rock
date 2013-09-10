@@ -21,7 +21,7 @@ namespace Rock.Workflow.Action.CheckIn
     [Description("Saves the selected check-in data as attendance")]
     [Export(typeof(ActionComponent))]
     [ExportMetadata( "ComponentName", "Save Attendance" )]
-    [IntegerField( "Security Code Length", "The number of characters to use for the security code." )]
+    [IntegerField( "Security Code Length", "The number of characters to use for the security code.", true, 3 )]
     public class SaveAttendance : CheckInActionComponent
     {
         /// <summary>

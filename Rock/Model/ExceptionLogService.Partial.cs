@@ -5,7 +5,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -89,7 +88,7 @@ namespace Rock.Model
                 // the exception originated.
                 if ( !isParent )
                 {
-                    exceptionLog = log.Clone() as ExceptionLog;
+                    exceptionLog = log.Clone( false );
 
                     if ( exceptionLog != null )
                     {
@@ -131,21 +130,16 @@ namespace Rock.Model
                 // If logging the exception fails, write the exception to a file
                 try
                 {
-
                     string directory = AppDomain.CurrentDomain.BaseDirectory;
-                    directory = Path.Combine( directory, "Logs" );
+                    directory = Path.Combine( directory, "App_Data", "Logs" );
 
-                    // check that directory exists
                     if ( !Directory.Exists( directory ) )
                     {
                         Directory.CreateDirectory( directory );
                     }
 
-                    // create full path to the fie
                     string filePath = Path.Combine( directory, "RockExceptions.csv" );
-
-                    // write to the file
-                    File.AppendAllText( filePath, string.Format( "{0},{1},\"{2}\"\r\n", DateTime.Now.ToString(), EventLogEntryType.Error, ex.Message ) );
+                    File.AppendAllText( filePath, string.Format( "{0},{1},\"{2}\"\r\n", DateTime.Now.ToString(), ex.GetType(), ex.Message ) );
                 }
                 catch
                 {
@@ -166,6 +160,28 @@ namespace Rock.Model
         /// <returns></returns>
         private static ExceptionLog PopulateExceptionLog( Exception ex, HttpContext context, int? pageId, int? siteId, int? personId, int? parentId )
         {
+            var exceptionLog = new ExceptionLog
+                {
+                    SiteId = siteId,
+                    PageId = pageId,
+                    ParentId = parentId,
+                    CreatedByPersonId = personId,
+                    HasInnerException = ex.InnerException != null,
+                    ExceptionType = ex.GetType().ToString(),
+                    Description = ex.Message,
+                    Source = ex.Source,
+                    StackTrace = ex.StackTrace,
+                    Guid = Guid.NewGuid(),
+                    ExceptionDateTime = DateTime.Now
+                };
+
+            // If current HttpContext is null, return early.
+            if ( context == null )
+            {
+                return exceptionLog;
+            }
+
+            // If current HttpContext is available, populate its information as well.
             var request = context.Request;
 
             StringBuilder cookies = new StringBuilder();
@@ -211,26 +227,13 @@ namespace Rock.Model
                 serverVars.Append( "</table>" );
             }
 
-            return new ExceptionLog
-                {
-                    SiteId = siteId,
-                    PageId = pageId,
-                    ParentId = parentId,
-                    CreatedByPersonId = personId,
-                    Cookies = cookies.ToString(),
-                    HasInnerException = ex.InnerException != null,
-                    StatusCode = context.Response.StatusCode.ToString(),
-                    ExceptionType = ex.GetType().ToString(),
-                    Description = ex.Message,
-                    Source = ex.Source,
-                    StackTrace = ex.StackTrace,
-                    PageUrl = request.Url.ToString(),
-                    ServerVariables = serverVars.ToString(),
-                    QueryString = request.Url.Query,
-                    Form = formItems.ToString(),
-                    Guid = Guid.NewGuid(),
-                    ExceptionDateTime = DateTime.Now
-                };
+            exceptionLog.Cookies = cookies.ToString();
+            exceptionLog.StatusCode = context.Response.StatusCode.ToString();
+            exceptionLog.PageUrl = request.Url.ToString();
+            exceptionLog.ServerVariables = serverVars.ToString();
+            exceptionLog.QueryString = request.Url.Query;
+            exceptionLog.Form = formItems.ToString();
+            return exceptionLog;
         }
     }
 }
