@@ -36,6 +36,15 @@ namespace Rock.CheckIn
         public int CurrentCount { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="CheckInPerson" /> was pre-selected by a check-in action.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if preselected; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool PreSelected { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this <see cref="CheckInLocation" /> is selected for check-in
         /// </summary>
         /// <value>
@@ -92,6 +101,7 @@ namespace Rock.CheckIn
             var dictionary = new Dictionary<string, object>();
             dictionary.Add( "Location", Location );
             dictionary.Add( "CurrentCount", CurrentCount );
+            dictionary.Add( "PreSelected", PreSelected );
             dictionary.Add( "Selected", Selected );
             dictionary.Add( "LastCheckIn", LastCheckIn );
             dictionary.Add( "Schedules", Schedules );

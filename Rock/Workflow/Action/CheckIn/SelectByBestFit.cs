@@ -15,9 +15,9 @@ using Rock.Model;
 namespace Rock.Workflow.Action.CheckIn
 {
     /// <summary>
-    /// Selects a group from those available if one hasn't been previously selected
+    /// Assigns a grouptype, group, location and schedule from those available if one hasn't been previously selected
     /// </summary>
-    [Description( "Selects the grouptype for each person based on their best fit." )]
+    [Description( "Selects the grouptype, group, location and schedule for each person based on their best fit." )]
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Select By Best Fit" )]
     public class SelectByBestFit : CheckInActionComponent
@@ -40,49 +40,53 @@ namespace Rock.Workflow.Action.CheckIn
                 {
                     foreach ( var person in family.People.Where( f => f.Selected ) )
                     {   
-                        // if the person already has something selected, don't change it                        
                         char[] delimiter = { ',' };                        
                         if ( person.GroupTypes.Any() )
                         {
                             CheckInGroupType groupType;
                             if ( person.GroupTypes.Count > 1 )
                             {
-                                var gradeFilter = person.GroupTypes.Where( g => g.GroupType.Attributes.ContainsKey( "GradeRange" ) )
-                                    .Select( g => new
-                                        {  
-                                            GroupType = g, 
+
+                                var gradeFilter = person.GroupTypes.Where( gt => gt.GroupType.Attributes.ContainsKey( "GradeRange" ) ).Select( g =>
+                                        new
+                                        {
+                                            GroupType = g,
                                             GradeRange = g.GroupType.GetAttributeValue( "GradeRange" ).Split( delimiter, StringSplitOptions.None )
+                                                .Select( av => ExtensionMethods.ParseNullable<int?>( av ) )
                                         } ).ToList();
-                                groupType = gradeFilter.Where( g => ExtensionMethods.ParseNullable<int?>( g.GradeRange.First() ) <= person.Person.Grade
-                                        && ExtensionMethods.ParseNullable<int?>( g.GradeRange.Last() ) >= person.Person.Grade )
-                                        //.Aggregate( 
-                                        .Select( g => g.GroupType ).FirstOrDefault();
 
-                                var ageFilter = person.GroupTypes.Where( g => g.GroupType.Attributes.ContainsKey( "AgeRange" ) )
-                                    .Select( g => new
-                                        {  
-                                            GroupType = g, 
+                                // use an aggregate function to find the grouptype with the closest grade
+                                var groupTypeMatchGrade = gradeFilter.Aggregate( ( x, y ) => Math.Abs( Convert.ToDouble( x.GradeRange.First() - person.Person.Grade ) )
+                                        < Math.Abs( Convert.ToDouble( y.GradeRange.First() - person.Person.Grade ) ) ? x : y )
+                                            .GroupType;
+
+                                var ageFilter = person.GroupTypes.Where( g => g.GroupType.Attributes.ContainsKey( "AgeRange" ) ).Select( g =>
+                                        new
+                                        {
+                                            GroupType = g,
                                             AgeRange = g.GroupType.GetAttributeValue( "AgeRange" ).Split( delimiter, StringSplitOptions.None )
+                                                .Select( av => ExtensionMethods.ParseNullable<double?>( av ) )
                                         } ).ToList();
-                                groupType = ageFilter.Where( g => ExtensionMethods.ParseNullable<int?>( g.AgeRange.First() ) <= person.Person.Age
-                                        && ExtensionMethods.ParseNullable<int?>( g.AgeRange.Last() ) >= person.Person.Age )
-                                        //.Aggregate( 
-                                        .Select( g => g.GroupType ).FirstOrDefault();
 
+                                // use an aggregate function to find the grouptype with the closest age
+                                var groupTypeMatchAge = ageFilter.Aggregate( ( x, y ) => Math.Abs( Convert.ToDouble( x.AgeRange.First() - person.Person.Age ) )
+                                        < Math.Abs( Convert.ToDouble( y.AgeRange.First() - person.Person.Age ) ) ? x : y )
+                                            .GroupType;
+
+                                groupType = groupTypeMatchGrade ?? groupTypeMatchAge;
                             }
                             else 
                             {   // only one option is left
                                 groupType = person.GroupTypes.FirstOrDefault();
-                            }
-                            
+                            }                            
 
                             if ( groupType != null && groupType.Groups.Count > 0 )
                             {
                                 groupType.Selected = true;
                                 var group = groupType.Groups.Where( g => g.Selected ).FirstOrDefault();
                                 if ( group == null )
-                                {   
-                                    // find the closest group by grade 
+                                {
+                                    //  check groups by grade
                                     var gradeGroups = groupType.Groups.Where( g => g.Group.Attributes.ContainsKey( "GradeRange" ) ).Select( g => 
                                         new {  
                                             Group = g, 
@@ -94,7 +98,7 @@ namespace Rock.Workflow.Action.CheckIn
                                             < Math.Abs( Convert.ToDouble( y.GradeRange.First() - person.Person.Grade ) ) ? x : y )
                                                 .Group;
 
-                                    // find the closest group by age 
+                                    // check groups by age
                                     var ageGroups = groupType.Groups.Where( g => g.Group.Attributes.ContainsKey( "AgeRange" ) ).Select( g => 
                                         new {
                                             Group = g,
@@ -136,6 +140,7 @@ namespace Rock.Workflow.Action.CheckIn
                         }
                     }
                 }
+
                 return true;
             }
 

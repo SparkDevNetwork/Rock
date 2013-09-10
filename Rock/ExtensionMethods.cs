@@ -16,7 +16,6 @@ using System.Web.Routing;
 using System.Web.UI.WebControls;
 using DotLiquid;
 using Newtonsoft.Json;
-using Rock.Data;
 using Rock.Model;
 
 namespace Rock
@@ -832,7 +831,6 @@ namespace Rock
         /// <param name="className">Name of the class.</param>
         public static void RemoveCssClass( this System.Web.UI.WebControls.WebControl webControl, string className )
         {
-            //string match = @"\s*\b" + className + "\b";
             string match = @"\s*\b" + className + @"\b";
             string css = webControl.CssClass;
 
