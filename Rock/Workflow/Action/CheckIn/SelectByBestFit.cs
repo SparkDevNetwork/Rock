@@ -46,13 +46,12 @@ namespace Rock.Workflow.Action.CheckIn
                             CheckInGroupType groupType;
                             if ( person.GroupTypes.Count > 1 )
                             {
-
                                 var gradeFilter = person.GroupTypes.Where( gt => gt.GroupType.Attributes.ContainsKey( "GradeRange" ) ).Select( g =>
                                         new
                                         {
                                             GroupType = g,
                                             GradeRange = g.GroupType.GetAttributeValue( "GradeRange" ).Split( delimiter, StringSplitOptions.None )
-                                                .Select( av => ExtensionMethods.ParseNullable<int?>( av ) )
+                                                .Select( av => av.AsType<int?>() )
                                         } ).ToList();
 
                                 // use an aggregate function to find the grouptype with the closest grade
@@ -65,7 +64,7 @@ namespace Rock.Workflow.Action.CheckIn
                                         {
                                             GroupType = g,
                                             AgeRange = g.GroupType.GetAttributeValue( "AgeRange" ).Split( delimiter, StringSplitOptions.None )
-                                                .Select( av => ExtensionMethods.ParseNullable<double?>( av ) )
+                                                .Select( av => av.AsType<double?>() )
                                         } ).ToList();
 
                                 // use an aggregate function to find the grouptype with the closest age
@@ -91,7 +90,7 @@ namespace Rock.Workflow.Action.CheckIn
                                         new {  
                                             Group = g, 
                                             GradeRange = g.Group.GetAttributeValue( "GradeRange" ).Split( delimiter, StringSplitOptions.None )
-                                                .Select( av => ExtensionMethods.ParseNullable<int?>( av ) )
+                                                .Select( av => av.AsType<int?>() )
                                         } ).ToList();
                                     
                                     var groupMatchGrade = gradeGroups.Aggregate( ( x, y ) => Math.Abs( Convert.ToDouble( x.GradeRange.First() - person.Person.Grade ) )
@@ -103,7 +102,7 @@ namespace Rock.Workflow.Action.CheckIn
                                         new {
                                             Group = g,
                                             AgeRange = g.Group.GetAttributeValue( "AgeRange" ).Split( delimiter, StringSplitOptions.None )
-                                                .Select( av => ExtensionMethods.ParseNullable<double?>( av ) )
+                                                .Select( av => av.AsType<double?>() )
                                         } ).ToList();
                                                                                                                                                 
                                     var groupMatchAge = ageGroups.Aggregate( ( x, y ) => Math.Abs( Convert.ToDouble( x.AgeRange.First() - person.Person.Age ) )
@@ -115,6 +114,7 @@ namespace Rock.Workflow.Action.CheckIn
 
                                 if ( group != null && group.Locations.Count > 0 )
                                 {
+                                    group.PreSelected = true;
                                     group.Selected = true;
                                     var location = group.Locations.Where( l => l.Selected ).FirstOrDefault();
                                     if ( location == null )
@@ -127,11 +127,13 @@ namespace Rock.Workflow.Action.CheckIn
 
                                     if ( location != null && location.Schedules.Count > 0 )
                                     {
+                                        location.PreSelected = true;
                                         location.Selected = true;
                                         var schedule = location.Schedules.Where( s => s.Selected ).FirstOrDefault();
                                         if ( schedule == null )
                                         {
                                             schedule = location.Schedules.FirstOrDefault();
+                                            schedule.PreSelected = true;
                                             schedule.Selected = true;
                                         }
                                     }
