@@ -147,6 +147,24 @@ namespace Rock.Model
         [DataMember]
         public string CheckMicrEncrypted { get; set; }
 
+        /// <summary>
+        /// Gets or sets the scheduled transaction id.
+        /// </summary>
+        /// <value>
+        /// The scheduled transaction id.
+        /// </value>
+        [DataMember]
+        public int? ScheduledTransactionId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the scheduled transaction key.  This is a key returned by the financial gateway to uniquely identify a recurring payment schedule
+        /// </summary>
+        /// <value>
+        /// The scheduled transaction key.
+        /// </value>
+        [DataMember]
+        public string ScheduledTransactionKey { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -221,6 +239,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual FinancialTransactionRefund Refund { get; set; }
+
+        /// <summary>
+        /// Gets or sets the scheduled transaction.
+        /// </summary>
+        /// <value>
+        /// The scheduled transaction.
+        /// </value>
+        [DataMember]
+        public virtual FinancialScheduledTransaction ScheduledTransaction { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction details.
@@ -310,6 +337,7 @@ namespace Rock.Model
             this.HasOptional( t => t.CreditCardTypeValue ).WithMany().HasForeignKey( t => t.CreditCardTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.SourceTypeValue ).WithMany().HasForeignKey( t => t.SourceTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.Refund ).WithRequired().WillCascadeOnDelete( true );
+            this.HasOptional( t => t.ScheduledTransaction ).WithMany( s => s.Transactions ).HasForeignKey( t => t.ScheduledTransactionId ).WillCascadeOnDelete( false );
         }
     }
 

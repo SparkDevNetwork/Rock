@@ -191,9 +191,9 @@
     <Compile Include="Migrations\201309070045381_CheckinConfigUI.Designer.cs">
       <DependentUpon>201309070045381_CheckinConfigUI.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201308281644108_FinancialGateway.cs" />
-    <Compile Include="Migrations\201308281644108_FinancialGateway.Designer.cs">
-      <DependentUpon>201308281644108_FinancialGateway.cs</DependentUpon>
+    <Compile Include="Migrations\201309101837256_FinancialGateway.cs" />
+    <Compile Include="Migrations\201309101837256_FinancialGateway.Designer.cs">
+      <DependentUpon>201309101837256_FinancialGateway.cs</DependentUpon>
     </Compile>
     <Compile Include="Model\FinancialPersonSavedAccountService.Partial.cs" />
     <Compile Include="Storage\ProviderComponent.cs" />
@@ -998,8 +998,8 @@
     <EmbeddedResource Include="Migrations\201309070045381_CheckinConfigUI.resx">
       <DependentUpon>201309070045381_CheckinConfigUI.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201308281644108_FinancialGateway.resx">
-      <DependentUpon>201308281644108_FinancialGateway.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201309101837256_FinancialGateway.resx">
+      <DependentUpon>201309101837256_FinancialGateway.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

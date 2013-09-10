@@ -120,6 +120,15 @@ namespace Rock.Model
         [Column( TypeName = "Date" )]
         public DateTime? LastRemindedDate { get; set; }
 
+        /// <summary>
+        /// Gets or sets the scheduled transaction key.  This is a key returned by the financial gateway to uniquely identify a recurring payment schedule
+        /// </summary>
+        /// <value>
+        /// The scheduled transaction key.
+        /// </value>
+        [DataMember]
+        public string ScheduledTransactionKey { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -163,6 +172,20 @@ namespace Rock.Model
             set { _scheduledTransactionDetails = value; }
         }
         private ICollection<FinancialScheduledTransactionDetail> _scheduledTransactionDetails;
+
+        /// <summary>
+        /// Gets or sets the transactions.  The transactions that have cleared for this scheduled transaction profile
+        /// </summary>
+        /// <value>
+        /// The transactions.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<FinancialTransaction> Transactions
+        {
+            get { return _transactions ?? ( _transactions = new Collection<FinancialTransaction>() ); }
+            set { _transactions = value; }
+        }
+        private ICollection<FinancialTransaction> _transactions;
 
         #endregion
 
