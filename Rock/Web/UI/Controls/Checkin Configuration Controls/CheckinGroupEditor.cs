@@ -111,12 +111,11 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
         {
             // manually wireup the grid events since they don't seem to do it automatically 
             string eventTarget = Page.Request.Params["__EVENTTARGET"];
-            List<string> controlIds = eventTarget.Split( new char[] { '$' } ).ToList();
-            int gridControlIndex = controlIds.IndexOf( gLocations.ClientID );
-            if ( gridControlIndex > -1 )
+            if ( eventTarget.StartsWith( gLocations.UniqueID ) )
             {
+                List<string> subTargetList = eventTarget.Replace( gLocations.UniqueID, string.Empty ).Split( new char[] { '$' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
                 EnsureChildControls();
-                string lblAddControlId = controlIds.Last();
+                string lblAddControlId = subTargetList.Last();
                 var lblAdd = gLocations.Actions.FindControl( lblAddControlId );
                 if ( lblAdd != null )
                 {
@@ -125,7 +124,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
                 else
                 {
                     // rowIndex is determined by the numeric suffix of the control id after the Grid, subtract 2 (one for the header, and another to convert from 0 to 1 based index)
-                    int rowIndex = controlIds[gridControlIndex + 1].AsNumeric().AsInteger().Value - 2;
+                    int rowIndex = subTargetList.First().AsNumeric().AsInteger().Value - 2;
                     RowEventArgs rowEventArgs = new RowEventArgs( rowIndex, this.Locations[rowIndex].LocationId );
                     DeleteLocation_Click( this, rowEventArgs );
                 }
