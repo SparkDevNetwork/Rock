@@ -69,11 +69,11 @@ VALUES (0, @DefinedValueFieldTypeId, @PersonEntityTypeId, '', '', 'Allergy', 'Al
 DECLARE @DTAbilityLevelId int
 SELECT @DTAbilityLevelId = [Id] FROM [DefinedType] WHERE [Name] = 'Ability Level'
 
-DECLARE @AbilityCuddler int
-DECLARE @AbilityCrawler int
-DECLARE @AbilityWalker int
-DECLARE @AbilityPottyTrained int
-DECLARE @AbilityToddler int
+DECLARE @AbilityCuddler uniqueidentifier
+DECLARE @AbilityCrawler uniqueidentifier
+DECLARE @AbilityWalker uniqueidentifier
+DECLARE @AbilityPottyTrained uniqueidentifier
+DECLARE @AbilityToddler uniqueidentifier
 
 UPDATE [DefinedValue]
 SET Name = 'Cuddler' 
@@ -89,23 +89,23 @@ VALUES ( 1, @DTAbilityLevelId, 2, 'Walker', 'The child is able to walk.', NEWID(
 INSERT [DefinedValue]
 VALUES ( 1, @DTAbilityLevelId, 4, 'Toddler', 'The child is able to run and climb.', NEWID() )
 
-SELECT @AbilityCuddler = [Id] FROM [DefinedValue] 
+SELECT @AbilityCuddler = [Guid] FROM [DefinedValue] 
 WHERE [DefinedTypeId] = @DTAbilityLevelId 
 AND Name = 'Cuddler'
 
-SELECT @AbilityCrawler = [Id] FROM [DefinedValue] 
+SELECT @AbilityCrawler = [Guid] FROM [DefinedValue] 
 WHERE [DefinedTypeId] = @DTAbilityLevelId 
 AND Name = 'Crawler'
 
-SELECT @AbilityWalker = [Id] FROM [DefinedValue] 
+SELECT @AbilityWalker = [Guid] FROM [DefinedValue] 
 WHERE [DefinedTypeId] = @DTAbilityLevelId 
 AND Name = 'Walker'
 
-SELECT @AbilityPottyTrained = [Id] FROM [DefinedValue] 
+SELECT @AbilityPottyTrained = [Guid] FROM [DefinedValue] 
 WHERE [DefinedTypeId] = @DTAbilityLevelId 
 AND Name = 'Potty Trained'
 
-SELECT @AbilityToddler = [Id] FROM [DefinedValue] 
+SELECT @AbilityToddler = [Guid] FROM [DefinedValue] 
 WHERE [DefinedTypeId] = @DTAbilityLevelId 
 AND Name = 'Toddler'
 
