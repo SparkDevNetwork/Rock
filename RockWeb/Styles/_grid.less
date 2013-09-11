@@ -139,34 +139,29 @@ td[align=center] {
 }
 
 // pagination
-.grid-table .pagination {
-    margin: 0;
+.grid-paging {
+    
+    .pagination {
+        margin-top: 0;
+        margin-bottom: 0;
+    }
 
-    a {
-        color: @text-color;
+    .grid-pager {
+        float: right;
+    }
+
+    .grid-pagesize {
+        float: left;
+    }
+
+    .grid-itemcount {
+        float: left;
+        font-size: 11px;
+        margin-left: 10px;
+        margin-top: 6px;
     }
 }
 
-.grid-table .page-navigation {
-    float: right;
-}
-
-.grid-table .pagination ul > li > a, 
-.pagination ul > li > span {
-    font-size: 11px;
-    padding: 4px 12px;
-}
-
-.grid-table .page-size {
-	float: left
-}
-
-.grid-table .item-count {
-    float: left;
-    font-size: 11px;
-    margin-left: 10px;
-    margin-top: 6px;
-}
 
 // actions
 .grid-actions {

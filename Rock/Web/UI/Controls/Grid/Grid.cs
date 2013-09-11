@@ -1398,9 +1398,9 @@ namespace Rock.Web.UI.Controls
         public void InstantiateIn( Control container )
         {
             HtmlGenericControl divPagination = new HtmlGenericControl( "div" );
-            divPagination.Attributes.Add( "class", "pagination" );
+            divPagination.Attributes.Add( "class", "grid-paging" );
             container.Controls.Add( divPagination );
-
+/*
             // Items Per RockPage
             HtmlGenericControl divSize = new HtmlGenericControl( "div" );
             divSize.Attributes.Add( "class", "page-size" );
@@ -1409,9 +1409,10 @@ namespace Rock.Web.UI.Controls
             HtmlGenericControl divSizeOptions = new HtmlGenericControl( "div" );
             divSizeOptions.Attributes.Add( "class", "page-size-options" );
             divSize.Controls.Add( divSizeOptions );
-
+            */
             HtmlGenericControl ulSizeOptions = new HtmlGenericControl( "ul" );
-            divSizeOptions.Controls.Add( ulSizeOptions );
+            ulSizeOptions.AddCssClass("grid-pagesize pagination pagination-sm");
+            divPagination.Controls.Add(ulSizeOptions);
 
             for ( int i = 0; i < ItemLinkListItem.Length; i++ )
             {
@@ -1430,32 +1431,29 @@ namespace Rock.Web.UI.Controls
 
             // itemCount
             HtmlGenericControl divItemCount = new HtmlGenericControl("div");
-            divItemCount.Attributes.Add("class", "item-count");
+            divItemCount.Attributes.Add("class", "grid-itemcount");
             divPagination.Controls.Add(divItemCount);
 
             itemCountDisplay = new Literal();
             divItemCount.Controls.Add(itemCountDisplay);
 
             // Pagination
-            NavigationPanel = new HtmlGenericControl("div");
-            NavigationPanel.Attributes.Add("class", "page-navigation");
+            NavigationPanel = new HtmlGenericControl("ul");
+            NavigationPanel.AddCssClass("grid-pager pagination pagination-sm");
             divPagination.Controls.Add(NavigationPanel);
-
-            HtmlGenericControl ulNavigation = new HtmlGenericControl("ul");
-            NavigationPanel.Controls.Add(ulNavigation);
 
             for (var i = 0; i < PageLinkListItem.Length; i++)
             {
                 PageLinkListItem[i] = new HtmlGenericContainer("li");
-                ulNavigation.Controls.Add(PageLinkListItem[i]);
+                NavigationPanel.Controls.Add(PageLinkListItem[i]);
 
                 PageLink[i] = new LinkButton();
                 PageLinkListItem[i].Controls.Add(PageLink[i]);
                 PageLink[i].Click += new EventHandler(lbPage_Click);
             }
 
-            PageLink[0].Text = "&larr; Previous";
-            PageLink[PageLinkListItem.Length - 1].Text = "Next &rarr;";
+            PageLink[0].Text = "&laquo;";
+            PageLink[PageLinkListItem.Length - 1].Text = "&raquo;";
         }
 
         /// <summary>
