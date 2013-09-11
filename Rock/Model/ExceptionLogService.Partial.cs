@@ -77,7 +77,7 @@ namespace Rock.Model
         /// <param name="ex">The <see cref="System.Exception"/> to log.</param>
         /// <param name="log">The parent <see cref="Rock.Model.ExceptionLog"/> of the exception being logged. This value is nullable.</param>
         /// <param name="isParent">A <see cref="System.Boolean"/> flag indicating if this Exception is a parent exception. This value is 
-        ///     <c>true</c> if the exception that is being logged is a parent exception, otherwise <c>false</c>/
+        ///     <c>true</c> if the exception that is being logged is a parent exception, otherwise <c>false</c>.
         /// </param>
         private static void LogExceptions( Exception ex, ExceptionLog log, bool isParent )
         {
@@ -88,7 +88,7 @@ namespace Rock.Model
 
                 // If this is a recursive call and not the originating exception being logged,
                 // attempt to clone the initial one, and populate it with Exception Type and Message
-                // from the inner excetpion, while retaining the contextual information from where
+                // from the inner exception, while retaining the contextual information from where
                 // the exception originated.
                 if ( !isParent )
                 {

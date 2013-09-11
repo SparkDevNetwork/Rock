@@ -88,7 +88,7 @@ namespace Rock.Model
         /// Gets or sets a collection of  <see cref="Rock.Model.Block">Blocks</see> that are implementations of this BlockType.
         /// </summary>
         /// <value>
-        /// Collection of <see cref="Rock.Model.Block">Blocks</see> that implmenet this BlockType.
+        /// Collection of <see cref="Rock.Model.Block">Blocks</see> that implements this BlockType.
         /// </value>
         [DataMember]
         public virtual ICollection<Block> Blocks
@@ -106,7 +106,7 @@ namespace Rock.Model
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this instance. Returns the naem ofthe BlockType
+        /// A <see cref="System.String" /> that represents this instance. Returns the name of the BlockType
         /// </returns>
         public override string ToString()
         {
