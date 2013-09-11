@@ -55,6 +55,7 @@ namespace Rock.Workflow.Action.CheckIn
                                         } ).ToList();
 
                                 // use an aggregate function to find the grouptype with the closest grade
+                                // #ToDO: Test the upper value of grade and age ranges
                                 var groupTypeMatchGrade = gradeFilter.Aggregate( ( x, y ) => Math.Abs( Convert.ToDouble( x.GradeRange.First() - person.Person.Grade ) )
                                         < Math.Abs( Convert.ToDouble( y.GradeRange.First() - person.Person.Grade ) ) ? x : y )
                                             .GroupType;

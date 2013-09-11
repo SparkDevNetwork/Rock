@@ -701,7 +701,7 @@ namespace Rock.Model
                     if ( DateTime.TryParse( globalAttributes.GetValue( "GradeTransitionDate" ), out transitionDate ) )
                     {
                         int gradeFactorReactor = ( DateTime.Now < transitionDate ) ? 12 : 13;
-                        GraduationDate = DateTime.Now.AddYears( gradeFactorReactor - value.Value );
+                        GraduationDate = transitionDate.AddYears( gradeFactorReactor - value.Value );
                     }
                 }
                 else

@@ -41,7 +41,7 @@
                 <div class="controls">
                     <asp:Repeater ID="rSelection" runat="server" OnItemCommand="rSelection_ItemCommand" OnItemDataBound="rSelection_ItemDataBound">
                         <ItemTemplate>
-                            <asp:LinkButton ID="lbSelect" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Id") %>' OnClientClick="disableButton(this);" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" />
+                            <asp:LinkButton ID="lbSelect" runat="server" Text='<%# Container.DataItem.ToString() %>' CommandArgument='<%# Eval("Guid") %>' OnClientClick="disableButton(this);" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" />
                         </ItemTemplate>
                     </asp:Repeater>
                 </div>

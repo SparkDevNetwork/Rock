@@ -12,15 +12,16 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Page Route POCO Service class
+    /// The data access/service class for the <see cref="Rock.Model.PageRoute"/> class.
     /// </summary>
     public partial class PageRouteService
     {
         /// <summary>
-        /// Gets Page Routes by Page Id
+        /// Gets an enumerable list of <see cref="Rock.Model.PageRoute"/> entities that are linked to a <see cref="Rock.Model.Page"/> by the 
+        /// by the <see cref="Rock.Model.Page">Page's</see> Id.
         /// </summary>
-        /// <param name="pageId">Page Id.</param>
-        /// <returns>An enumerable list of PageRoute objects.</returns>
+        /// <param name="pageId">An <see cref="String.Int32"/> value containing the Id of the <see cref="Rock.Model.Page"/> .</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.PageRoute"/> entities that reference the supplied PageId.</returns>
         public IEnumerable<PageRoute> GetByPageId( int pageId )
         {
             return Repository.Find( t => t.PageId == pageId );
