@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class WorkflowActionAttributes : Rock.Migrations.RockMigration
+    public partial class DefaultWorkflowActionAttributes : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
