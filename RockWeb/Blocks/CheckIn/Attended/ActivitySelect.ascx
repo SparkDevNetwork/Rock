@@ -169,7 +169,7 @@
         </asp:Repeater>
         
     </asp:Panel>
-    <asp:ModalPopupExtender ID="mpeAddCondition" runat="server" TargetControlID="hfOpenConditionPanel" PopupControlID="pnlAddCondition" 
+    <asp:ModalPopupExtender ID="mpeAddCondition" runat="server" TargetControlID="hfConditionPanel" PopupControlID="pnlAddCondition"
         CancelControlID="lbAddConditionCancel" BackgroundCssClass="modalBackground" />
     <asp:HiddenField ID="hfConditionPanel" runat="server" />    
 
