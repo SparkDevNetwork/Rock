@@ -36,22 +36,22 @@
 
     <asp:Panel ID="pnlAdmin" runat="server" DefaultButton="lbOk">
         <div class="row-fluid attended-checkin-header">
-            <div class="span3 attended-checkin-actions"></div>
+            <div class="span3"></div>
             <div class="span6">
-                <h1>Admin</h1>
+                <h1 class="xl-font">Admin</h1>
             </div>
-            <div class="span3 attended-checkin-actions">
-                <asp:LinkButton ID="lbOk" runat="server" CssClass="btn btn-large last btn-primary" OnClick="lbOk_Click" Text="Ok"></asp:LinkButton>
+            <div class="span3">
+                <asp:LinkButton ID="lbOk" runat="server" CssClass="btn btn-large btn-primary pull-right xl-font" OnClick="lbOk_Click" Text="Ok"></asp:LinkButton>
             </div>
         </div>
 
         <div class="row-fluid attended-checkin-body">
             <div class="span4"></div>
             <div class="span4">
-                <label class="admin-control-label">Checkin Type(s)</label>
+                <label class="admin-label small-font">Checkin Type(s)</label>
                 <asp:Repeater ID="repMinistry" runat="server" OnItemDataBound="repMinistry_ItemDataBound">
                     <ItemTemplate>
-                        <asp:Button ID="lbMinistry" runat="server" data-id='<%# Eval("Id") %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" Text='<%# Eval("Name") %>' />
+                        <asp:Button ID="lbMinistry" runat="server" data-id='<%# Eval("Id") %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select medium-font" Text='<%# Eval("Name") %>' />
                     </ItemTemplate>
                 </asp:Repeater>
             </div>

@@ -6,16 +6,16 @@
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
     <div class="row-fluid attended-checkin-header">
-        <div class="span3 attended-checkin-actions">
-            <asp:LinkButton ID="lbBack" CssClass="btn btn-primary btn-large" runat="server" OnClick="lbBack_Click" Text="Back"/>
+        <div class="span3">
+            <asp:LinkButton ID="lbBack" CssClass="btn btn-primary btn-large xl-font" runat="server" OnClick="lbBack_Click" Text="Back"/>
         </div>
 
         <div class="span6">
-            <h1>Confirm</h1>
+            <h1 class="xl-font">Confirm</h1>
         </div>
 
-        <div class="span3 attended-checkin-actions">
-            <asp:LinkButton ID="lbDone" CssClass="btn btn-primary btn-large last" runat="server" OnClick="lbDone_Click" Text="Done"/>
+        <div class="span3">
+            <asp:LinkButton ID="lbDone" CssClass="btn btn-primary btn-large pull-right xl-font" runat="server" OnClick="lbDone_Click" Text="Done"/>
         </div>
     </div>
 
@@ -46,7 +46,7 @@
     <div class="row-fluid attended-checkin-body">
         <div class="span9"></div>
         <div class="span3">
-            <asp:LinkButton ID="lbPrintAll" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" runat="server" OnClick="lbPrintAll_Click" Text="Print All" />
+            <asp:LinkButton ID="lbPrintAll" CssClass="btn btn-primary btn-large btn-block btn-checkin-select medium-font" runat="server" OnClick="lbPrintAll_Click" Text="Print All" />
         </div>
     </div>
 
