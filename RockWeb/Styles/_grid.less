@@ -100,43 +100,32 @@ td[align=center] {
 // -------------------------
 
 .table thead th  {
-	background: none;
     background-color: @grid-column-header-bg;
 	font-size: @grid-column-header-font-size;
 	color: @accent-bold-text-color;
-    font-weight: 300;
-    vertical-align: middle;
-}
+    font-weight: @grid-column-header-font-weight;
 
-.table-bordered th a {
-    color: @accent-bold-text-color;
-    display: block;
-}
+    a {
+        color: @accent-bold-text-color;
+        display: block;
+    }
 
+    // sorting
+    &.ascending a::before {
+        padding-right: 5px;
+	    content: "\f0d8";
+	    font-family: FontAwesome; 
+    }
 
-// sorting
-.grid-table thead th.ascending a::before {
-    padding-right: 5px;
-	content: "\f0d8";
-	font-family: FontAwesome; 
-}
-
-.grid-table thead th.descending a::before {
-    padding-right: 5px;
-	content: "\f0d7";
-	font-family: FontAwesome; 
+    &.descending a::before {
+        padding-right: 5px;
+	    content: "\f0d7";
+	    font-family: FontAwesome; 
+    }
 }
 
 // 4. Footer
 // -------------------------
-
-.grid-table tfoot td.grid-footer  {
-	background: none;
-    background-color: @grid-footer-bg;
-	@grid-footer-font-size: 10px;
-	color: @grid-footer-text-color;
-    font-weight: @grid-footer-font-weight;
-}
 
 // pagination
 .grid-paging {
@@ -158,19 +147,27 @@ td[align=center] {
         float: left;
         font-size: 11px;
         margin-left: 10px;
-        margin-top: 6px;
+        margin-top: 7px;
     }
 }
 
 
 // actions
 .grid-actions {
-	text-align: right;
+    text-align: right;
+    background-color: @grid-footer-bg;
+
+    .btn {
+        margin-left: 8px;
+        background-color: @grid-footer-button-bg;
+        color: @grid-footer-button-text-color;
+
+        &:hover {
+            background-color: darken(@grid-footer-button-bg, 10%);
+        }
+    }
 }
 
-.grid-table tfoot td .btn {
-    margin-left: 8px;
-}
 
 // 5. Light Style
 // -------------------------
@@ -195,21 +192,3 @@ td[align=center] {
 
 // 5. Disabled Styles
 // -------------------------
-.grid-table.aspNetDisabled {
-    opacity: 0.5;
-}
-
-.grid-table.aspNetDisabled.table-hover tbody tr:hover th,
-.grid-table.aspNetDisabled.table-hover tbody tr:hover td {
-    background-color: inherit;
-    cursor: default;
-}
-
-.grid-table.aspNetDisabled a {
-    cursor: default;
-}
-
-.grid-icon-cell.delete a.aspNetDisabled {
-    cursor: default;
-    color: #CCCCCC;
-}

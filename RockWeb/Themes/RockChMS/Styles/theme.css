@@ -8690,32 +8690,24 @@ td[align=center] {
   margin-bottom: 12px;
 }
 .table thead th {
-  background: none;
   background-color: #779cb1;
   font-size: 14px;
   color: #ecf0f3;
   font-weight: 300;
-  vertical-align: middle;
 }
-.table-bordered th a {
+.table thead th a {
   color: #ecf0f3;
   display: block;
 }
-.grid-table thead th.ascending a::before {
+.table thead th.ascending a::before {
   padding-right: 5px;
   content: "\f0d8";
   font-family: FontAwesome;
 }
-.grid-table thead th.descending a::before {
+.table thead th.descending a::before {
   padding-right: 5px;
   content: "\f0d7";
   font-family: FontAwesome;
-}
-.grid-table tfoot td.grid-footer {
-  background: none;
-  background-color: #d9e1e8;
-  color: #444444;
-  font-weight: 300;
 }
 .grid-paging .pagination {
   margin-top: 0;
@@ -8731,13 +8723,19 @@ td[align=center] {
   float: left;
   font-size: 11px;
   margin-left: 10px;
-  margin-top: 6px;
+  margin-top: 7px;
 }
 .grid-actions {
   text-align: right;
+  background-color: #d9e1e8;
 }
-.grid-table tfoot td .btn {
+.grid-actions .btn {
   margin-left: 8px;
+  background-color: #779cb1;
+  color: #ecf0f3;
+}
+.grid-actions .btn:hover {
+  background-color: #59849c;
 }
 .table-light thead th {
   background-color: inherit;
@@ -8753,21 +8751,6 @@ td[align=center] {
   border-width: 0;
   box-shadow: none;
   border-color: none;
-}
-.grid-table.aspNetDisabled {
-  opacity: 0.5;
-}
-.grid-table.aspNetDisabled.table-hover tbody tr:hover th,
-.grid-table.aspNetDisabled.table-hover tbody tr:hover td {
-  background-color: inherit;
-  cursor: default;
-}
-.grid-table.aspNetDisabled a {
-  cursor: default;
-}
-.grid-icon-cell.delete a.aspNetDisabled {
-  cursor: default;
-  color: #CCCCCC;
 }
 /*
     Used to manage styles related to modal dialog.

@@ -26,8 +26,8 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            this.HeaderStyle.CssClass = "grid-col-command";
-            this.ItemStyle.CssClass = "grid-col-command";
+            this.HeaderStyle.CssClass = "grid-columncommand";
+            this.ItemStyle.CssClass = "grid-columncommand";
         }
 
         /// <summary>
@@ -100,7 +100,7 @@ namespace Rock.Web.UI.Controls
                 DeleteField deleteField = cell.ContainingField as DeleteField;
                 ParentGrid = deleteField.ParentGrid;
                 LinkButton lbDelete = new LinkButton();
-                lbDelete.CssClass = "btn btn-danger";
+                lbDelete.CssClass = "btn btn-danger btn-sm";
                 lbDelete.ToolTip = "Delete";
 
                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
