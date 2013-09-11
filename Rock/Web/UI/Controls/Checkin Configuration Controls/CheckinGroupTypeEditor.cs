@@ -127,12 +127,11 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
         {
             // manually wireup the grid events since they don't seem to do it automatically 
             string eventTarget = Page.Request.Params["__EVENTTARGET"];
-            List<string> controlIds = eventTarget.Split( new char[] { '$' } ).ToList();
-            int gridControlIndex = controlIds.IndexOf( gCheckinLabels.ClientID );
-            if ( gridControlIndex > -1 )
+            if ( eventTarget.StartsWith( gCheckinLabels.UniqueID ) )
             {
+                List<string> subTargetList = eventTarget.Replace( gCheckinLabels.UniqueID, string.Empty ).Split( new char[] { '$' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
                 EnsureChildControls();
-                string lblAddControlId = controlIds.Last();
+                string lblAddControlId = subTargetList.Last();
                 var lblAdd = gCheckinLabels.Actions.FindControl( lblAddControlId );
                 if ( lblAdd != null )
                 {
@@ -141,7 +140,7 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
                 else
                 {
                     // rowIndex is determined by the numeric suffix of the control id after the Grid, subtract 2 (one for the header, and another to convert from 0 to 1 based index)
-                    int rowIndex = controlIds[gridControlIndex + 1].AsNumeric().AsInteger().Value - 2;
+                    int rowIndex = subTargetList.First().AsNumeric().AsInteger().Value - 2;
                     RowEventArgs rowEventArgs = new RowEventArgs( rowIndex, this.CheckinLabels[rowIndex].AttributeKey );
                     DeleteCheckinLabel_Click( this, rowEventArgs );
                 }
@@ -548,6 +547,11 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
             writer.RenderEndTag();
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget-content" );
+
+            if ( !ForceContentVisible )
+            {
+                writer.AddStyleAttribute( "display", "none" );
+            }
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
