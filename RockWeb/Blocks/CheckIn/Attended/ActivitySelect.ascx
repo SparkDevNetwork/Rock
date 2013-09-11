@@ -30,16 +30,16 @@
 
     <asp:Panel ID="pnlActivitySelect" runat="server" >
         <div class="row-fluid attended-checkin-header">
-            <div class="span3 attended-checkin-actions">
-                <asp:LinkButton ID="lbBack" CssClass="btn btn-primary btn-large" runat="server" OnClick="lbBack_Click" Text="Back"/>
+            <div class="span3">
+                <asp:LinkButton ID="lbBack" CssClass="btn btn-primary btn-large xl-font" runat="server" OnClick="lbBack_Click" Text="Back"/>
             </div>
 
             <div class="span6">
-                <h1><asp:Label ID="lblPersonName" runat="server"></asp:Label></h1>
+                <h1 class="xl-font"><asp:Label ID="lblPersonName" runat="server"></asp:Label></h1>
             </div>
 
-            <div class="span3 attended-checkin-actions">
-                <asp:LinkButton ID="lbNext" CssClass="btn btn-primary btn-large last" runat="server" OnClick="lbNext_Click" Text="Next"/>
+            <div class="span3">
+                <asp:LinkButton ID="lbNext" CssClass="btn btn-primary btn-large pull-right xl-font" runat="server" OnClick="lbNext_Click" Text="Next"/>
             </div>
         </div>
                 
@@ -51,7 +51,7 @@
                     <h3>GroupType</h3>
                     <asp:Repeater ID="rGroupType" runat="server" OnItemCommand="rGroupType_ItemCommand" OnItemDataBound="rGroupType_ItemDataBound">
                         <ItemTemplate>
-                            <asp:LinkButton ID="lbSelectGroupType" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select ministry" CausesValidation="false" />
+                            <asp:LinkButton ID="lbSelectGroupType" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select ministry medium-font" CausesValidation="false" />
                         </ItemTemplate>
                     </asp:Repeater>
                 </div>
@@ -64,12 +64,12 @@
                     <h3>Location</h3>
                     <asp:ListView ID="lvLocation" runat="server" OnPagePropertiesChanging="lvLocation_PagePropertiesChanging" OnItemCommand="lvLocation_ItemCommand" OnItemDataBound="lvLocation_ItemDataBound">
                         <ItemTemplate>
-                            <asp:LinkButton ID="lbSelectLocation" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" ></asp:LinkButton>
+                            <asp:LinkButton ID="lbSelectLocation" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select medium-font" ></asp:LinkButton>
                         </ItemTemplate>
                     </asp:ListView>
                     <asp:DataPager ID="Pager" runat="server" PageSize="5" PagedControlID="lvLocation">
                         <Fields>
-                            <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary" />
+                            <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary btn-checkin-select medium-font" />
                         </Fields>
                     </asp:DataPager>
                 </div>
@@ -82,7 +82,7 @@
                     <h3>Schedule</h3>
                     <asp:Repeater ID="rSchedule" runat="server" OnItemCommand="rSchedule_ItemCommand" OnItemDataBound="rSchedule_ItemDataBound">
                         <ItemTemplate>
-                            <asp:LinkButton ID="lbSelectSchedule" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select time" CausesValidation="false" />
+                            <asp:LinkButton ID="lbSelectSchedule" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select time medium-font" CausesValidation="false" />
                         </ItemTemplate>
                     </asp:Repeater>
                 </div>
@@ -105,8 +105,8 @@
                         </Rock:Grid>
                     </ContentTemplate>
                     </asp:UpdatePanel>
-                    <asp:LinkButton ID="lbAddCondition" runat="server" Text="Add an Allergy" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddCondition_Click" CausesValidation="false" />
-                    <asp:LinkButton ID="lbAddNote" runat="server" Text="Add a Note" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddNote_Click" CausesValidation="false" />                    
+                    <asp:LinkButton ID="lbAddCondition" runat="server" Text="Add an Allergy" CssClass="btn btn-primary btn-large btn-block btn-checkin-select medium-font" OnClick="lbAddCondition_Click" CausesValidation="false" />
+                    <asp:LinkButton ID="lbAddNote" runat="server" Text="Add a Note" CssClass="btn btn-primary btn-large btn-block btn-checkin-select medium-font" OnClick="lbAddNote_Click" CausesValidation="false" />                    
                 </div>
             </div>
         </div>   
@@ -116,16 +116,16 @@
     <asp:Panel ID="pnlAddNote" runat="server" CssClass="add-note" DefaultButton="lbAddNoteSave">
         <Rock:ModalAlert ID="maAddNote" runat="server" />
         <div class="row-fluid attended-checkin-header">
-            <div class="span3 attended-checkin-actions">
-                <asp:LinkButton ID="lbAddNoteCancel" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddNoteCancel_Click" Text="Cancel" CausesValidation="false"/>
+            <div class="span3">
+                <asp:LinkButton ID="lbAddNoteCancel" CssClass="btn btn-large btn-primary large-font" runat="server" OnClick="lbAddNoteCancel_Click" Text="Cancel" CausesValidation="false"/>
             </div>
 
             <div class="span6">
-                <h1>Add Note</h1>
+                <h1 class="large-font modal-header-color">Add Note</h1>
             </div>
 
-            <div class="span3 attended-checkin-actions">
-                <asp:LinkButton ID="lbAddNoteSave" CssClass="btn btn-large last btn-primary" runat="server" OnClick="lbAddNoteSave_Click" Text="Save" />
+            <div class="span3">
+                <asp:LinkButton ID="lbAddNoteSave" CssClass="btn btn-large btn-primary pull-right large-font" runat="server" OnClick="lbAddNoteSave_Click" Text="Save" />
             </div>
         </div>
 		
@@ -144,16 +144,16 @@
     <asp:Panel ID="pnlAddCondition" runat="server" CssClass="add-condition" DefaultButton="lbAddConditionSave">
         <Rock:ModalAlert ID="maAddCondition" runat="server" />
         <div class="row-fluid attended-checkin-header">
-            <div class="span3 attended-checkin-actions">
-                <asp:LinkButton ID="lbAddConditionCancel" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddConditionCancel_Click" Text="Cancel" CausesValidation="false"/>
+            <div class="span3">
+                <asp:LinkButton ID="lbAddConditionCancel" CssClass="btn btn-large btn-primary large-font" runat="server" OnClick="lbAddConditionCancel_Click" Text="Cancel" CausesValidation="false"/>
             </div>
 
             <div class="span6">
-                <h1>Add Allergy/Medical</h1>
+                <h1 class="large-font">Add Allergy/Medical</h1>
             </div>
 
-            <div class="span3 attended-checkin-actions">
-                <asp:LinkButton ID="lbAddConditionSave" CssClass="btn btn-large last btn-primary" runat="server" OnClick="lbAddConditionSave_Click" Text="Save" />
+            <div class="span3">
+                <asp:LinkButton ID="lbAddConditionSave" CssClass="btn btn-large btn-primary pull-right large-font" runat="server" OnClick="lbAddConditionSave_Click" Text="Save" />
             </div>
         </div>
 		
@@ -163,7 +163,7 @@
             </HeaderTemplate>
             <ItemTemplate>
                 <div class="span4">
-                    <asp:LinkButton ID="lbConditionName" CssClass="btn btn-large last btn-primary" runat="server" />
+                    <asp:LinkButton ID="lbConditionName" CssClass="btn btn-large last btn-primary medium-font" runat="server" />
                 </div>
             </ItemTemplate>
         </asp:Repeater>

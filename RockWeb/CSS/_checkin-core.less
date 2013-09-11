@@ -343,3 +343,413 @@ input.checkin-phone-entry
 
 /***********************  DEVELOPER ADDITIONS BELOW TO BE MOVED BY JON ***********************/
 
+// --------------------------------------
+// 5. Attended Check-In Styles
+// --------------------------------------
+
+// font sizes
+.xl-font {
+    font-size: 3.4286em;    /* 48px font size / 14px base font size. Rounded from 3.428571428571429 */
+    line-height: 48px;
+ }
+
+.large-font {
+    font-size: 2.5714em; /* 36px font size / 14px base font size. Rounded from 2.571428571428571 */
+    line-height: 36px;
+}
+
+.medium-font {
+    font-size: 1.7143em;     /* 24px font size / 14px base font size. Rounded from 1.714285714285714 */
+    line-height: 24px;
+}
+
+.small-font {
+	font-size: 1.4286em;     /* 20 px font size / 14px base font size. Rounded from 1.428571428571429 */
+    line-height: 20px;
+}
+
+.mini-font {
+    font-size: 1em;     /* 14px font size / 14px base font size */
+    line-height: 14px;
+}
+
+.keyboard-font {
+    font-size: 3em;
+    line-height: 1em;
+}
+
+// header styles
+.attended-checkin-header
+{
+    margin: 2.8125em auto !important;   /* 45px margin (top & bottom) / 16px font size */
+	width: 90%;
+}
+
+.attended-checkin-header h1 
+{
+	text-align: center;
+    font-weight: @font-bold-weight;
+    font-family: @font-family;
+    margin-top: 0.3125em;   /* 15px margin / 48px h1 font size Rounded from 0.4166666666666667*/
+}
+
+// search page keyboard & keypad
+.keypad 
+{
+    display: none;
+}
+
+.keyboard
+{
+	width: 75%;
+    font-weight: @font-semibold-weight;
+    margin: 0 auto;
+}
+
+.keyboard a.btn 
+{
+    padding: 2% 1%;
+    width: 6.5%;
+    margin: 0.35% 0.25%;
+}
+
+.keyboard a.back
+{
+    width: 13%;
+}
+
+.keyboard a.spacebar
+{
+    width: 50%;
+}
+
+// body styles
+.attended-checkin-body
+{
+	margin: 0 auto !important;
+	width: 90%;
+	text-align: center;
+}
+
+.admin-label 
+{
+    text-align: left;
+    margin-bottom: .9em;    /* 18px bottom margin / 20px height */
+}
+
+input.attended-checkin-keyboard-entry
+{
+    height: 3.5714%;    /* 50px height / 14 px base font size. Rounded from 3.571428571428571 */
+    font-weight: @font-semibold-weight;
+    font-size: 2.5714em; /* 36px font size / 14px base font size. Rounded from 2.571428571428571 */
+    padding: .12% 0.8571%;  /* top & bottom = 6px pad / 50px height, left & right = 12px pad / 14 px font size. Rounded from 0.8571428571428571 */
+    width: 70%;
+}
+
+input[type="submit"].btn[disabled="disabled"]
+{
+	display: none;
+}
+
+.grid-table
+{
+    font-size: 1.5714em;     /* Rounded from 1.571428571428571 */
+    background-color: transparent;
+}
+
+.grid-table .btn-primary
+{
+	font-size: 1.0909em;     /* 24px font size / 22px base font size. Rounded from 1.090909090909091 */
+	padding-top: 0.5909em;  /* 13px pad / 22px base font. Rounded from 0.5909090909090909 */
+}
+
+.grid-table thead th a, .table th[scope=col]
+{
+	color: @checkin-button-text-color;
+}
+
+.table th, .table td
+{
+	border: none;
+    padding: 0.4545em;  /* 10px pad / 22px font size. Rounded from 0.4545454545454545 */
+	vertical-align: middle;
+	text-align: center;
+}
+
+.page-size, .item-count 
+{
+    display: none;
+}
+
+.select
+{
+	font-size: 18px;
+}
+
+.btn .checkin-sub-title
+{
+    font-size: 0.75em;     /* 20px font size / 24px base font size. */
+    /*font-weight: @subheader-font-weight;*/
+    font-weight: normal;
+    margin: 0.4167em 0.8333em 0;   /* top = 10px pad / 24px base font size. Rounded from 0.4166666666666667, left & right = 20px pad / 24px base font size. Rounded from 0.8333333333333333 */
+    display: block;
+}
+
+.nothing-found-message
+{
+	background: rgba(100, 100, 100, .1);
+    border-radius: 6px;
+    /*font-size: 1.5em;*/
+    padding: 1em 1.7857em;   /* top = 35px pad / 14px base font size, left, right & bottom 25px pad / 14px base font size. Rounded from 1.785714285714286 */
+}
+
+.modalBackground 
+{
+    background-color: #000000;
+    filter: alpha(opacity=80);
+    opacity: 0.8;
+    z-index: 10000 !important;
+    position: absolute !important;
+    top: 0;
+}
+
+.modal-header-color {
+    color: @checkin-button-text-color;
+}
+
+.add-family, .add-person
+{
+    background: @rockBackgroundColor;
+    width: 80%;
+    height: 80%;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    z-index: 10001 !important;
+}
+
+.add-note, .add-tag
+{
+    background: #EEEEEE;
+    width: 38%;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    z-index: 10001 !important;
+}
+
+.add-note a.btn-primary, .add-tag a.btn-primary
+{
+    font-size: 2em;
+}
+
+.add-note h1, .add-tag h1 
+{
+    font-size: 2.5em;
+    margin-top: .25em;
+}
+
+.fullWidth {
+    width: 100%;
+}
+
+.error-modal 
+{
+    width: 50%;
+    position: relative;
+    left: 25%;
+}
+
+.modal 
+{
+    z-index: 10002 !important;
+}
+
+input[type="text"] {
+    width: 100%;
+}
+
+/*.k-datepicker 
+{
+    width: 95% !important;
+}*/
+
+/*.person input[type="text"], .person select, .searchperson input[type="text"], .searchperson select 
+{
+    width: 95%;
+}*/
+
+h3 {
+    font-weight: @font-bold-weight;
+    font-family: @font-family;
+}
+
+@media screen and (max-width:1240px) 
+{
+
+    input.attended-checkin-keyboard-entry, .keyboard 
+    {
+        width: 85%;
+    }
+
+    .keyboard-font {
+        font-size: 2.75em;
+    }
+
+    h3 
+    {
+        font-size: 1.5714em;     /* 22px font size / 14px base font size. Rounded from 1.571428571428571 */
+    }
+
+    .grid-table 
+    {
+        font-size: 1.25em;     /* 14px font size / 14px base font size */
+    }
+}
+
+@media screen and (max-width:1024px)
+{
+    .xl-font {
+        font-size: 1.7143em;     /* 24px font size / 14px base font size. Rounded from 1.714285714285714 */
+        line-height: 24px;
+    }
+
+    .large-font {
+	    font-size: 1.4286em;     /* 20px font size / 14px base font size. Rounded from 1.428571428571429 */
+        line-height: 20px;
+    }
+
+    .medium-font {
+        font-size: 1.2857em;     /* 18px font size / 14px base font size. Rounded from 1.285714285714286 */
+        line-height: 18px;
+    }
+
+    .small-font {
+        font-size: 1em;     /* 14px font size / 14px base font size */
+        line-height: 14px;
+    }
+
+    .mini-font {
+        font-size: 0.8571em;     /* 12px font size / 14px base font size. Rounded from 0.8571428571428571; */
+        line-height: 12px;
+    }
+
+    .keyboard-font {
+        font-size: 2.5em;
+    }
+
+    .attended-checkin-header
+    {
+        margin: 20px auto 10px !important;   /* 45px margin (top & bottom) / 16px font size */
+	    width: 90%;
+    }
+
+	input.attended-checkin-keyboard-entry, .keyboard
+	{
+		width: 90%;
+	}
+
+	.btn-primary.disabled, .btn-primary[disabled]
+	{
+		background-color: #b00a0e;
+	}
+
+	.btn .checkin-sub-title
+	{
+        font-size: 0.875em;     /* 14px font / 16px base font size */
+		/*margin-left: 10px;*/
+	}
+
+    h3 
+    {
+        font-size: 1.2857em;     /* 18px font size / 14px base font size. Rounded from 1.285714285714286 */
+    }
+
+    /*.fullBlock 
+    {
+        width: 90%;
+    }*/
+
+    .textInline 
+    {
+        width: 35%;
+    }
+
+    .grid-table 
+    {
+        font-size: 1em;     /* 14px font size / 14px base font size */
+    }
+
+    .grid-table .btn-primary
+    {
+	    font-size: 1em;     /* 14px font size / 14px base font size */
+	    padding-top: 0.8571em;  /* 12px pad / 14px base font. Rounded from 0.8571428571428571 */
+    }
+
+    .pagination 
+    {
+        margin: 0.7143em 0;     /* top & bottom = 10px pad / 14px base font size. Rounded from 0.7142857142857143 */
+    }
+
+    .add-note, .add-tag
+    {
+        width: 60%;
+    }
+}
+
+@media screen and (max-width:980px) 
+{
+    input.attended-checkin-keyboard-entry, .keyboard 
+    {
+        width: 95%;
+    }
+}
+
+@media screen and (max-width:800px) 
+{
+    .keyboard 
+    {
+        display: none;
+    }
+
+    .keypad 
+    {
+        display: block;
+        margin: 0 auto;
+        width: 100%;
+    }
+
+    .keypad .btn 
+    {
+        padding: 0;
+    }
+
+    .keypad a.btn 
+    {
+        font-size: 3em;
+        line-height: 1.5em;
+        width: 10%;
+        padding: 1%;
+        margin: 1%;
+    }
+}
+
+@media screen and (max-width:640px) 
+{
+    .keypad a.btn 
+    {
+        font-size: 2.5em;
+        line-height: 1.25em;
+    }
+}
+
+@media screen and (max-width:480px) 
+{
+    .keypad a.btn 
+    {
+        font-size: 2em;
+        line-height: 1em;
+    }
+}
+
+//@import "./Kendo/kendo.flat.less";
