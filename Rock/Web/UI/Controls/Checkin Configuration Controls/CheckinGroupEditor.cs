@@ -88,8 +88,6 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
 ";
 
             ScriptManager.RegisterStartupScript( hfGroupGuid, hfGroupGuid.GetType(), "CheckinGroupEditorScript", script, true );
-
-            CreateGroupAttributeControls();
         }
 
         /// <summary>
@@ -113,12 +111,11 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
         {
             // manually wireup the grid events since they don't seem to do it automatically 
             string eventTarget = Page.Request.Params["__EVENTTARGET"];
-            List<string> controlIds = eventTarget.Split( new char[] { '$' } ).ToList();
-            int gridControlIndex = controlIds.IndexOf( gLocations.ClientID );
-            if ( gridControlIndex > -1 )
+            if ( eventTarget.StartsWith( gLocations.UniqueID ) )
             {
+                List<string> subTargetList = eventTarget.Replace( gLocations.UniqueID, string.Empty ).Split( new char[] { '$' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
                 EnsureChildControls();
-                string lblAddControlId = controlIds.Last();
+                string lblAddControlId = subTargetList.Last();
                 var lblAdd = gLocations.Actions.FindControl( lblAddControlId );
                 if ( lblAdd != null )
                 {
@@ -127,7 +124,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
                 else
                 {
                     // rowIndex is determined by the numeric suffix of the control id after the Grid, subtract 2 (one for the header, and another to convert from 0 to 1 based index)
-                    int rowIndex = controlIds[gridControlIndex + 1].AsNumeric().AsInteger().Value - 2;
+                    int rowIndex = subTargetList.First().AsNumeric().AsInteger().Value - 2;
                     RowEventArgs rowEventArgs = new RowEventArgs( rowIndex, this.Locations[rowIndex].LocationId );
                     DeleteLocation_Click( this, rowEventArgs );
                 }
@@ -270,6 +267,8 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             hfGroupId.Value = value.Id.ToString();
             hfGroupTypeId.Value = value.GroupTypeId.ToString();
             tbGroupName.Text = value.Name;
+
+            CreateGroupAttributeControls( value );
         }
 
         /// <summary>
@@ -297,7 +296,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             lbDeleteGroup.ID = this.ID + "_lbDeleteGroup";
             lbDeleteGroup.CssClass = "btn btn-mini btn-danger";
             lbDeleteGroup.Click += lbDeleteGroup_Click;
-            lbDeleteGroup.Attributes["onclick"] = string.Format( "javascript: return Rock.controls.grid.confirmDelete(event, '{0}');", "group" );
+            lbDeleteGroup.Attributes["onclick"] = string.Format( "javascript: return Rock.controls.grid.confirmDelete(event, '{0}', '{1}');", "group", "Once saved, you will lose all attendance data." );
 
             var iDelete = new HtmlGenericControl( "i" );
             lbDeleteGroup.Controls.Add( iDelete );
@@ -481,24 +480,24 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
         /// <summary>
         /// Creates the group attribute controls.
         /// </summary>
-        public void CreateGroupAttributeControls()
+        public void CreateGroupAttributeControls(Group group)
         {
-            Group fakeGroup = new Group();
-            fakeGroup.Id = hfGroupId.ValueAsInt();
-            fakeGroup.GroupTypeId = hfGroupTypeId.ValueAsInt();
-
             // get the current InheritedGroupTypeId from the Parent Editor just in case it hasn't been saved to the database
             CheckinGroupTypeEditor checkinGroupTypeEditor = this.Parent as CheckinGroupTypeEditor;
             if ( checkinGroupTypeEditor != null )
             {
-                fakeGroup.GroupType = new GroupType();
-                fakeGroup.GroupType.Id = fakeGroup.GroupTypeId;
-                fakeGroup.GroupType.InheritedGroupTypeId = checkinGroupTypeEditor.InheritedGroupTypeId;
+                group.GroupType = new GroupType();
+                group.GroupType.Id = group.GroupTypeId;
+                group.GroupType.InheritedGroupTypeId = checkinGroupTypeEditor.InheritedGroupTypeId;
             }
 
-            fakeGroup.LoadAttributes();
+            if ( group.Attributes == null )
+            {
+                group.LoadAttributes();
+            }
+
             phGroupAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( fakeGroup, phGroupAttributes, true );
+            Rock.Attribute.Helper.AddEditControls( group, phGroupAttributes, true );
         }
 
         /// <summary>
