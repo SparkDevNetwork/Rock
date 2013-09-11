@@ -5,9 +5,15 @@
 
     Rock.controls.grid = (function () {
         return {
-            confirmDelete: function (e, nameText) {
+            confirmDelete: function (e, nameText, additionalMsg) {
                 e.preventDefault();
-                bootbox.dialog('Are you sure you want to delete this ' + nameText + '?',
+                var msg = 'Are you sure you want to delete this ' + nameText + '?';
+                if (additionalMsg)
+                {
+                    msg += ' ' + additionalMsg;
+                }
+                
+                bootbox.dialog(msg,
                     [
                         {
                             label: 'OK', 

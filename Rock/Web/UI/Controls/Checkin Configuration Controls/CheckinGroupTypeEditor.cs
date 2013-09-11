@@ -21,7 +21,7 @@ namespace Rock.Web.UI.Controls
     {
         private HiddenField hfGroupTypeGuid;
         private HiddenField hfGroupTypeId;
-        private Literal lblGroupTypeName;
+        private Label lblGroupTypeName;
         private LinkButton lbDeleteGroupType;
 
         private LabeledDropDownList ddlGroupTypeInheritFrom;
@@ -89,6 +89,16 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
     event.stopImmediatePropagation();
 });
 
+// fix so that the Add Sub-Area button will fire its event, but not the parent event 
+$('.checkin-grouptype a.checkin-grouptype-add-sub-area').click(function (event) {
+    event.stopImmediatePropagation();
+});
+
+// fix so that the Ad Check-in Group button will fire its event, but not the parent event 
+$('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (event) {
+    event.stopImmediatePropagation();
+});
+
 ";
 
             ScriptManager.RegisterStartupScript( hfGroupTypeGuid, hfGroupTypeGuid.GetType(), "CheckinGroupTypeEditorScript", script, true );
@@ -117,12 +127,11 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
         {
             // manually wireup the grid events since they don't seem to do it automatically 
             string eventTarget = Page.Request.Params["__EVENTTARGET"];
-            List<string> controlIds = eventTarget.Split( new char[] { '$' } ).ToList();
-            int gridControlIndex = controlIds.IndexOf( gCheckinLabels.ClientID );
-            if ( gridControlIndex > -1 )
+            if ( eventTarget.StartsWith( gCheckinLabels.UniqueID ) )
             {
+                List<string> subTargetList = eventTarget.Replace( gCheckinLabels.UniqueID, string.Empty ).Split( new char[] { '$' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
                 EnsureChildControls();
-                string lblAddControlId = controlIds.Last();
+                string lblAddControlId = subTargetList.Last();
                 var lblAdd = gCheckinLabels.Actions.FindControl( lblAddControlId );
                 if ( lblAdd != null )
                 {
@@ -131,7 +140,7 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
                 else
                 {
                     // rowIndex is determined by the numeric suffix of the control id after the Grid, subtract 2 (one for the header, and another to convert from 0 to 1 based index)
-                    int rowIndex = controlIds[gridControlIndex + 1].AsNumeric().AsInteger().Value - 2;
+                    int rowIndex = subTargetList.First().AsNumeric().AsInteger().Value - 2;
                     RowEventArgs rowEventArgs = new RowEventArgs( rowIndex, this.CheckinLabels[rowIndex].AttributeKey );
                     DeleteCheckinLabel_Click( this, rowEventArgs );
                 }
@@ -344,7 +353,7 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
             hfGroupTypeId = new HiddenField();
             hfGroupTypeId.ID = this.ID + "_hfGroupTypeId";
 
-            lblGroupTypeName = new Literal();
+            lblGroupTypeName = new Label();
             lblGroupTypeName.ClientIDMode = ClientIDMode.Static;
             lblGroupTypeName.ID = this.ID + "_lblGroupTypeName";
 
@@ -354,7 +363,7 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
             lbDeleteGroupType.CssClass = "btn btn-mini btn-danger";
             lbDeleteGroupType.Click += lbDeleteGroupType_Click;
             lbDeleteGroupType.Controls.Add( new LiteralControl { Text = "<i class='icon-remove'></i>" } );
-            lbDeleteGroupType.Attributes["onclick"] = string.Format( "javascript: return Rock.controls.grid.confirmDelete(event, '{0}');", "group type" );
+            lbDeleteGroupType.Attributes["onclick"] = string.Format( "javascript: return Rock.controls.grid.confirmDelete(event, '{0}', '{1}');", "check-in area", "Once saved, you will lose all attendance data." );
 
             ddlGroupTypeInheritFrom = new LabeledDropDownList();
             ddlGroupTypeInheritFrom.ID = this.ID + "_ddlGroupTypeInheritFrom";
@@ -374,7 +383,7 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
             tbGroupTypeName.LabelText = "Check-in Area Name";
 
             // set label when they exit the edit field
-            tbGroupTypeName.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", lblGroupTypeName.ID );
+            tbGroupTypeName.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", lblGroupTypeName.ClientID );
             tbGroupTypeName.SourceTypeName = "Rock.Model.GroupType, Rock";
             tbGroupTypeName.PropertyName = "Name";
 
@@ -383,14 +392,14 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
 
             lbAddCheckinGroupType = new LinkButton();
             lbAddCheckinGroupType.ID = this.ID + "_lblbAddCheckinGroupType";
-            lbAddCheckinGroupType.CssClass = "btn btn-mini btn-primary";
+            lbAddCheckinGroupType.CssClass = "btn btn-mini btn-primary checkin-grouptype-add-sub-area";
             lbAddCheckinGroupType.Click += lbAddCheckinGroupType_Click;
             lbAddCheckinGroupType.CausesValidation = false;
             lbAddCheckinGroupType.Controls.Add( new LiteralControl { Text = "<i class='icon-plus'></i> Add Sub-Area" } );
 
             lbAddCheckinGroup = new LinkButton();
             lbAddCheckinGroup.ID = this.ID + "_lbAddCheckinGroup";
-            lbAddCheckinGroup.CssClass = "btn btn-mini btn-primary";
+            lbAddCheckinGroup.CssClass = "btn btn-mini btn-primary checkin-grouptype-add-checkin-group";
             lbAddCheckinGroup.Click += lbAddGroup_Click;
             lbAddCheckinGroup.CausesValidation = false;
             lbAddCheckinGroup.Controls.Add( new LiteralControl { Text = "<i class='icon-plus'></i> Add Check-in Group" } );
@@ -479,7 +488,8 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
 
             foreach ( var groupEditor in this.Controls.OfType<CheckinGroupEditor>().ToList() )
             {
-                groupEditor.CreateGroupAttributeControls();
+                Group group = groupEditor.GetGroup();
+                groupEditor.CreateGroupAttributeControls(group);
             }
         }
 
@@ -536,33 +546,10 @@ $('.checkin-grouptype a.checkin-grouptype-reorder').click(function (event) {
             // header div
             writer.RenderEndTag();
 
-            bool forceContentVisible = !GetCheckinGroupType().IsValid || ForceContentVisible;
-
-            if ( !forceContentVisible )
-            {
-                foreach ( CheckinGroupTypeEditor checkinGroupTypeEditor in this.Controls.OfType<CheckinGroupTypeEditor>() )
-                {
-                    // TODO
-
-                    /*if ( !workflowActionTypeEditor.WorkflowActionType.IsValid || workflowActionTypeEditor.ForceContentVisible )
-                    {
-                        forceContentVisible = true;
-                        break;
-                    }
-                     */
-                }
-
-                foreach ( CheckinGroupEditor checkinGroupEditor in this.Controls.OfType<CheckinGroupEditor>() )
-                {
-                    // TODO
-                }
-            }
-
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget-content" );
 
-            if ( !forceContentVisible )
+            if ( !ForceContentVisible )
             {
-                // hide details if the grouptype and groups are valid
                 writer.AddStyleAttribute( "display", "none" );
             }
 
