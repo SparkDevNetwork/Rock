@@ -52,7 +52,7 @@
     <Rock:ModalAlert ID="maWarning" runat="server" />
     <asp:HiddenField ID="personVisitorType" runat="server" />
         
-    <asp:Panel ID="pnlFamilySelect" runat="server">
+    <asp:Panel ID="pnlFamilySelect" runat="server" CssClass="attended">
 
         <div class="row-fluid checkin-header">
             <div class="span3 checkin-actions">
@@ -79,14 +79,14 @@
                         OnItemCommand="lvFamily_ItemCommand" OnItemDataBound="lvFamily_ItemDataBound" >
                     <ItemTemplate>                            
                             <asp:LinkButton ID="lbSelectFamily" runat="server" CommandArgument='<%# Eval("Group.Id") %>'
-                                CssClass="btn btn-primary btn-large btn-block btn-checkin-select" CausesValidation="false">
+                                CssClass="btn btn-primary btn-large btn-block btn-checkin-select family" CausesValidation="false">
                                 <%# Eval("Caption") %><br /><span class='checkin-sub-title'><%# Eval("SubCaption") %></span>
                             </asp:LinkButton>
                     </ItemTemplate>                    
                     </asp:ListView>
                     <asp:DataPager ID="dpFamilyPager" runat="server" PageSize="5" PagedControlID="lvFamily">
                         <Fields>
-                            <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary btn-checkin-select" />
+                            <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary" />
                         </Fields>
                     </asp:DataPager>
                 </div>
@@ -103,20 +103,20 @@
                     <asp:ListView ID="lvPerson" runat="server" OnItemDataBound="lvPerson_ItemDataBound" OnPagePropertiesChanging="lvPerson_PagePropertiesChanging" >
                         <ItemTemplate>                            
                             <asp:LinkButton ID="lbSelectPerson" runat="server" data-id='<%# Eval("Person.Id") %>'
-                                CssClass="btn btn-primary btn-large btn-block btn-checkin-select">
+                                CssClass="btn btn-primary btn-large btn-block btn-checkin-select person">
                                 <%# Eval("Person.FullName") %><br />
                                 <span class='checkin-sub-title'>Birthday: <%# Eval("Person.BirthMonth") + "/" + Eval("Person.BirthDay") ?? "Not entered" %></span>
                             </asp:LinkButton>
                         </ItemTemplate>    
                         <EmptyDataTemplate>
-                            <div runat="server" class="nothing-found-message">
+                            <div runat="server" class="nothing-eligible">
                                 <asp:Label ID="lblPersonTitle" runat="server" Text="No one in this family is eligible to check-in." />
                             </div>                            
                         </EmptyDataTemplate>              
                     </asp:ListView>
                     <asp:DataPager ID="dpPersonPager" runat="server" PageSize="5" PagedControlID="lvPerson">
                         <Fields>
-                            <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary btn-checkin-select" />
+                            <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary" />
                         </Fields>
                     </asp:DataPager>
                 </div>
@@ -133,7 +133,7 @@
                     <asp:ListView ID="lvVisitor" runat="server" OnItemDataBound="lvVisitor_ItemDataBound" OnPagePropertiesChanging="lvVisitor_PagePropertiesChanging">
                         <ItemTemplate>
                             <asp:LinkButton ID="lbSelectVisitor" runat="server" data-id='<%# Eval("Person.Id") %>' 
-                                CssClass="btn btn-primary btn-large btn-block btn-checkin-select">
+                                CssClass="btn btn-primary btn-large btn-block btn-checkin-select visitor">
                                 <%# Eval("Person.FullName") %><br />
                                 <span class='checkin-sub-title'>Birthday: <%# Eval("Person.BirthMonth") + "/" + Eval("Person.BirthDay") ?? "Not entered" %></span>
                             </asp:LinkButton>
@@ -141,7 +141,7 @@
                     </asp:ListView>
                     <asp:DataPager ID="dpVisitorPager" runat="server" PageSize="5" PagedControlID="lvVisitor">
                         <Fields>
-                            <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary btn-checkin-select" />
+                            <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary" />
                         </Fields>
                     </asp:DataPager>
                 </div>

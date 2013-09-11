@@ -34,7 +34,7 @@
     </span>
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
-    <asp:Panel ID="pnlAdmin" runat="server" DefaultButton="lbOk">
+    <asp:Panel ID="pnlAdmin" runat="server" DefaultButton="lbOk" CssClass="attended">
         <div class="row-fluid checkin-header">
             <div class="span3"></div>
             <div class="span6">
@@ -51,7 +51,7 @@
                 <h2>Checkin Type(s)</h2>
                 <asp:Repeater ID="repMinistry" runat="server" OnItemDataBound="repMinistry_ItemDataBound">
                     <ItemTemplate>
-                        <asp:Button ID="lbMinistry" runat="server" data-id='<%# Eval("Id") %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select medium-font" Text='<%# Eval("Name") %>' />
+                        <asp:Button ID="lbMinistry" runat="server" data-id='<%# Eval("Id") %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" Text='<%# Eval("Name") %>' />
                     </ItemTemplate>
                 </asp:Repeater>
             </div>
