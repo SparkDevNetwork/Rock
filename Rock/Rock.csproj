@@ -189,9 +189,9 @@
     <Compile Include="Migrations\201309070045381_CheckinConfigUI.Designer.cs">
       <DependentUpon>201309070045381_CheckinConfigUI.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201309111540100_WorkflowActionAttributes.cs" />
-    <Compile Include="Migrations\201309111540100_WorkflowActionAttributes.Designer.cs">
-      <DependentUpon>201309111540100_WorkflowActionAttributes.cs</DependentUpon>
+    <Compile Include="Migrations\201309111540100_DefaultWorkflowActionAttributes.cs" />
+    <Compile Include="Migrations\201309111540100_DefaultWorkflowActionAttributes.Designer.cs">
+      <DependentUpon>201309111540100_DefaultWorkflowActionAttributes.cs</DependentUpon>
     </Compile>
     <Compile Include="Storage\ProviderComponent.cs" />
     <Compile Include="Storage\ProviderContainer.cs" />
@@ -1002,8 +1002,8 @@
     <EmbeddedResource Include="Migrations\201309070045381_CheckinConfigUI.resx">
       <DependentUpon>201309070045381_CheckinConfigUI.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201309111540100_WorkflowActionAttributes.resx">
-      <DependentUpon>201309111540100_WorkflowActionAttributes.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201309111540100_DefaultWorkflowActionAttributes.resx">
+      <DependentUpon>201309111540100_DefaultWorkflowActionAttributes.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
