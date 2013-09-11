@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class AddWorkflowActionAttributes : Rock.Migrations.RockMigration
+    public partial class WorkflowActionAttributes : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
@@ -77,9 +77,9 @@ namespace Rock.Migrations
                 SET [EntityTypeQualifierValue] = @SaveAttendanceAttributeId
                 WHERE [Guid] = 'D57F42C9-E497-4FEE-8231-4FE2D13DC191' 
             " );
-            
+
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
