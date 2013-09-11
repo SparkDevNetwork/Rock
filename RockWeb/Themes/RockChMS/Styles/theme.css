@@ -8717,24 +8717,17 @@ td[align=center] {
   color: #444444;
   font-weight: 300;
 }
-.grid-table .pagination {
-  margin: 0;
+.grid-paging .pagination {
+  margin-top: 0;
+  margin-bottom: 0;
 }
-.grid-table .pagination a {
-  color: #515151;
-}
-.grid-table .page-navigation {
+.grid-paging .grid-pager {
   float: right;
 }
-.grid-table .pagination ul > li > a,
-.pagination ul > li > span {
-  font-size: 11px;
-  padding: 4px 12px;
-}
-.grid-table .page-size {
+.grid-paging .grid-pagesize {
   float: left;
 }
-.grid-table .item-count {
+.grid-paging .grid-itemcount {
   float: left;
   font-size: 11px;
   margin-left: 10px;
@@ -10606,6 +10599,8 @@ header .nav a:hover .caret {
 .pagenav .nav {
   border-left: 1px solid #545454;
   width: 100%;
+  /* remove last divider out of the menu */
+
 }
 .pagenav .nav > li {
   height: 67px;
@@ -10639,6 +10634,9 @@ header .nav a:hover .caret {
   display: block;
   margin: 6px auto 2px;
   font-size: 18px;
+}
+.pagenav .nav li.divider:last-child {
+  display: none;
 }
 .pagenav .dropdown-menu {
   left: -2px;
