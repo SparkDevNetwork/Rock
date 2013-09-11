@@ -251,7 +251,7 @@
         <asp:ListView ID="lvAddFamily" runat="server" OnPagePropertiesChanging="lvAddFamily_PagePropertiesChanging" OnItemDataBound="lvAddFamily_ItemDataBound" >
         <LayoutTemplate>
             <div class="row-fluid attended-checkin-body">
-                <div class="span3">
+                <div class="span2">
                     <h3>First Name</h3>
                 </div>
                 <div class="span3">
@@ -263,7 +263,7 @@
                 <div class="span2">
                     <h3>Gender</h3>
                 </div>
-                <div class="span2">
+                <div class="span3">
                     <h3>Ability/Grade</h3>
                 </div>                
             </div>
@@ -271,7 +271,7 @@
         </LayoutTemplate>
         <ItemTemplate>
             <div class="row-fluid attended-checkin-body searchperson">
-                <div class="span3">
+                <div class="span2">
                     <Rock:LabeledTextBox ID="tbFirstName" runat="server" CssClass="fullBlock" Text='<%# ((NewPerson)Container.DataItem).FirstName %>' />
                 </div>
                 <div class="span3">
@@ -283,7 +283,7 @@
                 <div class="span2">                                        
                     <Rock:RockDropDownList ID="ddlGender" runat="server" CssClass="fullBlock" />
                 </div>
-                <div class="span2">
+                <div class="span3">
                     <Rock:RockDropDownList ID="ddlAbilityGrade" runat="server" CssClass="fullBlock" />
                 </div>                
             </div>
