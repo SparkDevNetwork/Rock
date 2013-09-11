@@ -709,19 +709,14 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 if ( abilityGroup == "Grade" )
                 {
                     person.Grade = (int)ability.ConvertToEnum<GradeLevel>();
+                    ps.Save( person, CurrentPersonId );
                 }
                 else if ( abilityGroup == "Ability" )
                 {
-                    person.LoadAttributes();
-                    person.SetAttributeValue( "AbilityLevel", ability );
-                    Rock.Attribute.Helper.SaveAttributeValues( person, person.Id );
-                }
+                    person.SetAttributeValue( "AbilityLevel", ability.ToUpper() );
+                    Rock.Attribute.Helper.SaveAttributeValues( person, CurrentPersonId );
+                }                
             }
-                        
-            Rock.Data.RockTransactionScope.WrapTransaction( () =>
-            {                
-                ps.Save( person, CurrentPersonId );
-            } );
 
             return person;
         }
@@ -840,7 +835,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             // get the list of people so we can filter by grade and ability level
             var peopleList = people.OrderBy( p => p.LastName ).ThenBy( p => p.FirstName ).ToList();
-            bool showGrade = false;
+            var abilityLevelValues = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL ) ).DefinedValues;
+            peopleList.ForEach( p => p.LoadAttributes() );
             if ( ddlAbilitySearch.SelectedIndex != 0 )
             {
                 var optionGroup = ddlAbilitySearch.SelectedItem.Attributes["optiongroup"];
@@ -850,25 +846,23 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     if ( grade != null && (int)grade <= 12 )
                     {
                         peopleList = peopleList.Where( p => p.Grade == (int)grade ).ToList();
-                        showGrade = true;                        
                     }
                 }
                 else if ( optionGroup.Equals( "Ability" ) )
                 {
-                    var ability = ddlAbilitySearch.SelectedValue;
-                    peopleList.ForEach( p => p.LoadAttributes() );
-                    peopleList = peopleList.Where( p => p.Attributes.ContainsKey( "AbilityLevel" ) && p.GetAttributeValue( "AbilityLevel" ) == ability ).ToList();
-                    showGrade = false;
+                    var abilityLevelGuid = ddlAbilitySearch.SelectedValue;                    
+                    peopleList = peopleList.Where( p => p.Attributes.ContainsKey( "AbilityLevel" ) 
+                        && p.GetAttributeValue( "AbilityLevel" ) == abilityLevelGuid ).ToList();
                 }
             }
             
-            // check if abilitylevel is null
-            rGridPersonResults.DataSource = peopleList.Select( p => new { 
+            rGridPersonResults.DataSource = peopleList.Select( p => new
+            {
                 p.Id, p.FirstName, p.LastName, p.BirthDate, p.Age, p.Gender,
-                Attribute = ( showGrade == true ) 
-                    ? ( (GradeLevel) p.Grade ).GetDescription()
-                    : DefinedValueCache.Read( new Guid( p.GetAttributeValue( "AbilityLevel" ) ) ).ToString() ?? ""
-            } ).ToList();
+                Attribute = p.Grade.HasValue 
+                    ? ( (GradeLevel) p.Grade ).GetDescription() 
+                    : abilityLevelValues.Where( dv => dv.Guid.ToString().Equals( p.GetAttributeValue( "AbilityLevel" ), StringComparison.OrdinalIgnoreCase ) ).Select( dv => dv.Name ).FirstOrDefault()
+            } ).OrderByDescending( p => p.BirthDate ).ToList();
             rGridPersonResults.DataBind();
         }
 
