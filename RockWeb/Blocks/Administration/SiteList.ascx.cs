@@ -18,7 +18,7 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// 
     /// </summary>
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     public partial class SiteList : RockBlock
     {
         #region Control Methods
@@ -70,7 +70,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gSites_Add( object sender, EventArgs e )
         {
-            NavigateToDetailPage( "siteId", 0 );
+            NavigateToLinkedPage( "DetailPage", "siteId", 0 );
         }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gSites_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "siteId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "siteId", (int)e.RowKeyValue );
         }
 
         /// <summary>
