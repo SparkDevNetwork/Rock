@@ -54,39 +54,39 @@
         
     <asp:Panel ID="pnlFamilySelect" runat="server">
 
-        <div class="row-fluid attended-checkin-header">
-            <div class="span3">
-                <asp:LinkButton ID="lbBack" CssClass="btn btn-large btn-primary xl-font" runat="server" OnClick="lbBack_Click" Text="Back" CausesValidation="false"/>
+        <div class="row-fluid checkin-header">
+            <div class="span3 checkin-actions">
+                <asp:LinkButton ID="lbBack" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbBack_Click" Text="Back" CausesValidation="false"/>
             </div>
 
             <div class="span6">                
-                <h1 id="lblFamilyTitle" runat="server" class="xl-font">Search Results</h1>
+                <h1 id="lblFamilyTitle" runat="server">Search Results</h1>
             </div>
 
-            <div class="span3">
-                <asp:LinkButton ID="lbNext" CssClass="btn btn-large btn-primary pull-right xl-font" runat="server" OnClick="lbNext_Click" Text="Next" CausesValidation="false" />
+            <div class="span3 checkin-actions">
+                <asp:LinkButton ID="lbNext" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbNext_Click" Text="Next" CausesValidation="false" />
             </div>
         </div>
                 
-        <div class="row-fluid attended-checkin-body">
+        <div class="row-fluid checkin-body">
             
-            <asp:UpdatePanel ID="pnlSelectFamily" runat="server" UpdateMode="Conditional" class="span3 family-div">
+            <asp:UpdatePanel ID="pnlSelectFamily" runat="server" UpdateMode="Conditional" class="span3">
             <ContentTemplate>
                 
-                <div class="attended-checkin-body-container">
+                <div class="">
                     <h3>Families</h3>
                     <asp:ListView ID="lvFamily" runat="server" OnPagePropertiesChanging="lvFamily_PagePropertiesChanging" 
                         OnItemCommand="lvFamily_ItemCommand" OnItemDataBound="lvFamily_ItemDataBound" >
                     <ItemTemplate>                            
                             <asp:LinkButton ID="lbSelectFamily" runat="server" CommandArgument='<%# Eval("Group.Id") %>'
-                                CssClass="btn btn-primary btn-large btn-block btn-checkin-select family medium-font" CausesValidation="false">
+                                CssClass="btn btn-primary btn-large btn-block btn-checkin-select" CausesValidation="false">
                                 <%# Eval("Caption") %><br /><span class='checkin-sub-title'><%# Eval("SubCaption") %></span>
                             </asp:LinkButton>
                     </ItemTemplate>                    
                     </asp:ListView>
                     <asp:DataPager ID="dpFamilyPager" runat="server" PageSize="5" PagedControlID="lvFamily">
                         <Fields>
-                            <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary btn-checkin-select medium-font" />
+                            <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary btn-checkin-select" />
                         </Fields>
                     </asp:DataPager>
                 </div>
@@ -94,29 +94,29 @@
             </ContentTemplate>
             </asp:UpdatePanel>
 
-            <asp:UpdatePanel ID="pnlSelectPerson" runat="server" UpdateMode="Conditional" class="span3 person-div">
+            <asp:UpdatePanel ID="pnlSelectPerson" runat="server" UpdateMode="Conditional" class="span3">
             <ContentTemplate>
                 <asp:HiddenField ID="hfSelectedPerson" runat="server" ClientIDMode="Static" />
 
-                <div class="attended-checkin-body-container">
+                <div class="">
                     <h3>People</h3>                    
                     <asp:ListView ID="lvPerson" runat="server" OnItemDataBound="lvPerson_ItemDataBound" OnPagePropertiesChanging="lvPerson_PagePropertiesChanging" >
                         <ItemTemplate>                            
                             <asp:LinkButton ID="lbSelectPerson" runat="server" data-id='<%# Eval("Person.Id") %>'
-                                CssClass="btn btn-primary btn-large btn-block btn-checkin-select person medium-font">
+                                CssClass="btn btn-primary btn-large btn-block btn-checkin-select">
                                 <%# Eval("Person.FullName") %><br />
                                 <span class='checkin-sub-title'>Birthday: <%# Eval("Person.BirthMonth") + "/" + Eval("Person.BirthDay") ?? "Not entered" %></span>
                             </asp:LinkButton>
                         </ItemTemplate>    
                         <EmptyDataTemplate>
-                            <div runat="server" class="nothing-found-message small-font">
+                            <div runat="server" class="nothing-found-message">
                                 <asp:Label ID="lblPersonTitle" runat="server" Text="No one in this family is eligible to check-in." />
                             </div>                            
                         </EmptyDataTemplate>              
                     </asp:ListView>
                     <asp:DataPager ID="dpPersonPager" runat="server" PageSize="5" PagedControlID="lvPerson">
                         <Fields>
-                            <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary btn-checkin-select medium-font" />
+                            <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary btn-checkin-select" />
                         </Fields>
                     </asp:DataPager>
                 </div>
@@ -124,16 +124,16 @@
             </ContentTemplate>
             </asp:UpdatePanel>
 
-            <asp:UpdatePanel ID="pnlSelectVisitor" runat="server" UpdateMode="Conditional" class="span3 visitor-div">
+            <asp:UpdatePanel ID="pnlSelectVisitor" runat="server" UpdateMode="Conditional" class="span3">
             <ContentTemplate>
                 <asp:HiddenField ID="hfSelectedVisitor" runat="server" ClientIDMode="Static" />
 
-                <div class="attended-checkin-body-container">
+                <div class="">
                     <h3>Visitors</h3>
                     <asp:ListView ID="lvVisitor" runat="server" OnItemDataBound="lvVisitor_ItemDataBound" OnPagePropertiesChanging="lvVisitor_PagePropertiesChanging">
                         <ItemTemplate>
                             <asp:LinkButton ID="lbSelectVisitor" runat="server" data-id='<%# Eval("Person.Id") %>' 
-                                CssClass="btn btn-primary btn-large btn-block btn-checkin-select visitor medium-font">
+                                CssClass="btn btn-primary btn-large btn-block btn-checkin-select">
                                 <%# Eval("Person.FullName") %><br />
                                 <span class='checkin-sub-title'>Birthday: <%# Eval("Person.BirthMonth") + "/" + Eval("Person.BirthDay") ?? "Not entered" %></span>
                             </asp:LinkButton>
@@ -141,7 +141,7 @@
                     </asp:ListView>
                     <asp:DataPager ID="dpVisitorPager" runat="server" PageSize="5" PagedControlID="lvVisitor">
                         <Fields>
-                            <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary btn-checkin-select medium-font" />
+                            <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary btn-checkin-select" />
                         </Fields>
                     </asp:DataPager>
                 </div>
@@ -149,16 +149,16 @@
             </ContentTemplate>
             </asp:UpdatePanel>
 
-            <div ID="divNothingFound" runat="server" class="span9 nothing-found-message small-font" visible="false">
+            <div ID="divNothingFound" runat="server" class="span9 nothing-found-message" visible="false">
                 <asp:Label ID="lblNothingFound" runat="server" Text="Please add them using one of the buttons on the right:" />
             </div>
             
-            <div class="span3 add-someone">
-                <div class="attended-checkin-body-container last">
+            <div class="span3">
+                <div class="">
                     <h3 id="actions" runat="server">Actions</h3>
-                    <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select medium-font" OnClick="lbAddPerson_Click" Text="Add Person" CausesValidation="false"></asp:LinkButton>
-                    <asp:LinkButton ID="lbAddVisitor" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select medium-font" OnClick="lbAddVisitor_Click" Text="Add Visitor" CausesValidation="false"></asp:LinkButton>                
-                    <asp:LinkButton ID="lbAddFamily" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select medium-font" OnClick="lbAddFamily_Click" Text="Add Family" CausesValidation="false" />
+                    <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddPerson_Click" Text="Add Person" CausesValidation="false"></asp:LinkButton>
+                    <asp:LinkButton ID="lbAddVisitor" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddVisitor_Click" Text="Add Visitor" CausesValidation="false"></asp:LinkButton>                
+                    <asp:LinkButton ID="lbAddFamily" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddFamily_Click" Text="Add Family" CausesValidation="false" />
                 </div>
             </div>
         </div>
@@ -168,21 +168,21 @@
     <asp:Panel ID="pnlAddPerson" runat="server" CssClass="add-person" DefaultButton="lbAddPersonSearch">
 
         <Rock:ModalAlert ID="maAddPerson" runat="server" />
-        <div class="row-fluid attended-checkin-header">
+        <div class="row-fluid checkin-header">
             <div class="span3">
-                <asp:LinkButton ID="lbAddPersonCancel" CssClass="btn btn-large btn-primary xl-font" runat="server" OnClick="lbAddPersonCancel_Click" Text="Cancel" CausesValidation="false"/>
+                <asp:LinkButton ID="lbAddPersonCancel" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddPersonCancel_Click" Text="Cancel" CausesValidation="false"/>
             </div>
 
             <div class="span6">
-                <h1 class="xl-font modal-header-color"><asp:Label ID="lblAddPersonHeader" runat="server"></asp:Label></h1>
+                <h1 class="modal-header-color"><asp:Label ID="lblAddPersonHeader" runat="server"></asp:Label></h1>
             </div>
 
             <div class="span3">
-                <asp:LinkButton ID="lbAddPersonSearch" CssClass="btn btn-large btn-primary pull-right xl-font" runat="server" OnClick="lbAddPersonSearch_Click" Text="Search" />
+                <asp:LinkButton ID="lbAddPersonSearch" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddPersonSearch_Click" Text="Search" />
             </div>
         </div>
 		
-        <div class="row-fluid attended-checkin-body searchperson">
+        <div class="row-fluid checkin-body">
             <div class="span2">
                 <Rock:LabeledTextBox ID="tbFirstNameSearch" runat="server" CssClass="" LabelText="First Name" />
             </div>
@@ -200,7 +200,7 @@
             </div>
         </div>
         <br />
-        <div class="row-fluid attended-checkin-body searchperson">
+        <div class="row-fluid checkin-body">
             <Rock:Grid ID="rGridPersonResults" runat="server" OnRowCommand="rGridPersonResults_AddExistingPerson" 
                 ShowActionRow="false" PageSize="3" DataKeyNames="Id" AllowPaging="true" AllowSorting="true">
                 <Columns>
@@ -222,7 +222,7 @@
             </Rock:Grid>
         </div>
 
-        <div class="row-fluid attended-checkin-body searchperson">
+        <div class="row-fluid checkin-body">
             <asp:LinkButton ID="lbAddNewPerson" runat="server" Text="None of these, add a new person."
                 CssClass="btn btn-large btn-primary" Visible="false" OnClick="lbAddNewPerson_Click">
             </asp:LinkButton>
@@ -234,23 +234,23 @@
 
     <asp:Panel ID="pnlAddFamily" runat="server" CssClass="add-family">
 
-        <div class="row-fluid attended-checkin-header">
+        <div class="row-fluid checkin-header">
             <div class="span3">
-                <asp:LinkButton ID="lbAddFamilyCancel" CssClass="btn btn-large btn-primary xl-font" runat="server" OnClick="lbAddFamilyCancel_Click" Text="Cancel" CausesValidation="false" />
+                <asp:LinkButton ID="lbAddFamilyCancel" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddFamilyCancel_Click" Text="Cancel" CausesValidation="false" />
             </div>
 
             <div class="span6">
-                <h1 class="xl-font modal-header-color">Add Family</h1>
+                <h1 class="modal-header-color">Add Family</h1>
             </div>
 
             <div class="span3">
-                <asp:LinkButton ID="lbAddFamilySave" CssClass="btn btn-large btn-primary pull-right xl-font" runat="server" OnClick="lbAddFamilySave_Click" Text="Save" />
+                <asp:LinkButton ID="lbAddFamilySave" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddFamilySave_Click" Text="Save" />
             </div>
         </div>        
     
         <asp:ListView ID="lvAddFamily" runat="server" OnPagePropertiesChanging="lvAddFamily_PagePropertiesChanging" OnItemDataBound="lvAddFamily_ItemDataBound" >
         <LayoutTemplate>
-            <div class="row-fluid attended-checkin-body">
+            <div class="row-fluid checkin-body">
                 <div class="span2">
                     <h3>First Name</h3>
                 </div>
@@ -270,7 +270,7 @@
             <asp:PlaceHolder ID="itemPlaceholder" runat="server" />
         </LayoutTemplate>
         <ItemTemplate>
-            <div class="row-fluid attended-checkin-body searchperson">
+            <div class="row-fluid checkin-body">
                 <div class="span2">
                     <Rock:LabeledTextBox ID="tbFirstName" runat="server" CssClass="fullBlock" Text='<%# ((NewPerson)Container.DataItem).FirstName %>' />
                 </div>
@@ -290,10 +290,10 @@
         </ItemTemplate>        
         </asp:ListView>        
 
-        <div class="row-fluid attended-checkin-body searchperson">
+        <div class="row-fluid checkin-body">
             <asp:DataPager ID="dpAddFamily" runat="server" PageSize="5" PagedControlID="lvAddFamily">
                 <Fields>
-                    <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary btn-checkin-select medium-font" />
+                    <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary btn-checkin-select" />
                 </Fields>
             </asp:DataPager>
         </div>

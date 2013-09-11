@@ -32,20 +32,20 @@
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
     <asp:Panel ID="pnlSearch" runat="server" DefaultButton="lbSearch">
-    <div class="row-fluid attended-checkin-header">
-        <div class="span3">
-            <asp:LinkButton ID="lbAdmin" runat="server" CssClass="btn btn-large btn-primary xl-font" OnClick="lbAdmin_Click" Text="Admin" />
-            <asp:LinkButton ID="lbBack" runat="server" CssClass="btn btn-large btn-primary xl-font" OnClick="lbBack_Click" Text="Back" Visible="false" />
+    <div class="row-fluid checkin-header">
+        <div class="span3 checkin-actions">
+            <asp:LinkButton ID="lbAdmin" runat="server" CssClass="btn btn-large btn-primary" OnClick="lbAdmin_Click" Text="Admin" />
+            <asp:LinkButton ID="lbBack" runat="server" CssClass="btn btn-large btn-primary" OnClick="lbBack_Click" Text="Back" Visible="false" />
         </div>
         <div class="span6">
-            <h1 class="xl-font">Check In</h1>
+            <h1>Check In</h1>
         </div>
-        <div class="span3">
-            <asp:LinkButton ID="lbSearch" runat="server" CssClass="btn btn-large btn-primary pull-right xl-font" OnClick="lbSearch_Click" Text="Search" />
+        <div class="span3 checkin-actions">
+            <asp:LinkButton ID="lbSearch" runat="server" CssClass="btn btn-large btn-primary" OnClick="lbSearch_Click" Text="Search" />
         </div>
     </div>
 
-    <div class="row-fluid attended-checkin-body">
+    <div class="row-fluid checkin-body">
         <div class="span12">
             <Rock:LabeledTextBox ID="tbSearchBox" MaxLength="50" CssClass="attended-checkin-keyboard-entry" runat="server" LabelText="" TabIndex="0" />
 
