@@ -717,6 +717,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     Rock.Attribute.Helper.SaveAttributeValues( person, person.Id );
                 }
             }
+                        
+            Rock.Data.RockTransactionScope.WrapTransaction( () =>
+            {                
+                ps.Save( person, CurrentPersonId );
+            } );
 
             return person;
         }
@@ -835,7 +840,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             // get the list of people so we can filter by grade and ability level
             var peopleList = people.OrderBy( p => p.LastName ).ThenBy( p => p.FirstName ).ToList();
-
+            bool showGrade = false;
             if ( ddlAbilitySearch.SelectedIndex != 0 )
             {
                 var optionGroup = ddlAbilitySearch.SelectedItem.Attributes["optiongroup"];
@@ -844,25 +849,25 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     var grade = ddlAbilitySearch.SelectedValueAsEnum<GradeLevel>();
                     if ( grade != null && (int)grade <= 12 )
                     {
-                        DateTime transitionDate, graduationDate;
-                        var globalAttributes = GlobalAttributesCache.Read();
-                        if ( DateTime.TryParse( globalAttributes.GetValue( "GradeTransitionDate" ), out transitionDate ) )
-                        {
-                            int gradeFactorReactor = ( DateTime.Now < transitionDate ) ? 12 : 13;
-                            graduationDate = transitionDate.AddYears( gradeFactorReactor - (int)grade );
-                            peopleList = peopleList.Where( p => p.GraduationDate == graduationDate ).ToList();
-                        }
+                        peopleList = peopleList.Where( p => p.Grade == (int)grade ).ToList();
+                        showGrade = true;                        
                     }
                 }
                 else if ( optionGroup.Equals( "Ability" ) )
                 {
                     var ability = ddlAbilitySearch.SelectedValue;
-                    peopleList = peopleList.Where( p => p.GetAttributeValue( "AbilityLevel" ).Contains( ability ) ).ToList();                    
+                    peopleList.ForEach( p => p.LoadAttributes() );
+                    peopleList = peopleList.Where( p => p.Attributes.ContainsKey( "AbilityLevel" ) && p.GetAttributeValue( "AbilityLevel" ) == ability ).ToList();
+                    showGrade = false;
                 }
             }
             
+            // check if abilitylevel is null
             rGridPersonResults.DataSource = peopleList.Select( p => new { 
-                p.Id, p.FirstName, p.LastName, p.BirthDate, p.Age, p.Gender, Attribute = p.GetAttributeValue( "AbilityLevel" ) 
+                p.Id, p.FirstName, p.LastName, p.BirthDate, p.Age, p.Gender,
+                Attribute = ( showGrade == true ) 
+                    ? ( (GradeLevel) p.Grade ).GetDescription()
+                    : DefinedValueCache.Read( new Guid( p.GetAttributeValue( "AbilityLevel" ) ) ).ToString() ?? ""
             } ).ToList();
             rGridPersonResults.DataBind();
         }
@@ -881,7 +886,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var dtAbility = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL ) );
             if ( dtAbility != null && dtAbility.DefinedValues.Count > 0 )
             {
-                foreach ( var ability in dtAbility.DefinedValues.Select( dv => new ListItem( dv.Name, dv.Id.ToString() ) ).ToList() )
+                foreach ( var ability in dtAbility.DefinedValues.Select( dv => new ListItem( dv.Name, dv.Guid.ToString() ) ).ToList() )
                 {
                     ability.Attributes.Add( "optiongroup", "Ability" );
                     thisDDL.Items.Add( ability );
@@ -900,6 +905,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
         #endregion
 
         #region NewPerson Class
+        /// <summary>
+        /// Lightweight Person model to quickly add people during Check-in
+        /// </summary>
         [Serializable()]
         protected class NewPerson
         {
