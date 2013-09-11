@@ -201,22 +201,22 @@ SET @TestGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @TestGroupTypeId);
 
 INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[InheritedGroupTypeId])
-   VALUES (0, 'Nursery/Preschool Area', 'CADB2D12-7836-44BC-8EEA-3C6AB22FD5E8', 1, 1, 0, 0, 0,0,0,0,@AbilityLevelGroupTypeId)
+   VALUES (0, 'Nursery/Preschool Area', 'CADB2D12-7836-44BC-8EEA-3C6AB22FD5E8', 1, 1, 0, 0, 0,0,1,0,@AbilityLevelGroupTypeId)
 SET @NurseryPreschoolGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @NurseryPreschoolGroupTypeId);
 
 INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[InheritedGroupTypeId])
-   VALUES (0, 'Elementary Area', 'E3C8F7D6-5CEB-43BB-802F-66C3E734049E', 1, 1, 0, 0, 0,0,0,0,@GradeGroupTypeId)
+   VALUES (0, 'Elementary Area', 'E3C8F7D6-5CEB-43BB-802F-66C3E734049E', 1, 1, 0, 0, 0,0,2,0,@GradeGroupTypeId)
 SET @ElementaryGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @ElementaryGroupTypeId);
 
 INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[InheritedGroupTypeId])
-   VALUES (0, 'Jr High Area', '7A17235B-69AD-439B-BAB0-1A0A472DB96F', 1, 1, 0, 0, 0,0,0,0,@GradeGroupTypeId)
+   VALUES (0, 'Jr High Area', '7A17235B-69AD-439B-BAB0-1A0A472DB96F', 1, 1, 0, 0, 0,0,3,0,@GradeGroupTypeId)
 SET @JHGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @JHGroupTypeId);
 
 INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[InheritedGroupTypeId])
-   VALUES (0, 'High School Area', '9A88743B-F336-4404-B877-2A623689195D', 1, 1, 0, 0, 0,0,0,0,@GradeGroupTypeId)
+   VALUES (0, 'High School Area', '9A88743B-F336-4404-B877-2A623689195D', 1, 1, 0, 0, 0,0,4,0,@GradeGroupTypeId)
 SET @HSGroupTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@ParentGroupTypeId, @HSGroupTypeId);
 
@@ -239,35 +239,35 @@ INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive
 SET @TestGroupId = SCOPE_IDENTITY()
 
 INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Order],[Guid] )
-   VALUES ( 0, @NurseryPreschoolGroupTypeId, 'Nursery', 0, 1, 0,'DC1A2A83-1B5D-46BC-9E99-4571466827F5' )
+   VALUES ( 0, @NurseryPreschoolGroupTypeId, 'Nursery', 0, 1, 1,'DC1A2A83-1B5D-46BC-9E99-4571466827F5' )
 SET @NurseryGroupId = SCOPE_IDENTITY()
 
 INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Order],[Guid] )
-   VALUES ( 0, @NurseryPreschoolGroupTypeId, 'Crawlers/Walkers', 0, 1, 0,'0650C672-1A08-4EEC-B3BC-2D00B744E371' )
+   VALUES ( 0, @NurseryPreschoolGroupTypeId, 'Crawlers/Walkers', 0, 1, 2,'0650C672-1A08-4EEC-B3BC-2D00B744E371' )
 SET @CrawlersWalkersGroupId = SCOPE_IDENTITY()
 
 INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Order],[Guid] )
-   VALUES ( 0, @NurseryPreschoolGroupTypeId, 'Preschool', 0, 1, 0,'366001D1-0E60-4AA1-875D-046286E29284' )
+   VALUES ( 0, @NurseryPreschoolGroupTypeId, 'Preschool', 0, 1, 3,'366001D1-0E60-4AA1-875D-046286E29284' )
 SET @PreschoolGroupId = SCOPE_IDENTITY()
 
 INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Order],[Guid] )
-   VALUES ( 0, @ElementaryGroupTypeId, 'Grades K-1', 0, 1, 0,'FB8AAAA2-9A57-4AA4-8543-10A053C4834F' )
+   VALUES ( 0, @ElementaryGroupTypeId, 'Grades K-1', 0, 1, 4,'FB8AAAA2-9A57-4AA4-8543-10A053C4834F' )
 SET @GradeK1GroupId = SCOPE_IDENTITY()
 
 INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Order],[Guid] )
-   VALUES ( 0, @ElementaryGroupTypeId, 'Grades 2-3', 0, 1, 0,'24901861-14CF-474F-9FCE-7BA1D6C84BFF' )
+   VALUES ( 0, @ElementaryGroupTypeId, 'Grades 2-3', 0, 1, 5,'24901861-14CF-474F-9FCE-7BA1D6C84BFF' )
 SET @Grade23GroupId = SCOPE_IDENTITY()
 
 INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Order],[Guid])
-   VALUES ( 0, @ElementaryGroupTypeId, 'Grades 4-6', 0, 1, 0,'42C408CE-3D69-4D7D-B9EA-41087A8945A6' )
+   VALUES ( 0, @ElementaryGroupTypeId, 'Grades 4-6', 0, 1, 6,'42C408CE-3D69-4D7D-B9EA-41087A8945A6' )
 SET @Grade46GroupId = SCOPE_IDENTITY()
 
 INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Order],[Guid])
-   VALUES ( 0, @JHGroupTypeId, 'Grades 7-8', 0, 1, 0,'7B99F840-66AB-4C7A-99A2-104D9CC953F7' )
+   VALUES ( 0, @JHGroupTypeId, 'Grades 7-8', 0, 1, 7,'7B99F840-66AB-4C7A-99A2-104D9CC953F7' )
 SET @JHGroupId = SCOPE_IDENTITY()
 
 INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Order],[Guid])
-   VALUES ( 0, @HSGroupTypeId, 'Grades 9-12', 0, 1, 0,'9B982B2A-24AB-4B82-AB49-84BDB4CF9E5F' )
+   VALUES ( 0, @HSGroupTypeId, 'Grades 9-12', 0, 1, 8,'9B982B2A-24AB-4B82-AB49-84BDB4CF9E5F' )
 SET @HSGroupId = SCOPE_IDENTITY()
 
 
@@ -284,9 +284,17 @@ SET @AttributeId = SCOPE_IDENTITY()
   INSERT INTO [AttributeCategory] (AttributeId, CategoryId)
     VALUES (@AttributeId, @GroupTypeCheckInCategoryId)
 
-  -- Nursery AgeRange (0 - 5.99)
+  -- Nursery AgeRange (0 - 3.00)
   INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
-    VALUES ( 0, @AttributeId, @NurseryGroupId , 0, '0.0,5.99',  newid() )
+    VALUES ( 0, @AttributeId, @NurseryGroupId , 0, '0.0,3.00',  newid() )
+
+  -- Crawlers and Walkers AgeRange (0 - 3.99)
+  INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
+    VALUES ( 0, @AttributeId, @CrawlersWalkersGroupId , 0, '0.0,3.99',  newid() )
+    
+  -- Preschool AgeRange (0 - 5.99)
+  INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
+    VALUES ( 0, @AttributeId, @PreschoolGroupId , 0, '0.0,5.99',  newid() )
        
   -- Grades K-1 AgeRange ( 4.75 - 8.75)
   INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid])
@@ -673,8 +681,11 @@ BEGIN
   DELETE [WorkflowType] WHERE Id = @WorkflowTypeId
 END
 
-INSERT INTO [WorkflowType] (IsSystem, IsActive, Name, [Order], WorkTerm, IsPersisted, LoggingLevel, Guid)
-VALUES (0, 1, 'Children''s Check-in', 0, 'Check-in', 0, 3, '011E9F5A-60D4-4FF5-912A-290881E37EAF')
+DECLARE @CheckInCategoryId int
+SET @CheckInCategoryId = (SELECT Id FROM [Category] WHERE Guid = '8F8B272D-D351-485E-86D6-3EE5B7C84D99')
+
+INSERT INTO [WorkflowType] (IsSystem, IsActive, Name, [CategoryId], [Order], WorkTerm, IsPersisted, LoggingLevel, Guid)
+VALUES (0, 1, 'Children''s Check-in', 0, 'Check-in', @CheckInCategoryId, 0, 3, '011E9F5A-60D4-4FF5-912A-290881E37EAF')
 SET @WorkflowTypeId = SCOPE_IDENTITY()
 
 UPDATE AV

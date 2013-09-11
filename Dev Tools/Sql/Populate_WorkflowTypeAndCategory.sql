@@ -13,16 +13,16 @@ begin
    end
 
    delete from WorkflowType where CategoryId is not null    
-   delete from Category where EntityTypeId in (@entityTypeIdWFType)  
-   
+   delete from Category where EntityTypeId in (@entityTypeIdWFType)
 
    -- root wf cats
    INSERT INTO [Category]([IsSystem],[ParentCategoryId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],[Name],[Guid],[IconSmallFileId],[IconLargeFileId],[IconCssClass])
      VALUES
       (0,@parentCategoryId,@entityTypeIdWFType,null,null,'CT Requests',NEWID(),null,null,'icon-beaker'),
       (0,@parentCategoryId,@entityTypeIdWFType,null,null,'HR Stuff',NEWID(),null,null,'icon-user-md'),
-      (0,@parentCategoryId,@entityTypeIdWFType,null,null,'Random Stuff',NEWID(),null,null,'icon-lightbulb') 
-
+      (0,@parentCategoryId,@entityTypeIdWFType,null,null,'Random Stuff',NEWID(),null,null,'icon-lightbulb'), 
+      (0,@parentCategoryId,@entityTypeIdWFType,null,null,'Check-in',NEWID(),null,null,'icon-check-sign') 
+      
    -- 2nd level cats
    set @parentCategoryId = (select id from Category where Name = 'CT Requests')
    INSERT INTO [Category]([IsSystem],[ParentCategoryId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],[Name],[Guid],[IconSmallFileId],[IconLargeFileId],[IconCssClass])
