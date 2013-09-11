@@ -12,15 +12,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Page Context POCO Service class
+    /// Data access and service class for the <see cref="Rock.Model.PageContext"/> model object. This class inherits from the Service class.
     /// </summary>
     public partial class PageContextService 
     {
         /// <summary>
-        /// Gets Page Contexts by Page Id
+        /// Returns an enumerable collection of <see cref="Rock.Model.PageContext"/> entities that are used on a page.
         /// </summary>
-        /// <param name="pageId">Page Id.</param>
-        /// <returns>An enumerable list of PageContext objects.</returns>
+        /// <param name="pageId">An <see cref="System.Int32"/> that contains the Id of the <see cref="Rock.Model.Page"/> to search by.</param>
+        /// <returns>An enumerable list of <see cref="Rock.Model.PageContext">PageContexts</see> that are referenced on the page.</returns>
         public IEnumerable<PageContext> GetByPageId( int pageId )
         {
             return Repository.Find( t => t.PageId == pageId );
