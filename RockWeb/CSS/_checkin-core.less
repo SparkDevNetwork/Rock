@@ -342,67 +342,17 @@ input.checkin-phone-entry
 // 5. Attended Check-In Styles
 // --------------------------------------
 
-.attended h1, h2, h3 
-{
-    text-align: center;
-}
-
-.attended .checkin-header, .attended .checkin-body 
+.attended h1, h2, h3,
+.attended .checkin-header,
+.attended .checkin-body 
 {
     text-align: center;        
-}
-
-.keyboard
-{
-	width: 80%;
-    font-weight: @font-semibold-weight;    
-    font-size: 2.5em;
-    margin: 0 auto;
-}
-
-.keyboard a.btn 
-{    
-    font-size: inherit;
-    padding: 2% 1%;
-    width: 6.5%;
-    margin: 0.35% 0.05%;
-    line-height: 1.5em;    
-}
-
-.keyboard a.spacebar 
-{
-    width: 50%;
-}
-
-.keyboard .back 
-{
-    width: 13%;
-}
-
-.attended .input 
-{
-    font-size: inherit;
-    height: 1.5em;
-    padding: .12% 0.857%;
-    width: 95%;
-}
-
-.attended .nothing-eligible
-{
-	background: rgba(100, 100, 100, .1);
-    font-size:inherit;
-    border-radius: 6px;    
-    padding: 1em 1.7857em;   
-}
-
-.attended .pager
-{
-
 }
 
 .attended .btn-checkin-select 
 {
     margin-bottom: 10px;
+    float: none;
 }
 
 .attended .btn-primary:active,
@@ -413,10 +363,61 @@ input.checkin-phone-entry
 .attended .btn-primary:active[disabled]
 {
     background: darken(@checkin-button-primary-background, 15%); 
-       
 }
 
-input[type="submit"].btn[disabled="disabled"]
+.attended .keyboard
+{
+	width: 80%;
+    font-weight: @font-semibold-weight;    
+    font-size: 2.5em;
+    margin: 0 auto;
+}
+
+.attended .keyboard .input 
+{
+    font-size: inherit;
+    height: 1.5em;
+    padding: .12% 0.857%;
+    width: 95%;
+}
+
+.attended .keyboard a.btn 
+{    
+    font-size: inherit;
+    padding: 2% 1%;
+    width: 6.5%;
+    margin: 0.35% 0.05%;
+    line-height: 1.5em;    
+}
+
+.attended .keyboard a.spacebar 
+{
+    width: 50%;
+}
+
+.attended .keyboard .back 
+{
+    width: 13%;
+}
+
+.attended .nothing-eligible
+{
+	background: rgba(100, 100, 100, .1);
+    font-size: 1.5em;
+    border-radius: 6px;    
+    padding: 1em 1.7857em;   
+}
+
+.attended table th,
+.attended table td
+{
+	border: none;
+    padding: 0.455em;  
+	vertical-align: middle;
+	text-align: center;
+}
+
+.attended input[type="submit"].btn[disabled="disabled"]
 {
 	display: none;
 }
