@@ -86,7 +86,7 @@
                     </asp:ListView>
                     <asp:DataPager ID="dpFamilyPager" runat="server" PageSize="5" PagedControlID="lvFamily">
                         <Fields>
-                            <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary" />
+                            <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-large btn-primary btn-checkin-select" />
                         </Fields>
                     </asp:DataPager>
                 </div>
@@ -116,7 +116,7 @@
                     </asp:ListView>
                     <asp:DataPager ID="dpPersonPager" runat="server" PageSize="5" PagedControlID="lvPerson">
                         <Fields>
-                            <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary" />
+                            <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-large btn-primary btn-checkin-select" />
                         </Fields>
                     </asp:DataPager>
                 </div>
@@ -141,7 +141,7 @@
                     </asp:ListView>
                     <asp:DataPager ID="dpVisitorPager" runat="server" PageSize="5" PagedControlID="lvVisitor">
                         <Fields>
-                            <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary" />
+                            <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-large btn-primary btn-checkin-select" />
                         </Fields>
                     </asp:DataPager>
                 </div>
