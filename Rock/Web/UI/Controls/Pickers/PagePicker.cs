@@ -431,20 +431,23 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         private void RenderPageRoutePicker( HtmlTextWriter writer )
         {
-            _hfPageRouteId.RenderControl( writer );
+            if ( PromptForPageRoute )
+            {
+                _hfPageRouteId.RenderControl( writer );
 
-            _btnShowPageRoutePicker.RenderControl( writer );
+                _btnShowPageRoutePicker.RenderControl( writer );
 
-            writer.Write( string.Format( @"<div id='page-route-picker_{0}' class='dropdown-menu rock-picker page-route-picker'>", this.ClientID ) );
+                writer.Write( string.Format( @"<div id='page-route-picker_{0}' class='dropdown-menu rock-picker page-route-picker'>", this.ClientID ) );
 
-            _rblSelectPageRoute.RenderControl( writer );
+                _rblSelectPageRoute.RenderControl( writer );
 
-            writer.Write( @"<hr />" );
+                writer.Write( @"<hr />" );
 
-            _btnSelectPageRoute.RenderControl( writer );
-            writer.WriteLine();
-            _btnCancelPageRoute.RenderControl( writer );
-            writer.Write( @"</div>" );
+                _btnSelectPageRoute.RenderControl( writer );
+                writer.WriteLine();
+                _btnCancelPageRoute.RenderControl( writer );
+                writer.Write( @"</div>" );
+            }
         }
     }
 }

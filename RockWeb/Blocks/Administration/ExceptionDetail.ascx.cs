@@ -20,7 +20,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    [DetailPage] 
+    [LinkedPage("Detail Page")] 
     [BooleanField( "Show Cookies", "Show cookie information when block loads.", false )]
     [BooleanField( "Show Server Variables", "Show server variables when block loads.", false )]
     public partial class ExceptionDetail : RockBlock, IDetailBlock

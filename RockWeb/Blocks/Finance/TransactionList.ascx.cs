@@ -21,7 +21,7 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// 
     /// </summary>
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     public partial class TransactionList : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -273,7 +273,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="id">The id.</param>
         protected void ShowDetailForm( int id )
         {
-            NavigateToDetailPage( "transactionId", id );
+            NavigateToLinkedPage( "DetailPage", "transactionId", id );
         }
 
         /// <summary>

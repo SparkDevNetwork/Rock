@@ -19,7 +19,7 @@ using System.Collections.Generic;
 
 namespace RockWeb.Blocks.Finance
 {
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     public partial class GivingProfileList : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -233,7 +233,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="id">The id.</param>
         protected void ShowDetailForm( int id )
         {
-            NavigateToDetailPage( "GivingProfileId", id );
+            NavigateToLinkedPage( "DetailPage", "GivingProfileId", id );
         }
 
         /// <summary>

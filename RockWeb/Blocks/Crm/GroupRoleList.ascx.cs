@@ -19,7 +19,7 @@ namespace RockWeb.Blocks.Crm
     /// <summary>
     /// 
     /// </summary>
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     public partial class GroupRoleList : RockBlock
     {
         #region Control Methods
@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gGroupRoles_Add( object sender, EventArgs e )
         {
-            NavigateToDetailPage( "groupRoleId", 0 );
+            NavigateToLinkedPage( "DetailPage", "groupRoleId", 0 );
         }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gGroupRoles_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "groupRoleId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "groupRoleId", (int)e.RowKeyValue );
         }
 
         /// <summary>
