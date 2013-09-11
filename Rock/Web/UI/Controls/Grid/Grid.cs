@@ -198,7 +198,6 @@ namespace Rock.Web.UI.Controls
                     this.RemoveCssClass( "table-bordered" );
                     this.RemoveCssClass( "table-striped" );
                     this.RemoveCssClass( "table-hover" );
-                    this.RemoveCssClass( "table-full" );
                     this.AddCssClass( "table-condensed" );
                     this.AddCssClass( "table-light" );
                 }
@@ -209,7 +208,6 @@ namespace Rock.Web.UI.Controls
                     this.AddCssClass( "table-bordered" );
                     this.AddCssClass( "table-striped" );
                     this.AddCssClass( "table-hover" );
-                    this.AddCssClass( "table-full" );
                 }
             }
         }
@@ -892,6 +890,12 @@ namespace Rock.Web.UI.Controls
                 if ( this.AllowPaging && this.BottomPagerRow != null )
                 {
                     this.BottomPagerRow.Visible = true;
+                    
+                    // add paging style
+                    if (this.BottomPagerRow.Cells.Count > 0)
+                    {
+                        this.BottomPagerRow.Cells[0].CssClass = "grid-paging";
+                    }
                 }
 
                 _actionRow = base.CreateRow( -1, -1, DataControlRowType.Footer, DataControlRowState.Normal );
@@ -899,7 +903,7 @@ namespace Rock.Web.UI.Controls
 
                 TableCell cell = new TableCell();
                 cell.ColumnSpan = this.Columns.Count;
-                cell.CssClass = "grid-footer";
+                cell.CssClass = "grid-actions";
                 _actionRow.Cells.Add( cell );
 
                 cell.Controls.Add( _gridActions );
@@ -1397,22 +1401,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="container">The <see cref="T:System.Web.UI.Control"/> object to contain the instances of controls from the inline template.</param>
         public void InstantiateIn( Control container )
         {
-            HtmlGenericControl divPagination = new HtmlGenericControl( "div" );
-            divPagination.Attributes.Add( "class", "grid-paging" );
-            container.Controls.Add( divPagination );
-/*
-            // Items Per RockPage
-            HtmlGenericControl divSize = new HtmlGenericControl( "div" );
-            divSize.Attributes.Add( "class", "page-size" );
-            divPagination.Controls.Add( divSize );
-
-            HtmlGenericControl divSizeOptions = new HtmlGenericControl( "div" );
-            divSizeOptions.Attributes.Add( "class", "page-size-options" );
-            divSize.Controls.Add( divSizeOptions );
-            */
             HtmlGenericControl ulSizeOptions = new HtmlGenericControl( "ul" );
             ulSizeOptions.AddCssClass("grid-pagesize pagination pagination-sm");
-            divPagination.Controls.Add(ulSizeOptions);
+            container.Controls.Add(ulSizeOptions);
 
             for ( int i = 0; i < ItemLinkListItem.Length; i++ )
             {
@@ -1432,7 +1423,7 @@ namespace Rock.Web.UI.Controls
             // itemCount
             HtmlGenericControl divItemCount = new HtmlGenericControl("div");
             divItemCount.Attributes.Add("class", "grid-itemcount");
-            divPagination.Controls.Add(divItemCount);
+            container.Controls.Add(divItemCount);
 
             itemCountDisplay = new Literal();
             divItemCount.Controls.Add(itemCountDisplay);
@@ -1440,7 +1431,7 @@ namespace Rock.Web.UI.Controls
             // Pagination
             NavigationPanel = new HtmlGenericControl("ul");
             NavigationPanel.AddCssClass("grid-pager pagination pagination-sm");
-            divPagination.Controls.Add(NavigationPanel);
+            container.Controls.Add(NavigationPanel);
 
             for (var i = 0; i < PageLinkListItem.Length; i++)
             {

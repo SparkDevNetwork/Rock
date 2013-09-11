@@ -167,7 +167,7 @@ namespace Rock.Web.UI.Controls
         /// <returns>One of the <see cref="T:System.Web.UI.HtmlTextWriterTag"/> enumeration values.</returns>
         protected override HtmlTextWriterTag TagKey
         {
-            get { return HtmlTextWriterTag.Div; }
+            get { return HtmlTextWriterTag.Unknown; }
         }
 
         /// <summary>
@@ -176,8 +176,24 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">A <see cref="T:System.Web.UI.HtmlTextWriter"/> that represents the output stream to render HTML content on the client.</param>
         public override void RenderBeginTag( HtmlTextWriter writer )
         {
-            writer.AddAttribute( "class", "grid-actions" );
-            base.RenderBeginTag( writer );
+            // suppress the writing of a wrapper tag
+            if (this.TagKey != HtmlTextWriterTag.Unknown)
+            {
+                base.RenderBeginTag(writer);
+            }
+        }
+
+        /// <summary>
+        /// Renders the HTML closing tag of the control to the specified writer. This method is used primarily by control developers.
+        /// </summary>
+        /// <param name="writer">A <see cref="T:System.Web.UI.HtmlTextWriter"/> that represents the output stream to render HTML content on the client.</param>
+        public override void RenderEndTag(HtmlTextWriter writer)
+        {
+            // suppress the writing of a wrapper tag
+            if (this.TagKey != HtmlTextWriterTag.Unknown)
+            {
+                base.RenderEndTag(writer);
+            }
         }
 
         /// <summary>
@@ -191,7 +207,7 @@ namespace Rock.Web.UI.Controls
             lbCommunicate = new LinkButton();
             Controls.Add( lbCommunicate );
             lbCommunicate.ID = "lbCommunicate";
-            lbCommunicate.CssClass = "communicate btn";
+            lbCommunicate.CssClass = "btn-communicate btn btn-default btn-sm";
             lbCommunicate.ToolTip = "Communicate";
             lbCommunicate.Click += lbCommunicate_Click;
             lbCommunicate.CausesValidation = false;
@@ -206,13 +222,13 @@ namespace Rock.Web.UI.Controls
             Controls.Add( aAdd );
             aAdd.ID = "aAdd";
             aAdd.Attributes.Add( "href", "#" );
-            aAdd.Attributes.Add( "class", "btn" );
+            aAdd.Attributes.Add("class", "btn-add btn btn-default btn-sm");
             aAdd.InnerText = "Add";
 
             lbAdd = new LinkButton();
             Controls.Add( lbAdd );
             lbAdd.ID = "lbAdd";
-            lbAdd.CssClass = "add btn";
+            lbAdd.CssClass = "btn-add btn btn-default btn-sm";
             lbAdd.ToolTip = "Add";
             lbAdd.Click += lbAdd_Click;
             lbAdd.CausesValidation = false;
@@ -227,13 +243,13 @@ namespace Rock.Web.UI.Controls
             Controls.Add( aExcelExport );
             aExcelExport.ID = "aExcelExport";
             aExcelExport.Attributes.Add( "href", "#" );
-            aExcelExport.Attributes.Add( "class", "excel-export" );
+            aExcelExport.Attributes.Add( "class", "btn-excelexport" );
             aExcelExport.InnerText = "Export To Excel";
 
             lbExcelExport = new LinkButton();
             Controls.Add( lbExcelExport );
             lbExcelExport.ID = "lbExcelExport";
-            lbExcelExport.CssClass = "excel-export btn";
+            lbExcelExport.CssClass = "btn-excelexport btn btn-default btn-sm";
             lbExcelExport.ToolTip = "Export to Excel";
             lbExcelExport.Click += lbExcelExport_Click;
             lbExcelExport.CausesValidation = false;
