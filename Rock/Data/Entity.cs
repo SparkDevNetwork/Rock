@@ -26,14 +26,14 @@ namespace Rock.Data
 
         /// <summary>
         /// Gets or sets the value of the identifier.  This value is the primary field/key for the entity object.  This value is system and database
-        /// dependant, and is not guranteed to be unique. This id should only be used to identify an object internally to a single implementation 
-        /// of RockChMS since this value has a very high probability of not being consistant in an external implementation of RockChMS.  
+        /// dependent, and is not guranteed to be unique. This id should only be used to identify an object internally to a single implementation 
+        /// of RockChMS since this value has a very high probability of not being consistent in an external implementation of RockChMS.  
         /// </summary>
         /// <example>
         /// 1
         /// </example>
         /// <value>
-        /// Primary and system dependant <see cref="String.Int"/> based identity/key of an entity object in RockChMS.  
+        /// Primary and system dependent <see cref="String.Int"/> based identity/key of an entity object in RockChMS.  
         /// </value>
         [Key]
         [DataMember]
@@ -41,8 +41,8 @@ namespace Rock.Data
 
         /// <summary>
         /// Gets or sets a <see cref="System.Guid"/> value that is a guaranteed unique identifier for the entity object.  This value 
-        /// is an alternate key for the object, and should be used when interacting with external systems and when comparing and syncronizing
-        /// objects across across datastores or external /implmentations of RockChMS
+        /// is an alternate key for the object, and should be used when interacting with external systems and when comparing and synchronizing
+        /// objects across across data stores or external /implmentations of RockChMS
         /// </summary>
         /// <example>
         /// BEC8FBCC-0DCB-41C7-871B-BD7FECAF74B3
@@ -53,7 +53,7 @@ namespace Rock.Data
         /// search based on the Guid because it would be guaranteed to be unique across all implementations of RockChMS. 
         /// </remarks>
         /// <value>
-        /// A <see cref="System.Guid"/> value that will uniquely identify the entity/object across all implmentations of RockChMS.
+        /// A <see cref="System.Guid"/> value that will uniquely identify the entity/object across all implementations of RockChMS.
         /// </value>
         [AlternateKey]
         [DataMember]
@@ -177,7 +177,7 @@ namespace Rock.Data
         /// Gets a URL friendly version of the EncryptedKey for the entity.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> that represents a URL friendly version of the entity's unqiue key.
+        /// A <see cref="System.String"/> that represents a URL friendly version of the entity's unique key.
         /// </value>
         /// <example>
         /// <!--TODO-->
@@ -272,7 +272,7 @@ namespace Rock.Data
         /// <summary>
         /// Creates a DotLiquid compatible dictionary that represents the current entity object. 
         /// </summary>
-        /// <returns>DotLiquid compatable dictionary.</returns>
+        /// <returns>DotLiquid compatible dictionary.</returns>
         public virtual object ToLiquid()
         {
             var dictionary = new Dictionary<string, object>();
@@ -291,10 +291,10 @@ namespace Rock.Data
         #region Static Methods
 
         /// <summary>
-        /// Static method to return an object from a json string.
+        /// Returns an instance of the  entity based on a JSON represented of the entity object.
         /// </summary>
-        /// <param name="json">The json.</param>
-        /// <returns></returns>
+        /// <param name="json">A <see cref="System.String"/> containing a JSON formatted representation of the object.</param>
+        /// <returns>An instance of the entity object based on the provided JSON string.</returns>
         public static T FromJson(string json) 
         {
             return JsonConvert.DeserializeObject(json, typeof(T)) as T;

@@ -17,11 +17,11 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents an individual webpage in RockChMS. A page is a contianer on a <see cref="Rock.Model.Site"/> that has a layout with consists of one or more content area zones.  
+    /// Represents an individual webpage in RockChMS. A page is a container on a <see cref="Rock.Model.Site"/> that has a layout with consists of one or more content area zones.  
     /// Each content area zone on the page can contain zero or more <see cref="Rock.Model.Block">Blocks.</see>.
     /// 
     /// Pages are hierarchical, and are used to create the structure of the site.  Each page can have one parent Page and zero or more children pages, and the 
-    /// page hierarchy is used to create the sitemap.
+    /// page hierarchy is used to create the SiteMap.
     /// </summary>
     [Table( "Page" )]
     [DataContract]
@@ -112,7 +112,7 @@ namespace Rock.Model
         private bool _enableViewState = true;
 
         /// <summary>
-        /// Gets or sets a value indicating wheter the Page Title should be displayed on the page (if the layout allows).
+        /// Gets or sets a value indicating whether the Page Title should be displayed on the page (if the layout allows).
         /// </summary>
         /// <value>
         ///   A <see cref="String.Boolean"/> that is <c>true</c> if the title should be displayed on the Page, otherwise <c>false</c>.
@@ -186,7 +186,7 @@ namespace Rock.Model
         /// Gets or sets a flag indicating if the Page description should be displayed in the menu.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> vaule that is <c>true</c> if the description should be displayed, otherwise <c>false</c>.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the description should be displayed, otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
@@ -288,7 +288,7 @@ namespace Rock.Model
         /// Gets or sets a flag indicating if the admin footer should be displayed when a Site Administrator is logged in.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Boolean"/> value that is <c>true</c> if Admin footer is displayed; otherwise <c>false</c>.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if admin footer is displayed; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
@@ -315,7 +315,7 @@ namespace Rock.Model
         /// Gets or sets the <see cref="Rock.Model.Site"/> of the site that the page belongs to.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Site"/> entity that the Page is assocated with
+        /// The <see cref="Rock.Model.Site"/> entity that the Page is associated with
         /// </value>
         public virtual Site Site { get; set; }
 
@@ -360,7 +360,7 @@ namespace Rock.Model
         /// Gets or sets the <see cref="Rock.Model.PageRoute">PageRoutes</see> that reference this page.
         /// </summary>
         /// <value>
-        /// Collection of <see cref="Rock.Model.PageRoute"/> entities that refernce this page.
+        /// Collection of <see cref="Rock.Model.PageRoute"/> entities that reference this page.
         /// </value>
         [DataMember]
         public virtual ICollection<PageRoute> PageRoutes
