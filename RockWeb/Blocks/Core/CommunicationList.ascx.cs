@@ -20,7 +20,7 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Core
 {
     [AdditionalActions( new string[] { "Approve" } )]
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     public partial class CommunicationList : Rock.Web.UI.RockBlock
     {
         private bool canApprove = false;
@@ -166,7 +166,7 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs" /> instance containing the event data.</param>
         protected void gCommunication_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            NavigateToDetailPage( "CommunicationId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "CommunicationId", (int)e.RowKeyValue );
         }
 
         protected void gCommunication_Delete( object sender, Rock.Web.UI.Controls.RowEventArgs e )

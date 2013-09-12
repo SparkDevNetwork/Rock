@@ -553,10 +553,44 @@ namespace Rock.Web.UI
         public void NavigateToLinkedPage( string attributeKey, Dictionary<string, string> queryParams = null )
         {
             Guid pageGuid = Guid.Empty;
-            if ( Guid.TryParse( GetAttributeValue( attributeKey ), out pageGuid ) )
+            Guid pageRouteGuid = Guid.Empty;
+            string[] valuePair = GetAttributeValue( attributeKey ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
+
+            //// Value is in format "Page.Guid,PageRoute.Guid"
+            //// If only the Page.Guid is specified this is just a reference to a page without a special route
+            //// In case the PageRoute record can't be found from PageRoute.Guid (maybe the pageroute was deleted), fall back to the Page without a PageRoute
+
+            if ( valuePair.Length > 0 )
             {
-                NavigateToPage( pageGuid, queryParams );
+                Guid.TryParse( valuePair[0], out pageGuid );
             }
+
+            if ( valuePair.Length == 2 )
+            {
+                Guid.TryParse( valuePair[1], out pageRouteGuid );
+            }
+
+            NavigateToPage( pageGuid, pageRouteGuid, queryParams );
+        }
+
+        /// <summary>
+        /// Navigates the automatic linked page.
+        /// </summary>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="itemKey">The item key.</param>
+        /// <param name="itemKeyValue">The item key value.</param>
+        /// <param name="itemParentKey">The item parent key.</param>
+        /// <param name="itemParentValue">The item parent value.</param>
+        public void NavigateToLinkedPage( string attributeKey, string itemKey, int itemKeyValue, string itemParentKey = null, int? itemParentValue = null )
+        {
+            Dictionary<string, string> queryParams = new Dictionary<string, string>();
+            queryParams.Add( itemKey, itemKeyValue.ToString() );
+            if ( !string.IsNullOrWhiteSpace( itemParentKey ) )
+            {
+                queryParams.Add( itemParentKey, ( itemParentValue ?? 0 ).ToString() );
+            }
+
+            NavigateToLinkedPage( attributeKey, queryParams );
         }
 
         /// <summary>
@@ -568,44 +602,33 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Shows the detail page.
+        /// Navigates the automatic page.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        /// <param name="itemParentKey">The item parent key.</param>
-        /// <param name="itemParentValue">The item parent value.</param>
-        public void NavigateToDetailPage( string itemKey, int itemKeyValue, string itemParentKey = null, int? itemParentValue = null )
+        /// <param name="pageGuid">The page unique identifier.</param>
+        /// <param name="queryString">The query string.</param>
+        public void NavigateToPage( Guid pageGuid, Dictionary<string, string> queryString )
         {
-            string pageGuid = GetAttributeValue( DetailPageAttribute.Key );
-
-            if ( !string.IsNullOrWhiteSpace( pageGuid ) )
-            {
-                Dictionary<string, string> queryString = new Dictionary<string, string>();
-                queryString.Add( itemKey, itemKeyValue.ToString() );
-                if ( !string.IsNullOrWhiteSpace( itemParentKey ) )
-                {
-                    queryString.Add( itemParentKey, ( itemParentValue ?? 0 ).ToString() );
-                }
-
-                NavigateToPage( new Guid( pageGuid ), queryString );
-            }
+            NavigateToPage(pageGuid, Guid.Empty, queryString);
         }
 
         /// <summary>
-        /// Navigates to page.
+        /// Navigates the automatic page.
         /// </summary>
-        /// <param name="pageGuid">The page GUID.</param>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        /// <param name="additionalParams">The additional params.</param>
-        public void NavigateToPage( Guid pageGuid, Dictionary<string, string> queryString )
+        /// <param name="pageGuid">The page unique identifier.</param>
+        /// <param name="pageRouteGuid">The page route unique identifier.</param>
+        /// <param name="queryString">The query string.</param>
+        public void NavigateToPage( Guid pageGuid, Guid pageRouteGuid, Dictionary<string, string> queryString )
         {
             var pageCache = PageCache.Read( pageGuid );
             if ( pageCache != null )
             {
                 int routeId = 0;
                 {
-                    routeId = pageCache.PageRoutes.FirstOrDefault().Key;
+                    var pageRouteInfo = pageCache.PageRoutes.FirstOrDefault( a => a.Guid == pageRouteGuid);
+                    if (pageRouteInfo != null)
+                    {
+                        routeId = pageRouteInfo.Id;
+                    }
                 }
 
                 var pageReference = new PageReference( pageCache.Id, routeId, queryString, null );

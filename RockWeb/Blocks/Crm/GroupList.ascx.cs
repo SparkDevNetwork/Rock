@@ -27,7 +27,7 @@ namespace RockWeb.Blocks.Crm
     [BooleanField( "Show Notification" )]
     [BooleanField( "Limit to Security Role Groups" )]
     [ContextAware( typeof( Group ) )]
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     public partial class GroupList : RockBlock
     {
         #region Control Methods
@@ -81,7 +81,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gGroups_Add( object sender, EventArgs e )
         {
-            NavigateToDetailPage( "groupId", 0 );
+            NavigateToLinkedPage( "DetailPage", "groupId", 0 );
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gGroups_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "groupId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "groupId", (int)e.RowKeyValue );
         }
 
         /// <summary>

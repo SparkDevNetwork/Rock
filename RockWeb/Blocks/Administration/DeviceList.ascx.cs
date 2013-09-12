@@ -21,7 +21,7 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// 
     /// </summary>
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     public partial class DeviceList : RockBlock
     { 
         #region Control Methods
@@ -142,7 +142,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gDevice_Add( object sender, EventArgs e )
         {
-            NavigateToDetailPage( "DeviceId", 0 );
+            NavigateToLinkedPage( "DetailPage", "DeviceId", 0 );
         }
 
         /// <summary>
@@ -152,7 +152,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gDevice_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "DeviceId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "DeviceId", (int)e.RowKeyValue );
         }
 
         /// <summary>

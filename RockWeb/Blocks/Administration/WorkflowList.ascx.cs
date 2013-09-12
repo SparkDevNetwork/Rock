@@ -22,7 +22,7 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// 
     /// </summary>
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     [ContextAware( typeof( WorkflowType ) )]
     public partial class WorkflowList : RockBlock
     {
@@ -72,7 +72,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gWorkflows_Add( object sender, EventArgs e )
         {
-            NavigateToDetailPage( "workflowId", 0 );
+            NavigateToLinkedPage( "DetailPage", "workflowId", 0 );
         }
 
         /// <summary>
@@ -82,7 +82,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gWorkflows_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "workflowId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "workflowId", (int)e.RowKeyValue );
         }
 
         /// <summary>

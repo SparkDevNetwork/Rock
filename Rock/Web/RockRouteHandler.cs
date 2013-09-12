@@ -90,8 +90,18 @@ namespace Rock.Web
 
                 cache[cacheKey] = sites;
 
-                if ( site != null && site.DefaultPageId.HasValue )
-                    pageId = site.DefaultPageId.Value.ToString();
+                if ( site != null) 
+                {
+                    if (site.DefaultPageId.HasValue)
+                    {
+                        pageId = site.DefaultPageId.Value.ToString();
+                    }
+
+                    if (site.DefaultPageRouteId.HasValue)
+                    {
+                        routeId = site.DefaultPageRouteId.Value;
+                    }
+                }
 
                 if ( string.IsNullOrEmpty( pageId ) )
                     throw new SystemException( "Invalid Site Configuration" );

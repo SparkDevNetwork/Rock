@@ -21,7 +21,7 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// User controls for managing defined types and their values
     /// </summary>
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     public partial class DefinedTypeList : RockBlock
     {
         #region Control Methods
@@ -89,7 +89,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gDefinedType_Add( object sender, EventArgs e )
         {
-            NavigateToDetailPage( "definedTypeId", 0 );
+            NavigateToLinkedPage( "DetailPage", "definedTypeId", 0 );
         }
 
         /// <summary>
@@ -99,7 +99,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gDefinedType_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "definedTypeId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "definedTypeId", e.RowKeyId );
         }
 
         /// <summary>
