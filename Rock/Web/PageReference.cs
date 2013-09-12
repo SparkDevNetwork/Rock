@@ -247,10 +247,10 @@ namespace Rock.Web
                 foreach ( var item in pageCache.PageRoutes )
                 {
                     // If route contains no parameters, and no parameters were provided, return this route
-                    var matches = r.Matches( item.Value);
+                    var matches = r.Matches( item.Route);
                     if ( matches.Count == 0 && ( Parameters == null || Parameters.Count == 0 ) )
                     {
-                        return item.Key;
+                        return item.Id;
                     }
 
                     // If route contains the same number of parameters as provided, check to see if they all match names
@@ -269,7 +269,7 @@ namespace Rock.Web
 
                         if ( matchesAllParms )
                         {
-                            return item.Key;
+                            return item.Id;
                         }
                     }
                 }

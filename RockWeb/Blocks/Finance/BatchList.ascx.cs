@@ -19,7 +19,7 @@ using System.Collections.Generic;
 
 namespace RockWeb.Blocks.Finance.Administration
 {
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     public partial class BatchList : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -269,7 +269,7 @@ namespace RockWeb.Blocks.Finance.Administration
         /// <param name="id">The id.</param>
         protected void ShowDetailForm( int id )
         {
-            NavigateToDetailPage( "financialBatchId", id );
+            NavigateToLinkedPage( "DetailPage", "financialBatchId", id );
         }
 
         /// <summary>
