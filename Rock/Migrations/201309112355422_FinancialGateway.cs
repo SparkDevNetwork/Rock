@@ -28,10 +28,11 @@ namespace Rock.Migrations
             DropIndex("dbo.FinancialScheduledTransaction", new[] { "GatewayId" });
             AddColumn("dbo.FinancialTransaction", "GatewayEntityTypeId", c => c.Int());
             AddColumn("dbo.FinancialTransaction", "ScheduledTransactionId", c => c.Int());
-            AddColumn("dbo.FinancialTransaction", "ScheduledTransactionKey", c => c.String());
             AddColumn("dbo.FinancialPersonSavedAccount", "GatewayEntityTypeId", c => c.Int());
+            AddColumn("dbo.FinancialScheduledTransaction", "NextPaymentDate", c => c.DateTime(storeType: "date"));
+            AddColumn("dbo.FinancialScheduledTransaction", "LastStatusUpdateDateTime", c => c.DateTime(storeType: "date"));
             AddColumn("dbo.FinancialScheduledTransaction", "GatewayEntityTypeId", c => c.Int());
-            AddColumn("dbo.FinancialScheduledTransaction", "ScheduledTransactionKey", c => c.String());
+            AddColumn("dbo.FinancialScheduledTransaction", "GatewayScheduleId", c => c.String());
             CreateIndex("dbo.FinancialTransaction", "GatewayEntityTypeId");
             CreateIndex("dbo.FinancialScheduledTransaction", "GatewayEntityTypeId");
             CreateIndex("dbo.FinancialTransaction", "ScheduledTransactionId");
@@ -119,10 +120,11 @@ namespace Rock.Migrations
             DropIndex("dbo.FinancialTransaction", new[] { "ScheduledTransactionId" });
             DropIndex("dbo.FinancialScheduledTransaction", new[] { "GatewayEntityTypeId" });
             DropIndex("dbo.FinancialTransaction", new[] { "GatewayEntityTypeId" });
-            DropColumn("dbo.FinancialScheduledTransaction", "ScheduledTransactionKey");
+            DropColumn("dbo.FinancialScheduledTransaction", "GatewayScheduleId");
             DropColumn("dbo.FinancialScheduledTransaction", "GatewayEntityTypeId");
+            DropColumn("dbo.FinancialScheduledTransaction", "LastStatusUpdateDateTime");
+            DropColumn("dbo.FinancialScheduledTransaction", "NextPaymentDate");
             DropColumn("dbo.FinancialPersonSavedAccount", "GatewayEntityTypeId");
-            DropColumn("dbo.FinancialTransaction", "ScheduledTransactionKey");
             DropColumn("dbo.FinancialTransaction", "ScheduledTransactionId");
             DropColumn("dbo.FinancialTransaction", "GatewayEntityTypeId");
             CreateIndex("dbo.FinancialScheduledTransaction", "GatewayId");

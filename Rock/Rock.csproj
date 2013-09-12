@@ -173,6 +173,11 @@
     <Compile Include="Field\Types\IntegerRangeFieldType.cs" />
     <Compile Include="Field\Types\DateRangeFieldType.cs" />
     <Compile Include="Field\Types\DecimalRangeFieldType.cs" />
+    <Compile Include="Financial\PaymentInfo.cs" />
+    <Compile Include="Financial\SwipePaymentInfo.cs" />
+    <Compile Include="Financial\ReferencePaymentInfo.cs" />
+    <Compile Include="Financial\PaymentSchedule.cs" />
+    <Compile Include="Financial\Payment.cs" />
     <Compile Include="Financial\GatewayComponent.cs" />
     <Compile Include="Financial\GatewayContainer.cs" />
     <Compile Include="Migrations\201308232058045_CreateDatabase.cs" />
@@ -191,9 +196,9 @@
     <Compile Include="Migrations\201309070045381_CheckinConfigUI.Designer.cs">
       <DependentUpon>201309070045381_CheckinConfigUI.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201309101837256_FinancialGateway.cs" />
-    <Compile Include="Migrations\201309101837256_FinancialGateway.Designer.cs">
-      <DependentUpon>201309101837256_FinancialGateway.cs</DependentUpon>
+    <Compile Include="Migrations\201309112355422_FinancialGateway.cs" />
+    <Compile Include="Migrations\201309112355422_FinancialGateway.Designer.cs">
+      <DependentUpon>201309112355422_FinancialGateway.cs</DependentUpon>
     </Compile>
     <Compile Include="Model\FinancialPersonSavedAccountService.Partial.cs" />
     <Compile Include="Storage\ProviderComponent.cs" />
@@ -308,8 +313,8 @@
     <Compile Include="Field\Types\EntityTypeFieldType.cs" />
     <Compile Include="Field\Types\GroupFieldType.cs" />
     <Compile Include="Field\Types\GroupTypesFieldType.cs" />
-    <Compile Include="Financial\BankAccount.cs" />
-    <Compile Include="Financial\CreditCard.cs" />
+    <Compile Include="Financial\ACHPaymentInfo.cs" />
+    <Compile Include="Financial\CreditCardPaymentInfo.cs" />
     <Compile Include="Model\AuthService.Partial.cs" />
     <Compile Include="Model\BlockService.Partial.cs" />
     <Compile Include="Model\BlockTypeService.Partial.cs" />
@@ -998,8 +1003,8 @@
     <EmbeddedResource Include="Migrations\201309070045381_CheckinConfigUI.resx">
       <DependentUpon>201309070045381_CheckinConfigUI.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201309101837256_FinancialGateway.resx">
-      <DependentUpon>201309101837256_FinancialGateway.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201309112355422_FinancialGateway.resx">
+      <DependentUpon>201309112355422_FinancialGateway.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

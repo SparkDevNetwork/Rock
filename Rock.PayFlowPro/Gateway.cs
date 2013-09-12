@@ -35,15 +35,15 @@ namespace Rock.PayFlowPro
 
     public class Gateway : GatewayComponent
     {
-        #region Gateway Configuration Properties
+        #region Gateway Component Implementation
 
         /// <summary>
-        /// Gets the supported frequency values.
+        /// Gets the supported payment schedules.
         /// </summary>
         /// <value>
-        /// The supported frequency values.
+        /// The supported payment schedules.
         /// </value>
-        public override List<DefinedValueCache> SupportedFrequencyValues
+        public override List<DefinedValueCache> SupportedPaymentSchedules
         {
             get
             {
@@ -57,74 +57,295 @@ namespace Rock.PayFlowPro
             }
         }
 
-        #endregion
+        /// <summary>
+        /// Charges the specified payment info.
+        /// </summary>
+        /// <param name="paymentInfo">The payment info.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public override FinancialTransaction Charge( PaymentInfo paymentInfo, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+            Response ppResponse = null;
+
+            var invoice = GetInvoice( paymentInfo );
+            var tender = GetTender( paymentInfo );
+
+            if ( tender != null )
+            {
+                if ( paymentInfo is ReferencePaymentInfo )
+                {
+                    var reference = paymentInfo as ReferencePaymentInfo;
+                    var ppTransaction = new ReferenceTransaction( "Sale", reference.ReferenceNumber, GetUserInfo(), GetConnection(), invoice, tender, PayflowUtility.RequestId );
+                    ppResponse = ppTransaction.SubmitTransaction();
+                }
+                else
+                {
+                    var ppTransaction = new SaleTransaction( GetUserInfo(), GetConnection(), invoice, tender, PayflowUtility.RequestId );
+                    ppResponse = ppTransaction.SubmitTransaction();
+                }
+            }
+            else
+            {
+                errorMessage = "Could not create tender from PaymentInfo";
+            }
+
+            if ( ppResponse != null )
+            {
+                TransactionResponse txnResponse = ppResponse.TransactionResponse;
+                if ( txnResponse != null )
+                {
+                    if ( txnResponse.Result == 0 ) // Success
+                    {
+                        var transaction = new FinancialTransaction();
+                        transaction.TransactionCode = txnResponse.Pnref;
+                        return transaction;
+                    }
+                    else
+                    {
+                        errorMessage = string.Format( "[{0}] {1}", txnResponse.Result, txnResponse.RespMsg );
+                    }
+                }
+                else
+                {
+                    errorMessage = "Invalid transaction response from the financial gateway";
+                }
+            }
+            else
+            {
+                errorMessage = "Invalid response from the financial gateway.";
+            }
+
+            return null;
+        }
 
         /// <summary>
-        /// Initiates a credit-card sale transaction.  If succesful, the TransactionCode is updated
+        /// Adds the scheduled payment.
+        /// </summary>
+        /// <param name="schedule">The schedule.</param>
+        /// <param name="paymentInfo">The payment info.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public override FinancialScheduledTransaction AddScheduledPayment( PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            var recurring = GetReccurring( schedule );
+
+            if ( paymentInfo is CreditCardPaymentInfo )
+            {
+                recurring.OptionalTrx = "A";
+            }
+
+            var ppTransaction = new RecurringAddTransaction( GetUserInfo(), GetConnection(), GetInvoice( paymentInfo ), GetTender( paymentInfo ), 
+                recurring, PayflowUtility.RequestId );
+
+            if ( paymentInfo is ReferencePaymentInfo )
+            {
+                var reference = paymentInfo as ReferencePaymentInfo;
+                ppTransaction.OrigId = reference.ReferenceNumber;
+            }
+            var ppResponse = ppTransaction.SubmitTransaction();
+
+            if ( ppResponse != null )
+            {
+                TransactionResponse txnResponse = ppResponse.TransactionResponse;
+                if ( txnResponse != null )
+                {
+                    if ( txnResponse.Result == 0 ) // Success
+                    {
+                        RecurringResponse recurringResponse = ppResponse.RecurringResponse;
+
+                        if ( recurringResponse != null )
+                        {
+                            var scheduledTransaction = new FinancialScheduledTransaction();
+                            scheduledTransaction.TransactionCode = recurringResponse.TrxPNRef;
+                            scheduledTransaction.GatewayScheduleId = recurringResponse.ProfileId;
+                            return scheduledTransaction;
+                        }
+                        else
+                        {
+                            errorMessage = "Invalid recurring response from the financial gateway";
+                        }
+                    }
+                    else
+                    {
+                        errorMessage = string.Format( "[{0}] {1}", txnResponse.Result, txnResponse.RespMsg );
+                    }
+                }
+                else
+                {
+                    errorMessage = "Invalid transaction response from the financial gateway";
+                }
+            }
+            else
+            {
+                errorMessage = "Invalid response from the financial gateway.";
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Updates the scheduled payment.
+        /// </summary>
+        /// <param name="schedule">The schedule.</param>
+        /// <param name="paymentInfo">The payment info.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public override bool UpdateScheduledPayment( FinancialScheduledTransaction transaction, PaymentInfo paymentInfo, out string errorMessage )
+        {
+            errorMessage = string.Empty;
+
+            RecurringModifyTransaction ppTransaction = null;
+
+            if ( paymentInfo != null )
+            {
+                ppTransaction = new RecurringModifyTransaction( GetUserInfo(), GetConnection(), GetReccurring( transaction ), GetInvoice( paymentInfo ), GetTender( paymentInfo ), PayflowUtility.RequestId );
+            }
+            else
+            {
+                ppTransaction = new RecurringModifyTransaction( GetUserInfo(), GetConnection(), GetReccurring( transaction ), PayflowUtility.RequestId );
+            }
+
+            var ppResponse = ppTransaction.SubmitTransaction();
+
+            if ( ppResponse != null )
+            {
+                TransactionResponse txnResponse = ppResponse.TransactionResponse;
+                if ( txnResponse != null )
+                {
+                    if ( txnResponse.Result == 0 ) // Success
+                    {
+                        RecurringResponse recurringResponse = ppResponse.RecurringResponse;
+                        if ( recurringResponse != null )
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            errorMessage = "Invalid recurring response from the financial gateway";
+                        }
+                    }
+                    else
+                    {
+                        errorMessage = string.Format( "[{0}] {1}", txnResponse.Result, txnResponse.RespMsg );
+                    }
+                }
+                else
+                {
+                    errorMessage = "Invalid transaction response from the financial gateway";
+                }
+            }
+            else
+            {
+                errorMessage = "Invalid response from the financial gateway.";
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Cancels the scheduled payment.
         /// </summary>
         /// <param name="transaction">The transaction.</param>
-        /// <param name="creditCard">The credit card.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public override bool Charge( FinancialTransaction transaction, Rock.Financial.CreditCard creditCard, out string errorMessage )
+        public override bool CancelScheduledPayment( FinancialScheduledTransaction transaction, out string errorMessage )
         {
-            return MakeSale( transaction, GetInvoice( creditCard ), GetTender( creditCard ), out errorMessage );
+            errorMessage = string.Empty;
+
+            var ppTransaction = new RecurringCancelTransaction( GetUserInfo(), GetConnection(), GetReccurring(transaction), PayflowUtility.RequestId );
+            var ppResponse = ppTransaction.SubmitTransaction();
+
+            if ( ppResponse != null )
+            {
+                TransactionResponse txnResponse = ppResponse.TransactionResponse;
+                if ( txnResponse != null )
+                {
+                    if ( txnResponse.Result == 0 ) // Success
+                    {
+                        RecurringResponse recurringResponse = ppResponse.RecurringResponse;
+                        if ( recurringResponse != null )
+                        {
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        errorMessage = string.Format( "[{0}] {1}", txnResponse.Result, txnResponse.RespMsg );
+                    }
+                }
+                else
+                {
+                    errorMessage = "Invalid transaction response from the financial gateway";
+                }
+            }
+            else
+            {
+                errorMessage = "Invalid response from the financial gateway.";
+            }
+
+            return false;
         }
 
         /// <summary>
-        /// Initiates an ach sale transaction. If succesful, the TransactionCode is updated
+        /// Gets the scheduled payment status.
         /// </summary>
         /// <param name="transaction">The transaction.</param>
-        /// <param name="bankAccount">The bank account.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public override bool Charge( FinancialTransaction transaction, BankAccount bankAccount, out string errorMessage )
+        public override bool GetScheduledPaymentStatus( FinancialScheduledTransaction transaction, out string errorMessage )
         {
-            return MakeSale( transaction, GetInvoice( bankAccount ), GetTender( bankAccount ), out errorMessage );
+            errorMessage = string.Empty;
+
+            var ppTransaction = new RecurringInquiryTransaction( GetUserInfo(), GetConnection(), GetReccurring( transaction ), PayflowUtility.RequestId );
+            var ppResponse = ppTransaction.SubmitTransaction();
+
+            if ( ppResponse != null )
+            {
+                TransactionResponse txnResponse = ppResponse.TransactionResponse;
+                if ( txnResponse != null )
+                {
+                    if ( txnResponse.Result == 0 ) // Success
+                    {
+                        RecurringResponse recurringResponse = ppResponse.RecurringResponse;
+                        if ( recurringResponse != null )
+                        {
+                            transaction.IsActive = recurringResponse.Status.ToUpper() == "ACTIVE";
+                            transaction.StartDate = GetDate( recurringResponse.Start ) ?? transaction.StartDate;
+                            transaction.NextPaymentDate = GetDate( recurringResponse.NextPayment ) ?? transaction.NextPaymentDate;
+                            transaction.NumberOfPayments = recurringResponse.Term.AsInteger( false ) ?? transaction.NumberOfPayments;
+                            return true;
+                        }
+                        return true;
+                    }
+                    else
+                    {
+                        errorMessage = string.Format( "[{0}] {1}", txnResponse.Result, txnResponse.RespMsg );
+                    }
+                }
+                else
+                {
+                    errorMessage = "Invalid transaction response from the financial gateway";
+                }
+            }
+            else
+            {
+                errorMessage = "Invalid response from the financial gateway.";
+            }
+
+            return false;
         }
 
         /// <summary>
-        /// Creates the scheduled transaction.
+        /// Gets the payments that have been processed for any scheduled transactions
         /// </summary>
-        /// <param name="scheduledTransaction">The scheduled transaction.</param>
-        /// <param name="creditCard">The credit card.</param>
+        /// <param name="startDate">The start date.</param>
+        /// <param name="endDate">The end date.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public override bool CreateScheduledTransaction( FinancialScheduledTransaction scheduledTransaction, Rock.Financial.CreditCard creditCard, out string errorMessage )
-        {
-            var recurringInfo = GetReccurring( scheduledTransaction );
-            return CreateRecurring( scheduledTransaction, recurringInfo, GetInvoice( creditCard ), GetTender( creditCard ), out errorMessage );
-        }
-
-        /// <summary>
-        /// Creates the scheduled transaction.
-        /// </summary>
-        /// <param name="scheduledTransaction">The scheduled transaction.</param>
-        /// <param name="bankAccount">The bank account.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns></returns>
-        public override bool CreateScheduledTransaction( FinancialScheduledTransaction scheduledTransaction, BankAccount bankAccount, out string errorMessage )
-        {
-            var recurringInfo = GetReccurring( scheduledTransaction );
-            return CreateRecurring( scheduledTransaction, recurringInfo, GetInvoice( bankAccount ), GetTender( bankAccount ), out errorMessage );
-        }
-
-        public override Model.FinancialScheduledTransaction UpdateScheduledTransaction( Model.FinancialScheduledTransaction transaction, out string errorMessage )
-        {
-            throw new NotImplementedException();
-        }
-
-        public override bool CancelScheduledTransaction( Model.FinancialScheduledTransaction transaction, out string errorMessage )
-        {
-            throw new NotImplementedException();
-        }
-
-        public override void ProcessPostBack( System.Web.HttpRequest request )
-        {
-            throw new NotImplementedException();
-        }
-
-        public override DataTable DownloadNewTransactions( DateTime startDate, DateTime endDate, out string errorMessage )
+        public override List<Payment> GetPayments( DateTime startDate, DateTime endDate, out string errorMessage )
         {
             var reportingApi = new Reporting.Api(
                 GetAttributeValue( "User" ),
@@ -139,7 +360,7 @@ namespace Rock.PayFlowPro
             DataTable dt = reportingApi.GetReport( "RecurringBillingReport", reportParams, out errorMessage );
             if ( dt != null )
             {
-                var txns = new List<FinancialTransaction>();
+                var txns = new List<Payment>();
 
                 // The Recurring Billing Report items does not include the amounts for each transaction, so need 
                 // to do a transactionIDSearch to get the amount for each transaction
@@ -147,37 +368,42 @@ namespace Rock.PayFlowPro
                 reportParams = new Dictionary<string, string>();
                 reportParams.Add( "transaction_id", string.Empty );
 
-                dt.Columns.Add( "Amount" );
                 foreach ( DataRow row in dt.Rows )
                 {
                     reportParams["transaction_id"] = row["Transaction ID"].ToString();
                     DataTable dtTxn = reportingApi.GetSearch( "TransactionIDSearch", reportParams, out errorMessage );
                     if ( dtTxn != null && dtTxn.Rows.Count == 1 )
                     {
-                        decimal amount = decimal.MinValue;
-                        if ( decimal.TryParse( dtTxn.Rows[0]["Amount"].ToString(), out amount ) )
-                        {
-                            var txn = new FinancialTransaction();
-                            txn.Amount = amount;
-                            txn.TransactionCode = row["Transaction ID"].ToString();
-                            txns.Add( txn );
-                        }
+                        var payment = new Payment();
 
-                        row["Amount"] = dtTxn.Rows[0]["Amount"];
+                        decimal amount = decimal.MinValue;
+                        payment.Amount = decimal.TryParse( dtTxn.Rows[0]["Amount"].ToString(), out amount ) ? (amount / 100) : 0.0M;
+
+                        var time = DateTime.MinValue;
+                        payment.TransactionDateTime = DateTime.TryParse( row["Time"].ToString(), out time ) ? time : DateTime.MinValue;
+
+                        payment.TransactionCode = row["Transaction ID"].ToString();
+                        payment.GatewayScheduleId = row["Profile ID"].ToString();
+                        payment.ScheduleActive = row["Status"].ToString() == "Active";
+                        txns.Add( payment );
                     }
                     else
                     {
+                        errorMessage = "The TransactionIDSearch report did not return a value for transaction: " + row["Transaction ID"].ToString();
                         return null;
                     }
                 }
 
-                return dt;
+                return txns;
             }
 
+            errorMessage = "The RecurringBillingReport report did not return any data";
             return null;
         }
 
-        #region PayFlowPro Helper Methods
+        #endregion
+
+        #region PayFlowPro Object Helper Methods
 
         private string GatewayUrl
         {
@@ -208,166 +434,140 @@ namespace Rock.PayFlowPro
                 GetAttributeValue( "Password" ) );
         }
 
-        private Invoice GetInvoice( Rock.Financial.CreditCard creditCard )
-        {
-            var ppAmount = new Currency( creditCard.Amount );
-
-            var ppInvoice = new Invoice();
-            ppInvoice.Amt = ppAmount;
-
-            return ppInvoice;
-        }
-
-        private Invoice GetInvoice( BankAccount bankAccount )
-        {
-            var ppAmount = new Currency( bankAccount.Amount );
-
-            var ppInvoice = new Invoice();
-            ppInvoice.Amt = ppAmount;
-
-            return ppInvoice;
-        }
-
-        private BaseTender GetTender( Rock.Financial.CreditCard creditCard )
+        private Invoice GetInvoice( PaymentInfo paymentInfo )
         {
             var ppBillingInfo = new BillTo();
-            ppBillingInfo.Street = creditCard.BillingStreet;
-            ppBillingInfo.City = creditCard.BillingCity;
-            ppBillingInfo.State = creditCard.BillingState;
-            ppBillingInfo.Zip = creditCard.BillingZip;
+            
+            ppBillingInfo.FirstName = paymentInfo.FirstName;
+            ppBillingInfo.LastName = paymentInfo.LastName;
+            ppBillingInfo.Email = paymentInfo.Email;
+            ppBillingInfo.PhoneNum = paymentInfo.Phone;
+            ppBillingInfo.Street = paymentInfo.Street;
+            ppBillingInfo.State = paymentInfo.State;
+            ppBillingInfo.Zip = paymentInfo.Zip;
 
-            var ppAmount = new Currency( creditCard.Amount );
+            if ( paymentInfo is CreditCardPaymentInfo )
+            {
+                var cc = paymentInfo as CreditCardPaymentInfo;
+                ppBillingInfo.Street = cc.BillingStreet;
+                ppBillingInfo.City = cc.BillingCity;
+                ppBillingInfo.State = cc.BillingState;
+                ppBillingInfo.Zip = cc.BillingZip;
+            }
 
-            var ppCreditCard = new PayPal.Payments.DataObjects.CreditCard( creditCard.Number, creditCard.ExpirationDate.ToString( "MMyy" ) );
-            ppCreditCard.Cvv2 = creditCard.Code;
+            var ppAmount = new Currency( paymentInfo.Amount );
 
-            return new CardTender( ppCreditCard );
+            var ppInvoice = new Invoice();
+            ppInvoice.Amt = ppAmount;
+            ppInvoice.BillTo = ppBillingInfo;
+
+            return ppInvoice;
         }
 
-        private BaseTender GetTender( BankAccount bankAccount )
+        private BaseTender GetTender( PaymentInfo paymentInfo )
         {
-            var ppBankAccount = new BankAcct( bankAccount.AccountNumber, bankAccount.RoutingNumber );
-            ppBankAccount.AcctType = bankAccount.AccountType == BankAccountType.Checking ? "C" : "S";
-            ppBankAccount.Name = bankAccount.BankName;
+            if (paymentInfo is CreditCardPaymentInfo)
+            {
+                var cc = paymentInfo as CreditCardPaymentInfo;
+                var ppCreditCard = new CreditCard( cc.Number, cc.ExpirationDate.ToString( "MMyy" ) );
+                ppCreditCard.Cvv2 = cc.Code;
+                return new CardTender( ppCreditCard );
+            }
 
-            return new ACHTender( ppBankAccount );
+            if ( paymentInfo is ACHPaymentInfo )
+            {
+                var ach = paymentInfo as ACHPaymentInfo;
+                var ppBankAccount = new BankAcct( ach.AccountNumber, ach.RoutingNumber );
+                ppBankAccount.AcctType = ach.AccountType == BankAccountType.Checking ? "C" : "S";
+                ppBankAccount.Name = ach.BankName;
+                return new ACHTender( ppBankAccount );
+            }
+
+            if ( paymentInfo is SwipePaymentInfo )
+            {
+                var swipe = paymentInfo as SwipePaymentInfo;
+                var ppSwipeCard = new SwipeCard( swipe.SwipeInfo );
+                return new CardTender( ppSwipeCard );
+            }
+
+            if ( paymentInfo is ReferencePaymentInfo )
+            {
+                var reference = paymentInfo as ReferencePaymentInfo;
+                if ( reference.PaymentMethod == PaymentMethod.ACH )
+                {
+                    return new ACHTender( (BankAcct)null );
+                }
+                else
+                {
+                    return new CardTender( (CreditCard)null );
+                }
+            }
+            return null;
         }
 
-        private RecurringInfo GetReccurring( FinancialScheduledTransaction scheduledTransaction )
+        private RecurringInfo GetReccurring( PaymentSchedule schedule )
         {
             var ppRecurringInfo = new RecurringInfo();
-            ppRecurringInfo.ProfileName = scheduledTransaction.AuthorizedPersonId.ToString();
-            ppRecurringInfo.Start = scheduledTransaction.StartDate.ToString( "MMddyyyy" );
 
-            var selectedFrequencyGuid = DefinedValueCache.Read( scheduledTransaction.TransactionFrequencyValueId ).Guid.ToString().ToUpper();
-            switch ( selectedFrequencyGuid )
+            ppRecurringInfo.ProfileName = schedule.PersonId.ToString();
+            ppRecurringInfo.Start = schedule.StartDate.ToString( "MMddyyyy" );
+            SetPayPeriod( ppRecurringInfo, schedule.TransactionFrequencyValue );
+
+            return ppRecurringInfo;
+        }
+
+        private RecurringInfo GetReccurring( FinancialScheduledTransaction schedule )
+        {
+            var ppRecurringInfo = new RecurringInfo();
+            
+            ppRecurringInfo.OrigProfileId = schedule.GatewayScheduleId;
+            ppRecurringInfo.Start = schedule.StartDate.ToString( "MMddyyyy" );
+            if ( schedule.TransactionFrequencyValueId > 0 )
             {
-                case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME:
-                    ppRecurringInfo.PayPeriod = "YEAR";
-                    ppRecurringInfo.Term = 1;
-                    break;
-                case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY:
-                    ppRecurringInfo.PayPeriod = "WEEK";
-                    break;
-                case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY:
-                    ppRecurringInfo.PayPeriod = "BIWK";
-                    break;
-                case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY:
-                    ppRecurringInfo.PayPeriod = "SMMO";
-                    break;
-                case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY:
-                    ppRecurringInfo.PayPeriod = "MONT";
-                    break;
+                SetPayPeriod( ppRecurringInfo, DefinedValueCache.Read( schedule.TransactionFrequencyValueId ) );
             }
 
             return ppRecurringInfo;
         }
 
+        private void SetPayPeriod( RecurringInfo recurringInfo, DefinedValueCache transactionFrequencyValue )
+        {
+            var selectedFrequencyGuid = transactionFrequencyValue.Guid.ToString().ToUpper();
+            switch ( selectedFrequencyGuid )
+            {
+                case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME:
+                    recurringInfo.PayPeriod = "YEAR";
+                    recurringInfo.Term = 1;
+                    break;
+                case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY:
+                    recurringInfo.PayPeriod = "WEEK";
+                    break;
+                case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY:
+                    recurringInfo.PayPeriod = "BIWK";
+                    break;
+                case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY:
+                    recurringInfo.PayPeriod = "SMMO";
+                    break;
+                case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY:
+                    recurringInfo.PayPeriod = "MONT";
+                    break;
+            }
+        }
+
+        private DateTime? GetDate( string date )
+        {
+            DateTime dt = DateTime.MinValue;
+            if (DateTime.TryParseExact( date, "MMddyyyy", null, System.Globalization.DateTimeStyles.None, out dt ))
+            {
+                return dt;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         #endregion
-
-        private bool MakeSale( FinancialTransaction transaction, Invoice invoice, BaseTender tender, out string errorMessage )
-        {
-            errorMessage = string.Empty;
-
-            var ppTransaction = new SaleTransaction( GetUserInfo(), GetConnection(), invoice, tender, PayflowUtility.RequestId );
-            var ppResponse = ppTransaction.SubmitTransaction();
-
-            if ( ppResponse != null )
-            {
-                TransactionResponse txnResponse = ppResponse.TransactionResponse;
-                if ( txnResponse != null )
-                {
-                    if ( txnResponse.Result == 0 ) // Success
-                    {
-                        transaction.TransactionCode = txnResponse.Pnref;
-                        return true;
-                    }
-                    else
-                    {
-                        errorMessage = string.Format( "[{0}] {1}", txnResponse.Result, txnResponse.RespMsg );
-                    }
-                }
-                else
-                {
-                    errorMessage = "Invalid transaction response from the financial gateway";
-                }
-            }
-            else
-            {
-                errorMessage = "Invalid response from the financial gateway.";
-            }
-
-
-            return false;
-        }
-
-
-        private bool CreateRecurring( FinancialScheduledTransaction scheduledTransaction, RecurringInfo recurringInfo, Invoice invoice, BaseTender tender, out string errorMessage )
-        {
-            errorMessage = string.Empty;
-
-            var ppTransaction = new RecurringAddTransaction( GetUserInfo(), GetConnection(), invoice, tender, recurringInfo, PayflowUtility.RequestId );
-            var ppResponse = ppTransaction.SubmitTransaction();
-
-            if ( ppResponse != null )
-            {
-                TransactionResponse txnResponse = ppResponse.TransactionResponse;
-                if ( txnResponse != null )
-                {
-                    if ( txnResponse.Result == 0 ) // Success
-                    {
-                        RecurringResponse recurringResponse = ppResponse.RecurringResponse;
-
-                        if ( recurringResponse != null )
-                        {
-                            scheduledTransaction.TransactionCode = recurringResponse.ProfileId;
-                            return true;
-                        }
-                        else
-                        {
-                            errorMessage = "Invalid recurring response from the financial gateway";
-                        }
-                    }
-                    else
-                    {
-                        errorMessage = string.Format( "[{0}] {1}", txnResponse.Result, txnResponse.RespMsg );
-                    }
-                }
-                else
-                {
-                    errorMessage = "Invalid transaction response from the financial gateway";
-                }
-            }
-            else
-            {
-                errorMessage = "Invalid response from the financial gateway.";
-            }
-
-
-            return false;
-
-
-        }
 
     }
 }

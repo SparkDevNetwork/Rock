@@ -59,7 +59,6 @@ namespace RockWeb.Blocks.Finance.Administration
                 if ( _ccGateway != null )
                 {
                     ccEnabled = true;
-                    supportedFrequencies = _ccGateway.SupportedFrequencyValues;
                     txtCardFirstName.Visible = _ccGateway.SplitNameOnCard;
                     txtCardLastName.Visible = _ccGateway.SplitNameOnCard;
                     txtCardName.Visible = !_ccGateway.SplitNameOnCard;
@@ -77,12 +76,12 @@ namespace RockWeb.Blocks.Finance.Administration
             {
                 if ( ccEnabled )
                 {
-                    supportedFrequencies = _ccGateway.SupportedFrequencyValues;
+                    supportedFrequencies = _ccGateway.SupportedPaymentSchedules;
                     hfPaymentTab.Value = "CreditCard";
                 }
                 else
                 {
-                    supportedFrequencies = _achGateway.SupportedFrequencyValues;
+                    supportedFrequencies = _achGateway.SupportedPaymentSchedules;
                     hfPaymentTab.Value = "ACH";
                 }
 
@@ -93,9 +92,9 @@ namespace RockWeb.Blocks.Finance.Administration
                     // If CC and ACH gateways are different, only allow frequencies supported by both payment gateways (if different)
                     if ( _ccGateway.TypeId != _achGateway.TypeId )
                     {
-                        supportedFrequencies = _ccGateway.SupportedFrequencyValues
+                        supportedFrequencies = _ccGateway.SupportedPaymentSchedules
                             .Where( c =>
-                                _achGateway.SupportedFrequencyValues
+                                _achGateway.SupportedPaymentSchedules
                                     .Select( a => a.Id )
                                     .Contains( c.Id ) )
                             .ToList();
@@ -249,113 +248,248 @@ namespace RockWeb.Blocks.Finance.Administration
         protected void btnNext_Click( object sender, EventArgs e )
         {
             string errorMessage = string.Empty;
-            bool success = false;
 
-            FinancialTransaction transaction = null;
-            FinancialScheduledTransaction scheduledTransaction = null;
+            GatewayComponent gateway = hfPaymentTab.Value == "ACH" ? _achGateway : _ccGateway;
+            PaymentInfo paymentInfo = GetPaymentInfo();
+            PaymentSchedule schedule = GetSchedule();
 
-            // Figure out if this is a one-time transaction or a future scheduled transaction
-            bool repeating = _showRepeatingOptions;
-            if ( repeating )
+            if ( schedule != null )
             {
-                // If a one-time gift was selected for today's date, then treat as a onetime immediate transaction (not scheduled)
-                int oneTimeFrequencyId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;
-                if ( btnFrequency.SelectedValue == oneTimeFrequencyId.ToString() &&
-                    dtpStartDate.SelectedDate == DateTime.Today )
-                {
-                    repeating = false;
-                }
-            }
-
-            if ( repeating )
-            {
-                if ( dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate > DateTime.Today )
-                {
-                    scheduledTransaction = new FinancialScheduledTransaction();
-                    scheduledTransaction.TransactionFrequencyValueId = btnFrequency.SelectedValueAsId().Value;
-                    scheduledTransaction.StartDate = dtpStartDate.SelectedDate.Value;
-                }
-                else
+                if ( schedule.StartDate <= DateTime.Today )
                 {
                     ShowMessage( NotificationBoxType.Error, "Payment Error", "First Gift must be a future date" );
                 }
-            }
-            else
-            {
-                transaction = new FinancialTransaction();
-            }
-
-            if ( hfPaymentTab.Value == "CreditCard" )
-            {
-                var cc = new CreditCard( txtCreditCard.Text, txtCVV.Text, mypExpiration.SelectedDate.Value );
-                cc.Amount = 0.02M;
-                cc.NameOnCard = _ccGateway.SplitNameOnCard ? txtCardFirstName.Text : txtCardName.Text;
-                cc.LastNameOnCard = txtCardLastName.Text;
-
-                if ( cbBillingAddress.Checked )
-                {
-                    cc.BillingStreet = txtBillingStreet.Text;
-                    cc.BillingCity = txtBillingCity.Text;
-                    cc.BillingState = ddlBillingState.SelectedValue;
-                    cc.BillingZip = txtBillingZip.Text;
-                }
                 else
                 {
-                    cc.BillingStreet = txtStreet.Text;
-                    cc.BillingCity = txtCity.Text;
-                    cc.BillingState = ddlState.SelectedValue;
-                    cc.BillingZip = txtZip.Text;
-                }
-
-                if ( repeating )
-                {
-                    scheduledTransaction.GatewayEntityTypeId = _ccGateway.TypeId;
-                    success = _ccGateway.CreateScheduledTransaction( scheduledTransaction, cc, out errorMessage );
-                }
-                else
-                {
-                    transaction.GatewayEntityTypeId = _ccGateway.TypeId;
-                    success = _ccGateway.Charge( transaction, cc, out errorMessage );
+                    var scheduledTransaction = gateway.AddScheduledPayment( schedule, paymentInfo, out errorMessage );
+                    if ( scheduledTransaction != null )
+                    {
+                        ShowMessage( NotificationBoxType.Success, "Success", "Schedule ID: " + scheduledTransaction.GatewayScheduleId );
+                    }
+                    else
+                    {
+                        ShowMessage( NotificationBoxType.Error, "Payment Error", errorMessage );
+                    }
                 }
             }
             else
             {
-                var ach = new BankAccount( txtAccountNumber.Text, txtRoutingNumber.Text, rblAccountType.SelectedValue == "Savings" ? BankAccountType.Savings : BankAccountType.Checking );
-                ach.Amount = 0.02M;
-                ach.BankName = txtBankName.Text;
-
-                if ( repeating )
+                var transaction = gateway.Charge( paymentInfo, out errorMessage );
+                if ( transaction != null )
                 {
-                    scheduledTransaction.GatewayEntityTypeId = _achGateway.TypeId;
-                    success = _ccGateway.CreateScheduledTransaction( scheduledTransaction, ach, out errorMessage );
+                    ShowMessage( NotificationBoxType.Success, "Success", "Transaction Code: " + transaction.TransactionCode );
                 }
                 else
                 {
-                    transaction.GatewayEntityTypeId = _achGateway.TypeId;
-                    success = _achGateway.Charge( transaction, ach, out errorMessage );
+                    ShowMessage( NotificationBoxType.Error, "Payment Error", errorMessage );
                 }
+            }
+
+        }
+
+        protected void btnTest_Click( object sender, EventArgs e )
+        {
+            string errorMessage = string.Empty;
+
+            var txns = _ccGateway.GetPayments( new DateTime( 2013, 9, 9 ), new DateTime( 2013, 9, 10 ), out errorMessage );
+            if ( txns != null )
+            {
+                gReport.DataSource = txns;
+                gReport.DataBind();
+                pnlReport.Visible = true;
+            }
+            else
+            {
+                ShowMessage( NotificationBoxType.Error, "Report Error", errorMessage );
+            }
+        }
+
+        protected void btnScheduleGo_Click( object sender, EventArgs e )
+        {
+            var transaction = new FinancialScheduledTransaction();
+            transaction.GatewayScheduleId = txtScheduleId.Text;
+
+            bool success = false;
+            string errorMessage = string.Empty;
+            switch ( ddlAction.SelectedValue )
+            {
+                case "Status":
+                    success = _ccGateway.GetScheduledPaymentStatus( transaction, out errorMessage );
+                    break;
+
+                case "UpdateSchedule":
+                case "UpdatePayment":
+
+                    PaymentSchedule schedule = GetSchedule();
+
+                    if ( schedule != null )
+                    {
+                        if ( schedule.StartDate <= DateTime.Today )
+                        {
+                            ShowMessage( NotificationBoxType.Error, "Payment Error", "Date must be a future date" );
+                        }
+                        else
+                        {
+                            PaymentInfo paymentInfo = null;
+                            if ( ddlAction.SelectedValue == "UpdatePayment" )
+                            {
+                                paymentInfo = GetPaymentInfo();
+                            }
+                            success = _ccGateway.UpdateScheduledPayment( transaction, paymentInfo, out errorMessage );
+                        }
+                    }
+                    else
+                    {
+                        ShowMessage( NotificationBoxType.Error, "Payment Error", "Invalid Schedule" );
+                    }
+
+                    break;
+
+                case "Cancel":
+                    success = _ccGateway.CancelScheduledPayment( transaction, out errorMessage );
+                    break;
             }
 
             if ( success )
             {
-                string message = string.Empty;
-
-                if ( repeating )
-                {
-                    message = "Profile ID: " + scheduledTransaction.TransactionCode;
-                }
-                else
-                {
-                    message = "Transaction Code: " + transaction.TransactionCode;
-                }
-
-                ShowMessage( NotificationBoxType.Success, "Success", message );
+                ShowMessage( NotificationBoxType.Success, "Success", string.Format(
+                    "<br/>TransactionCode: {0}<br/>ScheduleId: {1}<br/>Active: {2}<br/>Start Date: {3}<br/>Next Payment: {4}<br/>Number of Payments: {5}",
+                    transaction.TransactionCode, transaction.GatewayScheduleId, transaction.IsActive.ToString(),
+                    transaction.StartDate, transaction.NextPaymentDate, transaction.NumberOfPayments ) );
             }
             else
             {
                 ShowMessage( NotificationBoxType.Error, "Payment Error", errorMessage );
             }
         }
+
+        private Person GetPerson()
+        {
+            if (CurrentPerson != null && CurrentPerson.FirstName == txtFirstName.Text && CurrentPerson.LastName == txtLastName.Text)
+            {
+                return CurrentPerson;
+            }
+            else
+            {
+                // TODO Create New Person
+               return null;
+            }
+        }
+
+        private PaymentInfo GetPaymentInfo()
+        {
+            PaymentInfo paymentInfo = null;
+            if ( hfPaymentTab.Value == "ACH" )
+            {
+                if ( rblSavedAch.Items.Count > 0 && ( rblSavedAch.SelectedValueAsId() ?? 0 ) > 0 )
+                {
+                    paymentInfo = GetReferenceInfo( rblSavedAch.SelectedValueAsId().Value );
+                }
+                else
+                {
+                    paymentInfo = GetACHInfo();
+                }
+            }
+            else
+            {
+                if ( rblSavedCC.Items.Count > 0 && ( rblSavedCC.SelectedValueAsId() ?? 0 ) > 0 )
+                {
+                    paymentInfo = GetReferenceInfo( rblSavedCC.SelectedValueAsId().Value );
+                }
+                else
+                {
+                    paymentInfo = GetCCInfo();
+                }
+            }
+
+            paymentInfo.Amount = 0.02M;
+            paymentInfo.FirstName = txtFirstName.Text;
+            paymentInfo.LastName = txtLastName.Text;
+            paymentInfo.Email = txtEmail.Text;
+            paymentInfo.Phone = txtPhone.Text;
+            paymentInfo.Street = txtStreet.Text;
+            paymentInfo.City = txtCity.Text;
+            paymentInfo.State = ddlState.SelectedValue;
+            paymentInfo.Zip = txtZip.Text;
+
+            return paymentInfo;
+        }
+
+        private CreditCardPaymentInfo GetCCInfo()
+        {
+            var cc = new CreditCardPaymentInfo( txtCreditCard.Text, txtCVV.Text, mypExpiration.SelectedDate.Value );
+            cc.NameOnCard = _ccGateway.SplitNameOnCard ? txtCardFirstName.Text : txtCardName.Text;
+            cc.LastNameOnCard = txtCardLastName.Text;
+
+            if ( cbBillingAddress.Checked )
+            {
+                cc.BillingStreet = txtBillingStreet.Text;
+                cc.BillingCity = txtBillingCity.Text;
+                cc.BillingState = ddlBillingState.SelectedValue;
+                cc.BillingZip = txtBillingZip.Text;
+            }
+            else
+            {
+                cc.BillingStreet = txtStreet.Text;
+                cc.BillingCity = txtCity.Text;
+                cc.BillingState = ddlState.SelectedValue;
+                cc.BillingZip = txtZip.Text;
+            }
+            return cc;
+        }
+
+        private ACHPaymentInfo GetACHInfo()
+        {
+            var ach = new ACHPaymentInfo( txtAccountNumber.Text, txtRoutingNumber.Text, rblAccountType.SelectedValue == "Savings" ? BankAccountType.Savings : BankAccountType.Checking );
+            ach.BankName = txtBankName.Text;
+            return ach;
+        }
+
+        private ReferencePaymentInfo GetReferenceInfo(int savedAccountId)
+        {
+            var savedAccount = new FinancialPersonSavedAccountService().Get( savedAccountId );
+            if ( savedAccount != null )
+            {
+                var reference = new ReferencePaymentInfo( savedAccount.TransactionCode );
+                return reference;
+            }
+
+            return null;
+        }
+
+        private PaymentSchedule GetSchedule()
+        {
+            // Figure out if this is a one-time transaction or a future scheduled transaction
+            bool repeating = _showRepeatingOptions;
+            if ( repeating )
+            {
+                // If a one-time gift was selected for today's date, then treat as a onetime immediate transaction (not scheduled)
+                int oneTimeFrequencyId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;
+                if ( btnFrequency.SelectedValue == oneTimeFrequencyId.ToString() && dtpStartDate.SelectedDate == DateTime.Today )
+                {
+                    // one-time immediate payment
+                    return null;
+                }
+
+                var schedule = new PaymentSchedule();
+                schedule.TransactionFrequencyValue = DefinedValueCache.Read( btnFrequency.SelectedValueAsId().Value );
+                if ( dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate > DateTime.Today )
+                {
+                    schedule.StartDate = dtpStartDate.SelectedDate.Value;
+                    schedule.PersonId = GetPerson().Id;
+                }
+                else
+                {
+                    schedule.StartDate = DateTime.MinValue;
+                }
+
+                return schedule;
+            }
+
+            return null;
+        }
+
+
 
         /// <summary>
         /// Binds the saved accounts.
@@ -475,23 +609,5 @@ namespace RockWeb.Blocks.Finance.Administration
             nbMessage.Visible = true;
         }
 
-        protected void btnTest_Click( object sender, EventArgs e )
-        {
-            string errorMessage = string.Empty;
-
-            var dt = _ccGateway.DownloadNewTransactions( 
-                new DateTime(2013, 8, 29), new DateTime(2013, 8, 30), out errorMessage );
-            if ( dt != null )
-            {
-                gReport.AutoGenerateColumns = true;
-                gReport.DataSource = dt;
-                gReport.DataBind();
-                pnlReport.Visible = true;
-            }
-            else
-            {
-                ShowMessage( NotificationBoxType.Error, "Report Error", errorMessage );
-            }
-        }
     }
 }

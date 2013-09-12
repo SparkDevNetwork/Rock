@@ -127,6 +127,22 @@
             </div>
         </asp:Panel>
 
+        <div class="well">
+            <legend>Schedule Test</legend>
+            <div class="form-horizontal">
+                <fieldset>
+                    <Rock:LabeledTextBox ID="txtScheduleId" runat="server" LabelText="ScheduleId" CssClass="input-medium" />
+                    <Rock:LabeledDropDownList ID="ddlAction" runat="server" LabelText="Schedule Action">
+                        <asp:ListItem Value="Status" Text="Status" />
+                        <asp:ListItem Value="UpdateSchedule" Text="Update Schedule"/>
+                        <asp:ListItem Value="UpdatePayment" Text="Update Schedule & Payment"/>
+                        <asp:ListItem Value="Cancel" Text="Cancel" />
+                    </Rock:LabeledDropDownList>
+                    <asp:LinkButton ID="btnScheduleGo" runat="server" Text="Go" CssClass="btn btn-primary" OnClick="btnScheduleGo_Click" />
+                </fieldset>
+            </div>
+        </div>
+
         <Rock:NotificationBox ID="nbMessage" runat="server" Visible="false"></Rock:NotificationBox>
 
         <div id="divActions" runat="server" class="actions">
@@ -135,7 +151,15 @@
         </div>
 
         <asp:Panel ID="pnlReport" runat="server" Visible="false">
-            <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
+            <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" >
+                <Columns>
+                    <asp:BoundField DataField="GatewayScheduleId" HeaderText="Schedule Id" />
+                    <Rock:BoolField DataField="ScheduleActive" HeaderText="Active" />
+                    <asp:BoundField DataField="TransactionCode" HeaderText="Transaction Code" />
+                    <Rock:DateTimeField DataField="TransactionDateTime" HeaderText="When" />
+                    <asp:BoundField DataField="Amount" HeaderText="Amount" DataFormatString="{0:C}" />
+                </Columns>
+            </Rock:Grid>
         </asp:Panel>
 
     </ContentTemplate>
