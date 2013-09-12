@@ -189,13 +189,13 @@
     <Compile Include="Migrations\201309070045381_CheckinConfigUI.Designer.cs">
       <DependentUpon>201309070045381_CheckinConfigUI.cs</DependentUpon>
     </Compile>    
-    <Compile Include="Migrations\201309111540100_DefaultWorkflowActionAttributes.cs" />
-    <Compile Include="Migrations\201309111540100_DefaultWorkflowActionAttributes.Designer.cs">
-      <DependentUpon>201309111540100_DefaultWorkflowActionAttributes.cs</DependentUpon>
-    </Compile>
     <Compile Include="Migrations\201309111746562_AddAttendedCheckinPages.cs" />
     <Compile Include="Migrations\201309111746562_AddAttendedCheckinPages.Designer.cs">
       <DependentUpon>201309111746562_AddAttendedCheckinPages.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201309112300564_DefaultWorkflowActionAttributes.cs" />
+    <Compile Include="Migrations\201309112300564_DefaultWorkflowActionAttributes.Designer.cs">
+      <DependentUpon>201309112300564_DefaultWorkflowActionAttributes.cs</DependentUpon>
     </Compile>
     <Compile Include="Storage\ProviderComponent.cs" />
     <Compile Include="Storage\ProviderContainer.cs" />
@@ -517,8 +517,6 @@
     <Compile Include="Web\UI\ViewStateList.cs" />
     <Compile Include="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
-    <Compile Include="Workflow\Action\CheckIn\SelectByBestFit.cs" />
-    <Compile Include="Workflow\Action\CheckIn\SelectByLastAttended.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGrade.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByAge.cs" />
     <Compile Include="Workflow\Action\CheckIn\FilterGroupsByGender.cs" />
@@ -541,6 +539,8 @@
     <Compile Include="Workflow\Action\CheckIn\FindRelationships.cs" />
     <Compile Include="Workflow\Action\CheckIn\FindFamilyMembers.cs" />
     <Compile Include="Workflow\Action\CheckIn\FindFamilies.cs" />
+    <Compile Include="Workflow\Action\CheckIn\SelectByBestFit.cs" />
+    <Compile Include="Workflow\Action\CheckIn\SelectByLastAttended.cs" />
     <Compile Include="Workflow\Action\ParseZebraLabel.cs" />
     <Compile Include="Workflow\TriggerCache.cs" />
     <Compile Include="Model\WorkflowTriggerService.Partial.cs" />
@@ -1006,13 +1006,12 @@
     <EmbeddedResource Include="Migrations\201309070045381_CheckinConfigUI.resx">
       <DependentUpon>201309070045381_CheckinConfigUI.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201309111540100_DefaultWorkflowActionAttributes.resx">
-      <DependentUpon>201309111540100_DefaultWorkflowActionAttributes.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201309111746562_AddAttendedCheckinPages.resx">
       <DependentUpon>201309111746562_AddAttendedCheckinPages.cs</DependentUpon>
     </EmbeddedResource>
-
+    <EmbeddedResource Include="Migrations\201309112300564_DefaultWorkflowActionAttributes.resx">
+      <DependentUpon>201309112300564_DefaultWorkflowActionAttributes.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
