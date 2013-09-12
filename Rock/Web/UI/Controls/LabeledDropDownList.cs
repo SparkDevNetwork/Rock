@@ -211,6 +211,7 @@ namespace Rock.Web.UI.Controls
                         ( Required ? " required" : "" ) );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+                    writer.AddAttribute("for", this.ClientID);
                     writer.RenderBeginTag( HtmlTextWriterTag.Label );
                     label.Visible = this.Visible;
                     label.RenderControl( writer );

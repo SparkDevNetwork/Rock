@@ -29,8 +29,8 @@
             <h4 runat="server">Input</h4>
             <Rock:DataTextBox ID="dt" runat="server" LabelText="Rock:DataTextBox" LabelTextFromPropertyName="false" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
             <Rock:LabeledCheckBox ID="labeledCheckBox" runat="server" LabelText="Rock:LabeledCheckBox" />
-            <Rock:LabeledCheckBoxList ID="labeledCheckBoxList" runat="server" LabelText="Rock:LabeledCheckBoxList" />
-            <Rock:LabeledRadioButtonList ID="labeledRadioButtonList" runat="server" LabelText="Rock:LabeledRadioButtonList" />
+            <Rock:LabeledCheckBoxList ID="labeledCheckBoxList" runat="server" LabelText="Rock:LabeledCheckBoxList"  />
+            <Rock:LabeledRadioButtonList ID="labeledRadioButtonList" runat="server" LabelText="Rock:LabeledRadioButtonList"  />
             <Rock:NumberRangeEditor ID="numberRangeEditor" runat="server" LabelText="Rock:NumberRangeEditor" LowerValue="10" UpperValue="25" />
 
             <h4 runat="server">Pickers</h4>
