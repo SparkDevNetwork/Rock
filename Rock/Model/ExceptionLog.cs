@@ -76,7 +76,7 @@ namespace Rock.Model
         /// Gets or sets the date/time stamp of when the exception occurred. This property is required.
         /// </summary>
         /// <value>
-        /// A <see cref="System.DateTime"/> representing the timestamp of when the exception occurred.
+        /// A <see cref="System.DateTime"/> representing the time-stamp of when the exception occurred.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
