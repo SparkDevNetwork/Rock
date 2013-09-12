@@ -89,7 +89,6 @@ namespace Rock.Migrations
             DeleteAttribute( "70203A96-AE70-47AD-A086-FD84792DF2B6" ); // LoadLocations: LoadAll
             DeleteAttribute( "B222CAF2-DF12-433C-B5D4-A8DB95B60207" ); // LoadSchedules: LoadAll
             DeleteAttribute( "D57F42C9-E497-4FEE-8231-4FE2D13DC191" ); // SavedAttendance: SecurityCodeLength
-
         }
     }
 }

@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "Rock 0.0.1")]
-    public sealed partial class WorkflowActionAttributes : IMigrationMetadata
+    public sealed partial class DefaultWorkflowActionAttributes : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(WorkflowActionAttributes));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(DefaultWorkflowActionAttributes));
         
         string IMigrationMetadata.Id
         {
-            get { return "201309111540100_WorkflowActionAttributes"; }
+            get { return "201309112300564_DefaultWorkflowActionAttributes"; }
         }
         
         string IMigrationMetadata.Source
