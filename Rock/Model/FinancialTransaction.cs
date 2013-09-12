@@ -156,15 +156,6 @@ namespace Rock.Model
         [DataMember]
         public int? ScheduledTransactionId { get; set; }
 
-        /// <summary>
-        /// Gets or sets the scheduled transaction key.  This is a key returned by the financial gateway to uniquely identify a recurring payment schedule
-        /// </summary>
-        /// <value>
-        /// The scheduled transaction key.
-        /// </value>
-        [DataMember]
-        public string ScheduledTransactionKey { get; set; }
-
         #endregion
 
         #region Virtual Properties

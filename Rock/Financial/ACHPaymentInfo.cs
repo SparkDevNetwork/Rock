@@ -7,59 +7,48 @@
 namespace Rock.Financial
 {
     /// <summary>
-    /// Information about a bank account that is passed to financial gateway
+    /// Information about a bank payment to be processed by a financial gateway
     /// </summary>
-    public class BankAccount
+    public class ACHPaymentInfo : PaymentInfo
     {
-        /// <summary>
-        /// Gets or sets the amount.
-        /// </summary>
-        public decimal Amount { get; set; }
-
         /// <summary>
         /// Gets or sets the name of the bank.
         /// </summary>
-        /// <value>
-        /// The name of the bank.
-        /// </value>
         public string BankName { get; set; }
 
         /// <summary>
         /// The account number
         /// </summary>
-        public string AccountNumber;
+        public string AccountNumber { get; set; }
 
         /// <summary>
         /// The routing number
         /// </summary>
-        public string RoutingNumber;
+        public string RoutingNumber { get; set; }
 
         /// <summary>
         /// The account type
         /// </summary>
-        public BankAccountType AccountType;
+        public BankAccountType AccountType { get; set; }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BankAccount"/> class.
+        /// Initializes a new instance of the <see cref="ACHPaymentInfo"/> class.
         /// </summary>
-        public BankAccount()
+        public ACHPaymentInfo()
+            : base()
         {
-            Amount = 0;
-            AccountNumber = string.Empty;
-            RoutingNumber = string.Empty;
             AccountType = BankAccountType.Checking;
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="BankAccount" /> struct.
+        /// Initializes a new instance of the <see cref="ACHPaymentInfo"/> class.
         /// </summary>
         /// <param name="accountNumber">The account number.</param>
         /// <param name="routingNumber">The routing number.</param>
         /// <param name="accountType">Type of the account.</param>
-        public BankAccount( string accountNumber, string routingNumber, BankAccountType accountType )
+        public ACHPaymentInfo( string accountNumber, string routingNumber, BankAccountType accountType )
             : this()
         {
-            Amount = 0;
             AccountNumber = accountNumber;
             RoutingNumber = routingNumber;
             AccountType = accountType;

@@ -8,15 +8,10 @@ using System;
 namespace Rock.Financial
 {
     /// <summary>
-    /// Information about a credit card that is passed to financial gateway
+    /// Information about a credit card payment to be processed by a financial gateway
     /// </summary>
-    public class CreditCard
+    public class CreditCardPaymentInfo : PaymentInfo
     {
-        /// <summary>
-        /// Gets or sets the amount.
-        /// </summary>
-        public decimal Amount { get; set; }
-
         /// <summary>
         /// The name on card
         /// </summary>
@@ -63,35 +58,20 @@ namespace Rock.Financial
         public DateTime ExpirationDate { get; set; }
 
         /// <summary>
-        /// The information obtained from a card-present swipe
+        /// Initializes a new instance of the <see cref="CreditCardPaymentInfo"/> class.
         /// </summary>
-        public string SwipeInfo { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CreditCard"/> class.
-        /// </summary>
-        public CreditCard()
-        { 
-            Amount = 0;
-            NameOnCard = string.Empty;
-            LastNameOnCard = string.Empty;
-            BillingStreet = string.Empty;
-            BillingCity = string.Empty;
-            BillingState = string.Empty;
-            BillingZip = string.Empty;
-            Number = string.Empty;
-            Code = string.Empty;
-            ExpirationDate = DateTime.MinValue;
-            SwipeInfo = string.Empty;
+        public CreditCardPaymentInfo()
+            : base()
+        {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CreditCard" /> struct.
+        /// Initializes a new instance of the <see cref="CreditCardPaymentInfo"/> class.
         /// </summary>
         /// <param name="number">The number.</param>
         /// <param name="code">The code.</param>
         /// <param name="expirationDate">The expiration date.</param>
-        public CreditCard( string number, string code, DateTime expirationDate )
+        public CreditCardPaymentInfo( string number, string code, DateTime expirationDate )
             : this()
         {
             Number = number;
@@ -99,14 +79,5 @@ namespace Rock.Financial
             ExpirationDate = expirationDate;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CreditCard" /> struct.
-        /// </summary>
-        /// <param name="swipeInfo">The swipe info.</param>
-        public CreditCard( string swipeInfo )
-            : this()
-        {
-            SwipeInfo = swipeInfo;
-        }
     }
 }

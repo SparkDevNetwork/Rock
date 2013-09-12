@@ -31,76 +31,66 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Gets the supported frequency values.
+        /// Gets the supported payment schedules.
         /// </summary>
         /// <value>
-        /// The supported frequency values.
+        /// The supported payment schedules.
         /// </value>
-        public virtual List<DefinedValueCache> SupportedFrequencyValues
+        public virtual List<DefinedValueCache> SupportedPaymentSchedules
         {
             get { return new List<DefinedValueCache>(); }
         }
 
         /// <summary>
-        /// Initiates a credit-card sale transaction.  If succesful, a transaction id is returned
+        /// Charges the specified payment info.
         /// </summary>
-        /// <param name="transaction">The transaction.</param>
-        /// <param name="creditCard">The credit card.</param>
+        /// <param name="paymentInfo">The payment info.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public abstract bool Charge( FinancialTransaction transaction, CreditCard creditCard, out string errorMessage);
+        public abstract FinancialTransaction Charge( PaymentInfo paymentInfo, out string errorMessage );
 
         /// <summary>
-        /// Initiates an ach sale transaction.  If succesful, a transaction id is returned
+        /// Adds the scheduled payment.
         /// </summary>
-        /// <param name="transaction">The transaction.</param>
-        /// <param name="bankAccount">The bank account.</param>
+        /// <param name="schedule">The schedule.</param>
+        /// <param name="paymentInfo">The payment info.</param>
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public abstract bool Charge( FinancialTransaction transaction, BankAccount bankAccount, out string errorMessage );
+        public abstract FinancialScheduledTransaction AddScheduledPayment( PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage );
 
         /// <summary>
-        /// Creates the scheduled transaction.
-        /// </summary>
-        /// <param name="scheduledTransaction">The scheduled transaction.</param>
-        /// <param name="creditCard">The credit card.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns></returns>
-        public abstract bool CreateScheduledTransaction( FinancialScheduledTransaction scheduledTransaction, CreditCard creditCard, out string errorMessage );
-
-        /// <summary>
-        /// Creates the scheduled transaction.
-        /// </summary>
-        /// <param name="scheduledTransaction">The scheduled transaction.</param>
-        /// <param name="bankAccount">The bank account.</param>
-        /// <param name="errorMessage">The error message.</param>
-        /// <returns></returns>
-        public abstract bool CreateScheduledTransaction( FinancialScheduledTransaction scheduledTransaction, BankAccount bankAccount, out string errorMessage );
-
-        /// <summary>
-        /// Updates the scheduled transaction.
+        /// Updates the scheduled payment.
         /// </summary>
         /// <param name="transaction">The transaction.</param>
+        /// <param name="paymentInfo">The payment info.</param>
+        /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public abstract FinancialScheduledTransaction UpdateScheduledTransaction( FinancialScheduledTransaction transaction, out string errorMessage );
+        public abstract bool UpdateScheduledPayment( FinancialScheduledTransaction transaction, PaymentInfo paymentInfo, out string errorMessage );
 
         /// <summary>
-        /// Cancels the scheduled transaction.
+        /// Cancels the scheduled payment.
         /// </summary>
         /// <param name="transaction">The transaction.</param>
+        /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
-        public abstract bool CancelScheduledTransaction( FinancialScheduledTransaction transaction, out string errorMessage );
+        public abstract bool CancelScheduledPayment( FinancialScheduledTransaction transaction, out string errorMessage );
 
         /// <summary>
-        /// Processes any post back from the financial gateway.
+        /// Gets the scheduled payment status.
         /// </summary>
-        /// <param name="request">The request.</param>
-        public abstract void ProcessPostBack( System.Web.HttpRequest request );
+        /// <param name="transaction">The transaction.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public abstract bool GetScheduledPaymentStatus( FinancialScheduledTransaction transaction, out string errorMessage );
 
         /// <summary>
-        /// Downloads any new transactions from the financial gateway
+        /// Gets the payments that have been processed for any scheduled transactions
         /// </summary>
-        public abstract DataTable DownloadNewTransactions( DateTime startDate, DateTime endDate, out string errorMessage );
+        /// <param name="startDate">The start date.</param>
+        /// <param name="endDate">The end date.</param>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public abstract List<Payment> GetPayments( DateTime startDate, DateTime endDate, out string errorMessage );
     
     }
 }

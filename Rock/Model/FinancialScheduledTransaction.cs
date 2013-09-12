@@ -73,6 +73,32 @@ namespace Rock.Model
         [DataMember]
         public int? NumberOfPayments { get; set; }
 
+        /// <summary>
+        /// Gets or sets the end date.
+        /// </summary>
+        /// <value>
+        /// The end date.
+        /// </value>
+        [DataMember]
+        [Column( TypeName = "Date" )]
+        public DateTime? NextPaymentDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last status update date time.
+        /// </summary>
+        /// <value>
+        /// The last status update date time.
+        /// </value>
+        [DataMember]
+        [Column( TypeName = "Date" )]
+        public DateTime? LastStatusUpdateDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
         [DataMember]
         public bool IsActive
         {
@@ -101,6 +127,15 @@ namespace Rock.Model
         public string TransactionCode { get; set; }
 
         /// <summary>
+        /// Gets or sets the gateway scheduled id.  This is the id returned by the financial gateway to uniquely identify a payment schedule
+        /// </summary>
+        /// <value>
+        /// The scheduled transaction key.
+        /// </value>
+        [DataMember]
+        public string GatewayScheduleId { get; set; }
+
+        /// <summary>
         /// Gets or sets the date to remind user to update scheduled transaction.
         /// </summary>
         /// <value>
@@ -119,15 +154,6 @@ namespace Rock.Model
         [DataMember]
         [Column( TypeName = "Date" )]
         public DateTime? LastRemindedDate { get; set; }
-
-        /// <summary>
-        /// Gets or sets the scheduled transaction key.  This is a key returned by the financial gateway to uniquely identify a recurring payment schedule
-        /// </summary>
-        /// <value>
-        /// The scheduled transaction key.
-        /// </value>
-        [DataMember]
-        public string ScheduledTransactionKey { get; set; }
 
         #endregion
 

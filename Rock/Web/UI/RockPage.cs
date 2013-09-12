@@ -321,6 +321,9 @@ namespace Rock.Web.UI
             // enable history on the ScriptManager
             _scriptManager.EnableHistory = true;
 
+            // TODO: Delete this line, only used for testing
+            _scriptManager.AsyncPostBackTimeout = 180;
+
             // wire up navigation event
             _scriptManager.Navigate += new EventHandler<HistoryEventArgs>(scriptManager_Navigate);
 
