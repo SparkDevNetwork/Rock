@@ -6,7 +6,7 @@
     <Rock:ModalAlert ID="maWarning" runat="server" />
     <asp:Panel ID="pnlConfirm" runat="server" CssClass="attended">
         <div class="row-fluid checkin-header">
-            <div class="span3">
+            <div class="span3 checkin-actions">
                 <asp:LinkButton ID="lbBack" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbBack_Click" Text="Back"/>
             </div>
 
@@ -14,7 +14,7 @@
                 <h1>Confirm</h1>
             </div>
 
-            <div class="span3">
+            <div class="span3 checkin-actions">
                 <asp:LinkButton ID="lbDone" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbDone_Click" Text="Done"/>
             </div>
         </div>
@@ -22,7 +22,7 @@
         <div class="row-fluid checkin-body">
 
             <div class="span12">
-                <div class="checkin-body-container">
+                <div>
                     <Rock:Grid ID="gPersonList" runat="server" AllowSorting="true" AllowPaging="false" ShowActionRow="false" OnRowCommand="gPersonList_RowCommand" DataKeyNames="Id,AssignedTo,LocationId" >
                         <Columns>
                             <asp:BoundField DataField="Id" Visible="false" />
@@ -30,11 +30,11 @@
                             <asp:BoundField DataField="AssignedTo" HeaderText="Assigned To" />
                             <asp:BoundField DataField="Time" HeaderText="Time" />
                             <asp:BoundField DataField="LocationId" Visible="false" />
-                            <Rock:EditValueField OnClick="gPersonList_Edit" HeaderText="Edit" ControlStyle-CssClass="btn btn-large btn-primary" />
-                            <Rock:DeleteField OnClick="gPersonList_Delete" HeaderText="Delete" ControlStyle-CssClass="btn btn-large btn-primary" />
+                            <Rock:EditValueField OnClick="gPersonList_Edit" HeaderText="Edit" ControlStyle-CssClass="btn btn-large btn-primary btn-checkin-select" />
+                            <Rock:DeleteField OnClick="gPersonList_Delete" HeaderText="Delete" ControlStyle-CssClass="btn btn-large btn-primary btn-checkin-select" />
                             <asp:TemplateField HeaderText="Print">
                                 <ItemTemplate>
-                                    <asp:LinkButton ID="btnPrint" runat="server" CssClass="btn btn-large btn-primary" CommandName="Print" Text="Print" CommandArgument="<%# ((GridViewRow) Container).RowIndex %>"><i class="icon-print"></i></asp:LinkButton>
+                                    <asp:LinkButton ID="btnPrint" runat="server" CssClass="btn btn-large btn-primary btn-checkin-select" CommandName="Print" Text="Print" CommandArgument="<%# ((GridViewRow) Container).RowIndex %>"><i class="icon-print"></i></asp:LinkButton>
                                 </ItemTemplate> 
                             </asp:TemplateField>
                         </Columns>

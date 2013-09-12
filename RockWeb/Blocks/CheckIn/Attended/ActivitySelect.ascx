@@ -8,7 +8,7 @@
 
     <asp:Panel ID="pnlActivitySelect" runat="server" CssClass="attended" >
         <div class="row-fluid checkin-header">
-            <div class="span3">
+            <div class="span3 checkin-actions">
                 <asp:LinkButton ID="lbBack" CssClass="btn btn-primary btn-large" runat="server" OnClick="lbBack_Click" Text="Back"/>
             </div>
 
@@ -16,7 +16,7 @@
                 <h1><asp:Label ID="lblPersonName" runat="server"></asp:Label></h1>
             </div>
 
-            <div class="span3">
+            <div class="span3 checkin-actions">
                 <asp:LinkButton ID="lbNext" CssClass="btn btn-primary btn-large" runat="server" OnClick="lbNext_Click" Text="Next"/>
             </div>
         </div>
@@ -25,20 +25,20 @@
 
             <asp:UpdatePanel ID="pnlSelectGroupType" runat="server" UpdateMode="Conditional" class="span3">
             <ContentTemplate>        
-                <div class="checkin-body-container">
+                
                     <h3>GroupType</h3>
                     <asp:Repeater ID="rGroupType" runat="server" OnItemCommand="rGroupType_ItemCommand" OnItemDataBound="rGroupType_ItemDataBound">
                         <ItemTemplate>
                             <asp:LinkButton ID="lbSelectGroupType" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" CausesValidation="false" />
                         </ItemTemplate>
                     </asp:Repeater>
-                </div>
+                
             </ContentTemplate>
             </asp:UpdatePanel>
 
             <asp:UpdatePanel ID="pnlSelectLocation" runat="server" UpdateMode="Conditional" class="span3">
             <ContentTemplate>        
-                <div class="checkin-body-container">
+                
                     <h3>Location</h3>
                     <asp:ListView ID="lvLocation" runat="server" OnPagePropertiesChanging="lvLocation_PagePropertiesChanging" OnItemCommand="lvLocation_ItemCommand" OnItemDataBound="lvLocation_ItemDataBound">
                         <ItemTemplate>
@@ -50,25 +50,25 @@
                             <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-primary btn-checkin-select" />
                         </Fields>
                     </asp:DataPager>
-                </div>
+                
             </ContentTemplate>
             </asp:UpdatePanel>
 
             <asp:UpdatePanel ID="pnlSelectSchedule" runat="server" UpdateMode="Conditional" class="span3">
             <ContentTemplate>        
-                <div class="checkin-body-container">
+                
                     <h3>Schedule</h3>
                     <asp:Repeater ID="rSchedule" runat="server" OnItemCommand="rSchedule_ItemCommand" OnItemDataBound="rSchedule_ItemDataBound">
                         <ItemTemplate>
                             <asp:LinkButton ID="lbSelectSchedule" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" CausesValidation="false" />
                         </ItemTemplate>
                     </asp:Repeater>
-                </div>
+                
             </ContentTemplate>
             </asp:UpdatePanel>
 
             <div class="span3">
-                <div class="checkin-body-container">
+                
                     <h3>Selected</h3>
                     <asp:UpdatePanel ID="pnlSelectedGrid" runat="server" UpdateMode="Conditional">
                     <ContentTemplate>        
@@ -85,7 +85,7 @@
                     </asp:UpdatePanel>
                     <asp:LinkButton ID="lbAddCondition" runat="server" Text="Add an Allergy" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddCondition_Click" CausesValidation="false" />
                     <asp:LinkButton ID="lbAddNote" runat="server" Text="Add a Note" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddNote_Click" CausesValidation="false" />                    
-                </div>
+                
             </div>
         </div>   
     </asp:Panel>
