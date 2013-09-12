@@ -52,15 +52,15 @@ public class BundleConfig
 
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockUi" ).Include( 
             "~/Scripts/Rock/settings.js",
-            "~/Scripts/Rock/controls/*.js" ) );
+            "~/Scripts/Rock/_Controls/*.js" ) );
 
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockValidation" ).Include(
-            "~/Scripts/Rock/validate/*.js" ) );
+            "~/Scripts/Rock/_Validate/*.js" ) );
 
         // Creating a separate "Admin" bundle specifically for JS functionality that needs
         // to be included for administrative users
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockAdmin" ).Include( 
-            "~/Scripts/Rock/admin/*.js" ) );
+            "~/Scripts/Rock/_Admin/*.js" ) );
 
 
         // make sure the ConcatenationToken is what we want.  This is supposed to be the default, but it occassionally was an empty string.
