@@ -1,4 +1,4 @@
-/*!
+﻿/*!
  *  Font Awesome 3.2.1
  *  the iconic font designed for Bootstrap
  *  ------------------------------------------------------------------------------
@@ -52,7 +52,7 @@
 /* makes the font 33% larger relative to the icon container */
 .icon-large:before {
   vertical-align: -10%;
-  font-size: 1.3333333333333333em;
+  font-size: 1.3333333333333332em;
 }
 /* makes sure icons active on rollover in links */
 a [class^="icon-"],
@@ -8629,31 +8629,31 @@ span.cke_skin_kama {
 .table-hover tbody tr:hover th {
   cursor: pointer;
 }
-.grid-table th a:hover {
-  text-decoration: none;
+/*.grid-table th a:hover {
+    --text-decoration: none;
 }
+
 td[align=center] {
-  text-align: center;
+    text-align: center;
 }
+
 .grid-table a.minimal i {
-  text-decoration: none;
-  color: #515151;
+    text-decoration: none;
+    color: @text-color;
 }
+*/
 .grid-filter {
   background-color: #d9e1e8;
   border-radius: 4px;
-  padding: 0 0 12px 6px;
+  padding: 0 6px 12px 6px;
   margin-bottom: -10px;
 }
 .grid-filter header {
-  margin: 0 0 -4px -6px;
   border-radius: 4px 4px 0 0;
   padding: 4px;
   cursor: pointer;
-  height: 22px;
-}
-.grid-filter header div {
-  float: right;
+  height: 24px;
+  text-align: right;
 }
 .grid-filter header h3 {
   font-size: 12px;
@@ -8671,17 +8671,17 @@ td[align=center] {
 .grid-filter h4 {
   margin: 12px 0 20px;
   padding-bottom: 8px;
-  border-bottom: 1px solid #c0cdd9;
+  font-weight: 300;
+}
+.grid-filter .grid-filter-entry {
+  margin-bottom: 12px;
+}
+.grid-filter .grid-filter-entry .form-group {
+  width: 350px;
+  float: left;
 }
 .grid-filter + div .grid-table {
   margin-top: -12px;
-}
-.grid-filter-entry {
-  margin-bottom: 12px;
-}
-.grid-filter-entry .control-group {
-  width: 350px;
-  float: left;
 }
 .grid-filter-entry legend + .control-group {
   margin-top: 0;
@@ -10355,19 +10355,15 @@ div.k-imagebrowser-dropzone em {
   }
 }
 /* bootstrap overrides */
-.controls textarea {
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
-  width: 100%;
-}
+/*
 .control-label {
-  font-weight: 600;
-}
+    font-weight: @font-weight-semibold;
+}*/
 /* global classes */
 .clickable {
   cursor: pointer;
 }
+/* TODO Do we still need these */
 .light {
   font-weight: 300;
 }
@@ -10474,6 +10470,7 @@ fieldset .actions {
 */
 html {
   background-color: #3a3a3a;
+  background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4=");
 }
 h1 {
   font-size: 28px;
@@ -10529,20 +10526,15 @@ a:hover i[class^="icon-"] {
   background-color: #ff0000;
   cursor: not-allowed;
 }
-/* breadcrumbs */
+/* breadcrumbs 
 .breadcrumb {
-  margin: 20px 0 20px;
-  padding: 0;
+	margin: 20px 0 20px;
+	padding: 0;
 }
+
 .breadcrumb i[class^="icon-"] {
-  margin-right: 6px;
-}
-@media (min-width: 992px) {
-  .container-fluid {
-    padding-left: 40px;
-    padding-right: 40px;
-  }
-}
+	margin-right: 6px;
+}*/
 header .dropdown-menu li > a:hover,
 header .dropdown-menu li > a:focus,
 header .dropdown-submenu:hover > a {
@@ -10560,6 +10552,7 @@ header .nav a:hover .caret {
 }
 .brandbar {
   border-bottom: 1px solid #121212;
+  background: none;
   background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4=");
 }
 .brandbar .brandbar-logo {
