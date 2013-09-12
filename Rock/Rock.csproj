@@ -189,17 +189,17 @@
     <Compile Include="Migrations\201309070045381_CheckinConfigUI.Designer.cs">
       <DependentUpon>201309070045381_CheckinConfigUI.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201309111540100_DefaultWorkflowActionAttributes.cs" />
-    <Compile Include="Migrations\201309111540100_DefaultWorkflowActionAttributes.Designer.cs">
-      <DependentUpon>201309111540100_DefaultWorkflowActionAttributes.cs</DependentUpon>
+    <Compile Include="Migrations\201309112300564_DefaultWorkflowActionAttributes.cs" />
+    <Compile Include="Migrations\201309112300564_DefaultWorkflowActionAttributes.Designer.cs">
+      <DependentUpon>201309112300564_DefaultWorkflowActionAttributes.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201309112311579_DetailPageLinkedPageRefactor.cs" />
-    <Compile Include="Migrations\201309112311579_DetailPageLinkedPageRefactor.Designer.cs">
-      <DependentUpon>201309112311579_DetailPageLinkedPageRefactor.cs</DependentUpon>
+    <Compile Include="Migrations\201309122129396_SitePageRoute.cs" />
+    <Compile Include="Migrations\201309122129396_SitePageRoute.Designer.cs">
+      <DependentUpon>201309122129396_SitePageRoute.cs</DependentUpon>
     </Compile>
-    <Compile Include="Migrations\201309112329336_SitePageRoute.cs" />
-    <Compile Include="Migrations\201309112329336_SitePageRoute.Designer.cs">
-      <DependentUpon>201309112329336_SitePageRoute.cs</DependentUpon>
+    <Compile Include="Migrations\201309122131001_DetailPageLinkedPageRefactor.cs" />
+    <Compile Include="Migrations\201309122131001_DetailPageLinkedPageRefactor.Designer.cs">
+      <DependentUpon>201309122131001_DetailPageLinkedPageRefactor.cs</DependentUpon>
     </Compile>
     <Compile Include="Storage\ProviderComponent.cs" />
     <Compile Include="Storage\ProviderContainer.cs" />
@@ -1010,14 +1010,14 @@
     <EmbeddedResource Include="Migrations\201309070045381_CheckinConfigUI.resx">
       <DependentUpon>201309070045381_CheckinConfigUI.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201309111540100_DefaultWorkflowActionAttributes.resx">
-      <DependentUpon>201309111540100_DefaultWorkflowActionAttributes.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201309112300564_DefaultWorkflowActionAttributes.resx">
+      <DependentUpon>201309112300564_DefaultWorkflowActionAttributes.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201309112311579_DetailPageLinkedPageRefactor.resx">
-      <DependentUpon>201309112311579_DetailPageLinkedPageRefactor.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201309122129396_SitePageRoute.resx">
+      <DependentUpon>201309122129396_SitePageRoute.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201309112329336_SitePageRoute.resx">
-      <DependentUpon>201309112329336_SitePageRoute.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201309122131001_DetailPageLinkedPageRefactor.resx">
+      <DependentUpon>201309122131001_DetailPageLinkedPageRefactor.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

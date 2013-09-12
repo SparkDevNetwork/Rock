@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "Rock 0.0.1")]
-    public sealed partial class SitePageRoute : IMigrationMetadata
+    public sealed partial class DefaultWorkflowActionAttributes : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(SitePageRoute));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(DefaultWorkflowActionAttributes));
         
         string IMigrationMetadata.Id
         {
-            get { return "201309112329336_SitePageRoute"; }
+            get { return "201309112300564_DefaultWorkflowActionAttributes"; }
         }
         
         string IMigrationMetadata.Source
