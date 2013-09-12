@@ -132,41 +132,39 @@ namespace Rock.Web.UI.Controls
             {
                 bool renderControlGroupDiv = ( !string.IsNullOrWhiteSpace( LabelText ) || !string.IsNullOrWhiteSpace( Help ) );
 
-                if ( renderControlGroupDiv )
-                {
-                    writer.AddAttribute( "class", "form-group" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.AddAttribute( "class", "checkbox" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                    writer.RenderBeginTag( HtmlTextWriterTag.Label );
-                    label.Visible = this.Visible;
-                    label.RenderControl( writer );
-                    if ( !string.IsNullOrWhiteSpace( LabelText ) )
-                    {
-                        helpBlock.RenderControl( writer );
-                    }
-                    writer.RenderEndTag();
+                writer.RenderBeginTag( HtmlTextWriterTag.Label );
+                label.Visible = this.Visible;
+                label.RenderControl( writer );
+                if ( !string.IsNullOrWhiteSpace( LabelText ) )
+                {
+                    helpBlock.RenderControl( writer );
                 }
 
-                if ( Enabled )
+                if (Enabled)
                 {
-                    base.RenderControl( writer );
+                    base.RenderControl(writer);
 
-                    if ( renderControlGroupDiv && string.IsNullOrWhiteSpace( LabelText ) )
+                    if (renderControlGroupDiv && string.IsNullOrWhiteSpace(LabelText))
                     {
-                        helpBlock.RenderControl( writer );
+                        helpBlock.RenderControl(writer);
                     }
                 }
                 else
                 {
-                    if ( this.Checked )
+                    if (this.Checked)
                     {
-                        writer.WriteLine( "<i class=\"icon-check\"></i>" );
+                        writer.WriteLine("<i class=\"icon-check\"></i>");
                     }
                     else
                     {
-                        writer.WriteLine( "<i class=\"icon-check-empty\"></i>" );
+                        writer.WriteLine("<i class=\"icon-check-empty\"></i>");
                     }
                 }
+                
+                writer.RenderEndTag();
 
                 if ( !string.IsNullOrWhiteSpace( Tip ) )
                 {

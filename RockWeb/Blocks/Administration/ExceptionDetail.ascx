@@ -10,10 +10,10 @@
                     <div class="span6">
                         <div class="row-fluid">
                             <div class="span2">
-                                Site
+                                <!-- Site -->
                             </div>
                             <div class="span10">
-                                <Rock:LabeledText ID="lblSite" runat="server" />
+                                <Rock:LabeledText LabelText="Site" ID="lblSite" runat="server" />
                             </div>
                         </div>
                         <div class="row-fluid">
