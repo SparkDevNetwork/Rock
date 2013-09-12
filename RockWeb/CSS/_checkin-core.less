@@ -342,17 +342,27 @@ input.checkin-phone-entry
 // 5. Attended Check-In Styles
 // --------------------------------------
 
-.attended h1, h2, h3,
-.attended .checkin-header,
+.attended h1, .attended h2, .attended h3,
+.attended .checkin-header {
+    text-align: center;
+    margin-top: 3%;
+}
+
 .attended .checkin-body 
 {
-    text-align: center;        
+    text-align: center;
+    margin-top: 0;    
 }
 
 .attended .btn-checkin-select 
 {
     margin-bottom: 10px;
     float: none;
+}
+
+.attended .btn .checkin-sub-title 
+{
+    font-size: .75em;
 }
 
 .attended .btn-primary:active,
@@ -410,7 +420,7 @@ input.checkin-phone-entry
 
 .attended .grid-table
 {
-    font-size: 1.57em;     
+    font-size: 1.3em;     
     background-color: transparent;
 }
 
@@ -419,12 +429,56 @@ input.checkin-phone-entry
 .attended table td
 {
 	border: none;
-    padding: 0.455em;  
+    padding: 0.355em;  
 	vertical-align: middle;
-	text-align: center;
+	text-align: center;    
 }
 
+.attended .pagination 
+{
+    margin: 0;
+}
+
+.attended .page-size,
+.attended .item-count,
 .attended input[type="submit"].btn[disabled="disabled"]
 {
 	display: none;
+}
+
+.attended.modal-background 
+{
+    background-color: #000000;
+    filter: alpha(opacity=80);
+    opacity: 0.8;
+    z-index: 10000 !important;
+    position: absolute !important;
+    top: 0;
+}
+
+.attended.modal-foreground
+{
+    background: @rockBackgroundColor;
+    width: 80%;
+    height: 80%;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    z-index: 10001 !important;
+}
+
+.attended.modal-foreground .checkin-body 
+{
+    width: 95%;
+    margin-left: 3%;
+}
+
+.attended .add-note, .attended .add-condition
+{
+    background: #EEEEEE;
+    width: 38%;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+    border-radius: 10px;
+    z-index: 10001 !important;
 }
