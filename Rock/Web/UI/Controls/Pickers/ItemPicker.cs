@@ -600,6 +600,7 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
+                // this picker is not enabled (readonly), so just render a readonly version
                 string controlHtmlFormatDisabled = @"
         <i class='icon-file-alt'></i>
         <span id='selectedItemLabel_{0}'>{1}</span>

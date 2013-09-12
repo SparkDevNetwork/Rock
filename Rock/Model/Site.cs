@@ -67,7 +67,17 @@ namespace Rock.Model
         /// Default Page Id.
         /// </value>
         [DataMember]
-        public int? DefaultPageId { get; set; }
+        public int DefaultPageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default page route unique identifier.
+        /// If this has a value (and the PageRoute can be found) use this instead of the DefaultPageId
+        /// </summary>
+        /// <value>
+        /// The default page route unique identifier.
+        /// </value>
+        [DataMember]
+        public int? DefaultPageRouteId { get; set; }
         
         /// <summary>
         /// Gets or sets the Favicon Url.
@@ -166,6 +176,14 @@ namespace Rock.Model
         public virtual Page DefaultPage { get; set; }
 
         /// <summary>
+        /// Gets or sets the default page route.
+        /// </summary>
+        /// <value>
+        /// The default page route.
+        /// </value>
+        public virtual PageRoute DefaultPageRoute { get; set; }
+
+        /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
@@ -187,7 +205,8 @@ namespace Rock.Model
         /// </summary>
         public SiteConfiguration()
         {
-            this.HasOptional( p => p.DefaultPage ).WithMany().HasForeignKey( p => p.DefaultPageId ).WillCascadeOnDelete(false);
+            this.HasRequired( p => p.DefaultPage ).WithMany().HasForeignKey( p => p.DefaultPageId ).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.DefaultPageRoute ).WithMany().HasForeignKey( p => p.DefaultPageRouteId ).WillCascadeOnDelete( false );
         }
     }
 }
