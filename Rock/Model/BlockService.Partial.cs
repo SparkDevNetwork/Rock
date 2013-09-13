@@ -12,7 +12,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// The data access/service class for <see cref="Rock.Model.Block"/> entity type objects that extends the functionality of <see cref="Rock.Model.Service"/>
+    /// The data access/service class for <see cref="Rock.Model.Block"/> entity type objects that extends the functionality of <see cref="Rock.Data.Service"/>
     /// </summary>
     public partial class BlockService 
     {

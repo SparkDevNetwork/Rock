@@ -26,14 +26,11 @@ namespace Rock.Data
 
         /// <summary>
         /// Gets or sets the value of the identifier.  This value is the primary field/key for the entity object.  This value is system and database
-        /// dependent, and is not guranteed to be unique. This id should only be used to identify an object internally to a single implementation 
+        /// dependent, and is not guaranteed to be unique. This id should only be used to identify an object internally to a single implementation 
         /// of RockChMS since this value has a very high probability of not being consistent in an external implementation of RockChMS.  
         /// </summary>
-        /// <example>
-        /// 1
-        /// </example>
         /// <value>
-        /// Primary and system dependent <see cref="String.Int"/> based identity/key of an entity object in RockChMS.  
+        /// Primary and system dependent <see cref="String.Int32"/> based identity/key of an entity object in RockChMS.  
         /// </value>
         [Key]
         [DataMember]
@@ -42,11 +39,8 @@ namespace Rock.Data
         /// <summary>
         /// Gets or sets a <see cref="System.Guid"/> value that is a guaranteed unique identifier for the entity object.  This value 
         /// is an alternate key for the object, and should be used when interacting with external systems and when comparing and synchronizing
-        /// objects across across data stores or external /implmentations of RockChMS
+        /// objects across across data stores or external /implementations of RockChMS
         /// </summary>
-        /// <example>
-        /// BEC8FBCC-0DCB-41C7-871B-BD7FECAF74B3
-        /// </example>
         /// <remarks>
         /// A good place for a Guid to be used is when comparing or syncing data across two implementations of RockChMS. For example, if you 
         /// were creating a <see cref="Block"/> with a data migration that adds/remove a new defined value object to the database. You would want to 
@@ -75,9 +69,6 @@ namespace Rock.Data
         /// <value>
         /// An <see cref="System.Int"/> that represents the identifier for the current Entity object type. 
         /// </value>
-        /// <example>
-        /// The EntityTypeId for <see cref="Page"/> is 2.  
-        /// </example>
         public virtual int TypeId
         {
             get
@@ -93,9 +84,6 @@ namespace Rock.Data
         /// <value>
         /// The name of the entity type.
         /// </value>
-        /// <example>
-        /// The TypeName for the <see cref="Page"/> Entity Type is Rock.Model.Page.
-        /// </example>
         [NotMapped]
         public virtual string TypeName 
         {
@@ -140,9 +128,6 @@ namespace Rock.Data
         /// <value>
         ///   A <see cref="System.Boolean"/> that is <c>true</c> if this instance is valid; otherwise, <c>false</c>.
         /// </value>
-        /// <example>
-        ///     <!--TODO-->
-        /// </example>
         [NotMapped]
         public virtual bool IsValid
         {
@@ -160,9 +145,6 @@ namespace Rock.Data
         /// <value>
         /// A <see cref="System.String"/> that represents a viewable version of the entity's unique key.
         /// </value>
-        /// <example>
-        ///     <!--TODO-->
-        /// </example>
         [NotMapped]
         public virtual string EncryptedKey
         {
@@ -179,9 +161,6 @@ namespace Rock.Data
         /// <value>
         /// A <see cref="System.String"/> that represents a URL friendly version of the entity's unique key.
         /// </value>
-        /// <example>
-        /// <!--TODO-->
-        /// </example>
         [DataMember]
         public virtual string UrlEncodedKey
         {
@@ -497,7 +476,7 @@ namespace Rock.Data
     {
         private bool cancel = false;
         /// <summary>
-        /// Gets or sets a value indicating whether event should be cancelled.
+        /// Gets or sets a value indicating whether event should be canceled.
         /// </summary>
         /// <value>
         ///   <c>true</c> if event should be canceled; otherwise, <c>false</c>.

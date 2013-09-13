@@ -12,66 +12,69 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Group POCO Service class
+    /// Data Access/service class for <see cref="Rock.Model.Group"/> entity type objects that extends the functionality of <see cref="Rock.Data.Service"/>
     /// </summary>
     public partial class GroupService 
     {
         /// <summary>
-        /// Gets Groups by Group Type Id
+        /// Returns an enumerable collection of <see cref="Rock.Model.Group"/> entities that by their <see cref="Rock.Model.GroupType"/> Id.
         /// </summary>
-        /// <param name="groupTypeId">Group Type Id.</param>
-        /// <returns>An enumerable list of Group objects.</returns>
+        /// <param name="groupTypeId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupType"/> that they belong to.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.Group">Groups</see> belong to a specific <see cref="Rock.Model.GroupType"/>.</returns>
         public IEnumerable<Group> GetByGroupTypeId( int groupTypeId )
         {
             return Repository.Find( t => t.GroupTypeId == groupTypeId );
         }
 
+
         /// <summary>
-        /// Gets Group by Guid
+        /// Returns the <see cref="Rock.Model.Group"/> containing a Guid property that matches the provided value.
         /// </summary>
-        /// <param name="guid">Guid.</param>
-        /// <returns>Group object.</returns>
+        /// <param name="guid">A <see cref="System.Guid"/> to find a <see cref="Rock.Model.Group"/> by.</param>
+        /// <returns>The <see cref="Rock.Model.Group" /> who's Guid property matches the provided value.  If no match is found, returns null.</returns>
         public Group GetByGuid( Guid guid )
         {
             return Repository.FirstOrDefault( t => t.Guid == guid );
         }
 
         /// <summary>
-        /// Gets Groups by Is Security Role
+        /// Returns an enumerable collection of <see cref="Rock.Model.Group">Groups</see> by their IsSecurityRole flag.
         /// </summary>
-        /// <param name="isSecurityRole">Is Security Role.</param>
-        /// <returns>An enumerable list of Group objects.</returns>
+        /// <param name="isSecurityRole">A <see cref="System.Boolean"/> representing the IsSecurityRole flag value to search by.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.Group">Groups</see> that contains a IsSecurityRole flag that matches the provided value.</returns>
         public IEnumerable<Group> GetByIsSecurityRole( bool isSecurityRole )
         {
             return Repository.Find( t => t.IsSecurityRole == isSecurityRole );
         }
 
         /// <summary>
-        /// Gets Groups by Parent Group Id
+        /// Returns a collection of <see cref="Rock.Model.Group">Groups</see> by the Id of it's parent <see cref="Rock.Model.Group"/>. 
         /// </summary>
-        /// <param name="parentGroupId">Parent Group Id.</param>
-        /// <returns>An enumerable list of Group objects.</returns>
+        /// <param name="parentGroupId">A <see cref="System.Int32" /> representing the Id of the parent <see cref="Rock.Model.Group"/> to search by. This value
+        /// is nullable and a null value will search for <see cref="Rock.Model.Group">Groups</see> that do not inherit from other groups.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.Group">Groups</see> who's ParentGroupId matches the provided value.</returns>
         public IEnumerable<Group> GetByParentGroupId( int? parentGroupId )
         {
             return Repository.Find( t => ( t.ParentGroupId == parentGroupId || ( parentGroupId == null && t.ParentGroupId == null ) ) );
         }
 
+
         /// <summary>
-        /// Gets Groups by Parent Group Id And Name
+        /// Returns an enumerable collection of <see cref="Rock.Model.Group">Groups</see> by the Id of their parent <see cref="Rock.Model.Group"/> and by the Group's name.
         /// </summary>
-        /// <param name="parentGroupId">Parent Group Id.</param>
-        /// <param name="name">Name.</param>
-        /// <returns>An enumerable list of Group objects.</returns>
+        /// <param name="parentGroupId">An <see cref="System.Int32" /> representing the Id of the parent <see cref="Rock.Model.Group"/> to search by.</param>
+        /// <param name="name">A <see cref="System.String"/> containing the Name of the <see cref="Rock.Model.Group"/> to search by.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.Group">Groups</see> who's ParentGroupId and Name matches the provided values.</returns>
         public IEnumerable<Group> GetByParentGroupIdAndName( int? parentGroupId, string name )
         {
             return Repository.Find( t => ( t.ParentGroupId == parentGroupId || ( parentGroupId == null && t.ParentGroupId == null ) ) && t.Name == name );
         }
 
         /// <summary>
-        /// Gets all descendents.
+        /// Returns an enumerable collection of <see cref="Rock.Model.Group">Groups</see> that are descendants of a specified group.
         /// </summary>
-        /// <param name="parentGroupId">The parent group id.</param>
-        /// <returns></returns>
+        /// <param name="parentGroupId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/> to retrieve descendants for.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.Group">Groups</see> that are descendants of referenced group.</returns>
         public IEnumerable<Group> GetAllDescendents( int parentGroupId )
         {
             return Repository.ExecuteQuery( 
@@ -87,11 +90,11 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Deletes the specified item.
+        /// Deletes a specified group. Returns a boolean flag indicating if the deletion was successful.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="personId">The person id.</param>
-        /// <returns></returns>
+        /// <param name="item">The <see cref="Rock.Model.Group"/> to delete.</param>
+        /// <param name="personId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> performing the delete.</param>
+        /// <returns>A <see cref="System.Boolean"/> that indicates if the <see cref="Rock.Model.Group"/> was deleted successfully.</returns>
         public override bool Delete( Group item, int? personId )
         {
             string message;
