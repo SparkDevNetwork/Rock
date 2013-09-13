@@ -20,7 +20,7 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Prayer
 {
     [AdditionalActions( new string[] { "Approve" } )]
-    [DetailPage( Order = 0 )]
+    [LinkedPage( "Detail Page", Order = 0 )]
     [IntegerField( "Group Category Id", "The id of a 'top level' Category.  Only prayer requests under this category will be shown.", false, -1, "Filtering", 1, "GroupCategoryId" )]
     public partial class PrayerRequestList : Rock.Web.UI.RockBlock
     {
@@ -390,7 +390,7 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gPrayerRequests_Add( object sender, EventArgs e )
         {
-            NavigateToDetailPage( PrayerRequestKeyParameter, 0 );
+            NavigateToLinkedPage( "DetailPage", PrayerRequestKeyParameter, 0 );
         }
 
         /// <summary>
@@ -400,7 +400,7 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gPrayerRequests_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( PrayerRequestKeyParameter, (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", PrayerRequestKeyParameter, (int)e.RowKeyValue );
         }
 
         /// <summary>

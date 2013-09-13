@@ -19,7 +19,7 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// 
     /// </summary>
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     [BinaryFileTypeField]
     public partial class BinaryFileList : RockBlock
     {
@@ -96,7 +96,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gBinaryFile_Add( object sender, EventArgs e )
         {
-            NavigateToDetailPage( "BinaryFileId", 0, "BinaryFileTypeId", binaryFileType != null ? binaryFileType.Id : 0 );
+            NavigateToLinkedPage( "DetailPage", "BinaryFileId", 0, "BinaryFileTypeId", binaryFileType != null ? binaryFileType.Id : 0 );
         }
 
         /// <summary>
@@ -106,7 +106,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gBinaryFile_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "BinaryFileId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "BinaryFileId", (int)e.RowKeyValue );
         }
 
         /// <summary>

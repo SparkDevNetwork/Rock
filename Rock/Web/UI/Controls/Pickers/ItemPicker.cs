@@ -588,15 +588,7 @@ namespace Rock.Web.UI.Controls
 ";
                 writer.Write( controlHtmlFormatMiddle, this.ID );
 
-                // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
-                if ( SelectItem != null )
-                {
-                    _btnSelect.RenderControl( writer );
-                }
-                else
-                {
-                    writer.Write( "<a class='btn btn-mini btn-primary' id='btnSelect_{0}'>Select</a>", this.ID );
-                }
+                _btnSelect.RenderControl( writer );
 
                 string controlHtmlFormatEnd = @"
             <a class='btn btn-mini' id='btnCancel_{0}'>Cancel</a>
@@ -608,6 +600,7 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
+                // this picker is not enabled (readonly), so just render a readonly version
                 string controlHtmlFormatDisabled = @"
         <i class='icon-file-alt'></i>
         <span id='selectedItemLabel_{0}'>{1}</span>
