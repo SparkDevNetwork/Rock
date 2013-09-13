@@ -177,10 +177,10 @@ namespace Rock.Model
         private ICollection<GroupMember> _members;
 
         /// <summary>
-        /// Gets or sets the group locations.
+        /// Gets or Sets the <see cref="Rock.Model.GroupLocation">GroupLocations</see> that are associated with the Group.
         /// </summary>
         /// <value>
-        /// The group locations.
+        /// The <see cref="Rock.Model.GroupLocation">GroupLocations</see> that are associated with the Group.
         /// </value>
         [DataMember]
         public virtual ICollection<GroupLocation> GroupLocations
@@ -191,10 +191,12 @@ namespace Rock.Model
         private ICollection<GroupLocation> _groupLocations;
 
         /// <summary>
-        /// Gets the parent authority.
+        /// Gets the securable object that security permissions should be inherited from.  If block is located on a page
+        /// security will be inherited from the page, otherwise it will be inherited from the site.
         /// </summary>
         /// <value>
-        /// The parent authority.
+        /// The parent authority. If the block is located on the page, security will be
+        /// inherited from the page, otherwise it will be inherited from the site.
         /// </value>
         public override Security.ISecured ParentAuthority
         {
@@ -216,10 +218,10 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Returns a <see cref="System.String" /> containing the Name of the Group that represents this instance.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
+        /// A <see cref="System.String" /> containing the Name of the Group that represents this instance.
         /// </returns>
         public override string ToString()
         {
@@ -253,8 +255,10 @@ namespace Rock.Model
     #region Custom Exceptions
 
     /// <summary>
-    /// 
-    /// </summary>
+    /// Represents a circular reference exception. This occurs when a group is set as a parent of a group that is higher in the group hierarchy. 
+    /// <remarks>
+    ///  An example of this is when a child group is set as the parent of it's parent group.
+    /// </remarks>
     public class GroupParentCircularReferenceException : Exception
     {
         /// <summary>
