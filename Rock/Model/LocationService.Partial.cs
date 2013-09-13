@@ -12,16 +12,16 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Location POCO Service class
+    /// Data access and service class for <see cref="Rock.Model.Location"/> entities.
     /// </summary>
     public partial class LocationService 
     {
         /// <summary>
-        /// Gets Location by Full Address
+        /// Returns a <see cref="Rock.Model.Location"/> based on a provided full address string.
         /// </summary>
-        /// <param name="fullAddress">Full Address.</param>
+        /// <param name="fullAddress">A <see cref="System.String"/> representing the a location's full mailing/street address.</param>
         /// <returns>
-        /// Location object.
+        /// The first <see cref="Rock.Model.Location"/> where the FullAddress property matches the provided value.
         /// </returns>
         public Location GetByFullAddress( string fullAddress )
         {
@@ -29,15 +29,15 @@ namespace Rock.Model
         }
         
         /// <summary>
-        /// Gets Location by Street 1 And Street 2 And City And State And Zip, will first standardize the address.  If an existing location 
-        /// is not found, a new locaiton will be created and geocoded.
+        /// Returns the first <see cref="Rock.Model.Location"/> where the address matches the provided address.  If no address is found with the provided values, 
+        /// the address will be standardized. If there is still not a match, the address will be saved as a new location.
         /// </summary>
-        /// <param name="street1">Street 1.</param>
-        /// <param name="street2">Street 2.</param>
-        /// <param name="city">City.</param>
-        /// <param name="state">State.</param>
-        /// <param name="zip">Zip.</param>
-        /// <returns>Location object.</returns>
+        /// <param name="street1">A <see cref="System.String"/> representing the Address Line 1 to search by.</param>
+        /// <param name="street2">A <see cref="System.String"/> representing the Address Line 2 to search by.</param>
+        /// <param name="city">A <see cref="System.String"/> representing the City to search by.</param>
+        /// <param name="state">A <see cref="System.String"/> representing the State to search by.</param>
+        /// <param name="zip">A <see cref="System.String"/> representing the Zip/Postal code to search by</param>
+        /// <returns>The first <see cref="Rock.Model.Location"/> where an address match is found, if no match is found a new <see cref="Rock.Model.Location"/> is created and returned.</returns>
         public Location Get( string street1, string street2, string city, string state, string zip )
         {
             // First check if a location exists with the entered values
@@ -86,10 +86,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Standardizes the specified <see cref="Location"/>
+        /// Performs an Address Standardization on the provided <see cref="Rock.Model.Location"/>.
         /// </summary>
-        /// <param name="location">The location.</param>
-        /// <param name="personId">The person id.</param>
+        /// <param name="location">A <see cref="Rock.Model.Location"/> to standardize.</param>
+        /// <param name="personId">An <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Person"/> requesting the address standardization.</param>
         public void Standardize( Location location, int? personId )
         {
             Model.ServiceLogService logService = new Model.ServiceLogService();
@@ -113,7 +113,7 @@ namespace Rock.Model
                     logService.Add( log, personId );
                     logService.Save( log, personId );
 
-                    // If succesful, set the results and stop processing
+                    // If successful, set the results and stop processing
                     if ( success )
                     {
                         location.StandardizeAttemptedServiceType = service.Value.Metadata.ComponentName;
@@ -127,10 +127,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Geocodes the specified <see cref="Location"/>
+        /// Performs a geolocation on the provided Location.
         /// </summary>
-        /// <param name="location">The location.</param>
-        /// <param name="personId">The person id.</param>
+        /// <param name="location">The <see cref="Rock.Model.Location"/> entity to geocode.</param>
+        /// <param name="personId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> requesting the geolocation.</param>
         public void Geocode( Location location, int? personId )
         {
             Model.ServiceLogService logService = new Model.ServiceLogService();
@@ -155,7 +155,7 @@ namespace Rock.Model
                     logService.Add( log, personId );
                     logService.Save( log, personId );
 
-                    // If succesful, set the results and stop processing
+                    // If successful, set the results and stop processing
                     if ( success )
                     {
                         location.GeocodeAttemptedServiceType = service.Value.Metadata.ComponentName;
@@ -169,10 +169,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets all descendents.
+        /// Returns an enumerable collection of <see cref="Rock.Model.Location">Locations</see> that are descendants of a <see cref="Rock.Model.Location"/>
         /// </summary>
-        /// <param name="parentLocationId">The parent location id.</param>
-        /// <returns></returns>
+        /// <param name="parentLocationId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.mO"/></param>
+        /// <returns>A collection of <see cref="Rock.Model.Location"/> entities that are descendants of the provided parent <see cref="Rock.Model.Location"/>.</returns>
         public IEnumerable<Location> GetAllDescendents( int parentLocationId )
         {
             return Repository.ExecuteQuery(
