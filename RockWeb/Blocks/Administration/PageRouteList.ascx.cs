@@ -20,7 +20,7 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// 
     /// </summary>
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     public partial class PageRouteList : RockBlock
     {
         #region Control Methods
@@ -68,7 +68,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gPageRoutes_Add( object sender, EventArgs e )
         {
-            NavigateToDetailPage( "pageRouteId", 0 );
+            NavigateToLinkedPage( "DetailPage", "pageRouteId", 0 );
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gPageRoutes_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "pageRouteId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "pageRouteId", (int)e.RowKeyValue );
         }
 
         /// <summary>

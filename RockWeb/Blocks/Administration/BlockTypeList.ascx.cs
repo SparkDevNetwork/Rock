@@ -19,7 +19,7 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// 
     /// </summary>
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     public partial class BlockTypeList : RockBlock
     {
         #region Control Methods
@@ -82,7 +82,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gBlockTypes_Add( object sender, EventArgs e )
         {
-            NavigateToDetailPage( "blockTypeId", 0 );
+            NavigateToLinkedPage( "DetailPage", "blockTypeId", 0 );
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gBlockTypes_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "blockTypeId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "blockTypeId", (int)e.RowKeyValue );
         }
 
         /// <summary>
