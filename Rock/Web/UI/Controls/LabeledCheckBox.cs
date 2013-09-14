@@ -177,10 +177,7 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();
                 }
 
-                if ( renderControlGroupDiv )
-                {
-                    writer.RenderEndTag();
-                }
+                writer.RenderEndTag();
             }
         }
     }

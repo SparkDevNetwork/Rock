@@ -327,20 +327,21 @@ body#splash
 body#splash #content-box {
     background-color: @body-bg;
     .border-radius(@border-radius-base);
+    overflow: hidden;
 }
 
-#splash .form-actions
+#splash #content-box
 {
-    margin-bottom: 0;
+   padding: 15px;
 }
-
+/*
 // special styles for the login control 
 #splash .login fieldset {
     padding: 15px;
 }
-
+*/
 #splash .login .form-actions {
-    .border-radius(@border-radius-base);
+    margin: 0 -15px -15px -15px;
 }
 
 // 2 Column Left

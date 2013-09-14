@@ -19,7 +19,7 @@
                     <Rock:DatePicker ID="dtpEndDate" runat="server" LabelText="End Date" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="EndDate" Visible="False"/>
                     <Rock:DataDropDownList ID="ddlFrequencyType" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="PledgeFrequencyValueId"/>
                     <asp:Panel ID="pnlConfirm" runat="server" CssClass="alert alert-info" Visible="False">
-                        <p><strong>Hey!</strong> It looks like you've already made a pledge. Do you want to pledge again?</p>
+                        <p><strong>Information</strong> A pledge already exists for you.  Would your like to create an additional pledge?</p>
                         <div>
                             <asp:LinkButton ID="btnConfirmYes" runat="server" CssClass="btn btn-success" OnClick="btnConfirmYes_Click" CausesValidation="True"><i class="icon-ok"></i> Yes</asp:LinkButton>
                             <asp:LinkButton ID="btnConfirmNo" runat="server" CssClass="btn" OnClick="btnConfirmNo_Click"><i class="icon-remove"></i> No</asp:LinkButton>
