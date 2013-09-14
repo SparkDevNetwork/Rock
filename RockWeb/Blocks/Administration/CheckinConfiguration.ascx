@@ -29,6 +29,8 @@
                 <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
             </div>
 
+            <Rock:ConfirmPageUnload ID="confirmExit" runat="server" ConfirmationMessage="Changes have been made to this check-in configuration that have not yet been saved." Enabled="false" />
+
         </asp:Panel>
 
         <asp:Panel ID="pnlCheckinLabelPicker" runat="server" Visible="false">
@@ -75,6 +77,7 @@
                     },
                     update: function (event, ui) {
                         {
+                            $('#' + '<%=btnSave.ClientID %>').addClass('disabled');
                             __doPostBack('<%=upDetail.ClientID %>', 're-order-grouptype:' + ui.item.attr('data-key') + ';' + ui.item.index());
                         }
                     }
@@ -94,6 +97,7 @@
                     },
                     update: function (event, ui) {
                         {
+                            $('#' + '<%=btnSave.ClientID %>').addClass('disabled');
                             __doPostBack('<%=upDetail.ClientID %>', 're-order-group:' + ui.item.attr('data-key') + ';' + ui.item.index());
                         }
                     }

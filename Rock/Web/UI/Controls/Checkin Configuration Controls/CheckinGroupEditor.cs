@@ -87,7 +87,10 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
 });
 ";
 
-            ScriptManager.RegisterStartupScript( hfGroupGuid, hfGroupGuid.GetType(), "CheckinGroupEditorScript", script, true );
+            if ( !Page.IsPostBack )
+            {
+                ScriptManager.RegisterStartupScript( hfGroupGuid, hfGroupGuid.GetType(), "CheckinGroupEditorScript", script, true );
+            }
         }
 
         /// <summary>
@@ -206,6 +209,20 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             get
             {
                 return new Guid( hfGroupGuid.Value );
+            }
+        }
+
+        /// <summary>
+        /// Gets the group type unique identifier.
+        /// </summary>
+        /// <value>
+        /// The group type unique identifier.
+        /// </value>
+        public int GroupTypeId
+        {
+            get
+            {
+                return hfGroupTypeId.ValueAsInt();
             }
         }
 
