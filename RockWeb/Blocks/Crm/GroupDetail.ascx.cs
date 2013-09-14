@@ -707,7 +707,7 @@ namespace RockWeb.Blocks.Crm
             }
             else
             {
-                lblActiveHtml.Text = string.Format( activeHtmlFormat, "label-important", "Inactive" );
+                lblActiveHtml.Text = string.Format(activeHtmlFormat, "label-danger", "Inactive");
             }
 
             lGroupType.Text = group.GroupType.Name;

@@ -7520,7 +7520,7 @@ td.visible-print {
   border-radius: 0;
   border: 0 solid transparent;
   font-weight: 300;
-  font-size: 24px;
+  font-size: 14px;
   padding: 4px 12px;
   margin: 0 0 12px;
 }
@@ -8373,7 +8373,6 @@ div.tagsinput div {
 }
 .rock-picker .caret {
   border-top: 4px solid #515151;
-  margin-top: 8px;
 }
 .rock-picker h4 {
   font-size: 12px;
@@ -8415,6 +8414,7 @@ div.tagsinput div {
     
     1. SQL Command - block to query database directly
     2. HTML Content - block to edit HTML on a page
+    3. Login - block to allow logins
 
 */
 .sql-comand .panel {
@@ -8458,6 +8458,21 @@ span.cke_skin_kama {
 .loginstatus .dropdown-menu {
   right: 0;
   font-size: 11px;
+}
+.alt-authentication {
+  margin: 10px 0;
+}
+.alt-authentication .btn-authenication {
+  background-color: #d9e1e8;
+  color: #515151;
+}
+.alt-authentication .btn-authenication:hover {
+  background-color: #b9c8d5;
+}
+.alt-authentication .btn-authenication.facebook:before {
+  font-family: 'FontAwesome';
+  content: '';
+  margin-right: 4px;
 }
 /*
     Used to manage styles related to the CMS admin UI for on page editing
@@ -8816,10 +8831,22 @@ td[align=center] {
 /*
     Used to manage styles related to Rock's forms
     
-    1. Data Lists
-    2. 
+    1. Bootstrap Overrides / Additions
+    2. Data Lists
 
 */
+.form-actions {
+  /* adding BS2 form-actions back*/
+
+  padding: 12px 16px;
+  background-color: #d9e1e8;
+  color: #515151;
+}
+legend {
+  font-weight: 300;
+  color: #515151;
+  border-width: 0;
+}
 dl {
   margin-bottom: 0;
 }
@@ -10355,10 +10382,9 @@ div.k-imagebrowser-dropzone em {
   }
 }
 /* bootstrap overrides */
-/*
 .control-label {
-    font-weight: @font-weight-semibold;
-}*/
+  font-weight: 600;
+}
 /* global classes */
 .clickable {
   cursor: pointer;
@@ -10526,15 +10552,6 @@ a:hover i[class^="icon-"] {
   background-color: #ff0000;
   cursor: not-allowed;
 }
-/* breadcrumbs 
-.breadcrumb {
-	margin: 20px 0 20px;
-	padding: 0;
-}
-
-.breadcrumb i[class^="icon-"] {
-	margin-right: 6px;
-}*/
 header .dropdown-menu li > a:hover,
 header .dropdown-menu li > a:focus,
 header .dropdown-submenu:hover > a {
@@ -10664,17 +10681,19 @@ body#splash #content-box {
   -moz-border-radius: 4px;
   -webkit-border-radius: 4px;
   border-radius: 4px;
+  overflow: hidden;
 }
-#splash .form-actions {
-  margin-bottom: 0;
-}
-#splash .login fieldset {
+#splash #content-box {
   padding: 15px;
 }
+/*
+// special styles for the login control 
+#splash .login fieldset {
+    padding: 15px;
+}
+*/
 #splash .login .form-actions {
-  -moz-border-radius: 4px;
-  -webkit-border-radius: 4px;
-  border-radius: 4px;
+  margin: 0 -15px -15px -15px;
 }
 #left-column-content {
   min-height: 600px;

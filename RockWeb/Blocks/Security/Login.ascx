@@ -7,12 +7,10 @@
         <Rock:LabeledTextBox ID="tbUserName" runat="server" LabelText="Username" Required="true" DisplayRequiredIndicator="false" ></Rock:LabeledTextBox>
         <Rock:LabeledTextBox ID="tbPassword" runat="server" LabelText="Password" Required="true" DisplayRequiredIndicator="false" TextMode="Password" ></Rock:LabeledTextBox>
         
-        <div class="control-group">
-            <div class="controls">
-                <label class="checkbox">
-                    <asp:CheckBox ID="cbRememberMe" runat="server"/> Remember me on this computer
-                </label>
-            </div>
+        <div class="checkbox">
+            <label>
+                <asp:CheckBox ID="cbRememberMe" runat="server"/> Remember me on this computer
+            </label>
         </div>
         
     </fieldset>
@@ -29,8 +27,8 @@
 
     <div class="form-actions">
         <asp:Button ID="LoginButton" runat="server" Text="Login" CssClass="btn btn-primary" OnClick="btnLogin_Click" />
-        <asp:Button ID="NewAccountButton" runat="server" Text="Create New Account" CssClass="btn" OnClick="btnNewAccount_Click" CausesValidation="false" />
-        <asp:Button ID="Cancel" runat="server" Text="Help" CssClass="btn" OnClick="btnHelp_Click" CausesValidation="false" />
+        <asp:Button ID="NewAccountButton" runat="server" Text="Create New Account" CssClass="btn btn-default" OnClick="btnNewAccount_Click" CausesValidation="false" />
+        <asp:Button ID="Cancel" runat="server" Text="Help" CssClass="btn btn-default" OnClick="btnHelp_Click" CausesValidation="false" />
     </div>
 
     <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-info"/>

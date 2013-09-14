@@ -3,6 +3,7 @@
     
     1. SQL Command - block to query database directly
     2. HTML Content - block to edit HTML on a page
+    3. Login - block to allow logins
 
 */
 
@@ -73,5 +74,27 @@ span.cke_skin_kama
     .dropdown-menu {
         right: 0;
         font-size: 11px;
+    }
+}
+
+// 3. Login 
+// -------------------------
+
+.alt-authentication {
+    margin: 10px 0;
+
+    .btn-authenication {
+        background-color: @accent-color;
+        color: @accent-text-color;
+
+        &:hover {
+            background-color: darken(@accent-color, 10%);
+        }
+
+        &.facebook:before {
+            font-family: 'FontAwesome';
+            content: '';
+            margin-right: 4px;
+        }
     }
 }

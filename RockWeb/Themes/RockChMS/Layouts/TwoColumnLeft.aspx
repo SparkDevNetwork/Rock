@@ -80,7 +80,9 @@
                     </div>
                     <div id="right-column" class="col-md-9">
                         <div class="panel">
-                            <Rock:Zone ID="RightContent" runat="server" />
+                            <div class="panel-body">
+                                <Rock:Zone ID="RightContent" runat="server" />
+                            </div>
                         </div>
                     </div>
                 </div>
