@@ -14,11 +14,28 @@
                         <legend>Contribution Information</legend>
                         <div class="form-horizontal">
                             <fieldset>
+
+                                <asp:Repeater ID="rptAccountList" runat="server" >
+                                <ItemTemplate>       
+	                                <Rock:LabeledTextBox ID="txtAccountAmount" runat="server" PrependText="$" LabelText='<%# Eval("Name") %>' Text='<%# Eval("AmountFormatted") %>' CssClass="input-medium account-amount" />
+                                </ItemTemplate>                                
+                                </asp:Repeater>    
+                                <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" CssClass="btn btn-primary" Title="Add Another Account" Visible="false" LabelText=" " 
+                                    DataTextField="Name" DataValueField="Id" OnSelectionChanged="btnAddAccount_SelectionChanged" />
+                                   
+                                <div class="control-group">
+                                    <span class="control-label">Total</span>
+                                    <div class="controls"> 
+                                        <asp:Label ID="lblTotalAmount" runat="server" CssClass="total-amount" />
+                                    </div>
+                                </div>  
+
                                 <div id="divRepeatingPayments" runat="server" visible="false">
                                     <Rock:ButtonDropDownList ID="btnFrequency" runat="server" CssClass="btn btn-primary" LabelText="Frequency"
                                         DataTextField="Name" DataValueField="Id"  />
                                     <Rock:DatePicker ID="dtpStartDate" runat="server" LabelText="First Payment" />
                                 </div>
+
                             </fieldset>
                         </div>
                     </div>
