@@ -1,6 +1,7 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="FamilySelect.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Attended.FamilySelect" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="asp" %>
-
+<link rel="stylesheet" type="text/css"  href="../../CSS/Kendo/kendo.common.min.css" />
+<link rel="stylesheet" type="text/css"  href="../../CSS/Kendo/kendo.flat.less" />
 <script type="text/javascript">
 
     function setControlEvents() {

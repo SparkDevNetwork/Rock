@@ -587,12 +587,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
                 .People.Where( p => p.Person.Id == personId ).FirstOrDefault();
-                //var groupTypes = person.GroupTypes.Where( gt => gt.Selected ).ToList();
-                //var groups = groupTypes.SelectMany( gt => gt.Groups.Where( g => g.Selected ) ).ToList();
-                //var locations = groups.SelectMany( g => g.Locations.Where( l => l.Selected ) ).ToList();
-                //var schedules = locations.SelectMany( l => l.Schedules.Where( s => s.Selected ) ).ToList();
 
-                // all this does right now is clear out everything. Not what we want to do...just testing.
                 var groupTypes = person.GroupTypes.ToList();
                 foreach ( var groupType in groupTypes )
                 {
@@ -606,12 +601,28 @@ namespace RockWeb.Blocks.CheckIn.Attended
                             foreach ( var schedule in schedules )
                             {
                                 schedule.Selected = false;
+                                if ( schedule.PreSelected )
+                                {
+                                    schedule.Selected = true;
+                                }
                             }
                             location.Selected = false;
+                            if ( location.PreSelected )
+                            {
+                                location.Selected = true;
+                            }
                         }
                         group.Selected = false;
+                        if ( group.PreSelected )
+                        {
+                            group.Selected = true;
+                        }
                     }
                     groupType.Selected = false;
+                    if ( groupType.PreSelected )
+                    {
+                        groupType.Selected = true;
+                    }
                 }
             }            
 
@@ -623,6 +634,50 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// </summary>
         private void GoNext()
         {
+            var personId = Request.QueryString["personId"].AsType<int?>();
+            if ( personId != null )
+            {
+                var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
+                .People.Where( p => p.Person.Id == personId ).FirstOrDefault();
+
+                var groupTypes = person.GroupTypes.ToList();
+                foreach ( var groupType in groupTypes )
+                {
+                    var groups = groupType.Groups.ToList();
+                    foreach ( var group in groups )
+                    {
+                        var locations = group.Locations.ToList();
+                        foreach ( var location in locations )
+                        {
+                            var schedules = location.Schedules.ToList();
+                            foreach ( var schedule in schedules )
+                            {
+                                schedule.PreSelected = false;
+                                if ( schedule.Selected )
+                                {
+                                    schedule.PreSelected = true;
+                                }
+                            }
+                            location.PreSelected = false;
+                            if ( location.Selected )
+                            {
+                                location.PreSelected = true;
+                            }
+                        }
+                        group.PreSelected = false;
+                        if ( group.Selected )
+                        {
+                            group.PreSelected = true;
+                        }
+                    }
+                    groupType.PreSelected = false;
+                    if ( groupType.Selected )
+                    {
+                        groupType.PreSelected = true;
+                    }
+                }
+            }
+
             SaveState();
             NavigateToNextPage();
         }
