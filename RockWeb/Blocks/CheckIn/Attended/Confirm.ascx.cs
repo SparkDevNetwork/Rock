@@ -8,14 +8,17 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
+using System.Text.RegularExpressions;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Model;
+using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.CheckIn.Attended
@@ -25,6 +28,18 @@ namespace RockWeb.Blocks.CheckIn.Attended
     public partial class Confirm : CheckInBlock
     {
         #region Control Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            RockPage.AddScriptLink( this.Page, "http://www.sparkdevnetwork.org/public/js/cordova-2.4.0.js" );
+            RockPage.AddScriptLink( this.Page, "http://www.sparkdevnetwork.org/public/js/ZebraPrint.js" );
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -143,9 +158,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
                 // Retrieve the row that contains the button from the Rows collection.
                 GridViewRow row = gPersonList.Rows[index];
-
-                // Add code here to print a label or something
-                maWarning.Show( "If there was any code in here you would have just printed a label", ModalAlertType.Information );
+                // get info about person
+                //PrintLabel( personId, groupTypeId );
             }
         }
 
@@ -227,33 +241,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         #endregion
 
         #region Internal Methods
-
-        /// <summary>
-        /// Processes the best fit.
-        /// </summary>
-        private void ProcessBestFit()
-        {
-            var errors = new List<string>();
-            if ( ProcessActivity( "Assign Best Fit", out errors ) )
-            {
-                //if ( CurrentCheckInState.CheckIn.Families.All( f => f.People.Count == 0 ) )
-                //{
-                //    string errorMsg = "<ul><li>No one in that family is eligible to check-in.</li></ul>";
-                //    maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
-                //}
-                //else
-                //{
-                //    SaveState();                    
-                //}
-                SaveState();
-            }
-            else
-            {   // not able to assign everyone, please assign manually
-                string errorMsg = "<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
-                maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
-            }
-        }
-
+               
         /// <summary>
         /// Goes the back.
         /// </summary>
@@ -281,6 +269,120 @@ namespace RockWeb.Blocks.CheckIn.Attended
             CurrentCheckInState.CheckIn.SearchValue = string.Empty;
             SaveState();
             NavigateToNextPage();
+        }
+
+        /// <summary>
+        /// Prints the label.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        private void PrintLabel( int personId, int groupTypeId )
+        {
+            var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).SelectMany( f => f.People )
+                .Where( p => p.Person.Id == personId ).FirstOrDefault();                
+
+            foreach ( var groupType in person.GroupTypes.Where( gt => gt.Selected ).ToList() )
+            {
+                var printFromClient = groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Client);
+                if ( printFromClient.Any() )
+                {
+                    AddLabelScript( printFromClient.ToJson() );
+                }
+
+                var printFromServer = groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Server );
+                if ( printFromServer.Any() )
+                {
+                    Socket socket = null;
+                    string currentIp = string.Empty;
+
+                    foreach ( var label in printFromServer )
+                    {
+                        var labelCache = KioskLabel.Read( label.FileId );
+                        if ( labelCache != null )
+                        {
+                            if ( label.PrinterAddress != currentIp )
+                            {
+                                if ( socket != null && socket.Connected )
+                                {
+                                    socket.Shutdown( SocketShutdown.Both );
+                                    socket.Close();
+                                }
+
+                                currentIp = label.PrinterAddress;
+                                var printerIp = new IPEndPoint( IPAddress.Parse( currentIp ), 9100 );
+
+                                socket = new Socket( AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp );
+                                IAsyncResult result = socket.BeginConnect( printerIp, null, null );
+                                bool success = result.AsyncWaitHandle.WaitOne( 5000, true );
+                            }
+
+                            string printContent = labelCache.FileContent;
+                            foreach ( var mergeField in label.MergeFields )
+                            {
+                                var rgx = new Regex( string.Format( @"(?<=\^FD){0}(?=\^FS)", mergeField.Key ) );
+                                printContent = rgx.Replace( printContent, mergeField.Value );
+                            }
+
+                            if ( socket.Connected )
+                            {
+                                var ns = new NetworkStream( socket );
+                                byte[] toSend = System.Text.Encoding.ASCII.GetBytes( printContent );
+                                ns.Write( toSend, 0, toSend.Length );
+                            }
+                            else
+                            {
+                                maWarning.Show( "Could not connect to printer.", ModalAlertType.Warning );
+                            }
+                        }
+                    }
+
+                    if ( socket != null && socket.Connected )
+                    {
+                        socket.Shutdown( SocketShutdown.Both );
+                        socket.Close();
+                    }
+                }
+            }            
+        }
+
+        /// <summary>
+        /// Adds the label script.
+        /// </summary>
+        /// <param name="jsonObject">The json object.</param>
+        private void AddLabelScript( string jsonObject )
+        {
+            string script = string.Format( @"
+
+            // setup deviceready event to wait for cordova
+	        document.addEventListener('deviceready', onDeviceReady, false);
+
+	        // label data
+            var labelData = {0};
+
+		    function onDeviceReady() {{
+	
+			    //navigator.notification.alert('Oh boy! It's going to be a good day!, alertDismissed, 'Success', 'Continue');
+			    printLabels();
+		    }}
+		
+		    function alertDismissed() {{
+		        // do something
+		    }}
+		
+		    function printLabels() {{
+		        ZebraPrintPlugin.printTags(
+            	    JSON.stringify(labelData), 
+            	    function(result) {{ 
+			            console.log('I printed that tag like a champ!!!');
+			        }},
+			        function(error) {{   
+				        // error is an array where:
+				        // error[0] is the error message
+				        // error[1] determines if a re-print is possible (in the case where the JSON is good, but the printer was not connected)
+			            console.log('An error occurred: ' + error[0]);
+			        }}
+                );
+	        }}", jsonObject );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "addLabelScript", script, true );
         }
 
         #endregion
