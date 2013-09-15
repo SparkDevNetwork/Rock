@@ -47,63 +47,62 @@
         </div>
             
         <div class="row-fluid checkin-body keyboard">
-            <div class="span12">
-                <Rock:LabeledTextBox ID="tbSearchBox" MaxLength="50" CssClass="input" runat="server" LabelText="" TabIndex="0" />
+            
+            <Rock:LabeledTextBox ID="tbSearchBox" MaxLength="50" CssClass="input" runat="server" LabelText="" TabIndex="0" />
 
-                <div class="row-fluid">
-                    <a href="#" class="btn character">1</a>
-                    <a href="#" class="btn character">2</a>
-                    <a href="#" class="btn character">3</a>
-                    <a href="#" class="btn character">4</a>
-                    <a href="#" class="btn character">5</a>
-                    <a href="#" class="btn character">6</a>
-                    <a href="#" class="btn character">7</a>
-                    <a href="#" class="btn character">8</a>
-                    <a href="#" class="btn character">9</a>
-                    <a href="#" class="btn character">0</a>
-                </div>
-                <div class="row-fluid">
-                    <a href="#" class="btn character">Q</a>
-                    <a href="#" class="btn character">W</a>
-                    <a href="#" class="btn character">E</a>
-                    <a href="#" class="btn character">R</a>
-                    <a href="#" class="btn character">T</a>
-                    <a href="#" class="btn character">Y</a>
-                    <a href="#" class="btn character">U</a>
-                    <a href="#" class="btn character">I</a>
-                    <a href="#" class="btn character">O</a>
-                    <a href="#" class="btn character">P</a>
-                </div>
-                <div class="row-fluid">
-                    <a href="#" class="btn character">A</a>
-                    <a href="#" class="btn character">S</a>
-                    <a href="#" class="btn character">D</a>
-                    <a href="#" class="btn character">F</a>
-                    <a href="#" class="btn character">G</a>
-                    <a href="#" class="btn character">H</a>
-                    <a href="#" class="btn character">J</a>
-                    <a href="#" class="btn character">K</a>
-                    <a href="#" class="btn character">L</a>
-                    <a href="#" class=""></a>
-                </div>
-                <div class="row-fluid">
-                    <a href="#" class="btn character">Z</a>
-                    <a href="#" class="btn character">X</a>
-                    <a href="#" class="btn character">C</a>
-                    <a href="#" class="btn character">V</a>
-                    <a href="#" class="btn character">B</a>
-                    <a href="#" class="btn character">N</a>
-                    <a href="#" class="btn character">M</a>
-                    <a href="#" class=""></a>
-                    <a href="#" class=""></a>
-                    <a href="#" class="btn back"><i class='icon-arrow-left'></i></a>
-                </div>
-
-                <div class="row-fluid">
-                    <a href="#" class="btn spacebar">SPACE</a>
-                </div>
-           
+            <div class="row-fluid">
+                <a href="#" class="btn character">1</a>
+                <a href="#" class="btn character">2</a>
+                <a href="#" class="btn character">3</a>
+                <a href="#" class="btn character">4</a>
+                <a href="#" class="btn character">5</a>
+                <a href="#" class="btn character">6</a>
+                <a href="#" class="btn character">7</a>
+                <a href="#" class="btn character">8</a>
+                <a href="#" class="btn character">9</a>
+                <a href="#" class="btn character">0</a>
             </div>
+            <div class="row-fluid">
+                <a href="#" class="btn character">Q</a>
+                <a href="#" class="btn character">W</a>
+                <a href="#" class="btn character">E</a>
+                <a href="#" class="btn character">R</a>
+                <a href="#" class="btn character">T</a>
+                <a href="#" class="btn character">Y</a>
+                <a href="#" class="btn character">U</a>
+                <a href="#" class="btn character">I</a>
+                <a href="#" class="btn character">O</a>
+                <a href="#" class="btn character">P</a>
+            </div>
+            <div class="row-fluid">
+                <a href="#" class="btn character">A</a>
+                <a href="#" class="btn character">S</a>
+                <a href="#" class="btn character">D</a>
+                <a href="#" class="btn character">F</a>
+                <a href="#" class="btn character">G</a>
+                <a href="#" class="btn character">H</a>
+                <a href="#" class="btn character">J</a>
+                <a href="#" class="btn character">K</a>
+                <a href="#" class="btn character">L</a>
+                <a href="#" class=""></a>
+            </div>
+            <div class="row-fluid">
+                <a href="#" class="btn character">Z</a>
+                <a href="#" class="btn character">X</a>
+                <a href="#" class="btn character">C</a>
+                <a href="#" class="btn character">V</a>
+                <a href="#" class="btn character">B</a>
+                <a href="#" class="btn character">N</a>
+                <a href="#" class="btn character">M</a>
+                <a href="#" class=""></a>
+                <a href="#" class=""></a>
+                <a href="#" class="btn back"><i class='icon-arrow-left'></i></a>
+            </div>
+
+            <div class="row-fluid">
+                <a href="#" class="btn spacebar">SPACE</a>
+            </div>           
+            
         </div>
     </asp:Panel>
 </ContentTemplate>

@@ -151,17 +151,17 @@
             </ContentTemplate>
             </asp:UpdatePanel>
 
-            <div ID="divNothingFound" runat="server" class="span9 nothing-found-message" visible="false">
-                <asp:Label ID="lblNothingFound" runat="server" Text="Please add them using one of the buttons on the right:" />
-            </div>
-            
-            <div class="span3">
-                <div class="">
-                    <h3 id="actions" runat="server">Actions</h3>
-                    <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddPerson_Click" Text="Add Person" CausesValidation="false"></asp:LinkButton>
-                    <asp:LinkButton ID="lbAddVisitor" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddVisitor_Click" Text="Add Visitor" CausesValidation="false"></asp:LinkButton>                
-                    <asp:LinkButton ID="lbAddFamily" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddFamily_Click" Text="Add Family" CausesValidation="false" />
+            <div ID="divNothingFound" runat="server" class="span9" visible="false">
+                <div class="span3"></div>
+                <div class="span9 nothing-eligible">
+                    <asp:Label ID="lblNothingFound" runat="server" Text="Please add them using one of the buttons on the right:" />
                 </div>
+            </div>
+            <div class="span3">
+                <h3 id="actions" runat="server">Actions</h3>
+                <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddPerson_Click" Text="Add Person" CausesValidation="false"></asp:LinkButton>
+                <asp:LinkButton ID="lbAddVisitor" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddVisitor_Click" Text="Add Visitor" CausesValidation="false"></asp:LinkButton>                
+                <asp:LinkButton ID="lbAddFamily" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddFamily_Click" Text="Add Family" CausesValidation="false" />
             </div>
         </div>
 
@@ -186,22 +186,21 @@
 		
         <div class="checkin-body">
             <div class="row-fluid">
-
                 <div class="span2">
-                <Rock:LabeledTextBox ID="tbFirstNameSearch" runat="server" CssClass="span12" LabelText="First Name" />
+                    <Rock:LabeledTextBox ID="tbFirstNameSearch" runat="server" CssClass="span12" LabelText="First Name" />
                 </div>
                 <div class="span3">
-                <Rock:LabeledTextBox ID="tbLastNameSearch" runat="server" CssClass="span12" LabelText="Last Name" />
-                    </div>
-                    <div class="span2">
-                <Rock:DatePicker ID="dpDOBSearch" runat="server" LabelText="DOB" CssClass="span12" />                
-                        </div>
-                        <div class="span2">
-                <Rock:DataDropDownList ID="ddlGenderSearch" runat="server" CssClass="span12" LabelText="Gender" />
-                            </div>
-                            <div class="span3">
-                <Rock:DataDropDownList ID="ddlAbilitySearch" runat="server" CssClass="span12" LabelText="Ability/Grade" />
-                                </div>
+                    <Rock:LabeledTextBox ID="tbLastNameSearch" runat="server" CssClass="span12" LabelText="Last Name" />
+                </div>
+                <div class="span2">
+                    <Rock:DatePicker ID="dpDOBSearch" runat="server" LabelText="DOB" CssClass="span12" />                
+                </div>
+                <div class="span2">
+                    <Rock:DataDropDownList ID="ddlGenderSearch" runat="server" CssClass="span12" LabelText="Gender" />
+                </div>
+                <div class="span3">
+                    <Rock:DataDropDownList ID="ddlAbilitySearch" runat="server" CssClass="span12" LabelText="Ability/Grade" />
+                </div>
             </div>
             
             <div class="row-fluid">

@@ -48,7 +48,7 @@
         <div class="row-fluid checkin-body">
             <div class="span4"></div>
             <div class="span4">
-                <h2>Checkin Type(s)</h2>
+                <h3>Checkin Type(s)</h3>
                 <asp:Repeater ID="repMinistry" runat="server" OnItemDataBound="repMinistry_ItemDataBound">
                     <ItemTemplate>
                         <asp:Button ID="lbMinistry" runat="server" data-id='<%# Eval("Id") %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" Text='<%# Eval("Name") %>' />
