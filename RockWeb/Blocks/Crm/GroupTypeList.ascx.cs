@@ -19,7 +19,7 @@ namespace RockWeb.Blocks.Crm
     /// <summary>
     /// 
     /// </summary>
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     public partial class GroupTypeList : RockBlock
     { 
         #region Control Methods
@@ -68,7 +68,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gGroupType_Add( object sender, EventArgs e )
         {
-            NavigateToDetailPage( "groupTypeId", 0 );
+            NavigateToLinkedPage( "DetailPage", "groupTypeId", 0 );
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gGroupType_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "groupTypeId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "groupTypeId", e.RowKeyId );
         }
 
         /// <summary>

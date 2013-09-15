@@ -24,7 +24,7 @@ namespace RockWeb.Blocks.Administration
     /// </summary>
     [BooleanField( "Show Marketing Campaign Title")]
     [ContextAware( typeof( MarketingCampaign ) )]
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     public partial class MarketingCampaignAdList : RockBlock, IDimmableBlock
     {
         #region Control Methods
@@ -258,11 +258,11 @@ namespace RockWeb.Blocks.Administration
         {
             if ( marketingCampaignAdId == 0 )
             {
-                NavigateToDetailPage( "marketingCampaignAdId", 0, "marketingCampaignId", hfMarketingCampaignId.Value.AsInteger().Value );
+                NavigateToLinkedPage( "DetailPage", "marketingCampaignAdId", 0, "marketingCampaignId", hfMarketingCampaignId.Value.AsInteger().Value );
             }
             else
             {
-                NavigateToDetailPage( "marketingCampaignAdId", marketingCampaignAdId );
+                NavigateToLinkedPage( "DetailPage", "marketingCampaignAdId", marketingCampaignAdId );
             }
         }
 

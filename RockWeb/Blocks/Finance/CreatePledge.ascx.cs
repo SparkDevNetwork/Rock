@@ -175,7 +175,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnGivingProfile_Click( object sender, EventArgs e )
         {
-            NavigateToPage( new Guid( GetAttributeValue( "GivingPage" ) ), null );
+            NavigateToLinkedPage( "GivingPage" );
         }
 
         /// <summary>

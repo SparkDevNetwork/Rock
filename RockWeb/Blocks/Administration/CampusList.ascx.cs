@@ -18,7 +18,7 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// 
     /// </summary>
-    [DetailPage] 
+    [LinkedPage("Detail Page")] 
     public partial class Campuses : RockBlock
     {
         #region Control Methods
@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gCampuses_Add( object sender, EventArgs e )
         {
-            NavigateToDetailPage( "campusId", 0 );
+            NavigateToLinkedPage( "DetailPage", "campusId", 0 );
         }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gCampuses_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "campusId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "campusId", (int)e.RowKeyValue );
         }
 
         /// <summary>

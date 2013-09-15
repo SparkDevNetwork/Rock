@@ -24,7 +24,7 @@ namespace RockWeb.Blocks.Administraton
     /// Exception List Block
     /// </summary>
     [IntegerField( "Summary Count Days", "Summary field for exceptions that have occurred within the last x days. Default value is 7.", false, 7 )]
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     public partial class ExceptionList : RockBlock
     {
         #region Control Methods
@@ -229,7 +229,7 @@ namespace RockWeb.Blocks.Administraton
 
         protected void gExceptionOccurrences_RowSelected( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "ExceptionId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "ExceptionId", (int)e.RowKeyValue );
         }
 
         #endregion

@@ -13,37 +13,44 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Site Domain POCO Entity.
+    /// Represents a SiteDomain or URL that is associated with a <see cref="Rock.Model.Site"/> in RockChMS.  A domain (i.e. yourchurch.org) and a subdomain (sub.yourchurch.org) are considered
+    /// two different SiteDomains in RockChMS.
     /// </summary>
+    /// <remarks>
+    /// A SiteDomain must have a matching Binding setup in IIS otherwise it will not resolve.
+    /// </remarks>
     [Table( "SiteDomain" )]
     [DataContract]
     public partial class SiteDomain : Model<SiteDomain>
     {
         /// <summary>
-        /// Gets or sets the System.
+        /// Gets or sets a flag indicating if this SiteDomain was created by and is part of the RockChMS core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// System.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if the SiteDomain is part of the core system/framework.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
-        /// Gets or sets the Site Id.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Site"/> that this SiteDomain references. This property is required.
         /// </summary>
         /// <value>
-        /// Site Id.
+        /// An <see cref="System.Int32"/> containing the Id of the <see cref="Rock.Model.Site"/> that this SiteDomain references.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int SiteId { get; set; }
         
         /// <summary>
-        /// Gets or sets the Domain.
+        /// Gets or sets the the Url/Domain Name of this SiteDomain. This property is required.
         /// </summary>
+        /// <remarks>
+        /// Examples include: localhost, mysite.com (or www.mysite.com), subdomain.mysite.com.
+        /// </remarks>
         /// <value>
-        /// Domain.
+        /// A <see cref="System.String"/> containing the Domain Name for this SiteDomain.
         /// </value>
         [Required]
         [MaxLength( 200 )]
@@ -51,19 +58,19 @@ namespace Rock.Model
         public string Domain { get; set; }
         
         /// <summary>
-        /// Gets or sets the Site.
+        /// Gets or sets the <see cref="Rock.Model.Site"/> that is associated with this SiteDomain.
         /// </summary>
         /// <value>
-        /// A <see cref="Site"/> object.
+        /// The <see cref="Rock.Model.Site"/> that this SiteDomain is associated with.
         /// </value>
         [DataMember]
         public virtual Site Site { get; set; }
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Returns a <see cref="System.String" /> containing the domain name and represents this instance.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
+        /// A <see cref="System.String" /> containing the domain name  that represents this instance.
         /// </returns>
         public override string ToString()
         {

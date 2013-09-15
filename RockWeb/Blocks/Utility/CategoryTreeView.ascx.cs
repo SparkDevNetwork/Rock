@@ -18,7 +18,7 @@ namespace RockWeb.Blocks.Utility
     /// <summary>
     /// 
     /// </summary>
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     [EntityTypeField("Entity Type", "Display categories associated with this type of entity")]
     [TextField("Entity Type Qualifier Property", "", false)]
     [TextField("Entity type Qualifier Value", "", false)]
@@ -149,11 +149,11 @@ namespace RockWeb.Blocks.Utility
             int parentCategoryId = 0;
             if ( Int32.TryParse( hfSelectedCategoryId.Value, out parentCategoryId ) )
             {
-                NavigateToDetailPage( "CategoryId", 0, "parentCategoryId", parentCategoryId );
+                NavigateToLinkedPage( "DetailPage", "CategoryId", 0, "parentCategoryId", parentCategoryId );
             }
             else
             {
-                NavigateToDetailPage( "CategoryId", 0 );
+                NavigateToLinkedPage( "DetailPage", "CategoryId", 0 );
             }
         }
 
@@ -167,7 +167,7 @@ namespace RockWeb.Blocks.Utility
             int parentCategoryId = 0;
             if ( Int32.TryParse( hfSelectedCategoryId.Value, out parentCategoryId ) )
             {
-                NavigateToDetailPage( PageParameterName, 0, "parentCategoryId", parentCategoryId );
+                NavigateToLinkedPage( "DetailPage", PageParameterName, 0, "parentCategoryId", parentCategoryId );
             }
         }
     }

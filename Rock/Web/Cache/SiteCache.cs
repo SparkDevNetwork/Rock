@@ -118,6 +118,14 @@ namespace Rock.Web.Cache
         public int? DefaultPageId { get; set; }
 
         /// <summary>
+        /// Gets or sets the default page route unique identifier.
+        /// </summary>
+        /// <value>
+        /// The default page route unique identifier.
+        /// </value>
+        public int? DefaultPageRouteId { get; set; }
+
+        /// <summary>
         /// Gets or sets the favicon URL.
         /// </summary>
         /// <value>
@@ -207,6 +215,7 @@ namespace Rock.Web.Cache
                 this.Description = site.Description;
                 this.Theme = site.Theme;
                 this.DefaultPageId = site.DefaultPageId;
+                this.DefaultPageRouteId = site.DefaultPageRouteId;
                 this.FaviconUrl = site.FaviconUrl;
                 this.AppleTouchIconUrl = site.AppleTouchIconUrl;
                 this.FacebookAppId = site.FacebookAppId;

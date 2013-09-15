@@ -12,12 +12,12 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// The data access/service class for <see cref="Rock.Model.Block"/> entity type objects that extends the functionality of <see cref="Rock.Model.Service"/>
+    /// The data access/service class for <see cref="Rock.Model.Block"/> entity type objects that extends the functionality of <see cref="Rock.Data.Service"/>
     /// </summary>
     public partial class BlockService 
     {
         /// <summary>
-        /// Returns an enmerable collection of <see cref="Rock.Model.Block">Blocks</see> that implement a specific <see cref="Rock.Model.BlockType"/>.
+        /// Returns an enumerable collection of <see cref="Rock.Model.Block">Blocks</see> that implement a specific <see cref="Rock.Model.BlockType"/>.
         /// </summary>
         /// <param name="blockTypeId">The Id of the <see cref="Rock.Model.BlockType"/> to search for.</param>
         /// <returns>An enumerable collection of <see cref="Block"/> entity objects that implemented the referenced <see cref="Rock.Model.BlockType"/>.</returns>
@@ -47,13 +47,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.Blocks">Blocks</see> that are implemented in a speicific zone on a Site Layout template.
+        /// Returns an enumerable collection of <see cref="Rock.Model.Blocks">Blocks</see> that are implemented in a specific zone on a Site Layout template.
         /// </summary>
         /// <param name="siteId">A <see cref="System.Int32"/> representing the Id of the <see cref="Site"/> that the Layout belongs to.</param>
         /// <param name="layout">A <see cref="System.String"/> representing the name of the Layout.</param>
         /// <param name="zone">A <see cref="System.String"/> representing the name of the Zone to search by.</param>
         /// <returns>
-        /// An enumerable collection of <see cref="Block">Blocks</see> that are implmented in a Zone of a <see cref="Rock.Model.Site"/> Layout.
+        /// An enumerable collection of <see cref="Block">Blocks</see> that are implemented in a Zone of a <see cref="Rock.Model.Site"/> Layout.
         /// </returns>
         public IEnumerable<Block> GetByLayoutAndZone( int siteId, string layout, string zone )
         {
@@ -68,7 +68,7 @@ namespace Rock.Model
         /// <summary>
         /// Returns a collection of <see cref="Rock.Model.Block">Blocks</see> that are implemented on a specific page.
         /// </summary>
-        /// <param name="pageId">An <see cref="System.Int32"/> representing the Id of a <see cref="Page"/> that a <see cref="Block"/> may be implmeneted on.</param>
+        /// <param name="pageId">An <see cref="System.Int32"/> representing the Id of a <see cref="Page"/> that a <see cref="Block"/> may be implemented on.</param>
         /// <returns>An enumerable collection of <see cref="Block">Blocks</see> that are implemented on the <see cref="Rock.Model.Page"/>.</returns>
         public IEnumerable<Block> GetByPage( int pageId )
         {
