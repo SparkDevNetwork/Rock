@@ -67,25 +67,23 @@
             </ContentTemplate>
             </asp:UpdatePanel>
 
-            <div class="span3">
-                
-                    <h3>Selected</h3>
-                    <asp:UpdatePanel ID="pnlSelectedGrid" runat="server" UpdateMode="Conditional">
-                    <ContentTemplate>        
-                        <Rock:Grid ID="gSelectedList" runat="server" AllowSorting="true" AllowPaging="false" ShowActionRow="false" ShowHeader="false" CssClass="select" DataKeyNames="LocationId, ScheduleId">
-                            <Columns>
-                                <asp:BoundField DataField="Schedule" />
-                                <asp:BoundField DataField="Location" />
-                                <asp:BoundField DataField="LocationId" Visible="false" />
-                                <asp:BoundField DataField="ScheduleId" Visible="false" />
-                                <Rock:DeleteField OnClick="gSelectedList_Delete" ControlStyle-CssClass="btn btn-large btn-primary" />
-                            </Columns>
-                        </Rock:Grid>
-                    </ContentTemplate>
-                    </asp:UpdatePanel>
-                    <asp:LinkButton ID="lbAddCondition" runat="server" Text="Add an Allergy" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddCondition_Click" CausesValidation="false" />
-                    <asp:LinkButton ID="lbAddNote" runat="server" Text="Add a Note" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddNote_Click" CausesValidation="false" />                    
-                
+            <div class="span3">                
+                <h3>Selected</h3>
+                <asp:UpdatePanel ID="pnlSelectedGrid" runat="server" UpdateMode="Conditional">
+                <ContentTemplate>        
+                    <Rock:Grid ID="gSelectedList" runat="server" AllowSorting="true" AllowPaging="false" ShowActionRow="false" ShowHeader="false" CssClass="select" DataKeyNames="LocationId, ScheduleId">
+                    <Columns>
+                        <asp:BoundField DataField="Schedule" />
+                        <asp:BoundField DataField="Location" />
+                        <asp:BoundField DataField="LocationId" Visible="false" />
+                        <asp:BoundField DataField="ScheduleId" Visible="false" />
+                        <Rock:DeleteField OnClick="gSelectedList_Delete" ControlStyle-CssClass="btn btn-large btn-primary" />
+                    </Columns>
+                    </Rock:Grid>
+                </ContentTemplate>
+                </asp:UpdatePanel>
+                <asp:LinkButton ID="lbAddCondition" runat="server" Text="Add an Allergy" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddCondition_Click" CausesValidation="false" />
+                <asp:LinkButton ID="lbAddNote" runat="server" Text="Add a Note" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddNote_Click" CausesValidation="false" />                
             </div>
         </div>   
     </asp:Panel>

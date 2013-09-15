@@ -590,8 +590,14 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 maWarning.Show( "Please pick a family.", ModalAlertType.Warning );
                 return;
             }
+            else if ( family.People.Count == 0 )
+            {
+                string errorMsg = "No one in this family is eligible to check-in.";
+                maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
+                return;
+            }
 
-            if ( selectedPeopleList != null )
+            if ( selectedPeopleList.Count() > 0 )
             {
                 var selectedPeopleIds = selectedPeopleList.Select( int.Parse ).ToList();
                 family.People.ForEach( p => p.Selected = false );
