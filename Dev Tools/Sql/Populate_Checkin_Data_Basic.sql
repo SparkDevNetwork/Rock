@@ -685,7 +685,7 @@ DECLARE @CheckInCategoryId int
 SET @CheckInCategoryId = (SELECT Id FROM [Category] WHERE Guid = '8F8B272D-D351-485E-86D6-3EE5B7C84D99')
 
 INSERT INTO [WorkflowType] (IsSystem, IsActive, Name, [CategoryId], [Order], WorkTerm, IsPersisted, LoggingLevel, Guid)
-VALUES (0, 1, 'Children''s Check-in', 0, 'Check-in', @CheckInCategoryId, 0, 3, '011E9F5A-60D4-4FF5-912A-290881E37EAF')
+VALUES (0, 1, 'Children''s Check-in', @CheckInCategoryId, 0, 'Check-in', 0, 3, '011E9F5A-60D4-4FF5-912A-290881E37EAF')
 SET @WorkflowTypeId = SCOPE_IDENTITY()
 
 UPDATE AV

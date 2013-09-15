@@ -21,7 +21,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets a <see cref="Rock.Model.BlockType"/> by it's Guid.
         /// </summary>
-        /// <param name="guid"><see cref="System.Guid"/> identifier  fitler to search by.</param>
+        /// <param name="guid"><see cref="System.Guid"/> identifier  filter to search by.</param>
         /// <returns>The <see cref="Rock.BlockType"/> that has a Guid that matches the provided value, if none are found returns null. </returns>
         public BlockType GetByGuid( Guid guid )
         {
@@ -67,10 +67,10 @@ namespace Rock.Model
             // Now do the exact same thing for the Plugins folder...
             FindAllBlocksInPath( physWebAppPath, list, "Plugins" );
 
-            // Get a list of the blocktypes already registered (via the path)
+            // Get a list of the BlockTypes already registered (via the path)
             var registered = from r in Repository.GetAll() select r.Path;
 
-            // for each unregistered blocktype
+            // for each unregistered BlockType
             foreach ( string path in list.Keys.Except( registered, StringComparer.CurrentCultureIgnoreCase ) )
             {
                 // Attempt to load the control

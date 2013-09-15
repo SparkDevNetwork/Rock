@@ -40,4 +40,6 @@ using System.Runtime.InteropServices;
 // Read "The bottom line:" in this article: http://stackoverflow.com/questions/64602/what-are-differences-between-assemblyversion-assemblyfileversion-and-assemblyin
 [assembly: AssemblyVersion( "0.0" )]
 [assembly: AssemblyFileVersion( "0.0.1.0" )]
-[assembly: AssemblyInformationalVersion( "Rock 0.0.1 alpha" )]
+
+// This is the "official" product name that will be shown to people.  It's shown in the SystemInfo details and perhaps the RockUpdate page.
+[assembly: AssemblyInformationalVersion( "Rock Humphreys 0.1 (alpha)" )]

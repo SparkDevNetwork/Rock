@@ -135,19 +135,11 @@
         </Rock:Grid>
 
         <div class="actions">
-            <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" OnClientClick="javascript:disableConfirmation();" />
+            <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
             <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
         </div>
 
         <Rock:ConfirmPageUnload ID="confirmExit" runat="server" ConfirmationMessage="Changes have been made to this family that have not yet been saved." Enabled="false" />
-        <script>
-            // Need to set the value of the confirmation's rendered hidden field prior to postback, since the save is doing a Redirect 
-            // and even though confirmation is disabled by the save, that information is not rendered when returning with a redirect
-            // If validation fails during the save, the confirmation will be re-enabled (and rendered correctly without the redirect)
-            function disableConfirmation() {
-                $('#<%=confirmExit.ClientID%>').val('');
-            }
-        </script>
 
         <Rock:ModalDialog ID="modalAddPerson" runat="server" Title="Add Person" Content-Height="380">
             <Content>
