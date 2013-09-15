@@ -290,7 +290,6 @@ namespace Rock.Web.UI.Controls
             if ( this.Visible )
             {
                 bool renderControlGroupDiv = ( !string.IsNullOrWhiteSpace( LabelText ) || !string.IsNullOrWhiteSpace( Help ) );
-                string wrapperClassName = string.Empty;
 
                 if ( renderControlGroupDiv )
                 {
@@ -306,10 +305,11 @@ namespace Rock.Web.UI.Controls
                     helpBlock.RenderControl( writer );
                     writer.RenderEndTag();
 
-                    wrapperClassName = "controls";
+                    writer.AddAttribute( "class", "controls" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 }
 
-
+                string wrapperClassName = string.Empty;
                 if ( !string.IsNullOrWhiteSpace( PrependText ) )
                 {
                     wrapperClassName += " input-prepend";
@@ -373,6 +373,7 @@ namespace Rock.Web.UI.Controls
 
                 if ( renderControlGroupDiv )
                 {
+                    writer.RenderEndTag();
                     writer.RenderEndTag();
                 }
             }

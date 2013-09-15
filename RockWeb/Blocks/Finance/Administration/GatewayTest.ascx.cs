@@ -24,7 +24,13 @@ namespace RockWeb.Blocks.Finance.Administration
 {
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "Credit Card Gateway", "The payment gateway to use for Credit Card transactions", false, "", "", 0, "CCGateway" )]
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "ACH Card Gateway", "The payment gateway to use for ACH (bank account) transactions", false, "", "", 1, "ACHGateway" )]
+
+    [AccountsField( "Accounts", "The accounts to display.  By default all active accounts with a Public Name will be displayed", false, "", "", 2 )]
+    [BooleanField( "Allow Other Accounts", "Should users be allowed to select additional accounts?  If so, any active account with a Public Name value will be available", true, "", 3 )]
+
     [BooleanField( "Allow Scheduled Transactions", "If the selected gateway(s) allow scheduled transactions, should that option be provided to user", true, "", 2, "AllowScheduled" )]
+
+
     [DefinedValueField( Rock.SystemGuid.DefinedType.LOCATION_LOCATION_TYPE, "Address Type", "The location type to use for the person's address", false,
         Rock.SystemGuid.DefinedValue.LOCATION_TYPE_HOME, "", 3 )]
 
@@ -34,10 +40,60 @@ namespace RockWeb.Blocks.Finance.Administration
 
     public partial class GatewayTest : Rock.Web.UI.RockBlock
     {
+
+        #region Fields
+
         protected bool FluidLayout = false;
         private bool _showRepeatingOptions = false;
         private GatewayComponent _ccGateway;
         private GatewayComponent _achGateway;
+
+        #endregion 
+
+        #region Properties
+
+
+        /// <summary>
+        /// Gets or sets the accounts that are available for user to add to the list.
+        /// </summary>
+        protected List<AccountItem> AvailableAccounts
+        {
+            get
+            {
+                var accounts = ViewState["AvailableAccounts"] as List<AccountItem>;
+                if ( accounts == null )
+                {
+                    accounts = new List<AccountItem>();
+                }
+                return accounts;
+            }
+            set
+            {
+                ViewState["AvailableAccounts"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the accounts that are currently displayed to the user
+        /// </summary>
+        protected List<AccountItem> SelectedAccounts
+        {
+            get
+            {
+                var accounts = ViewState["SelectedAccounts"] as List<AccountItem>;
+                if ( accounts == null )
+                {
+                    accounts = new List<AccountItem>();
+                }
+                return accounts;
+            }
+            set
+            {
+                ViewState["SelectedAccounts"] = value;
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -163,6 +219,10 @@ namespace RockWeb.Blocks.Finance.Administration
             }
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
@@ -176,6 +236,26 @@ namespace RockWeb.Blocks.Finance.Administration
                 phSelection.Visible = true;
                 pnlPaymentInfo.Visible = true;
                 divActions.Visible = true;
+
+                // Save amounts from controls to the viewstate list
+                foreach ( RepeaterItem item in rptAccountList.Items )
+                {
+                    var accountAmount = item.FindControl( "txtAccountAmount" ) as LabeledTextBox;
+                    if ( accountAmount != null )
+                    {
+                        if ( SelectedAccounts.Count > item.ItemIndex )
+                        {
+                            decimal amount = decimal.MinValue;
+                            if ( decimal.TryParse( accountAmount.Text, out amount ) )
+                            {
+                                SelectedAccounts[item.ItemIndex].Amount = amount;
+                            }
+                        }
+                    }
+                }
+
+                // Update the total amount
+                lblTotalAmount.Text = SelectedAccounts.Select( f => f.Amount).Sum().ToString("F2");
 
                 // Set the frequency date label based on if 'One Time' is selected or not
                 if ( btnFrequency.Items.Count > 0 )
@@ -210,6 +290,10 @@ namespace RockWeb.Blocks.Finance.Administration
 
                 if ( !Page.IsPostBack )
                 {
+                    // Get the list of accounts that can be used
+                    GetAccounts();
+                    BindAccounts();
+
                     // Set personal information if there is a currently logged in person
                     if ( CurrentPerson != null )
                     {
@@ -243,6 +327,20 @@ namespace RockWeb.Blocks.Finance.Administration
                 ShowMessage( NotificationBoxType.Error, "Configuration Error", "Please check the configuration of this block and make sure a valid Credit Card and/or ACH Finacial Gateway has been selected." );
             }
             
+        }
+
+        /// <summary>
+        /// Handles the SelectionChanged event of the btnAddAccount control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnAddAccount_SelectionChanged( object sender, EventArgs e )
+        {
+            var selected = AvailableAccounts.Where( a => a.Id == ( btnAddAccount.SelectedValueAsId() ?? 0 ) ).ToList();
+            AvailableAccounts = AvailableAccounts.Except(selected).ToList();
+            SelectedAccounts.AddRange(selected);
+
+            BindAccounts();
         }
 
         protected void btnNext_Click( object sender, EventArgs e )
@@ -361,6 +459,62 @@ namespace RockWeb.Blocks.Finance.Administration
             {
                 ShowMessage( NotificationBoxType.Error, "Payment Error", errorMessage );
             }
+        }
+
+        private void GetAccounts()
+        {
+            var selectedGuids = GetAttributeValues( "Accounts" ).Select( Guid.Parse ).ToList();
+            bool showAll = !selectedGuids.Any();
+
+            bool allowOtherAccounts = true;
+            if ( !bool.TryParse( GetAttributeValue( "AllowOtherAccounts" ), out allowOtherAccounts ) )
+            {
+                allowOtherAccounts = true;
+            }
+
+            SelectedAccounts = new List<AccountItem>();
+            AvailableAccounts = new List<AccountItem>();
+
+            // Enumerate through all active accounts that have a public name
+            foreach ( var account in new FinancialAccountService().Queryable()
+                .Where( f =>
+                    f.IsActive &&
+                    f.PublicName != null &&
+                    f.PublicName.Trim() != "" &&
+                    ( f.StartDate == null || f.StartDate <= DateTime.Today ) &&
+                    ( f.EndDate == null || f.EndDate >= DateTime.Today ) )
+                .OrderBy( f => f.PublicName ) )
+            {
+                var accountItem = new AccountItem( account.Id, account.Name, account.CampusId );
+                if ( showAll )
+                {
+                    SelectedAccounts.Add( accountItem );
+                }
+                else
+                {
+                    if ( selectedGuids.Contains( account.Guid ) )
+                    {
+                        SelectedAccounts.Add( accountItem );
+                    }
+                    else
+                    {
+                        if ( allowOtherAccounts )
+                        {
+                            AvailableAccounts.Add( accountItem );
+                        }
+                    }
+                }
+            }
+        }
+
+        private void BindAccounts()
+        {
+            rptAccountList.DataSource = SelectedAccounts;
+            rptAccountList.DataBind();
+
+            btnAddAccount.Visible = AvailableAccounts.Any();
+            btnAddAccount.DataSource = AvailableAccounts;
+            btnAddAccount.DataBind();
         }
 
         private Person GetPerson()
@@ -553,16 +707,50 @@ namespace RockWeb.Blocks.Finance.Administration
 
             int oneTimeFrequencyId = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id;
 
-            string script = string.Format( @"
+          string script = string.Format( @"
     Sys.Application.add_load(function () {{
 
+        $('.account-amount').on('change', function() {{
+            var totalAmt = Number(0);
+            $('input.account-amount').each(function (index) {{
+                var itemValue = $(this).val();
+                if (itemValue != null && itemValue != '') {{
+                    if (isNaN(itemValue)) {{
+                        $(this).parents('div.control-group').addClass('error');
+                    }}
+                    else {{
+                        $(this).parents('div.control-group').removeClass('error');
+                        var num = Number(itemValue);
+                        $(this).val(num.toFixed(2));
+                        totalAmt = totalAmt + num;
+                    }}
+                }}
+            }});
+            $('.total-amount').html('$ ' + totalAmt.toFixed(2));
+            return false;
+        }});
+
         $('#ButtonDropDown_btnFrequency .dropdown-menu a').click( function () {{
-            var $lbl = $(this).parents('div.control-group').next().children('div.control-label');
+            var $when = $(this).parents('div.control-group').next(); 
             if ($(this).attr('data-id') == '{2}') {{
-                $lbl.html('When');
+                $when.find('div.control-label').html('When');
             }} else {{
-                $lbl.html('First Gift');
+                $when.find('div.control-label').html('First Gift');
+
+                // Set date to tomorrow if it is equal or less than today's date
+                var $dateInput = $when.find('input');
+                var dt = new Date(Date.parse($dateInput.val()));
+                var curr = new Date();
+                if ( (dt-curr) <= 0 ) {{ 
+                    curr.setDate(curr.getDate() + 1);
+                    var dd = curr.getDate();
+                    var mm = curr.getMonth()+1;
+                    var yy = curr.getFullYear();
+                    $dateInput.val(mm+'/'+dd+'/'+yy);
+                    $dateInput.data('kendoDatePicker').value(mm+'/'+dd+'/'+yy);
+                }}
             }};
+            
         }});
 
         // Save the state of the selected pill to a hidden field so that state can 
@@ -596,6 +784,10 @@ namespace RockWeb.Blocks.Finance.Administration
         }});
  
     }});
+
+    function calcTotalAmount() {{
+    }}
+
 ", divCCPaymentInfo.ClientID, hfPaymentTab.ClientID, oneTimeFrequencyId );
 
             ScriptManager.RegisterStartupScript( upPayment, this.GetType(), "giving-profile", script, true );
@@ -609,5 +801,32 @@ namespace RockWeb.Blocks.Finance.Administration
             nbMessage.Visible = true;
         }
 
-    }
+        [Serializable]
+        protected class AccountItem
+        {
+            public int Id { get; set; }
+            public string Name { get; set; }
+            public int? CampusId { get; set; }
+            public decimal Amount { get; set; }
+
+            public string AmountFormatted
+            {
+                get
+                {
+                    return Amount > 0 ? Amount.ToString( "F2" ) : string.Empty;
+                }
+
+            }
+
+            public AccountItem( int id, string name, int? campusId )
+            {
+                Id = id;
+                Name = name;
+                CampusId = campusId;
+            }
+        }
+
+}
+
+    
 }
