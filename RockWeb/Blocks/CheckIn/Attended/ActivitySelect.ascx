@@ -67,11 +67,11 @@
             </ContentTemplate>
             </asp:UpdatePanel>
 
-            <div class="span3">                
+            <div class="span3 selected-grid">
                 <h3>Selected</h3>
                 <asp:UpdatePanel ID="pnlSelectedGrid" runat="server" UpdateMode="Conditional">
                 <ContentTemplate>        
-                    <Rock:Grid ID="gSelectedList" runat="server" AllowSorting="true" AllowPaging="false" ShowActionRow="false" ShowHeader="false" CssClass="select" DataKeyNames="LocationId, ScheduleId">
+                    <Rock:Grid ID="gSelectedList" runat="server" AllowSorting="true" AllowPaging="false" ShowActionRow="false" ShowHeader="false" DataKeyNames="LocationId, ScheduleId">
                     <Columns>
                         <asp:BoundField DataField="Schedule" />
                         <asp:BoundField DataField="Location" />
@@ -89,64 +89,60 @@
     </asp:Panel>
 
     <!-- Add Note Panel -->
-    <asp:Panel ID="pnlAddNote" runat="server" CssClass="add-note" DefaultButton="lbAddNoteSave">
-        <Rock:ModalAlert ID="maAddNote" runat="server" />
+    <asp:Panel ID="pnlAddNote" runat="server" CssClass="attended modal-foreground-small" DefaultButton="lbAddNoteSave">
         <div class="row-fluid checkin-header">
-            <div class="span3">
+            <div class="span3 checkin-actions">
                 <asp:LinkButton ID="lbAddNoteCancel" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddNoteCancel_Click" Text="Cancel" CausesValidation="false"/>
             </div>
-
             <div class="span6">
-                <h1>Add Note</h1>
+                <h3>Add Note</h3>
             </div>
-
-            <div class="span3">
+            <div class="span3 checkin-actions">
                 <asp:LinkButton ID="lbAddNoteSave" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddNoteSave_Click" Text="Save" />
             </div>
         </div>
 		
         <div class="row-fluid checkin-body">
             <div class="span12">
-                <Rock:LabeledTextBox ID="tbNote" runat="server" CssClass="fullWidth" MaxLength="40" />
+                <Rock:LabeledTextBox ID="tbNote" runat="server" CssClass="note" MaxLength="40" />
             </div>
         </div>
 
     </asp:Panel>
     <asp:ModalPopupExtender ID="mpeAddNote" runat="server" TargetControlID="hfOpenNotePanel" PopupControlID="pnlAddNote" 
-        CancelControlID="lbAddNoteCancel" BackgroundCssClass="modalBackground" />
+        CancelControlID="lbAddNoteCancel" BackgroundCssClass="attended modal-background" />
     <asp:HiddenField ID="hfOpenNotePanel" runat="server" />    
 
     <!-- Add Condition Panel -->
-    <asp:Panel ID="pnlAddCondition" runat="server" CssClass="add-condition" DefaultButton="lbAddConditionSave">
-        <Rock:ModalAlert ID="maAddCondition" runat="server" />
+    <asp:Panel ID="pnlAddCondition" runat="server" CssClass="attended modal-foreground-small" DefaultButton="lbAddConditionSave">
         <div class="row-fluid checkin-header">
-            <div class="span3">
+            <div class="span3 checkin-actions">
                 <asp:LinkButton ID="lbAddConditionCancel" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddConditionCancel_Click" Text="Cancel" CausesValidation="false"/>
             </div>
-
             <div class="span6">
-                <h1>Add Allergy/Medical</h1>
+                <h3>Add Allergy/Medical</h3>
             </div>
-
-            <div class="span3">
+            <div class="span3 checkin-actions">
                 <asp:LinkButton ID="lbAddConditionSave" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddConditionSave_Click" Text="Save" />
             </div>
         </div>
 		
+        <div class="row-fluid checkin-body">
         <asp:Repeater ID="rptCondition" runat="server" OnItemDataBound="rptAddCondition_ItemDataBound">
             <HeaderTemplate>
                 
             </HeaderTemplate>
             <ItemTemplate>
                 <div class="span4">
-                    <asp:LinkButton ID="lbConditionName" CssClass="btn btn-large btn-primary" runat="server" />
+                    <asp:LinkButton ID="lbConditionName" CssClass="btn btn-block btn-primary btn-checkin-select" runat="server" />
                 </div>
             </ItemTemplate>
         </asp:Repeater>
+        </div>
         
     </asp:Panel>
     <asp:ModalPopupExtender ID="mpeAddCondition" runat="server" TargetControlID="hfConditionPanel" PopupControlID="pnlAddCondition"
-        CancelControlID="lbAddConditionCancel" BackgroundCssClass="modalBackground" />
+        CancelControlID="lbAddConditionCancel" BackgroundCssClass="attended modal-background" />
     <asp:HiddenField ID="hfConditionPanel" runat="server" />    
 
 </ContentTemplate>
