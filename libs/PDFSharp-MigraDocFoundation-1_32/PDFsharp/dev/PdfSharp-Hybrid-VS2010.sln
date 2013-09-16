@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XGraphicsLab-WPF", "XGraphicsLab-WPF\XGraphicsLab-WPF.csproj", "{5EF574B7-2B8A-47B4-A82A-041B5B1F356B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfSharp-Hybrid", "..\code\PdfSharp\PdfSharp-Hybrid.csproj", "{4C6B899E-D8F5-439E-ACA1-6C9D4CF79407}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5EF574B7-2B8A-47B4-A82A-041B5B1F356B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5EF574B7-2B8A-47B4-A82A-041B5B1F356B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5EF574B7-2B8A-47B4-A82A-041B5B1F356B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5EF574B7-2B8A-47B4-A82A-041B5B1F356B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4C6B899E-D8F5-439E-ACA1-6C9D4CF79407}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C6B899E-D8F5-439E-ACA1-6C9D4CF79407}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C6B899E-D8F5-439E-ACA1-6C9D4CF79407}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C6B899E-D8F5-439E-ACA1-6C9D4CF79407}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
