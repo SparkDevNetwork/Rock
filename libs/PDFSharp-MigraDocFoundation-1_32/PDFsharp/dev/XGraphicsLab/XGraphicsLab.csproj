@@ -1,0 +1,291 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectType>Local</ProjectType>
+    <ProductVersion>9.0.21022</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{C065BB11-6849-49E9-B099-AE99E7729E94}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ApplicationIcon>App.ico</ApplicationIcon>
+    <AssemblyKeyContainerName>
+    </AssemblyKeyContainerName>
+    <AssemblyName>XGraphicsLab</AssemblyName>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
+    <DefaultClientScript>JScript</DefaultClientScript>
+    <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
+    <DefaultTargetSchema>IE50</DefaultTargetSchema>
+    <DelaySign>false</DelaySign>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>XDrawing.TestLab</RootNamespace>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <StartupObject>
+    </StartupObject>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <TargetZone>LocalIntranet</TargetZone>
+    <GenerateManifests>false</GenerateManifests>
+    <ApplicationManifest>Properties\app.manifest</ApplicationManifest>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <BaseAddress>285212672</BaseAddress>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <ConfigurationOverrideFile>
+    </ConfigurationOverrideFile>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DocumentationFile>
+    </DocumentationFile>
+    <DebugSymbols>true</DebugSymbols>
+    <FileAlignment>4096</FileAlignment>
+    <NoStdLib>false</NoStdLib>
+    <NoWarn>1591</NoWarn>
+    <Optimize>false</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <BaseAddress>285212672</BaseAddress>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <ConfigurationOverrideFile>
+    </ConfigurationOverrideFile>
+    <DefineConstants>TRACE</DefineConstants>
+    <DocumentationFile>
+    </DocumentationFile>
+    <DebugSymbols>false</DebugSymbols>
+    <FileAlignment>4096</FileAlignment>
+    <NoStdLib>false</NoStdLib>
+    <NoWarn>1591</NoWarn>
+    <Optimize>true</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System">
+      <Name>System</Name>
+    </Reference>
+    <Reference Include="System.Data">
+      <Name>System.Data</Name>
+    </Reference>
+    <Reference Include="System.Drawing">
+      <Name>System.Drawing</Name>
+    </Reference>
+    <Reference Include="System.Windows.Forms">
+      <Name>System.Windows.Forms</Name>
+    </Reference>
+    <Reference Include="System.Xml">
+      <Name>System.XML</Name>
+    </Reference>
+    <ProjectReference Include="..\..\code\PdfSharp\PdfSharp.csproj">
+      <Name>PdfSharp</Name>
+      <Project>{5384CE57-1F94-4D22-860D-2E9C1AC12DDF}</Project>
+      <Package>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</Package>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="App.ico" />
+    <Compile Include="AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ChooseColorDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormPages\BrushPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="FormPages\ColorPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="FormPages\FontPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="FormPages\GeneralPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="FormPages\PenPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GraphicsProperties.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PreviewForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PropertiesForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <Compile Include="Tester\BarCodes\BarCodesDataMatrix.cs" />
+    <Compile Include="Tester\BarCodes\BarCodesOrientation.cs" />
+    <Compile Include="Tester\BarCodes\BarCodesTypes.cs" />
+    <Compile Include="Tester\Brushes\BrushesLinearGradient.cs" />
+    <Compile Include="Tester\Images\ImagesBmp.cs" />
+    <Compile Include="Tester\Images\ImagesBmpOS2.cs" />
+    <Compile Include="Tester\Images\ImagesFormXObject.cs" />
+    <Compile Include="Tester\Images\ImagesFormXObjectTemplate.cs" />
+    <Compile Include="Tester\Images\ImagesGif.cs" />
+    <Compile Include="Tester\Images\ImagesJpeg.cs" />
+    <Compile Include="Tester\Images\ImagesPng.cs" />
+    <Compile Include="Tester\Images\ImagesTiff.cs" />
+    <Compile Include="Tester\Lines\LinesArc.cs" />
+    <Compile Include="Tester\Lines\LinesBezierCurve.cs" />
+    <Compile Include="Tester\Lines\LinesBezierCurves.cs" />
+    <Compile Include="Tester\Lines\LinesCircleArc.cs" />
+    <Compile Include="Tester\Lines\LinesCurve.cs" />
+    <Compile Include="Tester\Lines\LinesPolyLines.cs" />
+    <Compile Include="Tester\Lines\LinesStraightLines.cs" />
+    <Compile Include="Tester\Miscellaneous\MiscClock.cs" />
+    <Compile Include="Tester\Miscellaneous\MiscSpiroGraph.cs" />
+    <Compile Include="Tester\Paths\PathClipGlyph.cs" />
+    <Compile Include="Tester\Paths\PathClipTest.cs" />
+    <Compile Include="Tester\Paths\PathFlatten.cs" />
+    <Compile Include="Tester\Paths\PathGlyph.cs" />
+    <Compile Include="Tester\Paths\PathTest01.cs" />
+    <Compile Include="Tester\Paths\PathWiden.cs" />
+    <Compile Include="Tester\Shapes\ShapesBeginContainer.cs" />
+    <Compile Include="Tester\Shapes\ShapesClipTest1.cs" />
+    <Compile Include="Tester\Shapes\ShapesClosedCurve.cs" />
+    <Compile Include="Tester\Shapes\ShapesEllipse.cs" />
+    <Compile Include="Tester\Shapes\ShapesMigraDocObject.cs" />
+    <Compile Include="Tester\Shapes\ShapesPie.cs" />
+    <Compile Include="Tester\Shapes\ShapesPolygon.cs" />
+    <Compile Include="Tester\Shapes\ShapesRectangle.cs" />
+    <Compile Include="Tester\Shapes\ShapesRoundedRectangle.cs" />
+    <Compile Include="Tester\Shapes\ShapesSave.cs" />
+    <Compile Include="Tester\Shapes\ShapesTransform.cs" />
+    <Compile Include="Tester\TesterBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Tester\Text\Acro8Bug.cs" />
+    <Compile Include="Tester\Text\Embedding.cs" />
+    <Compile Include="Tester\Text\Layout1.cs" />
+    <Compile Include="Tester\Text\RealizeTest.cs" />
+    <Compile Include="Tester\Text\TestText01.cs" />
+    <Compile Include="Tester\Text\TestText02.cs" />
+    <Compile Include="Tester\Text\TextAlign.cs" />
+    <Compile Include="Tester\Text\TextCodePage.cs" />
+    <Compile Include="Tester\Text\TextTransform1.cs" />
+    <Compile Include="Tester\Text\TextTransform2.cs" />
+    <Compile Include="Tester\Text\Unicode.cs" />
+    <Compile Include="UITools.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="XGraphicsLab.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <EmbeddedResource Include="ChooseColorDialog.resx">
+      <DependentUpon>ChooseColorDialog.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormPages\BrushPage.resx">
+      <DependentUpon>BrushPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormPages\ColorPage.resx">
+      <DependentUpon>ColorPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormPages\FontPage.resx">
+      <DependentUpon>FontPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormPages\GeneralPage.resx">
+      <DependentUpon>GeneralPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="FormPages\PenPage.resx">
+      <DependentUpon>PenPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PreviewForm.resx">
+      <DependentUpon>PreviewForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PropertiesForm.resx">
+      <DependentUpon>PropertiesForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <SubType>Designer</SubType>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Properties\app.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+</Project>

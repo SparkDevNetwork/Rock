@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRunConfiguration name="Local Test Run" id="b2b056d7-5734-491b-b91b-bd85b2679a97" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Description>This is a default test run configuration for a local test run.</Description>
+  <CodeCoverage enabled="true">
+    <Regular>
+      <CodeCoverageItem binaryFile="G:\!StLa\PDFsharp-1.10\OpenSource\PDFsharp\PdfSharp\bin\Debug\PdfSharpWinFX.dll" pdbFile="G:\!StLa\PDFsharp-1.10\OpenSource\PDFsharp\PdfSharp\bin\Debug\PdfSharpWinFX.pdb" instrumentInPlace="true" />
+    </Regular>
+  </CodeCoverage>
+  <TestTypeSpecific />
+</TestRunConfiguration>

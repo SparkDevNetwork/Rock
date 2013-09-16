@@ -1,0 +1,50 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfSharp", "..\code\PdfSharp\PdfSharp.csproj", "{5384CE57-1F94-4D22-860D-2E9C1AC12DDF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfSharp.Explorer", "PDFsharp.Explorer\PdfSharp.Explorer.csproj", "{2E8F09D6-EBCE-4A3C-BDDF-41D5B0DB87B8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XGraphicsLab", "XGraphicsLab\XGraphicsLab.csproj", "{C065BB11-6849-49E9-B099-AE99E7729E94}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfSharp.Charting", "..\code\PdfSharp.Charting\PdfSharp.Charting.csproj", "{CFDB7D46-EA8D-47DE-B10A-9E755A1B48BA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfSharp.Charting.Demo", "PdfSharp.Charting.Demo\PdfSharp.Charting.Demo.csproj", "{A29FE2BF-7B39-4787-B318-77A68CBF9986}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PrivateFonts", "..\samples\Samples C#\Based on GDI+\PrivateFonts\PrivateFonts.csproj", "{5047322B-A990-4FBE-BF8B-6181075DC93F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5384CE57-1F94-4D22-860D-2E9C1AC12DDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5384CE57-1F94-4D22-860D-2E9C1AC12DDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5384CE57-1F94-4D22-860D-2E9C1AC12DDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5384CE57-1F94-4D22-860D-2E9C1AC12DDF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2E8F09D6-EBCE-4A3C-BDDF-41D5B0DB87B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2E8F09D6-EBCE-4A3C-BDDF-41D5B0DB87B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2E8F09D6-EBCE-4A3C-BDDF-41D5B0DB87B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2E8F09D6-EBCE-4A3C-BDDF-41D5B0DB87B8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C065BB11-6849-49E9-B099-AE99E7729E94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C065BB11-6849-49E9-B099-AE99E7729E94}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C065BB11-6849-49E9-B099-AE99E7729E94}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C065BB11-6849-49E9-B099-AE99E7729E94}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFDB7D46-EA8D-47DE-B10A-9E755A1B48BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFDB7D46-EA8D-47DE-B10A-9E755A1B48BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFDB7D46-EA8D-47DE-B10A-9E755A1B48BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFDB7D46-EA8D-47DE-B10A-9E755A1B48BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A29FE2BF-7B39-4787-B318-77A68CBF9986}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A29FE2BF-7B39-4787-B318-77A68CBF9986}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A29FE2BF-7B39-4787-B318-77A68CBF9986}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A29FE2BF-7B39-4787-B318-77A68CBF9986}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5047322B-A990-4FBE-BF8B-6181075DC93F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5047322B-A990-4FBE-BF8B-6181075DC93F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5047322B-A990-4FBE-BF8B-6181075DC93F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5047322B-A990-4FBE-BF8B-6181075DC93F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
