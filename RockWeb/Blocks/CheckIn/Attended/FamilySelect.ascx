@@ -239,7 +239,7 @@
 
     <asp:Panel ID="pnlAddFamily" runat="server" CssClass="attended modal-foreground">
 
-        <div class="row-fluid">
+        <div class="row-fluid checkin-header">
             <div class="span3 checkin-actions">
                 <asp:LinkButton ID="lbAddFamilyCancel" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddFamilyCancel_Click" Text="Cancel" CausesValidation="false" />
             </div>
@@ -253,54 +253,56 @@
             </div>
         </div>        
     
-        <asp:ListView ID="lvAddFamily" runat="server" OnPagePropertiesChanging="lvAddFamily_PagePropertiesChanging" OnItemDataBound="lvAddFamily_ItemDataBound" >
-        <LayoutTemplate>
-            <div class="row-fluid checkin-body">
-                <div class="span2">
-                    <h3>First Name</h3>
+        <div class="checkin-body">
+            <asp:ListView ID="lvAddFamily" runat="server" OnPagePropertiesChanging="lvAddFamily_PagePropertiesChanging" OnItemDataBound="lvAddFamily_ItemDataBound" >
+            <LayoutTemplate>
+                <div class="row-fluid">
+                    <div class="span2">
+                        <h4>First Name</h4>
+                    </div>
+                    <div class="span3">
+                        <h4>Last Name</h4>
+                    </div>
+                    <div class="span2">
+                        <h4>DOB</h4>
+                    </div>
+                    <div class="span2">
+                        <h4>Gender</h4>
+                    </div>
+                    <div class="span3">
+                        <h4>Ability/Grade</h4>
+                    </div>                
                 </div>
-                <div class="span3">
-                    <h3>Last Name</h3>
+                <asp:PlaceHolder ID="itemPlaceholder" runat="server" />
+            </LayoutTemplate>
+            <ItemTemplate>
+                <div class="row-fluid">
+                    <div class="span2">
+                        <Rock:LabeledTextBox ID="tbFirstName" runat="server" CssClass="span12" Text='<%# ((NewPerson)Container.DataItem).FirstName %>' />
+                    </div>
+                    <div class="span3">
+                        <Rock:LabeledTextBox ID="tbLastName" runat="server" CssClass="span12" Text='<%# ((NewPerson)Container.DataItem).LastName %>' />
+                    </div>
+                    <div class="span2">
+                        <Rock:DatePicker ID="dpBirthDate" runat="server" CssClass="span12" SelectedDate='<%# ((NewPerson)Container.DataItem).BirthDate %>' />
+                    </div>
+                    <div class="span2">                                        
+                        <Rock:RockDropDownList ID="ddlGender" runat="server" CssClass="span12" />
+                    </div>
+                    <div class="span3">
+                        <Rock:RockDropDownList ID="ddlAbilityGrade" runat="server" CssClass="span12" />
+                    </div>                
                 </div>
-                <div class="span2">
-                    <h3>DOB</h3>
-                </div>
-                <div class="span2">
-                    <h3>Gender</h3>
-                </div>
-                <div class="span3">
-                    <h3>Ability/Grade</h3>
-                </div>                
-            </div>
-            <asp:PlaceHolder ID="itemPlaceholder" runat="server" />
-        </LayoutTemplate>
-        <ItemTemplate>
-            <div class="row-fluid checkin-body">
-                <div class="span2">
-                    <Rock:LabeledTextBox ID="tbFirstName" runat="server" Text='<%# ((NewPerson)Container.DataItem).FirstName %>' />
-                </div>
-                <div class="span3">
-                    <Rock:LabeledTextBox ID="tbLastName" runat="server" Text='<%# ((NewPerson)Container.DataItem).LastName %>' />
-                </div>
-                <div class="span2">
-                    <Rock:DatePicker ID="dpBirthDate" runat="server" SelectedDate='<%# ((NewPerson)Container.DataItem).BirthDate %>' />
-                </div>
-                <div class="span2">                                        
-                    <Rock:RockDropDownList ID="ddlGender" runat="server" />
-                </div>
-                <div class="span3">
-                    <Rock:RockDropDownList ID="ddlAbilityGrade" runat="server" />
-                </div>                
-            </div>
-        </ItemTemplate>        
-        </asp:ListView>        
+            </ItemTemplate>        
+            </asp:ListView>        
 
-        <div class="row-fluid checkin-body">
-            <asp:DataPager ID="dpAddFamily" runat="server" PageSize="5" PagedControlID="lvAddFamily">
-                <Fields>
-                    <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-large btn-primary btn-checkin-select" />
-                </Fields>
-            </asp:DataPager>
+            <div class="row-fluid">
+                <asp:DataPager ID="dpAddFamily" runat="server" PageSize="5" PagedControlID="lvAddFamily">
+                    <Fields>
+                        <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-large btn-primary btn-checkin-select" />
+                    </Fields>
+                </asp:DataPager>
+            </div>
         </div>
 
     </asp:Panel>
