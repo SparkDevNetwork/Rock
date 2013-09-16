@@ -1,0 +1,49 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock", "..\..\Rock\Rock.csproj", "{8F8C2A79-24F4-4157-8B99-45F75FA85799}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Quartz", "..\..\Quartz\Quartz.csproj", "{AEF8823B-E45B-4B35-A4D0-C08C1196D017}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CheckScannerUtility", "..\CheckScannerUtility\CheckScannerUtility\CheckScannerUtility.csproj", "{41D111D0-0579-45FF-9EC5-BEE6736C81D6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AXInteropBuilder", "..\CheckScannerUtility\AXInteropBuilder\AXInteropBuilder.csproj", "{ECCFB547-327B-42DC-9891-745DE7A52923}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ContributionStatementApp", "ContributionStatementApp\ContributionStatementApp.csproj", "{896F254D-0CEC-46D0-AD76-E95D43CC7B8D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{94B3D962-26A7-4CD9-9D46-79E032CF1AB5}"
+	ProjectSection(SolutionItems) = preProject
+		Rock.Wpf.Resources\ResourceDictionary.xaml = Rock.Wpf.Resources\ResourceDictionary.xaml
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8F8C2A79-24F4-4157-8B99-45F75FA85799}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F8C2A79-24F4-4157-8B99-45F75FA85799}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F8C2A79-24F4-4157-8B99-45F75FA85799}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F8C2A79-24F4-4157-8B99-45F75FA85799}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AEF8823B-E45B-4B35-A4D0-C08C1196D017}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AEF8823B-E45B-4B35-A4D0-C08C1196D017}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AEF8823B-E45B-4B35-A4D0-C08C1196D017}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AEF8823B-E45B-4B35-A4D0-C08C1196D017}.Release|Any CPU.Build.0 = Release|Any CPU
+		{41D111D0-0579-45FF-9EC5-BEE6736C81D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{41D111D0-0579-45FF-9EC5-BEE6736C81D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{41D111D0-0579-45FF-9EC5-BEE6736C81D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{41D111D0-0579-45FF-9EC5-BEE6736C81D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ECCFB547-327B-42DC-9891-745DE7A52923}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ECCFB547-327B-42DC-9891-745DE7A52923}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ECCFB547-327B-42DC-9891-745DE7A52923}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ECCFB547-327B-42DC-9891-745DE7A52923}.Release|Any CPU.Build.0 = Release|Any CPU
+		{896F254D-0CEC-46D0-AD76-E95D43CC7B8D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{896F254D-0CEC-46D0-AD76-E95D43CC7B8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{896F254D-0CEC-46D0-AD76-E95D43CC7B8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{896F254D-0CEC-46D0-AD76-E95D43CC7B8D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
