@@ -588,42 +588,25 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
                 .People.Where( p => p.Person.Id == personId ).FirstOrDefault();
 
-                var groupTypes = person.GroupTypes.ToList();
-                foreach ( var groupType in groupTypes )
-                {
-                    var groups = groupType.Groups.ToList();
-                    foreach ( var group in groups )
-                    {
-                        var locations = group.Locations.ToList();
-                        foreach ( var location in locations )
-                        {
-                            var schedules = location.Schedules.ToList();
-                            foreach ( var schedule in schedules )
-                            {
-                                schedule.Selected = false;
-                                if ( schedule.PreSelected )
-                                {
-                                    schedule.Selected = true;
-                                }
-                            }
-                            location.Selected = false;
-                            if ( location.PreSelected )
-                            {
-                                location.Selected = true;
-                            }
-                        }
-                        group.Selected = false;
-                        if ( group.PreSelected )
-                        {
-                            group.Selected = true;
-                        }
-                    }
-                    groupType.Selected = false;
-                    if ( groupType.PreSelected )
-                    {
-                        groupType.Selected = true;
-                    }
-                }
+                // set Selected to false for everything to make sure there are no orphan things selected.
+                var allTheGroupTypes = person.GroupTypes.ToList();
+                var allTheGroups = allTheGroupTypes.SelectMany( gt => gt.Groups ).ToList();
+                var allTheLocations = allTheGroups.SelectMany( g => g.Locations ).ToList();
+                var allTheSchedules = allTheLocations.SelectMany( l => l.Schedules ).ToList();
+                allTheGroupTypes.ForEach( gt => gt.Selected = false );
+                allTheGroups.ForEach( g => g.Selected = false );
+                allTheLocations.ForEach( l => l.Selected = false );
+                allTheSchedules.ForEach( s => s.Selected = false );
+
+                // set Selected to true for just those things that are PreSelected
+                var groupTypes = person.GroupTypes.Where( gt => gt.PreSelected == true ).ToList();
+                var groups = groupTypes.SelectMany( gt => gt.Groups.Where( g => g.PreSelected == true ) ).ToList();
+                var locations = groups.SelectMany( g => g.Locations.Where( l => l.PreSelected == true ) ).ToList();
+                var schedules = locations.SelectMany( l => l.Schedules.Where( s => s.PreSelected == true ) ).ToList();
+                groupTypes.ForEach( gt => gt.Selected = true );
+                groups.ForEach( g => g.Selected = true );
+                locations.ForEach( l => l.Selected = true );
+                schedules.ForEach( s => s.Selected = true );
             }            
 
             NavigateToPreviousPage();
@@ -640,42 +623,25 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
                 .People.Where( p => p.Person.Id == personId ).FirstOrDefault();
 
-                var groupTypes = person.GroupTypes.ToList();
-                foreach ( var groupType in groupTypes )
-                {
-                    var groups = groupType.Groups.ToList();
-                    foreach ( var group in groups )
-                    {
-                        var locations = group.Locations.ToList();
-                        foreach ( var location in locations )
-                        {
-                            var schedules = location.Schedules.ToList();
-                            foreach ( var schedule in schedules )
-                            {
-                                schedule.PreSelected = false;
-                                if ( schedule.Selected )
-                                {
-                                    schedule.PreSelected = true;
-                                }
-                            }
-                            location.PreSelected = false;
-                            if ( location.Selected )
-                            {
-                                location.PreSelected = true;
-                            }
-                        }
-                        group.PreSelected = false;
-                        if ( group.Selected )
-                        {
-                            group.PreSelected = true;
-                        }
-                    }
-                    groupType.PreSelected = false;
-                    if ( groupType.Selected )
-                    {
-                        groupType.PreSelected = true;
-                    }
-                }
+                // set PreSelected to false for everything to make sure there are no orphan things pre-selected.
+                var allTheGroupTypes = person.GroupTypes.ToList();
+                var allTheGroups = allTheGroupTypes.SelectMany( gt => gt.Groups ).ToList();
+                var allTheLocations = allTheGroups.SelectMany( g => g.Locations ).ToList();
+                var allTheSchedules = allTheLocations.SelectMany( l => l.Schedules ).ToList();
+                allTheGroupTypes.ForEach( gt => gt.PreSelected = false );
+                allTheGroups.ForEach( g => g.PreSelected = false );
+                allTheLocations.ForEach( l => l.PreSelected = false );
+                allTheSchedules.ForEach( s => s.PreSelected = false );
+
+                // set PreSelected to true for just those things that are Selected
+                var groupTypes = person.GroupTypes.Where( gt => gt.Selected == true ).ToList();
+                var groups = groupTypes.SelectMany( gt => gt.Groups.Where( g => g.Selected == true ) ).ToList();
+                var locations = groups.SelectMany( g => g.Locations.Where( l => l.Selected == true ) ).ToList();
+                var schedules = locations.SelectMany( l => l.Schedules.Where( s => s.Selected == true ) ).ToList();
+                groupTypes.ForEach( gt => gt.PreSelected = true );
+                groups.ForEach( g => g.PreSelected = true );
+                locations.ForEach( l => l.PreSelected = true );
+                schedules.ForEach( s => s.PreSelected = true );
             }
 
             SaveState();
