@@ -19,33 +19,36 @@
             </div>
         </div>
 
-        <div class="row-fluid checkin-body">            
-            <Rock:Grid ID="gPersonList" runat="server" DataKeyNames="PersonId,LocationId,ScheduleId" DisplayType="Light" OnRowCommand="gPersonList_Print" EmptyDataText="No People Selected">
-                <Columns>
-                    <asp:BoundField DataField="PersonId" Visible="false" />                    
-                    <asp:BoundField DataField="Name" HeaderText="Name" />
-                    <asp:BoundField DataField="Location" HeaderText="Assigned To" />
-                    <asp:BoundField DataField="LocationId" Visible="false" />
-                    <asp:BoundField DataField="Schedule" HeaderText="Time" />
-                    <asp:BoundField DataField="ScheduleId" Visible="false" />
-                    <Rock:EditValueField HeaderText="Edit" ControlStyle-CssClass="btn btn-large btn-primary btn-checkin-select" OnClick="gPersonList_Edit" />
-                    <Rock:DeleteField HeaderText="Delete" ControlStyle-CssClass="btn btn-large btn-primary btn-checkin-select" OnClick="gPersonList_Delete" />
-                    <asp:TemplateField HeaderText="Print">
-                        <ItemTemplate>
-                            <asp:LinkButton ID="btnPrint" runat="server" CssClass="btn btn-large btn-primary btn-checkin-select" CommandName="Print" CommandArgument="<%# Container.DataItemIndex %>">
-                                <i class="icon-print"></i>
-                            </asp:LinkButton>
-                        </ItemTemplate> 
-                    </asp:TemplateField>
-                </Columns>
-            </Rock:Grid>
-        </div>
-        <div class="row-fluid checkin-body">
-            <div class="span9"></div>
-            <div class="span3">
-                <asp:LinkButton ID="lbPrintAll" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" runat="server" OnClick="lbPrintAll_Click" Text="Print All" />
+        <div class="checkin-body">    
+            <div class="row-fluid">
+                <Rock:Grid ID="gPersonList" runat="server" DataKeyNames="PersonId,LocationId,ScheduleId" DisplayType="Light" OnRowCommand="gPersonList_Print" EmptyDataText="No People Selected">
+                    <Columns>
+                        <asp:BoundField DataField="PersonId" Visible="false" />                    
+                        <asp:BoundField DataField="Name" HeaderText="Name" />
+                        <asp:BoundField DataField="Location" HeaderText="Assigned To" />
+                        <asp:BoundField DataField="LocationId" Visible="false" />
+                        <asp:BoundField DataField="Schedule" HeaderText="Time" />
+                        <asp:BoundField DataField="ScheduleId" Visible="false" />
+                        <Rock:EditValueField HeaderText="Edit" ControlStyle-CssClass="btn btn-large btn-primary btn-checkin-select" OnClick="gPersonList_Edit" />
+                        <Rock:DeleteField HeaderText="Delete" ControlStyle-CssClass="btn btn-large btn-primary btn-checkin-select" OnClick="gPersonList_Delete" />
+                        <asp:TemplateField HeaderText="Print">
+                            <ItemTemplate>
+                                <asp:LinkButton ID="btnPrint" runat="server" CssClass="btn btn-large btn-primary btn-checkin-select" CommandName="Print" CommandArgument="<%# Container.DataItemIndex %>">
+                                    <i class="icon-print"></i>
+                                </asp:LinkButton>
+                            </ItemTemplate> 
+                        </asp:TemplateField>
+                    </Columns>
+                </Rock:Grid>
+            </div>
+            <div class="row-fluid">
+                <div class="span9"></div>
+                <div class="span3">
+                    <asp:LinkButton ID="lbPrintAll" CssClass="btn btn-primary btn-block btn-checkin-select" runat="server" OnClick="lbPrintAll_Click" Text="Print All" />
+                </div>
             </div>
         </div>
+        
     </asp:Panel>
 </ContentTemplate>
 </asp:UpdatePanel>
