@@ -344,7 +344,7 @@ input.checkin-phone-entry
 
 .attended h1, .attended h2, .attended h3,
 .attended .grid-table thead tr,
-.attended .checkin-header 
+.attended .checkin-header
 {
     text-align: center;
     margin-top: 2%;
@@ -424,11 +424,7 @@ input.checkin-phone-entry
 {
     font-size: 1.5em;     
     background-color: transparent;
-}
-
-.attended .selected-grid .grid-table
-{
-    font-size: 1.25em;
+    margin-bottom: 1%;
 }
 
 .attended .grid-table thead th a,
@@ -467,40 +463,24 @@ input.checkin-phone-entry
 {
     background: @rockBackgroundColor;
     width: 80%;
-    height: 80%;
+    height: 75%;    
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
     border-radius: 10px;
-    z-index: 10001 !important;
+    z-index: 10001 !important;    
 }
 
-.attended.modal-foreground-small 
-{
-    background: @rockBackgroundColor;
+.attended.modal-foreground.small 
+{    
     width: 60%;
-    -moz-border-radius: 10px;
-    -webkit-border-radius: 10px;
-    border-radius: 10px;
-    z-index: 10001 !important;
+    height: auto;    
 }
 
-.attended.modal-foreground .checkin-body,
-.attended.modal-foreground-small .checkin-body,
-.attended.modal-foreground-small .checkin-header
+.attended.modal-foreground .checkin-header,
+.attended.modal-foreground .checkin-body
 {
     width: 95%;
     margin-left: 3%;
-}
-
-.attended.modal-foreground-small .row-fluid 
-{
-    margin-top: 4%;
-}
-
-.attended.modal-foreground-small .row-fluid [class*="span"]
-{
-    margin-left: 0;
-    margin-right: 1%;
 }
 
 .attended input[type="text"].note
