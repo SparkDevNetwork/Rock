@@ -181,7 +181,7 @@
             </div>
 
             <div class="span3 checkin-actions">
-                <asp:LinkButton ID="lbAddPersonSearch" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddPersonSearch_Click" Text="Search" />
+                <asp:LinkButton ID="lbAddPersonSearch" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddPersonSearch_Click" Text="Search" CausesValidation="false" />
             </div>
         </div>
 		
@@ -194,7 +194,7 @@
                     <Rock:LabeledTextBox ID="tbLastNameSearch" runat="server" CssClass="span12" LabelText="Last Name" />
                 </div>
                 <div class="span2">
-                    <Rock:DatePicker ID="dpDOBSearch" runat="server" LabelText="DOB" CssClass="span12" />                
+                    <Rock:DatePicker ID="dpDOBSearch" runat="server" LabelText="DOB" CssClass="span12" />
                 </div>
                 <div class="span2">
                     <Rock:DataDropDownList ID="ddlGenderSearch" runat="server" CssClass="span12" LabelText="Gender" />

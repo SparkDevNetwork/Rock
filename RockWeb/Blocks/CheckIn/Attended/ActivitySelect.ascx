@@ -1,6 +1,29 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="ActivitySelect.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Attended.ActivitySelect" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="asp" %>
 
+<script type="text/javascript">
+
+    function setControlEvents() {
+        
+        $find("mpeAddCondition").add_shown(function () {
+            $find("mpeAddCondition")._backgroundElement.onclick = function () {
+                $find("mpeAddCondition").hide();
+            }
+        });
+
+        $find("mpeAddNote").add_shown(function () {
+            $find("mpeAddNote")._backgroundElement.onclick = function () {
+                $find("mpeAddNote").hide();
+            }
+        });
+        
+    };
+
+    $(document).ready(function () { setControlEvents(); });
+    Sys.WebForms.PageRequestManager.getInstance().add_endRequest(setControlEvents);
+
+</script>
+
 <asp:UpdatePanel ID="upContent" runat="server" UpdateMode="Conditional">
 <ContentTemplate>
 
@@ -120,7 +143,7 @@
         </div>
 
     </asp:Panel>
-    <asp:ModalPopupExtender ID="mpeAddCondition" runat="server" TargetControlID="hfConditionPanel" PopupControlID="pnlAddCondition"
+    <asp:ModalPopupExtender ID="mpeAddCondition" runat="server" BehaviorID="mpeAddCondition" TargetControlID="hfConditionPanel" PopupControlID="pnlAddCondition"
         CancelControlID="lbAddConditionCancel" BackgroundCssClass="attended modal-background" />
     <asp:HiddenField ID="hfConditionPanel" runat="server" />
 
@@ -145,7 +168,7 @@
         </div>
 
     </asp:Panel>
-    <asp:ModalPopupExtender ID="mpeAddNote" runat="server" TargetControlID="hfOpenNotePanel" PopupControlID="pnlAddNote" 
+    <asp:ModalPopupExtender ID="mpeAddNote" runat="server" BehaviorID="mpeAddNote" TargetControlID="hfOpenNotePanel" PopupControlID="pnlAddNote" 
         CancelControlID="lbAddNoteCancel" BackgroundCssClass="attended modal-background" />
     <asp:HiddenField ID="hfOpenNotePanel" runat="server" />    
 
