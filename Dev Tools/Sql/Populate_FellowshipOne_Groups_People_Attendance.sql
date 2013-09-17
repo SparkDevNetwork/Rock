@@ -86,14 +86,14 @@ DECLARE @GroupAttributeID int
 
 MERGE INTO [Attribute] A
 USING (
-	VALUES ( 0,	@IntFieldType,	@PersonEntityID, 'IndividualID',	'IndividualID',	'A person''s FellowshipOne individual ID',	0,	0,	0,	0,	'0F9C847B-4302-421E-9980-51E4772E80F5')	
-	, (0,	@IntFieldType,	@PersonEntityID,	'HouseholdID',	'HouseholdID',	'A person''s FellowshipOne household ID',	0,	0,	0,	0,	'CAB397A9-5E72-4970-AF27-E60967FD6D58')
-	, (0, @IntFieldType, @GroupEntityID, 'HouseholdID', 'HouseholdID', 'A group''s FellowshipOne household ID', 0, 0, 0, 0, '1DF676F2-A1C9-4534-9F59-8ABCBDD1CDD3')
-) AS E (IsSystem,	FieldTypeId,	EntityTypeId,	[Key], Name, [Description], [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid])
+	VALUES ( 0,	@IntFieldType,	@PersonEntityID, '', '', 'IndividualID',	'IndividualID',	'A person''s FellowshipOne individual ID',	0,	0,	0,	0,	'0F9C847B-4302-421E-9980-51E4772E80F5')	
+	, (0,	@IntFieldType,	@PersonEntityID, '', '', 'HouseholdID',	'HouseholdID',	'A person''s FellowshipOne household ID',	0,	0,	0,	0,	'CAB397A9-5E72-4970-AF27-E60967FD6D58')
+	, (0, @IntFieldType, @GroupEntityID, 'GroupTypeId', @FamilyGroupType, 'HouseholdID', 'HouseholdID', 'A group''s FellowshipOne household ID', 0, 0, 0, 0, '1DF676F2-A1C9-4534-9F59-8ABCBDD1CDD3')
+) AS E (IsSystem,	FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Description], [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid])
 ON A.[Guid] = E.[Guid]
 WHEN NOT MATCHED THEN
-	INSERT (IsSystem,	FieldTypeId,	EntityTypeId,	[Key], Name, [Description], [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid])
-	VALUES (E.IsSystem,	E.FieldTypeId,	E.EntityTypeId,	E.[Key], E.Name, E.[Description], E.[Order], E.IsGridColumn, E.IsMultiValue, E.IsRequired, E.[Guid]);
+	INSERT (IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Description], [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid])
+	VALUES (E.IsSystem,	E.FieldTypeId,	E.EntityTypeId,	E.EntityTypeQualifierColumn, E.EntityTypeQualifierValue, E.[Key], E.Name, E.[Description], E.[Order], E.IsGridColumn, E.IsMultiValue, E.IsRequired, E.[Guid]);
 		 
 SELECT @IndividualAttributeID = [ID] FROM [Attribute] WHERE [Guid] = '0F9C847B-4302-421E-9980-51E4772E80F5'
 SELECT @HouseholdAttributeID = [ID] FROM [Attribute] WHERE [Guid] = 'CAB397A9-5E72-4970-AF27-E60967FD6D58'

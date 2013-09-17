@@ -674,10 +674,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         LocationId = l.Location.Id.ToString(),
                         ScheduleId = l.Schedules.Where( s => s.Selected ).Select( s => s.Schedule.Id ).FirstOrDefault().ToString()
                     } ).OrderBy( gt => gt.StartTime ).ToList();
-                gSelectedList.DataBind();
-                gSelectedList.CssClass = string.Empty;
-                gSelectedList.AddCssClass( "grid-table" );
-                gSelectedList.AddCssClass( "table" );
+                gSelectedList.DataBind();                
                 pnlSelectedGrid.Update();
             }            
         }
