@@ -15,24 +15,24 @@ using System.Linq;
 namespace Rock.Model
 {
     /// <summary>
-    /// GroupLocation Service class
+    /// Data access/service class for <see cref="Rock.Model.GroupLocation"/> entity objects. This class extends the <see cref="Rock.Data.Service"/> class.
     /// </summary>
     public partial class GroupLocationService
     {
         /// <summary>
-        /// Gets Grouplocations by location.
+        /// Returns an enumerable collection of <see cref="Rock.Model.GroupLocation">GroupLocations</see> by their LocationId
         /// </summary>
-        /// <param name="locationId">The location id.</param>
-        /// <returns></returns>
+        /// <param name="locationId">A <see cref="System.Int32"/> representing the Id of a <see cref="Rock.Model.Location"/> to search by.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.GroupLocations"/> which are associated with the provided <see cref="Rock.Model.Location"/> </returns>
         public IEnumerable<GroupLocation> GetByLocation( int locationId )
         {
             return Repository.Find( g => g.LocationId == locationId );
         }
 
         /// <summary>
-        /// Gets Grouplocations by location.
+        /// Returns an enumerable collection of  active <see cref="Rock.Model.GroupLocation">GroupLocations</see> by their <see cref="Rock.Model.Location"/> Id
         /// </summary>
-        /// <param name="locationId">The location id.</param>
+        /// <param name="locationId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Location"/> to search by.</param>
         /// <returns></returns>
         public IEnumerable<GroupLocation> GetActiveByLocation( int locationId )
         {
