@@ -271,6 +271,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
             SetAddPersonFields();
             lblAddPersonHeader.Text = "Add Person";
             personVisitorType.Value = "Person";
+            tbFirstNameSearch.RemoveCssClass( "red-border" );
+            tbLastNameSearch.RemoveCssClass( "red-border" );
+            dpDOBSearch.RemoveCssClass( "red-border" );
+            ddlGenderSearch.RemoveCssClass( "red-border" );
             tbFirstNameSearch.Focus();
             mpeAddPerson.Show();
         }
@@ -317,8 +321,40 @@ namespace RockWeb.Blocks.CheckIn.Attended
             if ( string.IsNullOrEmpty( tbFirstNameSearch.Text ) || string.IsNullOrEmpty( tbLastNameSearch.Text ) || string.IsNullOrEmpty( dpDOBSearch.Text ) || ddlGenderSearch.SelectedValueAsInt() == 0 )
             {
                 mpeAddPerson.Show();
-                string errorMsg = "<ul><li>Please fill out the First Name, Last Name, DOB, and Gender fields.</li></ul>";
-                maAddPerson.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
+                //string errorMsg = "<ul><li>Please fill out the First Name, Last Name, DOB, and Gender fields.</li></ul>";
+                //maAddPerson.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
+                if ( string.IsNullOrEmpty( tbFirstNameSearch.Text ) )
+                {
+                    tbFirstNameSearch.AddCssClass( "red-border" );
+                }
+                else
+                {
+                    tbFirstNameSearch.RemoveCssClass( "red-border" );
+                }
+                if ( string.IsNullOrEmpty( tbLastNameSearch.Text ) )
+                {
+                    tbLastNameSearch.AddCssClass( "red-border" );
+                }
+                else
+                {
+                    tbLastNameSearch.RemoveCssClass( "red-border" );
+                }
+                if ( string.IsNullOrEmpty( dpDOBSearch.Text ) )
+                {
+                    dpDOBSearch.AddCssClass( "red-border" );
+                }
+                else
+                {
+                    dpDOBSearch.RemoveCssClass( "red-border" );
+                }
+                if ( ddlGenderSearch.SelectedValueAsInt() == 0 )
+                {
+                    ddlGenderSearch.AddCssClass( "red-border" );
+                }
+                else
+                {
+                    ddlGenderSearch.RemoveCssClass( "red-border" );
+                }
             }
             else
             {

@@ -376,6 +376,25 @@ namespace RockWeb.Blocks.CheckIn.Attended
             mpeAddNote.Show();
         }
 
+        /// <summary>
+        /// Handles the ItemCommand event of the rptCondition control.
+        /// </summary>
+        /// <param name="source">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
+        protected void rptCondition_ItemCommand( object source, RepeaterCommandEventArgs e )
+        {
+            string match = @"\s*\b" + "active" + @"\b";
+            string css = ( (LinkButton)e.Item.FindControl( "lbConditionName" ) ).CssClass;
+            if ( System.Text.RegularExpressions.Regex.IsMatch( css, match, System.Text.RegularExpressions.RegexOptions.IgnoreCase ) )
+            {
+                ( (LinkButton)e.Item.FindControl( "lbConditionName" ) ).RemoveCssClass( "active" );
+            }
+            else
+            {
+                ( (LinkButton)e.Item.FindControl( "lbConditionName" ) ).AddCssClass( "active" );
+            }
+            mpeAddCondition.Show();
+        }
 
         /// <summary>
         /// Handles the ItemDataBound event of the rptAddCondition control.
@@ -389,6 +408,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 var condition = (KeyValuePair<int, string>)e.Item.DataItem;
                 var lbConditionName = (LinkButton)e.Item.FindControl( "lbConditionName" );
                 lbConditionName.Text = condition.Value;
+                lbConditionName.CommandArgument = condition.Key.ToString();
 
             }
         }
@@ -420,7 +440,54 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddConditionSave_Click( object sender, EventArgs e )
         {
-            
+
+            foreach ( RepeaterItem item in rptCondition.Items )
+            {
+                string match = @"\s*\b" + "active" + @"\b";
+                string css = ( (LinkButton)item.FindControl( "lbConditionName" ) ).CssClass;
+                if ( System.Text.RegularExpressions.Regex.IsMatch( css, match, System.Text.RegularExpressions.RegexOptions.IgnoreCase ) )
+                {
+                    using ( new Rock.Data.UnitOfWorkScope() )
+                    {
+                        var tagService = new TagService();
+                        var taggedItemService = new TaggedItemService();
+                        var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
+                            .People.Where( p => p.Person.Id == int.Parse( Request.QueryString["personId"] ) ).FirstOrDefault();
+
+                        var entityTypeId = person.Person.TypeId;
+                        var entityQualifier = string.Empty;
+                        var entityQualifierValue = string.Empty;
+                        var entityGuid = person.Person.Guid;
+                        var ownerId = CurrentPersonId;
+                        var dvc = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_ALLERGY_TYPE ) ).DefinedValues.Where( dv => dv.Id == int.Parse( ( (LinkButton)item.FindControl( "lbConditionName" ) ).CommandArgument ) );
+                        var definedValue = DefinedValueCache.Read( dvc.FirstOrDefault().Guid );
+                        var name = definedValue.Name;
+
+                        var tag = tagService.Get( entityTypeId, entityQualifier, entityQualifierValue, ownerId, name );
+                        if ( tag == null )
+                        {
+                            tag = new Tag();
+                            tag.EntityTypeId = entityTypeId;
+                            tag.EntityTypeQualifierColumn = entityQualifier;
+                            tag.EntityTypeQualifierValue = entityQualifierValue;
+                            tag.OwnerId = ownerId;
+                            tag.Name = name;
+                            tagService.Add( tag, ownerId );
+                            tagService.Save( tag, ownerId );
+                        }
+
+                        var taggedItem = taggedItemService.Get( tag.Id, entityGuid );
+                        if ( taggedItem == null )
+                        {
+                            taggedItem = new TaggedItem();
+                            taggedItem.TagId = tag.Id;
+                            taggedItem.EntityGuid = entityGuid;
+                            taggedItemService.Add( taggedItem, ownerId );
+                            taggedItemService.Save( taggedItem, ownerId );
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -693,7 +760,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 {
                     // if person has this condition
                     // allergyValue.Attributes.Add["Selected"];
-                    conditionList.Add( allergyValue.Id, allergyValue.Name );                    
+                    conditionList.Add( allergyValue.Id, allergyValue.Name );
                 }
                 
             }
@@ -703,5 +770,5 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         #endregion        
-}
+    }
 }
