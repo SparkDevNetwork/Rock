@@ -16,7 +16,7 @@
                 $find("mpeAddNote").hide();
             }
         });
-        
+
     };
 
     $(document).ready(function () { setControlEvents(); });
