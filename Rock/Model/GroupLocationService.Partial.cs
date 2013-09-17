@@ -20,7 +20,7 @@ namespace Rock.Model
     public partial class GroupLocationService
     {
         /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.GroupLocation">GroupLocations</see> by their LocationId
+        /// Returns an enumerable collection of <see cref="Rock.Model.GroupLocation">GroupLocations</see> by their LocationId.
         /// </summary>
         /// <param name="locationId">A <see cref="System.Int32"/> representing the Id of a <see cref="Rock.Model.Location"/> to search by.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.GroupLocations"/> which are associated with the provided <see cref="Rock.Model.Location"/> </returns>

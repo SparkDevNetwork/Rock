@@ -11,28 +11,30 @@ using System.Runtime.Serialization;
 namespace Rock.Model
 {
     /// <summary>
-    /// 
+    /// Represents the a type of <see cref="Rock.Model.Location"/> that is supported by a <see cref="Rock.Model.GroupType"/>.
     /// </summary>
     [Table( "GroupTypeLocationType" )]
     [DataContract]
     public class GroupTypeLocationType
     {
         /// <summary>
-        /// Gets or sets the group type id.
+        /// Gets or sets the Id of the <see cref="Rock.Model.GroupType"/>. This property is required, and is part of the key.
         /// </summary>
         /// <value>
-        /// The group type id.
+        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupType"/>.
         /// </value>
         [Key]
         [Column(Order=0)]
         [DataMember]
         public int GroupTypeId { get; set; }
 
+
         /// <summary>
-        /// Gets or sets the location type id.
+        /// Gets or sets the Id of the LocationType <see cref="Rock.Model.DefinedValue"/> that represents a type of <see cref="Rock.Model.Location"/> that is
+        /// supported by a <see cref="Rock.Model.GroupType"/>. This property is required and is part of the key.
         /// </summary>
         /// <value>
-        /// The location type id.
+        /// A <see cref="System.Int32"/> representing the Id of a LocationType <see cref="Rock.Model.DefinedValue">  that is supported by a <see cref="Rock.Model.GroupType"/>.
         /// </value>
         [Key]
         [Column( Order = 1 )]
@@ -40,19 +42,19 @@ namespace Rock.Model
         public int LocationTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the group.
+        /// Gets or sets the <see cref="Rock.Model.GroupType"/>.
         /// </summary>
         /// <value>
-        /// The type of the group.
+        /// The <see cref="Rock.Model.GroupType"/>.
         /// </value>
         [DataMember]
         public virtual GroupType GroupType { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the location.
+        /// Gets or sets the a <see cref="Rock.Model.DefinedType"/> that is supported by the <see cref="Rock.Model.GroupType"/>.
         /// </summary>
         /// <value>
-        /// The type of the location.
+        /// A <see cref="Rock.Model.GroupType" /> that is supported by the <see cref="Rock.Model.GroupType"/>.
         /// </value>
         [DataMember]
         public virtual Model.DefinedValue LocationTypeValue { get; set; }

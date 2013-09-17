@@ -20,7 +20,7 @@ namespace Rock.Model
     public partial class GroupMember : Model<GroupMember>
     {
         /// <summary>
-        /// Gets or sets a flag indicating if this GroupMember is part of the RockChMS core system/framework. This propery is required.
+        /// Gets or sets a flag indicating if this GroupMember is part of the RockChMS core system/framework. This property is required.
         /// </summary>
         /// <value>
         /// A <see cref="System.Boolean"/> value that is <c>true</c> if this GroupMember is a part of the RockChMS core system/framework; otherwise <c>false</c>.
