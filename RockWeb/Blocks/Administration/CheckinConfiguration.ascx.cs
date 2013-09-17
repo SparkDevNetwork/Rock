@@ -40,6 +40,11 @@ namespace RockWeb.Blocks.Administration
                     pnlDetails.Visible = false;
                 }
             }
+            else
+            {
+                // assume if there is a PostBack, that something changed  and that confirmExit should be enabled
+                confirmExit.Enabled = true;
+            }
 
             // handle sort events
             string postbackArgs = Request.Params["__EVENTARGUMENT"];
@@ -93,6 +98,39 @@ namespace RockWeb.Blocks.Administration
             else if ( eventParam.Equals( "re-order-group" ) )
             {
                 var allCheckinGroupEditors = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupEditor>();
+
+                Guid groupGuid = new Guid( values[0] );
+                int newIndex = int.Parse( values[1] );
+
+                CheckinGroupEditor sortedGroupEditor = allCheckinGroupEditors.FirstOrDefault( a => a.GroupGuid.Equals( groupGuid ) );
+                if ( sortedGroupEditor != null )
+                {
+                    var siblingGroupEditors = allCheckinGroupEditors.Where( a => a.GroupTypeId == sortedGroupEditor.GroupTypeId ).ToList();
+                    
+                    Control parentControl = sortedGroupEditor.Parent;
+                    // parent control has other controls, so just just remove all the checkingroupeditors, sort them, and add them back in the new order
+                    foreach ( var item in siblingGroupEditors )
+                    {
+                        parentControl.Controls.Remove( item );
+                    }
+
+                    siblingGroupEditors.Remove( sortedGroupEditor );
+                    if ( newIndex >= siblingGroupEditors.Count() )
+                    {
+                        siblingGroupEditors.Add( sortedGroupEditor );
+                    }
+                    else
+                    {
+                        siblingGroupEditors.Insert( newIndex, sortedGroupEditor );
+                    }
+
+                    foreach ( var item in siblingGroupEditors )
+                    {
+                        parentControl.Controls.Add( item );
+                    }
+
+                    (sortedGroupEditor.Parent as CheckinGroupTypeEditor).ForceContentVisible = true;
+                }
             }
         }
 
