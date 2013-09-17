@@ -364,12 +364,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddPersonSearch_Click( object sender, EventArgs e )
         {
-            var test = dpDOBSearch.SelectedDate;
+            var storeDOB = dpDOBSearch.SelectedDate;
             lbAddNewPerson.Visible = true;
             rGridPersonResults.PageIndex = 0;
             BindPersonGrid();
             rGridPersonResults.Visible = true;
-            dpDOBSearch.SelectedDate = test;
+            dpDOBSearch.SelectedDate = storeDOB;
             mpeAddPerson.Show();
         }
 
@@ -453,8 +453,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             checkInFamily.SubCaption = string.Join( ",", familyGroup.Members.Select( gm => gm.Person.FirstName ) );
             checkInFamily.Selected = true;
 
-            // don't clear in case there are several "smith" families
-            // CurrentCheckInState.CheckIn.Families.Clear();
             CurrentCheckInState.CheckIn.Families.Add( checkInFamily );
             lvFamily.DataSource = CurrentCheckInState.CheckIn.Families.OrderBy( f => f.Caption ).ToList();
             lvFamily.DataBind();
