@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
 using MigraDoc.DocumentObjectModel;
 using MigraDoc.Rendering;
+using Rock.Model;
+using System.Linq;
+using Rock.Data;
 
 namespace ContributionStatementApp
 {
@@ -28,7 +32,18 @@ namespace ContributionStatementApp
         private void btnShowStatement_Click( object sender, RoutedEventArgs e )
         {
             ContributionForm contributionForm = new ContributionForm();
-            Document document = contributionForm.CreateDocument();
+
+            DateTime startDate = new DateTime(2013, 8, 1);
+            DateTime endDate = new DateTime(2013, 9, 1);
+
+            var qry = new FinancialTransactionService().Queryable( "TransactionDetails" )
+                .Where( a => a.TransactionDateTime >= startDate )
+                .Where( a => a.TransactionDateTime < endDate );
+                
+            qry = qry.Take(100);
+            
+
+            Document document = contributionForm.CreateDocument( qry.OrderBy( a => a.TransactionDateTime ).ToList());
 
             PdfDocumentRenderer pdfDocumentRenderer = new PdfDocumentRenderer(false);
             pdfDocumentRenderer.Document = document;

@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using MigraDoc.DocumentObjectModel;
 using MigraDoc.DocumentObjectModel.Shapes;
 using MigraDoc.DocumentObjectModel.Tables;
+using Rock.Model;
+using System.Linq;
 
 namespace ContributionStatementApp
 {
@@ -30,7 +33,7 @@ namespace ContributionStatementApp
         private readonly static Color TableBlue = new Color( 235, 240, 249 );
         private readonly static Color TableGray = new Color( 242, 242, 242 );
 
-        public Document CreateDocument()
+        public Document CreateDocument(IEnumerable<FinancialTransaction> financialTransactionList)
         {
             this.document = new Document();
 
@@ -41,7 +44,7 @@ namespace ContributionStatementApp
             DefineStyles();
             CreatePage();
 
-            FillContent();
+            FillContent( financialTransactionList );
 
             return this.document;
         }
@@ -96,25 +99,9 @@ namespace ContributionStatementApp
             headerParagraphLine2.AddTab();
             headerParagraphLine2.AddText( "as of " + DateTime.Now.ToShortDateString() );
 
-            // Create the text frame for the address
-            this.returnAddressFrame = section.AddTextFrame();
-            this.returnAddressFrame.Height = "3.0cm";
-            this.returnAddressFrame.Width = "7.0cm";
-            this.returnAddressFrame.Left = ShapePosition.Left;
-            this.returnAddressFrame.RelativeHorizontal = RelativeHorizontal.Margin;
-            this.returnAddressFrame.Top = "5.0cm";
-            this.returnAddressFrame.RelativeVertical = RelativeVertical.Page;
+            
 
-            // Populate Return Address Frame
-            Paragraph addressParagraph = this.returnAddressFrame.AddParagraph();
-            addressParagraph.Add( new Text( "Rock Solid Church" ) );
-            addressParagraph.AddLineBreak();
-            addressParagraph.Add( new Text( "101 Electric Ave" ) );
-            addressParagraph.AddLineBreak();
-            addressParagraph.Add( new Text( "Big Stone City, SD 57001" ) );
-            addressParagraph.Format.Font.Name = "Times New Roman";
-            addressParagraph.Format.Font.Size = 7;
-            addressParagraph.Format.SpaceAfter = 3;
+            
 
             // Create the item table
             this.table = section.AddTable();
@@ -130,7 +117,7 @@ namespace ContributionStatementApp
             /* Define the columns */
 
             // Date
-            Column column = this.table.AddColumn( "1cm" );
+            Column column = this.table.AddColumn( "2cm" );
             column.Shading.Color = TableGray;
             column.Borders.Visible = false;
             column.Format.Alignment = ParagraphAlignment.Left;
@@ -141,7 +128,7 @@ namespace ContributionStatementApp
             column.Format.Alignment = ParagraphAlignment.Left;
 
             // Note
-            column = this.table.AddColumn( "3cm" );
+            column = this.table.AddColumn( "6cm" );
             column.Shading.Color = TableGray;
             column.Borders.Visible = false;
             column.Format.Alignment = ParagraphAlignment.Left;
@@ -174,10 +161,68 @@ namespace ContributionStatementApp
             headerRow.Cells[3].Format.Alignment = ParagraphAlignment.Left;
             headerRow.Cells[4].AddParagraph( "Amount" );
             headerRow.Cells[4].Format.Alignment = ParagraphAlignment.Right;
+
+
+            // Create the text frame for the address
+            this.returnAddressFrame = section.AddTextFrame();
+            this.returnAddressFrame.Height = "3.0cm";
+            this.returnAddressFrame.Width = "7.0cm";
+            this.returnAddressFrame.Left = ShapePosition.Left;
+            this.returnAddressFrame.RelativeHorizontal = RelativeHorizontal.Margin;
+            this.returnAddressFrame.Top = "7.5in";
+            this.returnAddressFrame.RelativeVertical = RelativeVertical.Page;
+
+            
+            // Populate Return Address Frame
+            Paragraph addressParagraph = this.returnAddressFrame.AddParagraph();
+
+            addressParagraph.Add( new Text( "Rock Solid Church" ) );
+            addressParagraph.AddLineBreak();
+            addressParagraph.Add( new Text( "101 Electric Ave" ) );
+            addressParagraph.AddLineBreak();
+            addressParagraph.Add( new Text( "Big Stone City, SD 57001" ) );
+            addressParagraph.Format.Font.Name = "Times New Roman";
+            addressParagraph.Format.Font.Size = 7;
+            //addressParagraph.Format.SpaceBefore = 3;
+            //addressParagraph.Format.SpaceAfter = 3;
+
+            /*Paragraph paragraph = this.returnAddressFrame.AddParagraph( "PowerBooks Inc · Sample Street 42 · 56789 Cologne" );
+            paragraph.Format.Font.Name = "Times New Roman";
+            paragraph.Format.Font.Size = 7;
+            paragraph.Format.SpaceAfter = 3;
+
+            paragraph = section.AddParagraph();
+            paragraph.Format.SpaceBefore = "8cm";
+            paragraph.Style = "Reference";
+            paragraph.AddFormattedText( "INVOICE", TextFormat.Bold );
+            paragraph.AddTab();
+            paragraph.AddText( "Cologne, " );
+            paragraph.AddDateField( "dd.MM.yyyy" );
+             */ 
         }
 
-        private void FillContent()
+        private void FillContent( IEnumerable<FinancialTransaction> financialTransactionList )
         {
+            foreach ( var financialTransaction in financialTransactionList )
+            {
+                Row row = this.table.AddRow();
+                row.Cells[0].AddParagraph( financialTransaction.TransactionDateTime.Value.ToShortDateString() );
+                row.Cells[1].AddParagraph( financialTransaction.CurrencyTypeValue.Name );
+                row.Cells[2].AddParagraph( financialTransaction.Summary );
+
+                string accountName = string.Empty;
+                var detail = financialTransaction.TransactionDetails.FirstOrDefault();
+                if ( detail != null )
+                {
+                    if ( detail.Account != null )
+                    {
+                        row.Cells[3].AddParagraph( detail.Account.Name );
+                    }
+                }
+                
+                row.Cells[4].AddParagraph( financialTransaction.Amount.ToString() );
+            }
+            
             /*
             while ( iter.MoveNext() )
             {
