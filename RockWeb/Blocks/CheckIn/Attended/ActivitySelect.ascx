@@ -126,7 +126,7 @@
         </div>
 
         <div class="checkin-body">
-            <asp:Repeater ID="rptCondition" runat="server" OnItemDataBound="rptAddCondition_ItemDataBound">
+            <asp:Repeater ID="rptCondition" runat="server" OnItemDataBound="rptAddCondition_ItemDataBound" OnItemCommand="rptCondition_ItemCommand">
                 <HeaderTemplate>
                     <div class="row-fluid">
                 </HeaderTemplate>
