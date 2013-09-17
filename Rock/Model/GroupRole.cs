@@ -24,29 +24,30 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the System.
+        /// Gets or sets a flag indicating if this GroupRole is part of the RockChMS core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// System.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this GroupRole is part of the RockChMS core system/framework; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Group Type Id.
+        /// Gets or sets the Id of the <see cref="Rock.Model.GroupType"/> that this GroupRole belongs to. This property is required.
         /// </summary>
         /// <value>
-        /// Group Type Id.
+        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupType"/> that this GroupRole belongs to.
         /// </value>
-        [DataMember]
+        [Required]
+        [DataMember (IsRequired = true) ]
         public int? GroupTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the Name of the GroupRole. This property is required.
         /// </summary>
         /// <value>
-        /// Name.
+        /// A <see cref="System.String" /> representing the Name of the GroupRole.
         /// </value>
         [Required]
         [MaxLength( 100 )]
@@ -54,46 +55,51 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the user defined description of the GroupRole. This property is required.
         /// </summary>
         /// <value>
-        /// Description.
+        /// A <see cref="System.String"/> representing the user defined description of the GroupRole.
         /// </value>
         [DataMember( IsRequired = true )]
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the sort order.
+        /// Gets or sets the sort order position of the GroupRole.  The lower the SortOrder the higher the GroupRole shows in lists/controls.  
         /// </summary>
         /// <value>
-        /// The sort order.
+        /// A <see cref="System.Int32"/> representing the sort order of the GroupRole.
         /// </value>
         [DataMember( IsRequired = true )]
         public int? SortOrder { get; set; }
 
+
         /// <summary>
-        /// Gets or sets the max count.
+        /// Gets or sets the maximum count of <see cref="Rock.Model.GroupMember">GroupMembers</see> that a <see cref="Rock.Model.Group"/> can have who 
+        /// belong to this GroupRole.
         /// </summary>
         /// <value>
-        /// The max count.
+        /// A <see cref="System.Int32"/> representing the maximum count of <see cref="Rock.Model.GroupMember">GroupMembers</see> that a <see cref="Rock.Model.Group"/> can have
+        /// who belong to this GroupRole. If there isn't a maximum, this value is null.
         /// </value>
         [DataMember]
         public int? MaxCount { get; set; }
 
         /// <summary>
-        /// Gets or sets the min count.
+        /// Gets or sets the minimum count of <see cref="Rock.Model.GroupMember">GroupMembers</see> that a <see cref="Rock.Model.Group"/> can have who belong to this GroupRole.
         /// </summary>
         /// <value>
-        /// The min count.
+        /// The min count of <see cref="Rock.Model.GroupMember">GroupMebers</see> that a <see cref="Rock.Model.Group"/> can have who belong to this GroupRole. If there is no minimum
+        /// this value is null.
         /// </value>
         [DataMember]
         public int? MinCount { get; set; }
 
+
         /// <summary>
-        /// Is this role a leader of the group
+        /// Gets or sets a flag indicating if this is a group leader role.  
         /// </summary>
         /// <value>
-        /// The is leader.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this is a GroupLeader role; otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool IsLeader { get; set; }
@@ -103,10 +109,10 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the Group Type.
+        /// Gets or sets the <see cref="Rock.Model.GroupType"/> that this GroupRole belongs to.
         /// </summary>
         /// <value>
-        /// A <see cref="GroupType"/> object.
+        /// The <see cref="Rock.Model.GroupType"/> that this GroupRole belongs to.
         /// </value>
         public virtual GroupType GroupType { get; set; }
 
@@ -115,10 +121,10 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Returns a <see cref="System.String" /> containing Name of the GroupRole that represents this instance.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
+        /// A <see cref="System.String" /> containing the Name of the GroupRole that represents this instance.
         /// </returns>
         public override string ToString()
         {
