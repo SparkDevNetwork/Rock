@@ -100,8 +100,10 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
 });
 
 ";
-
-            ScriptManager.RegisterStartupScript( hfGroupTypeGuid, hfGroupTypeGuid.GetType(), "CheckinGroupTypeEditorScript", script, true );
+            if ( !Page.IsPostBack )
+            {
+                ScriptManager.RegisterStartupScript( hfGroupTypeGuid, hfGroupTypeGuid.GetType(), "CheckinGroupTypeEditorScript", script, true );
+            }
 
             CreateGroupTypeAttributeControls();
         }
