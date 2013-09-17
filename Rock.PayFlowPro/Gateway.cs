@@ -477,7 +477,7 @@ namespace Rock.PayFlowPro
             if ( paymentInfo is ACHPaymentInfo )
             {
                 var ach = paymentInfo as ACHPaymentInfo;
-                var ppBankAccount = new BankAcct( ach.AccountNumber, ach.RoutingNumber );
+                var ppBankAccount = new BankAcct( ach.BankAccountNumber, ach.BankRoutingNumber );
                 ppBankAccount.AcctType = ach.AccountType == BankAccountType.Checking ? "C" : "S";
                 ppBankAccount.Name = ach.BankName;
                 return new ACHTender( ppBankAccount );
@@ -493,7 +493,7 @@ namespace Rock.PayFlowPro
             if ( paymentInfo is ReferencePaymentInfo )
             {
                 var reference = paymentInfo as ReferencePaymentInfo;
-                if ( reference.PaymentMethod == PaymentMethod.ACH )
+                if ( reference.InitialPaymentMethod == PaymentMethod.ACH )
                 {
                     return new ACHTender( (BankAcct)null );
                 }
