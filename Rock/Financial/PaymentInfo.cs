@@ -70,5 +70,15 @@ namespace Rock.Financial
         /// The billing zip
         /// </summary>
         public string Zip { get; set; }
+
+        /// <summary>
+        /// Gets the payment method.
+        /// </summary>
+        public virtual string PaymentMethod { get { return string.Empty; } }
+
+        /// <summary>
+        /// Gets the account number.
+        /// </summary>
+        public virtual string AccountNumber { get { return string.Empty; } }
     }
 }

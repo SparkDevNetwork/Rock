@@ -19,12 +19,12 @@ namespace Rock.Financial
         /// <summary>
         /// The account number
         /// </summary>
-        public string AccountNumber { get; set; }
+        public string BankAccountNumber { get; set; }
 
         /// <summary>
         /// The routing number
         /// </summary>
-        public string RoutingNumber { get; set; }
+        public string BankRoutingNumber { get; set; }
 
         /// <summary>
         /// The account type
@@ -43,17 +43,32 @@ namespace Rock.Financial
         /// <summary>
         /// Initializes a new instance of the <see cref="ACHPaymentInfo"/> class.
         /// </summary>
-        /// <param name="accountNumber">The account number.</param>
-        /// <param name="routingNumber">The routing number.</param>
+        /// <param name="bankAccountNumber">The account number.</param>
+        /// <param name="bankRoutingNumber">The routing number.</param>
         /// <param name="accountType">Type of the account.</param>
-        public ACHPaymentInfo( string accountNumber, string routingNumber, BankAccountType accountType )
+        public ACHPaymentInfo( string bankAccountNumber, string bankRoutingNumber, BankAccountType accountType )
             : this()
         {
-            AccountNumber = accountNumber;
-            RoutingNumber = routingNumber;
+            BankAccountNumber = bankAccountNumber;
+            BankRoutingNumber = bankRoutingNumber;
             AccountType = accountType;
         }
-            
+
+        /// <summary>
+        /// Gets the payment method.
+        /// </summary>
+        public override string PaymentMethod 
+        {
+            get { return "Bank Account (ACH)"; }
+        }
+
+        /// <summary>
+        /// Gets the account number.
+        /// </summary>
+        public override string AccountNumber 
+        {
+            get { return BankAccountNumber.Masked(); }
+        }
     }
 
     /// <summary>

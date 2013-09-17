@@ -27,5 +27,21 @@ namespace Rock.Financial
         {
             SwipeInfo = swipeInfo;
         }
+
+        /// <summary>
+        /// Gets the payment method.
+        /// </summary>
+        public override string PaymentMethod
+        {
+            get { return "Credit Card"; }
+        }
+
+        /// <summary>
+        /// Gets the account number.
+        /// </summary>
+        public override string AccountNumber
+        {
+            get { return "Swiped"; }
+        }
     }
 }

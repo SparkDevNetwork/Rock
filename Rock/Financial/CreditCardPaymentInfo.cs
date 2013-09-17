@@ -79,5 +79,20 @@ namespace Rock.Financial
             ExpirationDate = expirationDate;
         }
 
+        /// <summary>
+        /// Gets the payment method.
+        /// </summary>
+        public override string PaymentMethod
+        {
+            get { return "Credit Card"; }
+        }
+
+        /// <summary>
+        /// Gets the account number.
+        /// </summary>
+        public override string AccountNumber
+        {
+            get { return Number.Masked(); }
+        }
     }
 }

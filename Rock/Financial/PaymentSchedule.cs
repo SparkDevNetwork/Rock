@@ -51,5 +51,11 @@ namespace Rock.Financial
         /// The number of payments.
         /// </value>
         public int? NumberOfPayments { get; set; }
+
+        public override string ToString()
+        {
+            return string.Format( "{0} starting on {1}",
+                TransactionFrequencyValue.Description, StartDate );
+        }
     }
 }
