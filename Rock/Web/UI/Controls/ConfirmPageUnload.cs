@@ -68,11 +68,7 @@ namespace Rock.Web.UI.Controls
     }})
 ", this.ClientID, this.ParentUpdatePanel().ClientID );
 
-
-            if ( !Page.IsPostBack )
-            {
-                ScriptManager.RegisterStartupScript( this, this.GetType(), "ConfirmPageUnload", script, true );
-            }
+            ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "ConfirmPageUnload", script, true );
         }
 
         /// <summary>
