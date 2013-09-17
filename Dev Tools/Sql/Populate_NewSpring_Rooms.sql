@@ -261,6 +261,7 @@ INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[Tak
 VALUES (0, 'Fuse', NEWID(), 1, 0, 0, 0, 0, 0, 0, 0, @GradeTypeId, NULL)
 SET @FuseTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@TopLevelGroupTypeId, @FuseTypeId);
+INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid]) VALUES (0, @GroupTypeAttributeAgeRange, @FuseTypeId, 0, '11,19.99', NEWID())
 INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
 VALUES ( 0, @IntegerFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @FuseTypeId, 'Gender', 'Gender', 1, 0, 0, 0, NEWID(), 'Defines the gender required to check into these group types.' )
 SET @GenderAttributeId = SCOPE_IDENTITY()
