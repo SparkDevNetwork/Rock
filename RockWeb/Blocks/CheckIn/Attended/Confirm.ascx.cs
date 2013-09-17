@@ -67,57 +67,33 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// </summary>
         protected void BindGrid()
         {
-            var selectedPeopleList = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault().People.Where( p => p.Selected ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
+            var selectedPeopleList = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
+                .People.Where( p => p.Selected ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
             var checkInGrid = new System.Data.DataTable();
-            checkInGrid.Columns.Add( "Id", typeof(int) );
+            checkInGrid.Columns.Add( "PersonId", typeof(int) );
             checkInGrid.Columns.Add( "Name", typeof(string) );
-            checkInGrid.Columns.Add( "AssignedTo", typeof(string) );
-            checkInGrid.Columns.Add( "Time", typeof(string) );
-            checkInGrid.Columns.Add( "LocationId", typeof( int ) );
-
+            checkInGrid.Columns.Add( "Location", typeof(string) );
+            checkInGrid.Columns.Add( "LocationId", typeof(int) );
+            checkInGrid.Columns.Add( "Schedule", typeof(string) );
+            checkInGrid.Columns.Add( "ScheduleId", typeof(int) );
+            
             foreach ( var person in selectedPeopleList )
             {
                 int personId = person.Person.Id;
                 string personName = person.Person.FullName;
-                //var assignments = person.GroupTypes.Where( gt => gt.Selected )
-                //    .SelectMany( gt => gt.Groups ).Where( g => g.Selected )
-                //    .Select( g => new {
-                //        Id = personId,
-                //        Name = personName,
-                //        AssignedTo = g.Group.Name,
-                //        Time = g.Locations.Where( l => l.Selected )
-                //          .Where( l => l.Schedules.Any( s => s.Selected ) )
-                //          .SelectMany( l => l.Schedules.Select( s => s.Schedule.Name ) ).FirstOrDefault()
-                //    } ).ToList();
-                var assignments = person.GroupTypes.Where( gt => gt.Selected )
+                var locations = person.GroupTypes.Where( gt => gt.Selected )
                     .SelectMany( gt => gt.Groups ).Where( g => g.Selected )
-                    .SelectMany( g => g.Locations ).Where( l => l.Selected )
-                    .Select( l => new
-                    {
-                        Id = personId,
-                        Name = personName,
-                        AssignedTo = l.Location.Name,
-                        Time = l.Schedules.Where( s => s.Selected ).Select( s => s.Schedule.Name ).FirstOrDefault(),
-                        LocationId = l.Location.Id.ToString()
-                    } ).ToList();
-
-                foreach ( var assignment in assignments )
+                    .SelectMany( g => g.Locations ).Where( l => l.Selected ).ToList();                    
+                                
+                foreach ( var location in locations )
                 {
-                    checkInGrid.Rows.Add( assignment.Id, assignment.Name, assignment.AssignedTo, assignment.Time, assignment.LocationId );
-                }
-
-                if ( !assignments.Any() )
-                {
-                    checkInGrid.Rows.Add( personId, personName, string.Empty, string.Empty, 0 );   
-                }                        
+                    var schedule = location.Schedules.Where( s => s.Selected ).FirstOrDefault();                    
+                    checkInGrid.Rows.Add( personId, personName, location.Location.Name, location.Location.Id, schedule.Schedule.Name, schedule.Schedule.Id );
+                }                
             }
 
             gPersonList.DataSource = checkInGrid;
             gPersonList.DataBind();
-            
-            gPersonList.CssClass = string.Empty;
-            gPersonList.AddCssClass( "grid-table" );
-            gPersonList.AddCssClass( "table" );
         }
 
         #endregion
@@ -143,26 +119,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             GoNext();
         }
-
-        /// <summary>
-        /// Handles the RowCommand event of the gPersonList control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="GridViewCommandEventArgs"/> instance containing the event data.</param>
-        protected void gPersonList_RowCommand( object sender, GridViewCommandEventArgs e )
-        {
-            if ( e.CommandName == "Print" )
-            {
-                // Retrieve the row index stored in the CommandArgument property.
-                int index = Convert.ToInt32( e.CommandArgument );
-
-                // Retrieve the row that contains the button from the Rows collection.
-                GridViewRow row = gPersonList.Rows[index];
-                // get info about person
-                //PrintLabel( personId, groupTypeId );
-            }
-        }
-
+        
         /// <summary>
         /// Handles the Click event of the lbPrintAll control.
         /// </summary>
@@ -170,8 +127,15 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbPrintAll_Click( object sender, EventArgs e )
         {
-            // Do some crazy printing crap in here where you can print labels for everyone listed in the grid.
-            maWarning.Show( "If there was any code in here you would have just printed all the labels", ModalAlertType.Information );
+            SaveAttendance();
+            foreach ( DataKey dataKey in gPersonList.DataKeys )
+            {               
+                //var dataKeyValues = gPersonList.DataKeys[index].Values;
+                var personId = Convert.ToInt32( dataKey["PersonId"] );
+                var locationId = Convert.ToInt32( dataKey["LocationId"] );
+                var scheduleId = Convert.ToInt32( dataKey["ScheduleId"] );
+                PrintLabel( personId, locationId, scheduleId );               
+            }
         }
 
         /// <summary>
@@ -181,17 +145,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gPersonList_Edit( object sender, RowEventArgs e )
         {
-            // throw the user back to the activity select page for the person they want to edit.
-            int index = e.RowIndex;
-            var row = gPersonList.Rows[index];
-            var dataKeyValues = gPersonList.DataKeys[index].Values;
-            var locationId = dataKeyValues["LocationId"].ToString();
-            var personId = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
-                .People.Where( p => p.Person.Id == e.RowKeyId ).FirstOrDefault().Person.Id.ToString();
-            //var blah = row["AssignedTo"];
+            var dataKeyValues = gPersonList.DataKeys[e.RowIndex].Values;
             var queryParams = new Dictionary<string, string>();
-            queryParams.Add( "personId", personId );
-            queryParams.Add( "locationId", locationId);
+            queryParams.Add( "personId", dataKeyValues["PersonId"].ToString() );
+            queryParams.Add( "locationId", dataKeyValues["LocationId"].ToString() );
             NavigateToLinkedPage( "ActivitySelectPage", queryParams);
         }
 
@@ -202,60 +159,80 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gPersonList_Delete( object sender, RowEventArgs e )
         {
-            // remove person
-            //CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
-            //    .People.Where( p => p.Person.Id == e.RowKeyId ).FirstOrDefault().Selected = false;
-            //BindGrid();
-
-            // just remove the one particular item selected.
-            var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
-                .People.Where( p => p.Person.Id == e.RowKeyId ).FirstOrDefault();
-
-            int index = e.RowIndex;
-            var row = gPersonList.Rows[index];
-            var dataKeyValues = gPersonList.DataKeys[index].Values;
-            var id = int.Parse( dataKeyValues["Id"].ToString() );
-            var assignedTo = dataKeyValues["AssignedTo"].ToString();
-
-            var selectedGroupType = person.GroupTypes.Where( gt => gt.Selected ).FirstOrDefault();
-            var selectedGroup = selectedGroupType.Groups.Where( g => g.Selected && g.Group.Name == assignedTo ).FirstOrDefault();
-            var selectedLocation = selectedGroup.Locations.Where( l => l.Selected && l.Location.Name == assignedTo ).FirstOrDefault();
-            var selectedSchedule = selectedLocation.Schedules.Where( s => s.Selected ).FirstOrDefault();
-
-            selectedGroup.Selected = false;
-            selectedLocation.Selected = false;
+            var dataKeyValues = gPersonList.DataKeys[e.RowIndex].Values;
+            var personId = Convert.ToInt32( dataKeyValues["PersonId"] );
+            var locationId = Convert.ToInt32( dataKeyValues["LocationId"] );
+            var scheduleId = Convert.ToInt32( dataKeyValues["ScheduleId"] );
+            
+            var selectedPerson = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
+                .People.Where( p => p.Person.Id == personId ).FirstOrDefault();
+            var selectedGroups = selectedPerson.GroupTypes.Where( gt => gt.Selected ).SelectMany( gt => gt.Groups );
+            CheckInGroup selectedGroup = selectedGroups.Where( g => g.Selected
+                && g.Locations.Any( l => l.Location.Id == locationId
+                    && l.Schedules.Any( s => s.Schedule.Id == scheduleId ) ) ).FirstOrDefault();
+            CheckInLocation selectedLocation = selectedGroup.Locations.Where( l => l.Selected 
+                && l.Location.Id == locationId 
+                    && l.Schedules.Any( s => s.Schedule.Id == scheduleId ) ).FirstOrDefault();
+            CheckInSchedule selectedSchedule = selectedLocation.Schedules.Where( s => s.Selected 
+                && s.Schedule.Id == scheduleId ).FirstOrDefault();
+            
             selectedSchedule.Selected = false;
-
-            // if there are no groups selected anymore, unselect the group type and the person
-            selectedGroup = person.GroupTypes.Where( gt => gt.Selected ).FirstOrDefault().Groups.Where( g => g.Selected ).FirstOrDefault();
-            if ( selectedGroup == null )
+            selectedLocation.Selected = false;
+            if ( selectedGroups.Count() == 1 )
             {
-                selectedGroupType.Selected = false;
-                person.Selected = false;
+                selectedGroup.Selected = false;
+                selectedPerson.Selected = false;
             }
-
+            
             BindGrid();
-
         }
+
+        /// <summary>
+        /// Handles the RowCommand event of the gPersonList control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridViewCommandEventArgs"/> instance containing the event data.</param>
+        protected void gPersonList_Print( object sender, GridViewCommandEventArgs e )
+        {
+            if ( e.CommandName == "Print" )
+            {
+                SaveAttendance();                
+                int index = Convert.ToInt32( e.CommandArgument );                
+                var dataKeyValues = gPersonList.DataKeys[index].Values;
+                var personId = Convert.ToInt32( dataKeyValues["PersonId"] );
+                var locationId = Convert.ToInt32( dataKeyValues["LocationId"] );
+                var scheduleId = Convert.ToInt32( dataKeyValues["ScheduleId"] );
+                PrintLabel( personId, locationId, scheduleId );
+            }
+        }        
 
         #endregion
 
         #region Internal Methods
+
+        /// <summary>
+        /// Saves the attendance and loads the labels.
+        /// </summary>
+        private void SaveAttendance()
+        {
+            var errors = new List<string>();
+            if ( ProcessActivity( "Save Attendance", out errors ) )
+            {
+                SaveState();
+                NavigateToNextPage();
+            }
+            else
+            {
+                string errorMsg = "<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
+                maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
+            }
+        }
                
         /// <summary>
         /// Goes the back.
         /// </summary>
         private void GoBack()
-        {
-            var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-
-            List<int> peopleIds = new List<int>();
-            foreach ( var person in family.People.Where( p => p.Selected ) )
-            {
-                peopleIds.Add( person.Person.Id );
-            }
-
-
+        {            
             SaveState();
             NavigateToPreviousPage();
         }
@@ -275,12 +252,15 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// Prints the label.
         /// </summary>
         /// <param name="person">The person.</param>
-        private void PrintLabel( int personId, int groupTypeId )
+        private void PrintLabel( int personId, int locationId, int scheduleId )
         {
-            var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).SelectMany( f => f.People )
-                .Where( p => p.Person.Id == personId ).FirstOrDefault();                
-
-            foreach ( var groupType in person.GroupTypes.Where( gt => gt.Selected ).ToList() )
+            CheckInPerson selectedPerson = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
+                    .People.Where( p => p.Person.Id == personId ).FirstOrDefault();
+            List<CheckInGroupType> selectedGroupTypes = selectedPerson.GroupTypes.Where( gt => gt.Selected 
+                && gt.Groups.Any( g => g.Selected && g.Locations.Any( l => l.Location.Id == locationId 
+                    && l.Schedules.Any( s => s.Schedule.Id == scheduleId ) ) ) ).ToList();
+            
+            foreach ( var groupType in selectedGroupTypes )
             {
                 var printFromClient = groupType.Labels.Where( l => l.PrintFrom == Rock.Model.PrintFrom.Client);
                 if ( printFromClient.Any() )
@@ -385,6 +365,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             ScriptManager.RegisterStartupScript( this, this.GetType(), "addLabelScript", script, true );
         }
 
-        #endregion
+        #endregion        
     }
 }

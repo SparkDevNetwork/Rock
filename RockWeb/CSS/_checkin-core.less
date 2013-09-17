@@ -343,15 +343,18 @@ input.checkin-phone-entry
 // --------------------------------------
 
 .attended h1, .attended h2, .attended h3,
-.attended .checkin-header {
+.attended .grid-table thead tr,
+.attended .checkin-header 
+{
     text-align: center;
     margin-top: 2%;
+    margin-bottom: 1%;
 }
 
 .attended .checkin-body 
 {
     text-align: center;
-    margin: 2% auto;
+    margin: 0 auto;
 }
 
 .attended .btn-checkin-select 
@@ -383,10 +386,11 @@ input.checkin-phone-entry
 }
 
 .attended .keyboard .input 
-{
+{   
+    font-weight: inherit;     
     font-size: inherit;
     height: 1.5em;    
-    width: 94%;
+    width: 93%;
 }
 
 .attended .keyboard a.btn 
@@ -480,7 +484,9 @@ input.checkin-phone-entry
     z-index: 10001 !important;
 }
 
-.attended.modal-foreground .checkin-body, .attended.modal-foreground-small .checkin-body, .attended.modal-foreground-small .checkin-header
+.attended.modal-foreground .checkin-body,
+.attended.modal-foreground-small .checkin-body,
+.attended.modal-foreground-small .checkin-header
 {
     width: 95%;
     margin-left: 3%;

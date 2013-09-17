@@ -71,12 +71,13 @@
                 <h3>Selected</h3>
                 <asp:UpdatePanel ID="pnlSelectedGrid" runat="server" UpdateMode="Conditional">
                 <ContentTemplate>        
-                    <Rock:Grid ID="gSelectedList" runat="server" AllowSorting="true" AllowPaging="false" ShowActionRow="false" ShowHeader="false" DataKeyNames="LocationId, ScheduleId">
+
+                    <Rock:Grid ID="gSelectedList" runat="server" ShowHeader="false" DataKeyNames="LocationId, ScheduleId" DisplayType="Light">
                     <Columns>
                         <asp:BoundField DataField="Schedule" />
-                        <asp:BoundField DataField="Location" />
-                        <asp:BoundField DataField="LocationId" Visible="false" />
                         <asp:BoundField DataField="ScheduleId" Visible="false" />
+                        <asp:BoundField DataField="Location" />
+                        <asp:BoundField DataField="LocationId" Visible="false" />                        
                         <Rock:DeleteField OnClick="gSelectedList_Delete" ControlStyle-CssClass="btn btn-large btn-primary" />
                     </Columns>
                     </Rock:Grid>
