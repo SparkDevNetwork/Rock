@@ -268,14 +268,14 @@ SET @GenderAttributeId = SCOPE_IDENTITY()
 
 -- Middle School
 INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[InheritedGroupTypeId],[GroupTypePurposeValueId]) 
-VALUES (0, 'Middle School', NEWID(), 1, 0, 0, 0, 0, 0, 0, 0, @GradeTypeId, NULL)
+VALUES (0, 'Middle School', NEWID(), 1, 0, 0, 0, 0, 0, 0, 0, @FuseTypeId, NULL)
 SET @MSTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@FuseTypeId, @MSTypeId);
 INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid]) VALUES (0, @GroupTypeAttributeAgeRange, @MSTypeId, 0, '11.0,14.0', NEWID())
 
 -- High School
 INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[InheritedGroupTypeId],[GroupTypePurposeValueId]) 
-VALUES (0, 'High School', NEWID(), 1, 0, 0, 0, 0, 0, 0, 0, @GradeTypeId, NULL)
+VALUES (0, 'High School', NEWID(), 1, 0, 0, 0, 0, 0, 0, 0, @FuseTypeId, NULL)
 SET @HSTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@FuseTypeId, @HSTypeId);
 INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid]) VALUES (0, @GroupTypeAttributeAgeRange, @HSTypeId, 0, '14.0,19.99', NEWID())
