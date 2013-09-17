@@ -13,160 +13,138 @@
 
 // 1. Header
 // -------------------------
-.persondetails-header .navbar-inner
-{
+.persondetails-header {
     padding-bottom: 24px;
-}
+    background-color: @accent-light-color;
+    border-bottom: 1px solid darken(@accent-light-color, @const-border-darken-amt);
 
+    .actions { // edit individual button
+        position: absolute;
+        right: 12px;
+        margin-top: 50px;
+    }
 
-.persondetails-header .navbar-inner {
-	background-color: @accent-light-color; 
-	border-bottom: 1px solid darken(@accent-light-color, @const-border-darken-amt);
-	background-image: none;
-    filter: initial;
-}
+    .labels {
+        margin-top: 11px;
+        text-align: right;
+    }
 
-// edit individual button
-.persondetails-header .actions 
-{
-    position: absolute; 
-    right: 12px; 
-    z-order: 99;
-    margin-top: 50px;
-}
+    .photo {
+        padding: 5px 5px 5px 5px;
+        background-color: #fff;
+        border: 1px solid #bdbdbd;
+        display: table;
+        width: 100%;
+        max-width: 200px;
 
+        img {
+            width: 100%;
+        }
+    }
 
-.persondetails-header .label
-{
-    margin-top: 11px;
-}
+    .demographics {
+        margin-top: 44px;
+    }
 
-// actions dropdown
-.navbar .nav > li > a.persondetails-actions,
-.navbar .nav li.dropdown.open > a.persondetails-actions {
-    color: @accent-light-text-color;
-    padding-bottom: 6px;
-}
+    ul.phonenumbers {
+        list-style: none;
+        padding-left: 0;
+    }
 
-.persondetails .navbar .nav > li > a:hover,
-.persondetails .navbar .nav > li > a:focus
-{
-    color: inherit;
-}
+    // style actions dropdown 
+    a.persondetails-actions.dropdown-toggle {
+        color: @accent-light-text-color;
+        padding: 2px 15px;
 
-.persondetails .navbar .nav li.dropdown > .dropdown-toggle .caret
-{
-    border-top: 4px solid @accent-light-text-color;
-}
+        .caret {
+            border-top: 4px solid @accent-light-text-color;
+        }
 
-.persondetails .navbar .nav > li > a:hover .caret,
-.persondetails .navbar .nav > li > a:focus .caret
-{
-    border-top: 4px solid lighten(@accent-light-text-color, 20%);
-}
+        &:hover, &:focus {
+            color: lighten(@accent-light-text-color, 10%);
+        }
 
-.persondetails-header .photo
-{
-    padding: 5px 5px 5px 5px;
-    background-color: #fff;
-    border: 1px solid #bdbdbd;
-    display: table;
-    width: 100%;
-    max-width: 300px;
-}
+        &:hover .caret, &:focus .caret {
+            border-top: 4px solid lighten(@accent-light-text-color, 10%);
+        }
+    }
 
-.persondetails-header .photo img
-{
-    width: 100%;
-}
-
-.persondetails-header .demographics
-{
-    margin-top: 44px;
-}
-
-.persondetails-header .phone
-{
-    margin-bottom: 12px;
-}
-
-// 2. Badge Bar
-// -------------------------
-
-.persondetails-badgebar .navbar-inner
-{
-    background-color: @accent-color;
-    background-image: none;
-    box-shadow: none;
-    border: 0;
-    min-height: 50px;
-    border-bottom: 1px solid darken(@accent-color, @const-border-darken-amt);
-}
-
-.persondetails-badgebar .badge-group
-{
-    margin: 10px 0;
-}
-
-.persondetails-badgebar .badge-group:last-child
-{
-    text-align: right;
-}
-
-@media (max-width: 767px) {
-	.persondetails-badgebar .badge-group:last-child
-    {
+    .dropdown-menu {
         text-align: left;
     }
 }
 
-.persondetails-badgebar .badge
+
+// 2. Badge Bar
+// -------------------------
+
+.persondetails-badgebar
 {
-    background-color: inherit;
+    background-color: @accent-color;
+    min-height: 50px;
+    border-bottom: 1px solid darken(@accent-color, @const-border-darken-amt);
+
+    .badge-group {
+        margin: 10px 0;
+
+        &:last-child {
+            text-align: right;
+        }
+
+        .badge { // might take this out when we get real badges
+            background-color: inherit;
+        }
+    }
 }
+
 
 // 3. Family Bar
 // -------------------------
 
-.persondetails-familybar .navbar-inner
-{
+.persondetails-familybar {
     background: @accent-color;
     padding: 12px 0;
     border-bottom: 1px solid darken(@accent-color, @const-border-darken-amt);
+
+    .actions { // edit family button
+        position: absolute; 
+        right: 12px; 
+        z-order: 99;
+    }
+
+    .members {
+        header {
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        ul {
+            list-style: none;
+            margin: 6px 0;
+
+            li {
+                float: left;
+                margin-right: 12px;
+                margin-bottom: 12px;
+                min-width: 150px;
+
+                a {
+                    color: #515151;
+                }
+
+                img {
+                    float: left;
+                    border: 1px solid #fff;
+                    max-width: 37px;
+                    max-height: 37px;
+                }
+            }
+        }
+
+
+    }
 }
 
-.persondetails-familybar .members header
-{
-    font-size: 16px;
-    margin-bottom: 12px;
-}
-
-.persondetails-familybar .members ul
-{
-    list-style: none;
-    margin: 6px 0;
-}
-
-.persondetails-familybar .members li
-{
-    float: left;
-    margin-right: 12px;
-    margin-bottom: 12px;
-    min-width: 150px;
-}
-
-.persondetails-familybar .members li a
-{
-    color: #515151;
-}
-
-.persondetails-familybar .members li img
-{
-    float: left;
-    border: 1px solid #fff;
-    max-width: 37px;
-    max-height: 37px;
-}
 
 .persondetails-familybar .member
 {
@@ -234,13 +212,6 @@
 .persondetails-familybar .address .actions a
 {
     padding: 1px;
-}
-
-.persondetails-familybar .container-fluid > .actions
-{
-    position: absolute; 
-    right: 12px; 
-    z-order: 99;
 }
 
 

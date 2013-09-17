@@ -7,12 +7,12 @@
             <ItemTemplate>
 
                     <div class="actions" style="display: none;">
-                        <asp:HyperLink ID="hlEditFamily" runat="server" CssClass="edit btn btn-mini"><i class="icon-pencil"></i> Edit Family</asp:HyperLink>
+                        <asp:HyperLink ID="hlEditFamily" runat="server" CssClass="edit btn btn-xs"><i class="icon-pencil"></i> Edit Family</asp:HyperLink>
                     </div>
 
-                    <div class="row-fluid">
+                    <div class="row">
                 
-                        <div class="span8 members clearfix">
+                        <div class="col-md-8 members clearfix">
 
                             <header class="title"><span class="first-word"><%# Eval("Name") %></span> Family</header>
 
@@ -26,7 +26,6 @@
                                                 <div class="member">
                                                     <h4><%# Eval("Person.FirstName") %></h4>
                                                     <small class="age"><%# Eval("Person.Age")  %></small>
-                                                    <small><%# Eval("GroupRole.Name")  %></small>
                                                 </div>
                                             </a>
                                         </li>
@@ -37,7 +36,7 @@
 
                         </div>
 
-                        <div class="span4 addresses clearfix">
+                        <div class="col-md-4 addresses clearfix">
 
                             <ul>
 
