@@ -34,20 +34,34 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="DotLiquid, Version=1.7.0.0, Culture=neutral, PublicKeyToken=82e46016ecf9f07c, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\libs\DotLiquid v1.7.0\NET40\DotLiquid.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\EntityFramework.6.0.0-rc1\lib\net45\EntityFramework.dll</HintPath>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer">
+      <HintPath>..\packages\EntityFramework.6.0.0-rc1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+    </Reference>
     <Reference Include="MigraDoc.DocumentObjectModel-WPF, Version=1.32.3885.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\libs\PDFsharp-MigraDocFoundation-Assemblies-1_32\WPF\MigraDoc.DocumentObjectModel-WPF.dll</HintPath>
+      <HintPath>..\..\..\libs\MigraDoc-1.32-patch-pakeha_by\_debug\MigraDoc.DocumentObjectModel-WPF.dll</HintPath>
     </Reference>
     <Reference Include="MigraDoc.Rendering-WPF, Version=1.32.3885.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\libs\PDFsharp-MigraDocFoundation-Assemblies-1_32\WPF\MigraDoc.Rendering-WPF.dll</HintPath>
+      <HintPath>..\..\..\libs\MigraDoc-1.32-patch-pakeha_by\_debug\MigraDoc.Rendering-WPF.dll</HintPath>
     </Reference>
-    <Reference Include="PdfSharp-WPF, Version=1.32.2608.0, Culture=neutral, PublicKeyToken=f94615aa0424f9eb, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\libs\PDFsharp-MigraDocFoundation-Assemblies-1_32\WPF\PdfSharp-WPF.dll</HintPath>
+    <Reference Include="MigraDoc.RtfRendering-WPF">
+      <HintPath>..\..\..\libs\MigraDoc-1.32-patch-pakeha_by\_debug\MigraDoc.RtfRendering-WPF.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.Services" />
+    <Reference Include="System.Data.Services.Client" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Core" />
@@ -97,11 +111,15 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <None Include="web.ConnectionStrings.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
