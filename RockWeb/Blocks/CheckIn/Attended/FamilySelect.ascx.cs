@@ -489,6 +489,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             checkInFamily.SubCaption = string.Join( ",", familyGroup.Members.Select( gm => gm.Person.FirstName ) );
             checkInFamily.Selected = true;
 
+            CurrentCheckInState.CheckIn.Families.Clear();
             CurrentCheckInState.CheckIn.Families.Add( checkInFamily );
             lvFamily.DataSource = CurrentCheckInState.CheckIn.Families.OrderBy( f => f.Caption ).ToList();
             lvFamily.DataBind();
@@ -496,7 +497,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             lvPerson.DataSource = checkInFamily.People.OrderBy( p => p.Person.FullNameLastFirst ).ToList();
             lvPerson.DataBind();
-            pnlSelectPerson.Update();            
+            pnlSelectPerson.Update();
+
+            lvVisitor.DataSource = null;
+            lvVisitor.DataBind();
+            pnlSelectVisitor.Update();
         }
 
         /// <summary>

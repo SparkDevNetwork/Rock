@@ -342,6 +342,13 @@ input.checkin-phone-entry
 // 5. Attended Check-In Styles
 // --------------------------------------
 
+body {
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
 .attended h1, .attended h2, .attended h3,
 .attended .grid-table thead tr,
 .attended .checkin-header
@@ -432,7 +439,7 @@ input.checkin-phone-entry
 .attended table td
 {
 	border: none;
-    padding: 0.355em;  
+    padding: 0.255em;  
 	vertical-align: middle;
 	text-align: center;    
 }
@@ -471,7 +478,7 @@ input.checkin-phone-entry
 
 .attended.modal-foreground
 {
-    background: @rockBackgroundColor;
+    background: rgba(255,255,255,.8);
     width: 80%;
     height: 75%;    
     -moz-border-radius: 10px;
