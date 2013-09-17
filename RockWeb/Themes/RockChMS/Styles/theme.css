@@ -4278,7 +4278,7 @@ input[type="button"].btn-block {
   height: 0;
   margin-left: 2px;
   vertical-align: middle;
-  border-top: 4px solid #000000;
+  border-top: 4px solid #ff0000;
   border-right: 4px solid transparent;
   border-left: 4px solid transparent;
   border-bottom: 0 dotted;
@@ -4384,7 +4384,7 @@ input[type="button"].btn-block {
 .dropup .caret,
 .navbar-fixed-bottom .dropdown .caret {
   border-top: 0 dotted;
-  border-bottom: 4px solid #000000;
+  border-bottom: 4px solid #ff0000;
   content: "";
 }
 .dropup .dropdown-menu,
@@ -8872,39 +8872,19 @@ dl dd {
     6. Misc Items
 
 */
-.persondetails-header .navbar-inner {
+.persondetails-header {
   padding-bottom: 24px;
-}
-.persondetails-header .navbar-inner {
   background-color: #e7ecf0;
   border-bottom: 1px solid #c8d3dc;
-  background-image: none;
-  filter: initial;
 }
 .persondetails-header .actions {
   position: absolute;
   right: 12px;
-  z-order: 99;
   margin-top: 50px;
 }
-.persondetails-header .label {
+.persondetails-header .labels {
   margin-top: 11px;
-}
-.navbar .nav > li > a.persondetails-actions,
-.navbar .nav li.dropdown.open > a.persondetails-actions {
-  color: #515151;
-  padding-bottom: 6px;
-}
-.persondetails .navbar .nav > li > a:hover,
-.persondetails .navbar .nav > li > a:focus {
-  color: inherit;
-}
-.persondetails .navbar .nav li.dropdown > .dropdown-toggle .caret {
-  border-top: 4px solid #515151;
-}
-.persondetails .navbar .nav > li > a:hover .caret,
-.persondetails .navbar .nav > li > a:focus .caret {
-  border-top: 4px solid #848484;
+  text-align: right;
 }
 .persondetails-header .photo {
   padding: 5px 5px 5px 5px;
@@ -8912,7 +8892,7 @@ dl dd {
   border: 1px solid #bdbdbd;
   display: table;
   width: 100%;
-  max-width: 300px;
+  max-width: 200px;
 }
 .persondetails-header .photo img {
   width: 100%;
@@ -8920,14 +8900,30 @@ dl dd {
 .persondetails-header .demographics {
   margin-top: 44px;
 }
-.persondetails-header .phone {
-  margin-bottom: 12px;
+.persondetails-header ul.phonenumbers {
+  list-style: none;
+  padding-left: 0;
 }
-.persondetails-badgebar .navbar-inner {
+.persondetails-header a.persondetails-actions.dropdown-toggle {
+  color: #515151;
+  padding: 2px 15px;
+}
+.persondetails-header a.persondetails-actions.dropdown-toggle .caret {
+  border-top: 4px solid #515151;
+}
+.persondetails-header a.persondetails-actions.dropdown-toggle:hover,
+.persondetails-header a.persondetails-actions.dropdown-toggle:focus {
+  color: #6a6a6a;
+}
+.persondetails-header a.persondetails-actions.dropdown-toggle:hover .caret,
+.persondetails-header a.persondetails-actions.dropdown-toggle:focus .caret {
+  border-top: 4px solid #6a6a6a;
+}
+.persondetails-header .dropdown-menu {
+  text-align: left;
+}
+.persondetails-badgebar {
   background-color: #d9e1e8;
-  background-image: none;
-  box-shadow: none;
-  border: 0;
   min-height: 50px;
   border-bottom: 1px solid #b9c8d5;
 }
@@ -8937,18 +8933,18 @@ dl dd {
 .persondetails-badgebar .badge-group:last-child {
   text-align: right;
 }
-@media (max-width: 767px) {
-  .persondetails-badgebar .badge-group:last-child {
-    text-align: left;
-  }
-}
-.persondetails-badgebar .badge {
+.persondetails-badgebar .badge-group .badge {
   background-color: inherit;
 }
-.persondetails-familybar .navbar-inner {
+.persondetails-familybar {
   background: #d9e1e8;
   padding: 12px 0;
   border-bottom: 1px solid #b9c8d5;
+}
+.persondetails-familybar .actions {
+  position: absolute;
+  right: 12px;
+  z-order: 99;
 }
 .persondetails-familybar .members header {
   font-size: 16px;
@@ -8958,16 +8954,16 @@ dl dd {
   list-style: none;
   margin: 6px 0;
 }
-.persondetails-familybar .members li {
+.persondetails-familybar .members ul li {
   float: left;
   margin-right: 12px;
   margin-bottom: 12px;
   min-width: 150px;
 }
-.persondetails-familybar .members li a {
+.persondetails-familybar .members ul li a {
   color: #515151;
 }
-.persondetails-familybar .members li img {
+.persondetails-familybar .members ul li img {
   float: left;
   border: 1px solid #fff;
   max-width: 37px;
@@ -9020,11 +9016,6 @@ dl dd {
 }
 .persondetails-familybar .address .actions a {
   padding: 1px;
-}
-.persondetails-familybar .container-fluid > .actions {
-  position: absolute;
-  right: 12px;
-  z-order: 99;
 }
 .pagetabs {
   margin-top: 12px;
@@ -10445,7 +10436,6 @@ fieldset .actions {
     width: 28%;
   }
 }
-/* panel */
 /* creates a border color by darkening the background by this amount */
 /* admin bar */
 /* tooltip */

@@ -1,13 +1,14 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Bio.ascx.cs" Inherits="RockWeb.Blocks.Crm.PersonDetail.Bio" %>
 
 <div class="actions" style="display: none;">
-    <asp:LinkButton ID="lbEditPerson" runat="server" CssClass="edit btn btn-mini" OnClick="lbEditPerson_Click"><i class="icon-pencil"></i> Edit Individual</asp:LinkButton>
+    <asp:LinkButton ID="lbEditPerson" runat="server" CssClass="edit btn btn-xs" OnClick="lbEditPerson_Click"><i class="icon-pencil"></i> Edit Individual</asp:LinkButton>
 </div>
-<div class="row-fluid">
-	<div class="span6">
+
+<div class="row">
+	<div class="col-md-6">
 		<h1 class="title"><asp:Literal ID="lName" runat="server" /></h1>
 	</div>
-    <div class="span6 labels">
+    <div class="col-md-6 labels">
 
         <Rock:PersonProfileBadgeList id="blStatus" runat="server" />
 
@@ -32,14 +33,14 @@
 
     </div>
 </div> <!-- end row -->
-<div class="row-fluid">
-	<div class="span2">
+<div class="row">
+	<div class="col-md-2">
         <div class="photo">
             <asp:PlaceHolder ID="phImage" runat="server"></asp:PlaceHolder>
         </div>
     </div>
 
-    <div class="span4">
+    <div class="col-md-4">
         <div class="summary">
             <div class="tags clearfix">
                 <Rock:TagList ID="tlPersonTags" runat="server" />
@@ -53,7 +54,7 @@
         </div>
     </div>
 
-    <div class="span6">
+    <div class="col-md-6">
         <div class="personcontact">
 
             <ul class="unstyled phonenumbers">
