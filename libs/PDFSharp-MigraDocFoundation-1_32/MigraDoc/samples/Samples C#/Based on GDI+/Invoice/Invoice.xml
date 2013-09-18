@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<invoice>
+  <number>42</number>
+  <date>2005-12-06</date>
+  <from>
+    <name>
+      <prefix></prefix>
+      <givenName></givenName>
+      <middleName></middleName>
+      <surname></surname>
+      <suffix></suffix>
+      <singleName></singleName>
+    </name>
+    <address>
+      <line1></line1>
+      <line2></line2>
+      <line3></line3>
+      <line4></line4>
+      <city></city>
+      <stateProvince></stateProvince>
+      <postalCode></postalCode>
+      <country></country>
+    </address>
+    <identificationNumber></identificationNumber>
+    <emailAddressPrimary></emailAddressPrimary>
+    <emailAddressSecondary></emailAddressSecondary>
+    <telephoneNumberWork></telephoneNumberWork>
+    <telephoneNumberHome></telephoneNumberHome>
+    <telephoneNumberCell></telephoneNumberCell>
+    <telephoneNumberPager></telephoneNumberPager>
+    <faxNumber></faxNumber>
+    <jobTitle></jobTitle>
+    <officeLocation></officeLocation>
+    <department></department>
+    <webSite></webSite>
+    <ftpSite></ftpSite>
+    <company>
+      <name></name>
+      <address>
+        <line1></line1>
+        <line2></line2>
+        <line3></line3>
+        <line4></line4>
+        <city></city>
+        <stateProvince></stateProvince>
+        <postalCode></postalCode>
+        <country></country>
+      </address>
+      <identificationNumber></identificationNumber>
+      <telephoneNumber></telephoneNumber>
+      <faxNumber></faxNumber>
+      <emailAddressPrimary></emailAddressPrimary>
+      <webSite></webSite>
+      <ftpSite></ftpSite>
+      <telex></telex>
+    </company>
+  </from>
+  <to>
+    <name>
+      <prefix></prefix>
+      <givenName></givenName>
+      <middleName></middleName>
+      <surname></surname>
+      <suffix></suffix>
+      <singleName>Peter Smith</singleName>
+    </name>
+    <address>
+      <line1>Main Street 123</line1>
+      <line2></line2>
+      <line3></line3>
+      <line4></line4>
+      <city>Munich</city>
+      <stateProvince></stateProvince>
+      <postalCode>81539</postalCode>
+      <country>Germany</country>
+    </address>
+    <identificationNumber></identificationNumber>
+    <emailAddressPrimary></emailAddressPrimary>
+    <emailAddressSecondary></emailAddressSecondary>
+    <telephoneNumberWork></telephoneNumberWork>
+    <telephoneNumberHome></telephoneNumberHome>
+    <telephoneNumberCell></telephoneNumberCell>
+    <telephoneNumberPager></telephoneNumberPager>
+    <faxNumber></faxNumber>
+    <jobTitle></jobTitle>
+    <officeLocation></officeLocation>
+    <department></department>
+    <webSite></webSite>
+    <ftpSite></ftpSite>
+    <company>
+      <name></name>
+      <address>
+        <line1></line1>
+        <line2></line2>
+        <line3></line3>
+        <line4></line4>
+        <city></city>
+        <stateProvince></stateProvince>
+        <postalCode></postalCode>
+        <country></country>
+      </address>
+      <identificationNumber></identificationNumber>
+      <telephoneNumber></telephoneNumber>
+      <faxNumber></faxNumber>
+      <emailAddressPrimary></emailAddressPrimary>
+      <webSite></webSite>
+      <ftpSite></ftpSite>
+      <telex></telex>
+    </company>
+  </to>
+  <currency>
+    <name>EUR</name>
+    <symbol>€</symbol>
+  </currency>
+  <items>
+    <item>
+      <itemNumber>1</itemNumber>
+      <title>PDF Reference Version 1.6 (5th Edition)</title>
+      <author>Adobe Systems Inc.</author>
+      <isbn>0321304748</isbn>
+      <quantity>2</quantity>
+      <discount>5</discount>
+      <price>37.00</price>
+      <percentageTax></percentageTax>
+      <taxable></taxable>
+      <extendedPrice></extendedPrice>
+      <extendedPricePlusTax></extendedPricePlusTax>
+    </item>
+    <item>
+      <itemNumber>1</itemNumber>
+      <title>iText in Action - Creating and Manipulating PDF</title>
+      <author>Bruno Lowagie</author>
+      <isbn>1932394796</isbn>
+      <quantity>1</quantity>
+      <discount>5</discount>
+      <price>36.95</price>
+      <percentageTax></percentageTax>
+      <taxable></taxable>
+      <extendedPrice></extendedPrice>
+      <extendedPricePlusTax></extendedPricePlusTax>
+    </item>
+    <item>
+      <itemNumber>2</itemNumber>
+      <title>The C# Programming Language</title>
+      <author>Anders Hejlsberg, Peter Golde, Scott Wiltamuth</author>
+      <isbn>0321154916</isbn>
+      <quantity>5</quantity>
+      <discount>10</discount>
+      <price>23</price>
+      <percentageTax></percentageTax>
+      <taxable></taxable>
+      <extendedPrice></extendedPrice>
+      <extendedPricePlusTax></extendedPricePlusTax>
+    </item>
+    <item>
+      <itemNumber>3</itemNumber>
+      <title>The Elegant Universe: Superstrings, Hidden Dimensions, and the Quest for the Ultimate Theory</title>
+      <author>Brian Greene</author>
+      <isbn>0393058581</isbn>
+      <quantity>1</quantity>
+      <discount></discount>
+      <price>17.90</price>
+      <percentageTax></percentageTax>
+      <taxable></taxable>
+      <extendedPrice></extendedPrice>
+      <extendedPricePlusTax></extendedPricePlusTax>
+    </item>
+    <item>
+      <itemNumber>4</itemNumber>
+      <title>'Surely You're Joking, Mr. Feynman!' (Adventures of a Curious Character)</title>
+      <author>Richard P. Feynman, Ralph Leighton</author>
+      <isbn>0393316041</isbn>
+      <quantity>3</quantity>
+      <discount></discount>
+      <price>9.80</price>
+      <percentageTax></percentageTax>
+      <taxable></taxable>
+      <extendedPrice></extendedPrice>
+      <extendedPricePlusTax></extendedPricePlusTax>
+    </item>
+    <item>
+      <itemNumber>5</itemNumber>
+      <title>The Mind's I</title>
+      <author>Douglas R. Hofstadter, Daniel C. Dennett</author>
+      <isbn>014006253X</isbn>
+      <quantity>1</quantity>
+      <discount></discount>
+      <price>29.90</price>
+      <percentageTax></percentageTax>
+      <taxable></taxable>
+      <extendedPrice></extendedPrice>
+      <extendedPricePlusTax></extendedPricePlusTax>
+    </item>
+    <item>
+      <itemNumber>6</itemNumber>
+      <title>The Blind Watchmaker: Why the Evidence of Evolution Reveals a Universe Without Design</title>
+      <author>Richard Dawkins</author>
+      <isbn></isbn>
+      <quantity>1</quantity>
+      <discount></discount>
+      <price>11.00</price>
+      <percentageTax></percentageTax>
+      <taxable></taxable>
+      <extendedPrice></extendedPrice>
+      <extendedPricePlusTax></extendedPricePlusTax>
+    </item>
+    <item>
+      <itemNumber>7</itemNumber>
+      <title>How the Mind Works</title>
+      <author>Steven Pinker</author>
+      <isbn>0393045358</isbn>
+      <quantity>1</quantity>
+      <discount></discount>
+      <price>16.30</price>
+      <percentageTax></percentageTax>
+      <taxable></taxable>
+      <extendedPrice></extendedPrice>
+      <extendedPricePlusTax></extendedPricePlusTax>
+    </item>
+    <item>
+      <itemNumber>8</itemNumber>
+      <title>The Origins of Life: From the Birth of Life to the Origin of Language</title>
+      <author>John Maynard Smith, Eörs Szathmáry</author>
+      <isbn>0375727205</isbn>
+      <quantity>1</quantity>
+      <discount></discount>
+      <price>29.45</price>
+      <percentageTax></percentageTax>
+      <taxable></taxable>
+      <extendedPrice></extendedPrice>
+      <extendedPricePlusTax></extendedPricePlusTax>
+    </item>
+  </items>
+  <totals>
+    <totalExtendedPrice></totalExtendedPrice>
+    <taxRate></taxRate>
+    <totalTax></totalTax>
+    <shippingAndHandling></shippingAndHandling>
+    <totalDue></totalDue>
+  </totals>
+  <terms>
+    <term></term>
+    <term></term>
+    <term></term>
+  </terms>
+  <notes>This is a sample invoice created with MigraDoc. The PDF document is rendered with PDFsharp.</notes>
+  <signatures></signatures>
+</invoice>

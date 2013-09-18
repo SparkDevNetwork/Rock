@@ -1,0 +1,10 @@
+﻿<Window x:Class="XDrawing.WpfPreview"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:xyz="clr-namespace:XDrawing"
+    Title="WpfPreview" Height="500" Width="600" Left="800" Top="600" ShowInTaskbar="False" ResizeMode="CanResizeWithGrip" WindowStyle="ThreeDBorderWindow">
+  <Grid>
+    <DocumentViewer Margin="0,0,0,28" Name="documentViewer" />
+    <Button Height="23" HorizontalAlignment="Left" Margin="5,0,0,0" Name="button1" VerticalAlignment="Bottom" Width="75" Click="button1_Click">Invalidate</Button>
+  </Grid>
+</Window>
