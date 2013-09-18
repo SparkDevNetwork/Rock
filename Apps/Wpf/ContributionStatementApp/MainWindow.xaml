@@ -3,9 +3,29 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="MainWindow" Height="350" Width="525">
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+            <ColumnDefinition />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition />
+            <RowDefinition />
+            <RowDefinition />
+        </Grid.RowDefinitions>
         <Button Name="btnShowStatement"
                 Click="btnShowStatement_Click"
                 HorizontalAlignment="Center"
+                Grid.Column="1"
+                Grid.Row="1"
                 Style="{StaticResource buttonStylePrimary}">Show Statement</Button>
+        <Label x:Name="lblReportProgress"
+               Grid.Row="2"
+               Grid.Column="0"
+               Grid.ColumnSpan="3"
+               VerticalAlignment="Top"
+               Visibility="Hidden"
+               Style="{StaticResource labelStyleAlert}"
+               Content="Progress" />
     </Grid>
 </Window>

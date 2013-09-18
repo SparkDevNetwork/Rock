@@ -2,6 +2,9 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              StartupUri="MainWindow.xaml">
+
+    <!--  TODO Move this to a shared dll -->
+    
     <Application.Resources>
     <!-- 
           Label Styles
