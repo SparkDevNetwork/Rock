@@ -6,6 +6,7 @@ using MigraDoc.DocumentObjectModel.Tables;
 using Rock.Model;
 using System.Linq;
 using Rock.Web.Cache;
+using MigraDoc.DocumentObjectModel.Fields;
 
 namespace ContributionStatementApp
 {
@@ -19,6 +20,8 @@ namespace ContributionStatementApp
         /// </summary>
         private Document document;
 
+        private SectionField headerPersonSectionField;
+
         /// <summary>
         /// The text frame of the MigraDoc document that contains the address.
         /// </summary>
@@ -27,7 +30,7 @@ namespace ContributionStatementApp
         /// <summary>
         /// The table of the MigraDoc document that contains the invoice items.
         /// </summary>
-        private Table table;
+        //private Table table;
 
         // migradoc sample colors
         private readonly static Color TableBorder = new Color( 81, 125, 192 );
@@ -38,12 +41,22 @@ namespace ContributionStatementApp
         {
             this.document = new Document();
 
-            this.document.Info.Title = "Contribution Statement - proof of concept";
-            this.document.Info.Subject = "the subject";
-            this.document.Info.Author = "the author";
+            this.document.Info.Title = "Contribution Statement";
+            this.document.Info.Subject = "";
+            this.document.Info.Author = "";
 
             DefineStyles();
-            CreatePage();
+
+            // 
+
+            // Each MigraDoc document needs at least one section.
+            Section section = this.document.AddSection();
+
+            // Create header
+            Paragraph headerParagraph = section.Headers.Primary.AddParagraph();
+            headerParagraph.Format.Font.Bold = true;
+            headerParagraph.AddText( string.Format( "Rock Solid Church Giving Statement\t{0}", "TODO: Aug 1, 2013 - Aug 31, 2013" ) );
+            headerPersonSectionField = headerParagraph.AddSectionField();
 
             FillContent( financialTransactionQry );
 
@@ -85,64 +98,76 @@ namespace ContributionStatementApp
         /// <summary>
         /// Creates the static parts of the invoice.
         /// </summary>
-        private void CreatePage()
+        private void CreateHeaderAndAddresses( Person person )
         {
-            // Each MigraDoc document needs at least one section.
-            Section section = this.document.AddSection();
+            //headerPersonSectionField.A
 
-            // Create header
-            Paragraph headerParagraph = section.Headers.Primary.AddParagraph();
-            headerParagraph.AddFormattedText( "Rock Solid Church Giving Statement", TextFormat.Bold );
-            headerParagraph.AddTab();
+            // Create the text frame for the address
+            TextFrame returnAddressFrame = document.LastSection.AddTextFrame();
+            returnAddressFrame.Height = "3.0cm";
+            returnAddressFrame.Width = "7.0cm";
+            returnAddressFrame.Left = ShapePosition.Left;
+            returnAddressFrame.RelativeHorizontal = RelativeHorizontal.Margin;
+            returnAddressFrame.Top = "7.5in";
+            returnAddressFrame.RelativeVertical = RelativeVertical.Line;
 
-            headerParagraph.AddFormattedText( "Aug 1, 2013 - Aug 31, 2013" );
-            Paragraph headerParagraphLine2 = section.Headers.Primary.AddParagraph();
-            headerParagraphLine2.AddTab();
-            headerParagraphLine2.AddText( "as of " + DateTime.Now.ToShortDateString() );
+            // Populate Return Address Frame
+            Paragraph addressParagraph = returnAddressFrame.AddParagraph();
+            addressParagraph.Format.Font.Name = "Times New Roman";
+            addressParagraph.Format.Font.Size = 7;
+            addressParagraph.AddText( string.Format("{0}\n{1}\n{2}", 
+                person.FullName, 
+                "ToDo Address", 
+                "ToDo City State Zip") );
+            
+        }
 
+        private Table AddTransactionListTable()
+        {
             // Create the item table
-            this.table = section.AddTable();
-            this.table.Style = "Table";
-            this.table.Borders.Visible = true;
-            this.table.Borders.Color = TableBorder;
-            this.table.Borders.Width = 0.25;
-            this.table.Borders.Left.Width = 0.5;
-            this.table.Borders.Right.Width = 0.5;
-            this.table.Rows.LeftIndent = 0;
-            this.table.Format.SpaceBefore = 3;
+            Table result = this.document.Sections[0].AddTable();
+
+            result.Style = "Table";
+            result.Borders.Visible = true;
+            result.Borders.Color = TableBorder;
+            result.Borders.Width = 0.25;
+            result.Borders.Left.Width = 0.5;
+            result.Borders.Right.Width = 0.5;
+            result.Rows.LeftIndent = 0;
+            result.Format.SpaceBefore = 3;
 
             /* Define the columns */
 
             // Date
-            Column column = this.table.AddColumn( "2cm" );
+            Column column = result.AddColumn( "2cm" );
             column.Shading.Color = TableGray;
             column.Borders.Visible = false;
             column.Format.Alignment = ParagraphAlignment.Left;
 
             // Payment Type
-            column = this.table.AddColumn( "2.5cm" );
+            column = result.AddColumn( "2.5cm" );
             column.Borders.Visible = false;
             column.Format.Alignment = ParagraphAlignment.Left;
 
             // Note
-            column = this.table.AddColumn( "6cm" );
+            column = result.AddColumn( "6cm" );
             column.Shading.Color = TableGray;
             column.Borders.Visible = false;
             column.Format.Alignment = ParagraphAlignment.Left;
 
             // Account
-            column = this.table.AddColumn( "3.5cm" );
+            column = result.AddColumn( "3.5cm" );
             column.Borders.Visible = false;
             column.Format.Alignment = ParagraphAlignment.Left;
 
             // Amount
-            column = this.table.AddColumn( "2cm" );
+            column = result.AddColumn( "2cm" );
             column.Shading.Color = TableGray;
             column.Borders.Visible = false;
             column.Format.Alignment = ParagraphAlignment.Right;
 
             // Create the header of the table
-            Row headerRow = table.AddRow();
+            Row headerRow = result.AddRow();
             headerRow.HeadingFormat = true;
             headerRow.Format.Alignment = ParagraphAlignment.Center;
             headerRow.Format.Font.Bold = true;
@@ -159,27 +184,7 @@ namespace ContributionStatementApp
             headerRow.Cells[4].AddParagraph( "Amount" );
             headerRow.Cells[4].Format.Alignment = ParagraphAlignment.Right;
 
-
-            // Create the text frame for the address
-            TextFrame returnAddressFrame = section.AddTextFrame();
-            returnAddressFrame.Height = "3.0cm";
-            returnAddressFrame.Width = "7.0cm";
-            returnAddressFrame.Left = ShapePosition.Left;
-            returnAddressFrame.RelativeHorizontal = RelativeHorizontal.Margin;
-            returnAddressFrame.Top = "7.5in";
-            returnAddressFrame.RelativeVertical = RelativeVertical.Line;
-            
-            // Populate Return Address Frame
-            Paragraph addressParagraph = returnAddressFrame.AddParagraph();
-
-            addressParagraph.Add( new Text( "Rock Solid Church" ) );
-            addressParagraph.AddLineBreak();
-            addressParagraph.Add( new Text( "101 Electric Ave" ) );
-            addressParagraph.AddLineBreak();
-            addressParagraph.Add( new Text( "Big Stone City, SD 57001" ) );
-            addressParagraph.Format.Font.Name = "Times New Roman";
-            addressParagraph.Format.Font.Size = 7;
-            
+            return result;
         }
 
         /// <summary>
@@ -202,29 +207,29 @@ namespace ContributionStatementApp
                 .OrderBy( t => t.TransactionDateTime )
                 .GroupBy( a => a.AuthorizedPerson )
                 .OrderBy( p => p.Key.FullNameLastFirst );
-            
+
 
             foreach ( var personTransactionList in personTransactionGroupBy )
             {
-                Person person =personTransactionList.Key;
-                this.table.AddRow();
-                Row personRow = this.table.AddRow();
-                this.table.AddRow();
-                personRow.Cells[0].AddParagraph( person.FullName );
+                Person person = personTransactionList.Key;
+                CreateHeaderAndAddresses( person );
+
+                var personTransactionTable = AddTransactionListTable();
+                
                 foreach ( var financialTransaction in personTransactionList )
                 {
-                    Row row = this.table.AddRow();
+                    Row row = personTransactionTable.AddRow();
                     row.Cells[0].AddParagraph( financialTransaction.TransactionDateTime.Value.ToShortDateString() );
                     row.Cells[1].AddParagraph( DefinedValueCache.Read( financialTransaction.CurrencyTypeValueId ?? 0 ).Name );
-                    row.Cells[2].AddParagraph( financialTransaction.Summary );
+                    row.Cells[2].AddParagraph( financialTransaction.Summary + person.FullName);
 
                     string accountName = string.Empty;
                     row.Cells[3].AddParagraph( financialTransaction.AccountName );
 
                     row.Cells[4].AddParagraph( financialTransaction.Amount.ToString() );
                 }
-                
-                //return;
+
+                this.document.Sections[0].AddPageBreak();
             }
         }
     }
