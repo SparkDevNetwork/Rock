@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="PdfSharp-WPF-VS2010">
+</Property><Property Name="Solution File" Value="F:\@thho\TfsTest\PDFsharp_v-1.32\PDFsharp\PDFsharp\dev\PdfSharp-WPF-VS2010.sln">
+</Property><Property Name="Date" Value="Dienstag, 6. März 2012">
+</Property><Property Name="Time" Value="09:59:13">
+</Property></Properties><Event ErrorLevel="1" Project="PdfSharp.Charting.Demo-WPF" Source="PdfSharp.Charting.Demo\PdfSharp.Charting.Demo-WPF.csproj" Description="Your project is targeting .NET Framework 2.0 or 3.0. If your project uses assemblies requiring a newer .NET Framework, your project will fail to build. You can change the .NET Framework version by clicking Properties on the project menu and then selecting a new version in the '.NET Framework' dropdown box. (In Visual Basic, this is located on the Compile tab by clicking the 'Advanced Compiler Options...' button.)">
+</Event><Event ErrorLevel="0" Project="PdfSharp.Charting.Demo-WPF" Source="PdfSharp.Charting.Demo\PdfSharp.Charting.Demo-WPF.csproj" Description="Project converted successfully">
+</Event><Event ErrorLevel="3" Project="PdfSharp.Charting.Demo-WPF" Source="PdfSharp.Charting.Demo\PdfSharp.Charting.Demo-WPF.csproj" Description="Converted">
+</Event><Event ErrorLevel="0" Project="PdfSharp.Charting.Demo-WPF" Source="PdfSharp.Charting.Demo\PdfSharp.Charting.Demo-WPF.csproj" Description="Scan complete: Upgrade not required for project files.">
+</Event></UpgradeLog>

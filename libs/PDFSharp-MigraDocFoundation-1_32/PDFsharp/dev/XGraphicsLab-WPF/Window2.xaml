@@ -1,0 +1,9 @@
+﻿<Window x:Class="XDrawing.Window2"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Title="Window2" Height="338" Width="518">
+    <Grid>
+    <RadioButton Height="16" Margin="115,62,43,0" Name="radioButton1" VerticalAlignment="Top">RadioButton</RadioButton>
+    <Button Height="23" Margin="115,0,88,104" Name="button1" VerticalAlignment="Bottom" Click="button1_Click">Button</Button>
+  </Grid>
+</Window>

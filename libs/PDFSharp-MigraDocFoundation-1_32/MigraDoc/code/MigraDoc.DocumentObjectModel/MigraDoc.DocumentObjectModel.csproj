@@ -1,0 +1,643 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectType>Local</ProjectType>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{4666ABF3-EFE5-49BD-B2E8-9E04F5949145}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ApplicationIcon>
+    </ApplicationIcon>
+    <AssemblyKeyContainerName>
+    </AssemblyKeyContainerName>
+    <AssemblyName>MigraDoc.DocumentObjectModel</AssemblyName>
+    <AssemblyOriginatorKeyFile>StrongnameKey.snk</AssemblyOriginatorKeyFile>
+    <DefaultClientScript>JScript</DefaultClientScript>
+    <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
+    <DefaultTargetSchema>IE50</DefaultTargetSchema>
+    <DelaySign>false</DelaySign>
+    <OutputType>Library</OutputType>
+    <RootNamespace>
+    </RootNamespace>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+    <StartupObject>
+    </StartupObject>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <SignAssembly>true</SignAssembly>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <BaseAddress>285212672</BaseAddress>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <ConfigurationOverrideFile>
+    </ConfigurationOverrideFile>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DocumentationFile>bin\Debug\MigraDoc.DocumentObjectModel.xml</DocumentationFile>
+    <DebugSymbols>true</DebugSymbols>
+    <FileAlignment>4096</FileAlignment>
+    <NoStdLib>false</NoStdLib>
+    <NoWarn>1591</NoWarn>
+    <Optimize>false</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <DebugType>full</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <BaseAddress>285212672</BaseAddress>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <ConfigurationOverrideFile>
+    </ConfigurationOverrideFile>
+    <DefineConstants>TRACE</DefineConstants>
+    <DocumentationFile>bin\Release\MigraDoc.DocumentObjectModel.xml</DocumentationFile>
+    <DebugSymbols>true</DebugSymbols>
+    <FileAlignment>4096</FileAlignment>
+    <NoStdLib>false</NoStdLib>
+    <NoWarn>1591</NoWarn>
+    <Optimize>true</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <DebugType>pdbonly</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System">
+      <Name>System</Name>
+    </Reference>
+    <Reference Include="System.Data">
+      <Name>System.Data</Name>
+    </Reference>
+    <Reference Include="System.Drawing">
+      <Name>System.Drawing</Name>
+    </Reference>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml">
+      <Name>System.XML</Name>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Fields\BookmarkField.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Fields\DateField.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Fields\enums\InfoFieldType.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Fields\InfoField.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Fields\NumericFieldBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Fields\NumPagesField.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Fields\PageField.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Fields\PageRefField.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Fields\SectionField.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Fields\SectionPagesField.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Internals\Meta.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Internals\ValueDescriptor.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Internals\DomValueDescriptorCollection.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Internals\DVAttribute.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Internals\enums\GV.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Internals\enums\VDFlags.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Internals\INullableValue.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Internals\NBool.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Internals\NDouble.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Internals\NEnum.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Internals\NInt.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Internals\NString.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.IO\DdlParser.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.IO\DdlParserException.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.IO\DdlReader.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.IO\DdlReaderError.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.IO\DdlReaderErrors.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.IO\DdlScanner.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.IO\DdlWriter.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.IO\enums\DdlErrorLevel.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.IO\enums\Symbol.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.IO\enums\TokenType.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.IO\Symbols.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes.Charts\Axis.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes.Charts\AxisTitle.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes.Charts\Chart.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes.Charts\ChartObject.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes.Charts\DataLabel.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes.Charts\enums\BlankType.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes.Charts\enums\ChartType.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes.Charts\enums\DataLabelPosition.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes.Charts\enums\DataLabelType.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes.Charts\enums\HorizontalAlignment.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes.Charts\enums\MarkerStyle.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes.Charts\enums\TickMarkType.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes.Charts\Gridlines.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes.Charts\Legend.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes.Charts\PlotArea.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes.Charts\Point.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes.Charts\Series.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes.Charts\SeriesCollection.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes.Charts\SeriesElements.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes.Charts\TextArea.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes.Charts\TickLabels.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes.Charts\XSeries.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes.Charts\XSeriesElements.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes.Charts\XValue.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes.Charts\XValues.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes\Barcode.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes\enums\BarcodeType.cs" />
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes\enums\DashStyle.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes\enums\LineStyle.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes\enums\RelativeHorizontal.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes\enums\RelativeVertical.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes\enums\ShapePosition.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes\enums\TextOrientation.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes\enums\WrapStyle.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes\FillFormat.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes\Image.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes\LeftPosition.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes\LineFormat.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes\PictureFormat.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes\Shape.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes\TextFrame.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes\TopPosition.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Shapes\WrapFormat.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Tables\Cell.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Tables\Cells.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Tables\Column.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Tables\Columns.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Tables\enums\Edge.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Tables\enums\RowAlignment.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Tables\enums\RowHeightRule.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Tables\enums\VerticalAlignment.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Tables\Row.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Tables\Rows.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Tables\Table.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Visitors\CellComparer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Visitors\DocumentObjectVisitor.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Visitors\IDomVisitable.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Visitors\MergedCellList.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Visitors\PdfFlattenVisitor.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Visitors\RtfFlattenVisitor.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel.Visitors\VisitorBase.cs" />
+    <Compile Include="MigraDoc.DocumentObjectModel\Border.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\Borders.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\Character.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\Chars.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\Color.cs" />
+    <Compile Include="MigraDoc.DocumentObjectModel\Color.backup.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\Colors.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\DdlEncoder.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\DdlVisibleAttribute.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\Document.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\DocumentElements.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\DocumentInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\DocumentObject.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\DocumentObjectCollection.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\DocumentRelations.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\DomSR.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\enums\BorderStyle.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\enums\BorderType.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\enums\BreakType.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\enums\ColorName.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\enums\DomMsgID.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\enums\FontProperties.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\enums\FootnoteLocation.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\enums\FootnoteNumberingRule.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\enums\FootnoteNumberStyle.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\enums\HeaderFooterIndex.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\enums\HyperlinkType.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\enums\LineSpacingRule.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\enums\ListType.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\enums\Orientation.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\enums\OutlineLevel.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\enums\PageFormat.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\enums\ParagraphAlignment.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\enums\StyleType.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\enums\SymbolName.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\enums\TabAlignment.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\enums\TabLeader.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\enums\TextFormat.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\enums\Underline.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\enums\UnitType.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\Font.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\Footnote.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\FormattedText.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\HeaderFooter.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\HeadersFooters.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\Hyperlink.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\ImageHelper.cs" />
+    <Compile Include="MigraDoc.DocumentObjectModel\ListInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\PageBreak.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\PageSetup.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\Paragraph.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\ParagraphElements.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\ParagraphFormat.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\Section.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\Sections.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\Serializer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\Shading.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\Style.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\StyleNames.cs" />
+    <Compile Include="MigraDoc.DocumentObjectModel\Styles.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\TabStop.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\TabStops.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\Text.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\TextMeasurement.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.DocumentObjectModel\Unit.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ProductVersionInfo.cs" />
+    <Compile Include="MigraDoc.DocumentObjectModel\VersionInfo.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="MigraDoc.DocumentObjectModel.Resources\Messages.de.restext" />
+    <EmbeddedResource Include="MigraDoc.DocumentObjectModel.Resources\Messages.restext" />
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <SubType>Designer</SubType>
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="StrongnameKey.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.0 %28x86%29</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="MigraDoc.DocumentObjectModel.UnitTests\" />
+    <Folder Include="MigraDoc\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+</Project>

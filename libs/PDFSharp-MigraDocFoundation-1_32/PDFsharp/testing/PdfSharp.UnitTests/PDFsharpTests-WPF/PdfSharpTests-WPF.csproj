@@ -1,0 +1,188 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{FBBD36F0-FFD3-4C85-A0F3-DF7C5BE7AB4D}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>PdfSsharp.UnitTests</RootNamespace>
+    <AssemblyName>PdfSharp.UnitTests-WPF</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <ProjectTypeGuids>{3AC096D0-A1C2-E12C-1390-A8335801FDAB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <UpgradeBackupLocation />
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;WPF</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisIgnoreGeneratedCode>false</CodeAnalysisIgnoreGeneratedCode>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;WPF</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="PresentationCore">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="PresentationFramework">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="WindowsBase">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\PDFsharpTests-GDI\Helpers\GeometryObjects.cs">
+      <Link>Helpers\GeometryObjects.cs</Link>
+    </Compile>
+    <Compile Include="..\PDFsharpTests-GDI\Helpers\TestBase.cs">
+      <Link>Helpers\TestBase.cs</Link>
+    </Compile>
+    <Compile Include="..\PDFsharpTests-GDI\Images\JPEGs.cs">
+      <Link>Images\JPEGs.cs</Link>
+    </Compile>
+    <Compile Include="..\PDFsharpTests-GDI\LinesAndCurves\Arcs.cs">
+      <Link>LinesAndCurves\Arcs.cs</Link>
+    </Compile>
+    <Compile Include="..\PDFsharpTests-GDI\LinesAndCurves\Beziers.cs">
+      <Link>LinesAndCurves\Beziers.cs</Link>
+    </Compile>
+    <Compile Include="..\PDFsharpTests-GDI\LinesAndCurves\Curves.cs">
+      <Link>LinesAndCurves\Curves.cs</Link>
+    </Compile>
+    <Compile Include="..\PDFsharpTests-GDI\LinesAndCurves\Lines.cs">
+      <Link>LinesAndCurves\Lines.cs</Link>
+    </Compile>
+    <Compile Include="..\PDFsharpTests-GDI\Paths\AlternateAndWinding.cs">
+      <Link>Paths\AlternateAndWinding.cs</Link>
+    </Compile>
+    <Compile Include="..\PDFsharpTests-GDI\Paths\ClipPaths.cs">
+      <Link>Paths\ClipPaths.cs</Link>
+    </Compile>
+    <Compile Include="..\PDFsharpTests-GDI\Paths\GlyphsPaths.cs">
+      <Link>Paths\GlyphsPaths.cs</Link>
+    </Compile>
+    <Compile Include="..\PDFsharpTests-GDI\Paths\SimplePaths.cs">
+      <Link>Paths\SimplePaths.cs</Link>
+    </Compile>
+    <Compile Include="..\PDFsharpTests-GDI\Shapes\ClosedCurves.cs">
+      <Link>Shapes\ClosedCurves.cs</Link>
+    </Compile>
+    <Compile Include="..\PDFsharpTests-GDI\Shapes\Ellipses.cs">
+      <Link>Shapes\Ellipses.cs</Link>
+    </Compile>
+    <Compile Include="..\PDFsharpTests-GDI\Shapes\Pies.cs">
+      <Link>Shapes\Pies.cs</Link>
+    </Compile>
+    <Compile Include="..\PDFsharpTests-GDI\Shapes\Polygons.cs">
+      <Link>Shapes\Polygons.cs</Link>
+    </Compile>
+    <Compile Include="..\PDFsharpTests-GDI\Shapes\Rectangles.cs">
+      <Link>Shapes\Rectangles.cs</Link>
+    </Compile>
+    <Compile Include="..\PDFsharpTests-GDI\Shapes\RoundedRectangles.cs">
+      <Link>Shapes\RoundedRectangles.cs</Link>
+    </Compile>
+    <Compile Include="..\PDFsharpTests-GDI\Text\MeasureText.cs">
+      <Link>Text\MeasureText.cs</Link>
+    </Compile>
+    <Compile Include="..\PDFsharpTests-GDI\Text\TextAlignment.cs">
+      <Link>Text\TextAlignment.cs</Link>
+    </Compile>
+    <Compile Include="..\PDFsharpTests-GDI\Text\TextStyles1.cs">
+      <Link>Text\TextStyles1.cs</Link>
+    </Compile>
+    <Compile Include="..\PDFsharpTests-GDI\Text\TextStyles2.cs">
+      <Link>Text\TextStyles2.cs</Link>
+    </Compile>
+    <Compile Include="..\PDFsharpTests-GDI\Text\TextStyles3.cs">
+      <Link>Text\TextStyles3.cs</Link>
+    </Compile>
+    <Compile Include="..\PDFsharpTests-GDI\Text\TextStyles4.cs">
+      <Link>Text\TextStyles4.cs</Link>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\code\PdfSharp\PdfSharp-WPF.csproj">
+      <Project>{02FCC0BB-2AA2-43BA-8D2F-66D168B87A1D}</Project>
+      <Name>PdfSharp-WPF</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.0">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

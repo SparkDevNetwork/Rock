@@ -1,0 +1,42 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfSharp", "PdfSharp\PdfSharp.csproj", "{5384CE57-1F94-4D22-860D-2E9C1AC12DDF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfSharp.Charting", "PdfSharp.Charting\PdfSharp.Charting.csproj", "{CFDB7D46-EA8D-47DE-B10A-9E755A1B48BA}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|Win32 = Debug|Win32
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5384CE57-1F94-4D22-860D-2E9C1AC12DDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5384CE57-1F94-4D22-860D-2E9C1AC12DDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5384CE57-1F94-4D22-860D-2E9C1AC12DDF}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{5384CE57-1F94-4D22-860D-2E9C1AC12DDF}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{5384CE57-1F94-4D22-860D-2E9C1AC12DDF}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{5384CE57-1F94-4D22-860D-2E9C1AC12DDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5384CE57-1F94-4D22-860D-2E9C1AC12DDF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5384CE57-1F94-4D22-860D-2E9C1AC12DDF}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{5384CE57-1F94-4D22-860D-2E9C1AC12DDF}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{5384CE57-1F94-4D22-860D-2E9C1AC12DDF}.Release|Win32.ActiveCfg = Release|Any CPU
+		{CFDB7D46-EA8D-47DE-B10A-9E755A1B48BA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFDB7D46-EA8D-47DE-B10A-9E755A1B48BA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFDB7D46-EA8D-47DE-B10A-9E755A1B48BA}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{CFDB7D46-EA8D-47DE-B10A-9E755A1B48BA}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{CFDB7D46-EA8D-47DE-B10A-9E755A1B48BA}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{CFDB7D46-EA8D-47DE-B10A-9E755A1B48BA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFDB7D46-EA8D-47DE-B10A-9E755A1B48BA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFDB7D46-EA8D-47DE-B10A-9E755A1B48BA}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{CFDB7D46-EA8D-47DE-B10A-9E755A1B48BA}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{CFDB7D46-EA8D-47DE-B10A-9E755A1B48BA}.Release|Win32.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
