@@ -5,6 +5,7 @@ using MigraDoc.DocumentObjectModel.Shapes;
 using MigraDoc.DocumentObjectModel.Tables;
 using Rock.Model;
 using System.Linq;
+using Rock.Web.Cache;
 
 namespace ContributionStatementApp
 {
@@ -21,7 +22,7 @@ namespace ContributionStatementApp
         /// <summary>
         /// The text frame of the MigraDoc document that contains the address.
         /// </summary>
-        private TextFrame returnAddressFrame;
+        //private TextFrame returnAddressFrame;
 
         /// <summary>
         /// The table of the MigraDoc document that contains the invoice items.
@@ -33,7 +34,7 @@ namespace ContributionStatementApp
         private readonly static Color TableBlue = new Color( 235, 240, 249 );
         private readonly static Color TableGray = new Color( 242, 242, 242 );
 
-        public Document CreateDocument(IEnumerable<FinancialTransaction> financialTransactionList)
+        public Document CreateDocument( IQueryable<FinancialTransaction> financialTransactionQry )
         {
             this.document = new Document();
 
@@ -44,7 +45,7 @@ namespace ContributionStatementApp
             DefineStyles();
             CreatePage();
 
-            FillContent( financialTransactionList );
+            FillContent( financialTransactionQry );
 
             return this.document;
         }
@@ -98,10 +99,6 @@ namespace ContributionStatementApp
             Paragraph headerParagraphLine2 = section.Headers.Primary.AddParagraph();
             headerParagraphLine2.AddTab();
             headerParagraphLine2.AddText( "as of " + DateTime.Now.ToShortDateString() );
-
-            
-
-            
 
             // Create the item table
             this.table = section.AddTable();
@@ -164,17 +161,16 @@ namespace ContributionStatementApp
 
 
             // Create the text frame for the address
-            this.returnAddressFrame = section.AddTextFrame();
-            this.returnAddressFrame.Height = "3.0cm";
-            this.returnAddressFrame.Width = "7.0cm";
-            this.returnAddressFrame.Left = ShapePosition.Left;
-            this.returnAddressFrame.RelativeHorizontal = RelativeHorizontal.Margin;
-            this.returnAddressFrame.Top = "7.5in";
-            this.returnAddressFrame.RelativeVertical = RelativeVertical.Page;
-
+            TextFrame returnAddressFrame = section.AddTextFrame();
+            returnAddressFrame.Height = "3.0cm";
+            returnAddressFrame.Width = "7.0cm";
+            returnAddressFrame.Left = ShapePosition.Left;
+            returnAddressFrame.RelativeHorizontal = RelativeHorizontal.Margin;
+            returnAddressFrame.Top = "7.5in";
+            returnAddressFrame.RelativeVertical = RelativeVertical.Line;
             
             // Populate Return Address Frame
-            Paragraph addressParagraph = this.returnAddressFrame.AddParagraph();
+            Paragraph addressParagraph = returnAddressFrame.AddParagraph();
 
             addressParagraph.Add( new Text( "Rock Solid Church" ) );
             addressParagraph.AddLineBreak();
@@ -183,91 +179,53 @@ namespace ContributionStatementApp
             addressParagraph.Add( new Text( "Big Stone City, SD 57001" ) );
             addressParagraph.Format.Font.Name = "Times New Roman";
             addressParagraph.Format.Font.Size = 7;
-            //addressParagraph.Format.SpaceBefore = 3;
-            //addressParagraph.Format.SpaceAfter = 3;
-
-            /*Paragraph paragraph = this.returnAddressFrame.AddParagraph( "PowerBooks Inc · Sample Street 42 · 56789 Cologne" );
-            paragraph.Format.Font.Name = "Times New Roman";
-            paragraph.Format.Font.Size = 7;
-            paragraph.Format.SpaceAfter = 3;
-
-            paragraph = section.AddParagraph();
-            paragraph.Format.SpaceBefore = "8cm";
-            paragraph.Style = "Reference";
-            paragraph.AddFormattedText( "INVOICE", TextFormat.Bold );
-            paragraph.AddTab();
-            paragraph.AddText( "Cologne, " );
-            paragraph.AddDateField( "dd.MM.yyyy" );
-             */ 
+            
         }
 
-        private void FillContent( IEnumerable<FinancialTransaction> financialTransactionList )
+        /// <summary>
+        /// Fills the content.
+        /// </summary>
+        /// <param name="financialTransactionList">The financial transaction list.</param>
+        private void FillContent( IQueryable<FinancialTransaction> financialTransactionQry )
         {
-            foreach ( var financialTransaction in financialTransactionList )
+            var selectQry = financialTransactionQry.Select( a => new
             {
-                Row row = this.table.AddRow();
-                row.Cells[0].AddParagraph( financialTransaction.TransactionDateTime.Value.ToShortDateString() );
-                row.Cells[1].AddParagraph( financialTransaction.CurrencyTypeValue.Name );
-                row.Cells[2].AddParagraph( financialTransaction.Summary );
+                a.AuthorizedPerson,
+                a.TransactionDateTime,
+                a.CurrencyTypeValueId,
+                a.Summary,
+                AccountName = a.TransactionDetails.FirstOrDefault().Account.Name,
+                a.Amount
+            } );
 
-                string accountName = string.Empty;
-                var detail = financialTransaction.TransactionDetails.FirstOrDefault();
-                if ( detail != null )
+            var personTransactionGroupBy = selectQry
+                .OrderBy( t => t.TransactionDateTime )
+                .GroupBy( a => a.AuthorizedPerson )
+                .OrderBy( p => p.Key.FullNameLastFirst );
+            
+
+            foreach ( var personTransactionList in personTransactionGroupBy )
+            {
+                Person person =personTransactionList.Key;
+                this.table.AddRow();
+                Row personRow = this.table.AddRow();
+                this.table.AddRow();
+                personRow.Cells[0].AddParagraph( person.FullName );
+                foreach ( var financialTransaction in personTransactionList )
                 {
-                    if ( detail.Account != null )
-                    {
-                        row.Cells[3].AddParagraph( detail.Account.Name );
-                    }
+                    Row row = this.table.AddRow();
+                    row.Cells[0].AddParagraph( financialTransaction.TransactionDateTime.Value.ToShortDateString() );
+                    row.Cells[1].AddParagraph( DefinedValueCache.Read( financialTransaction.CurrencyTypeValueId ?? 0 ).Name );
+                    row.Cells[2].AddParagraph( financialTransaction.Summary );
+
+                    string accountName = string.Empty;
+                    row.Cells[3].AddParagraph( financialTransaction.AccountName );
+
+                    row.Cells[4].AddParagraph( financialTransaction.Amount.ToString() );
                 }
                 
-                row.Cells[4].AddParagraph( financialTransaction.Amount.ToString() );
+                //return;
             }
-            
-            /*
-            while ( iter.MoveNext() )
-            {
-                for ( int repeatCount = 0; repeatCount < maxRepeatCount; repeatCount++ )
-                {
-                    item = iter.Current;
-                    double quantity = GetValueAsDouble( item, "quantity" );
-                    double price = GetValueAsDouble( item, "price" );
-                    double discount = GetValueAsDouble( item, "discount" );
-
-                    // Each item fills two rows
-                    Row row1 = this.table.AddRow();
-                    Row row2 = this.table.AddRow();
-                    row1.TopPadding = 1.5;
-                    row1.Cells[0].Shading.Color = TableGray;
-                    row1.Cells[0].VerticalAlignment = VerticalAlignment.Center;
-                    row1.Cells[0].MergeDown = 1;
-                    row1.Cells[1].Format.Alignment = ParagraphAlignment.Left;
-                    row1.Cells[1].MergeRight = 3;
-                    row1.Cells[5].Shading.Color = TableGray;
-                    row1.Cells[5].MergeDown = 1;
-
-                    row1.Cells[0].AddParagraph( GetValue( item, "itemNumber" ) );
-                    paragraph = row1.Cells[1].AddParagraph();
-                    paragraph.AddFormattedText( GetValue( item, "title" ), TextFormat.Bold );
-                    paragraph.AddFormattedText( " by ", TextFormat.Italic );
-                    paragraph.AddText( GetValue( item, "author" ) );
-                    row2.Cells[1].AddParagraph( GetValue( item, "quantity" ) );
-                    row2.Cells[2].AddParagraph( price.ToString( "0.00" ) + " €" );
-                    row2.Cells[3].AddParagraph( discount.ToString( "0.0" ) );
-                    row2.Cells[4].AddParagraph();
-                    row2.Cells[5].AddParagraph( price.ToString( "0.00" ) );
-                    double extendedPrice = quantity * price;
-                    extendedPrice = extendedPrice * ( 100 - discount ) / 100;
-                    row1.Cells[5].AddParagraph( extendedPrice.ToString( "0.00" ) + " €" );
-                    row1.Cells[5].VerticalAlignment = VerticalAlignment.Bottom;
-                    totalExtendedPrice += extendedPrice;
-
-                    this.table.SetEdge( 0, this.table.Rows.Count - 2, 6, 2, Edge.Box, BorderStyle.Single, 0.75 );
-                }
-            }
-             */
-
-            // Set the borders of the specified cell range
-            // this.table.SetEdge( 5, this.table.Rows.Count - 4, 1, 4, Edge.Box, BorderStyle.Single, 0.75 );
         }
     }
 }
