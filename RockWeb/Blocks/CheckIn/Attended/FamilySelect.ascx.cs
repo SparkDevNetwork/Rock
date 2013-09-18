@@ -477,31 +477,40 @@ namespace RockWeb.Blocks.CheckIn.Attended
             foreach ( NewPerson np in newFamilyList.Where( np => np.IsValid() ) )
             {
                 var person = CreatePerson( np.FirstName, np.LastName, np.BirthDate, (int)np.Gender, np.Ability, np.AbilityGroup );
-                AddGroupMember( familyGroup, person );
+                var groupMember = AddGroupMember( familyGroup, person );
+                familyGroup.Members.Add( groupMember );
                 checkInPerson = new CheckInPerson();
                 checkInPerson.Person = person;
                 checkInPerson.Selected = true;
+                checkInPerson.FamilyMember = true;
                 checkInFamily.People.Add( checkInPerson );
             }
 
             checkInFamily.Group = familyGroup;
             checkInFamily.Caption = familyGroup.Name;
-            checkInFamily.SubCaption = string.Join( ",", familyGroup.Members.Select( gm => gm.Person.FirstName ) );
+            checkInFamily.SubCaption = string.Join( ",", checkInFamily.People.Select( p => p.Person.FirstName ) );
             checkInFamily.Selected = true;
 
             CurrentCheckInState.CheckIn.Families.Clear();
             CurrentCheckInState.CheckIn.Families.Add( checkInFamily );
+
+            ProcessFamily();
+
             lvFamily.DataSource = CurrentCheckInState.CheckIn.Families.OrderBy( f => f.Caption ).ToList();
             lvFamily.DataBind();
             pnlSelectFamily.Update();
 
-            lvPerson.DataSource = checkInFamily.People.OrderBy( p => p.Person.FullNameLastFirst ).ToList();
-            lvPerson.DataBind();
-            pnlSelectPerson.Update();
-
-            lvVisitor.DataSource = null;
-            lvVisitor.DataBind();
-            pnlSelectVisitor.Update();
+            if ( divNothingFound.Visible )
+            {
+                lblFamilyTitle.InnerText = "Search Results";
+                lbNext.Enabled = true;
+                lbNext.Visible = true;
+                pnlSelectFamily.Visible = true;
+                pnlSelectPerson.Visible = true;
+                pnlSelectVisitor.Visible = true;
+                actions.Visible = true;
+                divNothingFound.Visible = false;
+            }
         }
 
         /// <summary>
