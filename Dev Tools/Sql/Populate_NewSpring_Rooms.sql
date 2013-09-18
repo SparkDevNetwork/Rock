@@ -180,14 +180,19 @@ SET @AgeTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@TopLevelGroupTypeId, @AgeTypeId);
 
 INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[InheritedGroupTypeId],[GroupTypePurposeValueId])
+   VALUES (0, 'Check in by Ability', NEWID(), 0, 0, 0, 0, 0, 0, 0, 0, @AgeTypeId, @GroupTypePurposeCheckinFilterId)
+SET @AbilityTypeId = SCOPE_IDENTITY()
+INSERT INTO [GroupTypeAssociation] VALUES (@TopLevelGroupTypeId, @AbilityTypeId);
+
+INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[InheritedGroupTypeId],[GroupTypePurposeValueId])
    VALUES (0, 'Check in by Grade', NEWID(), 0, 0, 0, 0, 0, 0, 0, 0, @AgeTypeId, @GroupTypePurposeCheckinFilterId)
 SET @GradeTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@TopLevelGroupTypeId, @GradeTypeId);
 
 INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[InheritedGroupTypeId],[GroupTypePurposeValueId])
-   VALUES (0, 'Check in by Ability', NEWID(), 0, 0, 0, 0, 0, 0, 0, 0, @AgeTypeId, @GroupTypePurposeCheckinFilterId)
-SET @AbilityTypeId = SCOPE_IDENTITY()
-INSERT INTO [GroupTypeAssociation] VALUES (@TopLevelGroupTypeId, @AbilityTypeId);
+   VALUES (0, 'Check in by Gender', NEWID(), 0, 0, 0, 0, 0, 0, 0, 0, @GradeTypeId, @GroupTypePurposeCheckinFilterId)
+SET @GenderTypeId = SCOPE_IDENTITY()
+INSERT INTO [GroupTypeAssociation] VALUES (@TopLevelGroupTypeId, @GenderTypeId);
 
 -- Add GroupType attributes to Age to filter checkin people
 DECLARE @GroupTypeAttributeAgeRange int
@@ -221,6 +226,12 @@ INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifi
 	VALUES ( 0, @DefinedValueFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @AbilityTypeId, 'AbilityLevel', 'Ability Level', 1, 0, 0, 0, NEWID(), 'Defines the ability level required to check in to these groups.' )
 SET @AbilityAttributeId = SCOPE_IDENTITY()
 INSERT INTO [AttributeCategory] (AttributeId, CategoryId) VALUES (@AbilityAttributeId, @GroupTypeCheckInCategoryId)
+
+-- Gender Group Attribute
+INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
+	VALUES ( 0, @IntegerFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @GenderTypeId, 'Gender', 'Gender', 1, 0, 0, 0, NEWID(), 'Defines the gender required to check into these group types.' )
+SET @GenderAttributeId = SCOPE_IDENTITY()
+INSERT INTO [AttributeCategory] (AttributeId, CategoryId) VALUES (@GenderAttributeId, @GroupTypeCheckInCategoryId)
 
 ------------------------------------------------------------------------
 -- Resume Adding GroupTypes
@@ -258,24 +269,21 @@ INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value],
 
 -- Fuse
 INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[InheritedGroupTypeId],[GroupTypePurposeValueId]) 
-VALUES (0, 'Fuse', NEWID(), 1, 0, 0, 0, 0, 0, 0, 0, @GradeTypeId, NULL)
+VALUES (0, 'Fuse', NEWID(), 1, 0, 0, 0, 0, 0, 0, 0, NULL, NULL)
 SET @FuseTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@TopLevelGroupTypeId, @FuseTypeId);
 INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid]) VALUES (0, @GroupTypeAttributeAgeRange, @FuseTypeId, 0, '11,19.99', NEWID())
-INSERT INTO [Attribute] ( IsSystem, FieldTypeId, EntityTypeId, EntityTypeQualifierColumn, EntityTypeQualifierValue, [Key], Name, [Order], IsGridColumn, IsMultiValue, IsRequired, [Guid], [Description] )
-VALUES ( 0, @IntegerFieldTypeId, @GroupEntityTypeId, 'GroupTypeId', @FuseTypeId, 'Gender', 'Gender', 1, 0, 0, 0, NEWID(), 'Defines the gender required to check into these group types.' )
-SET @GenderAttributeId = SCOPE_IDENTITY()
 
 -- Middle School
 INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[InheritedGroupTypeId],[GroupTypePurposeValueId]) 
-VALUES (0, 'Middle School', NEWID(), 1, 0, 0, 0, 0, 0, 0, 0, @FuseTypeId, NULL)
+VALUES (0, 'Middle School', NEWID(), 1, 0, 0, 0, 0, 0, 0, 0, @GenderTypeId, NULL)
 SET @MSTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@FuseTypeId, @MSTypeId);
 INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid]) VALUES (0, @GroupTypeAttributeAgeRange, @MSTypeId, 0, '11.0,14.0', NEWID())
 
 -- High School
 INSERT INTO [GroupType] ( [IsSystem],[Name],[Guid],[AllowMultipleLocations],[TakesAttendance],[AttendanceRule],[AttendancePrintTo],[ShowInGroupList],[ShowInNavigation],[Order],[LocationSelectionMode],[InheritedGroupTypeId],[GroupTypePurposeValueId]) 
-VALUES (0, 'High School', NEWID(), 1, 0, 0, 0, 0, 0, 0, 0, @FuseTypeId, NULL)
+VALUES (0, 'High School', NEWID(), 1, 0, 0, 0, 0, 0, 0, 0, @GenderTypeId, NULL)
 SET @HSTypeId = SCOPE_IDENTITY()
 INSERT INTO [GroupTypeAssociation] VALUES (@FuseTypeId, @HSTypeId);
 INSERT INTO [AttributeValue] (IsSystem, AttributeId, EntityId, [Order], [Value], [Guid]) VALUES (0, @GroupTypeAttributeAgeRange, @HSTypeId, 0, '14.0,19.99', NEWID())
