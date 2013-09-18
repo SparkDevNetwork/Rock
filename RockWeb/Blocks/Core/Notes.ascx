@@ -4,7 +4,7 @@
 <asp:UpdatePanel ID="upNotes" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlNotes" runat="server">
-            <section class="widget persontimeline">
+            <section class="widget">
 
                 <header class="clearfix">
                     <h4>
