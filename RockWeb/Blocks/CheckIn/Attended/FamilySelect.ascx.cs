@@ -323,38 +323,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 mpeAddPerson.Show();
                 //string errorMsg = "<ul><li>Please fill out the First Name, Last Name, DOB, and Gender fields.</li></ul>";
                 //maAddPerson.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
-                if ( string.IsNullOrEmpty( tbFirstNameSearch.Text ) )
-                {
-                    tbFirstNameSearch.AddCssClass( "red-border" );
-                }
-                else
-                {
-                    tbFirstNameSearch.RemoveCssClass( "red-border" );
-                }
-                if ( string.IsNullOrEmpty( tbLastNameSearch.Text ) )
-                {
-                    tbLastNameSearch.AddCssClass( "red-border" );
-                }
-                else
-                {
-                    tbLastNameSearch.RemoveCssClass( "red-border" );
-                }
-                if ( string.IsNullOrEmpty( dpDOBSearch.Text ) )
-                {
-                    dpDOBSearch.AddCssClass( "red-border" );
-                }
-                else
-                {
-                    dpDOBSearch.RemoveCssClass( "red-border" );
-                }
-                if ( ddlGenderSearch.SelectedValueAsInt() == 0 )
-                {
-                    ddlGenderSearch.AddCssClass( "red-border" );
-                }
-                else
-                {
-                    ddlGenderSearch.RemoveCssClass( "red-border" );
-                }
             }
             else
             {
@@ -767,9 +735,14 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 }
                 else if ( abilityGroup == "Ability" )
                 {
-                    person.SetAttributeValue( "AbilityLevel", ability.ToUpper() );
-                    Rock.Attribute.Helper.SaveAttributeValues( person, CurrentPersonId );
-                }                
+                    Person p = new PersonService().Get( person.Id );
+                    if ( p != null )
+                    {
+                        p.LoadAttributes();
+                        p.SetAttributeValue( "AbilityLevel", ability );
+                        Rock.Attribute.Helper.SaveAttributeValues( p, CurrentPersonId );
+                    }
+                }
             }
 
             return person;

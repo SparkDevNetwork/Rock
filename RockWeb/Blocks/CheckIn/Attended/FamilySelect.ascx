@@ -201,16 +201,16 @@
         <div class="checkin-body">
             <div class="row-fluid">
                 <div class="span2">
-                    <Rock:LabeledTextBox ID="tbFirstNameSearch" runat="server" CssClass="span12" LabelText="First Name" />
+                    <Rock:LabeledTextBox ID="tbFirstNameSearch" runat="server" CssClass="span12" LabelText="First Name" Required="true" RequiredErrorMessage="Required" />
                 </div>
                 <div class="span3">
-                    <Rock:LabeledTextBox ID="tbLastNameSearch" runat="server" CssClass="span12" LabelText="Last Name" />
+                    <Rock:LabeledTextBox ID="tbLastNameSearch" runat="server" CssClass="span12" LabelText="Last Name" Required="true" RequiredErrorMessage="Required" />
                 </div>
                 <div class="span2">
-                    <Rock:DatePicker ID="dpDOBSearch" runat="server" LabelText="DOB" CssClass="span12" />
+                    <Rock:DatePicker ID="dpDOBSearch" runat="server" LabelText="DOB" CssClass="span12" Required="true" RequiredErrorMessage="Required" />
                 </div>
                 <div class="span2">
-                    <Rock:DataDropDownList ID="ddlGenderSearch" runat="server" CssClass="span12" LabelText="Gender" />
+                    <Rock:DataDropDownList ID="ddlGenderSearch" runat="server" CssClass="span12" LabelText="Gender" Required="true" RequiredErrorMessage="Required" />
                 </div>
                 <div class="span3">
                     <Rock:DataDropDownList ID="ddlAbilitySearch" runat="server" CssClass="span12" LabelText="Ability/Grade" />
