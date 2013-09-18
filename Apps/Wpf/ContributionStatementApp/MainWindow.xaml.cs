@@ -8,6 +8,8 @@ using MigraDoc.Rendering;
 using Rock.Model;
 using System.Linq;
 using Rock.Data;
+using System.Data.Entity;
+using System.ComponentModel;
 
 namespace ContributionStatementApp
 {
@@ -31,35 +33,57 @@ namespace ContributionStatementApp
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnShowStatement_Click( object sender, RoutedEventArgs e )
         {
+
+            BackgroundWorker bw = new BackgroundWorker();
+            bw.DoWork += bw_DoWork;
+            bw.RunWorkerCompleted += bw_RunWorkerCompleted;
+            bw.RunWorkerAsync();
+        }
+
+        void bw_RunWorkerCompleted( object sender, RunWorkerCompletedEventArgs e )
+        {
+            MessageBox.Show( "Done" );
+        }
+
+        void bw_DoWork( object sender, DoWorkEventArgs e )
+        {
             ContributionForm contributionForm = new ContributionForm();
 
-            DateTime startDate = new DateTime(2013, 8, 1);
-            DateTime endDate = new DateTime(2013, 9, 1);
+            // default Initializer is CreateDatabaseIfNotExists, but we don't want that to happen if automigrate is false, so set it to NULL so that nothing happens
+            Database.SetInitializer<Rock.Data.RockContext>( null );
 
-            var qry = new FinancialTransactionService().Queryable( "TransactionDetails" )
+            // TODO - Get actual date range
+            DateTime startDate = new DateTime( 2013, 1, 1 );
+            DateTime endDate = new DateTime( 2013, 12, 1 );
+
+            FinancialTransactionService financialTransactionService = new FinancialTransactionService();
+
+            var qry = financialTransactionService.Queryable();
+
+            qry = qry
                 .Where( a => a.TransactionDateTime >= startDate )
                 .Where( a => a.TransactionDateTime < endDate );
-                
-            qry = qry.Take(100);
-            
 
-            Document document = contributionForm.CreateDocument( qry.OrderBy( a => a.TransactionDateTime ).ToList());
+            Document document = contributionForm.CreateDocument( qry );
 
-            PdfDocumentRenderer pdfDocumentRenderer = new PdfDocumentRenderer(false);
+            PdfDocumentRenderer pdfDocumentRenderer = new PdfDocumentRenderer( false );
             pdfDocumentRenderer.Document = document;
-            pdfDocumentRenderer.RenderDocument();
+            pdfDocumentRenderer.DocumentRenderer.PrepareDocumentProgress += DocumentRenderer_PrepareDocumentProgress;
 
-            string fileName = "Statement_" + Guid.NewGuid().ToString("N") + ".pdf";
+            //pdfDocumentRenderer.DocumentRenderer.WorkingDirectory = "c:\temp";
+            //pdfDocumentRenderer.PrepareRenderPages();
+            pdfDocumentRenderer.RenderDocument();
+            string fileName = "Statement_" + Guid.NewGuid().ToString( "N" ) + ".pdf";
             pdfDocumentRenderer.Save( fileName );
 
-            using ( MemoryStream ms = new MemoryStream() )
-            {
-                // doesn't work when pdfDocumentRenderer.Unicode = true
-                pdfDocumentRenderer.Save( ms, true );
-                byte[] pdfBytes = ms.GetBuffer();
-            }
-
             Process.Start( fileName );
+            
+        }
+
+        void DocumentRenderer_PrepareDocumentProgress( object sender, DocumentRenderer.PrepareDocumentProgressEventArgs e )
+        {
+            var progress = e.Value/e.Maximum;
+            
         }
     }
 }

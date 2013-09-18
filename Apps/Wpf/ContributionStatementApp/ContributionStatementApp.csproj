@@ -15,7 +15,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -55,6 +55,9 @@
     </Reference>
     <Reference Include="MigraDoc.RtfRendering-WPF">
       <HintPath>..\..\..\libs\MigraDoc-1.32-patch-pakeha_by\_debug\MigraDoc.RtfRendering-WPF.dll</HintPath>
+    </Reference>
+    <Reference Include="PdfSharp-WPF">
+      <HintPath>..\..\..\libs\PDFsharp-MigraDocFoundation-Assemblies-1_32\WPF\PdfSharp-WPF.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
