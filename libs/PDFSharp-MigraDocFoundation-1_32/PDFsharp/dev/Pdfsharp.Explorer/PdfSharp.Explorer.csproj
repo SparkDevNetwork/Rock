@@ -1,0 +1,284 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+  <PropertyGroup>
+    <ProjectType>Local</ProjectType>
+    <ProductVersion>9.0.21022</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{2E8F09D6-EBCE-4A3C-BDDF-41D5B0DB87B8}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ApplicationIcon>App.ico</ApplicationIcon>
+    <AssemblyKeyContainerName>
+    </AssemblyKeyContainerName>
+    <AssemblyName>PdfSharp.Explorer</AssemblyName>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
+    <DefaultClientScript>JScript</DefaultClientScript>
+    <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
+    <DefaultTargetSchema>IE50</DefaultTargetSchema>
+    <DelaySign>false</DelaySign>
+    <OutputType>WinExe</OutputType>
+    <RootNamespace>
+    </RootNamespace>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <StartupObject>
+    </StartupObject>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <OldToolsVersion>3.5</OldToolsVersion>
+    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccAuxPath>
+    </SccAuxPath>
+    <SccProvider>
+    </SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <BaseAddress>285212672</BaseAddress>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <ConfigurationOverrideFile>
+    </ConfigurationOverrideFile>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DocumentationFile>
+    </DocumentationFile>
+    <DebugSymbols>true</DebugSymbols>
+    <FileAlignment>4096</FileAlignment>
+    <NoStdLib>false</NoStdLib>
+    <NoWarn>1591</NoWarn>
+    <Optimize>false</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <DebugType>full</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+    <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <BaseAddress>285212672</BaseAddress>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <ConfigurationOverrideFile>
+    </ConfigurationOverrideFile>
+    <DefineConstants>TRACE</DefineConstants>
+    <DocumentationFile>
+    </DocumentationFile>
+    <DebugSymbols>false</DebugSymbols>
+    <FileAlignment>4096</FileAlignment>
+    <NoStdLib>false</NoStdLib>
+    <NoWarn>1591</NoWarn>
+    <Optimize>true</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <DebugType>none</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System">
+      <Name>System</Name>
+    </Reference>
+    <Reference Include="System.Data">
+      <Name>System.Data</Name>
+    </Reference>
+    <Reference Include="System.Drawing">
+      <Name>System.Drawing</Name>
+    </Reference>
+    <Reference Include="System.Windows.Forms">
+      <Name>System.Windows.Forms</Name>
+    </Reference>
+    <Reference Include="System.Xml">
+      <Name>System.XML</Name>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="App.ico" />
+    <Content Include="PdfSharp.Explorer.resources\bitmaps\Back.bmp" />
+    <Content Include="PdfSharp.Explorer.resources\bitmaps\Forward.bmp" />
+    <Content Include="PdfSharp.Explorer.resources\bitmaps\OpenFolder.bmp" />
+    <Content Include="PdfSharp.Explorer.resources\bitmaps\Save.bmp" />
+    <Compile Include="AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="PdfSharp.Explorer.Pages\ArrayPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="PdfSharp.Explorer.Pages\DescriptionPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="PdfSharp.Explorer.Pages\DictionaryPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="PdfSharp.Explorer.Pages\InitialViewPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="PdfSharp.Explorer.Pages\MainInformationPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="PdfSharp.Explorer.Pages\MainObjectsPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="PdfSharp.Explorer.Pages\MainObjectsPageBase.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="PdfSharp.Explorer.Pages\MainPagesPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="PdfSharp.Explorer.Pages\MainTreePage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="PdfSharp.Explorer.Pages\PageBase.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="PdfSharp.Explorer.Pages\PdfTextPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="PdfSharp.Explorer.Pages\SecurityPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="PdfSharp.Explorer.Pages\SimpleObjectPage.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="PdfSharp.Explorer\ExplorerHelper.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="PdfSharp.Explorer\ExplorerPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="PdfSharp.Explorer\ExplorerProcess.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="PdfSharp.Explorer\MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PdfSharp.Explorer\PasswordForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PdfSharp.Explorer\Program.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="PdfSharp.Explorer\VersionInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <EmbeddedResource Include="PdfSharp.Explorer.Pages\ArrayPage.resx">
+      <DependentUpon>ArrayPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PdfSharp.Explorer.Pages\DescriptionPage.resx">
+      <DependentUpon>DescriptionPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PdfSharp.Explorer.Pages\DictionaryPage.resx">
+      <DependentUpon>DictionaryPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PdfSharp.Explorer.Pages\InitialViewPage.resx">
+      <DependentUpon>InitialViewPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PdfSharp.Explorer.Pages\MainInformationPage.resx">
+      <DependentUpon>MainInformationPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PdfSharp.Explorer.Pages\MainObjectsPage.resx">
+      <DependentUpon>MainObjectsPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PdfSharp.Explorer.Pages\MainObjectsPageBase.resx">
+      <DependentUpon>MainObjectsPageBase.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PdfSharp.Explorer.Pages\MainPagesPage.resx">
+      <DependentUpon>MainPagesPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PdfSharp.Explorer.Pages\MainTreePage.resx">
+      <DependentUpon>MainTreePage.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PdfSharp.Explorer.Pages\PageBase.resx">
+      <DependentUpon>PageBase.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PdfSharp.Explorer.Pages\PdfTextPage.resx">
+      <DependentUpon>PdfTextPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PdfSharp.Explorer.Pages\SecurityPage.resx">
+      <DependentUpon>SecurityPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PdfSharp.Explorer.Pages\SimpleObjectPage.resx">
+      <DependentUpon>SimpleObjectPage.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PdfSharp.Explorer\ExplorerPanel.resx">
+      <DependentUpon>ExplorerPanel.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PdfSharp.Explorer\MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PdfSharp.Explorer\PasswordForm.resx">
+      <DependentUpon>PasswordForm.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\code\PdfSharp\PdfSharp.csproj">
+      <Project>{5384CE57-1F94-4D22-860D-2E9C1AC12DDF}</Project>
+      <Name>PdfSharp</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.3.1">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 3.1</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+</Project>

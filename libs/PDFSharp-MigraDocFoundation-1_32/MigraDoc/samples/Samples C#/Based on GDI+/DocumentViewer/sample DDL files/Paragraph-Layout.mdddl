@@ -1,0 +1,1093 @@
+//
+// empira MigraDoc DDL sample
+//
+// This code is free for public use.
+// You are encouraged to use this code as a basis for your own documents.
+//
+
+\document
+{
+  \styles
+  {
+    Heading1
+    {
+      Font.Size = 13
+      Font.Bold = true
+      Font.Color = RGB(204,0,51)
+      ParagraphFormat.SpaceBefore = 0
+      ParagraphFormat.SpaceAfter = 12
+      ParagraphFormat.KeepWithNext = true
+    }
+    
+    Heading2
+    {
+      Font.Size = 11
+      ParagraphFormat.SpaceBefore = 12
+      ParagraphFormat.SpaceAfter = 6
+      ParagraphFormat.KeepWithNext = true
+    }
+
+    Header {Font.Color = RGB(70,70,70)}
+    
+    Footer {Font.Color = RGB(70,70,70)}
+    
+    Comment : Normal
+    {
+      Font.Color = RGB(30,70,160)
+      ParagraphFormat.SpaceBefore = 9
+      ParagraphFormat.SpaceAfter = 6
+    }
+   
+    DDL : Normal
+    {
+      Font.Name = "Lucida Console"
+      Font.Size = 9
+      Font.Color = RGB(30,70,160)
+      ParagraphFormat.SpaceBefore = 6
+      ParagraphFormat.SpaceAfter = 6
+      ParagraphFormat.Shading.Color = GRAY(5)
+      ParagraphFormat.KeepTogether = true
+    }
+  }
+
+  \section [PageSetup.StartingNumber = 1]
+  {
+    \header
+    {
+      Paragraph - Layout - Alignment
+    }
+    \footer [Format.Alignment = Center]
+    {
+      Section \field(Section) \(0x95) Page \field(Page) of \field(SectionPages)
+    }
+
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading1"]
+    {
+      Alignment
+    }
+    \paragraph [Style = "Comment"]
+    {
+      A paragraph can be aligned left, right, center, or justified.
+      
+      In the samples the background of the paragraph is shaded for better illustration.
+    }
+
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading2"]
+    {
+      Left aligned
+    }
+    \paragraph [Style = "Comment"]
+    {
+      This is default.
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph [Format.Alignment = Left] \linebreak
+      \{…\}
+    }
+    \paragraph [Format.Alignment = Left Format.Shading.Color = LavenderBlush]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading2"]
+    {
+      Right aligned
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph [Format.Alignment = Right] \linebreak
+      \{…\}
+    }
+    \paragraph [Format.Alignment = Right Format.Shading.Color = LavenderBlush]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading2"]
+    {
+      Centered
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph [Format.Alignment = Center] \linebreak
+      \{…\}
+    }
+    \paragraph [Format.Alignment = Center Format.Shading.Color = LavenderBlush]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading2"]
+    {
+      Justified
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph [Format.Alignment = Justify] \linebreak
+      \{…\}
+    }
+    \paragraph [Format.Alignment = Justify Format.Shading.Color = LavenderBlush]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+  }
+  
+  \section [PageSetup.StartingNumber = 1]
+  {
+    \header
+    {
+      Paragraph - Layout - Indent
+    }
+
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading1"]
+    {
+      Indent
+    }
+    \paragraph [Style = "Comment"]
+    {
+      A paragraph has a left, right, and first line indent.
+    }
+
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading2"]
+    {
+      Left Indent
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph [Format.LeftIndent = "2cm"] \linebreak
+      \{…\}
+    }
+    \paragraph [Format.LeftIndent = "2cm" Format.Shading.Color = LavenderBlush]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+    
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading2"]
+    {
+      Right Indent
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph [Format.RightIndent = "2cm"] \linebreak
+      \{…\}
+    }
+    \paragraph [Format.RightIndent = "2cm" Format.Shading.Color = LavenderBlush]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+    
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading2"]
+    {
+      First Line Indent
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph [Format.FirstLineIndent = "1.5cm"] \linebreak
+      \{…\}
+    }
+    \paragraph [Format.FirstLineIndent = "1.5cm" Format.Shading.Color = LavenderBlush]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading2"]
+    {
+      Hanging First Line Indent
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph [Format.FirstLineIndent = "-1.5cm" Format.LeftIndent = "1.5cm"] \linebreak
+      \{…\}
+    }
+    \paragraph [Format.FirstLineIndent = "-1.5cm" Format.LeftIndent = "1.5cm" Format.Shading.Color = LavenderBlush]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+  }
+
+  \section [PageSetup.StartingNumber = 1]
+  {
+    \header
+    {
+      Paragraph - Layout - Space before / Space after
+    }
+
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading1"]
+    {
+      Space before / Space after
+    }
+    \paragraph [Style = "Comment"]
+    {
+      The distance between consecutive paragraphs is controlled by their space
+      before and space after attributes.
+    }
+
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading2"]
+    {
+      Space before
+    }
+    \paragraph [Style = "Comment"]
+    {
+      3 mm space before paragraph.
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph [Format.SpaceBefore = "3mm"] \linebreak
+      \{…\}
+    }
+    \paragraph [Format.Font.Color = LightSlateGray] {Paragraph before…}
+    \paragraph [Format.SpaceBefore = "3mm" Format.Shading.Color = LavenderBlush]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+    \paragraph [Format.Font.Color = LightSlateGray] {Paragraph after…}
+   
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading2"]
+    {
+      Space after
+    }
+    \paragraph [Style = "Comment"]
+    {
+      6 pt space after paragraph.
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph [Format.SpaceAfter = 6] \linebreak
+      \{…\}
+    }
+    \paragraph [Format.Font.Color = LightSlateGray] {Paragraph before…}
+    \paragraph [Format.SpaceAfter = 6 Format.Shading.Color = LavenderBlush]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+    \paragraph [Format.Font.Color = LightSlateGray] {Paragraph after…}
+
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading2"]
+    {
+      Actual Distance
+    }
+    \paragraph [Style = "Comment"]
+    {
+      The actual distance between two paragraphs is the maximum of the space after the first
+      paragraph and the space before of the second one.
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph [Format.SpaceAfter = 5] \linebreak
+      \{…\} \linebreak
+      \\paragraph [Format.SpaceBefore = 15] \linebreak
+      \{…\}
+    }
+    \paragraph [Format.SpaceAfter = 5]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+    \paragraph [Format.SpaceBefore = 15]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+    \paragraph [Style = "Comment"]
+    {
+      The distance in the example is 15pt and not 20pt.
+    }
+  }
+  
+  \section [PageSetup.StartingNumber = 1]
+  {
+    \header
+    {
+      Paragraph - Layout - Borders and Shading
+    }
+
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading1"]
+    {
+      Borders and Shading
+    }
+    \paragraph [Style = "Comment"]
+    {
+      A paragraph has borders and a shading. By default, the borders are invisible
+      and the shading is transparent.
+    }
+
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading2"]
+    {
+      Solid Border
+    }
+    \paragraph [Style = "Comment"]
+    {
+      To get the default border just make is visible.
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph [Format.Borders.Visible = true] \linebreak
+      \{…\}
+    }
+    \paragraph [Format.Borders.Visible = true]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+   
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading2"]
+    {
+      Border Distance
+    }
+    \paragraph [Style = "Comment"]
+    {
+      The border distance can be set separately for each side.
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph \linebreak
+      [ Format.Borders.Visible = true \linebreak
+        Format.Borders.DistanceFromTop = 12 \linebreak
+        Format.Borders.DistanceFromBottom = 2 \linebreak
+        Format.Borders.DistanceFromLeft = 10 \linebreak
+        Format.Borders.DistanceFromRight = 20 \linebreak
+      ]
+      \{…\}
+    }
+    \paragraph
+    [
+      Format.Borders.Visible = true 
+      Format.Borders.DistanceFromTop = 12
+      Format.Borders.DistanceFromBottom = 2
+      Format.Borders.DistanceFromLeft = 10
+      Format.Borders.DistanceFromRight = 20
+    ]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+   
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading2"]
+    {
+      Border Styles
+    }
+    \paragraph [Style = "Comment"]
+    {
+      The Borders attributes Visible, Width, Style, and Color apply to all borders. 
+      In addition each border can be styled inividually.
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph \linebreak
+      [ \linebreak
+        Format.Borders.Visible = true \linebreak
+        Format.Borders.DistanceFromTop = 3 \linebreak
+        Format.Borders.DistanceFromBottom = 3 \linebreak
+        Format.Borders.DistanceFromLeft = 5 \linebreak
+        Format.Borders.DistanceFromRight = 5 \linebreak
+        Format.Borders.Top.Width = 3 \linebreak
+        Format.Borders.Top.Style = Dot \linebreak
+        Format.Borders.Top.Color = Orange \linebreak
+        Format.Borders.Bottom.Width = .5 \linebreak
+        Format.Borders.Bottom.Style = DashDot \linebreak
+        Format.Borders.Bottom.Color = SpringGreen \linebreak
+        Format.Borders.Left.Width = 5 \linebreak
+        Format.Borders.Left.Style = Single \linebreak
+        Format.Borders.Left.Color = Black \linebreak
+        Format.Borders.Right.Visible = false \linebreak
+      ] \linebreak
+      \{…\}
+    }
+    \paragraph
+    [
+      Format.Borders.Visible = true
+      Format.Borders.DistanceFromTop = 3
+      Format.Borders.DistanceFromBottom = 3
+      Format.Borders.DistanceFromLeft = 5
+      Format.Borders.DistanceFromRight = 5
+      Format.Borders.Top.Width = 3
+      Format.Borders.Top.Style = Dot
+      Format.Borders.Top.Color = Orange
+      Format.Borders.Bottom.Width = .5
+      Format.Borders.Bottom.Style = DashDot
+      Format.Borders.Bottom.Color = SpringGreen
+      Format.Borders.Left.Width = 5
+      Format.Borders.Left.Style = Single
+      Format.Borders.Left.Color = Black
+      Format.Borders.Right.Visible = false
+    ]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+   
+    \pagebreak
+	
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading2"]
+    {
+      Shading
+    }
+    \paragraph [Style = "Comment"]
+    {
+      The background of a paragraph can get a color.
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph [Format.Shading.Color = Gold] \linebreak
+      \{…\}
+    }
+    \paragraph [Format.Shading.Color = Gold]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading2"]
+    {
+      Border Distance
+    }
+    \paragraph [Style = "Comment"]
+    {
+      The shading area depends on the border distance.
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph \linebreak
+      [ Format.Shading.Color = Gold \linebreak
+        Format.Borders.DistanceFromTop = 10 \linebreak
+        Format.Borders.DistanceFromBottom = 10 \linebreak
+        Format.Borders.DistanceFromLeft = 10 \linebreak
+        Format.Borders.DistanceFromRight = 10 \linebreak
+      ] \{…\}
+    }
+    \paragraph [Format.Shading.Color = Gold
+      Format.Borders.DistanceFromTop = 10
+      Format.Borders.DistanceFromBottom = 10
+      Format.Borders.DistanceFromLeft = 10
+      Format.Borders.DistanceFromRight = 10
+    ]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading2"]
+    {
+      Borders and Shading
+    }
+    \paragraph [Style = "Comment"]
+    {
+      The left and right indent can compensate the left and right border distance
+      to fit a paragraph excatly into the page margins.
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph \linebreak
+      [ Format.Shading.Color = Gold \linebreak
+        Format.LeftIndent = 10 \linebreak
+        Format.RightIndent = 10 \linebreak
+        Format.Borders.Visible = true \linebreak
+        Format.Borders.Width = 1.5 \linebreak
+        Format.Borders.DistanceFromTop = 7 \linebreak
+        Format.Borders.DistanceFromBottom = 7 \linebreak
+        Format.Borders.DistanceFromLeft = 10 \linebreak
+        Format.Borders.DistanceFromRight = 10 \linebreak
+      ] \{…\}
+    }
+    \paragraph
+    [ Format.Shading.Color = Gold
+      Format.LeftIndent = 10
+      Format.RightIndent = 10
+      Format.Borders.Visible = true
+      Format.Borders.Width = 1.5
+      Format.Borders.DistanceFromTop = 7
+      Format.Borders.DistanceFromBottom = 7
+      Format.Borders.DistanceFromLeft = 10
+      Format.Borders.DistanceFromRight = 10
+    ]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+    \pagebreak
+    
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading2"]
+    {
+      Combining Paragraphs
+    }
+    \paragraph [Style = "Comment"]
+    {
+      MigraDoc 1.1 does not automatically combine consecutive paragraphs with
+      the same borders and shading. To get one single border around two or more
+      paragraphs, the formatting must be exact. The following sample illustrates
+      that, but in most cases it is easier done using a table.
+      
+      The distance between the paragraphs must be achieved with the border
+      distance while SpaceBefore and SpaceAfter must be zero. A space after the 
+      first or before the second paragraph disrupts the borders and the shading.      
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph \linebreak
+      [ Format.Shading.Color = Gold \linebreak
+        format.Font.Bold = true \linebreak
+        Format.LeftIndent = 10 \linebreak
+        Format.RightIndent = 10 \linebreak
+        Format.Borders.Visible = true \linebreak
+        Format.Borders.Width = 1.5 \linebreak
+        Format.Borders.DistanceFromTop = 7 \linebreak
+        Format.Borders.DistanceFromBottom = 3.5 \linebreak
+        Format.Borders.DistanceFromLeft = 10 \linebreak
+        Format.Borders.DistanceFromRight = 10 \linebreak
+        Format.Borders.Bottom.Visible = false \linebreak
+      ] \{…\} \linebreak
+      \\paragraph \linebreak
+      [ Format.Shading.Color = Gold \linebreak
+        Format.LeftIndent = 10 \linebreak
+        Format.RightIndent = 10 \linebreak
+        Format.Borders.Visible = true \linebreak
+        Format.Borders.Width = 1.5 \linebreak
+        Format.Borders.DistanceFromTop = 7 \linebreak
+        Format.Borders.DistanceFromBottom = 3.5 \linebreak
+        Format.Borders.DistanceFromLeft = 10 \linebreak
+        Format.Borders.DistanceFromRight = 10 \linebreak
+        Format.Borders.Top.Visible = false \linebreak
+      ] \{…\}
+    }
+    \paragraph
+    [ Format.Shading.Color = Gold
+      format.Font.Bold = true
+      Format.LeftIndent = 10
+      Format.RightIndent = 10
+      Format.Borders.Visible = true
+      Format.Borders.Width = 1.5
+      Format.Borders.DistanceFromTop = 7
+      Format.Borders.DistanceFromBottom = 3.5
+      Format.Borders.DistanceFromLeft = 10
+      Format.Borders.DistanceFromRight = 10
+      Format.Borders.Bottom.Visible = false
+      Format.Borders.Bottom.Width = 0  //BUG Superflous by design! Must be fixed in renderer.
+    ]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+    \paragraph 
+    [ Format.Shading.Color = Gold
+      Format.LeftIndent = 10
+      Format.RightIndent = 10
+      Format.Borders.Visible = true
+      Format.Borders.Width = 1.5
+      Format.Borders.DistanceFromTop = 7
+      Format.Borders.DistanceFromBottom = 3.5
+      Format.Borders.DistanceFromLeft = 10
+      Format.Borders.DistanceFromRight = 10
+      Format.Borders.Top.Visible = false
+    ]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+    \paragraph [Style = "Comment"]
+    {
+      \bold{Remark:} There are two additional borders DiagonalUp and DiagonalDown. These borders
+      apply only to tables. Used with paragraphs they are ignored.
+    }
+  } 
+  
+  \section [PageSetup.StartingNumber = 1]
+  {
+    \header
+    {
+      Paragraph - Layout - Line Spacing
+    }
+
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading1"]
+    {
+      Line Spacing
+    }
+    \paragraph [Style = "Comment"]
+    {
+      The space between the lines of a paragraph is controlled by the attributes
+      LineSpacing and LineSpacingRule.
+    }
+
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading2"]
+    {
+      Default
+    }
+    \paragraph [Style = "Comment"]
+    {
+      The default LineSpacingRule is Single and the space between the lines is 
+      determinated by the paragraph´s font and its size.
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph [Format.Font.Size = 8] \linebreak
+      \{…\}
+    }
+    \paragraph [Format.Font.Size = 8]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph [Format.Font.Size = 12] \linebreak
+      \{…\}
+    }
+    \paragraph [Format.Font.Size = 12]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+    \paragraph [Style = "Comment"]
+    {
+      Into detail, it depends on the largest font used in each single line.
+    }
+    \paragraph [Format.Font.Size = 9]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna \font[Size=13]{feugiam} quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+    
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading2"]
+    {
+      AtLeast Line Spacing
+    }
+    \paragraph [Style = "Comment"]
+    {
+      With the LineSpacingRule AtLeast, the space between the lines can be increased
+      to at least the value of LineSpacing.
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph \linebreak
+      [ Format.LineSpacingRule = AtLeast \linebreak
+        Format.LineSpacing = 17 \linebreak
+      ]\{…\}
+    }
+    \paragraph [Format.LineSpacingRule = AtLeast Format.LineSpacing = 17]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+    \pagebreak
+
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading2"]
+    {
+      Exact Line Spacing
+    }
+    \paragraph [Style = "Comment"]
+    {
+      With the LineSpacingRule Exactly, the space between the lines is fixed.
+      The space never changes, even if a word overwrites other text.
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph [Format.LineSpacingRule = Exactly] \linebreak
+      \{…\}
+    }
+    \paragraph [Format.LineSpacingRule = Exactly]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna \font[Size=20]{feugiam}  quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+    
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading2"]
+    {
+      Multiple Line Spacing
+    }
+    \paragraph [Style = "Comment"]
+    {
+      With the LineSpacingRule Multiple, the space between the lines is a multiple
+      of the default space between lines.
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph \linebreak
+      [ Format.LineSpacingRule = Multiple \linebreak
+        Format.LineSpacing = 2 \linebreak
+      ] \{…\}
+    }
+    \paragraph [Format.LineSpacingRule = Multiple Format.LineSpacing = 2]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+  }
+
+  \section [PageSetup.StartingNumber = 1]
+  {
+    \header
+    {
+      Paragraph - Layout - List Info
+    }
+
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading1"]
+    {
+      ListInfo
+    }
+    \paragraph [Style = "Comment"]
+    {
+      The ListInfo attribute can be used to generate either a list with a bullet symbol or
+      a numbered list.
+    }
+
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading2"]
+    {
+      ListType
+    }
+    \paragraph [Style = "Comment"]
+    {
+      There are 6 list types in MigraDoc.
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph [Format.ListInfo.ListType = BulletList1] \linebreak
+      \{ \linebreak
+        BulletList1 \linebreak
+      \} \linebreak
+      \\paragraph [Format.ListInfo.ListType = BulletList2] \linebreak
+      \{ \linebreak
+        BulletList2 \linebreak
+      \} \linebreak
+      \\paragraph [Format.ListInfo.ListType = BulletList3] \linebreak
+      \{ \linebreak
+        BulletList3 \linebreak
+      \} \linebreak
+      \\paragraph [Format.ListInfo.ListType = NumberList1] \linebreak
+      \{ \linebreak
+        NumberList1 \linebreak
+      \} \linebreak
+      \\paragraph [Format.ListInfo.ListType = NumberList2] \linebreak
+      \{ \linebreak
+        NumberList2 \linebreak
+      \} \linebreak
+      \\paragraph [Format.ListInfo.ListType = NumberList3] \linebreak
+      \{ \linebreak
+        NumberList3 \linebreak
+      \}
+    }
+    \paragraph [Format.ListInfo.ListType = BulletList1]
+    {
+      BulletList1
+    }
+    \paragraph [Format.ListInfo.ListType = BulletList2]
+    {
+      BulletList2
+    }
+    \paragraph [Format.ListInfo.ListType = BulletList3]
+    {
+      BulletList3
+    }
+    \paragraph [Format.ListInfo.ListType = NumberList1]
+    {
+      NumberList1
+    }
+    \paragraph [Format.ListInfo.ListType = NumberList2]
+    {
+      NumberList2
+    }
+    \paragraph [Format.ListInfo.ListType = NumberList3]
+    {
+      NumberList3
+    }
+
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading2"]
+    {
+      ContinuePreviousList
+    }
+    \paragraph [Style = "Comment"]
+    {
+      The numbering of a number list will continue to increase until
+      the ContinuePreviousList attribute in the ListInfo is set to false.      
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph [Format.ListInfo.ListType = NumberList1] \linebreak
+      \{ \linebreak
+        Entry \linebreak
+      \}\linebreak
+      \\paragraph [Format.ListInfo.ListType = NumberList1] \linebreak
+      \{ \linebreak
+        Entry \linebreak
+      \} \linebreak
+      \\paragraph [Format.ListInfo \{ListType = NumberList1 ContinuePreviousList = false\}] \linebreak
+      \{ \linebreak
+        Entry \linebreak
+      \} \linebreak
+      \\paragraph [Format.ListInfo.ListType = NumberList1] \linebreak
+      \{ \linebreak
+        Entry \linebreak
+      \}
+    }
+    \paragraph [Format.ListInfo.ListType = NumberList1]
+    {
+      Entry
+    }
+    \paragraph [Format.ListInfo.ListType = NumberList1]
+    {
+      Entry
+    }
+    \paragraph [Format.ListInfo {ListType = NumberList1 ContinuePreviousList = false}]
+    {
+      Entry
+    }
+    \paragraph [Format.ListInfo.ListType = NumberList1]
+    {
+      Entry
+    }
+    \pagebreak
+
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading2"]
+    {
+      NumberPosition
+    }
+    \paragraph [Style = "Comment"]
+    {
+      The position of the bullet or number in the beginning of each entry can be defined with the
+      NumberPosition attribute of the ListInfo. The value defined in the NumberPosition attribute
+      is the distance between the left margin and the bullet of numbering of the list.
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph [Format.ListInfo.ListType = BulletList1] \linebreak
+      \{…\}\linebreak
+      \\paragraph [Format.ListInfo \{ListType = BulletList1 NumberPosition = "2cm"\}] \linebreak
+      \{…\}
+    }
+    \paragraph [Format.ListInfo.ListType = BulletList1]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+    \paragraph [Format.ListInfo {ListType = BulletList1 NumberPosition = "2cm"}]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+
+    // -------------------------------------------------------------------------
+    \paragraph [Style = "Heading2"]
+    {
+      Layout Formatting of a List
+    }
+    \paragraph [Style = "Comment"]
+    {
+      The layout of a list can also be defined by setting the indentation of the paragraph.
+      The left indent controls how the paragraph is indented.
+      When NumberPosition is undefined, the paragraph will use the value defined in FirstLineIndent,
+      which has a default value of zero (0). The FirstLineIndent however is relative to the left indent,
+      while NumberPosition is relative to the left margin.
+      A TabStop can be used to control the distance between the list's bullet or numbering and
+      the beginning of the paragraph, because a tab is inserted behind the bullet of numbering, implicitly.
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph \linebreak
+      [ \linebreak
+        Format \linebreak
+        \{ \linebreak
+          ListInfo.ListType = BulletList1 \linebreak
+          LeftIndent = "2cm" \linebreak
+        \} \linebreak
+      ] \linebreak
+      \{…\}\linebreak
+      \\paragraph \linebreak
+      [ \linebreak
+        Format \linebreak
+        \{ \linebreak
+          ListInfo \linebreak
+          \{ \linebreak
+            ListType = BulletList1 \linebreak
+            NumberPosition = "1cm" \linebreak
+          \} \linebreak
+          LeftIndent = "2cm" \linebreak
+        \} \linebreak
+      ] \linebreak
+      \{…\}
+    }
+    \paragraph
+    [
+      Format
+      {
+        ListInfo.ListType = BulletList1
+        LeftIndent = "2cm"
+      }
+    ]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+    \paragraph
+    [
+      Format
+      {
+        ListInfo
+        {
+          ListType = BulletList1
+          NumberPosition = "1cm"
+        }
+        LeftIndent = "2cm"
+      }
+    ]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+    \paragraph [Style = "DDL"]
+    {
+      \\paragraph \linebreak
+      [ \linebreak
+        Format \linebreak
+        \{ \linebreak
+          ListInfo.ListType = BulletList1 \linebreak
+          LeftIndent = "2cm" \linebreak
+          FirstLineIndent = "1cm" \linebreak
+          \//or you can write NumberPosition = "3cm" \linebreak
+        \} \linebreak
+      ] \linebreak
+      \{…\} \linebreak
+      \\paragraph \linebreak
+      [ \linebreak
+        Format.ListInfo.ListType = BulletList1 \linebreak
+      ] \linebreak
+      \{…\} \linebreak
+      \\paragraph \linebreak
+      [ \linebreak
+        Format.ListInfo.ListType = BulletList1 \linebreak
+        Format.TabStops += \linebreak
+        \{ \linebreak
+          Position = "0.5cm" \linebreak
+        \} \linebreak
+      ] \linebreak
+      \{…\} \linebreak
+      \\paragraph \linebreak
+      [ \linebreak
+        Format.ListInfo.ListType = BulletList1 \linebreak
+        Format.TabStops += \linebreak
+        \{ \linebreak
+          Position = "3cm" \linebreak
+        \} \linebreak
+      ] \linebreak
+      \{…\}
+    }
+    \paragraph
+    [
+      Format
+      {
+        ListInfo.ListType = BulletList1
+        LeftIndent = "2cm"
+        FirstLineIndent = "1cm"
+      }
+    ]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+    \paragraph
+    [
+      Format.ListInfo.ListType = BulletList1
+    ]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+    \paragraph
+    [
+      Format.ListInfo.ListType = BulletList1
+      Format.TabStops +=
+      {
+        Position = "0.5cm"
+      }
+    ]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+    \paragraph
+    [
+      Format.ListInfo.ListType = BulletList1
+      Format.TabStops +=
+      {
+        Position = "3cm"
+      }
+    ]
+    {
+      Loreet ad et luptat. Duis niamconsecte digna facilla reros delit utat augait eratie modions quisciduisi
+      euissed magna feugiam quat alit amet alit, quamcon henibh eum veros nullan eugiat. Ut ipsummod
+      esto exer in hent lortio odolore dolorer iustis am vullam, quating eugueraestie etumsan ute modions.
+    }
+  }
+}

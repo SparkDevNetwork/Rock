@@ -1,0 +1,39 @@
+<publishData>
+  <publishTarget publishUrl="G:\!StLa\WebSites\dev.empira.de\pdfsharpClock\">
+    <file relUrl="_ReSharper.PDFsharpClock-VS2008/CachesImage.bin" publishTime="06/09/2009 00:39:50" />
+    <file relUrl="PDFsharpClock-VS2008.suo" publishTime="04/28/2009 23:09:29" />
+    <file relUrl="bin/PdfSharp.dll" publishTime="06/09/2009 00:40:06" />
+    <file relUrl="Properties/AssemblyInfo.cs" publishTime="05/08/2006 15:33:08" />
+    <file relUrl="Clock.aspx" publishTime="05/08/2006 15:42:50" />
+    <file relUrl="Web.config" publishTime="05/08/2006 15:33:08" />
+    <file relUrl="_ReSharper.PDFsharpClock-VS2008/WebsiteFileReferences/.version" publishTime="06/09/2009 00:39:51" />
+    <file relUrl="Clock.aspx.designer.cs" publishTime="05/08/2006 15:42:50" />
+    <file relUrl="_ReSharper.PDFsharpClock-VS2008/TodoCache/9/750f63f5.dat" publishTime="06/09/2009 00:39:51" />
+    <file relUrl="PDFsharpClock.Publish.xml" publishTime="12/13/2007 00:00:35" />
+    <file relUrl="bin/PDFsharpClock.pdb" publishTime="06/09/2009 00:40:06" />
+    <file relUrl="PDFsharpClock.csproj" publishTime="06/06/2008 14:10:20" />
+    <file relUrl="_ReSharper.PDFsharpClock-VS2008/WordIndex.New/9/750f63f5.dat" publishTime="06/09/2009 00:39:50" />
+    <file relUrl="PDFsharpClock-VS2008.4.1.resharper.user" publishTime="04/28/2009 23:09:32" />
+    <file relUrl="bin/PDFsharpClock.dll" publishTime="06/09/2009 00:40:06" />
+    <file relUrl="PDFsharpClock-VS2005.sln" publishTime="06/22/2008 00:37:32" />
+    <file relUrl="_ReSharper.PDFsharpClock-VS2008/TodoCache/.version" publishTime="06/09/2009 00:39:51" />
+    <file relUrl="bin/de/PdfSharp.resources.dll" publishTime="06/09/2009 00:40:06" />
+    <file relUrl="bin/PdfSharp.xml" publishTime="06/09/2009 00:40:06" />
+    <file relUrl="!readme.txt" publishTime="05/08/2006 21:01:24" />
+    <file relUrl="bin/PdfSharp.pdb" publishTime="06/09/2009 00:40:06" />
+    <file relUrl="Clock.aspx.cs" publishTime="06/09/2009 00:40:04" />
+    <file relUrl="_ReSharper.PDFsharpClock-VS2008/ProjectModel/ProjectModel.dat" publishTime="06/09/2009 00:39:40" />
+    <file relUrl="PDFsharpClock-VS2008.sln" publishTime="06/06/2008 14:09:53" />
+    <file relUrl="_ReSharper.PDFsharpClock-VS2008/WordIndex.New/.version" publishTime="06/09/2009 00:39:50" />
+  </publishTarget>
+  <publishTarget publishUrl="http://192.168.7.75/pdfsharpclock/">
+    <file relUrl="bin/PdfSharp.pdb" publishTime="12/11/2007 23:36:04" />
+    <file relUrl="bin/PDFsharpClock.dll" publishTime="12/12/2007 23:24:31" />
+    <file relUrl="Web.config" publishTime="05/08/2006 15:33:08" />
+    <file relUrl="Clock.aspx" publishTime="05/08/2006 15:42:50" />
+    <file relUrl="bin/de/PdfSharp.resources.dll" publishTime="12/11/2007 23:36:05" />
+    <file relUrl="bin/PdfSharp.XML" publishTime="12/11/2007 23:36:04" />
+    <file relUrl="bin/PdfSharp.dll" publishTime="12/11/2007 23:36:04" />
+    <file relUrl="bin/PDFsharpClock.pdb" publishTime="12/12/2007 23:24:31" />
+  </publishTarget>
+</publishData>

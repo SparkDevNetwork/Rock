@@ -87,10 +87,8 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
 });
 ";
 
-            if ( !Page.IsPostBack )
-            {
-                ScriptManager.RegisterStartupScript( hfGroupGuid, hfGroupGuid.GetType(), "CheckinGroupEditorScript", script, true );
-            }
+            ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "CheckinGroupEditorScript", script, true );
+
         }
 
         /// <summary>
@@ -497,7 +495,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
         /// <summary>
         /// Creates the group attribute controls.
         /// </summary>
-        public void CreateGroupAttributeControls(Group group)
+        public void CreateGroupAttributeControls( Group group )
         {
             // get the current InheritedGroupTypeId from the Parent Editor just in case it hasn't been saved to the database
             CheckinGroupTypeEditor checkinGroupTypeEditor = this.Parent as CheckinGroupTypeEditor;
