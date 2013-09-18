@@ -40,7 +40,7 @@ namespace Rock.Workflow.Action.CheckIn
             var family = checkInState.CheckIn.Families.FirstOrDefault( f => f.Selected );
             if ( family != null )
             {
-                foreach ( var person in family.People.Where( p => p.Selected && p.Person.LastName.Length > 0 ) )
+                foreach ( var person in family.People.Where( p => p.Selected ) )
                 {
                     person.Person.LoadAttributes();
                     string personAbilityLevel = person.Person.GetAttributeValue( "AbilityLevel" );
@@ -49,7 +49,7 @@ namespace Rock.Workflow.Action.CheckIn
                         continue;
                     }
 
-                    foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ).ToList() )
+                    foreach ( var groupType in person.GroupTypes.ToList() )
                     {
                         foreach ( var group in groupType.Groups.ToList() )
                         {
