@@ -66,6 +66,20 @@ SET @PersonId = SCOPE_IDENTITY()
 INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid, GroupMemberStatus)
 VALUES (0, @GroupId, @PersonId, @ChildRole, newid(), 0)
 
+-- Baby's birthdate, 12 months from today, also useful for testing "birthday is today" features...
+DECLARE @BabyBirthDate DateTime
+SET @BabyBirthDate = DATEADD(month, -12, GetDate());
+
+INSERT INTO [Person] ([IsSystem],[GivenName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId])
+VALUES (0, 'Joey', 'Turner', DAY(@BabyBirthDate), MONTH(@BabyBirthDate), YEAR( @BabyBirthDate), 1, 'joey@azturners.com', 1, 0, NEWID(), @PersonRecordType, @ActiveRecordStatus)
+SET @PersonId = SCOPE_IDENTITY()
+INSERT INTO [GroupMember] (IsSystem, GroupId, PersonId, GroupRoleId, Guid, GroupMemberStatus)
+VALUES (0, @GroupId, @PersonId, @ChildRole, newid(), 0)
+	-- Set Joey with an "Infant" Ability Level
+	DECLARE @AbilityLevelAttributeId int
+	SET @AbilityLevelAttributeId = ( SELECT Id FROM [Attribute] WHERE Guid = '4abf0bf2-49ba-4363-9d85-ac48a0f7e92a' )
+	INSERT INTO [AttributeValue] ( [IsSystem], [AttributeId], [EntityId], [Order], [Value], [Guid] )
+	VALUES (0, @AbilityLevelAttributeId, @PersonId, 0, 'C4550426-ED87-4CB0-957E-C6E0BC96080F', NEWID() )
 
 -- Edmiston Family
 SET @GroupId = (SELECT Id FROM [Group] WHERE Guid = '4DCC3392-9CA6-4FA1-A59E-FF085E0750B4')

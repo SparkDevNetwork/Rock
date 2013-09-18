@@ -31,6 +31,7 @@ namespace RockWeb.Blocks.CheckIn
             {
                 if ( !Page.IsPostBack )
                 {
+                    ClearSelection();
                     var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                     if ( family != null )
                     {
@@ -49,7 +50,7 @@ namespace RockWeb.Blocks.CheckIn
                                     familyMember.Selected = true;
                                 }
 
-                                ProcessSelection();
+                                ProcessSelection( maWarning );
                             }
                         }
                         else
@@ -66,6 +67,20 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
+        /// <summary>
+        /// Clear any previously selected people.
+        /// </summary>
+        private void ClearSelection()
+        {
+            foreach ( var family in CurrentCheckInState.CheckIn.Families )
+            {
+                foreach ( var person in family.People )
+                {
+                    person.Selected = false;
+                }
+            }
+        }
+
         protected void rSelection_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             if ( KioskCurrentlyActive )
@@ -78,7 +93,7 @@ namespace RockWeb.Blocks.CheckIn
                     if ( familyMember != null )
                     {
                         familyMember.Selected = true;
-                        ProcessSelection();
+                        ProcessSelection( maWarning );
                     }
                 }
             }
@@ -92,25 +107,6 @@ namespace RockWeb.Blocks.CheckIn
         protected void lbCancel_Click( object sender, EventArgs e )
         {
             CancelCheckin();
-        }
-
-        private void GoBack()
-        {
-            foreach ( var family in CurrentCheckInState.CheckIn.Families )
-            {
-                family.Selected = false;
-                family.People = new List<CheckInPerson>();
-            }
-
-            SaveState();
-
-            NavigateToPreviousPage();
-        }
-
-        private void ProcessSelection()
-        {
-            SaveState();
-            NavigateToNextPage();
         }
 
         protected void rSelection_ItemDataBound( object sender, RepeaterItemEventArgs e )
