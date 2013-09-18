@@ -82,6 +82,7 @@ namespace Rock.Workflow.Action.CheckIn
 
                             if ( groupType != null && groupType.Groups.Count > 0 )
                             {
+                                groupType.PreSelected = true;
                                 groupType.Selected = true;
                                 var group = groupType.Groups.Where( g => g.Selected ).FirstOrDefault();
                                 if ( group == null )

@@ -40,6 +40,19 @@
             alert('checking date');
             args.IsValid = args.Value.match(/^(\d{1,2})[- /.](\d{1,2})[- /.](\d{2,4})$/);        
         };
+
+        $find("mpeAddPerson").add_shown(function () {
+            $find("mpeAddPerson")._backgroundElement.onclick = function () {
+                $find("mpeAddPerson").hide();
+            }
+        });
+
+        $find("mpeAddFamily").add_shown(function () {
+            $find("mpeAddFamily")._backgroundElement.onclick = function () {
+                $find("mpeAddFamily").hide();
+            }
+        });
+
     };
 
     $(document).ready(function () { setControlEvents(); });
@@ -233,7 +246,7 @@
             </div>
         </div>
     </asp:Panel>
-    <asp:ModalPopupExtender ID="mpeAddPerson" runat="server" TargetControlID="hfOpenPersonPanel" PopupControlID="pnlAddPerson" 
+    <asp:ModalPopupExtender ID="mpeAddPerson" runat="server" BehaviorID="mpeAddPerson" TargetControlID="hfOpenPersonPanel" PopupControlID="pnlAddPerson" 
         CancelControlID="lbAddPersonCancel" BackgroundCssClass="attended modal-background" />
     <asp:HiddenField ID="hfOpenPersonPanel" runat="server" />    
 
@@ -306,7 +319,7 @@
         </div>
 
     </asp:Panel>
-    <asp:ModalPopupExtender ID="mpeAddFamily" runat="server" TargetControlID="hfOpenFamilyPanel" PopupControlID="pnlAddFamily"
+    <asp:ModalPopupExtender ID="mpeAddFamily" runat="server" BehaviorID="mpeAddFamily" TargetControlID="hfOpenFamilyPanel" PopupControlID="pnlAddFamily"
         CancelControlID="lbAddFamilyCancel" BackgroundCssClass="attended modal-background" />
     <asp:HiddenField ID="hfOpenFamilyPanel" runat="server" />
 
