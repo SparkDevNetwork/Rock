@@ -14,7 +14,9 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Group Role POCO Entity.
+    /// Represents a role that a <see cref="Rock.Model.GroupMember"/> can have in a <see cref="Rock.Model.Group"/>.  In RockChMS each member of a group has one 
+    /// or more <see cref="Rock.Model.GroupRole">GroupRoles</see> assigned to them (for instance the leader of a group can have both a leader and member role). Examples
+    /// of roles include leader, member, team leader, coach, host, etc.
     /// </summary>
     [Table( "GroupRole" )]
     [DataContract]
