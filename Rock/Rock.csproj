@@ -201,6 +201,10 @@
     <Compile Include="Migrations\201309122131001_DetailPageLinkedPageRefactor.Designer.cs">
       <DependentUpon>201309122131001_DetailPageLinkedPageRefactor.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201309182012247_DefinedTypeRefactor.cs" />
+    <Compile Include="Migrations\201309182012247_DefinedTypeRefactor.Designer.cs">
+      <DependentUpon>201309182012247_DefinedTypeRefactor.cs</DependentUpon>
+    </Compile>
     <Compile Include="Storage\ProviderComponent.cs" />
     <Compile Include="Storage\ProviderContainer.cs" />
     <Compile Include="Storage\Provider\Database.cs" />
@@ -1018,6 +1022,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201309122131001_DetailPageLinkedPageRefactor.resx">
       <DependentUpon>201309122131001_DetailPageLinkedPageRefactor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201309182012247_DefinedTypeRefactor.resx">
+      <DependentUpon>201309182012247_DefinedTypeRefactor.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
