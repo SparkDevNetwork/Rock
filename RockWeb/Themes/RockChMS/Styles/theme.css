@@ -8969,11 +8969,11 @@ dl dd {
   max-width: 37px;
   max-height: 37px;
 }
-.persondetails-familybar .member {
+.persondetails-familybar .members ul li .member {
   float: left;
   margin-left: 4px;
 }
-.persondetails-familybar .member h4 {
+.persondetails-familybar .members ul li .member h4 {
   margin: 0;
   font-size: 14px;
   font-weight: normal;
@@ -8982,40 +8982,36 @@ dl dd {
   text-overflow: ellipsis;
   overflow: hidden;
 }
-.persondetails-familybar .member small {
+.persondetails-familybar .members ul li .member small {
   display: block;
   line-height: 16px;
   margin: 0;
-}
-.persondetails-familybar .member small.age {
-  display: inline;
-  margin-left: 4px;
 }
 .persondetails-familybar .addresses ul {
   list-style: none;
   margin: 0;
 }
-.persondetails-familybar .addresses li {
+.persondetails-familybar .addresses ul li {
   display: block;
   clear: both;
   margin-bottom: 12px;
 }
-.persondetails-familybar .addresses h4 {
+.persondetails-familybar .addresses ul h4 {
   margin: 0;
   font-size: 14px;
   font-weight: 600;
 }
-.persondetails-familybar .addresses a.map,
-.persondetails-familybar .addresses div.actions,
-.persondetails-familybar .addresses div.address {
-  float: left;
-  margin-right: 4px;
-}
-.persondetails-familybar .address .actions {
+.persondetails-familybar .addresses ul .address .actions {
   display: none;
 }
-.persondetails-familybar .address .actions a {
+.persondetails-familybar .addresses ul .address .actions a {
   padding: 1px;
+}
+.persondetails-familybar .addresses ul a.map,
+.persondetails-familybar .addresses ul div.actions,
+.persondetails-familybar .addresses ul div.address {
+  float: left;
+  margin-right: 4px;
 }
 .pagetabs {
   margin-top: 12px;
@@ -9042,32 +9038,30 @@ dl dd {
   font-weight: 300;
   margin-left: 8px;
 }
-.persontimeline article i {
+.persontimeline article > i {
   float: left;
-  color: #a8a8a8;
+  color: #c8d3dc;
   width: 6%;
   font-size: 20px;
-}
-.persontimeline article h5 {
-  margin-top: 0;
-  margin-bottom: 4px;
 }
 .persontimeline article .details {
   float: left;
   width: 84%;
 }
+.persontimeline article .details h5 {
+  margin-top: 0;
+  margin-bottom: 6px;
+}
 .persontimeline article .actions {
   float: right;
   width: 10%;
 }
-.persontimeline article .actions i {
-  font-size: 14px;
-}
 .persontimeline article .actions a {
   float: right;
-  margin-left: 6px;
+  margin-left: 8px;
+  font-size: 14px;
 }
-.persontimelin article:last-child {
+.persontimeline article:last-child {
   margin-bottom: 0;
 }
 .persontimeline article.highlight {
@@ -9076,7 +9070,7 @@ dl dd {
   color: #b94a48;
 }
 .persontimeline article.highlight i {
-  color: #b94a48;
+  color: #eed3d7;
 }
 .persontimeline article.personal {
   background-color: #e7ecf0;
@@ -9084,7 +9078,7 @@ dl dd {
   color: #515151;
 }
 .persontimeline article.personal i {
-  color: #3a87ad;
+  color: #dee7ea;
 }
 .persontimeline .load-more {
   margin: 0 40%;

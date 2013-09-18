@@ -268,7 +268,7 @@ namespace Rock.Web.UI.Controls
 
             if ( ShowSecurityButton )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-mini security" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-xs security" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Type, "button" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Button );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "icon-lock" );
@@ -283,7 +283,7 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "actions" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             lbSaveNote.RenderControl( writer );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "edit-note-cancel btn btn-small" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "edit-note-cancel btn btn-sm" );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
             writer.Write( "Cancel" );
             writer.RenderEndTag();
@@ -308,8 +308,8 @@ namespace Rock.Web.UI.Controls
             if ( CreatedDateTime.HasValue )
             {
                 writer.Write( " " );
+                writer.AddAttribute("class", "date");
                 writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "timestamp" );
                 writer.Write( CreatedDateTime.Value.ToRelativeDateString( 6 ) );
                 writer.RenderEndTag();
             }

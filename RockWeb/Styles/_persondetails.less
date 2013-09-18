@@ -138,81 +138,66 @@
                     max-width: 37px;
                     max-height: 37px;
                 }
+
+                .member {
+                    float: left;
+                    margin-left: 4px;
+
+                        h4 {
+                            margin: 0;
+                            font-size: 14px;
+                            font-weight: normal;
+                            float: left;
+                            max-width: 88px;
+                            text-overflow: ellipsis;
+                            overflow: hidden;
+                        }
+
+                        small {
+                            display: block;
+                            line-height: 16px;
+                            margin: 0;
+                        }
+                }
+            }
+        }
+    }
+
+    .addresses ul {
+        list-style: none;
+        margin: 0;
+
+        li {
+            display: block;
+            clear: both;
+            margin-bottom: 12px;
+        }
+
+        h4 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: @font-weight-semibold;
+        }
+
+        .address {
+            .actions {
+                display: none;
+
+                a {
+                    padding: 1px;
+                }
             }
         }
 
-
+        & a.map,
+        & div.actions,
+        & div.address {
+            float: left;
+            margin-right: 4px;
+        }
     }
 }
 
-
-.persondetails-familybar .member
-{
-    float: left;
-    margin-left: 4px;
-}
-
-.persondetails-familybar .member h4
-{
-    margin: 0;
-    font-size: 14px;
-    font-weight: normal;
-    float: left;
-    max-width: 88px;
-    text-overflow: ellipsis;
-    overflow: hidden;
-}
-
-.persondetails-familybar .member small
-{
-    display: block;
-    line-height: 16px;
-    margin: 0;
-}
-
-.persondetails-familybar .member small.age
-{
-    display: inline;
-    margin-left: 4px;
-}
-
-.persondetails-familybar .addresses ul
-{
-    list-style: none;
-    margin: 0;
-}
-
-.persondetails-familybar .addresses li
-{
-    display: block;
-    clear: both;
-    margin-bottom: 12px;
-}
-
-.persondetails-familybar .addresses h4
-{
-    margin: 0;
-    font-size: 14px;
-    font-weight: @font-weight-semibold;
-}
-
-.persondetails-familybar .addresses a.map,
-.persondetails-familybar .addresses div.actions,
-.persondetails-familybar .addresses div.address
-{
-    float: left;
-    margin-right: 4px;
-}
-
-.persondetails-familybar .address .actions
-{
-    display: none;
-}
-
-.persondetails-familybar .address .actions a
-{
-    padding: 1px;
-}
 
 
 // 4. Page Tabs
@@ -221,110 +206,95 @@
 .pagetabs
 {
     margin-top: 12px;
-}
 
-.pagetabs .nav
-{
-    margin: 10px 0;
+    .nav {
+        margin: 10px 0;
+    }
 }
-
 
 // 5. Timeline
 // -------------------------
 
-.persontimeline header h4
-{
-    float: left;
+.persontimeline {
+
+    header {
+        h4 {
+            float: left;
+        }
+
+        .btn {
+            float: right;
+            margin-top: 6px;
+        }
+    }
+
+    article {
+        border-radius: @border-radius-base;
+        border: 1px solid darken(@accent-light-color, @const-border-darken-amt);
+        padding: 12px;
+        margin-bottom: 12px;
+        background-color: @accent-light-color;
+
+        .date {
+            font-size: 13px;
+            font-weight: @font-weight-light;
+            margin-left: 8px;
+        }
+
+        & > i {
+            float: left;
+            color: darken(@accent-light-color, 10%);
+            width: 6%;
+            font-size: 20px;
+        }
+
+        .details {
+            float: left;
+            width: 84%;
+
+            h5 {
+                margin-top: 0;
+                margin-bottom: 6px;
+            }
+        }
+
+        .actions {
+            float: right;
+            width: 10%;
+
+            a {
+                float: right;
+                margin-left: 8px;
+                font-size: 14px;
+            }
+        }
+
+        &:last-child {
+            margin-bottom: 0;
+        }
+
+        &.highlight {
+            background-color: @state-danger-bg;
+            border: 1px solid darken(spin(@state-danger-bg, -10), 3%);
+            color: @state-danger-text;
+
+            i {
+                color: darken(spin(@state-danger-bg, -10), 3%);
+            }
+        }
+
+        &.personal {
+            background-color: @state-info-bg;
+            border: 1px solid darken(spin(@state-info-bg, -10), 3%);
+            color: @state-info-text;
+
+            i {
+                color: darken(spin(@state-info-bg, -10), 3%);
+            }
+        }
+    }
 }
 
-.persontimeline header .btn
-{
-    float: right;
-    margin-top: 6px;
-}
-
-.persontimeline article
-{
-    border-radius: @border-radius-base;
-    border: 1px solid darken(@accent-light-color, @const-border-darken-amt);
-    padding: 12px;
-    margin-bottom: 12px;
-    background-color: @accent-light-color; 
-}
-
-.persontimeline article .date
-{
-    font-size: 13px;
-    font-weight: @font-weight-light;
-    margin-left: 8px;
-}
-
-.persontimeline article i
-{
-    float: left;
-    color: #a8a8a8;
-    width: 6%;
-    font-size: 20px;
-}
-
-.persontimeline article h5
-{
-    margin-top: 0;
-    margin-bottom: 4px;
-}
-
-.persontimeline article .details
-{
-    float: left;
-    width: 84%;
-}
-
-.persontimeline article .actions
-{
-    float: right;
-    width: 10%;
-}
-
-.persontimeline article .actions i
-{
-    font-size: 14px;
-            
-}
-
-.persontimeline article .actions a
-{
-    float: right;
-    margin-left: 6px;
-}
-
-.persontimelin article:last-child
-{
-    margin-bottom: 0;
-}
-
-.persontimeline article.highlight
-{
-    background-color: @state-danger-bg;
-    border: 1px solid darken(spin(@state-danger-bg, -10), 3%);
-    color: @state-danger-text;
-}
-
-.persontimeline article.highlight i
-{
-    color: #b94a48;
-}
-
-.persontimeline article.personal
-{
-    background-color: @state-info-bg;
-    border: 1px solid darken(spin(@state-info-bg, -10), 3%);
-    color: @state-info-text;
-}
-
-.persontimeline article.personal i
-{
-    color: #3a87ad;
-}
 
 .persontimeline .load-more
 {
