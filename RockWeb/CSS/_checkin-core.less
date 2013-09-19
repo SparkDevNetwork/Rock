@@ -362,6 +362,7 @@ body {
 {
     text-align: center;
     margin: 0 auto;
+    color: @header-text-color;
 }
 
 .attended .btn-checkin-select 
@@ -429,6 +430,7 @@ body {
 
 .attended .grid-table
 {
+    border: none;
     font-size: 1.35em;
     background-color: transparent;
     margin-bottom: 1%;
@@ -447,11 +449,6 @@ body {
 .attended .selected-grid .grid-table 
 {
     font-size: 1.25em;
-}
-
-.attended .table-bordered 
-{
-    border: 1px solid #dddddd;
 }
 
 .attended .pagination 
@@ -484,7 +481,7 @@ body {
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
     border-radius: 10px;
-    z-index: 10001 !important;    
+    z-index: 10001 !important;
 }
 
 .attended.modal-foreground.small 
@@ -498,7 +495,12 @@ body {
 {
     width: 95%;
     margin-left: 3%;
+    color: @site-text-color;
 }
+
+/*.attended.modal-foreground h2 {
+    color: @site-text-color !important;
+}*/
 
 .attended input[type="text"].note
 {
@@ -512,5 +514,5 @@ body {
 
 .attended .help-inline 
 {
-    color: darken(#FF0000, 15%);
+    color: darken(@checkin-button-primary-background, 15%);
 }

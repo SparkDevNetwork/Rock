@@ -153,7 +153,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 var person = (CheckInPerson)e.Item.DataItem;
                 if ( person.Selected )
                 {
-                    var lbSelectPerson = ( (LinkButton)e.Item.FindControl( "lbSelectPerson" ) );
+                    var lbSelectPerson = (LinkButton)e.Item.FindControl( "lbSelectPerson" );
                     lbSelectPerson.AddCssClass( "active" );
                     lbSelectPerson.CommandArgument = person.Person.Id.ToString();
                 }
@@ -172,7 +172,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 var person = (CheckInPerson)e.Item.DataItem;
                 if ( person.Selected )
                 {
-                    var lbSelectVisitor = ( (LinkButton)e.Item.FindControl( "lbSelectVisitor" ) );
+                    var lbSelectVisitor = (LinkButton)e.Item.FindControl( "lbSelectVisitor" );
                     lbSelectVisitor.AddCssClass( "active" );
                     lbSelectVisitor.CommandArgument = person.Person.Id.ToString();
                 }
@@ -298,9 +298,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// </summary>
         protected void SetAddPersonFields()
         {
-            tbFirstNameSearch.Text = "";
-            tbLastNameSearch.Text = "";
-            dpDOBSearch.Text = "";
+            tbFirstNameSearch.Text = string.Empty;
+            tbLastNameSearch.Text = string.Empty;
+            dpDOBSearch.Text = string.Empty;
             ddlGenderSearch.BindToEnum( typeof( Gender ) );
             ddlGenderSearch.SelectedIndex = 0;
             BindAbilityGrade( ddlAbilitySearch );
@@ -321,8 +321,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             if ( string.IsNullOrEmpty( tbFirstNameSearch.Text ) || string.IsNullOrEmpty( tbLastNameSearch.Text ) || string.IsNullOrEmpty( dpDOBSearch.Text ) || ddlGenderSearch.SelectedValueAsInt() == 0 )
             {
                 mpeAddPerson.Show();
-                //string errorMsg = "<ul><li>Please fill out the First Name, Last Name, DOB, and Gender fields.</li></ul>";
-                //maAddPerson.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
             }
             else
             {
@@ -555,7 +553,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                             // add the visitor to the checkin group
                             checkInPerson.FamilyMember = false;
                             hfSelectedVisitor.Value += personId + ",";
-
                         }
 
                         family.People.Add( checkInPerson );
@@ -769,6 +766,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 groupMember.GroupRoleId = new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) ).Id;
             }
+
             Rock.Data.RockTransactionScope.WrapTransaction( () =>
             {
                 groupMemberService.Add( groupMember, CurrentPersonId );
@@ -957,6 +955,5 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         #endregion
-
-}
+    }
 }

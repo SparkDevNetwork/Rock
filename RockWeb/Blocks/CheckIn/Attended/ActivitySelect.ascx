@@ -107,6 +107,7 @@
                 </asp:UpdatePanel>
                 <asp:LinkButton ID="lbAddCondition" runat="server" Text="Add an Allergy" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddCondition_Click" CausesValidation="false" />
                 <asp:LinkButton ID="lbAddNote" runat="server" Text="Add a Note" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddNote_Click" CausesValidation="false" />                
+                <asp:LinkButton ID="lbAddSpecialNeeds" runat="server" Text="Add Special Needs" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddSpecialNeeds_Click" CausesValidation="false" />
             </div>
         </div>   
     </asp:Panel>
