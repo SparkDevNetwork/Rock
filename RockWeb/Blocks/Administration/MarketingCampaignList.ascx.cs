@@ -19,7 +19,7 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// 
     /// </summary>
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     public partial class MarketingCampaignList : RockBlock
     {
         #region Control Methods
@@ -67,7 +67,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gMarketingCampaigns_Add( object sender, EventArgs e )
         {
-            NavigateToDetailPage( "marketingCampaignId", 0 );
+            NavigateToLinkedPage( "DetailPage", "marketingCampaignId", 0 );
         }
 
         /// <summary>
@@ -77,7 +77,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gMarketingCampaigns_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "marketingCampaignId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "marketingCampaignId", (int)e.RowKeyValue );
         }
 
         /// <summary>

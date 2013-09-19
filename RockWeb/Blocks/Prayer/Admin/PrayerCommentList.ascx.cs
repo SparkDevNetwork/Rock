@@ -19,7 +19,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Prayer
 {
-    [DetailPage( Order = 0 )]
+    [LinkedPage( "Detail Page", Order = 0 ), ]
     [IntegerField( "Group Category Id", "The id of a 'top level' Category.  Only prayer requests comments under this category will be shown.", false, -1, "Filtering", 1, "GroupCategoryId" )]
     public partial class PrayerCommentsList : Rock.Web.UI.RockBlock
     {
@@ -172,7 +172,7 @@ namespace RockWeb.Blocks.Prayer
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gPrayerComments_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( PrayerCommentKeyParameter, (int)e.RowKeyValues["id"], PrayerrequestKeyParameter, (int)e.RowKeyValues["entityid"] );
+            NavigateToLinkedPage( "DetailPage", PrayerCommentKeyParameter, (int)e.RowKeyValues["id"], PrayerrequestKeyParameter, (int)e.RowKeyValues["entityid"] );
         }
 
         /// <summary>

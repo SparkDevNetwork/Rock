@@ -19,7 +19,7 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// 
     /// </summary>
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     public partial class WorkflowTriggerList : RockBlock
     {
         #region Control Methods
@@ -68,7 +68,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gWorkflowTrigger_Add( object sender, EventArgs e )
         {
-            NavigateToDetailPage( "WorkflowTriggerId", 0 );
+            NavigateToLinkedPage( "DetailPage", "WorkflowTriggerId", 0 );
         }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gWorkflowTrigger_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "WorkflowTriggerId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "WorkflowTriggerId", (int)e.RowKeyValue );
         }
 
         /// <summary>

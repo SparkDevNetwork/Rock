@@ -5,14 +5,11 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Configuration;
 using System.Linq;
 using System.Runtime.Caching;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Web;
-using System.Web.Routing;
 using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -21,7 +18,6 @@ using Rock.Model;
 using Rock.Transactions;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
-using Rock;
 using Page = System.Web.UI.Page;
 
 namespace Rock.Web.UI
@@ -711,18 +707,10 @@ namespace Rock.Web.UI
                     if ( CurrentPage.IncludeAdminFooter && canAdministratePage )
                     {
                         Page.Trace.Warn( "Adding admin footer to page" );
-
-                        // put Adminfooter into an UpdatePanel and call Update() on it so it gets updated on both Full and Partial Postbacks
-                        UpdatePanel upAdminFooter = new UpdatePanel();
-                        upAdminFooter.ID = "upAdminFooter";
-                        upAdminFooter.UpdateMode = UpdatePanelUpdateMode.Conditional;
-                        this.Form.Controls.Add( upAdminFooter );
-
                         HtmlGenericControl adminFooter = new HtmlGenericControl( "div" );
                         adminFooter.ID = "cms-admin-footer";
-                        upAdminFooter.ContentTemplateContainer.Controls.Add( adminFooter );
-                        upAdminFooter.Update();
                         adminFooter.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+                        this.Form.Controls.Add( adminFooter );
 
                         phLoadTime = new PlaceHolder();
                         adminFooter.Controls.Add( phLoadTime );
@@ -846,12 +834,12 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.PreRender"/> event.
+        /// Raises the <see cref="E:System.Web.UI.Page.SaveStateComplete" /> event after the page state has been saved to the persistence medium.
         /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs"/> object that contains the event data.</param>
-        protected override void OnPreRender( EventArgs e )
+        /// <param name="e">A <see cref="T:System.EventArgs" /> object containing the event data.</param>
+        protected override void OnSaveStateComplete( EventArgs e )
         {
-            base.OnPreRender( e );
+            base.OnSaveStateComplete( e );
 
             if ( phLoadTime != null )
             {

@@ -2,10 +2,11 @@
 
 <asp:UpdateProgress id="updateProgress" runat="server">
 		<ProgressTemplate>
-		    <div id="updateProgress"> <i class="icon-spinner icon-spin"></i> 
+		    <div id="updateProgress" class="modal-backdrop"> <i class="icon-spinner icon-4x icon-spin" style="color: white;"></i> 
 		    </div>
 		</ProgressTemplate>
 </asp:UpdateProgress>
+
 <asp:UpdatePanel ID="upRockPackages" runat="server">
 <ContentTemplate>
     <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Error" Visible="false" />

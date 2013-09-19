@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{8268FAC2-7ECA-43AD-AD75-4E5EDAE47144}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfSharp-WPF", "..\code\PdfSharp\PdfSharp-WPF.csproj", "{02FCC0BB-2AA2-43BA-8D2F-66D168B87A1D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PdfSharp.Charting-WPF", "..\code\PdfSharp.Charting\PdfSharp.Charting-WPF.csproj", "{E6A2734E-0CD6-4210-8AEC-47EE348F8D78}"
+EndProject
+Global
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = MigraDocTests-GDI2.vsmdi
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{02FCC0BB-2AA2-43BA-8D2F-66D168B87A1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02FCC0BB-2AA2-43BA-8D2F-66D168B87A1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02FCC0BB-2AA2-43BA-8D2F-66D168B87A1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02FCC0BB-2AA2-43BA-8D2F-66D168B87A1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6A2734E-0CD6-4210-8AEC-47EE348F8D78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6A2734E-0CD6-4210-8AEC-47EE348F8D78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6A2734E-0CD6-4210-8AEC-47EE348F8D78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6A2734E-0CD6-4210-8AEC-47EE348F8D78}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
