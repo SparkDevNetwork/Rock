@@ -290,6 +290,19 @@ namespace Rock.Model
                 .FirstOrDefault();
         }
 
+        /// <summary>
+        /// Gets a phone number
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="phoneType">Type of the phone.</param>
+        /// <returns></returns>
+        public PhoneNumber GetPhoneNumber(Person person, Rock.Web.Cache.DefinedValueCache phoneType)
+        {
+            return new PhoneNumberService().Queryable()
+                .Where( n => n.PersonId == person.Id && n.NumberTypeValueId == phoneType.Id)
+                .FirstOrDefault();
+        }
+
         #endregion
 
         #region Get Person

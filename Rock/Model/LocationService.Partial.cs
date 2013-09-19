@@ -40,6 +40,16 @@ namespace Rock.Model
         /// <returns>Location object.</returns>
         public Location Get( string street1, string street2, string city, string state, string zip )
         {
+            // Make sure it's not an empty address
+            if ( string.IsNullOrWhiteSpace( street1 ) &&
+                string.IsNullOrWhiteSpace( street2 ) &&
+                string.IsNullOrWhiteSpace( city ) &&
+                string.IsNullOrWhiteSpace( state ) &&
+                string.IsNullOrWhiteSpace( zip ) )
+            {
+                return null;
+            }
+
             // First check if a location exists with the entered values
             Location existingLoction = Repository.FirstOrDefault( t =>
                 ( t.Street1 == street1 || ( street1 == null && t.Street1 == null ) ) &&
