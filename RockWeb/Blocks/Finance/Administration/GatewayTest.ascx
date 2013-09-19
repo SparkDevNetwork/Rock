@@ -21,7 +21,7 @@
                                         <Rock:LabeledTextBox ID="txtAccountAmount" runat="server" PrependText="$" LabelText='<%# Eval("Name") %>' Text='<%# Eval("AmountFormatted") %>' CssClass="input-medium account-amount" />
                                     </ItemTemplate>
                                 </asp:Repeater>
-                                <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" CssClass="btn btn-primary" Title="Add Another Account" Visible="false" LabelText=" "
+                                <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" CssClass="btn btn-primary" Visible="false" LabelText=" "
                                     DataTextField="Name" DataValueField="Id" OnSelectionChanged="btnAddAccount_SelectionChanged" />
 
                                 <div class="control-group">
@@ -51,6 +51,7 @@
                         <legend>Personal Information</legend>
                         <div class="form-horizontal">
                             <fieldset>
+                                <Rock:LabeledText ID="txtCurrentName" runat="server" LabelText="Name" Visible="true" />
                                 <Rock:LabeledTextBox ID="txtFirstName" runat="server" LabelText="First Name" CssClass="input-small"></Rock:LabeledTextBox>
                                 <Rock:LabeledTextBox ID="txtLastName" runat="server" LabelText="Last Name" CssClass="input-small"></Rock:LabeledTextBox>
                                 <Rock:LabeledTextBox ID="txtPhone" runat="server" LabelText="Phone" CssClass="input-medium"></Rock:LabeledTextBox>
@@ -216,6 +217,7 @@
                                     </div>
 
                                     <Rock:LabeledTextBox ID="txtUserName" runat="server" LabelText="Username" CssClass="input-medium" />
+
                                     <Rock:LabeledTextBox ID="txtPassword" runat="server" LabelText="Password" CssClass="input-medium" TextMode="Password" />
 
                                 </asp:PlaceHolder>

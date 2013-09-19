@@ -26,9 +26,11 @@ namespace RockWeb.Blocks.Finance.Administration
 
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "Credit Card Gateway", "The payment gateway to use for Credit Card transactions", false, "", "", 0, "CCGateway" )]
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "ACH Card Gateway", "The payment gateway to use for ACH (bank account) transactions", false, "", "", 1, "ACHGateway" )]
+    [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving", "", 4 )]
 
     [AccountsField( "Accounts", "The accounts to display.  By default all active accounts with a Public Name will be displayed", false, "", "", 2 )]
     [BooleanField( "Allow Other Accounts", "Should users be allowed to select additional accounts?  If so, any active account with a Public Name value will be available", true, "", 3 )]
+    [TextField( "Add Account Text", "The button text to display for adding an additional account", false, "Add Another Account", "", 4 )]
 
     [BooleanField( "Allow Scheduled Transactions", "If the selected gateway(s) allow scheduled transactions, should that option be provided to user", true, "", 2, "AllowScheduled" )]
 
@@ -137,6 +139,7 @@ achieve our mission.  We are so grateful for your commitment.
             set { ViewState["ScheduleId"] = value; }
         }
 
+
         #endregion
 
         #region overridden control methods
@@ -239,6 +242,8 @@ achieve our mission.  We are so grateful for your commitment.
                 }
 
                 // Display Options
+                btnAddAccount.Title = GetAttributeValue( "AddAccountText" );
+
                 bool display = false;
                 
                 bool.TryParse( GetAttributeValue( "DisplayEmail" ), out display );
@@ -368,26 +373,48 @@ achieve our mission.  We are so grateful for your commitment.
                     BindAccounts();
 
                     // Set personal information if there is a currently logged in person
-                    if ( CurrentPerson != null )
+                    var person = GetPerson( false );
+                    if ( person != null )
                     {
-                        txtFirstName.Text = CurrentPerson.FirstName;
-                        txtLastName.Text = CurrentPerson.LastName;
+                        // If there is a currently logged in user, do not allow them to change their name.
+                        txtCurrentName.Visible = true;
+                        txtCurrentName.Text = person.FullName;
+                        txtFirstName.Visible = false;
+                        txtLastName.Visible = false;
                         txtEmail.Text = CurrentPerson.Email;
 
-                        Guid addressTypeGuid = Guid.Empty;
-                        if ( !Guid.TryParse( GetAttributeValue( "AddressType" ), out addressTypeGuid ) )
+                        using ( new UnitOfWorkScope() )
                         {
-                            addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_HOME );
-                        }
+                            var personService = new PersonService();
 
-                        var address = new PersonService().GetFirstLocation( CurrentPerson, DefinedValueCache.Read( addressTypeGuid ).Id );
-                        if ( address != null )
-                        {
-                            txtStreet.Text = address.Street1;
-                            txtCity.Text = address.City;
-                            ddlState.SelectedValue = address.State;
-                            txtZip.Text = address.Zip;
+                            bool displayPhone = false;
+                            if ( bool.TryParse( GetAttributeValue( "DisplayPhone" ), out displayPhone ) && displayPhone )
+                            {
+                                var phoneNumber = personService.GetPhoneNumber( person, DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ) );
+                                txtPhone.Text = phoneNumber != null ? phoneNumber.NumberFormatted : string.Empty;
+                            }
+
+                            Guid addressTypeGuid = Guid.Empty;
+                            if ( !Guid.TryParse( GetAttributeValue( "AddressType" ), out addressTypeGuid ) )
+                            {
+                                addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_HOME );
+                            }
+
+                            var address = personService.GetFirstLocation( person, DefinedValueCache.Read( addressTypeGuid ).Id );
+                            if ( address != null )
+                            {
+                                txtStreet.Text = address.Street1;
+                                txtCity.Text = address.City;
+                                ddlState.SelectedValue = address.State;
+                                txtZip.Text = address.Zip;
+                            }
                         }
+                    }
+                    else
+                    {
+                        txtCurrentName.Visible = false;
+                        txtFirstName.Visible = true;
+                        txtLastName.Visible = true;
                     }
 
                     SetPage( 1 );
@@ -578,7 +605,104 @@ achieve our mission.  We are so grateful for your commitment.
             btnAddAccount.DataBind();
         }
 
-         /// <summary>
+        private Person GetPerson( bool create )
+        {
+            Person person = null;
+
+            int personId = ViewState["PersonId"] as int? ?? 0;
+            if ( personId == 0 && CurrentPerson != null )
+            {
+                person = CurrentPerson;
+            }
+            else
+            {
+                using ( new UnitOfWorkScope() )
+                {
+                    var personService = new PersonService();
+
+                    if ( personId != 0 )
+                    {
+                        person = personService.Get( personId );
+                    }
+
+                    if ( person == null && create )
+                    {
+                        // Check to see if there's only one person with same email, first name, and last name
+                        if ( !string.IsNullOrWhiteSpace( txtEmail.Text ) &&
+                            !string.IsNullOrWhiteSpace( txtFirstName.Text ) &&
+                            !string.IsNullOrWhiteSpace( txtLastName.Text ) )
+                        {
+                            var personMatches = personService.GetByEmail( txtEmail.Text ).Where( p =>
+                                p.LastName.Equals( txtLastName.Text, StringComparison.OrdinalIgnoreCase ) &&
+                                ( p.FirstName.Equals( txtFirstName.Text, StringComparison.OrdinalIgnoreCase ) ||
+                                p.NickName.Equals( txtFirstName.Text, StringComparison.OrdinalIgnoreCase ) ) );
+                            if ( personMatches.Count() == 1 )
+                            {
+                                person = personMatches.FirstOrDefault();
+                            }
+                        }
+
+                        if ( person == null )
+                        {
+                            // Create Person
+                            person = new Person();
+                            person.GivenName = txtFirstName.Text;
+                            person.LastName = txtFirstName.Text;
+                            person.Email = txtEmail.Text;
+
+                            bool displayPhone = false;
+                            if ( bool.TryParse( GetAttributeValue( "DisplayPhone" ), out displayPhone ) && displayPhone )
+                            {
+                                var phone = new PhoneNumber();
+                                phone.Number = txtPhone.Text.AsNumeric();
+                                phone.NumberTypeValueId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME ) ).Id;
+                                person.PhoneNumbers.Add( phone );
+                            }
+
+                            // Create Family Role
+                            var groupMember = new GroupMember();
+                            groupMember.Person = person;
+                            groupMember.GroupRoleId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ).Id;
+
+                            // Create Family
+                            var group = new Group();
+                            group.Members.Add( groupMember );
+                            group.Name = person.LastName + " Family";
+                            group.GroupTypeId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Id;
+
+                            var groupLocation = new GroupLocation();
+                            var location = new LocationService().Get(
+                                txtStreet.Text, string.Empty, txtCity.Text, ddlState.SelectedValue, txtZip.Text );
+                            if ( location != null )
+                            {
+                                Guid addressTypeGuid = Guid.Empty;
+                                if ( !Guid.TryParse( GetAttributeValue( "AddressType" ), out addressTypeGuid ) )
+                                {
+                                    addressTypeGuid = new Guid( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_HOME );
+                                }
+
+                                groupLocation = new GroupLocation();
+                                groupLocation.Location = location;
+                                groupLocation.GroupLocationTypeValueId = DefinedValueCache.Read( addressTypeGuid ).Id;
+
+                                group.GroupLocations.Add( groupLocation );
+                            }
+
+                            var groupService = new GroupService();
+                            groupService.Add( group, CurrentPersonId );
+                            groupService.Save( group, CurrentPersonId );
+                        }
+
+                        ViewState["PersonId"] = person != null ? person.Id : 0;
+
+                    }
+                }
+            }
+
+            return person;
+        }
+
+        /// <summary>
         /// Binds the saved accounts.
         /// </summary>
         private void BindSavedAccounts()
@@ -664,9 +788,12 @@ achieve our mission.  We are so grateful for your commitment.
                 }
             }
 
-            if ( string.IsNullOrWhiteSpace( txtFirstName.Text ) || string.IsNullOrWhiteSpace( txtLastName.Text ) )
+            if ( txtFirstName.Visible == true )
             {
-                errorMessages.Add( "Make sure to enter both a first and last name" );
+                if ( string.IsNullOrWhiteSpace( txtFirstName.Text ) || string.IsNullOrWhiteSpace( txtLastName.Text ) )
+                {
+                    errorMessages.Add( "Make sure to enter both a first and last name" );
+                }
             }
 
             if ( string.IsNullOrWhiteSpace( txtEmail.Text ) )
@@ -744,21 +871,6 @@ achieve our mission.  We are so grateful for your commitment.
             tdWhen.Description = schedule != null ? schedule.ToString() : "Today";
 
             return true;
-        }
-
-        private Person GetPerson()
-        {
-            if ( CurrentPerson != null &&
-                CurrentPerson.LastName == txtLastName.Text &&
-                ( CurrentPerson.FirstName == txtFirstName.Text || CurrentPerson.NickName == txtFirstName.Text ) )
-            {
-                return CurrentPerson;
-            }
-            else
-            {
-                // TODO Create New Person
-                return null;
-            }
         }
 
         private PaymentInfo GetPaymentInfo()
@@ -862,7 +974,6 @@ achieve our mission.  We are so grateful for your commitment.
                 if ( dtpStartDate.SelectedDate.HasValue && dtpStartDate.SelectedDate > DateTime.Today )
                 {
                     schedule.StartDate = dtpStartDate.SelectedDate.Value;
-                    schedule.PersonId = GetPerson().Id;
                 }
                 else
                 {
@@ -884,11 +995,31 @@ achieve our mission.  We are so grateful for your commitment.
             if ( string.IsNullOrWhiteSpace( TransactionCode ) )
             {
                 GatewayComponent gateway = hfPaymentTab.Value == "ACH" ? _achGateway : _ccGateway;
-                PaymentInfo paymentInfo = GetPaymentInfo();
-                PaymentSchedule schedule = GetSchedule();
+                if ( gateway == null )
+                {
+                    errorMessage = "There was a problem creating the payment gateway information";
+                    return false;
+                }
 
+                PaymentInfo paymentInfo = GetPaymentInfo();
+                if ( paymentInfo == null )
+                {
+                    errorMessage = "There was a problem creating the payment information";
+                    return false;
+                }
+
+                Person person = GetPerson( true );
+                if ( person == null )
+                {
+                    errorMessage = "There was a problem creating the person information";
+                    return false;
+                }
+
+                PaymentSchedule schedule = GetSchedule();
                 if ( schedule != null )
                 {
+                    schedule.PersonId = person.Id;
+
                     var scheduledTransaction = gateway.AddScheduledPayment( schedule, paymentInfo, out errorMessage );
                     if ( scheduledTransaction != null )
                     {
@@ -919,8 +1050,26 @@ achieve our mission.  We are so grateful for your commitment.
                 tdScheduleId.Description = ScheduleId;
                 tdScheduleId.Visible = !string.IsNullOrWhiteSpace( ScheduleId );
 
-                pnlSaveAccount.Visible = !( paymentInfo is ReferencePaymentInfo ) && !string.IsNullOrWhiteSpace( TransactionCode );
-                phCreateLogin.Visible = CurrentUser != null;
+                // If there was a transaction code returned and this was not already created from a previous saved account, 
+                // show the option to save the account.
+                if ( !( paymentInfo is ReferencePaymentInfo ) && !string.IsNullOrWhiteSpace( TransactionCode ) )
+                {
+                    pnlSaveAccount.Visible = true;
+
+                    // If the current user is not logged in and person does not have any logins created allow them to create a new login
+                    if ( CurrentUser == null && !( new UserLoginService().GetByPersonId( person.Id ).Any() ) )
+                    {
+                        phCreateLogin.Visible = true;
+                    }
+                    else
+                    {
+                        phCreateLogin.Visible = false;
+                    }
+                }
+                else
+                {
+                    pnlSaveAccount.Visible = false;
+                }
 
                 return true;
             }
