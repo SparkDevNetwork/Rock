@@ -58,7 +58,7 @@
                 </div>
 
                 <div class="checkin-actions">
-                    <asp:LinkButton CssClass="btn btn-primary" ID="lbSearch" runat="server" OnClick="lbSearch_Click" OnClientClick="$(this).button('loading')"  Text="Search" />
+                    <Rock:BootstrapButton CssClass="btn btn-primary" ID="lbSearch" runat="server" OnClick="lbSearch_Click" Text="Search" DataLoadingText="Searching..." ></Rock:BootstrapButton>
                 </div>
 
             </div>
