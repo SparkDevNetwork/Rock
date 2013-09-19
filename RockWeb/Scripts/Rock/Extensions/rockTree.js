@@ -2,17 +2,12 @@
     'use strict';
 
     // Data container "class" to generically represent data from the server.
-    var RockTreeNode = function (options) {
-            this.id = options.id;
-            this.name = options.name;
-            this.parentId = options.parentId;
-            this.hasChildren = options.hasChildren;
+    var RockTree = function (element, options) {
+            this.el = element;
+            this.$el = $(element);
+            this.options = options;
         },
-		RockTree = function (element, options) {
-		    this.$el = $(element);
-		    this.options = options;
-		},
-		_findNodeById = function (array, id) {
+		_findNodeById = function (id, array) {
 		    var currentNode,
 				node;
 
@@ -23,13 +18,10 @@
 		    for (var i = 0; i < array.length; i++) {
 		        currentNode = array[i];
 
-		        // Double equals used deliberately here to avoid needing
-		        // to cast between int or string, while also allowing guids
-		        // to be used.
-		        if (currentNode.id == id || currentNode.Id == id) {
+		        if (currentNode.id.toString() === id.toString()) {
 		            return currentNode;
 		        } else if (currentNode.hasChildren) {
-		            node = _findNodeById(currentNode.children, id);
+		            node = _findNodeById(id, currentNode.children || []);
 
 		            if (node) {
 		                return node;
@@ -46,148 +38,196 @@
             var promise = this.fetch(this.options.id),
 				self = this;
 
-            this.$el.html(this.options.loadingHtml);
-            promise.done(function (data) {
-                self.render(data, null);
+            this.showLoading(this.el);
+            promise.done(function () {
+                self.render();
+                self.discardLoading(self.el);
                 self.initTreeEvents();
-            });
-        },
-        fetch: function (id) {
-            var promise,
-				dfd,
-				data,
-				parentNode;
-
-            if (this.options.remote) {
-                promise = $.ajax({
-                    url: Rock.settings.get('baseUrl') + '/' + this.options.remote + '/' + id,
-                    type: 'GET',
-                    dataType: 'json',
-                    contentType: 'application/json'
-                });
-            } else {
-                // If the remote has not been set, see if local has. Create a new deferred and return its promise.
-                dfd = $.Deferred();
-                promise = dfd.promise();
-
-                if (this.options.local) {
-                    if (!id) {
-                        data = this.options.local;
-                    } else {
-                        parentNode = _findNodeById(this.options.local, id);
-                        data = parentNode ? (parentNode.children || null) : null;
-                    }
-
-                    setTimeout(function () { dfd.resolve(data); }, 2000);
-                } else {
-                    dfd.resolve(null);
-                }
-            }
-
-            return promise;
-        },
-        render: function (data, parentNode) {
-            var self = this,
-				promise = this.populateNodes(data);
-
-            promise.done(function (nodes) {
-                // If this is the first time the page is loading, parentNode should be null,
-                // otherwise it'll be populated with the id of the parent being "opened"
-                if (!parentNode) {
-                    self.nodes = nodes;
-                } else {
-                    parentNode.children = nodes;
-                }
-
-                var parentId = parentNode ? parentNode.id : nodes[0].parentId,
-					$container = parentId ? self.$el.find('[data-id="' + parentId + '"]') : self.$el,
-					$ul = $('<ul/>');
-                $container.find('ul').remove();
-                $ul.addClass(!parentNode ? 'rock-tree' : 'rock-tree-children'); //.appendTo($container);
-
-                $.each(nodes, function (index, node) {
-                    //var $ul = $container.find('ul'),
-                    var $li = $('<li/>'),
-						iconClassName = node.hasChildren ? 'glyphicon-folder-close' : 'glyphicon-file';
-
-                    $li.addClass('rock-tree-item').addClass(node.hasChildren ? 'rock-tree-folder' : '').data('rockTreeNode', node);
-                    $li.attr('data-id', node.id).attr('data-parent-id', node.parentId);
-                    $li.append('<i class="glyphicon ' + iconClassName + '"></i>');
-                    $li.append('<span class="rock-tree-name"> ' + node.name + '</span>');
-                    $ul.append($li);
-                });
-
-                $container.append($ul);
-                $container.find('.rock-tree-loading').remove();
             });
 
             promise.fail(function (msg) {
-                var $warning = $('<div class="alert alert-warning"/>')
-					.append('<p/>');
-                $warning.find('p')
-                    .append('<strong><i class="glyphicon glyphicon-warning-sign"></i> Uh oh! </strong>')
-                    .append(msg);
-                self.$el.html($warning);
+                self.renderError(msg);
+                self.discardLoading(self.el);
+                self.initErrorEvents();
             });
-
-
         },
-        populateNodes: function (data) {
-            var dfd = $.Deferred(),
-				nodeArray = [];
+        fetch: function (id) {
+            var self = this,
+				parentNode = _findNodeById(id, this.nodes),
+				dfd = $.Deferred(),
+				request,
+				nodes;
 
-            if (!data) {
-                dfd.reject('We weren\'t able to load any data.');
-                return dfd.promise();
+            if (this.options.remote) {
+                request = $.ajax({
+                    url: Rock.settings.get('baseUrl') + '/' + this.options.remote + '/' + id,
+                    dataType: 'json',
+                    contentType: 'application/json'
+                });
+
+                request.done(function (data) {
+                    try {
+                        nodes = self.dataBind(data, parentNode);
+                        dfd.resolve(nodes);
+                    } catch (er) {
+                        dfd.reject(er);
+                    }
+                });
+            } else if (this.options.local) {
+                try {
+                    nodes = this.dataBind(this.options.local);
+                    dfd.resolve(nodes);
+                } catch (ex) {
+                    dfd.reject(ex);
+                }
+            } else {
+                dfd.reject('No server endpoint or local data configured!');
             }
 
-            $.each(data, function (index, value) {
-                nodeArray.push(new RockTreeNode({
-                    id: value.Id,
-                    name: value.Name || value.Title,
-                    parentId: value.ParentId,
-                    hasChildren: value.HasChildren
-                }));
+            return dfd.promise();
+        },
+        dataBind: function (data, parentNode) {
+            var self = this,
+				nodeArray,
+				mapArray = function (arr) {
+				    var items,
+						nodes = [],
+						i;
 
-                if (index === data.length - 1) {
-                    dfd.resolve(nodeArray);
-                }
+				    // If there is a custom mapping function defined, defer to its logic...
+				    if (typeof self.options.mapping.mapData === 'function') {
+				        items = self.options.mapping.mapData(arr);
+
+				        for (i = 0; i < items.length; i++) {
+				            nodes.push(items[i]);
+				        }
+
+				        return nodes;
+				    }
+
+				    // Otherwise, attempt to make best guesses at given the data structure.
+				    return $.map(arr, function (item) {
+				        var node = {
+				            id: item.Id,
+				            name: item.Name || item.Title,
+				            parentId: item.ParentId,
+				            hasChildren: item.HasChildren
+				        };
+
+				        if (item.Children && typeof item.Children.length === 'number') {
+				            node.children = mapArray(item.Children);
+				        }
+
+				        return node;
+				    });
+				};
+
+            if (!data) {
+                throw 'Unable to load data!';
+            }
+
+            nodeArray = mapArray(data);
+
+            if (parentNode) {
+                parentNode.chidren = nodeArray;
+            } else {
+                this.nodes = nodeArray;
+            }
+
+            this.$el.trigger('dataBound');
+            return nodeArray;
+        },
+        render: function () {
+            var self = this,
+				$ul = $('<ul/>'),
+				renderNode = function ($list, node) {
+				    var $li = $('<li/>'),
+						$childUl,
+						iconClassName = node.hasChildren ? self.options.iconClasses.branchClosed : self.options.iconClasses.leaf,
+						includeAttrs = self.options.mapping.include;
+
+				    $li.addClass('rock-tree-item')
+						.addClass(node.hasChildren ? 'rock-tree-folder' : '')
+						.attr('data-id', node.id)
+						.attr('data-parent-id', node.parentId);
+
+				    // Include any configured custom data-* attributes to be decorated on the <li>
+				    for (var i = 0; i < includeAttrs.length; i++) {
+				        $li.attr('data-' + includeAttrs[i], node[includeAttrs[i]]);
+				    }
+
+				    $li.append('<i class="rock-tree-icon ' + iconClassName + '"></i>');
+				    $li.append('<span class="rock-tree-name"> ' + node.name + '</span>');
+				    $list.append($li);
+
+				    if (node.hasChildren && node.children) {
+				        $childUl = $('<ul/>');
+				        $childUl.addClass('rock-tree-children');
+				        $childUl.hide();
+				        $li.append($childUl);
+
+				        $.each(node.children, function (index, childNode) {
+				            renderNode($childUl, childNode);
+				        });
+				    }
+				};
+
+            // Clear tree and prepare to re-render
+            this.$el.empty();
+            $ul.addClass('rock-tree');
+            this.$el.append($ul);
+
+            $.each(this.nodes, function (idex, node) {
+                renderNode($ul, node);
             });
 
-            return dfd.promise();
+            this.$el.trigger('rendered');
+        },
+        renderError: function (msg) {
+            var $warning = $('<div class="alert alert-warning"/>').append('<p/>');
+            $warning.find('p')
+                .append('<strong><i class="icon-warning-sign"></i> Uh oh! </strong>')
+                .append(msg);
+            this.$el.html($warning);
+        },
+        showLoading: function (element) {
+            $(element).append(this.options.loadingHtml);
+        },
+        discardLoading: function (element) {
+            $(element).find('.rock-tree-loading').remove();
         },
         initTreeEvents: function () {
             var self = this;
 
-            this.$el.on('click', '.rock-tree-folder > .glyphicon-folder-open, .rock-tree-folder > .glyphicon-folder-close', function (e) {
+            this.$el.on('click', '.rock-tree-folder > .rock-tree-icon', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
 
                 var $icon = $(this),
 					$ul = $icon.siblings('ul'),
-					itemId = $icon.parent('li').attr('data-id'),
-					node;
+					id = $icon.parent('li').attr('data-id'),
+					node = _findNodeById(id, self.nodes),
+					openClass = self.options.iconClasses.branchOpen,
+					closedClass = self.options.iconClasses.branchClosed;
 
-                if ($icon.hasClass('glyphicon-folder-open')) {
-                    $icon.removeClass('glyphicon-folder-open').addClass('glyphicon-folder-close');
+                if ($icon.hasClass(openClass)) {
+                    $icon.removeClass(openClass).addClass(closedClass);
                     $ul.hide();
                 } else {
-                    node = _findNodeById(self.nodes, itemId);
+                    $icon.removeClass(closedClass).addClass(openClass);
 
-                    if (!node.children) {
-                        // Attempt to get child nodes of the parent
-                        $icon.parent('li').append(self.options.loadingHtml);
-                        self.fetch(itemId).done(function (data) {
-                            self.render(data, node);
+                    // If the node has children, but they've not been fetched from the server yet...
+                    if (node.hasChldren && !node.children) {
+                        self.showLoading($icon.parent('li'));
+                        self.fetch(node.id).done(function () {
+                            self.render();
+                            self.discardLoading();
                             $ul = $icon.siblings('ul');
                             $ul.show();
                         });
                     } else {
                         $ul.show();
                     }
-
-                    $icon.removeClass('glyphicon-folder-close').addClass('glyphicon-folder-open');
-
                 }
             });
 
@@ -210,13 +250,22 @@
                 });
 
                 self.selectedIds = selectedIds;
-                $rockTree.trigger('selected', id);
+                self.$el.trigger('selected', id);
+            });
+        },
+        initErrorEvents: function () {
+            var self = this;
+
+            this.$el.on('click', '.rock-tree-reset', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                self.init();
             });
         }
     };
 
     $.fn.rockTree = function (options) {
-        var settings = $.extend($.fn.rockTree.defaults, options);
+        var settings = $.extend(true, $.fn.rockTree.defaults, options);
 
         return this.each(function () {
             var $el = $(this),
@@ -239,6 +288,15 @@
         local: null,
         id: 0,
         multiselect: false,
-        loadingHtml: '<span class="rock-tree-loading"><i class="glyphicon glyphicon-refresh icon-spin"></i>Loading...</span>'
+        loadingHtml: '<span class="rock-tree-loading"><i class="icon-refresh icon-spin"></i>Loading...</span>',
+        iconClasses: {
+            branchOpen: 'icon-folder-open',
+            branchClosed: 'icon-folder-close',
+            leaf: 'icon-file-alt'
+        },
+        mapping: {
+            include: [],
+            mapData: null
+        }
     };
 }(jQuery));
