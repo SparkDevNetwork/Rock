@@ -69,16 +69,16 @@
                     try {
                         nodes = self.dataBind(data, parentNode);
                         dfd.resolve(nodes);
-                    } catch (er) {
-                        dfd.reject(er);
+                    } catch (e) {
+                        dfd.reject(e);
                     }
                 });
             } else if (this.options.local) {
                 try {
                     nodes = this.dataBind(this.options.local);
                     dfd.resolve(nodes);
-                } catch (ex) {
-                    dfd.reject(ex);
+                } catch (e) {
+                    dfd.reject(e);
                 }
             } else {
                 dfd.reject('No server endpoint or local data configured!');
@@ -270,13 +270,7 @@
         return this.each(function () {
             var $el = $(this),
 				data = $el.data('rockTree'),
-				rockTree;
-
-            if (!data) {
-                rockTree = new RockTree(this, settings);
-            } else {
-                rockTree = data;
-            }
+				rockTree = data ? data : new RockTree(this, settings);
 
             $el.data('rockTree', rockTree);
             rockTree.init();
@@ -288,7 +282,7 @@
         local: null,
         id: 0,
         multiselect: false,
-        loadingHtml: '<span class="rock-tree-loading"><i class="icon-refresh icon-spin"></i>Loading...</span>',
+        loadingHtml: '<span class="rock-tree-loading"><i class="icon-refresh icon-spin"></i> Loading...</span>',
         iconClasses: {
             branchOpen: 'icon-folder-open',
             branchClosed: 'icon-folder-close',
