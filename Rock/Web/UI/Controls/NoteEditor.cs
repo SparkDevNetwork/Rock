@@ -21,7 +21,7 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:NoteEditor runat=server></{0}:NoteEditor>" )]
     public class NoteEditor : CompositeControl
     {
-        private TextBox tbNote;
+        private LabeledTextBox tbNote;
         private CheckBox cbAlert;
         private CheckBox cbPrivate;
         private LinkButton lbSaveNote;
@@ -148,7 +148,7 @@ namespace Rock.Web.UI.Controls
 
         public NoteEditor()
         {
-            tbNote = new TextBox();
+            tbNote = new LabeledTextBox();
             cbAlert = new CheckBox();
             cbPrivate = new CheckBox();
             lbSaveNote = new LinkButton();
@@ -190,7 +190,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add(cbPrivate);
 
             lbSaveNote.ID = this.ID + "_lbSaveNote";
-            lbSaveNote.Attributes["class"] = "btn btn-primary btn-small";
+            lbSaveNote.Attributes["class"] = "btn btn-primary btn-xs";
             lbSaveNote.Text = "Save Note";
             lbSaveNote.Click += lbSaveNote_Click;
 
@@ -233,25 +233,23 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // Edit Mode HTML...
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "note-entry clearfix" );
+            writer.AddAttribute(HtmlTextWriterAttribute.Class, "panel panel-noteentry");
             writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // label and text
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "note" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.RenderBeginTag( HtmlTextWriterTag.Label );
-            writer.Write( "Note" );
-            writer.RenderEndTag();
+            tbNote.LabelText = "Note";
             tbNote.Text = Text;
             tbNote.RenderControl( writer );
-            writer.RenderEndTag();
+            
 
             // Options
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "settings clearfix" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "options" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "options pull-left" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             if ( ShowAlertCheckBox )
@@ -268,7 +266,7 @@ namespace Rock.Web.UI.Controls
 
             if ( ShowSecurityButton )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-xs security" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-xs security pull-right" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Type, "button" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Button );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "icon-lock" );
@@ -279,11 +277,12 @@ namespace Rock.Web.UI.Controls
             }
 
             writer.RenderEndTag();  // settings div
+            writer.RenderEndTag();  // panel body
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "actions" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-footer" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             lbSaveNote.RenderControl( writer );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "edit-note-cancel btn btn-sm" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "edit-note-cancel btn btn-xs" );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
             writer.Write( "Cancel" );
             writer.RenderEndTag();

@@ -7,6 +7,7 @@
 @import "_forms.less";
 @import "_persondetails.less";
 @import "_scroll.less";
+@import "_global-variables.less";
 
 @import "./Bootstrap/mixins.less";
 @import "./Kendo/kendo.flat.less";
@@ -52,8 +53,22 @@ fieldset .actions {
     margin-top: 36px;
 }
 
-.panel legend {
-    border-color: @accent-color;
+/* extension of Bootstrap 3 panel */
+.panel {
+    legend {
+        border-color: @accent-color;
+    }
+
+    .panel-heading {
+        .actions {
+            display: none;
+            height: 14px;
+
+            a {
+                padding-left: 4px;
+            }
+        }
+    }
 }
 
 

@@ -9,9 +9,41 @@
 // Imports
 // --------------------------------------------------
 
-@import "../../../Styles/Bootstrap/bootstrap.less";
-@import "_variables.less";
+@import "../../../Styles/FontAwesome/font-awesome.less";
+@import "../../../Styles/Bootstrap/bootstrap.less"; 
 @import "../../../Styles/_checkin-core.less";
+
+//
+// Variables
+// --------------------------------------------------
+
+// Font Variables
+@font-family-base:     'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+@font-weight-light:     300;
+@font-weight-bold:      700;
+@font-weight-semibold:  600;
+
+@text-color:    #fff;
+
+@header-text-color:     #fff;
+@header-font-weight:    @font-weight-bold;
+
+@subheader-text-color:      #bde2ef;
+@subheader-font-weight:     @font-weight-light;
+
+// Button Styles
+@btn-default-bg: #7f7e7e;
+@btn-default-color:     #fff;
+@btn-default-border:   #9d9c9c;
+@checkin-button-text-weight:    @font-weight-bold;
+@checkin-button-alttext-weight: @font-weight-light;
+
+@btn-primary-color:    #fff;
+@btn-primary-border:   #b00a0e;
+@btn-primary-bg:    #e3151a;
+
+@btn-disabled-color: @btn-primary-border;
+@btn-disabled-bg: darken(@btn-primary-bg, 20%);
 
 // Fonts
 // -------------------------
@@ -90,12 +122,3 @@
 	color: #4c4c4b;
 }
 
-.btn
-{
-    text-shadow: 1px 1px rgba(255, 255, 255, 0.75);
-}
-
-.btn-primary
-{
-    text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.25);
-}

@@ -246,7 +246,13 @@ namespace Rock.Web.UI.Controls
 
             Controls.Clear();
 
-            this.CssClass = "form-control";
+            // add space to the css class if it already has a value
+            if ( !string.IsNullOrEmpty(this.CssClass))
+            {
+                this.CssClass += " ";
+            }
+
+            this.CssClass = this.CssClass + " form-control";
 
             label = new Literal();
             Controls.Add( label );
