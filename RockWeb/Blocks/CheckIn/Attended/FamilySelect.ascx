@@ -185,16 +185,18 @@
         
         <Rock:ModalAlert ID="maAddPerson" runat="server" />
         <div class="row-fluid checkin-header">
-            <div class="span3 checkin-actions">
-                <asp:LinkButton ID="lbAddPersonCancel" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddPersonCancel_Click" Text="Cancel" CausesValidation="false"/>
-            </div>
+            <div class="checkin-actions">
+                <div class="span3">
+                    <asp:LinkButton ID="lbAddPersonCancel" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddPersonCancel_Click" Text="Cancel" CausesValidation="false"/>
+                </div>
 
-            <div class="span6">
-                <h2><asp:Label ID="lblAddPersonHeader" runat="server"></asp:Label></h2>
-            </div>
+                <div class="span6">
+                    <h2><asp:Label ID="lblAddPersonHeader" runat="server"></asp:Label></h2>
+                </div>
 
-            <div class="span3 checkin-actions">
-                <asp:LinkButton ID="lbAddPersonSearch" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddPersonSearch_Click" Text="Search" CausesValidation="false" />
+                <div class="span3">
+                    <asp:LinkButton ID="lbAddPersonSearch" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddPersonSearch_Click" Text="Search" CausesValidation="false" />
+                </div>
             </div>
         </div>
 		
