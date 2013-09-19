@@ -36,8 +36,7 @@ namespace RockWeb.Blocks.CheckIn
             {
                 if ( !Page.IsPostBack )
                 {
-                    //var abilityLevelDtGuid = new Guid( "D8672146-C14F-41E8-A143-242361CECCD3" );
-                    var abilityLevelDtGuid = new Guid( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL );
+                    var abilityLevelDtGuid = new Guid( "7BEEF4D4-0860-4913-9A3D-857634D1BF7C" );
                     
                     var family = CurrentCheckInState.CheckIn.Families.FirstOrDefault( f => f.Selected );
                     if ( family != null )
@@ -45,18 +44,31 @@ namespace RockWeb.Blocks.CheckIn
                         var person = family.People.FirstOrDefault( p => p.Selected );
                         if ( person != null )
                         {
-                            lPersonName.Text = person.ToString();
-                            person.Person.LoadAttributes();
-                            _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" );
-
-                            var abilityLevelDType = DefinedTypeCache.Read( abilityLevelDtGuid );
-
-                            if ( abilityLevelDType != null )
+                            // If no AbilityLevel attributes on Groups or GroupTypes, skip to next screen.
+                            if ( HasNoAbilityLevelAttribsOnGroupTypesOrGroups() )
                             {
-                                // TODO -- remove ability levels that are lower (ordered) than the person's current
-                                // ability level.
-                                rSelection.DataSource = abilityLevelDType.DefinedValues.ToList();
-                                rSelection.DataBind();
+                                if ( UserBackedUp )
+                                {
+                                    GoBack();
+                                }
+                                else
+                                {
+                                    ProcessSelection( maWarning );
+                                }
+                            }
+                            else
+                            {
+                                lPersonName.Text = person.ToString();
+                                person.Person.LoadAttributes();
+                                _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToLower();
+
+                                var abilityLevelDType = DefinedTypeCache.Read( abilityLevelDtGuid );
+
+                                if ( abilityLevelDType != null )
+                                {
+                                    rSelection.DataSource = abilityLevelDType.DefinedValues.ToList();
+                                    rSelection.DataBind();
+                                }
                             }
                         }
                     }
@@ -66,6 +78,44 @@ namespace RockWeb.Blocks.CheckIn
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines whether any of the selected person's GroupTypes or Groups have
+        /// any AbilityLevel attributes defined.
+        /// </summary>
+        /// <returns>
+        ///   <c>true</c> if no AbilityLevel attributes are defined; otherwise, <c>false</c>.
+        /// </returns>
+        private bool HasNoAbilityLevelAttribsOnGroupTypesOrGroups()
+        {
+            foreach ( var family in CurrentCheckInState.CheckIn.Families )
+            {
+                foreach ( var person in family.People.Where( p => p.Selected ) )
+                {
+                    foreach ( var groupType in person.GroupTypes )
+                    {
+                        var groupTypeAttributes = groupType.GroupType.GetAttributeValues( "AbilityLevel" );
+                        if ( groupTypeAttributes.Any() )
+                        {
+                            // break out, we're done as soon as we find one!
+                            return false;
+                        }
+
+                        foreach ( var group in groupType.Groups )
+                        {
+                            var groupAttributes = group.Group.GetAttributeValues( "AbilityLevel" );
+                            if ( groupAttributes.Any() )
+                            {
+                                // break out, we're done as soon as we find one!
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return true;
         }
 
         protected void rSelection_ItemCommand( object source, RepeaterCommandEventArgs e )
@@ -78,9 +128,9 @@ namespace RockWeb.Blocks.CheckIn
                     var person = family.People.Where( p => p.Selected ).FirstOrDefault();
                     if ( person != null )
                     {
-                        string selectedAbilityLevelGuid = e.CommandArgument.ToString();
+                        string selectedAbilityLevelGuid = e.CommandArgument.ToString().ToLower();
                         //person.Person.LoadAttributes();
-                        _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" );
+                        _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToLower();
 
                         // Only save the ability level if it's changed
                         if ( _personAbilityLevelGuid != selectedAbilityLevelGuid )
@@ -95,7 +145,7 @@ namespace RockWeb.Blocks.CheckIn
                             }
                         }
 
-                        ProcessSelection();
+                        ProcessSelection( maWarning );
                     }
                 }
             }
@@ -109,21 +159,6 @@ namespace RockWeb.Blocks.CheckIn
         protected void lbCancel_Click( object sender, EventArgs e )
         {
             CancelCheckin();
-        }
-
-        /// <summary>
-        /// Do nothing (such as unselecting something) but simply return to previous screen.
-        /// </summary>
-        private void GoBack()
-        {
-            SaveState();
-            NavigateToPreviousPage();
-        }
-
-        private void ProcessSelection()
-        {
-            SaveState();
-            NavigateToNextPage();
         }
 
         protected void rSelection_ItemDataBound( object sender, RepeaterItemEventArgs e )

@@ -21,6 +21,7 @@ namespace Rock.CheckIn
     [LinkedPage( "Next Page" )]
     [LinkedPage( "Previous Page" )]
     [IntegerField( "Workflow Type Id", "The Id of the workflow type to activate for Check-in", false, 0 )]
+    [TextField( "Workflow Activity", "The name of the workflow activity to run on selection.", false, "" )]
     public abstract class CheckInBlock : RockBlock
     {
         /// <summary>
@@ -199,6 +200,75 @@ namespace Rock.CheckIn
             {
                 Session.Remove( "CheckInWorkflow" );
             }
+        }
+
+        /// <summary>
+        /// Processes the selection, save state and navigates to the next page if no errors
+        /// are encountered during processing the activity.
+        /// </summary>
+        /// <param name="modalAlert">The modal alert control to show if errors occur.</param>
+        /// <returns>a list of errors encountered during processing the activity</returns>
+        protected virtual List<string> ProcessSelection( Rock.Web.UI.Controls.ModalAlert modalAlert )
+        {
+            var errors = new List<string>();
+
+            string workflowActivity = GetAttributeValue( "WorkflowActivity" );
+            if ( string.IsNullOrEmpty( workflowActivity ) || ProcessActivity( workflowActivity, out errors ) )
+            {
+                SaveState();
+                NavigateToNextPage();
+            }
+            else
+            {
+                string errorMsg = "<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
+                modalAlert.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
+            }
+
+            return errors;
+        }
+
+        /// <summary>
+        /// Processes the selection, save state and navigates to the next page if no errors
+        /// are encountered during processing the activity.  
+        /// </summary>
+        /// <param name="modalAlert">The modal alert control to show if errors occur.</param>
+        /// <param name="doNotProceedCondition">A condition that must be met after processing
+        /// the activity in order to save state and continue to the next page.</param>
+        /// <param name="conditionMessage">The message to display in the modal if the condition fails.</param>
+        /// <returns></returns>
+        protected virtual List<string> ProcessSelection( Rock.Web.UI.Controls.ModalAlert modalAlert, Func<bool> doNotProceedCondition, string conditionMessage )
+        {
+            var errors = new List<string>();
+
+            string workflowActivity = GetAttributeValue( "WorkflowActivity" );
+            if ( string.IsNullOrEmpty( workflowActivity ) || ProcessActivity( workflowActivity, out errors ) )
+            {
+                if ( doNotProceedCondition() )
+                {
+                    modalAlert.Show( conditionMessage, Rock.Web.UI.Controls.ModalAlertType.Warning );
+                }
+                else
+                {
+                    SaveState();
+                    NavigateToNextPage();
+                }
+            }
+            else
+            {
+                string errorMsg = "<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
+                modalAlert.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
+            }
+
+            return errors;
+        }
+
+        /// <summary>
+        /// Do nothing (such as unselecting something) but simply return to previous screen.
+        /// </summary>
+        protected virtual void GoBack()
+        {
+            SaveState();
+            NavigateToPreviousPage();
         }
 
         /// <summary>

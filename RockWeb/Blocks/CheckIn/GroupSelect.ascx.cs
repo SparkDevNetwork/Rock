@@ -31,6 +31,7 @@ namespace RockWeb.Blocks.CheckIn
             {
                 if ( !Page.IsPostBack )
                 {
+                    ClearSelection();
                     var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                     if ( family != null )
                     {
@@ -55,7 +56,7 @@ namespace RockWeb.Blocks.CheckIn
                                             group.Selected = true;
                                         }
 
-                                        ProcessSelection();
+                                        ProcessSelection( maWarning );
                                     }
                                 }
                                 else
@@ -82,6 +83,27 @@ namespace RockWeb.Blocks.CheckIn
             }
         }
 
+        /// <summary>
+        /// Clear any previously selected groups.
+        /// </summary>
+        private void ClearSelection()
+        {
+            foreach ( var family in CurrentCheckInState.CheckIn.Families )
+            {
+                foreach ( var person in family.People )
+                {
+                    foreach ( var groupType in person.GroupTypes )
+                    {
+                        foreach ( var group in groupType.Groups )
+                        {
+                            group.Selected = false;
+                            //group.Locations = new List<CheckInLocation>();
+                        }
+                    }
+                }
+            }
+        }
+
         protected void rSelection_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
             if ( KioskCurrentlyActive )
@@ -100,7 +122,7 @@ namespace RockWeb.Blocks.CheckIn
                             if ( group != null )
                             {
                                 group.Selected = true;
-                                ProcessSelection();
+                                ProcessSelection( maWarning );
                             }
                         }
                     }
@@ -117,40 +139,5 @@ namespace RockWeb.Blocks.CheckIn
         {
             CancelCheckin();
         }
-
-        private void GoBack()
-        {
-            foreach ( var family in CurrentCheckInState.CheckIn.Families )
-            {
-                foreach( var person in family.People)
-                {
-                    foreach ( var groupType in person.GroupTypes )
-                    {
-                        groupType.Selected = false;
-                        groupType.Groups = new List<CheckInGroup>();
-                    }
-                }
-            }
-
-            SaveState();
-
-            NavigateToPreviousPage();
-        }
-
-        private void ProcessSelection()
-        {
-            var errors = new List<string>();
-            if ( ProcessActivity( "Location Search", out errors ) )
-            {
-                SaveState();
-                NavigateToNextPage();
-            }
-            else
-            {
-                string errorMsg = "<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
-                maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
-            }
-        }
-
     }
 }
