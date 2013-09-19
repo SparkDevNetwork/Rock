@@ -327,9 +327,9 @@ namespace Rock.Web.UI
             // Add library and UI bundles during init, that way theme developers will only
             // need to worry about registering any custom scripts or script bundles they need
             _scriptManager.Scripts.Add( new ScriptReference { Name = "WebFormsBundle" } );
-            _scriptManager.Scripts.Add( new ScriptReference( "~/bundles/RockLibs" ) );
-            _scriptManager.Scripts.Add( new ScriptReference( "~/bundles/RockUi" ) );
-            _scriptManager.Scripts.Add( new ScriptReference( "~/bundles/RockValidation" ) );
+            _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockLibs" ) );
+            _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockUi" ) );
+            _scriptManager.Scripts.Add( new ScriptReference( "~/Scripts/Bundles/RockValidation" ) );
 
             // Recurse the page controls to find the rock page title and zone controls
             Page.Trace.Warn( "Recursing layout to find zones" );
@@ -972,7 +972,7 @@ namespace Rock.Web.UI
         private void AddConfigElements()
         {
             // Add the page admin script
-            AddScriptLink( Page, "~/bundles/RockAdmin" );
+            AddScriptLink( Page, "~/Scripts/Bundles/RockAdmin" );
 
             AddBlockMove();
             // Add Zone Wrappers
