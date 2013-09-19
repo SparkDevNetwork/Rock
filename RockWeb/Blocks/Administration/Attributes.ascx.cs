@@ -351,7 +351,7 @@ namespace RockWeb.Blocks.Administration
                 Literal lDescription = e.Row.FindControl( "lDescription" ) as Literal;
                 if ( lDescription != null )
                 {
-                    lDescription.Text = attribute.Description.Ellipsis( 100 );
+                    lDescription.Text = attribute.Description.Truncate( 100 );
                 }
 
                 if ( _displayValueEdit )
