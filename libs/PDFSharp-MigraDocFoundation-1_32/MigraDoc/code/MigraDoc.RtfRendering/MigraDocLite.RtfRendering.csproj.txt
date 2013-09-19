@@ -1,0 +1,265 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+  <PropertyGroup>
+    <ProjectType>Local</ProjectType>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{5A3E379E-97DC-417c-90A4-FCDFDDD237C0}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ApplicationIcon>
+    </ApplicationIcon>
+    <AssemblyKeyContainerName>
+    </AssemblyKeyContainerName>
+    <AssemblyName>MigraDoc.RtfRendering</AssemblyName>
+    <AssemblyOriginatorKeyFile>StrongnameKey.snk</AssemblyOriginatorKeyFile>
+    <DefaultClientScript>JScript</DefaultClientScript>
+    <DefaultHTMLPageLayout>Grid</DefaultHTMLPageLayout>
+    <DefaultTargetSchema>IE50</DefaultTargetSchema>
+    <DelaySign>false</DelaySign>
+    <OutputType>Library</OutputType>
+    <RootNamespace>
+    </RootNamespace>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
+    <StartupObject>
+    </StartupObject>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <UpgradeBackupLocation>
+    </UpgradeBackupLocation>
+    <SignAssembly>true</SignAssembly>
+    <OldToolsVersion>2.0</OldToolsVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <OutputPath>bin\Debug\</OutputPath>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <BaseAddress>285212672</BaseAddress>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <ConfigurationOverrideFile>
+    </ConfigurationOverrideFile>
+    <DefineConstants>TRACE;DEBUG;NET_2_0</DefineConstants>
+    <DocumentationFile>
+    </DocumentationFile>
+    <DebugSymbols>true</DebugSymbols>
+    <FileAlignment>4096</FileAlignment>
+    <NoStdLib>false</NoStdLib>
+    <NoWarn>1591 1030</NoWarn>
+    <Optimize>false</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <DebugType>full</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release\</OutputPath>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+    <BaseAddress>285212672</BaseAddress>
+    <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
+    <ConfigurationOverrideFile>
+    </ConfigurationOverrideFile>
+    <DefineConstants>TRACE;NET_2_0</DefineConstants>
+    <DocumentationFile>
+    </DocumentationFile>
+    <DebugSymbols>false</DebugSymbols>
+    <FileAlignment>4096</FileAlignment>
+    <NoStdLib>false</NoStdLib>
+    <NoWarn>1591</NoWarn>
+    <Optimize>true</Optimize>
+    <RegisterForComInterop>false</RegisterForComInterop>
+    <RemoveIntegerChecks>false</RemoveIntegerChecks>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <DebugType>none</DebugType>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System">
+      <Name>System</Name>
+    </Reference>
+    <Reference Include="System.Data">
+      <Name>System.Data</Name>
+    </Reference>
+    <Reference Include="System.Drawing">
+      <Name>System.Drawing</Name>
+    </Reference>
+    <Reference Include="System.Xml">
+      <Name>System.XML</Name>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering.Resources\Messages.cs" />
+    <Compile Include="MigraDoc.RtfRendering\BookmarkFieldRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\BorderRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\BorderRendererBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\BordersRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\CellFormatRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\CellRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\CharacterRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\ChartRenderer.cs" />
+    <Compile Include="MigraDoc.RtfRendering\ListInfoOverrideRenderer.cs" />
+    <Compile Include="MigraDoc.RtfRendering\DateFieldRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\enums\RtfUnit.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\FieldRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\FontRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\FootnoteRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\FormattedTextRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\HeaderFooterRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\HeadersFootersRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\HyperlinkRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\ImageRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\InfoFieldRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\ListInfoRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\NumericFieldRendererBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\NumPagesFieldRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\PageBreakRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\PageFieldRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\PageRefFieldRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\PageSetupRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\ParagraphFormatRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\ParagraphRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\RendererBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\RendererFactory.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\RowRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\RowsRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\RtfDocumentRenderer.cs" />
+    <Compile Include="MigraDoc.RtfRendering\RtfWriter.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\SectionFieldRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\SectionPagesFieldRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\SectionRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\ShadingRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\ShapeRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\StyleAndFormatRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\StyleRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\TableRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\TabStopRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\TabStopsRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\TextFrameRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="MigraDoc.RtfRendering\TextRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="VersionInfo.cs" />
+    <EmbeddedResource Include="MigraDoc.RtfRendering.resources\Messages.de.resources" />
+    <EmbeddedResource Include="MigraDoc.RtfRendering.resources\Messages.resources" />
+    <Content Include="MigraDoc.RtfRendering.resources\Messages.de.txt" />
+    <Content Include="MigraDoc.RtfRendering.resources\Messages.txt" />
+    <EmbeddedResource Include="MigraDoc.RtfRendering.Resources\PDF.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\PDFsharp\PdfSharp\PdfSharp.csproj">
+      <Project>{5384CE57-1F94-4D22-860D-2E9C1AC12DDF}</Project>
+      <Name>PdfSharp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MigraDoc.DocumentObjectModel\MigraDocLite.DocumentObjectModel.csproj">
+      <Project>{4666ABF3-EFE5-49BD-B2E8-9E04F5949145}</Project>
+      <Name>MigraDocLite.DocumentObjectModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\MigraDoc.Rendering\MigraDocLite.Rendering.csproj">
+      <Project>{FEBBE5BE-9F58-4967-BBCF-801F1CFCD774}</Project>
+      <Name>MigraDocLite.Rendering</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="StrongnameKey.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="MigraDoc.RtfRendering.Resources\Debug\" />
+    <Folder Include="MigraDoc.RtfRendering.Resources\Release\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PreBuildEvent>
+    </PreBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+</Project>

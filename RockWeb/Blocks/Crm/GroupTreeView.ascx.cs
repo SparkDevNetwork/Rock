@@ -20,7 +20,7 @@ namespace RockWeb.Blocks.Crm
     [GroupTypesField( "Group Types", "Select group types to show in this block.  Leave all unchecked to show all group types.", false )]
     [GroupField( "Group", "Select the root group to show in this block.", false )]
     [BooleanField( "Limit to Security Role Groups" )]
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     public partial class GroupTreeView : RockBlock
     {
         /// <summary>
@@ -90,7 +90,7 @@ namespace RockWeb.Blocks.Crm
         protected void lbAddGroup_Click( object sender, EventArgs e )
         {
             int groupId = hfSelectedGroupId.ValueAsInt();
-            NavigateToDetailPage( "groupId", 0, "parentGroupId", groupId );
+            NavigateToLinkedPage( "DetailPage", "groupId", 0, "parentGroupId", groupId );
         }
     }
 }

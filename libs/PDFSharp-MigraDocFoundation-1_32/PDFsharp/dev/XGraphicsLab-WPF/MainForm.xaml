@@ -1,0 +1,114 @@
+﻿<Window x:Class="XDrawing.MainForm"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:xyz="clr-namespace:XDrawing"
+    Title="XGraphics on WPF" Height="524" Width="842" Left="10" Top="600" WindowStyle="SingleBorderWindow">
+  <DockPanel>
+    <Menu DockPanel.Dock="Top" Background="LightGray">
+      <MenuItem Header="File">
+        <MenuItem Header="Edit"/>
+        <MenuItem Header="View"/>
+        <MenuItem Header="Project" Click="MenuItem_Click" />
+        <MenuItem Header="Build"/>
+        <MenuItem Header="Data"/>
+        <MenuItem Header="Tools"/>
+        <MenuItem Header="Window"/>
+        <MenuItem Header="Community"/>
+      </MenuItem>
+      <MenuItem Header="Edit"/>
+      <MenuItem Header="View"/>
+      <MenuItem Header="Project"/>
+      <MenuItem Header="Build"/>
+      <MenuItem Header="Data"/>
+      <MenuItem Header="Tools"/>
+      <MenuItem Header="Window"/>
+      <MenuItem Header="Community"/>
+      <MenuItem Header="Help"/>
+    </Menu>
+    <ToolBar Name="toolBar1" Height="32" DockPanel.Dock="Top">
+      <Button>
+        <Image Source="iconVSproperties.bmp"/>
+      </Button>
+      <Button>
+        <Image Source="iconVSshowall.bmp"/>
+      </Button>
+      <Button Click="MenuItem_Click">
+        <Image Source="iconVSrefresh.bmp"/>
+      </Button>
+    </ToolBar>
+    <StatusBar Height="23" Name="statusBar1" DockPanel.Dock="Bottom">
+      <StatusBarItem>The Status</StatusBarItem>
+    </StatusBar>
+    <Grid>
+    </Grid>
+    <TreeView HorizontalAlignment="Left" Name="tvTest" Width="250" DockPanel.Dock="Left"  SelectedItemChanged="tvTest_SelectedItemChanged">
+      <TreeViewItem Header="Lines" Tag="LinesStraightLines" IsExpanded="True" >
+        <TreeViewItem Header="StraightLines" Tag="LinesStraightLines"/>
+        <TreeViewItem Header="Poly Lines" Tag="LinesPolyLines" />
+        <TreeViewItem Header="Bézier Curve" Tag="LinesBézierCurve" />
+        <TreeViewItem Header="Bézier Curves" Tag="LinesBézierCurves" />
+        <TreeViewItem Header="Arc" Tag="LinesArc" />
+        <TreeViewItem Header="CircleArc" Tag="LinesCircleArc" />
+        <TreeViewItem Header="Curve" Tag="LinesCurve" />
+      </TreeViewItem>
+      <TreeViewItem Header="Brushes" Tag="LinesStraightLines" IsExpanded="True" >
+        <TreeViewItem Header="LinearGradient" Tag="BrushesLinearGradient"/>
+        <TreeViewItem Header="Flatten" Tag="PathFlatten"/>
+        <TreeViewItem Header="Widen" Tag="PathWiden"/>
+        <TreeViewItem Header="Glyph" Tag="PathGlyph"/>
+        <TreeViewItem Header="ClipGlyph" Tag="PathClipGlyph"/>
+        <TreeViewItem Header="ClipTest" Tag="PathClipTest"/>
+      </TreeViewItem>
+      <TreeViewItem Header="Images" Tag="LinesStraightLines" IsExpanded="True" >
+        <TreeViewItem Header="JPEG" Tag="ImagesJpeg"/>
+        <TreeViewItem Header="PNG" Tag="ImagesPng"/>
+        <TreeViewItem Header="GIF" Tag="ImagesGif"/>
+        <TreeViewItem Header="TIFF" Tag="ImagesTiff"/>
+        <TreeViewItem Header="BMP (Windows)" Tag="ImagesBmp"/>
+        <TreeViewItem Header="BMP (OS/2)" Tag="ImagesBmpOS2"/>
+        <TreeViewItem Header="FormXObject (only visible in PDF)" Tag="ImagesFormXObject"/>
+        <TreeViewItem Header="FormXObjectTemplate" Tag="ImagesFormXObjectTemplate"/>
+      </TreeViewItem>
+      <TreeViewItem Header="Paths" Tag="LinesStraightLines" IsExpanded="True" >
+        <TreeViewItem Header="ArcSegment" Tag="PathArcSegment"/>
+        <TreeViewItem Header="Flatten" Tag="PathFlatten"/>
+        <TreeViewItem Header="Widen" Tag="PathWiden"/>
+        <TreeViewItem Header="Glyph" Tag="PathGlyph"/>
+        <TreeViewItem Header="ClipGlyph" Tag="PathClipGlyph"/>
+        <TreeViewItem Header="ClipTest" Tag="PathClipTest"/>
+      </TreeViewItem>
+      <TreeViewItem Header="Shapes" Tag="ShapesRectangle" IsExpanded="True" >
+        <TreeViewItem Header="Rectangle" Tag="ShapesRectangle"/>
+        <TreeViewItem Header="Rounded Rectangle" Tag="ShapesRoundedRectangle"/>
+        <TreeViewItem Header="Ellipse" Tag="ShapesEllipse"/>
+        <TreeViewItem Header="Polygon" Tag="ShapesPolygon"/>
+        <TreeViewItem Header="Pie" Tag="ShapesPie"/>
+        <TreeViewItem Header="Closed Curve" Tag="ShapesClosedCurve"/>
+        <TreeViewItem Header="Transform" Tag="ShapesTransform"/>
+        <TreeViewItem Header="Clip Test 1" Tag="ShapesClipTest1"/>
+        <TreeViewItem Header="Save" Tag="ShapesSave"/>
+        <TreeViewItem Header="BeginContainer" Tag="ShapesBeginContainer"/>
+      </TreeViewItem>
+      <TreeViewItem Header="Text" Tag="LinesStraightLines" IsExpanded="True" >
+        <TreeViewItem Header="Text01" Tag="TestText01"/>
+        <TreeViewItem Header="Text02" Tag="TestText02"/>
+        <TreeViewItem Header="Align" Tag="TextAlign"/>
+        <TreeViewItem Header="Transform 1" Tag="TextTransform1"/>
+        <TreeViewItem Header="Transform 2" Tag="TextTransform2"/>
+        <TreeViewItem Header="CodePage" Tag="TextCodePage"/>
+        <TreeViewItem Header="Unicode" Tag="Unicode"/>
+        <TreeViewItem Header="Layout 1" Tag="Layout1"/>
+        <TreeViewItem Header="Embedding" Tag="Embedding"/>
+      </TreeViewItem>
+      <TreeViewItem Header="Bar Code" IsExpanded="True" >
+        <TreeViewItem Header="Orientation" Tag="BarCodesOrientation"/>
+        <TreeViewItem Header="Types" Tag="BarCodesTypes"/>
+        <TreeViewItem Header="DataMatrix" Tag="BarCodesDataMatrix"/>
+      </TreeViewItem>
+      <TreeViewItem Header="Miscellaneous" IsExpanded="True" >
+        <TreeViewItem Header="SpiroGraph" Tag="MiscSpiroGraph"/>
+        <TreeViewItem Header="Clock" Tag="MiscClock"/>
+      </TreeViewItem>
+    </TreeView>
+  </DockPanel>
+</Window>

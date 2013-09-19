@@ -40,7 +40,8 @@ namespace Rock.Web.UI.Controls
         /// <value>
         ///   <c>true</c> if [force content visible]; otherwise, <c>false</c>.
         /// </value>
-        public bool ForceContentVisible { 
+        public bool ForceContentVisible
+        {
             private get
             {
                 return _forceContentVisible;
@@ -101,7 +102,7 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
 
 ";
 
-            ScriptManager.RegisterStartupScript( hfGroupTypeGuid, hfGroupTypeGuid.GetType(), "CheckinGroupTypeEditorScript", script, true );
+            ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "CheckinGroupTypeEditorScript", script, true );
 
             CreateGroupTypeAttributeControls();
         }
@@ -489,7 +490,7 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
             foreach ( var groupEditor in this.Controls.OfType<CheckinGroupEditor>().ToList() )
             {
                 Group group = groupEditor.GetGroup();
-                groupEditor.CreateGroupAttributeControls(group);
+                groupEditor.CreateGroupAttributeControls( group );
             }
         }
 

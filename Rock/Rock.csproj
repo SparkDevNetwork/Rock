@@ -193,6 +193,22 @@
     <Compile Include="Migrations\201309112300564_DefaultWorkflowActionAttributes.Designer.cs">
       <DependentUpon>201309112300564_DefaultWorkflowActionAttributes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201309122129396_SitePageRoute.cs" />
+    <Compile Include="Migrations\201309122129396_SitePageRoute.Designer.cs">
+      <DependentUpon>201309122129396_SitePageRoute.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201309122131001_DetailPageLinkedPageRefactor.cs" />
+    <Compile Include="Migrations\201309122131001_DetailPageLinkedPageRefactor.Designer.cs">
+      <DependentUpon>201309122131001_DetailPageLinkedPageRefactor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201309182012247_DefinedTypeRefactor.cs" />
+    <Compile Include="Migrations\201309182012247_DefinedTypeRefactor.Designer.cs">
+      <DependentUpon>201309182012247_DefinedTypeRefactor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201309182328119_AddAbilityLevelToCheckIn.cs" />
+    <Compile Include="Migrations\201309182328119_AddAbilityLevelToCheckIn.Designer.cs">
+      <DependentUpon>201309182328119_AddAbilityLevelToCheckIn.cs</DependentUpon>
+    </Compile>
     <Compile Include="Storage\ProviderComponent.cs" />
     <Compile Include="Storage\ProviderContainer.cs" />
     <Compile Include="Storage\Provider\Database.cs" />
@@ -237,6 +253,7 @@
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
     <Compile Include="Web\Cache\CategoryCache.cs" />
     <Compile Include="Web\DescriptionList.cs" />
+    <Compile Include="Web\UI\Controls\BootstrapButton.cs" />
     <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinGroupEditor.cs" />
     <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinGroupTypeEditor.cs" />
     <Compile Include="Web\UI\Controls\Communication\ChannelControl.cs" />
@@ -1004,6 +1021,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201309112300564_DefaultWorkflowActionAttributes.resx">
       <DependentUpon>201309112300564_DefaultWorkflowActionAttributes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201309122129396_SitePageRoute.resx">
+      <DependentUpon>201309122129396_SitePageRoute.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201309122131001_DetailPageLinkedPageRefactor.resx">
+      <DependentUpon>201309122131001_DetailPageLinkedPageRefactor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201309182012247_DefinedTypeRefactor.resx">
+      <DependentUpon>201309182012247_DefinedTypeRefactor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201309182328119_AddAbilityLevelToCheckIn.resx">
+      <DependentUpon>201309182328119_AddAbilityLevelToCheckIn.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

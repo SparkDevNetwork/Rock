@@ -74,7 +74,17 @@ namespace Rock.Model
         /// this value will be null.
         /// </value>
         [DataMember]
-        public int? DefaultPageId { get; set; }
+        public int DefaultPageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default page route unique identifier.
+        /// If this has a value (and the PageRoute can be found) use this instead of the DefaultPageId
+        /// </summary>
+        /// <value>
+        /// The default page route unique identifier.
+        /// </value>
+        [DataMember]
+        public int? DefaultPageRouteId { get; set; }
         
         /// <summary>
         /// Gets or sets the path to the Site's Favicon.
@@ -175,9 +185,17 @@ namespace Rock.Model
         /// Gets or sets the default <see cref="Rock.Model.Page"/> page for the site.
         /// </summary>
         /// <value>
-        /// The default <see cref="Rock.Model.Page"/> for the site. If no default page is provided, this value will be null.
+        /// The default <see cref="Rock.Model.Page"/> for the site. 
         /// </value>
         public virtual Page DefaultPage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default <see cref="Rock.Model.PageRoute"/> page route for this site. If this value is null, the DefaultPage will be used
+        /// </summary>
+        /// <value>
+        /// The default page route.
+        /// </value>
+        public virtual PageRoute DefaultPageRoute { get; set; }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> containing the Name of the site that that represents this instance.
@@ -201,7 +219,8 @@ namespace Rock.Model
         /// </summary>
         public SiteConfiguration()
         {
-            this.HasOptional( p => p.DefaultPage ).WithMany().HasForeignKey( p => p.DefaultPageId ).WillCascadeOnDelete(false);
+            this.HasRequired( p => p.DefaultPage ).WithMany().HasForeignKey( p => p.DefaultPageId ).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.DefaultPageRoute ).WithMany().HasForeignKey( p => p.DefaultPageRouteId ).WillCascadeOnDelete( false );
         }
     }
 }

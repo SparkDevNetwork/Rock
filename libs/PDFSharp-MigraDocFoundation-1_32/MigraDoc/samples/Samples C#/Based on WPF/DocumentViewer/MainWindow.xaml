@@ -1,0 +1,119 @@
+﻿<Window x:Class="DocumentViewer.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:md="clr-namespace:MigraDoc.Rendering.Windows;assembly=MigraDoc.Rendering-WPF"
+    Title="MigraDoc Document Viewer (for demonstration only)"
+    Height="600" Width="800" MinWidth="400" MinHeight="300" 
+    ShowInTaskbar="True" ResizeMode="CanResizeWithGrip" WindowStartupLocation="CenterScreen" WindowStyle="ThreeDBorderWindow">
+  
+  <Window.Resources>
+    
+    <LinearGradientBrush x:Key="LightBrush" StartPoint="0,0" EndPoint="0,1">
+      <GradientBrush.GradientStops>
+        <GradientStopCollection>
+          <GradientStop Color="#FFF" Offset="0.0"/>
+          <GradientStop Color="#EEE" Offset="1.0"/>
+        </GradientStopCollection>
+      </GradientBrush.GradientStops>
+    </LinearGradientBrush>
+
+    <Style x:Key="{x:Type DocumentViewer}" TargetType="DocumentViewer">
+      <Setter Property="Foreground"
+          Value="{DynamicResource {x:Static SystemColors.WindowTextBrushKey}}"/>
+      <Setter Property="Background"
+          Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"/>
+      <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+      <!--Setter Property="ContextMenu"
+          Value="{DynamicResource {ComponentResourceKey
+          TypeInTargetAssembly={x:Type ui:PresentationUIStyleResources},
+          ResourceId=PUIDocumentViewerContextMenu}}"/ -->
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="DocumentViewer">
+            <Border BorderThickness="{TemplateBinding BorderThickness}"
+                BorderBrush="{TemplateBinding BorderBrush}" Focusable="False">
+              <Grid Background="{StaticResource LightBrush}" KeyboardNavigation.TabNavigation="Local">
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="*"/>
+                  <!-- RowDefinition Height="Auto"/ -->
+                </Grid.RowDefinitions>
+                <ToolBar 
+              ToolBarTray.IsLocked="True" 
+              KeyboardNavigation.TabNavigation="Continue">
+                  <Button Command="ApplicationCommands.Print" 
+                CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                Content="Print"/>
+                  <!-- Button Command="ApplicationCommands.Copy" 
+                CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                Content="Copy"/ -->
+                  <Separator />
+                  <Button Command="NavigationCommands.IncreaseZoom" 
+                CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                Content="Zoom In"/>
+                  <Button Command="NavigationCommands.DecreaseZoom" 
+                CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                Content="Zoom Out"/>
+                  <Separator />
+                  <Button Command="NavigationCommands.Zoom" 
+                CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                CommandParameter="100.0" 
+                Content="Actual Size" />
+                  <Button Command="DocumentViewer.FitToWidthCommand" 
+                CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                Content="Fit to Width" />
+                  
+                  <Button Command="DocumentViewer.FitToMaxPagesAcrossCommand" 
+                CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                CommandParameter="1" 
+                Content="Whole Page"/>
+                  
+                  <Button Command="DocumentViewer.FitToMaxPagesAcrossCommand" 
+                CommandTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                CommandParameter="2" 
+                Content="Two Pages"/>
+
+                <Button Content="Create PDF" Click="CreatePdf_Click"/>
+                </ToolBar>
+
+                <ScrollViewer Grid.Row="1"
+              CanContentScroll="true"
+              HorizontalScrollBarVisibility="Auto"
+              x:Name="PART_ContentHost"
+              IsTabStop="true"/>
+
+                <!-- ContentControl Grid.Row="2" x:Name="PART_FindToolBarHost"/ -->
+              </Grid>
+            </Border>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+  </Window.Resources>
+  
+  <DockPanel>
+    <Menu DockPanel.Dock="Top">
+      <MenuItem Header="_File">
+        <MenuItem Header="Create Sample 1" Click="Sample1_Click"/>
+        <MenuItem Header="Create Sample 2"  Click="Sample2_Click"/>
+        <MenuItem Header="Open DDL File" Click="OpenDDL_Click"/>
+        <Separator/>
+        <MenuItem Header="Printer Setup" IsEnabled="False" />
+        <MenuItem Header="Preview" IsEnabled="False" />
+        <MenuItem Header="Print" IsEnabled="False" />
+        <Separator/>
+        <MenuItem Header="E_xit" Click="Close_Click"/>
+      </MenuItem>
+      <MenuItem Header="_Zoom">
+        <MenuItem />
+      </MenuItem>
+      <MenuItem Header="_Demonstrate">
+        <MenuItem Header="Create PDF File" Click="CreatePdf_Click"/>
+        <MenuItem Header="Create Word/RTF File" />
+        <MenuItem Header="Create Image File" />
+        <MenuItem Header="Create Meta File" />
+      </MenuItem>
+    </Menu>
+    <md:DocumentPreview x:Name="preview"/>
+  </DockPanel>
+</Window>

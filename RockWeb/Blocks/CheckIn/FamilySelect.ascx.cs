@@ -31,6 +31,7 @@ namespace RockWeb.Blocks.CheckIn
             {
                 if ( !Page.IsPostBack )
                 {
+                    ClearSelection();
                     if ( CurrentCheckInState.CheckIn.Families.Count == 1 &&
                         !CurrentCheckInState.CheckIn.ConfirmSingleFamily )
                     {
@@ -54,6 +55,18 @@ namespace RockWeb.Blocks.CheckIn
                         rSelection.DataBind();
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Clear any previously selected families.
+        /// </summary>
+        private void ClearSelection()
+        {
+            foreach ( var family in CurrentCheckInState.CheckIn.Families )
+            {
+                family.Selected = false;
+                family.People = new List<CheckInPerson>();
             }
         }
 
@@ -81,7 +94,10 @@ namespace RockWeb.Blocks.CheckIn
             CancelCheckin();
         }
 
-        private void GoBack()
+        /// <summary>
+        /// Special handling instead of the normal, default GoBack() behavior.
+        /// </summary>
+        protected override void GoBack()
         {
             if ( CurrentCheckInState != null && CurrentCheckInState.CheckIn != null )
             {
@@ -104,27 +120,7 @@ namespace RockWeb.Blocks.CheckIn
 
         private void ProcessSelection()
         {
-            var errors = new List<string>();
-            if ( ProcessActivity( "Person Search", out errors ) )
-            {
-                if ( CurrentCheckInState.CheckIn.Families.All( f => f.People.Count == 0 ) )
-                {
-                    string errorMsg = "<ul><li>No one in that family is eligible to Check-in.</li></ul>";
-                    maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
-                }
-                else
-                {
-                    SaveState();
-                    NavigateToNextPage();
-                }
-            }
-            else
-            {
-                string errorMsg = "<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
-                maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
-            }
+            ProcessSelection( maWarning, () => CurrentCheckInState.CheckIn.Families.All( f => f.People.Count == 0 ), "<ul><li>No one in that family is eligible to check-in.</li></ul>" );
         }
-
-
     }
 }

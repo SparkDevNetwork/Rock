@@ -43,25 +43,7 @@ namespace RockWeb.Blocks.CheckIn
                     CurrentCheckInState.CheckIn.SearchType = DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_PHONE_NUMBER );
                     CurrentCheckInState.CheckIn.SearchValue = tbPhone.Text;
 
-                    var errors = new List<string>();
-                    if ( ProcessActivity( "Family Search", out errors ) )
-                    {
-                        if ( CurrentCheckInState.CheckIn.Families.Count > 0 )
-                        {
-                            SaveState();
-                            NavigateToNextPage();
-                        }
-                        else
-                        {
-                            string errorMsg = "<ul><li>There are not any families with the selected phone number</li></ul>";
-                            maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
-                        }
-                    }
-                    else
-                    {
-                        string errorMsg = "<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
-                        maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
-                    }
+                    ProcessSelection();
                 }
                 else
                 {
@@ -72,6 +54,11 @@ namespace RockWeb.Blocks.CheckIn
                     maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
                 }
             }
+        }
+
+        protected void ProcessSelection()
+        {
+            ProcessSelection( maWarning, () => CurrentCheckInState.CheckIn.Families.Count <= 0 , "<ul><li>There are not any families with the selected phone number</li></ul>" );
         }
 
         protected void lbBack_Click( object sender, EventArgs e )

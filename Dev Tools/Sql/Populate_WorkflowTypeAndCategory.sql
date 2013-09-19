@@ -21,7 +21,7 @@ begin
       (0,@parentCategoryId,@entityTypeIdWFType,null,null,'CT Requests',NEWID(),null,null,'icon-beaker'),
       (0,@parentCategoryId,@entityTypeIdWFType,null,null,'HR Stuff',NEWID(),null,null,'icon-user-md'),
       (0,@parentCategoryId,@entityTypeIdWFType,null,null,'Random Stuff',NEWID(),null,null,'icon-lightbulb'), 
-      (0,@parentCategoryId,@entityTypeIdWFType,null,null,'Check-in',NEWID(),null,null,'icon-check-sign') 
+      (0,@parentCategoryId,@entityTypeIdWFType,null,null,'Check-in','8F8B272D-D351-485E-86D6-3EE5B7C84D99',null,null,'icon-check-sign') 
       
    -- 2nd level cats
    set @parentCategoryId = (select id from Category where Name = 'CT Requests')

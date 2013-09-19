@@ -456,7 +456,7 @@ namespace Rock.Apps.CheckScannerUtility
                 BinaryFile binaryFileFront = new BinaryFile();
                 binaryFileFront.Guid = Guid.NewGuid();
                 binaryFileFront.FileName = string.Format( "{0}_{1}_{2}_front.png", scannedCheckInfo.RoutingNumber, scannedCheckInfo.MaskedAccountNumber, scannedCheckInfo.CheckNumber );
-                binaryFileFront.Data = scannedCheckInfo.FrontImagePngBytes;
+                binaryFileFront.Data.Content = scannedCheckInfo.FrontImagePngBytes;
                 binaryFileFront.BinaryFileTypeId = binaryFileTypeContribution.Id;
                 binaryFileFront.IsSystem = false;
                 binaryFileFront.MimeType = "image/png";
@@ -470,7 +470,7 @@ namespace Rock.Apps.CheckScannerUtility
                     binaryFileBack = new BinaryFile();
                     binaryFileBack.Guid = Guid.NewGuid();
                     binaryFileBack.FileName = string.Format( "{0}_{1}_{2}_back.png", scannedCheckInfo.RoutingNumber, scannedCheckInfo.MaskedAccountNumber, scannedCheckInfo.CheckNumber );
-                    binaryFileBack.Data = scannedCheckInfo.BackImagePngBytes;
+                    binaryFileBack.Data.Content = scannedCheckInfo.BackImagePngBytes;
                     binaryFileBack.BinaryFileTypeId = binaryFileTypeContribution.Id;
                     binaryFileBack.IsSystem = false;
                     binaryFileBack.MimeType = "image/png";

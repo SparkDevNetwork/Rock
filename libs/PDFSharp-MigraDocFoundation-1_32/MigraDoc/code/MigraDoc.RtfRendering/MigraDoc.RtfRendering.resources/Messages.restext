@@ -1,0 +1,42 @@
+;  MigraDoc - Creating Documents on the Fly
+; 
+;  Authors:
+;    Klaus Potzesny (mailto:Klaus.Potzesny@pdfsharp.com)
+; 
+;  Copyright (c) 2001-2008 empira Software GmbH, Cologne (Germany)
+; 
+;  http://www.pdfsharp.com
+;  http://www.migradoc.com
+;  http://sourceforge.net/projects/pdfsharp
+; 
+;  Permission is hereby granted, free of charge, to any person obtaining a
+;  copy of this software and associated documentation files (the "Software"),
+;  to deal in the Software without restriction, including without limitation
+;  the rights to use, copy, modify, merge, publish, distribute, sublicense,
+;  and/or sell copies of the Software, and to permit persons to whom the
+;  Software is furnished to do so, subject to the following conditions:
+; 
+;  The above copyright notice and this permission notice shall be included
+;  in all copies or substantial portions of the Software.
+; 
+;  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+;  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+;  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+;  THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+;  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+;  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER 
+;  DEALINGS IN THE SOFTWARE.
+
+; ----- Default Messages -------------------------------------------------------
+;  Default Messages for any system culture.
+; ------------------------------------------------------------------------------
+
+UpdateField = < Please update this field. >
+TextframeContentsNotTurned = Textframe contents could not be turned. Only paragraphs can be turned within textframes.
+ImageFreelyPlacedInWrongContext = Images can be placed freely only within headers, footers and sections. Image {0} will be ignored.
+ChartFreelyPlacedInWrongContext = Chart is being ignored. A chart can be placed freely only within headers, footers and sections. 
+ImageNotFound = Image '{0}' could not be found.
+ImageNotReadable = Image '{0}' could not be read. Inner Exception:\n{1}.
+ImageTypeNotSupported = Type of image '{0}' is not supported.
+CharacterNotAllowedInDateFormat = The character '{0}' is not allowed in a date field's format string and will be ignored.
+InvalidNumericFieldFormat = '{0}' is not a valid format for a numeric field und will be ignored.

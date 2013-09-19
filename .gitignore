@@ -1,5 +1,6 @@
 #file types
 _ReSharper.*
+*.resharper
 *.DS_Store
 *.tlog
 *.vsp

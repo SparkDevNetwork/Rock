@@ -22,7 +22,6 @@ namespace RockWeb.Blocks.Finance.Administration
     /// <summary>
     /// 
     /// </summary>
-    //[DetailPage]
     public partial class TransactionDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         # region Fields

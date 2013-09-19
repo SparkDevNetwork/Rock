@@ -1,0 +1,1105 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>MigraDoc.RtfRendering</name>
+    </assembly>
+    <members>
+        <member name="T:MigraDoc.RtfRendering.ImageRenderer">
+            <summary>
+            Render an image to RTF.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.ShapeRenderer">
+            <summary>
+            Base class for Renderers that render shapes (images, textframes, charts) to RTF.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.RendererBase">
+            <summary>
+            This class is a base for all renderers.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RendererBase.CollectionContainsObjectAssignableTo(MigraDoc.DocumentObjectModel.DocumentObjectCollection,System.Type[])">
+            <summary>
+            Indicates whether the container contains an element
+            that is of one of the specified types or inherited.
+            </summary>
+            <param name="coll">The collection to search.</param>
+            <param name="types">The types to find within the collection.</param>
+            <returns>True, if an object of one of the given types is found within the collection.</returns>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RendererBase.#ctor">
+            <summary>
+            Initializes a new instance of the RendererBase class.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RendererBase.#ctor(MigraDoc.DocumentObjectModel.DocumentObject,MigraDoc.RtfRendering.RtfDocumentRenderer)">
+            <summary>
+            Initializes a new instance of the RendererBase class.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RendererBase.CreateEnumTranslationTable">
+            <summary>
+            Helps translating MigraDoc DOM enumerations to an RTF control word.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RendererBase.ToRtfUnit(MigraDoc.DocumentObjectModel.Unit,MigraDoc.RtfRendering.RtfUnit)">
+            <summary>
+            Translates the given Unit to an RTF unit.
+            </summary>
+            <param name="unit"></param>
+            <param name="rtfUnit"></param>
+            <returns></returns>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RendererBase.Translate(System.String,System.String,MigraDoc.RtfRendering.RtfUnit,System.String,System.Boolean)">
+            <summary>
+            Translates a value named 'valueName' to a Rtf Control word that specifies a Unit, Enum, Bool, Int or Color.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RendererBase.Translate(System.String,System.String,MigraDoc.RtfRendering.RtfUnit,MigraDoc.DocumentObjectModel.Unit,System.Boolean)">
+            <summary>
+            Translates a value named 'valueName' to a Rtf Control word that specifies a unit, enum, bool, int or color.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RendererBase.Translate(System.String,System.String)">
+            <summary>
+            Translates a value named 'valueName' to a Rtf Control word that specifies a unit, enum, bool or color.
+            If it is a unit, twips are assumed as RtfUnit.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RendererBase.TranslateBool(System.String,System.String,System.String,System.Boolean)">
+            <summary>
+            Translates a value named 'valueName' to a Rtf Control word that specifies a Boolean and devides in two control words.
+            If the control word in false case is simply left away, you can also use the Translate function as well.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RendererBase.GetValueAsIntended(System.String)">
+            <summary>
+            Gets the specified value either as effective value if useEffectiveValue is set to true,
+            otherwise returns the usual GetValue or null if IsNull evaluates to true.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RendererBase.RenderUnit(System.String,MigraDoc.DocumentObjectModel.Unit)">
+            <summary>
+            Renders the given unit as control / value pair in Twips.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RendererBase.RenderUnit(System.String,MigraDoc.DocumentObjectModel.Unit,MigraDoc.RtfRendering.RtfUnit)">
+            <summary>
+            Renders the given unit as control / value pair in the given RTF unit.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RendererBase.RenderUnit(System.String,MigraDoc.DocumentObjectModel.Unit,MigraDoc.RtfRendering.RtfUnit,System.Boolean)">
+            <summary>
+            Renders the given Unit as control / value pair of the given RTF control in the given RTF unit, optionally with a star.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RendererBase.ToTwips(MigraDoc.DocumentObjectModel.Unit)">
+            <summary>
+            Converts the given Unit to Twips
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RendererBase.ToEmu(MigraDoc.DocumentObjectModel.Unit)">
+            <summary>
+            Converts the given Unit to EMU
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RendererBase.Render">
+            <summary>
+            Renders the given object to rtf, _docObj must be of type DocumentObject or DocumentObjectContainer.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RendererBase.GetValueOrDefault(System.String,System.Object)">
+            <summary>
+            Returns GetValueAsIntended if this evaluates non-null, otherwise the given default value.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RendererBase.RenderTrailingParagraph(MigraDoc.DocumentObjectModel.DocumentElements)">
+            <summary>
+            Renders a trailing standard paragraph in case the last element in elements isn't a paragraph.
+            (Some RTF elements need to close with a paragraph.)
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShapeRenderer.StartShapeArea">
+            <summary>
+            Starts the area for a common shape description in RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShapeRenderer.RenderShapeAttributes">
+            <summary>
+            Renders attributes that belong to a shape.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShapeRenderer.RenderFillFormat">
+            <summary>
+            Renders the fill format of the shape.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShapeRenderer.RenderLineFormat">
+            <summary>
+            Renders the line format of the shape.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShapeRenderer.RenderTopPosition">
+            <summary>
+            Renders the shape's Left attribute by setting the \posv, \shptop and \shpbottom RTF controls.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShapeRenderer.RenderLeftPosition">
+            <summary>
+            Renders the shape's Left attribute by setting the \posh, \shpleft and \shpright RTF controls.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShapeRenderer.GetShapeHeight">
+            <summary>
+            Gets the user defined shape height.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShapeRenderer.GetShapeWidth">
+            <summary>
+            Gets the user defined shape width.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShapeRenderer.RenderInParagraph">
+            <summary>
+            A shape that shall be placed between its predecessor and its successor must be embedded in a paragraph.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShapeRenderer.RenderParagraphAttributes">
+            <summary>
+            Renders the dummy paragraph's attributes.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShapeRenderer.RenderParagraphDistances">
+            <summary>
+            Renders the dummy paragraph's space before and space after attributes.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShapeRenderer.RenderParagraphAlignment">
+            <summary>
+            Renders the dummy paragraph's Alignment taking into account the shape's Left property.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShapeRenderer.RenderRelativeHorizontal">
+            <summary>
+            Renders the RelativeHorizontal attribute.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShapeRenderer.RenderRelativeVertical">
+            <summary>
+            Renders the RelativeVerticalattribute.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShapeRenderer.RenderWrapFormat">
+            <summary>
+            Renders the WrapFormat.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShapeRenderer.RenderParagraphIndents">
+            <summary>
+            Renders the dummy paragraph's left indent.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShapeRenderer.RenderTopBottom">
+            <summary>
+            Renders (and calculates) the \shptop and \shpbottom controls in RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShapeRenderer.AlignVertically(MigraDoc.DocumentObjectModel.Shapes.ShapePosition,MigraDoc.DocumentObjectModel.Unit,MigraDoc.DocumentObjectModel.Unit@,MigraDoc.DocumentObjectModel.Unit@)">
+            <summary>
+            Aligns the given top and bottom position so that ShapePosition.Top results in top position = 0.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShapeRenderer.RenderLeftRight">
+            <summary>
+            Renders (and calculates) the \shpleft and \shpright controls in RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShapeRenderer.AlignHorizontally(MigraDoc.DocumentObjectModel.Shapes.ShapePosition,MigraDoc.DocumentObjectModel.Unit,MigraDoc.DocumentObjectModel.Unit@,MigraDoc.DocumentObjectModel.Unit@)">
+            <summary>
+            Aligns the given left and right position so that ShapePosition.Left results in left position = 0.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShapeRenderer.RenderNameValuePair(System.String,System.String)">
+            <summary>
+            Renders a name value pair as shape property to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShapeRenderer.StartNameValuePair(System.String)">
+            <summary>
+            Renders name as the beginning of a shape's name value pair to RTF.
+            Used in the order StartNameValuePair &lt;value rendering&gt; EndNameValuePair.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShapeRenderer.EndNameValuePair">
+            <summary>
+            Renders the end of a shape's name value pair.
+            Used in the order StartNameValuePair &lt;value rendering&gt; EndNameValuePair.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShapeRenderer.TranslateAsNameValuePair(System.String,System.String,MigraDoc.RtfRendering.RtfUnit,System.String)">
+            <summary>
+            Translates a value as a shape's name value pair to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShapeRenderer.StartDummyParagraph">
+            <summary>
+            Starts a dummy paragraph to put a shape in, which is wrapped TopBottom style.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShapeRenderer.EndDummyParagraph">
+            <summary>
+            Ends a dummy paragraph to put a shape in, which is wrapped TopBottom style.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ImageRenderer.Render">
+            <summary>
+            Renders an image to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ImageRenderer.RenderImage">
+            <summary>
+            Renders image specific attributes and the image byte series to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ImageRenderer.RenderDimensionSettings">
+            <summary>
+            Renders scaling, width and height for the image.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ImageRenderer.RenderByteSeries">
+            <summary>
+            Renders the image file as byte series.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ImageRenderer.RenderCropping">
+            <summary>
+            Renders the image cropping at all edges.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.ListInfoOverrideRenderer">
+            <summary>
+            Renders a ListInfo in the \listoverridetable control.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ListInfoOverrideRenderer.Render">
+            <summary>
+            Renders a ListInfo to RTF for the \listoverridetable.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.Resources.Messages">
+            <summary>
+            Provides diagnostic messages taken from the resources.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.SectionRenderer">
+            <summary>
+            Class to render a Section to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.SectionRenderer.Render">
+            <summary>
+            Renders a section to RTF
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.ChartRenderer">
+            <summary>
+            Summary description for ChartRenderer.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ChartRenderer.Render">
+            <summary>
+            Renders an image to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ChartRenderer.RenderImage(System.String)">
+            <summary>
+            Renders image specific attributes and the image byte series to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ChartRenderer.RenderDimensionSettings">
+            <summary>
+            Renders scaling, width and height for the image.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ChartRenderer.RenderByteSeries(System.String)">
+            <summary>
+            Renders the image file as byte series.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.CellRenderer">
+            <summary>
+            Renders a cell to RTF.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.StyleAndFormatRenderer">
+            <summary>
+            Base class to render objects that have a style and a format attribute (currently cells, paragraphs).
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.StyleAndFormatRenderer.RenderStyleAndFormat">
+            <summary>
+            Renders format and style. Always call EndFormatAndStyleAfterContent() after the content was written.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.StyleAndFormatRenderer.EndStyleAndFormatAfterContent">
+            <summary>
+            Ends the format and style rendering. Always paired with RenderStyleAndFormat().
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.PageFieldRenderer">
+            <summary>
+            Class to render a PageField to RTF.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.NumericFieldRendererBase">
+            <summary>
+            Base Class to render numeric fields.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.FieldRenderer">
+            <summary>
+            Base class for all classes that render fields to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.FieldRenderer.StartField">
+            <summary>
+            Starts an RTF field with appropriate control words.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.FieldRenderer.EndField">
+            <summary>
+            Ends an RTF field with appropriate control words.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.FieldRenderer.GetFieldResult">
+            <summary>
+            Gets the field result if possible.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.NumericFieldRendererBase.TranslateFormat">
+            <summary>
+            Translates the number format to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.PageFieldRenderer.Render">
+            <summary>
+            Renders a PageField to RTF.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.HeaderFooterRenderer">
+            <summary>
+            Renders a header or footer to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.HeaderFooterRenderer.Render">
+            <summary>
+            Renders a single Header or Footer.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.HeaderFooterRenderer.GetHeaderFooterControls">
+            <summary>
+            Gets a collection of RTF header/footer control words the HeaderFooter is rendered in.
+            (e.g. the primary header might be rendered into the rtf controls headerl and headerr for left and right pages.)
+            </summary>
+        </member>
+        <member name="P:MigraDoc.RtfRendering.HeaderFooterRenderer.PageSetup">
+            <summary>
+            Sets the PageSetup (It stems from the section the currently HeaderFooter is used in).
+            Caution: This PageSetup might differ from the one the "parent" section's got
+            for inheritance reasons. This value is set by the HeadersFootersRenderer.
+            </summary>
+        </member>
+        <member name="P:MigraDoc.RtfRendering.HeaderFooterRenderer.RenderAs">
+            <summary>
+            Sets the HeaderFooterIndex (Primary, Even FirstPage) the rendered HeaderFooer
+            shall represent. This value is set by the HeadersFootersRenderer.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.CharacterRenderer">
+            <summary>
+            Renders a special character to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.CharacterRenderer.#ctor(MigraDoc.DocumentObjectModel.DocumentObject,MigraDoc.RtfRendering.RtfDocumentRenderer)">
+            <summary>
+            Creates a new instance of the CharacterRenderer class.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.CharacterRenderer.Render">
+            <summary>
+            Renders a character to rtf.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.SectionPagesFieldRenderer">
+            <summary>
+            Class to render a SectionPagesField to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.SectionPagesFieldRenderer.Render">
+            <summary>
+            Renders a SectionPagesField to RTF.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.NumPagesFieldRenderer">
+            <summary>
+            Class to render a NumPagesField to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.NumPagesFieldRenderer.Render">
+            <summary>
+            Renders a NumPagesField to RTF.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.PageSetupRenderer">
+            <summary>
+            Class to render a PageSetup to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.PageSetupRenderer.Render">
+            <summary>
+            Render a PageSetup object to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.PageSetupRenderer.RenderPageDistances">
+            <summary>
+            Renders attributes related to the page margins and header footer distances.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.PageSetupRenderer.RenderSectionStart">
+            <summary>
+            Renders attributes related to the section start behavior.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.PageSetupRenderer.RenderPageSize(MigraDoc.DocumentObjectModel.Orientation)">
+            <summary>
+            Renders the page size, taking into account Orientation, PageFormat and PageWidth / PageHeight.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.ListInfoRenderer">
+            <summary>
+            ListInfoRenderer.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ListInfoRenderer.Render">
+            <summary>
+            Renders a ListIfo to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ListInfoRenderer.GetListID(MigraDoc.DocumentObjectModel.ListInfo)">
+            <summary>
+            Gets the corresponding List ID of the ListInfo Object.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.FootnoteRenderer">
+            <summary>
+            Renders a footnote to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.FootnoteRenderer.Render">
+            <summary>
+            Renders a footnote to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.FootnoteRenderer.RenderReference">
+            <summary>
+            Renders the footnote's reference symbol.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.FootnoteRenderer.RenderContent">
+            <summary>
+            Renders the footnote's content.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.RtfDocumentRenderer">
+            <summary>
+            Class to render a MigraDoc document to RTF format.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfDocumentRenderer.#ctor">
+            <summary>
+            Initializes a new instance of the DocumentRenderer class.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfDocumentRenderer.Render">
+            <summary>
+            This function is declared only for technical reasons!
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfDocumentRenderer.Render(MigraDoc.DocumentObjectModel.Document,System.String,System.String)">
+            <summary>
+            Renders a MigraDoc document to the specified file.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfDocumentRenderer.Render(MigraDoc.DocumentObjectModel.Document,System.IO.Stream,System.String)">
+            <summary>
+            Renders a MigraDoc document to the specified stream.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfDocumentRenderer.RenderToString(MigraDoc.DocumentObjectModel.Document,System.String)">
+            <summary>
+            Renders a MigraDoc to Rtf and returns the result as string.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfDocumentRenderer.WriteDocument">
+            <summary>
+            Renders a MigraDoc document with help of the internal RtfWriter.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfDocumentRenderer.Prepare">
+            <summary>
+            Prepares this renderer by collecting Information for font and color table.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfDocumentRenderer.RenderHeader">
+            <summary>
+            Renders the RTF Header.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfDocumentRenderer.CollectTables(MigraDoc.DocumentObjectModel.DocumentObject)">
+            <summary>
+            Fills the font, color and (later!) list hashtables so they can be rendered and used by other renderers.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfDocumentRenderer.RenderFontTable">
+            <summary>
+            Renders the font hashtable within the RTF header.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfDocumentRenderer.RenderColorTable">
+            <summary>
+            Renders the color hashtable within the RTF header.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfDocumentRenderer.GetFontIndex(System.String)">
+            <summary>
+            Gets the font table index for the specified font name.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfDocumentRenderer.GetColorIndex(MigraDoc.DocumentObjectModel.Color)">
+            <summary>
+            Gets the color table index for the specified color.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfDocumentRenderer.GetStyleIndex(System.String)">
+            <summary>
+            Gets the style index for the specified color.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfDocumentRenderer.RenderStyles">
+            <summary>
+            Renders styles as part of the RTF header.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfDocumentRenderer.RenderListTable">
+            <summary>
+            Renders the list hashtable within the RTF header.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfDocumentRenderer.RenderDocumentArea">
+            <summary>
+            Renders the RTF document area, which is all except the header.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfDocumentRenderer.RenderGlobalPorperties">
+            <summary>
+            Renders global document properties, such as mirror margins and unicode treatment.
+            Note that a section specific margin mirroring does not work in Word.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfDocumentRenderer.RenderDocumentFormat">
+            <summary>
+            Renders the document format such as standard tab stops and footnote settings.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfDocumentRenderer.RenderSectionProperties">
+            <summary>
+            Renders footnote properties for a section. (not part of the rtf specification, but necessary for Word)
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfDocumentRenderer.RenderInfo">
+            <summary>
+            Renders the document information of title, author etc..
+            </summary>
+        </member>
+        <member name="P:MigraDoc.RtfRendering.RtfDocumentRenderer.Document">
+            <summary>
+            Gets the MigraDoc document that is currently rendered.
+            </summary>
+        </member>
+        <member name="P:MigraDoc.RtfRendering.RtfDocumentRenderer.RtfWriter">
+            <summary>
+            Gets the RtfWriter the document is rendered with.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.TableRenderer">
+            <summary>
+            Class to render a Table to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.TableRenderer.Render">
+            <summary>
+            Renders a Table to RTF.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.ParagraphRenderer">
+            <summary>
+            Class to render a Paragraph to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ParagraphRenderer.Render">
+            <summary>
+            Renders the paragraph to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ParagraphRenderer.RenderContent">
+            <summary>
+            Renders the paragraph content to RTF.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.ShadingRenderer">
+            <summary>
+            Class to render a shading to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ShadingRenderer.Render">
+            <summary>
+            Render a shading to RTF.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.PageRefFieldRenderer">
+            <summary>
+            Class to render a PageRefField to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.PageRefFieldRenderer.Render">
+            <summary>
+            Renders PageRefField to RTF.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.CellFormatRenderer">
+            <summary>
+            Render the format information of a cell.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.CellFormatRenderer.Render">
+            <summary>
+            Renders the cell's shading, borders and so on (used by the RowRenderer).
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.CellFormatRenderer.GetRightCellBoundary">
+            <summary>
+            Gets the right boundary of the cell which is currently rendered.
+            </summary>
+        </member>
+        <member name="P:MigraDoc.RtfRendering.CellFormatRenderer.CellList">
+            <summary>
+            Sets the MergedCellList received from the DOM table. This property is set by the RowRenderer.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.BorderRendererBase">
+            <summary>
+            Base class for BorderRenderer and BordersRenderer 
+            Useful because the BordersRenderer needs to draw single borders too.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.BorderRendererBase.RenderBorder(System.String)">
+            <summary>
+            Renders a single border that might have a parent of type Borders or Border .
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.BorderRendererBase.GetDefaultColor">
+            <summary>
+            Gets the default color of the Border.
+            Paragraph Borders use the font color by default.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.BorderRendererBase.GetBorderControl(MigraDoc.DocumentObjectModel.BorderType)">
+            <summary>
+            Gets the RTF border control for the given border type.
+            </summary>
+        </member>
+        <member name="P:MigraDoc.RtfRendering.BorderRendererBase.ParentFormat">
+            <summary>
+            Sets the paragraph format the Border is part of.
+            This property is set by the ParagraphFormatRenderer
+            </summary>
+        </member>
+        <member name="P:MigraDoc.RtfRendering.BorderRendererBase.ParentCell">
+            <summary>
+            Sets the cell the border is part of.
+            This property is set by the CellFormatRenderer
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.BookmarkFieldRenderer">
+            <summary>
+            Class to render a Bookmark to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.BookmarkFieldRenderer.Render">
+            <summary>
+            Renders a Bookmark.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.BookmarkFieldRenderer.MakeValidBookmarkName(System.String)">
+            <summary>
+            Gets a valid bookmark name for RTF  by the given original name.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.StyleRenderer">
+            <summary>
+            Class to render a Style to RTF.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.RowsRenderer">
+            <summary>
+            Class to render a Row to RTF..
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.InfoFieldRenderer">
+            <summary>
+            Renders an information field to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.InfoFieldRenderer.Render">
+            <summary>
+            Renders an InfoField to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.InfoFieldRenderer.GetFieldResult">
+            <summary>
+            Gets the requested document info if available.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.DateFieldRenderer">
+            <summary>
+            Renders a date field to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.DateFieldRenderer.Render">
+            <summary>
+            Renders a date field to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.DateFieldRenderer.TranslateFormat">
+            <summary>
+            Translates the date field format to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.DateFieldRenderer.TranslateCustomFormatChar(System.Char)">
+            <summary>
+            Translates an unescaped character of a DateField's custom format to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.DateFieldRenderer.GetFieldResult">
+            <summary>
+            Gets the current date in the correct format.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.BordersRenderer">
+            <summary>
+            Class to render a Borders object to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.BordersRenderer.Render">
+            <summary>
+            Renders a Borders object to RTF.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.TextFrameRenderer">
+            <summary>
+            Class to render a TextFrame to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.TextFrameRenderer.Render">
+            <summary>
+            Renders a TextFrame to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.TextFrameRenderer.GetShapeHeight">
+            <summary>
+            Gets the user defined shape height if given, else 1 inch.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.TextFrameRenderer.GetShapeWidth">
+            <summary>
+            Gets the user defined shape width if given, else 1 inch.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.TextFrameRenderer.RenderLayoutPicture">
+            <summary>
+            Renders an empty dummy picture that allows the textframe to be placed in the dummy paragraph.
+            (A bit obscure, but the only possiblity.)
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.TextFrameRenderer.StartDummyParagraph">
+            <summary>
+            Starts a dummy paragraph to put a shape in, which is wrapped TopBottom style.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.TextFrameRenderer.EndDummyParagraph">
+            <summary>
+            Ends a dummy paragraph to put a shape in, which is wrapped TopBottom style.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.RendererFactory">
+            <summary>
+            Class to dynamically create renderers.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RendererFactory.CreateRenderer(MigraDoc.DocumentObjectModel.DocumentObject,MigraDoc.RtfRendering.RtfDocumentRenderer)">
+            <summary>
+            Dynamically creates a renderer for the given document object.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.HyperlinkRenderer">
+            <summary>
+            Renders a Hyperlink to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.HyperlinkRenderer.Render">
+            <summary>
+            Renders a hyperlink to RTF.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.BorderRenderer">
+            <summary>
+            Renders a single border to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.BorderRenderer.Render">
+            <summary>
+            Renders a single border. A border also needs to be rendered if it is invisible.
+            </summary>
+        </member>
+        <member name="P:MigraDoc.RtfRendering.BorderRenderer.BorderType">
+            <summary>
+            Sets the border type to render. This property is set by the borders renderer.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.RowRenderer">
+            <summary>
+            Class to render a Row to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RowRenderer.Render">
+            <summary>
+            Render a Row to RTF.
+            </summary>
+        </member>
+        <member name="P:MigraDoc.RtfRendering.RowRenderer.CellList">
+            <summary>
+            Sets the merged cell list. This property is set by the table renderer.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.TextRenderer">
+            <summary>
+            Renders Text to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.TextRenderer.Render">
+            <summary>
+            Renders text to RTF.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.TabStopsRenderer">
+            <summary>
+            Class to render a TabStops collection to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.TabStopsRenderer.Render">
+            <summary>
+            Renders a TabStops collection to RTF.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.HeadersFootersRenderer">
+            <summary>
+            Renders headers and footers to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.HeadersFootersRenderer.Render">
+            <summary>
+            Renders a section's headers and footers to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.HeadersFootersRenderer.RenderHeaderFooter(MigraDoc.DocumentObjectModel.HeaderFooter,MigraDoc.DocumentObjectModel.HeaderFooterIndex)">
+            <summary>
+            Renders a single header footer.
+            </summary>
+        </member>
+        <member name="P:MigraDoc.RtfRendering.HeadersFootersRenderer.PageSetup">
+            <summary>
+            Sets the PageSetup (It stems from the section the HeadersFooters are used in).
+            Caution: This PageSetup might differ from the one the "parent" section's got
+            for inheritance reasons.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.ParagraphFormatRenderer">
+            <summary>
+            Class to render a ParagraphFormat to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ParagraphFormatRenderer.#ctor(MigraDoc.DocumentObjectModel.DocumentObject,MigraDoc.RtfRendering.RtfDocumentRenderer)">
+            <summary>
+            Initializes a new instance of the Paragraph Renderer class.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.ParagraphFormatRenderer.Render">
+            <summary>
+            Renders a ParagraphFormat object.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.FormattedTextRenderer">
+            <summary>
+            Renders formatted text to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.FormattedTextRenderer.Render">
+            <summary>
+            Renders a formatted text to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.FormattedTextRenderer.RenderStyleAndFont">
+            <summary>
+            Renders the style if it is a character style and the font of the formatted text.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.SectionFieldRenderer">
+            <summary>
+            Class to render a SectionField to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.SectionFieldRenderer.Render">
+            <summary>
+            Renders a SectionField to RTF.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.TabStopRenderer">
+            <summary>
+            Class to render a TabStop to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.TabStopRenderer.Render">
+            <summary>
+            Renders a TabStop to RTF.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.PageBreakRenderer">
+            <summary>
+            Class to render a PageBreak to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.PageBreakRenderer.Render">
+            <summary>
+            Renders a pagebreak to RTF.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.FontRenderer">
+            <summary>
+            Renders a font to RTF.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.FontRenderer.Render">
+            <summary>
+            Renders a font to RTF.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.RtfUnit">
+            <summary>
+            Units rendered in RTF output.
+            </summary>
+        </member>
+        <member name="T:MigraDoc.RtfRendering.RtfWriter">
+            <summary>
+            Class to write RTF output.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfWriter.#ctor(System.IO.TextWriter)">
+            <summary>
+            Initializes a new instance of the RtfWriter class.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfWriter.StartContent">
+            <summary>
+            Writes a left brace.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfWriter.EndContent">
+            <summary>
+            Writes a right brace.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfWriter.WriteText(System.String)">
+            <summary>
+            Writes the given text, handling special characters before.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfWriter.IsCp1252Char(System.Char)">
+            <summary>
+            Indicates whether the specified Unicode character is available in the Ansi code page 1252.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfWriter.WriteHex(System.UInt32)">
+            <summary>
+            Writes the number as hex value. Only numbers &lt;= 255 are allowed.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfWriter.WriteBlank">
+            <summary>
+            Writes a blank in paragraph text.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfWriter.WriteSeparator">
+            <summary>
+            Writes a semicolon as separator e.g. in in font tables.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfWriter.WriteControl(System.String,System.Boolean)">
+            <summary>
+            Writes the given string as control word optionally with a star.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfWriter.WriteControl(System.String,System.String,System.Boolean)">
+            <summary>
+            Writes the given string as control word with a star followed by a space.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfWriter.WriteControl(System.String,System.Int32,System.Boolean)">
+            <summary>
+            Writes the given string as control word with a star followed by a space.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfWriter.WriteControl(System.String)">
+            <summary>
+            Writes the given string as control word.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfWriter.WriteControl(System.String,System.Int32)">
+            <summary>
+            Writes the given string and integer as control word / value pair followed by a space.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfWriter.WriteControl(System.String,System.String)">
+            <summary>
+            Writes the given strings as control word / value pair.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfWriter.WriteControlWithStar(System.String)">
+            <summary>
+            Writes the given string and integer as control word / value pair
+            with a star.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfWriter.WriteControlWithStar(System.String,System.Int32)">
+            <summary>
+            Writes the given string and integer as control word / value pair followed by a space.
+            </summary>
+        </member>
+        <member name="M:MigraDoc.RtfRendering.RtfWriter.WriteControlWithStar(System.String,System.String)">
+            <summary>
+            Writes the given string and integer as control word / value pair
+            with a star.
+            </summary>
+        </member>
+    </members>
+</doc>

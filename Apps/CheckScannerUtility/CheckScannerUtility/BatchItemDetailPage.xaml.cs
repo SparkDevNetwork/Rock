@@ -72,7 +72,7 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 BitmapImage bitmapImage = new BitmapImage();
                 bitmapImage.BeginInit();
-                bitmapImage.StreamSource = new MemoryStream( frontTranImage.BinaryFile.Data );
+                bitmapImage.StreamSource = new MemoryStream( frontTranImage.BinaryFile.Data.Content );
                 bitmapImage.EndInit();
                 imgFront.Source = bitmapImage;
             }
@@ -85,7 +85,7 @@ namespace Rock.Apps.CheckScannerUtility
             {
                 BitmapImage bitmapImage = new BitmapImage();
                 bitmapImage.BeginInit();
-                bitmapImage.StreamSource = new MemoryStream( backTranImage.BinaryFile.Data );
+                bitmapImage.StreamSource = new MemoryStream( backTranImage.BinaryFile.Data.Content );
                 bitmapImage.EndInit();
                 imgBack.Source = bitmapImage;
             }

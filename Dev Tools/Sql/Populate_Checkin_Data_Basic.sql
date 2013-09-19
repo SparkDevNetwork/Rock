@@ -39,12 +39,16 @@
 *
 */
 
-BEGIN TRANSACTION
+IF NOT EXISTS(SELECT *  FROM [Category] WHERE Guid = '8F8B272D-D351-485E-86D6-3EE5B7C84D99' )
+BEGIN
+	PRINT( 'ERROR: This script requires that the Populate_WorkflowTypeAndCategory.sql be run first.' )
+	RETURN
+END
 
 -- Group Type Entity Type
 IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Model.GroupType')
-  INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured)
-  VALUES ('Rock.Model.GroupType', NEWID(), 0, 0)
+  INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured, IsCommon)
+  VALUES ('Rock.Model.GroupType', NEWID(), 0, 0, 0)
 
 DECLARE @GroupTypeEntityTypeId int
 SET @GroupTypeEntityTypeId = (SELECT Id FROM EntityType WHERE Name = 'Rock.Model.GroupType')
@@ -269,7 +273,6 @@ SET @JHGroupId = SCOPE_IDENTITY()
 INSERT INTO [Group] ( [IsSystem],[GroupTypeId],[Name],[IsSecurityRole],[IsActive],[Order],[Guid])
    VALUES ( 0, @HSGroupTypeId, 'Grades 9-12', 0, 1, 8,'9B982B2A-24AB-4B82-AB49-84BDB4CF9E5F' )
 SET @HSGroupId = SCOPE_IDENTITY()
-
 
 ------------------------------------------------------------------------------------
 -- Add the attributes
@@ -602,73 +605,97 @@ INNER JOIN Schedule S ON S.[Name] LIKE '%(test)'
 
 -- Workflow Action Entity Types
 IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.FilterActiveLocations')
-INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured)
-VALUES ('Rock.Workflow.Action.CheckIn.FilterActiveLocations', NEWID(), 0, 0)
+INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured, IsCommon)
+VALUES ('Rock.Workflow.Action.CheckIn.FilterActiveLocations', NEWID(), 0, 0, 0)
 
 IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.FilterByAge')
-INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured)
-VALUES ('Rock.Workflow.Action.CheckIn.FilterByAge', NEWID(), 0, 0)
+INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured, IsCommon)
+VALUES ('Rock.Workflow.Action.CheckIn.FilterByAge', NEWID(), 0, 0, 0)
+
+IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.FilterGroupsByAge')
+INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured, IsCommon)
+VALUES ('Rock.Workflow.Action.CheckIn.FilterGroupsByAge', NEWID(), 0, 0, 0)
+
+IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.FilterByGrade')
+INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured, IsCommon)
+VALUES ('Rock.Workflow.Action.CheckIn.FilterByGrade', NEWID(), 0, 0, 0)
+
+IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.FilterGroupsByGrade')
+INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured, IsCommon)
+VALUES ('Rock.Workflow.Action.CheckIn.FilterGroupsByGrade', NEWID(), 0, 0, 0)
+
+IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.FilterGroupsByAbilityLevel')
+INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured, IsCommon)
+VALUES ('Rock.Workflow.Action.CheckIn.FilterGroupsByAbilityLevel', NEWID(), 0, 0, 0)
+
+IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.FilterGroupsByLastName')
+INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured, IsCommon)
+VALUES ('Rock.Workflow.Action.CheckIn.FilterGroupsByLastName', NEWID(), 0, 0, 0)
+
+IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.FilterGroupsBySpecialNeeds')
+INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured, IsCommon)
+VALUES ('Rock.Workflow.Action.CheckIn.FilterGroupsBySpecialNeeds', NEWID(), 0, 0, 0)
 
 IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.FindFamilies')
-INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured)
-VALUES ('Rock.Workflow.Action.CheckIn.FindFamilies', NEWID(), 0, 0)
+INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured, IsCommon)
+VALUES ('Rock.Workflow.Action.CheckIn.FindFamilies', NEWID(), 0, 0, 0)
 
 IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.FindFamilyMembers')
-INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured)
-VALUES ('Rock.Workflow.Action.CheckIn.FindFamilyMembers', NEWID(), 0, 0)
+INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured, IsCommon)
+VALUES ('Rock.Workflow.Action.CheckIn.FindFamilyMembers', NEWID(), 0, 0, 0)
 
 IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.FindRelationships')
-INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured)
-VALUES ('Rock.Workflow.Action.CheckIn.FindRelationships', NEWID(), 0, 0)
+INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured, IsCommon)
+VALUES ('Rock.Workflow.Action.CheckIn.FindRelationships', NEWID(), 0, 0, 0)
 
 IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.LoadGroups')
-INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured)
-VALUES ('Rock.Workflow.Action.CheckIn.LoadGroups', NEWID(), 0, 0)
+INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured, IsCommon)
+VALUES ('Rock.Workflow.Action.CheckIn.LoadGroups', NEWID(), 0, 0, 0)
 
 IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.LoadGroupTypes')
-INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured)
-VALUES ('Rock.Workflow.Action.CheckIn.LoadGroupTypes', NEWID(), 0, 0)
+INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured, IsCommon)
+VALUES ('Rock.Workflow.Action.CheckIn.LoadGroupTypes', NEWID(), 0, 0, 0)
 
 IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.LoadLocations')
-INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured)
-VALUES ('Rock.Workflow.Action.CheckIn.LoadLocations', NEWID(), 0, 0)
+INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured, IsCommon)
+VALUES ('Rock.Workflow.Action.CheckIn.LoadLocations', NEWID(), 0, 0, 0)
 
 IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.LoadSchedules')
-INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured)
-VALUES ('Rock.Workflow.Action.CheckIn.LoadSchedules', NEWID(), 0, 0)
+INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured, IsCommon)
+VALUES ('Rock.Workflow.Action.CheckIn.LoadSchedules', NEWID(), 0, 0, 0)
 
 IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.RemoveEmptyGroups')
-INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured)
-VALUES ('Rock.Workflow.Action.CheckIn.RemoveEmptyGroups', NEWID(), 0, 0)
+INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured, IsCommon)
+VALUES ('Rock.Workflow.Action.CheckIn.RemoveEmptyGroups', NEWID(), 0, 0, 0)
 
 IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.RemoveEmptyGroupTypes')
-INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured)
-VALUES ('Rock.Workflow.Action.CheckIn.RemoveEmptyGroupTypes', NEWID(), 0, 0)
+INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured, IsCommon)
+VALUES ('Rock.Workflow.Action.CheckIn.RemoveEmptyGroupTypes', NEWID(), 0, 0, 0)
 
 IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.RemoveEmptyLocations')
-INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured)
-VALUES ('Rock.Workflow.Action.CheckIn.RemoveEmptyLocations', NEWID(), 0, 0)
+INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured, IsCommon)
+VALUES ('Rock.Workflow.Action.CheckIn.RemoveEmptyLocations', NEWID(), 0, 0, 0)
 
 IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.RemoveEmptyPeople')
-INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured)
-VALUES ('Rock.Workflow.Action.CheckIn.RemoveEmptyPeople', NEWID(), 0, 0)
+INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured, IsCommon)
+VALUES ('Rock.Workflow.Action.CheckIn.RemoveEmptyPeople', NEWID(), 0, 0, 0)
 
 IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.SaveAttendance')
-INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured)
-VALUES ('Rock.Workflow.Action.CheckIn.SaveAttendance', NEWID(), 0, 0)
+INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured, IsCommon)
+VALUES ('Rock.Workflow.Action.CheckIn.SaveAttendance', NEWID(), 0, 0, 0)
 
 IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.CreateLabels')
-INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured)
-VALUES ('Rock.Workflow.Action.CheckIn.CreateLabels', NEWID(), 0, 0)
+INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured, IsCommon)
+VALUES ('Rock.Workflow.Action.CheckIn.CreateLabels', NEWID(), 0, 0, 0)
 
 IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.CalculateLastAttended')
-INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured)
-VALUES ('Rock.Workflow.Action.CheckIn.CalculateLastAttended', NEWID(), 0, 0)
+INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured, IsCommon)
+VALUES ('Rock.Workflow.Action.CheckIn.CalculateLastAttended', NEWID(), 0, 0, 0)
 
 -- Workflow Entity Type
 IF NOT EXISTS(SELECT Id FROM EntityType WHERE Name = 'Rock.Model.Workflow')
-INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured)
-VALUES ('Rock.Model.Workflow', NEWID(), 0, 0)
+INSERT INTO EntityType (Name, Guid, IsEntity, IsSecured, IsCommon)
+VALUES ('Rock.Model.Workflow', NEWID(), 0, 0, 0)
 DECLARE @WorkflowEntityTypeId int
 SET @WorkflowEntityTypeId = (SELECT Id FROM EntityType WHERE Name = 'Rock.Model.Workflow')
 
@@ -685,20 +712,22 @@ DECLARE @CheckInCategoryId int
 SET @CheckInCategoryId = (SELECT Id FROM [Category] WHERE Guid = '8F8B272D-D351-485E-86D6-3EE5B7C84D99')
 
 INSERT INTO [WorkflowType] (IsSystem, IsActive, Name, [CategoryId], [Order], WorkTerm, IsPersisted, LoggingLevel, Guid)
-VALUES (0, 1, 'Children''s Check-in', 0, 'Check-in', @CheckInCategoryId, 0, 3, '011E9F5A-60D4-4FF5-912A-290881E37EAF')
+VALUES (0, 1, 'Unattended Check-in', @CheckInCategoryId, 0, 'Check-in', 0, 3, '011E9F5A-60D4-4FF5-912A-290881E37EAF')
 SET @WorkflowTypeId = SCOPE_IDENTITY()
 
 UPDATE AV
 SET [Value] = @WorkflowTypeId
 FROM AttributeValue AV
 INNER JOIN Attribute A ON A.Id = AV.AttributeId
-WHERE A.[Key] = 'WorkflowTypeId'
+WHERE A.[Key] = 'WorkflowTypeId' AND A.[Description] = 'The Id of the workflow type to activate for Check-in'
+
 DECLARE @TextFieldTypeId int
 SET @TextFieldTypeId = (SELECT Id FROM FieldType WHERE guid = '9C204CD0-1233-41C5-818A-C5DA439445AA')
 DELETE [Attribute] WHERE guid = '9D2BFE8A-41F3-4A02-B3CF-9193F0C8419E'  -- old attribute, no longer added by script
 
 -- Family Search Activity
 DECLARE @WorkflowActivityTypeId int
+DECLARE @WorkflowActionTypeId int
 INSERT INTO [WorkflowActivityType] (IsActive, WorkflowTypeId, Name, IsActivatedWithWorkflow, [Order], Guid)
 VALUES (1, @WorkflowTypeId, 'Family Search', 0, 0, NEWID())
 SET @WorkflowActivityTypeId = SCOPE_IDENTITY()
@@ -712,17 +741,53 @@ VALUES (1, @WorkflowTypeId, 'Person Search', 0, 1, NEWID())
 SET @WorkflowActivityTypeId = SCOPE_IDENTITY()
 
 INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
-SELECT @WorkflowActivityTypeId, 'Find Family Members', 0, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.FindFamilyMembers'
+SELECT @WorkflowActivityTypeId, 'Find Family Members', 1, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.FindFamilyMembers'
 INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
-SELECT @WorkflowActivityTypeId, 'Find Relationships', 1, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.FindRelationships'
+SELECT @WorkflowActivityTypeId, 'Find Relationships', 2, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.FindRelationships'
 INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
-SELECT @WorkflowActivityTypeId, 'Load Group Types', 2, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.LoadGroupTypes'
+SELECT @WorkflowActivityTypeId, 'Load Group Types', 3, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.LoadGroupTypes'
 INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
-SELECT @WorkflowActivityTypeId, 'Filter by Age', 3, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.FilterByAge'
+SELECT @WorkflowActivityTypeId, 'Filter GroupTypes by Age', 4, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.FilterByAge'
 INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
-SELECT @WorkflowActivityTypeId, 'Remove Empty People', 4, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.RemoveEmptyPeople'
+SELECT @WorkflowActivityTypeId, 'Filter GroupTypes by Grade', 5, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.FilterByGrade'
 INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
-SELECT @WorkflowActivityTypeId, 'Update Last Attended', 5, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.CalculateLastAttended'
+SELECT @WorkflowActivityTypeId, 'Load Groups', 6, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.LoadGroups'
+SET @WorkflowActionTypeId = SCOPE_IDENTITY()
+	-- set the Load All attribute to true
+	INSERT INTO [AttributeValue] ( IsSystem, AttributeId, [EntityId], [Order], [Value], Guid )
+	SELECT 1, Id, @WorkflowActionTypeId, 0, 'True', NEWID() FROM [Attribute] WHERE Guid = '39762EF0-91D5-4B13-BD34-FC3AC3C24897'
+
+INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
+SELECT @WorkflowActivityTypeId, 'Filter Groups by Age', 6, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.FilterGroupsByAge'
+INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
+SELECT @WorkflowActivityTypeId, 'Filter Groups by Grade', 8, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.FilterGroupsByGrade'
+INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
+SELECT @WorkflowActivityTypeId, 'Load Locations', 9, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.LoadLocations'
+SET @WorkflowActionTypeId = SCOPE_IDENTITY()
+	-- set the Load All attribute to true
+	INSERT INTO [AttributeValue] ( IsSystem, AttributeId, [EntityId], [Order], [Value], Guid )
+	SELECT 1, Id, @WorkflowActionTypeId, 0, 'True', NEWID() FROM [Attribute] WHERE Guid = '70203A96-AE70-47AD-A086-FD84792DF2B6'
+	
+INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
+SELECT @WorkflowActivityTypeId, 'Remove Empty Groups', 10, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.RemoveEmptyGroups'
+INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
+SELECT @WorkflowActivityTypeId, 'Remove Empty Group Types', 11, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.RemoveEmptyGroupTypes'
+INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
+SELECT @WorkflowActivityTypeId, 'Remove Empty People', 12, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.RemoveEmptyPeople'
+INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
+SELECT @WorkflowActivityTypeId, 'Update Last Attended', 13, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.CalculateLastAttended'
+
+-- Ability Level Search
+INSERT INTO [WorkflowActivityType] (IsActive, WorkflowTypeId, Name, IsActivatedWithWorkflow, [Order], Guid)
+VALUES (1, @WorkflowTypeId, 'Ability Level Search', 0, 3, NEWID())
+SET @WorkflowActivityTypeId = SCOPE_IDENTITY()
+
+INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
+SELECT @WorkflowActivityTypeId, 'Filter Groups By Ability Level', 1, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.FilterGroupsByAbilityLevel'
+INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
+SELECT @WorkflowActivityTypeId, 'Remove Empty Groups', 2, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.RemoveEmptyGroups'
+INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
+SELECT @WorkflowActivityTypeId, 'Remove Empty Group Types', 3, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.RemoveEmptyGroupTypes'
 
 -- Group Search
 INSERT INTO [WorkflowActivityType] (IsActive, WorkflowTypeId, Name, IsActivatedWithWorkflow, [Order], Guid)
@@ -730,13 +795,11 @@ VALUES (1, @WorkflowTypeId, 'Group Search', 0, 2, NEWID())
 SET @WorkflowActivityTypeId = SCOPE_IDENTITY()
 
 INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
-SELECT @WorkflowActivityTypeId, 'Load Groups', 0, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.LoadGroups'
-INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
-SELECT @WorkflowActivityTypeId, 'Update Last Attended', 2, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.CalculateLastAttended'
+SELECT @WorkflowActivityTypeId, 'Update Last Attended', 10, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.CalculateLastAttended'
 
 -- Location Search
 INSERT INTO [WorkflowActivityType] (IsActive, WorkflowTypeId, Name, IsActivatedWithWorkflow, [Order], Guid)
-VALUES (1, @WorkflowTypeId, 'Location Search', 0, 3, NEWID())
+VALUES (1, @WorkflowTypeId, 'Location Search', 0, 4, NEWID())
 SET @WorkflowActivityTypeId = SCOPE_IDENTITY()
 
 INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
@@ -750,7 +813,7 @@ SELECT @WorkflowActivityTypeId, 'Update Last Attended', 3, Id, 1, 0, NEWID() FRO
 
 -- Schedule Search
 INSERT INTO [WorkflowActivityType] (IsActive, WorkflowTypeId, Name, IsActivatedWithWorkflow, [Order], Guid)
-VALUES (1, @WorkflowTypeId, 'Schedule Search', 0, 4, NEWID())
+VALUES (1, @WorkflowTypeId, 'Schedule Search', 0, 5, NEWID())
 SET @WorkflowActivityTypeId = SCOPE_IDENTITY()
 
 INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
@@ -758,12 +821,10 @@ SELECT @WorkflowActivityTypeId, 'Load Schedules', 0, Id, 1, 0, NEWID() FROM Enti
 
 -- Save Attendance
 INSERT INTO [WorkflowActivityType] (IsActive, WorkflowTypeId, Name, IsActivatedWithWorkflow, [Order], Guid)
-VALUES (1, @WorkflowTypeId, 'Save Attendance', 0, 5, NEWID())
+VALUES (1, @WorkflowTypeId, 'Save Attendance', 0, 6, NEWID())
 SET @WorkflowActivityTypeId = SCOPE_IDENTITY()
 
 INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
 SELECT @WorkflowActivityTypeId, 'Save Attendance', 0, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.SaveAttendance'
 INSERT INTO [WorkflowActionType] (ActivityTypeId, Name, [Order], [EntityTypeId], IsActionCompletedOnSuccess, IsActivityCompletedOnSuccess, Guid)
 SELECT @WorkflowActivityTypeId, 'Create Labels', 0, Id, 1, 0, NEWID() FROM EntityType WHERE Name = 'Rock.Workflow.Action.CheckIn.CreateLabels'
-
-COMMIT
