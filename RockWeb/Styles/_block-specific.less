@@ -158,10 +158,6 @@ span.cke_skin_kama
             }
         }
 
-        &:last-child {
-            margin-bottom: 0;
-        }
-
         &.highlight {
             background-color: @state-danger-bg;
             border: 1px solid darken(spin(@state-danger-bg, -10), 3%);
@@ -194,47 +190,22 @@ span.cke_skin_kama
     }
 }
 
-.note-entry
-{
-    background-color: #F3F3F3;
-    border: 1px solid #D3D3D3;
-    border-radius: 4px 4px 4px 4px;
-    margin-bottom: 12px;
-    padding: 6px 6px 0 6px;
+.panel-noteentry {
+  .panel-variant(@accent-color; @accent-text-color; @accent-text-color; @accent-text-color);
 }
 
-.note-entry textarea
+.panel-noteentry
 {
-    -webkit-box-sizing: border-box;
-    -moz-box-sizing: border-box;
-    box-sizing: border-box;
-    width: 100%;
-}
 
-.note-entry .settings .options
-{
-    float: left;
-}
+    .settings {
+        .options {
+            input {
+                margin-right: 4px;
+            }
+        }
+    } 
 
-.note-entry .settings .options label
-{
-    float: left;
-    margin-right: 12px;
-    margin-left: 4px;
-}
-
-.note-entry .settings button.security
-{
-    float: right;
-}
-
-.note-entry .actions
-{
-    border-top: 1px solid #D3D3D3;
-    background-color: #ededed;
-    margin: 6px -6px 0 -6px;
-    padding: 6px;
-    text-align: right;
-    padding: 8px 6px;
-    border-radius: 0 0 4px 4px;
+    .panel-footer {
+        background-color: @accent-color;
+    }
 }

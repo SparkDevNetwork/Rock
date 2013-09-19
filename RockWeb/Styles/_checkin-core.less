@@ -1,4 +1,6 @@
-﻿/*
+﻿@import "_global-variables.less";
+
+/*
     Used to style the check-in screens
     
     1. Bootstrap Overrides
@@ -30,52 +32,11 @@ h1 {
     color: @header-text-color;
 }
 
-.btn-mini
-{
-    padding: 0 6px;
-}
-
-.control-label
+.form-group label
 {
     font-size: 18px;
     margin-bottom: 6px;
 }
-
-.btn
-{
-	border-color: @checkin-button-border-color;
-	text-shadow:
-		0px -1px 0px rgba(000,000,000,0.6),
-		0px 1px 0px rgba(255,255,255,0.1);
-    .buttonBackground(lighten(@checkin-button-background, 5%), @checkin-button-background, @checkin-button-text-color);
-    -webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 1px 0 rgba(0,0,0,.1);
-    -moz-box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 1px 0 rgba(0,0,0,.1);
-    box-shadow: inset 0 2px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 2px 0 rgba(0,0,0,.1);
-}
-
-.btn:active,
-.btn:hover
-{
-    //color: darken(@checkin-button-text-color, 10%);
-    //.buttonBackground( @checkin-button-background, darken(@checkin-button-background, 5%));
-    
-    //background-position: initial;
-}
-
-.btn-primary
-{
-    .buttonBackground(@checkin-button-primary-background, spin(@checkin-button-primary-background, 20%));
-	color: @checkin-button-primary-text-color;
-	border-color: @checkin-button-primary-border-color;
-}
-
-.btn-primary:hover,
-.btn-primary:active
-{
-    color: darken(@checkin-button-primary-text-color, 10%);
-    .buttonBackground(spin(@checkin-button-primary-background, 20%), spin(@checkin-button-primary-background, 30%));
-}
-
 
 .btn-checkin-select
 {
@@ -119,27 +80,24 @@ body {
 .checkin-header
 {
     margin-top: 45px;
+
+    h1 {
+        font-size: 48px;
+	    font-weight: @header-font-weight;
+    }
+
+    .checkin-sub-title {
+        color: @subheader-text-color;
+	    font-size: 24px;
+        font-weight: @subheader-font-weight;
+        margin-top: 12px;
+    }
 }
 
-.checkin-header h1
-{
-    font-size: 48px;
-	font-weight: @header-font-weight;
-}
-
-.checkin-header .checkin-sub-title
-{
-    color: @subheader-text-color;
-	font-size: 24px;
-    font-weight: @subheader-font-weight;
-    margin-top: 12px;
-}
-
-.btn .checkin-sub-title
+.btn .checkin-sub-title // todo ?
 {
     font-size: 20px;
     font-weight: @checkin-button-alttext-weight;
-    font-weight: normal;
     margin-left: 20px;
 }
 
@@ -152,12 +110,11 @@ body {
 
 .checkin-body
 {
-    margin-top: 24px;
-}
-
-.checkin-body .btn-primary {
-	float: right;
-	clear: both;
+    .checkin-actions {
+        .btn {
+	        font-size: 36px;
+        }
+    }
 }
 
 .checkin-search-actions a
@@ -166,16 +123,6 @@ body {
     font-size: 48px;
     line-height: 48px;
     font-weight: @checkin-button-text-weight;
-}
-
-.checkin-body .checkin-actions {
-	text-align: right;
-}
-
-.checkin-body .checkin-actions .btn {
-	font-size: 48px;
-    height: 43px;
-    padding: 28px 26px 10px;
 }
 
 // checkin footer 
@@ -194,7 +141,7 @@ body {
 .checkin-count h3,
 .checkin-count li
 {
-    color: @checkin-text-color;
+    color: @text-color;
 }
 
 .checkin-count-locations, 
@@ -241,7 +188,7 @@ body {
 
 .btn-checkbox.active
 {
-    .buttonBackground(@checkin-button-primary-background, spin(@checkin-button-primary-background, 20%));
+    //.buttonBackground(@checkin-button-primary-background, spin(@checkin-button-primary-background, 20%));
     -webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 1px 0 rgba(0,0,0,.1);
     -moz-box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 1px 0 rgba(0,0,0,.1);
     box-shadow: inset 0 2px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 2px 0 rgba(0,0,0,.1);
@@ -275,50 +222,51 @@ button.btn-checkbox.btn i
 {
     font-size: 22px;
     margin-bottom: 18px;
-	color: @checkin-text-color;
+	color: @text-color;
 }
 
 /* Ten Key Keypad */
 .tenkey
 {
     width: 320px;
-}
 
-.tenkey a.btn {
-    margin: 2px;
-    font-size: 20px;
-    width: 60px;
-    height: 38px;
-    padding-top: 33px;
-}
+     a.btn {
+        margin: 2px;
+        width: 80px;
+        height: 80px;
+    }
 
-.tenkey a.digit {
-    font-size: 48px;
-    height: 43px;
-    padding-top: 28px;
-    font-weight: @font-weight-semibold;
-}
+     a.digit {
+        font-size: 48px;
+        font-weight: @font-weight-semibold;
+    }
+
+     a.command {
+         font-size: 20px;
+         font-weight: @font-weight-light;
+         padding-top: 28px;
+     }
+} 
 
 // 4. Specific Page Styles
 // -------------------------
 
 // search page
-.checkin-search-body
-    {
-        margin-right: auto !important;
-        margin-left: auto !important;
-        width: 320px;
-    }
+.checkin-search-body {
+    margin-right: auto !important;
+    margin-left: auto !important;
+    width: 320px;
+}
 
 input.checkin-phone-entry
 {
-    height: 50px;
+    height: 60px;
     font-weight: @checkin-button-text-weight;
     font-size: 36px;
-    padding: 6px 24px;
-    width: 272px; // keypad is 320 - padding (24px x 2)
+    padding: 6px 20px;
+    width: 260px; // keypad is 320 - padding (24px x 2)
     float: left;
-    margin-right: 36px;
+    margin-bottom: 10px;
 }
 
 .checkin-phone-keypad
@@ -341,5 +289,5 @@ input.checkin-phone-entry
 
 
 
-/***********************  DEVELOPER ADDITIONS BELOW TO BE MOVED BY JON ***********************/
+/***********************  DEVELOPER ADDITIONS BELOW  ***********************/
 

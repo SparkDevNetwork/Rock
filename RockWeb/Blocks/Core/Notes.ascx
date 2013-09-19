@@ -26,11 +26,11 @@
                                 <asp:CheckBox ID="cbAlert" runat="server" Text="Alert" />
                                 <asp:CheckBox ID="cbPrivate" runat="server" Text="Private" />
                             </div>
-                            <button class="btn btn-mini security" type="button" id="btnSecurity" runat="server"><i class="icon-lock"></i> Security</button>
+                            <button class="btn btn-xs security" type="button" id="btnSecurity" runat="server"><i class="icon-lock"></i> Security</button>
                         </div>
                         <div class="actions">
                             <asp:LinkButton ID="btnAddNote" runat="server" CssClass="btn btn-primary btn-small" Text="Add Note" />
-                            <a class="add-note-cancel btn btn-small">Cancel</a>
+                            <a class="add-note-cancel btn btn-xs">Cancel</a>
                         </div>
 
                     </div>

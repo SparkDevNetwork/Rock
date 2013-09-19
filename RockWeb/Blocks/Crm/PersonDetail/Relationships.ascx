@@ -2,20 +2,20 @@
 <asp:UpdatePanel ID="upEditFamily" runat="server">
     <ContentTemplate>
 
-        <section class="widget relationships">
+        <section class="panel panel-default">
 
-            <header class="clearfix">
-                <h4 class="pull-left">
+            <div class="panel-heading clearfix">
+                <h3 class="panel-title pull-left">
                     <asp:PlaceHolder ID="phGroupTypeIcon" runat="server"></asp:PlaceHolder>
-                    <asp:Literal ID="lGroupName" runat="server"></asp:Literal></h4>
+                    <asp:Literal ID="lGroupName" runat="server"></asp:Literal></h3>
                 <asp:PlaceHolder ID="phEditActions" runat="server">
                     <div class="actions pull-right">
                         <asp:LinkButton ID="lbAdd" runat="server" CssClass="edit" Text="Add Relationship" OnClick="lbAdd_Click"><i class="icon-plus"></i></asp:LinkButton>
                     </div>
                 </asp:PlaceHolder>
-            </header>
+            </div>
 
-            <div class="widget-content">
+            <div class="panel-body">
                 <ul class="personlist">
                     <asp:Repeater ID="rGroupMembers" runat="server">
                         <ItemTemplate>

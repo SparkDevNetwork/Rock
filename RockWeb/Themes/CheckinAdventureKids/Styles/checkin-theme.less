@@ -9,9 +9,43 @@
 // Imports
 // --------------------------------------------------
 
-@import "../../../Styles/Bootstrap/bootstrap.less";
-@import "_variables.less";
+@import "../../../Styles/FontAwesome/font-awesome.less";
+@import "../../../Styles/Bootstrap/bootstrap.less"; 
 @import "../../../Styles/_checkin-core.less";
+
+
+//
+// Variables
+// --------------------------------------------------
+
+// Font Variables
+@font-family-base:     'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+@font-weight-light:     300;
+@font-weight-bold:      700;
+@font-weight-semibold:  600;
+
+@text-color:    #92724C;
+
+@header-text-color:     #54412b;
+@header-font-weight:    @font-weight-bold;
+
+@subheader-text-color:      #54412b;
+@subheader-font-weight:     @font-weight-light;
+
+// Button Styles
+@btn-default-bg: #ecdebf;
+@btn-default-color:     #92724c;
+@btn-default-border:   #91876f;
+@checkin-button-text-weight:    @font-weight-bold;
+@checkin-button-alttext-weight: @font-weight-light;
+
+@btn-primary-color:    #fff;
+@btn-primary-border:   #361c1b;
+@btn-primary-bg:    #4e2727;
+
+@btn-disabled-color: @btn-primary-border;
+@btn-disabled-bg: darken(@btn-primary-bg, 20%);
+
 
 // Fonts
 // -------------------------
@@ -75,7 +109,7 @@
 .checkinBackgroundRetina()
 {
     background-image: url('../Assets/Images/background@2x.jpg');
-    background-size: 1348px 1024px; // should be 1/2 of the actual
+    background-size: 1348px 1024px; // should be 1/2 of the actual size
 }
 
 

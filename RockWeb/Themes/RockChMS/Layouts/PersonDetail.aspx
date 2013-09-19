@@ -120,7 +120,24 @@
                 }
         });
 
-        $('.widget header').live({
+        $('.panel .panel-heading').live({
+            mouseenter:
+                function () {
+                    var actionsDiv = $('.actions', this);
+                    if (actionsDiv.length > 0) {
+                        $(actionsDiv).fadeToggle();
+                    }
+                },
+            mouseleave:
+                function () {
+                    var actionsDiv = $('.actions', this);
+                    if (actionsDiv.length > 0) {
+                        $(actionsDiv).fadeToggle();
+                    }
+                }
+        });
+
+        $('.panel-notes .panel-heading').live({
             mouseenter:
                 function () {
                     var actionsDiv = $('.actions', this);
