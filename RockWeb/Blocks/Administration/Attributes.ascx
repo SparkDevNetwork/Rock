@@ -22,7 +22,12 @@
                         </ItemTemplate>
                     </asp:TemplateField>
                     <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" ItemStyle-Wrap="false" />
-                    <asp:BoundField DataField="Description" HeaderText="Description" />
+                    <asp:TemplateField>
+                        <HeaderTemplate>Description</HeaderTemplate>
+                        <ItemTemplate>
+                            <asp:Literal ID="lDescription" runat="server"></asp:Literal>
+                        </ItemTemplate>
+                    </asp:TemplateField>                    
                     <asp:TemplateField ItemStyle-Wrap="false">
                         <HeaderTemplate>Categories</HeaderTemplate>
                         <ItemTemplate>
