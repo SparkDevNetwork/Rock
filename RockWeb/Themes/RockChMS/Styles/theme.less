@@ -205,6 +205,10 @@ header {
     
     .block-gradient(@header-bg);
 
+    .navbar-nav {
+        margin: 0; //////////////////////////
+    }
+
     .nav {
         border-left: 1px solid lighten(@header-bg, 10%);
         width: 100%;
@@ -214,6 +218,7 @@ header {
             border-left: 1px solid darken(@header-bg, 10%);
             border-right: 1px solid lighten(@header-bg, 10%);
             width: 12.5%; /* set to allow 8 nav items */
+            min-width: 120px;
             
             &:last-child:after { /* add the final shadow to the last nav element */
                 content: " ";
