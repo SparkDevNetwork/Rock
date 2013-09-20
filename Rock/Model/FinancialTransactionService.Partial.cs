@@ -17,6 +17,22 @@ namespace Rock.Model
     public partial class FinancialTransactionService 
     {
         /// <summary>
+        /// Gets the transaction by its TransactionCode.
+        /// </summary>
+        /// <param name="transactionCode">The transaction code.</param>
+        /// <returns></returns>
+        public FinancialTransaction GetByTransactionCode( string transactionCode )
+        {
+            if ( !string.IsNullOrWhiteSpace( transactionCode ) )
+            {
+                return Repository.AsQueryable()
+                    .Where( t => t.TransactionCode.Equals( transactionCode.Trim(), StringComparison.OrdinalIgnoreCase ) )
+                    .FirstOrDefault();
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Gets the transaction by search.
         /// </summary>
         /// <param name="searchValue">The search value.</param>

@@ -5,6 +5,8 @@
 //
 using System;
 
+using Rock.Web.Cache;
+
 namespace Rock.Financial
 {
     /// <summary>
@@ -29,19 +31,20 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Gets the payment method.
-        /// </summary>
-        public override string PaymentMethod
-        {
-            get { return "Credit Card"; }
-        }
-
-        /// <summary>
         /// Gets the account number.
         /// </summary>
         public override string AccountNumber
         {
             get { return "Swiped"; }
         }
+
+        /// <summary>
+        /// Gets the currency type value.
+        /// </summary>
+        public override DefinedValueCache CurrencyTypeValue
+        {
+            get { return DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ); }
+        }
+
     }
 }

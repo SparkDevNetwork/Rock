@@ -24,7 +24,7 @@
                 </div>
 
                 <div class="span4">
-                    <Rock:DatePicker ID="dtBatchDate" TabIndex="3"  runat="server" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDate" LabelText="Batch Date" />
+                    <Rock:DateRangePicker ID="dtBatchDate" TabIndex="3"  runat="server" LabelText="Batch Date Range" />
                     <Rock:LabeledDropDownList ID="ddlStatus" TabIndex="5" runat="server" LabelText="Status"></Rock:LabeledDropDownList>
                     </div>
                 <div class="span4">

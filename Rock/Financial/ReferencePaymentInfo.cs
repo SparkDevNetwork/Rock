@@ -5,6 +5,8 @@
 //
 using System;
 
+using Rock.Web.Cache;
+
 namespace Rock.Financial
 {
     /// <summary>
@@ -25,12 +27,20 @@ namespace Rock.Financial
         public string MaskedAccountNumber { get; set; }
 
         /// <summary>
-        /// Gets or sets the initial payment method.
+        /// Gets or sets the initial currency type value.
         /// </summary>
         /// <value>
-        /// The payment method.
+        /// The initial currency type value.
         /// </value>
-        public Rock.Model.PaymentMethod InitialPaymentMethod { get; set; }
+        public DefinedValueCache InitialCurrencyTypeValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the initial credit card type value id.
+        /// </summary>
+        /// <value>
+        /// The initial credit card type value id.
+        /// </value>
+        public DefinedValueCache InitialCreditCardTypeValue { get; set; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ReferencePaymentInfo" /> struct.
@@ -43,29 +53,27 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Gets the payment method.
-        /// </summary>
-        public override string PaymentMethod
-        {
-            get 
-            {
-                if ( InitialPaymentMethod == Model.PaymentMethod.ACH )
-                {
-                    return "Bank Account (ACH)";
-                }
-                else
-                {
-                    return "Credit Card";
-                }
-            }
-        }
-
-        /// <summary>
         /// Gets the account number.
         /// </summary>
         public override string AccountNumber
         {
             get { return MaskedAccountNumber; }
+        }
+
+        /// <summary>
+        /// Gets the currency type value.
+        /// </summary>
+        public override DefinedValueCache CurrencyTypeValue
+        {
+            get { return InitialCurrencyTypeValue; }
+        }
+
+        /// <summary>
+        /// Gets the credit card type value id.
+        /// </summary>
+        public override DefinedValueCache CreditCardTypeValue
+        {
+            get { return InitialCreditCardTypeValue; }
         }
     }
 }

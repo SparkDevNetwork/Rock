@@ -20,7 +20,7 @@
                 <asp:BoundField DataField="Name" HeaderText="Title" SortExpression="Name" />
                 <asp:TemplateField HeaderText="Date">
                     <ItemTemplate>
-                        <span><%# Eval("BatchDate") %></span>
+                        <span><%# Eval("BatchStartDateTime") %></span>
                     </ItemTemplate>
                 </asp:TemplateField>
                 <Rock:EnumField DataField="Status" HeaderText="Status" SortExpression="Status" />

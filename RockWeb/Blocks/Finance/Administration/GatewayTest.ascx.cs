@@ -26,13 +26,15 @@ namespace RockWeb.Blocks.Finance.Administration
 
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "Credit Card Gateway", "The payment gateway to use for Credit Card transactions", false, "", "", 0, "CCGateway" )]
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "ACH Card Gateway", "The payment gateway to use for ACH (bank account) transactions", false, "", "", 1, "ACHGateway" )]
-    [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving", "", 4 )]
+    [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving - ", "", 2 )]
 
     [AccountsField( "Accounts", "The accounts to display.  By default all active accounts with a Public Name will be displayed", false, "", "", 2 )]
     [BooleanField( "Allow Other Accounts", "Should users be allowed to select additional accounts?  If so, any active account with a Public Name value will be available", true, "", 3 )]
     [TextField( "Add Account Text", "The button text to display for adding an additional account", false, "Add Another Account", "", 4 )]
 
     [BooleanField( "Allow Scheduled Transactions", "If the selected gateway(s) allow scheduled transactions, should that option be provided to user", true, "", 2, "AllowScheduled" )]
+
+    [DefinedValueField( Rock.SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE, "Source", "The Financial Source Type to use when creating transactions", false, "", "", 3)]
 
     [DefinedValueField( Rock.SystemGuid.DefinedType.LOCATION_LOCATION_TYPE, "Address Type", "The location type to use for the person's address", false,
         Rock.SystemGuid.DefinedValue.LOCATION_TYPE_HOME, "", 3 )]
@@ -713,46 +715,47 @@ achieve our mission.  We are so grateful for your commitment.
             {
                 // Get the saved accounts for the currently logged in user
                 var savedAccounts = new FinancialPersonSavedAccountService()
-                    .GetByPersonId( CurrentPersonId.Value ).ToList();
+                    .GetByPersonId( CurrentPersonId.Value );
 
-                if ( savedAccounts.Any() )
+                if ( _ccGateway != null )
                 {
-                    if ( _ccGateway != null )
-                    {
-                        rblSavedCC.DataSource = savedAccounts
-                            .Where( a =>
-                                a.GatewayEntityTypeId == _ccGateway.TypeId &&
-                                a.PaymentMethod == PaymentMethod.CreditCard )
-                            .OrderBy( a => a.Name )
-                            .Select( a => new
-                            {
-                                Id = a.Id,
-                                Name = "Use " + a.Name + " (" + a.MaskedAccountNumber + ")"
-                            } );
-                        rblSavedCC.DataBind();
-                        if ( rblSavedCC.Items.Count > 0 )
-                        {
-                            rblSavedCC.Items.Add( new ListItem( "Use a different card", "0" ) );
-                        }
-                    }
+                    var ccCurrencyType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) );
 
-                    if ( _achGateway != null )
-                    {
-                        rblSavedAch.DataSource = savedAccounts
-                            .Where( a =>
-                                a.GatewayEntityTypeId == _achGateway.TypeId &&
-                                a.PaymentMethod == PaymentMethod.ACH )
-                            .OrderBy( a => a.Name )
-                            .Select( a => new
-                            {
-                                Id = a.Id,
-                                Name = "Use " + a.Name + " (" + a.MaskedAccountNumber + ")"
-                            } );
-                        rblSavedAch.DataBind();
-                        if ( rblSavedAch.Items.Count > 0 )
+                    rblSavedCC.DataSource = savedAccounts
+                        .Where( a =>
+                            a.FinancialTransaction.GatewayEntityTypeId == _ccGateway.TypeId &&
+                            a.FinancialTransaction.CurrencyTypeValueId == ccCurrencyType.Id )
+                        .OrderBy( a => a.Name )
+                        .Select( a => new
                         {
-                            rblSavedAch.Items.Add( new ListItem( "Use a different bank account", "0" ) );
-                        }
+                            Id = a.Id,
+                            Name = "Use " + a.Name + " (" + a.MaskedAccountNumber + ")"
+                        } ).ToList();
+                    rblSavedCC.DataBind();
+                    if ( rblSavedCC.Items.Count > 0 )
+                    {
+                        rblSavedCC.Items.Add( new ListItem( "Use a different card", "0" ) );
+                    }
+                }
+
+                if ( _achGateway != null )
+                {
+                    var achCurrencyType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) );
+
+                    rblSavedAch.DataSource = savedAccounts
+                        .Where( a =>
+                            a.FinancialTransaction.GatewayEntityTypeId == _achGateway.TypeId &&
+                            a.FinancialTransaction.CurrencyTypeValueId == achCurrencyType.Id )
+                        .OrderBy( a => a.Name )
+                        .Select( a => new
+                        {
+                            Id = a.Id,
+                            Name = "Use " + a.Name + " (" + a.MaskedAccountNumber + ")"
+                        } ).ToList();
+                    rblSavedAch.DataBind();
+                    if ( rblSavedAch.Items.Count > 0 )
+                    {
+                        rblSavedAch.Items.Add( new ListItem( "Use a different bank account", "0" ) );
                     }
                 }
             }
@@ -855,6 +858,20 @@ achieve our mission.  We are so grateful for your commitment.
             }
 
             PaymentInfo paymentInfo = GetPaymentInfo();
+            if ( txtCurrentName.Visible )
+            {
+                Person person = GetPerson( false );
+                if ( person != null )
+                {
+                    paymentInfo.FirstName = person.FirstName;
+                    paymentInfo.LastName = person.LastName;
+                }
+            }
+            else
+            {
+                paymentInfo.FirstName = txtFirstName.Text;
+                paymentInfo.LastName = txtLastName.Text;
+            }
 
             tdName.Description = paymentInfo.FullName;
             tdPhone.Description = paymentInfo.Phone;
@@ -866,7 +883,8 @@ achieve our mission.  We are so grateful for your commitment.
             rptAccountListConfirmation.DataBind();
 
             tdTotal.Description = paymentInfo.Amount.ToString( "C" );
-            tdPaymentMethod.Description = paymentInfo.PaymentMethod;
+
+            tdPaymentMethod.Description = paymentInfo.CurrencyTypeValue.Description;
             tdAccountNumber.Description = paymentInfo.AccountNumber;
             tdWhen.Description = schedule != null ? schedule.ToString() : "Today";
 
@@ -900,8 +918,6 @@ achieve our mission.  We are so grateful for your commitment.
             }
 
             paymentInfo.Amount = SelectedAccounts.Sum( a => a.Amount );
-            paymentInfo.FirstName = txtFirstName.Text;
-            paymentInfo.LastName = txtLastName.Text;
             paymentInfo.Email = txtEmail.Text;
             paymentInfo.Phone = txtPhone.Text;
             paymentInfo.Street = txtStreet.Text;
@@ -944,12 +960,17 @@ achieve our mission.  We are so grateful for your commitment.
 
         private ReferencePaymentInfo GetReferenceInfo( int savedAccountId )
         {
-            var savedAccount = new FinancialPersonSavedAccountService().Get( savedAccountId );
-            if ( savedAccount != null )
+            using (new UnitOfWorkScope() )
             {
-                var reference = new ReferencePaymentInfo( savedAccount.TransactionCode );
-                reference.MaskedAccountNumber = savedAccount.MaskedAccountNumber;
-                return reference;
+                var savedAccount = new FinancialPersonSavedAccountService().Get( savedAccountId );
+                if ( savedAccount != null )
+                {
+                    var reference = new ReferencePaymentInfo( savedAccount.FinancialTransaction.TransactionCode );
+                    reference.MaskedAccountNumber = savedAccount.MaskedAccountNumber;
+                    reference.InitialCurrencyTypeValue = DefinedValueCache.Read( savedAccount.FinancialTransaction.CurrencyTypeValue );
+                    reference.InitialCreditCardTypeValue = DefinedValueCache.Read( savedAccount.FinancialTransaction.CreditCardTypeValue );
+                    return reference;
+                }
             }
 
             return null;
@@ -1001,18 +1022,23 @@ achieve our mission.  We are so grateful for your commitment.
                     return false;
                 }
 
+                Person person = GetPerson( true );
+                if ( person == null )
+                {
+                    errorMessage = "There was a problem creating the person information";
+                    return false;
+                }
+
                 PaymentInfo paymentInfo = GetPaymentInfo();
                 if ( paymentInfo == null )
                 {
                     errorMessage = "There was a problem creating the payment information";
                     return false;
                 }
-
-                Person person = GetPerson( true );
-                if ( person == null )
+                else
                 {
-                    errorMessage = "There was a problem creating the person information";
-                    return false;
+                    paymentInfo.FirstName = person.FirstName;
+                    paymentInfo.LastName = person.LastName;
                 }
 
                 PaymentSchedule schedule = GetSchedule();
@@ -1036,6 +1062,80 @@ achieve our mission.  We are so grateful for your commitment.
                     var transaction = gateway.Charge( paymentInfo, out errorMessage );
                     if ( transaction != null )
                     {
+                        transaction.TransactionDateTime = DateTime.Now;
+                        transaction.AuthorizedPersonId = person.Id;
+                        transaction.GatewayEntityTypeId = gateway.TypeId;
+                        transaction.Amount = paymentInfo.Amount;
+                        transaction.TransactionTypeValueId = DefinedValueCache.Read(new Guid(Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION)).Id;
+                        transaction.CurrencyTypeValueId = paymentInfo.CurrencyTypeValue.Id;
+
+                        if (paymentInfo.CreditCardTypeValue != null)
+                        {
+                            transaction.CreditCardTypeValueId = paymentInfo.CreditCardTypeValue.Id;
+                        }
+
+                        Guid sourceGuid = Guid.Empty;
+                        if (Guid.TryParse(GetAttributeValue("Source"), out sourceGuid))
+                        {
+                            transaction.SourceTypeValueId = DefinedValueCache.Read(sourceGuid).Id;
+                        }
+                        foreach ( var account in SelectedAccounts.Where( a => a.Amount > 0 ) )
+                        {
+                            var transactionDetail = new FinancialTransactionDetail();
+                            transactionDetail.Amount = account.Amount;
+                            transactionDetail.AccountId = account.Id;
+                            transaction.TransactionDetails.Add( transactionDetail );
+                        }
+
+                        // Get the batch name
+                        string ccSuffix = string.Empty;
+                        if ( paymentInfo.CreditCardTypeValue != null )
+                        {
+                            ccSuffix = paymentInfo.CreditCardTypeValue.GetAttributeValue( "BatchNameSuffix" );
+                        }
+                        if ( string.IsNullOrWhiteSpace( ccSuffix ) )
+                        {
+                            ccSuffix = paymentInfo.CurrencyTypeValue.Name;
+                        }
+                        string batchName = GetAttributeValue( "BatchNamePrefix" ).Trim() + " " + ccSuffix;
+
+                        using ( new UnitOfWorkScope() )
+                        {
+                            var batchService = new FinancialBatchService();
+                            var batch = batchService.Queryable()
+                                .Where( b =>
+                                    b.Status == BatchStatus.Open &&
+                                    b.BatchStartDateTime <= transaction.TransactionDateTime &&
+                                    b.BatchEndDateTime > transaction.TransactionDateTime &&
+                                    b.Name == batchName )
+                                .FirstOrDefault();
+                            if ( batch == null )
+                            {
+                                batch = new FinancialBatch();
+                                batch.Name = batchName;
+                                batch.Status = BatchStatus.Open;
+                                batch.BatchStartDateTime = transaction.TransactionDateTime.Value.Date.Add( gateway.BatchTimeOffset );
+                                if ( batch.BatchStartDateTime > transaction.TransactionDateTime )
+                                {
+                                    batch.BatchStartDateTime.Value.AddDays( -1 );
+                                }
+                                batch.BatchEndDateTime = batch.BatchStartDateTime.Value.AddDays( 1 ).AddMilliseconds( -1 );
+                                batch.CreatedByPersonId = person.Id;
+                                batchService.Add( batch, person.Id );
+                                batchService.Save( batch, person.Id );
+
+                                batch = batchService.Get( batch.Id );
+                            }
+
+                            batch.ControlAmount += transaction.Amount;
+                            batchService.Save( batch, CurrentPersonId );
+
+                            var transactionService = new FinancialTransactionService();
+                            transaction.BatchId = batch.Id;
+                            transactionService.Add( transaction, person.Id );
+                            transactionService.Save( transaction, person.Id );
+                        }
+
                         TransactionCode = transaction.TransactionCode;
                     }
                     else

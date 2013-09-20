@@ -68,6 +68,16 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string CURRENCY_TYPE_CHECK =	"8B086A19-405A-451F-8D44-174E92D6B402";
 
+        /// <summary>
+        /// Credit Card
+        /// </summary>
+        public const string CURRENCY_TYPE_CREDIT_CARD = "928A2E04-C77B-4282-888F-EC549CEE026A";
+
+        /// <summary>
+        /// ACH
+        /// </summary>
+        public const string CURRENCY_TYPE_ACH = "DABEE8FD-AEDF-43E1-8547-4C97FA14D9B6";
+
         #endregion
 
         #region Financial Transaction Type

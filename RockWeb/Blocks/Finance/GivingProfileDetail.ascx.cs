@@ -681,20 +681,11 @@ Thank you for your generosity! You just gave a total of {{ TotalContribution }} 
 
             account.Name = accountNickname;
             // #TODO WITH GATEWAY CALL
-            account.TransactionCode = "Unknown";
+            account.FinancialTransactionId = 0;
             
             account.PersonId = person.Id;
             account.MaskedAccountNumber = configValues["PaymentLastFour"].ToString();
 
-            if ( !string.IsNullOrEmpty( txtCreditCard.Text ) )
-            {
-                account.PaymentMethod = PaymentMethod.CreditCard;
-            }
-            else if ( !string.IsNullOrEmpty( txtAccountNumber.Text ) )
-            {
-                account.PaymentMethod = PaymentMethod.ACH;
-            }            
-            
             accountService.Save( account, person.Id );
             divPaymentNick.Visible = false;
         }
@@ -967,9 +958,10 @@ Thank you for your generosity! You just gave a total of {{ TotalContribution }} 
 
             if ( accountsQueryable.Count() > 0 )
             {
-                if ( accountsQueryable.Where( a => a.PaymentMethod == PaymentMethod.CreditCard ).Any() )
+                var ccCurrencyType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) );
+                if ( accountsQueryable.Where( a => a.FinancialTransaction.CurrencyTypeValueId == ccCurrencyType.Id ).Any() )
                 {
-                    var savedCreditCard = accountsQueryable.Where( a => a.PaymentMethod == PaymentMethod.CreditCard )
+                    var savedCreditCard = accountsQueryable.Where( a => a.FinancialTransaction.CurrencyTypeValueId == ccCurrencyType.Id )
                         .ToDictionary( a => "Use " + a.Name + " ending in *************" + a.MaskedAccountNumber, a => a.Id );
                     savedCreditCard.Add( "Use a different card", 0 );
                     rblSavedCard.DataSource = savedCreditCard;
@@ -980,9 +972,10 @@ Thank you for your generosity! You just gave a total of {{ TotalContribution }} 
                     divNewCard.Style["display"] = "none";
                 }
 
-                if ( accountsQueryable.Where( a => a.PaymentMethod == PaymentMethod.ACH ).Any() )
+                var achCurrencyType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) );
+                if ( accountsQueryable.Where( a => a.FinancialTransaction.CurrencyTypeValueId == achCurrencyType.Id ).Any() )
                 {
-                    var savedACH = accountsQueryable.Where( a => a.PaymentMethod == PaymentMethod.ACH )
+                    var savedACH = accountsQueryable.Where( a => a.FinancialTransaction.CurrencyTypeValueId == achCurrencyType.Id )
                         .ToDictionary( a => "Use " + a.Name + " account ending in *************" + a.MaskedAccountNumber, a => a.Id );
                     savedACH.Add( "Use a different account", 0 );
                     rblSavedCheck.DataSource = savedACH;

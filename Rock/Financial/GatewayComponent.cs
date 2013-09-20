@@ -42,6 +42,17 @@ namespace Rock.Financial
         }
 
         /// <summary>
+        /// Gets the batch time offset.  By default online payments will be grouped into batches with a start time
+        /// of 12:00:00 AM.  However if the the payment gateway groups transactions into batches based on a different
+        /// time, this offset can specified so that Rock will use the same time when creating batches for online
+        /// transactions
+        /// </summary>
+        public virtual TimeSpan BatchTimeOffset
+        {
+            get { return new TimeSpan( 0 ); }
+        }
+
+        /// <summary>
         /// Charges the specified payment info.
         /// </summary>
         /// <param name="paymentInfo">The payment info.</param>

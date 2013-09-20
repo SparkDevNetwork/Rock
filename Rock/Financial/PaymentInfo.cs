@@ -5,6 +5,8 @@
 //
 using System;
 
+using Rock.Web.Cache;
+
 namespace Rock.Financial
 {
     /// <summary>
@@ -72,13 +74,18 @@ namespace Rock.Financial
         public string Zip { get; set; }
 
         /// <summary>
-        /// Gets the payment method.
-        /// </summary>
-        public virtual string PaymentMethod { get { return string.Empty; } }
-
-        /// <summary>
         /// Gets the account number.
         /// </summary>
         public virtual string AccountNumber { get { return string.Empty; } }
+
+        /// <summary>
+        /// Gets the currency type value.
+        /// </summary>
+        public virtual DefinedValueCache CurrencyTypeValue { get { return null; } }
+
+        /// <summary>
+        /// Gets the credit card type value id.
+        /// </summary>
+        public virtual DefinedValueCache CreditCardTypeValue { get { return null; } }
     }
 }
