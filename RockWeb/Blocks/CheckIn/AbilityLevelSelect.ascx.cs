@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.CheckIn
                             {
                                 lPersonName.Text = person.ToString();
                                 person.Person.LoadAttributes();
-                                _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToLower();
+                                _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" );
 
                                 var abilityLevelDType = DefinedTypeCache.Read( abilityLevelDtGuid );
 
@@ -128,9 +128,9 @@ namespace RockWeb.Blocks.CheckIn
                     var person = family.People.Where( p => p.Selected ).FirstOrDefault();
                     if ( person != null )
                     {
-                        string selectedAbilityLevelGuid = e.CommandArgument.ToString().ToLower();
+                        string selectedAbilityLevelGuid = e.CommandArgument.ToString();
                         //person.Person.LoadAttributes();
-                        _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToLower();
+                        _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" );
 
                         // Only save the ability level if it's changed
                         if ( _personAbilityLevelGuid != selectedAbilityLevelGuid )
@@ -140,7 +140,7 @@ namespace RockWeb.Blocks.CheckIn
                             if ( p != null )
                             {
                                 p.LoadAttributes();
-                                p.SetAttributeValue( "AbilityLevel", selectedAbilityLevelGuid );
+                                p.SetAttributeValue( "AbilityLevel", selectedAbilityLevelGuid.ToUpperInvariant() );
                                 Rock.Attribute.Helper.SaveAttributeValues( p, CurrentPersonId );
                             }
                         }
