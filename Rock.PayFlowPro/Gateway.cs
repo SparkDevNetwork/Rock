@@ -32,6 +32,7 @@ namespace Rock.PayFlowPro
     [TextField( "PayPal User", "", false, "", "", 2, "User" )]
     [TextField( "PayPal Password", "", true, "", "", 3, "Password" )]
     [CustomRadioListField( "Mode", "Mode to use for transactions", "Live,Test", true, "Live", "", 4 )]
+    [TimeField( "Batch Process Time", "The Paypal Batch processing cut-off time.  When batches are created by Rock, they will use this for the start/stop when creating new batches", false, "00:00:00", "", 5)]
 
     public class Gateway : GatewayComponent
     {
@@ -54,6 +55,22 @@ namespace Rock.PayFlowPro
                 values.Add( DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY ) );
                 values.Add( DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY ) );
                 return values;
+            }
+        }
+
+        /// <summary>
+        /// Gets the batch time offset.
+        /// </summary>
+        public override TimeSpan BatchTimeOffset
+        {
+            get
+            {
+                var timeValue = new TimeSpan( 0 );
+                if ( TimeSpan.TryParse( GetAttributeValue("BatchProcessTime"), out timeValue ) )
+                {
+                    return timeValue;
+                }
+                return base.BatchTimeOffset;
             }
         }
 
@@ -493,7 +510,7 @@ namespace Rock.PayFlowPro
             if ( paymentInfo is ReferencePaymentInfo )
             {
                 var reference = paymentInfo as ReferencePaymentInfo;
-                if ( reference.InitialPaymentMethod == PaymentMethod.ACH )
+                if ( reference.CurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) ) )
                 {
                     return new ACHTender( (BankAcct)null );
                 }

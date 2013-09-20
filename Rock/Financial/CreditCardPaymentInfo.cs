@@ -4,6 +4,9 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Text.RegularExpressions;
+
+using Rock.Web.Cache;
 
 namespace Rock.Financial
 {
@@ -80,19 +83,45 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Gets the payment method.
-        /// </summary>
-        public override string PaymentMethod
-        {
-            get { return "Credit Card"; }
-        }
-
-        /// <summary>
         /// Gets the account number.
         /// </summary>
         public override string AccountNumber
         {
             get { return Number.Masked(); }
         }
+
+        /// <summary>
+        /// Gets the currency type value.
+        /// </summary>
+        public override DefinedValueCache CurrencyTypeValue
+        {
+            get { return DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ); }
+        }
+
+        /// <summary>
+        /// Gets the credit card type value id.
+        /// </summary>
+        public override DefinedValueCache CreditCardTypeValue
+        {
+            get
+            {
+                string cc = Number.AsNumeric();
+                foreach ( var dv in DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_CREDIT_CARD_TYPE ) ).DefinedValues )
+                {
+                    string pattern = dv.GetAttributeValue( "RegExPattern" );
+                    if ( !string.IsNullOrWhiteSpace( pattern ) )
+                    {
+                        var re = new Regex( pattern );
+                        if ( re.IsMatch( cc ) )
+                        {
+                            return dv;
+                        }
+                    }
+                }
+
+                return null;
+            }
+        }
+
     }
 }

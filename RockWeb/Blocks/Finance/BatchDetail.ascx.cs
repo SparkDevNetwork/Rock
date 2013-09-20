@@ -139,7 +139,8 @@ namespace RockWeb.Blocks.Finance.Administration
             
             lValue.Text = "Edit";
             tbName.Text = batch.Name;
-            dtBatchDate.SelectedDate = batch.BatchDate;
+            dtBatchDate.LowerValue = batch.BatchStartDateTime;
+            dtBatchDate.UpperValue = batch.BatchEndDateTime;
             if ( batch.CampusId.HasValue )
             {
                 cpCampus.SelectedCampusId = batch.CampusId;  
@@ -177,7 +178,8 @@ namespace RockWeb.Blocks.Finance.Administration
                 }
 
                 financialBatch.Name = tbName.Text;
-                financialBatch.BatchDate = dtBatchDate.SelectedDate;
+                financialBatch.BatchStartDateTime = dtBatchDate.LowerValue;
+                financialBatch.BatchEndDateTime = dtBatchDate.UpperValue;
                 financialBatch.CampusId = cpCampus.SelectedCampusId;                
                 financialBatch.Status = (BatchStatus) ddlStatus.SelectedIndex;
                 decimal fcontrolamt = 0;

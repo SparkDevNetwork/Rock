@@ -59,11 +59,16 @@ namespace Rock.Migrations
     INNER JOIN [DefinedValue] OV ON OV.[Id] = P.[PledgeFrequencyValueId]
     INNER JOIN [DefinedValue] NV ON NV.[DefinedTypeId] = @FrequencyValueTypeId AND NV.[Name] = OV.[Name]
 " );
-            DeleteDefinedType( "059F69C0-BF9B-4D53-B7CD-2D3B7C647C5F" );
-            DeleteDefinedValue( "A5A12067-322E-44A4-94C4-561312F9913C" );
+            DeleteDefinedType( "9E358FBE-2321-4C54-895F-C888E29298AE" );    // Batch Type
+            DeleteDefinedType( "059F69C0-BF9B-4D53-B7CD-2D3B7C647C5F" );    // Frequency Type
+            DeleteDefinedValue( "A5A12067-322E-44A4-94C4-561312F9913C" );   // One-Time - Future
+
             AddDefinedValue( "1F645CFB-5BBD-4465-B9CA-0D2104A1479B", "Quarterly", "Every Quarter", "BF08EA03-C52A-4364-B142-12EBCA7CA14A" );
             AddDefinedValue( "1F645CFB-5BBD-4465-B9CA-0D2104A1479B", "Twice a Year", "Every Six Months", "691BB8AB-5F96-4E88-847C-CB970D9E87FA" );
             AddDefinedValue( "1F645CFB-5BBD-4465-B9CA-0D2104A1479B", "Yearly", "Every Year", "AC88C37A-901E-4CBB-947B-11348C208192" );
+
+            AddDefinedValue( "1D1304DE-E83A-44AF-B11D-0C66DD600B81", "Credit Card", "Credit Card", "928A2E04-C77B-4282-888F-EC549CEE026A" );
+            AddDefinedValue( "1D1304DE-E83A-44AF-B11D-0C66DD600B81", "ACH", "Bank Account (ACH)", "DABEE8FD-AEDF-43E1-8547-4C97FA14D9B6" );
         }
         
         /// <summary>
@@ -71,6 +76,9 @@ namespace Rock.Migrations
         /// </summary>
         public override void Down()
         {
+            DeleteDefinedValue( "DABEE8FD-AEDF-43E1-8547-4C97FA14D9B6" );
+            DeleteDefinedValue( "928A2E04-C77B-4282-888F-EC549CEE026A" );
+
             DeleteDefinedValue( "AC88C37A-901E-4CBB-947B-11348C208192" );
             DeleteDefinedValue( "691BB8AB-5F96-4E88-847C-CB970D9E87FA" );
             DeleteDefinedValue( "BF08EA03-C52A-4364-B142-12EBCA7CA14A" );
@@ -96,6 +104,14 @@ namespace Rock.Migrations
             AddDefinedType( "Financial", "Payment Type", "The type of payment associated with a transaction", "23E80D98-017E-47B9-BAF3-AC442A1EC3EE" );
             AddDefinedValue( "23E80D98-017E-47B9-BAF3-AC442A1EC3EE", "Credit Card", "Credit Card payment type", "09412338-AAAA-4644-BA2A-4CADBE653468" );
             AddDefinedValue( "23E80D98-017E-47B9-BAF3-AC442A1EC3EE", "Checking/ACH", "Checking/ACH payment type", "FFAD975C-7504-418F-8959-30BD0C62CD30" );
+
+            AddDefinedType( "Financial", "Batch Type", "Batch Types", "9E358FBE-2321-4C54-895F-C888E29298AE" );
+            AddDefinedValue( "9E358FBE-2321-4C54-895F-C888E29298AE", "ACH", "ACH", "E6F877F3-D2CC-443E-976A-4402502F544F" );
+            AddDefinedValue( "9E358FBE-2321-4C54-895F-C888E29298AE", "Visa", "Visa", "24CC2E82-B2B6-4037-87AE-39EEAFE06712" );
+            AddDefinedValue( "9E358FBE-2321-4C54-895F-C888E29298AE", "MasterCard", "MasterCard", "50F625F8-F1BE-4FA0-B99F-3FA852D87DD1" );
+            AddDefinedValue( "9E358FBE-2321-4C54-895F-C888E29298AE", "Discover", "Discover", "18DF8254-0C68-4FE0-973E-C0B1767EFD3F" );
+            AddDefinedValue( "9E358FBE-2321-4C54-895F-C888E29298AE", "Amex", "Amex", "378D8EAD-7FA6-4D0D-862D-ED6E04B17770" );
+            AddDefinedValue( "9E358FBE-2321-4C54-895F-C888E29298AE", "PayPal", "PayPal", "4832DA18-DD18-477F-BFDB-ABFC28FE5743" );
 
             CreateTable(
                 "dbo.FinancialGateway",

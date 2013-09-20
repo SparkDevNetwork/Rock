@@ -3,6 +3,9 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System;
+
+using Rock.Web.Cache;
 
 namespace Rock.Financial
 {
@@ -55,20 +58,21 @@ namespace Rock.Financial
         }
 
         /// <summary>
-        /// Gets the payment method.
-        /// </summary>
-        public override string PaymentMethod 
-        {
-            get { return "Bank Account (ACH)"; }
-        }
-
-        /// <summary>
         /// Gets the account number.
         /// </summary>
-        public override string AccountNumber 
+        public override string AccountNumber
         {
             get { return BankAccountNumber.Masked(); }
         }
+
+        /// <summary>
+        /// Gets the currency type value.
+        /// </summary>
+        public override DefinedValueCache CurrencyTypeValue
+        {
+            get { return DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) ); }
+        }
+
     }
 
     /// <summary>

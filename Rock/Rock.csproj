@@ -144,6 +144,7 @@
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
+    <Compile Include="Attribute\TimeFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerRangeFieldAttribute.cs" />
     <Compile Include="Attribute\DateRangeFieldAttribute.cs" />
     <Compile Include="Attribute\DecimalRangeFieldAttribute.cs" />
@@ -170,6 +171,7 @@
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
+    <Compile Include="Field\Types\TimeFieldType.cs" />
     <Compile Include="Field\Types\IntegerRangeFieldType.cs" />
     <Compile Include="Field\Types\DateRangeFieldType.cs" />
     <Compile Include="Field\Types\DecimalRangeFieldType.cs" />
@@ -199,6 +201,14 @@
     <Compile Include="Migrations\201309112355422_FinancialGateway.cs" />
     <Compile Include="Migrations\201309112355422_FinancialGateway.Designer.cs">
       <DependentUpon>201309112355422_FinancialGateway.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201309200328285_BatchDates.cs" />
+    <Compile Include="Migrations\201309200328285_BatchDates.Designer.cs">
+      <DependentUpon>201309200328285_BatchDates.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201309201228091_CurrencyType.cs" />
+    <Compile Include="Migrations\201309201228091_CurrencyType.Designer.cs">
+      <DependentUpon>201309201228091_CurrencyType.cs</DependentUpon>
     </Compile>
     <Compile Include="Model\FinancialPersonSavedAccountService.Partial.cs" />
     <Compile Include="Storage\ProviderComponent.cs" />
@@ -1006,6 +1016,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201309112355422_FinancialGateway.resx">
       <DependentUpon>201309112355422_FinancialGateway.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201309200328285_BatchDates.resx">
+      <DependentUpon>201309200328285_BatchDates.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201309201228091_CurrencyType.resx">
+      <DependentUpon>201309201228091_CurrencyType.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
