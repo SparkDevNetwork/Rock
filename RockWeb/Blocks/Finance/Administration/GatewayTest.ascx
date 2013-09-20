@@ -217,14 +217,14 @@
                                     </div>
 
                                     <Rock:LabeledTextBox ID="txtUserName" runat="server" LabelText="Username" CssClass="input-medium" />
-
                                     <Rock:LabeledTextBox ID="txtPassword" runat="server" LabelText="Password" CssClass="input-medium" TextMode="Password" />
+                                    <Rock:LabeledTextBox ID="txtPasswordConfirm" runat="server" LabelText="Confirm Password" CssClass="input-medium" TextMode="Password" />
 
                                 </asp:PlaceHolder>
 
                                 <Rock:NotificationBox ID="nbSaveAccount" runat="server" Visible="false" NotificationBoxType="Error"></Rock:NotificationBox>
 
-                                <div class="actions">
+                                <div id="divSaveActions" runat="server" class="actions">
                                     <asp:LinkButton ID="lbSaveAccount" runat="server" Text="Save Account" CssClass="btn btn-primary" OnClick="lbSaveAccount_Click" />
                                 </div>
 

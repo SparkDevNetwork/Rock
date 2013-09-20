@@ -178,7 +178,10 @@ namespace Rock.PayFlowPro
                             var scheduledTransaction = new FinancialScheduledTransaction();
                             scheduledTransaction.TransactionCode = recurringResponse.TrxPNRef;
                             scheduledTransaction.GatewayScheduleId = recurringResponse.ProfileId;
+
+                            GetScheduledPaymentStatus( scheduledTransaction, out errorMessage );
                             return scheduledTransaction;
+
                         }
                         else
                         {
@@ -333,6 +336,7 @@ namespace Rock.PayFlowPro
                             transaction.StartDate = GetDate( recurringResponse.Start ) ?? transaction.StartDate;
                             transaction.NextPaymentDate = GetDate( recurringResponse.NextPayment ) ?? transaction.NextPaymentDate;
                             transaction.NumberOfPayments = recurringResponse.Term.AsInteger( false ) ?? transaction.NumberOfPayments;
+                            transaction.LastStatusUpdateDateTime = DateTime.Now;
                             return true;
                         }
                         return true;

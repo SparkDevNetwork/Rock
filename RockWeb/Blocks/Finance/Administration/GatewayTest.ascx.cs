@@ -308,12 +308,10 @@ achieve our mission.  We are so grateful for your commitment.
             // Hide the error box on every postback
             nbMessage.Visible = false;
             pnlDupWarning.Visible = false;
+            nbSaveAccount.Visible = false;
 
             if ( _ccGateway != null || _achGateway != null )
             {
-                pnlPaymentInfo.Visible = true;
-                divActions.Visible = true;
-
                 // Save amounts from controls to the viewstate list
                 foreach ( RepeaterItem item in rptAccountList.Items )
                 {
@@ -360,7 +358,7 @@ achieve our mission.  We are so grateful for your commitment.
                 }
 
                 // Show or Hide the Credit card entry panel based on if a saved account exists and it's selected or not.
-                divNewCard.Style[HtmlTextWriterStyle.Display] = ( rblSavedCC.Items.Count > 0 && rblSavedCC.Items[0].Selected ) ? "none" : "block";
+                divNewCard.Style[HtmlTextWriterStyle.Display] = ( rblSavedCC.Items.Count > 0 && rblSavedCC.Items[rblSavedCC.Items.Count - 1].Selected ) ? "block" : "none";
 
                 // Show billing address based on if billing address checkbox is checked
                 divBillingAddress.Style[HtmlTextWriterStyle.Display] = cbBillingAddress.Checked ? "block" : "none";
@@ -370,6 +368,8 @@ achieve our mission.  We are so grateful for your commitment.
 
                 if ( !Page.IsPostBack )
                 {
+                    SetPage( 1 );
+
                     // Get the list of accounts that can be used
                     GetAccounts();
                     BindAccounts();
@@ -542,7 +542,109 @@ achieve our mission.  We are so grateful for your commitment.
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSaveAccount_Click( object sender, EventArgs e )
         {
+            if ( string.IsNullOrWhiteSpace(TransactionCode))
+            {
+                nbSaveAccount.Text = "Sorry, the account information cannot be saved as there's not a valid transaction code to reference";
+                nbSaveAccount.Visible = true;
+                return;
+            }
 
+            if ( phCreateLogin.Visible )
+            {
+                if ( string.IsNullOrWhiteSpace( txtUserName.Text ) || string.IsNullOrWhiteSpace(txtPassword.Text))
+                {
+                    nbSaveAccount.Title = "Missing Informaton";
+                    nbSaveAccount.Text = "A username and password are required when saving an account";
+                    nbSaveAccount.NotificationBoxType = NotificationBoxType.Error;
+                    nbSaveAccount.Visible = true;
+                    return;
+                }
+
+                if ( new UserLoginService().GetByUserName( txtUserName.Text ) != null )
+                {
+                    nbSaveAccount.Title = "Invalid Username";
+                    nbSaveAccount.Text = "The selected Username is already being used.  Please select a different Username";
+                    nbSaveAccount.NotificationBoxType = NotificationBoxType.Error;
+                    nbSaveAccount.Visible = true;
+                    return;
+                }
+
+                if ( txtPasswordConfirm.Text != txtPassword.Text )
+                {
+                    nbSaveAccount.Title = "Invalid Password";
+                    nbSaveAccount.Text = "The password and password confirmation do not match";
+                    nbSaveAccount.NotificationBoxType = NotificationBoxType.Error;
+                    nbSaveAccount.Visible = true;
+                    return;
+                }
+            }
+
+            if ( !string.IsNullOrWhiteSpace( txtSaveAccount.Text ) )
+            {
+                using ( new UnitOfWorkScope() )
+                {
+                    var transaction = new FinancialTransactionService().GetByTransactionCode( TransactionCode );
+                    if ( transaction != null && transaction.AuthorizedPersonId.HasValue )
+                    {
+                        if ( phCreateLogin.Visible )
+                        {
+                            var userLoginService = new Rock.Model.UserLoginService();
+                            var user = userLoginService.Create( transaction.AuthorizedPerson, Rock.Model.AuthenticationServiceType.Internal, "Rock.Security.Authentication.Database", txtUserName.Text, txtPassword.Text, false, CurrentPersonId );
+
+                            var mergeObjects = new Dictionary<string, object>();
+                            mergeObjects.Add( "ConfirmAccountUrl", RootPath + "ConfirmAccount" );
+
+                            var personDictionary = transaction.AuthorizedPerson.ToDictionary();
+                            mergeObjects.Add( "Person", personDictionary );
+
+                            mergeObjects.Add( "User", user.ToDictionary() );
+
+                            var recipients = new Dictionary<string, Dictionary<string, object>>();
+                            recipients.Add( transaction.AuthorizedPerson.Email, mergeObjects );
+
+                            Rock.Communication.Email email = new Rock.Communication.Email( Rock.SystemGuid.EmailTemplate.SECURITY_CONFIRM_ACCOUNT );
+                            email.Send( recipients );
+                        }
+
+                        var paymentInfo = GetPaymentInfo();
+
+                        var savedAccount = new FinancialPersonSavedAccount();
+                        savedAccount.PersonId = transaction.AuthorizedPersonId.Value;
+                        savedAccount.FinancialTransactionId = transaction.Id;
+                        savedAccount.Name = txtSaveAccount.Text;
+                        savedAccount.MaskedAccountNumber = paymentInfo.AccountNumber;
+
+                        var savedAccountService = new FinancialPersonSavedAccountService();
+                        savedAccountService.Add( savedAccount, savedAccount.PersonId );
+                        savedAccountService.Save( savedAccount, savedAccount.PersonId );
+
+                        cbSaveAccount.Visible = false;
+                        txtSaveAccount.Visible = false;
+                        phCreateLogin.Visible = false;
+                        divSaveActions.Visible = false;
+
+                        nbSaveAccount.Title = "Success";
+                        nbSaveAccount.Text = "The account has been saved for future use";
+                        nbSaveAccount.NotificationBoxType = NotificationBoxType.Success;
+                        nbSaveAccount.Visible = true;
+
+                    }
+                    else
+                    {
+                        nbSaveAccount.Title = "Invalid Transaction";
+                        nbSaveAccount.Text = "Sorry, the account information cannot be saved as there's not a valid transaction code to reference";
+                        nbSaveAccount.NotificationBoxType = NotificationBoxType.Error;
+                        nbSaveAccount.Visible = true;
+                    }
+                }
+            }
+            else
+            {
+                nbSaveAccount.Title = "Missing Account Name";
+                nbSaveAccount.Text = "Please enter a name to use for this account";
+                nbSaveAccount.NotificationBoxType = NotificationBoxType.Error;
+                nbSaveAccount.Visible = true;
+            }
         }
 
         #endregion
@@ -1049,6 +1151,21 @@ achieve our mission.  We are so grateful for your commitment.
                     var scheduledTransaction = gateway.AddScheduledPayment( schedule, paymentInfo, out errorMessage );
                     if ( scheduledTransaction != null )
                     {
+                        scheduledTransaction.TransactionFrequencyValueId = schedule.TransactionFrequencyValue.Id;
+                        scheduledTransaction.AuthorizedPersonId = person.Id;
+
+                        foreach ( var account in SelectedAccounts.Where( a => a.Amount > 0 ) )
+                        {
+                            var transactionDetail = new FinancialScheduledTransactionDetail();
+                            transactionDetail.Amount = account.Amount;
+                            transactionDetail.AccountId = account.Id;
+                            scheduledTransaction.ScheduledTransactionDetails.Add( transactionDetail );
+                        }
+
+                        var transactionService = new FinancialScheduledTransactionService();
+                        transactionService.Add( scheduledTransaction, person.Id );
+                        transactionService.Save( scheduledTransaction, person.Id );
+
                         ScheduleId = scheduledTransaction.GatewayScheduleId;
                         TransactionCode = scheduledTransaction.TransactionCode;
                     }
@@ -1154,17 +1271,12 @@ achieve our mission.  We are so grateful for your commitment.
                 // show the option to save the account.
                 if ( !( paymentInfo is ReferencePaymentInfo ) && !string.IsNullOrWhiteSpace( TransactionCode ) )
                 {
+                    cbSaveAccount.Visible = true;
                     pnlSaveAccount.Visible = true;
+                    txtSaveAccount.Visible = true;
 
-                    // If the current user is not logged in and person does not have any logins created allow them to create a new login
-                    if ( CurrentUser == null && !( new UserLoginService().GetByPersonId( person.Id ).Any() ) )
-                    {
-                        phCreateLogin.Visible = true;
-                    }
-                    else
-                    {
-                        phCreateLogin.Visible = false;
-                    }
+                    // If current person does not have a login, have them create a username and password
+                    phCreateLogin.Visible = !new UserLoginService().GetByPersonId( person.Id ).Any();
                 }
                 else
                 {
