@@ -582,7 +582,7 @@ namespace Rock.Web.UI.Controls
                 </div>
             </div>
 
-            <hr />
+            <div class='picker-actions'>
 ";
                 writer.Write( controlHtmlFormatMiddle, this.ID );
 
@@ -598,7 +598,7 @@ namespace Rock.Web.UI.Controls
 
                 string controlHtmlFormatEnd = @"
             <a class='btn btn-xs' id='btnCancel_{0}'>Cancel</a>
-            
+            </div>
           </div>
         </div>
 ";

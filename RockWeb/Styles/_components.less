@@ -1,7 +1,7 @@
 ﻿/*
     Used to manage styles related to reusable components / widgets.
     
-    xBS3 1. Panel - used to visually link related content items together
+    1. Pickers - used to pick complex data types
     2. Banner - used as the primary heading for a page or large section
     3. Treeview - additional styles for the kendo treeview
     4. Widget - reusable box wrapper for content
@@ -15,6 +15,44 @@
     12. Labels - additional label defintions that extend Boostrap labels (eg label-campus)
 
 */
+
+// 1. Pickers
+// -------------------------
+
+.picker {
+    position: relative;
+
+    .scroll-container-picker { 
+        width: 360px; 
+
+        .viewport { 
+            width: 340px;  
+            height: 190px;
+        }
+
+        .scrollbar {
+            margin-top: 10px;
+        }
+    }
+
+    .picker-actions {
+        background-color: @accent-light-color;
+        padding: 10px;
+        border-top: 1px solid @accent-color;
+        border-radius: 0 0 @border-radius-base @border-radius-base;
+        margin-bottom: -5px;
+    }
+}
+
+#dialog .scroll-container-picker 
+{
+    width: 360px;
+
+    .viewport {
+        width: 340px;  
+        height: 190px;
+    }
+}
 
 
 // 2. Banner

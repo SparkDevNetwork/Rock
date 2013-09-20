@@ -7500,7 +7500,7 @@ td.visible-print {
 /*
     Used to manage styles related to reusable components / widgets.
     
-    xBS3 1. Panel - used to visually link related content items together
+    1. Pickers - used to pick complex data types
     2. Banner - used as the primary heading for a page or large section
     3. Treeview - additional styles for the kendo treeview
     4. Widget - reusable box wrapper for content
@@ -7514,6 +7514,33 @@ td.visible-print {
     12. Labels - additional label defintions that extend Boostrap labels (eg label-campus)
 
 */
+.picker {
+  position: relative;
+}
+.picker .scroll-container-picker {
+  width: 360px;
+}
+.picker .scroll-container-picker .viewport {
+  width: 340px;
+  height: 190px;
+}
+.picker .scroll-container-picker .scrollbar {
+  margin-top: 10px;
+}
+.picker .picker-actions {
+  background-color: #e7ecf0;
+  padding: 10px;
+  border-top: 1px solid #d9e1e8;
+  border-radius: 0 0 4px 4px;
+  margin-bottom: -5px;
+}
+#dialog .scroll-container-picker {
+  width: 360px;
+}
+#dialog .scroll-container-picker .viewport {
+  width: 340px;
+  height: 190px;
+}
 .banner {
   color: #ecf0f3;
   background-color: #779cb1;

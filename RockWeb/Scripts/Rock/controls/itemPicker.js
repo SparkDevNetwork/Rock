@@ -193,7 +193,7 @@
                 });
 
             $('#btnCancel_' + controlId).click(function () {
-                $(this).parent().slideUp();
+                $(this).closest('.picker-menu').slideUp();
             });
 
             $('#btnSelectNone_' + controlId).click(function (e) {
@@ -234,7 +234,7 @@
                     $selectedItemLabel.text(selectedText);
                 }
 
-                $(this).parent().slideUp();
+                $(this).closest('.picker-menu').slideUp();
             });
         };
 
