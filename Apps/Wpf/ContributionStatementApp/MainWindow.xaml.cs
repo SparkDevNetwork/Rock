@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.Entity;
 using System.Diagnostics;
 using System.IO;
-using System.Windows;
-using MigraDoc.DocumentObjectModel;
-using MigraDoc.Rendering;
-using Rock.Model;
 using System.Linq;
-using Rock.Data;
-using System.Data.Entity;
-using System.ComponentModel;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
+using MigraDoc.DocumentObjectModel;
+using MigraDoc.Rendering;
+using Rock.Data;
+using Rock.Model;
 
 namespace ContributionStatementApp
 {
@@ -114,29 +114,46 @@ namespace ContributionStatementApp
             Database.SetInitializer<Rock.Data.RockContext>( null );
 
             // TODO - Get actual date range
-            DateTime startDate = new DateTime( 2013, 2, 1 );
-            DateTime endDate = new DateTime( 2013, 9, 1 );
+
+            string fileName = "Statement_" + Guid.NewGuid().ToString( "N" ) + ".pdf";
+            contributionForm.StartDate = new DateTime( 2012, 9, 1 );
+            contributionForm.EndDate = new DateTime( 2013, 9, 1 );
 
             FinancialTransactionService financialTransactionService = new FinancialTransactionService();
 
             var qry = financialTransactionService.Queryable();
 
             qry = qry
-                .Where( a => a.TransactionDateTime >= startDate )
-                .Where( a => a.TransactionDateTime < endDate );
+                .Where( a => a.TransactionDateTime >= contributionForm.StartDate )
+                .Where( a => a.TransactionDateTime < contributionForm.EndDate );
 
+            // limit to one person 2693 has 81 trans
+            //qry = qry.Where( a => a.AuthorizedPersonId == 2693 );
+
+            Stopwatch sw = Stopwatch.StartNew();
             Document document = contributionForm.CreateDocument( qry );
+            sw.Stop();
+            File.AppendAllText( "stats.log", string.Format( "File {0}, CreateDocument = {1} seconds\n", fileName, sw.Elapsed.TotalSeconds ) );
+            sw.Restart();
+
+            //MigraDoc.DocumentObjectModel.IO.DdlWriter.WriteToFile( document, Path.ChangeExtension( fileName, "mdddl" ) );
 
             PdfDocumentRenderer pdfDocumentRenderer = new PdfDocumentRenderer( false );
             pdfDocumentRenderer.Document = document;
             pdfDocumentRenderer.DocumentRenderer.PrepareDocumentProgress += DocumentRenderer_PrepareDocumentProgress;
 
             pdfDocumentRenderer.RenderDocument();
-            string fileName = "Statement_" + Guid.NewGuid().ToString( "N" ) + ".pdf";
+            sw.Stop();
+            int personCount = qry.Select( a => a.AuthorizedPersonId ).Distinct().Count();
+            File.AppendAllText( "stats.log", string.Format( "File {0}\n\tPageCount {1}\n\tRenderDocument() = {2} seconds\n",
+                fileName,
+                pdfDocumentRenderer.PageCount,
+                sw.Elapsed.TotalSeconds ) );
+            sw.Restart();
             pdfDocumentRenderer.Save( fileName );
 
+            System.Threading.Thread.Sleep( 250 );
             Process.Start( fileName );
-
         }
 
         /// <summary>
@@ -151,14 +168,12 @@ namespace ContributionStatementApp
         /// <param name="e">The <see cref="DocumentRenderer.PrepareDocumentProgressEventArgs"/> instance containing the event data.</param>
         void DocumentRenderer_PrepareDocumentProgress( object sender, DocumentRenderer.PrepareDocumentProgressEventArgs e )
         {
-
-            decimal percentProgress = decimal.Divide( e.Value, e.Maximum ) * 100;
+            decimal percentProgress = decimal.Round( decimal.Divide( e.Value, e.Maximum ) * 100, 0 );
             if ( percentProgress != currentProgressPercent )
             {
                 currentProgressPercent = percentProgress;
                 Dispatcher.Invoke( new Action( UpdateProgressBar ) );
             }
-
         }
 
         /// <summary>
