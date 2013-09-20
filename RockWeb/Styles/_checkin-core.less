@@ -22,11 +22,6 @@ h1 {
     color: @header-text-color;
 }
 
-.navbar-inner {
-	padding: 0;
-}
-
-
 .close
 {
     color: @header-text-color;
@@ -59,6 +54,11 @@ h1 {
 .config-bar
 {
     display: none;
+}
+
+.btn-dimmed
+{
+    opacity: 0.33;  // todo does this look good JME
 }
 
 // set page background
@@ -94,16 +94,11 @@ body {
     }
 }
 
-.btn .checkin-sub-title // todo ?
+.btn .checkin-sub-title // button sub-text
 {
     font-size: 20px;
     font-weight: @checkin-button-alttext-weight;
     margin-left: 20px;
-}
-
-.btn-dimmed
-{
-    opacity: 0.33;  // todo does this look good JME
 }
 
 // checkin body items 
@@ -111,6 +106,8 @@ body {
 .checkin-body
 {
     .checkin-actions {
+        text-align: right;
+
         .btn {
 	        font-size: 36px;
         }
@@ -162,67 +159,44 @@ body {
     margin-right: 24px;
 }
 
-.checkin-actions a
-{
-    font-size: 22px;
-    font-weight: @checkin-button-text-weight; 
-    padding: 12px 24px;
-}
+.checkin-actions {
+   
+    a {
+        font-size: 22px;
+        font-weight: @checkin-button-text-weight; 
+        padding: 12px 24px;
 
-.checkin-actions a.btn-primary
-{
-    font-size: 28px;
-    padding: 14px 26px;
-}
-
-.checkin-body-container
-{
-    width: 80%;
+        &.btn-primary {
+            font-size: 28px;
+            padding: 14px 26px;
+        }
+    }
 }
 
 // time select checkbox 
 .btn-checkbox
 {
-    padding: 24px 48px;
-}
+    padding: 24px;
+    background-color: @btn-default-bg;
+    color: @btn-default-color;
+    border-color: @btn-default-border;
+    font-size: 20px;
 
-.btn-checkbox.active
-{
-    //.buttonBackground(@checkin-button-primary-background, spin(@checkin-button-primary-background, 20%));
-    -webkit-box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 1px 0 rgba(0,0,0,.1);
-    -moz-box-shadow: inset 0 1px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 1px 0 rgba(0,0,0,.1);
-    box-shadow: inset 0 2px 0 rgba(255,255,255,.5), inset 0 -2px 0 rgba(0,0,0,.25), inset 0 -3px 0 rgba(255,255,255,.2), 0 2px 0 rgba(0,0,0,.1);
-}
+    &.active {
+        background-color: @btn-primary-bg;
+        color: @btn-primary-color;
+        border-color: @btn-primary-border;
+    }
 
-button.btn-checkbox.btn i
-{
-    font-size: 48px;
-    display: block;
-    line-height: 48px;
-}
+    i {
+        font-size: 92px;
+        display: block;
+        line-height: 92px;
+    }
 
-.btn-checkbox.active i:before
-{
-    content: "\f046";
-}
-
-.btn-checkbox div
-{
-    font-size: 26px;
-    line-height: 26px;
-    margin-top: 8px;
-}
-
-.checkin-summary
-{
-    list-style-type: none;
-}
-
-.checkin-summary li
-{
-    font-size: 22px;
-    margin-bottom: 18px;
-	color: @text-color;
+    &.active i:before { // checked icon
+        content: "\f046";
+    }
 }
 
 /* Ten Key Keypad */
@@ -255,7 +229,7 @@ button.btn-checkbox.btn i
 .checkin-search-body {
     margin-right: auto !important;
     margin-left: auto !important;
-    width: 320px;
+    width: 260px;
 }
 
 input.checkin-phone-entry
@@ -283,6 +257,18 @@ input.checkin-phone-entry
 
 .checkin-timelist {
 	margin-bottom: 12px;
+}
+
+// checkin summary page
+.checkin-summary
+{
+    list-style-type: none;
+
+    li {
+        font-size: 22px;
+        margin-bottom: 18px;
+	    color: @text-color;
+    }
 }
 
 

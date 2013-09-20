@@ -1,4 +1,4 @@
-﻿/*!
+/*!
  *  Font Awesome 3.2.1
  *  the iconic font designed for Bootstrap
  *  ------------------------------------------------------------------------------
@@ -52,7 +52,7 @@
 /* makes the font 33% larger relative to the icon container */
 .icon-large:before {
   vertical-align: -10%;
-  font-size: 1.3333333333333332em;
+  font-size: 1.3333333333333333em;
 }
 /* makes sure icons active on rollover in links */
 a [class^="icon-"],
@@ -10575,6 +10575,7 @@ header .nav a:hover .caret {
   /* set to allow 8 nav items */
 
   min-width: 120px;
+  float: left;
 }
 .pagenav .nav > li:last-child:after {
   /* add the final shadow to the last nav element */
@@ -10607,6 +10608,25 @@ header .nav a:hover .caret {
 .pagenav .dropdown-menu {
   left: -2px;
   width: 240px;
+}
+@media (max-width: 767px) {
+  .pagenav .nav {
+    border: 0;
+  }
+  .pagenav .nav > li {
+    width: 33%;
+    height: auto;
+    border: 0;
+  }
+  .pagenav .nav > li:last-child:after {
+    border-right: 0;
+  }
+  .pagenav .nav > li .dropdown-menu > li > a {
+    color: white;
+  }
+  .pagenav .nav > li .dropdown-menu > li.divider {
+    display: none;
+  }
 }
 .pagetitle {
   background-color: #c7cacd;
