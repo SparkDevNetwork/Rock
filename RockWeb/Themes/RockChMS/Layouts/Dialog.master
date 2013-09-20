@@ -36,12 +36,11 @@
 
 <body id="dialog">
     <form id="form1" runat="server">
-        <div id="headerPanel" class="modal-header">
+        <div id="headerPanel" class="modal-header clearfix">
             <a id="closeLink" href="#" class="close" onclick="window.parent.Rock.controls.modal.close();">&times;</a>
-            <h3><asp:Literal ID="lTitle" runat="server"></asp:Literal></h3>
+            <h3 class="modal-title"><asp:Literal ID="lTitle" runat="server"></asp:Literal></h3>
         </div>
 
-        <div id="mdlbody">
         <div class="modal-body">
             <div id="modal-scroll-container" class="scroll-container">
 	            <div class="scrollbar"><div class="track"><div class="thumb"><div class="end"></div></div></div></div>
@@ -52,15 +51,12 @@
 	            </div>
             </div>		
         </div>
-        </div>
-        <div id="pnl1"></div>
 
         <div id="footerPanel" class="modal-footer">
             <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" OnClick="btnCancel_Click " CausesValidation="false" />
             <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click " />
         </div>
 
-        <div id="pnl2"></div>
         <asp:ScriptManager ID="sManager" runat="server"/>
     </form>
 

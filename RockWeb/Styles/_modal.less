@@ -1,10 +1,37 @@
 ﻿/*
     Used to manage styles related to modal dialog.
-    
-    1. Panel - used to visually link related content items together.
-    2. Banner - used as the primary heading for a page or large section.
 
 */
+
+.rock-modal {
+    width: 750px;
+}
+
+#dialog {
+    .modal-header {
+        background-color: @modal-header-bg;  
+        color: @modal-header-text-color;
+        padding: 5px 15px;
+        min-height: 34px;
+        
+        h3 {
+            float: left;
+        }
+
+        .close {
+            margin: 0;
+            padding: 6px;
+            color: @modal-header-text-color;
+            text-shadow: none;
+        }
+    }
+
+    .modal-footer {
+        padding: 8px;
+        margin-top: 10px;
+        background-color: @accent-light-color;
+    }
+}
 
 .modal-body .scroll-container 
 {
@@ -22,22 +49,11 @@
     overflow: hidden;
 }
 
-.modal-header {
-    min-height: 34px;
-    background-color: @modal-header-bg;  
-    color: @modal-header-text-color;
-    padding: 5px 15px;
-}
-
-.modal-header h3 
-{
-    float: left;
-}
-
 .modal-backdrop 
 {
     background-color: #8b8b8b;
     opacity: 0.7;    
+    
 }
 
 .bootbox.modal {

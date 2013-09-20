@@ -246,14 +246,6 @@ namespace Rock.Web.UI.Controls
 
             Controls.Clear();
 
-            // add space to the css class if it already has a value
-            if ( !string.IsNullOrEmpty(this.CssClass))
-            {
-                this.CssClass += " ";
-            }
-
-            this.CssClass = this.CssClass + " form-control";
-
             label = new Literal();
             Controls.Add( label );
 
@@ -337,6 +329,14 @@ namespace Rock.Web.UI.Controls
                     prependLabel.RenderControl( writer );
                     writer.RenderEndTag();
                 }
+
+                // add space to the css class if it already has a value
+                if (!string.IsNullOrEmpty(this.CssClass))
+                {
+                    this.CssClass += " ";
+                }
+
+                this.CssClass = this.CssClass + "form-control";
 
                 base.RenderControl( writer );
 

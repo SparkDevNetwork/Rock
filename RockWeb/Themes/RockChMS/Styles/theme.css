@@ -1856,10 +1856,10 @@ cite {
   color: #356635;
 }
 .text-info {
-  color: #515151;
+  color: #3a87ad;
 }
 .text-info:hover {
-  color: #373737;
+  color: #2d6987;
 }
 .text-left {
   text-align: left;
@@ -4278,7 +4278,7 @@ input[type="button"].btn-block {
   height: 0;
   margin-left: 2px;
   vertical-align: middle;
-  border-top: 4px solid #ff0000;
+  border-top: 4px solid #437b9b;
   border-right: 4px solid transparent;
   border-left: 4px solid transparent;
   border-bottom: 0 dotted;
@@ -4384,7 +4384,7 @@ input[type="button"].btn-block {
 .dropup .caret,
 .navbar-fixed-bottom .dropdown .caret {
   border-top: 0 dotted;
-  border-bottom: 4px solid #ff0000;
+  border-bottom: 4px solid #437b9b;
   content: "";
 }
 .dropup .dropdown-menu,
@@ -5927,15 +5927,15 @@ a.thumbnail:focus {
   color: #356635;
 }
 .alert-info {
-  background-color: #e7ecf0;
-  border-color: #d1dde2;
-  color: #515151;
+  background-color: #d9edf7;
+  border-color: #bce8f1;
+  color: #3a87ad;
 }
 .alert-info hr {
-  border-top-color: #c1d2d8;
+  border-top-color: #a6e1ec;
 }
 .alert-info .alert-link {
-  color: #373737;
+  color: #2d6987;
 }
 .alert-warning {
   background-color: #fcf8e3;
@@ -6158,7 +6158,7 @@ a.list-group-item:focus {
 }
 .panel {
   margin-bottom: 20px;
-  background-color: #f4f4f4;
+  background-color: #e7ecf0;
   border: 1px solid transparent;
   border-radius: 4px;
   -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
@@ -6352,18 +6352,18 @@ a.list-group-item:focus {
   border-bottom-color: #eed3d7;
 }
 .panel-info {
-  border-color: #d1dde2;
+  border-color: #bce8f1;
 }
 .panel-info > .panel-heading {
-  color: #515151;
-  background-color: #e7ecf0;
-  border-color: #d1dde2;
+  color: #3a87ad;
+  background-color: #d9edf7;
+  border-color: #bce8f1;
 }
 .panel-info > .panel-heading + .panel-collapse .panel-body {
-  border-top-color: #d1dde2;
+  border-top-color: #bce8f1;
 }
 .panel-info > .panel-footer + .panel-collapse .panel-body {
-  border-bottom-color: #d1dde2;
+  border-bottom-color: #bce8f1;
 }
 .well {
   min-height: 20px;
@@ -7965,6 +7965,7 @@ td.visible-print {
   overflow: hidden;
   color: #515151;
   text-align: center;
+  height: 80px;
 }
 .page-list-as-blocks ul li a {
   display: block;
@@ -8363,80 +8364,6 @@ div.tagsinput div {
   background-color: #87a8ba;
 }
 /*
-    Used to style Rock's various custom pickers
-    
-    1. Base Styles
-    2. Person Picker
-
-*/
-.rock-picker {
-  color: #515151;
-  left: auto;
-  top: auto;
-  padding: 8px;
-}
-.rock-picker:after {
-  border-bottom: 6px solid #FFFFFF;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  content: "";
-  display: inline-block;
-  left: 10px;
-  position: absolute;
-  top: -6px;
-}
-.rock-picker:before {
-  border-bottom: 7px solid rgba(0, 0, 0, 0.2);
-  border-left: 7px solid transparent;
-  border-right: 7px solid transparent;
-  content: "";
-  display: inline-block;
-  left: 9px;
-  position: absolute;
-  top: -7px;
-}
-.rock-picker .rock-picker-search {
-  width: 304px;
-}
-.rock-picker .caret {
-  border-top: 4px solid #515151;
-}
-.rock-picker h4 {
-  font-size: 12px;
-  text-transform: uppercase;
-  margin-bottom: 0;
-}
-.rock-picker hr {
-  margin: 0 0 6px;
-}
-.rock-picker ul.rock-picker-select {
-  list-style: none;
-  margin-left: 0;
-}
-.rock-picker .rock-picker-select-item-details {
-  margin-bottom: 12px;
-}
-.rock-picker .rock-picker-select-item-details h5 {
-  margin: 0 0 -4px;
-  text-transform: uppercase;
-  font-size: 10px;
-}
-.rock-picker .rock-picker-select-item-details img {
-  float: left;
-  margin: 2px 12px 2px 24px;
-}
-.rock-picker ul.rock-picker-select input[type="radio"],
-.rock-picker ul.rock-picker-select input[type="checkbox"] {
-  margin: 0 6px 0 0;
-}
-.rock-picker-person {
-  width: 320px;
-}
-.rock-picker-person .rock-picker-select-person-details {
-  float: left;
-  font-size: 13px;
-}
-/*
     Used to manage styles for specific blocks.
     
     1. SQL Command - block to query database directly
@@ -8554,12 +8481,12 @@ span.cke_skin_kama {
   color: #eed3d7;
 }
 .panel-notes article.personal {
-  background-color: #e7ecf0;
-  border: 1px solid #dee7ea;
-  color: #515151;
+  background-color: #d9edf7;
+  border: 1px solid #cceef4;
+  color: #3a87ad;
 }
 .panel-notes article.personal i {
-  color: #dee7ea;
+  color: #cceef4;
 }
 .panel-notes .load-more {
   margin: 0 40%;
@@ -8884,11 +8811,31 @@ td[align=center] {
 }
 /*
     Used to manage styles related to modal dialog.
-    
-    1. Panel - used to visually link related content items together.
-    2. Banner - used as the primary heading for a page or large section.
 
 */
+.rock-modal {
+  width: 750px;
+}
+#dialog .modal-header {
+  background-color: #3a3a3a;
+  color: #bbbbbb;
+  padding: 5px 15px;
+  min-height: 34px;
+}
+#dialog .modal-header h3 {
+  float: left;
+}
+#dialog .modal-header .close {
+  margin: 0;
+  padding: 6px;
+  color: #bbbbbb;
+  text-shadow: none;
+}
+#dialog .modal-footer {
+  padding: 8px;
+  margin-top: 10px;
+  background-color: #e7ecf0;
+}
 .modal-body .scroll-container {
   width: 720px;
 }
@@ -8900,15 +8847,6 @@ td[align=center] {
   /* http://preloaders.net/en/popular */
 
   overflow: hidden;
-}
-.modal-header {
-  min-height: 34px;
-  background-color: #3a3a3a;
-  color: #bbbbbb;
-  padding: 5px 15px;
-}
-.modal-header h3 {
-  float: left;
 }
 .modal-backdrop {
   background-color: #8b8b8b;
@@ -9161,7 +9099,7 @@ dl dd {
   width: 500px;
   overflow: hidden;
   position: relative;
-  height: 380px;
+  height: 375px;
 }
 .scroll-container .overview {
   list-style: none;
@@ -9192,6 +9130,12 @@ dl dd {
   position: absolute;
   top: 0;
   border-radius: 120px;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 .scroll-container .thumb .end {
   overflow: hidden;
@@ -10518,11 +10462,6 @@ a:hover i[class^="icon-"] {
 }
 .navbar {
   position: static;
-}
-.modal-header .close {
-  color: #bbbbbb;
-  opacity: 1;
-  text-shadow: none;
 }
 .nav-pills > .active > a,
 .nav-pills > .active > a:hover {

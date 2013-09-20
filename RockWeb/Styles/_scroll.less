@@ -21,7 +21,7 @@
         width: 500px;  
         overflow: hidden; 
         position: relative; 
-        height: 380px;
+        height: 375px;
     }
 
     .overview { 
@@ -56,6 +56,14 @@
         position: absolute; 
         top: 0;
         border-radius: 120px;
+
+        // keeps the thumb from being selectable like text
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
 
         .end { 
             overflow: hidden; 
