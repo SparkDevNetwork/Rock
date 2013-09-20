@@ -36,7 +36,7 @@ namespace Rock.Field.Types
             var timeValue = TimeSpan.MinValue;
             if ( TimeSpan.TryParse( value, out timeValue ) )
             {
-                formattedValue = timeValue.ToString("hh:mm:ss");
+                formattedValue = timeValue.ToString();
             }
 
             return formattedValue;
@@ -68,7 +68,7 @@ namespace Rock.Field.Types
                 var tp = control as TimePicker;
                 if ( tp != null && tp.SelectedTime.HasValue )
                 {
-                    return tp.SelectedTime.Value.ToString( "hh:mm:ss" );
+                    return tp.SelectedTime.Value.ToString();
                 }
             }
 
