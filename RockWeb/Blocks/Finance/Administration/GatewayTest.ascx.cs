@@ -24,6 +24,8 @@ namespace RockWeb.Blocks.Finance.Administration
 {
     #region Block Attributes
 
+    [BooleanField("Allow Impersonation", "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users", false, "", 0)]
+
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "Credit Card Gateway", "The payment gateway to use for Credit Card transactions", false, "", "", 0, "CCGateway" )]
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "ACH Card Gateway", "The payment gateway to use for ACH (bank account) transactions", false, "", "", 1, "ACHGateway" )]
     [TextField( "Batch Name Prefix", "The batch prefix name to use when creating a new batch", false, "Online Giving - ", "", 2 )]
@@ -82,6 +84,10 @@ achieve our mission.  We are so grateful for your commitment.
 
         #region Properties
 
+        /// <summary>
+        /// Gets or sets the target person.
+        /// </summary>
+        protected Person TargetPerson { get; private set; }
 
         /// <summary>
         /// Gets or sets the accounts that are available for user to add to the list.
@@ -153,6 +159,21 @@ achieve our mission.  We are so grateful for your commitment.
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+
+            // If impersonation is allowed, and a valid person key was used, set the target to that person
+            bool allowInpersonation = false;
+            if ( bool.TryParse( GetAttributeValue( "Allow Impersonation" ), out allowInpersonation ) && allowInpersonation )
+            {
+                string personKey = PageParameter( "Person" );
+                if ( !string.IsNullOrWhiteSpace( personKey ) )
+                {
+                    TargetPerson = new PersonService().GetByUrlEncodedKey( personKey );
+                }
+            }
+            if (TargetPerson == null)
+            {
+                TargetPerson = CurrentPerson;
+            }
 
             // Enable payment options based on the configured gateways
             bool ccEnabled = false;
@@ -383,7 +404,7 @@ achieve our mission.  We are so grateful for your commitment.
                         txtCurrentName.Text = person.FullName;
                         txtFirstName.Visible = false;
                         txtLastName.Visible = false;
-                        txtEmail.Text = CurrentPerson.Email;
+                        txtEmail.Text = person.Email;
 
                         using ( new UnitOfWorkScope() )
                         {
@@ -615,8 +636,8 @@ achieve our mission.  We are so grateful for your commitment.
                         savedAccount.MaskedAccountNumber = paymentInfo.AccountNumber;
 
                         var savedAccountService = new FinancialPersonSavedAccountService();
-                        savedAccountService.Add( savedAccount, savedAccount.PersonId );
-                        savedAccountService.Save( savedAccount, savedAccount.PersonId );
+                        savedAccountService.Add( savedAccount, CurrentPersonId );
+                        savedAccountService.Save( savedAccount, CurrentPersonId );
 
                         cbSaveAccount.Visible = false;
                         txtSaveAccount.Visible = false;
@@ -714,9 +735,9 @@ achieve our mission.  We are so grateful for your commitment.
             Person person = null;
 
             int personId = ViewState["PersonId"] as int? ?? 0;
-            if ( personId == 0 && CurrentPerson != null )
+            if ( personId == 0 && TargetPerson != null )
             {
-                person = CurrentPerson;
+                person = TargetPerson;
             }
             else
             {
@@ -813,11 +834,11 @@ achieve our mission.  We are so grateful for your commitment.
         {
             rblSavedCC.Items.Clear();
 
-            if ( CurrentPersonId.HasValue )
+            if ( TargetPerson != null  )
             {
                 // Get the saved accounts for the currently logged in user
                 var savedAccounts = new FinancialPersonSavedAccountService()
-                    .GetByPersonId( CurrentPersonId.Value );
+                    .GetByPersonId( TargetPerson.Id );
 
                 if ( _ccGateway != null )
                 {
@@ -1163,8 +1184,8 @@ achieve our mission.  We are so grateful for your commitment.
                         }
 
                         var transactionService = new FinancialScheduledTransactionService();
-                        transactionService.Add( scheduledTransaction, person.Id );
-                        transactionService.Save( scheduledTransaction, person.Id );
+                        transactionService.Add( scheduledTransaction, CurrentPersonId );
+                        transactionService.Save( scheduledTransaction, CurrentPersonId );
 
                         ScheduleId = scheduledTransaction.GatewayScheduleId;
                         TransactionCode = scheduledTransaction.TransactionCode;
@@ -1238,8 +1259,8 @@ achieve our mission.  We are so grateful for your commitment.
                                 }
                                 batch.BatchEndDateTime = batch.BatchStartDateTime.Value.AddDays( 1 ).AddMilliseconds( -1 );
                                 batch.CreatedByPersonId = person.Id;
-                                batchService.Add( batch, person.Id );
-                                batchService.Save( batch, person.Id );
+                                batchService.Add( batch, CurrentPersonId );
+                                batchService.Save( batch, CurrentPersonId );
 
                                 batch = batchService.Get( batch.Id );
                             }
@@ -1249,8 +1270,8 @@ achieve our mission.  We are so grateful for your commitment.
 
                             var transactionService = new FinancialTransactionService();
                             transaction.BatchId = batch.Id;
-                            transactionService.Add( transaction, person.Id );
-                            transactionService.Save( transaction, person.Id );
+                            transactionService.Add( transaction, CurrentPersonId );
+                            transactionService.Save( transaction, CurrentPersonId );
                         }
 
                         TransactionCode = transaction.TransactionCode;
