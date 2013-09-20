@@ -7521,9 +7521,6 @@ h1 {
   font-size: 28px;
   color: #54412b;
 }
-.navbar-inner {
-  padding: 0;
-}
 .close {
   color: #54412b;
 }
@@ -7543,6 +7540,9 @@ h1 {
 }
 .config-bar {
   display: none;
+}
+.btn-dimmed {
+  opacity: 0.33;
 }
 body {
   background: #dbc189 url('../Assets/Images/background.jpg') top right no-repeat fixed;
@@ -7571,8 +7571,8 @@ body {
   font-weight: 300;
   margin-left: 20px;
 }
-.btn-dimmed {
-  opacity: 0.33;
+.checkin-body .checkin-actions {
+  text-align: right;
 }
 .checkin-body .checkin-actions .btn {
   font-size: 36px;
@@ -7614,37 +7614,25 @@ body {
   font-size: 28px;
   padding: 14px 26px;
 }
-.checkin-body-container {
-  width: 80%;
-}
 .btn-checkbox {
-  padding: 24px 48px;
+  padding: 24px;
+  background-color: #ecdebf;
+  color: #92724c;
+  border-color: #91876f;
+  font-size: 20px;
 }
 .btn-checkbox.active {
-  -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -2px 0 rgba(0, 0, 0, 0.25), inset 0 -3px 0 rgba(255, 255, 255, 0.2), 0 1px 0 rgba(0, 0, 0, 0.1);
-  -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -2px 0 rgba(0, 0, 0, 0.25), inset 0 -3px 0 rgba(255, 255, 255, 0.2), 0 1px 0 rgba(0, 0, 0, 0.1);
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5), inset 0 -2px 0 rgba(0, 0, 0, 0.25), inset 0 -3px 0 rgba(255, 255, 255, 0.2), 0 2px 0 rgba(0, 0, 0, 0.1);
+  background-color: #4e2727;
+  color: #ffffff;
+  border-color: #361c1b;
 }
-button.btn-checkbox.btn i {
-  font-size: 48px;
+.btn-checkbox i {
+  font-size: 92px;
   display: block;
-  line-height: 48px;
+  line-height: 92px;
 }
 .btn-checkbox.active i:before {
   content: "\f046";
-}
-.btn-checkbox div {
-  font-size: 26px;
-  line-height: 26px;
-  margin-top: 8px;
-}
-.checkin-summary {
-  list-style-type: none;
-}
-.checkin-summary li {
-  font-size: 22px;
-  margin-bottom: 18px;
-  color: #92724c;
 }
 /* Ten Key Keypad */
 .tenkey {
@@ -7667,7 +7655,7 @@ button.btn-checkbox.btn i {
 .checkin-search-body {
   margin-right: auto !important;
   margin-left: auto !important;
-  width: 320px;
+  width: 260px;
 }
 input.checkin-phone-entry {
   height: 60px;
@@ -7688,6 +7676,14 @@ input.checkin-phone-entry {
 }
 .checkin-timelist {
   margin-bottom: 12px;
+}
+.checkin-summary {
+  list-style-type: none;
+}
+.checkin-summary li {
+  font-size: 22px;
+  margin-bottom: 18px;
+  color: #92724c;
 }
 /***********************  DEVELOPER ADDITIONS BELOW  ***********************/
 @font-face {
@@ -7717,4 +7713,7 @@ input.checkin-phone-entry {
   src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot?#iefix') format('embedded-opentype'), url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.woff') format('woff'), url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.ttf') format('truetype'), url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.svg#OpenSansBold') format('svg');
   font-weight: 700;
   font-style: normal;
+}
+.checkin-body-container {
+  width: 80%;
 }

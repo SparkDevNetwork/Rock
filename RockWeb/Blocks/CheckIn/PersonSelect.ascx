@@ -5,14 +5,14 @@
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
 
-    <div class="row-fluid checkin-header">
-        <div class="span12">
+    <div class="row checkin-header">
+        <div class="col-md-12">
             <h1><asp:Literal ID="lFamilyName" runat="server"></asp:Literal></h1>
         </div>
     </div>
                 
-    <div class="row-fluid checkin-body">
-        <div class="span12">
+    <div class="row checkin-body">
+        <div class="col-md-12">
 
             <div class="control-group checkin-body-container">
                 <label class="control-label">Select Person</label>
@@ -29,10 +29,10 @@
         
    
 
-    <div class="row-fluid checkin-footer">   
+    <div class="checkin-footer">   
         <div class="checkin-actions">
-            <asp:LinkButton CssClass="btn btn-secondary" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
-            <asp:LinkButton CssClass="btn btn-secondary" ID="lbCancel" runat="server" OnClick="lbCancel_Click" Text="Cancel" />
+            <asp:LinkButton CssClass="btn btn-default" ID="lbBack" runat="server" OnClick="lbBack_Click" Text="Back" />
+            <asp:LinkButton CssClass="btn btn-default" ID="lbCancel" runat="server" OnClick="lbCancel_Click" Text="Cancel" />
         </div>
     </div>
 

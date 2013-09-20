@@ -1,4 +1,4 @@
-﻿/*
+/*
      
      Rock ChMS Park Check-in Theme
      Crafted by: Spark Development Network
@@ -58,7 +58,7 @@
 /* makes the font 33% larger relative to the icon container */
 .icon-large:before {
   vertical-align: -10%;
-  font-size: 1.3333333333333332em;
+  font-size: 1.3333333333333333em;
 }
 /* makes sure icons active on rollover in links */
 a [class^="icon-"],
@@ -7521,9 +7521,6 @@ h1 {
   font-size: 28px;
   color: #ffffff;
 }
-.navbar-inner {
-  padding: 0;
-}
 .close {
   color: #ffffff;
 }
@@ -7543,6 +7540,9 @@ h1 {
 }
 .config-bar {
   display: none;
+}
+.btn-dimmed {
+  opacity: 0.33;
 }
 body {
   background: #85b11c url('../Assets/Images/background.jpg') top right no-repeat fixed;
@@ -7571,8 +7571,8 @@ body {
   font-weight: 300;
   margin-left: 20px;
 }
-.btn-dimmed {
-  opacity: 0.33;
+.checkin-body .checkin-actions {
+  text-align: right;
 }
 .checkin-body .checkin-actions .btn {
   font-size: 36px;
@@ -7614,37 +7614,25 @@ body {
   font-size: 28px;
   padding: 14px 26px;
 }
-.checkin-body-container {
-  width: 80%;
-}
 .btn-checkbox {
-  padding: 24px 48px;
+  padding: 24px;
+  background-color: #7f7e7e;
+  color: #ffffff;
+  border-color: #9d9c9c;
+  font-size: 20px;
 }
 .btn-checkbox.active {
-  -webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -2px 0 rgba(0, 0, 0, 0.25), inset 0 -3px 0 rgba(255, 255, 255, 0.2), 0 1px 0 rgba(0, 0, 0, 0.1);
-  -moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5), inset 0 -2px 0 rgba(0, 0, 0, 0.25), inset 0 -3px 0 rgba(255, 255, 255, 0.2), 0 1px 0 rgba(0, 0, 0, 0.1);
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5), inset 0 -2px 0 rgba(0, 0, 0, 0.25), inset 0 -3px 0 rgba(255, 255, 255, 0.2), 0 2px 0 rgba(0, 0, 0, 0.1);
+  background-color: #e3151a;
+  color: #ffffff;
+  border-color: #b00a0e;
 }
-button.btn-checkbox.btn i {
-  font-size: 48px;
+.btn-checkbox i {
+  font-size: 92px;
   display: block;
-  line-height: 48px;
+  line-height: 92px;
 }
 .btn-checkbox.active i:before {
   content: "\f046";
-}
-.btn-checkbox div {
-  font-size: 26px;
-  line-height: 26px;
-  margin-top: 8px;
-}
-.checkin-summary {
-  list-style-type: none;
-}
-.checkin-summary li {
-  font-size: 22px;
-  margin-bottom: 18px;
-  color: #ffffff;
 }
 /* Ten Key Keypad */
 .tenkey {
@@ -7667,7 +7655,7 @@ button.btn-checkbox.btn i {
 .checkin-search-body {
   margin-right: auto !important;
   margin-left: auto !important;
-  width: 320px;
+  width: 260px;
 }
 input.checkin-phone-entry {
   height: 60px;
@@ -7688,6 +7676,14 @@ input.checkin-phone-entry {
 }
 .checkin-timelist {
   margin-bottom: 12px;
+}
+.checkin-summary {
+  list-style-type: none;
+}
+.checkin-summary li {
+  font-size: 22px;
+  margin-bottom: 18px;
+  color: #ffffff;
 }
 /***********************  DEVELOPER ADDITIONS BELOW  ***********************/
 @font-face {
