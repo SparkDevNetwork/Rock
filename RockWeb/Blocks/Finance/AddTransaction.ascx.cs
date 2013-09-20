@@ -20,10 +20,13 @@ using Rock.Web.Cache;
 
 using System.Collections.Generic;
 
-namespace RockWeb.Blocks.Finance.Administration
+namespace RockWeb.Blocks.Finance
 {
     #region Block Attributes
 
+    /// <summary>
+    /// Add a new one-time or scheduled transaction
+    /// </summary>
     [BooleanField("Allow Impersonation", "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users", false, "", 0)]
 
     [ComponentField( "Rock.Financial.GatewayContainer, Rock", "Credit Card Gateway", "The payment gateway to use for Credit Card transactions", false, "", "", 0, "CCGateway" )]
@@ -70,7 +73,7 @@ achieve our mission.  We are so grateful for your commitment.
 
     #endregion
 
-    public partial class GatewayTest : Rock.Web.UI.RockBlock
+    public partial class AddTransaction : Rock.Web.UI.RockBlock
     {
 
         #region Fields
@@ -379,7 +382,7 @@ achieve our mission.  We are so grateful for your commitment.
                 }
 
                 // Show or Hide the Credit card entry panel based on if a saved account exists and it's selected or not.
-                divNewCard.Style[HtmlTextWriterStyle.Display] = ( rblSavedCC.Items.Count > 0 && rblSavedCC.Items[rblSavedCC.Items.Count - 1].Selected ) ? "block" : "none";
+                divNewCard.Style[HtmlTextWriterStyle.Display] = ( rblSavedCC.Items.Count == 0 || rblSavedCC.Items[rblSavedCC.Items.Count - 1].Selected ) ? "block" : "none";
 
                 // Show billing address based on if billing address checkbox is checked
                 divBillingAddress.Style[HtmlTextWriterStyle.Display] = cbBillingAddress.Checked ? "block" : "none";
@@ -772,7 +775,7 @@ achieve our mission.  We are so grateful for your commitment.
                             // Create Person
                             person = new Person();
                             person.GivenName = txtFirstName.Text;
-                            person.LastName = txtFirstName.Text;
+                            person.LastName = txtLastName.Text;
                             person.Email = txtEmail.Text;
 
                             bool displayPhone = false;
@@ -787,13 +790,13 @@ achieve our mission.  We are so grateful for your commitment.
                             // Create Family Role
                             var groupMember = new GroupMember();
                             groupMember.Person = person;
-                            groupMember.GroupRoleId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ).Id;
+                            groupMember.GroupRole = new GroupRoleService().Get(new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) );
 
                             // Create Family
                             var group = new Group();
                             group.Members.Add( groupMember );
                             group.Name = person.LastName + " Family";
-                            group.GroupTypeId = DefinedValueCache.Read( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Id;
+                            group.GroupType = new GroupTypeService().Get( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) );
 
                             var groupLocation = new GroupLocation();
                             var location = new LocationService().Get(
