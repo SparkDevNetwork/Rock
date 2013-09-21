@@ -1,0 +1,232 @@
+﻿/*
+    Used to manage styles related to the person details page
+    
+    1. Header
+    2. Badge Bar
+    3. Family Bar
+    4. Page Tabs
+    5. Timeline
+    6. Misc Items
+
+*/
+
+
+// 1. Header
+// -------------------------
+.persondetails-header {
+    padding-bottom: 24px;
+    background-color: @accent-light-color;
+    border-bottom: 1px solid darken(@accent-light-color, @const-border-darken-amt);
+
+    .actions { // edit individual button
+        position: absolute;
+        right: 12px;
+        margin-top: 50px;
+    }
+
+    .labels {
+        margin-top: 11px;
+        text-align: right;
+    }
+
+    .photo {
+        padding: 5px 5px 5px 5px;
+        background-color: #fff;
+        border: 1px solid #bdbdbd;
+        display: table;
+        width: 100%;
+        max-width: 200px;
+
+        img {
+            width: 100%;
+        }
+    }
+
+    .demographics {
+        margin-top: 44px;
+    }
+
+    ul.phonenumbers {
+        list-style: none;
+        padding-left: 0;
+    }
+
+    // style actions dropdown 
+    a.persondetails-actions.dropdown-toggle {
+        color: @accent-light-text-color;
+        padding: 2px 15px;
+
+        .caret {
+            border-top: 4px solid @accent-light-text-color;
+        }
+
+        &:hover, &:focus {
+            color: lighten(@accent-light-text-color, 10%);
+        }
+
+        &:hover .caret, &:focus .caret {
+            border-top: 4px solid lighten(@accent-light-text-color, 10%);
+        }
+    }
+
+    .dropdown-menu {
+        text-align: left;
+    }
+}
+
+
+// 2. Badge Bar
+// -------------------------
+
+.persondetails-badgebar
+{
+    background-color: @accent-color;
+    min-height: 50px;
+    border-bottom: 1px solid darken(@accent-color, @const-border-darken-amt);
+
+    .badge-group {
+        margin: 10px 0;
+
+        &:last-child {
+            text-align: right;
+        }
+
+        .badge { // might take this out when we get real badges
+            background-color: inherit;
+        }
+    }
+}
+
+
+// 3. Family Bar
+// -------------------------
+
+.persondetails-familybar {
+    background: @accent-color;
+    padding: 12px 0;
+    border-bottom: 1px solid darken(@accent-color, @const-border-darken-amt);
+
+    .actions { // edit family button
+        position: absolute; 
+        right: 12px; 
+        z-order: 99;
+    }
+
+    .members {
+        header {
+            font-size: 16px;
+            margin-bottom: 12px;
+        }
+
+        ul {
+            list-style: none;
+            margin: 6px 0;
+
+            li {
+                float: left;
+                margin-right: 12px;
+                margin-bottom: 12px;
+                min-width: 150px;
+
+                a {
+                    color: #515151;
+                }
+
+                img {
+                    float: left;
+                    border: 1px solid #fff;
+                    max-width: 37px;
+                    max-height: 37px;
+                }
+
+                .member {
+                    float: left;
+                    margin-left: 4px;
+
+                        h4 {
+                            margin: 0;
+                            font-size: 14px;
+                            font-weight: normal;
+                            float: left;
+                            max-width: 88px;
+                            text-overflow: ellipsis;
+                            overflow: hidden;
+                        }
+
+                        small {
+                            display: block;
+                            line-height: 16px;
+                            margin: 0;
+                        }
+                }
+            }
+        }
+    }
+
+    .addresses ul {
+        list-style: none;
+        margin: 0;
+
+        li {
+            display: block;
+            clear: both;
+            margin-bottom: 12px;
+        }
+
+        h4 {
+            margin: 0;
+            font-size: 14px;
+            font-weight: @font-weight-semibold;
+        }
+
+        .address {
+            .actions {
+                display: none;
+
+                a {
+                    padding: 1px;
+                }
+            }
+        }
+
+        & a.map,
+        & div.actions,
+        & div.address {
+            float: left;
+            margin-right: 4px;
+        }
+    }
+}
+
+
+
+// 4. Page Tabs
+// -------------------------
+
+.pagetabs
+{
+    margin-top: 12px;
+
+    .nav {
+        margin: 10px 0;
+    }
+}
+
+// 5. Timeline
+// -------------------------
+
+// moved to notes block
+
+// 6. Misc Items
+// -------------------------
+
+/*.bookmarkattributes ul // todo check if this is needed
+{
+    list-style-type: none;
+    margin-left: 0;
+}*/
+
+.persondetails small
+{
+    color: lighten(@text-color, 20%);
+}

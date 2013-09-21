@@ -18,9 +18,7 @@
     <asp:ContentPlaceHolder ID="css" runat="server" />
 
 	<!-- Included CSS Files -->
-    <link rel="stylesheet" href="../CSS/bootstrap.less">
-    <link rel="stylesheet" href="../CSS/bootstrap-responsive.less">
-    <link rel="stylesheet" href="../CSS/checkin-theme.less">
+    <link rel="stylesheet" href="../Styles/checkin-theme.css">
 
     <script src="<%# ResolveUrl("~/Scripts/fastclick.js") %>" ></script>
 

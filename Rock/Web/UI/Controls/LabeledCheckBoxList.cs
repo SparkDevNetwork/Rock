@@ -129,17 +129,13 @@ namespace Rock.Web.UI.Controls
 
                 if ( renderControlGroupDiv )
                 {
-                    writer.AddAttribute( "class", "control-group" );
+                    writer.AddAttribute( "class", "form-group" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                    writer.AddAttribute( "class", "control-label" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Label );
                     label.RenderControl( writer );
                     helpBlock.RenderControl( writer );
                     writer.RenderEndTag();
-
-                    writer.AddAttribute( "class", "controls checkbox" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 }
 
                 if ( Items.Count == 0 )
@@ -162,7 +158,6 @@ namespace Rock.Web.UI.Controls
 
                 if ( renderControlGroupDiv )
                 {
-                    writer.RenderEndTag();
                     writer.RenderEndTag();
                 }
             }

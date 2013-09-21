@@ -176,13 +176,13 @@
                 isMultiSelect = this.isMultiSelect,
                 updateScrollbar = this.updateScrollbar;
 
-            $('#' + controlId + ' a.rock-picker').click(function (e) {
+            $('#' + controlId + ' a.picker-label').click(function (e) {
                 e.preventDefault();
-                $(this).parent().siblings('.rock-picker').first().toggle();
+                $('#' + controlId).find('.picker-menu').first().toggle();
                 updateScrollbar(controlId);
             });
 
-            $('#' + controlId + ' .rock-picker-select').hover(
+            $('#' + controlId).hover(
                 function () {
                     if ($('#hfItemId_' + controlId).val() !== '0') {
                         $('#btnSelectNone_' + controlId).stop().show();
@@ -193,7 +193,7 @@
                 });
 
             $('#btnCancel_' + controlId).click(function () {
-                $(this).parent().slideUp();
+                $(this).closest('.picker-menu').slideUp();
             });
 
             $('#btnSelectNone_' + controlId).click(function (e) {
@@ -234,7 +234,7 @@
                     $selectedItemLabel.text(selectedText);
                 }
 
-                $(this).parent().slideUp();
+                $(this).closest('.picker-menu').slideUp();
             });
         };
 

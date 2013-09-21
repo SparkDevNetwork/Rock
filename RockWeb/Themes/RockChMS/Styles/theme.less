@@ -1,0 +1,389 @@
+// Imports
+// -------------------------
+
+@FontAwesomePath: '../../../../Assets/Fonts';
+
+
+// Load Master Styles
+// -------------------------
+@import "../../../Styles/FontAwesome/font-awesome.less";
+@import "../../../Styles/Bootstrap/bootstrap.less"; 
+@import "../../../Styles/_rock-core.less";
+@import "_variables.less";
+
+// Fonts
+// -------------------------
+
+// regular (weight 'normal' aka 400)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.woff') format('woff'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.ttf') format('truetype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
+    font-weight: 400;
+    font-style: normal;
+}
+
+// light (weight 300)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot');
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.woff') format('woff'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.ttf') format('truetype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.svg#OpenSansLight') format('svg');
+    font-weight: 300;
+    font-style: normal;
+}
+
+// semi-bold (weight 600)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot');
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.woff') format('woff'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.ttf') format('truetype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.svg#OpenSansSemibold') format('svg');
+    font-weight: 600;
+    font-style: normal;
+}
+
+// bold (weight 700)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot');
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.woff') format('woff'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.ttf') format('truetype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.svg#OpenSansBold') format('svg');
+    font-weight: 700;
+    font-style: normal;
+}
+
+
+/*
+    Rock ChMS Theme Styles
+
+    1. HTML Overrides
+    2. Bootstrap Overides
+    3. Page Header
+    4. Footer
+    5. Responsive Tweaks
+    6. Layout Specific Styles
+
+*/
+
+// 1. HTML Overrides
+// -------------------------
+
+// set window background
+html
+{
+    background-color: #3a3a3a;  
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4="); 
+}
+
+h1 {
+	font-size: 28px;
+}
+
+h1, h2, h3 {
+	letter-spacing: -0.03em;
+}
+
+h2, h3, h4
+{
+    font-weight: @font-weight-semibold;
+}
+
+// get rid of dotted box around anchors with focus
+a {
+   outline: 0;
+}
+
+a:hover {
+    text-decoration: none;
+}
+
+a:hover i[class^="icon-"]
+{
+    text-decoration: none;
+}
+
+// 2. Bootstrap Overrides 
+// ------------------------- 
+
+.navbar {
+    position: static; // default is relative which causes the dropdowns to go under the other navbars dispite having a higher z-index - JME 9/9/2013
+}
+
+.nav-pills > .active > a,
+.nav-pills > .active > a:hover
+{
+    background-color: @accent-bold-color;
+    color: @accent-bold-text-color;
+}
+
+.nav-pills > li > a
+{
+    color: @text-color;
+}
+
+.nav-pills > li > a:hover
+{
+    background-color: @accent-color;
+}
+
+.btn-mini
+{
+    padding: 0 6px;
+}
+
+.label,
+.badge {
+    font-weight: @font-weight-light;
+}
+
+// todo - needed in bs3?
+.btn-primary.disabled, .btn-primary[disabled] {
+    color: @btn-disabled-color;
+    background-color: @btn-disabled-bg;
+    cursor: not-allowed;
+}
+
+
+// 3. Page Header
+// -------------------------
+
+// common header styles
+header {
+    
+    .dropdown-menu li > a:hover,
+    .dropdown-menu li > a:focus,
+    .dropdown-submenu:hover > a {
+        background-image: none;
+        background-color: @accent-bold-color;
+        color: #fff;
+    }
+    
+    .nav .caret {
+        border-top-color: @navbar-default-link-color;
+        border-bottom-color: @navbar-default-link-color;
+    }
+
+    .nav a:hover .caret {
+        border-top-color: @navbar-default-link-hover-color;
+        border-bottom-color: @navbar-default-link-hover-color;
+    }
+}
+
+// brand bar
+.brandbar {
+    border-bottom: 1px solid #121212;
+    background: none;
+    background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1IiBoZWlnaHQ9IjUiPgo8cmVjdCB3aWR0aD0iNSIgaGVpZ2h0PSI1IiBmaWxsPSIjMzczNzM3Ij48L3JlY3Q+CjxwYXRoIGQ9Ik0wIDVMNSAwWk02IDRMNCA2Wk0tMSAxTDEgLTFaIiBzdHJva2U9IiM0MDQwNDAiIHN0cm9rZS13aWR0aD0iMSI+PC9wYXRoPgo8L3N2Zz4=");
+
+    .brandbar-logo {
+	    height: 36px;
+	    width: 92.83px
+    }
+}
+
+// page nav
+.pagenav {
+    border-top: 1px solid lighten(@header-bg, 10%);
+    border-bottom: 1px solid darken(@header-bg, 10%);
+    
+    .block-gradient(@header-bg);
+
+    .navbar-nav {
+        margin: 0;
+    }
+
+    .nav {
+        border-left: 1px solid lighten(@header-bg, 10%);
+        width: 100%;
+
+        > li {
+            height: 67px;
+            border-left: 1px solid darken(@header-bg, 10%);
+            border-right: 1px solid lighten(@header-bg, 10%);
+            width: 12.5%; /* set to allow 8 nav items */
+            min-width: 120px;
+            float: left;
+            
+            &:last-child:after { /* add the final shadow to the last nav element */
+                content: " ";
+                position: absolute;
+                top: 0;
+                right: 0;
+                bottom: 0;
+                border-right: 1px solid darken(@header-bg, 10%);
+            }
+
+            > a {
+                padding: 4px 15px;
+                text-align: center;
+                font-size: 11px;
+                color: @header-text-color;
+
+                .caret {
+                    display: block;
+                    margin: 0 auto;
+                }
+
+                i[class^='icon-'] {
+                    display: block;
+                    margin: 6px auto 2px;
+                    font-size: 18px;
+                }
+            }
+        }
+
+        /* remove last divider out of the menu */
+        li.divider:last-child { 
+            display: none;
+        }
+    }
+
+    .dropdown-menu 
+    {
+	    left: -2px;
+        width: 240px;
+    }
+}
+
+// responsive menu rules
+@media (max-width: 767px) {
+    
+    .pagenav {
+        .nav {
+            border: 0;
+
+            & > li {
+                width: 33%;
+                height: auto;
+                border: 0;
+
+                &:last-child:after {
+		            border-right: 0;
+	            }
+
+                .dropdown-menu > li {
+                    > a {
+                        color: white;
+                    }
+
+                    &.divider {
+                        display: none;
+                    }
+                } 
+            }
+        }
+    }
+}
+
+
+// page title
+.pagetitle {
+	background-color: @pagetitle-bg;
+	border-bottom: 1px solid darken(@pagetitle-bg, 10%);
+	background-image: none;
+    filter: initial;
+
+    h1 {
+        margin: 12px 0 0 0;
+    }
+
+    .page-icon
+    {
+        font-size: 36px;
+        margin-right: 12px;
+        float: left;
+    }
+}
+
+// switch 
+/*
+ .switch span.switch-primary, .switch span.switch-left {
+  color: white;
+  background: #898a8a;
+  background-image: none;
+}
+    */
+
+// 4. Footer
+// -------------------------
+
+
+.page-footer {
+    margin-top: 24px;
+	padding-top: 24px;
+	min-height: 120px;
+	background-color: @footer-bg;
+	border-top: 1px solid #000;
+	color: @footer-text-color;
+}
+
+
+
+// 5. Responsive Tweaks
+// -------------------------
+
+
+// 6. Layout Specific Styles
+// -------------------------
+
+// splash screen
+body#splash
+{
+    background: none;
+}
+
+#splash .pageheader-logo {
+    height: 45px;
+	width: 127.57px;
+    margin-bottom: 6px;
+}
+
+#splash #content {
+    width: 550px;
+    margin: 5% auto 0 auto;
+}
+
+body#splash #content-box {
+    background-color: @body-bg;
+    .border-radius(@border-radius-base);
+    overflow: hidden;
+}
+
+#splash #content-box
+{
+   padding: 15px;
+}
+/*
+// special styles for the login control 
+#splash .login fieldset {
+    padding: 15px;
+}
+*/
+#splash .login .form-actions {
+    margin: 0 -15px -15px -15px;
+}
+
+// 2 Column Left
+
+#left-column-content {
+	min-height: 600px;
+	border-right: 1px solid @header-text-color;
+}
+
+@media (max-width: 767px) {
+	#left-column-content {
+		min-height: 0;
+		border-right: 0;
+	}
+}
+

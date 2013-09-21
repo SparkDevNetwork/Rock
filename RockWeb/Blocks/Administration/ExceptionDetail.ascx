@@ -10,10 +10,10 @@
                     <div class="span6">
                         <div class="row-fluid">
                             <div class="span2">
-                                Site
+                                <!-- Site -->
                             </div>
                             <div class="span10">
-                                <Rock:LabeledText ID="lblSite" runat="server" />
+                                <Rock:LabeledText LabelText="Site" ID="lblSite" runat="server" />
                             </div>
                         </div>
                         <div class="row-fluid">
@@ -68,7 +68,7 @@
                 <fieldset>
                     <legend>Details</legend>
                     <div class="row-fluid">
-                        <asp:Table ID="tblExceptionDetails" runat="server" CssClass="table table-bordered table-striped table-full table-hover">
+                        <asp:Table ID="tblExceptionDetails" runat="server" CssClass="table table-bordered table-striped table-hover">
                             <asp:TableHeaderRow ID="thRowExceptionDetails"  runat="server">
                                 <asp:TableHeaderCell ID="thExceptionType" runat="server" CssClass="span2" Text="Exception Type" />
                                 <asp:TableHeaderCell ID="thExceptionSource" runat="server" CssClass="span2" Text=" Source" />

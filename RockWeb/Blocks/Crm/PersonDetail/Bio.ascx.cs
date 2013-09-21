@@ -40,16 +40,27 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 fullName.Append( "</span>" );
                 lName.Text = Person.FullName.FormatAsHtmlTitle();
 
-                if ( Person.PhotoId.HasValue )
+                if (Person.PhotoId.HasValue)
                 {
                     var imgLink = new HtmlAnchor();
-                    phImage.Controls.Add( imgLink );
+                    phImage.Controls.Add(imgLink);
                     imgLink.HRef = "~/GetImage.ashx?id=" + Person.PhotoId.Value.ToString();
                     imgLink.Target = "_blank";
 
                     var img = new HtmlImage();
-                    imgLink.Controls.Add( img );
+                    imgLink.Controls.Add(img);
                     img.Src = "~/GetImage.ashx?id=" + Person.PhotoId.Value.ToString();
+                    img.Alt = Person.FullName;
+                }
+                else
+                {
+                    var imgLink = new HtmlAnchor();
+                    phImage.Controls.Add(imgLink);
+                    imgLink.HRef = ""; /* TODO link to get photo */
+                                        
+                    var img = new HtmlImage();
+                    imgLink.Controls.Add(img);
+                    img.Src = "~/Assets/Images/person-no-photo.svg";
                     img.Alt = Person.FullName;
                 }
 

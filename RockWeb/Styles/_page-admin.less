@@ -1,0 +1,191 @@
+﻿/*
+    Used to manage styles related to the CMS admin UI for on page editing
+    
+    1. Zone Configuration
+    2. Module Configuration
+    3. Admin Footer
+    4. Security Dialog
+
+*/
+
+
+
+// 1. Zone Config
+// -------------------------
+
+.zone-instance.outline 
+{
+    border: 1px solid #909090; /* todo */
+    min-height: 30px;
+    min-width: 120px;
+    position: relative;
+    margin: 1px;
+}
+
+.zone-configuration {
+    background: @adminbar-bg;
+    border: 1px solid darken(@adminbar-bg, @const-border-darken-amt);
+    border-radius:  @border-radius-base;
+    cursor: pointer;
+    display: none;
+    height: 26px;
+    overflow: hidden;
+    position: absolute;
+    top: 1px;
+    left: 1px;
+    width: 25px;
+    z-index: 40;
+    right: auto;
+}
+
+.zone-configuration-bar {
+    color: @adminbar-text-color;
+    display: inline-block;
+    float: left;
+    left: 24px;
+    margin-left: 6px;
+    margin-right: -999em;
+    overflow: hidden;
+    position: absolute;
+}
+
+.zone-configuration-bar span {
+    display: block;
+    float: left;
+    font-size: 10px;
+    padding-right: 20px;
+    margin-top: 3px;
+}
+
+.zone-configuration p {
+    float: left;   
+}
+
+// 2. Module Config
+// -------------------------
+.block-configuration {
+    background: @adminbar-bg;
+    border: 1px solid darken(@adminbar-bg, @const-border-darken-amt);
+    border-radius: @border-radius-base;
+    cursor: pointer;
+    display: none;
+    height: 26px;
+    overflow: hidden;
+    position: absolute;
+    top: 2px;
+    width: 26px;
+    z-index: 40;
+}
+
+.block-instance.outline 
+{
+    min-height: 36px;
+    clear: both;
+    display: block;
+    position: relative;
+}
+
+.config-bar > a 
+{
+    text-decoration: none;
+}
+
+.config-bar  a i[class^="icon-"] {
+    float: left;
+    margin-left: 5px;
+    margin-top: 3px;
+    font-size: 18px;
+    color: @adminbar-text-color;
+    margin-right: 10px;
+}
+
+.block-configuration-bar {
+    color: @adminbar-text-color;
+    display: inline-block;
+    float: left;
+    left: 24px;
+    margin-left: 6px;
+    margin-right: -999em;
+    overflow: hidden;
+    position: absolute;
+}
+
+.block-configuration-bar .btn
+{
+    margin-right: 12px;
+    color: @adminbar-text-color;
+    text-shadow: none;
+}
+
+.block-configuration-bar span {
+    display: block;
+    float: left;
+    font-size: 10px;
+    padding-right: 20px;
+    margin-top: 3px;
+}
+
+
+// 3. Admin Footer
+// -------------------------
+#cms-admin-footer {
+    bottom: 0;
+    height: 25px;
+    z-index: 300;
+    position: fixed;
+    right: 0;
+    margin-right: 25px;
+    background: @adminbar-bg;
+    border-color: darken(@adminbar-bg, @const-border-darken-amt);
+    border-width: 1px 1px 0 1px;
+    border-style: solid;
+    color: @adminbar-text-color;
+    padding: 5px 12px 0 12px;
+    font-size: 80%;
+}
+
+#cms-admin-footer .button-bar {
+    margin-top: -8px;
+    margin-left: 12px;
+    float: right;
+}
+
+#cms-admin-footer .button-bar a 
+{
+    background-color: transparent;
+    background-image: none;
+    border: 0;
+}
+
+#cms-admin-footer .btn
+{
+    color: @adminbar-text-color;
+    box-shadow: none;
+    text-shadow: none;
+}
+
+// 4. Security Dialog
+// -------------------------
+.add-user fieldset, .add-role fieldset 
+{
+    border: 1px solid #c4c4c4; /* TODO */
+    border-radius: 4px;   
+    margin-top: 22px;
+}
+
+.add-user legend, .add-role legend
+{
+    font-size: 16px;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+.add-user table 
+{
+    margin-top: 10px;   
+}
+
+.add-user table td 
+{
+    padding: 0 10px 6px;   
+}

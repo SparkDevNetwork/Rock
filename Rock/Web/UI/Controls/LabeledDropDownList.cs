@@ -206,22 +206,20 @@ namespace Rock.Web.UI.Controls
 
                 if ( renderControlGroupDiv )
                 {
-                    writer.AddAttribute( "class", "control-group" +
+                    writer.AddAttribute( "class", "form-group" +
                         ( IsValid ? "" : " error" ) +
                         ( Required ? " required" : "" ) );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                    writer.AddAttribute( "class", "control-label" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    writer.AddAttribute("for", this.ClientID);
+                    writer.RenderBeginTag( HtmlTextWriterTag.Label );
                     label.Visible = this.Visible;
                     label.RenderControl( writer );
                     helpBlock.RenderControl( writer );
                     writer.RenderEndTag();
-
-                    writer.AddAttribute( "class", "controls" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 }
 
+                writer.AddAttribute("class", "form-control");
                 base.RenderControl( writer );
 
                 if ( Required )
@@ -250,7 +248,6 @@ namespace Rock.Web.UI.Controls
 
                 if ( renderControlGroupDiv )
                 {
-                    writer.RenderEndTag();
                     writer.RenderEndTag();
                 }
             }

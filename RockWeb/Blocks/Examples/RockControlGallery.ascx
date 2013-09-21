@@ -29,8 +29,8 @@
             <h4 runat="server">Input</h4>
             <Rock:DataTextBox ID="dt" runat="server" LabelText="Rock:DataTextBox" LabelTextFromPropertyName="false" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
             <Rock:LabeledCheckBox ID="labeledCheckBox" runat="server" LabelText="Rock:LabeledCheckBox" />
-            <Rock:LabeledCheckBoxList ID="labeledCheckBoxList" runat="server" LabelText="Rock:LabeledCheckBoxList" />
-            <Rock:LabeledRadioButtonList ID="labeledRadioButtonList" runat="server" LabelText="Rock:LabeledRadioButtonList" />
+            <Rock:LabeledCheckBoxList ID="labeledCheckBoxList" runat="server" LabelText="Rock:LabeledCheckBoxList"  />
+            <Rock:LabeledRadioButtonList ID="labeledRadioButtonList" runat="server" LabelText="Rock:LabeledRadioButtonList"  />
             <Rock:NumberRangeEditor ID="numberRangeEditor" runat="server" LabelText="Rock:NumberRangeEditor" LowerValue="10" UpperValue="25" />
 
             <h4 runat="server">Pickers</h4>
@@ -68,6 +68,9 @@
 
             <Rock:NotificationBox ID="notificationBox" runat="server" Title="Rock:NotificationBox" Text="Box Text" />
             <Rock:Badge ID="badge" runat="server" BadgeType="Important" ToolTip="Some Tooltip">Badge</Rock:Badge>
+
+            <h4>Rock:BootstrapButton</h4>
+            <Rock:BootstrapButton ID="lbSave" runat="server" Text="Click Me" DataLoadingText="Disabled and Loading..." CssClass="btn btn-primary" />
 
             <h4 runat="server">Rock:AttributeEditor</h4>
             <asp:LinkButton ID="btnShowAttributeEditor" runat="server" CssClass="btn" Text="Attribute Editor..." OnClick="btnShowAttributeEditor_Click" CausesValidation="false" />

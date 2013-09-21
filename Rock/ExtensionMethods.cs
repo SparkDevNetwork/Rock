@@ -225,7 +225,7 @@ namespace Rock
         /// <param name="str"></param>
         /// <param name="maxLength"></param>
         /// <returns></returns>
-        public static string Ellipsis( this string str, int maxLength )
+        public static string Truncate( this string str, int maxLength )
         {
             if ( str == null )
                 return null;

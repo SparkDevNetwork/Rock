@@ -1,0 +1,976 @@
+﻿/*
+    Used to manage styles related to reusable components / widgets.
+    
+    1. Pickers - used to pick complex data types
+    2. Banner - used as the primary heading for a page or large section
+    3. Treeview - additional styles for the kendo treeview
+    4. Widget - reusable box wrapper for content
+    5. Tooltip - styles for the tooltipster module
+    6. Pagelist - used to list child pages; currently used in admin screens
+    7. Tags - component that allows you to tag entities
+    8. Switch - uses the Bootstrap Switch component
+    9. Smart Searh - search at th top of the page for searching people, groups, etc.
+    10. Title - markup for styling header titles
+    11. Notifications - additional styles to the Bootstrap notifications
+    12. Labels - additional label defintions that extend Boostrap labels (eg label-campus)
+
+*/
+
+// 1. Pickers
+// -------------------------
+
+.picker {
+    position: relative;
+
+    .scroll-container-picker { 
+        width: 360px; 
+
+        .viewport { 
+            width: 340px;  
+            height: 190px;
+        }
+
+        .scrollbar {
+            margin-top: 10px;
+        }
+    }
+
+    .picker-actions {
+        background-color: @accent-light-color;
+        padding: 10px;
+        border-top: 1px solid @accent-color;
+        border-radius: 0 0 @border-radius-base @border-radius-base;
+        margin-bottom: -5px;
+    }
+}
+
+#dialog .scroll-container-picker 
+{
+    width: 360px;
+
+    .viewport {
+        width: 340px;  
+        height: 190px;
+    }
+}
+
+
+// 2. Banner
+// -------------------------
+
+.banner
+{
+    color: @banner-text-color;
+    background-color: @banner-bg;
+    border-radius: @banner-border-radius;
+    border: @banner-border-size solid @banner-border-color;
+    font-weight: @banner-font-weight;
+    font-size: @banner-font-size;
+    padding: @banner-padding;
+    margin: 0 0 12px;
+    .clearfix;
+
+    h1 {
+        float: left;
+        margin: 0;
+        font-weight: @banner-font-weight;
+
+        .first-word {
+            font-weight: @banner-firstword-weight;
+        }
+    }
+
+    .label {
+        float: right;
+        margin-top: 16px;
+        margin-left: 6px;
+    }
+}
+
+
+// 3. Treeview
+// -------------------------
+
+.treeview {
+	margin-bottom: 20px;
+}
+
+.treeview-actions {
+	padding-right: 12px;
+	margin-bottom: 12px;
+}
+
+#treeview-content { /* TODO this will need to be a class, but the javascript needs to be modified. */
+	clear: both;
+	overflow: hidden;
+}
+
+/*
+.k-treeview span.k-in,
+.k-treeview .k-in.k-state-hover, 
+.k-treeview .k-in.k-state-selected, 
+.k-treeview .k-in.k-state-focused
+{
+     padding: 2px 10px;
+}
+
+.k-state-selected,
+.k-state-selected.k-state-focused, 
+.k-state-selected.k-state-highlight { 
+	background-color: @accent-bold-color;
+	border: 1px solid transparent;
+	color: @accent-bold-text-color;
+	box-shadow: none !important;
+}
+
+.k-state-hover {
+
+	border: 1px solid transparent;
+	color: #000 !important;
+	background: #b8b9b9 !important; 
+	background: -moz-linear-gradient(top, #b8b9b9 0%, #b8b9b9 100%) !important;
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#b8b9b9), color-stop(100%,#b8b9b9)) !important;
+	background: -webkit-linear-gradient(top, #b8b9b9 0%,#b8b9b9 100%) !important;
+	background: -o-linear-gradient(top, #b8b9b9 0%,#b8b9b9 100%) !important;
+	background: -ms-linear-gradient(top, #b8b9b9 0%,#b8b9b9 100%) !important;
+	background: linear-gradient(to bottom, #b8b9b9 0%,#b8b9b9 100%) !important;
+    background-color: @accent-light-color;
+}
+
+.k-state-hover {
+	background-color: @rockHoverBackgroundColor !important;
+}
+
+    */
+
+// 4. Widget TODO delete as BS3 Panel will replace
+// -------------------------
+
+.widget {
+    background-color: @body-bg;
+    border: 1px solid darken(@accent-light-color, @const-border-darken-amt);
+    border-radius: @border-radius-base;
+    margin-bottom: 2em;
+
+    h3 {
+        font-size: 15px;  
+        line-height: 15px;
+        margin: 0 0 6px 0;
+    }
+
+    header {
+        background-color: @widget-header-bg;
+        color: @widget-header-text-color;
+        padding: 6px 15px;
+        border-radius: @border-radius-base @border-radius-base 0 0 ;
+    }
+}
+
+.filter-toogle > span {
+    vertical-align: 20%;
+}
+
+.widget.widget-dark > header
+{
+	background-color: @widget-header-bg-dark;
+    color: @widget-header-text-color-dark;
+}
+
+
+.widget-content
+{
+    padding: 20px 15px 15px;
+}
+
+// 5. Tooltip
+// -------------------------
+
+.tooltipster-default {
+	border-radius: 5px; 
+	border: 2px solid #000;
+	background: #4c4c4c;
+	color: #fff;
+}
+
+.tooltipster-default .tooltipster-content {
+	font-family: Arial, sans-serif;
+	font-size: 14px;
+	line-height: 16px;
+	padding: 8px 10px;
+	overflow: hidden;
+}
+
+.tooltipster-base {
+	border-radius: @border-radius-base; 
+	border: 1px solid #cccccc;
+	background: @tooltip-bg;
+	color:  @text-color;
+    padding: 0;
+	font-size: 0;
+	line-height: 0;
+	position: absolute;
+	z-index: 9999999;
+	pointer-events: none;
+	width: auto;
+	overflow: visible;
+}
+
+.tooltipster-base .tooltipster-content {
+	overflow: hidden;
+}
+
+
+// styles for carrot
+.tooltipster-arrow {
+	display: block;
+	text-align: center;
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: -1;
+}
+.tooltipster-arrow span, .tooltipster-arrow-border {
+	display: block;
+	width: 0; 
+	height: 0;
+	position: absolute;
+}
+.tooltipster-arrow-top span, .tooltipster-arrow-top-right span, .tooltipster-arrow-top-left span {
+	border-left: 8px solid transparent !important;
+	border-right: 8px solid transparent !important;
+	border-top: 8px solid;
+	bottom: -8px;
+}
+.tooltipster-arrow-top .tooltipster-arrow-border, .tooltipster-arrow-top-right .tooltipster-arrow-border, .tooltipster-arrow-top-left .tooltipster-arrow-border {
+	border-left: 9px solid transparent !important;
+	border-right: 9px solid transparent !important;
+	border-top: 9px solid;
+	bottom: -8px;
+}
+
+.tooltipster-arrow-bottom span, .tooltipster-arrow-bottom-right span, .tooltipster-arrow-bottom-left span {
+	border-left: 8px solid transparent !important;
+	border-right: 8px solid transparent !important;
+	border-bottom: 8px solid;
+	top: -8px;
+}
+.tooltipster-arrow-bottom .tooltipster-arrow-border, .tooltipster-arrow-bottom-right .tooltipster-arrow-border, .tooltipster-arrow-bottom-left .tooltipster-arrow-border {
+	border-left: 9px solid transparent !important;
+	border-right: 9px solid transparent !important;
+	border-bottom: 9px solid;
+	top: -8px;
+}
+.tooltipster-arrow-top span, .tooltipster-arrow-top .tooltipster-arrow-border, .tooltipster-arrow-bottom span, .tooltipster-arrow-bottom .tooltipster-arrow-border {
+	left: 0;
+	right: 0;
+	margin: 0 auto;
+}
+.tooltipster-arrow-top-left span, .tooltipster-arrow-bottom-left span {
+	left: 6px;
+}
+.tooltipster-arrow-top-left .tooltipster-arrow-border, .tooltipster-arrow-bottom-left .tooltipster-arrow-border {
+	left: 5px;
+}
+.tooltipster-arrow-top-right span,  .tooltipster-arrow-bottom-right span {
+	right: 6px;
+}
+.tooltipster-arrow-top-right .tooltipster-arrow-border, .tooltipster-arrow-bottom-right .tooltipster-arrow-border {
+	right: 5px;
+}
+.tooltipster-arrow-left span, .tooltipster-arrow-left .tooltipster-arrow-border {
+	border-top: 8px solid transparent !important;
+	border-bottom: 8px solid transparent !important; 
+	border-left: 8px solid;
+	top: 50%;
+	margin-top: -7px;
+	right: -8px;
+}
+.tooltipster-arrow-left .tooltipster-arrow-border {
+	border-top: 9px solid transparent !important;
+	border-bottom: 9px solid transparent !important; 
+	border-left: 9px solid;
+	margin-top: -8px;
+}
+.tooltipster-arrow-right span, .tooltipster-arrow-right .tooltipster-arrow-border {
+	border-top: 8px solid transparent !important;
+	border-bottom: 8px solid transparent !important; 
+	border-right: 8px solid;
+	top: 50%;
+	margin-top: -7px;
+	left: -8px;
+}
+.tooltipster-arrow-right .tooltipster-arrow-border {
+	border-top: 9px solid transparent !important;
+	border-bottom: 9px solid transparent !important; 
+	border-right: 9px solid;
+	margin-top: -8px;
+}
+
+// annimations
+.tooltipster-fade {
+	opacity: 0;
+	-webkit-transition-property: opacity;
+	-moz-transition-property: opacity;
+	-o-transition-property: opacity;
+	-ms-transition-property: opacity;
+	transition-property: opacity;
+}
+.tooltipster-fade-show {
+	opacity: 1;
+}
+
+.tooltipster-grow {
+	-webkit-transform: scale(0,0);
+	-moz-transform: scale(0,0);
+	-o-transform: scale(0,0);
+	-ms-transform: scale(0,0);
+	transform: scale(0,0);
+	-webkit-transition-property: -webkit-transform;
+	-moz-transition-property: -moz-transform;
+	-o-transition-property: -o-transform;
+	-ms-transition-property: -ms-transform;
+	transition-property: transform;
+	-webkit-backface-visibility: hidden;
+}
+.tooltipster-grow-show {
+	-webkit-transform: scale(1,1);
+	-moz-transform: scale(1,1);
+	-o-transform: scale(1,1);
+	-ms-transform: scale(1,1);
+	transform: scale(1,1);
+	-webkit-transition-timing-function: cubic-bezier(0.175, 0.885, 0.320, 1);
+	-webkit-transition-timing-function: cubic-bezier(0.175, 0.885, 0.320, 1.15); 
+	-moz-transition-timing-function: cubic-bezier(0.175, 0.885, 0.320, 1.15); 
+	-ms-transition-timing-function: cubic-bezier(0.175, 0.885, 0.320, 1.15); 
+	-o-transition-timing-function: cubic-bezier(0.175, 0.885, 0.320, 1.15); 
+	transition-timing-function: cubic-bezier(0.175, 0.885, 0.320, 1.15);
+}
+
+.tooltipster-swing {
+	opacity: 0;
+	-webkit-transform: rotateZ(4deg);
+	-moz-transform: rotateZ(4deg);
+	-o-transform: rotateZ(4deg);
+	-ms-transform: rotateZ(4deg);
+	transform: rotateZ(4deg);
+	-webkit-transition-property: -webkit-transform, opacity;
+	-moz-transition-property: -moz-transform;
+	-o-transition-property: -o-transform;
+	-ms-transition-property: -ms-transform;
+	transition-property: transform;
+}
+.tooltipster-swing-show {
+	opacity: 1;
+	-webkit-transform: rotateZ(0deg);
+	-moz-transform: rotateZ(0deg);
+	-o-transform: rotateZ(0deg);
+	-ms-transform: rotateZ(0deg);
+	transform: rotateZ(0deg);
+	-webkit-transition-timing-function: cubic-bezier(0.230, 0.635, 0.495, 1);
+	-webkit-transition-timing-function: cubic-bezier(0.230, 0.635, 0.495, 2.4); 
+	-moz-transition-timing-function: cubic-bezier(0.230, 0.635, 0.495, 2.4); 
+	-ms-transition-timing-function: cubic-bezier(0.230, 0.635, 0.495, 2.4); 
+	-o-transition-timing-function: cubic-bezier(0.230, 0.635, 0.495, 2.4); 
+	transition-timing-function: cubic-bezier(0.230, 0.635, 0.495, 2.4);
+}
+
+.tooltipster-fall {
+	top: 0;
+	-webkit-transition-property: top;
+	-moz-transition-property: top;
+	-o-transition-property: top;
+	-ms-transition-property: top;
+	transition-property: top;
+	-webkit-transition-timing-function: cubic-bezier(0.175, 0.885, 0.320, 1);
+	-webkit-transition-timing-function: cubic-bezier(0.175, 0.885, 0.320, 1.15); 
+	-moz-transition-timing-function: cubic-bezier(0.175, 0.885, 0.320, 1.15); 
+	-ms-transition-timing-function: cubic-bezier(0.175, 0.885, 0.320, 1.15); 
+	-o-transition-timing-function: cubic-bezier(0.175, 0.885, 0.320, 1.15); 
+	transition-timing-function: cubic-bezier(0.175, 0.885, 0.320, 1.15); 
+}
+.tooltipster-fall-show {
+}
+.tooltipster-fall.tooltipster-dying {
+	-webkit-transition-property: all;
+	-moz-transition-property: all;
+	-o-transition-property: all;
+	-ms-transition-property: all;
+	transition-property: all;
+	top: 0px !important;
+	opacity: 0;
+}
+
+.tooltipster-slide {
+	left: -40px;
+	-webkit-transition-property: left;
+	-moz-transition-property: left;
+	-o-transition-property: left;
+	-ms-transition-property: left;
+	transition-property: left;
+	-webkit-transition-timing-function: cubic-bezier(0.175, 0.885, 0.320, 1);
+	-webkit-transition-timing-function: cubic-bezier(0.175, 0.885, 0.320, 1.15); 
+	-moz-transition-timing-function: cubic-bezier(0.175, 0.885, 0.320, 1.15); 
+	-ms-transition-timing-function: cubic-bezier(0.175, 0.885, 0.320, 1.15); 
+	-o-transition-timing-function: cubic-bezier(0.175, 0.885, 0.320, 1.15); 
+	transition-timing-function: cubic-bezier(0.175, 0.885, 0.320, 1.15);
+}
+.tooltipster-slide.tooltipster-slide-show {
+}
+.tooltipster-slide.tooltipster-dying {
+	-webkit-transition-property: all;
+	-moz-transition-property: all;
+	-o-transition-property: all;
+	-ms-transition-property: all;
+	transition-property: all;
+	left: 0px !important;
+	opacity: 0;
+}
+
+.tooltipster-content-changing {
+	opacity: 0.5;
+	-webkit-transform: scale(1.1, 1.1);
+	-moz-transform: scale(1.1, 1.1);
+	-o-transform: scale(1.1, 1.1);
+	-ms-transform: scale(1.1, 1.1);
+	transform: scale(1.1, 1.1);
+}
+
+.tooltipster-content header img,
+.tooltipster-content header div
+{
+    float: left;
+}
+
+.tooltipster-content header div
+{
+    margin: 4px 0 0 8px;
+    font-weight: @font-weight-semibold;
+}
+
+.tooltipster-content header small
+{
+    display: block;
+    font-weight: normal;
+    font-family: @font-weight-light;
+}
+
+.tooltipster-content header:after
+{
+    content: ".";
+    display: block;
+    height: 0;
+    clear: both;
+    visibility: hidden;
+}
+
+.tooltipster-content header
+{
+    background-color: @tooltip-header-bg;
+    margin: -8px -10px 8px -10px;
+    padding: 8px 10px;
+    border-radius: @border-radius-base; 
+    color: @tooltip-header-text-color;
+}
+
+.tooltipster-content strong
+{
+    font-weight: @font-weight-semibold;
+    font-weight: normal;
+}
+
+
+// 6. Pagelist
+// -------------------------
+
+.page-list-as-blocks {
+    
+    h3 {
+        margin-top: 0;
+        font-size: 14px;
+        margin: 6px 0;
+    }
+    
+    ul {
+        list-style: none;
+
+        li {
+            background-color: @pagelist-bg;
+            border-radius: @border-radius-base;
+            border: 1px solid #bbb;
+            float: left;
+            margin: 0 2% 12px 2%;
+            width: 20%;
+            overflow: hidden;
+            color: @pagelist-text-color;
+            text-align: center;
+            height: 80px;
+
+            a {
+                display: block;
+                color: inherit;
+                height: 65px;
+                padding: 12px;
+            }
+        }
+    }
+}
+
+// 7. Tags
+// ------------------------
+
+div.tagsinput  
+{ 
+    width:100%; 
+    overflow-y: auto;
+    float: left;
+    margin-left: 12px;
+}
+
+div.tagsinput span.tag 
+{
+	float: left;
+	height: 18px;
+	line-height: 18px;
+	position: relative;
+	font-size: 11px;
+	margin-bottom: 6px;
+    margin-left: 20px;
+	padding: 0 10px 0 12px;
+	background: @tag-bg;
+	color: @tag-text-color;
+	text-decoration: none;	
+	border-bottom-right-radius: @tag-border-radius;
+	border-top-right-radius: @tag-border-radius;
+
+    &:before {       /* tag point */
+	    content: "";
+	    float: left;
+	    position: absolute;
+	    top: 0;
+	    left: -9px;
+	    width: 0;
+	    height: 0;
+	    border-color: transparent @tag-bg transparent transparent;
+	    border-style: solid;
+	    border-width: 9px 9px 9px 0;		
+    }
+
+    &:after {         /* tag dot */
+	    content: "";
+	    position: absolute;
+	    top: 7px;
+	    left: 0;
+	    float: left;
+	    width: 4px;
+	    height: 4px;
+	    border-radius: 2px;
+	    background: @tag-dot-color;
+	    box-shadow: -1px -1px 2px @tag-bg;
+    }
+}
+
+div.tagsinput span.tag.personal 
+{
+    background: @tag-bg-alt;
+}
+
+div.tagsinput span.tag.personal:before
+{
+    border-color: transparent @tag-bg-alt transparent transparent;
+}
+
+div.tagsinput span.tag a 
+{ 
+    font-weight: bold; 
+    color: @tag-text-color; 
+    text-decoration:none; 
+    font-size: 11px;
+    opacity: 0;
+    -moz-transition: opacity 0.3s ease 0s, color 0.3s ease 0s, background 0.3s ease 0s;
+    -webkit-transition: opacity 0.3s ease 0s, color 0.3s ease 0s, background 0.3s ease 0s; 
+}
+
+div.tagsinput span.tag:hover a 
+{ 
+    opacity: 1;
+}
+
+div.tagsinput input 
+{ 
+    width:80px; 
+    margin:0px; 
+    font-family: helvetica; 
+    font-size: 13px; 
+    border:1px solid transparent; 
+    padding: 0px; 
+    background: transparent; 
+    color: #8f8f8f !important; /* needed as script adds element value */ 
+    outline: 0px; 
+    box-shadow: none;
+    margin: -2px 0 0 10px;
+}
+
+div.tagsinput div 
+{ 
+    display:block; 
+    float: left; 
+}
+
+.tags_clear 
+{ 
+    clear: both; 
+    width: 100%; 
+    height: 0px; 
+}
+
+.not_valid 
+{
+    background: #FBD8DB !important; 
+    color: #90111A !important;
+}
+
+.tag-wrap .ui-autocomplete 
+{
+    position: absolute; 
+    left: 0px; 
+    top: 4px; 
+    width: 250px;
+    z-index: 90;
+    list-style: none;
+    padding: 12px;
+    background-color: #7c7c7c; /* todo */
+    color: #fff;
+    border: 1px solid #515151; /* todo */
+    width: 300px;
+    border-radius: 4px;
+    opacity: .9;
+    z-index: 9999 !important;
+}
+
+.ui-autocomplete li 
+{
+    margin-bottom: 4px;   
+}
+
+.ui-autocomplete li:last-child 
+{
+    margin-bottom: 0;   
+}
+
+.ui-autocomplete a
+{
+    color: #fff; /* todo */
+    text-decoration: none;
+    cursor: pointer;
+    padding: 4px;
+}
+
+.ui-autocomplete a:hover
+{
+    background: #bbb; /* todo */
+    border-radius: 4px;
+}
+ 
+// 8. Switch
+// ------------------------
+
+.switch {
+  display: inline-block;
+  cursor: pointer;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -ms-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
+  border: 1px solid;
+  border-color: rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.1) rgba(0, 0, 0, 0.25);
+  background: #e6e6e6;
+  position: relative;
+  text-align: left;
+  overflow: hidden;
+  line-height: 8px;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  min-width: 100px;
+}
+
+.switch.switch-mini {
+  min-width: 70px;
+}
+
+.switch.switch-small {
+  min-width: 80px;
+}
+
+.switch.switch-large {
+  min-width: 120px;
+}
+
+.switch.deactivate {
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=50);
+  opacity: 0.5;
+  cursor: default !important;
+}
+
+.switch.deactivate label, .switch.deactivate span {
+  cursor: default !important;
+}
+
+.switch > div {
+  display: inline-block;
+  width: 150%;
+  position: relative;
+  top: 0;
+}
+
+.switch > div.switch-animate {
+  -webkit-transition: left 0.5s;
+  -moz-transition: left 0.5s;
+  -o-transition: left 0.5s;
+  transition: left 0.5s;
+}
+
+.switch > div.switch-off {
+  left: -49.5%;
+}
+
+.switch > div.switch-on {
+  left: 0%;
+}
+
+.switch input[type=checkbox] {
+  display: none;
+}
+
+.switch span, .switch label {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+  height: 100%;
+  padding-bottom: 4px;
+  padding-top: 4px;
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.switch span.switch-mini, .switch label.switch-mini {
+  padding-bottom: 4px;
+  padding-top: 4px;
+  font-size: 10px;
+  line-height: 9px;
+}
+
+.switch span.switch-small, .switch label.switch-small {
+  padding-bottom: 3px;
+  padding-top: 3px;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.switch span.switch-large, .switch label.switch-large {
+  padding-bottom: 9px;
+  padding-top: 9px;
+  font-size: 16px;
+  line-height: normal;
+}
+
+.switch label {
+  background: white;
+  margin-top: -1px;
+  margin-bottom: -1px;
+  z-index: 100;
+  width: 34%;
+  border-left: 1px solid #e6e6e6;
+  border-right: 1px solid #e6e6e6;
+  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #ffffff), color-stop(100%, #e6e6e6));
+  background-image: -webkit-linear-gradient(top, #ffffff, #e6e6e6);
+  background-image: -moz-linear-gradient(top, #ffffff, #e6e6e6);
+  background-image: -o-linear-gradient(top, #ffffff, #e6e6e6);
+  background-image: linear-gradient(top, #ffffff, #e6e6e6);
+}
+
+.switch span {
+  color: white;
+  text-align: center;
+  z-index: 1;
+  width: 33%;
+}
+
+.switch span.switch-left {
+  -moz-border-radius-topleft: 4px;
+  -webkit-border-top-left-radius: 4px;
+  border-top-left-radius: 4px;
+  -moz-border-radius-bottomleft: 4px;
+  -webkit-border-bottom-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+
+.switch span.switch-right {
+  color: black;
+  -moz-border-radius-topright: 4px;
+  -webkit-border-top-right-radius: 4px;
+  border-top-right-radius: 4px;
+  -moz-border-radius-bottomright: 4px;
+  -webkit-border-bottom-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+  background-image: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, #ffffff), color-stop(100%, #e6e6e6));
+  background-image: -webkit-linear-gradient(bottom, #ffffff, #e6e6e6);
+  background-image: -moz-linear-gradient(bottom, #ffffff, #e6e6e6);
+  background-image: -o-linear-gradient(bottom, #ffffff, #e6e6e6);
+  background-image: linear-gradient(bottom, #ffffff, #e6e6e6);
+}
+
+.switch span.switch-primary, .switch span.switch-left {
+    color: white;
+    background: #0088cc;
+    background-image: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, #0088cc), color-stop(100%, #0055cc));
+    background-image: -webkit-linear-gradient(bottom, #0088cc, #0055cc);
+    background-image: -moz-linear-gradient(bottom, #0088cc, #0055cc);
+    background-image: -o-linear-gradient(bottom, #0088cc, #0055cc);
+    background-image: linear-gradient(bottom, #0088cc, #0055cc);
+}
+
+.switch span.switch-info {
+  color: white;
+  background: #5bc0de;
+  background-image: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, #5bc0de), color-stop(100%, #2f96b4));
+  background-image: -webkit-linear-gradient(bottom, #5bc0de, #2f96b4);
+  background-image: -moz-linear-gradient(bottom, #5bc0de, #2f96b4);
+  background-image: -o-linear-gradient(bottom, #5bc0de, #2f96b4);
+  background-image: linear-gradient(bottom, #5bc0de, #2f96b4);
+}
+
+.switch span.switch-success {
+  color: white;
+  background: #62c462;
+  background-image: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, #62c462), color-stop(100%, #51a351));
+  background-image: -webkit-linear-gradient(bottom, #62c462, #51a351);
+  background-image: -moz-linear-gradient(bottom, #62c462, #51a351);
+  background-image: -o-linear-gradient(bottom, #62c462, #51a351);
+  background-image: linear-gradient(bottom, #62c462, #51a351);
+}
+
+.switch span.switch-warning {
+  color: white;
+  background: #dbb450;
+  background-image: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, #dbb450), color-stop(100%, #f89406));
+  background-image: -webkit-linear-gradient(bottom, #dbb450, #f89406);
+  background-image: -moz-linear-gradient(bottom, #dbb450, #f89406);
+  background-image: -o-linear-gradient(bottom, #dbb450, #f89406);
+  background-image: linear-gradient(bottom, #dbb450, #f89406);
+}
+
+.switch span.switch-danger {
+  color: white;
+  background: #ee5f5b;
+  background-image: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, #ee5f5b), color-stop(100%, #bd362f));
+  background-image: -webkit-linear-gradient(bottom, #ee5f5b, #bd362f);
+  background-image: -moz-linear-gradient(bottom, #ee5f5b, #bd362f);
+  background-image: -o-linear-gradient(bottom, #ee5f5b, #bd362f);
+  background-image: linear-gradient(bottom, #ee5f5b, #bd362f);
+}
+
+
+// 9. Smart Search
+// ------------------------
+
+.smartsearch {
+	width: 290px;
+	margin-top: 6px;
+	font-size: 11px;
+	height: 16px;
+	font-size: 12px;
+	background-color: @smartsearch-bg;
+	border: 1px solid @smartsearch-border-color;
+    height: 26px;
+    border-radius: 15px;
+    padding: 0 6px;
+
+    &:focus {
+        border-color: #595959;
+    }
+
+    input {
+	    border: 0;
+	    background: transparent;
+	    color: @smartsearch-input-text-color;
+	    border-radius: 0;
+	    width: 150px;
+        margin: 2px 0 0 6px;
+
+        &:focus {
+            box-shadow: 0 0 0 0;
+        }
+    }
+    .dropdown-menu {
+        font-size: 11px;
+        right: 0;
+        left: auto;
+    }
+
+    .dropdown-toggle span {
+        padding-right: 4px;
+    }
+}
+
+.smartsearch input:-moz-placeholder {
+    color: darken(@smartsearch-input-text-color, 25%); 
+}
+
+
+.smartsearch input::-webkit-input-placeholder {
+    color: darken(@smartsearch-input-text-color, 25%); 
+}
+
+.smartsearch .nav > li > a {
+	padding: 4px 15px;
+}
+
+.smartsearch input::selection {
+	background: @smartsearch-input-selection-background; /* Safari */
+	color: @smartsearch-input-selection-text-color;
+}
+
+.smartsearch input::-moz-selection {
+	background: @smartsearch-input-selection-background; /* Firefox */
+	color: @smartsearch-input-selection-text-color;
+}
+
+// 10. Titles
+// ------------------------
+.title {
+    font-weight: @title-default-weight;
+}
+
+.title .first-word {
+    font-weight: @title-firstword-weight;
+}
+
+// 11. Notifications
+// -------------------------
+
+.alert-info h4:before {
+    content: "\f05a";
+    font-family: FontAwesome;
+}
+
+// 12. Labels
+// -------------------------
+
+.label-campus {
+    background-color: @label-campus;
+}
+
+.label-type {
+    background-color: @label-type;
+}
+
