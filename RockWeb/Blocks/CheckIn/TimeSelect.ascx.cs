@@ -56,7 +56,7 @@ namespace RockWeb.Blocks.CheckIn
                                                 schedule.Selected = true;
                                             }
 
-                                            ProcessSelection();
+                                            ProcessSelection( maWarning );
                                         }
                                         else
                                         {
@@ -142,7 +142,7 @@ namespace RockWeb.Blocks.CheckIn
                                         }
                                     }
 
-                                    ProcessSelection();
+                                    ProcessSelection( maWarning );
                                 }
                             }
                         }
@@ -160,47 +160,5 @@ namespace RockWeb.Blocks.CheckIn
         {
             CancelCheckin();
         }
-
-        private void GoBack()
-        {
-            foreach ( var family in CurrentCheckInState.CheckIn.Families )
-            {
-                foreach( var person in family.People)
-                {
-                    foreach ( var groupType in person.GroupTypes )
-                    {
-                        foreach ( var group in groupType.Groups )
-                        {
-                            foreach ( var location in group.Locations )
-                            {
-                                location.Selected = false;
-                                location.Schedules = new List<CheckInSchedule>();
-                            }
-                        }
-                    }
-                }
-            }
-
-            SaveState();
-
-            NavigateToPreviousPage();
-        }
-
-        private void ProcessSelection()
-        {
-            var errors = new List<string>();
-            if ( ProcessActivity( "Save Attendance", out errors ) )
-            {
-                SaveState();
-                NavigateToNextPage();
-            }
-            else
-            {
-                string errorMsg = "<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
-                maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
-            }
-        }
-
-
     }
 }

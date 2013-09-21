@@ -67,16 +67,26 @@ namespace Rock.Field.Types
 
             if ( ppPage != null )
             {
-                Guid pageGuid = Guid.Empty;
-                int? pageId = ppPage.ItemId.AsInteger();
+                //// Value is in format "Page.Guid,PageRoute.Guid"
+                //// If only a Page is specified, this is just a reference to a page without a special route
 
-                var page = new PageService().Get( pageId ?? 0 );
-                if ( page != null )
+                if ( ppPage.IsPageRoute )
                 {
-                    pageGuid = page.Guid;
+                    int? pageRouteId = ppPage.PageRouteId;
+                    var pageRoute = new PageRouteService().Get( ppPage.PageRouteId ?? 0);
+                    if ( pageRoute != null )
+                    {
+                        result = string.Format( "{0},{1}", pageRoute.Page.Guid, pageRoute.Guid );
+                    }
                 }
-
-                result = pageGuid.ToString();
+                else
+                {
+                    var page = new PageService().Get( ppPage.PageId ?? 0 );
+                    if ( page != null )
+                    {
+                        result = page.Guid.ToString();
+                    }
+                }
             }
 
             return result;
@@ -95,11 +105,37 @@ namespace Rock.Field.Types
 	            PagePicker ppPage = control as PagePicker;
     	        if ( ppPage != null )
         	    {
-            	    Guid pageGuid = Guid.Empty;
-                	Guid.TryParse(value, out pageGuid);
+                    string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
 
-	                var page = new PageService().Get( pageGuid );
-    	            ppPage.SetValue( page );
+                    Page page = null;
+                    PageRoute pageRoute = null;
+
+                    //// Value is in format "Page.Guid,PageRoute.Guid"
+                    //// If only the Page.Guid is specified this is just a reference to a page without a special route
+                    //// In case the PageRoute record can't be found from PageRoute.Guid (maybe the pageroute was deleted), fall back to the Page without a PageRoute
+
+                    if ( valuePair.Length == 2 )
+                    {
+                        Guid pageRouteGuid;
+                        Guid.TryParse( valuePair[1], out pageRouteGuid );
+                        pageRoute = new PageRouteService().Get( pageRouteGuid );
+                    }
+
+                    if ( pageRoute != null )
+                    {
+                        ppPage.SetValue( pageRoute );
+                    }
+                    else
+                    {
+                        if ( valuePair.Length > 0 )
+                        {
+                            Guid pageGuid;
+                            Guid.TryParse( valuePair[0], out pageGuid );
+                            page = new PageService().Get( pageGuid );
+                        }
+
+                        ppPage.SetValue( page );
+                    }
         	    }
         	}
         }

@@ -16,8 +16,11 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Group POCO Entity.
+    /// Represents A collection of <see cref="Rock.Model.Person"/> entities. This can be a family, small group, Bible study, security group,  etc. Groups can be hierarchical.
     /// </summary>
+    /// <remarks>
+    /// In RockChMS any collection or defined subset of people are considered a group.
+    /// </remarks>
     [Table( "Group" )]
     [DataContract]
     public partial class Group : Model<Group>
@@ -26,48 +29,49 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the System.
+        /// Gets or sets a flag indicating if this Group is a part of the RockChMS core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// System.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this Group is part of the RockChMS core system/framework; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Parent Group Id.
+        /// Gets or sets the Id of the Group's Parent Group.
         /// </summary>
         /// <value>
-        /// Parent Group Id.
+        /// An <see cref="System.Int32"/> representing the Id of the Group's Parent Group.
         /// </value>
         [DataMember]
         public int? ParentGroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Group Type Id.
+        /// Gets or sets the Id of the <see cref="Rock.Model.GroupType"/> that this Group is a member belongs to. This property is required.
         /// </summary>
         /// <value>
-        /// Group Type Id.
+        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.ModelGroupType"/> that this group is a member of.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int GroupTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Campus Id.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Campus"/> that this Group is associated with.
         /// </summary>
         /// <value>
-        /// Campus Id.
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Campus"/> that the Group is associated with. If the group is not 
+        /// associated with a campus, this value is null.
         /// </value>
         [DataMember]
         public int? CampusId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the Name of the Group. This property is required.
         /// </summary>
         /// <value>
-        /// Name.
+        /// A <see cref="System.String"/> representing the name of the Group. 
         /// </value>
         [Required]
         [MaxLength( 100 )]
@@ -75,39 +79,40 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the optional description of the group.
         /// </summary>
         /// <value>
-        /// Description.
+        /// A <see cref="System.String"/> representing the description of the group.
         /// </value>
         [DataMember]
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the Is Security Role.
+        /// Gets or sets a flag indicating if this Group is a Security Role. This value is required.
         /// </summary>
         /// <value>
-        /// Is Security Role.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this Group is a security role, otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSecurityRole { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is active.
+        /// Gets or sets a flag indicating if this is an active group. This value is required.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this group is active, otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsActive { get; set; }
 
         /// <summary>
-        /// Gets or sets the order.
+        /// Gets or sets the display order of the group in the group list and group hierarchy. The lower the number the higher the 
+        /// display priority this group has. This property is required.
         /// </summary>
         /// <value>
-        /// The order.
+        /// A <see cref="System.Int32"/> representing the display order of the group.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
@@ -118,36 +123,36 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the Parent Group.
+        /// Gets or sets this parent Group of this Group.
         /// </summary>
         /// <value>
-        /// A <see cref="Group"/> object.
+        /// A <see cref="Rock.Model.Group"/> representing the Group's parent group. If this Group does not have a parent, the value will be null.
         /// </value>
         public virtual Group ParentGroup { get; set; }
 
         /// <summary>
-        /// Gets or sets the Group Type.
+        /// Gets or sets the <see cref="Rock.Model.GroupType"/> that this Group is a member of.
         /// </summary>
         /// <value>
-        /// A <see cref="GroupType"/> object.
+        /// The <see cref="Rock.Model.GroupType"/> that this Group is a member of.
         /// </value>
         [DataMember]
         public virtual GroupType GroupType { get; set; }
 
         /// <summary>
-        /// Gets or sets the Campus.
+        /// Gets or sets the <see cref="Rock.Model.Campus"/> that this Group is associated with.
         /// </summary>
         /// <value>
-        /// A <see cref="Rock.Model.Campus"/> object.
+        /// The <see cref="Rock.Model.Campus"/> that this Group is associated with.
         /// </value>
         [DataMember]
         public virtual Rock.Model.Campus Campus { get; set; }
 
         /// <summary>
-        /// Gets or sets the Groups.
+        /// Gets or sets a collection the Groups that are children of this group.
         /// </summary>
         /// <value>
-        /// Collection of Groups.
+        /// A collection of Groups that are children of this group.
         /// </value>
         [DataMember]
         public virtual ICollection<Group> Groups
@@ -158,10 +163,10 @@ namespace Rock.Model
         private ICollection<Group> _groups;
 
         /// <summary>
-        /// Gets or sets the Members.
+        /// Gets or sets a collection containing the <see cref="Rock.Model.GroupMember">GroupMembers</see> who are associated with the Group.
         /// </summary>
         /// <value>
-        /// Collection of Members.
+        /// A collection of <see cref="Rock.Model.GroupMember">GroupMembers</see> who are associated with the Group.
         /// </value>
         [DataMember]
         public virtual ICollection<GroupMember> Members
@@ -172,10 +177,10 @@ namespace Rock.Model
         private ICollection<GroupMember> _members;
 
         /// <summary>
-        /// Gets or sets the group locations.
+        /// Gets or Sets the <see cref="Rock.Model.GroupLocation">GroupLocations</see> that are associated with the Group.
         /// </summary>
         /// <value>
-        /// The group locations.
+        /// The <see cref="Rock.Model.GroupLocation">GroupLocations</see> that are associated with the Group.
         /// </value>
         [DataMember]
         public virtual ICollection<GroupLocation> GroupLocations
@@ -186,10 +191,12 @@ namespace Rock.Model
         private ICollection<GroupLocation> _groupLocations;
 
         /// <summary>
-        /// Gets the parent authority.
+        /// Gets the securable object that security permissions should be inherited from.  If block is located on a page
+        /// security will be inherited from the page, otherwise it will be inherited from the site.
         /// </summary>
         /// <value>
-        /// The parent authority.
+        /// The parent authority. If the block is located on the page, security will be
+        /// inherited from the page, otherwise it will be inherited from the site.
         /// </value>
         public override Security.ISecured ParentAuthority
         {
@@ -211,10 +218,10 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Returns a <see cref="System.String" /> containing the Name of the Group that represents this instance.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
+        /// A <see cref="System.String" /> containing the Name of the Group that represents this instance.
         /// </returns>
         public override string ToString()
         {
@@ -248,8 +255,10 @@ namespace Rock.Model
     #region Custom Exceptions
 
     /// <summary>
-    /// 
-    /// </summary>
+    /// Represents a circular reference exception. This occurs when a group is set as a parent of a group that is higher in the group hierarchy. 
+    /// <remarks>
+    ///  An example of this is when a child group is set as the parent of it's parent group.
+    /// </remarks>
     public class GroupParentCircularReferenceException : Exception
     {
         /// <summary>

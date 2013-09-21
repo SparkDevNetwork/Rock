@@ -46,7 +46,7 @@ namespace Rock.Workflow.Action.CheckIn
             var family = checkInState.CheckIn.Families.FirstOrDefault( f => f.Selected );
             if ( family != null )
             {
-                foreach ( var person in family.People.Where( p => p.Selected && p.Person.LastName.Length > 0 ) )
+                foreach ( var person in family.People.Where( p => p.Selected ) )
                 {
                     bool isSNPerson = bool.Parse( person.Person.GetAttributeValue( "IsSpecialNeeds" ) ?? "false" );
                     foreach ( var groupType in person.GroupTypes.Where( g => g.Selected ).ToList() )

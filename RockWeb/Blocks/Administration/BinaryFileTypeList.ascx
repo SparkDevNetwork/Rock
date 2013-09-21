@@ -10,6 +10,7 @@
                 <asp:BoundField DataField="StorageEntityType" HeaderText="Storage Type" SortExpression="StorageEntityType" />
                 <asp:BoundField DataField="BinaryFileCount" HeaderText="File Count" SortExpression="BinaryFileCount" />
                 <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
+                <Rock:BoolField DataField="AllowCaching" HeaderText="Allows Caching" SortExpression="AllowCaching" />
                 <Rock:DeleteField OnClick="gBinaryFileType_Delete" />
             </Columns>
         </Rock:Grid>

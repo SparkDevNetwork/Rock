@@ -6,7 +6,6 @@
 
 using System;
 using System.Linq;
-using System.Web.UI;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -19,7 +18,7 @@ namespace RockWeb.Blocks.Administration
     /// <summary>
     /// 
     /// </summary>
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     public partial class BinaryFileTypeList : RockBlock
     {
         #region Control Methods
@@ -68,7 +67,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gBinaryFileType_Add( object sender, EventArgs e )
         {
-            NavigateToDetailPage( "binaryFileTypeId", 0 );
+            NavigateToLinkedPage( "DetailPage", "binaryFileTypeId", 0 );
         }
 
         /// <summary>
@@ -78,7 +77,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gBinaryFileType_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "binaryFileTypeId", e.RowKeyId );
+            NavigateToLinkedPage( "DetailPage", "binaryFileTypeId", e.RowKeyId );
         }
 
         /// <summary>
@@ -130,6 +129,7 @@ namespace RockWeb.Blocks.Administration
         private void BindGrid()
         {
             // use the same rockContext for both services so we can join
+            // TODO: Can/Should this be refactored to use UnitOfWorkScope?
             RockContext rockContext = new RockContext();
             BinaryFileTypeService binaryFileTypeService = new BinaryFileTypeService( rockContext );
             BinaryFileService binaryFileService = new BinaryFileService( rockContext );
@@ -148,7 +148,8 @@ namespace RockWeb.Blocks.Administration
                           ft.Description,
                           BinaryFileCount = x.Key == null ? 0 : x.Count(),
                           StorageEntityType = ft.StorageEntityType != null ? ft.StorageEntityType.FriendlyName : string.Empty,
-                          ft.IsSystem
+                          ft.IsSystem,
+                          ft.AllowCaching
                       };
 
             if ( sortProperty != null )

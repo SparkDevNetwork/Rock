@@ -20,7 +20,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    [DetailPage] 
+    [LinkedPage("Detail Page")] 
     [BooleanField( "Show Cookies", "Show cookie information when block loads.", false )]
     [BooleanField( "Show Server Variables", "Show server variables when block loads.", false )]
     public partial class ExceptionDetail : RockBlock, IDetailBlock
@@ -249,10 +249,15 @@ namespace RockWeb.Blocks.Administration
             var baseException = new ExceptionLogService().Get( itemKeyValue );
 
             //set fields
-            lblSite.Text = baseException.Site.Name;
-            lblPage.Text = baseException.Page.Name;
-            hlPageLink.NavigateUrl = string.Format( "~{0}", baseException.PageUrl );
+            if ( baseException == null )
+            {
+                return;
+            }
 
+            lblSite.Text = baseException.Site != null ? baseException.Site.Name : string.Empty;
+            lblPage.Text = baseException.Page != null ? baseException.Site.Name : string.Empty;
+
+            hlPageLink.NavigateUrl = string.Format( "~{0}", baseException.PageUrl );
 
             if ( baseException.CreatedByPersonId == null || baseException.CreatedByPersonId == 0 )
             {

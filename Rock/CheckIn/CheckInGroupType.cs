@@ -25,7 +25,16 @@ namespace Rock.CheckIn
         /// </value>
         [DataMember]
         public GroupType GroupType { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="CheckInPerson" /> was pre-selected by a check-in action.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if preselected; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool PreSelected { get; set; }
+
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="CheckInGroupType" /> is selected for check-in
         /// </summary>
@@ -91,6 +100,7 @@ namespace Rock.CheckIn
         {
             var dictionary = new Dictionary<string, object>();
             dictionary.Add( "GroupType", GroupType );
+            dictionary.Add( "PreSelected", PreSelected );
             dictionary.Add( "Selected", Selected );
             dictionary.Add( "LastCheckIn", LastCheckIn );
             dictionary.Add( "Groups", Groups );

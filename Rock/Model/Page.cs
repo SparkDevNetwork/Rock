@@ -17,7 +17,11 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Page POCO Entity.
+    /// Represents an individual webpage in RockChMS. A page is a container on a <see cref="Rock.Model.Site"/> that has a layout with consists of one or more content area zones.  
+    /// Each content area zone on the page can contain zero or more <see cref="Rock.Model.Block">Blocks.</see>.
+    /// 
+    /// Pages are hierarchical, and are used to create the structure of the site.  Each page can have one parent Page and zero or more children pages, and the 
+    /// page hierarchy is used to create the SiteMap.
     /// </summary>
     [Table( "Page" )]
     [DataContract]
@@ -27,10 +31,10 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the user defined Name of the Page. This property is required.
         /// </summary>
         /// <value>
-        /// Name.
+        /// A <see cref="System.String"/> that represents the Name of the Page.
         /// </value>
         [Required]
         [MaxLength( 100 )]
@@ -38,66 +42,66 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Parent Page Id.
+        /// Gets or sets the Id of the parent Page.
         /// </summary>
         /// <value>
-        /// Parent Page Id.
+        /// An <see cref="System.Int32"/> that represents the Id of the parent Page.
         /// </value>
         [DataMember]
         public int? ParentPageId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Title.
+        /// Gets or sets the title of the of the Page.
         /// </summary>
         /// <value>
-        /// Title.
+        /// A <see cref="System.String"/> that represents the title of the Page.
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
         public string Title { get; set; }
 
         /// <summary>
-        /// Gets or sets the IsSystem.
+        /// Gets or sets a flag indicating if the Page is part of the RockChMS core system/framework.
         /// </summary>
         /// <value>
-        /// IsSystem.
+        /// A <see cref="String.Boolean"/> that is <c>true</c> if this Page is part of the RockChMS core system/framework, otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Site Id.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Site"/> that this Page is on.
         /// </summary>
         /// <value>
-        /// Site Id.
+        /// An <see cref="String.Int32"/> that represents the Id of the <see cref="Rock.Model.Site"/> that this Page is a part of.
         /// </value>
         [DataMember]
         public int? SiteId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Layout.
+        /// Gets or sets the the Page's Layout template.
         /// </summary>
         /// <value>
-        /// Layout.
+        /// A <see cref="System.String"/> that represents the name of the Page's Layout template.
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
         public string Layout { get; set; }
 
         /// <summary>
-        /// Gets or sets the Requires Encryption.
+        /// Gets or sets a flag that indicates if the Page requires SSL encryption.
         /// </summary>
         /// <value>
-        /// Requires Encryption.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if this Page requires encryption, otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool RequiresEncryption { get; set; }
 
         /// <summary>
-        /// Gets or sets the Enable View State.
+        /// Gets or sets a flag indicating if view state should be enabled on the page. 
         /// </summary>
         /// <value>
-        /// Enable View State.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if view state should be enabled on the page, otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool EnableViewState
@@ -108,10 +112,10 @@ namespace Rock.Model
         private bool _enableViewState = true;
 
         /// <summary>
-        /// Gets or sets a value indicating whether title is displayed on page
+        /// Gets or sets a value indicating whether the Page Title should be displayed on the page (if the layout allows).
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [page display title]; otherwise, <c>false</c>.
+        ///   A <see cref="String.Boolean"/> that is <c>true</c> if the title should be displayed on the Page, otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool PageDisplayTitle
@@ -122,10 +126,10 @@ namespace Rock.Model
         private bool _pageDisplayTitle = true;
 
         /// <summary>
-        /// Gets or sets a value indicating whether breadcrumbs are displayed on page
+        /// Gets or sets a flag indicating whether breadcrumbs are displayed on Page
         /// </summary>
         /// <value>
-        /// <c>true</c> if [page display breadcrumb]; otherwise, <c>false</c>.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if breadcrumbs should be displayed on the page, otherwise, <c>false</c>
         /// </value>
         [DataMember]
         public bool PageDisplayBreadCrumb
@@ -136,10 +140,10 @@ namespace Rock.Model
         private bool _pageDisplayBreadCrumb = true;
 
         /// <summary>
-        /// Gets or sets a value indicating whether icon is displayed on page
+        /// Gets or sets a value indicating whether the Page icon should be displayed on the Page.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [page display icon]; otherwise, <c>false</c>.
+        ///   A <see cref="System.Boolean"/> that is <c>true</c> if the icon should be displayed otherwise <c>false</c>
         /// </value>
         [DataMember]
         public bool PageDisplayIcon
@@ -150,10 +154,10 @@ namespace Rock.Model
         private bool _pageDisplayIcon = true;
 
         /// <summary>
-        /// Gets or sets a value indicating whether description is displayed on page
+        /// Gets or sets a value indicating whether the Page description should be displayed on the page.
         /// </summary>
         /// <value>
-        /// <c>true</c> if [page display description]; otherwise, <c>false</c>.
+        /// A <see cref="System.Boolean"/>value that is <c>true</c> if the description should be displayed; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
         public bool PageDisplayDescription
@@ -164,10 +168,10 @@ namespace Rock.Model
         private bool _pageDisplayDescription = true;
 
         /// <summary>
-        /// Gets or sets the Display In Nav When.
+        /// Gets or sets a a value indicating when the Page should be displayed in the navigation.
         /// </summary>
         /// <value>
-        /// Determines when to display in a navigation 
+        /// An <see cref="DisplayInNavWhen"/> enum value that determines when to display in a navigation 
         /// 0 = When Security Allows
         /// 1 = Always
         /// 3 = Never   
@@ -179,40 +183,40 @@ namespace Rock.Model
         public DisplayInNavWhen DisplayInNavWhen { get; set; }
 
         /// <summary>
-        /// Gets or sets the Menu Display Description.
+        /// Gets or sets a flag indicating if the Page description should be displayed in the menu.
         /// </summary>
         /// <value>
-        /// Menu Display Description.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the description should be displayed, otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool MenuDisplayDescription { get; set; }
 
         /// <summary>
-        /// Gets or sets the Menu Display Icon.
+        /// Gets or sets a flag indicating if the Page icon should be displayed in the menu.
         /// </summary>
         /// <value>
-        /// Menu Display Icon.
+        /// A <see cref="String.Boolean"/> value that is <c>true</c> if the Page description should be displayed, otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool MenuDisplayIcon { get; set; }
 
         /// <summary>
-        /// Gets or sets the Menu Display Child Pages.
+        /// Gets or sets a flag indicating if the Page's children Pages should be displayed in the menu.
         /// </summary>
         /// <value>
-        /// Menu Display Child Pages.
+        /// A <see cref="System.Boolean" /> value that is <c>true</c> if the Page's child pages should be displayed, otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool MenuDisplayChildPages { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether name is displayed in breadcrumb.
+        /// Gets or sets a value indicating whether the Page Name is displayed in the breadcrumb.
         /// </summary>
         /// <value>
-        /// <c>true</c> if [breadcrumb display name]; otherwise, <c>false</c>.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the Page's name should be displayed in breadcrumb, otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool BreadCrumbDisplayName
@@ -226,63 +230,65 @@ namespace Rock.Model
         /// Gets or sets a value indicating whether icon is displayed in breadcrumb.
         /// </summary>
         /// <value>
-        /// <c>true</c> if [breadcrumb display icon]; otherwise, <c>false</c>.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if the icon is displayed in the breadcrumb, otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool BreadCrumbDisplayIcon { get; set; }
 
         /// <summary>
-        /// Gets or sets the Order.
+        /// Gets or sets a number indicating the order of the page in the menu and in the site map.
+        /// This will also affect the page order in the menu. This property is required.
         /// </summary>
         /// <value>
-        /// Order.
+        /// A <see cref="System.Int32"/> indicating the order of the page in the page hierarchy and sitemap.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int Order { get; set; }
 
         /// <summary>
-        /// Gets or sets the Output Cache Duration.
+        /// Gets or sets a value indicating the length of time in that rendered output is cached. This property is required.
         /// </summary>
         /// <value>
-        /// Output Cache Duration.
+        /// An <see cref="System.Int32"/> represents the length of time that output is cached. 0 = no caching.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int OutputCacheDuration { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets a user defined description of the page.  
         /// </summary>
         /// <value>
-        /// Description.
+        /// A <see cref="System.String"/> that represents the Page description.
         /// </value>
         [DataMember]
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the Icon File ID.
+        /// Gets or sets the Id the <see cref="Rock.Model.BinaryFile"/> that is being used as an icon for the Page
         /// </summary>
         /// <value>
-        /// Icon Url.
+        /// A <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.BinaryFile"/> that is being used for the Page Icon, if a file
+        /// based icon is not used this value will be null.
         /// </value>
         [DataMember]
         public int? IconFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the icon CSS class.
+        /// Gets or sets the icon CSS class name for a font vector based icon.
         /// </summary>
         /// <value>
-        /// The icon CSS class.
+        /// A <see cref="System.String"/> that represents the CSS Class Name of the icon being used. This value will be empty/null if a file based icon is being used.
         /// </value>
         [DataMember]
         public string IconCssClass { get; set; }
 
         /// <summary>
-        /// Gets or sets the Include Admin Footer.
+        /// Gets or sets a flag indicating if the admin footer should be displayed when a Site Administrator is logged in.
         /// </summary>
         /// <value>
-        /// Include Admin Footer.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if admin footer is displayed; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
@@ -298,35 +304,35 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the Parent Page.
+        /// Gets or sets the Page entity for the parent page.
         /// </summary>
         /// <value>
-        /// A <see cref="Page"/> object.
+        /// The <see cref="Rock.Model.Page"/> entity for the parent Page
         /// </value>
         public virtual Page ParentPage { get; set; }
 
         /// <summary>
-        /// Gets or sets the Site.
+        /// Gets or sets the <see cref="Rock.Model.Site"/> of the site that the page belongs to.
         /// </summary>
         /// <value>
-        /// A <see cref="Site"/> object.
+        /// The <see cref="Rock.Model.Site"/> entity that the Page is associated with
         /// </value>
         public virtual Site Site { get; set; }
 
         /// <summary>
-        /// Gets or sets the icon file.
+        /// Gets or sets the page icon's <see cref="Rock.Model.BinaryFile"/> for file based icons.
         /// </summary>
         /// <value>
-        /// The icon file.
+        /// The <see cref="Rock.Model.BinaryFile" /> for file based icons, if a file based icon is not used this value will be null.
         /// </value>
         [DataMember]
         public virtual BinaryFile IconFile { get; set; }
 
         /// <summary>
-        /// Gets or sets the Blocks.
+        /// Gets or sets the collection of <see cref="Rock.Model.Block">Blocks</see> that are used on the page.
         /// </summary>
         /// <value>
-        /// Collection of Blocks.
+        /// Collection of <see cref="Rock.Model.Block"/> entities that are used on the Page.
         /// </value>
         [DataMember]
         public virtual ICollection<Block> Blocks
@@ -337,10 +343,10 @@ namespace Rock.Model
         private ICollection<Block> _blocks;
 
         /// <summary>
-        /// Gets or sets the Pages.
+        /// Gets or sets the collection of the current page's child pages.
         /// </summary>
         /// <value>
-        /// Collection of Pages.
+        /// Collection of child pages
         /// </value>
         [DataMember]
         public virtual ICollection<Page> Pages
@@ -351,10 +357,10 @@ namespace Rock.Model
         private ICollection<Page> _pages;
 
         /// <summary>
-        /// Gets or sets the Page Routes.
+        /// Gets or sets the <see cref="Rock.Model.PageRoute">PageRoutes</see> that reference this page.
         /// </summary>
         /// <value>
-        /// Collection of Page Routes.
+        /// Collection of <see cref="Rock.Model.PageRoute"/> entities that reference this page.
         /// </value>
         [DataMember]
         public virtual ICollection<PageRoute> PageRoutes
@@ -365,10 +371,10 @@ namespace Rock.Model
         private ICollection<PageRoute> _pageRoutes;
 
         /// <summary>
-        /// Gets or sets the Page Contexts.
+        /// Gets or sets a collection of <see cref="Rock.Model.PageContext" /> entities that are used on this page.
         /// </summary>
         /// <value>
-        /// Collection of Page Contexts.
+        /// A collection of <see cref="Rock.Model.PageContext"/> entities that are used on the page. 
         /// </value>
         [DataMember]
         public virtual ICollection<PageContext> PageContexts
@@ -379,7 +385,7 @@ namespace Rock.Model
         private ICollection<PageContext> _pageContexts;
 
         /// <summary>
-        /// Gets the parent authority.
+        /// Gets the parent authority for the page. Page security is automatically inherited from the parent page, unless explicitly overridden.
         /// </summary>
         /// <value>
         /// The parent authority.
@@ -440,7 +446,7 @@ namespace Rock.Model
     #region Enumerations
 
     /// <summary>
-    /// How should page be displayed in a page navigation block
+    /// Represents how a <see cref="Rock.Model.Page"/> should be displayed in the page navigation controls.
     /// </summary>
     public enum DisplayInNavWhen
     {

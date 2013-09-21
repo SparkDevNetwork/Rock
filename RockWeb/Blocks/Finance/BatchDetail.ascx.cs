@@ -23,7 +23,7 @@ namespace RockWeb.Blocks.Finance.Administration
     /// <summary>
     /// 
     /// </summary>
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     public partial class BatchDetail : Rock.Web.UI.RockBlock, IDetailBlock
     {
         #region Fields
@@ -276,11 +276,11 @@ namespace RockWeb.Blocks.Finance.Administration
         {
             if ( id == 0 )
             {
-                NavigateToDetailPage( "financialBatchId", Int32.Parse( hfIdValue.Value ) );
+                NavigateToLinkedPage( "DetailPage", "financialBatchId", Int32.Parse( hfIdValue.Value ) );
             }
             else
             {
-                NavigateToDetailPage( "transactionId", id );
+                NavigateToLinkedPage( "DetailPage", "transactionId", id );
             }
         }
                 

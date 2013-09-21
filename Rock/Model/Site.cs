@@ -14,27 +14,28 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Site POCO Entity.
+    /// Site Model Entity. A Site in Rock is a collection of <see cref="Page">pages</see> and usually 
+    /// associated with one or more <see cref="SiteDomain">SiteDomains </see>.
     /// </summary>
     [Table( "Site" )]
     [DataContract]
     public partial class Site : Model<Site>
     {
         /// <summary>
-        /// Gets or sets the System.
+        /// Gets or sets a flag indicating if this Site was created by and is part of the RockChMS core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// System.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if this Site is part of the RockChMS core system/framework, otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name of the Site. This property is required.
         /// </summary>
         /// <value>
-        /// Name.
+        /// A <see cref="System.String"/> that represents the name of the Site.
         /// </value>
         [Required]
         [MaxLength( 100 )]
@@ -42,65 +43,88 @@ namespace Rock.Model
         public string Name { get; set; }
         
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets a user defined description/summary  of the Site.
         /// </summary>
         /// <value>
-        /// Description.
+        /// A <see cref="System.String"/> that contains the description of the Site. If no description is provided
+        ///  this value will be an null string.
         /// </value>
         [DataMember]
         public string Description { get; set; }
         
         /// <summary>
-        /// Gets or sets the Theme.
+        /// Gets or sets the name of the Theme that is used on the Site.
         /// </summary>
         /// <value>
-        /// Theme.
+        /// A <see cref="System.String"/> that contains the name of the theme that is being used on the Site.
         /// </value>
         [MaxLength( 100 )]
         [DataMember]
         public string Theme { get; set; }
         
         /// <summary>
-        /// Gets or sets the Default Page Id.
+        /// Gets or sets the Id of the Site's default <see cref="Rock.Model.Page"/>. 
         /// </summary>
+        /// <remarks>
+        /// This is the <see cref="Rock.Model.Page"/> that is loaded when the user browses to the root of one of the Site's <see cref="Rock.Model.SiteDomain"/>
+        /// (i.e. http://www.mychurchdomain.org/) without providing a page or route. 
+        /// </remarks>
         /// <value>
-        /// Default Page Id.
+        /// An <see cref="System.Int32"/> containing the Id of the Site's default <see cref="Rock.Model.Page"/>. If the site doesn't have a default <see cref="Rock.Model.Page"/>
+        /// this value will be null.
         /// </value>
         [DataMember]
-        public int? DefaultPageId { get; set; }
-        
+        public int DefaultPageId { get; set; }
+
         /// <summary>
-        /// Gets or sets the Favicon Url.
+        /// Gets or sets the default page route unique identifier.
+        /// If this has a value (and the PageRoute can be found) use this instead of the DefaultPageId
         /// </summary>
         /// <value>
-        /// Favicon Url.
+        /// The default page route unique identifier.
+        /// </value>
+        [DataMember]
+        public int? DefaultPageRouteId { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the path to the Site's Favicon.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> containing the Url to the Site's Favicon. This property will be null if the site does not use a Favicon.
         /// </value>
         [MaxLength( 150 )]
         [DataMember]
         public string FaviconUrl { get; set; }
         
         /// <summary>
-        /// Gets or sets the Apple Touch Icon Url.
+        /// Gets or sets the path to the site's AppleTouch icon. 
         /// </summary>
+        /// <remarks>
+        /// This icon is a .png file used on iOS devices that is shown when a web application saved to the home screen.  For complete details on 
+        /// how to use these, please visit. https://developer.apple.com/library/ios/documentation/AppleApplications/Reference/SafariWebContent/ConfiguringWebApplications/ConfiguringWebApplications.html
+        /// </remarks>
         /// <value>
-        /// Apple Touch Icon Url.
+        /// A <see cref="System.String"/> containing the path to the site's AppleTouch icon.
         /// </value>
         [MaxLength( 150 )]
         [DataMember]
         public string AppleTouchIconUrl { get; set; }
         
         /// <summary>
-        /// Gets or sets the Facebook App Id.
+        /// Gets or sets the Site's Facebook AppId for utilizing the Facebook SDK.
         /// </summary>
+        /// <remarks>
+        /// Each site that utilizes the Facebook SDK requires a different AppId. More info is available at http://developer.facebook.com
+        /// </remarks>
         /// <value>
         /// Facebook App Id.
         /// </value>
         [MaxLength( 25 )]
         [DataMember]
         public string FacebookAppId { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets the Facebook App Secret.
+        /// Gets or sets the site's App Secret for the Facebook API
         /// </summary>
         /// <value>
         /// Facebook App Secret.
@@ -110,66 +134,74 @@ namespace Rock.Model
         public string FacebookAppSecret { get; set; }
         
         /// <summary>
-        /// Gets or sets the Login Page Reference.
+        /// Gets or sets the path to the URL of the Login Page
         /// </summary>
         /// <value>
-        /// Login Page Reference.
+        /// A <see cref="System.String"/> containing the path to the Login Page.
         /// </value>
         [MaxLength( 260 )]
         [DataMember]
         public string LoginPageReference { get; set; }
         
         /// <summary>
-        /// Gets or sets the Registration Page Reference.
+        /// Gets or sets the path to the URL of the Registration Page.
         /// </summary>
         /// <value>
-        /// Registration Page Reference.
+        /// A <see cref="System.String"/> containing the path to the registration page.
         /// </value>
         [MaxLength( 260 )]
         [DataMember]
         public string RegistrationPageReference { get; set; }
         
         /// <summary>
-        /// Gets or sets the Error Page.
+        /// Gets or sets the path to the error page.
         /// </summary>
         /// <value>
-        /// Path to the error page for this site..
+        /// A <see cref="System.String"/> containing the path to the error page.
         /// </value>
         [MaxLength( 260 )]
         [DataMember]
         public string ErrorPage { get; set; }
         
         /// <summary>
-        /// Gets or sets the Pages.
+        /// Gets or sets a collection of <see cref="Rock.Model.Page"/> entities that are a part of the Site.
         /// </summary>
         /// <value>
-        /// Collection of Pages.
+        /// A collection of <see cref="Rock.Model.Page"/> entities that are a part of the site.
         /// </value>
         [DataMember]
         public virtual ICollection<Page> Pages { get; set; }
         
         /// <summary>
-        /// Gets or sets the Site Domains.
+        /// Gets or sets the collection of <see cref="Rock.Model.SiteDomain"/> entities that reference the Site.
         /// </summary>
         /// <value>
-        /// Collection of Site Domains.
+        /// Collection of <see cref="Rock.Model.SiteDomain"/> entities that reference the Site.
         /// </value>
         [DataMember]
         public virtual ICollection<SiteDomain> SiteDomains { get; set; }
         
         /// <summary>
-        /// Gets or sets the Default Page.
+        /// Gets or sets the default <see cref="Rock.Model.Page"/> page for the site.
         /// </summary>
         /// <value>
-        /// A <see cref="Page"/> object.
+        /// The default <see cref="Rock.Model.Page"/> for the site. 
         /// </value>
         public virtual Page DefaultPage { get; set; }
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Gets or sets the default <see cref="Rock.Model.PageRoute"/> page route for this site. If this value is null, the DefaultPage will be used
+        /// </summary>
+        /// <value>
+        /// The default page route.
+        /// </value>
+        public virtual PageRoute DefaultPageRoute { get; set; }
+
+        /// <summary>
+        /// Returns a <see cref="System.String" /> containing the Name of the site that that represents this instance.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
+        /// A <see cref="System.String" /> containing the Name of the site that represents this instance.
         /// </returns>
         public override string ToString()
         {
@@ -187,7 +219,8 @@ namespace Rock.Model
         /// </summary>
         public SiteConfiguration()
         {
-            this.HasOptional( p => p.DefaultPage ).WithMany().HasForeignKey( p => p.DefaultPageId ).WillCascadeOnDelete(false);
+            this.HasRequired( p => p.DefaultPage ).WithMany().HasForeignKey( p => p.DefaultPageId ).WillCascadeOnDelete(false);
+            this.HasOptional( p => p.DefaultPageRoute ).WithMany().HasForeignKey( p => p.DefaultPageRouteId ).WillCascadeOnDelete( false );
         }
     }
 }
