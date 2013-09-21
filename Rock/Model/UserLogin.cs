@@ -18,27 +18,32 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// User POCO Entity.
+    /// Represents a user's RockChMS login and authentication credentials.
     /// </summary>
     [Table( "UserLogin" )]
     [DataContract]
     public partial class UserLogin : Model<UserLogin>
     {
         /// <summary>
-        /// Gets or sets the type of the service.
+        /// Gets or sets the type of authentication service used by this UserLogin. This property is required.
         /// </summary>
         /// <value>
-        /// The type of the service.
+        /// A <see cref="Rock.Model.AuthenticationServiceType"/> enum value representing the type of authentication service used by this UserLogin. 
         /// </value>
+        /// <remarks>
+        /// Options include: 
+        /// <c>AuthenticationServiceType.Internal</c> which includes database and Active Directory
+        /// <c>AuthenticationServiceType.External</c> which includes Facebook, Google, oAuth, etc.
+        /// </remarks>
         [Required]
         [DataMember( IsRequired = true )]
         public AuthenticationServiceType ServiceType { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the service.
+        /// Gets or service class/type name of the authentication service that this UserLogin uses. This property is required.
         /// </summary>
         /// <value>
-        /// The service.
+        /// A <see cref="System.String"/> representing the service class/type name.
         /// </value>
         [Required]
         [MaxLength( 200 )]
@@ -46,10 +51,10 @@ namespace Rock.Model
         public string ServiceName { get; set; }
 
         /// <summary>
-        /// Gets or sets the User Name.
+        /// Gets or sets the UserName that is associated with this UserLogin. This property is required.
         /// </summary>
         /// <value>
-        /// User Name.
+        /// A <see cref="System.String"/> representing the UserName that is associated with this UserLogin.
         /// </value>
         [Required]
         [MaxLength( 255 )]
@@ -61,92 +66,93 @@ namespace Rock.Model
         /// Gets or sets the Password.  Stored as a SHA1 hash for Rock Database Auth, but possibly a different hashtype for other ServiceTypes
         /// </summary>
         /// <value>
-        /// Password.
+        /// A <see cref="System.String"/> representing the password. 
         /// </value>
         [MaxLength( 128 )]
         public string Password { get; set; }
         
         /// <summary>
-        /// Gets or sets the is confirmed.
+        /// Gets or sets a flag indicating if the UserLogin has been confirmed.
         /// </summary>
         /// <value>
-        /// Is confirmed.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the UserLogin has been confirmed; otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool? IsConfirmed { get; set; }
 
         /// <summary>
-        /// Gets or sets the last activity date time.
+        /// Gets or sets the date and time of the last activity (login, password change, etc.) performed with this UserLogin.
         /// </summary>
         /// <value>
-        /// The last activity date time.
+        /// A <see cref="System.DateTime"/> representing the date and time of the last activity associated with this UserLogin.
         /// </value>
         [NotAudited]
         [DataMember]
         [MergeField]
         public DateTime? LastActivityDateTime { get; set; }
 
+
         /// <summary>
-        /// Gets or sets the last login date time.
+        /// Gets or sets the most recent date and time that a user successfully logged in using this UserLogin.
         /// </summary>
         /// <value>
-        /// The last login date time.
+        /// A <see cref="System.DateTime"/> representing the most recent date and time that a user successfully logged in with this UserLogin.
         /// </value>
         [DataMember]
         [MergeField]
         public DateTime? LastLoginDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the last password changed date time.
+        /// Gets or sets the date and time that the password was successfully changed.
         /// </summary>
         /// <value>
-        /// The last password changed date time.
+        /// A <see cref="System.DateTime"/> representing when the password was last changed.
         /// </value>
         [DataMember]
         [MergeField]
         public DateTime? LastPasswordChangedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the creation date time.
+        /// Gets or sets the date and time that the UserLogin was created.
         /// </summary>
         /// <value>
-        /// The creation date time.
+        /// A <see cref="System.DateTime"/> representing when the UserLogin was created.
         /// </value>
         [DataMember]
         public DateTime? CreationDateTime { get; set; }
         
         /// <summary>
-        /// Gets or sets the Is On Line.
+        /// Gets or sets a flag indicating if the user is currently online and logged in to the system.
         /// </summary>
         /// <value>
-        /// Is On Line.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the user is currently online and logged in with this UserLogin; otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool? IsOnLine { get; set; }
         
         /// <summary>
-        /// Gets or sets the Is Locked Out.
+        /// Gets or sets a flag indicating if the UserLogin is currently locked out.
         /// </summary>
         /// <value>
-        /// Is Locked Out.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if the UserLogin is currently locked out; otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool? IsLockedOut { get; set; }
 
         /// <summary>
-        /// Gets or sets the last locked out date time.
+        /// Gets or sets date and time that the UserLogin was last locked out.
         /// </summary>
         /// <value>
-        /// The last locked out date time.
+        /// A <see cref="System.DateTime"/> representing the date and time that the user login was last locked out.
         /// </value>
         [DataMember]
         public DateTime? LastLockedOutDateTime { get; set; }
         
         /// <summary>
-        /// Gets or sets the Failed Password Attempt Count.
+        /// Gets or sets the number of failed password attempts within the failed password attempt window.
         /// </summary>
         /// <value>
-        /// Failed Password Attempt Count.
+        /// An <see cref="System.Int32"/> representing the failed password attempts during the attempt window.
         /// </value>
         [DataMember]
         public int? FailedPasswordAttemptCount { get; set; }
