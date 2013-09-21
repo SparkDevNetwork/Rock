@@ -144,6 +144,7 @@
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
+    <Compile Include="Attribute\TimeFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerRangeFieldAttribute.cs" />
     <Compile Include="Attribute\DateRangeFieldAttribute.cs" />
     <Compile Include="Attribute\DecimalRangeFieldAttribute.cs" />
@@ -169,9 +170,17 @@
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
+    <Compile Include="Field\Types\TimeFieldType.cs" />
     <Compile Include="Field\Types\IntegerRangeFieldType.cs" />
     <Compile Include="Field\Types\DateRangeFieldType.cs" />
     <Compile Include="Field\Types\DecimalRangeFieldType.cs" />
+    <Compile Include="Financial\PaymentInfo.cs" />
+    <Compile Include="Financial\SwipePaymentInfo.cs" />
+    <Compile Include="Financial\ReferencePaymentInfo.cs" />
+    <Compile Include="Financial\PaymentSchedule.cs" />
+    <Compile Include="Financial\Payment.cs" />
+    <Compile Include="Financial\GatewayComponent.cs" />
+    <Compile Include="Financial\GatewayContainer.cs" />
     <Compile Include="Migrations\201308232058045_CreateDatabase.cs" />
     <Compile Include="Migrations\201308232058045_CreateDatabase.Designer.cs">
       <DependentUpon>201308232058045_CreateDatabase.cs</DependentUpon>
@@ -321,9 +330,8 @@
     <Compile Include="Field\Types\EntityTypeFieldType.cs" />
     <Compile Include="Field\Types\GroupFieldType.cs" />
     <Compile Include="Field\Types\GroupTypesFieldType.cs" />
-    <Compile Include="Financial\BankAccount.cs" />
-    <Compile Include="Financial\CreditCard.cs" />
-    <Compile Include="Financial\IGateway.cs" />
+    <Compile Include="Financial\ACHPaymentInfo.cs" />
+    <Compile Include="Financial\CreditCardPaymentInfo.cs" />
     <Compile Include="Model\AuthService.Partial.cs" />
     <Compile Include="Model\BlockService.Partial.cs" />
     <Compile Include="Model\BlockTypeService.Partial.cs" />
@@ -343,7 +351,6 @@
     <Compile Include="Model\CodeGenerated\DeviceService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialBatchService.cs" />
-    <Compile Include="Model\CodeGenerated\FinancialGatewayService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPledgeService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialScheduledTransactionDetailService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialScheduledTransactionService.cs" />
@@ -450,6 +457,7 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
+    <Compile Include="Web\UI\Controls\TermDescription.cs" />
     <Compile Include="Web\UI\Controls\Grid\DefinedValueField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LocationPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DateRangePicker.cs" />
@@ -665,9 +673,6 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\FinancialAccount.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Model\FinancialGateway.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\FinancialPledge.cs">

@@ -706,6 +706,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                     foreach ( var familyAddress in FamilyAddresses )
                     {
+                        Location updatedAddress = null;
+                        if (familyAddress.LocationIsDirty)
+                        {
+                            updatedAddress  = new LocationService().Get(
+                                familyAddress.Street1, familyAddress.Street2, familyAddress.City,
+                                familyAddress.State, familyAddress.Zip );
+                        }
+
                         GroupLocation groupLocation = null;
                         if ( familyAddress.Id > 0 )
                         {
@@ -721,12 +729,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                         groupLocation.GroupLocationTypeValueId = familyAddress.LocationTypeId;
                         groupLocation.IsMailing = familyAddress.IsMailing;
                         groupLocation.IsLocation = familyAddress.IsLocation;
-
-                        if ( familyAddress.LocationIsDirty )
+                        if ( updatedAddress != null )
                         {
-                            groupLocation.Location = new LocationService().Get(
-                                familyAddress.Street1, familyAddress.Street2, familyAddress.City,
-                                familyAddress.State, familyAddress.Zip );
+                            groupLocation.Location = updatedAddress;
                         }
 
                         groupLocationService.Save( groupLocation, CurrentPersonId );

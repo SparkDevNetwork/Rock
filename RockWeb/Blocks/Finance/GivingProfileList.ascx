@@ -23,17 +23,12 @@
                     </ItemTemplate>
                 </asp:TemplateField>
               <asp:BoundField DataField="EndDate" HeaderText="End Date" />
-                
               <asp:BoundField DataField="NumberOfPayments" HeaderText="# Payments"  />
-                
-              <asp:BoundField DataField="GatewayId" HeaderText="Gateway"  />
-                
+              <asp:BoundField DataField="GatewayEntityTypeId" HeaderText="Gateway"  />
               <asp:BoundField DataField="TransactionCode" HeaderText="Transaction Code"  />
-              
-                <asp:BoundField DataField="IsActive" HeaderText="Active" />
-
+              <asp:BoundField DataField="GatewayScheduleId" HeaderText="Schedule ID"  />
+              <asp:BoundField DataField="IsActive" HeaderText="Active" />
               <asp:BoundField DataField="CardReminderDate" HeaderText="Expiration Date"  />
-                
               <Rock:DeleteField OnClick="rGridGivingProfile_Delete" />
 
             </Columns>

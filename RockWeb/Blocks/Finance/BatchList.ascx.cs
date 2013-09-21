@@ -232,7 +232,7 @@ namespace RockWeb.Blocks.Finance.Administration
 
             if ( dtBatchDate.SelectedDate.HasValue )
             {
-                batches = batches.Where( batch => batch.BatchDate >= dtBatchDate.SelectedDate );
+                batches = batches.Where( batch => batch.BatchStartDateTime >= dtBatchDate.SelectedDate );
             }
 
             if ( (ddlStatus.SelectedValueAsInt() ?? 0) > 0 )
