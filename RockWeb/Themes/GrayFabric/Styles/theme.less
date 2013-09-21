@@ -1,0 +1,400 @@
+/*
+    Rock ChMS Theme Styles
+
+    1. Reusable Classes
+    2. Master Page Styles
+    3. Header
+    4. Homepage Layout
+    5. Inside Page Layout
+    6. Footer
+    7. Responsive Logic
+    8. Retina 
+
+*/
+
+
+// Load Master Styles
+// -------------------------
+@import "../../../Styles/FontAwesome/font-awesome.less";
+@import "../../../Styles/Bootstrap/bootstrap.less"; 
+@import "_variables.less";
+@import "../../../Styles/_rock-core.less";
+
+
+
+// 1. Reusable Classes
+// -------------------------
+
+.separator {
+	border-bottom: 1px solid #515151;
+	height: 12px;
+	background-image: url('../Assets/Images/separator-gradient.png');
+	background-position: left bottom;
+	background-repeat: repeat-x;
+}
+
+.right-align {
+	text-align: right;
+}
+
+.bold
+{
+    font-weight: @font-weight-bold;
+}
+
+a:hover
+{
+    text-decoration: none;
+}
+
+.title-image {
+    width: 100%;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    color: #c9c9c9;
+}
+
+// 2. Master Page Styles
+// -------------------------
+
+body {
+	background: url('../Assets/Images/background.jpg');
+	font-family: 'Open Sans', sans-serif;
+	color: #4a4a4a;
+}
+
+#band {
+	width: 100%;
+	position: absolute;
+	top: 0;
+	background-size: 100% 310px;
+	background: #c8c6c6;
+	background: -moz-linear-gradient(top,  #c8c6c6 0%, #7a7a7a 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,#c8c6c6), color-stop(100%,#7a7a7a));
+	background: -webkit-linear-gradient(top,  #c8c6c6 0%,#7a7a7a 100%);
+	background: -o-linear-gradient(top,  #c8c6c6 0%,#7a7a7a 100%);
+	background: -ms-linear-gradient(top,  #c8c6c6 0%,#7a7a7a 100%);
+	background: linear-gradient(to bottom,  #c8c6c6 0%,#7a7a7a 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#c8c6c6', endColorstr='#7a7a7a',GradientType=0 );
+	z-index: -1;
+	border-bottom: 1px solid #bebebe;
+
+    &.homepage {
+        height: 300px;
+    }
+
+    &.insidepage {
+        height: 115px;
+    }
+}
+
+
+// 3. Header
+// -------------------------
+header {
+	margin-top: 24px;
+}
+
+header .identity {
+	margin-bottom: 8px;
+	
+}
+
+header .logo {
+	width: 100%;
+	max-width: 400px;
+	min-width: 200px;
+}
+
+header .my-account {
+	text-align: right;
+}
+
+header .service-times {
+	margin-top: 2px;
+}
+
+header .service-times .bold,
+header .service-times i {
+	font-size: 18px;
+}
+
+header .my-account {
+	margin-top: 14px;
+}
+
+// navbar overrides - template specific
+header .navbar {
+	margin-bottom: 0;
+	box-shadow: 0 10px 18px -4px rgba(0,0,0,0.5);
+	z-index: 10000;
+	position: relative;
+}
+
+header .navbar-inner {
+	background: rgb(108,108,108);
+	background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzZjNmM2YyIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM0YjRiNGIiIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+	background: -moz-linear-gradient(top,  rgba(108,108,108,1) 0%, rgba(75,75,75,1) 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(108,108,108,1)), color-stop(100%,rgba(75,75,75,1)));
+	background: -webkit-linear-gradient(top,  rgba(108,108,108,1) 0%,rgba(75,75,75,1) 100%);
+	background: -o-linear-gradient(top,  rgba(108,108,108,1) 0%,rgba(75,75,75,1) 100%);
+	background: -ms-linear-gradient(top,  rgba(108,108,108,1) 0%,rgba(75,75,75,1) 100%);
+	background: linear-gradient(to bottom,  rgba(108,108,108,1) 0%,rgba(75,75,75,1) 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#6c6c6c', endColorstr='#4b4b4b',GradientType=0 );
+	border: 0;
+	border-radius: 0;
+}
+
+header .navbar .nav > li > a {
+	color: #e6e4e4;
+	text-shadow: 0 1px 0 rgba(0,0,0, 0.8);
+    font-weight: @font-semibold-weight;
+}
+
+header .navbar .nav > li:hover > a {
+	color: #a9a9a9;
+}
+
+header .navbar .divider-vertical {
+	border-left: 1px solid #7c7c7c;
+    border-right: 0;
+}
+
+
+// 4. Homepage Layout
+// -------------------------
+
+.promo-slider {
+	margin-bottom: 20px;
+}
+
+.promo-slider .slider-shadow {
+	width: 100%;
+}
+
+/* promo-secondary */
+.promo-secondary ul {
+	list-style: none;
+	margin: 40px 0 0 0;
+}
+
+.promo-secondary li {
+	float: left;
+	width: 23.5%;
+	margin-right: 2%;
+	
+}
+
+.promo-secondary li:last-child {
+	margin-right: 0;
+}
+
+.promo-secondary img {
+	border: 4px solid #9a9898;
+	width: 100%;
+	
+}
+
+.promo-secondary a:after {
+	content: url('../Assets/Images/sub-promo-shadow.png');
+	display:block;
+    position:relative;
+    bottom: 0;
+    text-align: center;
+    overflow: hidden;
+}
+
+/* contact info */
+
+section.contact {
+	margin-top: 40px;
+	color: #b3b2b2;
+}
+
+section.contact a {
+	color: #b3b2b2;
+}
+
+section.contact a:hover {
+	color: #fff;
+	text-decoration: none;
+}
+
+section.contact .social .bold {
+	font-size: 24px;
+}
+
+section.contact .social .icons {
+	font-size: 44px;
+	margin-top: 8px;
+}
+
+section.contact .social .icons i {
+	margin-right: 10px;
+}
+
+section.contact .traditional div {
+	float: left;
+}
+
+section.contact .traditional .info {
+	padding-left: 12px;
+}
+
+section.contact .traditional .map img {
+	border: 4px solid #9a9898;
+}
+
+section.contact .traditional .info .bold {
+	font-size: 18px;
+}
+
+// 5. Inside Page Layout
+// -------------------------
+
+#content {
+    margin-top: 48px;
+    color: @site-text-color;
+}
+
+
+// 6. Footer
+// -------------------------
+
+footer {
+	margin-top: 40px;
+	border-top: 1px solid #5e5e5e;
+	padding: 12px 0 8px 0;
+	color: #919090;
+	background: rgb(45,45,45);
+	background: -moz-linear-gradient(top,  rgba(45,45,45,1) 0%, rgba(74,74,74,1) 26%, rgba(74,74,74,1) 100%);
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(45,45,45,1)), color-stop(26%,rgba(74,74,74,1)), color-stop(100%,rgba(74,74,74,1)));
+	background: -webkit-linear-gradient(top,  rgba(45,45,45,1) 0%,rgba(74,74,74,1) 26%,rgba(74,74,74,1) 100%);
+	background: -o-linear-gradient(top,  rgba(45,45,45,1) 0%,rgba(74,74,74,1) 26%,rgba(74,74,74,1) 100%);
+	background: -ms-linear-gradient(top,  rgba(45,45,45,1) 0%,rgba(74,74,74,1) 26%,rgba(74,74,74,1) 100%);
+	background: linear-gradient(to bottom,  rgba(45,45,45,1) 0%,rgba(74,74,74,1) 26%,rgba(74,74,74,1) 100%);
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2d2d2d', endColorstr='#4a4a4a',GradientType=0 );
+}
+
+footer a {
+	color: #b3b2b2;
+}
+
+footer a:hover {
+	color: #fff;
+	text-decoration: none;
+}
+
+footer section {
+	width: 50%;
+	float: left;
+}
+
+footer section.author span:first-child:after {
+	content: ' ';
+	border-right: 1px solid #919090;
+	margin-right: 6px;
+	margin-left: 2px;
+}
+
+// 7. Responsive Logic
+// -------------------------
+
+/* large size */
+@media (min-width: 768px) and (max-width: 979px) {
+	
+	/* contact info */
+	section.contact .traditional .info {
+		padding-left: 0;
+		margin-top: 12px;
+	}
+	
+}
+
+/* medium size */
+@media (max-width: 767px) {
+	
+	.flexslider { /* prevent gap */
+		margin-bottom: -2px;
+	}
+	
+	#band,
+	.separator,
+	footer {
+		margin-right: -20px;
+		margin-left: -20px;
+	}
+	
+	footer {
+		padding: 20px 20px 8px 20px;
+	}
+	
+	footer span {
+		display: block;
+	}
+	
+	footer section.author span:first-child:after {
+		border-right: 0;
+	}	
+	
+	/* promos */
+	.promo-secondary li {
+		width: 48%;
+		margin-right: 4%;
+		margin-bottom: 4%;
+	}
+	
+	.promo-secondary li:nth-child(2) {
+		margin-right: 0;
+	}
+	
+	/* contact info */
+	section.contact .traditional {
+		margin-top: 24px;
+	}
+	
+}
+
+/* small size */
+@media (max-width: 480px) {
+	
+	.flexslider { /* prevent gap */
+		margin-bottom: -5px;
+	}
+	
+	.promo-secondary li {
+		width: 100%;
+		margin-right: 0;
+		margin-bottom: 4%;
+	}
+	
+	/* contact info */
+	section.contact .traditional div {
+		float: none;
+	}
+	
+	section.contact .traditional .info {
+		padding-left: 0;
+		margin-top: 12px;
+	}
+
+}
+
+
+
+// 8. Retina
+// -------------------------
+
+/* for high resolution display */
+@media only screen and (min--moz-device-pixel-ratio: 2),
+only screen and (-o-min-device-pixel-ratio: 2/1),
+only screen and (-webkit-min-device-pixel-ratio: 2),
+only screen and (min-device-pixel-ratio: 2) {
+	
+	body {
+		background: url('../Assets/Images/background@2x.jpg');
+		background-size: 400px 400px;
+	}
+	
+}

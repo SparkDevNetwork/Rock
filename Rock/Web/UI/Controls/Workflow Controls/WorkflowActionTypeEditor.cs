@@ -62,11 +62,7 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
     event.stopImmediatePropagation();
 });
 ";
-
-            if ( !Page.IsPostBack )
-            {
-                ScriptManager.RegisterStartupScript( hfActionTypeGuid, hfActionTypeGuid.GetType(), "WorkflowActionTypeEditorScript", script, true );
-            }
+            ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "WorkflowActionTypeEditorScript", script, true );
         }
 
         /// <summary>

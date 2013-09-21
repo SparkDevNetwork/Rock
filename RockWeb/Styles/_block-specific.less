@@ -1,0 +1,211 @@
+﻿/*
+    Used to manage styles for specific blocks.
+    
+    1. SQL Command - block to query database directly
+    2. HTML Content - block to edit HTML on a page
+    3. Login - block to allow logins
+    4. Notes - block to display, add, edit, delete notes
+
+*/
+
+// 1. SQL Command
+// -------------------------
+
+.sql-comand
+{
+    .panel
+    {
+        margin-bottom: 24px;
+    }
+}
+
+// 2. HTML Content
+// -------------------------
+
+.html-content-editor-panel .editor-buttons {
+    float: right;
+    margin-top: 6px;
+}
+
+.html-content-version-label
+{
+    background-color: lighten(@modal-header-bg, 20%);
+    padding: 2px 8px;
+    float: left;
+    margin: 6px 0 0 16px;
+    .border-radius(@border-radius-base);
+    color: @modal-header-text-color;
+
+    &:hover
+    {
+        color: inherit;
+    }
+}
+
+.html-content-edit-header 
+{
+    padding: 6px 16px 0 16px;
+}
+
+.html-content-approve 
+{
+    float: right;
+    margin-top: 4px;
+}
+
+
+/* CK Editor Tweaks */
+span.cke_skin_kama
+{
+    padding: 0 !important;
+}
+
+
+// 3. Login Status
+// -------------------------
+
+.loginstatus {
+    width: 160px;
+
+    .dropdown-toggle {
+        text-align: right;
+        font-size: 11px;
+    }
+
+    .dropdown-menu {
+        right: 0;
+        font-size: 11px;
+    }
+}
+
+// 3. Login 
+// -------------------------
+
+.alt-authentication {
+    margin: 10px 0;
+
+    .btn-authenication {
+        background-color: @accent-color;
+        color: @accent-text-color;
+
+        &:hover {
+            background-color: darken(@accent-color, 10%);
+        }
+
+        &.facebook:before {
+            font-family: 'FontAwesome';
+            content: '';
+            margin-right: 4px;
+        }
+    }
+}
+
+// 4. Notes 
+// -------------------------
+
+.panel-notes {
+
+    .panel-heading {
+        h3 {
+            float: left;
+            margin-top: 4px;
+        }
+
+        .btn {
+            float: right;
+            margin: 0;
+        }
+    }
+
+    article {
+        border-radius: @border-radius-base;
+        border: 1px solid darken(@accent-light-color, @const-border-darken-amt);
+        padding: 12px;
+        margin-bottom: 12px;
+        background-color: @accent-light-color;
+
+        .date {
+            font-size: 13px;
+            font-weight: @font-weight-light;
+            margin-left: 8px;
+        }
+
+        & > i {
+            float: left;
+            color: darken(@accent-light-color, 10%);
+            width: 6%;
+            font-size: 20px;
+        }
+
+        .details {
+            float: left;
+            width: 84%;
+
+            h5 {
+                margin-top: 0;
+                margin-bottom: 6px;
+            }
+        }
+
+        .actions {
+            float: right;
+            width: 10%;
+
+            a {
+                float: right;
+                margin-left: 8px;
+                font-size: 14px;
+            }
+        }
+
+        &.highlight {
+            background-color: @state-danger-bg;
+            border: 1px solid darken(spin(@state-danger-bg, -10), 3%);
+            color: @state-danger-text;
+
+            i {
+                color: darken(spin(@state-danger-bg, -10), 3%);
+            }
+        }
+
+        &.personal {
+            background-color: @state-info-bg;
+            border: 1px solid darken(spin(@state-info-bg, -10), 3%);
+            color: @state-info-text;
+
+            i {
+                color: darken(spin(@state-info-bg, -10), 3%);
+            }
+        }
+    }
+
+    .load-more {
+        margin: 0 40%;
+        min-width: 120px;
+        width: 20%;
+
+        span {
+            margin: 0 12px;
+        }
+    }
+}
+
+.panel-noteentry {
+  .panel-variant(@accent-color; @accent-text-color; @accent-text-color; @accent-text-color);
+}
+
+.panel-noteentry
+{
+
+    .settings {
+        .options {
+            input {
+                margin-right: 4px;
+            }
+        }
+    } 
+
+    .panel-footer {
+        background-color: @accent-color;
+    }
+}

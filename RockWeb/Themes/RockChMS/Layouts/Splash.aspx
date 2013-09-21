@@ -14,10 +14,9 @@
     <meta name="viewport" content="width=device-width" />
 
     <!-- Included CSS Files -->
-    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/bootstrap.less") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/bootstrap-responsive.less") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Css/site-theme.less") %>">
-    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/developer.css") %>">
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Styles/Kendo/kendo.common.min.css") %>"/>
+	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Styles/theme.css") %>"/>
+	<link rel="stylesheet" href="<%# ResolveUrl("~/Styles/developer.css") %>"/>
 
     <script src="<%# ResolveUrl("~/Scripts/jquery.js") %>" ></script>
     <script src="<%# ResolveUrl("~/Scripts/bootstrap.min.js") %>" ></script>

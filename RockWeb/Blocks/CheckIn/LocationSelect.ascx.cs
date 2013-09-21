@@ -37,6 +37,7 @@ namespace RockWeb.Blocks.CheckIn
             {
                 if ( !Page.IsPostBack )
                 {
+                    ClearSelection();
                     var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                     if ( family != null )
                     {
@@ -65,7 +66,7 @@ namespace RockWeb.Blocks.CheckIn
                                                 location.Selected = true;
                                             }
 
-                                            ProcessSelection();
+                                            ProcessSelection( maWarning );
                                         }
                                     }
                                     else
@@ -98,6 +99,30 @@ namespace RockWeb.Blocks.CheckIn
         }
 
         /// <summary>
+        /// Clears any previously selected locations.
+        /// </summary>
+        private void ClearSelection()
+        {
+            foreach ( var family in CurrentCheckInState.CheckIn.Families )
+            {
+                foreach ( var person in family.People )
+                {
+                    foreach ( var groupType in person.GroupTypes )
+                    {
+                        foreach ( var group in groupType.Groups )
+                        {
+                            foreach ( var location in group.Locations )
+                            {
+                                location.Selected = false;
+                                //location.Schedules = new List<CheckInSchedule>();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Handles the ItemCommand event of the rSelection control.
         /// </summary>
         /// <param name="source">The source of the event.</param>
@@ -123,7 +148,7 @@ namespace RockWeb.Blocks.CheckIn
                                 if ( location != null )
                                 {
                                     location.Selected = true;
-                                    ProcessSelection();
+                                    ProcessSelection( maWarning );
                                 }
                             }
                         }
@@ -150,49 +175,6 @@ namespace RockWeb.Blocks.CheckIn
         protected void lbCancel_Click( object sender, EventArgs e )
         {
             CancelCheckin();
-        }
-
-        /// <summary>
-        /// Goes the back.
-        /// </summary>
-        private void GoBack()
-        {
-            foreach ( var family in CurrentCheckInState.CheckIn.Families )
-            {
-                foreach( var person in family.People)
-                {
-                    foreach ( var groupType in person.GroupTypes )
-                    {
-                        foreach ( var group in groupType.Groups )
-                        {
-                            group.Selected = false;
-                            group.Locations = new List<CheckInLocation>();
-                        }
-                    }
-                }
-            }
-
-            SaveState();
-
-            NavigateToPreviousPage();
-        }
-
-        /// <summary>
-        /// Processes the selection.
-        /// </summary>
-        private void ProcessSelection()
-        {
-            var errors = new List<string>();
-            if ( ProcessActivity( "Schedule Search", out errors ) )
-            {
-                SaveState();
-                NavigateToNextPage();
-            }
-            else
-            {
-                string errorMsg = "<ul><li>" + errors.AsDelimited( "</li><li>" ) + "</li></ul>";
-                maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
-            }
         }
 
         /// <summary>

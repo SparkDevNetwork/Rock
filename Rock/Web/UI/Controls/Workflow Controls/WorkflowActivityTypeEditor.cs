@@ -62,7 +62,7 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
 
 ";
 
-            ScriptManager.RegisterStartupScript( hfActivityTypeGuid, hfActivityTypeGuid.GetType(), "WorkflowActivityTypeEditorScript", script, true );
+            ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "WorkflowActivityTypeEditorScript", script, true );
         }
 
         /// <summary>

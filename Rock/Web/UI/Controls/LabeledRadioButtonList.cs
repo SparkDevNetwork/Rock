@@ -123,14 +123,13 @@ namespace Rock.Web.UI.Controls
                 bool renderControlGroupDiv = ( !string.IsNullOrWhiteSpace( LabelText ) || !string.IsNullOrWhiteSpace( Help ) );
                 string wrapperClassName = string.Empty;
 
+                writer.AddAttribute("class", "form-group");
+                writer.RenderBeginTag(HtmlTextWriterTag.Div);
+
                 if ( renderControlGroupDiv )
                 {
-
-                    writer.AddAttribute( "class", "control-group" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                    writer.AddAttribute( "class", "control-label" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    writer.AddAttribute( "for", this.ClientID );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Label );
                     label.RenderControl( writer );
                     helpBlock.RenderControl( writer );
 
@@ -140,12 +139,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "controls" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( "class", "checkbox" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Label );
-
                 base.RenderControl( writer );
-
-                writer.RenderEndTag();
 
                 if ( Tip.Trim() != string.Empty )
                 {
@@ -158,11 +152,8 @@ namespace Rock.Web.UI.Controls
                     writer.RenderEndTag();
                 }
 
-                if ( renderControlGroupDiv )
-                {
-                    writer.RenderEndTag();
-                    writer.RenderEndTag();
-                }
+                writer.RenderEndTag();
+                writer.RenderEndTag();
             }
         }
 

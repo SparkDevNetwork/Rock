@@ -5,11 +5,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Oops...</title>
+    <title>Rock ChMS - Error</title>
 
-    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Css/bootstrap.less") %>" />
-    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Css/bootstrap-responsive.less") %>" />
-    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Css/site-theme.less") %>" />
+    <link rel="stylesheet" href="<%= Page.ResolveUrl("~/Themes/RockChMS/Styles/theme.css") %>" />
 
     <script src="<%= ResolveUrl("~/Scripts/jquery.js") %>" >
     <script>
@@ -23,7 +21,7 @@
         });
     </script>
 </head>
-<body id="splash">
+<body id="splash" class="error">
     <form id="form1" runat="server">
     
         
@@ -31,8 +29,8 @@
             <img alt="Rock ChMS" id="logoImg" runat="server" class="pageheader-logo" src="#" />
 
             <div id="content-box">
-                <div class="row-fluid">
-                    <div class="span12">
+                <div class="row">
+                    <div class="col-md-12">
                         <div class="error-wrap">
                             <h1>Ah Man... An Error Occurred...</h1>
                             <p>An error has occurred while processing your request.  The Rock ChMS administrators have 
