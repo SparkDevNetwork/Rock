@@ -223,7 +223,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void ShowForm()
         {
-            var frequencyTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_PLEDGE_FREQUENCY );
+            var frequencyTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY );
             ddlFrequencyType.BindToDefinedType( DefinedTypeCache.Read( frequencyTypeGuid ) );
 
             if ( AccountGuids.Any() )

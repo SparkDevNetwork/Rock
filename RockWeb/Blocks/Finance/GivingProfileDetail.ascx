@@ -234,7 +234,7 @@
                                 <asp:Repeater ID="rptPaymentType" runat="server">
                                     <ItemTemplate>
                                         <li id="liSelectedTab" runat="server">
-                                            <asp:LinkButton ID="lbPaymentType" runat="server" Text='<%# DataBinder.Eval(Container.DataItem, "Name") %>' OnClick="lbPaymentType_Click" CausesValidation="false" />
+                                            <asp:LinkButton ID="lbPaymentType" runat="server" Text='<%# Container.DataItem %>' OnClick="lbPaymentType_Click" CausesValidation="false" />
                                         </li>
                                     </ItemTemplate>
                                 </asp:Repeater>

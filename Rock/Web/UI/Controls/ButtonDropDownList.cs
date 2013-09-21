@@ -240,7 +240,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            bool renderControlGroupDiv = !string.IsNullOrWhiteSpace( LabelText );
+            bool renderControlGroupDiv = !string.IsNullOrEmpty( LabelText );
 
             if ( renderControlGroupDiv )
             {
