@@ -1,0 +1,47 @@
+﻿/*
+    Used to manage styles related to Rock's forms
+    
+    1. Bootstrap Overrides / Additions
+    2. Data Lists
+
+*/
+
+// 1. Bootstrap Overrides / Additions
+// -------------------------
+
+.form-actions { /* adding BS2 form-actions back*/
+    padding: 12px 16px;
+    background-color: @accent-color;
+    color: @accent-text-color;
+}
+
+legend {
+    font-weight: @font-weight-light;
+    color: @text-color;
+    border-width: 0;
+}
+
+// 2. Data Lists
+// -------------------------
+
+dl {
+    margin-bottom: 0;
+
+    dt {
+        font-weight: @font-weight-bold;
+        margin-top: 16px;
+        margin-bottom: 2px;
+
+        &:first-child {
+            margin-top: 0;
+        }
+    }
+
+    dd {
+        margin-left: 0;
+    }
+}
+
+// 2. Form Action
+// -------------------------
+

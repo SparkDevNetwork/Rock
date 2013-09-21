@@ -114,22 +114,25 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                writer.AddAttribute( "class", "control-group" );
+                writer.AddAttribute( "class", "form-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 label.AddCssClass( "control-label" );
+
+                writer.RenderBeginTag(HtmlTextWriterTag.Label);
                 label.RenderControl( writer );
+                writer.RenderEndTag();
 
                 if ( !string.IsNullOrWhiteSpace( TextCssClass ) )
                 {
-                    writer.AddAttribute( "class", "controls " + TextCssClass );
+                    writer.AddAttribute("class", "form-control-static " + TextCssClass);
                 }
                 else
                 {
-                    writer.AddAttribute( "class", "controls" );
+                    writer.AddAttribute("class", "form-control-static");
                 }
 
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.RenderBeginTag( HtmlTextWriterTag.P );
 
                 literal.RenderControl( writer );
 

@@ -1,0 +1,193 @@
+﻿/*
+    Used to manage styles related to Rock's internal grid component
+    
+    1. Bootstrap Overrides
+    2. Filter
+    3. Column Header
+    4. Footer
+    5. Light Style - Used for small grids
+    5. Disabled Styles - Used when the entire grid should be shown in a disabled state
+
+*/
+
+
+// 1. Bootstrap Overrides
+// -------------------------
+.table-hover tbody tr:hover td,
+.table-hover tbody tr:hover th {
+    cursor: pointer;
+}
+
+/*.grid-table th a:hover {
+    --text-decoration: none;
+}
+
+td[align=center] {
+    text-align: center;
+}
+
+.grid-table a.minimal i {
+    text-decoration: none;
+    color: @text-color;
+}
+*/
+
+// 2. Filter
+// -------------------------
+.grid-filter {
+    background-color: @grid-filter-bg;
+    border-radius: @border-radius-base;
+    padding: 0 6px 12px 6px;
+	margin-bottom: -10px;
+
+    header {
+        border-radius: @border-radius-base @border-radius-base 0 0;
+        padding: 4px;
+        cursor: pointer;
+        height: 24px;
+        text-align: right;
+
+        h3 {
+            font-size: 12px;
+            margin: 0 2px 0 2px;
+            line-height: 16px;
+            display: inline;
+	        font-weight: @font-weight-light;
+        }
+
+        i {
+            color: lighten(@text-color, 20%);
+        }
+
+        fieldset {
+            margin-bottom: 0;
+        }
+    }
+
+     h4 {
+        margin: 12px 0 20px;
+        padding-bottom: 8px;
+        //border-bottom: 1px solid darken(@grid-filter-bg, 8%);
+        font-weight: @font-weight-light;
+    }
+
+     .grid-filter-entry {
+        margin-bottom: 12px;
+
+        .form-group {
+            width: 350px;
+            float: left;
+        }
+    }
+}
+
+.grid-filter +  div .grid-table {
+    margin-top: -12px;   
+}
+
+
+
+ .grid-filter-entry legend + .control-group {
+     margin-top: 0;
+ }
+
+.grid-filter-overview fieldset {
+    margin-bottom: 12px;
+}
+
+// 3. Column Header
+// -------------------------
+
+.table thead th  {
+    background-color: @grid-column-header-bg;
+	font-size: @grid-column-header-font-size;
+	color: @accent-bold-text-color;
+    font-weight: @grid-column-header-font-weight;
+
+    a {
+        color: @accent-bold-text-color;
+        display: block;
+    }
+
+    // sorting
+    &.ascending a::before {
+        padding-right: 5px;
+	    content: "\f0d8";
+	    font-family: FontAwesome; 
+    }
+
+    &.descending a::before {
+        padding-right: 5px;
+	    content: "\f0d7";
+	    font-family: FontAwesome; 
+    }
+}
+
+// 4. Footer
+// -------------------------
+
+// pagination
+.grid-paging {
+    
+    .pagination {
+        margin-top: 0;
+        margin-bottom: 0;
+    }
+
+    .grid-pager {
+        float: right;
+    }
+
+    .grid-pagesize {
+        float: left;
+    }
+
+    .grid-itemcount {
+        float: left;
+        font-size: 11px;
+        margin-left: 10px;
+        margin-top: 7px;
+    }
+}
+
+
+// actions
+.grid-actions {
+    text-align: right;
+    background-color: @grid-footer-bg;
+
+    .btn {
+        margin-left: 8px;
+        background-color: @grid-footer-button-bg;
+        color: @grid-footer-button-text-color;
+
+        &:hover {
+            background-color: darken(@grid-footer-button-bg, 10%);
+        }
+    }
+}
+
+
+// 5. Light Style
+// -------------------------
+
+.table-light thead th {
+    background-color: inherit;
+    color: @text-color;
+    font-weight: @font-weight-bold;
+}
+
+.table-light tfoot td {
+    background-color: inherit;
+}
+
+.table-light tfoot td .grid-actions a {
+    border-radius: 0;
+    border-style: none;
+    border-width: 0;
+    box-shadow: none;
+    border-color: none;
+}
+
+// 5. Disabled Styles
+// -------------------------

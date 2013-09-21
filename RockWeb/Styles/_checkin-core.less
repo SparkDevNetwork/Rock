@@ -1,0 +1,279 @@
+﻿@import "_global-variables.less";
+
+/*
+    Used to style the check-in screens
+    
+    1. Bootstrap Overrides
+    2. Global Styles
+    3. Components
+    4. Specific Page Styles
+
+*/
+
+// 1. Bootstrap Overrides
+// -------------------------
+
+h1, h2, h3 {
+	letter-spacing: -0.03em;
+}
+
+h1 {
+	font-size: 28px;
+    color: @header-text-color;
+}
+
+.close
+{
+    color: @header-text-color;
+}
+
+.form-group label
+{
+    font-size: 18px;
+    margin-bottom: 6px;
+}
+
+.btn-checkin-select
+{
+    font-weight: @font-weight-semibold;
+    font-size: 24px;
+    margin-bottom: 20px;
+    padding-top: 14px;
+    padding-bottom: 14px;
+}
+
+// 2. Global Styles
+// -------------------------
+
+// turn off configuration items 
+#cms-admin-footer
+{
+    display: none;
+}
+
+.config-bar
+{
+    display: none;
+}
+
+.btn-dimmed
+{
+    opacity: 0.33;  // todo does this look good JME
+}
+
+// set page background
+body {  
+	.checkinBackground;
+}
+@media all and (-webkit-min-device-pixel-ratio: 1.5) {
+  body {
+    .checkinBackgroundRetina()
+  }
+}
+
+
+// 3. Components
+// -------------------------
+
+// checkin header items
+
+.checkin-header
+{
+    margin-top: 45px;
+
+    h1 {
+        font-size: 48px;
+	    font-weight: @header-font-weight;
+    }
+
+    .checkin-sub-title {
+        color: @subheader-text-color;
+	    font-size: 24px;
+        font-weight: @subheader-font-weight;
+        margin-top: 12px;
+    }
+}
+
+.btn .checkin-sub-title // button sub-text
+{
+    font-size: 20px;
+    font-weight: @checkin-button-alttext-weight;
+    margin-left: 20px;
+}
+
+// checkin body items 
+
+.checkin-body
+{
+    .checkin-actions {
+        text-align: right;
+
+        .btn {
+	        font-size: 36px;
+        }
+    }
+}
+
+.checkin-search-actions a
+{
+    padding: 20px 48px;
+    font-size: 48px;
+    line-height: 48px;
+    font-weight: @checkin-button-text-weight;
+}
+
+// checkin footer 
+
+.checkin-footer
+{
+    position: absolute; 
+    bottom: 0; 
+    margin-bottom: 12px;
+    width: 80%;
+}
+
+
+// checkin counts 
+
+.checkin-count h3,
+.checkin-count li
+{
+    color: @text-color;
+}
+
+.checkin-count-locations, 
+.checkin-count-groups,
+.checkin-count-schedules
+{
+    list-style: none;
+}
+
+.checkin-count-locations > li
+{
+    float: left;
+}
+
+.checkin-counts ul li
+{
+    float: left;
+    margin-right: 24px;
+}
+
+.checkin-actions {
+   
+    a {
+        font-size: 22px;
+        font-weight: @checkin-button-text-weight; 
+        padding: 12px 24px;
+
+        &.btn-primary {
+            font-size: 28px;
+            padding: 14px 26px;
+        }
+    }
+}
+
+// time select checkbox 
+.btn-checkbox
+{
+    padding: 24px;
+    background-color: @btn-default-bg;
+    color: @btn-default-color;
+    border-color: @btn-default-border;
+    font-size: 20px;
+
+    &.active {
+        background-color: @btn-primary-bg;
+        color: @btn-primary-color;
+        border-color: @btn-primary-border;
+    }
+
+    i {
+        font-size: 92px;
+        display: block;
+        line-height: 92px;
+    }
+
+    &.active i:before { // checked icon
+        content: "\f046";
+    }
+}
+
+/* Ten Key Keypad */
+.tenkey
+{
+    width: 320px;
+
+     a.btn {
+        margin: 2px;
+        width: 80px;
+        height: 80px;
+    }
+
+     a.digit {
+        font-size: 48px;
+        font-weight: @font-weight-semibold;
+    }
+
+     a.command {
+         font-size: 20px;
+         font-weight: @font-weight-light;
+         padding-top: 28px;
+     }
+} 
+
+// 4. Specific Page Styles
+// -------------------------
+
+// search page
+.checkin-search-body {
+    margin-right: auto !important;
+    margin-left: auto !important;
+    width: 260px;
+}
+
+input.checkin-phone-entry
+{
+    height: 60px;
+    font-weight: @checkin-button-text-weight;
+    font-size: 36px;
+    padding: 6px 20px;
+    width: 260px; // keypad is 320 - padding (24px x 2)
+    float: left;
+    margin-bottom: 10px;
+}
+
+.checkin-phone-keypad
+{
+    float: left;
+	margin-bottom: 12px;
+}
+
+// time select
+.checkin-time-select {
+	margin: 0 auto;
+	display: table;
+}
+
+.checkin-timelist {
+	margin-bottom: 12px;
+}
+
+// checkin summary page
+.checkin-summary
+{
+    list-style-type: none;
+
+    li {
+        font-size: 22px;
+        margin-bottom: 18px;
+	    color: @text-color;
+    }
+}
+
+
+
+
+
+/***********************  DEVELOPER ADDITIONS BELOW  ***********************/
+
