@@ -1,0 +1,92 @@
+﻿/*
+    Used to manage styles related to modal dialog.
+
+*/
+
+.rock-modal {
+    width: 750px;
+}
+
+#dialog {
+    .modal-header {
+        background-color: @modal-header-bg;  
+        color: @modal-header-text-color;
+        padding: 5px 15px;
+        min-height: 34px;
+        
+        h3 {
+            float: left;
+        }
+
+        .close {
+            margin: 0;
+            padding: 6px;
+            color: @modal-header-text-color;
+            text-shadow: none;
+        }
+    }
+
+    .modal-footer {
+        padding: 8px;
+        margin-top: 10px;
+        background-color: @accent-light-color;
+    }
+}
+
+.modal-body .scroll-container 
+{
+    width: 720px;
+}
+
+.modal-body .scroll-container .viewport 
+{
+    width: 690px; 
+}
+
+.modal-body.iframe 
+{
+    background: url("../assets/images/ajax-loading.png") center center no-repeat; /* http://preloaders.net/en/popular */
+    overflow: hidden;
+}
+
+.modal-backdrop 
+{
+    background-color: #8b8b8b;
+    opacity: 0.7;    
+    
+}
+
+.bootbox.modal {
+    width:500px;
+    left: 50%;
+    margin-left:-250px;
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 11000;
+  width: 750px;
+  margin-left: 0px;
+  background-color: @body-bg;
+}
+
+
+.modal-body {
+  padding: 8px 12px 12px 12px;
+}
+
+.modal-footer:after {
+  clear: both;
+}
+.modal-footer .btn {
+  float: right;
+  margin-left: 5px;
+}
+
+#modal-popup_iframe {
+    height: 100%;
+    width: 100%;
+    border: 0;
+}

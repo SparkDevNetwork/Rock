@@ -24,8 +24,8 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            this.HeaderStyle.CssClass = "grid-col-command";
-            this.ItemStyle.CssClass = "grid-col-command";
+            this.HeaderStyle.CssClass = "grid-columncommand";
+            this.ItemStyle.CssClass = "grid-columncommand";
         }
 
         /// <summary>
@@ -87,7 +87,7 @@ namespace Rock.Web.UI.Controls
             {
                 LinkButton lbEditValue = new LinkButton();
                 lbEditValue.ToolTip = "Edit";
-                lbEditValue.CssClass = "btn";
+                lbEditValue.CssClass = "btn btn-default btn-sm";
 
                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
                 buttonIcon.Attributes.Add( "class", "icon-pencil" );

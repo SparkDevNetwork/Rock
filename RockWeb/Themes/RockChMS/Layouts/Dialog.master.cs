@@ -6,6 +6,8 @@
 using System;
 using System.Web.UI;
 
+using Rock;
+
 namespace RockWeb.Themes.RockChMS.Layouts
 {
     public partial class Dialog : Rock.Web.UI.DialogMasterPage
@@ -39,6 +41,10 @@ namespace RockWeb.Themes.RockChMS.Layouts
 
             btnCancel.Text = Request.QueryString["sb"] ?? "Cancel";
             btnCancel.Visible = btnCancel.Text.Trim() != string.Empty;
+            if (!btnSave.Visible)
+            {
+                btnCancel.AddCssClass( "btn-primary" );
+            }
         }
 
     }
