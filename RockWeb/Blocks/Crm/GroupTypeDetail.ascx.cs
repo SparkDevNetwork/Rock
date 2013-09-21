@@ -800,7 +800,6 @@ namespace RockWeb.Blocks.Crm
                                 {
                                     attribute.AttributeQualifiers.Add( qualifier.Clone() as AttributeQualifier );
                                 }
-
                             }
 
                             attribute.EntityTypeQualifierColumn = "GroupTypeId";

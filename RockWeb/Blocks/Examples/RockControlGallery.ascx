@@ -69,6 +69,9 @@
             <Rock:NotificationBox ID="notificationBox" runat="server" Title="Rock:NotificationBox" Text="Box Text" />
             <Rock:Badge ID="badge" runat="server" BadgeType="Important" ToolTip="Some Tooltip">Badge</Rock:Badge>
 
+            <h4>Rock:BootstrapButton</h4>
+            <Rock:BootstrapButton ID="lbSave" runat="server" Text="Click Me" DataLoadingText="Disabled and Loading..." CssClass="btn btn-primary" />
+
             <h4 runat="server">Rock:AttributeEditor</h4>
             <asp:LinkButton ID="btnShowAttributeEditor" runat="server" CssClass="btn" Text="Attribute Editor..." OnClick="btnShowAttributeEditor_Click" CausesValidation="false" />
             <asp:Panel ID="aeExampleDiv" runat="server" Visible="false" CssClass="well">

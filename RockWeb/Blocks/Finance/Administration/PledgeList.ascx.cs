@@ -18,7 +18,7 @@ namespace RockWeb.Blocks.Finance.Administration
     /// <summary>
     /// 
     /// </summary>
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     public partial class PledgeList : RockBlock
     {
         /// <summary>
@@ -69,7 +69,7 @@ namespace RockWeb.Blocks.Finance.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         private void gPledges_Add( object sender, EventArgs e )
         {
-            NavigateToDetailPage( "pledgeId", 0 );
+            NavigateToLinkedPage( "DetailPage", "pledgeId", 0 );
         }
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace RockWeb.Blocks.Finance.Administration
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void gPledges_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "pledgeId", (int) e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "pledgeId", (int) e.RowKeyValue );
         }
 
         /// <summary>

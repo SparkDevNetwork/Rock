@@ -17,7 +17,8 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Block Type POCO Entity.
+    /// Represents a a configurable and functional component or module that extends the base functionality of the RockChMS system/framework. A
+    /// BlockType can be implemented one or more <see cref="Page">Pages</see> or <see cref="Site"/> Layouts.
     /// </summary>
     [Table( "BlockType" )]
     [DataContract]
@@ -27,43 +28,55 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the System.
+        /// Gets or sets a flag indicating if this BlockType was created by and is a part of the RockChMS core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// System.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if this Block is part of the RockChMS core system/framework, otherwise is <c>false</c>.
         /// </value>
+        /// <example>
+        /// True
+        /// </example>
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
-        /// Gets or sets the Path.
+        /// Gets or sets relative path to the .Net ASCX UserControl that provides the HTML Markup and code for the BlockType. This property is required.
         /// </summary>
         /// <value>
-        /// Path.
+        /// A <see cref="System.String"/> that represents the relative path to the supporting UserControl for the BlockType.
         /// </value>
+        /// <example>
+        /// ~/Blocks/Security/Login.ascx
+        /// </example>
         [Required]
         [MaxLength( 260 )]
         [DataMember( IsRequired = true )]
         public string Path { get; set; }
         
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the name of the BlockType.
         /// </summary>
         /// <value>
-        /// Name.
+        /// A <see cref="System.String"/> that represents the Name of the BlockType. This property is required.
         /// </value>
+        /// <example>
+        /// Login
+        /// </example>
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }
         
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets the user defined description of the BlockType. 
         /// </summary>
         /// <value>
-        /// Description.
+        /// A <see cref="System.String"/> that represents the Description of the BlockType
         /// </value>
+        /// <example>
+        /// Provides ability to login to site.
+        /// </example>
         [DataMember]
         public string Description { get; set; }
 
@@ -72,10 +85,10 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the Blocks.
+        /// Gets or sets a collection of  <see cref="Rock.Model.Block">Blocks</see> that are implementations of this BlockType.
         /// </summary>
         /// <value>
-        /// Collection of Blocks.
+        /// Collection of <see cref="Rock.Model.Block">Blocks</see> that implements this BlockType.
         /// </value>
         [DataMember]
         public virtual ICollection<Block> Blocks
@@ -93,7 +106,7 @@ namespace Rock.Model
         /// Returns a <see cref="System.String" /> that represents this instance.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
+        /// A <see cref="System.String" /> that represents this instance. Returns the name of the BlockType
         /// </returns>
         public override string ToString()
         {

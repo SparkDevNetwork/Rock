@@ -46,14 +46,35 @@ namespace Rock.Web.UI.Controls
             string script = string.Format( @"
     window.addEventListener('beforeunload', function(e) {{
         confirmationMessage = $('#{0}').val();
-        (e || window.event).returnValue = confirmationMessage;
-        return confirmationMessage;
-    }});
-", this.ClientID );
+        
+        var activeControl = document.activeElement;
 
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "ConfirmPageUnload", script, true );
+        if ($('#{1}').find(activeControl).length ) {{
+           // todo if it isn't the cancel button
+
+           // if the active control is a child of our update panel, assume we aren't navigating away
+           return;           
+        }}
+
+        if ($(activeControl).parents('.modal').length) {{
+            // if the active control is part of a modal (for example, a confirm delete modal) assume we aren't navigating away
+           return; 
+        }}
+ 
+        if (confirmationMessage || '' > '') {{
+          (e || window.event).returnValue = confirmationMessage;
+          return confirmationMessage;
+        }}
+    }})
+", this.ClientID, this.ParentUpdatePanel().ClientID );
+
+            ScriptManager.RegisterStartupScript( this.Page, this.Page.GetType(), "ConfirmPageUnload", script, true );
         }
 
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
             base.RenderControl( writer );
@@ -61,7 +82,7 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Type, "hidden" );
             writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ClientID );
             writer.AddAttribute( HtmlTextWriterAttribute.Value, Enabled ? ConfirmationMessage : "" );
-            writer.RenderBeginTag(HtmlTextWriterTag.Input);
+            writer.RenderBeginTag( HtmlTextWriterTag.Input );
             writer.RenderEndTag();
         }
     }

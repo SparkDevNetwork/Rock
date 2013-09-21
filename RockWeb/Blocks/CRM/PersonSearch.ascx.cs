@@ -35,20 +35,21 @@ namespace RockWeb.Blocks.Crm
             string type = PageParameter( "SearchType" );
             string term = PageParameter( "SearchTerm" );
 
-            var people = new List<Person>();
-
+            List<Person> personList = null;
+            
             if ( !String.IsNullOrWhiteSpace( type ) && !String.IsNullOrWhiteSpace( term ) )
             {
-
                 using ( var uow = new Rock.Data.UnitOfWorkScope() )
                 {
+                    IQueryable<Person> people = null;
+
                     var personService = new PersonService();
 
                     switch ( type.ToLower() )
                     {
                         case ( "name" ):
 
-                            people = personService.GetByFullName( term, true ).ToList();
+                            people = personService.GetByFullName( term, true );
 
                             break;
 
@@ -62,8 +63,8 @@ namespace RockWeb.Blocks.Crm
 
                             people = personService.Queryable().
                                 Where( p => personIds.Contains( p.Id ) ).
-                                OrderBy( p => p.LastName ).ThenBy( p => ( p.FirstName ) ).
-                                ToList();
+                                OrderBy( p => p.LastName ).ThenBy( p => ( p.FirstName ) );
+                                
 
                             break;
 
@@ -75,23 +76,38 @@ namespace RockWeb.Blocks.Crm
 
                             people = personService.Queryable().
                                 Where( p => p.Email.Contains( term ) ).
-                                OrderBy( p => p.LastName ).ThenBy( p => ( p.FirstName ) ).
-                                ToList();
+                                OrderBy( p => p.LastName ).ThenBy( p => ( p.FirstName ) );
 
                             break;
                     }
+
+                    SortProperty sortProperty = gPeople.SortProperty;
+                    if ( sortProperty != null )
+                    {
+                        people = people.Sort( sortProperty );
+                    }
+                    else
+                    {
+                        people = people.OrderBy( p => p.LastName ).ThenBy( p => p.FirstName );
+                    }
+
+                    personList = people.ToList();
+
                 }
             }
 
-            if ( people.Count == 1 )
+            if ( personList != null )
             {
-                Response.Redirect( string.Format( "~/Person/{0}", people[0].Id ), false );
-                Context.ApplicationInstance.CompleteRequest();
-            }
-            else
-            {
-                gPeople.DataSource = people;
-                gPeople.DataBind();
+                if ( personList.Count == 1 )
+                {
+                    Response.Redirect( string.Format( "~/Person/{0}", personList[0].Id ), false );
+                    Context.ApplicationInstance.CompleteRequest();
+                }
+                else
+                {
+                    gPeople.DataSource = personList;
+                    gPeople.DataBind();
+                }
             }
         }
 
