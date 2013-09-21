@@ -586,15 +586,7 @@ namespace Rock.Web.UI.Controls
 ";
                 writer.Write( controlHtmlFormatMiddle, this.ID );
 
-                // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
-                if ( SelectItem != null )
-                {
-                    _btnSelect.RenderControl( writer );
-                }
-                else
-                {
-                    writer.Write( "<a class='btn btn-xs btn-primary' id='btnSelect_{0}'>Select</a>", this.ID );
-                }
+                _btnSelect.RenderControl( writer );
 
                 string controlHtmlFormatEnd = @"
             <a class='btn btn-xs' id='btnCancel_{0}'>Cancel</a>
