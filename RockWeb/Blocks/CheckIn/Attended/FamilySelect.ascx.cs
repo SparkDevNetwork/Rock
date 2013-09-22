@@ -860,7 +860,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
             // get the list of people so we can filter by grade and ability level
             var peopleList = people.OrderBy( p => p.LastName ).ThenBy( p => p.FirstName ).ToList();
-            var abilityLevelValues = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL ) ).DefinedValues;
+            var abilityLevelValues = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE ) ).DefinedValues;
             peopleList.ForEach( p => p.LoadAttributes() );
             if ( ddlAbilitySearch.SelectedIndex != 0 )
             {
@@ -902,7 +902,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             thisDDL.DataValueField = "Value";
             thisDDL.Items.Add( new ListItem( Rock.Constants.None.Text, Rock.Constants.None.Id.ToString() ) );
 
-            var dtAbility = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL ) );
+            var dtAbility = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE ) );
             if ( dtAbility != null && dtAbility.DefinedValues.Count > 0 )
             {
                 foreach ( var ability in dtAbility.DefinedValues.Select( dv => new ListItem( dv.Name, dv.Guid.ToString() ) ).ToList() )
