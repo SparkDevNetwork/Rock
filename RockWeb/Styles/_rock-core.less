@@ -1,0 +1,107 @@
+@import "_components.less";
+@import "_block-specific.less";
+@import "_page-admin.less";
+@import "_grid.less";
+@import "_modal.less";
+@import "_forms.less";
+@import "_persondetails.less";
+@import "_scroll.less";
+@import "_global-variables.less";
+
+@import "./Bootstrap/mixins.less";
+@import "./Kendo/kendo.flat.less";
+
+// HTML Overrides
+//--------------------------------
+
+
+/* bootstrap overrides */
+
+.control-label {
+    font-weight: @font-weight-semibold;
+}
+
+/* global classes */
+.clickable
+{
+    cursor: pointer;
+}
+
+/* TODO Do we still need these */
+.light {
+    font-weight: @font-weight-light;
+}
+
+.bold {
+    font-weight: @font-weight-light;
+}
+
+.semibold {
+    font-weight: @font-weight-semibold;
+}
+
+/* context help  */
+a.help {
+    margin-left: 6px;
+    outline: 0;
+    color: @header-text-color;
+}
+
+/* form styles - not enough yet for it's own file */
+fieldset .actions {
+    margin-top: 36px;
+}
+
+/* extension of Bootstrap 3 panel */
+.panel {
+    legend {
+        border-color: @accent-color;
+    }
+
+    .panel-heading {
+        .actions {
+            display: none;
+            height: 14px;
+
+            a {
+                padding-left: 4px;
+            }
+        }
+    }
+}
+
+
+// Kendo Overrides
+//--------------------------------
+
+.k-treeview .k-in.k-state-hover, 
+.k-treeview .k-in.k-state-selected, 
+.k-treeview .k-in.k-state-focused,
+.k-treeview .k-in
+{
+    padding: 2px 12px;
+    border: 1px solid transparent;
+}
+
+/* user registration styles */
+.not-me 
+{
+    margin-left: 21px;
+}
+
+
+/* error page */
+#splash.error  #content {
+    width: 750px;
+}
+
+
+/* data views */
+.filter-toogle .switch {
+	margin: 0 6px;
+}
+
+/* security window */
+.security-inherited {
+	margin-top: 12px;
+}

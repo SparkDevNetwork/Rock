@@ -6,11 +6,11 @@
 
 	<xsl:template match="/">
 
-			<ul class="nav">
+			<ul class="nav navbar-nav">
 				<xsl:for-each select="page/pages/page">
 					<!-- top level child pages of the root page -->
-					<li class="dropdown">
-						<a href="#" class="dropdown-toggle pagenav-item" data-toggle="dropdown">
+					<li class="dropdown pagenav-item">
+						<a href="#" class="dropdown-toggle" data-toggle="dropdown">
 							<xsl:attribute name="href">#</xsl:attribute>
 
               <i>
@@ -24,7 +24,7 @@
             </a>
               <!-- only display the children if true -->
               <xsl:if test="@display-child-pages = 'true' and pages[count(page) > 0]">
-                <ul class="dropdown-menu">
+                <ul class="dropdown-menu" role="menu">
                   <!-- second level children -->
                   <xsl:for-each select="pages/page">
                     <xsl:call-template name="secondLevel">
@@ -44,7 +44,7 @@
 	<xsl:template name="secondLevel">
 		<xsl:param name="page"/>
 		
-				<li class="pagenav-subitem-header">
+				<li class="dropdown-header">
 					<xsl:value-of select="@title"/>
 				</li>
 				
@@ -53,8 +53,8 @@
 			<xsl:if test="@display-child-pages = 'true'">
 				<!-- third level children -->
 				<xsl:for-each select="./pages/page">
-					<li>
-						<a>
+					<li role="presentation">
+						<a role="menu-item">
 							<xsl:attribute name="href">
 								<xsl:value-of select="@url"/>
 							</xsl:attribute>

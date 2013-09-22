@@ -294,52 +294,65 @@ namespace Rock.Web.UI.Controls
 
                 if ( renderControlGroupDiv )
                 {
-                    writer.AddAttribute( "class", "control-group" +
+                    writer.AddAttribute( "class", "form-group" +
                         ( IsValid ? "" : " error" ) +
                         ( Required ? " required" : "" ) );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                    writer.AddAttribute( "class", "control-label" );
-
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    writer.AddAttribute("for", this.ClientID);
+                    writer.RenderBeginTag( HtmlTextWriterTag.Label );
                     label.RenderControl( writer );
                     helpBlock.RenderControl( writer );
                     writer.RenderEndTag();
-
-                    wrapperClassName = "controls";
                 }
 
+                // logic to add input groups for preappend and append labels
+                bool renderInputGroup = false;
 
-                if ( !string.IsNullOrWhiteSpace( PrependText ) )
+                if ( !string.IsNullOrWhiteSpace( PrependText ) ||  !string.IsNullOrWhiteSpace( AppendText ))
                 {
-                    wrapperClassName += " input-prepend";
+                    renderInputGroup = true;
                 }
 
-                if ( !string.IsNullOrWhiteSpace( AppendText ) )
+                if (renderInputGroup)
                 {
-                    wrapperClassName += " input-append";
-                }
-
-                bool renderControlsDiv = !string.IsNullOrWhiteSpace( wrapperClassName );
-
-                if ( renderControlsDiv )
-                {
-                    writer.AddAttribute( "class", wrapperClassName );
+                    writer.AddAttribute( "class", "input-group" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 }
 
                 if ( !string.IsNullOrWhiteSpace( PrependText ) )
                 {
+                    writer.AddAttribute("class", "input-group-addon");
+                    writer.RenderBeginTag(HtmlTextWriterTag.Span);
+
                     prependLabel.Text = PrependText;
                     prependLabel.RenderControl( writer );
+                    writer.RenderEndTag();
                 }
+
+                // add space to the css class if it already has a value
+                if (!string.IsNullOrEmpty(this.CssClass))
+                {
+                    this.CssClass += " ";
+                }
+
+                this.CssClass = this.CssClass + "form-control";
 
                 base.RenderControl( writer );
 
                 if ( !string.IsNullOrWhiteSpace( AppendText ) )
                 {
+                    writer.AddAttribute("class", "input-group-addon");
+                    writer.RenderBeginTag(HtmlTextWriterTag.Span);
+                    
                     appendLabel.Text = AppendText;
                     appendLabel.RenderControl( writer );
+                    writer.RenderEndTag();
+                }
+
+                if (renderInputGroup)
+                {
+                    writer.RenderEndTag();
                 }
 
                 if ( Required )
@@ -363,11 +376,6 @@ namespace Rock.Web.UI.Controls
                     writer.RenderBeginTag( HtmlTextWriterTag.Span );
                     writer.Write( Tip.Trim() );
                     writer.RenderEndTag();
-                    writer.RenderEndTag();
-                }
-
-                if ( renderControlsDiv )
-                {
                     writer.RenderEndTag();
                 }
 

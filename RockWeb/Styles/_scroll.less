@@ -1,0 +1,79 @@
+﻿/*
+    Used to manage styles related to Rock's internal scrollbar
+
+*/
+
+
+.scroll-container { 
+    width: 520px; 
+    clear: both; 
+
+    .thumb {
+        margin-left: -6px;
+        background-color: #ccc;
+
+        &:hover {
+            background-color: #bbb;
+        }
+    }
+
+    .viewport { 
+        width: 500px;  
+        overflow: hidden; 
+        position: relative; 
+        height: 375px;
+    }
+
+    .overview { 
+        list-style: none; 
+        position: absolute; 
+        left: 0; 
+        top: 0; 
+    }
+
+    .scrollbar { 
+        position: relative; 
+        float: right; 
+        width: 15px; 
+    }
+
+    .track { 
+        height: 100%; 
+        position: relative;  
+        width: 0;
+        background-color: #ddd;
+        border-radius: 4px;  
+        border-left: 1px solid #aaa;
+        border-right: 1px solid #fff;
+        padding: 0; 
+    }
+
+    .thumb { 
+        height: 20px; 
+        width: 13px; 
+        cursor: pointer; 
+        overflow: hidden; 
+        position: absolute; 
+        top: 0;
+        border-radius: 120px;
+
+        // keeps the thumb from being selectable like text
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+
+        .end { 
+            overflow: hidden; 
+            height: 5px; 
+            width: 13px; 
+            background-color: transparent; 
+        }
+    }
+
+    .disable { 
+        display: none; 
+    }
+}

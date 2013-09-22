@@ -81,7 +81,7 @@ Sys.Application.add_load(function () {
             lbFilter = new LinkButton();
             Controls.Add( lbFilter );
             lbFilter.ID = "lbFilter";
-            lbFilter.CssClass = "filter btn";
+            lbFilter.CssClass = "filter btn btn-primary btn-xs";
             lbFilter.ToolTip = "Apply Filter";
             lbFilter.Text = "Apply Filter";
             lbFilter.CausesValidation = false;
@@ -115,8 +115,6 @@ Sys.Application.add_load(function () {
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.Write( "<header>" );
-            
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.RenderBeginTag( HtmlTextWriterTag.H3 );
             writer.Write( "Filter Options" );
@@ -128,7 +126,6 @@ Sys.Application.add_load(function () {
             writer.RenderBeginTag( HtmlTextWriterTag.I );
             writer.RenderEndTag();
 
-            writer.RenderEndTag();
             writer.Write( "</header>" );
 
             // Filter Overview

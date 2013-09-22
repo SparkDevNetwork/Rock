@@ -14,7 +14,7 @@
                         <HeaderStyle CssClass="span1" />
                         <ItemStyle HorizontalAlign="Center"/>
                         <ItemTemplate>
-                            <a id="aSecure" runat="server" class="btn btn-mini" height="500px"><i class="icon-lock"></i></a>
+                            <a id="aSecure" runat="server" class="btn btn-default btn-sm" height="500px"><i class="icon-lock"></i></a>
                         </ItemTemplate>
                     </asp:TemplateField>
                 </Columns>

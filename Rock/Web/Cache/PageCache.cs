@@ -415,7 +415,7 @@ namespace Rock.Web.Cache
 
                 if ( BreadCrumbDisplayIcon && !string.IsNullOrWhiteSpace( IconCssClass ) )
                 {
-                    bcName = string.Format( "<i class='{0}'></i>", IconCssClass );
+                    bcName = string.Format( "<i class='{0}'></i> ", IconCssClass );
                 }
                 if ( BreadCrumbDisplayName )
                 {

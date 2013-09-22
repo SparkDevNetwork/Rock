@@ -58,42 +58,90 @@ namespace Rock.Web.UI.Adapters
                 int i = 0;
                 foreach ( ListItem li in rbl.Items )
                 {
-                    writer.WriteLine();
-                    writer.AddAttribute( "class", "radio" + ( rbl.RepeatDirection == RepeatDirection.Horizontal ? " inline" : string.Empty ) );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Label );
 
-                    string itemId = string.Format( "{0}_{1}", rbl.ClientID, i++ );
-                    writer.AddAttribute( "id", itemId );
-                    writer.AddAttribute( "type", "radio" );
-                    writer.AddAttribute( "name", rbl.UniqueID );
-                    writer.AddAttribute( "value", li.Value );
-                    if ( li.Selected )
+                    if (rbl.RepeatDirection == RepeatDirection.Horizontal)
                     {
-                        writer.AddAttribute( "checked", "checked" );
-                    }
+                        writer.WriteLine();
+                        writer.AddAttribute("class", "radio-inline");
+                        writer.RenderBeginTag(HtmlTextWriterTag.Label);
 
-                    foreach ( var attributeKey in li.Attributes.Keys )
+                        string itemId = string.Format("{0}_{1}", rbl.ClientID, i++);
+                        writer.AddAttribute("id", itemId);
+                        writer.AddAttribute("type", "radio");
+                        writer.AddAttribute("name", rbl.UniqueID);
+                        writer.AddAttribute("value", li.Value);
+                        if (li.Selected)
+                        {
+                            writer.AddAttribute("checked", "checked");
+                        }
+
+                        foreach (var attributeKey in li.Attributes.Keys)
+                        {
+                            var key = attributeKey as string;
+                            writer.AddAttribute(key, li.Attributes[key]);
+                        }
+
+                        if (postBackOption != null)
+                        {
+                            writer.AddAttribute(HtmlTextWriterAttribute.Onclick, Page.ClientScript.GetPostBackEventReference(postBackOption, true));
+                        }
+
+                        writer.RenderBeginTag(HtmlTextWriterTag.Input);
+                        writer.RenderEndTag();
+
+                        writer.Write(li.Text);
+
+                        writer.RenderEndTag();
+
+                        if (Page != null && Page.ClientScript != null)
+                        {
+                            Page.ClientScript.RegisterForEventValidation(rbl.UniqueID, li.Value);
+                        }
+                    }
+                    else
                     {
-                        var key = attributeKey as string;
-                        writer.AddAttribute( key, li.Attributes[key] );
+                        writer.WriteLine();
+                        writer.AddAttribute("class", "radio");
+                        writer.RenderBeginTag(HtmlTextWriterTag.Div);
+                        
+                        writer.RenderBeginTag(HtmlTextWriterTag.Label);
+
+                        string itemId = string.Format("{0}_{1}", rbl.ClientID, i++);
+                        writer.AddAttribute("id", itemId);
+                        writer.AddAttribute("type", "radio");
+                        writer.AddAttribute("name", rbl.UniqueID);
+                        writer.AddAttribute("value", li.Value);
+                        if (li.Selected)
+                        {
+                            writer.AddAttribute("checked", "checked");
+                        }
+
+                        foreach (var attributeKey in li.Attributes.Keys)
+                        {
+                            var key = attributeKey as string;
+                            writer.AddAttribute(key, li.Attributes[key]);
+                        }
+
+                        if (postBackOption != null)
+                        {
+                            writer.AddAttribute(HtmlTextWriterAttribute.Onclick, Page.ClientScript.GetPostBackEventReference(postBackOption, true));
+                        }
+
+                        writer.RenderBeginTag(HtmlTextWriterTag.Input);
+                        writer.RenderEndTag();
+
+                        writer.Write(li.Text);
+
+                        writer.RenderEndTag();
+                        writer.RenderEndTag();
+
+                        if (Page != null && Page.ClientScript != null)
+                        {
+                            Page.ClientScript.RegisterForEventValidation(rbl.UniqueID, li.Value);
+                        }
                     }
-
-                    if ( postBackOption != null )
-                    {
-                        writer.AddAttribute( HtmlTextWriterAttribute.Onclick, Page.ClientScript.GetPostBackEventReference( postBackOption, true ) );
-                    }
-
-                    writer.RenderBeginTag( HtmlTextWriterTag.Input );
-                    writer.RenderEndTag();
-
-                    writer.Write( li.Text );
-
-                    writer.RenderEndTag();
-
-                    if ( Page != null && Page.ClientScript != null )
-                    {
-                        Page.ClientScript.RegisterForEventValidation( rbl.UniqueID, li.Value );
-                    }
+                    
+                    
                 }
 
                 if ( Page != null && Page.ClientScript != null )
