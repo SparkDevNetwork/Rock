@@ -164,10 +164,11 @@ namespace RockWeb.Blocks.CheckIn
         protected void rSelection_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             var dvalue = e.Item.DataItem as CachedModel<DefinedValue>;
+            var guid = dvalue.Guid.ToString().ToUpper();
 
             // Once we've hit the person's ability level -OR- if their level is not yet set, 
             // we stop lowlighting/disabling the buttons. 
-            if ( _shouldLowlight && ( _personAbilityLevelGuid == "" || dvalue.Guid.ToString() == _personAbilityLevelGuid ) )
+            if ( _shouldLowlight && ( _personAbilityLevelGuid == "" || guid == _personAbilityLevelGuid ) )
             {
                 _shouldLowlight = false;
             }
@@ -181,7 +182,7 @@ namespace RockWeb.Blocks.CheckIn
                 linkButton.AddCssClass( "btn-dimmed" );
             }
 
-            if ( dvalue.Guid.ToString() == _personAbilityLevelGuid )
+            if ( guid == _personAbilityLevelGuid )
             {
                 var linkButton = e.Item.FindControl( "lbSelect" ) as LinkButton;
                 linkButton.Text = string.Format( "{0} {1}", "<i class='icon-check-sign'> </i>", linkButton.Text );
