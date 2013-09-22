@@ -31,22 +31,22 @@
 
     <asp:Panel ID="pnlActivitySelect" runat="server" CssClass="attended" >
         <div class="row-fluid checkin-header">
-            <div class="span3 checkin-actions">
+            <div class="col-md-3 checkin-actions">
                 <asp:LinkButton ID="lbBack" CssClass="btn btn-primary btn-large" runat="server" OnClick="lbBack_Click" Text="Back"/>
             </div>
 
-            <div class="span6">
+            <div class="col-md-6">
                 <h1><asp:Label ID="lblPersonName" runat="server"></asp:Label></h1>
             </div>
 
-            <div class="span3 checkin-actions">
+            <div class="col-md-3 checkin-actions">
                 <asp:LinkButton ID="lbNext" CssClass="btn btn-primary btn-large" runat="server" OnClick="lbNext_Click" Text="Next"/>
             </div>
         </div>
                 
         <div class="row-fluid checkin-body">
 
-            <asp:UpdatePanel ID="pnlSelectGroupType" runat="server" UpdateMode="Conditional" class="span3">
+            <asp:UpdatePanel ID="pnlSelectGroupType" runat="server" UpdateMode="Conditional" class="col-md-3">
             <ContentTemplate>        
                 
                     <h3>GroupType</h3>
@@ -59,7 +59,7 @@
             </ContentTemplate>
             </asp:UpdatePanel>
 
-            <asp:UpdatePanel ID="pnlSelectLocation" runat="server" UpdateMode="Conditional" class="span3">
+            <asp:UpdatePanel ID="pnlSelectLocation" runat="server" UpdateMode="Conditional" class="col-md-3">
             <ContentTemplate>        
                 
                     <h3>Location</h3>
@@ -77,7 +77,7 @@
             </ContentTemplate>
             </asp:UpdatePanel>
 
-            <asp:UpdatePanel ID="pnlSelectSchedule" runat="server" UpdateMode="Conditional" class="span3">
+            <asp:UpdatePanel ID="pnlSelectSchedule" runat="server" UpdateMode="Conditional" class="col-md-3">
             <ContentTemplate>        
                 
                     <h3>Schedule</h3>
@@ -90,7 +90,7 @@
             </ContentTemplate>
             </asp:UpdatePanel>
 
-            <div class="span3 selected-grid">
+            <div class="col-md-3 selected-grid">
                 <h3>Selected</h3>
                 <asp:UpdatePanel ID="pnlSelectedGrid" runat="server" UpdateMode="Conditional">
                 <ContentTemplate> 
@@ -115,13 +115,13 @@
     <!-- Add Condition Panel -->
     <asp:Panel ID="pnlAddCondition" runat="server" CssClass="attended modal-foreground small" DefaultButton="lbAddConditionSave">
         <div class="checkin-header row-fluid">
-            <div class="span3 checkin-actions">
+            <div class="col-md-3 checkin-actions">
                 <asp:LinkButton ID="lbAddConditionCancel" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddConditionCancel_Click" Text="Cancel" CausesValidation="false" />
             </div>
-            <div class="span6">
+            <div class="col-md-6">
                 <h3>Add Allergy/Medical</h3>
             </div>
-            <div class="span3 checkin-actions">
+            <div class="col-md-3 checkin-actions">
                 <asp:LinkButton ID="lbAddConditionSave" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddConditionSave_Click" Text="Save" />
             </div>
         </div>
@@ -133,7 +133,7 @@
                 </HeaderTemplate>
                 <ItemTemplate>
                     <%# (Container.ItemIndex > 0 && Container.ItemIndex % 3 == 0) ? "</div><div class=\"row-fluid\">" : string.Empty %>
-                    <div class="span4">
+                    <div class="col-md-4">
                         <asp:LinkButton ID="lbConditionName" CssClass="btn btn-block btn-primary btn-checkin-select" runat="server" />
                     </div>
                 </ItemTemplate>
@@ -151,13 +151,13 @@
     <!-- Add Note Panel -->
     <asp:Panel ID="pnlAddNote" runat="server" CssClass="attended modal-foreground small" DefaultButton="lbAddNoteSave">
         <div class="checkin-header row-fluid">
-            <div class="span3 checkin-actions">
+            <div class="col-md-3 checkin-actions">
                 <asp:LinkButton ID="lbAddNoteCancel" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddNoteCancel_Click" Text="Cancel" CausesValidation="false"/>
             </div>
-            <div class="span6">
+            <div class="col-md-6">
                 <h3>Add Note</h3>
             </div>
-            <div class="span3 checkin-actions">
+            <div class="col-md-3 checkin-actions">
                 <asp:LinkButton ID="lbAddNoteSave" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddNoteSave_Click" Text="Save" />
             </div>
         </div>

@@ -31,14 +31,14 @@
     <asp:Panel ID="pnlSearch" runat="server" DefaultButton="lbSearch" CssClass="attended">
             
         <div class="row-fluid checkin-header ">
-            <div class="span3 checkin-actions">
+            <div class="col-md-3 checkin-actions">
                 <asp:LinkButton ID="lbAdmin" runat="server" CssClass="btn btn-large btn-primary" OnClick="lbAdmin_Click" Text="Admin" />
                 <asp:LinkButton ID="lbBack" runat="server" CssClass="btn btn-large btn-primary" OnClick="lbBack_Click" Text="Back" Visible="false" />
             </div>
-            <div class="span6">
+            <div class="col-md-6">
                 <h1>Search</h1>
             </div>
-            <div class="span3 checkin-actions">
+            <div class="col-md-3 checkin-actions">
                 <asp:LinkButton ID="lbSearch" runat="server" CssClass="btn btn-large btn-primary" OnClick="lbSearch_Click" Text="Search" />
             </div>
         </div>

@@ -6,15 +6,15 @@
     <Rock:ModalAlert ID="maWarning" runat="server" />
     <asp:Panel ID="pnlConfirm" runat="server" CssClass="attended">
         <div class="row-fluid checkin-header">
-            <div class="span3 checkin-actions">
+            <div class="col-md-3 checkin-actions">
                 <asp:LinkButton ID="lbBack" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbBack_Click" Text="Back"/>
             </div>
 
-            <div class="span6">
+            <div class="col-md-6">
                 <h1>Confirm</h1>
             </div>
 
-            <div class="span3 checkin-actions">
+            <div class="col-md-3 checkin-actions">
                 <asp:LinkButton ID="lbDone" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbDone_Click" Text="Done"/>
             </div>
         </div>
@@ -42,8 +42,8 @@
                 </Rock:Grid>
             </div>
             <div class="row-fluid">
-                <div class="span9"></div>
-                <div class="span3">
+                <div class="col-md-9"></div>
+                <div class="col-md-3">
                     <asp:LinkButton ID="lbPrintAll" CssClass="btn btn-primary btn-block btn-checkin-select" runat="server" OnClick="lbPrintAll_Click" Text="Print All" />
                 </div>
             </div>

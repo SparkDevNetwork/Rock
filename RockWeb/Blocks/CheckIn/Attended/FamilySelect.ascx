@@ -69,22 +69,22 @@
     <asp:Panel ID="pnlFamilySelect" runat="server" CssClass="attended">
 
         <div class="row-fluid checkin-header">
-            <div class="span3 checkin-actions">
+            <div class="col-md-3 checkin-actions">
                 <asp:LinkButton ID="lbBack" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbBack_Click" Text="Back" CausesValidation="false"/>
             </div>
 
-            <div class="span6">                
+            <div class="col-md-6">                
                 <h1 id="lblFamilyTitle" runat="server">Search Results</h1>
             </div>
 
-            <div class="span3 checkin-actions">
+            <div class="col-md-3 checkin-actions">
                 <asp:LinkButton ID="lbNext" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbNext_Click" Text="Next" CausesValidation="false" />
             </div>
         </div>
                 
         <div class="row-fluid checkin-body">
             
-            <asp:UpdatePanel ID="pnlSelectFamily" runat="server" UpdateMode="Conditional" class="span3">
+            <asp:UpdatePanel ID="pnlSelectFamily" runat="server" UpdateMode="Conditional" class="col-md-3">
             <ContentTemplate>
                 
                 <div class="">
@@ -108,7 +108,7 @@
             </ContentTemplate>
             </asp:UpdatePanel>
 
-            <asp:UpdatePanel ID="pnlSelectPerson" runat="server" UpdateMode="Conditional" class="span3">
+            <asp:UpdatePanel ID="pnlSelectPerson" runat="server" UpdateMode="Conditional" class="col-md-3">
             <ContentTemplate>
                 <asp:HiddenField ID="hfSelectedPerson" runat="server" ClientIDMode="Static" />
 
@@ -140,7 +140,7 @@
             </ContentTemplate>
             </asp:UpdatePanel>
 
-            <asp:UpdatePanel ID="pnlSelectVisitor" runat="server" UpdateMode="Conditional" class="span3">
+            <asp:UpdatePanel ID="pnlSelectVisitor" runat="server" UpdateMode="Conditional" class="col-md-3">
             <ContentTemplate>
                 <asp:HiddenField ID="hfSelectedVisitor" runat="server" ClientIDMode="Static" />
 
@@ -165,13 +165,13 @@
             </ContentTemplate>
             </asp:UpdatePanel>
 
-            <div ID="divNothingFound" runat="server" class="span9" visible="false">
-                <div class="span3"></div>
-                <div class="span9 nothing-eligible">
+            <div ID="divNothingFound" runat="server" class="col-md-9" visible="false">
+                <div class="col-md-3"></div>
+                <div class="col-md-9 nothing-eligible">
                     <asp:Label ID="lblNothingFound" runat="server" Text="Please add them using one of the buttons on the right:" />
                 </div>
             </div>
-            <div class="span3">
+            <div class="col-md-3">
                 <h3 id="actions" runat="server">Actions</h3>
                 <asp:LinkButton ID="lbAddPerson" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddPerson_Click" Text="Add Person" CausesValidation="false"></asp:LinkButton>
                 <asp:LinkButton ID="lbAddVisitor" runat="server" CssClass="btn btn-primary btn-large btn-block btn-checkin-select" OnClick="lbAddVisitor_Click" Text="Add Visitor" CausesValidation="false"></asp:LinkButton>                
@@ -186,15 +186,15 @@
         <Rock:ModalAlert ID="maAddPerson" runat="server" />
         <div class="row-fluid checkin-header">
             <div class="checkin-actions">
-                <div class="span3">
+                <div class="col-md-3">
                     <asp:LinkButton ID="lbAddPersonCancel" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddPersonCancel_Click" Text="Cancel" CausesValidation="false"/>
                 </div>
 
-                <div class="span6">
+                <div class="col-md-6">
                     <h2><asp:Label ID="lblAddPersonHeader" runat="server"></asp:Label></h2>
                 </div>
 
-                <div class="span3">
+                <div class="col-md-3">
                     <asp:LinkButton ID="lbAddPersonSearch" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddPersonSearch_Click" Text="Search" CausesValidation="false" />
                 </div>
             </div>
@@ -202,20 +202,20 @@
 		
         <div class="checkin-body">
             <div class="row-fluid">
-                <div class="span2">
-                    <Rock:LabeledTextBox ID="tbFirstNameSearch" runat="server" CssClass="span12" LabelText="First Name" Required="true" RequiredErrorMessage="Required" ValidationGroup="test" />
+                <div class="col-md-2">
+                    <Rock:LabeledTextBox ID="tbFirstNameSearch" runat="server" CssClass="col-md-12" LabelText="First Name" Required="true" RequiredErrorMessage="Required" ValidationGroup="test" />
                 </div>
-                <div class="span3">
-                    <Rock:LabeledTextBox ID="tbLastNameSearch" runat="server" CssClass="span12" LabelText="Last Name" Required="true" RequiredErrorMessage="Required" ValidationGroup="test" />
+                <div class="col-md-3">
+                    <Rock:LabeledTextBox ID="tbLastNameSearch" runat="server" CssClass="col-md-12" LabelText="Last Name" Required="true" RequiredErrorMessage="Required" ValidationGroup="test" />
                 </div>
-                <div class="span2">
-                    <Rock:DatePicker ID="dpDOBSearch" runat="server" LabelText="DOB" CssClass="span12" Required="true" RequiredErrorMessage="Required" ValidationGroup="test" />
+                <div class="col-md-2">
+                    <Rock:DatePicker ID="dpDOBSearch" runat="server" LabelText="DOB" CssClass="col-md-12" Required="true" RequiredErrorMessage="Required" ValidationGroup="test" />
                 </div>
-                <div class="span2">
-                    <Rock:DataDropDownList ID="ddlGenderSearch" runat="server" CssClass="span12" LabelText="Gender" Required="true" RequiredErrorMessage="Required" ValidationGroup="test" />
+                <div class="col-md-2">
+                    <Rock:DataDropDownList ID="ddlGenderSearch" runat="server" CssClass="col-md-12" LabelText="Gender" Required="true" RequiredErrorMessage="Required" ValidationGroup="test" />
                 </div>
-                <div class="span3">
-                    <Rock:DataDropDownList ID="ddlAbilitySearch" runat="server" CssClass="span12" LabelText="Ability/Grade" />
+                <div class="col-md-3">
+                    <Rock:DataDropDownList ID="ddlAbilitySearch" runat="server" CssClass="col-md-12" LabelText="Ability/Grade" />
                 </div>
             </div>
             
@@ -255,15 +255,15 @@
     <asp:Panel ID="pnlAddFamily" runat="server" CssClass="attended modal-foreground">
 
         <div class="row-fluid checkin-header">
-            <div class="span3 checkin-actions">
+            <div class="col-md-3 checkin-actions">
                 <asp:LinkButton ID="lbAddFamilyCancel" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddFamilyCancel_Click" Text="Cancel" CausesValidation="false" />
             </div>
 
-            <div class="span6">
+            <div class="col-md-6">
                 <h2>Add Family</h2>
             </div>
 
-            <div class="span3 checkin-actions">
+            <div class="col-md-3 checkin-actions">
                 <asp:LinkButton ID="lbAddFamilySave" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddFamilySave_Click" Text="Save" />
             </div>
         </div>        
@@ -272,19 +272,19 @@
             <asp:ListView ID="lvAddFamily" runat="server" OnPagePropertiesChanging="lvAddFamily_PagePropertiesChanging" OnItemDataBound="lvAddFamily_ItemDataBound" >
             <LayoutTemplate>
                 <div class="row-fluid">
-                    <div class="span2">
+                    <div class="col-md-2">
                         <h4>First Name</h4>
                     </div>
-                    <div class="span3">
+                    <div class="col-md-3">
                         <h4>Last Name</h4>
                     </div>
-                    <div class="span2">
+                    <div class="col-md-2">
                         <h4>DOB</h4>
                     </div>
-                    <div class="span2">
+                    <div class="col-md-2">
                         <h4>Gender</h4>
                     </div>
-                    <div class="span3">
+                    <div class="col-md-3">
                         <h4>Ability/Grade</h4>
                     </div>                
                 </div>
@@ -292,20 +292,20 @@
             </LayoutTemplate>
             <ItemTemplate>
                 <div class="row-fluid">
-                    <div class="span2">
-                        <Rock:LabeledTextBox ID="tbFirstName" runat="server" CssClass="span12" Text='<%# ((NewPerson)Container.DataItem).FirstName %>' />
+                    <div class="col-md-2">
+                        <Rock:LabeledTextBox ID="tbFirstName" runat="server" CssClass="col-md-12" Text='<%# ((NewPerson)Container.DataItem).FirstName %>' />
                     </div>
-                    <div class="span3">
-                        <Rock:LabeledTextBox ID="tbLastName" runat="server" CssClass="span12" Text='<%# ((NewPerson)Container.DataItem).LastName %>' />
+                    <div class="col-md-3">
+                        <Rock:LabeledTextBox ID="tbLastName" runat="server" CssClass="col-md-12" Text='<%# ((NewPerson)Container.DataItem).LastName %>' />
                     </div>
-                    <div class="span2">
-                        <Rock:DatePicker ID="dpBirthDate" runat="server" CssClass="span12" SelectedDate='<%# ((NewPerson)Container.DataItem).BirthDate %>' />
+                    <div class="col-md-2">
+                        <Rock:DatePicker ID="dpBirthDate" runat="server" CssClass="col-md-12" SelectedDate='<%# ((NewPerson)Container.DataItem).BirthDate %>' />
                     </div>
-                    <div class="span2">                                        
-                        <Rock:RockDropDownList ID="ddlGender" runat="server" CssClass="span12" />
+                    <div class="col-md-2">
+                        <Rock:RockDropDownList ID="ddlGender" runat="server" CssClass="col-md-12" />
                     </div>
-                    <div class="span3">
-                        <Rock:RockDropDownList ID="ddlAbilityGrade" runat="server" CssClass="span12" />
+                    <div class="col-md-3">
+                        <Rock:RockDropDownList ID="ddlAbilityGrade" runat="server" CssClass="col-md-12" />
                     </div>                
                 </div>
             </ItemTemplate>        
