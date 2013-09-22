@@ -147,16 +147,15 @@ namespace Rock.SystemGuid
         /// Guid for the types of Person phone numbers (such as Primary, Secondary, etc.)
         /// </summary>
         public const string PERSON_PHONE_TYPE =  "8345DD45-73C6-4F5E-BEBD-B77FC83F18FD";
-
-        /// <summary>
-        /// Guid for a check-in person's ability level
-        /// </summary>
-        public static string PERSON_ABILITY_LEVEL = "7BEEF4D4-0860-4913-9A3D-857634D1BF7C";
-
+             
         /// <summary>
         /// Guid for potential types of allergies
         /// </summary>
         public const string PERSON_ALLERGY_TYPE = "50F984FE-1CCF-4645-997E-A5610F3E5FFE";
+
+        /// Guid for the types of possible check-in system ability levels (such as Infant, Crawler, etc.)
+        /// </summary>
+        public const string PERSON_ABILITY_LEVEL_TYPE = "7BEEF4D4-0860-4913-9A3D-857634D1BF7C";
 
         /// <summary>
         /// Guid for the types of Batches (ACH, Visa, MasterCard, Discover, Amex, and PayPal)
