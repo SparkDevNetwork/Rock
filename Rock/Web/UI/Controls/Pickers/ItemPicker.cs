@@ -493,7 +493,7 @@ namespace Rock.Web.UI.Controls
 
             _btnSelect = new LinkButton();
             _btnSelect.ClientIDMode = ClientIDMode.Static;
-            _btnSelect.CssClass = "btn btn-mini btn-primary";
+            _btnSelect.CssClass = "btn btn-xs btn-primary";
             _btnSelect.ID = string.Format( "btnSelect_{0}", this.ID );
             _btnSelect.Text = "Select Item";
             _btnSelect.CausesValidation = false;
@@ -501,7 +501,7 @@ namespace Rock.Web.UI.Controls
 
             _btnSelectNone = new LinkButton();
             _btnSelectNone.ClientIDMode = ClientIDMode.Static;
-            _btnSelectNone.CssClass = "rock-picker-select-none";
+            _btnSelectNone.CssClass = "picker-select-none";
             _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ID );
             _btnSelectNone.Text = "<i class='icon-remove'></i>";
             _btnSelectNone.CausesValidation = false;
@@ -545,9 +545,8 @@ namespace Rock.Web.UI.Controls
             if ( this.Enabled )
             {
                 string controlHtmlFormatStart = @"
-    <span id='{0}'>
-        <span class='rock-picker rock-picker-select'> 
-            <a class='rock-picker' href='#'>
+        <div id='{0}' class='picker picker-select'> 
+            <a class='picker-label' href='#'>
                 <i class='icon-folder-open'></i>
                 <span id='selectedItemLabel_{0}'>{1}</span>
                 <b class='caret'></b>
@@ -562,12 +561,11 @@ namespace Rock.Web.UI.Controls
                 }
                 else
                 {
-                    writer.Write( "<a class='rock-picker-select-none' id='btnSelectNone_{0}' href='#' style='display:none'><i class='icon-remove'></i></a>", this.ID );
+                    writer.Write( "<a class='picker-select-none' id='btnSelectNone_{0}' href='#' style='display:none'><i class='icon-remove'></i></a>", this.ID );
                 }
 
                 string controlHtmlFormatMiddle = @"
-        </span>
-        <div class='dropdown-menu rock-picker rock-picker-item'>
+          <div class='picker-menu dropdown-menu'>
 
             <div id='treeview-scroll-container_{0}' class='scroll-container scroll-container-picker'>
                 <div class='scrollbar'>
@@ -584,17 +582,17 @@ namespace Rock.Web.UI.Controls
                 </div>
             </div>
 
-            <hr />
+            <div class='picker-actions'>
 ";
                 writer.Write( controlHtmlFormatMiddle, this.ID );
 
                 _btnSelect.RenderControl( writer );
 
                 string controlHtmlFormatEnd = @"
-            <a class='btn btn-mini' id='btnCancel_{0}'>Cancel</a>
-            
+            <a class='btn btn-xs' id='btnCancel_{0}'>Cancel</a>
+            </div>
+          </div>
         </div>
-    </span>
 ";
                 writer.Write( controlHtmlFormatEnd, this.ID );
             }

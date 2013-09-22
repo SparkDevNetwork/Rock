@@ -4,15 +4,15 @@
 
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
-    <div class="row-fluid checkin-header">
-        <div class="span12">
+    <div class="row checkin-header">
+        <div class="col-md-12">
             <h1>Checked-in</h1>
         </div>
     </div>
 
 
-    <div class="row-fluid checkin-body">
-        <div class="span12">
+    <div class="row checkin-body">
+        <div class="col-md-12">
             
             <ol class="checkin-summary checkin-body-container">
                 <asp:PlaceHolder ID="phResults" runat="server"></asp:PlaceHolder>
@@ -21,10 +21,10 @@
     </div>
 
 
-    <div class="row-fluid checkin-footer">   
+    <div class="checkin-footer">   
         <div class="checkin-actions">
             <asp:LinkButton CssClass="btn btn-primary" ID="lbDone" runat="server" OnClick="lbDone_Click" Text="Done" />
-            <asp:LinkButton CssClass="btn btn-secondary" ID="lbAnother" runat="server" OnClick="lbAnother_Click" Text="Another Person" />
+            <asp:LinkButton CssClass="btn btn-default" ID="lbAnother" runat="server" OnClick="lbAnother_Click" Text="Another Person" />
          </div>
     </div>
 

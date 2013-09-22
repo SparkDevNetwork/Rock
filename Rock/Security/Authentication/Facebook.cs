@@ -202,7 +202,7 @@ namespace Rock.Security.ExternalAuthentication
         /// <exception cref="System.NotImplementedException"></exception>
         public override String ImageUrl()
         {
-            return "~/Assets/Images/facebook-login.png";
+            return ""; /*~/Assets/Images/facebook-login.png*/
         }
 
         private string GetRedirectUrl( HttpRequest request )

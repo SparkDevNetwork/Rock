@@ -24,8 +24,8 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            this.HeaderStyle.CssClass = "grid-col-command";
-            this.ItemStyle.CssClass = "grid-col-command";
+            this.HeaderStyle.CssClass = "grid-columncommand";
+            this.ItemStyle.CssClass = "grid-columncommand";
         }
 
         /// <summary>
