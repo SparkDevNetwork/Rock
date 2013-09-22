@@ -35,7 +35,7 @@
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
     <asp:Panel ID="pnlAdmin" runat="server" DefaultButton="lbOk" CssClass="attended">
-        <div class="row-fluid checkin-header">
+        <div class="row checkin-header">
             <div class="col-md-3"></div>
             <div class="col-md-6">
                 <h1>Admin</h1>
@@ -45,7 +45,7 @@
             </div>
         </div>
 
-        <div class="row-fluid checkin-body">
+        <div class="row checkin-body">
             <div class="col-md-4"></div>
             <div class="col-md-4">
                 <h3>Checkin Type(s)</h3>
@@ -58,7 +58,7 @@
             <div class="col-md-4"></div>
         </div>
 
-        <div class="row-fluid checkin-footer">
+        <div class="row checkin-footer">
             <div class="checkin-actions">
                 <a id="lbRetry" runat="server" class="btn btn-primary" visible="false" href="javascript:window.location.href=window.location.href">Retry</a>
             </div>
