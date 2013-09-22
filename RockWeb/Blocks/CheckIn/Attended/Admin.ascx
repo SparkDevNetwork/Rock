@@ -36,18 +36,18 @@
 
     <asp:Panel ID="pnlAdmin" runat="server" DefaultButton="lbOk" CssClass="attended">
         <div class="row-fluid checkin-header">
-            <div class="span3"></div>
-            <div class="span6">
+            <div class="col-md-3"></div>
+            <div class="col-md-6">
                 <h1>Admin</h1>
             </div>
-            <div class="span3 checkin-actions">
+            <div class="col-md-3 checkin-actions">
                 <asp:LinkButton ID="lbOk" runat="server" CssClass="btn btn-large btn-primary" OnClick="lbOk_Click" Text="Ok"></asp:LinkButton>
             </div>
         </div>
 
         <div class="row-fluid checkin-body">
-            <div class="span4"></div>
-            <div class="span4">
+            <div class="col-md-4"></div>
+            <div class="col-md-4">
                 <h3>Checkin Type(s)</h3>
                 <asp:Repeater ID="repMinistry" runat="server" OnItemDataBound="repMinistry_ItemDataBound">
                     <ItemTemplate>
@@ -55,7 +55,7 @@
                     </ItemTemplate>
                 </asp:Repeater>
             </div>
-            <div class="span4"></div>
+            <div class="col-md-4"></div>
         </div>
 
         <div class="row-fluid checkin-footer">
