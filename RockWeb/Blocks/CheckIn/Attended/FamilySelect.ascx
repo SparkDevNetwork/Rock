@@ -1,7 +1,7 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="FamilySelect.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Attended.FamilySelect" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="asp" %>
-<link rel="stylesheet" type="text/css"  href="../../CSS/Kendo/kendo.common.min.css" />
-<link rel="stylesheet" type="text/css"  href="../../CSS/Kendo/kendo.flat.less" />
+<link rel="stylesheet" type="text/css"  href="../../Styles/Kendo/kendo.common.min.css" />
+<%--<link rel="stylesheet" type="text/css"  href="../../Styles/Kendo/kendo.flat.less" />--%>
 <script type="text/javascript">
 
     function setControlEvents() {
@@ -68,7 +68,7 @@
         
     <asp:Panel ID="pnlFamilySelect" runat="server" CssClass="attended">
 
-        <div class="row-fluid checkin-header">
+        <div class="row checkin-header">
             <div class="col-md-3 checkin-actions">
                 <asp:LinkButton ID="lbBack" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbBack_Click" Text="Back" CausesValidation="false"/>
             </div>
@@ -82,7 +82,7 @@
             </div>
         </div>
                 
-        <div class="row-fluid checkin-body">
+        <div class="row checkin-body">
             
             <asp:UpdatePanel ID="pnlSelectFamily" runat="server" UpdateMode="Conditional" class="col-md-3">
             <ContentTemplate>
@@ -184,7 +184,7 @@
     <asp:Panel ID="pnlAddPerson" runat="server" CssClass="attended modal-foreground" DefaultButton="lbAddPersonSearch">
         
         <Rock:ModalAlert ID="maAddPerson" runat="server" />
-        <div class="row-fluid checkin-header">
+        <div class="row checkin-header">
             <div class="checkin-actions">
                 <div class="col-md-3">
                     <asp:LinkButton ID="lbAddPersonCancel" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddPersonCancel_Click" Text="Cancel" CausesValidation="false"/>
@@ -201,7 +201,7 @@
         </div>
 		
         <div class="checkin-body">
-            <div class="row-fluid">
+            <div class="row">
                 <div class="col-md-2">
                     <Rock:LabeledTextBox ID="tbFirstNameSearch" runat="server" CssClass="col-md-12" LabelText="First Name" Required="true" RequiredErrorMessage="Required" ValidationGroup="test" />
                 </div>
@@ -219,7 +219,7 @@
                 </div>
             </div>
             
-            <div class="row-fluid">
+            <div class="row">
                 <Rock:Grid ID="rGridPersonResults" runat="server" OnRowCommand="rGridPersonResults_AddExistingPerson"
                     ShowActionRow="false" PageSize="3" DataKeyNames="Id" AllowSorting="true">
                     <Columns>
@@ -241,7 +241,7 @@
                 </Rock:Grid>
             </div>
 
-            <div class="row-fluid">
+            <div class="row">
                 <asp:LinkButton ID="lbAddNewPerson" runat="server" Text="None of these, add a new person."
                     CssClass="btn btn-large btn-primary btn-checkin-select" Visible="false" OnClick="lbAddNewPerson_Click" ValidationGroup="test">
                 </asp:LinkButton>
@@ -254,7 +254,7 @@
 
     <asp:Panel ID="pnlAddFamily" runat="server" CssClass="attended modal-foreground">
 
-        <div class="row-fluid checkin-header">
+        <div class="row checkin-header">
             <div class="col-md-3 checkin-actions">
                 <asp:LinkButton ID="lbAddFamilyCancel" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddFamilyCancel_Click" Text="Cancel" CausesValidation="false" />
             </div>
@@ -271,7 +271,7 @@
         <div class="checkin-body">
             <asp:ListView ID="lvAddFamily" runat="server" OnPagePropertiesChanging="lvAddFamily_PagePropertiesChanging" OnItemDataBound="lvAddFamily_ItemDataBound" >
             <LayoutTemplate>
-                <div class="row-fluid">
+                <div class="row">
                     <div class="col-md-2">
                         <h4>First Name</h4>
                     </div>
@@ -291,7 +291,7 @@
                 <asp:PlaceHolder ID="itemPlaceholder" runat="server" />
             </LayoutTemplate>
             <ItemTemplate>
-                <div class="row-fluid">
+                <div class="row">
                     <div class="col-md-2">
                         <Rock:LabeledTextBox ID="tbFirstName" runat="server" CssClass="col-md-12" Text='<%# ((NewPerson)Container.DataItem).FirstName %>' />
                     </div>
@@ -311,7 +311,7 @@
             </ItemTemplate>        
             </asp:ListView>        
 
-            <div class="row-fluid">
+            <div class="row">
                 <asp:DataPager ID="dpAddFamily" runat="server" PageSize="5" PagedControlID="lvAddFamily">
                     <Fields>
                         <asp:NextPreviousPagerField ButtonType="Button" ButtonCssClass="btn btn-large btn-primary btn-checkin-select" />

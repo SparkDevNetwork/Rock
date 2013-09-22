@@ -30,7 +30,7 @@
 
     <asp:Panel ID="pnlSearch" runat="server" DefaultButton="lbSearch" CssClass="attended">
             
-        <div class="row-fluid checkin-header ">
+        <div class="row checkin-header ">
             <div class="col-md-3 checkin-actions">
                 <asp:LinkButton ID="lbAdmin" runat="server" CssClass="btn btn-large btn-primary" OnClick="lbAdmin_Click" Text="Admin" />
                 <asp:LinkButton ID="lbBack" runat="server" CssClass="btn btn-large btn-primary" OnClick="lbBack_Click" Text="Back" Visible="false" />
@@ -43,30 +43,12 @@
             </div>
         </div>
             
-        <div class="row-fluid checkin-body keyboard">
-            <Rock:LabeledTextBox ID="tbSearchBox" MaxLength="50" CssClass="input" runat="server" LabelText="" TabIndex="0" />            
-            <%--<div class="tenkey checkin-phone-keypad">--%>
-                <div class="row-fluid">
-                    <a href="#" class="btn btn-large digit">1</a>
-                    <a href="#" class="btn btn-large digit">2</a>
-                    <a href="#" class="btn btn-large digit">3</a>
-                </div>
-                <div class="row-fluid">
-                    <a href="#" class="btn btn-large digit">4</a>
-                    <a href="#" class="btn btn-large digit">5</a>
-                    <a href="#" class="btn btn-large digit">6</a>
-                </div>
-                <div class="row-fluid">
-                    <a href="#" class="btn btn-large digit">7</a>
-                    <a href="#" class="btn btn-large digit">8</a>
-                    <a href="#" class="btn btn-large digit">9</a>
-                </div>
-                <div class="row-fluid">
-                    <a href="#" class="btn btn-large back">Del</a>
-                    <a href="#" class="btn btn-large digit">0</a>
-                    <a href="#" class="btn btn-large clear">Clear</a>
-                </div>
-            <%--</div>--%>
+        <div class="row checkin-body keyboard">
+            <div class="col-md-3"></div>
+            <div class="col-md-6">
+            <Rock:LabeledTextBox ID="tbSearchBox" MaxLength="50" CssClass="input" runat="server" LabelText="" TabIndex="0" />
+            </div>
+            <div class="col-md-3"></div>
         </div>
     </asp:Panel>
 </ContentTemplate>

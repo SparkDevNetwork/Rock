@@ -5,7 +5,7 @@
 
     <Rock:ModalAlert ID="maWarning" runat="server" />
     <asp:Panel ID="pnlConfirm" runat="server" CssClass="attended">
-        <div class="row-fluid checkin-header">
+        <div class="row checkin-header">
             <div class="col-md-3 checkin-actions">
                 <asp:LinkButton ID="lbBack" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbBack_Click" Text="Back"/>
             </div>
@@ -20,7 +20,7 @@
         </div>
 
         <div class="checkin-body">    
-            <div class="row-fluid">
+            <div class="row">
                 <Rock:Grid ID="gPersonList" runat="server" DataKeyNames="PersonId,LocationId,ScheduleId" DisplayType="Light" OnRowCommand="gPersonList_Print" EmptyDataText="No People Selected">
                     <Columns>
                         <asp:BoundField DataField="PersonId" Visible="false" />                    
@@ -41,7 +41,7 @@
                     </Columns>
                 </Rock:Grid>
             </div>
-            <div class="row-fluid">
+            <div class="row">
                 <div class="col-md-9"></div>
                 <div class="col-md-3">
                     <asp:LinkButton ID="lbPrintAll" CssClass="btn btn-primary btn-block btn-checkin-select" runat="server" OnClick="lbPrintAll_Click" Text="Print All" />

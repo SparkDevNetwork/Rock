@@ -292,7 +292,7 @@ body {
 {
     text-align: center;
     margin-top: 2%;
-    margin-bottom: 1%;
+    /*margin-bottom: 1%;*/
 }
 
 .attended .checkin-body 
@@ -311,6 +311,8 @@ body {
 .attended .btn .checkin-sub-title 
 {
     font-size: .75em;
+    margin-left: 0;
+    white-space: normal;
 }
 
 .attended .btn-primary:active,
@@ -320,12 +322,12 @@ body {
 .attended .btn-primary:active.disabled,
 .attended .btn-primary:active[disabled]
 {
-    background: darken(@checkin-button-primary-background, 15%); 
+    background: darken(@btn-primary-bg, 15%); 
 }
 
 .attended .keyboard
 {
-    font-weight: @font-semibold-weight;    
+    font-weight: @font-weight-semibold;
     font-size: 2em;
     margin: 0 auto;
 }
@@ -335,7 +337,8 @@ body {
     font-weight: inherit;     
     font-size: inherit;
     height: 1.5em;    
-    width: 93%;
+    /*width: 50%;*/
+    margin-top: 25%;
 }
 
 .attended .keyboard a.btn 
@@ -432,7 +435,7 @@ body {
 {
     width: 95%;
     margin-left: 3%;
-    color: @site-text-color;
+    color: @text-color;
 }
 
 /*.attended.modal-foreground h2 {
@@ -451,5 +454,5 @@ body {
 
 .attended .help-inline 
 {
-    color: darken(@checkin-button-primary-background, 15%);
+    color: darken(@btn-primary-bg, 15%);
 }

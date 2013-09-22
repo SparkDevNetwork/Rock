@@ -30,7 +30,7 @@
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
     <asp:Panel ID="pnlActivitySelect" runat="server" CssClass="attended" >
-        <div class="row-fluid checkin-header">
+        <div class="row checkin-header">
             <div class="col-md-3 checkin-actions">
                 <asp:LinkButton ID="lbBack" CssClass="btn btn-primary btn-large" runat="server" OnClick="lbBack_Click" Text="Back"/>
             </div>
@@ -44,7 +44,7 @@
             </div>
         </div>
                 
-        <div class="row-fluid checkin-body">
+        <div class="row checkin-body">
 
             <asp:UpdatePanel ID="pnlSelectGroupType" runat="server" UpdateMode="Conditional" class="col-md-3">
             <ContentTemplate>        
@@ -114,7 +114,7 @@
 
     <!-- Add Condition Panel -->
     <asp:Panel ID="pnlAddCondition" runat="server" CssClass="attended modal-foreground small" DefaultButton="lbAddConditionSave">
-        <div class="checkin-header row-fluid">
+        <div class="checkin-header row">
             <div class="col-md-3 checkin-actions">
                 <asp:LinkButton ID="lbAddConditionCancel" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddConditionCancel_Click" Text="Cancel" CausesValidation="false" />
             </div>
@@ -129,10 +129,10 @@
         <div class="checkin-body">
             <asp:Repeater ID="rptCondition" runat="server" OnItemDataBound="rptAddCondition_ItemDataBound" OnItemCommand="rptCondition_ItemCommand">
                 <HeaderTemplate>
-                    <div class="row-fluid">
+                    <div class="row">
                 </HeaderTemplate>
                 <ItemTemplate>
-                    <%# (Container.ItemIndex > 0 && Container.ItemIndex % 3 == 0) ? "</div><div class=\"row-fluid\">" : string.Empty %>
+                    <%# (Container.ItemIndex > 0 && Container.ItemIndex % 3 == 0) ? "</div><div class=\"row\">" : string.Empty %>
                     <div class="col-md-4">
                         <asp:LinkButton ID="lbConditionName" CssClass="btn btn-block btn-primary btn-checkin-select" runat="server" />
                     </div>
@@ -150,7 +150,7 @@
 
     <!-- Add Note Panel -->
     <asp:Panel ID="pnlAddNote" runat="server" CssClass="attended modal-foreground small" DefaultButton="lbAddNoteSave">
-        <div class="checkin-header row-fluid">
+        <div class="checkin-header row">
             <div class="col-md-3 checkin-actions">
                 <asp:LinkButton ID="lbAddNoteCancel" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddNoteCancel_Click" Text="Cancel" CausesValidation="false"/>
             </div>
@@ -163,7 +163,7 @@
         </div>
 		
         <div class="checkin-body">
-            <div class="row-fluid">
+            <div class="row">
                 <Rock:LabeledTextBox ID="tbNote" runat="server" CssClass="note" MaxLength="40" />
             </div>
         </div>
