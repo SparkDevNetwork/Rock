@@ -217,6 +217,11 @@
     <Compile Include="Migrations\201309182328119_AddAbilityLevelToCheckIn.Designer.cs">
       <DependentUpon>201309182328119_AddAbilityLevelToCheckIn.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201309211607057_PaymentGateway.cs" />
+    <Compile Include="Migrations\201309211607057_PaymentGateway.Designer.cs">
+      <DependentUpon>201309211607057_PaymentGateway.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Model\FinancialPersonSavedAccountService.Partial.cs" />
     <Compile Include="Storage\ProviderComponent.cs" />
     <Compile Include="Storage\ProviderContainer.cs" />
     <Compile Include="Storage\Provider\Database.cs" />
@@ -1038,6 +1043,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201309182328119_AddAbilityLevelToCheckIn.resx">
       <DependentUpon>201309182328119_AddAbilityLevelToCheckIn.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201309211607057_PaymentGateway.resx">
+      <DependentUpon>201309211607057_PaymentGateway.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

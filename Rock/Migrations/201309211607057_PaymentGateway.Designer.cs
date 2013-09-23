@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "Rock 0.0.1")]
-    public sealed partial class BatchDates : IMigrationMetadata
+    public sealed partial class PaymentGateway : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(BatchDates));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(PaymentGateway));
         
         string IMigrationMetadata.Id
         {
-            get { return "201309200328285_BatchDates"; }
+            get { return "201309211607057_PaymentGateway"; }
         }
         
         string IMigrationMetadata.Source
