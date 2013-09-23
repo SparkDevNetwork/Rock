@@ -51,6 +51,11 @@ namespace Rock.Web.UI.Adapters
                     writer.AddAttribute( "checked", "checked" );
                 }
 
+                if ( !string.IsNullOrWhiteSpace( cb.CssClass ) )
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, cb.CssClass );
+                }
+
                 foreach ( var inputAttributeKey in cb.InputAttributes.Keys )
                 {
                     var key = inputAttributeKey as string;

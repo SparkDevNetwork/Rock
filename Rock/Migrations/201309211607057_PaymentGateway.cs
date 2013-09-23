@@ -145,6 +145,8 @@ achieve our mission.  We are so grateful for your commitment.
             // Attrib Value for Block:Contributions, Attribute:Accounts, Page:Give Now
             AddBlockAttributeValue( "20C12A0F-BEC1-4620-9273-EEFE4CFB1D96", "DAB27F0A-D0C0-4275-93F4-DEF227F6B1A2", "4410306f-3fb5-4a57-9a80-09a3f9d40d0c,67c6181c-1d8c-44d7-b262-b81e746f06d8" );
 
+            AddBlockAttributeValue( "8C707818-ECB1-4E40-8F2C-6E9802E6BA73", "ABBABC4C-1C9D-4B75-9A8F-B1C86205F3F1", "True" );
+
             UpdateFieldType( "Time Field Type", "", "Rock", "Rock.Field.Types.TimeFieldType", "2F8F5EC4-57FA-4F6C-AB15-9D6616994580" );
         }
 
@@ -153,6 +155,8 @@ achieve our mission.  We are so grateful for your commitment.
         /// </summary>
         public override void Down()
         {
+            DeleteBlockAttributeValue( "8C707818-ECB1-4E40-8F2C-6E9802E6BA73", "ABBABC4C-1C9D-4B75-9A8F-B1C86205F3F1" );
+
             DeleteAttribute("3D478949-1F85-4E81-A403-22BBA96B8F69");
             DeleteAttribute("D6429E78-E8F0-4EF2-9D18-DFDDE4ECC6A7");
             DeleteAttribute("245BDD4E-E8FF-4039-8C0B-C7AC1C185D1D");
@@ -173,10 +177,10 @@ achieve our mission.  We are so grateful for your commitment.
 
             // Remove Block: Gateways, from Page: Financial Gateways
             DeleteBlock("8C707818-ECB1-4E40-8F2C-6E9802E6BA73");
-            AddBlock( "1615E090-1889-42FF-AB18-5F7BE9F24498", "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "Contributions", "", "Main", 0, "20C12A0F-BEC1-4620-9273-EEFE4CFB1D96" );
 
             // Remove Block: Contributions, from Page: Give Now
             DeleteBlock("20C12A0F-BEC1-4620-9273-EEFE4CFB1D96");
+            AddBlock( "1615E090-1889-42FF-AB18-5F7BE9F24498", "B343E2B7-0AD0-49B8-B78E-E47BD42171A7", "Contributions", "", "Main", 0, "20C12A0F-BEC1-4620-9273-EEFE4CFB1D96" );
 
             DeleteBlockType("74EE3481-3E5A-4971-A02E-D463ABB45591"); // Finance - Add Transaction
 
