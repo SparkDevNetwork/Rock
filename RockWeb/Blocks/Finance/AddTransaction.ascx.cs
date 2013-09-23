@@ -308,14 +308,12 @@ achieve our mission.  We are so grateful for your commitment.
                 phSuccessFooter.Controls.Add( new LiteralControl( GetAttributeValue( "SuccessFooter" ).ResolveMergeFields( configValues ) ) );
 
                 // Temp values for testing...
-                txtCardName.Text = "David R Turner";
-                txtCreditCard.Text = "5105105105105100";
-                mypExpiration.SelectedDate = new DateTime( 2014, 1, 1 );
-                txtCVV.Text = "023";
+                //txtCreditCard.Text = "5105105105105100";
+                //txtCVV.Text = "023";
 
-                txtBankName.Text = "Test Bank";
-                txtRoutingNumber.Text = "111111118";
-                txtAccountNumber.Text = "1111111111";
+                //txtBankName.Text = "Test Bank";
+                //txtRoutingNumber.Text = "111111118";
+                //txtAccountNumber.Text = "1111111111";
             }
         }
 

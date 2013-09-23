@@ -82,6 +82,19 @@ namespace Rock.Migrations
             AddBlock( "6F8EC649-FDED-4805-B7AF-42A6901C197F", "21F5F466-59BC-40B2-8D73-7314D936C3CB", "Gateways", "", "Content", 0, "8C707818-ECB1-4E40-8F2C-6E9802E6BA73" );
             AddBlockAttributeValue( "8C707818-ECB1-4E40-8F2C-6E9802E6BA73", "259AF14D-0214-4BE4-A7BF-40423EA07C99", "Rock.Financial.GatewayContainer, Rock" );
 
+            UpdateFieldType( "Time Field Type", "", "Rock", "Rock.Field.Types.TimeFieldType", "2F8F5EC4-57FA-4F6C-AB15-9D6616994580" );
+
+            UpdateEntityType( "Rock.PayFlowPro.Gateway", "Gateway", "Rock.PayFlowPro.Gateway, Rock.PayFlowPro, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null", false, false, "d4a40c4a-336f-49a6-9f44-88f149726126" );
+            AddEntityAttribute( "Rock.PayFlowPro.Gateway", "1EDAFDED-DFE6-4334-B019-6EECBA89E05A", "", "", "Active", "", "Should Service be used?", 0, "False", "ABBABC4C-1C9D-4B75-9A8F-B1C86205F3F1" );
+            AddEntityAttribute( "Rock.PayFlowPro.Gateway", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "", "", "Order", "", "The order that this service should be used (priority)", 0, "", "4F8C4047-DFB2-46FE-86B6-2002E3DDF6DE" );
+            AddEntityAttribute( "Rock.PayFlowPro.Gateway", "7525C4CB-EE6B-41D4-9B64-A08048D5A5C0", "", "", "Mode", "", "Mode to use for transactions", 1, "Live", "EEF31B3A-92EF-4E2B-81BB-184741291DEC" );
+            AddEntityAttribute( "Rock.PayFlowPro.Gateway", "9C204CD0-1233-41C5-818A-C5DA439445AA", "", "", "PayPal Partner", "", "", 2, "", "5EB5E3F5-AD7C-4B3B-B779-FB3FA37D98D4" );
+            AddEntityAttribute( "Rock.PayFlowPro.Gateway", "9C204CD0-1233-41C5-818A-C5DA439445AA", "", "", "PayPal Merchant Login", "", "", 3, "", "ECB1048F-6930-4B53-86D9-611E49469BFA" );
+            AddEntityAttribute( "Rock.PayFlowPro.Gateway", "9C204CD0-1233-41C5-818A-C5DA439445AA", "", "", "PayPal User", "", "", 4, "", "298E7FA1-45C8-46A0-9266-CA75465B66FD" );
+            AddEntityAttribute( "Rock.PayFlowPro.Gateway", "9C204CD0-1233-41C5-818A-C5DA439445AA", "", "", "PayPal Password", "", "", 5, "", "9F792F64-A4C0-4FE3-AE4E-8F869503101B" );
+            AddEntityAttribute( "Rock.PayFlowPro.Gateway", "2F8F5EC4-57FA-4F6C-AB15-9D6616994580", "", "", "Batch Process Time", "", "The Paypal Batch processing cut-off time.  When batches are created by Rock, they will use this for the start/stop when creating new batches", 6, "00:00:00", "5DF40338-3DA1-4959-AF81-B2B3A32C9C9D" );
+            AddAttributeValue("ABBABC4C-1C9D-4B75-9A8F-B1C86205F3F1", 0, "True", "BD8D3D0A-A535-4CBE-9342-8027C5665CCB" );
+
             // Add Transaction Page
             DeleteBlock( "20C12A0F-BEC1-4620-9273-EEFE4CFB1D96" );
             AddBlockType( "Finance - Add Transaction", "", "~/Blocks/Finance/AddTransaction.ascx", "74EE3481-3E5A-4971-A02E-D463ABB45591" );
@@ -137,7 +150,6 @@ achieve our mission.  We are so grateful for your commitment.
             AddBlockTypeAttribute( "74EE3481-3E5A-4971-A02E-D463ABB45591", "C28C7BF3-A552-4D77-9408-DEDCF760CED0", "Success Footer", "SuccessFooter", "", "The text (HTML) to display at the bottom of the confirmation section?", 16, @"
 ", "188C6D55-CC08-4019-AA5F-706251509696" );
 
-            UpdateEntityType( "Rock.PayFlowPro.Gateway", "Gateway", "Rock.PayFlowPro.Gateway, Rock.PayFlowPro, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null", false, false, "d4a40c4a-336f-49a6-9f44-88f149726126" );
             // Attrib Value for Block:Contributions, Attribute:Credit Card Gateway, Page:Give Now
             AddBlockAttributeValue( "20C12A0F-BEC1-4620-9273-EEFE4CFB1D96", "3D478949-1F85-4E81-A403-22BBA96B8F69", "d4a40c4a-336f-49a6-9f44-88f149726126" );
             // Attrib Value for Block:Contributions, Attribute:ACH Card Gateway, Page:Give Now
@@ -145,9 +157,6 @@ achieve our mission.  We are so grateful for your commitment.
             // Attrib Value for Block:Contributions, Attribute:Accounts, Page:Give Now
             AddBlockAttributeValue( "20C12A0F-BEC1-4620-9273-EEFE4CFB1D96", "DAB27F0A-D0C0-4275-93F4-DEF227F6B1A2", "4410306f-3fb5-4a57-9a80-09a3f9d40d0c,67c6181c-1d8c-44d7-b262-b81e746f06d8" );
 
-            AddBlockAttributeValue( "8C707818-ECB1-4E40-8F2C-6E9802E6BA73", "ABBABC4C-1C9D-4B75-9A8F-B1C86205F3F1", "True" );
-
-            UpdateFieldType( "Time Field Type", "", "Rock", "Rock.Field.Types.TimeFieldType", "2F8F5EC4-57FA-4F6C-AB15-9D6616994580" );
         }
 
         /// <summary>
@@ -174,6 +183,15 @@ achieve our mission.  We are so grateful for your commitment.
             DeleteAttribute("B1F9196D-B51D-4ECD-A7BE-89F34431D736");
             DeleteAttribute("1597A542-E6EB-4E29-A435-E5C23785251E");
             DeleteAttribute("188C6D55-CC08-4019-AA5F-706251509696");
+
+            DeleteAttribute( "5EB5E3F5-AD7C-4B3B-B779-FB3FA37D98D4" );    // Rock.PayFlowPro.Gateway: PayPal Partner
+            DeleteAttribute( "4F8C4047-DFB2-46FE-86B6-2002E3DDF6DE" );    // Rock.PayFlowPro.Gateway: Order
+            DeleteAttribute( "ABBABC4C-1C9D-4B75-9A8F-B1C86205F3F1" );    // Rock.PayFlowPro.Gateway: Active
+            DeleteAttribute( "ECB1048F-6930-4B53-86D9-611E49469BFA" );    // Rock.PayFlowPro.Gateway: PayPal Merchant Login
+            DeleteAttribute( "298E7FA1-45C8-46A0-9266-CA75465B66FD" );    // Rock.PayFlowPro.Gateway: PayPal User
+            DeleteAttribute( "9F792F64-A4C0-4FE3-AE4E-8F869503101B" );    // Rock.PayFlowPro.Gateway: PayPal Password
+            DeleteAttribute( "EEF31B3A-92EF-4E2B-81BB-184741291DEC" );    // Rock.PayFlowPro.Gateway: Mode
+            DeleteAttribute( "5DF40338-3DA1-4959-AF81-B2B3A32C9C9D" );    // Rock.PayFlowPro.Gateway: Batch Process Time
 
             // Remove Block: Gateways, from Page: Financial Gateways
             DeleteBlock("8C707818-ECB1-4E40-8F2C-6E9802E6BA73");
