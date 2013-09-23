@@ -302,10 +302,10 @@
                         <Rock:DatePicker ID="dpBirthDate" runat="server" CssClass="col-md-12" SelectedDate='<%# ((NewPerson)Container.DataItem).BirthDate %>' />
                     </div>
                     <div class="col-md-2">
-                        <Rock:RockDropDownList ID="ddlGender" runat="server" CssClass="col-md-12" />
+                        <Rock:DataDropDownList ID="ddlGender" runat="server" CssClass="col-md-12" />
                     </div>
                     <div class="col-md-3">
-                        <Rock:RockDropDownList ID="ddlAbilityGrade" runat="server" CssClass="col-md-12" />
+                        <Rock:DataDropDownList ID="ddlAbilityGrade" runat="server" CssClass="col-md-12" />
                     </div>                
                 </div>
             </ItemTemplate>        

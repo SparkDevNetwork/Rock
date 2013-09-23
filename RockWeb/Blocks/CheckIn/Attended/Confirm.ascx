@@ -19,7 +19,7 @@
             </div>
         </div>
 
-        <div class="checkin-body">    
+        <div class="checkin-body selected-grid">
             <div class="row">
                 <Rock:Grid ID="gPersonList" runat="server" DataKeyNames="PersonId,LocationId,ScheduleId" DisplayType="Light" OnRowCommand="gPersonList_Print" EmptyDataText="No People Selected">
                     <Columns>
@@ -29,11 +29,11 @@
                         <asp:BoundField DataField="LocationId" Visible="false" />
                         <asp:BoundField DataField="Schedule" HeaderText="Time" />
                         <asp:BoundField DataField="ScheduleId" Visible="false" />
-                        <Rock:EditValueField HeaderText="Edit" ControlStyle-CssClass="btn btn-large btn-primary btn-checkin-select" OnClick="gPersonList_Edit" />
-                        <Rock:DeleteField HeaderText="Delete" ControlStyle-CssClass="btn btn-large btn-primary btn-checkin-select" OnClick="gPersonList_Delete" />
+                        <Rock:EditValueField HeaderText="Edit" ControlStyle-CssClass="btn btn-large btn-primary" OnClick="gPersonList_Edit" />
+                        <Rock:DeleteField HeaderText="Delete" ControlStyle-CssClass="btn btn-large btn-primary" OnClick="gPersonList_Delete" />
                         <asp:TemplateField HeaderText="Print">
                             <ItemTemplate>
-                                <asp:LinkButton ID="btnPrint" runat="server" CssClass="btn btn-large btn-primary btn-checkin-select" CommandName="Print" CommandArgument="<%# Container.DataItemIndex %>">
+                                <asp:LinkButton ID="btnPrint" runat="server" CssClass="btn btn-large btn-primary" CommandName="Print" CommandArgument="<%# Container.DataItemIndex %>">
                                     <i class="icon-print"></i>
                                 </asp:LinkButton>
                             </ItemTemplate> 

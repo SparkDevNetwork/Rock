@@ -43,7 +43,7 @@
             </div>
         </div>
             
-        <div class="row checkin-body keyboard">
+        <div class="row checkin-body">
             <div class="col-md-3"></div>
             <div class="col-md-6">
             <Rock:LabeledTextBox ID="tbSearchBox" MaxLength="50" CssClass="input" runat="server" LabelText="" TabIndex="0" />
