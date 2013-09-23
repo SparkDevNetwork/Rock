@@ -292,13 +292,12 @@ body {
 {
     text-align: center;
     margin-top: 2%;
-    /*margin-bottom: 1%;*/
 }
 
 .attended .checkin-body 
 {
     text-align: center;
-    margin: 0 auto;
+    margin: 1% auto 0;
     color: @header-text-color;
 }
 
@@ -306,6 +305,7 @@ body {
 {
     margin-bottom: 10px;
     float: none;
+    white-space: normal;
 }
 
 .attended .btn .checkin-sub-title 
@@ -325,39 +325,14 @@ body {
     background: darken(@btn-primary-bg, 15%); 
 }
 
-.attended .keyboard
-{
+.attended .input 
+{   
+    /*font-weight: inherit;     
+    font-size: inherit;*/
     font-weight: @font-weight-semibold;
     font-size: 2em;
-    margin: 0 auto;
-}
-
-.attended .keyboard .input 
-{   
-    font-weight: inherit;     
-    font-size: inherit;
     height: 1.5em;    
-    /*width: 50%;*/
     margin-top: 25%;
-}
-
-.attended .keyboard a.btn 
-{    
-    font-size: inherit;
-    padding: 2% 1%;
-    width: 6.5%;
-    margin: 0.35% 0.05%;
-    line-height: 1.5em;    
-}
-
-.attended .keyboard a.spacebar 
-{
-    width: 50%;
-}
-
-.attended .keyboard .back 
-{
-    width: 13%;
 }
 
 .attended .nothing-eligible
@@ -381,14 +356,22 @@ body {
 .attended table td
 {
 	border: none;
-    padding: 0.255em;  
+    padding: 0.255em;
 	vertical-align: middle;
-	text-align: center;    
+	text-align: center;
 }
 
 .attended .selected-grid .grid-table 
 {
     font-size: 1.25em;
+    background: rgba(0, 0, 0, .25);
+}
+
+.attended .selected-grid .table > tfoot > tr > td, .attended .selected-grid .table > tbody > tr > td, .attended .selected-grid .table > thead > tr > th,
+.attended .table-bordered > tfoot > tr > td, .attended .table-bordered > tbody > tr > td, .attended .table-bordered > thead > tr > th
+{
+    border: none;
+    vertical-align: middle;
 }
 
 .attended .pagination 
@@ -396,8 +379,8 @@ body {
     margin: 0;
 }
 
-.attended .page-size,
-.attended .item-count,
+.attended .grid-pagesize,
+.attended .grid-itemcount,
 .attended input[type="submit"].btn[disabled="disabled"]
 {
 	display: none;
@@ -417,7 +400,7 @@ body {
 {
     background: rgba(255,255,255,.8);
     width: 80%;
-    height: 75%;    
+    height: 80%;
     -moz-border-radius: 10px;
     -webkit-border-radius: 10px;
     border-radius: 10px;
@@ -435,12 +418,14 @@ body {
 {
     width: 95%;
     margin-left: 3%;
-    color: @text-color;
+    color: darken(@text-color, 50%);
 }
 
-/*.attended.modal-foreground h2 {
-    color: @site-text-color !important;
-}*/
+.attended.modal-foreground div[class*='col-md-']
+{
+    padding-left: 3px;
+    padding-right: 3px;
+}
 
 .attended input[type="text"].note
 {
@@ -450,6 +435,8 @@ body {
 .attended .k-datepicker
 {
     margin-bottom: 10px;
+    display: block;
+    width: 100%;
 }
 
 .attended .help-inline 

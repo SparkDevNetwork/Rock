@@ -55,7 +55,7 @@ namespace Rock.Workflow.Action.CheckIn
                             {
                                 foreach ( var group in groupType.Groups.Where( g => g.Selected || loadAll ) )
                                 {
-                                    foreach ( var kioskGroup in kioskGroupType.KioskGroups.Where( g => g.Group.Id == group.Group.Id ) )
+                                    foreach ( var kioskGroup in kioskGroupType.KioskGroups.Where( g => g.Group.Id == group.Group.Id || loadAll ) )
                                     {
                                         foreach ( var kioskLocation in kioskGroup.KioskLocations )
                                         {
