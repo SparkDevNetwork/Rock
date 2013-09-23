@@ -8844,7 +8844,7 @@ td[align=center] {
   width: 720px;
 }
 .modal-body .scroll-container .viewport {
-  width: 690px;
+  width: 670px;
 }
 .modal-body.iframe {
   background: url("../assets/images/ajax-loading.png") center center no-repeat;
@@ -9110,6 +9110,7 @@ dl dd {
   position: absolute;
   left: 0;
   top: 0;
+  width: 100%;
 }
 .scroll-container .scrollbar {
   position: relative;

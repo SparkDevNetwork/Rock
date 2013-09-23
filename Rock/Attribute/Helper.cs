@@ -637,7 +637,7 @@ namespace Rock.Attribute
                     div.Controls.Clear();
 
                     div.ID = string.Format( "attribute_{0}", attribute.Id );
-                    div.AddCssClass( "control-group" );
+                    div.AddCssClass( "form-group" );
                     if ( attribute.IsRequired )
                         div.AddCssClass( "required" );
                     div.Attributes.Add( "attribute-key", attribute.Key );
@@ -646,9 +646,9 @@ namespace Rock.Attribute
                     Control attributeControl = attribute.CreateControl( item.AttributeValues[attribute.Key][0].Value, setValue, true );
                     if ( !( attributeControl is CheckBox ) )
                     {
-                        HtmlGenericControl labelDiv = new HtmlGenericControl( "div" );
+                        HtmlGenericControl labelDiv = new HtmlGenericControl( "label" );
                         div.Controls.Add( labelDiv );
-                        labelDiv.AddCssClass( "control-label" );
+                        //labelDiv.AddCssClass( "control-label" );
                         labelDiv.ClientIDMode = ClientIDMode.AutoID;
 
                         Literal lbl = new Literal();
