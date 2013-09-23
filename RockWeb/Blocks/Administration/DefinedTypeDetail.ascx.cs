@@ -5,6 +5,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Rock;
 using Rock.Constants;
@@ -105,7 +106,9 @@ namespace RockWeb.Blocks.Administration
                 definedType = typeService.Get( definedType.Guid );
             } );
 
-            ShowReadonlyDetails( definedType );
+            var qryParams = new Dictionary<string, string>();
+            qryParams["definedTypeId"] = definedType.Id.ToString();
+            NavigateToPage( this.CurrentPage.Guid, qryParams );
         }
 
         /// <summary>
