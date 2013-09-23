@@ -10,7 +10,6 @@
 	  	<header>
 		  	<div class="row-fluid identity">
 			  	<div class="span6">
-			  		<img class="logo" src="./assets/img/rocksolidchurchlogo.svg">
                     <asp:HyperLink ID="hlLogo" runat="server" NavigateUrl="~" >
                         <asp:Image ID="imgLogo" runat="server" ImageUrl="~/Themes/GrayFabric/Assets/Images/rocksolidchurchlogo.svg" CssClass="logo" />
                     </asp:HyperLink>
