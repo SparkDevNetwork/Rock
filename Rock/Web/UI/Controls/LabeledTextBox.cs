@@ -289,14 +289,12 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                bool renderControlGroupDiv = ( !string.IsNullOrWhiteSpace( LabelText ) || !string.IsNullOrWhiteSpace( Help ) );
+                bool renderControlGroupDiv = ( !string.IsNullOrEmpty( LabelText ) || !string.IsNullOrWhiteSpace( Help ) );
                 string wrapperClassName = string.Empty;
 
                 if ( renderControlGroupDiv )
                 {
-                    writer.AddAttribute( "class", "form-group" +
-                        ( IsValid ? "" : " error" ) +
-                        ( Required ? " required" : "" ) );
+                    writer.AddAttribute( "class", "form-group" + ( IsValid ? "" : " error" ) + ( Required ? " required" : "" ) );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                     writer.AddAttribute("for", this.ClientID);
@@ -324,7 +322,6 @@ namespace Rock.Web.UI.Controls
                 {
                     writer.AddAttribute("class", "input-group-addon");
                     writer.RenderBeginTag(HtmlTextWriterTag.Span);
-
                     prependLabel.Text = PrependText;
                     prependLabel.RenderControl( writer );
                     writer.RenderEndTag();
@@ -335,16 +332,13 @@ namespace Rock.Web.UI.Controls
                 {
                     this.CssClass += " ";
                 }
-
                 this.CssClass = this.CssClass + "form-control";
-
                 base.RenderControl( writer );
 
                 if ( !string.IsNullOrWhiteSpace( AppendText ) )
                 {
                     writer.AddAttribute("class", "input-group-addon");
                     writer.RenderBeginTag(HtmlTextWriterTag.Span);
-                    
                     appendLabel.Text = AppendText;
                     appendLabel.RenderControl( writer );
                     writer.RenderEndTag();
@@ -352,7 +346,7 @@ namespace Rock.Web.UI.Controls
 
                 if (renderInputGroup)
                 {
-                    writer.RenderEndTag();
+                    writer.RenderEndTag();  // input-group
                 }
 
                 if ( Required )
@@ -381,8 +375,7 @@ namespace Rock.Web.UI.Controls
 
                 if ( renderControlGroupDiv )
                 {
-                    writer.RenderEndTag();
-                    writer.RenderEndTag();
+                    writer.RenderEndTag();  // form-group
                 }
             }
         }
