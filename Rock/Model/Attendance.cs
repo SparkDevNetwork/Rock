@@ -14,7 +14,8 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// CheckInAttendance EF Model.
+    /// Represents an instance where a <see cref="Rock.Model.Person"/> who attended or was scheduled to attend a group or event.
+    /// This can be used for attendee/volunteer check-in, group attendance, etc.
     /// </summary>
     [Table( "Attendance" )]
     [DataContract]
@@ -24,65 +25,66 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the location id.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Location"/> that the individual attended/checked in to. 
         /// </summary>
         /// <value>
-        /// The location id.
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Location"/> that was checked in to.
         /// </value>
         [DataMember]
         public int? LocationId { get; set; }
 
+
         /// <summary>
-        /// Gets or sets the shedule id.
+        /// Gets or sets the Id of the schedule that the <see cref="Rock.Model.Person"/> checked in to.
         /// </summary>
         /// <value>
-        /// The shedule id.
+        /// An <see cref="System.Int32"/> representing the schedule that was checked in to.
         /// </value>
         [DataMember]
         public int? ScheduleId { get; set; }
 
         /// <summary>
-        /// Gets or sets the group id.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Group"/> that the <see cref="Rock.Model.Person"/> checked in to.
         /// </summary>
         /// <value>
-        /// The group id.
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/> that was checked in to.
         /// </value>
         [DataMember]
         public int? GroupId { get; set; }
 
         /// <summary>
-        /// Gets or sets the person id.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Person"/> that attended/checked in to the <see cref="Rock.Model.Group"/>
         /// </summary>
         /// <value>
-        /// The person id.
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who attended/checked in.
         /// </value>
         [DataMember]
         public int? PersonId { get; set; }
 
         /// <summary>
-        /// Gets or sets the device id that was used. (i.e. where user "checked-in" from
+        /// Gets or sets the Id of the <see cref="Rock.Model.Device"/> that was used (the device where the person checked in from).
         /// </summary>
         /// <value>
-        /// The device id.
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Device"/> that was used.
         /// </value>
         [DataMember]
         public int? DeviceId { get; set; }
 
         /// <summary>
-        /// Gets or sets the search type value id.
+        /// Gets or sets the Id of the Check-in Search Type <see cref="Rock.Model.DefinedValue"/> that was used to search for the person/family.
         /// </summary>
         /// <value>
-        /// The search type value id.
+        /// A <see cref="System.Int32"/> representing the Id of the Check-in Search Type <see cref="Rock.Model.DefinedValue"/> that was used to search for the person/family.
         /// </value>
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.CHECKIN_SEARCH_TYPE )]
         public int? SearchTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the attendance code id.
+        /// Gets or sets the Id of the <see cref="Rock.Model.AttendanceCode"/> that is associated with this <see cref="Rock.Model.Attendance"/> entity.
         /// </summary>
         /// <value>
-        /// The attendance code id.
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.AttendanceCode"/> that is associated with this <see cref="Rock.Model.Attendance"/> entity.
         /// </value>
         [DataMember]
         public int? AttendanceCodeId { get; set; }
@@ -99,28 +101,28 @@ namespace Rock.Model
         public int? QualifierValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the start date time.
+        /// Gets or sets the start date and time/check in time
         /// </summary>
         /// <value>
-        /// The start date time.
+        /// A <see cref="System.DateTime"/> representing the start date and time/check in date and time.
         /// </value>
         [DataMember]
         public DateTime StartDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the end date time.
+        /// Gets or sets the end date and time/check out date and time.
         /// </summary>
         /// <value>
-        /// The end date time.
+        /// A <see cref="System.DateTime"/> representing the end date and time/check out time.
         /// </value>
         [DataMember]
         public DateTime? EndDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether [did attend].
+        /// Gets or sets a flag indicating if the person attended.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if [did attend]; otherwise, <c>false</c>.
+        /// A <see cref="System.Boolean"/> indicating if the person attended. This value will be <c>true</c> if they did attend, otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool DidAttend
@@ -134,7 +136,7 @@ namespace Rock.Model
         /// Gets or sets the note.
         /// </summary>
         /// <value>
-        /// The note.
+        /// A <see cref="System.String"/> representing the note.
         /// </value>
         [DataMember]
         public string Note { get; set; }
@@ -144,10 +146,10 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the location.
+        /// Gets or sets the <see cref="Rock.Model.Location"/> where the <see cref="Rock.Model.Person"/> attended.
         /// </summary>
         /// <value>
-        /// The location.
+        /// The <see cref="Rock.Model.Location"/> where the <see cref="Rock.Model.Person"/> attended.
         /// </value>
         [DataMember]
         public virtual Location Location { get; set; }
@@ -162,46 +164,46 @@ namespace Rock.Model
         public virtual Schedule Schedule { get; set; }
 
         /// <summary>
-        /// Gets or sets the group.
+        /// Gets or sets the <see cref="Rock.Model.Group"/> that was attended.
         /// </summary>
         /// <value>
-        /// The group.
+        /// The <see cref="Rock.Model.Group"/> that was attended.
         /// </value>
         [DataMember]
         public virtual Group Group { get; set; }
 
         /// <summary>
-        /// Gets or sets the person.
+        /// Gets or sets the <see cref="Rock.Model.Person"/> who was the attendee.
         /// </summary>
         /// <value>
-        /// The person.
+        /// The <see cref="Rock.Model.Person"/> who was the attendee.
         /// </value>
         [DataMember]
         public virtual Person Person { get; set; }
 
         /// <summary>
-        /// Gets or sets the device that was used. (i.e. where user "checked-in" from
+        /// Gets or sets the <see cref="Rock.Model.Device"/> that was used to check in
         /// </summary>
         /// <value>
-        /// The device.
+        /// The <see cref="Rock.Model.Device"/> that was used to check in 
         /// </value>
         [DataMember]
         public virtual Device Device { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of search used during check-in
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue "/> representing the type of search used during check-in
         /// </summary>
         /// <value>
-        /// The search type value.
+        /// The <see cref="Rock.Model.DefinedValue"/>  representing the search type value.
         /// </value>
         [DataMember]
         public virtual DefinedValue SearchTypeValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the attendance code.
+        /// Gets or sets the <see cref="Rock.Model.AttendanceCode"/> associated with this Attendance.
         /// </summary>
         /// <value>
-        /// The attendance code.
+        /// The <see cref="Rock.Model.AttendanceCode"/> associated with this Attendance.
         /// </value>
         [DataMember]
         public virtual AttendanceCode AttendanceCode { get; set; }
