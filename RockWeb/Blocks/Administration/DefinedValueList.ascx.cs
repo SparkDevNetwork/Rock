@@ -36,19 +36,19 @@ namespace RockWeb.Blocks.Administration
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-                        
-            _canConfigure = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
-            if ( _canConfigure == true )
-            {
-                gDefinedValues.DataKeyNames = new string[] { "id" };
-                gDefinedValues.Actions.ShowAdd = true;
-                gDefinedValues.Actions.AddClick += gDefinedValues_Add;
-                gDefinedValues.GridRebind += gDefinedValues_GridRebind;
-                gDefinedValues.GridReorder += gDefinedValues_GridReorder;
 
-                modalValue.SaveClick += btnSaveValue_Click;
-                modalValue.OnCancelScript = string.Format( "$('#{0}').val('');", hfDefinedValueId.ClientID );
-            }
+            gDefinedValues.DataKeyNames = new string[] { "id" };
+            gDefinedValues.Actions.ShowAdd = true;
+            gDefinedValues.Actions.AddClick += gDefinedValues_Add;
+            gDefinedValues.GridRebind += gDefinedValues_GridRebind;
+            gDefinedValues.GridReorder += gDefinedValues_GridReorder;
+
+            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            gDefinedValues.Actions.ShowAdd = canAddEditDelete;
+            gDefinedValues.IsDeleteEnabled = canAddEditDelete;
+
+            modalValue.SaveClick += btnSaveValue_Click;
+            modalValue.OnCancelScript = string.Format( "$('#{0}').val('');", hfDefinedValueId.ClientID );           
         }
 
         /// <summary>
@@ -64,25 +64,12 @@ namespace RockWeb.Blocks.Administration
                 string itemId = PageParameter( "definedTypeId" );
                 if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
-                    ShowDetail( "definedTypeId", int.Parse( itemId ) );
+                    ShowDetail( "definedTypeId", (int)itemId.AsInteger( false ) );
                 }
                 else
                 {
                     pnlList.Visible = false;
                 }
-
-
-                if ( pnlList.Visible )
-                {
-                    if ( !string.IsNullOrWhiteSpace( hfDefinedTypeId.Value ) )
-                    {
-                        var definedValue = new DefinedValue { DefinedTypeId = hfDefinedTypeId.ValueAsInt() };
-                        definedValue.LoadAttributes();
-                        phDefinedValueAttributes.Controls.Clear();
-                        Rock.Attribute.Helper.AddEditControls( definedValue, phDefinedValueAttributes, false );
-                    }
-                }
-
             }            
         }
 
