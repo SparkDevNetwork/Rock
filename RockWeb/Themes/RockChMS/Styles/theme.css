@@ -8370,6 +8370,7 @@ div.tagsinput div {
     2. HTML Content - block to edit HTML on a page
     3. Login - block to allow logins
     4. Notes - block to display, add, edit, delete notes
+    5. Add Family - block to add families to the database
 
 */
 .sql-comand .panel {
@@ -8515,6 +8516,9 @@ span.cke_skin_kama {
 }
 .panel-noteentry .panel-footer {
   background-color: #d9e1e8;
+}
+.table-familymembers .radio:first-child {
+  margin-top: 0;
 }
 /*
     Used to manage styles related to the CMS admin UI for on page editing

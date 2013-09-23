@@ -54,7 +54,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( lbAddFamilyMember );
             lbAddFamilyMember.ID = this.ID + "_btnAddFamilyMember";
             lbAddFamilyMember.Click += lbAddFamilyMember_Click;
-            lbAddFamilyMember.AddCssClass( "add btn" );
+            lbAddFamilyMember.AddCssClass( "add btn btn-default" );
             lbAddFamilyMember.CausesValidation = false;
 
             var iAddFilter = new HtmlGenericControl( "i" );
@@ -78,7 +78,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "table" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "table table-familymembers" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Table );
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Thead );
