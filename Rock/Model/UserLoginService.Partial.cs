@@ -16,35 +16,36 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// User POCO Service class
+    /// Data Access/Service class for <see cref="Rock.Model.UserLogin"/> entities.
     /// </summary>
     public partial class UserLoginService 
     {
         /// <summary>
-        /// Gets Users by Api Key
+        /// Returns an enumerable collection of <see cref="Rock.Model.UserLogin"/> entities by their API Key.
         /// </summary>
-        /// <param name="apiKey">Api Key.</param>
-        /// <returns>An enumerable list of User objects.</returns>
+        /// <param name="apiKey">A <see cref="System.String"/> representing the API key to search by.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.UserLogin"/> entities where the API key matches the provided value..</returns>
         public IEnumerable<UserLogin> GetByApiKey( string apiKey )
         {
             return Repository.Find( t => ( t.ApiKey == apiKey || ( apiKey == null && t.ApiKey == null ) ) );
         }
         
         /// <summary>
-        /// Gets Users by Person Id
+        /// Gets an enumerable collection of <see cref="Rock.Model.UserLogin"/> entities by a <see cref="Rock.Model.Person">Person's</see> PersonId.
         /// </summary>
-        /// <param name="personId">Person Id.</param>
-        /// <returns>An enumerable list of User objects.</returns>
+        /// <param name="personId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> to search by. This property is nullable
+        /// to find <see cref="Rock.Model.UserLogin"/> entities that are not associated with a Person.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.UserLogin"/> entities that are associated with the provided PersonId.</returns>
         public IEnumerable<UserLogin> GetByPersonId( int? personId )
         {
             return Repository.Find( t => ( t.PersonId == personId || ( personId == null && t.PersonId == null ) ) );
         }
         
         /// <summary>
-        /// Gets User by User Name
+        /// Gets<see cref="Rock.Model.UserLogin"/> by User Name
         /// </summary>
-        /// <param name="userName">User Name.</param>
-        /// <returns>User object.</returns>
+        /// <param name="userName">A <see cref="System.String"/> representing the UserName to search for.</param>
+        /// <returns>A <see cref="UserLogin"/> entity where the UserName matches the provided value.</returns>
         public UserLogin GetByUserName( string userName )
         {
             return Repository
@@ -54,18 +55,18 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates a new user.
+        /// Creates a new <see cref="Rock.Model.UserLogin"/>
         /// </summary>
-        /// <param name="person">The person.</param>
-        /// <param name="serviceType">Type of the service.</param>
-        /// <param name="serviceName">Name of the service.</param>
-        /// <param name="username">The username.</param>
-        /// <param name="password">The password.</param>
-        /// <param name="isConfirmed">if set to <c>true</c> [is confirmed].</param>
-        /// <param name="currentPersonId">The current person id.</param>
+        /// <param name="person">The <see cref="Rock.Model.Person"/> that this <see cref="UserLogin"/> will be associated with.</param>
+        /// <param name="serviceType">The <see cref="Rock.Model.AuthenticationServiceType"/> type of Login</param>
+        /// <param name="serviceName">A <see cref="System.String"/> representing the service class/type name of the authentication service</param>
+        /// <param name="username">A <see cref="System.String"/> containing the UserName.</param>
+        /// <param name="password">A <see cref="System.String"/> containing the unhashed/unencrypted password.</param>
+        /// <param name="isConfirmed">A <see cref="System.Boolean"/> flag indicating if the user has been confirmed.</param>
+        /// <param name="currentPersonId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> creating the <see cref="Rock.Model.UserLogin"/></param>
         /// <returns></returns>
-        /// <exception cref="System.ArgumentOutOfRangeException">username;Username already exists</exception>
-        /// <exception cref="System.ArgumentException">serviceName</exception>
+        /// <exception cref="System.ArgumentOutOfRangeException">Thrown when the Username already exists.</exception>
+        /// <exception cref="System.ArgumentException">Thrown when the service does not exist or is not active.</exception>
         public UserLogin Create( Rock.Model.Person person,
             AuthenticationServiceType serviceType,
             string serviceName,
@@ -106,12 +107,12 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Changes the password after first validating the existing password
+        /// Changes a <see cref="Rock.Model.UserLogin">UserLogin's</see> password after first validating the current password.
         /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="oldPassword">The old password.</param>
-        /// <param name="newPassword">The new password.</param>
-        /// <returns></returns>
+        /// <param name="user">The <see cref="Rock.Model.UserLogin"/> to change the password on..</param>
+        /// <param name="oldPassword">A <see cref="System.String"/> representing an unhashed instance of the current/old password.</param>
+        /// <param name="newPassword">A <see cref="System.String"/> representing an unhashed instance of the new password..</param>
+        /// <returns>A <see cref="System.Boolean"/> value that indicates if the password change was successful. <c>true</c> if successful; otherwise <c>false</c>.</returns>
         public bool ChangePassword( UserLogin user, string oldPassword, string newPassword )
         {
             if ( user.ServiceType == AuthenticationServiceType.External )
@@ -131,10 +132,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Changes the password.
+        /// Changes the a <see cref="Rock.Model.UserLogin">UserLogin's</see> password.
         /// </summary>
-        /// <param name="user">The user.</param>
-        /// <param name="password">The password.</param>
+        /// <param name="user">The <see cref="Rock.Model.UserLogin"/> to change the password for.</param>
+        /// <param name="password">A <see cref="System.String"/> representing the new password.</param>
         public void ChangePassword( UserLogin user, string password )
         {
             if ( user.ServiceType == AuthenticationServiceType.External )
@@ -149,15 +150,19 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Unlocks the user.
+        /// Unlocks a <see cref="Rock.Model.UserLogin"/>
         /// </summary>
-        /// <param name="user">The user.</param>
+        /// <param name="user">The <see cref="Rock.Model.UserLogin"/> to unlock.</param>
         public void Unlock( UserLogin user )
         {
             user.IsLockedOut = false;
             this.Save( user, null );
         }
 
+        /// <summary>
+        /// Updates the <see cref="Rock.Model.UserLogin"/> failed password attempt count.
+        /// </summary>
+        /// <param name="user">The <see cref="Rock.Model.UserLogin"/> to update the failure count on.</param>
         private void UpdateFailureCount( UserLogin user )
         {
             int passwordAttemptWindow = 0;
@@ -192,10 +197,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the user by the encrypted confirmation code.
+        /// Returns a <see cref="Rock.Model.UserLogin"/> by an encrypted confirmation code.
         /// </summary>
-        /// <param name="code">The encrypted confirmation code.</param>
-        /// <returns></returns>
+        /// <param name="code">A <see cref="System.String"/> containing the encrypted confirmation code to search for.</param>
+        /// <returns>The <see cref="Rock.Model.UserLogin"/> associated with the encrypted confirmation code.</returns>
         public UserLogin GetByConfirmationCode( string code )
         {
             if ( !string.IsNullOrEmpty( code ) )
@@ -230,6 +235,11 @@ namespace Rock.Model
             return null;
         }
 
+        /// <summary>
+        /// Gets a <see cref="Rock.Security.AuthenticationComponent"/> by the name of the authentication service.
+        /// </summary>
+        /// <param name="serviceName">A <see cref="System.String"/> containing the service name.</param>
+        /// <returns>The <see cref="Rock.Security.AuthenticationCompeont"/> associated with the service.</returns>
         private AuthenticationComponent GetComponent( string serviceName )
         {
             foreach ( var serviceEntry in AuthenticationContainer.Instance.Components )
@@ -251,19 +261,19 @@ namespace Rock.Model
         #region Static Methods
 
         /// <summary>
-        /// Gets the current user.
+        /// Returns the <see cref="Rcok.Model.UserLogin"/> of the user who is currently logged in.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The <see cref="Rock.Model.UserLogin"/> of the user who is currently logged in</returns>
         public static UserLogin GetCurrentUser()
         {
             return GetCurrentUser( true );
         }
 
         /// <summary>
-        /// Gets the current user.
+        /// Returns the <see cref="Rock.Model.UserLogin"/>
         /// </summary>
-        /// <param name="userIsOnline">if set to <c>true</c> [user is online].</param>
-        /// <returns></returns>
+        /// <param name="userIsOnline">A <see cref="System.Boolean"/> value that returns the logged in user if <c>true</c>; otherwise can return the impersonated user</param>
+        /// <returns>The current <see cref="Rock.Model.UserLogin"/></returns>
         public static UserLogin GetCurrentUser( bool userIsOnline )
         {
             string userName = UserLogin.GetCurrentUserName();

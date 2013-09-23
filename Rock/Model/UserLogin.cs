@@ -40,7 +40,7 @@ namespace Rock.Model
         public AuthenticationServiceType ServiceType { get; set; }
 
         /// <summary>
-        /// Gets or service class/type name of the authentication service that this UserLogin uses. This property is required.
+        /// Gets or sets the service class/type name of the authentication service that this UserLogin uses. This property is required.
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> representing the service class/type name.
@@ -167,27 +167,30 @@ namespace Rock.Model
         public DateTime? FailedPasswordAttemptWindowStartDateTime { get; set; }
         
         /// <summary>
-        /// Gets or sets the Api Key.
+        /// Gets or sets the API key associated with the UserLogin
         /// </summary>
         /// <value>
-        /// Api Key.
+        /// A <see cref="System.String"/> representing the API key that is associated with the UserLogin
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
         public string ApiKey { get; set; }
         
         /// <summary>
-        /// Gets or sets the Person Id.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Person"/> who this UserLogin belongs to.
         /// </summary>
         /// <value>
-        /// Person Id.
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> that this UserLogin belongs to.
         /// </value>
         [DataMember]
         public int? PersonId { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether the user has authenticated (vs. used an inpersonation link)
+        /// Gets a flag indicating if the User authenticated with their last interaction with RockChMS (versus using an impersonation link).
         /// </summary>
+        /// <value>
+        ///   A <see cref="System.Boolean"/> value that is <c>true</c> if the user actually authenticated; otherwise <c>false</c>.
+        /// </value>
         [NotMapped]
         public virtual bool IsAuthenticated
         {
@@ -206,28 +209,31 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the person.
+        /// Gets or sets the <see cref="Rock.Model.Person"/> that this UserLogin is associated with.
         /// </summary>
         /// <value>
-        /// The person.
+        /// The <see cref="Rock.Model.Person"/> that this UserLogin is associated with.
         /// </value>
         [DataMember]
         [MergeField]
         public virtual Model.Person Person { get; set; }
-        
+
         /// <summary>
-        /// The default authorization for the selected action.
+        /// Returns a boolean flag indicating if the provided action is allowed by default
         /// </summary>
-        /// <param name="action">The action.</param>
-        /// <returns></returns>
+        /// <param name="action">A <see cref="System.String"/> representing the action.</param>
+        /// <returns>A <see cref="System.Boolean"/> flag indicating if the provided action is allowed by default.</returns>
         public override bool IsAllowedByDefault( string action )
         {
             return false;
         }
 
         /// <summary>
-        /// Gets the encrypted confirmation code.
+        /// Gets an encrypted confirmation code for the UserLogin.
         /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the encrypted confirmation code.
+        /// </value>
         [MergeField]
         public virtual string ConfirmationCode
         {
@@ -240,8 +246,11 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a urlencoded and encrypted confirmation code.
+        /// Gets a URL encoded  and encrypted confirmation code.
         /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing a URL encoded and encrypted confirmation code.
+        /// </value>
         [MergeField]
         public virtual string ConfirmationCodeEncoded
         {
@@ -252,6 +261,12 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Creates a <see cref="System.Collections.Generic.Dictionary"/> of this UserLogin object.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.Collections.Generic.Dictionary"/> of this UserLogin object.
+        /// </returns>
         public override System.Collections.Generic.Dictionary<string, object> ToDictionary()
         {
             var dictionary = base.ToDictionary();
@@ -262,10 +277,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Returns a <see cref="System.String" /> containing the UserName that represents this instance.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
+        /// A <see cref="System.String" /> containing the UserName that represents this instance.
         /// </returns>
         public override string ToString()
         {
@@ -275,9 +290,9 @@ namespace Rock.Model
         #region Static Methods
 
         /// <summary>
-        /// Gets the name of the current user.
+        /// Returns the UserName of the user that is currently logged in.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A <see cref="System.String"/> representing the UserName of the user that is currently logged in.</returns>
         internal static string GetCurrentUserName()
         {
             if ( HostingEnvironment.IsHosted )
