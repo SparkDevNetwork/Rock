@@ -54,7 +54,7 @@ namespace Rock.Web.UI.Adapters
 
                 if ( !string.IsNullOrWhiteSpace( rb.CssClass ) )
                 {
-                    writer.AddAttribute( "class", rb.CssClass );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, rb.CssClass );
                 }
                 
                 if ( rb.Checked )

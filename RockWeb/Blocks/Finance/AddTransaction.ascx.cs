@@ -1384,11 +1384,11 @@ achieve our mission.  We are so grateful for your commitment.
 
         // Set the date prompt based on the frequency value entered
         $('#ButtonDropDown_btnFrequency .dropdown-menu a').click( function () {{
-            var $when = $(this).parents('div.control-group').next(); 
+            var $when = $(this).parents('div.form-group:first').next(); 
             if ($(this).attr('data-id') == '{2}') {{
-                $when.find('div.control-label').html('When');
+                $when.find('label:first').html('When');
             }} else {{
-                $when.find('div.control-label').html('First Gift');
+                $when.find('label:first').html('First Gift');
 
                 // Set date to tomorrow if it is equal or less than today's date
                 var $dateInput = $when.find('input');
@@ -1408,7 +1408,7 @@ achieve our mission.  We are so grateful for your commitment.
 
         // Save the state of the selected payment type pill to a hidden field so that state can 
         // be preserved through postback
-        $('a[data-toggle=""pill""]').on('shown', function (e) {{
+        $('a[data-toggle=""pill""]').on('shown.bs.tab', function (e) {{
             var tabHref = $(e.target).attr(""href"");
             if (tabHref == '#{0}') {{
                 $('#{1}').val('CreditCard');
@@ -1420,8 +1420,9 @@ achieve our mission.  We are so grateful for your commitment.
         // detect credit card type
         $('.credit-card').creditCardTypeDetector({{ 'credit_card_logos': '.card_logos' }});
 
-        $('.radio-list input:radio').unbind('click').on('click', function () {{
-            var $content = $(this).parents('.radio-list').next('.radio-content')
+        // Toggle credit card display if saved card option is available
+        $('div.radio-content').prev('.form-group').find('input:radio').unbind('click').on('click', function () {{
+            var $content = $(this).parents('div.form-group:first').next('.radio-content')
             var radioDisplay = $content.css('display');            
             if ($(this).val() == 0 && radioDisplay == 'none') {{
                 $content.slideToggle();
@@ -1432,8 +1433,8 @@ achieve our mission.  We are so grateful for your commitment.
         }});      
 
         // Hide or show a div based on selection of checkbox
-        $('.toggle-input input:checkbox').unbind('click').on('click', function () {{
-            $(this).parents('.toggle-input').next('.toggle-content').slideToggle();
+        $('input:checkbox.toggle-input').unbind('click').on('click', function () {{
+            $(this).parents('div:first').next('.toggle-content').slideToggle();
         }});
 
         // Disable the submit button as soon as it's clicked to prevent double-clicking

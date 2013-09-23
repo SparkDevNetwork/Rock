@@ -18,7 +18,7 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:ButtonDropDownList runat=server></{0}:ButtonDropDownList>" )]
     public class ButtonDropDownList : ListControl, ILabeledControl
     {
-        protected Label label;
+        protected Literal label;
 
         private String _btnTitle = string.Empty;
         private HtmlGenericControl _divControl;
@@ -202,7 +202,7 @@ namespace Rock.Web.UI.Controls
 
 			Controls.Clear();
 
-            label = new Label();
+            label = new Literal();
             Controls.Add( label );
 
             _divControl = new HtmlGenericControl( "div" );
@@ -240,44 +240,45 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            bool renderControlGroupDiv = !string.IsNullOrEmpty( LabelText );
-
-            if ( renderControlGroupDiv )
+            if ( this.Visible )
             {
-                writer.AddAttribute( "class", "control-group" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                bool renderControlGroupDiv = !string.IsNullOrEmpty( LabelText );
 
-                label.AddCssClass( "control-label" );
-                label.Visible = this.Visible;
-                label.RenderControl( writer );
+                if ( renderControlGroupDiv )
+                {
+                    writer.AddAttribute( "class", "form-group" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( "class", "controls" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.For, this.ClientID );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Label );
+                    label.RenderControl( writer );
+                    writer.RenderEndTag();
 
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            }
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                }
 
-            foreach ( var item in this.Items.OfType<ListItem>() )
-            {
-                string controlHtmlFormat = "<li><a href='#' data-id='{0}'>{1}</a></li>";
-                _listControl.Controls.Add( new LiteralControl { Text = string.Format( controlHtmlFormat, item.Value, item.Text ) } );
-            }
+                foreach ( var item in this.Items.OfType<ListItem>() )
+                {
+                    string controlHtmlFormat = "<li><a href='#' data-id='{0}'>{1}</a></li>";
+                    _listControl.Controls.Add( new LiteralControl { Text = string.Format( controlHtmlFormat, item.Value, item.Text ) } );
+                }
 
-            _divControl.Controls.Add( _listControl );
+                _divControl.Controls.Add( _listControl );
 
-            string selectedText = SelectedItem != null ? SelectedItem.Text : _btnTitle;
-            _btnSelect.Controls.Clear();
-            _btnSelect.Controls.Add( new LiteralControl { Text = string.Format( "{0} <span class='caret'></span>", selectedText ) } );
+                string selectedText = SelectedItem != null ? SelectedItem.Text : _btnTitle;
+                _btnSelect.Controls.Clear();
+                _btnSelect.Controls.Add( new LiteralControl { Text = string.Format( "{0} <span class='caret'></span>", selectedText ) } );
 
-            _divControl.RenderControl( writer );
+                _divControl.RenderControl( writer );
 
-            _hfSelectedItemId.RenderControl( writer );
-            _hfSelectedItemText.RenderControl( writer );
+                _hfSelectedItemId.RenderControl( writer );
+                _hfSelectedItemText.RenderControl( writer );
 
-            if ( renderControlGroupDiv )
-            {
-                writer.RenderEndTag();
-
-                writer.RenderEndTag();
+                if ( renderControlGroupDiv )
+                {
+                    writer.RenderEndTag();
+                    writer.RenderEndTag();
+                }
             }
         }
 

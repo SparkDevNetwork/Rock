@@ -24,11 +24,9 @@
                                 <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" CssClass="btn btn-primary" Visible="false" LabelText=" "
                                     DataTextField="Name" DataValueField="Id" OnSelectionChanged="btnAddAccount_SelectionChanged" />
 
-                                <div class="control-group">
-                                    <span class="control-label">Total</span>
-                                    <div class="controls">
-                                        <asp:Label ID="lblTotalAmount" runat="server" CssClass="total-amount" />
-                                    </div>
+                                <div class="form-group">
+                                    <label>Total</label>
+                                    <asp:Label ID="lblTotalAmount" runat="server" CssClass="form-control-static total-amount" />
                                 </div>
 
                                 <div id="divRepeatingPayments" runat="server" visible="false">
@@ -57,9 +55,9 @@
                                 <Rock:LabeledTextBox ID="txtPhone" runat="server" LabelText="Phone" CssClass="input-medium"></Rock:LabeledTextBox>
                                 <Rock:LabeledTextBox ID="txtEmail" runat="server" LabelText="Email" CssClass="input-large"></Rock:LabeledTextBox>
                                 <Rock:LabeledTextBox ID="txtStreet" runat="server" LabelText="Address" CssClass="input-large"></Rock:LabeledTextBox>
-                                <div class="control-group">
-                                    <div class="control-label">&nbsp;</div>
-                                    <div class="controls">
+                                <div class="form-group">
+                                    <asp:Label AssociatedControlID="txtCity" runat="server">&nbsp;</asp:Label>
+                                    <div class="form-control">
                                         <asp:TextBox ID="txtCity" runat="server" CssClass="input-small" />
                                         ,&nbsp;
                                             <Rock:StateDropDownList ID="ddlState" runat="server" UseAbbreviation="true" CssClass="input-mini" />&nbsp;
