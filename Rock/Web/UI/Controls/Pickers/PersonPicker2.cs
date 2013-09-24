@@ -148,7 +148,7 @@ namespace Rock.Web.UI.Controls
     <div class='control-group'>
         <div class='control-label'>Search</div>
         <div class='controls'>
-            <input id='personPicker_{0}' type='text' class='rock-picker-search input-medium' value='{1}'/>
+            <input id='personPicker_{0}' type='text' class='picker-search input-medium' value='{1}'/>
         </div>
     </div>
     <div id='person-search-results' class='scroll-container'>
@@ -161,7 +161,7 @@ namespace Rock.Web.UI.Controls
         </div>
         <div class='viewport'>
             <div class='overview'>
-                <ul class='rock-picker-select' id='personPickerItems_{0}'>
+                <ul class='picker-select' id='personPickerItems_{0}'>
                 </ul>
             </div>
         </div>
