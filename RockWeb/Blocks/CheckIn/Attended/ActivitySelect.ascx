@@ -121,10 +121,9 @@
 		
         <div class="checkin-body">
             <div class="row">
-                <Rock:LabeledTextBox ID="tbNote" runat="server" CssClass="note" MaxLength="40" />
+                <asp:PlaceHolder ID="phNotes" runat="server"></asp:PlaceHolder>
             </div>
         </div>
-
     </asp:Panel>
     <asp:ModalPopupExtender ID="mpeAddNote" runat="server" BehaviorID="mpeAddNote" TargetControlID="hfOpenNotePanel" PopupControlID="pnlAddNote" 
         CancelControlID="lbAddNoteCancel" BackgroundCssClass="attended modal-background" />
