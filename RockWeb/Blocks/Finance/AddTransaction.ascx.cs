@@ -1432,7 +1432,7 @@ achieve our mission.  We are so grateful for your commitment.
 
         // Hide or show a div based on selection of checkbox
         $('input:checkbox.toggle-input').unbind('click').on('click', function () {{
-            $(this).parents('div:first').next('.toggle-content').slideToggle();
+            $(this).parents('div.form-group:first').next('.toggle-content').slideToggle();
         }});
 
         // Disable the submit button as soon as it's clicked to prevent double-clicking
