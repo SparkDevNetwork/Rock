@@ -44,9 +44,9 @@
                 <asp:Literal ID="lAction" runat="server">Account</asp:Literal>
             </legend>
 
-            <div class="row-fluid">
+            <div class="row">
 
-                <div class="span6">
+                <div class="col-md-6">
                     <Rock:DataTextBox ID="tbName" runat="server"
                         SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="Name" />
                     <Rock:DataTextBox ID="tbPublicName" runat="server"
@@ -59,7 +59,7 @@
                         SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="GlCode" />
                 </div>
 
-                <div class="span6">                
+                <div class="col-md-6">                
                     <Rock:DatePicker ID="dtpStartDate" runat="server" SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="StartDate" LabelText="Start Date" />
                     <Rock:DatePicker ID="dtpEndDate" runat="server" SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="EndDate" LabelText="End Date" />
                     <Rock:LabeledCheckBox ID="cbIsActive" runat="server" LabelText="Active" />
