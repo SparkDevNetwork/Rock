@@ -67,7 +67,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         BindGroupTypes( person );
                         BindLocations( person );
                         BindSchedules( person );
-                        BindSelectedGrid();                        
+                        BindSelectedGrid();
+
+                        phNotes.Controls.Clear();
+                        var personB = person.Person;
+                        personB.LoadAttributes();
+                        Rock.Attribute.Helper.AddEditControls( personB, phNotes, true );
                     }
                     else
                     {
@@ -331,38 +336,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddNoteSave_Click( object sender, EventArgs e )
         {
-            if ( !string.IsNullOrEmpty( tbNote.Text ) )
-            {
-                // get the entity type for Person
-                EntityTypeService entityTypeService = new EntityTypeService();
-                var personEntity = entityTypeService.Get( "Rock.Model.Person" );
-                var noteTypeService = new NoteTypeService();
-                var noteType = noteTypeService.Get( personEntity.Id, "Timeline" );
-
-                var note = new Note().Clone( false );
-                note.IsSystem = false;
-                note.NoteTypeId = noteType.Id;
-                note.EntityId = personEntity.Id;
-                if ( noteType.Sources != null )
-                {
-                    var source = noteType.Sources.DefinedValues.Where( dv => dv.Name == "Check In Note" ).FirstOrDefault();
-                    if ( source != null )
-                    {
-                        note.SourceTypeValueId = source.Id;
-                    }
-                }
-
-                note.Caption = string.Empty;
-                note.IsAlert = false;
-                note.Text = tbNote.Text;
-                note.CreationDateTime = DateTime.Now;
-                Rock.Data.RockTransactionScope.WrapTransaction( () =>
-                {
-                    var ns = new NoteService();
-                    ns.Add( note, CurrentPersonId );
-                    ns.Save( note, CurrentPersonId );
-                } );
-            }
         }
 
         /// <summary>
@@ -372,7 +345,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddNote_Click( object sender, EventArgs e )
         {
-            tbNote.Text = string.Empty;
             mpeAddNote.Show();
         }
 
@@ -652,5 +624,5 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         #endregion        
-}
+    }
 }

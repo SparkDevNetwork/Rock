@@ -177,11 +177,15 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 && s.Schedule.Id == scheduleId ).FirstOrDefault();
             
             selectedSchedule.Selected = false;
+            selectedSchedule.PreSelected = false;
             selectedLocation.Selected = false;
+            selectedLocation.PreSelected = false;
             if ( selectedGroups.Count() == 1 )
             {
                 selectedGroup.Selected = false;
+                selectedGroup.PreSelected = false;
                 selectedPerson.Selected = false;
+                selectedPerson.PreSelected = false;
             }
             
             BindGrid();

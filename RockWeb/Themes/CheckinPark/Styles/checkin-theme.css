@@ -7710,6 +7710,7 @@ body {
   margin-bottom: 10px;
   float: none;
   white-space: normal;
+  font-size: 1.4em;
 }
 .attended .btn .checkin-sub-title {
   font-size: .75em;
@@ -7725,9 +7726,6 @@ body {
   background: #9d0f12;
 }
 .attended .input {
-  /*font-weight: inherit;     
-    font-size: inherit;*/
-
   font-weight: 600;
   font-size: 2em;
   height: 1.5em;
@@ -7756,6 +7754,11 @@ body {
 .attended .selected-grid .grid-table {
   font-size: 1.25em;
   background: rgba(0, 0, 0, 0.25);
+  margin-bottom: 5%;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  -o-border-radius: 5px;
+  border-radius: 5px;
 }
 .attended .selected-grid .table > tfoot > tr > td,
 .attended .selected-grid .table > tbody > tr > td,
