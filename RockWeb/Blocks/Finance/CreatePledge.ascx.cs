@@ -192,7 +192,7 @@ namespace RockWeb.Blocks.Finance
             if ( textbox == null || hiddenField == null || account == null )
                 return;
 
-            textbox.LabelText = account.PublicName;
+            textbox.Label = account.PublicName;
             hiddenField.Value = account.Id.ToString();
         }
 

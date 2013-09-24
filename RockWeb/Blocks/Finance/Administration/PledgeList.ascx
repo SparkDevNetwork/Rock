@@ -4,8 +4,8 @@
     <ContentTemplate>
         <Rock:ModalAlert ID="mdGridWarning" runat="server"/>
         <Rock:GridFilter ID="rFilter" runat="server">
-            <Rock:PersonPicker ID="ppFilterPerson" runat="server" LabelText="Filter by person"/>
-            <Rock:AccountPicker ID="fpFilterAccount" runat="server" LabelText="Filter by account" AllowMultiSelect="True"/>
+            <Rock:PersonPicker ID="ppFilterPerson" runat="server" Label="Filter by person"/>
+            <Rock:AccountPicker ID="fpFilterAccount" runat="server" Label="Filter by account" AllowMultiSelect="True"/>
         </Rock:GridFilter>
         <Rock:Grid ID="gPledges" runat="server" AutoGenerateColumns="False" AllowSorting="True" AllowPaging="True" OnRowSelected="gPledges_Edit">
             <Columns>

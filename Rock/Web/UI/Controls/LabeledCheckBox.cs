@@ -14,70 +14,9 @@ namespace Rock.Web.UI.Controls
     /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with an associated label.
     /// </summary>
     [ToolboxData( "<{0}:LabeledCheckBox runat=server></{0}:LabeledTextBox>" )]
-    public class LabeledCheckBox : CheckBox, ILabeledControl
+    public class LabeledCheckBox : CheckBox, IRockControl
     {
-        /// <summary>
-        /// The label
-        /// </summary>
-        private Literal label;
-
-        /// <summary>
-        /// The help block
-        /// </summary>
-        private HelpBlock helpBlock;
-
-        /// <summary>
-        /// Gets or sets the help tip.
-        /// </summary>
-        /// <value>
-        /// The help tip.
-        /// </value>
-        [
-        Bindable( true ),
-        Category( "Appearance" ),
-        DefaultValue( "" ),
-        Description( "The help tip." )
-        ]
-        public string Tip
-        {
-            get
-            {
-                string s = ViewState["Tip"] as string;
-                return s == null ? string.Empty : s;
-            }
-
-            set
-            {
-                ViewState["Tip"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the help block.
-        /// </summary>
-        /// <value>
-        /// The help block.
-        /// </value>
-        [
-        Bindable( true ),
-        Category( "Appearance" ),
-        DefaultValue( "" ),
-        Description( "The help block." )
-        ]
-        public string Help
-        {
-            get
-            {
-                EnsureChildControls();
-                return helpBlock.Text;
-            }
-
-            set
-            {
-                EnsureChildControls();
-                helpBlock.Text = value;
-            }
-        }
+        #region IRockControl implementation
 
         /// <summary>
         /// Gets or sets the label text.
@@ -91,19 +30,110 @@ namespace Rock.Web.UI.Controls
         DefaultValue( "" ),
         Description( "The text for the label." )
         ]
-        public string LabelText
+        public string Label
+        {
+            get { return ViewState["Label"] as string ?? string.Empty; }
+            set { ViewState["Label"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the help text.
+        /// </summary>
+        /// <value>
+        /// The help text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The help block." )
+        ]
+        public string Help
         {
             get
             {
                 EnsureChildControls();
-                return label.Text;
+                return HelpBlock.Text;
             }
-
             set
             {
                 EnsureChildControls();
-                label.Text = value;
+                HelpBlock.Text = value;
             }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="LabeledTextBox"/> is required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "false" ),
+        Description( "Is the value required?" )
+        ]
+        public bool Required
+        {
+            get { return ViewState["Required"] as bool? ?? false; }
+            set { ViewState["Required"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the required error message.  If blank, the LabelName name will be used
+        /// </summary>
+        /// <value>
+        /// The required error message.
+        /// </value>
+        public string RequiredErrorMessage
+        {
+            get
+            {
+                return RequiredFieldValidator.ErrorMessage;
+            }
+            set
+            {
+                RequiredFieldValidator.ErrorMessage = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool IsValid
+        {
+            get
+            {
+                return !Required || RequiredFieldValidator.IsValid;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the help block.
+        /// </summary>
+        /// <value>
+        /// The help block.
+        /// </value>
+        public HelpBlock HelpBlock { get; set; }
+
+        /// <summary>
+        /// Gets or sets the required field validator.
+        /// </summary>
+        /// <value>
+        /// The required field validator.
+        /// </value>
+        public RequiredFieldValidator RequiredFieldValidator { get; set; }
+
+        #endregion
+
+        public LabeledCheckBox()
+            : base()
+        {
+            HelpBlock = new HelpBlock();
         }
 
         /// <summary>
@@ -112,16 +142,14 @@ namespace Rock.Web.UI.Controls
         protected override void CreateChildControls()
         {
             base.CreateChildControls();
-
             Controls.Clear();
-
-            label = new Literal();
-            Controls.Add( label );
-
-            helpBlock = new HelpBlock();
-            Controls.Add( helpBlock );
+            RockControl.CreateChildControls( this, Controls );
         }
 
+        protected override void OnPreRender( System.EventArgs e )
+        {
+            base.OnPreRender( e );
+        }
         /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
@@ -130,54 +158,23 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                bool renderControlGroupDiv = ( !string.IsNullOrEmpty( LabelText ) || !string.IsNullOrEmpty( Help ) );
+                RockControl.RenderControl( this, writer );
+            }
+        }
 
-                writer.AddAttribute( "class", "checkbox" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                writer.RenderBeginTag( HtmlTextWriterTag.Label );
-                label.Visible = this.Visible;
-                label.RenderControl( writer );
-                if ( !string.IsNullOrWhiteSpace( LabelText ) )
-                {
-                    helpBlock.RenderControl( writer );
-                }
-
-                if (Enabled)
-                {
-                    base.RenderControl(writer);
-
-                    if (renderControlGroupDiv && string.IsNullOrWhiteSpace(LabelText))
-                    {
-                        helpBlock.RenderControl(writer);
-                    }
-                }
-                else
-                {
-                    if (this.Checked)
-                    {
-                        writer.WriteLine("<i class=\"icon-check\"></i>");
-                    }
-                    else
-                    {
-                        writer.WriteLine("<i class=\"icon-check-empty\"></i>");
-                    }
-                }
-                
-                writer.RenderEndTag();
-
-                if ( !string.IsNullOrWhiteSpace( Tip ) )
-                {
-                    writer.AddAttribute( "class", "help-tip" );
-                    writer.AddAttribute( "href", "#" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.A );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                    writer.Write( Tip.Trim() );
-                    writer.RenderEndTag();
-                    writer.RenderEndTag();
-                }
-
-                writer.RenderEndTag();
+        /// <summary>
+        /// Renders the base control.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public void RenderBaseControl( HtmlTextWriter writer )
+        {
+            if (Enabled)
+            {
+                base.RenderControl(writer);
+            }
+            else
+            {
+                writer.WriteLine( string.Format( "<i class=\"icon-check\"></i>", this.Checked ? "icon-check" : "icon-check-empty" ) );
             }
         }
     }

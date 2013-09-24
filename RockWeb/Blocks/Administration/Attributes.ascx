@@ -5,8 +5,8 @@
         <asp:Panel ID="pnlList" runat="server">
 
             <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
-                <Rock:LabeledDropDownList ID="ddlEntityType" runat="server" LabelText="Entity Type" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
-                <Rock:CategoryPicker ID="cpCategoriesFilter" runat="server" LabelText="Categories" AllowMultiSelect="true" />
+                <Rock:LabeledDropDownList ID="ddlEntityType" runat="server" Label="Entity Type" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
+                <Rock:CategoryPicker ID="cpCategoriesFilter" runat="server" Label="Categories" AllowMultiSelect="true" />
             </Rock:GridFilter>
             <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="setting" OnRowSelected="rGrid_Edit">
                 <Columns>
@@ -62,9 +62,9 @@
             <asp:ValidationSummary ID="valSummaryTop" runat="server"  
                 HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
 
-            <Rock:LabeledDropDownList ID="ddlAttrEntityType" runat="server" LabelText="Entity Type" />
-            <Rock:LabeledTextBox ID="tbAttrQualifierField" runat="server" LabelText="Qualifier Field" />
-            <Rock:LabeledTextBox ID="tbAttrQualifierValue" runat="server" LabelText="Qualifier Value" />
+            <Rock:LabeledDropDownList ID="ddlAttrEntityType" runat="server" Label="Entity Type" />
+            <Rock:LabeledTextBox ID="tbAttrQualifierField" runat="server" Label="Qualifier Field" />
+            <Rock:LabeledTextBox ID="tbAttrQualifierValue" runat="server" Label="Qualifier Value" />
 
             <Rock:AttributeEditor ID="edtAttribute" runat="server" OnSaveClick="btnSave_Click" OnCancelClick="btnCancel_Click" />
 

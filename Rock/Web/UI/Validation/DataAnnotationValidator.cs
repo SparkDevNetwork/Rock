@@ -79,7 +79,7 @@ namespace Rock.Web.UI.Validation
             {
                 if ( control is ILabeledControl )
                 {
-                    propertyLabelText = ( control as ILabeledControl ).LabelText;
+                    propertyLabelText = ( control as ILabeledControl ).Label;
                 }
             }
 

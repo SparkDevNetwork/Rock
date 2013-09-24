@@ -67,9 +67,9 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 dataValidator.PropertyName = value;
-                if (( this.LabelText == string.Empty ) && (LabelTextFromPropertyName))
+                if (( this.Label == string.Empty ) && (LabelTextFromPropertyName))
                 {
-                    this.LabelText = value.SplitCase();
+                    this.Label = value.SplitCase();
                 }
             }
         }
@@ -85,7 +85,7 @@ namespace Rock.Web.UI.Controls
         Bindable( false ),
         Category( "Appearance" ),
         DefaultValue( true ),
-        Description( "If the LabelText is not set, get the LabelText from PropertyName" )
+        Description( "If the Label is not set, get the Label from PropertyName" )
         ]
         public bool LabelTextFromPropertyName
         {

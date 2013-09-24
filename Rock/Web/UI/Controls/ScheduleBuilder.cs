@@ -172,7 +172,7 @@ END:VCALENDAR
         DefaultValue( "" ),
         Description( "The text for the label." )
         ]
-        public string LabelText
+        public string Label
         {
             get
             {
@@ -712,7 +712,7 @@ END:VCALENDAR
 
             _dpStartDateTime.ClientIDMode = ClientIDMode.Static;
             _dpStartDateTime.ID = "dpStartDateTime_" + this.ClientID;
-            _dpStartDateTime.LabelText = "Start Date / Time";
+            _dpStartDateTime.Label = "Start Date / Time";
             _dpStartDateTime.Required = false;
             _dpStartDateTime.ValidationGroup = validationGroup;
 

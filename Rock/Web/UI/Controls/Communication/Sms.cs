@@ -73,11 +73,11 @@ namespace Rock.Web.UI.Controls.Communication
             Controls.Clear();
 
             tbFromPhone.ID = string.Format( "tbFromName_{0}", this.ID );
-            tbFromPhone.LabelText = "From Phone Number";
+            tbFromPhone.Label = "From Phone Number";
             Controls.Add( tbFromPhone );
 
             tbTextMessage.ID = string.Format( "tbTextMessage_{0}", this.ID );
-            tbTextMessage.LabelText = "Message";
+            tbTextMessage.Label = "Message";
             tbTextMessage.TextMode = TextBoxMode.MultiLine;
             tbTextMessage.Rows = 3;
             Controls.Add( tbTextMessage );

@@ -156,7 +156,7 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
             lbDeleteActivityType.Click += lbDeleteActivityType_Click;
             lbDeleteActivityType.Controls.Add( new LiteralControl { Text = "<i class='icon-remove'></i>" } );
 
-            cbActivityTypeIsActive = new LabeledCheckBox { LabelText = "Active" };
+            cbActivityTypeIsActive = new LabeledCheckBox { Label = "Active" };
             cbActivityTypeIsActive.ID = this.ID + "_cbActivityTypeIsActive";
             string checkboxScriptFormat = @"
 javascript: 
@@ -174,7 +174,7 @@ javascript:
 
             tbActivityTypeName = new DataTextBox();
             tbActivityTypeName.ID = this.ID + "_tbActivityTypeName";
-            tbActivityTypeName.LabelText = "Name";
+            tbActivityTypeName.Label = "Name";
 
             // set label when they exit the edit field
             tbActivityTypeName.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", lblActivityTypeName.ID );
@@ -183,7 +183,7 @@ javascript:
 
             tbActivityTypeDescription = new DataTextBox();
             tbActivityTypeDescription.ID = this.ID + "_tbActivityTypeDescription";
-            tbActivityTypeDescription.LabelText = "Description";
+            tbActivityTypeDescription.Label = "Description";
             tbActivityTypeDescription.TextMode = TextBoxMode.MultiLine;
             tbActivityTypeDescription.Rows = 4;
 
@@ -192,7 +192,7 @@ javascript:
             tbActivityTypeDescription.SourceTypeName = "Rock.Model.WorkflowActivityType, Rock";
             tbActivityTypeDescription.PropertyName = "Description";
 
-            cbActivityTypeIsActivatedWithWorkflow = new LabeledCheckBox { LabelText = "Activated with Workflow" };
+            cbActivityTypeIsActivatedWithWorkflow = new LabeledCheckBox { Label = "Activated with Workflow" };
             cbActivityTypeIsActivatedWithWorkflow.ID = this.ID + "_cbActivityTypeIsActivatedWithWorkflow";
 
             lbAddActionType = new LinkButton();

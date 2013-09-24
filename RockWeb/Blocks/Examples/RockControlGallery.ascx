@@ -22,45 +22,44 @@
             </Rock:Grid>
             
             <h4 runat="server">DropDowns</h4>
-            <Rock:DataDropDownList ID="ddlDataExample" runat="server" LabelText="Rock:DataDropDownList/LabeledDropDownList" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
-            <Rock:StateDropDownList ID="NotificationBox3" runat="server" LabelText="Rock:StateDropDownList" />
-            <Rock:ButtonDropDownList ID="bddlExample" runat="server" LabelText="Rock:ButtonDropDownList" />
+            <Rock:DataDropDownList ID="ddlDataExample" runat="server" Label="Rock:DataDropDownList/LabeledDropDownList" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
+            <Rock:StateDropDownList ID="NotificationBox3" runat="server" Label="Rock:StateDropDownList" />
+            <Rock:ButtonDropDownList ID="bddlExample" runat="server" Label="Rock:ButtonDropDownList" />
 
             <h4 runat="server">Input</h4>
-            <Rock:DataTextBox ID="dt" runat="server" LabelText="Rock:DataTextBox" LabelTextFromPropertyName="false" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
-            <Rock:LabeledCheckBox ID="labeledCheckBox" runat="server" LabelText="Rock:LabeledCheckBox" />
-            <Rock:LabeledCheckBoxList ID="labeledCheckBoxList" runat="server" LabelText="Rock:LabeledCheckBoxList"  />
-            <Rock:LabeledRadioButtonList ID="labeledRadioButtonList" runat="server" LabelText="Rock:LabeledRadioButtonList"  />
-            <Rock:NumberRangeEditor ID="numberRangeEditor" runat="server" LabelText="Rock:NumberRangeEditor" LowerValue="10" UpperValue="25" />
+            <Rock:DataTextBox ID="dt" runat="server" Label="Rock:DataTextBox" LabelTextFromPropertyName="false" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
+            <Rock:LabeledCheckBox ID="labeledCheckBox" runat="server" Label="Rock:LabeledCheckBox" />
+            <Rock:LabeledCheckBoxList ID="labeledCheckBoxList" runat="server" Label="Rock:LabeledCheckBoxList"  />
+            <Rock:LabeledRadioButtonList ID="labeledRadioButtonList" runat="server" Label="Rock:LabeledRadioButtonList"  />
+            <Rock:NumberRangeEditor ID="numberRangeEditor" runat="server" Label="Rock:NumberRangeEditor" LowerValue="10" UpperValue="25" />
 
             <h4 runat="server">Pickers</h4>
-            <Rock:DatePicker ID="datePicker" runat="server" LabelText="Rock:DatePicker" />
-            <Rock:DateTimePicker ID="dateTimePicker" runat="server" LabelText="Rock:DateTimePicker" />
-            <Rock:TimePicker ID="timePicker" runat="server" LabelText="Rock:TimePicker" />
-            <Rock:MonthYearPicker ID="monthYearPicker" runat="server" LabelText="Rock:MonthYearPicker" OnTextChanged="monthYearPicker_TextChanged" AutoPostBack="true" />
-            <Rock:MonthDayPicker ID="monthDayPicker" runat="server" LabelText="Rock:MonthDayPicker" OnTextChanged="monthDayPicker_TextChanged" AutoPostBack="true" />
-            <Rock:DateRangePicker ID="dateRangerPicker" runat="server" LabelText="Rock:DateRangePicker" LowerValue="1/1/2012" UpperValue="12/31/2014" />
+            <Rock:DatePicker ID="datePicker" runat="server" Label="Rock:DatePicker" />
+            <Rock:DateTimePicker ID="dateTimePicker" runat="server" Label="Rock:DateTimePicker" />
+            <Rock:TimePicker ID="timePicker" runat="server" Label="Rock:TimePicker" />
+            <Rock:MonthYearPicker ID="monthYearPicker" runat="server" Label="Rock:MonthYearPicker" OnTextChanged="monthYearPicker_TextChanged" AutoPostBack="true" />
+            <Rock:MonthDayPicker ID="monthDayPicker" runat="server" Label="Rock:MonthDayPicker" OnTextChanged="monthDayPicker_TextChanged" AutoPostBack="true" />
+            <Rock:DateRangePicker ID="dateRangerPicker" runat="server" Label="Rock:DateRangePicker" LowerValue="1/1/2012" UpperValue="12/31/2014" />
 
+            <Rock:GroupPicker ID="groupPicker" runat="server" Label="Rock:GroupPicker" />
+            <Rock:CampusPicker ID="campusPicker" runat="server" Label="Rock:CampusPicker" />
+            <Rock:PagePicker ID="pagePicker" runat="server" Label="Rock:PagePicker" />
+            <Rock:PersonPicker ID="personPicker" runat="server" Label="Rock:PersonPicker" />
 
-            <Rock:GroupPicker ID="groupPicker" runat="server" LabelText="Rock:GroupPicker" />
-            <Rock:CampusPicker ID="campusPicker" runat="server" LabelText="Rock:CampusPicker" />
-            <Rock:PagePicker ID="pagePicker" runat="server" LabelText="Rock:PagePicker" />
-            <Rock:PersonPicker ID="personPicker" runat="server" LabelText="Rock:PersonPicker" />
+            <Rock:ScheduleBuilder ID="scheduleBuilder" runat="server" Label="Rock:ScheduleBuilder" />
 
-            <Rock:ScheduleBuilder ID="scheduleBuilder" runat="server" LabelText="Rock:ScheduleBuilder" />
+            <Rock:AccountPicker ID="accountPicker" runat="server" Label="Rock:AccountPicker" />
+            <Rock:CategoryPicker ID="categoryPicker" runat="server" Label="Rock:CategoryPicker" />
+            <Rock:ComponentPicker ID="componentPicker" runat="server" Label="Rock:ComponentPicker" />
 
-            <Rock:AccountPicker ID="accountPicker" runat="server" LabelText="Rock:AccountPicker" />
-            <Rock:CategoryPicker ID="categoryPicker" runat="server" LabelText="Rock:CategoryPicker" />
-            <Rock:ComponentPicker ID="componentPicker" runat="server" LabelText="Rock:ComponentPicker" />
-
-            <Rock:GeoPicker ID="geoPicker" runat="server" LabelText="Rock:GeoPicker" DrawingMode="Point" />
+            <Rock:GeoPicker ID="geoPicker" runat="server" Label="Rock:GeoPicker" DrawingMode="Point" />
             
             <h4>Rock:PersonPicker2</h4>
             <Rock:PersonPicker2 ID="personPicker2" runat="server" />
 
 
             <%-- 
-                <Rock:MergeFieldPicker ID="LabeledCheckBox4" runat="server" LabelText="Rock:MergeFieldPicker" />
+                <Rock:MergeFieldPicker ID="LabeledCheckBox4" runat="server" Label="Rock:MergeFieldPicker" />
             --%>
 
             <h4 runat="server">BinaryFilePicker, BinaryFileTypePicker</h4>
@@ -68,9 +67,9 @@
             <Rock:BinaryFilePicker ID="binaryFilePicker" runat="server" />
 
             <h4 runat="server">Misc</h4>
-            <Rock:FieldTypeList ID="FieldTypeList" runat="server" LabelText="Rock:FieldTypeList" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
-            <Rock:FileUploader ID="fup" runat="server" LabelText="Rock:FileUploader" />
-            <Rock:ImageUploader ID="imageUploader" runat="server" LabelText="Rock:ImageUploader" />
+            <Rock:FieldTypeList ID="FieldTypeList" runat="server" Label="Rock:FieldTypeList" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
+            <Rock:FileUploader ID="fup" runat="server" Label="Rock:FileUploader" />
+            <Rock:ImageUploader ID="imageUploader" runat="server" Label="Rock:ImageUploader" />
 
             <Rock:NotificationBox ID="notificationBox" runat="server" Title="Rock:NotificationBox" Text="Box Text" />
             <Rock:Badge ID="badge" runat="server" BadgeType="Important" ToolTip="Some Tooltip">Badge</Rock:Badge>
@@ -85,7 +84,7 @@
             </asp:Panel>
 
             <h4 runat="server">Rock:HtmlEditor</h4>
-            <Rock:HtmlEditor ID="htmlEdit" runat="server" LabelText="HtmlEditor" />
+            <Rock:HtmlEditor ID="htmlEdit" runat="server" Label="HtmlEditor" />
 
             
 

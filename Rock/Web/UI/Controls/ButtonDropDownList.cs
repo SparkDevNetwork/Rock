@@ -33,7 +33,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The label text.
         /// </value>
-        public string LabelText
+        public string Label
         {
             get
             {
@@ -242,7 +242,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                bool renderControlGroupDiv = !string.IsNullOrEmpty( LabelText );
+                bool renderControlGroupDiv = !string.IsNullOrEmpty( Label );
 
                 if ( renderControlGroupDiv )
                 {

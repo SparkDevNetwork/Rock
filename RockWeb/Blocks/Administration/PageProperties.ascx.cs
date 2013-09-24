@@ -104,7 +104,7 @@ namespace RockWeb.Blocks.Administration
                         var tbContext = new LabeledTextBox();
                         tbContext.ID = string.Format( "context_{0}", i++ );
                         tbContext.Required = true;
-                        tbContext.LabelText = context;
+                        tbContext.Label = context;
 
                         if ( _page.PageContexts.ContainsKey( context ) )
                         {
@@ -309,7 +309,7 @@ namespace RockWeb.Blocks.Administration
                             {
                                 var tbContext = control as LabeledTextBox;
                                 var pageContext = new PageContext();
-                                pageContext.Entity = tbContext.LabelText;
+                                pageContext.Entity = tbContext.Label;
                                 pageContext.IdParameter = tbContext.Text;
                                 page.PageContexts.Add( pageContext );
                             }

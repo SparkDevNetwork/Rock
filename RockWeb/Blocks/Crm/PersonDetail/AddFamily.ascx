@@ -13,7 +13,7 @@
                 <div class="col-md-4">
 
                     <fieldset>
-                        <Rock:LabeledTextBox ID="tbFamilyName" runat="server" LabelText="Family Name" Required="true" CssClass="input-meduim" />
+                        <Rock:LabeledTextBox ID="tbFamilyName" runat="server" Label="Family Name" Required="true" CssClass="input-meduim" />
                     </fieldset>
 
                 </div>
@@ -22,18 +22,18 @@
 
                     <fieldset>
                         <Rock:CampusPicker ID="cpCampus" runat="server" Required="true" />
-                        <Rock:LabeledTextBox ID="tbStreet1" runat="server" LabelText="Address Line 1" />
-                        <Rock:LabeledTextBox ID="tbStreet2" runat="server" LabelText="Address Line 2" />
+                        <Rock:LabeledTextBox ID="tbStreet1" runat="server" Label="Address Line 1" />
+                        <Rock:LabeledTextBox ID="tbStreet2" runat="server" Label="Address Line 2" />
 
                         <div class="row">
                             <div class="col-lg-7">
-                                <Rock:LabeledTextBox ID="tbCity" LabelText="City"  runat="server" />
+                                <Rock:LabeledTextBox ID="tbCity" Label="City"  runat="server" />
                             </div>
                             <div class="col-lg-2">
-                                <Rock:StateDropDownList ID="ddlState" LabelText="State" runat="server" UseAbbreviation="true" CssClass="input-mini" />
+                                <Rock:StateDropDownList ID="ddlState" Label="State" runat="server" UseAbbreviation="true" CssClass="input-mini" />
                             </div>
                             <div class="col-lg-3">
-                                <Rock:LabeledTextBox ID="tbZip" LabelText="Zip" runat="server" CssClass="input-small" />
+                                <Rock:LabeledTextBox ID="tbZip" Label="Zip" runat="server" CssClass="input-small" />
                             </div>
                         </div>
 

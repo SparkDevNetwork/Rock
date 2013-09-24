@@ -368,7 +368,7 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
 
             ddlGroupTypeInheritFrom = new LabeledDropDownList();
             ddlGroupTypeInheritFrom.ID = this.ID + "_ddlGroupTypeInheritFrom";
-            ddlGroupTypeInheritFrom.LabelText = "Inherit from";
+            ddlGroupTypeInheritFrom.Label = "Inherit from";
             ddlGroupTypeInheritFrom.AutoPostBack = true;
             ddlGroupTypeInheritFrom.SelectedIndexChanged += ddlGroupTypeInheritFrom_SelectedIndexChanged;
 
@@ -381,7 +381,7 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
 
             tbGroupTypeName = new DataTextBox();
             tbGroupTypeName.ID = this.ID + "_tbGroupTypeName";
-            tbGroupTypeName.LabelText = "Check-in Area Name";
+            tbGroupTypeName.Label = "Check-in Area Name";
 
             // set label when they exit the edit field
             tbGroupTypeName.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", lblGroupTypeName.ClientID );

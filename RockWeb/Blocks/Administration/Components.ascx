@@ -8,9 +8,9 @@
     <asp:Panel ID="pnlList" runat="server" Visible="true" >
         
         <Rock:GridFilter ID="rFilter" runat="server">
-            <Rock:LabeledTextBox ID="tbName" runat="server" LabelText="Name" />
-            <Rock:LabeledTextBox ID="tbDescription" runat="server" LabelText="Description" />
-            <Rock:LabeledRadioButtonList ID="rblActive" runat="server" LabelText="Active" RepeatDirection="Horizontal">
+            <Rock:LabeledTextBox ID="tbName" runat="server" Label="Name" />
+            <Rock:LabeledTextBox ID="tbDescription" runat="server" Label="Description" />
+            <Rock:LabeledRadioButtonList ID="rblActive" runat="server" Label="Active" RepeatDirection="Horizontal">
                 <asp:ListItem Value="" Text="All" />
                 <asp:ListItem Value="Yes" Text="Yes" />
                 <asp:ListItem Value="No" Text="No" />
