@@ -67,8 +67,8 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 dataValidator.PropertyName = value;
-                if ( this.LabelText == string.Empty )
-                    this.LabelText = value.SplitCase();
+                if ( this.Label == string.Empty )
+                    this.Label = value.SplitCase();
             }
         }
 

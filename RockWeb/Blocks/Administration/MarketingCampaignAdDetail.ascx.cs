@@ -263,7 +263,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( string.IsNullOrWhiteSpace( ddlMarketingCampaignAdType.SelectedValue ) )
             {
-                ddlMarketingCampaignAdType.ShowErrorMessage( WarningMessage.CannotBeBlank( ddlMarketingCampaignAdType.LabelText ) );
+                ddlMarketingCampaignAdType.ShowErrorMessage( WarningMessage.CannotBeBlank( ddlMarketingCampaignAdType.Label ) );
                 return;
             }
 

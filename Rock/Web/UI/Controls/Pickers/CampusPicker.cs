@@ -23,7 +23,7 @@ namespace Rock.Web.UI.Controls
         public CampusPicker()
             : base()
         {
-            LabelText = "Campus";
+            Label = "Campus";
         }
 
         /// <summary>

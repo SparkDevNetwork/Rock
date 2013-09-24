@@ -610,7 +610,7 @@ namespace RockWeb.Blocks.Crm
 
             // GroupType depends on Selected ParentGroup
             ddlParentGroup_SelectedIndexChanged( null, null );
-            gpParentGroup.LabelText = "Parent Group";
+            gpParentGroup.Label = "Parent Group";
 
             if ( group.Id == 0 && ddlGroupType.Items.Count > 1 )
             {

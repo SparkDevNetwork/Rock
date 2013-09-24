@@ -119,7 +119,7 @@ namespace Rock.Web.UI.Controls
         DefaultValue( "" ),
         Description( "The text for the label." )
         ]
-        public string LabelText
+        public string Label
         {
             get
             {
@@ -202,7 +202,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                bool renderControlGroupDiv = ( !string.IsNullOrWhiteSpace( LabelText ) || !string.IsNullOrWhiteSpace( Help ) );
+                bool renderControlGroupDiv = ( !string.IsNullOrWhiteSpace( Label ) || !string.IsNullOrWhiteSpace( Help ) );
 
                 if ( renderControlGroupDiv )
                 {
@@ -228,7 +228,7 @@ namespace Rock.Web.UI.Controls
                     requiredValidator.ValidationGroup = this.ValidationGroup;
                     if ( string.IsNullOrWhiteSpace( requiredValidator.ErrorMessage ) )
                     {
-                        requiredValidator.ErrorMessage = LabelText + " is Required.";
+                        requiredValidator.ErrorMessage = Label + " is Required.";
                     }
                     requiredValidator.RenderControl( writer );
                 }

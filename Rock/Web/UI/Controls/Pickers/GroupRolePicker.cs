@@ -34,7 +34,7 @@ namespace Rock.Web.UI.Controls
             _ddlGroupRole = new DropDownList();
         }
 
-        public string LabelText
+        public string Label
         {
             get { return _label.Text; }
             set { _label.Text = value; }
@@ -196,7 +196,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                bool renderControlGroupDiv = ( !string.IsNullOrWhiteSpace( LabelText ) || !string.IsNullOrWhiteSpace( Help ) );
+                bool renderControlGroupDiv = ( !string.IsNullOrWhiteSpace( Label ) || !string.IsNullOrWhiteSpace( Help ) );
 
                 if ( renderControlGroupDiv )
                 {

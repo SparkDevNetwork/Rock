@@ -41,14 +41,14 @@
 
                      <div class="row-fluid">
                         <div class="span6">
-                            <Rock:DataTextBox ID="tbWorkTerm" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="WorkTerm" LabelText="Work Term" />
-                            <Rock:LabeledDropDownList ID="ddlLoggingLevel" Help="The level you would like to audit.  Start and stop times can be logged for each workflow, workflow activity, or activity action." runat="server" LabelText="Logging Level" />
+                            <Rock:DataTextBox ID="tbWorkTerm" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="WorkTerm" Label="Work Term" />
+                            <Rock:LabeledDropDownList ID="ddlLoggingLevel" Help="The level you would like to audit.  Start and stop times can be logged for each workflow, workflow activity, or activity action." runat="server" Label="Logging Level" />
                         </div>
                          <div class="span6">
-                            <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" LabelText="Category" EntityTypeName="Rock.Model.WorkflowType" />
-                            <Rock:DataTextBox ID="tbProcessingInterval" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="ProcessingIntervalSeconds" LabelText="Processing Interval (seconds)" />
+                            <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" Label="Category" EntityTypeName="Rock.Model.WorkflowType" />
+                            <Rock:DataTextBox ID="tbProcessingInterval" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="ProcessingIntervalSeconds" Label="Processing Interval (seconds)" />
                             <Rock:LabeledCheckBox ID="cbIsPersisted" runat="server" Text="Persisted" />
-                            <Rock:DataTextBox ID="tbOrder" runat="server" CssClass="input-mini" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Order" LabelText="Order" Required="true" />
+                            <Rock:DataTextBox ID="tbOrder" runat="server" CssClass="input-mini" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Order" Label="Order" Required="true" />
                         </div>
                     </div>
                 </fieldset>

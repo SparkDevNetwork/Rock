@@ -20,14 +20,14 @@ namespace Rock.Web.UI.Controls
         private RangeValidator rangeValidator;
 
         /// <summary>
-        /// Gets or sets the name of the field (for range validation messages when LabelText is not provided)
+        /// Gets or sets the name of the field (for range validation messages when Label is not provided)
         /// </summary>
         /// <value>
         /// The name of the field.
         /// </value>
         public string FieldName
         {
-            get { return ViewState["FieldName"] as string ?? LabelText; }
+            get { return ViewState["FieldName"] as string ?? Label; }
             set { ViewState["FieldName"] = value; }
         }
 

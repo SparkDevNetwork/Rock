@@ -53,7 +53,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The label text.
         /// </value>
-        public string LabelText
+        public string Label
         {
             get
             {
@@ -160,7 +160,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            bool renderWithLabel = !string.IsNullOrEmpty( LabelText );
+            bool renderWithLabel = !string.IsNullOrEmpty( Label );
 
             if ( renderWithLabel )
             {

@@ -26,7 +26,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The label text.
         /// </value>
-        public string LabelText
+        public string Label
         {
             get { return label.Text; }
             set 
@@ -128,7 +128,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            if ( string.IsNullOrEmpty( LabelText ) )
+            if ( string.IsNullOrEmpty( Label ) )
             {
                 base.RenderControl( writer );
             }

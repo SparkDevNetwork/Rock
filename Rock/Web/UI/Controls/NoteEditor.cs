@@ -240,7 +240,7 @@ namespace Rock.Web.UI.Controls
             // label and text
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            tbNote.LabelText = "Note";
+            tbNote.Label = "Note";
             tbNote.Text = Text;
             tbNote.RenderControl( writer );
             
