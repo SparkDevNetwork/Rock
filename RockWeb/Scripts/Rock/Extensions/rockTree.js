@@ -3,7 +3,6 @@
 
     // Data container "class" to generically represent data from the server.
     var RockTree = function (element, options) {
-            this.el = element;
             this.$el = $(element);
             this.options = options;
         },
@@ -30,7 +29,24 @@
 		    }
 
 		    return null;
-		};
+		},
+		_mapArrayDefault = function (arr) {
+		    return $.map(arr, function (item) {
+		        var node = {
+		            id: item.Id,
+		            name: item.Name || item.Title,
+		            iconCssClass: item.IconCssClass,
+		            parentId: item.ParentId,
+		            hasChildren: item.HasChildren
+		        };
+
+		        if (item.Children && typeof item.Children.length === 'number') {
+		            node.children = _mapArrayDefault(item.Children);
+		        }
+
+		        return node;
+		    });
+		};;
 
     RockTree.prototype = {
         constructor: RockTree,
@@ -38,29 +54,29 @@
             var promise = this.fetch(this.options.id),
 				self = this;
 
-            this.showLoading(this.el);
+            this.showLoading(this.$el);
             promise.done(function () {
                 self.render();
-                self.discardLoading(self.el);
+                self.discardLoading(self.$el);
                 self.initTreeEvents();
             });
 
             promise.fail(function (msg) {
                 self.renderError(msg);
-                self.discardLoading(self.el);
+                self.discardLoading(self.$el);
                 self.initErrorEvents();
             });
         },
         fetch: function (id) {
             var self = this,
-				parentNode = _findNodeById(id, this.nodes),
-				dfd = $.Deferred(),
-				request,
-				nodes;
+                parentNode = _findNodeById(id, this.nodes),
+                dfd = $.Deferred(),
+                request,
+                nodes;
 
-            if (this.options.remote) {
+            if (this.options.restUrl) {
                 request = $.ajax({
-                    url: Rock.settings.get('baseUrl') + '/' + this.options.remote + '/' + id,
+                    url: this.options.restUrl + id,
                     dataType: 'json',
                     contentType: 'application/json'
                 });
@@ -87,49 +103,23 @@
             return dfd.promise();
         },
         dataBind: function (data, parentNode) {
-            var self = this,
-				nodeArray,
-				mapArray = function (arr) {
-				    var items,
-						nodes = [],
-						i;
+            var nodeArray,
+                i;
 
-				    // If there is a custom mapping function defined, defer to its logic...
-				    if (typeof self.options.mapping.mapData === 'function') {
-				        items = self.options.mapping.mapData(arr);
-
-				        for (i = 0; i < items.length; i++) {
-				            nodes.push(items[i]);
-				        }
-
-				        return nodes;
-				    }
-
-				    // Otherwise, attempt to make best guesses at given the data structure.
-				    return $.map(arr, function (item) {
-				        var node = {
-				            id: item.Id,
-				            name: item.Name || item.Title,
-				            parentId: item.ParentId,
-				            hasChildren: item.HasChildren
-				        };
-
-				        if (item.Children && typeof item.Children.length === 'number') {
-				            node.children = mapArray(item.Children);
-				        }
-
-				        return node;
-				    });
-				};
-
-            if (!data) {
+            if (!data || typeof this.options.mapping.mapData !== 'function') {
                 throw 'Unable to load data!';
             }
 
-            nodeArray = mapArray(data);
+            nodeArray = this.options.mapping.mapData(data);
+            
+            for (i = 0; i < nodeArray.length; i++) {
+                nodeArray[i].isOpen = false;
+            }
 
+            // If a parent node is supplied, append the result set to the parent node.
             if (parentNode) {
-                parentNode.chidren = nodeArray;
+                parentNode.children = nodeArray;
+                // Otherwise the result set would be the root array.
             } else {
                 this.nodes = nodeArray;
             }
@@ -143,8 +133,9 @@
 				renderNode = function ($list, node) {
 				    var $li = $('<li/>'),
 						$childUl,
-						iconClassName = node.hasChildren ? self.options.iconClasses.branchClosed : self.options.iconClasses.leaf,
-						includeAttrs = self.options.mapping.include;
+						includeAttrs = self.options.mapping.include,
+				        folderCssClass = node.isOpen ? self.options.iconClasses.branchOpen : self.options.iconClasses.branchClosed,
+				        leafCssClass = node.iconCssClass || self.options.iconClasses.leaf;
 
 				    $li.addClass('rock-tree-item')
 						.addClass(node.hasChildren ? 'rock-tree-folder' : '')
@@ -156,14 +147,28 @@
 				        $li.attr('data-' + includeAttrs[i], node[includeAttrs[i]]);
 				    }
 
-				    $li.append('<i class="rock-tree-icon ' + iconClassName + '"></i>');
 				    $li.append('<span class="rock-tree-name"> ' + node.name + '</span>');
+
+				    if (node.hasChildren) {
+				        $li.prepend('<i class="rock-tree-icon ' + folderCssClass + '"></i>');
+
+				        if (node.iconCssClass) {
+				            $li.find('.rock-tree-name').prepend('<i class="' + node.iconCssClass + '"></i>');
+				        }
+				    } else {
+				        $li.prepend('<i class="rock-tree-icon ' + leafCssClass + '"></i>');
+				    }
+
 				    $list.append($li);
 
 				    if (node.hasChildren && node.children) {
 				        $childUl = $('<ul/>');
 				        $childUl.addClass('rock-tree-children');
-				        $childUl.hide();
+
+                        if (!node.isOpen) {
+                            $childUl.hide();
+                        }
+				        
 				        $li.append($childUl);
 
 				        $.each(node.children, function (index, childNode) {
@@ -190,11 +195,11 @@
                 .append(msg);
             this.$el.html($warning);
         },
-        showLoading: function (element) {
-            $(element).append(this.options.loadingHtml);
+        showLoading: function ($element) {
+            $element.append(this.options.loadingHtml);
         },
-        discardLoading: function (element) {
-            $(element).find('.rock-tree-loading').remove();
+        discardLoading: function ($element) {
+            $element.find('.rock-tree-loading').remove();
         },
         initTreeEvents: function () {
             var self = this;
@@ -210,20 +215,19 @@
 					openClass = self.options.iconClasses.branchOpen,
 					closedClass = self.options.iconClasses.branchClosed;
 
-                if ($icon.hasClass(openClass)) {
-                    $icon.removeClass(openClass).addClass(closedClass);
+                if (node.isOpen) {
                     $ul.hide();
+                    node.isOpen = false;
+                    $icon.removeClass(openClass).addClass(closedClass);
                 } else {
+                    //$ul.show();
+                    node.isOpen = true;
                     $icon.removeClass(closedClass).addClass(openClass);
-
-                    // If the node has children, but they've not been fetched from the server yet...
-                    if (node.hasChldren && !node.children) {
+                    
+                    if (node.hasChildren && !node.children) {
                         self.showLoading($icon.parent('li'));
                         self.fetch(node.id).done(function () {
                             self.render();
-                            self.discardLoading();
-                            $ul = $icon.siblings('ul');
-                            $ul.show();
                         });
                     } else {
                         $ul.show();
@@ -278,11 +282,11 @@
     };
 
     $.fn.rockTree.defaults = {
-        remote: '',
+        id: null,
+        restUrl: null,
         local: null,
-        id: 0,
         multiselect: false,
-        loadingHtml: '<span class="rock-tree-loading"><i class="icon-refresh icon-spin"></i> Loading...</span>',
+        loadingHtml: '<span class="rock-tree-loading"><i class="icon-refresh icon-spin"></i>Loading...</span>',
         iconClasses: {
             branchOpen: 'icon-folder-open',
             branchClosed: 'icon-folder-close',
@@ -290,7 +294,7 @@
         },
         mapping: {
             include: [],
-            mapData: null
+            mapData: _mapArrayDefault
         }
     };
 }(jQuery));
