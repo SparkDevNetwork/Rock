@@ -357,7 +357,7 @@ namespace Rock.Web.UI.Controls
                 }
 
                 string controlHtmlFormatMiddle = @"
-          <div class='picker-menu dropdown-menu picker-person'>
+          <div class='picker-menu dropdown-menu'>
 
              <h4>Search</h4>
              <input id='personPicker_{0}' type='text' class='picker-search' />
