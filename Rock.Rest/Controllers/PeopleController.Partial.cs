@@ -77,7 +77,7 @@ namespace Rock.Rest.Controllers
             string itemDetailFormat = @"
 <div class='picker-select-item-details clearfix' style='display: none;'>
 	{0}
-	<div class='picker-select-person-details'>
+	<div class='contents'>
         {1}
 	</div>
 </div>
@@ -148,7 +148,7 @@ namespace Rock.Rest.Controllers
                             {
                                 if ( !familyGroupMember.Person.Gender.Equals( spouseMember.Person.Gender ) )
                                 {
-                                    personInfo += "<h5>Spouse</h5>" + spouseMember.Person.FullName;
+                                    personInfo += "<p><strong>Spouse:</strong> " + spouseMember.Person.FullName + "</p>";
                                 }
                             }
                         }

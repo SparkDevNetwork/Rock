@@ -23,7 +23,7 @@
     position: relative;
 
     .scroll-container-picker { 
-        width: 360px; 
+        width: 355px; 
 
         .viewport { 
             width: 340px;  
@@ -35,12 +35,44 @@
         }
     }
 
+    h4 {
+        font-size: 14px;
+        font-weight: @font-weight-semibold;
+    }
+
+    .picker-select {
+        padding: 0;
+    }
+
+    .picker-menu {
+        width: 370px;
+        padding: 10px;
+
+        h4:first-child {
+            margin-top: 0;
+        }
+    }
+
     .picker-actions {
         background-color: @accent-light-color;
         padding: 10px;
         border-top: 1px solid @accent-color;
         border-radius: 0 0 @border-radius-base @border-radius-base;
-        margin-bottom: -5px;
+        margin: 0 -10px -10px -10px;
+    }
+
+    // details used for pickers like person picker to show the details of the selected item
+    .picker-select-item-details {
+        margin-left: 20px;
+
+        img {
+            float: left;
+        }
+
+        .contents {
+            float: left;
+            margin-left: 5px;
+        }
     }
 }
 
