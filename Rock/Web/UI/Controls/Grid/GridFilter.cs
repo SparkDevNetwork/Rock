@@ -203,21 +203,30 @@ Sys.Application.add_load(function () {
 
                 // write first row
                 writer.AddAttribute("class", "row");
-                writer.WriteBeginTag("div");
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 foreach ( Control child in Controls )
                 {
                     // write new row
-                    if (cellCount > cellsPerRow)
+                    if (cellCount >= cellsPerRow)
                     {
                         writer.RenderEndTag();
                         writer.AddAttribute("class", "row");
-                        writer.WriteBeginTag("div");
+                        writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                        cellCount = 0;
                     }
 
                     if ( child != lbFilter && child != hfVisible )
                     {
+                        // add row column
+                        writer.AddAttribute("class", "col-md-4");
+                        writer.RenderBeginTag(HtmlTextWriterTag.Div);
+
                         child.RenderControl( writer );
+
+                        writer.RenderEndTag();
+
+                        cellCount++;
                     }
                 }
 
