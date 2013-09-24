@@ -41,6 +41,7 @@
             <Rock:MonthDayPicker ID="monthDayPicker" runat="server" LabelText="Rock:MonthDayPicker" OnTextChanged="monthDayPicker_TextChanged" AutoPostBack="true" />
             <Rock:DateRangePicker ID="dateRangerPicker" runat="server" LabelText="Rock:DateRangePicker" LowerValue="1/1/2012" UpperValue="12/31/2014" />
 
+
             <Rock:GroupPicker ID="groupPicker" runat="server" LabelText="Rock:GroupPicker" />
             <Rock:CampusPicker ID="campusPicker" runat="server" LabelText="Rock:CampusPicker" />
             <Rock:PagePicker ID="pagePicker" runat="server" LabelText="Rock:PagePicker" />
@@ -51,6 +52,11 @@
             <Rock:AccountPicker ID="accountPicker" runat="server" LabelText="Rock:AccountPicker" />
             <Rock:CategoryPicker ID="categoryPicker" runat="server" LabelText="Rock:CategoryPicker" />
             <Rock:ComponentPicker ID="componentPicker" runat="server" LabelText="Rock:ComponentPicker" />
+
+            <Rock:GeoPicker ID="geoPicker" runat="server" LabelText="Rock:GeoPicker" DrawingMode="Point" />
+            
+            <h4>Rock:PersonPicker2</h4>
+            <Rock:PersonPicker2 ID="personPicker2" runat="server" />
 
 
             <%-- 
