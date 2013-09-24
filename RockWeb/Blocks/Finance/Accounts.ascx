@@ -4,15 +4,15 @@
     <asp:Panel ID="pnlAccountList" runat="server">
         <h4>Financial Accounts</h4>
         <Rock:GridFilter ID="rAccountFilter" runat="server" OnApplyFilterClick="rAccountFilter_ApplyFilterClick">
-            <Rock:LabeledTextBox ID="txtAccountName" runat="server" LabelText="Name" />
-            <Rock:DatePicker ID="dtStartDate" runat="server" LabelText="From Start Date" />
-            <Rock:DatePicker ID="dtEndDate" runat="server" LabelText="To End Date" />
-            <Rock:DataDropDownList ID="ddlIsActive" runat="server" LabelText="Account Status">
+            <Rock:LabeledTextBox ID="txtAccountName" runat="server" Label="Name" />
+            <Rock:DatePicker ID="dtStartDate" runat="server" Label="From Start Date" />
+            <Rock:DatePicker ID="dtEndDate" runat="server" Label="To End Date" />
+            <Rock:DataDropDownList ID="ddlIsActive" runat="server" Label="Account Status">
                 <asp:ListItem Text="Any" Value="Any" />
                 <asp:ListItem Text="Active" Value="True" />
                 <asp:ListItem Text="Inactive" Value="False" />
             </Rock:DataDropDownList>
-            <Rock:DataDropDownList ID="ddlIsTaxDeductible" runat="server" LabelText="Tax Deductible">
+            <Rock:DataDropDownList ID="ddlIsTaxDeductible" runat="server" Label="Tax Deductible">
                 <asp:ListItem Text="Any" Value="Any" />
                 <asp:ListItem Text="Yes" Value="True" />
                 <asp:ListItem Text="No" Value="False" />
@@ -60,12 +60,12 @@
                 </div>
 
                 <div class="col-md-6">                
-                    <Rock:DatePicker ID="dtpStartDate" runat="server" SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="StartDate" LabelText="Start Date" />
-                    <Rock:DatePicker ID="dtpEndDate" runat="server" SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="EndDate" LabelText="End Date" />
-                    <Rock:LabeledCheckBox ID="cbIsActive" runat="server" LabelText="Active" />
-                    <Rock:LabeledCheckBox ID="cbIsTaxDeductible" runat="server" LabelText="Tax Deductible" />
-                    <Rock:LabeledDropDownList ID="ddlAccountType" runat="server" LabelText="Account Type" />
-                    <Rock:AccountPicker ID="apParentAccount" runat="server" LabelText="Parent Account" />                
+                    <Rock:DatePicker ID="dtpStartDate" runat="server" SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="StartDate" Label="Start Date" />
+                    <Rock:DatePicker ID="dtpEndDate" runat="server" SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="EndDate" Label="End Date" />
+                    <Rock:LabeledCheckBox ID="cbIsActive" runat="server" Label="Active" />
+                    <Rock:LabeledCheckBox ID="cbIsTaxDeductible" runat="server" Label="Tax Deductible" />
+                    <Rock:LabeledDropDownList ID="ddlAccountType" runat="server" Label="Account Type" />
+                    <Rock:AccountPicker ID="apParentAccount" runat="server" Label="Parent Account" />                
                 </div>
         </div>
 
