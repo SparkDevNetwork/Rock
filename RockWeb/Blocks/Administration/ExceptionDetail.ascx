@@ -13,7 +13,7 @@
                                 <!-- Site -->
                             </div>
                             <div class="span10">
-                                <Rock:LabeledText LabelText="Site" ID="lblSite" runat="server" />
+                                <Rock:LabeledText Label="Site" ID="lblSite" runat="server" />
                             </div>
                         </div>
                         <div class="row-fluid">

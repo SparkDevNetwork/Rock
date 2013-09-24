@@ -122,20 +122,20 @@ namespace Rock.Web.UI.Controls.Communication
             Controls.Clear();
 
             tbFromName.ID = string.Format( "tbFromName_{0}", this.ID );
-            tbFromName.LabelText = "From Name";
+            tbFromName.Label = "From Name";
             Controls.Add( tbFromName );
 
             tbFromAddress.ID = string.Format( "tbFromAddress_{0}", this.ID );
-            tbFromAddress.LabelText = "From Address";
+            tbFromAddress.Label = "From Address";
             tbFromAddress.Required = true;
             Controls.Add( tbFromAddress );
 
             tbReplyToAddress.ID = string.Format( "tbReplyToAddress_{0}", this.ID );
-            tbReplyToAddress.LabelText = "Reply To Address";
+            tbReplyToAddress.Label = "Reply To Address";
             Controls.Add( tbReplyToAddress );
 
             tbSubject.ID = string.Format( "tbSubject_{0}", this.ID );
-            tbSubject.LabelText = "Subject";
+            tbSubject.Label = "Subject";
             Controls.Add( tbSubject );
 
             htmlMessage.ID = string.Format( "htmlMessage_{0}", this.ID );
@@ -143,11 +143,11 @@ namespace Rock.Web.UI.Controls.Communication
             htmlMessage.MergeFields.Add( "GlobalAttribute" );
             htmlMessage.MergeFields.Add( "Rock.Model.Person" );
             this.AdditionalMergeFields.ForEach( m => htmlMessage.MergeFields.Add( m ) );
-            htmlMessage.LabelText = "Message";
+            htmlMessage.Label = "Message";
             Controls.Add( htmlMessage );
 
             tbTextMessage.ID = string.Format( "tbTextMessage_{0}", this.ID );
-            tbTextMessage.LabelText = "Message (Text Version)";
+            tbTextMessage.Label = "Message (Text Version)";
             tbTextMessage.TextMode = TextBoxMode.MultiLine;
             tbTextMessage.Rows = 5;
             tbTextMessage.CssClass = "span12";
@@ -157,7 +157,7 @@ namespace Rock.Web.UI.Controls.Communication
             Controls.Add( hfAttachments );
 
             fuAttachments.ID = string.Format( "fuAttachments_{0}", this.ID );
-            fuAttachments.LabelText = "Attachments";
+            fuAttachments.Label = "Attachments";
             fuAttachments.FileUploaded += fuAttachments_FileUploaded;
             Controls.Add( fuAttachments );
 

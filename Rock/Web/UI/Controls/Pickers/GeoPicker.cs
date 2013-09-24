@@ -24,7 +24,7 @@ namespace Rock.Web.UI.Controls
     /// To use on a page or usercontrol:
     /// <example>
     /// <code>
-    ///     <Rock:GeoPicker ID="gpGeoPoint" runat="server" Required="false" LabelText="Geo Point" DrawingMode="Point" />
+    ///     <Rock:GeoPicker ID="gpGeoPoint" runat="server" Required="false" Label="Geo Point" DrawingMode="Point" />
     /// </code>
     /// </example>
     /// To set an initial value:
@@ -68,7 +68,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The label text.
         /// </value>
-        public string LabelText
+        public string Label
         {
             get { return _label.Text; }
             set { _label.Text = value; }
@@ -76,7 +76,7 @@ namespace Rock.Web.UI.Controls
 
         /// <summary>
         /// Gets or sets the name of the field to display in validation messages
-        /// when a LabelText is not entered
+        /// when a Label is not entered
         /// </summary>
         /// <value>
         /// The name of the field.
@@ -457,7 +457,7 @@ namespace Rock.Web.UI.Controls
         {
             RegisterJavaScript();
 
-            bool renderLabel = !string.IsNullOrEmpty( LabelText );
+            bool renderLabel = !string.IsNullOrEmpty( Label );
 
             if ( renderLabel )
             {
@@ -476,7 +476,7 @@ namespace Rock.Web.UI.Controls
             if ( Required )
             {
                 RequiredValidator.Enabled = true;
-                RequiredValidator.ErrorMessage = LabelText + " is Required.";
+                RequiredValidator.ErrorMessage = Label + " is Required.";
                 RequiredValidator.RenderControl( writer );
             }
 

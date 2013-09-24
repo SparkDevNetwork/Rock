@@ -82,7 +82,7 @@ namespace Rock.Web.UI.Controls
         DefaultValue( "" ),
         Description( "The text for the label." )
         ]
-        public string LabelText
+        public string Label
         {
             get
             {
@@ -120,7 +120,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                bool renderControlGroupDiv = ( !string.IsNullOrEmpty( LabelText ) || !string.IsNullOrEmpty( Help ) );
+                bool renderControlGroupDiv = ( !string.IsNullOrEmpty( Label ) || !string.IsNullOrEmpty( Help ) );
                 string wrapperClassName = string.Empty;
 
                 writer.AddAttribute("class", "form-group");

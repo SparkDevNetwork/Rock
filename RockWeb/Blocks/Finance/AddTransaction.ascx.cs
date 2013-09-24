@@ -355,7 +355,7 @@ achieve our mission.  We are so grateful for your commitment.
                 // Set the frequency date label based on if 'One Time' is selected or not
                 if ( btnFrequency.Items.Count > 0 )
                 {
-                    dtpStartDate.LabelText = btnFrequency.Items[0].Selected ? "When" : "First Gift";
+                    dtpStartDate.Label = btnFrequency.Items[0].Selected ? "When" : "First Gift";
                 }
 
                 // If there are both CC and ACH options, set the active tab based on the hidden field value that tracks the active tag

@@ -23,7 +23,7 @@ namespace Rock.Web.UI.Controls
         public GroupTypePicker()
             : base()
         {
-            LabelText = "Group Type";
+            Label = "Group Type";
         }
 
         /// <summary>

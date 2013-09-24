@@ -7,7 +7,7 @@
         <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
         <Rock:GridFilter ID="rFBFilter" runat="server">
-            <Rock:DateTimePicker ID="dtpGivingProfileDate" runat="server" SourceTypeName="Rock.Model.FinancialScheduledTransaction, Rock" PropertyName="StartDate" LabelText="Date" />
+            <Rock:DateTimePicker ID="dtpGivingProfileDate" runat="server" SourceTypeName="Rock.Model.FinancialScheduledTransaction, Rock" PropertyName="StartDate" Label="Date" />
         </Rock:GridFilter>
 
         <Rock:Grid ID="rGridGivingProfile" runat="server" EmptyDataText="No Scheduled Contributions Found" OnRowDataBound="rGridGivingProfile_RowDataBound"
