@@ -157,11 +157,11 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
 
             tbActionTypeName = new DataTextBox();
             tbActionTypeName.ID = this.ID + "_tbActionTypeName";
-            tbActionTypeName.LabelText = "Name";
+            tbActionTypeName.Label = "Name";
 
             ddlEntityType = new LabeledDropDownList();
             ddlEntityType.ID = this.ID + "_ddlEntityType";
-            ddlEntityType.LabelText = "Action Type";
+            ddlEntityType.Label = "Action Type";
 
             // make it autopostback since Attributes are dependant on which EntityType is selected
             ddlEntityType.AutoPostBack = true;
@@ -178,10 +178,10 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             tbActionTypeName.SourceTypeName = "Rock.Model.WorkflowActionType, Rock";
             tbActionTypeName.PropertyName = "Name";
 
-            cbIsActionCompletedOnSuccess = new LabeledCheckBox { LabelText = "Action is Completed on Success" };
+            cbIsActionCompletedOnSuccess = new LabeledCheckBox { Label = "Action is Completed on Success" };
             cbIsActionCompletedOnSuccess.ID = this.ID + "_cbIsActionCompletedOnSuccess";
 
-            cbIsActivityCompletedOnSuccess = new LabeledCheckBox { LabelText = "Activity is Completed on Success" };
+            cbIsActivityCompletedOnSuccess = new LabeledCheckBox { Label = "Activity is Completed on Success" };
             cbIsActivityCompletedOnSuccess.ID = this.ID + "_cbIsActivityCompletedOnSuccess";
 
             phActionAttributes = new PlaceHolder();

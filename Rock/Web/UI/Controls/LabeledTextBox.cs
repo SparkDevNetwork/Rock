@@ -14,32 +14,53 @@ namespace Rock.Web.UI.Controls
     /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with an associated label.
     /// </summary>
     [ToolboxData( "<{0}:LabeledTextBox runat=server></{0}:LabeledTextBox>" )]
-    public class LabeledTextBox : TextBox, ILabeledControl, IRequiredControl
+    public class LabeledTextBox : TextBox, IRockControl
     {
-        /// <summary>
-        /// The label
-        /// </summary>
-        protected Literal label;
+        #region IRockControl implementation
 
         /// <summary>
-        /// The help block
+        /// Gets or sets the label text.
         /// </summary>
-        protected HelpBlock helpBlock;
+        /// <value>
+        /// The label text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text for the label." )
+        ]
+        public string Label
+        {
+            get { return ViewState["Label"] as string ?? string.Empty; }
+            set { ViewState["Label"] = value; }
+        }
 
         /// <summary>
-        /// The required field validator
+        /// Gets or sets the help text.
         /// </summary>
-        protected RequiredFieldValidator requiredValidator;
-
-        /// <summary>
-        /// The prepend label
-        /// </summary>
-        protected Label prependLabel;
-
-        /// <summary>
-        /// The append label
-        /// </summary>
-        protected Label appendLabel;
+        /// <value>
+        /// The help text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The help block." )
+        ]
+        public string Help
+        {
+            get
+            {
+                EnsureChildControls();
+                return HelpBlock.Text;
+            }
+            set
+            {
+                EnsureChildControls();
+                HelpBlock.Text = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="LabeledTextBox"/> is required.
@@ -55,41 +76,39 @@ namespace Rock.Web.UI.Controls
         ]
         public bool Required
         {
+            get { return ViewState["Required"] as bool? ?? false; }
+            set { ViewState["Required"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the required error message.  If blank, the LabelName name will be used
+        /// </summary>
+        /// <value>
+        /// The required error message.
+        /// </value>
+        public string RequiredErrorMessage
+        {
             get
             {
-                if ( ViewState["Required"] != null )
-                    return (bool)ViewState["Required"];
-                else
-                    return false;
+                return RequiredFieldValidator.ErrorMessage;
             }
             set
             {
-                ViewState["Required"] = value;
+                RequiredFieldValidator.ErrorMessage = value;
             }
         }
 
         /// <summary>
-        /// Gets or sets the help tip.
+        /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
-        /// The help tip.
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
         /// </value>
-        [
-        Bindable( true ),
-        Category( "Appearance" ),
-        DefaultValue( "" ),
-        Description( "The help tip." )
-        ]
-        public string Tip
+        public virtual bool IsValid
         {
             get
             {
-                string s = ViewState["Tip"] as string;
-                return s == null ? string.Empty : s;
-            }
-            set
-            {
-                ViewState["Tip"] = value;
+                return !Required || RequiredFieldValidator.IsValid;
             }
         }
 
@@ -99,51 +118,17 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The help block.
         /// </value>
-        [
-        Bindable( true ),
-        Category( "Appearance" ),
-        DefaultValue( "" ),
-        Description( "The help block." )
-        ]
-        public string Help
-        {
-            get
-            {
-                EnsureChildControls();
-                return helpBlock.Text;
-            }
-            set
-            {
-                EnsureChildControls();
-                helpBlock.Text = value;
-            }
-        }
+        public HelpBlock HelpBlock { get; set; }
 
         /// <summary>
-        /// Gets or sets the label text.
+        /// Gets or sets the required field validator.
         /// </summary>
         /// <value>
-        /// The label text.
+        /// The required field validator.
         /// </value>
-        [
-        Bindable( true ),
-        Category( "Appearance" ),
-        DefaultValue( "" ),
-        Description( "The text for the label." )
-        ]
-        public string LabelText
-        {
-            get
-            {
-                EnsureChildControls();
-                return label.Text;
-            }
-            set
-            {
-                EnsureChildControls();
-                label.Text = value;
-            }
-        }
+        public RequiredFieldValidator RequiredFieldValidator { get; set; }
+        
+        #endregion
 
         /// <summary>
         /// Gets or sets the prepend text.
@@ -159,16 +144,8 @@ namespace Rock.Web.UI.Controls
         ]
         public string PrependText
         {
-            get
-            {
-                EnsureChildControls();
-                return prependLabel.Text;
-            } 
-            set
-            {
-                EnsureChildControls();
-                prependLabel.Text = value;
-            }
+            get { return ViewState["PrependText"] as string ?? string.Empty; }
+            set { ViewState["PrependText"] = value; }
         }
 
         /// <summary>
@@ -185,48 +162,8 @@ namespace Rock.Web.UI.Controls
         ]
         public string AppendText
         {
-            get
-            {
-                EnsureChildControls();
-                return appendLabel.Text;
-            }
-            set
-            {
-                EnsureChildControls();
-                appendLabel.Text = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is valid.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
-        /// </value>
-        public virtual bool IsValid
-        {
-            get
-            {
-                return !Required || requiredValidator.IsValid;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the required error message.  If blank, the LabelName name will be used
-        /// </summary>
-        /// <value>
-        /// The required error message.
-        /// </value>
-        public string RequiredErrorMessage
-        {
-            get
-            {
-                return requiredValidator.ErrorMessage;
-            }
-            set
-            {
-                requiredValidator.ErrorMessage = value;
-            }
+            get { return ViewState["AppendText"] as string ?? string.Empty; }
+            set { ViewState["AppendText"] = value; }
         }
 
         /// <summary>
@@ -234,7 +171,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public LabeledTextBox() : base()
         {
-            requiredValidator = new RequiredFieldValidator();
+            RockControl.Init( this );
         }
 
         /// <summary>
@@ -243,42 +180,8 @@ namespace Rock.Web.UI.Controls
         protected override void CreateChildControls()
         {
             base.CreateChildControls();
-
             Controls.Clear();
-
-            label = new Literal();
-            Controls.Add( label );
-
-            requiredValidator.ID = this.ID + "_rfv";
-            requiredValidator.ControlToValidate = this.ID;
-            requiredValidator.Display = ValidatorDisplay.Dynamic;
-            requiredValidator.CssClass = "validation-error help-inline";
-            requiredValidator.Enabled = false;
-            Controls.Add( requiredValidator );
-
-            helpBlock = new HelpBlock();
-            Controls.Add( helpBlock );
-
-            prependLabel = new Label
-            {
-                ID = this.ID + "_prepend",
-                CssClass = "add-on"
-            };
-
-            Controls.Add( prependLabel );
-
-            appendLabel = new Label
-            {
-                ID = this.ID + "_append",
-                CssClass = "add-on"
-            };
-                
-            Controls.Add( appendLabel );
-        }
-
-        protected override void Render( HtmlTextWriter writer )
-        {
-            base.Render( writer );
+            RockControl.CreateChildControls(this, Controls);
         }
 
         /// <summary>
@@ -289,95 +192,56 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                bool renderControlGroupDiv = ( !string.IsNullOrEmpty( LabelText ) || !string.IsNullOrWhiteSpace( Help ) );
-                string wrapperClassName = string.Empty;
-
-                if ( renderControlGroupDiv )
-                {
-                    writer.AddAttribute( "class", "form-group" + ( IsValid ? "" : " error" ) + ( Required ? " required" : "" ) );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                    writer.AddAttribute("for", this.ClientID);
-                    writer.RenderBeginTag( HtmlTextWriterTag.Label );
-                    label.RenderControl( writer );
-                    helpBlock.RenderControl( writer );
-                    writer.RenderEndTag();
-                }
-
-                // logic to add input groups for preappend and append labels
-                bool renderInputGroup = false;
-
-                if ( !string.IsNullOrWhiteSpace( PrependText ) ||  !string.IsNullOrWhiteSpace( AppendText ))
-                {
-                    renderInputGroup = true;
-                }
-
-                if (renderInputGroup)
-                {
-                    writer.AddAttribute( "class", "input-group" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                }
-
-                if ( !string.IsNullOrWhiteSpace( PrependText ) )
-                {
-                    writer.AddAttribute("class", "input-group-addon");
-                    writer.RenderBeginTag(HtmlTextWriterTag.Span);
-                    prependLabel.Text = PrependText;
-                    prependLabel.RenderControl( writer );
-                    writer.RenderEndTag();
-                }
-
-                // add space to the css class if it already has a value
-                if (!string.IsNullOrEmpty(this.CssClass))
-                {
-                    this.CssClass += " ";
-                }
-                this.CssClass = this.CssClass + "form-control";
-                base.RenderControl( writer );
-
-                if ( !string.IsNullOrWhiteSpace( AppendText ) )
-                {
-                    writer.AddAttribute("class", "input-group-addon");
-                    writer.RenderBeginTag(HtmlTextWriterTag.Span);
-                    appendLabel.Text = AppendText;
-                    appendLabel.RenderControl( writer );
-                    writer.RenderEndTag();
-                }
-
-                if (renderInputGroup)
-                {
-                    writer.RenderEndTag();  // input-group
-                }
-
-                if ( Required )
-                {
-                    requiredValidator.Enabled = true;
-                    requiredValidator.ValidationGroup = this.ValidationGroup;
-                    if ( string.IsNullOrWhiteSpace( requiredValidator.ErrorMessage ) )
-                    {
-                        requiredValidator.ErrorMessage = LabelText + " is Required.";
-                    }
-                    requiredValidator.RenderControl( writer );
-                }
-
-                RenderDataValidator( writer );
-
-                if ( Tip.Trim() != string.Empty )
-                {
-                    writer.AddAttribute( "class", "help-tip" );
-                    writer.AddAttribute( "href", "#" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.A );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                    writer.Write( Tip.Trim() );
-                    writer.RenderEndTag();
-                    writer.RenderEndTag();
-                }
-
-                if ( renderControlGroupDiv )
-                {
-                    writer.RenderEndTag();  // form-group
-                }
+                RockControl.RenderControl( this, writer );
             }
+        }
+
+        /// <summary>
+        /// Renders the base control.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public void RenderBaseControl( HtmlTextWriter writer )
+        {
+            // logic to add input groups for preappend and append labels
+            bool renderInputGroup = false;
+
+            if ( !string.IsNullOrWhiteSpace( PrependText ) || !string.IsNullOrWhiteSpace( AppendText ) )
+            {
+                renderInputGroup = true;
+            }
+
+            if ( renderInputGroup )
+            {
+                writer.AddAttribute( "class", "input-group" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            }
+
+            if ( !string.IsNullOrWhiteSpace( PrependText ) )
+            {
+                writer.AddAttribute( "class", "input-group-addon" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                writer.Write( PrependText );
+                writer.RenderEndTag();
+            }
+
+            ( (WebControl)this ).AddCssClass( "form-control" );
+            base.RenderControl( writer );
+
+            if ( !string.IsNullOrWhiteSpace( AppendText ) )
+            {
+                writer.AddAttribute( "class", "input-group-addon" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Span );
+                writer.Write( AppendText );
+                writer.RenderEndTag();
+            }
+
+            if ( renderInputGroup )
+            {
+                writer.RenderEndTag();  // input-group
+            }
+
+            RenderDataValidator( writer );
+
         }
 
         /// <summary>

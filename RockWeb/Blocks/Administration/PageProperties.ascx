@@ -30,7 +30,7 @@
                 <div class="row">
                     <div class="span6">
                         <fieldset>
-                            <Rock:PagePicker ID="ppParentPage" runat="server" LabelText="Parent Page" Required="false" />
+                            <Rock:PagePicker ID="ppParentPage" runat="server" Label="Parent Page" Required="false" />
                             <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Name" Required="true" />
                             <Rock:DataTextBox ID="tbPageTitle" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Title" Help="The text to be displayed in menus and page headings"/>
                             <Rock:DataDropDownList ID="ddlLayout" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Layout"/>
@@ -41,7 +41,7 @@
                                     <Rock:ImageUploader ID="imgIcon" runat="server" />
                                 </div>
                             </div>
-                            <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="IconCssClass" LabelText="Icon CSS Class"/>
+                            <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="IconCssClass" Label="Icon CSS Class"/>
                         </fieldset>
                     </div>
                     <div class="span6">
@@ -62,7 +62,7 @@
                 </fieldset>
                 <fieldset>
                     <legend>Menu</legend>
-                    <Rock:DataDropDownList ID="ddlMenuWhen" runat="server" LabelText="Display When" SourceTypeName="Rock.Model.Page, Rock" PropertyName="DisplayInNavWhen"/>
+                    <Rock:DataDropDownList ID="ddlMenuWhen" runat="server" Label="Display When" SourceTypeName="Rock.Model.Page, Rock" PropertyName="DisplayInNavWhen"/>
                     <Rock:LabeledCheckBox ID="cbMenuDescription" runat="server" Text="Show Description" Help="If a menu support it, should this page's description be included with it's title in the menu?"/>
                     <Rock:LabeledCheckBox ID="cbMenuChildPages" runat="server" Text="Show Child Pages" Help="Should child pages be displayed in a menu?"/>
                 </fieldset>
@@ -80,12 +80,12 @@
                             <Rock:LabeledCheckBox ID="cbRequiresEncryption" runat="server" Text="Force SSL"/>
                             <Rock:LabeledCheckBox ID="cbEnableViewState" runat="server" Text="Enable ViewState"/>
                             <Rock:LabeledCheckBox ID="cbIncludeAdminFooter" runat="server" Text="Allow Configuration"/>
-                            <Rock:DataTextBox ID="tbCacheDuration" runat="server" LabelText="Cache Duration" SourceTypeName="Rock.Model.Page, Rock" PropertyName="OutputCacheDuration"/>
+                            <Rock:DataTextBox ID="tbCacheDuration" runat="server" Label="Cache Duration" SourceTypeName="Rock.Model.Page, Rock" PropertyName="OutputCacheDuration"/>
                         </fieldset>
                     </div>
                     <div class="span6">
                         <fieldset>                
-                            <Rock:DataTextBox ID="tbPageRoute" runat="server" TextMode="MultiLine" Rows="3" LabelText="Page Routes" SourceTypeName="Rock.Model.Page, Rock" PropertyName="PageRoutes"  />
+                            <Rock:DataTextBox ID="tbPageRoute" runat="server" TextMode="MultiLine" Rows="3" Label="Page Routes" SourceTypeName="Rock.Model.Page, Rock" PropertyName="PageRoutes"  />
                         </fieldset>
                         <asp:PlaceHolder ID="phContextPanel" runat="server">
                             <fieldset>

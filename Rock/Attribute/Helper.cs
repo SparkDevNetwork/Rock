@@ -15,6 +15,7 @@ using Rock.Constants;
 
 using Rock.Model;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Attribute
 {
@@ -612,6 +613,15 @@ namespace Rock.Attribute
             }
         }
 
+        /// <summary>
+        /// Adds the edit controls.
+        /// </summary>
+        /// <param name="category">The category.</param>
+        /// <param name="attributeKeys">The attribute keys.</param>
+        /// <param name="item">The item.</param>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="setValue">if set to <c>true</c> [set value].</param>
+        /// <param name="exclude">The exclude.</param>
         private static void AddEditControls( string category, List<string> attributeKeys, IHasAttributes item, Control parentControl, bool setValue, List<string> exclude )
         {
             HtmlGenericControl fieldSet = new HtmlGenericControl( "fieldset" );
@@ -632,60 +642,71 @@ namespace Rock.Attribute
 
                 if ( !exclude.Contains( attribute.Name ) )
                 {
-                    HtmlGenericControl div = new HtmlGenericControl( "div" );
-                    fieldSet.Controls.Add( div );
-                    div.Controls.Clear();
-
-                    div.ID = string.Format( "attribute_{0}", attribute.Id );
-                    div.AddCssClass( "form-group" );
-                    if ( attribute.IsRequired )
-                        div.AddCssClass( "required" );
-                    div.Attributes.Add( "attribute-key", attribute.Key );
-                    div.ClientIDMode = ClientIDMode.AutoID;
-
+                    // Get the control for editing the attribute value based on the attribute's field type
                     Control attributeControl = attribute.CreateControl( item.AttributeValues[attribute.Key][0].Value, setValue, true );
-                    if ( !( attributeControl is CheckBox ) )
+
+                    // If the control is a RockControl
+                    var rockControl = attributeControl as IRockControl;
+                    if ( rockControl != null )
                     {
-                        HtmlGenericControl labelDiv = new HtmlGenericControl( "label" );
-                        div.Controls.Add( labelDiv );
-                        //labelDiv.AddCssClass( "control-label" );
-                        labelDiv.ClientIDMode = ClientIDMode.AutoID;
-
-                        Literal lbl = new Literal();
-                        labelDiv.Controls.Add( lbl );
-                        lbl.Text = attribute.Name;
-
-                        if ( !string.IsNullOrEmpty( attribute.Description ) )
+                        var checkBox = rockControl as LabeledCheckBox;
+                        if ( checkBox != null )
                         {
-                            var HelpBlock = new Rock.Web.UI.Controls.HelpBlock();
-                            labelDiv.Controls.Add( HelpBlock );
-                            HelpBlock.Text = attribute.Description;
+                            checkBox.Text = attribute.Name;
                         }
-                    }
-
-                    HtmlGenericControl divControls = new HtmlGenericControl( "div" );
-                    div.Controls.Add( divControls );
-                    divControls.AddCssClass( "controls" );
-                    divControls.Controls.Clear();
-
-                    divControls.Controls.Add( attributeControl );
-
-                    if ( attributeControl is CheckBox )
-                    {
-                        ( attributeControl as CheckBox ).Text = attribute.Name;
-                        if ( !string.IsNullOrEmpty( attribute.Description ) )
+                        else
                         {
-                            var HelpBlock = new Rock.Web.UI.Controls.HelpBlock();
-                            divControls.Controls.Add( HelpBlock );
-                            HelpBlock.Text = attribute.Description;
+                            rockControl.Label = attribute.Name;
                         }
-                    }
 
-                    if ( attributeControl is Rock.Web.UI.Controls.IRequiredControl)
+                        rockControl.Help = attribute.Description;
+                        rockControl.Required = attribute.IsRequired;
+                        fieldSet.Controls.Add( attributeControl );
+                    }
+                    else
                     {
-                        var requiredControl = attributeControl as Rock.Web.UI.Controls.IRequiredControl;
-                        requiredControl.Required = attribute.IsRequired;
-                        requiredControl.RequiredErrorMessage = attribute.Name + " is required.";
+                        // If control is not a rockControl, then create the form-group, label, and control elements
+                        var checkBoxControl = attributeControl as CheckBox;
+
+                        HtmlGenericControl div = new HtmlGenericControl( "div" );
+                        fieldSet.Controls.Add( div );
+                        div.Controls.Clear();
+                        div.AddCssClass( "form-group" );
+                        if ( attribute.IsRequired )
+                        {
+                            div.AddCssClass( "required" );
+                        }
+                        div.ClientIDMode = ClientIDMode.AutoID;
+
+                        var HelpBlock = new Rock.Web.UI.Controls.HelpBlock();
+                        HelpBlock.ClientIDMode = ClientIDMode.AutoID;
+                        HelpBlock.Text = attribute.Description;
+
+                        if ( checkBoxControl == null )
+                        {
+                            // If control is not a checkbox, add a label, help text, and control
+                            Label label = new Label();
+                            div.Controls.Add( label );
+                            label.AssociatedControlID = attributeControl.ID;
+                            label.ClientIDMode = ClientIDMode.AutoID;
+
+                            if (!string.IsNullOrWhiteSpace(HelpBlock.Text))
+                            {
+                                div.Controls.Add(HelpBlock);
+                            }
+
+                            div.Controls.Add( attributeControl );
+                        }
+                        else
+                        {
+                            // if control is a checkbox, set its text, but don't add a label, then add control and then help text
+                            checkBoxControl.Text = attribute.Name;
+                            div.Controls.Add( attributeControl );
+                            if (! string.IsNullOrWhiteSpace( HelpBlock.Text ) )
+                            {
+                                div.Controls.Add( HelpBlock );
+                            }
+                        }
                     }
                 }
             }

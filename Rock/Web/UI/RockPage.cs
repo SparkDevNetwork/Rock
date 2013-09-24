@@ -1095,7 +1095,7 @@ namespace Rock.Web.UI
             LabeledDropDownList ddlZones = new LabeledDropDownList();
             ddlZones.ClientIDMode = ClientIDMode.Static;
             ddlZones.ID = "block-move-zone";
-            ddlZones.LabelText = "Zone";
+            ddlZones.Label = "Zone";
             foreach ( var zone in Zones )
                 ddlZones.Items.Add( new ListItem( zone.Value.Key, zone.Value.Value.ID ) );
             fsZoneSelect.Controls.Add( ddlZones );
@@ -1107,7 +1107,7 @@ namespace Rock.Web.UI
             rblLocation.CssClass = "inputs-list";
             rblLocation.Items.Add( new ListItem( "Current Page" ) );
             rblLocation.Items.Add( new ListItem( string.Format( "All Pages Using the '{0}' Layout", CurrentPage.Layout ) ) );
-            rblLocation.LabelText = "Parent";
+            rblLocation.Label = "Parent";
             fsZoneSelect.Controls.Add( rblLocation );
         }
 
