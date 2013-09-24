@@ -11,7 +11,7 @@
         <div class="row-fluid">
             <div class="span4 form-horizontal">
                 <fieldset>
-                    <Rock:LabeledTextBox ID="tbFamilyName" runat="server" Label="Family Name" Required="true" CssClass="input-meduim" AutoPostBack="true" OnTextChanged="tbFamilyName_TextChanged" />
+                    <Rock:RockTextBox ID="tbFamilyName" runat="server" Label="Family Name" Required="true" CssClass="input-meduim" AutoPostBack="true" OnTextChanged="tbFamilyName_TextChanged" />
                 </fieldset>
             </div>
             <div class="span4 form-horizontal">
@@ -159,7 +159,7 @@
                     <div id="divExistingPerson" runat="server" class="tab-pane active">
                         <fieldset>
                             <Rock:PersonPicker2 ID="ppExistingPerson" runat="server" />
-                            <Rock:LabeledCheckBox ID="cbRemoveOtherFamilies" runat="server" Checked="true" Text="Remove person from other families" />
+                            <Rock:RockCheckBox ID="cbRemoveOtherFamilies" runat="server" Checked="true" Text="Remove person from other families" />
                         </fieldset>
                     </div>
 
@@ -167,12 +167,12 @@
                         <div class="row-fluid">
                             <div class="span4">
                                 <fieldset>
-                                    <Rock:LabeledTextBox ID="tbNewPersonFirstName" runat="server" Label="First Name" ValidationGroup="modalAddPersonValidationGroup" />
+                                    <Rock:RockTextBox ID="tbNewPersonFirstName" runat="server" Label="First Name" ValidationGroup="modalAddPersonValidationGroup" />
                                 </fieldset>
                             </div>
                             <div class="span4">
                                 <fieldset>
-                                    <Rock:LabeledTextBox ID="tbNewPersonLastName" runat="server" Label="Last Name" ValidationGroup="modalAddPersonValidationGroup" />
+                                    <Rock:RockTextBox ID="tbNewPersonLastName" runat="server" Label="Last Name" ValidationGroup="modalAddPersonValidationGroup" />
                                 </fieldset>
                             </div>
                         </div>
@@ -191,7 +191,7 @@
                         <div class="row-fluid">
                             <div class="span4">
                                 <fieldset>
-                                    <Rock:LabeledRadioButtonList ID="rblNewPersonRole" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" Label="Role" />
+                                    <Rock:RockRadioButtonList ID="rblNewPersonRole" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" Label="Role" />
                                 </fieldset>
                             </div>
                         </div>

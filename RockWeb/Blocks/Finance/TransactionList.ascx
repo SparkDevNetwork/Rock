@@ -9,9 +9,9 @@
         <Rock:GridFilter ID="rFilter" runat="server">
             <Rock:DatePicker ID="dtStartDate" runat="server" SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionDateTime" Label="From Date" />
             <Rock:DatePicker ID="dtEndDate" runat="server"  SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionDateTime" Label="To Date" />
-            <Rock:LabeledTextBox ID="txtFromAmount" runat="server" Label="From Amount"></Rock:LabeledTextBox>
-            <Rock:LabeledTextBox ID="txtToAmount" runat="server" Label="To Amount"></Rock:LabeledTextBox>
-            <Rock:LabeledTextBox ID="txtTransactionCode" runat="server" Label="Transaction Code"></Rock:LabeledTextBox>
+            <Rock:RockTextBox ID="txtFromAmount" runat="server" Label="From Amount"></Rock:RockTextBox>
+            <Rock:RockTextBox ID="txtToAmount" runat="server" Label="To Amount"></Rock:RockTextBox>
+            <Rock:RockTextBox ID="txtTransactionCode" runat="server" Label="Transaction Code"></Rock:RockTextBox>
             <Rock:LabeledDropDownList ID="ddlAccount" runat="server" Label="Account" />
             <Rock:LabeledDropDownList ID="ddlTransactionType" runat="server" Label="Transaction Type" />
             <Rock:LabeledDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" />

@@ -11,7 +11,7 @@
                     <asp:Repeater ID="rptAccounts" runat="server" OnItemDataBound="rptAccounts_ItemDataBound">
                         <ItemTemplate>
                             <asp:HiddenField ID="hfId" runat="server"/>
-                            <Rock:LabeledTextBox ID="tbAmount" runat="server" PrependText="$"/>
+                            <Rock:RockTextBox ID="tbAmount" runat="server" PrependText="$"/>
                         </ItemTemplate>
                     </asp:Repeater>
                     <Rock:DataTextBox ID="tbEmail" runat="server" Label="Email" TextMode="Email" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email"/>

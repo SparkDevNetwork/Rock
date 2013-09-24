@@ -1100,7 +1100,7 @@ namespace Rock.Web.UI
                 ddlZones.Items.Add( new ListItem( zone.Value.Key, zone.Value.Value.ID ) );
             fsZoneSelect.Controls.Add( ddlZones );
 
-            LabeledRadioButtonList rblLocation = new LabeledRadioButtonList();
+            RockRadioButtonList rblLocation = new RockRadioButtonList();
             rblLocation.RepeatDirection = RepeatDirection.Horizontal;
             rblLocation.ClientIDMode = ClientIDMode.Static;
             rblLocation.ID = "block-move-Location";

@@ -21,7 +21,7 @@ namespace Rock.Web.UI.Controls
         private Label label;
         private HiddenField _hfPageRouteId;
         private HyperLink _btnShowPageRoutePicker;
-        private LabeledRadioButtonList _rblSelectPageRoute;
+        private RockRadioButtonList _rblSelectPageRoute;
         private LinkButton _btnSelectPageRoute;
         private HyperLink _btnCancelPageRoute;
 
@@ -350,7 +350,7 @@ namespace Rock.Web.UI.Controls
             _btnShowPageRoutePicker.Text = "Pick Route";
             _btnShowPageRoutePicker.Visible = false;
 
-            _rblSelectPageRoute = new LabeledRadioButtonList();
+            _rblSelectPageRoute = new RockRadioButtonList();
             _rblSelectPageRoute.ID = "rblSelectPageRoute_" + this.ID;
             _rblSelectPageRoute.Visible = false;
             _rblSelectPageRoute.EnableViewState = true;

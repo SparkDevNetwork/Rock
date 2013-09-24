@@ -24,10 +24,10 @@ namespace Rock.Web.UI.Controls
         private Label lblInactive;
         private LinkButton lbDeleteActivityType;
 
-        private LabeledCheckBox cbActivityTypeIsActive;
+        private RockCheckBox cbActivityTypeIsActive;
         private DataTextBox tbActivityTypeName;
         private DataTextBox tbActivityTypeDescription;
-        private LabeledCheckBox cbActivityTypeIsActivatedWithWorkflow;
+        private RockCheckBox cbActivityTypeIsActivatedWithWorkflow;
 
         private LinkButton lbAddActionType;
 
@@ -156,7 +156,7 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
             lbDeleteActivityType.Click += lbDeleteActivityType_Click;
             lbDeleteActivityType.Controls.Add( new LiteralControl { Text = "<i class='icon-remove'></i>" } );
 
-            cbActivityTypeIsActive = new LabeledCheckBox { Label = "Active" };
+            cbActivityTypeIsActive = new RockCheckBox { Label = "Active" };
             cbActivityTypeIsActive.ID = this.ID + "_cbActivityTypeIsActive";
             string checkboxScriptFormat = @"
 javascript: 
@@ -192,7 +192,7 @@ javascript:
             tbActivityTypeDescription.SourceTypeName = "Rock.Model.WorkflowActivityType, Rock";
             tbActivityTypeDescription.PropertyName = "Description";
 
-            cbActivityTypeIsActivatedWithWorkflow = new LabeledCheckBox { Label = "Activated with Workflow" };
+            cbActivityTypeIsActivatedWithWorkflow = new RockCheckBox { Label = "Activated with Workflow" };
             cbActivityTypeIsActivatedWithWorkflow.ID = this.ID + "_cbActivityTypeIsActivatedWithWorkflow";
 
             lbAddActionType = new LinkButton();

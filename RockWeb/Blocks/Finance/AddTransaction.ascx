@@ -18,7 +18,7 @@
 
                                 <asp:Repeater ID="rptAccountList" runat="server">
                                     <ItemTemplate>
-                                        <Rock:LabeledTextBox ID="txtAccountAmount" runat="server" PrependText="$" Label='<%# Eval("Name") %>' Text='<%# Eval("AmountFormatted") %>' CssClass="account-amount" />
+                                        <Rock:RockTextBox ID="txtAccountAmount" runat="server" PrependText="$" Label='<%# Eval("Name") %>' Text='<%# Eval("AmountFormatted") %>' CssClass="account-amount" />
                                     </ItemTemplate>
                                 </asp:Repeater>
                                 <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" CssClass="btn btn-primary" Visible="false" Label=" "
@@ -49,22 +49,22 @@
                         <div class="panel-heading"><h3 class="panel-title">Personal Information</h3></div>
                         <div class="panel-body">
                             <fieldset>
-                                <Rock:LabeledText ID="txtCurrentName" runat="server" Label="Name" Visible="true" />
-                                <Rock:LabeledTextBox ID="txtFirstName" runat="server" Label="First Name"></Rock:LabeledTextBox>
-                                <Rock:LabeledTextBox ID="txtLastName" runat="server" Label="Last Name"></Rock:LabeledTextBox>
-                                <Rock:LabeledTextBox ID="txtPhone" runat="server" Label="Phone"></Rock:LabeledTextBox>
-                                <Rock:LabeledTextBox ID="txtEmail" runat="server" Label="Email"></Rock:LabeledTextBox>
-                                <Rock:LabeledTextBox ID="txtStreet" runat="server" Label="Address"></Rock:LabeledTextBox>
+                                <Rock:RockText ID="txtCurrentName" runat="server" Label="Name" Visible="true" />
+                                <Rock:RockTextBox ID="txtFirstName" runat="server" Label="First Name"></Rock:RockTextBox>
+                                <Rock:RockTextBox ID="txtLastName" runat="server" Label="Last Name"></Rock:RockTextBox>
+                                <Rock:RockTextBox ID="txtPhone" runat="server" Label="Phone"></Rock:RockTextBox>
+                                <Rock:RockTextBox ID="txtEmail" runat="server" Label="Email"></Rock:RockTextBox>
+                                <Rock:RockTextBox ID="txtStreet" runat="server" Label="Address"></Rock:RockTextBox>
                                 
                                 <div class="row">
                                     <div class="col-md-7">
-                                        <Rock:LabeledTextBox Label="City" ID="txtCity" runat="server" />
+                                        <Rock:RockTextBox Label="City" ID="txtCity" runat="server" />
                                     </div>
                                     <div class="col-md-2">
                                         <Rock:StateDropDownList Label="State" ID="ddlState" runat="server" UseAbbreviation="true" />
                                     </div>
                                     <div class="col-md-3">
-                                        <Rock:LabeledTextBox  ID="txtZip" runat="server" />
+                                        <Rock:RockTextBox  ID="txtZip" runat="server" />
                                     </div>
                                 </div>
                                 
@@ -97,12 +97,12 @@
 
                         <div id="divCCPaymentInfo" runat="server" visible="false">
                             <fieldset>
-                                <Rock:LabeledRadioButtonList ID="rblSavedCC" runat="server" Label=" " CssClass="radio-list" RepeatDirection="Vertical" DataValueField="Id" DataTextField="Name" />
+                                <Rock:RockRadioButtonList ID="rblSavedCC" runat="server" Label=" " CssClass="radio-list" RepeatDirection="Vertical" DataValueField="Id" DataTextField="Name" />
                                 <div id="divNewCard" runat="server" class="radio-content">
-                                    <Rock:LabeledTextBox ID="txtCardFirstName" runat="server" Label="First Name on Card" Visible="false"></Rock:LabeledTextBox>
-                                    <Rock:LabeledTextBox ID="txtCardLastName" runat="server" Label="Last Name on Card" Visible="false"></Rock:LabeledTextBox>
-                                    <Rock:LabeledTextBox ID="txtCardName" runat="server" Label="Name on Card" Visible="false"></Rock:LabeledTextBox>
-                                    <Rock:LabeledTextBox ID="txtCreditCard" runat="server" Label="Credit Card #" MaxLength="19" CssClass="credit-card" />
+                                    <Rock:RockTextBox ID="txtCardFirstName" runat="server" Label="First Name on Card" Visible="false"></Rock:RockTextBox>
+                                    <Rock:RockTextBox ID="txtCardLastName" runat="server" Label="Last Name on Card" Visible="false"></Rock:RockTextBox>
+                                    <Rock:RockTextBox ID="txtCardName" runat="server" Label="Name on Card" Visible="false"></Rock:RockTextBox>
+                                    <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Credit Card #" MaxLength="19" CssClass="credit-card" />
                                     <ul class="card-logos">
                                         <li class="card-visa"></li>
                                         <li class="card-mastercard"></li>
@@ -111,9 +111,9 @@
                                     </ul>
                                     <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" />
                                     <Rock:NumberBox ID="txtCVV" Label="Card Security Code" runat="server" MaxLength="3" />
-                                    <Rock:LabeledCheckBox ID="cbBillingAddress" runat="server" Label=" " Text="Enter a different billing address" CssClass="toggle-input" />
+                                    <Rock:RockCheckBox ID="cbBillingAddress" runat="server" Label=" " Text="Enter a different billing address" CssClass="toggle-input" />
                                     <div id="divBillingAddress" runat="server" class="toggle-content">
-                                        <Rock:LabeledTextBox ID="txtBillingStreet" runat="server" Label="Billing Address"></Rock:LabeledTextBox>
+                                        <Rock:RockTextBox ID="txtBillingStreet" runat="server" Label="Billing Address"></Rock:RockTextBox>
                                         <div class="control-group">
                                             <div class="control-label">&nbsp;</div>
                                             <div class="controls">
@@ -130,16 +130,16 @@
 
                         <div id="divACHPaymentInfo" runat="server" visible="false" class="form-horizontal">
                             <fieldset>
-                                <Rock:LabeledRadioButtonList ID="rblSavedAch" runat="server" RepeatDirection="Vertical" DataValueField="Id" DataTextField="Name" />
+                                <Rock:RockRadioButtonList ID="rblSavedAch" runat="server" RepeatDirection="Vertical" DataValueField="Id" DataTextField="Name" />
                                 <div id="divNewBank" runat="server" class="radio-content row-fluid">
                                     <div class="span7">
-                                        <Rock:LabeledTextBox ID="txtBankName" runat="server" Label="Bank Name" CssClass="input-medium" />
-                                        <Rock:LabeledTextBox ID="txtRoutingNumber" runat="server" Label="Routing #" CssClass="input-large" />
-                                        <Rock:LabeledTextBox ID="txtAccountNumber" runat="server" Label="Account #" CssClass="input-large" />
-                                        <Rock:LabeledRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" Label="Account Type">
+                                        <Rock:RockTextBox ID="txtBankName" runat="server" Label="Bank Name" CssClass="input-medium" />
+                                        <Rock:RockTextBox ID="txtRoutingNumber" runat="server" Label="Routing #" CssClass="input-large" />
+                                        <Rock:RockTextBox ID="txtAccountNumber" runat="server" Label="Account #" CssClass="input-large" />
+                                        <Rock:RockRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" Label="Account Type">
                                             <asp:ListItem Text="Checking" Selected="true" />
                                             <asp:ListItem Text="Savings" />
-                                        </Rock:LabeledRadioButtonList>
+                                        </Rock:RockRadioButtonList>
                                     </div>
                                     <div class="span5">
                                         <asp:Image ID="imgCheck" runat="server" ImageUrl="~/Assets/Images/check-image.png" />
@@ -203,9 +203,9 @@
                     <legend>Make Giving Even Easier</legend>
                     <div class="form-horizontal">
                         <fieldset>
-                            <Rock:LabeledCheckBox ID="cbSaveAccount" runat="server" Label=" " Text="Save account information for future gifts" CssClass="toggle-input" />
+                            <Rock:RockCheckBox ID="cbSaveAccount" runat="server" Label=" " Text="Save account information for future gifts" CssClass="toggle-input" />
                             <div id="divSaveAccount" runat="server" class="toggle-content">
-                                <Rock:LabeledTextBox ID="txtSaveAccount" runat="server" Label="Name for this account" CssClass="input-large"></Rock:LabeledTextBox>
+                                <Rock:RockTextBox ID="txtSaveAccount" runat="server" Label="Name for this account" CssClass="input-large"></Rock:RockTextBox>
 
                                 <asp:PlaceHolder ID="phCreateLogin" runat="server" Visible="false">
 
@@ -219,9 +219,9 @@
                                         </div>
                                     </div>
 
-                                    <Rock:LabeledTextBox ID="txtUserName" runat="server" Label="Username" CssClass="input-medium" />
-                                    <Rock:LabeledTextBox ID="txtPassword" runat="server" Label="Password" CssClass="input-medium" TextMode="Password" />
-                                    <Rock:LabeledTextBox ID="txtPasswordConfirm" runat="server" Label="Confirm Password" CssClass="input-medium" TextMode="Password" />
+                                    <Rock:RockTextBox ID="txtUserName" runat="server" Label="Username" CssClass="input-medium" />
+                                    <Rock:RockTextBox ID="txtPassword" runat="server" Label="Password" CssClass="input-medium" TextMode="Password" />
+                                    <Rock:RockTextBox ID="txtPasswordConfirm" runat="server" Label="Confirm Password" CssClass="input-medium" TextMode="Password" />
 
                                 </asp:PlaceHolder>
 

@@ -14,7 +14,7 @@ namespace Rock.Web.UI.Controls
     /// A composite control that renders a label, textbox, and datavalidation control for a specific field of a data model
     /// </summary>
     [ToolboxData( "<{0}:DataTextBox runat=server></{0}:DataTextBox>" )]
-    public class DataTextBox : LabeledTextBox
+    public class DataTextBox : RockTextBox
     {
         private Validation.DataAnnotationValidator dataValidator;
 

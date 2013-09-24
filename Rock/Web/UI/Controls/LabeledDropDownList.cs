@@ -32,7 +32,7 @@ namespace Rock.Web.UI.Controls
         protected RequiredFieldValidator requiredValidator;
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="LabeledTextBox"/> is required.
+        /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
         /// </summary>
         /// <value>
         ///   <c>true</c> if required; otherwise, <c>false</c>.

@@ -21,7 +21,7 @@ namespace Rock.Web.UI.Controls
     public class ComponentPicker : LabeledDropDownList
     {
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="LabeledTextBox" /> is required.
+        /// Gets or sets a value indicating whether this <see cref="RockTextBox" /> is required.
         /// </summary>
         /// <value>
         ///   <c>true</c> if required; otherwise, <c>false</c>.

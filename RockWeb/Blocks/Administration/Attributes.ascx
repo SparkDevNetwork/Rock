@@ -63,8 +63,8 @@
                 HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
 
             <Rock:LabeledDropDownList ID="ddlAttrEntityType" runat="server" Label="Entity Type" />
-            <Rock:LabeledTextBox ID="tbAttrQualifierField" runat="server" Label="Qualifier Field" />
-            <Rock:LabeledTextBox ID="tbAttrQualifierValue" runat="server" Label="Qualifier Value" />
+            <Rock:RockTextBox ID="tbAttrQualifierField" runat="server" Label="Qualifier Field" />
+            <Rock:RockTextBox ID="tbAttrQualifierValue" runat="server" Label="Qualifier Value" />
 
             <Rock:AttributeEditor ID="edtAttribute" runat="server" OnSaveClick="btnSave_Click" OnCancelClick="btnCancel_Click" />
 

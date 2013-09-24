@@ -15,7 +15,7 @@ namespace Rock.Web.UI.Controls
     /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with numerical validation 
     /// </summary>
     [ToolboxData( "<{0}:NumberBox runat=server></{0}:NumberBox>" )]
-    public class NumberBox : LabeledTextBox
+    public class NumberBox : RockTextBox
     {
         private RangeValidator rangeValidator;
 

@@ -10,7 +10,7 @@
             <asp:UpdatePanel ID="upAdApproval" runat="server">
                 <ContentTemplate>
                     <div class="well pull-right">
-                        <Rock:LabeledText ID="ltMarketingCampaignAdStatus" runat="server" Label="Approval Status" />
+                        <Rock:RockText ID="ltMarketingCampaignAdStatus" runat="server" Label="Approval Status" />
                         <asp:HiddenField ID="hfMarketingCampaignAdStatus" runat="server" />
                         <div class="controls">
                             <asp:Label ID="lblMarketingCampaignAdStatusPerson" runat="server" />

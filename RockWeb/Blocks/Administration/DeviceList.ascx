@@ -6,9 +6,9 @@
         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
         
         <Rock:GridFilter ID="fDevice" runat="server">
-            <Rock:LabeledTextBox ID="tbName" runat="server" Label="Name" />
+            <Rock:RockTextBox ID="tbName" runat="server" Label="Name" />
             <Rock:LabeledDropDownList ID="ddlDeviceType" runat="server" Label="Device Type" />
-            <Rock:LabeledTextBox ID="tbIPAddress" runat="server" Label="IP Address" />
+            <Rock:RockTextBox ID="tbIPAddress" runat="server" Label="IP Address" />
             <Rock:LabeledDropDownList ID="ddlPrintTo" runat="server" Label="Print To" />
             <Rock:LabeledDropDownList ID="ddlPrinter" runat="server" Label="Printer" DataTextField="Name" DataValueField="Id" />
             <Rock:LabeledDropDownList ID="ddlPrintFrom" runat="server" Label="Print From" />

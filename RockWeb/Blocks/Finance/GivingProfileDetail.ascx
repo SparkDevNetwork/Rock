@@ -122,7 +122,7 @@
                                     </div>
                                     
                                     <div id="divLimitGifts" runat="server" class="row-fluid align-middle">
-                                        <Rock:LabeledCheckBox ID="chkLimitGifts" runat="server" Text="Limit number of gifts" CssClass="toggle-input" />
+                                        <Rock:RockCheckBox ID="chkLimitGifts" runat="server" Text="Limit number of gifts" CssClass="toggle-input" />
                                     
                                         <div id="divLimitNumber" runat="server" class="toggle-content label-padding" style="display: none">
                                             <Rock:NumberBox ID="txtLimitNumber" runat="server" class="input-small" Text="0" />
@@ -253,7 +253,7 @@
                             <div ID="divCreditCard" runat="server" CssClass="tab-pane">
                                                        
                                 <div id="divSavedCard" runat="server" class="radio-list">
-                                    <Rock:LabeledRadioButtonList ID="rblSavedCard" runat="server" RepeatDirection="Vertical" />
+                                    <Rock:RockRadioButtonList ID="rblSavedCard" runat="server" RepeatDirection="Vertical" />
                                 </div>
                                 
                                 <div id="divNewCard" runat="server" class="radio-content">
@@ -261,7 +261,7 @@
                                     <div class="row-fluid">
 
                                         <div id="divCardNumber" runat="server">
-                                            <Rock:LabeledTextBox ID="txtCreditCard" runat="server" Label="Credit Card #" MaxLength="19" MinimumValue="1000000000" MaximumValue="9999999999999999" CssClass="credit-card input-inherit" />
+                                            <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Credit Card #" MaxLength="19" MinimumValue="1000000000" MaximumValue="9999999999999999" CssClass="credit-card input-inherit" />
                                         </div>
                                                                         
                                         <div ID="divCardType" runat="server">
@@ -288,7 +288,7 @@
                                     </div>
 
                                     <div class="row-fluid">
-                                        <Rock:LabeledTextBox ID="txtCardName" runat="server" Label="Name on Card" />
+                                        <Rock:RockTextBox ID="txtCardName" runat="server" Label="Name on Card" />
                                     </div>
 
                                 </div>                            
@@ -298,21 +298,21 @@
                             <div ID="divChecking" runat="server" CssClass="tab-pane">
                                 
                                 <div id="divSavedCheck" runat="server" class="radio-list">                                                              
-                                    <Rock:LabeledRadioButtonList ID="rblSavedCheck" runat="server" RepeatDirection="Vertical" />
+                                    <Rock:RockRadioButtonList ID="rblSavedCheck" runat="server" RepeatDirection="Vertical" />
                                 </div>
                             
                                 <div id="divNewCheck" runat="server" class="row-fluid radio-content">
                                     
                                     <div ID="divCheckDetail" runat="server">
                                         <fieldset>
-                                            <Rock:LabeledTextBox ID="txtBankName" runat="server" Label="Bank Name" CssClass="input-inherit" />
+                                            <Rock:RockTextBox ID="txtBankName" runat="server" Label="Bank Name" CssClass="input-inherit" />
                                             <Rock:NumberBox ID="txtRoutingNumber" runat="server" Label="Routing #" MinimumValue="0.0" CssClass="input-inherit" />
                                             <Rock:NumberBox ID="txtAccountNumber" runat="server" Label="Account #" MinimumValue="0.0" CssClass="input-inherit" />
 
-                                            <Rock:LabeledRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" Label="Account Type" CssClass="remove-margin">
+                                            <Rock:RockRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" Label="Account Type" CssClass="remove-margin">
                                                 <asp:ListItem Text="Checking" Selected="true"  />
                                                 <asp:ListItem Text="Savings" />
-                                            </Rock:LabeledRadioButtonList>
+                                            </Rock:RockRadioButtonList>
                                         </fieldset>
                                     </div>
 
@@ -331,7 +331,7 @@
                     <div class="tabFooter">
 
                         <div ID="divDefaultAddress" runat="server" class="row-fluid">
-                            <Rock:LabeledCheckBox ID="chkNewAddress" runat="server" Text="Enter a different billing address" CssClass="toggle-input" />
+                            <Rock:RockCheckBox ID="chkNewAddress" runat="server" Text="Enter a different billing address" CssClass="toggle-input" />
                         </div>
 
                         <div id="divNewAddress" runat="server" class="toggle-content label-padding" style="display:none">
@@ -412,10 +412,10 @@
                 <asp:UpdatePanel id="pnlSavePayment" runat="server" UpdateMode="Conditional" Visible="false">
                 <ContentTemplate>
 
-                    <Rock:LabeledCheckBox ID="chkSavePayment" runat="server" Text="Save My Payment Information" CssClass="toggle-input" />                                                                                
+                    <Rock:RockCheckBox ID="chkSavePayment" runat="server" Text="Save My Payment Information" CssClass="toggle-input" />                                                                                
                     <div id="divPaymentNick" runat="server" class="toggle-content label-padding" style="display: none">
                         <div class="span6">
-                            <Rock:LabeledTextBox ID="txtPaymentNick" runat="server" Label="Account nickname:" CssClass="input-medium" />                                    
+                            <Rock:RockTextBox ID="txtPaymentNick" runat="server" Label="Account nickname:" CssClass="input-medium" />                                    
                         </div>
                         <div class="span6">
                             <asp:LinkButton ID="btnSavePaymentInfo" runat="server" Text="Save" CssClass="btn btn-primary padding-label" OnClick="btnSavePaymentInfo_Click" />                                    
@@ -428,15 +428,15 @@
                 <asp:UpdatePanel id="pnlCreateAccount" runat="server" updatemode="Conditional">
                 <ContentTemplate>
 
-                    <Rock:LabeledCheckBox ID="chkCreateAccount" runat="server" Label="Create An Account" CssClass="toggle-input"/>                
+                    <Rock:RockCheckBox ID="chkCreateAccount" runat="server" Label="Create An Account" CssClass="toggle-input"/>                
                     <div id="divCredentials" runat="server" class="toggle-content" style="display:none">
 
 				        <div class="span6">
                             <div class="row-fluid">
-                                <Rock:LabeledTextBox ID="txtUserName" runat="server" Label="Enter a username" />
+                                <Rock:RockTextBox ID="txtUserName" runat="server" Label="Enter a username" />
                             </div>
                             <div class="row-fluid">
-                                <Rock:LabeledTextBox ID="txtPassword" runat="server" TextMode="Password" Label="Enter a password" />
+                                <Rock:RockTextBox ID="txtPassword" runat="server" TextMode="Password" Label="Enter a password" />
                             </div>
                         </div>    
                                                  

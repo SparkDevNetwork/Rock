@@ -11,10 +11,10 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with an associated label.
+    /// A <see cref="T:System.Web.UI.WebControls.Literal"/> control with an associated label.
     /// </summary>
-    [ToolboxData( "<{0}:LabeledCheckBox runat=server></{0}:LabeledTextBox>" )]
-    public class LabeledCheckBox : CheckBox, IRockControl
+    [ToolboxData( "<{0}:RockText runat=server></{0}:RockText>" )]
+    public class RockText : CompositeControl, IRockControl
     {
         #region IRockControl implementation
 
@@ -63,7 +63,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="LabeledTextBox"/> is required.
+        /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
         /// </summary>
         /// <value>
         ///   <c>true</c> if required; otherwise, <c>false</c>.
@@ -130,10 +130,34 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
-        public LabeledCheckBox()
-            : base()
+        /// <summary>
+        /// Gets or sets the text CSS class.
+        /// </summary>
+        /// <value>
+        /// The text CSS class.
+        /// </value>
+        public string TextCssClass
         {
-            HelpBlock = new HelpBlock();
+            get { return ViewState["TextCssClass"] as string ?? string.Empty; }
+            set { ViewState["TextCssClass"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the label text.
+        /// </summary>
+        /// <value>
+        /// The label text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text." )
+        ]
+        public string Text
+        {
+            get { return ViewState["Text"] as string ?? string.Empty; }
+            set { ViewState["Text"] = value; }
         }
 
         /// <summary>
@@ -146,14 +170,10 @@ namespace Rock.Web.UI.Controls
             RockControlHelper.CreateChildControls( this, Controls );
         }
 
-        protected override void OnPreRender( System.EventArgs e )
-        {
-            base.OnPreRender( e );
-        }
         /// <summary>
-        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
         /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
             if ( this.Visible )
@@ -166,16 +186,13 @@ namespace Rock.Web.UI.Controls
         /// Renders the base control.
         /// </summary>
         /// <param name="writer">The writer.</param>
-        public void RenderBaseControl( HtmlTextWriter writer )
+        public void RenderBaseControl(HtmlTextWriter writer)
         {
-            if (Enabled)
-            {
-                base.RenderControl(writer);
-            }
-            else
-            {
-                writer.WriteLine( string.Format( "<i class=\"icon-check\"></i>", this.Checked ? "icon-check" : "icon-check-empty" ) );
-            }
+            writer.AddAttribute("class", "form-control-static " + TextCssClass);
+            writer.RenderBeginTag( HtmlTextWriterTag.P );
+            writer.Write(Text);
+            writer.RenderEndTag();
         }
+
     }
 }

@@ -56,13 +56,13 @@
 
                <fieldset>
                     <legend>New Account</legend>
-                    <Rock:LabeledTextBox ID="tbUserName" runat="server" Label="Username" Required="true" ></Rock:LabeledTextBox>
+                    <Rock:RockTextBox ID="tbUserName" runat="server" Label="Username" Required="true" ></Rock:RockTextBox>
                     <dl id="availabilityMessageRow">
                         <dt></dt>
                         <dd><div id="availabilityMessage" class="alert"/></dd>
                     </dl>
-                    <Rock:LabeledTextBox ID="tbPassword" runat="server" Label="Password" Required="true" TextMode="Password" ></Rock:LabeledTextBox>
-                    <Rock:LabeledTextBox ID="tbPasswordConfirm" runat="server" Label="Confirmation" Required="true" TextMode="Password" ></Rock:LabeledTextBox>
+                    <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" Required="true" TextMode="Password" ></Rock:RockTextBox>
+                    <Rock:RockTextBox ID="tbPasswordConfirm" runat="server" Label="Confirmation" Required="true" TextMode="Password" ></Rock:RockTextBox>
                     <asp:CompareValidator ID="cvPassword" runat="server" ControlToCompare="tbPassword" ControlToValidate="tbPasswordConfirm" ErrorMessage="Password and Confirmation do not match" Display="Dynamic" CssClass="validation-error"></asp:CompareValidator>
 
                 </fieldset>
@@ -73,9 +73,9 @@
 
                 <fieldset>
                     <legend>Your Information</legend> 
-                    <Rock:LabeledTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" ></Rock:LabeledTextBox>
-                    <Rock:LabeledTextBox ID="tbLastName" runat="server" Label="Last Name" Required="true" ></Rock:LabeledTextBox>
-                    <Rock:LabeledTextBox ID="tbEmail" runat="server" Label="Email" Required="true" ></Rock:LabeledTextBox>
+                    <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" ></Rock:RockTextBox>
+                    <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" Required="true" ></Rock:RockTextBox>
+                    <Rock:RockTextBox ID="tbEmail" runat="server" Label="Email" Required="true" ></Rock:RockTextBox>
                     <Rock:LabeledDropDownList ID="ddlGender" runat="server" Label="Gender" CssClass="input-small">
                         <asp:ListItem Text="" Value="U"></asp:ListItem>
                         <asp:ListItem Text="Male" Value="M"></asp:ListItem>

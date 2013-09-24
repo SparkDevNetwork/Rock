@@ -29,8 +29,8 @@ namespace Rock.Web.UI.Controls
 
         private DataTextBox tbActionTypeName;
         private LabeledDropDownList ddlEntityType;
-        private LabeledCheckBox cbIsActionCompletedOnSuccess;
-        private LabeledCheckBox cbIsActivityCompletedOnSuccess;
+        private RockCheckBox cbIsActionCompletedOnSuccess;
+        private RockCheckBox cbIsActivityCompletedOnSuccess;
         private PlaceHolder phActionAttributes;
 
         public bool ForceContentVisible { get; set; }
@@ -178,10 +178,10 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             tbActionTypeName.SourceTypeName = "Rock.Model.WorkflowActionType, Rock";
             tbActionTypeName.PropertyName = "Name";
 
-            cbIsActionCompletedOnSuccess = new LabeledCheckBox { Label = "Action is Completed on Success" };
+            cbIsActionCompletedOnSuccess = new RockCheckBox { Label = "Action is Completed on Success" };
             cbIsActionCompletedOnSuccess.ID = this.ID + "_cbIsActionCompletedOnSuccess";
 
-            cbIsActivityCompletedOnSuccess = new LabeledCheckBox { Label = "Activity is Completed on Success" };
+            cbIsActivityCompletedOnSuccess = new RockCheckBox { Label = "Activity is Completed on Success" };
             cbIsActivityCompletedOnSuccess.ID = this.ID + "_cbIsActivityCompletedOnSuccess";
 
             phActionAttributes = new PlaceHolder();
