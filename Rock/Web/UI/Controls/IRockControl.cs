@@ -62,14 +62,6 @@ namespace Rock.Web.UI.Controls
         string ID { get; }
 
         /// <summary>
-        /// Gets the validation group.
-        /// </summary>
-        /// <value>
-        /// The validation group.
-        /// </value>
-        string ValidationGroup { get; }
-
-        /// <summary>
         /// Gets the client ID.
         /// </summary>
         /// <value>

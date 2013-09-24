@@ -171,7 +171,9 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public LabeledTextBox() : base()
         {
-            RockControl.Init( this );
+            RequiredFieldValidator = new RequiredFieldValidator();
+            RequiredFieldValidator.ValidationGroup = this.ValidationGroup;
+            HelpBlock = new HelpBlock();
         }
 
         /// <summary>
@@ -181,7 +183,7 @@ namespace Rock.Web.UI.Controls
         {
             base.CreateChildControls();
             Controls.Clear();
-            RockControl.CreateChildControls(this, Controls);
+            RockControlHelper.CreateChildControls(this, Controls);
         }
 
         /// <summary>
@@ -192,7 +194,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                RockControl.RenderControl( this, writer );
+                RockControlHelper.RenderControl( this, writer );
             }
         }
 

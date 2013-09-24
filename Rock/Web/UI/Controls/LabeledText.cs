@@ -14,10 +14,9 @@ namespace Rock.Web.UI.Controls
     /// A <see cref="T:System.Web.UI.WebControls.Literal"/> control with an associated label.
     /// </summary>
     [ToolboxData( "<{0}:LabeledText runat=server></{0}:LabeledText>" )]
-    public class LabeledText : CompositeControl, ILabeledControl
+    public class LabeledText : CompositeControl, IRockControl
     {
-        private Label label;
-        private Literal literal;
+        #region IRockControl implementation
 
         /// <summary>
         /// Gets or sets the label text.
@@ -33,17 +32,103 @@ namespace Rock.Web.UI.Controls
         ]
         public string Label
         {
+            get { return ViewState["Label"] as string ?? string.Empty; }
+            set { ViewState["Label"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the help text.
+        /// </summary>
+        /// <value>
+        /// The help text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The help block." )
+        ]
+        public string Help
+        {
             get
             {
                 EnsureChildControls();
-                return label.Text;
+                return HelpBlock.Text;
             }
             set
             {
                 EnsureChildControls();
-                label.Text = value;
+                HelpBlock.Text = value;
             }
         }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="LabeledTextBox"/> is required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "false" ),
+        Description( "Is the value required?" )
+        ]
+        public bool Required
+        {
+            get { return ViewState["Required"] as bool? ?? false; }
+            set { ViewState["Required"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the required error message.  If blank, the LabelName name will be used
+        /// </summary>
+        /// <value>
+        /// The required error message.
+        /// </value>
+        public string RequiredErrorMessage
+        {
+            get
+            {
+                return RequiredFieldValidator.ErrorMessage;
+            }
+            set
+            {
+                RequiredFieldValidator.ErrorMessage = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool IsValid
+        {
+            get
+            {
+                return !Required || RequiredFieldValidator.IsValid;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the help block.
+        /// </summary>
+        /// <value>
+        /// The help block.
+        /// </value>
+        public HelpBlock HelpBlock { get; set; }
+
+        /// <summary>
+        /// Gets or sets the required field validator.
+        /// </summary>
+        /// <value>
+        /// The required field validator.
+        /// </value>
+        public RequiredFieldValidator RequiredFieldValidator { get; set; }
+
+        #endregion
 
         /// <summary>
         /// Gets or sets the text CSS class.
@@ -53,15 +138,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string TextCssClass
         {
-            get
-            {
-                string s = ViewState["TextCssClass"] as string;
-                return s == null ? string.Empty : s;
-            }
-            set
-            {
-                ViewState["TextCssClass"] = value;
-            }
+            get { return ViewState["TextCssClass"] as string ?? string.Empty; }
+            set { ViewState["TextCssClass"] = value; }
         }
 
         /// <summary>
@@ -78,16 +156,8 @@ namespace Rock.Web.UI.Controls
         ]
         public string Text
         {
-            get
-            {
-                EnsureChildControls();
-                return literal.Text;
-            }
-            set
-            {
-                EnsureChildControls();
-                literal.Text = value;
-            }
+            get { return ViewState["Text"] as string ?? string.Empty; }
+            set { ViewState["Text"] = value; }
         }
 
         /// <summary>
@@ -96,50 +166,32 @@ namespace Rock.Web.UI.Controls
         protected override void CreateChildControls()
         {
             base.CreateChildControls();
-
             Controls.Clear();
-
-            label = new Label();
-            literal = new Literal();
-
-            Controls.Add( label );
-            Controls.Add( literal );
+            RockControlHelper.CreateChildControls( this, Controls );
         }
 
         /// <summary>
         /// Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
-        protected override void Render( HtmlTextWriter writer )
+        public override void RenderControl( HtmlTextWriter writer )
         {
             if ( this.Visible )
             {
-                writer.AddAttribute( "class", "form-group" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                label.AddCssClass( "control-label" );
-
-                writer.RenderBeginTag(HtmlTextWriterTag.Label);
-                label.RenderControl( writer );
-                writer.RenderEndTag();
-
-                if ( !string.IsNullOrWhiteSpace( TextCssClass ) )
-                {
-                    writer.AddAttribute("class", "form-control-static " + TextCssClass);
-                }
-                else
-                {
-                    writer.AddAttribute("class", "form-control-static");
-                }
-
-                writer.RenderBeginTag( HtmlTextWriterTag.P );
-
-                literal.RenderControl( writer );
-
-                writer.RenderEndTag();
-
-                writer.RenderEndTag();
+                RockControlHelper.RenderControl( this, writer );
             }
+        }
+
+        /// <summary>
+        /// Renders the base control.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public void RenderBaseControl(HtmlTextWriter writer)
+        {
+            writer.AddAttribute("class", "form-control-static " + TextCssClass);
+            writer.RenderBeginTag( HtmlTextWriterTag.P );
+            writer.Write(Text);
+            writer.RenderEndTag();
         }
 
     }

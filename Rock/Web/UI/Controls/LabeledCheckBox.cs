@@ -143,7 +143,7 @@ namespace Rock.Web.UI.Controls
         {
             base.CreateChildControls();
             Controls.Clear();
-            RockControl.CreateChildControls( this, Controls );
+            RockControlHelper.CreateChildControls( this, Controls );
         }
 
         protected override void OnPreRender( System.EventArgs e )
@@ -158,7 +158,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                RockControl.RenderControl( this, writer );
+                RockControlHelper.RenderControl( this, writer );
             }
         }
 
