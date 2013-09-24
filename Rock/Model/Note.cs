@@ -25,77 +25,77 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the System.
+        /// Gets or sets a flag indicating if this note is part of the RockChMS core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// System.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this note is part of the RockChMS core system/framework; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Note Type Id.
+        /// Gets or sets the Id of the <see cref="Rock.Model.NoteType"/>. This property is required.
         /// </summary>
         /// <value>
-        /// Note Type Id.
+        /// A <see cref="System.Int"/> representing the Id of the <see cref="Rock.Model.NoteType"/>
         /// </value>
         [Required]
         [DataMember]
         public int NoteTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Entity Id.
+        /// Gets or sets the Id of the entity that this note is related to.
         /// </summary>
         /// <value>
-        /// Entity Id.
+        /// A <see cref="System.Int32"/> representing the Id of the entity (object) that this note is related to.
         /// </value>
         [DataMember]
         public int? EntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the source type value id.
+        /// Gets or sets the Id of the SourceType <see cref="Rock.Model.DefinedValue"/>. This shows how/where the note was created.
         /// </summary>
         /// <value>
-        /// The source type value id.
+        /// A <see cref="System.Int32"/> representing the Source Type <see cref="Rock.Model.DefinedValue"/>.
         /// </value>
         [DataMember]
         public int? SourceTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the caption.
+        /// Gets or sets the caption
         /// </summary>
         /// <value>
-        /// The caption.
+        /// A <see cref="System.String"/> representing the caption of the Note.
         /// </value>
         [MaxLength( 200 )]
         [DataMember]
         public string Caption { get; set; }
 
         /// <summary>
-        /// Gets or sets the creation date time.
+        /// Gets or sets the date and time that the note was created.
         /// </summary>
         /// <value>
-        /// The creation date time.
+        /// A <see cref="System.DateTime"/> representing the date and time when the note was created.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public DateTime CreationDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the alert.
+        /// Gets or sets a flag indicating if this note is an alert.
         /// </summary>
         /// <value>
-        /// The alert.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this note is an alert; otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool? IsAlert { get; set; }
 
         /// <summary>
-        /// Gets or sets the Value.
+        /// Gets or sets the text/body of the note.
         /// </summary>
         /// <value>
-        /// Value.
+        /// A <see cref="System.String"/> representing the text/body of the note.
         /// </value>
         [DataMember]
         public string Text { get; set; }
@@ -105,25 +105,25 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the Note Type.
+        /// Gets or sets the Note Type
         /// </summary>
         /// <value>
-        /// A <see cref="NoteType"/> object.
+        /// The <see cref="Rock.Model.NoteType"/> of this note.
         /// </value>
         [DataMember]
         public virtual NoteType NoteType { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the source.
+        /// Gets or sets the source of the note.
         /// </summary>
         /// <value>
-        /// The type of the source.
+        /// A <see cref="Rock.Model.DefienedValue"/> representing the source of the note.
         /// </value>
         [DataMember]
         public virtual DefinedValue SourceType { get; set; }
 
         /// <summary>
-        /// Gets the parent authority.
+        /// Gets the parent security authority of this Note. Where security is inherited from.
         /// </summary>
         /// <value>
         /// The parent authority.
