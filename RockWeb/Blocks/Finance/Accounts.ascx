@@ -4,7 +4,7 @@
     <asp:Panel ID="pnlAccountList" runat="server">
         <h4>Financial Accounts</h4>
         <Rock:GridFilter ID="rAccountFilter" runat="server" OnApplyFilterClick="rAccountFilter_ApplyFilterClick">
-            <Rock:LabeledTextBox ID="txtAccountName" runat="server" Label="Name" />
+            <Rock:RockTextBox ID="txtAccountName" runat="server" Label="Name" />
             <Rock:DatePicker ID="dtStartDate" runat="server" Label="From Start Date" />
             <Rock:DatePicker ID="dtEndDate" runat="server" Label="To End Date" />
             <Rock:DataDropDownList ID="ddlIsActive" runat="server" Label="Account Status">
@@ -62,8 +62,8 @@
                 <div class="col-md-6">                
                     <Rock:DatePicker ID="dtpStartDate" runat="server" SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="StartDate" Label="Start Date" />
                     <Rock:DatePicker ID="dtpEndDate" runat="server" SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="EndDate" Label="End Date" />
-                    <Rock:LabeledCheckBox ID="cbIsActive" runat="server" Label="Active" />
-                    <Rock:LabeledCheckBox ID="cbIsTaxDeductible" runat="server" Label="Tax Deductible" />
+                    <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
+                    <Rock:RockCheckBox ID="cbIsTaxDeductible" runat="server" Label="Tax Deductible" />
                     <Rock:LabeledDropDownList ID="ddlAccountType" runat="server" Label="Account Type" />
                     <Rock:AccountPicker ID="apParentAccount" runat="server" Label="Parent Account" />                
                 </div>

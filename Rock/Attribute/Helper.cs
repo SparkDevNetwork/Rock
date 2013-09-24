@@ -649,7 +649,7 @@ namespace Rock.Attribute
                     var rockControl = attributeControl as IRockControl;
                     if ( rockControl != null )
                     {
-                        var checkBox = rockControl as LabeledCheckBox;
+                        var checkBox = rockControl as RockCheckBox;
                         if ( checkBox != null )
                         {
                             checkBox.Text = attribute.Name;

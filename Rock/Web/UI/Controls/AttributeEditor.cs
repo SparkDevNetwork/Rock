@@ -35,9 +35,9 @@ namespace Rock.Web.UI.Controls
         private List<Control> QualifierControls;
         private Control DefaultValueControl;
 
-        private LabeledCheckBox cbMultiValue;
-        private LabeledCheckBox cbRequired;
-        private LabeledCheckBox cbShowInGrid;
+        private RockCheckBox cbMultiValue;
+        private RockCheckBox cbRequired;
+        private RockCheckBox cbShowInGrid;
 
         // buttons
         private LinkButton btnSave;
@@ -72,9 +72,9 @@ namespace Rock.Web.UI.Controls
             ddlFieldType.AutoPostBack = true;
             ddlFieldType.SelectedIndexChanged += ddlFieldType_SelectedIndexChanged;
 
-            cbMultiValue = new LabeledCheckBox();
-            cbRequired = new LabeledCheckBox();
-            cbShowInGrid = new LabeledCheckBox();
+            cbMultiValue = new RockCheckBox();
+            cbRequired = new RockCheckBox();
+            cbShowInGrid = new RockCheckBox();
         }
 
         void ddlFieldType_SelectedIndexChanged( object sender, EventArgs e )

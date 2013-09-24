@@ -21,7 +21,7 @@
                         <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.BinaryFileType, Rock" PropertyName="IconCssClass" />
                         <Rock:ImageUploader ID="imgIconSmall" runat="server" Label="Small Icon Image" />
                         <Rock:ImageUploader ID="imgIconLarge" runat="server" Label="Large Icon Image" />
-                        <Rock:LabeledCheckBox ID="cbAllowCaching" runat="server" Label="Allows Caching"/>
+                        <Rock:RockCheckBox ID="cbAllowCaching" runat="server" Label="Allows Caching"/>
                         <Rock:ComponentPicker ID="cpStorageType" runat="server" ContainerType="Rock.Storage.ProviderContainer, Rock" Label="Storage Type" />
                     </div>
                     <div class="span6">

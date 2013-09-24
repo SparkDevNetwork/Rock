@@ -20,7 +20,7 @@
                 <Rock:LabeledDropDownList ID="ddlSite" runat="server" Label="Site" />
                 <Rock:PagePicker ID="ppPage" runat="server" Label="Page" />
                 <Rock:PersonPicker ID="ppUser" runat="server" Label="User" />
-                <Rock:LabeledTextBox ID="txtStatusCode" runat="server" Label="Status Code" />
+                <Rock:RockTextBox ID="txtStatusCode" runat="server" Label="Status Code" />
                 <Rock:DatePicker ID="dpStartDate" runat="server"   Label="Start Date" />
                 <Rock:DatePicker ID="dpEndDate" runat="server" Label="End Date" />
             </Rock:GridFilter>

@@ -31,7 +31,7 @@
                 <legend><asp:Literal ID="lActionTitle" runat="server" /></legend>
                 <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.EntityType, Rock" PropertyName="Name" Label="Entity Type Name" />
                 <Rock:DataTextBox ID="tbFriendlyName" runat="server" SourceTypeName="Rock.Model.EntityType, Rock" PropertyName="FriendlyName" Label="Friendly Name" />
-                <Rock:LabeledCheckBox ID="cbCommon" runat="server" Text="Common" Help="There are various places that a user is prompted for an entity type.  'Common' entities will be listed first for the user to easily find them" />
+                <Rock:RockCheckBox ID="cbCommon" runat="server" Text="Common" Help="There are various places that a user is prompted for an entity type.  'Common' entities will be listed first for the user to easily find them" />
             </fieldset>
 
             <div class="actions" id="pnlEditDetailsActions" runat="server">

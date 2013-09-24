@@ -23,8 +23,8 @@ namespace Rock.Web.UI.Controls.Communication
     {
         #region UI Controls
 
-        private LabeledTextBox tbFromPhone;
-        private LabeledTextBox tbTextMessage;
+        private RockTextBox tbFromPhone;
+        private RockTextBox tbTextMessage;
 
         #endregion
 
@@ -35,8 +35,8 @@ namespace Rock.Web.UI.Controls.Communication
         /// </summary>
         public Sms()
         {
-            tbFromPhone = new LabeledTextBox();
-            tbTextMessage = new LabeledTextBox();
+            tbFromPhone = new RockTextBox();
+            tbTextMessage = new RockTextBox();
         }
 
         #endregion

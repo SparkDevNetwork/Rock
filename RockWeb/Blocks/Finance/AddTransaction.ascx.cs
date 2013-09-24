@@ -335,7 +335,7 @@ achieve our mission.  We are so grateful for your commitment.
                 // Save amounts from controls to the viewstate list
                 foreach ( RepeaterItem item in rptAccountList.Items )
                 {
-                    var accountAmount = item.FindControl( "txtAccountAmount" ) as LabeledTextBox;
+                    var accountAmount = item.FindControl( "txtAccountAmount" ) as RockTextBox;
                     if ( accountAmount != null )
                     {
                         if ( SelectedAccounts.Count > item.ItemIndex )

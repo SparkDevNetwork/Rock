@@ -13,7 +13,7 @@
                 <div class="col-md-4">
 
                     <fieldset>
-                        <Rock:LabeledTextBox ID="tbFamilyName" runat="server" Label="Family Name" Required="true" CssClass="input-meduim" />
+                        <Rock:RockTextBox ID="tbFamilyName" runat="server" Label="Family Name" Required="true" CssClass="input-meduim" />
                     </fieldset>
 
                 </div>
@@ -22,18 +22,18 @@
 
                     <fieldset>
                         <Rock:CampusPicker ID="cpCampus" runat="server" Required="true" />
-                        <Rock:LabeledTextBox ID="tbStreet1" runat="server" Label="Address Line 1" />
-                        <Rock:LabeledTextBox ID="tbStreet2" runat="server" Label="Address Line 2" />
+                        <Rock:RockTextBox ID="tbStreet1" runat="server" Label="Address Line 1" />
+                        <Rock:RockTextBox ID="tbStreet2" runat="server" Label="Address Line 2" />
 
                         <div class="row">
                             <div class="col-lg-7">
-                                <Rock:LabeledTextBox ID="tbCity" Label="City"  runat="server" />
+                                <Rock:RockTextBox ID="tbCity" Label="City"  runat="server" />
                             </div>
                             <div class="col-lg-2">
                                 <Rock:StateDropDownList ID="ddlState" Label="State" runat="server" UseAbbreviation="true" CssClass="input-mini" />
                             </div>
                             <div class="col-lg-3">
-                                <Rock:LabeledTextBox ID="tbZip" Label="Zip" runat="server" CssClass="input-small" />
+                                <Rock:RockTextBox ID="tbZip" Label="Zip" runat="server" CssClass="input-small" />
                             </div>
                         </div>
 

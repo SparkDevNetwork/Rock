@@ -21,17 +21,17 @@
                         <Rock:DataTextBox ID="tbGroupTerm" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="GroupTerm" />
                         <Rock:DataTextBox ID="tbGroupMemberTerm" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="GroupMemberTerm" />
                         <Rock:DataDropDownList ID="ddlDefaultGroupRole" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="Name" Label="Default Group Role" />
-                        <Rock:LabeledCheckBox ID="cbShowInGroupList" runat="server" Label="Show in Group Lists" />
-                        <Rock:LabeledCheckBox ID="cbShowInNavigation" runat="server" Label="Show in Navigation" Help="Check the box to show in navigation controls such as TreeViews and Menus." />
+                        <Rock:RockCheckBox ID="cbShowInGroupList" runat="server" Label="Show in Group Lists" />
+                        <Rock:RockCheckBox ID="cbShowInNavigation" runat="server" Label="Show in Navigation" Help="Check the box to show in navigation controls such as TreeViews and Menus." />
                         <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="IconCssClass" />
                         <Rock:ImageUploader ID="imgIconSmall" runat="server" Label="Small Icon Image" />
                         <Rock:ImageUploader ID="imgIconLarge" runat="server" Label="Large Icon Image" />
                     </div>
                     <div class="span6">
-                        <Rock:LabeledCheckBox ID="cbTakesAttendance" runat="server" Label="Takes Attendance" />
+                        <Rock:RockCheckBox ID="cbTakesAttendance" runat="server" Label="Takes Attendance" />
                         <Rock:LabeledDropDownList ID="ddlAttendanceRule" runat="server" Label="Attendance Rule" />
                         <Rock:LabeledDropDownList ID="ddlAttendancePrintTo" runat="server" Label="Attendance Print To" />
-                        <Rock:LabeledCheckBox ID="cbAllowMultipleLocations" runat="server" Label="Allow Multiple Locations" />
+                        <Rock:RockCheckBox ID="cbAllowMultipleLocations" runat="server" Label="Allow Multiple Locations" />
                         <Rock:LabeledDropDownList ID="ddlLocationSelectionMode" runat="server" Label="Location Selection Mode" Help="The selection mode to use when adding locations to groups of this type" />
                         <Rock:LabeledDropDownList ID="ddlGroupTypePurpose" runat="server" Label="Purpose" Help="Define a specific purpose for this group type <span class='label'>Defined Value</span>" />
                         <Rock:GroupTypePicker ID="gtpInheritedGroupType" runat="server" Label="Inherited Group Type" Help="Group Type to inherit properties and attributes from" AutoPostBack="true" OnSelectedIndexChanged="gtpInheritedGroupType_SelectedIndexChanged" />

@@ -27,7 +27,7 @@
             <Content>
                 <asp:HiddenField ID="hfIdValue" runat="server" />
                 <fieldset>
-                    <Rock:LabeledTextBox ID="tbName" runat="server" Label="Name" />
+                    <Rock:RockTextBox ID="tbName" runat="server" Label="Name" />
                 </fieldset>
             </Content>
         </Rock:ModalDialog>

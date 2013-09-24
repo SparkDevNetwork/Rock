@@ -13,8 +13,8 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with an associated label.
     /// </summary>
-    [ToolboxData( "<{0}:LabeledTextBox runat=server></{0}:LabeledTextBox>" )]
-    public class LabeledTextBox : TextBox, IRockControl
+    [ToolboxData( "<{0}:RockRadioButtonList runat=server></{0}:RockRadioButtonList>" )]
+    public class RockRadioButtonList : RadioButtonList, IRockControl
     {
         #region IRockControl implementation
 
@@ -63,7 +63,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="LabeledTextBox"/> is required.
+        /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
         /// </summary>
         /// <value>
         ///   <c>true</c> if required; otherwise, <c>false</c>.
@@ -127,49 +127,14 @@ namespace Rock.Web.UI.Controls
         /// The required field validator.
         /// </value>
         public RequiredFieldValidator RequiredFieldValidator { get; set; }
-        
+
         #endregion
 
         /// <summary>
-        /// Gets or sets the prepend text.
+        /// Initializes a new instance of the <see cref="RockRadioButtonList"/> class.
         /// </summary>
-        /// <value>
-        /// The prepend text.
-        /// </value>
-        [
-        Bindable( false ),
-        Category( "Appearance" ),
-        DefaultValue(""),
-        Description("Text that appears prepended to the front of the text box.")
-        ]
-        public string PrependText
-        {
-            get { return ViewState["PrependText"] as string ?? string.Empty; }
-            set { ViewState["PrependText"] = value; }
-        }
-
-        /// <summary>
-        /// Gets or sets the append text.
-        /// </summary>
-        /// <value>
-        /// The append text.
-        /// </value>
-        [
-        Bindable( false ),
-        Category( "Appearance" ),
-        DefaultValue( "" ),
-        Description( "Text that appears appended to the end of the text box." )
-        ]
-        public string AppendText
-        {
-            get { return ViewState["AppendText"] as string ?? string.Empty; }
-            set { ViewState["AppendText"] = value; }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LabeledTextBox" /> class.
-        /// </summary>
-        public LabeledTextBox() : base()
+        public RockRadioButtonList()
+            : base()
         {
             RequiredFieldValidator = new RequiredFieldValidator();
             RequiredFieldValidator.ValidationGroup = this.ValidationGroup;
@@ -183,7 +148,7 @@ namespace Rock.Web.UI.Controls
         {
             base.CreateChildControls();
             Controls.Clear();
-            RockControlHelper.CreateChildControls(this, Controls);
+            RockControlHelper.CreateChildControls( this, Controls );
         }
 
         /// <summary>
@@ -204,77 +169,12 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            // logic to add input groups for preappend and append labels
-            bool renderInputGroup = false;
+            writer.AddAttribute( "class", "controls" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            if ( !string.IsNullOrWhiteSpace( PrependText ) || !string.IsNullOrWhiteSpace( AppendText ) )
-            {
-                renderInputGroup = true;
-            }
-
-            if ( renderInputGroup )
-            {
-                writer.AddAttribute( "class", "input-group" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            }
-
-            if ( !string.IsNullOrWhiteSpace( PrependText ) )
-            {
-                writer.AddAttribute( "class", "input-group-addon" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                writer.Write( PrependText );
-                writer.RenderEndTag();
-            }
-
-            ( (WebControl)this ).AddCssClass( "form-control" );
             base.RenderControl( writer );
 
-            if ( !string.IsNullOrWhiteSpace( AppendText ) )
-            {
-                writer.AddAttribute( "class", "input-group-addon" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                writer.Write( AppendText );
-                writer.RenderEndTag();
-            }
-
-            if ( renderInputGroup )
-            {
-                writer.RenderEndTag();  // input-group
-            }
-
-            RenderDataValidator( writer );
-
-        }
-
-        /// <summary>
-        /// Renders any data validator.
-        /// </summary>
-        /// <param name="writer">The writer.</param>
-        protected virtual void RenderDataValidator( HtmlTextWriter writer )
-        {
-        }
-
-        /// <summary>
-        /// Gets or sets the text content of the <see cref="T:System.Web.UI.WebControls.TextBox" /> control.
-        /// </summary>
-        /// <returns>The text displayed in the <see cref="T:System.Web.UI.WebControls.TextBox" /> control. The default is an empty string ("").</returns>
-        public override string Text
-        {
-            get
-            {
-                if ( base.Text == null )
-                {
-                    return null;
-                }
-                else
-                {
-                    return base.Text.Trim();
-                }
-            }
-            set
-            {
-                base.Text = value;
-            }
+            writer.RenderEndTag();
         }
 
     }

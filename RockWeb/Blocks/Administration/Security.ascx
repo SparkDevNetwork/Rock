@@ -117,7 +117,7 @@
         
             <fieldset>
                 <legend>Select User to Add</legend>
-                <Rock:LabeledTextBox ID="tbUser" runat="server" Label="User" />
+                <Rock:RockTextBox ID="tbUser" runat="server" Label="User" />
                 <dl>
                     <dt></dt>
                     <dd>

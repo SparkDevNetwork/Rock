@@ -101,7 +101,7 @@ namespace RockWeb.Blocks.Administration
                     int i = 0;
                     foreach ( string context in blockContexts )
                     {
-                        var tbContext = new LabeledTextBox();
+                        var tbContext = new RockTextBox();
                         tbContext.ID = string.Format( "context_{0}", i++ );
                         tbContext.Required = true;
                         tbContext.Label = context;
@@ -305,9 +305,9 @@ namespace RockWeb.Blocks.Administration
                     {
                         foreach ( var control in phContext.Controls )
                         {
-                            if ( control is LabeledTextBox )
+                            if ( control is RockTextBox )
                             {
-                                var tbContext = control as LabeledTextBox;
+                                var tbContext = control as RockTextBox;
                                 var pageContext = new PageContext();
                                 pageContext.Entity = tbContext.Label;
                                 pageContext.IdParameter = tbContext.Text;

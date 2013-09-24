@@ -28,7 +28,7 @@
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Name" />
                         </div>
                         <div class="span6">
-                            <Rock:LabeledCheckBox ID="cbIsActive" runat="server" Text="Active" />
+                            <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
                             
                         </div>
                     </div>
@@ -47,7 +47,7 @@
                          <div class="span6">
                             <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" Label="Category" EntityTypeName="Rock.Model.WorkflowType" />
                             <Rock:DataTextBox ID="tbProcessingInterval" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="ProcessingIntervalSeconds" Label="Processing Interval (seconds)" />
-                            <Rock:LabeledCheckBox ID="cbIsPersisted" runat="server" Text="Persisted" />
+                            <Rock:RockCheckBox ID="cbIsPersisted" runat="server" Text="Persisted" />
                             <Rock:DataTextBox ID="tbOrder" runat="server" CssClass="input-mini" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Order" Label="Order" Required="true" />
                         </div>
                     </div>

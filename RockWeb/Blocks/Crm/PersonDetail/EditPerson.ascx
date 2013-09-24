@@ -21,14 +21,14 @@
                     <Rock:DatePicker ID="dpBirthDate" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="BirthDate" />
                     <Rock:DatePicker ID="dpAnniversaryDate" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="AnniversaryDate" />
 
-                    <Rock:LabeledRadioButtonList ID="rblGender" runat="server" RepeatDirection="Horizontal" Label="Gender">
+                    <Rock:RockRadioButtonList ID="rblGender" runat="server" RepeatDirection="Horizontal" Label="Gender">
                         <asp:ListItem Text="Male" Value="Male" />
                         <asp:ListItem Text="Female" Value="Female" />
                         <asp:ListItem Text="Unknown" Value="Unknown" />
-                    </Rock:LabeledRadioButtonList>
+                    </Rock:RockRadioButtonList>
 
-                    <Rock:LabeledRadioButtonList ID="rblMaritalStatus" runat="server" RepeatDirection="Horizontal" Label="Marital Status" />
-                    <Rock:LabeledRadioButtonList ID="rblStatus" runat="server" Label="Person Status" />
+                    <Rock:RockRadioButtonList ID="rblMaritalStatus" runat="server" RepeatDirection="Horizontal" Label="Marital Status" />
+                    <Rock:RockRadioButtonList ID="rblStatus" runat="server" Label="Person Status" />
 
                 </fieldset>
 

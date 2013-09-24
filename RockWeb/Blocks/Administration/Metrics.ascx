@@ -64,7 +64,7 @@
                         <Rock:DataTextBox ID="tbSourceSQL" runat="server" Label="Source SQL"
                             SourceTypeName="Rock.Model.Metric, Rock" TextMode="MultiLine" Rows="3"
                             PropertyName="SourceSQL" />
-                        <Rock:LabeledCheckBox ID="cbType" runat="server" Label="Allow Multiple Values" />
+                        <Rock:RockCheckBox ID="cbType" runat="server" Label="Allow Multiple Values" />
                     </fieldset>
                 </div>
             </div>
@@ -118,7 +118,7 @@
                             SourceTypeName="Rock.Model.MetricValue, Rock" PropertyName="xValue" />
                         <Rock:DataTextBox ID="tbLabel" runat="server" Label="Label"
                             SourceTypeName="Rock.Model.MetricValue, Rock" PropertyName="Label" />
-                        <Rock:LabeledCheckBox ID="cbIsDateBased" runat="server" Label="Is Date Based"
+                        <Rock:RockCheckBox ID="cbIsDateBased" runat="server" Label="Is Date Based"
                             SourceTypeName="Rock.Model.MetricValue, Rock" PropertyName="isDateBased" />
 
                     </div>

@@ -10,35 +10,35 @@
                 <Rock:LabeledDropDownList ID="ddlPrayerCategoryFilter" runat="server" Label="Prayer Category" />--%>
                 <Rock:CategoryPicker ID="cpPrayerCategoryFilter" runat="server" Label="Category" Required="true" EntityTypeName="Rock.Model.PrayerRequest"/>
 
-                <Rock:LabeledRadioButtonList ID="rblApprovedFilter" runat="server" Label="Approval Status">
+                <Rock:RockRadioButtonList ID="rblApprovedFilter" runat="server" Label="Approval Status">
                     <asp:ListItem Text="all" Value="all"></asp:ListItem>
                     <asp:ListItem Text="only approved" Value="approved"></asp:ListItem>
                     <asp:ListItem Text="only unapproved" Value="unapproved"></asp:ListItem>
-                </Rock:LabeledRadioButtonList>
+                </Rock:RockRadioButtonList>
 
-                <Rock:LabeledRadioButtonList ID="rblUrgentFilter" runat="server" Label="Urgent Status">
+                <Rock:RockRadioButtonList ID="rblUrgentFilter" runat="server" Label="Urgent Status">
                     <asp:ListItem Text="all" Value="all"></asp:ListItem>
                     <asp:ListItem Text="only urgent" Value="urgent"></asp:ListItem>
                     <asp:ListItem Text="only non-urgent" Value="non-urgent"></asp:ListItem>
-                </Rock:LabeledRadioButtonList>
+                </Rock:RockRadioButtonList>
 
-                <Rock:LabeledRadioButtonList ID="rblPublicFilter" runat="server" Label="Private/Public">
+                <Rock:RockRadioButtonList ID="rblPublicFilter" runat="server" Label="Private/Public">
                     <asp:ListItem Text="all" Value="all"></asp:ListItem>
                     <asp:ListItem Text="only public" Value="public"></asp:ListItem>
                     <asp:ListItem Text="only non-public" Value="non-public"></asp:ListItem>
-                </Rock:LabeledRadioButtonList>
+                </Rock:RockRadioButtonList>
 
-                <Rock:LabeledRadioButtonList ID="rblActiveFilter" runat="server" Label="Active Status">
+                <Rock:RockRadioButtonList ID="rblActiveFilter" runat="server" Label="Active Status">
                     <asp:ListItem Text="all" Value="all"></asp:ListItem>
                     <asp:ListItem Text="only active" Value="active"></asp:ListItem>
                     <asp:ListItem Text="only inactive" Value="inactive"></asp:ListItem>
-                </Rock:LabeledRadioButtonList>
+                </Rock:RockRadioButtonList>
 
-                <Rock:LabeledRadioButtonList ID="rblAllowCommentsFilter" runat="server" Label="Commenting Status">
+                <Rock:RockRadioButtonList ID="rblAllowCommentsFilter" runat="server" Label="Commenting Status">
                     <asp:ListItem Text="all" Value="all"></asp:ListItem>
                     <asp:ListItem Text="only allow" Value="allow"></asp:ListItem>
                     <asp:ListItem Text="only unallow" Value="unallow"></asp:ListItem>
-                </Rock:LabeledRadioButtonList>
+                </Rock:RockRadioButtonList>
 
             </Rock:GridFilter>
 

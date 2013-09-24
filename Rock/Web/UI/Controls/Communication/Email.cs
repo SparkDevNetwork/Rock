@@ -21,12 +21,12 @@ namespace Rock.Web.UI.Controls.Communication
 
         #region UI Controls
 
-        private LabeledTextBox tbFromName;
-        private LabeledTextBox tbFromAddress;
-        private LabeledTextBox tbReplyToAddress;
-        private LabeledTextBox tbSubject;
+        private RockTextBox tbFromName;
+        private RockTextBox tbFromAddress;
+        private RockTextBox tbReplyToAddress;
+        private RockTextBox tbSubject;
         private HtmlEditor htmlMessage;
-        private LabeledTextBox tbTextMessage;
+        private RockTextBox tbTextMessage;
         private HiddenField hfAttachments;
         private FileUploader fuAttachments;
         private Dictionary<int, LinkButton> removeButtons;
@@ -40,12 +40,12 @@ namespace Rock.Web.UI.Controls.Communication
         /// </summary>
         public Email()
         {
-            tbFromName = new LabeledTextBox();
-            tbFromAddress = new LabeledTextBox();
-            tbReplyToAddress = new LabeledTextBox();
-            tbSubject = new LabeledTextBox();
+            tbFromName = new RockTextBox();
+            tbFromAddress = new RockTextBox();
+            tbReplyToAddress = new RockTextBox();
+            tbSubject = new RockTextBox();
             htmlMessage = new HtmlEditor();
-            tbTextMessage = new LabeledTextBox();
+            tbTextMessage = new RockTextBox();
             hfAttachments = new HiddenField();
             fuAttachments = new FileUploader();
         }
