@@ -5,7 +5,7 @@
 
 @const-border-darken-amt: 10%; /* creates a border color by darkening the background by this amount */
 
-@text-color:           #515151;
+@text-color:           #d4d4d4;
 @site-link-color:           #437b9b;
 @headings-color:    #c9c9c9;
 
@@ -103,10 +103,13 @@
 
 /* panel */
 @panel-border-radius: 4px;
-@panel-bg: @accent-light-color;
+@panel-bg: rgba(159, 159, 159, .1);
 @panel-border-color: darken(@panel-bg, 10%);
 @panel-border-size: 1px;
 @panel-padding: 20px;
+@panel-default-text: @text-color;
+@panel-default-border:  darken(@panel-bg, 10%);
+@panel-default-heading-bg: darken(@panel-bg, 10%);
 
 // titles
 @title-firstword-weight: @font-weight-bold;

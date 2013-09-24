@@ -8371,6 +8371,7 @@ div.tagsinput div {
     3. Login - block to allow logins
     4. Notes - block to display, add, edit, delete notes
     5. Add Family - block to add families to the database
+    6. Contributions - block add a contribution transaction
 
 */
 .sql-comand .panel {
@@ -8520,6 +8521,9 @@ span.cke_skin_kama {
 .table-familymembers .radio:first-child {
   margin-top: 0;
 }
+.contribution-payment .tab-content {
+  margin-top: 12px;
+}
 /*
     Used to manage styles related to the CMS admin UI for on page editing
     
@@ -8550,7 +8554,7 @@ span.cke_skin_kama {
   top: 1px;
   left: 1px;
   width: 25px;
-  z-index: 40;
+  z-index: 11000;
   right: auto;
 }
 .zone-configuration-bar {
@@ -8584,7 +8588,7 @@ span.cke_skin_kama {
   position: absolute;
   top: 2px;
   width: 26px;
-  z-index: 40;
+  z-index: 11000;
 }
 .block-instance.outline {
   min-height: 36px;
