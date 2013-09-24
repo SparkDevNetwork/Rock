@@ -464,7 +464,7 @@
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
     <Compile Include="Web\UI\Controls\ILabeledControl.cs" />
     <Compile Include="Web\UI\Controls\IRequiredControl.cs" />
-    <Compile Include="Web\UI\Controls\RockControl.cs" />
+    <Compile Include="Web\UI\Controls\RockControlHelper.cs" />
     <Compile Include="Web\UI\Controls\TermDescription.cs" />
     <Compile Include="Web\UI\Controls\Grid\DefinedValueField.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LocationPicker.cs" />

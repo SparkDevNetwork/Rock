@@ -11,7 +11,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// Helper class to intialize and render rock controls with Bootstrap html elements
     /// </summary>
-    internal static class RockControl
+    internal static class RockControlHelper
     {
         /// <summary>
         /// Inits the specified rock control.
@@ -84,7 +84,6 @@ namespace Rock.Web.UI.Controls
             if ( rockControl.RequiredFieldValidator != null && rockControl.Required )
             {
                 rockControl.RequiredFieldValidator.Enabled = true;
-                rockControl.RequiredFieldValidator.ValidationGroup = rockControl.ValidationGroup;
                 if ( string.IsNullOrWhiteSpace( rockControl.RequiredFieldValidator.ErrorMessage ) )
                 {
                     rockControl.RequiredFieldValidator.ErrorMessage = rockControl.Label + " is Required.";
