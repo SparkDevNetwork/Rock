@@ -404,14 +404,14 @@ namespace Rock.Web.UI.Controls
             _hfGeoPath.ID = string.Format( "hfGeoPath_{0}", this.ClientID );
 
             _btnSelect.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-            _btnSelect.CssClass = "btn btn-mini btn-primary";
+            _btnSelect.CssClass = "btn btn-xs btn-primary";
             _btnSelect.ID = string.Format( "btnSelect_{0}", this.ClientID );
             _btnSelect.Text = "Done";
             _btnSelect.CausesValidation = false;
             _btnSelect.Click += btnSelect_Click;
 
             _btnSelectNone.ClientIDMode = ClientIDMode.Static;
-            _btnSelectNone.CssClass = "rock-picker-select-none";
+            _btnSelectNone.CssClass = "picker-select-none";
             _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ClientID );
             _btnSelectNone.Text = "<i class='icon-remove'></i>";
             _btnSelectNone.CausesValidation = false;
@@ -486,9 +486,8 @@ namespace Rock.Web.UI.Controls
             if ( this.Enabled )
             {
                 string controlHtmlFormatStart = @"
-    <span id='{0}'>
-        <span class='rock-picker rock-picker-select' id='{0}'> 
-            <a class='rock-picker' href='#'>
+        <div class='picker picker-select' id='{0}'> 
+            <a class='picker-label' href='#'>
                 <i class='icon-map-marker'></i>
                 <span id='selectedGeographyLabel_{0}'>{1}</span>
                 <b class='caret'></b>
@@ -504,22 +503,21 @@ namespace Rock.Web.UI.Controls
                 }
                 else
                 {
-                    writer.Write( "<a class='rock-picker-select-none' id='btnSelectNone_{0}' href='#' style='display:none'><i class='icon-remove'></i></a>", this.ClientID );
+                    writer.Write( "<a class='picker-select-none' id='btnSelectNone_{0}' href='#' style='display:none'><i class='icon-remove'></i></a>", this.ClientID );
                 }
 
                 string controlHtmlFormatMiddle = @"
-        </span>
-        <div class='dropdown-menu rock-picker rock-picker-geography' style='Width: 500px;'>
-            <h4>Geography Picker</h4>
-            <!-- Our custom delete button that we add to the map for deleting polygons. -->
-            <div style='display: none; z-index: 10; position: absolute; left: 105px; top: 0px; line-height:0;' id='gmnoprint-delete-button_{0}'>
-                <div style='direction: ltr; overflow: hidden; text-align: left; position: relative; color: rgb(51, 51, 51); font-family: Arial, sans-serif; font-size: 13px; background-color: rgb(255, 255, 255); padding: 4px; border-width: 1px 1px 1px 1px; border-style: solid; border-color: rgb(113, 123, 135); -webkit-box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px; box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px; font-weight: normal; background-position: initial initial; background-repeat: initial initial;' title='Delete selected shape'>
-                    <span style='display: inline-block;'><div style='width: 16px; height: 16px; overflow: hidden; position: relative;'><i class='icon-remove' style='font-size: 16px; padding-left: 2px; color: #aaa;'></i></div></span>
+            <div class='picker-menu dropdown-menu picker-geography' style='Width: 500px;'>
+                <h4>Geography Picker</h4>
+                <!-- Our custom delete button that we add to the map for deleting polygons. -->
+                <div style='display: none; z-index: 10; position: absolute; left: 105px; top: 0px; line-height:0;' id='gmnoprint-delete-button_{0}'>
+                    <div style='direction: ltr; overflow: hidden; text-align: left; position: relative; color: rgb(51, 51, 51); font-family: Arial, sans-serif; font-size: 13px; background-color: rgb(255, 255, 255); padding: 4px; border-width: 1px 1px 1px 1px; border-style: solid; border-color: rgb(113, 123, 135); -webkit-box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px; box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px; font-weight: normal; background-position: initial initial; background-repeat: initial initial;' title='Delete selected shape'>
+                        <span style='display: inline-block;'><div style='width: 16px; height: 16px; overflow: hidden; position: relative;'><i class='icon-remove' style='font-size: 16px; padding-left: 2px; color: #aaa;'></i></div></span>
+                    </div>
                 </div>
-            </div>
-            <!-- This is where the Google Map (with Drawing Tools) will go. -->
-            <div id='geoPicker_{0}' style='height: 300px; width: 500px' /></div>
-            <hr />
+                <!-- This is where the Google Map (with Drawing Tools) will go. -->
+                <div id='geoPicker_{0}' style='height: 300px; width: 500px' /></div>
+                <hr />
 ";
 
                 writer.Write( controlHtmlFormatMiddle, this.ClientID, this.GeoDisplayName );
@@ -531,13 +529,13 @@ namespace Rock.Web.UI.Controls
                 }
                 else
                 {
-                    writer.Write( string.Format( "<a class='btn btn-mini btn-primary' id='btnSelect_{0}'>Done</a>", this.ClientID ) );
+                    writer.Write( string.Format( "<a class='btn btn-xs btn-primary' id='btnSelect_{0}'>Done</a>", this.ClientID ) );
                 }
 
                 string controlHtmlFormatEnd = @"
-            <a class='btn btn-mini' id='btnCancel_{0}'>Cancel</a>
-        </div>
-    </span>
+              <a class='btn btn-xs' id='btnCancel_{0}'>Cancel</a>
+          </div>
+      </div> 
 ";
 
                 writer.Write( string.Format( controlHtmlFormatEnd, this.ClientID, this.GeoDisplayName ) );
