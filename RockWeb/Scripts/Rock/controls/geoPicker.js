@@ -408,10 +408,10 @@
             /**
             * Toggle the picker on and off when the control's link is clicked.
             */
-            $('#' + controlId + ' a.rock-picker').click(function (e) {
+            $('#' + controlId + ' a.picker-label').click(function (e) {
                 e.preventDefault();
-                $(this).parent().siblings('.rock-picker').first().toggle();
-                if ($(this).parent().siblings('.rock-picker').first().is(":visible")) {
+                $('#' + controlId).find('.picker-menu').first().toggle();
+                if ($('#' + controlId).find('.picker-menu').first().is(":visible")) {
                     google.maps.event.trigger(self.map, "resize");
                     // now we can safely fit the map to any polygon boundary
                     self.fitBounds();
@@ -422,7 +422,7 @@
             * Handle the Cancel button click by hiding the overlay.
             */
             $('#btnCancel_' + controlId).click(function () {
-                $(this).parent().slideUp();
+                $(this).closest('.picker-menu').slideUp();
                 self.path = self.pathTemp;
                 if ( self.selectedShape ) {
                     self.selectedShape.setMap(null);
@@ -449,7 +449,7 @@
                 //clear out any old map positioning
                 self.initMinMaxLatLng();
 
-                $(this).parent().slideUp();
+                $(this).closest('.picker-menu').slideUp();
             });
         };
 

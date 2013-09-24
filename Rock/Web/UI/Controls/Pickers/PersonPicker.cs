@@ -336,7 +336,7 @@ namespace Rock.Web.UI.Controls
             if ( this.Enabled )
             {
                 string controlHtmlFormatStart = @"
-        <div id='{0}' class='picker picker-select' > 
+        <div id='{0}' class='picker picker-select picker-person' > 
             <a class='picker-label' href='#'>
                 <i class='icon-user'></i>
                 <span id='selectedPersonLabel_{0}'>{1}</span>
@@ -360,9 +360,12 @@ namespace Rock.Web.UI.Controls
           <div class='picker-menu dropdown-menu'>
 
              <h4>Search</h4>
-             <input id='personPicker_{0}' type='text' class='picker-search' />
+             <input id='personPicker_{0}' type='text' class='picker-search form-control input-sm' />
+
+             <hr />             
+
              <h4>Results</h4>
-             <hr />
+             
              <ul class='picker-select' id='personPickerItems_{0}'>
              </ul>
              <div class='picker-actions'>

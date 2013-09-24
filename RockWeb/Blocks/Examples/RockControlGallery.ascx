@@ -54,8 +54,7 @@
 
             <Rock:GeoPicker ID="geoPicker" runat="server" Label="Rock:GeoPicker" DrawingMode="Point" />
             
-            <h4>Rock:PersonPicker2</h4>
-            <Rock:PersonPicker2 ID="personPicker2" runat="server" />
+            
 
 
             <%-- 
