@@ -8550,7 +8550,7 @@ span.cke_skin_kama {
   top: 1px;
   left: 1px;
   width: 25px;
-  z-index: 40;
+  z-index: 11000;
   right: auto;
 }
 .zone-configuration-bar {
@@ -8584,7 +8584,7 @@ span.cke_skin_kama {
   position: absolute;
   top: 2px;
   width: 26px;
-  z-index: 40;
+  z-index: 11000;
 }
 .block-instance.outline {
   min-height: 36px;
