@@ -805,6 +805,84 @@ namespace Rock.Web.Cache
 
         #endregion
 
+        #region Menu Property Methods
+
+        /// <summary>
+        /// Gets the menu properties.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public Dictionary<string, object> GetMenuProperties( Person person )
+        {
+            return GetMenuProperties( 1, person );
+        }
+
+        /// <summary>
+        /// Gets the menu properties.
+        /// </summary>
+        /// <param name="levelsDeep">The levels deep.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="currentPage">The current page.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <param name="queryString">The query string.</param>
+        /// <returns></returns>
+        public Dictionary<string, object> GetMenuProperties( int levelsDeep, Person person, PageCache currentPage = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
+        {
+            if ( levelsDeep >= 0 && this.DisplayInNav( person ) )
+            {
+                string iconUrl = string.Empty;
+                if ( this.IconFileId.HasValue )
+                {
+                    iconUrl = string.Format( "{0}/GetImage.ashx?{1}",
+                        HttpContext.Current.Request.ApplicationPath,
+                        this.IconFileId.Value );
+                }
+
+                bool isCurrentPage = currentPage != null && currentPage.Id == this.Id;
+
+                var properties = new Dictionary<string, object>();
+                properties.Add( "id", this.Id );
+                properties.Add( "title", this.Title ?? this.Name );
+                properties.Add( "current", isCurrentPage.ToString() );
+                properties.Add( "url", new PageReference( this.Id, 0, parameters, queryString ).BuildUrl() );
+                properties.Add( "display-description", this.MenuDisplayDescription.ToString().ToLower() );
+                properties.Add( "display-icon", this.MenuDisplayIcon.ToString().ToLower() );
+                properties.Add( "display-child-pages", this.MenuDisplayChildPages.ToString().ToLower() );
+                properties.Add( "icon-css-class", this.IconCssClass ?? string.Empty );
+                properties.Add( "description", this.Description ?? "" );
+                properties.Add( "icon-url", iconUrl );
+
+                if ( levelsDeep > 0 && this.MenuDisplayChildPages )
+                {
+                    var childPages = new List<Dictionary<string, object>>();
+
+                    foreach ( PageCache page in Pages )
+                    {
+                        if ( page != null )
+                        {
+                            var childPageElement = page.GetMenuProperties( levelsDeep - 1, person, currentPage, parameters, queryString );
+                            if ( childPageElement != null )
+                                childPages.Add( childPageElement );
+                        }
+                    }
+
+                    if ( childPages.Any() )
+                    {
+                        properties.Add( "pages", childPages );
+                    }
+                }
+
+                return properties;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        #endregion
+
+
         #endregion
 
         #region Private Methods

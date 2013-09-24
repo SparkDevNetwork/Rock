@@ -342,6 +342,8 @@ namespace Rock
                 return content;
 
             Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
+            //TODO: This should probably use the theme assets folder
+            Template.FileSystem = new DotLiquid.FileSystems.LocalFileSystem( System.Web.HttpContext.Current.Server.MapPath( "~/Assets/Liquid" ) );
             Template template = Template.Parse( content );
 
             return template.Render( Hash.FromDictionary( mergeObjects ) );
