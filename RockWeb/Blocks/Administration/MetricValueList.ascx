@@ -1,4 +1,4 @@
-﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="Metrics.ascx.cs" Inherits="RockWeb.Blocks.Administration.Metrics" %>
+﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="MetricValueList.ascx.cs" Inherits="RockWeb.Blocks.Administration.MetricValueList" %>
 
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>

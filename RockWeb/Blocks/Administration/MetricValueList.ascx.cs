@@ -17,8 +17,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-
-    public partial class Metrics : Rock.Web.UI.RockBlock
+    public partial class MetricValueList : Rock.Web.UI.RockBlock
     {
         #region Fields
 
