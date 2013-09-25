@@ -6,13 +6,7 @@
         <legend>Login</legend> 
         <Rock:RockTextBox ID="tbUserName" runat="server" Label="Username" Required="true" DisplayRequiredIndicator="false" ></Rock:RockTextBox>
         <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" Required="true" DisplayRequiredIndicator="false" TextMode="Password" ></Rock:RockTextBox>
-        
-        <div class="checkbox">
-            <label>
-                <asp:CheckBox ID="cbRememberMe" runat="server"/> Remember me on this computer
-            </label>
-        </div>
-        
+        <Rock:RockCheckBox ID="cbRememberMe" runat="server" Text="Remember me on this computer" />        
     </fieldset>
 
     <div class="alt-authentication">

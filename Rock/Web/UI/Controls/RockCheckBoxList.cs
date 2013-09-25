@@ -4,17 +4,20 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Constants;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
     /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with an associated label.
     /// </summary>
-    [ToolboxData( "<{0}:RockCheckBox runat=server></{0}:RockTextBox>" )]
-    public class RockCheckBox : CheckBox, IRockControl
+    [ToolboxData( "<{0}:RockCheckBoxList runat=server></{0}:RockCheckBoxList>" )]
+    public class RockCheckBoxList : CheckBoxList, IRockControl
     {
         #region IRockControl implementation
 
@@ -50,9 +53,9 @@ namespace Rock.Web.UI.Controls
         ]
         public string Help
         {
-            get
-            {
-                return HelpBlock != null ? HelpBlock.Text : string.Empty;
+            get 
+            { 
+                return HelpBlock != null ? HelpBlock.Text : string.Empty; 
             }
             set
             {
@@ -90,7 +93,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
+                return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty; 
             }
             set
             {
@@ -133,7 +136,10 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
-        public RockCheckBox()
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockCheckBoxList"/> class.
+        /// </summary>
+        public RockCheckBoxList()
             : base()
         {
             HelpBlock = new HelpBlock();
@@ -149,10 +155,6 @@ namespace Rock.Web.UI.Controls
             RockControlHelper.CreateChildControls( this, Controls );
         }
 
-        protected override void OnPreRender( System.EventArgs e )
-        {
-            base.OnPreRender( e );
-        }
         /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
@@ -171,14 +173,26 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            if (Enabled)
+            if ( Items.Count == 0 )
             {
-                base.RenderControl(writer);
+                writer.Write( None.TextHtml );
             }
-            else
+            base.RenderControl( writer );
+        }
+
+        /// <summary>
+        /// Gets the selected values as int.
+        /// </summary>
+        /// <value>
+        /// The selected values as int.
+        /// </value>
+        public List<string> SelectedValues
+        {
+            get
             {
-                writer.WriteLine( string.Format( "<i class=\"icon-check\"></i>", this.Checked ? "icon-check" : "icon-check-empty" ) );
+                return this.Items.OfType<ListItem>().Where( l => l.Selected ).Select( a => a.Value ).ToList();
             }
         }
+
     }
 }

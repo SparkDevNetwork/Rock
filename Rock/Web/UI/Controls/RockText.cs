@@ -52,16 +52,16 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                EnsureChildControls();
-                return HelpBlock.Text;
+                return HelpBlock != null ? HelpBlock.Text : string.Empty;
             }
             set
             {
-                EnsureChildControls();
-                HelpBlock.Text = value;
+                if ( HelpBlock != null )
+                {
+                    HelpBlock.Text = value;
+                }
             }
         }
-
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
         /// </summary>
@@ -90,11 +90,14 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return RequiredFieldValidator.ErrorMessage;
+                return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
             }
             set
             {
-                RequiredFieldValidator.ErrorMessage = value;
+                if ( RequiredFieldValidator != null )
+                {
+                    RequiredFieldValidator.ErrorMessage = value;
+                }
             }
         }
 
@@ -108,7 +111,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return !Required || RequiredFieldValidator.IsValid;
+                return !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid;
             }
         }
 
