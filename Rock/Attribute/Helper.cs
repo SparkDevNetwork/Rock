@@ -687,6 +687,7 @@ namespace Rock.Attribute
                             // If control is not a checkbox, add a label, help text, and control
                             Label label = new Label();
                             div.Controls.Add( label );
+                            label.Text = attribute.Name;
                             label.AssociatedControlID = attributeControl.ID;
                             label.ClientIDMode = ClientIDMode.AutoID;
 
