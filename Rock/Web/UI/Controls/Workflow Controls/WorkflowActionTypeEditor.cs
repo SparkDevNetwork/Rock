@@ -148,7 +148,7 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             lbDeleteActionType = new LinkButton();
             lbDeleteActionType.CausesValidation = false;
             lbDeleteActionType.ID = this.ID + "_lbDeleteActionType";
-            lbDeleteActionType.CssClass = "btn btn-mini btn-danger";
+            lbDeleteActionType.CssClass = "btn btn-xs btn-danger";
             lbDeleteActionType.Click += lbDeleteActionType_Click;
 
             var iDelete = new HtmlGenericControl( "i" );
@@ -232,8 +232,8 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.WriteLine( "<a class='btn btn-mini workflow-action-reorder'><i class='icon-reorder'></i></a>" );
-            writer.WriteLine( "<a class='btn btn-mini'><i class='workflow-action-state icon-chevron-down'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-xs workflow-action-reorder'><i class='icon-reorder'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-xs'><i class='workflow-action-state icon-chevron-down'></i></a>" );
 
             if ( IsDeleteEnabled )
             {
