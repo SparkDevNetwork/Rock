@@ -22,11 +22,7 @@ namespace RockWeb.Blocks.Administration
     /// User controls for managing defined values
     /// </summary>    
     public partial class DefinedValueList : RockBlock
-    {
-        #region Fields
-
-        private bool _canConfigure = false;
-        #endregion
+    {        
         #region Control Methods
 
         /// <summary>
@@ -285,22 +281,22 @@ namespace RockWeb.Blocks.Administration
         {            
             var definedType = DefinedTypeCache.Read( hfDefinedTypeId.ValueAsInt() );            
             DefinedValue definedValue;
-            if ( valueId.Equals( 0 ) )
-            {
-                definedValue = new DefinedValue { Id = 0 };
-                definedValue.DefinedTypeId = hfDefinedTypeId.ValueAsInt();
-                if ( definedType != null )
-                {
-                    lActionTitleDefinedValue.Text = ActionTitle.Add( "defined value for " + definedType.Name );
-                }                
-            }
-            else
+            if ( !valueId.Equals( 0 ) )
             {
                 definedValue = new DefinedValueService().Get( valueId );
                 if ( definedType != null )
                 {
                     lActionTitleDefinedValue.Text = ActionTitle.Edit( "defined value for " + definedType.Name );
                 }                                
+            }
+            else
+            {
+                definedValue = new DefinedValue { Id = 0 };
+                definedValue.DefinedTypeId = hfDefinedTypeId.ValueAsInt();
+                if ( definedType != null )
+                {
+                    lActionTitleDefinedValue.Text = ActionTitle.Add( "defined value for " + definedType.Name );
+                }
             }            
 
             hfDefinedValueId.SetValue( definedValue.Id );
