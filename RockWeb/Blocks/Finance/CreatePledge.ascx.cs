@@ -186,13 +186,13 @@ namespace RockWeb.Blocks.Finance
         protected void rptAccounts_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             var account = e.Item.DataItem as FinancialAccount;
-            var textbox = e.Item.FindControl( "tbAmount" ) as LabeledTextBox;
+            var textbox = e.Item.FindControl( "tbAmount" ) as RockTextBox;
             var hiddenField = e.Item.FindControl( "hfId" ) as HiddenField;
 
             if ( textbox == null || hiddenField == null || account == null )
                 return;
 
-            textbox.LabelText = account.PublicName;
+            textbox.Label = account.PublicName;
             hiddenField.Value = account.Id.ToString();
         }
 
@@ -223,7 +223,7 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         private void ShowForm()
         {
-            var frequencyTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_PLEDGE_FREQUENCY );
+            var frequencyTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY );
             ddlFrequencyType.BindToDefinedType( DefinedTypeCache.Read( frequencyTypeGuid ) );
 
             if ( AccountGuids.Any() )
@@ -329,7 +329,7 @@ namespace RockWeb.Blocks.Finance
             // For some reason, this approach is not working. Account is not being found from the repeater data items...
             pledges.AddRange( from RepeaterItem item in rptAccounts.Items
                               where item.ItemType == ListItemType.Item || item.ItemType == ListItemType.AlternatingItem
-                              let textBox = item.FindControl( "tbAmount" ) as LabeledTextBox
+                              let textBox = item.FindControl( "tbAmount" ) as RockTextBox
                               let hiddenField = item.FindControl( "hfId" ) as HiddenField
                               where !string.IsNullOrWhiteSpace( hiddenField.Value ) && !string.IsNullOrWhiteSpace( textBox.Text )
                               select new FinancialPledge

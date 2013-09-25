@@ -22,7 +22,7 @@
 
     <asp:HiddenField ID="hfAction" runat="server" />
     <asp:Button ID="btnDefault" runat="server" Text="Show" style="display:none"/>
-    <asp:Panel ID="pnlContentEditor" runat="server" CssClass="modal" style="display:none">
+    <asp:Panel ID="pnlContentEditor" runat="server" CssClass="rock-modal" style="display:none">
 
         <div class="modal-header">
             <a id="aClose" runat="server" href="#" class="close">&times;</a>

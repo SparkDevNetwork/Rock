@@ -36,14 +36,24 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the batch date.
+        /// Gets or sets the batch start date.
         /// </summary>
         /// <value>
-        /// The batch date.
+        /// The batch start date time.
         /// </value>
         [DataMember]
-        [Column( TypeName = "Date" )]
-        public DateTime? BatchDate { get; set; }
+        [Column( TypeName = "DateTime" )]
+        public DateTime? BatchStartDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the batch end date time.
+        /// </summary>
+        /// <value>
+        /// The batch end date time.
+        /// </value>
+        [DataMember]
+        [Column( TypeName = "DateTime" )]
+        public DateTime? BatchEndDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the created by person id.

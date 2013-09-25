@@ -22,7 +22,7 @@
                     </div>
                     <div class="span6">
                         <Rock:DataDropDownList ID="ddlWorkflowType" runat="server" SourceTypeName="Rock.Model.WorkflowTrigger, Rock" PropertyName="WorkflowType" Required="true" Help="The workflow type to run" />
-                        <Rock:LabeledRadioButtonList ID="rblTriggerType" runat="server" RepeatDirection="Horizontal" LabelText="Trigger Type" Help="When should the workflow be triggered" />
+                        <Rock:RockRadioButtonList ID="rblTriggerType" runat="server" RepeatDirection="Horizontal" Label="Trigger Type" Help="When should the workflow be triggered" />
                         <Rock:DataTextBox ID="tbWorkflowName" runat="server" SourceTypeName="Rock.Model.WorkflowTrigger, Rock" PropertyName="WorkflowName" Help="The name to use for each workflow created" />
                     </div>
                 </div>

@@ -16,7 +16,7 @@ namespace Rock.Jobs
     /// <author>Jon Edmiston</author>
     /// <author>Spark Development Network</author>
 
-    [TextField( "Domain", "Domain name of your SMTP server", true, "smtp.yourdomain.com" )]
+    [TextField( "Domain", "Domain name of your SMTP server", true, "smtp.yourdomain.com")]
     [TextField( "Port", "Port of the email server", true, "25" )]
     public class TestJob : IJob
     {
@@ -46,7 +46,7 @@ namespace Rock.Jobs
             
             JobDataMap dataMap = context.JobDetail.JobDataMap;
 
-            string key1 = dataMap.GetString( "EmailServer" );
+            string key1 = dataMap.GetString( "Domain" );
             string key2 = dataMap.GetString( "EmailServerPort" );
             
             // I don't do much

@@ -64,17 +64,17 @@
                     <div class="span6">
                         <Rock:DataTextBox ID="tbFirstName" runat="server" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="FirstName" />
                         <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="LastName" />
-                        <Rock:CategoryPicker ID="cpCategory" runat="server" LabelText="Category" Required="true" EntityTypeName="Rock.Model.PrayerRequest"/>
+                        <Rock:CategoryPicker ID="cpCategory" runat="server" Label="Category" Required="true" EntityTypeName="Rock.Model.PrayerRequest"/>
                     </div>
                 </div>
                 <div class="row-fluid">
                     <div class="span12">
-                        <Rock:DataTextBox ID="tbText" runat="server" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="Text" LabelText="Request" CssClass="field span12" TextMode="MultiLine" Rows="4"/>
+                        <Rock:DataTextBox ID="tbText" runat="server" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="Text" Label="Request" CssClass="field span12" TextMode="MultiLine" Rows="4"/>
                     </div>
                 </div>
                 <div class="row-fluid">
                     <div class="span12">
-                        <Rock:DataTextBox ID="tbAnswer" runat="server" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="Answer" LabelText="Answer" CssClass="field span12" TextMode="MultiLine" Rows="4"/>
+                        <Rock:DataTextBox ID="tbAnswer" runat="server" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="Answer" Label="Answer" CssClass="field span12" TextMode="MultiLine" Rows="4"/>
                     </div>
                 </div>
 

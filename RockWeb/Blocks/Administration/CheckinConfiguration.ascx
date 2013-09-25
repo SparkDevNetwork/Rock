@@ -35,7 +35,7 @@
 
         <asp:Panel ID="pnlCheckinLabelPicker" runat="server" Visible="false">
             <asp:HiddenField ID="hfAddCheckinLabelGroupTypeGuid" runat="server" />
-            <Rock:LabeledDropDownList ID="ddlCheckinLabel" runat="server" LabelText="Select Check-in Label" />
+            <Rock:RockDropDownList ID="ddlCheckinLabel" runat="server" Label="Select Check-in Label" />
 
             <div class="actions">
                 <asp:LinkButton ID="btnAddCheckinLabel" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddCheckinLabel_Click"></asp:LinkButton>
@@ -45,7 +45,7 @@
 
         <asp:Panel ID="pnlLocationPicker" runat="server" Visible="false">
             <asp:HiddenField ID="hfAddLocationGroupGuid" runat="server" />
-            <Rock:LabeledDropDownList ID="ddlLocation" runat="server" LabelText="Select Check-in Location" />
+            <Rock:RockDropDownList ID="ddlLocation" runat="server" Label="Select Check-in Location" />
 
             <div class="actions">
                 <asp:LinkButton ID="btnAddLocation" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddLocation_Click"></asp:LinkButton>

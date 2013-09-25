@@ -10,7 +10,7 @@
   
 	<xsl:template match="/">
 		<xsl:if test="page/@display-child-pages = 'true' and page/pages[count(page) > 0]">
-      <div class="panel page-list-as-blocks clearfix">
+      <div class="panel panel-default page-list-as-blocks clearfix">
         <!--<header>
           <xsl:if test="@icon-css-class != ''">
             <i>
@@ -29,7 +29,7 @@
           </xsl:if>
         </header>-->
 
-        <div class="widget-content">
+        <div class="panel-body">
           <ul>
             <xsl:for-each select="page/pages/page">
               <xsl:call-template name="otherLevels">

@@ -35,9 +35,9 @@ namespace Rock.Web.UI.Controls
         private List<Control> QualifierControls;
         private Control DefaultValueControl;
 
-        private LabeledCheckBox cbMultiValue;
-        private LabeledCheckBox cbRequired;
-        private LabeledCheckBox cbShowInGrid;
+        private RockCheckBox cbMultiValue;
+        private RockCheckBox cbRequired;
+        private RockCheckBox cbShowInGrid;
 
         // buttons
         private LinkButton btnSave;
@@ -72,9 +72,9 @@ namespace Rock.Web.UI.Controls
             ddlFieldType.AutoPostBack = true;
             ddlFieldType.SelectedIndexChanged += ddlFieldType_SelectedIndexChanged;
 
-            cbMultiValue = new LabeledCheckBox();
-            cbRequired = new LabeledCheckBox();
-            cbShowInGrid = new LabeledCheckBox();
+            cbMultiValue = new RockCheckBox();
+            cbRequired = new RockCheckBox();
+            cbShowInGrid = new RockCheckBox();
         }
 
         void ddlFieldType_SelectedIndexChanged( object sender, EventArgs e )
@@ -444,7 +444,7 @@ namespace Rock.Web.UI.Controls
             cvKey.ErrorMessage = "There is already an existing property with the key value you entered.  Please select a different key value";
             Controls.Add( cvKey );
 
-            cpCategories.LabelText = "Categories";
+            cpCategories.Label = "Categories";
             cpCategories.ID = string.Format( "cpCategories_{0}", this.ID );
             cpCategories.AllowMultiSelect = true;
             cpCategories.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
@@ -459,7 +459,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( tbDescription );
 
             ddlFieldType.ID = string.Format( "ddlFieldType_{0}", this.ID );
-            ddlFieldType.LabelText = "Field Type";
+            ddlFieldType.Label = "Field Type";
             ddlFieldType.SourceTypeName = "Rock.Model.FieldType, Rock";
             ddlFieldType.PropertyName = "Name";
             ddlFieldType.AutoPostBack = true;

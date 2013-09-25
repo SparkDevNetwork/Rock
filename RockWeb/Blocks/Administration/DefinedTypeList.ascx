@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upSettings" runat="server">
     <ContentTemplate>
         <Rock:GridFilter ID="tFilter" runat="server">
-            <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" AutoPostBack="false" />
+            <Rock:RockDropDownList ID="ddlCategoryFilter" runat="server" Label="Category" AutoPostBack="false" />
         </Rock:GridFilter>
         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
         <Rock:Grid ID="gDefinedType" runat="server" AllowSorting="true" OnRowSelected="gDefinedType_Edit">

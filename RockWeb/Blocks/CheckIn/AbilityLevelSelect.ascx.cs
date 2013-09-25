@@ -36,7 +36,7 @@ namespace RockWeb.Blocks.CheckIn
             {
                 if ( !Page.IsPostBack )
                 {
-                    var abilityLevelDtGuid = new Guid( "7BEEF4D4-0860-4913-9A3D-857634D1BF7C" );
+                    var abilityLevelDtGuid = new Guid( Rock.SystemGuid.DefinedType.PERSON_ABILITY_LEVEL_TYPE );
                     
                     var family = CurrentCheckInState.CheckIn.Families.FirstOrDefault( f => f.Selected );
                     if ( family != null )
@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.CheckIn
                             {
                                 lPersonName.Text = person.ToString();
                                 person.Person.LoadAttributes();
-                                _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToLower();
+                                _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" );
 
                                 var abilityLevelDType = DefinedTypeCache.Read( abilityLevelDtGuid );
 
@@ -128,9 +128,9 @@ namespace RockWeb.Blocks.CheckIn
                     var person = family.People.Where( p => p.Selected ).FirstOrDefault();
                     if ( person != null )
                     {
-                        string selectedAbilityLevelGuid = e.CommandArgument.ToString().ToLower();
+                        string selectedAbilityLevelGuid = e.CommandArgument.ToString();
                         //person.Person.LoadAttributes();
-                        _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" ).ToLower();
+                        _personAbilityLevelGuid = person.Person.GetAttributeValue( "AbilityLevel" );
 
                         // Only save the ability level if it's changed
                         if ( _personAbilityLevelGuid != selectedAbilityLevelGuid )
@@ -140,7 +140,7 @@ namespace RockWeb.Blocks.CheckIn
                             if ( p != null )
                             {
                                 p.LoadAttributes();
-                                p.SetAttributeValue( "AbilityLevel", selectedAbilityLevelGuid );
+                                p.SetAttributeValue( "AbilityLevel", selectedAbilityLevelGuid.ToUpperInvariant() );
                                 Rock.Attribute.Helper.SaveAttributeValues( p, CurrentPersonId );
                             }
                         }
@@ -164,10 +164,11 @@ namespace RockWeb.Blocks.CheckIn
         protected void rSelection_ItemDataBound( object sender, RepeaterItemEventArgs e )
         {
             var dvalue = e.Item.DataItem as CachedModel<DefinedValue>;
+            var guid = dvalue.Guid.ToString().ToUpper();
 
             // Once we've hit the person's ability level -OR- if their level is not yet set, 
             // we stop lowlighting/disabling the buttons. 
-            if ( _shouldLowlight && ( _personAbilityLevelGuid == "" || dvalue.Guid.ToString() == _personAbilityLevelGuid ) )
+            if ( _shouldLowlight && ( _personAbilityLevelGuid == "" || guid == _personAbilityLevelGuid ) )
             {
                 _shouldLowlight = false;
             }
@@ -181,7 +182,7 @@ namespace RockWeb.Blocks.CheckIn
                 linkButton.AddCssClass( "btn-dimmed" );
             }
 
-            if ( dvalue.Guid.ToString() == _personAbilityLevelGuid )
+            if ( guid == _personAbilityLevelGuid )
             {
                 var linkButton = e.Item.FindControl( "lbSelect" ) as LinkButton;
                 linkButton.Text = string.Format( "{0} {1}", "<i class='icon-check-sign'> </i>", linkButton.Text );

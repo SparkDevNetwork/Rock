@@ -4,17 +4,17 @@
 <asp:UpdatePanel ID="upNotes" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlNotes" runat="server">
-            <section class="widget persontimeline">
+            <section class="panel panel-default panel-notes">
 
-                <header class="clearfix">
-                    <h4>
+                <div class="panel-heading clearfix">
+                    <h3 class="panel-title">
                         <i class="icon-calendar"></i>
                         <asp:Literal ID="lTitle" runat="server"></asp:Literal>
-                    </h4>
-                    <a class="btn btn-small add-note"><i class="icon-plus"></i></a>
-                </header>
+                    </h3>
+                    <a class="btn btn-sm btn-default add-note"><i class="icon-plus"></i></a>
+                </div>
 
-                <div class="widget-content">
+                <div class="panel-body">
 
                     <div class="note-entry clearfix" style="display: none;">
                         <div class="note">
@@ -26,11 +26,11 @@
                                 <asp:CheckBox ID="cbAlert" runat="server" Text="Alert" />
                                 <asp:CheckBox ID="cbPrivate" runat="server" Text="Private" />
                             </div>
-                            <button class="btn btn-mini security" type="button" id="btnSecurity" runat="server"><i class="icon-lock"></i> Security</button>
+                            <button class="btn btn-xs security" type="button" id="btnSecurity" runat="server"><i class="icon-lock"></i> Security</button>
                         </div>
                         <div class="actions">
                             <asp:LinkButton ID="btnAddNote" runat="server" CssClass="btn btn-primary btn-small" Text="Add Note" />
-                            <a class="add-note-cancel btn btn-small">Cancel</a>
+                            <a class="add-note-cancel btn btn-xs">Cancel</a>
                         </div>
 
                     </div>

@@ -101,7 +101,7 @@ namespace Rock.Web.UI.Controls
         DefaultValue( "" ),
         Description( "The text for the lblTitle." )
         ]
-        public string LabelText
+        public string Label
         {
             get
             {
@@ -150,7 +150,7 @@ Rock.controls.fileUploader.initialize({{
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            bool renderControlGroupDiv = ( !string.IsNullOrWhiteSpace( LabelText ) );
+            bool renderControlGroupDiv = ( !string.IsNullOrWhiteSpace( Label ) );
 
             if ( renderControlGroupDiv )
             {

@@ -16,11 +16,11 @@
 
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
-                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.BlockType, Rock" PropertyName="Name" LabelText="Name" />
+                <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.BlockType, Rock" PropertyName="Name" Label="Name" />
                 <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.BlockType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
                 <Rock:DataTextBox ID="tbPath" runat="server" SourceTypeName="Rock.Model.BlockType, Rock" PropertyName="Path" CssClass="input-xlarge" />
-                <Rock:LabeledText ID="lblStatus" runat="server" LabelText="Status" />
-                <Rock:LabeledBulletedList ID="lstPages" runat="server" LabelText="Pages that use this block type"/>
+                <Rock:RockLiteral ID="lblStatus" runat="server" Label="Status" />
+                <Rock:RockBulletedList ID="lstPages" runat="server" Label="Pages that use this block type"/>
             </fieldset>
 
             <div class="actions">

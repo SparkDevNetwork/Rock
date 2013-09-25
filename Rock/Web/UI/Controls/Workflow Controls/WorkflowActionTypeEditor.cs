@@ -28,9 +28,9 @@ namespace Rock.Web.UI.Controls
         private LinkButton lbDeleteActionType;
 
         private DataTextBox tbActionTypeName;
-        private LabeledDropDownList ddlEntityType;
-        private LabeledCheckBox cbIsActionCompletedOnSuccess;
-        private LabeledCheckBox cbIsActivityCompletedOnSuccess;
+        private RockDropDownList ddlEntityType;
+        private RockCheckBox cbIsActionCompletedOnSuccess;
+        private RockCheckBox cbIsActivityCompletedOnSuccess;
         private PlaceHolder phActionAttributes;
 
         public bool ForceContentVisible { get; set; }
@@ -157,11 +157,11 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
 
             tbActionTypeName = new DataTextBox();
             tbActionTypeName.ID = this.ID + "_tbActionTypeName";
-            tbActionTypeName.LabelText = "Name";
+            tbActionTypeName.Label = "Name";
 
-            ddlEntityType = new LabeledDropDownList();
+            ddlEntityType = new RockDropDownList();
             ddlEntityType.ID = this.ID + "_ddlEntityType";
-            ddlEntityType.LabelText = "Action Type";
+            ddlEntityType.Label = "Action Type";
 
             // make it autopostback since Attributes are dependant on which EntityType is selected
             ddlEntityType.AutoPostBack = true;
@@ -178,10 +178,10 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             tbActionTypeName.SourceTypeName = "Rock.Model.WorkflowActionType, Rock";
             tbActionTypeName.PropertyName = "Name";
 
-            cbIsActionCompletedOnSuccess = new LabeledCheckBox { LabelText = "Action is Completed on Success" };
+            cbIsActionCompletedOnSuccess = new RockCheckBox { Label = "Action is Completed on Success" };
             cbIsActionCompletedOnSuccess.ID = this.ID + "_cbIsActionCompletedOnSuccess";
 
-            cbIsActivityCompletedOnSuccess = new LabeledCheckBox { LabelText = "Activity is Completed on Success" };
+            cbIsActivityCompletedOnSuccess = new RockCheckBox { Label = "Activity is Completed on Success" };
             cbIsActivityCompletedOnSuccess.ID = this.ID + "_cbIsActivityCompletedOnSuccess";
 
             phActionAttributes = new PlaceHolder();

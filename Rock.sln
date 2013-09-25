@@ -44,6 +44,8 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "RockWeb", "http://localhost
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Version", "Rock.Version\Rock.Version.csproj", "{381A2FC8-6F4F-4B66-A9B4-14932D43B76A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.PayFlowPro", "Rock.PayFlowPro\Rock.PayFlowPro.csproj", "{05F3587D-86DD-4CF3-A80A-D8CF598E1FD1}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Rock.vsmdi
@@ -127,6 +129,16 @@ Global
 		{381A2FC8-6F4F-4B66-A9B4-14932D43B76A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{381A2FC8-6F4F-4B66-A9B4-14932D43B76A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{381A2FC8-6F4F-4B66-A9B4-14932D43B76A}.Release|x86.ActiveCfg = Release|Any CPU
+		{05F3587D-86DD-4CF3-A80A-D8CF598E1FD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05F3587D-86DD-4CF3-A80A-D8CF598E1FD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05F3587D-86DD-4CF3-A80A-D8CF598E1FD1}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{05F3587D-86DD-4CF3-A80A-D8CF598E1FD1}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{05F3587D-86DD-4CF3-A80A-D8CF598E1FD1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{05F3587D-86DD-4CF3-A80A-D8CF598E1FD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05F3587D-86DD-4CF3-A80A-D8CF598E1FD1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05F3587D-86DD-4CF3-A80A-D8CF598E1FD1}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{05F3587D-86DD-4CF3-A80A-D8CF598E1FD1}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{05F3587D-86DD-4CF3-A80A-D8CF598E1FD1}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

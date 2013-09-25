@@ -8,19 +8,18 @@
 
     <div class="container">
 	  	<header>
-		  	<div class="row-fluid identity">
-			  	<div class="span6">
-			  		<img class="logo" src="./assets/img/rocksolidchurchlogo.svg">
+		  	<div class="row identity">
+			  	<div class="col-md-6">
                     <asp:HyperLink ID="hlLogo" runat="server" NavigateUrl="~" >
                         <asp:Image ID="imgLogo" runat="server" ImageUrl="~/Themes/GrayFabric/Assets/Images/rocksolidchurchlogo.svg" CssClass="logo" />
                     </asp:HyperLink>
 			  	</div>
                 <Rock:Zone ID="Heading" Name="Header" runat="server" />
-			  	<div class="span3 service-times">
+			  	<div class="col-md-3 service-times">
 			  		<i class="icon-time"></i> <span class="bold">Service Times</span>
 				  	<br><span class="light">Sunday 9am, 10:30am and Noon</span>
 			  	</div>
-			  	<div class="span3 my-account">My Account</div>
+			  	<div class="col-md-3 my-account">My Account</div>
 			</div>
 	  		
            <Rock:Zone ID="Navigation" runat="server" />
@@ -33,11 +32,11 @@
   	<div id="content" class="container"> 
         <h1 class="page-title"><Rock:PageTitle ID="PageTitle" runat="server" /></h1>
 
-  	    <div class="row-fluid">
-            <div class="span3">
+  	    <div class="row">
+            <div class="col-md-3">
                 <Rock:Zone ID="Sidebar" runat="server" />
             </div>
-            <div class="span9">
+            <div class="col-md-9">
                 <Rock:Zone ID="Main" runat="server" />
             </div>
         </div>

@@ -15,10 +15,10 @@
     <Node Id="WebActivatorEx 2.0.1" Label="WebActivatorEx 2.0.1" Category="Package" />
     <Node Id="WebGrease 1.1.0" Label="WebGrease 1.1.0" Category="Package" />
     <Node Id="Rock.Tests" Label="Rock.Tests" Category="Project" />
+    <Node Id="EntityFramework 6.0.0-beta1" Label="EntityFramework 6.0.0-beta1" Category="Package" />
     <Node Id="Newtonsoft.Json 5.0.3" Label="Newtonsoft.Json 5.0.3" Category="Package" />
     <Node Id="NUnit 2.6.2" Label="NUnit 2.6.2" Category="Package" />
     <Node Id="Rock.Rest" Label="Rock.Rest" Category="Project" />
-    <Node Id="EntityFramework 5.0.0" Label="EntityFramework 5.0.0" Category="Package" />
     <Node Id="Microsoft.AspNet.WebApi.Client 4.0.20710.0" Label="Microsoft.AspNet.WebApi.Client 4.0.20710.0" Category="Package" />
     <Node Id="Microsoft.AspNet.WebApi.Core 4.0.20710.0" Label="Microsoft.AspNet.WebApi.Core 4.0.20710.0" Category="Package" />
     <Node Id="Microsoft.AspNet.WebApi.OData 4.0.1" Label="Microsoft.AspNet.WebApi.OData 4.0.1" Category="Package" />
@@ -30,7 +30,7 @@
     <Node Id="Rock" Label="Rock" Category="Project" />
     <Node Id="AjaxControlToolkit 7.0429" Label="AjaxControlToolkit 7.0429" Category="Package" />
     <Node Id="DDay.iCal 1.0.2.575" Label="DDay.iCal 1.0.2.575" Category="Package" />
-    <Node Id="EntityFramework 5.0.0" Label="EntityFramework 5.0.0" Category="Package" />
+    <Node Id="EntityFramework 6.0.0-beta1" Label="EntityFramework 6.0.0-beta1" Category="Package" />
     <Node Id="Facebook 6.4.0" Label="Facebook 6.4.0" Category="Package" />
     <Node Id="Microsoft.AspNet.Web.Optimization 1.0.0" Label="Microsoft.AspNet.Web.Optimization 1.0.0" Category="Package" />
     <Node Id="Microsoft.Web.Infrastructure 1.0.0.0" Label="Microsoft.Web.Infrastructure 1.0.0.0" Category="Package" />
@@ -54,6 +54,7 @@
     <Link Source="RockWeb" Target="Microsoft.AspNet.WebApi 4.0.20710.0" Category="Installed Package" />
     <Link Source="RockWeb" Target="NuGet.Core 2.2.0" Category="Installed Package" />
     <Link Source="RockWeb" Target="WebActivatorEx 2.0.1" Category="Installed Package" />
+    <Link Source="Rock.Tests" Target="EntityFramework 6.0.0-beta1" Category="Installed Package" />
     <Link Source="Rock.Tests" Target="Newtonsoft.Json 5.0.3" Category="Installed Package" />
     <Link Source="Rock.Tests" Target="NUnit 2.6.2" Category="Installed Package" />
     <Link Source="Microsoft.AspNet.WebApi.Client 4.0.20710.0" Target="Microsoft.Net.Http 2.0.20710.0" Category="Package Dependency" />
@@ -65,11 +66,10 @@
     <Link Source="Microsoft.AspNet.WebApi.OData 4.0.1" Target="Microsoft.Data.OData 5.4.0" Category="Package Dependency" />
     <Link Source="Microsoft.Data.OData 5.4.0" Target="System.Spatial 5.4.0" Category="Package Dependency" />
     <Link Source="Microsoft.Data.OData 5.4.0" Target="Microsoft.Data.Edm 5.4.0" Category="Package Dependency" />
-    <Link Source="Rock.Rest" Target="EntityFramework 5.0.0" Category="Installed Package" />
     <Link Source="Rock.Rest" Target="Microsoft.AspNet.WebApi.OData 4.0.1" Category="Installed Package" />
     <Link Source="Microsoft.AspNet.Web.Optimization 1.0.0" Target="Microsoft.Web.Infrastructure 1.0.0.0" Category="Package Dependency" />
     <Link Source="Microsoft.AspNet.Web.Optimization 1.0.0" Target="WebGrease 1.1.0" Category="Package Dependency" />
-    <Link Source="T4Scaffolding 1.0.5" Target="EntityFramework 5.0.0" Category="Package Dependency" />
+    <Link Source="T4Scaffolding 1.0.5" Target="EntityFramework 6.0.0-beta1" Category="Package Dependency" />
     <Link Source="Rock" Target="AjaxControlToolkit 7.0429" Category="Installed Package" />
     <Link Source="Rock" Target="DDay.iCal 1.0.2.575" Category="Installed Package" />
     <Link Source="Rock" Target="Facebook 6.4.0" Category="Installed Package" />
