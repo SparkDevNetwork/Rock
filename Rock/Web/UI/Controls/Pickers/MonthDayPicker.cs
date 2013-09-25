@@ -28,8 +28,9 @@ namespace Rock.Web.UI.Controls
                 this.PropertyName = "SelectedDate";
             }
 
-            var script = string.Format( @"Rock.controls.datePicker.initialize({{ id: '{0}', format: 'MM/dd', start: 'month', depth: 'month' }});", this.ClientID );
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "date_picker-" + this.ClientID, script, true );
+            // #TODO# Decide how we want to design this control.  Two DropDownLists?
+            //var script = string.Format( @"Rock.controls.datePicker.initialize({{ id: '{0}', format: 'mm/dd', startView: 'month', minViewMode: 'month' }});", this.ClientID );
+            //ScriptManager.RegisterStartupScript( this, this.GetType(), "date_picker-" + this.ClientID, script, true );
         }
 
         /// <summary>
