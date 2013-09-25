@@ -18,7 +18,8 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            DeleteBlock( "CCD4F459-2E0A-40C6-8DE3-AD512AE9CA74" );
+            DeleteBlock( "9126CFA2-9B26-4FBB-BB87-F76514221DBE" );
+            DeleteBlockType( "CCD4F459-2E0A-40C6-8DE3-AD512AE9CA74" );
             
             AddPage("84DB9BA0-2725-40A5-A3CA-9A1C043C31B0","Metric Detail","","Default","574544A8-4831-4DAB-8BCE-B2C9B3D188AF","");      
             AddBlockType("Administration - Metric List","","~/Blocks/Administration/MetricList.ascx","AE70E6C4-A34C-4D05-A13C-CE0ABE2A6B5B");
@@ -59,7 +60,12 @@ namespace Rock.Migrations
             DeleteBlockType("819C3597-4A93-4974-B1E9-4D065989EA25"); // Administration - Metric Value List
             DeleteBlockType("AE70E6C4-A34C-4D05-A13C-CE0ABE2A6B5B"); // Administration - Metric List
             DeleteBlockType("CE769F0A-722F-4745-A6A8-7F00548CD1D2"); // Administration - Metric Detail
-            DeletePage("574544A8-4831-4DAB-8BCE-B2C9B3D188AF"); // Metric Detail            
+            DeletePage("574544A8-4831-4DAB-8BCE-B2C9B3D188AF"); // Metric Detail         
+
+            AddBlockType( "Administration - Metrics", "", "~/Blocks/Administration/Metrics.ascx", "CCD4F459-2E0A-40C6-8DE3-AD512AE9CA74" );
+            AddBlock( "84DB9BA0-2725-40A5-A3CA-9A1C043C31B0", "CCD4F459-2E0A-40C6-8DE3-AD512AE9CA74", "Metrics", "", "Content", 0, "9126CFA2-9B26-4FBB-BB87-F76514221DBE" );
+
+            
         }
     }
 }
