@@ -20,7 +20,7 @@
                         <Rock:DataTextBox ID="tbSiteName" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="Name" />
                         <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
                         <Rock:DataDropDownList ID="ddlTheme" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="Theme" />
-                        <Rock:PagePicker ID="ppDefaultPage" runat="server" LabelText="Default Page" Required="true" PromptForPageRoute="true"/>
+                        <Rock:PagePicker ID="ppDefaultPage" runat="server" Label="Default Page" Required="true" PromptForPageRoute="true"/>
                         <Rock:DataTextBox ID="tbLoginPageReference" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="LoginPageReference" />
                     </div>
                     <div class="span6">

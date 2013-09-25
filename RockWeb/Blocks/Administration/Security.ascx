@@ -96,7 +96,7 @@
         
             <fieldset>
                 <legend>Select Role to Add</legend>
-                <Rock:LabeledDropDownList ID="ddlRoles" runat="server" LabelText="Role" AutoPostBack="true" onselectedindexchanged="ddlRoles_SelectedIndexChanged" />
+                <Rock:RockDropDownList ID="ddlRoles" runat="server" Label="Role" AutoPostBack="true" onselectedindexchanged="ddlRoles_SelectedIndexChanged" />
                 <dl>
                     <dt></dt>
                     <dd>
@@ -117,7 +117,7 @@
         
             <fieldset>
                 <legend>Select User to Add</legend>
-                <Rock:LabeledTextBox ID="tbUser" runat="server" LabelText="User" />
+                <Rock:RockTextBox ID="tbUser" runat="server" Label="User" />
                 <dl>
                     <dt></dt>
                     <dd>

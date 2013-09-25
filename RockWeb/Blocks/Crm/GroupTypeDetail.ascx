@@ -20,21 +20,21 @@
                         <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Description" />
                         <Rock:DataTextBox ID="tbGroupTerm" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="GroupTerm" />
                         <Rock:DataTextBox ID="tbGroupMemberTerm" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="GroupMemberTerm" />
-                        <Rock:DataDropDownList ID="ddlDefaultGroupRole" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="Name" LabelText="Default Group Role" />
-                        <Rock:LabeledCheckBox ID="cbShowInGroupList" runat="server" LabelText="Show in Group Lists" />
-                        <Rock:LabeledCheckBox ID="cbShowInNavigation" runat="server" LabelText="Show in Navigation" Help="Check the box to show in navigation controls such as TreeViews and Menus." />
+                        <Rock:DataDropDownList ID="ddlDefaultGroupRole" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="Name" Label="Default Group Role" />
+                        <Rock:RockCheckBox ID="cbShowInGroupList" runat="server" Label="Show in Group Lists" />
+                        <Rock:RockCheckBox ID="cbShowInNavigation" runat="server" Label="Show in Navigation" Help="Check the box to show in navigation controls such as TreeViews and Menus." />
                         <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="IconCssClass" />
-                        <Rock:ImageUploader ID="imgIconSmall" runat="server" LabelText="Small Icon Image" />
-                        <Rock:ImageUploader ID="imgIconLarge" runat="server" LabelText="Large Icon Image" />
+                        <Rock:ImageUploader ID="imgIconSmall" runat="server" Label="Small Icon Image" />
+                        <Rock:ImageUploader ID="imgIconLarge" runat="server" Label="Large Icon Image" />
                     </div>
                     <div class="span6">
-                        <Rock:LabeledCheckBox ID="cbTakesAttendance" runat="server" LabelText="Takes Attendance" />
-                        <Rock:LabeledDropDownList ID="ddlAttendanceRule" runat="server" LabelText="Attendance Rule" />
-                        <Rock:LabeledDropDownList ID="ddlAttendancePrintTo" runat="server" LabelText="Attendance Print To" />
-                        <Rock:LabeledCheckBox ID="cbAllowMultipleLocations" runat="server" LabelText="Allow Multiple Locations" />
-                        <Rock:LabeledDropDownList ID="ddlLocationSelectionMode" runat="server" LabelText="Location Selection Mode" Help="The selection mode to use when adding locations to groups of this type" />
-                        <Rock:LabeledDropDownList ID="ddlGroupTypePurpose" runat="server" LabelText="Purpose" Help="Define a specific purpose for this group type <span class='label'>Defined Value</span>" />
-                        <Rock:GroupTypePicker ID="gtpInheritedGroupType" runat="server" LabelText="Inherited Group Type" Help="Group Type to inherit properties and attributes from" AutoPostBack="true" OnSelectedIndexChanged="gtpInheritedGroupType_SelectedIndexChanged" />
+                        <Rock:RockCheckBox ID="cbTakesAttendance" runat="server" Label="Takes Attendance" />
+                        <Rock:RockDropDownList ID="ddlAttendanceRule" runat="server" Label="Attendance Rule" />
+                        <Rock:RockDropDownList ID="ddlAttendancePrintTo" runat="server" Label="Attendance Print To" />
+                        <Rock:RockCheckBox ID="cbAllowMultipleLocations" runat="server" Label="Allow Multiple Locations" />
+                        <Rock:RockDropDownList ID="ddlLocationSelectionMode" runat="server" Label="Location Selection Mode" Help="The selection mode to use when adding locations to groups of this type" />
+                        <Rock:RockDropDownList ID="ddlGroupTypePurpose" runat="server" Label="Purpose" Help="Define a specific purpose for this group type <span class='label'>Defined Value</span>" />
+                        <Rock:GroupTypePicker ID="gtpInheritedGroupType" runat="server" Label="Inherited Group Type" Help="Group Type to inherit properties and attributes from" AutoPostBack="true" OnSelectedIndexChanged="gtpInheritedGroupType_SelectedIndexChanged" />
                         <div class="control-group">
                             <h5>Group Type Attributes
                             </h5>
@@ -98,7 +98,7 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlChildGroupTypePicker" runat="server" Visible="false">
-            <Rock:DataDropDownList ID="ddlChildGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" LabelText="Select Child Group Type" />
+            <Rock:DataDropDownList ID="ddlChildGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" Label="Select Child Group Type" />
 
             <div class="actions">
                 <asp:LinkButton ID="btnAddChildGroupType" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddChildGroupType_Click"></asp:LinkButton> 
@@ -107,7 +107,7 @@
         </asp:Panel>
 
         <asp:Panel ID="pnlLocationTypePicker" runat="server" Visible="false">
-            <Rock:DataDropDownList ID="ddlLocationType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Name" LabelText="Select Location Type" />
+            <Rock:DataDropDownList ID="ddlLocationType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Name" Label="Select Location Type" />
 
             <div class="actions">
                 <asp:LinkButton ID="btnAddLocationType" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddLocationType_Click"></asp:LinkButton> 

@@ -13,7 +13,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class CampusesPicker : LabeledCheckBoxList
+    public class CampusesPicker : RockCheckBoxList
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CampusPicker" /> class.
@@ -21,7 +21,7 @@ namespace Rock.Web.UI.Controls
         public CampusesPicker()
             : base()
         {
-            LabelText = "Campuses";
+            Label = "Campuses";
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-﻿/*!
+/*!
  *  Font Awesome 3.2.1
  *  the iconic font designed for Bootstrap
  *  ------------------------------------------------------------------------------
@@ -52,7 +52,7 @@
 /* makes the font 33% larger relative to the icon container */
 .icon-large:before {
   vertical-align: -10%;
-  font-size: 1.3333333333333332em;
+  font-size: 1.3333333333333333em;
 }
 /* makes sure icons active on rollover in links */
 a [class^="icon-"],
@@ -1740,7 +1740,7 @@ body {
   font-family: 'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-size: 14px;
   line-height: 1.428571429;
-  color: #515151;
+  color: #d4d4d4;
   background-color: #f4f4f4;
 }
 input,
@@ -1856,10 +1856,10 @@ cite {
   color: #356635;
 }
 .text-info {
-  color: #515151;
+  color: #d4d4d4;
 }
 .text-info:hover {
-  color: #373737;
+  color: #bbbbbb;
 }
 .text-left {
   text-align: left;
@@ -1885,7 +1885,7 @@ h6,
   font-family: 'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   font-weight: 500;
   line-height: 1.1;
-  color: inherit;
+  color: #c9c9c9;
 }
 h1 small,
 h2 small,
@@ -3235,7 +3235,7 @@ textarea.input-lg {
   display: block;
   margin-top: 5px;
   margin-bottom: 10px;
-  color: #919191;
+  color: #ffffff;
 }
 @media (min-width: 768px) {
   .form-inline .form-group {
@@ -4817,7 +4817,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .nav > li > a:hover,
 .nav > li > a:focus {
   text-decoration: none;
-  background-color: #eeeeee;
+  background-color: rgba(119, 119, 119, 0.3);
 }
 .nav > li.disabled > a {
   color: #999999;
@@ -4832,7 +4832,7 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .nav .open > a,
 .nav .open > a:hover,
 .nav .open > a:focus {
-  background-color: #eeeeee;
+  background-color: rgba(119, 119, 119, 0.3);
   border-color: #428bca;
 }
 .nav .nav-divider {
@@ -5884,7 +5884,7 @@ a.thumbnail:focus {
 }
 .thumbnail .caption {
   padding: 9px;
-  color: #515151;
+  color: #d4d4d4;
 }
 .alert {
   padding: 15px;
@@ -5929,13 +5929,13 @@ a.thumbnail:focus {
 .alert-info {
   background-color: #e7ecf0;
   border-color: #d1dde2;
-  color: #515151;
+  color: #d4d4d4;
 }
 .alert-info hr {
   border-top-color: #c1d2d8;
 }
 .alert-info .alert-link {
-  color: #373737;
+  color: #bbbbbb;
 }
 .alert-warning {
   background-color: #fcf8e3;
@@ -6158,7 +6158,7 @@ a.list-group-item:focus {
 }
 .panel {
   margin-bottom: 20px;
-  background-color: #e7ecf0;
+  background-color: rgba(159, 159, 159, 0.1);
   border: 1px solid transparent;
   border-radius: 4px;
   -webkit-box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
@@ -6282,18 +6282,18 @@ a.list-group-item:focus {
   border-bottom: 1px solid #dddddd;
 }
 .panel-default {
-  border-color: #dddddd;
+  border-color: rgba(134, 134, 134, 0.1);
 }
 .panel-default > .panel-heading {
-  color: #333333;
-  background-color: #f5f5f5;
-  border-color: #dddddd;
+  color: #d4d4d4;
+  background-color: rgba(134, 134, 134, 0.1);
+  border-color: rgba(134, 134, 134, 0.1);
 }
 .panel-default > .panel-heading + .panel-collapse .panel-body {
-  border-top-color: #dddddd;
+  border-top-color: rgba(134, 134, 134, 0.1);
 }
 .panel-default > .panel-footer + .panel-collapse .panel-body {
-  border-bottom-color: #dddddd;
+  border-bottom-color: rgba(134, 134, 134, 0.1);
 }
 .panel-primary {
   border-color: #428bca;
@@ -6355,7 +6355,7 @@ a.list-group-item:focus {
   border-color: #d1dde2;
 }
 .panel-info > .panel-heading {
-  color: #515151;
+  color: #d4d4d4;
   background-color: #e7ecf0;
   border-color: #d1dde2;
 }
@@ -7518,7 +7518,7 @@ td.visible-print {
   position: relative;
 }
 .picker .scroll-container-picker {
-  width: 360px;
+  width: 355px;
 }
 .picker .scroll-container-picker .viewport {
   width: 340px;
@@ -7527,12 +7527,36 @@ td.visible-print {
 .picker .scroll-container-picker .scrollbar {
   margin-top: 10px;
 }
+.picker h4 {
+  font-size: 14px;
+  font-weight: 600;
+}
+.picker .picker-select {
+  padding: 0;
+}
+.picker .picker-menu {
+  width: 370px;
+  padding: 10px;
+}
+.picker .picker-menu h4:first-child {
+  margin-top: 0;
+}
 .picker .picker-actions {
   background-color: #e7ecf0;
   padding: 10px;
   border-top: 1px solid #d9e1e8;
   border-radius: 0 0 4px 4px;
-  margin-bottom: -5px;
+  margin: 0 -10px -10px -10px;
+}
+.picker .picker-select-item-details {
+  margin-left: 20px;
+}
+.picker .picker-select-item-details img {
+  float: left;
+}
+.picker .picker-select-item-details .contents {
+  float: left;
+  margin-left: 5px;
 }
 #dialog .scroll-container-picker {
   width: 360px;
@@ -7651,7 +7675,7 @@ td.visible-print {
 }
 .widget header {
   background-color: #e7ecf0;
-  color: #515151;
+  color: #d4d4d4;
   padding: 6px 15px;
   border-radius: 4px 4px 0 0;
 }
@@ -7682,7 +7706,7 @@ td.visible-print {
   border-radius: 4px;
   border: 1px solid #cccccc;
   background: #f4f4f4;
-  color: #515151;
+  color: #d4d4d4;
   padding: 0;
   font-size: 0;
   line-height: 0;
@@ -7941,7 +7965,7 @@ td.visible-print {
   margin: -8px -10px 8px -10px;
   padding: 8px 10px;
   border-radius: 4px;
-  color: #515151;
+  color: #d4d4d4;
 }
 .tooltipster-content strong {
   font-weight: 600;
@@ -7963,7 +7987,7 @@ td.visible-print {
   margin: 0 2% 12px 2%;
   width: 20%;
   overflow: hidden;
-  color: #515151;
+  color: #d4d4d4;
   text-align: center;
   height: 80px;
 }
@@ -8370,6 +8394,8 @@ div.tagsinput div {
     2. HTML Content - block to edit HTML on a page
     3. Login - block to allow logins
     4. Notes - block to display, add, edit, delete notes
+    5. Add Family - block to add families to the database
+    6. Contributions - block add a contribution transaction
 
 */
 .sql-comand .panel {
@@ -8419,7 +8445,7 @@ span.cke_skin_kama {
 }
 .alt-authentication .btn-authenication {
   background-color: #d9e1e8;
-  color: #515151;
+  color: #d4d4d4;
 }
 .alt-authentication .btn-authenication:hover {
   background-color: #b9c8d5;
@@ -8483,7 +8509,7 @@ span.cke_skin_kama {
 .panel-notes article.personal {
   background-color: #e7ecf0;
   border: 1px solid #dee7ea;
-  color: #515151;
+  color: #d4d4d4;
 }
 .panel-notes article.personal i {
   color: #dee7ea;
@@ -8500,9 +8526,9 @@ span.cke_skin_kama {
   border-color: #d9e1e8;
 }
 .panel-noteentry > .panel-heading {
-  color: #515151;
-  background-color: #515151;
-  border-color: #515151;
+  color: #d4d4d4;
+  background-color: #d4d4d4;
+  border-color: #d4d4d4;
 }
 .panel-noteentry > .panel-heading + .panel-collapse .panel-body {
   border-top-color: #d9e1e8;
@@ -8515,6 +8541,12 @@ span.cke_skin_kama {
 }
 .panel-noteentry .panel-footer {
   background-color: #d9e1e8;
+}
+.table-familymembers .radio:first-child {
+  margin-top: 0;
+}
+.contribution-payment .tab-content {
+  margin-top: 12px;
 }
 /*
     Used to manage styles related to the CMS admin UI for on page editing
@@ -8546,7 +8578,7 @@ span.cke_skin_kama {
   top: 1px;
   left: 1px;
   width: 25px;
-  z-index: 40;
+  z-index: 11000;
   right: auto;
 }
 .zone-configuration-bar {
@@ -8580,7 +8612,7 @@ span.cke_skin_kama {
   position: absolute;
   top: 2px;
   width: 26px;
-  z-index: 40;
+  z-index: 11000;
 }
 .block-instance.outline {
   min-height: 36px;
@@ -8720,7 +8752,7 @@ td[align=center] {
   font-weight: 300;
 }
 .grid-filter header i {
-  color: #848484;
+  color: #ffffff;
 }
 .grid-filter header fieldset {
   margin-bottom: 0;
@@ -8796,7 +8828,7 @@ td[align=center] {
 }
 .table-light thead th {
   background-color: inherit;
-  color: #515151;
+  color: #d4d4d4;
   font-weight: 700;
 }
 .table-light tfoot td {
@@ -8840,7 +8872,7 @@ td[align=center] {
   width: 720px;
 }
 .modal-body .scroll-container .viewport {
-  width: 690px;
+  width: 670px;
 }
 .modal-body.iframe {
   background: url("../assets/images/ajax-loading.png") center center no-repeat;
@@ -8893,11 +8925,11 @@ td[align=center] {
 
   padding: 12px 16px;
   background-color: #d9e1e8;
-  color: #515151;
+  color: #d4d4d4;
 }
 legend {
   font-weight: 300;
-  color: #515151;
+  color: #d4d4d4;
   border-width: 0;
 }
 dl {
@@ -8958,19 +8990,19 @@ dl dd {
   padding-left: 0;
 }
 .persondetails-header a.persondetails-actions.dropdown-toggle {
-  color: #515151;
+  color: #d4d4d4;
   padding: 2px 15px;
 }
 .persondetails-header a.persondetails-actions.dropdown-toggle .caret {
-  border-top: 4px solid #515151;
+  border-top: 4px solid #d4d4d4;
 }
 .persondetails-header a.persondetails-actions.dropdown-toggle:hover,
 .persondetails-header a.persondetails-actions.dropdown-toggle:focus {
-  color: #6a6a6a;
+  color: #eeeeee;
 }
 .persondetails-header a.persondetails-actions.dropdown-toggle:hover .caret,
 .persondetails-header a.persondetails-actions.dropdown-toggle:focus .caret {
-  border-top: 4px solid #6a6a6a;
+  border-top: 4px solid #eeeeee;
 }
 .persondetails-header .dropdown-menu {
   text-align: left;
@@ -9078,7 +9110,7 @@ dl dd {
     margin-left: 0;
 }*/
 .persondetails small {
-  color: #848484;
+  color: #ffffff;
 }
 /*
     Used to manage styles related to Rock's internal scrollbar
@@ -9106,6 +9138,7 @@ dl dd {
   position: absolute;
   left: 0;
   top: 0;
+  width: 100%;
 }
 .scroll-container .scrollbar {
   position: relative;
@@ -9296,7 +9329,7 @@ textarea.k-textbox:hover,
 .k-popup,
 .k-content,
 .k-dropdown .k-input {
-  color: #515151;
+  color: #d4d4d4;
 }
 .k-link:link,
 .k-link:visited,
@@ -9305,7 +9338,7 @@ textarea.k-textbox:hover,
 }
 .k-tabstrip-items .k-link,
 .k-panelbar > li > .k-link {
-  color: #515151;
+  color: #d4d4d4;
 }
 .k-header {
   color: #bbbbbb;
@@ -9412,7 +9445,7 @@ textarea.k-textbox:hover,
 .k-scheduler-datecolumn,
 .k-scheduler-groupcolumn {
   background-color: #ffffff;
-  color: #515151;
+  color: #d4d4d4;
 }
 .k-scheduler-times tr,
 .k-scheduler-times th,
@@ -9440,7 +9473,7 @@ textarea.k-textbox:hover,
 }
 .k-ie7 .k-event .k-resize-handle,
 .k-event .k-resize-handle:after {
-  background-color: #515151;
+  background-color: #d4d4d4;
 }
 .k-scheduler-marquee:before,
 .k-scheduler-marquee:after {
@@ -9483,7 +9516,7 @@ textarea.k-textbox:hover,
   border-color: #779cb1;
 }
 .k-calendar .k-link {
-  color: #515151;
+  color: #d4d4d4;
 }
 .k-calendar .k-footer {
   padding: 0;
@@ -9670,7 +9703,7 @@ div.k-imagebrowser-dropzone em {
   border-color: #47687b;
 }
 .k-dropdown .k-state-focused .k-input {
-  color: #515151;
+  color: #d4d4d4;
 }
 .k-dropdown .k-state-hover .k-input {
   color: #ffffff;
@@ -10179,7 +10212,7 @@ div.k-imagebrowser-dropzone em {
 }
 .k-tabstrip .k-content.k-state-active {
   background-color: #ffffff;
-  color: #515151;
+  color: #d4d4d4;
 }
 .k-menu.k-header,
 .k-menu .k-item {
@@ -10370,6 +10403,9 @@ fieldset .actions {
   padding: 2px 12px;
   border: 1px solid transparent;
 }
+.k-treeview .k-item {
+  padding: 0;
+}
 /* user registration styles */
 .not-me {
   margin-left: 21px;
@@ -10434,22 +10470,15 @@ fieldset .actions {
 .right-align {
   text-align: right;
 }
-.bold {
-  font-weight: 700;
-}
 a:hover {
   text-decoration: none;
 }
 .title-image {
   width: 100%;
 }
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  color: #c9c9c9;
+.panel-title {
+  font-size: 18px;
+  font-weight: 600;
 }
 body {
   background: url('../Assets/Images/background.jpg');
@@ -10484,31 +10513,27 @@ header {
 header .identity {
   margin-bottom: 8px;
 }
-header .logo {
+header .identity .logo {
   width: 100%;
   max-width: 400px;
   min-width: 200px;
 }
-header .my-account {
+header .identity .my-account {
   text-align: right;
+  margin-top: 14px;
 }
-header .service-times {
+header .identity .service-times {
   margin-top: 2px;
 }
-header .service-times .bold,
-header .service-times i {
+header .identity .service-times .bold,
+header .identity .service-times i {
   font-size: 18px;
-}
-header .my-account {
-  margin-top: 14px;
 }
 header .navbar {
   margin-bottom: 0;
   box-shadow: 0 10px 18px -4px rgba(0, 0, 0, 0.5);
   z-index: 10000;
   position: relative;
-}
-header .navbar-inner {
   background: #6c6c6c;
   background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzZjNmM2YyIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM0YjRiNGIiIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
   background: -moz-linear-gradient(top, #6c6c6c 0%, #4b4b4b 100%);
@@ -10521,17 +10546,16 @@ header .navbar-inner {
   border: 0;
   border-radius: 0;
 }
-header .navbar .nav > li > a {
+header .navbar .nav li {
+  border-right: 1px solid #a9a9a9;
+}
+header .navbar .nav li:first-child {
+  border-left: 1px solid #a9a9a9;
+}
+header .navbar .nav li > a {
   color: #e6e4e4;
   text-shadow: 0 1px 0 rgba(0, 0, 0, 0.8);
   font-weight: 600;
-}
-header .navbar .nav > li:hover > a {
-  color: #a9a9a9;
-}
-header .navbar .divider-vertical {
-  border-left: 1px solid #7c7c7c;
-  border-right: 0;
 }
 .promo-slider {
   margin-bottom: 20px;
@@ -10543,6 +10567,7 @@ header .navbar .divider-vertical {
 .promo-secondary ul {
   list-style: none;
   margin: 40px 0 0 0;
+  padding: 0;
 }
 .promo-secondary li {
   float: left;
@@ -10600,7 +10625,7 @@ section.contact .traditional .info .bold {
 }
 #content {
   margin-top: 48px;
-  color: #515151;
+  color: #d4d4d4;
 }
 footer {
   margin-top: 40px;

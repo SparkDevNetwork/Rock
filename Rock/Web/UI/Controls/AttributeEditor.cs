@@ -35,9 +35,9 @@ namespace Rock.Web.UI.Controls
         private List<Control> QualifierControls;
         private Control DefaultValueControl;
 
-        private LabeledCheckBox cbMultiValue;
-        private LabeledCheckBox cbRequired;
-        private LabeledCheckBox cbShowInGrid;
+        private RockCheckBox cbMultiValue;
+        private RockCheckBox cbRequired;
+        private RockCheckBox cbShowInGrid;
 
         // buttons
         private LinkButton btnSave;
@@ -72,9 +72,9 @@ namespace Rock.Web.UI.Controls
             ddlFieldType.AutoPostBack = true;
             ddlFieldType.SelectedIndexChanged += ddlFieldType_SelectedIndexChanged;
 
-            cbMultiValue = new LabeledCheckBox();
-            cbRequired = new LabeledCheckBox();
-            cbShowInGrid = new LabeledCheckBox();
+            cbMultiValue = new RockCheckBox();
+            cbRequired = new RockCheckBox();
+            cbShowInGrid = new RockCheckBox();
         }
 
         void ddlFieldType_SelectedIndexChanged( object sender, EventArgs e )
@@ -444,7 +444,7 @@ namespace Rock.Web.UI.Controls
             cvKey.ErrorMessage = "There is already an existing property with the key value you entered.  Please select a different key value";
             Controls.Add( cvKey );
 
-            cpCategories.LabelText = "Categories";
+            cpCategories.Label = "Categories";
             cpCategories.ID = string.Format( "cpCategories_{0}", this.ID );
             cpCategories.AllowMultiSelect = true;
             cpCategories.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
@@ -459,7 +459,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( tbDescription );
 
             ddlFieldType.ID = string.Format( "ddlFieldType_{0}", this.ID );
-            ddlFieldType.LabelText = "Field Type";
+            ddlFieldType.Label = "Field Type";
             ddlFieldType.SourceTypeName = "Rock.Model.FieldType, Rock";
             ddlFieldType.PropertyName = "Name";
             ddlFieldType.AutoPostBack = true;
@@ -490,15 +490,19 @@ namespace Rock.Web.UI.Controls
             }
 
             cbMultiValue.ID = string.Format( "cbMultiValue_{0}", this.ID );
-            cbMultiValue.Text = "Allow Multiple Values";
+            cbMultiValue.Label = "Allow Multiple Values";
+            cbMultiValue.Text = "Yes";
             Controls.Add( cbMultiValue );
 
             cbRequired.ID = string.Format( "cbRequired_{0}", this.ID );
-            cbRequired.Text = "Required";
+            cbRequired.Label = "Required";
+            cbRequired.Text = "Require a value";
             Controls.Add( cbRequired );
 
             cbShowInGrid.ID = string.Format( "cbShowInGrid_{0}", this.ID );
-            cbShowInGrid.Text = "Show in Grid";
+            cbShowInGrid.Label = "Show in Grid";
+            cbShowInGrid.Text = "Yes";
+            cbShowInGrid.Help = "When items are displayed in a grid, should this attribute be included as a column on the grid?"; 
             Controls.Add( cbShowInGrid );
 
             btnSave = new LinkButton { ID = string.Format( "btnSave_{0}", this.ID ) };
@@ -562,42 +566,33 @@ namespace Rock.Web.UI.Controls
                     int i = 0;
                     foreach ( var configValue in field.ConfigurationValues( null ) )
                     {
-                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-group" );
-                        writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
-                        writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                        writer.Write( configValue.Value.Name );
-                        writer.RenderEndTag();
-
-                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "controls" );
-                        writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                        QualifierControls[i].RenderControl( writer );
-                        writer.RenderEndTag();
-
-                        writer.RenderEndTag();
+                        var rockControl = QualifierControls[i] as IRockControl;
+                        if ( rockControl != null )
+                        {
+                            rockControl.Label = configValue.Value.Name;
+                            RockControlHelper.RenderControl( rockControl, writer );
+                        }
+                        else
+                        {
+                            RockControlHelper.RenderControl( configValue.Value.Name, QualifierControls[i], writer );
+                        }
 
                         i++;
                     }
                 }
+
                 if ( DefaultValueControl != null )
                 {
-                    field.SetEditValue( DefaultValueControl, Qualifiers, DefaultValue );
-
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-group" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    writer.Write( "Default Value" );
-                    writer.RenderEndTag();
-
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "controls" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    DefaultValueControl.RenderControl( writer );
-                    writer.RenderEndTag();
-
-                    writer.RenderEndTag();
+                    var rockControl = DefaultValueControl as IRockControl;
+                    if ( rockControl != null )
+                    {
+                        rockControl.Label = "Default Value";
+                        RockControlHelper.RenderControl( rockControl, writer );
+                    }
+                    else
+                    {
+                        RockControlHelper.RenderControl( "Default Value", DefaultValueControl, writer );
+                    }
                 }
             }
 

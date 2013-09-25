@@ -10,7 +10,7 @@
 
         <fieldset>
             <legend>Enter Code</legend>
-            <Rock:LabeledTextBox ID="tbConfirmationCode" runat="server" LabelText="Code" Required="true" ></Rock:LabeledTextBox>
+            <Rock:RockTextBox ID="tbConfirmationCode" runat="server" Label="Code" Required="true" ></Rock:RockTextBox>
         </fieldset>
 
         <div class="actions">
@@ -31,8 +31,8 @@
 
         <fieldset>
             <legend>Enter New Password</legend>
-            <Rock:LabeledTextBox ID="tbPassword" runat="server" LabelText="New Password" Required="true" TextMode="Password" ></Rock:LabeledTextBox>
-            <Rock:LabeledTextBox ID="tbPasswordConfirm" runat="server" LabelText="Confirm Password" Required="true" TextMode="Password" ></Rock:LabeledTextBox>
+            <Rock:RockTextBox ID="tbPassword" runat="server" Label="New Password" Required="true" TextMode="Password" ></Rock:RockTextBox>
+            <Rock:RockTextBox ID="tbPasswordConfirm" runat="server" Label="Confirm Password" Required="true" TextMode="Password" ></Rock:RockTextBox>
             <asp:CompareValidator ID="cvPassword" runat="server" ControlToCompare="tbPassword" ControlToValidate="tbPasswordConfirm" ErrorMessage="New Password and Confirm Password do not match" Display="Dynamic" CssClass="validation-error"></asp:CompareValidator>
         </fieldset>
 

@@ -11,7 +11,7 @@
         <div class="row-fluid">
             <div class="span4 form-horizontal">
                 <fieldset>
-                    <Rock:LabeledTextBox ID="tbFamilyName" runat="server" LabelText="Family Name" Required="true" CssClass="input-meduim" AutoPostBack="true" OnTextChanged="tbFamilyName_TextChanged" />
+                    <Rock:RockTextBox ID="tbFamilyName" runat="server" Label="Family Name" Required="true" CssClass="input-meduim" AutoPostBack="true" OnTextChanged="tbFamilyName_TextChanged" />
                 </fieldset>
             </div>
             <div class="span4 form-horizontal">
@@ -21,8 +21,8 @@
             </div>
             <div class="span4 form-horizontal">
                 <fieldset>
-                    <Rock:LabeledDropDownList ID="ddlRecordStatus" runat="server" LabelText="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" /><br />
-                    <Rock:LabeledDropDownList ID="ddlReason" runat="server" LabelText="Reason" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="ddlReason_SelectedIndexChanged"></Rock:LabeledDropDownList>
+                    <Rock:RockDropDownList ID="ddlRecordStatus" runat="server" Label="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" /><br />
+                    <Rock:RockDropDownList ID="ddlReason" runat="server" Label="Reason" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="ddlReason_SelectedIndexChanged"></Rock:RockDropDownList>
                 </fieldset>
 
             </div>
@@ -159,7 +159,7 @@
                     <div id="divExistingPerson" runat="server" class="tab-pane active">
                         <fieldset>
                             <Rock:PersonPicker2 ID="ppExistingPerson" runat="server" />
-                            <Rock:LabeledCheckBox ID="cbRemoveOtherFamilies" runat="server" Checked="true" Text="Remove person from other families" />
+                            <Rock:RockCheckBox ID="cbRemoveOtherFamilies" runat="server" Checked="true" Text="Remove person from other families" />
                         </fieldset>
                     </div>
 
@@ -167,31 +167,31 @@
                         <div class="row-fluid">
                             <div class="span4">
                                 <fieldset>
-                                    <Rock:LabeledTextBox ID="tbNewPersonFirstName" runat="server" LabelText="First Name" ValidationGroup="modalAddPersonValidationGroup" />
+                                    <Rock:RockTextBox ID="tbNewPersonFirstName" runat="server" Label="First Name" ValidationGroup="modalAddPersonValidationGroup" />
                                 </fieldset>
                             </div>
                             <div class="span4">
                                 <fieldset>
-                                    <Rock:LabeledTextBox ID="tbNewPersonLastName" runat="server" LabelText="Last Name" ValidationGroup="modalAddPersonValidationGroup" />
-                                </fieldset>
-                            </div>
-                        </div>
-                        <div class="row-fluid">
-                            <div class="span4">
-                                <fieldset>
-                                    <Rock:LabeledDropDownList ID="ddlNewPersonGender" runat="server" LabelText="Gender" />
-                                </fieldset>
-                            </div>
-                            <div class="span4">
-                                <fieldset>
-                                    <Rock:DatePicker ID="dpNewPersonBirthDate" runat="server" LabelText="Birthdate" />
+                                    <Rock:RockTextBox ID="tbNewPersonLastName" runat="server" Label="Last Name" ValidationGroup="modalAddPersonValidationGroup" />
                                 </fieldset>
                             </div>
                         </div>
                         <div class="row-fluid">
                             <div class="span4">
                                 <fieldset>
-                                    <Rock:LabeledRadioButtonList ID="rblNewPersonRole" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" LabelText="Role" />
+                                    <Rock:RockDropDownList ID="ddlNewPersonGender" runat="server" Label="Gender" />
+                                </fieldset>
+                            </div>
+                            <div class="span4">
+                                <fieldset>
+                                    <Rock:DatePicker ID="dpNewPersonBirthDate" runat="server" Label="Birthdate" />
+                                </fieldset>
+                            </div>
+                        </div>
+                        <div class="row-fluid">
+                            <div class="span4">
+                                <fieldset>
+                                    <Rock:RockRadioButtonList ID="rblNewPersonRole" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" Label="Role" />
                                 </fieldset>
                             </div>
                         </div>

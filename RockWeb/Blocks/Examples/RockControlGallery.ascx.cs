@@ -112,13 +112,13 @@ namespace RockWeb.Blocks.Examples
                 if ( control is ILabeledControl )
                 {
                     ILabeledControl labeledControl = control as ILabeledControl;
-                    if ( string.IsNullOrWhiteSpace( labeledControl.LabelText ) )
+                    if ( string.IsNullOrWhiteSpace( labeledControl.Label ) )
                     {
-                        labeledControl.LabelText = string.Format( "Rock:{0}", labeledControl.GetType().Name );
+                        labeledControl.Label = string.Format( "Rock:{0}", labeledControl.GetType().Name );
                     }
                     else
                     {
-                        labeledControl.LabelText = string.Empty;
+                        labeledControl.Label = string.Empty;
                     }
                 }
                 else if ( control is HtmlGenericControl )
