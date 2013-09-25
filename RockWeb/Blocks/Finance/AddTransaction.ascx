@@ -49,7 +49,7 @@
                         <div class="panel-heading"><h3 class="panel-title">Personal Information</h3></div>
                         <div class="panel-body">
                             <fieldset>
-                                <Rock:RockText ID="txtCurrentName" runat="server" Label="Name" Visible="true" />
+                                <Rock:RockLiteral ID="txtCurrentName" runat="server" Label="Name" Visible="true" />
                                 <Rock:RockTextBox ID="txtFirstName" runat="server" Label="First Name"></Rock:RockTextBox>
                                 <Rock:RockTextBox ID="txtLastName" runat="server" Label="Last Name"></Rock:RockTextBox>
                                 <Rock:RockTextBox ID="txtPhone" runat="server" Label="Phone"></Rock:RockTextBox>

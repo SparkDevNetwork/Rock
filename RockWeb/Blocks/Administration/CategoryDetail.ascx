@@ -16,10 +16,10 @@
 
                     <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="Name" />
                     <Rock:CategoryPicker ID="cpParentCategory" runat="server" Label="Parent Category" />
-                    <Rock:RockText ID="lblEntityTypeName" runat="server" Label="Entity Type" />
+                    <Rock:RockLiteral ID="lblEntityTypeName" runat="server" Label="Entity Type" />
                     <asp:HiddenField ID="hfEntityTypeId" runat="server" />
-                    <Rock:RockText ID="lblEntityTypeQualifierColumn" runat="server" Label="Entity Type Qualifier Column" />
-                    <Rock:RockText ID="lblEntityTypeQualifierValue" runat="server" Label="Entity Type Qualifier Value" />
+                    <Rock:RockLiteral ID="lblEntityTypeQualifierColumn" runat="server" Label="Entity Type Qualifier Column" />
+                    <Rock:RockLiteral ID="lblEntityTypeQualifierValue" runat="server" Label="Entity Type Qualifier Value" />
                     <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Category, Rock" PropertyName="IconCssClass" />
                     <Rock:ImageUploader ID="imgIconSmall" runat="server" Label="Small Icon Image" />
                     <Rock:ImageUploader ID="imgIconLarge" runat="server" Label="Large Icon Image" />

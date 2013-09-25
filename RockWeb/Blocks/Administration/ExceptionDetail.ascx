@@ -13,7 +13,7 @@
                                 <!-- Site -->
                             </div>
                             <div class="span10">
-                                <Rock:RockText Label="Site" ID="lblSite" runat="server" />
+                                <Rock:RockLiteral Label="Site" ID="lblSite" runat="server" />
                             </div>
                         </div>
                         <div class="row-fluid">
@@ -21,7 +21,7 @@
                                 Page
                             </div>
                             <div class="span4">
-                                <Rock:RockText ID="lblPage" runat="server" />
+                                <Rock:RockLiteral ID="lblPage" runat="server" />
                             </div>
                             <div class="span6">
                                 <asp:HyperLink ID="hlPageLink" runat="server" CssClass="btn btn-mini" Target="_blank"><i class="icon-arrow-right"></i></asp:HyperLink>
@@ -31,7 +31,7 @@
                     <div class="span6">
                         <div class="span2">User</div>
                         <div class="span10">
-                            <Rock:RockText ID="lblUser" runat="server" />
+                            <Rock:RockLiteral ID="lblUser" runat="server" />
                         </div>
                     </div>
                 </div>
