@@ -579,7 +579,7 @@ namespace Rock.Web.UI.Controls
                 </div>
                 <div class='viewport'>
                     <div class='overview'>
-                        <div id='treeviewItems_{0}' class='treeview treeview-items'></div>        
+                        <div id='treeviewItems_{0}' class='treeview treeview-items'></div>
                     </div>
                 </div>
             </div>

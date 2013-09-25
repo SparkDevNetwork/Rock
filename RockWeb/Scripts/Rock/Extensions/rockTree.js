@@ -30,10 +30,27 @@
 
 		    return null;
 		},
+        _clearSelectedNodes = function (array) {
+            var currentNode,
+                i;
+            
+            if (!array || typeof array.length !== 'number') {
+                return;
+            }
+
+            for (i = 0; i < array.length; i++) {
+                currentNode = array[i];
+                currentNode.isSelected = false;
+                
+                if (currentNode.hasChildren && currentNode.children) {
+                    _clearSelectedNodes(currentNode.children);
+                }
+            }
+        },
 		_mapArrayDefault = function (arr) {
 		    return $.map(arr, function (item) {
 		        var node = {
-		            id: item.Id,
+		            id: item.Guid || item.Id,
 		            name: item.Name || item.Title,
 		            iconCssClass: item.IconCssClass,
 		            parentId: item.ParentId,
@@ -114,6 +131,7 @@
             
             for (i = 0; i < nodeArray.length; i++) {
                 nodeArray[i].isOpen = false;
+                nodeArray[i].isSelected = false;
             }
 
             // If a parent node is supplied, append the result set to the parent node.
@@ -148,6 +166,10 @@
 				    }
 
 				    $li.append('<span class="rock-tree-name"> ' + node.name + '</span>');
+				    
+                    if (node.isSelected) {
+                        $li.find('.rock-tree-name').addClass('selected');
+                    }
 
 				    if (node.hasChildren) {
 				        $li.prepend('<i class="rock-tree-icon ' + folderCssClass + '"></i>');
@@ -201,6 +223,11 @@
         discardLoading: function ($element) {
             $element.find('.rock-tree-loading').remove();
         },
+        clear: function () {
+            this.selectedNodes = [];
+            _clearSelectedNodes(this.nodes);
+            this.render();
+        },
         initTreeEvents: function () {
             var self = this;
 
@@ -219,8 +246,8 @@
                     $ul.hide();
                     node.isOpen = false;
                     $icon.removeClass(openClass).addClass(closedClass);
+                    self.$el.trigger('close');
                 } else {
-                    //$ul.show();
                     node.isOpen = true;
                     $icon.removeClass(closedClass).addClass(openClass);
                     
@@ -228,9 +255,11 @@
                         self.showLoading($icon.parent('li'));
                         self.fetch(node.id).done(function () {
                             self.render();
+                            self.$el.trigger('open');
                         });
                     } else {
                         $ul.show();
+                        self.$el.trigger('open');
                     }
                 }
             });
@@ -240,20 +269,27 @@
                 e.stopPropagation();
 
                 var $rockTree = $(this).parents('.rock-tree'),
-					$item = $(this),
-					id = $item.parent('li').attr('data-id'),
-					selectedIds = [];
+                    $item = $(this),
+                    id = $item.parent('li').attr('data-id'),
+                    node = _findNodeById(id, self.nodes),
+                    selectedNodes = [];
 
                 if (!self.options.multiselect) {
                     $rockTree.find('.selected').removeClass('selected');
+                    _clearSelectedNodes(self.nodes);
                 }
 
+                node.isSelected = true;
                 $item.toggleClass('selected');
                 $rockTree.find('.selected').parent('li').each(function (i, li) {
-                    selectedIds.push($(li).attr('data-id'));
+                    var $li = $(li);
+                    selectedNodes.push({
+                        id: $li.attr('data-id'),
+                        name: $li.find('span').text()
+                    });
                 });
 
-                self.selectedIds = selectedIds;
+                self.selectedNodes = selectedNodes;
                 self.$el.trigger('selected', id);
             });
         },
@@ -282,7 +318,7 @@
     };
 
     $.fn.rockTree.defaults = {
-        id: null,
+        id: 0,
         restUrl: null,
         local: null,
         multiselect: false,

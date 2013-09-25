@@ -462,11 +462,13 @@ ul.rock-tree ul {
 }
 
 .rock-tree .rock-tree-name:hover {
-	background: #f0f0f0;
+	background: #59849C;
+    color: #fff;
 }
 
 .rock-tree .selected {
-	background: #e9e9e9;
+	background: #779cb1;
+    color: #fff
 }
 
 .rock-tree .rock-tree-name {
