@@ -221,6 +221,10 @@
     <Compile Include="Migrations\201309211607057_PaymentGateway.Designer.cs">
       <DependentUpon>201309211607057_PaymentGateway.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201309251315512_RefactorMetrics.cs" />
+    <Compile Include="Migrations\201309251315512_RefactorMetrics.Designer.cs">
+      <DependentUpon>201309251315512_RefactorMetrics.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\FinancialPersonSavedAccountService.Partial.cs" />
     <Compile Include="Storage\ProviderComponent.cs" />
     <Compile Include="Storage\ProviderContainer.cs" />
@@ -1047,6 +1051,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201309211607057_PaymentGateway.resx">
       <DependentUpon>201309211607057_PaymentGateway.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201309251315512_RefactorMetrics.resx">
+      <DependentUpon>201309251315512_RefactorMetrics.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
