@@ -13,6 +13,7 @@
     10. Title - markup for styling header titles
     11. Notifications - additional styles to the Bootstrap notifications
     12. Labels - additional label defintions that extend Boostrap labels (eg label-campus)
+    13. Datepicker - styles for the date picker
 
 */
 
@@ -1006,3 +1007,54 @@ div.tagsinput div
     background-color: @label-type;
 }
 
+
+// 13. Datepicker
+// -------------------------
+.datepicker {
+    padding: 10px;
+
+    table {
+        thead {
+            th.datepicker-switch {
+                text-align: center;
+            }
+
+            th.next {
+                text-align: right;
+            }
+        }
+
+        td.active {
+            background-color: @accent-color;
+            color: @accent-text-color;
+        }
+
+        td.day {
+            text-align: center;
+        }
+
+        td.old, td.new {
+            color: lighten(@text-color, 60%);
+        }
+
+        tfoot {
+            display: none;
+        }
+
+        td span.month {
+            margin-left: 2px;
+            padding: 2px;
+
+            &:hover {
+                background-color: @accent-color;
+                color: @accent-text-color;
+            }
+        }
+
+        td span.month:first-child {
+            margin-left: 0;
+        }
+    }
+
+    
+}
