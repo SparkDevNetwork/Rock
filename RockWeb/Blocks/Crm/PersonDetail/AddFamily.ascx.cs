@@ -24,7 +24,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 {
     [BooleanField("Require Gender", "Should Gender be required")]
     [BooleanField("Require Grade", "Should Grade by required")]
-    [AttributeCategoryField("Category", "The Attribute Categories to display attributes from", true, "Rock.Model.Person")]
+    [AttributeCategoryField("Attribute Categories", "The Attribute Categories to display attributes from", true, "Rock.Model.Person")]
     [DefinedValueField(Rock.SystemGuid.DefinedType.LOCATION_LOCATION_TYPE, "Location Type", "The type of location that address should use")]
     public partial class AddFamily : Rock.Web.UI.RockBlock
     {
@@ -180,7 +180,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             attributeControls.Clear();
             pnlAttributes.Controls.Clear();
 
-            foreach ( string categoryGuid in GetAttributeValue( "Category" ).SplitDelimitedValues( false ) )
+            foreach ( string categoryGuid in GetAttributeValue( "AttributeCategories" ).SplitDelimitedValues( false ) )
             {
                 Guid guid = Guid.Empty;
                 if ( Guid.TryParse( categoryGuid, out guid ) )
