@@ -166,7 +166,7 @@ namespace Rock.Field.Types
             }
             else
             {
-                editControl = new Rock.Web.UI.Controls.LabeledDropDownList { ID = id }; 
+                editControl = new Rock.Web.UI.Controls.RockDropDownList { ID = id }; 
                 editControl.Items.Add( new ListItem() );
             }
 
@@ -198,7 +198,7 @@ namespace Rock.Field.Types
 
             if ( control != null && control is ListControl )
             {
-                if ( control is Rock.Web.UI.Controls.LabeledDropDownList )
+                if ( control is Rock.Web.UI.Controls.RockDropDownList )
                 {
                     ids.Add( ( (ListControl)control ).SelectedValue );
                 }

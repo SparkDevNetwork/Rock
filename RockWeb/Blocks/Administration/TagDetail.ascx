@@ -31,7 +31,7 @@
                             <Rock:PersonPicker ID="ppOwner" runat="server" Label="Owner" />
                         </div>
                         <div class="span6">
-                            <Rock:LabeledDropDownList id="ddlEntityType" runat="server" Label="Entity Type" />
+                            <Rock:RockDropDownList id="ddlEntityType" runat="server" Label="Entity Type" />
                             <Rock:RockTextBox ID="tbEntityTypeQualifierColumn" runat="server" Label="Entity Type Qualifier Column" />
                             <Rock:RockTextBox ID="tbEntityTypeQualifierValue" runat="server" Label="Entity Type Qualifier Value" />
                        </div>

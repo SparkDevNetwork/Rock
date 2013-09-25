@@ -4,9 +4,9 @@
     <ContentTemplate>
         <Rock:GridFilter ID="rFilter" runat="server" >
             <%-- Approval Status, Priority Range, Ad Type, Date Range --%>
-            <Rock:LabeledDropDownList ID="ddlApprovalStatus" runat="server" Label="Approval Status" />
+            <Rock:RockDropDownList ID="ddlApprovalStatus" runat="server" Label="Approval Status" />
             <Rock:NumberRangeEditor ID="pPriorityRange" runat="server" Label="Priority Range" />
-            <Rock:LabeledDropDownList ID="ddlAdType" runat="server" Label="Ad Type" />
+            <Rock:RockDropDownList ID="ddlAdType" runat="server" Label="Ad Type" />
             <Rock:DateRangePicker ID="pDateRange" runat="server" Label="Date Range" />
         </Rock:GridFilter>
         <div id="pnlMarketingCampaignAds" runat="server">

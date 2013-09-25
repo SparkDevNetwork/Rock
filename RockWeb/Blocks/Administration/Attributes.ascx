@@ -5,7 +5,7 @@
         <asp:Panel ID="pnlList" runat="server">
 
             <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
-                <Rock:LabeledDropDownList ID="ddlEntityType" runat="server" Label="Entity Type" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
+                <Rock:RockDropDownList ID="ddlEntityType" runat="server" Label="Entity Type" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
                 <Rock:CategoryPicker ID="cpCategoriesFilter" runat="server" Label="Categories" AllowMultiSelect="true" />
             </Rock:GridFilter>
             <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="setting" OnRowSelected="rGrid_Edit">
@@ -62,7 +62,7 @@
             <asp:ValidationSummary ID="valSummaryTop" runat="server"  
                 HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
 
-            <Rock:LabeledDropDownList ID="ddlAttrEntityType" runat="server" Label="Entity Type" />
+            <Rock:RockDropDownList ID="ddlAttrEntityType" runat="server" Label="Entity Type" />
             <Rock:RockTextBox ID="tbAttrQualifierField" runat="server" Label="Qualifier Field" />
             <Rock:RockTextBox ID="tbAttrQualifierValue" runat="server" Label="Qualifier Value" />
 

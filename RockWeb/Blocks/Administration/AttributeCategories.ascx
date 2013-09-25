@@ -5,7 +5,7 @@
         <asp:Panel ID="pnlList" runat="server">
 
             <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
-                <Rock:LabeledDropDownList ID="ddlEntityType" runat="server" Label="Entity Type" />
+                <Rock:RockDropDownList ID="ddlEntityType" runat="server" Label="Entity Type" />
             </Rock:GridFilter>
             <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="setting" OnRowSelected="rGrid_Edit">
                 <Columns>

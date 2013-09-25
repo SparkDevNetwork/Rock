@@ -8,7 +8,7 @@
         <Rock:GridFilter ID="rFilter" runat="server">
             <Rock:CategoryPicker ID="pCategory" runat="server" AllowMultiSelect="false" Label="Schedule Category" />
             <Rock:GroupTypePicker ID="ddlGroupType" runat="server" />
-            <Rock:LabeledDropDownList ID="ddlParentLocation" runat="server" Label="Parent Location" />
+            <Rock:RockDropDownList ID="ddlParentLocation" runat="server" Label="Parent Location" />
         </Rock:GridFilter>
         <Rock:Grid ID="gGroupLocationSchedule" runat="server" AllowSorting="true" AllowPaging="false" >
             <Columns>

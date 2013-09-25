@@ -22,7 +22,7 @@
             </Rock:Grid>
             
             <h4 runat="server">DropDowns</h4>
-            <Rock:DataDropDownList ID="ddlDataExample" runat="server" Label="Rock:DataDropDownList/LabeledDropDownList" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
+            <Rock:DataDropDownList ID="ddlDataExample" runat="server" Label="Rock:DataDropDownList/RockDropDownList" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
             <Rock:StateDropDownList ID="NotificationBox3" runat="server" Label="Rock:StateDropDownList" />
             <Rock:ButtonDropDownList ID="bddlExample" runat="server" Label="Rock:ButtonDropDownList" />
 

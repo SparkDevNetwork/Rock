@@ -76,11 +76,11 @@
                     <Rock:RockTextBox ID="tbFirstName" runat="server" Label="First Name" Required="true" ></Rock:RockTextBox>
                     <Rock:RockTextBox ID="tbLastName" runat="server" Label="Last Name" Required="true" ></Rock:RockTextBox>
                     <Rock:RockTextBox ID="tbEmail" runat="server" Label="Email" Required="true" ></Rock:RockTextBox>
-                    <Rock:LabeledDropDownList ID="ddlGender" runat="server" Label="Gender" CssClass="input-small">
+                    <Rock:RockDropDownList ID="ddlGender" runat="server" Label="Gender" CssClass="input-small">
                         <asp:ListItem Text="" Value="U"></asp:ListItem>
                         <asp:ListItem Text="Male" Value="M"></asp:ListItem>
                         <asp:ListItem Text="Female" Value="F"></asp:ListItem>
-                    </Rock:LabeledDropDownList>
+                    </Rock:RockDropDownList>
                     <div class="control-group">
                         <asp:Label runat="server" AssociatedControlID="ddlBirthMonth" Text="Birthdate"></asp:Label>
                         <div class="controls">

@@ -21,8 +21,8 @@
             </div>
             <div class="span4 form-horizontal">
                 <fieldset>
-                    <Rock:LabeledDropDownList ID="ddlRecordStatus" runat="server" Label="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" /><br />
-                    <Rock:LabeledDropDownList ID="ddlReason" runat="server" Label="Reason" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="ddlReason_SelectedIndexChanged"></Rock:LabeledDropDownList>
+                    <Rock:RockDropDownList ID="ddlRecordStatus" runat="server" Label="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" /><br />
+                    <Rock:RockDropDownList ID="ddlReason" runat="server" Label="Reason" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="ddlReason_SelectedIndexChanged"></Rock:RockDropDownList>
                 </fieldset>
 
             </div>
@@ -179,7 +179,7 @@
                         <div class="row-fluid">
                             <div class="span4">
                                 <fieldset>
-                                    <Rock:LabeledDropDownList ID="ddlNewPersonGender" runat="server" Label="Gender" />
+                                    <Rock:RockDropDownList ID="ddlNewPersonGender" runat="server" Label="Gender" />
                                 </fieldset>
                             </div>
                             <div class="span4">

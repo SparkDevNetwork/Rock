@@ -15,7 +15,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class CampusPicker : LabeledDropDownList
+    public class CampusPicker : RockDropDownList
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CampusPicker" /> class.
@@ -24,39 +24,6 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             Label = "Campus";
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="RockTextBox" /> is required.
-        /// </summary>
-        /// <value><c>true</c> if required; otherwise, <c>false</c>.</value>
-        public override bool Required
-        {
-            get
-            {
-                return base.Required;
-            }
-            set
-            {
-                var li = this.Items.FindByValue( None.IdValue );
-
-                if ( value )
-                {
-                    if ( li != null )
-                    {
-                        this.Items.Remove( li );
-                    }
-                }
-                else
-                {
-                    if ( li == null )
-                    {
-                        this.Items.Insert( 0, new ListItem( string.Empty, None.IdValue ) );
-                    }
-                }
-
-                base.Required = value;
-            }
         }
 
         /// <summary>

@@ -29,11 +29,11 @@
                     </div>
                     <div class="span6">
                         <Rock:RockCheckBox ID="cbTakesAttendance" runat="server" Label="Takes Attendance" />
-                        <Rock:LabeledDropDownList ID="ddlAttendanceRule" runat="server" Label="Attendance Rule" />
-                        <Rock:LabeledDropDownList ID="ddlAttendancePrintTo" runat="server" Label="Attendance Print To" />
+                        <Rock:RockDropDownList ID="ddlAttendanceRule" runat="server" Label="Attendance Rule" />
+                        <Rock:RockDropDownList ID="ddlAttendancePrintTo" runat="server" Label="Attendance Print To" />
                         <Rock:RockCheckBox ID="cbAllowMultipleLocations" runat="server" Label="Allow Multiple Locations" />
-                        <Rock:LabeledDropDownList ID="ddlLocationSelectionMode" runat="server" Label="Location Selection Mode" Help="The selection mode to use when adding locations to groups of this type" />
-                        <Rock:LabeledDropDownList ID="ddlGroupTypePurpose" runat="server" Label="Purpose" Help="Define a specific purpose for this group type <span class='label'>Defined Value</span>" />
+                        <Rock:RockDropDownList ID="ddlLocationSelectionMode" runat="server" Label="Location Selection Mode" Help="The selection mode to use when adding locations to groups of this type" />
+                        <Rock:RockDropDownList ID="ddlGroupTypePurpose" runat="server" Label="Purpose" Help="Define a specific purpose for this group type <span class='label'>Defined Value</span>" />
                         <Rock:GroupTypePicker ID="gtpInheritedGroupType" runat="server" Label="Inherited Group Type" Help="Group Type to inherit properties and attributes from" AutoPostBack="true" OnSelectedIndexChanged="gtpInheritedGroupType_SelectedIndexChanged" />
                         <div class="control-group">
                             <h5>Group Type Attributes

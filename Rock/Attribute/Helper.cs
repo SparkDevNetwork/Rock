@@ -259,7 +259,7 @@ namespace Rock.Attribute
 
             // Check for inherited group type attributes
             var inheritedGroupTypeIds = new List<int>();
-            if ( entity is Group || entity is GroupType)
+            if ( entity is Group || entity is GroupType )
             {
                 //int? groupTypeId = null;
                 GroupType groupType = null;
@@ -274,7 +274,7 @@ namespace Rock.Attribute
                     groupType = ( (GroupType)entity );
                 }
 
-                
+
 
                 while ( groupType != null )
                 {
@@ -400,7 +400,7 @@ namespace Rock.Attribute
                     foreach ( var category in attribute.Categories.OrderBy( c => c.Name ) )
                     {
                         AddAttributeCategory( attributeCategories, category, attribute );
-                        if (!allowMultiple)
+                        if ( !allowMultiple )
                         {
                             break;
                         }
@@ -418,7 +418,7 @@ namespace Rock.Attribute
         private static void AddAttributeCategory( List<AttributeCategory> attributeCategories, Rock.Web.Cache.CategoryCache category, Rock.Web.Cache.AttributeCache attribute )
         {
             AttributeCategory attributeCategory = null;
-            if (category != null)
+            if ( category != null )
             {
                 attributeCategory = attributeCategories.Where( g => g.Category != null && g.Category.Id == category.Id ).FirstOrDefault();
             }
@@ -603,12 +603,12 @@ namespace Rock.Attribute
         {
             if ( item.Attributes != null )
             {
-                foreach(var attributeCategory in GetAttributeCategories(item ))
+                foreach ( var attributeCategory in GetAttributeCategories( item ) )
                 {
                     AddEditControls(
                         attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty,
                         attributeCategory.Attributes.Select( a => a.Key ).ToList(),
-                        item, parentControl, setValue, exclude);
+                        item, parentControl, setValue, exclude );
                 }
             }
         }
@@ -649,16 +649,7 @@ namespace Rock.Attribute
                     var rockControl = attributeControl as IRockControl;
                     if ( rockControl != null )
                     {
-                        var checkBox = rockControl as RockCheckBox;
-                        if ( checkBox != null )
-                        {
-                            checkBox.Text = attribute.Name;
-                        }
-                        else
-                        {
-                            rockControl.Label = attribute.Name;
-                        }
-
+                        rockControl.Label = attribute.Name;
                         rockControl.Help = attribute.Description;
                         rockControl.Required = attribute.IsRequired;
                         fieldSet.Controls.Add( attributeControl );
@@ -682,32 +673,18 @@ namespace Rock.Attribute
                         HelpBlock.ClientIDMode = ClientIDMode.AutoID;
                         HelpBlock.Text = attribute.Description;
 
-                        if ( checkBoxControl == null )
-                        {
-                            // If control is not a checkbox, add a label, help text, and control
-                            Label label = new Label();
-                            div.Controls.Add( label );
-                            label.Text = attribute.Name;
-                            label.AssociatedControlID = attributeControl.ID;
-                            label.ClientIDMode = ClientIDMode.AutoID;
+                        Label label = new Label();
+                        div.Controls.Add( label );
+                        label.Text = attribute.Name;
+                        label.AssociatedControlID = attributeControl.ID;
+                        label.ClientIDMode = ClientIDMode.AutoID;
 
-                            if (!string.IsNullOrWhiteSpace(HelpBlock.Text))
-                            {
-                                div.Controls.Add(HelpBlock);
-                            }
-
-                            div.Controls.Add( attributeControl );
-                        }
-                        else
+                        if ( !string.IsNullOrWhiteSpace( HelpBlock.Text ) )
                         {
-                            // if control is a checkbox, set its text, but don't add a label, then add control and then help text
-                            checkBoxControl.Text = attribute.Name;
-                            div.Controls.Add( attributeControl );
-                            if (! string.IsNullOrWhiteSpace( HelpBlock.Text ) )
-                            {
-                                div.Controls.Add( HelpBlock );
-                            }
+                            div.Controls.Add( HelpBlock );
                         }
+
+                        div.Controls.Add( attributeControl );
                     }
                 }
             }

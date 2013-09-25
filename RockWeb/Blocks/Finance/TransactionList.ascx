@@ -12,11 +12,11 @@
             <Rock:RockTextBox ID="txtFromAmount" runat="server" Label="From Amount"></Rock:RockTextBox>
             <Rock:RockTextBox ID="txtToAmount" runat="server" Label="To Amount"></Rock:RockTextBox>
             <Rock:RockTextBox ID="txtTransactionCode" runat="server" Label="Transaction Code"></Rock:RockTextBox>
-            <Rock:LabeledDropDownList ID="ddlAccount" runat="server" Label="Account" />
-            <Rock:LabeledDropDownList ID="ddlTransactionType" runat="server" Label="Transaction Type" />
-            <Rock:LabeledDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" />
-            <Rock:LabeledDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" />
-            <Rock:LabeledDropDownList ID="ddlSourceType" runat="server" Label="Source Type" />
+            <Rock:RockDropDownList ID="ddlAccount" runat="server" Label="Account" />
+            <Rock:RockDropDownList ID="ddlTransactionType" runat="server" Label="Transaction Type" />
+            <Rock:RockDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" />
+            <Rock:RockDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" />
+            <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source Type" />
         </Rock:GridFilter>
 
         <Rock:Grid ID="rGridTransactions" runat="server" EmptyDataText="No Transactions Found" OnRowSelected="rGridTransactions_Edit" AllowSorting="true">

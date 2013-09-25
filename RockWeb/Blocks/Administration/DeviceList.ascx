@@ -7,11 +7,11 @@
         
         <Rock:GridFilter ID="fDevice" runat="server">
             <Rock:RockTextBox ID="tbName" runat="server" Label="Name" />
-            <Rock:LabeledDropDownList ID="ddlDeviceType" runat="server" Label="Device Type" />
+            <Rock:RockDropDownList ID="ddlDeviceType" runat="server" Label="Device Type" />
             <Rock:RockTextBox ID="tbIPAddress" runat="server" Label="IP Address" />
-            <Rock:LabeledDropDownList ID="ddlPrintTo" runat="server" Label="Print To" />
-            <Rock:LabeledDropDownList ID="ddlPrinter" runat="server" Label="Printer" DataTextField="Name" DataValueField="Id" />
-            <Rock:LabeledDropDownList ID="ddlPrintFrom" runat="server" Label="Print From" />
+            <Rock:RockDropDownList ID="ddlPrintTo" runat="server" Label="Print To" />
+            <Rock:RockDropDownList ID="ddlPrinter" runat="server" Label="Printer" DataTextField="Name" DataValueField="Id" />
+            <Rock:RockDropDownList ID="ddlPrintFrom" runat="server" Label="Print From" />
         </Rock:GridFilter>
         
         <Rock:Grid ID="gDevice" runat="server" AllowSorting="true" OnRowSelected="gDevice_Edit">

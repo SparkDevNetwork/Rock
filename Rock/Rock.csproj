@@ -497,7 +497,6 @@
     <Compile Include="Web\UI\Controls\Pickers\MergeFieldPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\PersonPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\TreeViewItem.cs" />
-    <Compile Include="Web\UI\Controls\RockDropDownList.cs" />
     <Compile Include="Web\UI\Controls\NumberBox.cs" />
     <Compile Include="Web\UI\Controls\PageBreadCrumbs.cs" />
     <Compile Include="Web\UI\Controls\PageDescription.cs" />
@@ -823,7 +822,7 @@
     <Compile Include="Web\UI\Controls\Data Fields\DataTextBox.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Web\UI\Controls\LabeledDropDownList.cs" />
+    <Compile Include="Web\UI\Controls\RockDropDownList.cs" />
     <Compile Include="Web\UI\Controls\Grid\SecurityField.cs" />
     <Compile Include="Web\UI\Controls\Grid\ReorderField.cs" />
     <Compile Include="Web\UI\Controls\Grid\EditField.cs" />

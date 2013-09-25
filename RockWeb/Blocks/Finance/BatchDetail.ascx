@@ -25,7 +25,7 @@
 
                 <div class="span4">
                     <Rock:DateRangePicker ID="dtBatchDate" TabIndex="3"  runat="server" Label="Batch Date Range" />
-                    <Rock:LabeledDropDownList ID="ddlStatus" TabIndex="5" runat="server" Label="Status"></Rock:LabeledDropDownList>
+                    <Rock:RockDropDownList ID="ddlStatus" TabIndex="5" runat="server" Label="Status"></Rock:RockDropDownList>
                     </div>
                 <div class="span4">
                     <Rock:DataTextBox ID="tbControlAmount" runat="server" Label="Control Amount" TabIndex="7" 

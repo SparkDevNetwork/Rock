@@ -9,7 +9,7 @@
                 
             <Rock:RockTextBox ID="tbSubject" runat="server" Label="Subject" />
             <Rock:ComponentPicker ID="cpChannel" runat="server" ContainerType="Rock.Communication.ChannelContainer, Rock" Label="Channel" />
-            <Rock:LabeledDropDownList ID="ddlStatus" runat="server" Label="Status" />
+            <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
             <Rock:PersonPicker ID="ppSender" runat="server" Label="Created By" />
             <Rock:RockTextBox ID="tbContent" runat="server" Label="Content" />
         </Rock:GridFilter>
