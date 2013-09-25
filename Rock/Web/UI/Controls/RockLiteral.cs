@@ -13,8 +13,8 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// A <see cref="T:System.Web.UI.WebControls.Literal"/> control with an associated label.
     /// </summary>
-    [ToolboxData( "<{0}:RockText runat=server></{0}:RockText>" )]
-    public class RockText : CompositeControl, IRockControl
+    [ToolboxData( "<{0}:RockLiteral runat=server></{0}:RockLiteral>" )]
+    public class RockLiteral : CompositeControl, IRockControl
     {
         #region IRockControl implementation
 
