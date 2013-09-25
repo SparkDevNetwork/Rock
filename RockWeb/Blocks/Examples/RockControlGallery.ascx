@@ -46,8 +46,10 @@
             <Rock:PagePicker ID="pagePicker" runat="server" Label="Rock:PagePicker" />
             <Rock:PersonPicker ID="personPicker" runat="server" Label="Rock:PersonPicker" />
 
+            <p />
+            <label>Rock:Schedule Builder</label>
             <Rock:ScheduleBuilder ID="scheduleBuilder" runat="server" Label="Rock:ScheduleBuilder" />
-
+            <p />
             <Rock:AccountPicker ID="accountPicker" runat="server" Label="Rock:AccountPicker" />
             <Rock:CategoryPicker ID="categoryPicker" runat="server" Label="Rock:CategoryPicker" />
             <Rock:ComponentPicker ID="componentPicker" runat="server" Label="Rock:ComponentPicker" />
