@@ -23,7 +23,7 @@ namespace Rock.Web.UI.Controls
             rockControl.HelpBlock = new HelpBlock();
         }
 
-        /// <summary>
+        /// <summary> 
         /// Creates the child controls.
         /// </summary>
         /// <param name="rockControl">The rock control.</param>
