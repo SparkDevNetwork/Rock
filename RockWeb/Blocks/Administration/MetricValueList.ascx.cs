@@ -12,215 +12,126 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Constants;
 using Rock.Model;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
+    /// <summary>
+    /// User contols for managing metric values
+    /// </summary>
     public partial class MetricValueList : Rock.Web.UI.RockBlock
-    {
-        #region Fields
-
-        private MetricService metricService = new MetricService();
-        private MetricValueService metricValueService = new MetricValueService();
-        private DefinedValueService definedValueService = new DefinedValueService();        
-        private bool _canConfigure = false;
-        
-        #endregion
-
+    {       
         #region Control Methods
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
 
-            try
+            gMetricValues.DataKeyNames = new string[] { "id" };
+            gMetricValues.Actions.ShowAdd = true;
+            gMetricValues.Actions.AddClick += gMetricValues_Add;
+            gMetricValues.GridRebind += gMetricValues_GridRebind;            
+
+            bool canAddEditDelete = IsUserAuthorized( "Edit" );
+            gMetricValues.Actions.ShowAdd = canAddEditDelete;
+            gMetricValues.IsDeleteEnabled = canAddEditDelete;
+
+            modalValue.SaveClick += btnSaveValue_Click;
+            modalValue.OnCancelScript = string.Format( "$('#{0}').val('');", hfMetricValueId.ClientID );
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            if ( !Page.IsPostBack )
             {
-                _canConfigure = CurrentPage.IsAuthorized( "Administrate", CurrentPerson );
-
-                rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
-                BindCategoryFilter();                
-
-                if ( _canConfigure )
+                string itemId = PageParameter( "metricId" );
+                if ( !string.IsNullOrWhiteSpace( itemId ) )
                 {
-                    rGridMetric.DataKeyNames = new string[] { "id" };
-                    rGridMetric.Actions.ShowAdd = true;
-
-                    rGridMetric.Actions.AddClick += rGridMetric_Add;
-                    rGridMetric.GridRebind += rGridMetric_GridRebind;
-
-                    rGridValue.DataKeyNames = new string[] { "id" };
-                    rGridValue.Actions.ShowAdd = true;
-
-                    rGridValue.Actions.AddClick += rGridValue_Add;
-                    rGridValue.GridRebind += rGridValue_GridRebind;
-
-                    modalValue.SaveClick += btnSaveValue_Click;
-                    modalValue.OnCancelScript = string.Format( "$('#{0}').val('');", hfIdValue.ClientID );
+                    hfMetricId.Value = itemId.AsInteger( false ).ToString();
+                    BindGrid();
                 }
                 else
                 {
-                    DisplayError( "You are not authorized to configure this page" );
+                    pnlList.Visible = false;
                 }
             }
-            catch ( SystemException ex )
-            {
-                DisplayError( ex.Message );
-            }
-        }
-
-        protected override void OnLoad( EventArgs e )
-        {
-            if ( !Page.IsPostBack && _canConfigure )
-                BindGridMetric();
-
-            base.OnLoad( e );
         }
 
         #endregion
 
         #region Events
 
-        void rFilter_ApplyFilterClick( object sender, EventArgs e )
-        {
-            rFilter.SaveUserPreference( "Category", ddlCategoryFilter.SelectedValue );
-            BindGridMetric();
-        }
-
-        protected void rGridMetric_Add( object sender, EventArgs e )
-        {
-            BindCollectionFrequencies();
-            ShowEditMetric( 0 );
-        }
-
-        protected void rGridMetric_Edit( object sender, RowEventArgs e )
-        {
-            BindCollectionFrequencies();
-            ShowEditMetric( (int)rGridMetric.DataKeys[e.RowIndex]["id"] );
-        }
-
-        protected void rGridMetric_EditValue( object sender, RowEventArgs e )
-        {
-            hfIdMetric.Value = rGridMetric.DataKeys[e.RowIndex]["id"].ToString();
-            BindGridValue();
-
-            pnlMetricList.Visible = false;
-            pnlValueList.Visible = true;
-        }
-
-        protected void rGridMetric_Delete( object sender, RowEventArgs e )
-        {
-            var metricService = new Rock.Model.MetricService();
-
-            Rock.Model.Metric metric = metricService.Get( (int)rGridMetric.DataKeys[e.RowIndex]["id"] );
-            if ( metric != null )
-            {
-                metricService.Delete( metric, CurrentPersonId );
-                metricService.Save( metric, CurrentPersonId );
-            }
-
-            BindGridMetric();
-        }
-
-        protected void btnSaveMetric_Click( object sender, EventArgs e )
-        {
-            using ( new Rock.Data.UnitOfWorkScope() )
-            {
-                var metricService = new Rock.Model.MetricService();
-                Rock.Model.Metric metric;                
-                int metricId = ( hfIdMetric.Value ) != null ? Int32.Parse( hfIdMetric.Value ) : 0;
-
-                if ( metricId == 0 )
-                {
-                    metric = new Rock.Model.Metric();
-                    metric.IsSystem = false;
-                    metricService.Add( metric, CurrentPersonId );
-                }
-                else
-                {
-                    metric = metricService.Get( metricId );
-                }
-
-                metric.Category = tbCategory.Text;
-                metric.Title = tbTitle.Text;
-                metric.Subtitle = tbSubtitle.Text;
-                metric.Description = tbDescription.Text;
-                metric.MinValue = tbMinValue.Text != "" ? Int32.Parse( tbMinValue.Text, NumberStyles.AllowThousands ) : (int?)null;
-                metric.MaxValue = tbMinValue.Text != "" ? Int32.Parse( tbMaxValue.Text, NumberStyles.AllowThousands ) : (int?)null;
-                metric.Type = cbType.Checked;
-                metric.CollectionFrequencyValueId = Int32.Parse( ddlCollectionFrequency.SelectedValue );
-                metric.Source = tbSource.Text;
-                metric.SourceSQL = tbSourceSQL.Text;
-
-                metricService.Save( metric, CurrentPersonId );
-            }
-
-            BindCategoryFilter();
-            BindGridMetric();
-
-            pnlMetricDetails.Visible = false;
-            pnlMetricList.Visible = true;
-        }
-
-        protected void btnCancelMetric_Click( object sender, EventArgs e )
-        {
-            pnlMetricDetails.Visible = false;
-            pnlMetricList.Visible = true;
-        }
-
-        void rGridMetric_GridRebind( object sender, EventArgs e )
-        {
-            BindCategoryFilter();
-            BindGridMetric();
-        }
-        
-        protected void rGridValue_Add( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the Add event of the gMetricValues control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void gMetricValues_Add( object sender, EventArgs e )
         {
             BindMetricFilter();
-            ShowEditValue( 0 );
+            ShowEdit( 0 );
         }
 
-        protected void rGridValue_Edit( object sender, RowEventArgs e )
+        /// <summary>
+        /// Handles the Edit event of the gMetricValues control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gMetricValues_Edit( object sender, RowEventArgs e )
         {
             BindMetricFilter();
-            ShowEditValue( (int)rGridValue.DataKeys[e.RowIndex]["id"] );
+            ShowEdit( (int)e.RowKeyValue );
         }
 
-        protected void rGridValue_Delete( object sender, RowEventArgs e )
+        /// <summary>
+        /// Handles the Delete event of the gMetricValues control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
+        protected void gMetricValues_Delete( object sender, RowEventArgs e )
         {
-            var metricValueService = new Rock.Model.MetricValueService();
+            var metricValueService = new MetricValueService();
 
-            Rock.Model.MetricValue metricValue = metricValueService.Get( (int)rGridValue.DataKeys[e.RowIndex]["id"] );
+            MetricValue metricValue = metricValueService.Get( (int)e.RowKeyValue );
             if ( metricValue != null )
             {
                 metricValueService.Delete( metricValue, CurrentPersonId );
                 metricValueService.Save( metricValue, CurrentPersonId );
             }
 
-            BindGridValue();
+            BindGrid();
         }
 
-        protected void btnValueDone_Click( object sender, EventArgs e )
-        {
-            BindCategoryFilter();
-            BindGridMetric();
-            pnlValueList.Visible = false;
-            pnlMetricList.Visible = true;        
-        }
-
+        /// <summary>
+        /// Handles the Click event of the btnSaveValue control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSaveValue_Click( object sender, EventArgs e )
         {
             using ( new Rock.Data.UnitOfWorkScope() )
             {
-                int metricValueId = ( hfIdValue.Value ) != null ? Int32.Parse( hfIdValue.Value ) : 0;
-                var metricValueService = new Rock.Model.MetricValueService();
-                Rock.Model.MetricValue metricValue;                                
+                int metricValueId = hfMetricValueId.ValueAsInt();
+                var metricValueService = new MetricValueService();
+                MetricValue metricValue;
 
                 if ( metricValueId == 0 )
                 {
-                    metricValue = new Rock.Model.MetricValue();
+                    metricValue = new MetricValue();
                     metricValue.IsSystem = false;
-                    metricValue.MetricId = Int32.Parse( hfIdMetric.Value );
+                    metricValue.MetricId = hfMetricId.ValueAsInt();
                     metricValueService.Add( metricValue, CurrentPersonId );
                 }
                 else
@@ -237,200 +148,99 @@ namespace RockWeb.Blocks.Administration
                 metricValueService.Save( metricValue, CurrentPersonId );
             }
 
-            BindGridValue();
-
-            modalValue.Hide();
-            pnlValueList.Visible = true;
+            BindGrid();
+            modalValue.Hide();            
         }
 
-        protected void btnCancelValue_Click( object sender, EventArgs e )
+        /// <summary>
+        /// Handles the GridRebind event of the gMetricValues control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        void gMetricValues_GridRebind( object sender, EventArgs e )
         {
-            modalValue.Hide();
-            pnlValueList.Visible = true;
-        }
-
-        void rGridValue_GridRebind( object sender, EventArgs e )
-        {
-            BindGridValue();
+            BindGrid();
         }
         
         #endregion
 
-        #region Methods
-                
-        private void BindCategoryFilter()
+        #region Internal Methods
+
+        /// <summary>
+        /// Binds the grid.
+        /// </summary>
+        private void BindGrid()
         {
-            ddlCategoryFilter.Items.Clear();
-            ddlCategoryFilter.Items.Add( Rock.Constants.All.Text );
+            int metricId = hfMetricId.ValueAsInt();
+            var queryable = new MetricValueService().Queryable()
+                .Where( a => a.MetricId == metricId );
 
-            MetricService metricService = new MetricService();
-            var items = metricService.Queryable().
-                Where( a => a.Category != "" && a.Category != null ).
-                OrderBy( a => a.Category ).
-                Select( a => a.Category ).
-                Distinct().ToList();
-
-            foreach ( var item in items )
-            {
-                ListItem li = new ListItem( item );
-                li.Selected = ( !Page.IsPostBack && rFilter.GetUserPreference( "Category" ) == item );
-                ddlCategoryFilter.Items.Add( li );
-            }
-        }
-
-        private void BindGridMetric()
-        {
-            var queryable = new Rock.Model.MetricService().Queryable();
-
-            if ( ddlCategoryFilter.SelectedValue != Rock.Constants.All.Text )
-                queryable = queryable.
-                    Where( a => a.Category == ddlCategoryFilter.SelectedValue );
-
-            SortProperty sortProperty = rGridMetric.SortProperty;
+            SortProperty sortProperty = gMetricValues.SortProperty;
             if ( sortProperty != null )
-                queryable = queryable.
-                    Sort( sortProperty );
-            else
-                queryable = queryable.
-                    OrderBy( a => a.Category ).
-                    ThenBy( a => a.Title );
-
-            rGridMetric.DataSource = queryable.ToList();
-            rGridMetric.DataBind();
-
-        }
-
-        private void BindCollectionFrequencies()
-        {
-            ddlCollectionFrequency.Items.Clear();
-
-            List<DefinedValue> definedValues = new List<DefinedValue>();
-            using ( new Rock.Data.UnitOfWorkScope() )
             {
-                definedValues = definedValueService.Queryable().
-                    Where( definedValue => definedValue.DefinedType.Guid == new Guid( Rock.SystemGuid.DefinedType.METRIC_COLLECTION_FREQUENCY ) ).
-                    OrderBy( v => v.Order).
-                    ToList();
-            }
-
-            foreach ( DefinedValue value in definedValues )
-                ddlCollectionFrequency.Items.Add( new ListItem( value.Name, value.Id.ToString() ) );
-
-        }
-
-        protected void ShowEditMetric( int metricId )
-        {
-            hfIdMetric.Value = metricId.ToString();
-
-            var metric = new Rock.Model.MetricService().Get( metricId );
-
-            if ( metric != null )
-            {
-                lAction.Text = "Edit";
-                tbCategory.Text = metric.Category;
-                tbTitle.Text = metric.Title;
-                tbSubtitle.Text = metric.Subtitle;
-                tbDescription.Text = metric.Description;
-                tbMinValue.Text = metric.MinValue.ToString();
-                tbMaxValue.Text = metric.MaxValue.ToString();
-                cbType.Checked = metric.Type;
-                ddlCollectionFrequency.SelectedValue = metric.CollectionFrequencyValueId.ToString();
-                tbSource.Text = metric.Source;
-                tbSourceSQL.Text = metric.SourceSQL;
+                queryable = queryable.Sort( sortProperty );
             }
             else
             {
-                lAction.Text = "Add";
-                tbCategory.Text = ddlCategoryFilter.SelectedValue != Rock.Constants.All.Text ? ddlCategoryFilter.SelectedValue : string.Empty;
-                tbTitle.Text = string.Empty;
-                tbSubtitle.Text = string.Empty;
-                tbDescription.Text = string.Empty;
-                tbMinValue.Text = string.Empty;
-                tbMaxValue.Text = string.Empty;
-                cbType.Checked = false;
-                tbSource.Text = string.Empty;
-                tbSourceSQL.Text = string.Empty;
+                queryable = queryable.OrderBy( a => a.Id ).ThenBy( a => a.Value );
             }
 
-            pnlMetricList.Visible = false;
-            pnlMetricDetails.Visible = true;
+            gMetricValues.DataSource = queryable.ToList();
+            gMetricValues.DataBind();
         }
 
+        /// <summary>
+        /// Binds the metric filter.
+        /// </summary>
         private void BindMetricFilter()
         {
             ddlMetricFilter.Items.Clear();
 
-            List<Metric> metrics = new List<Metric>();
-            using ( new Rock.Data.UnitOfWorkScope() )
-            {
-                metrics = metricService.Queryable().
-                    Where( a => a.Title != "" && a.Title != null ).
-                    OrderBy( a => a.Title ).
-                    ToList();
-            }
+            var metricList = new MetricService().Queryable().OrderBy( m => m.Title ).ToList();
 
-            foreach ( Metric metric in metrics )
+            foreach ( Metric metric in metricList )
+            {
                 ddlMetricFilter.Items.Add( new ListItem( metric.Title, metric.Id.ToString() ) );
-
-            ddlMetricFilter.SelectedValue = hfIdMetric.Value;
+            }
         }
-        
-        private void BindGridValue( )
-        {
-            int metricId = ( hfIdMetric.Value != null ) ? Int32.Parse( hfIdMetric.Value ) : 0;
-            var queryable = new Rock.Model.MetricValueService().Queryable();
-            
-            queryable = queryable.
-                Where( a => a.MetricId == metricId );
 
-            SortProperty sortProperty = rGridValue.SortProperty;
-            if ( sortProperty != null )
-                queryable = queryable.
-                    Sort( sortProperty );
+        /// <summary>
+        /// Shows the edit modal.
+        /// </summary>
+        /// <param name="valueId">The value unique identifier.</param>
+        protected void ShowEdit( int valueId )
+        {
+            var metricId = hfMetricId.ValueAsInt();
+            var metric = new MetricService().Get( metricId );
+
+            MetricValue metricValue = null;
+            if ( !valueId.Equals( 0 ) )
+            {
+                metricValue = new MetricValueService().Get( valueId );
+                if ( metric != null )
+                {
+                    lActionTitle.Text = ActionTitle.Edit( "metric value for " + metric.Title );
+                }
+            }
             else
-                queryable = queryable.
-                    OrderBy( a => a.Id ).
-                    ThenBy( a => a.Value );
-
-            rGridValue.DataSource = queryable.ToList();
-            rGridValue.DataBind();
-        }
-
-        protected void ShowEditValue( int metricValueId )
-        {
-            hfIdValue.Value = metricValueId.ToString();
-
-            var metricValue = new Rock.Model.MetricValueService().Get( metricValueId );
-
-            if ( metricValue != null )
             {
-                lValue.Text = "Edit";
-                tbValue.Text = metricValue.Value;
-                tbValueDescription.Text = metricValue.Description;
-                tbXValue.Text = metricValue.xValue;
-                tbLabel.Text = metricValue.Label;
-                cbIsDateBased.Checked = metricValue.isDateBased;
-            }
-            else 
-            {
-                lValue.Text = "Add";
-                tbValue.Text = string.Empty;
-                tbValueDescription.Text = string.Empty;
-                tbXValue.Text = string.Empty;
-                tbLabel.Text = string.Empty;
-                cbIsDateBased.Checked = false;
+                metricValue = new MetricValue { Id = 0 };
+                metricValue.MetricId = metricId;
+                if ( metric != null )
+                {
+                    lActionTitle.Text = ActionTitle.Add( "metric value for " + metric.Title );
+                }
             }
 
-            ddlMetricFilter.SelectedValue = hfIdMetric.Value;                
-            modalValue.Show();
-            
-        }
+            hfMetricValueId.SetValue( metricValue.Id );
+            ddlMetricFilter.SelectedValue = hfMetricId.Value;
+            tbValue.Text = metricValue.Value;
+            tbValueDescription.Text = metricValue.Description;
+            tbXValue.Text = metricValue.xValue;
+            tbLabel.Text = metricValue.Label;
+            cbIsDateBased.Checked = metricValue.isDateBased; 
 
-        private void DisplayError( string message )
-        {
-            pnlMessage.Controls.Clear();
-            pnlMessage.Controls.Add( new LiteralControl( message ) );
-            pnlMessage.Visible = true;
+            modalValue.Show();            
         }
 
         #endregion
