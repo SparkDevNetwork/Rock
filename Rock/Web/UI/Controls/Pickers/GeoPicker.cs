@@ -461,16 +461,12 @@ namespace Rock.Web.UI.Controls
 
             if ( renderLabel )
             {
-                writer.AddAttribute( "class", "control-group" );
+                writer.AddAttribute( "class", "form-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                _label.AddCssClass( "control-label" );
-
-                _label.RenderControl( writer );
-
-                writer.AddAttribute( "class", "controls" );
-
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.RenderBeginTag(HtmlTextWriterTag.Label);
+                writer.Write(_label.Text);
+                writer.RenderEndTag();
             }
 
             if ( Required )
@@ -486,7 +482,7 @@ namespace Rock.Web.UI.Controls
             if ( this.Enabled )
             {
                 string controlHtmlFormatStart = @"
-        <div class='picker picker-select' id='{0}'> 
+        <div class='picker picker-geography' id='{0}'> 
             <a class='picker-label' href='#'>
                 <i class='icon-map-marker'></i>
                 <span id='selectedGeographyLabel_{0}'>{1}</span>
@@ -507,7 +503,7 @@ namespace Rock.Web.UI.Controls
                 }
 
                 string controlHtmlFormatMiddle = @"
-            <div class='picker-menu dropdown-menu picker-geography' style='Width: 500px;'>
+            <div class='picker-menu dropdown-menu'>
                 <h4>Geography Picker</h4>
                 <!-- Our custom delete button that we add to the map for deleting polygons. -->
                 <div style='display: none; z-index: 10; position: absolute; left: 105px; top: 0px; line-height:0;' id='gmnoprint-delete-button_{0}'>
@@ -517,10 +513,11 @@ namespace Rock.Web.UI.Controls
                 </div>
                 <!-- This is where the Google Map (with Drawing Tools) will go. -->
                 <div id='geoPicker_{0}' style='height: 300px; width: 500px' /></div>
-                <hr />
 ";
 
                 writer.Write( controlHtmlFormatMiddle, this.ClientID, this.GeoDisplayName );
+
+                writer.Write("<div class='picker-actions'>");
 
                 // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
                 if ( SelectGeography != null )
@@ -536,6 +533,7 @@ namespace Rock.Web.UI.Controls
               <a class='btn btn-xs' id='btnCancel_{0}'>Cancel</a>
           </div>
       </div> 
+    </div>
 ";
 
                 writer.Write( string.Format( controlHtmlFormatEnd, this.ClientID, this.GeoDisplayName ) );
@@ -551,8 +549,6 @@ namespace Rock.Web.UI.Controls
 
             if ( renderLabel )
             {
-                writer.RenderEndTag();
-
                 writer.RenderEndTag();
             }
         }
