@@ -20,7 +20,7 @@
                     <Rock:DeleteField />
                 </Columns>
             </Rock:Grid>
-            
+
             <h4 runat="server">DropDowns</h4>
             <Rock:DataDropDownList ID="ddlDataExample" runat="server" Label="Rock:DataDropDownList/RockDropDownList" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
             <Rock:StateDropDownList ID="NotificationBox3" runat="server" Label="Rock:StateDropDownList" />
@@ -29,16 +29,19 @@
             <h4 runat="server">Input</h4>
             <Rock:DataTextBox ID="dt" runat="server" Label="Rock:DataTextBox" LabelTextFromPropertyName="false" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
             <Rock:RockCheckBox ID="labeledCheckBox" runat="server" Label="Rock:RockCheckBox" />
-            <Rock:RockCheckBoxList ID="labeledCheckBoxList" runat="server" Label="Rock:RockCheckBoxList"  />
-            <Rock:RockRadioButtonList ID="labeledRadioButtonList" runat="server" Label="Rock:RockRadioButtonList"  />
+            <Rock:RockCheckBoxList ID="labeledCheckBoxList" runat="server" Label="Rock:RockCheckBoxList" />
+            <Rock:RockRadioButtonList ID="labeledRadioButtonList" runat="server" Label="Rock:RockRadioButtonList" />
             <Rock:NumberRangeEditor ID="numberRangeEditor" runat="server" Label="Rock:NumberRangeEditor" LowerValue="10" UpperValue="25" />
 
             <h4 runat="server">Pickers</h4>
+
             <Rock:DatePicker ID="datePicker" runat="server" Label="Rock:DatePicker" />
             <Rock:DateTimePicker ID="dateTimePicker" runat="server" Label="Rock:DateTimePicker" />
+
             <Rock:TimePicker ID="timePicker" runat="server" Label="Rock:TimePicker" />
-            <Rock:MonthYearPicker ID="monthYearPicker" runat="server" Label="Rock:MonthYearPicker" OnTextChanged="monthYearPicker_TextChanged" AutoPostBack="true" />
-            <Rock:MonthDayPicker ID="monthDayPicker" runat="server" Label="Rock:MonthDayPicker" OnTextChanged="monthDayPicker_TextChanged" AutoPostBack="true" />
+
+            <Rock:MonthYearPicker ID="monthYearPicker" runat="server" Label="Rock:MonthYearPicker" OnSelectedMonthYearChanged="monthYearPicker_SelectedMonthYearChanged" />
+            <Rock:MonthDayPicker ID="monthDayPicker" runat="server" Label="Rock:MonthDayPicker" OnSelectedMonthDayChanged="monthDayPicker_SelectedMonthDayChanged" />
             <Rock:DateRangePicker ID="dateRangerPicker" runat="server" Label="Rock:DateRangePicker" LowerValue="1/1/2012" UpperValue="12/31/2014" />
 
             <Rock:GroupPicker ID="groupPicker" runat="server" Label="Rock:GroupPicker" />
@@ -55,9 +58,6 @@
             <Rock:ComponentPicker ID="componentPicker" runat="server" Label="Rock:ComponentPicker" />
 
             <Rock:GeoPicker ID="geoPicker" runat="server" Label="Rock:GeoPicker" DrawingMode="Point" />
-            
-            
-
 
             <%-- 
                 <Rock:MergeFieldPicker ID="LabeledCheckBox4" runat="server" Label="Rock:MergeFieldPicker" />
@@ -86,8 +86,6 @@
 
             <h4 runat="server">Rock:HtmlEditor</h4>
             <Rock:HtmlEditor ID="htmlEdit" runat="server" Label="HtmlEditor" />
-
-            
 
         </asp:Panel>
     </ContentTemplate>
