@@ -73,6 +73,19 @@ namespace Rock
             return obj;
         }
 
+        /// <summary>
+        /// Safely ToString() this item, even if it's null.
+        /// </summary>
+        /// <param name="obj">an object</param>
+        /// <returns>The ToString or the empty string if the item is null.</returns>
+        public static string ToStringSafe( this object obj )
+        {
+            if ( obj != null )
+            {
+                return obj.ToString();
+            }
+            return String.Empty;
+        }
         #endregion
 
         #region Type Extensions
@@ -389,7 +402,6 @@ namespace Rock
                 return value;
             }
         }
-
         #endregion
 
         #region Int Extensions
