@@ -4,21 +4,21 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
-using Rock.Constants;
 
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// A <see cref="T:System.Web.UI.WebControls.DropDownList"/> control with an associated label.
+    /// A <see cref="T:System.Web.UI.WebControls.BulletedList"/> control with an associated label.
     /// </summary>
-    [ToolboxData( "<{0}:RockDropDownList runat=server></{0}:RockDropDownList>" )]
-    public class RockDropDownList : DropDownList, IRockControl
+    [ToolboxData( "<{0}:RockBulletedList runat=server></{0}:RockBulletedList>" )]
+    public class RockBulletedList : CompositeControl, IRockControl
     {
-        #region IRockControl implementation (NOTE: uses a different Required property than other IRockControl controls)
+        #region IRockControl implementation
 
         /// <summary>
         /// Gets or sets the label text.
@@ -79,28 +79,7 @@ namespace Rock.Web.UI.Controls
         public bool Required
         {
             get { return ViewState["Required"] as bool? ?? false; }
-
-            set 
-            { 
-                var li = this.Items.FindByValue( None.IdValue );
-
-                if ( value )
-                {
-                    if ( li != null )
-                    {
-                        this.Items.Remove( li );
-                    }
-                }
-                else
-                {
-                    if ( li == null )
-                    {
-                        this.Items.Insert( 0, new ListItem( string.Empty, None.IdValue ) );
-                    }
-                }
-
-                ViewState["Required"] = value; 
-            }
+            set { ViewState["Required"] = value; }
         }
 
         /// <summary>
@@ -156,15 +135,48 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
+        private BulletedList bulletedList;
+
         /// <summary>
-        /// Initializes a new instance of the <see cref="RockDropDownList" /> class.
+        /// Gets or sets the label text.
         /// </summary>
-        public RockDropDownList()
+        /// <value>
+        /// The label text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The Bulleted Items." )
+        ]
+        public ListItemCollection Items
         {
-            RequiredFieldValidator = new RequiredFieldValidator();
-            RequiredFieldValidator.ValidationGroup = this.ValidationGroup;
+            get
+            {
+                EnsureChildControls();
+                return bulletedList.Items;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                bulletedList.Items.Clear();
+                foreach ( string item in value )
+                {
+                    bulletedList.Items.Add( item );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockBulletedList"/> class.
+        /// </summary>
+        public RockBulletedList()
+            : base()
+        {
             HelpBlock = new HelpBlock();
         }
+
 
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
@@ -174,6 +186,10 @@ namespace Rock.Web.UI.Controls
             base.CreateChildControls();
             Controls.Clear();
             RockControlHelper.CreateChildControls( this, Controls );
+
+            bulletedList = new BulletedList();
+            bulletedList.ID = this.ID;
+            Controls.Add( bulletedList );
         }
 
         /// <summary>
@@ -194,73 +210,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            ( (WebControl)this ).AddCssClass( "form-control" );
-            base.RenderControl( writer );
-
-            RenderDataValidator( writer );
-        }
-
-        /// <summary>
-        /// Renders any data validator.
-        /// </summary>
-        /// <param name="writer">The writer.</param>
-        protected virtual void RenderDataValidator( HtmlTextWriter writer)
-        {
-        }
-
-        /// <summary>
-        /// Creates a collection to store child controls.
-        /// </summary>
-        /// <returns>
-        /// Always returns an <see cref="T:System.Web.UI.EmptyControlCollection"/>.
-        /// </returns>
-        protected override ControlCollection CreateControlCollection()
-        {
-            // By default a DropDownList control does not allow adding of child controls.
-            // This method needs to be overridden to allow this
-            return new ControlCollection( this );
-        }
-
-        /// <summary>
-        /// Saves the current view state of the <see cref="T:System.Web.UI.WebControls.ListControl" /> -derived control and the items it contains.
-        /// </summary>
-        /// <returns>
-        /// An <see cref="T:System.Object" /> that contains the saved state of the <see cref="T:System.Web.UI.WebControls.ListControl" /> control.
-        /// </returns>
-        protected override object SaveViewState()
-        {
-            object[] allStates = new object[this.Items.Count + 1];
-            allStates[0] = base.SaveViewState();
-
-            int i = 1;
-            foreach ( ListItem li in this.Items )
-            {
-                allStates[i++] = li.Attributes["optiongroup"];
-            }
-
-            return allStates;
-        }
-
-        /// <summary>
-        /// Loads the previously saved view state of the <see cref="T:System.Web.UI.WebControls.DetailsView" /> control.
-        /// </summary>
-        /// <param name="savedState">An <see cref="T:System.Object" /> that represents the state of the <see cref="T:System.Web.UI.WebControls.ListControl" /> -derived control.</param>
-        protected override void LoadViewState( object savedState )
-        {
-            if ( savedState != null )
-            {
-                object[] allStates = (object[])savedState;
-                if ( allStates[0] != null )
-                {
-                    base.LoadViewState( allStates[0] );
-                }
-
-                int i = 1;
-                foreach ( ListItem li in this.Items )
-                {
-                    li.Attributes["optiongroup"] = (string)allStates[i++];
-                }
-            }
+            bulletedList.CssClass = this.CssClass;
+            bulletedList.RenderControl( writer );
         }
 
     }
