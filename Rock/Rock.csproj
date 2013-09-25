@@ -798,7 +798,7 @@
     <Compile Include="Web\UI\Controls\ImageUploader.cs" />
     <Compile Include="Web\UI\Controls\RockTextBox.cs" />
     <Compile Include="Web\UI\Controls\PageTitle.cs" />
-    <Compile Include="Web\UI\Controls\LabeledCheckBoxList.cs" />
+    <Compile Include="Web\UI\Controls\RockCheckBoxList.cs" />
     <Compile Include="Web\UI\Controls\Data Fields\FieldTypeList.cs" />
     <Compile Include="Web\UI\Controls\Grid\GridActions.cs" />
     <Compile Include="Web\UI\Controls\RockCheckBox.cs" />

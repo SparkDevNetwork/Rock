@@ -29,7 +29,7 @@
             <h4 runat="server">Input</h4>
             <Rock:DataTextBox ID="dt" runat="server" Label="Rock:DataTextBox" LabelTextFromPropertyName="false" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
             <Rock:RockCheckBox ID="labeledCheckBox" runat="server" Label="Rock:RockCheckBox" />
-            <Rock:LabeledCheckBoxList ID="labeledCheckBoxList" runat="server" Label="Rock:LabeledCheckBoxList"  />
+            <Rock:RockCheckBoxList ID="labeledCheckBoxList" runat="server" Label="Rock:RockCheckBoxList"  />
             <Rock:RockRadioButtonList ID="labeledRadioButtonList" runat="server" Label="Rock:RockRadioButtonList"  />
             <Rock:NumberRangeEditor ID="numberRangeEditor" runat="server" Label="Rock:NumberRangeEditor" LowerValue="10" UpperValue="25" />
 

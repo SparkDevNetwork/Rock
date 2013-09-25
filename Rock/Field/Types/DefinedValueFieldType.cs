@@ -161,7 +161,7 @@ namespace Rock.Field.Types
 
             if ( configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ ALLOW_MULTIPLE_KEY ].Value.AsBoolean() )
             {
-                editControl = new Rock.Web.UI.Controls.LabeledCheckBoxList { ID = id }; 
+                editControl = new Rock.Web.UI.Controls.RockCheckBoxList { ID = id }; 
                 editControl.AddCssClass( "checkboxlist-group" );
             }
             else
@@ -202,9 +202,9 @@ namespace Rock.Field.Types
                 {
                     ids.Add( ( (ListControl)control ).SelectedValue );
                 }
-                else if ( control is Rock.Web.UI.Controls.LabeledCheckBoxList )
+                else if ( control is Rock.Web.UI.Controls.RockCheckBoxList )
                 {
-                    var cblControl = control as Rock.Web.UI.Controls.LabeledCheckBoxList;
+                    var cblControl = control as Rock.Web.UI.Controls.RockCheckBoxList;
 
                     ids.AddRange( cblControl.Items.Cast<ListItem>()
                         .Where( i => i.Selected )
