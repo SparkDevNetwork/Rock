@@ -8,7 +8,7 @@
         <asp:Panel ID="pnlMetricList" runat="server">
 
             <Rock:GridFilter ID="rFilter" runat="server">
-                <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" />
+                <Rock:RockDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" />
             </Rock:GridFilter>
             <Rock:Grid ID="gMetrics" runat="server" AllowSorting="true" EmptyDataText="No Metrics Found" RowItemText="Metric" OnRowSelected="gMetrics_Edit">
                 <Columns>
