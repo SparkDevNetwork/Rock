@@ -24,7 +24,7 @@
 
                     <div class="row-fluid">
                         <div class="span12">
-                            <Rock:LabeledDropDownList ID="ddlGroupMemberStatus" runat="server" Label="Member Status" />
+                            <Rock:RockDropDownList ID="ddlGroupMemberStatus" runat="server" Label="Member Status" />
                         </div>
                     </div>
 

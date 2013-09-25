@@ -17,7 +17,7 @@
                 </div>
             </div>
             <Rock:GridFilter ID="fExceptionList" runat="server">
-                <Rock:LabeledDropDownList ID="ddlSite" runat="server" Label="Site" />
+                <Rock:RockDropDownList ID="ddlSite" runat="server" Label="Site" />
                 <Rock:PagePicker ID="ppPage" runat="server" Label="Page" />
                 <Rock:PersonPicker ID="ppUser" runat="server" Label="User" />
                 <Rock:RockTextBox ID="txtStatusCode" runat="server" Label="Status Code" />

@@ -6,8 +6,8 @@
                 <Rock:DatePicker ID="dtRequestEnteredDateRangeStartDate" runat="server" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="EnteredDate" Label="From date" />
                 <Rock:DatePicker ID="dtRequestEnteredDateRangeEndDate" runat="server" SourceTypeName="Rock.Model.PrayerRequest, Rock" PropertyName="EnteredDate" Label="To date" />
 
-                <%--<Rock:LabeledDropDownList ID="ddlGroupCategoryFilter" runat="server" Label="Prayer Group Category" OnTextChanged="ddlGroupCategoryFilter_TextChanged" />
-                <Rock:LabeledDropDownList ID="ddlPrayerCategoryFilter" runat="server" Label="Prayer Category" />--%>
+                <%--<Rock:RockDropDownList ID="ddlGroupCategoryFilter" runat="server" Label="Prayer Group Category" OnTextChanged="ddlGroupCategoryFilter_TextChanged" />
+                <Rock:RockDropDownList ID="ddlPrayerCategoryFilter" runat="server" Label="Prayer Category" />--%>
                 <Rock:CategoryPicker ID="cpPrayerCategoryFilter" runat="server" Label="Category" Required="true" EntityTypeName="Rock.Model.PrayerRequest"/>
 
                 <Rock:RockRadioButtonList ID="rblApprovedFilter" runat="server" Label="Approval Status">

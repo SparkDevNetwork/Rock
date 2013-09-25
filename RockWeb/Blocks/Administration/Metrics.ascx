@@ -8,7 +8,7 @@
         <asp:Panel ID="pnlMetricList" runat="server">
 
             <Rock:GridFilter ID="rFilter" runat="server">
-                <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" Label="Category" />
+                <Rock:RockDropDownList ID="ddlCategoryFilter" runat="server" Label="Category" />
             </Rock:GridFilter>
             <Rock:Grid ID="rGridMetric" runat="server" AllowSorting="true" EmptyDataText="No Metrics Found" RowItemText="Metric" OnRowSelected="rGridMetric_Edit">
                 <Columns>
@@ -53,7 +53,7 @@
                 <div class="span6">
                     <fieldset>
                         <legend>&nbsp;</legend>
-                        <Rock:LabeledDropDownList ID="ddlCollectionFrequency" runat="server"
+                        <Rock:RockDropDownList ID="ddlCollectionFrequency" runat="server"
                             Label="Collection Frequency"  />
                         <Rock:DataTextBox ID="tbMinValue" runat="server" Label="Minimum Value"
                             SourceTypeName="Rock.Model.Metric, Rock" PropertyName="MinValue" />
@@ -109,7 +109,7 @@
 
                 <fieldset>
                     <div class="span6">
-                        <Rock:LabeledDropDownList ID="ddlMetricFilter" runat="server" Label="Metric" />
+                        <Rock:RockDropDownList ID="ddlMetricFilter" runat="server" Label="Metric" />
                         <Rock:DataTextBox ID="tbValue" runat="server" Label="Value"
                             SourceTypeName="Rock.Model.MetricValue, Rock" PropertyName="Value" />
                         <Rock:DataTextBox ID="tbValueDescription" runat="server" Label="Description"

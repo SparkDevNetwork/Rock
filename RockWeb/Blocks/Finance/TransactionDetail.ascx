@@ -29,19 +29,19 @@
             </div>
 
             <div class="span4">
-                <Rock:LabeledDropDownList ID="ddlSourceType" runat="server" Label="Source Type" TabIndex="6" />
+                <Rock:RockDropDownList ID="ddlSourceType" runat="server" Label="Source Type" TabIndex="6" />
                         
-                <Rock:LabeledDropDownList ID="ddlTransactionType" runat="server" Label="Transaction Type" TabIndex="7" />
+                <Rock:RockDropDownList ID="ddlTransactionType" runat="server" Label="Transaction Type" TabIndex="7" />
 
                 <Rock:DataTextBox ID="tbTransactionCode" runat="server" Label="Transaction Code" TabIndex="8"
                     SourceTypeName="Rock.Model.FinancialTransaction, Rock" PropertyName="TransactionCode" />
             </div>
             
             <div class="span4">
-                <Rock:LabeledDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" TabIndex="9" />
-                <Rock:LabeledDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" TabIndex="10" />
+                <Rock:RockDropDownList ID="ddlCurrencyType" runat="server" Label="Currency Type" TabIndex="9" />
+                <Rock:RockDropDownList ID="ddlCreditCardType" runat="server" Label="Credit Card Type" TabIndex="10" />
                 <Rock:ComponentPicker ID="ddlPaymentGateway" runat="server" Label="Payment Gateway" TabIndex="11" />
-                <%--  <Rock:LabeledDropDownList ID="ddlEntityType" runat="server" Label="Entity Type" />--%>
+                <%--  <Rock:RockDropDownList ID="ddlEntityType" runat="server" Label="Entity Type" />--%>
             </div>
 
         </fieldset>

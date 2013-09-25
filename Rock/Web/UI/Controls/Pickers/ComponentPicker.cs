@@ -18,43 +18,8 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class ComponentPicker : LabeledDropDownList
+    public class ComponentPicker : RockDropDownList
     {
-        /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="RockTextBox" /> is required.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if required; otherwise, <c>false</c>.
-        /// </value>
-        public override bool Required
-        {
-            get
-            {
-                return base.Required;
-            }
-            set
-            {
-                var li = this.Items.FindByValue( string.Empty );
-
-                if ( value )
-                {
-                    if ( li != null )
-                    {
-                        this.Items.Remove( li );
-                    }
-                }
-                else
-                {
-                    if ( li == null )
-                    {
-                        this.Items.Insert( 0, new ListItem( string.Empty, string.Empty ) );
-                    }
-                }
-
-                base.Required = value;
-            }
-        }
-
         /// <summary>
         /// Gets or sets the type of the container.
         /// </summary>

@@ -133,6 +133,8 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
+        #region Properties
+
         /// <summary>
         /// Gets or sets the prepend text.
         /// </summary>
@@ -168,6 +170,8 @@ namespace Rock.Web.UI.Controls
             get { return ViewState["AppendText"] as string ?? string.Empty; }
             set { ViewState["AppendText"] = value; }
         }
+
+        #endregion
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RockTextBox" /> class.

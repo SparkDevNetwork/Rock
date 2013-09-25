@@ -1092,7 +1092,7 @@ namespace Rock.Web.UI
             legend.InnerText = "New Location";
             fsZoneSelect.Controls.Add( legend );
 
-            LabeledDropDownList ddlZones = new LabeledDropDownList();
+            RockDropDownList ddlZones = new RockDropDownList();
             ddlZones.ClientIDMode = ClientIDMode.Static;
             ddlZones.ID = "block-move-zone";
             ddlZones.Label = "Zone";

@@ -28,7 +28,7 @@ namespace Rock.Web.UI.Controls
         private LinkButton lbDeleteActionType;
 
         private DataTextBox tbActionTypeName;
-        private LabeledDropDownList ddlEntityType;
+        private RockDropDownList ddlEntityType;
         private RockCheckBox cbIsActionCompletedOnSuccess;
         private RockCheckBox cbIsActivityCompletedOnSuccess;
         private PlaceHolder phActionAttributes;
@@ -159,7 +159,7 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             tbActionTypeName.ID = this.ID + "_tbActionTypeName";
             tbActionTypeName.Label = "Name";
 
-            ddlEntityType = new LabeledDropDownList();
+            ddlEntityType = new RockDropDownList();
             ddlEntityType.ID = this.ID + "_ddlEntityType";
             ddlEntityType.Label = "Action Type";
 

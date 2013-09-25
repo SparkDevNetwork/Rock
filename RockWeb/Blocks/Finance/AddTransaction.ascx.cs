@@ -37,12 +37,15 @@ namespace RockWeb.Blocks.Finance
     [CustomDropdownListField( "Layout Style", "How the sections of this page should be displayed", "Vertical,Fluid", false, "Vertical", "", 5 )]
 
     [AccountsField( "Accounts", "The accounts to display.  By default all active accounts with a Public Name will be displayed", false, "", "", 6 )]
-    [BooleanField( "Allow Other Accounts", "Should users be allowed to select additional accounts?  If so, any active account with a Public Name value will be available", true, "", 7 )]
+    [BooleanField( "Additional Accounts", "Display option for selecting additional accounts", "Don't display option", 
+        "Should users be allowed to select additional accounts?  If so, any active account with a Public Name value will be available", true, "", 7 )]
     [TextField( "Add Account Text", "The button text to display for adding an additional account", false, "Add Another Account", "", 8 )]
 
-    [BooleanField( "Allow Scheduled Transactions", "If the selected gateway(s) allow scheduled transactions, should that option be provided to user", true, "", 9, "AllowScheduled" )]
+    [BooleanField( "Scheduled Transactions", "Allow", "Don't Allow", 
+        "If the selected gateway(s) allow scheduled transactions, should that option be provided to user", true, "", 9, "AllowScheduled" )]
 
-    [BooleanField("Allow Impersonation", "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users", false, "", 10)]
+    [BooleanField( "Impersonation", "Allow (only use on internal page used by staff)", "Don't Allow", 
+        "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users", false, "", 10)]
     [BooleanField( "Prompt for Phone", "Should the user be prompted for their phone number?", false, "", 11, "DisplayPhone" )]
     [BooleanField( "Prompt for Email", "Should the user be prompted for their email address?", true, "", 12, "DisplayEmail" )]
 
@@ -163,7 +166,7 @@ achieve our mission.  We are so grateful for your commitment.
 
             // If impersonation is allowed, and a valid person key was used, set the target to that person
             bool allowInpersonation = false;
-            if ( bool.TryParse( GetAttributeValue( "Allow Impersonation" ), out allowInpersonation ) && allowInpersonation )
+            if ( bool.TryParse( GetAttributeValue( "Impersonation" ), out allowInpersonation ) && allowInpersonation )
             {
                 string personKey = PageParameter( "Person" );
                 if ( !string.IsNullOrWhiteSpace( personKey ) )
@@ -678,10 +681,10 @@ achieve our mission.  We are so grateful for your commitment.
             var selectedGuids = GetAttributeValues( "Accounts" ).Select( Guid.Parse ).ToList();
             bool showAll = !selectedGuids.Any();
 
-            bool allowOtherAccounts = true;
-            if ( !bool.TryParse( GetAttributeValue( "AllowOtherAccounts" ), out allowOtherAccounts ) )
+            bool additionalAccounts = true;
+            if ( !bool.TryParse( GetAttributeValue( "AdditionalAccounts" ), out additionalAccounts ) )
             {
-                allowOtherAccounts = true;
+                additionalAccounts = true;
             }
 
             SelectedAccounts = new List<AccountItem>();
@@ -710,7 +713,7 @@ achieve our mission.  We are so grateful for your commitment.
                     }
                     else
                     {
-                        if ( allowOtherAccounts )
+                        if ( additionalAccounts )
                         {
                             AvailableAccounts.Add( accountItem );
                         }

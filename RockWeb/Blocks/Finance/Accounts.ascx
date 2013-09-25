@@ -64,7 +64,7 @@
                     <Rock:DatePicker ID="dtpEndDate" runat="server" SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="EndDate" Label="End Date" />
                     <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
                     <Rock:RockCheckBox ID="cbIsTaxDeductible" runat="server" Label="Tax Deductible" />
-                    <Rock:LabeledDropDownList ID="ddlAccountType" runat="server" Label="Account Type" />
+                    <Rock:RockDropDownList ID="ddlAccountType" runat="server" Label="Account Type" />
                     <Rock:AccountPicker ID="apParentAccount" runat="server" Label="Parent Account" />                
                 </div>
         </div>

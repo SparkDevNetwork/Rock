@@ -22,7 +22,7 @@
                         <Rock:DataTextBox ID="tbAssembly" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock" PropertyName="Assembly" />
                         <Rock:DataTextBox ID="tbClass" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock" PropertyName="Class" />
                         <Rock:DataTextBox ID="tbNotificationEmails" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock" PropertyName="NotificationEmails" />
-                        <Rock:LabeledDropDownList ID="drpNotificationStatus" runat="server" Label="Notification Status" />
+                        <Rock:RockDropDownList ID="drpNotificationStatus" runat="server" Label="Notification Status" />
                     </div>
                     <div class="span6">
                         <Rock:DataTextBox ID="tbCronExpression" runat="server" SourceTypeName="Rock.Model.ServiceJob, Rock" PropertyName="CronExpression" />
