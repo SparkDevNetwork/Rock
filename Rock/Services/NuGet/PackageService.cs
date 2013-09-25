@@ -21,7 +21,6 @@ namespace Rock.Services.NuGet
     /// </summary>
     public class PackageService
     {
-
         /// <summary>
         /// Gets or sets the error messages.
         /// </summary>

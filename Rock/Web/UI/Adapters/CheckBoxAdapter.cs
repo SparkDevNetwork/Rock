@@ -40,8 +40,10 @@ namespace Rock.Web.UI.Adapters
             if ( cb != null )
             {
                 writer.WriteLine();
-                //writer.AddAttribute( "class", "checkbox inline" );
-                //writer.RenderBeginTag( HtmlTextWriterTag.Label );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "checkbox" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Label );
 
                 writer.AddAttribute( "id", cb.ClientID );
                 writer.AddAttribute( "type", "checkbox" );
@@ -82,7 +84,8 @@ namespace Rock.Web.UI.Adapters
 
                 writer.Write( cb.Text );
 
-                //writer.RenderEndTag();
+                writer.RenderEndTag();
+                writer.RenderEndTag();
 
                 if ( Page != null && Page.ClientScript != null )
                 {

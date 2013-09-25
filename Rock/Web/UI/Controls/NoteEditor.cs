@@ -21,7 +21,7 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:NoteEditor runat=server></{0}:NoteEditor>" )]
     public class NoteEditor : CompositeControl
     {
-        private LabeledTextBox tbNote;
+        private RockTextBox tbNote;
         private CheckBox cbAlert;
         private CheckBox cbPrivate;
         private LinkButton lbSaveNote;
@@ -148,7 +148,7 @@ namespace Rock.Web.UI.Controls
 
         public NoteEditor()
         {
-            tbNote = new LabeledTextBox();
+            tbNote = new RockTextBox();
             cbAlert = new CheckBox();
             cbPrivate = new CheckBox();
             lbSaveNote = new LinkButton();
@@ -240,7 +240,7 @@ namespace Rock.Web.UI.Controls
             // label and text
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            tbNote.LabelText = "Note";
+            tbNote.Label = "Note";
             tbNote.Text = Text;
             tbNote.RenderControl( writer );
             

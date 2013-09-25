@@ -13,7 +13,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class StateDropDownList : LabeledDropDownList
+    public class StateDropDownList : RockDropDownList
     {
         private bool RebindRequired = false;
 

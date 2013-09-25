@@ -309,7 +309,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             lbDeleteGroup = new LinkButton();
             lbDeleteGroup.CausesValidation = false;
             lbDeleteGroup.ID = this.ID + "_lbDeleteGroup";
-            lbDeleteGroup.CssClass = "btn btn-mini btn-danger";
+            lbDeleteGroup.CssClass = "btn btn-xs btn-danger";
             lbDeleteGroup.Click += lbDeleteGroup_Click;
             lbDeleteGroup.Attributes["onclick"] = string.Format( "javascript: return Rock.controls.grid.confirmDelete(event, '{0}', '{1}');", "group", "Once saved, you will lose all attendance data." );
 
@@ -319,7 +319,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
 
             tbGroupName = new DataTextBox();
             tbGroupName.ID = this.ID + "_tbGroupName";
-            tbGroupName.LabelText = "Check-in Group Name";
+            tbGroupName.Label = "Check-in Group Name";
 
             // set label when they exit the edit field
             tbGroupName.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", lblGroupName.ID );
@@ -422,8 +422,8 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.WriteLine( "<a class='btn btn-mini checkin-group-reorder'><i class='icon-reorder'></i></a>" );
-            writer.WriteLine( "<a class='btn btn-mini'><i class='checkin-group-state icon-chevron-down'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-xs checkin-group-reorder'><i class='icon-reorder'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-xs'><i class='checkin-group-state icon-chevron-down'></i></a>" );
 
             if ( IsDeleteEnabled )
             {

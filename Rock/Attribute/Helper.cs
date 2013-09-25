@@ -15,6 +15,7 @@ using Rock.Constants;
 
 using Rock.Model;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Attribute
 {
@@ -258,7 +259,7 @@ namespace Rock.Attribute
 
             // Check for inherited group type attributes
             var inheritedGroupTypeIds = new List<int>();
-            if ( entity is Group || entity is GroupType)
+            if ( entity is Group || entity is GroupType )
             {
                 //int? groupTypeId = null;
                 GroupType groupType = null;
@@ -273,7 +274,7 @@ namespace Rock.Attribute
                     groupType = ( (GroupType)entity );
                 }
 
-                
+
 
                 while ( groupType != null )
                 {
@@ -399,7 +400,7 @@ namespace Rock.Attribute
                     foreach ( var category in attribute.Categories.OrderBy( c => c.Name ) )
                     {
                         AddAttributeCategory( attributeCategories, category, attribute );
-                        if (!allowMultiple)
+                        if ( !allowMultiple )
                         {
                             break;
                         }
@@ -417,7 +418,7 @@ namespace Rock.Attribute
         private static void AddAttributeCategory( List<AttributeCategory> attributeCategories, Rock.Web.Cache.CategoryCache category, Rock.Web.Cache.AttributeCache attribute )
         {
             AttributeCategory attributeCategory = null;
-            if (category != null)
+            if ( category != null )
             {
                 attributeCategory = attributeCategories.Where( g => g.Category != null && g.Category.Id == category.Id ).FirstOrDefault();
             }
@@ -602,16 +603,25 @@ namespace Rock.Attribute
         {
             if ( item.Attributes != null )
             {
-                foreach(var attributeCategory in GetAttributeCategories(item ))
+                foreach ( var attributeCategory in GetAttributeCategories( item ) )
                 {
                     AddEditControls(
                         attributeCategory.Category != null ? attributeCategory.Category.Name : string.Empty,
                         attributeCategory.Attributes.Select( a => a.Key ).ToList(),
-                        item, parentControl, setValue, exclude);
+                        item, parentControl, setValue, exclude );
                 }
             }
         }
 
+        /// <summary>
+        /// Adds the edit controls.
+        /// </summary>
+        /// <param name="category">The category.</param>
+        /// <param name="attributeKeys">The attribute keys.</param>
+        /// <param name="item">The item.</param>
+        /// <param name="parentControl">The parent control.</param>
+        /// <param name="setValue">if set to <c>true</c> [set value].</param>
+        /// <param name="exclude">The exclude.</param>
         private static void AddEditControls( string category, List<string> attributeKeys, IHasAttributes item, Control parentControl, bool setValue, List<string> exclude )
         {
             HtmlGenericControl fieldSet = new HtmlGenericControl( "fieldset" );
@@ -632,61 +642,8 @@ namespace Rock.Attribute
 
                 if ( !exclude.Contains( attribute.Name ) )
                 {
-                    HtmlGenericControl div = new HtmlGenericControl( "div" );
-                    fieldSet.Controls.Add( div );
-                    div.Controls.Clear();
-
-                    div.ID = string.Format( "attribute_{0}", attribute.Id );
-                    div.AddCssClass( "control-group" );
-                    if ( attribute.IsRequired )
-                        div.AddCssClass( "required" );
-                    div.Attributes.Add( "attribute-key", attribute.Key );
-                    div.ClientIDMode = ClientIDMode.AutoID;
-
-                    Control attributeControl = attribute.CreateControl( item.AttributeValues[attribute.Key][0].Value, setValue, true );
-                    if ( !( attributeControl is CheckBox ) )
-                    {
-                        HtmlGenericControl labelDiv = new HtmlGenericControl( "div" );
-                        div.Controls.Add( labelDiv );
-                        labelDiv.AddCssClass( "control-label" );
-                        labelDiv.ClientIDMode = ClientIDMode.AutoID;
-
-                        Literal lbl = new Literal();
-                        labelDiv.Controls.Add( lbl );
-                        lbl.Text = attribute.Name;
-
-                        if ( !string.IsNullOrEmpty( attribute.Description ) )
-                        {
-                            var HelpBlock = new Rock.Web.UI.Controls.HelpBlock();
-                            labelDiv.Controls.Add( HelpBlock );
-                            HelpBlock.Text = attribute.Description;
-                        }
-                    }
-
-                    HtmlGenericControl divControls = new HtmlGenericControl( "div" );
-                    div.Controls.Add( divControls );
-                    divControls.AddCssClass( "controls" );
-                    divControls.Controls.Clear();
-
-                    divControls.Controls.Add( attributeControl );
-
-                    if ( attributeControl is CheckBox )
-                    {
-                        ( attributeControl as CheckBox ).Text = attribute.Name;
-                        if ( !string.IsNullOrEmpty( attribute.Description ) )
-                        {
-                            var HelpBlock = new Rock.Web.UI.Controls.HelpBlock();
-                            divControls.Controls.Add( HelpBlock );
-                            HelpBlock.Text = attribute.Description;
-                        }
-                    }
-
-                    if ( attributeControl is Rock.Web.UI.Controls.IRequiredControl)
-                    {
-                        var requiredControl = attributeControl as Rock.Web.UI.Controls.IRequiredControl;
-                        requiredControl.Required = attribute.IsRequired;
-                        requiredControl.RequiredErrorMessage = attribute.Name + " is required.";
-                    }
+                    // Add the control for editing the attribute value
+                    attribute.AddControl( fieldSet.Controls, item.AttributeValues[attribute.Key][0].Value, setValue, true );
                 }
             }
         }

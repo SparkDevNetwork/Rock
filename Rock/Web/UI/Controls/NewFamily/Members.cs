@@ -44,6 +44,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [show nick name].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show nick name]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowNickName
+        {
+            get { return ViewState["ShowNickName"] as bool? ?? false; }
+            set { ViewState["ShowNickName"] = value; }
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -54,7 +66,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( lbAddFamilyMember );
             lbAddFamilyMember.ID = this.ID + "_btnAddFamilyMember";
             lbAddFamilyMember.Click += lbAddFamilyMember_Click;
-            lbAddFamilyMember.AddCssClass( "add btn" );
+            lbAddFamilyMember.AddCssClass( "add btn btn-default" );
             lbAddFamilyMember.CausesValidation = false;
 
             var iAddFilter = new HtmlGenericControl( "i" );
@@ -78,7 +90,7 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "table" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "table table-familymembers" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Table );
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Thead );
@@ -96,9 +108,12 @@ namespace Rock.Web.UI.Controls
                 writer.Write( "First Name" );
                 writer.RenderEndTag();
 
-                writer.RenderBeginTag( HtmlTextWriterTag.Th );
-                writer.Write( "Nick Name" );
-                writer.RenderEndTag();
+                if ( ShowNickName )
+                {
+                    writer.RenderBeginTag( HtmlTextWriterTag.Th );
+                    writer.Write( "Nick Name" );
+                    writer.RenderEndTag();
+                }
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Th );
                 writer.Write( "Last Name" );
@@ -133,6 +148,7 @@ namespace Rock.Web.UI.Controls
                 {
                     if ( control is NewFamilyMembersRow )
                     {
+                        ( (NewFamilyMembersRow)control ).ShowNickName = ShowNickName;
                         control.RenderControl( writer );
                     }
                 }

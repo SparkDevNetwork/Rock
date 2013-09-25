@@ -10,7 +10,7 @@
             <asp:UpdatePanel ID="upAdApproval" runat="server">
                 <ContentTemplate>
                     <div class="well pull-right">
-                        <Rock:LabeledText ID="ltMarketingCampaignAdStatus" runat="server" LabelText="Approval Status" />
+                        <Rock:RockLiteral ID="ltMarketingCampaignAdStatus" runat="server" Label="Approval Status" />
                         <asp:HiddenField ID="hfMarketingCampaignAdStatus" runat="server" />
                         <div class="controls">
                             <asp:Label ID="lblMarketingCampaignAdStatusPerson" runat="server" />
@@ -28,14 +28,14 @@
                 <div class="row-fluid">
                     <div class="span6">
                         <Rock:DataDropDownList ID="ddlMarketingCampaignAdType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.MarketingCampaignAdType, Rock" PropertyName="Name"
-                            LabelText="Ad Type" AutoPostBack="true" OnSelectedIndexChanged="ddlMarketingCampaignAdType_SelectedIndexChanged" />
-                        <Rock:DatePicker ID="tbAdDateRangeStartDate" runat="server" SourceTypeName="Rock.Model.MarketingCampaignAd, Rock" PropertyName="StartDate" LabelText="Start Date" Required="true" />
-                        <Rock:DatePicker ID="tbAdDateRangeEndDate" runat="server" SourceTypeName="Rock.Model.MarketingCampaignAd, Rock" PropertyName="EndDate" LabelText="End Date" Required="true" />
+                            Label="Ad Type" AutoPostBack="true" OnSelectedIndexChanged="ddlMarketingCampaignAdType_SelectedIndexChanged" />
+                        <Rock:DatePicker ID="tbAdDateRangeStartDate" runat="server" SourceTypeName="Rock.Model.MarketingCampaignAd, Rock" PropertyName="StartDate" Label="Start Date" Required="true" />
+                        <Rock:DatePicker ID="tbAdDateRangeEndDate" runat="server" SourceTypeName="Rock.Model.MarketingCampaignAd, Rock" PropertyName="EndDate" Label="End Date" Required="true" />
                     </div>
 
                     <div class="span6">
-                        <Rock:DataTextBox ID="tbUrl" runat="server" SourceTypeName="Rock.Model.MarketingCampaignAd, Rock" PropertyName="Url" LabelText="Url" />
-                        <Rock:DataTextBox ID="tbPriority" runat="server" SourceTypeName="Rock.Model.MarketingCampaignAd, Rock" PropertyName="Priority" LabelText="Priority" />
+                        <Rock:DataTextBox ID="tbUrl" runat="server" SourceTypeName="Rock.Model.MarketingCampaignAd, Rock" PropertyName="Url" Label="Url" />
+                        <Rock:DataTextBox ID="tbPriority" runat="server" SourceTypeName="Rock.Model.MarketingCampaignAd, Rock" PropertyName="Priority" Label="Priority" />
                     </div>
                 </div>
 

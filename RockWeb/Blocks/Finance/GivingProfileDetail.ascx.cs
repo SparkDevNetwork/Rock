@@ -229,12 +229,12 @@ Thank you for your generosity! You just gave a total of {{ TotalContribution }} 
             // postback layout changes
             if ( _spanClass != "span6" )
             {
-                txtCity.LabelText = "City, State, Zip";
-                txtNewCity.LabelText = "City, State, Zip";
-                ddlState.LabelText = string.Empty;
-                ddlNewState.LabelText = string.Empty;
-                txtZip.LabelText = string.Empty;
-                txtNewZip.LabelText = string.Empty;                                
+                txtCity.Label = "City, State, Zip";
+                txtNewCity.Label = "City, State, Zip";
+                ddlState.Label = string.Empty;
+                ddlNewState.Label = string.Empty;
+                txtZip.Label = string.Empty;
+                txtNewZip.Label = string.Empty;                                
             }            
         }
        

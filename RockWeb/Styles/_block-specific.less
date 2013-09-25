@@ -5,6 +5,8 @@
     2. HTML Content - block to edit HTML on a page
     3. Login - block to allow logins
     4. Notes - block to display, add, edit, delete notes
+    5. Add Family - block to add families to the database
+    6. Contributions - block add a contribution transaction
 
 */
 
@@ -190,12 +192,9 @@ span.cke_skin_kama
     }
 }
 
-.panel-noteentry {
-  .panel-variant(@accent-color; @accent-text-color; @accent-text-color; @accent-text-color);
-}
-
 .panel-noteentry
 {
+    .panel-variant(@accent-color; @accent-text-color; @accent-text-color; @accent-text-color);
 
     .settings {
         .options {
@@ -208,4 +207,18 @@ span.cke_skin_kama
     .panel-footer {
         background-color: @accent-color;
     }
+}
+
+// 5. Add Families
+// -------------------------
+
+.table-familymembers .radio:first-child {
+    margin-top: 0;
+}
+
+// 6. Contributions
+// -------------------------
+
+.contribution-payment .tab-content {
+    margin-top: 12px;
 }

@@ -28,6 +28,7 @@ namespace Rock.Web.UI.Controls
                 this.PropertyName = "SelectedDateTime";
             }
 
+            // #TODO# Decide how we want to design this control.  DatePicker + TimePicker?
             var script = string.Format( @"Rock.controls.dateTimePicker.initialize({{ id: '{0}' }});", this.ClientID );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "date_time_picker-" + this.ClientID, script, true );
         }

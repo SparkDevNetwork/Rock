@@ -5,7 +5,7 @@
         <asp:Panel ID="pnlList" runat="server">
 
             <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
-                <Rock:LabeledDropDownList ID="ddlEntityType" runat="server" LabelText="Entity Type" />
+                <Rock:RockDropDownList ID="ddlEntityType" runat="server" Label="Entity Type" />
             </Rock:GridFilter>
             <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="setting" OnRowSelected="rGrid_Edit">
                 <Columns>
@@ -27,7 +27,7 @@
             <Content>
                 <asp:HiddenField ID="hfIdValue" runat="server" />
                 <fieldset>
-                    <Rock:LabeledTextBox ID="tbName" runat="server" LabelText="Name" />
+                    <Rock:RockTextBox ID="tbName" runat="server" Label="Name" />
                 </fieldset>
             </Content>
         </Rock:ModalDialog>
