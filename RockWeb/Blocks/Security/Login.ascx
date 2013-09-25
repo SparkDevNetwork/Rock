@@ -4,15 +4,9 @@
 
     <fieldset>
         <legend>Login</legend> 
-        <Rock:LabeledTextBox ID="tbUserName" runat="server" LabelText="Username" Required="true" DisplayRequiredIndicator="false" ></Rock:LabeledTextBox>
-        <Rock:LabeledTextBox ID="tbPassword" runat="server" LabelText="Password" Required="true" DisplayRequiredIndicator="false" TextMode="Password" ></Rock:LabeledTextBox>
-        
-        <div class="checkbox">
-            <label>
-                <asp:CheckBox ID="cbRememberMe" runat="server"/> Remember me on this computer
-            </label>
-        </div>
-        
+        <Rock:RockTextBox ID="tbUserName" runat="server" Label="Username" Required="true" DisplayRequiredIndicator="false" ></Rock:RockTextBox>
+        <Rock:RockTextBox ID="tbPassword" runat="server" Label="Password" Required="true" DisplayRequiredIndicator="false" TextMode="Password" ></Rock:RockTextBox>
+        <Rock:RockCheckBox ID="cbRememberMe" runat="server" Text="Remember me on this computer" />        
     </fieldset>
 
     <div class="alt-authentication">

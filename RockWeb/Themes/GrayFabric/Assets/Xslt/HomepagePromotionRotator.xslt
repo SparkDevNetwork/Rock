@@ -6,7 +6,7 @@
   <xsl:param name="application_path" />
     
   <xsl:template match="/">
-      <section class="promo-slider container">
+      <section class="promo-slider">
           <div class="flexslider">
 			        <ul class="slides">
                   <xsl:for-each select="Ads/Ad">

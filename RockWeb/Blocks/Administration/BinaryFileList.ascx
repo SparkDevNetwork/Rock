@@ -6,9 +6,9 @@
         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
         
         <Rock:GridFilter ID="fBinaryFile" runat="server">
-            <Rock:LabeledTextBox ID="tbName" runat="server" LabelText="File Name" />
-            <Rock:LabeledTextBox ID="tbType" runat="server" LabelText="Mime Type" />
-            <Rock:LabeledCheckBox ID="dbIncludeTemporary" runat="server" Checked="false" LabelText="Include Temporary" Text="Yes"
+            <Rock:RockTextBox ID="tbName" runat="server" Label="File Name" />
+            <Rock:RockTextBox ID="tbType" runat="server" Label="Mime Type" />
+            <Rock:RockCheckBox ID="dbIncludeTemporary" runat="server" Checked="false" Label="Include Temporary" Text="Yes"
                 Help="Temporary files are files that were uploaded to the server, but a reference to the file was never saved." />
         </Rock:GridFilter>
         

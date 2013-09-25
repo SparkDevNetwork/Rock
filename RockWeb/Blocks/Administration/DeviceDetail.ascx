@@ -24,8 +24,8 @@
                             Help="What type of device is this?" />
                     </div>
                     <div class="span6">
-                        <Rock:GeoPicker ID="gpGeoPoint" runat="server" Required="false" LabelText="Geo Point" DrawingMode="Point" />
-                        <Rock:GeoPicker ID="gpGeoFence" runat="server" Required="false" LabelText="Geo Fence" DrawingMode="Polygon" />
+                        <Rock:GeoPicker ID="gpGeoPoint" runat="server" Required="false" Label="Geo Point" DrawingMode="Point" />
+                        <Rock:GeoPicker ID="gpGeoFence" runat="server" Required="false" Label="Geo Fence" DrawingMode="Polygon" />
                         <Rock:DataDropDownList ID="ddlPrintTo" runat="server" SourceTypeName="Rock.Model.Device, Rock" PropertyName="PrintToOverride" Required="false" 
                             Help="When this device needs to print, should printing be done to this device's printer (Kiosk), the printer defined by the location using this device (Location), or should this decision be deferred to the Group Type using the device (Default)?" />
                         <Rock:DataDropDownList ID="ddlPrinter" runat="server" SourceTypeName="Rock.Model.Device, Rock" PropertyName="PrinterDeviceId" Required="false" 

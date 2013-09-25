@@ -25,7 +25,7 @@
             <fieldset>
                 <legend><asp:Literal ID="lEditAction" runat="server"/> Child Page</legend>
                 <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Name" />
-                <Rock:LabeledDropDownList ID="ddlLayout" runat="server" LabelText="Layout"></Rock:LabeledDropDownList>
+                <Rock:RockDropDownList ID="ddlLayout" runat="server" Label="Layout"></Rock:RockDropDownList>
             </fieldset>
 
             <div class="actions">

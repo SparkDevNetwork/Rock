@@ -15,16 +15,16 @@
                     </legend>
                     <div class="row-fluid">
                         <div class="span6">
-                            <Rock:PersonPicker runat="server" ID="ppGroupMemberPerson" LabelText="Person" Required="true"/>
+                            <Rock:PersonPicker runat="server" ID="ppGroupMemberPerson" Label="Person" Required="true"/>
                         </div>
                         <div class="span6">
-                            <Rock:DataDropDownList runat="server" ID="ddlGroupRole" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="Name" LabelText="Group Role" />
+                            <Rock:DataDropDownList runat="server" ID="ddlGroupRole" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="Name" Label="Group Role" />
                         </div>
                     </div>
 
                     <div class="row-fluid">
                         <div class="span12">
-                            <Rock:LabeledDropDownList ID="ddlGroupMemberStatus" runat="server" LabelText="Member Status" />
+                            <Rock:RockDropDownList ID="ddlGroupMemberStatus" runat="server" Label="Member Status" />
                         </div>
                     </div>
 

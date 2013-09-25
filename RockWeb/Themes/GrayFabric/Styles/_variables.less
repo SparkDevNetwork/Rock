@@ -1,69 +1,20 @@
 
-// Fonts
-// -------------------------
-
-// regular (weight 'normal' aka 400)
-@font-face {
-    font-family: 'OpenSans';
-    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');
-    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.woff') format('woff'),
-         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.ttf') format('truetype'),
-         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
-    font-weight: 400;
-    font-style: normal;
-}
-
-// light (weight 300)
-@font-face {
-    font-family: 'OpenSans';
-    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot');
-    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.woff') format('woff'),
-         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.ttf') format('truetype'),
-         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.svg#OpenSansLight') format('svg');
-    font-weight: 300;
-    font-style: normal;
-}
-
-// semi-bold (weight 600)
-@font-face {
-    font-family: 'OpenSans';
-    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot');
-    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.woff') format('woff'),
-         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.ttf') format('truetype'),
-         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.svg#OpenSansSemibold') format('svg');
-    font-weight: 600;
-    font-style: normal;
-}
-
-// bold (weight 700)
-@font-face {
-    font-family: 'OpenSans';
-    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot');
-    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot?#iefix') format('embedded-opentype'),
-         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.woff') format('woff'),
-         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.ttf') format('truetype'),
-         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.svg#OpenSansBold') format('svg');
-    font-weight: 700;
-    font-style: normal;
-}
-
-
 
 // Global Values
 // --------------------------------------------------
 
 @const-border-darken-amt: 10%; /* creates a border color by darkening the background by this amount */
 
-@text-color:           #515151;
+@text-color:           #d4d4d4;
 @site-link-color:           #437b9b;
+@headings-color:    #c9c9c9;
 
 @body-bg: #f4f4f4;
 
 @header-bg:     #3A3A3A;
 @header-text-color: #bbb;
+
+@nav-link-hover-bg: rgba(119,119,119, .3);
 
 @footer-bg: @header-bg;
 @footer-text-color: @header-text-color;
@@ -119,6 +70,7 @@
 @grid-column-header-bg: @accent-bold-color;
 @grid-column-header-text-color: @accent-bold-text-color;
 @grid-column-header-font-size: 14px;
+@grid-column-header-font-weight: @font-weight-light;
 
 @grid-hover-bg: @accent-light-color;
 
@@ -126,6 +78,8 @@
 @grid-footer-text-color: #444;
 @grid-footer-font-size: 10px;
 @grid-footer-font-weight: 300;
+@grid-footer-button-bg: @accent-bold-color;
+@grid-footer-button-text-color: @accent-bold-text-color;
 
 
 
@@ -149,10 +103,13 @@
 
 /* panel */
 @panel-border-radius: 4px;
-@panel-bg: @accent-light-color;
+@panel-bg: rgba(159, 159, 159, .1);
 @panel-border-color: darken(@panel-bg, 10%);
 @panel-border-size: 1px;
 @panel-padding: 20px;
+@panel-default-text: @text-color;
+@panel-default-border:  darken(@panel-bg, 10%);
+@panel-default-heading-bg: darken(@panel-bg, 10%);
 
 // titles
 @title-firstword-weight: @font-weight-bold;

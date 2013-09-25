@@ -98,7 +98,11 @@
                         // override jQueryUI autocomplete's _renderItem so that we can do Html for the listitems
                         // derived from http://github.com/scottgonzalez/jquery-ui-extensions
 
-                        var $label = $('<label/>').text(item.Name),
+                        var $div = $('<div/>').attr('class', 'radio'),
+
+                            $label = $('<label/>')
+                                .text(item.Name)
+                                .prependTo($div),
 
                             $radio = $('<input type="radio" name="person-id" />')
                                 .attr('id', item.Id)
@@ -108,7 +112,7 @@
                             $li = $('<li/>')
                                 .addClass('picker-select-item')
                                 .attr('data-person-id', item.Id)
-                                .html($label),
+                                .html($div),
 
                             $resultSection = $(this.options.appendTo);
 

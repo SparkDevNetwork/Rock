@@ -22,6 +22,6 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The label text.
         /// </value>
-        string LabelText { get; set; }
+        string Label { get; set; }
     }
 }

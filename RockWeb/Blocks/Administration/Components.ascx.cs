@@ -44,7 +44,6 @@ namespace RockWeb.Blocks.Administration
 
             // wire up page naviagte
             RockPage page = Page as RockPage;
-
             if (page != null)
             {
                 page.PageNavigate += page_PageNavigate;

@@ -378,6 +378,18 @@ namespace Rock
                 : default( T );
         }
 
+        public static string Masked( this string value )
+        {
+            if ( value.Length > 4 )
+            {
+                return string.Concat(new string('*', 12 ), value.Substring( value.Length - 4 ) );
+            }
+            else
+            {
+                return value;
+            }
+        }
+
         #endregion
 
         #region Int Extensions

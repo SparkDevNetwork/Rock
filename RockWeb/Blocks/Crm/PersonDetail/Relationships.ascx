@@ -42,7 +42,7 @@
 
                     <div id="divExistingPerson" runat="server">
                         <fieldset>
-                            <Rock:GroupRolePicker ID="grpRole" runat="server" LabelText="Relationship Type" Required="true" />
+                            <Rock:GroupRolePicker ID="grpRole" runat="server" Label="Relationship Type" Required="true" />
                             <Rock:PersonPicker2 ID="ppPerson" runat="server" />
                         </fieldset>
                     </div>

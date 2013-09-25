@@ -364,29 +364,29 @@ namespace Rock.Web.UI.Controls
             Controls.Add( ddlGrade );
             Controls.Add( lbDelete );
 
-            rblRole.RepeatDirection = RepeatDirection.Horizontal;
+            rblRole.RepeatDirection = RepeatDirection.Vertical;
             rblRole.AutoPostBack = true;
             rblRole.SelectedIndexChanged += rblRole_SelectedIndexChanged;
             rfvRole.ControlToValidate = rblRole.ID;
 
-            ddlTitle.CssClass = "input-small";
+            ddlTitle.CssClass = "form-control";
 
-            tbFirstName.CssClass = "input-small";
+            tbFirstName.CssClass = "form-control";
             rfvFirstName.ControlToValidate = tbFirstName.ID;
 
-            tbNickName.CssClass = "input-small";
+            tbNickName.CssClass = "form-control";
 
-            tbLastName.CssClass = "input-small";
+            tbLastName.CssClass = "form-control";
             rfvLastName.ControlToValidate = tbLastName.ID;
 
-            rblGender.RepeatDirection = RepeatDirection.Horizontal;
+            rblGender.RepeatDirection = RepeatDirection.Vertical;
             rfvGender.ControlToValidate = rblGender.ID;
 
-            ddlStatus.CssClass = "input-medium";
+            ddlStatus.CssClass = "form-control";
 
-            ddlGrade.CssClass = "input-mini";
+            ddlGrade.CssClass = "form-control";
 
-            lbDelete.CssClass = "btn btn-mini btn-danger";
+            lbDelete.CssClass = "btn btn-xs btn-danger";
             lbDelete.Click += lbDelete_Click;
             lbDelete.CausesValidation = false;
 
@@ -407,7 +407,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Tr );
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-group" + ( rfvRole.IsValid ? "" : " error" ) );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( rfvRole.IsValid ? "" : " error" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 rblRole.RenderControl( writer );
                 rfvRole.RenderControl( writer );
@@ -419,7 +419,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-group" + ( rfvFirstName.IsValid ? "" : " error" ) );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( rfvFirstName.IsValid ? "" : " error" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 tbFirstName.RenderControl( writer );
                 rfvFirstName.RenderControl( writer );
@@ -431,7 +431,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-group" + ( rfvLastName .IsValid ? "" : " error" ) );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( rfvLastName .IsValid ? "" : " error" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 tbLastName.RenderControl( writer );
                 rfvLastName.RenderControl( writer );
@@ -439,7 +439,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-group" + ( rfvGender.IsValid ? "" : " error" ) );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( rfvGender.IsValid ? "" : " error" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 rfvGender.Enabled = RequireGender;
                 rblGender.RenderControl( writer );
@@ -481,8 +481,8 @@ namespace Rock.Web.UI.Controls
             string selectedValue = rblGender.SelectedValue;
 
             rblGender.Items.Clear();
-            rblGender.Items.Add( new ListItem( "Male", "Male" ) );
-            rblGender.Items.Add( new ListItem( "Female", "Female" ) );
+            rblGender.Items.Add( new ListItem( "M", "Male" ) );
+            rblGender.Items.Add( new ListItem( "F", "Female" ) );
             if ( !RequireGender )
             {
                 rblGender.Items.Add( new ListItem( "Unknown", "" ) );

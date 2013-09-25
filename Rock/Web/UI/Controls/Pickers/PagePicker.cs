@@ -21,7 +21,7 @@ namespace Rock.Web.UI.Controls
         private Label label;
         private HiddenField _hfPageRouteId;
         private HyperLink _btnShowPageRoutePicker;
-        private LabeledRadioButtonList _rblSelectPageRoute;
+        private RockRadioButtonList _rblSelectPageRoute;
         private LinkButton _btnSelectPageRoute;
         private HyperLink _btnCancelPageRoute;
 
@@ -31,7 +31,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The label text.
         /// </value>
-        public string LabelText
+        public string Label
         {
             get
             {
@@ -107,11 +107,11 @@ namespace Rock.Web.UI.Controls
                 }});
 
                 $('#{1}').click(function () {{
-                    $(this).parent().slideUp();
+                    $(this).closest('.picker-menu').slideUp();
                 }});
 
                 $('#{2}').click(function () {{
-                    $(this).parent().slideUp();
+                    $(this).closest('.picker-menu').slideUp();
                 }});";
 
             string script = string.Format( scriptFormat, _btnShowPageRoutePicker.ClientID, _btnSelectPageRoute.ClientID, _btnCancelPageRoute.ClientID, this.ClientID );
@@ -201,7 +201,7 @@ namespace Rock.Web.UI.Controls
                     ItemName = page.Name + " (" + pageRoute.Route + ")";
                     
                     _rblSelectPageRoute.Visible = false;
-                    _btnShowPageRoutePicker.Visible = false;
+                    _btnShowPageRoutePicker.Style[HtmlTextWriterStyle.Display] = "none";
                 }
                 else
                 {
@@ -221,7 +221,15 @@ namespace Rock.Web.UI.Controls
                         }
                     }
 
-                    _btnShowPageRoutePicker.Visible = _rblSelectPageRoute.Items.Count > 0;
+                    if ( _rblSelectPageRoute.Items.Count > 0 )
+                    {
+                        _btnShowPageRoutePicker.Style[HtmlTextWriterStyle.Display] = "";
+                    }
+                    else
+                    {
+                        _btnShowPageRoutePicker.Style[HtmlTextWriterStyle.Display] = "none";
+                    }
+
                     if ( _rblSelectPageRoute.Items.Count == 1 )
                     {
                         _btnShowPageRoutePicker.Text = "( 1 route exists )";
@@ -345,25 +353,25 @@ namespace Rock.Web.UI.Controls
             _hfPageRouteId.ID = string.Format( "hfPageRouteId_{0}", this.ID );
 
             _btnShowPageRoutePicker = new HyperLink();
-            _btnShowPageRoutePicker.CssClass = "btn btn-mini";
+            _btnShowPageRoutePicker.CssClass = "btn btn-xs";
             _btnShowPageRoutePicker.ID = string.Format( "btnShowPageRoutePicker_{0}", this.ID );
             _btnShowPageRoutePicker.Text = "Pick Route";
-            _btnShowPageRoutePicker.Visible = false;
+            _btnShowPageRoutePicker.Style[HtmlTextWriterStyle.Display] = "none";
 
-            _rblSelectPageRoute = new LabeledRadioButtonList();
+            _rblSelectPageRoute = new RockRadioButtonList();
             _rblSelectPageRoute.ID = "rblSelectPageRoute_" + this.ID;
             _rblSelectPageRoute.Visible = false;
             _rblSelectPageRoute.EnableViewState = true;
 
             _btnSelectPageRoute = new LinkButton();
-            _btnSelectPageRoute.CssClass = "btn btn-mini btn-primary";
+            _btnSelectPageRoute.CssClass = "btn btn-xs btn-primary";
             _btnSelectPageRoute.ID = string.Format( "btnSelectPageRoute_{0}", this.ID );
             _btnSelectPageRoute.Text = "Select";
             _btnSelectPageRoute.CausesValidation = false;
             _btnSelectPageRoute.Click += _btnSelectPageRoute_Click;
 
             _btnCancelPageRoute = new HyperLink();
-            _btnCancelPageRoute.CssClass = "btn btn-mini";
+            _btnCancelPageRoute.CssClass = "btn btn-xs";
             _btnCancelPageRoute.ID = string.Format( "btnCancelPageRoute_{0}", this.ID );
             _btnCancelPageRoute.Text = "Cancel";
 
@@ -396,7 +404,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            if ( string.IsNullOrEmpty( LabelText ) )
+            if ( string.IsNullOrEmpty( Label ) )
             {
                 base.Render( writer );
 
@@ -438,18 +446,21 @@ namespace Rock.Web.UI.Controls
                 if ( PromptForPageRoute )
                 {
                     _hfPageRouteId.RenderControl( writer );
-
+                    
                     _btnShowPageRoutePicker.RenderControl( writer );
 
-                    writer.Write( string.Format( @"<div id='page-route-picker_{0}' class='dropdown-menu rock-picker page-route-picker'>", this.ClientID ) );
+                    writer.Write( string.Format( @"<div id='page-route-picker_{0}' class='picker-menu picker dropdown-menu'>", this.ClientID ) );
 
                     _rblSelectPageRoute.RenderControl( writer );
 
                     writer.Write( @"<hr />" );
 
+                    writer.Write( @"<div class='picker-actions'>" );
+
                     _btnSelectPageRoute.RenderControl( writer );
                     writer.WriteLine();
                     _btnCancelPageRoute.RenderControl( writer );
+                    writer.Write( @"</div>" );
                     writer.Write( @"</div>" );
                 }
             }

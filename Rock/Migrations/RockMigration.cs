@@ -35,9 +35,9 @@ namespace Rock.Migrations
                 IF @Id IS NULL
                 BEGIN
                     INSERT INTO [EntityType] (
-                        [Name],[FriendlyName],[AssemblyName],[IsEntity],[IsSecured],[Guid])
+                        [Name],[FriendlyName],[AssemblyName],[IsEntity],[IsSecured],[IsCommon],[Guid])
                     VALUES(
-                        '{0}','{1}','{2}',{3},{4},'{5}')
+                        '{0}','{1}','{2}',{3},{4},0,'{5}')
                 END
                 ELSE
                 BEGIN

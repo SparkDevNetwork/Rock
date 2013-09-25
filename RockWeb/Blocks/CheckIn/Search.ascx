@@ -32,7 +32,7 @@
     <div class="row checkin-body">
         <div class="col-md-12">
             <div class="checkin-search-body">
-                <Rock:LabeledTextBox ID="tbPhone" MaxLength="10" CssClass="checkin-phone-entry" runat="server" LabelText="Phone Number" />
+                <Rock:RockTextBox ID="tbPhone" MaxLength="10" CssClass="checkin-phone-entry" runat="server" Label="Phone Number" />
 
                 <div class="tenkey checkin-phone-keypad">
                     <div>

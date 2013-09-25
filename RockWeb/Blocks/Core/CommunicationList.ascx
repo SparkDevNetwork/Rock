@@ -7,11 +7,11 @@
 
         <Rock:GridFilter ID="rFilter" runat="server">
                 
-            <Rock:LabeledTextBox ID="tbSubject" runat="server" LabelText="Subject" />
-            <Rock:ComponentPicker ID="cpChannel" runat="server" ContainerType="Rock.Communication.ChannelContainer, Rock" LabelText="Channel" />
-            <Rock:LabeledDropDownList ID="ddlStatus" runat="server" LabelText="Status" />
-            <Rock:PersonPicker ID="ppSender" runat="server" LabelText="Created By" />
-            <Rock:LabeledTextBox ID="tbContent" runat="server" LabelText="Content" />
+            <Rock:RockTextBox ID="tbSubject" runat="server" Label="Subject" />
+            <Rock:ComponentPicker ID="cpChannel" runat="server" ContainerType="Rock.Communication.ChannelContainer, Rock" Label="Channel" />
+            <Rock:RockDropDownList ID="ddlStatus" runat="server" Label="Status" />
+            <Rock:PersonPicker ID="ppSender" runat="server" Label="Created By" />
+            <Rock:RockTextBox ID="tbContent" runat="server" Label="Content" />
         </Rock:GridFilter>
 
         <Rock:Grid ID="gCommunication" runat="server" AllowSorting="true" OnRowSelected="gCommunication_RowSelected" OnRowDataBound="gCommunication_RowDataBound" >
