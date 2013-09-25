@@ -22,6 +22,10 @@ SET @DefinedValueFieldTypeId = (SELECT Id FROM FieldType WHERE guid = '59D5A94C-
 DECLARE @PersonEntityTypeId int
 SET @PersonEntityTypeId = (SELECT Id FROM EntityType WHERE Name = 'Rock.Model.Person')
 
+-- Attribute Entity Type
+DECLARE @AttributeEntityTypeId int
+SET @AttributeEntityTypeId = (SELECT Id FROM EntityType WHERE Name = 'Rock.Model.Attribute')
+
 -- Attribute
 DECLARE @AttributeGradeTransition int
 SELECT @AttributeGradeTransition = [ID] from [Attribute] where [Guid] = '265734A6-C888-45B4-A7A5-9A26478306B8'
@@ -60,8 +64,17 @@ VALUES ( 0, @AllergyDefinedTypeId, 0, 'Wheat', 'Wheat Allergy', NEWID() )
 INSERT [DefinedValue]
 VALUES ( 0, @AllergyDefinedTypeId, 0, 'Latex', 'Latex Allergy', NEWID() )
 
+DECLARE @CheckinCategoryId int
+INSERT Category ([IsSystem], [ParentCategoryId], [EntityTypeId], [EntityTypeQualifierColumn], [EntityTypeQualifierValue], [Name], [IconSmallFileId], [IconLargeFileId], [IconCssClass], [Guid]) 
+VALUES (0, NULL, @AttributeEntityTypeId, 'EntityTypeId', @PersonEntityTypeId, 'Checkin', NULL, NULL, NULL, NEWID())
+SET @CheckinCategoryId = SCOPE_IDENTITY()
+
+DECLARE @CheckinAttributeId int
 INSERT Attribute ([IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],[Key],[Name],[Description],[Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],[Guid])
-VALUES (0, @DefinedValueFieldTypeId, @PersonEntityTypeId, '', '', 'Allergy', 'Allergy', 'The item(s) this person is allergic to.', 0, 0, '', 0, 0, NEWID())
+VALUES (0, @TextFieldTypeId, @PersonEntityTypeId, '', '', 'Allergy', 'Allergy', 'The item(s) this person is allergic to.', 0, 0, '', 0, 0, NEWID())
+SET @CheckinAttributeId = SCOPE_IDENTITY()
+
+INSERT INTO [AttributeCategory] ([AttributeId], [CategoryId]) VALUES (@CheckinAttributeId, @CheckinCategoryId)
 
 ------------------------------------------------------------------------
 -- Update Defined Type names for Ability Level
@@ -124,8 +137,8 @@ DECLARE @GroupTypeEntityTypeId int
 SET @GroupTypeEntityTypeId = (SELECT Id FROM EntityType WHERE Name = 'Rock.Model.GroupType')
 DECLARE @GroupEntityTypeId int
 SET @GroupEntityTypeId = (SELECT Id FROM EntityType WHERE Name = 'Rock.Model.Group')
-DECLARE @AttributeEntityTypeId INT
-SET @AttributeEntityTypeId = (SELECT Id FROM [EntityType] WHERE Name = 'Rock.Model.Attribute')
+--DECLARE @AttributeEntityTypeId INT
+--SET @AttributeEntityTypeId = (SELECT Id FROM [EntityType] WHERE Name = 'Rock.Model.Attribute')
 
 -- Group Type Check-in Category Id
 DECLARE @GroupTypeCheckInCategoryId INT
