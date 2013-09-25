@@ -71,47 +71,61 @@ namespace Rock.Web.UI.Adapters
                 }
 
                 int i = 0;
-                foreach ( ListItem li in cbl.Items )
+                foreach (ListItem li in cbl.Items)
                 {
                     writer.WriteLine();
 
-                    writer.AddAttribute( "class", "checkbox" + ( cbl.RepeatDirection == RepeatDirection.Horizontal ? " inline" : string.Empty ) );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Label );
-
-                    string itemId = string.Format( "{0}_{1}", cbl.ClientID, i );
-                    writer.AddAttribute( "id", itemId );
-                    writer.AddAttribute( "type", "checkbox" );
-                    writer.AddAttribute( "name", string.Format( "{0}${1}", cbl.UniqueID, i++ ) );
-                    writer.AddAttribute( "value", li.Value );
-                    if ( li.Selected )
+                    if ( cbl.RepeatDirection == RepeatDirection.Vertical )
                     {
-                        writer.AddAttribute( "checked", "checked" );
+                        writer.AddAttribute( "class", "checkbox" );
+                        writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    }
+                    else
+                    {
+                        writer.AddAttribute( "class", "checkbox-inline" );
                     }
 
-                    foreach ( var attributeKey in li.Attributes.Keys )
+                    writer.RenderBeginTag(HtmlTextWriterTag.Label);
+
+                    string itemId = string.Format("{0}_{1}", cbl.ClientID, i);
+                    writer.AddAttribute("id", itemId);
+                    writer.AddAttribute("type", "checkbox");
+                    writer.AddAttribute("name", string.Format("{0}${1}", cbl.UniqueID, i++));
+                    writer.AddAttribute("value", li.Value);
+                    if (li.Selected)
+                    {
+                        writer.AddAttribute("checked", "checked");
+                    }
+
+                    foreach (var attributeKey in li.Attributes.Keys)
                     {
                         var key = attributeKey as string;
-                        writer.AddAttribute( key, li.Attributes[key] );
+                        writer.AddAttribute(key, li.Attributes[key]);
                     }
-                    
+
                     if (postBackOption != null)
                     {
-                        writer.AddAttribute( HtmlTextWriterAttribute.Onclick, Page.ClientScript.GetPostBackEventReference( postBackOption, true ) );
+                        writer.AddAttribute(HtmlTextWriterAttribute.Onclick, Page.ClientScript.GetPostBackEventReference(postBackOption, true));
                     }
 
-                    writer.RenderBeginTag( HtmlTextWriterTag.Input );
+                    writer.RenderBeginTag(HtmlTextWriterTag.Input);
                     writer.RenderEndTag();
 
-                    writer.Write( li.Text );
+                    writer.Write(li.Text);
 
-                    writer.RenderEndTag();
+                    writer.RenderEndTag();      // Label
+
+                    if ( cbl.RepeatDirection == RepeatDirection.Vertical )
+                    {
+                        writer.RenderEndTag();   // div
+                    }
 
                     if ( Page != null && Page.ClientScript != null )
                     {
-                        Page.ClientScript.RegisterForEventValidation( cbl.UniqueID, li.Value );
+                        Page.ClientScript.RegisterForEventValidation(cbl.UniqueID, li.Value);
                     }
                 }
-
+                
                 if ( Page != null && Page.ClientScript != null )
                 {
                     Page.ClientScript.RegisterForEventValidation( cbl.UniqueID );

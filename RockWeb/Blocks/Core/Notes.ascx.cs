@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Core
 
             string script = @"
     $('a.add-note').click(function () {
-        $(this).parent().siblings('.widget-content').children('.note-entry').slideToggle(""slow"");
+        $(this).parent().siblings('.panel-body').children('.note-entry').slideToggle(""slow"");
     });
     
     $('a.add-note-cancel').click(function () {
@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Core
         $(this).parent().parent().slideToggle(""slow"");
     });
 
-    $('.persontimeline article').live({
+    $('.panel-notes article').live({
         mouseenter:
             function () {
                 var actionsDiv = $('.actions', this);

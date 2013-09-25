@@ -476,7 +476,7 @@ INSERT INTO [Location] ([Guid], [Name], [IsActive],[IsLocation]) VALUES (NEWID()
 SET @CampusLocationId = SCOPE_IDENTITY()
 
 -- Main building
-INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@CampusLocationId, 'Bldg 1', 1, 0, NEWID())
+INSERT INTO [Location] ([ParentLocationId], [Name], [IsActive], [IsLocation], [Guid]) VALUES (@CampusLocationId, 'Bldg 1', 1, 1, NEWID())
 SET @BuildingLocationId = SCOPE_IDENTITY()
 
 -- Check in Rooms

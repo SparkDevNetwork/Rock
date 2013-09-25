@@ -319,7 +319,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
 
             tbGroupName = new DataTextBox();
             tbGroupName.ID = this.ID + "_tbGroupName";
-            tbGroupName.LabelText = "Check-in Group Name";
+            tbGroupName.Label = "Check-in Group Name";
 
             // set label when they exit the edit field
             tbGroupName.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", lblGroupName.ID );

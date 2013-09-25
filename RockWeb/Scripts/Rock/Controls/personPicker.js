@@ -45,36 +45,36 @@
                 }
             });
 
-            $('#' + controlId + ' a.rock-picker').click(function (e) {
+            $('#' + controlId + ' a.picker-label').click(function (e) {
                 e.preventDefault();
-                $(this).parent().siblings('.rock-picker').first().toggle();
+                $('#' + controlId).find('.picker-menu').first().toggle();
             });
 
-            $('.rock-picker-select').on('click', '.rock-picker-select-item', function () {
+            $('.picker-select').on('click', '.picker-select-item', function () {
                 var $selectedItem = $(this).attr('data-person-id');
 
                 // hide other open details
-                $('.rock-picker-select-item-details').each(function () {
+                $('.picker-select-item-details').each(function () {
                     var $el = $(this),
-                        $currentItem = $el.parent().attr('data-person-id');
+                        $currentItem = $el.closest('.picker-select-item').attr('data-person-id');
 
                     if ($currentItem != $selectedItem) {
                         $el.slideUp();
                     }
                 });
 
-                $(this).find('.rock-picker-select-item-details:hidden').slideDown();
+                $(this).find('.picker-select-item-details:hidden').slideDown();
             });
 
             $('#btnCancel_' + controlId).click(function () {
-                $(this).parent().slideUp();
+                $(this).closest('.picker-menu').slideUp();
             });
 
             $('#btnSelect_' + controlId).click(function () {
                 var radInput = $('#' + controlId).find('input:checked'),
 
                     selectedValue = radInput.val(),
-                    selectedText = radInput.parent().text(),
+                    selectedText = radInput.closest('.picker-select-item').find('label').text(),
 
                     selectedPersonLabel = $('#selectedPersonLabel_' + controlId),
 
@@ -87,7 +87,7 @@
                 selectedPersonLabel.val(selectedValue);
                 selectedPersonLabel.text(selectedText);
 
-                $(this).parent().slideUp();
+                $(this).closest('.picker-menu').slideUp();
             });
         };
 
@@ -98,7 +98,11 @@
                         // override jQueryUI autocomplete's _renderItem so that we can do Html for the listitems
                         // derived from http://github.com/scottgonzalez/jquery-ui-extensions
 
-                        var $label = $('<label/>').text(item.Name),
+                        var $div = $('<div/>').attr('class', 'radio'),
+
+                            $label = $('<label/>')
+                                .text(item.Name)
+                                .prependTo($div),
 
                             $radio = $('<input type="radio" name="person-id" />')
                                 .attr('id', item.Id)
@@ -106,9 +110,9 @@
                                 .prependTo($label),
 
                             $li = $('<li/>')
-                                .addClass('rock-picker-select-item')
+                                .addClass('picker-select-item')
                                 .attr('data-person-id', item.Id)
-                                .html($label),
+                                .html($div),
 
                             $resultSection = $(this.options.appendTo);
 

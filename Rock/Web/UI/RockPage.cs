@@ -317,6 +317,9 @@ namespace Rock.Web.UI
             // enable history on the ScriptManager
             _scriptManager.EnableHistory = true;
 
+            // TODO: Delete this line, only used for testing
+            _scriptManager.AsyncPostBackTimeout = 180;
+
             // wire up navigation event
             _scriptManager.Navigate += new EventHandler<HistoryEventArgs>(scriptManager_Navigate);
 
@@ -1089,22 +1092,22 @@ namespace Rock.Web.UI
             legend.InnerText = "New Location";
             fsZoneSelect.Controls.Add( legend );
 
-            LabeledDropDownList ddlZones = new LabeledDropDownList();
+            RockDropDownList ddlZones = new RockDropDownList();
             ddlZones.ClientIDMode = ClientIDMode.Static;
             ddlZones.ID = "block-move-zone";
-            ddlZones.LabelText = "Zone";
+            ddlZones.Label = "Zone";
             foreach ( var zone in Zones )
                 ddlZones.Items.Add( new ListItem( zone.Value.Key, zone.Value.Value.ID ) );
             fsZoneSelect.Controls.Add( ddlZones );
 
-            LabeledRadioButtonList rblLocation = new LabeledRadioButtonList();
+            RockRadioButtonList rblLocation = new RockRadioButtonList();
             rblLocation.RepeatDirection = RepeatDirection.Horizontal;
             rblLocation.ClientIDMode = ClientIDMode.Static;
             rblLocation.ID = "block-move-Location";
             rblLocation.CssClass = "inputs-list";
             rblLocation.Items.Add( new ListItem( "Current Page" ) );
             rblLocation.Items.Add( new ListItem( string.Format( "All Pages Using the '{0}' Layout", CurrentPage.Layout ) ) );
-            rblLocation.LabelText = "Parent";
+            rblLocation.Label = "Parent";
             fsZoneSelect.Controls.Add( rblLocation );
         }
 

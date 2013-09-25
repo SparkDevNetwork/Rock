@@ -9,19 +9,18 @@
 
     <div class="container">
 	  	<header>
-		  	<div class="row-fluid identity">
-			  	<div class="span6">
-			  		<img class="logo" src="./assets/img/rocksolidchurchlogo.svg">
+		  	<div class="row identity">
+			  	<div class="col-md-6">
                     <asp:HyperLink ID="hlLogo" runat="server" NavigateUrl="~" >
                         <asp:Image ID="imgLogo" runat="server" ImageUrl="~/Themes/GrayFabric/Assets/Images/rocksolidchurchlogo.svg" CssClass="logo" />
                     </asp:HyperLink>
 			  	</div>
                 <Rock:Zone ID="Heading" Name="Header" runat="server" />
-			  	<div class="span3 service-times">
+			  	<div class="col-md-3 service-times">
 			  		<i class="icon-time"></i> <span class="bold">Service Times</span>
 				  	<br><span class="light">Sunday 9am, 10:30am and Noon</span>
 			  	</div>
-			  	<div class="span3 my-account">My Account</div>
+			  	<div class="col-md-3 my-account">My Account</div>
 			</div>
 	  		
            <Rock:Zone ID="Navigation" runat="server" />
@@ -39,8 +38,8 @@
   	 
   	  
   	<section class="contact container">
-  		<div class="row-fluid">
-  			<section class="span6 social">
+  		<div class="row">
+  			<section class="col-md-6 social">
 	  			<span class="bold">Be Social, Share!</span> Like, comment, tweet, pin and share!
 	  			<div class="icons">	
 	  				<a href=""><i class="icon-twitter-sign"></i></a>
@@ -50,7 +49,7 @@
 	  				<a href=""><i class="icon-linkedin-sign"></i></a>
 	  			</div>
   			</section>
-  			<section class="traditional span6">
+  			<section class="traditional col-md-6">
 	  			<div class="map">
 	  				<img src="http://maps.google.com/maps/api/staticmap?center=33.590795,-112.126459&zoom=13&markers=33.590795,-112.126459&size=225x225&sensor=false" />
 	  			</div>

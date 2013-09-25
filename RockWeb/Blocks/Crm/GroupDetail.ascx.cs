@@ -610,7 +610,7 @@ namespace RockWeb.Blocks.Crm
 
             // GroupType depends on Selected ParentGroup
             ddlParentGroup_SelectedIndexChanged( null, null );
-            gpParentGroup.LabelText = "Parent Group";
+            gpParentGroup.Label = "Parent Group";
 
             if ( group.Id == 0 && ddlGroupType.Items.Count > 1 )
             {
@@ -707,7 +707,7 @@ namespace RockWeb.Blocks.Crm
             }
             else
             {
-                lblActiveHtml.Text = string.Format( activeHtmlFormat, "label-important", "Inactive" );
+                lblActiveHtml.Text = string.Format(activeHtmlFormat, "label-danger", "Inactive");
             }
 
             lGroupType.Text = group.GroupType.Name;

@@ -70,7 +70,7 @@ namespace Rock.Model
                 target.ScannedCheckMicr = source.ScannedCheckMicr;
                 target.AuthorizedPersonId = source.AuthorizedPersonId;
                 target.BatchId = source.BatchId;
-                target.GatewayId = source.GatewayId;
+                target.GatewayEntityTypeId = source.GatewayEntityTypeId;
                 target.TransactionDateTime = source.TransactionDateTime;
                 target.Amount = source.Amount;
                 target.TransactionCode = source.TransactionCode;

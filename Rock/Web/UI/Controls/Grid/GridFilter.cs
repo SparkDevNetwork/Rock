@@ -81,7 +81,7 @@ Sys.Application.add_load(function () {
             lbFilter = new LinkButton();
             Controls.Add( lbFilter );
             lbFilter.ID = "lbFilter";
-            lbFilter.CssClass = "filter btn";
+            lbFilter.CssClass = "filter btn btn-primary btn-xs";
             lbFilter.ToolTip = "Apply Filter";
             lbFilter.Text = "Apply Filter";
             lbFilter.CausesValidation = false;
@@ -115,8 +115,6 @@ Sys.Application.add_load(function () {
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.Write( "<header>" );
-            
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             writer.RenderBeginTag( HtmlTextWriterTag.H3 );
             writer.Write( "Filter Options" );
@@ -128,7 +126,6 @@ Sys.Application.add_load(function () {
             writer.RenderBeginTag( HtmlTextWriterTag.I );
             writer.RenderEndTag();
 
-            writer.RenderEndTag();
             writer.Write( "</header>" );
 
             // Filter Overview
@@ -200,13 +197,41 @@ Sys.Application.add_load(function () {
         {
             if ( this.Controls != null )
             {
+                // wrap filter items in bootstrap responsive grid
+                int cellCount = 0;
+                int cellsPerRow = 3;
+
+                // write first row
+                writer.AddAttribute("class", "row");
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
                 foreach ( Control child in Controls )
                 {
+                    // write new row
+                    if (cellCount >= cellsPerRow)
+                    {
+                        writer.RenderEndTag();
+                        writer.AddAttribute("class", "row");
+                        writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                        cellCount = 0;
+                    }
+
                     if ( child != lbFilter && child != hfVisible )
                     {
+                        // add row column
+                        writer.AddAttribute("class", "col-md-4");
+                        writer.RenderBeginTag(HtmlTextWriterTag.Div);
+
                         child.RenderControl( writer );
+
+                        writer.RenderEndTag();
+
+                        cellCount++;
                     }
                 }
+
+                // write end row div
+                writer.RenderEndTag();
             }
         }
 

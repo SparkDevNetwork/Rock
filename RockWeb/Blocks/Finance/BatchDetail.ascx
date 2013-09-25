@@ -18,17 +18,17 @@
                 </legend>
 
                 <div class="span4">
-                    <Rock:DataTextBox ID="tbName" runat="server" LabelText="Title" TabIndex="1" 
+                    <Rock:DataTextBox ID="tbName" runat="server" Label="Title" TabIndex="1" 
                         SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="Name" />
                     <Rock:CampusPicker ID="cpCampus" runat="server" />
                 </div>
 
                 <div class="span4">
-                    <Rock:DatePicker ID="dtBatchDate" TabIndex="3"  runat="server" SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="BatchDate" LabelText="Batch Date" />
-                    <Rock:LabeledDropDownList ID="ddlStatus" TabIndex="5" runat="server" LabelText="Status"></Rock:LabeledDropDownList>
+                    <Rock:DateRangePicker ID="dtBatchDate" TabIndex="3"  runat="server" Label="Batch Date Range" />
+                    <Rock:RockDropDownList ID="ddlStatus" TabIndex="5" runat="server" Label="Status"></Rock:RockDropDownList>
                     </div>
                 <div class="span4">
-                    <Rock:DataTextBox ID="tbControlAmount" runat="server" LabelText="Control Amount" TabIndex="7" 
+                    <Rock:DataTextBox ID="tbControlAmount" runat="server" Label="Control Amount" TabIndex="7" 
                         SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="ControlAmount" />
                     </div>
                 </div>

@@ -18,7 +18,7 @@
                 <div class="row-fluid">
                     <div class="span6">
                         <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.MarketingCampaignAdType, Rock" PropertyName="Name" />
-                        <Rock:LabeledDropDownList ID="ddlDateRangeType" runat="server" LabelText="Date Range Type" />
+                        <Rock:RockDropDownList ID="ddlDateRangeType" runat="server" Label="Date Range Type" />
                     </div>
                     <div class="span6">
                         <Rock:Grid ID="gMarketingCampaignAdAttributeTypes" runat="server" AllowPaging="false" DisplayType="Light">

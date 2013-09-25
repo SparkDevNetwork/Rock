@@ -39,7 +39,7 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The label text.
         /// </value>
-        public string LabelText
+        public string Label
         {
             get { return _label.Text; }
             set { _label.Text = value; }
@@ -258,14 +258,14 @@ namespace Rock.Web.UI.Controls
             _hfPersonName.ID = string.Format( "hfPersonName_{0}", this.ID );
 
             _btnSelect.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-            _btnSelect.CssClass = "btn btn-mini btn-primary";
+            _btnSelect.CssClass = "btn btn-xs btn-primary";
             _btnSelect.ID = string.Format( "btnSelect_{0}", this.ID );
             _btnSelect.Text = "Select";
             _btnSelect.CausesValidation = false;
             _btnSelect.Click += btnSelect_Click;
 
             _btnSelectNone.ClientIDMode = ClientIDMode.Static;
-            _btnSelectNone.CssClass = "rock-picker-select-none";
+            _btnSelectNone.CssClass = "picker-select-none";
             _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ID );
             _btnSelectNone.Text = "<i class='icon-remove'></i>";
             _btnSelectNone.CausesValidation = false;
@@ -308,7 +308,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> that receives the rendered output.</param>
         protected override void Render( HtmlTextWriter writer )
         {
-            bool renderLabel = !string.IsNullOrEmpty( LabelText );
+            bool renderLabel = !string.IsNullOrEmpty( Label );
 
             if ( renderLabel )
             {
@@ -336,9 +336,8 @@ namespace Rock.Web.UI.Controls
             if ( this.Enabled )
             {
                 string controlHtmlFormatStart = @"
-    <span id='{0}'>
-        <span class='rock-picker rock-picker-select' id='{0}'> 
-            <a class='rock-picker' href='#'>
+        <div id='{0}' class='picker picker-select picker-person' > 
+            <a class='picker-label' href='#'>
                 <i class='icon-user'></i>
                 <span id='selectedPersonLabel_{0}'>{1}</span>
                 <b class='caret'></b>
@@ -354,20 +353,22 @@ namespace Rock.Web.UI.Controls
                 }
                 else
                 {
-                    writer.Write( "<a class='rock-picker-select-none' id='btnSelectNone_{0}' href='#' style='display:none'><i class='icon-remove'></i></a>", this.ID );
+                    writer.Write( "<a class='picker-select-none' id='btnSelectNone_{0}' href='#' style='display:none'><i class='icon-remove'></i></a>", this.ID );
                 }
 
                 string controlHtmlFormatMiddle = @"
-        </span>
-        <div class='dropdown-menu rock-picker rock-picker-person'>
+          <div class='picker-menu dropdown-menu'>
 
-            <h4>Search</h4>
-            <input id='personPicker_{0}' type='text' class='rock-picker-search' />
-            <h4>Results</h4>
-            <hr />
-            <ul class='rock-picker-select' id='personPickerItems_{0}'>
-            </ul>
-            <hr />
+             <h4>Search</h4>
+             <input id='personPicker_{0}' type='text' class='picker-search form-control input-sm' />
+
+             <hr />             
+
+             <h4>Results</h4>
+             
+             <ul class='picker-select' id='personPickerItems_{0}'>
+             </ul>
+             <div class='picker-actions'>
 ";
 
                 writer.Write( controlHtmlFormatMiddle, this.ID, this.PersonName );
@@ -379,13 +380,14 @@ namespace Rock.Web.UI.Controls
                 }
                 else
                 {
-                    writer.Write( string.Format( "<a class='btn btn-mini btn-primary' id='btnSelect_{0}'>Select</a>", this.ID ) );
+                    writer.Write( string.Format( "<a class='btn btn-xs btn-primary' id='btnSelect_{0}'>Select</a>", this.ID ) );
                 }
 
                 string controlHtmlFormatEnd = @"
-            <a class='btn btn-mini' id='btnCancel_{0}'>Cancel</a>
+            <a class='btn btn-xs' id='btnCancel_{0}'>Cancel</a>
+            </div>
         </div>
-    </span>
+    </div>
 ";
 
                 writer.Write( string.Format( controlHtmlFormatEnd, this.ID, this.PersonName ) );

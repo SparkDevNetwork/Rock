@@ -144,6 +144,7 @@
     <Compile Include="Attribute\ComponentsFieldAttribute.cs" />
     <Compile Include="Attribute\CategoryFieldAttribute.cs" />
     <Compile Include="Attribute\AttributeCategoryFieldAttribute.cs" />
+    <Compile Include="Attribute\TimeFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerRangeFieldAttribute.cs" />
     <Compile Include="Attribute\DateRangeFieldAttribute.cs" />
     <Compile Include="Attribute\DecimalRangeFieldAttribute.cs" />
@@ -164,15 +165,22 @@
     <Compile Include="Attribute\DefinedValueFieldAttribute.cs" />
     <Compile Include="Attribute\CampusesFieldAttribute.cs" />
     <Compile Include="Attribute\EntityTypeFieldAttribute.cs" />
-    <Compile Include="Attribute\DetailPageAttribute.cs" />
     <Compile Include="Attribute\FieldAttribute.cs" />
     <Compile Include="Attribute\GroupFieldAttribute.cs" />
     <Compile Include="Attribute\GroupTypesFieldAttribute.cs" />
     <Compile Include="Attribute\IntegerFieldAttribute.cs" />
     <Compile Include="Attribute\LinkedPageAttribute.cs" />
+    <Compile Include="Field\Types\TimeFieldType.cs" />
     <Compile Include="Field\Types\IntegerRangeFieldType.cs" />
     <Compile Include="Field\Types\DateRangeFieldType.cs" />
     <Compile Include="Field\Types\DecimalRangeFieldType.cs" />
+    <Compile Include="Financial\PaymentInfo.cs" />
+    <Compile Include="Financial\SwipePaymentInfo.cs" />
+    <Compile Include="Financial\ReferencePaymentInfo.cs" />
+    <Compile Include="Financial\PaymentSchedule.cs" />
+    <Compile Include="Financial\Payment.cs" />
+    <Compile Include="Financial\GatewayComponent.cs" />
+    <Compile Include="Financial\GatewayContainer.cs" />
     <Compile Include="Migrations\201308232058045_CreateDatabase.cs" />
     <Compile Include="Migrations\201308232058045_CreateDatabase.Designer.cs">
       <DependentUpon>201308232058045_CreateDatabase.cs</DependentUpon>
@@ -209,6 +217,16 @@
     <Compile Include="Migrations\201309182328119_AddAbilityLevelToCheckIn.Designer.cs">
       <DependentUpon>201309182328119_AddAbilityLevelToCheckIn.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201309211607057_PaymentGateway.cs" />
+    <Compile Include="Migrations\201309211607057_PaymentGateway.Designer.cs">
+      <DependentUpon>201309211607057_PaymentGateway.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201309251315512_RefactorMetrics.cs" />
+    <Compile Include="Migrations\201309251315512_RefactorMetrics.Designer.cs">
+      <DependentUpon>201309251315512_RefactorMetrics.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Model\FinancialPersonSavedAccountService.Partial.cs" />
+    <Compile Include="Services\NuGet\NuGetExtensionsMethods.cs" />
     <Compile Include="Storage\ProviderComponent.cs" />
     <Compile Include="Storage\ProviderContainer.cs" />
     <Compile Include="Storage\Provider\Database.cs" />
@@ -322,9 +340,8 @@
     <Compile Include="Field\Types\EntityTypeFieldType.cs" />
     <Compile Include="Field\Types\GroupFieldType.cs" />
     <Compile Include="Field\Types\GroupTypesFieldType.cs" />
-    <Compile Include="Financial\BankAccount.cs" />
-    <Compile Include="Financial\CreditCard.cs" />
-    <Compile Include="Financial\IGateway.cs" />
+    <Compile Include="Financial\ACHPaymentInfo.cs" />
+    <Compile Include="Financial\CreditCardPaymentInfo.cs" />
     <Compile Include="Model\AuthService.Partial.cs" />
     <Compile Include="Model\BlockService.Partial.cs" />
     <Compile Include="Model\BlockTypeService.Partial.cs" />
@@ -344,7 +361,6 @@
     <Compile Include="Model\CodeGenerated\DeviceService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialBatchService.cs" />
-    <Compile Include="Model\CodeGenerated\FinancialGatewayService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPledgeService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialScheduledTransactionDetailService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialScheduledTransactionService.cs" />
@@ -451,12 +467,16 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
+    <Compile Include="Web\UI\Controls\ILabeledControl.cs" />
+    <Compile Include="Web\UI\Controls\IRequiredControl.cs" />
+    <Compile Include="Web\UI\Controls\RockControlHelper.cs" />
+    <Compile Include="Web\UI\Controls\TermDescription.cs" />
     <Compile Include="Web\UI\Controls\Grid\DefinedValueField.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\LocationPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\DateRangePicker.cs" />
     <Compile Include="Web\UI\Controls\Grid\CheckBoxEditableField.cs" />
     <Compile Include="Web\UI\Controls\Grid\ColorField.cs" />
-    <Compile Include="Web\UI\Controls\IRequiredControl.cs" />
-    <Compile Include="Web\UI\Controls\LabeledBulletedList.cs" />
+    <Compile Include="Web\UI\Controls\RockBulletedList.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\Attributes.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\AttributesRow.cs" />
     <Compile Include="Web\UI\Controls\NewFamily\Members.cs" />
@@ -482,7 +502,6 @@
     <Compile Include="Web\UI\Controls\Pickers\MergeFieldPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\PersonPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\TreeViewItem.cs" />
-    <Compile Include="Web\UI\Controls\RockDropDownList.cs" />
     <Compile Include="Web\UI\Controls\NumberBox.cs" />
     <Compile Include="Web\UI\Controls\PageBreadCrumbs.cs" />
     <Compile Include="Web\UI\Controls\PageDescription.cs" />
@@ -523,7 +542,7 @@
     <Compile Include="Web\UI\Controls\Data View Filters\FilterGroup.cs" />
     <Compile Include="Web\UI\Controls\Data View Filters\FilterField.cs" />
     <Compile Include="Web\UI\Controls\Grid\AttributeField.cs" />
-    <Compile Include="Web\UI\Controls\ILabeledControl.cs" />
+    <Compile Include="Web\UI\Controls\IRockControl.cs" />
     <Compile Include="Web\UI\BreadCrumb.cs" />
     <Compile Include="Web\UI\IDetailBlock.cs" />
     <Compile Include="Web\UI\IDimmableBlock.cs" />
@@ -667,9 +686,6 @@
     <Compile Include="Model\FinancialAccount.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\FinancialGateway.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Model\FinancialPledge.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -775,21 +791,21 @@
     <Compile Include="Web\UI\Controls\Pickers\CampusesPicker.cs" />
     <Compile Include="Web\UI\Controls\ModalAlert.cs" />
     <Compile Include="Web\UI\Controls\ModalDialog.cs" />
-    <Compile Include="Web\UI\Controls\LabeledRadioButtonList.cs" />
+    <Compile Include="Web\UI\Controls\RockRadioButtonList.cs" />
     <Compile Include="Web\UI\Controls\Grid\EnumField.cs" />
     <Compile Include="Web\UI\Controls\Grid\DateTimeField.cs" />
     <Compile Include="Web\UI\Controls\Grid\DateField.cs" />
     <Compile Include="Web\UI\Controls\Grid\EditValueField.cs" />
     <Compile Include="Web\UI\Controls\Grid\GridFilter.cs" />
-    <Compile Include="Web\UI\Controls\LabeledText.cs" />
+    <Compile Include="Web\UI\Controls\RockLiteral.cs" />
     <Compile Include="Web\UI\Controls\ModalIFrameDialog.cs" />
     <Compile Include="Web\UI\Controls\ImageUploader.cs" />
-    <Compile Include="Web\UI\Controls\LabeledTextBox.cs" />
+    <Compile Include="Web\UI\Controls\RockTextBox.cs" />
     <Compile Include="Web\UI\Controls\PageTitle.cs" />
-    <Compile Include="Web\UI\Controls\LabeledCheckBoxList.cs" />
+    <Compile Include="Web\UI\Controls\RockCheckBoxList.cs" />
     <Compile Include="Web\UI\Controls\Data Fields\FieldTypeList.cs" />
     <Compile Include="Web\UI\Controls\Grid\GridActions.cs" />
-    <Compile Include="Web\UI\Controls\LabeledCheckBox.cs" />
+    <Compile Include="Web\UI\Controls\RockCheckBox.cs" />
     <Compile Include="Web\UI\Controls\SearchField.cs" />
     <Compile Include="Web\UI\Controls\Zone.cs" />
     <Compile Include="Web\UI\DialogMasterPage.cs">
@@ -811,7 +827,7 @@
     <Compile Include="Web\UI\Controls\Data Fields\DataTextBox.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Web\UI\Controls\LabeledDropDownList.cs" />
+    <Compile Include="Web\UI\Controls\RockDropDownList.cs" />
     <Compile Include="Web\UI\Controls\Grid\SecurityField.cs" />
     <Compile Include="Web\UI\Controls\Grid\ReorderField.cs" />
     <Compile Include="Web\UI\Controls\Grid\EditField.cs" />
@@ -1033,6 +1049,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201309182328119_AddAbilityLevelToCheckIn.resx">
       <DependentUpon>201309182328119_AddAbilityLevelToCheckIn.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201309211607057_PaymentGateway.resx">
+      <DependentUpon>201309211607057_PaymentGateway.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201309251315512_RefactorMetrics.resx">
+      <DependentUpon>201309251315512_RefactorMetrics.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

@@ -16,7 +16,7 @@
 
                 <div class="row-fluid">
                     <div class="span6">
-                        <Rock:FileUploader ID="fsFile" runat="server" LabelText="Upload New File" />
+                        <Rock:FileUploader ID="fsFile" runat="server" Label="Upload New File" />
                         <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.BinaryFile, Rock" PropertyName="FileName" Required="true" />
                         <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.BinaryFile, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
                         <Rock:DataTextBox ID="tbMimeType" runat="server" SourceTypeName="Rock.Model.BinaryFile, Rock" PropertyName="MimeType" />
