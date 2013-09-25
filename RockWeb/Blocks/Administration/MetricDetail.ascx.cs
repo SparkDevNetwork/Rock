@@ -14,6 +14,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Constants;
 using Rock.Model;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -35,20 +36,35 @@ namespace RockWeb.Blocks.Administration
         {
             base.OnLoad( e );
 
-            string itemId = PageParameter( "metricId" );
-            if ( !string.IsNullOrWhiteSpace( itemId ) )
+            if ( !Page.IsPostBack )
             {
-                ShowDetail( "metricId", int.Parse( itemId ) );
+                string itemId = PageParameter( "metricId" );
+                if ( !string.IsNullOrWhiteSpace( itemId ) )
+                {
+                    ShowDetail( "metricId", int.Parse( itemId ) );
+                }
+                else
+                {
+                    pnlDetails.Visible = false;
+                }
             }
-            else
-            {
-                pnlDetails.Visible = false;
-            }            
         }
 
         #endregion
 
         #region Events
+
+        /// <summary>
+        /// Handles the Click event of the btnEdit control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnEdit_Click( object sender, EventArgs e )
+        {
+            var metricService = new MetricService();
+            var metric = metricService.Get( hfMetricId.ValueAsInt() );
+            ShowEdit( metric );
+        }
 
         /// <summary>
         /// Handles the Click event of the btnSave control.
@@ -59,9 +75,9 @@ namespace RockWeb.Blocks.Administration
         {
             using ( new Rock.Data.UnitOfWorkScope() )
             {
+                int metricId = hfMetricId.ValueAsInt();
                 var metricService = new MetricService();
-                Metric metric = null;
-                int metricId = ( hfMetricId.Value ) != null ? Int32.Parse( hfMetricId.Value ) : 0;
+                Metric metric = null;                
 
                 if ( metricId == 0 )
                 {
@@ -78,17 +94,25 @@ namespace RockWeb.Blocks.Administration
                 metric.Title = tbTitle.Text;
                 metric.Subtitle = tbSubtitle.Text;
                 metric.Description = tbDescription.Text;
-                metric.MinValue = tbMinValue.Text != "" ? Int32.Parse( tbMinValue.Text, NumberStyles.AllowThousands ) : (int?)null;
-                metric.MaxValue = tbMinValue.Text != "" ? Int32.Parse( tbMaxValue.Text, NumberStyles.AllowThousands ) : (int?)null;
+                metric.MinValue = tbMinValue.Text.AsType<int?>();
+                metric.MaxValue = tbMaxValue.Text.AsType<int?>();
                 metric.Type = cbType.Checked;
                 metric.CollectionFrequencyValueId = Int32.Parse( ddlCollectionFrequency.SelectedValue );
                 metric.Source = tbSource.Text;
                 metric.SourceSQL = tbSourceSQL.Text;
 
+                if ( !metric.IsValid )
+                {
+                    // Controls will render the error messages                    
+                    return;
+                }
+
                 metricService.Save( metric, CurrentPersonId );
+                hfMetricId.SetValue( metric.Id );
             }
 
-            NavigateToParentPage();
+            var savedMetric = new MetricService().Get( hfMetricId.ValueAsInt() );
+            ShowReadOnly( savedMetric );
         }
 
         /// <summary>
@@ -98,12 +122,13 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnCancel_Click( object sender, EventArgs e )
         {
-            NavigateToParentPage();
+            var metric = new MetricService().Get( hfMetricId.ValueAsInt() );
+            ShowReadOnly( metric );
         }
         
         #endregion
 
-        #region Methods
+        #region Internal Methods
 
         /// <summary>
         /// Binds the collection frequencies.
@@ -112,16 +137,77 @@ namespace RockWeb.Blocks.Administration
         {
             ddlCollectionFrequency.Items.Clear();
 
-            var dTCollectionFrequency = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedType.METRIC_COLLECTION_FREQUENCY ) );
+            var dTCollectionFrequency = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.METRIC_COLLECTION_FREQUENCY ) );
 
-            if ( dTCollectionFrequency != null && dTCollectionFrequency.DefinedType.DefinedValues.Any() )
+            if ( dTCollectionFrequency != null && dTCollectionFrequency.DefinedValues.Any() )
             {
-                var definedValues = dTCollectionFrequency.DefinedType.DefinedValues.OrderBy( dv => dv.Order ).ToList();
+                var definedValues = dTCollectionFrequency.DefinedValues.OrderBy( dv => dv.Order ).ToList();
                 foreach ( var value in definedValues )
                 {
                     ddlCollectionFrequency.Items.Add( new ListItem( value.Name, value.Id.ToString() ) );
                 }
             }            
+        }
+
+        /// <summary>
+        /// Shows the readonly details.
+        /// </summary>
+        /// <param name="metric">The metric.</param>
+        private void ShowReadOnly( Metric metric )
+        {
+            SetEditMode( false );
+
+            hfMetricId.SetValue( metric.Id );            
+            lblDetails.Text = new DescriptionList()
+                .Add( "Title", metric.Title )                
+                .Add( "Description", metric.Description )
+                .Add( "Category", metric.Category )
+                .Add( "Collection Frequency", metric.CollectionFrequencyValue.Name )
+                .Add( "MinValue", metric.MinValue )
+                .Add( "MaxValue", metric.MaxValue )
+                .Add( "Source", metric.Source )
+                .Html;
+        }        
+
+        /// <summary>
+        /// Shows the edit details.
+        /// </summary>
+        /// <param name="metric">The metric.</param>
+        protected void ShowEdit( Metric metric )
+        {
+            if ( metric.Id > 0 )
+            {
+                lActionTitle.Text = ActionTitle.Edit( DefinedType.FriendlyTypeName );
+            }
+            else
+            {
+                lActionTitle.Text = ActionTitle.Add( DefinedType.FriendlyTypeName );
+            }
+
+            SetEditMode( true );
+
+            BindCollectionFrequencies();
+            hfMetricId.Value = metric.Id.ToString();
+            tbCategory.Text = metric.Category;
+            tbTitle.Text = metric.Title;
+            tbSubtitle.Text = metric.Subtitle;
+            tbDescription.Text = metric.Description;
+            tbMinValue.Text = metric.MinValue.ToString();
+            tbMaxValue.Text = metric.MaxValue.ToString();
+            cbType.Checked = metric.Type;
+            ddlCollectionFrequency.SelectedValue = metric.CollectionFrequencyValueId.ToString();
+            tbSource.Text = metric.Source;
+            tbSourceSQL.Text = metric.SourceSQL;
+        }
+
+        /// <summary>
+        /// Sets the edit mode.
+        /// </summary>
+        /// <param name="editable">if set to <c>true</c> [editable].</param>
+        private void SetEditMode( bool editable )
+        {
+            pnlEditDetails.Visible = editable;            
+            fieldsetViewDetails.Visible = !editable;
         }
 
         /// <summary>
@@ -139,50 +225,39 @@ namespace RockWeb.Blocks.Administration
             Metric metric = null;
             if ( !itemKeyValue.Equals( 0 ) )
             {
-                metric = new MetricService().Get( itemKeyValue );
-                lActionTitle.Text = ActionTitle.Edit( Metric.FriendlyTypeName );
-                               
+                metric = new MetricService().Get( itemKeyValue );                
             }
             else
             {
-                metric = new Metric { Id = 0 };
-                lActionTitle.Text = ActionTitle.Add( Metric.FriendlyTypeName );
-                
-                //tbTitle.Text = string.Empty;
-                //tbSubtitle.Text = string.Empty;
-                //tbDescription.Text = string.Empty;
-                //tbMinValue.Text = string.Empty;
-                //tbMaxValue.Text = string.Empty;
-                //cbType.Checked = false;
-                //tbSource.Text = string.Empty;
-                //tbSourceSQL.Text = string.Empty;
+                metric = new Metric { Id = 0 };                
             }
-
-            hfMetricId.Value = metric.Id.ToString();
-            tbCategory.Text = metric.Category;
-            tbTitle.Text = metric.Title;
-            tbSubtitle.Text = metric.Subtitle;
-            tbDescription.Text = metric.Description;
-            tbMinValue.Text = metric.MinValue.ToString();
-            tbMaxValue.Text = metric.MaxValue.ToString();
-            cbType.Checked = metric.Type;
-            ddlCollectionFrequency.SelectedValue = metric.CollectionFrequencyValueId.ToString();
-            tbSource.Text = metric.Source;
-            tbSourceSQL.Text = metric.SourceSQL;
-
-            BindCollectionFrequencies();
 
             bool readOnly = false;
             if ( !IsUserAuthorized( "Edit" ) )
             {
                 readOnly = true;
                 nbEditModeMessage.Text = EditModeMessage.ReadOnlyEditActionNotAllowed( Metric.FriendlyTypeName );
-                lActionTitle.Text = ActionTitle.View( Metric.FriendlyTypeName );
-                btnCancel.Text = "Close";
             }
-                        
+
+            if ( !readOnly )
+            {
+                btnEdit.Visible = true;
+                if ( metric.Id > 0 )
+                {
+                    ShowReadOnly( metric );
+                }
+                else
+                {
+                    ShowEdit( metric );
+                }                
+            }
+            else
+            {
+                btnEdit.Visible = false;
+                ShowReadOnly( metric );                
+            }
+                                    
             btnSave.Visible = !readOnly;
-            pnlDetails.Visible = true;
         }        
 
         #endregion

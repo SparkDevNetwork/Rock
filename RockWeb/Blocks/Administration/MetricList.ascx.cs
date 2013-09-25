@@ -34,17 +34,17 @@ namespace RockWeb.Blocks.Administration
         {
             base.OnInit( e );
 
-            rGridMetric.DataKeyNames = new string[] { "id" };
-            rGridMetric.Actions.ShowAdd = true;
-            rGridMetric.Actions.AddClick += rGridMetric_Add;
-            rGridMetric.GridRebind += rGridMetric_GridRebind;                    
+            gMetrics.DataKeyNames = new string[] { "id" };
+            gMetrics.Actions.ShowAdd = true;
+            gMetrics.Actions.AddClick += gMetrics_Add;
+            gMetrics.GridRebind += gMetrics_GridRebind;                    
            
             rFilter.ApplyFilterClick += rFilter_ApplyFilterClick;
             BindCategoryFilter();                
                        
             bool canAddEditDelete = IsUserAuthorized( "Edit" );
-            rGridMetric.Actions.ShowAdd = canAddEditDelete;
-            rGridMetric.IsDeleteEnabled = canAddEditDelete;
+            gMetrics.Actions.ShowAdd = canAddEditDelete;
+            gMetrics.IsDeleteEnabled = canAddEditDelete;
         }
 
         /// <summary>
@@ -77,35 +77,35 @@ namespace RockWeb.Blocks.Administration
         }
 
         /// <summary>
-        /// Handles the Add event of the rGridMetric control.
+        /// Handles the Add event of the gMetrics control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void rGridMetric_Add( object sender, EventArgs e )
+        protected void gMetrics_Add( object sender, EventArgs e )
         {
             NavigateToLinkedPage( "DetailPage", "metricId", 0 );
         }
 
         /// <summary>
-        /// Handles the Edit event of the rGridMetric control.
+        /// Handles the Edit event of the gMetrics control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void rGridMetric_Edit( object sender, RowEventArgs e )
+        protected void gMetrics_Edit( object sender, RowEventArgs e )
         {
             NavigateToLinkedPage( "DetailPage", "metricId", (int)e.RowKeyValue );
         }
         
         /// <summary>
-        /// Handles the Delete event of the rGridMetric control.
+        /// Handles the Delete event of the gMetrics control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
-        protected void rGridMetric_Delete( object sender, RowEventArgs e )
+        protected void gMetrics_Delete( object sender, RowEventArgs e )
         {
             var metricService = new MetricService();
 
-            Metric metric = metricService.Get( (int)rGridMetric.DataKeys[e.RowIndex]["id"] );
+            Metric metric = metricService.Get( (int)e.RowKeyValue );
             if ( metric != null )
             {
                 metricService.Delete( metric, CurrentPersonId );
@@ -116,11 +116,11 @@ namespace RockWeb.Blocks.Administration
         }
         
         /// <summary>
-        /// Handles the GridRebind event of the rGridMetric control.
+        /// Handles the GridRebind event of the gMetrics control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void rGridMetric_GridRebind( object sender, EventArgs e )
+        void gMetrics_GridRebind( object sender, EventArgs e )
         {
             BindCategoryFilter();
             BindGrid();
@@ -128,7 +128,7 @@ namespace RockWeb.Blocks.Administration
         
         #endregion
 
-        #region Methods
+        #region Internal Methods
 
         /// <summary>
         /// Binds the category filter.
@@ -161,20 +161,22 @@ namespace RockWeb.Blocks.Administration
             var queryable = new MetricService().Queryable();
 
             if ( ddlCategoryFilter.SelectedValue != Rock.Constants.All.Text )
-                queryable = queryable.
-                    Where( a => a.Category == ddlCategoryFilter.SelectedValue );
+            {
+                queryable = queryable.Where( a => a.Category == ddlCategoryFilter.SelectedValue );
+            }
 
-            var sortProperty = rGridMetric.SortProperty;
+            var sortProperty = gMetrics.SortProperty;
             if ( sortProperty != null )
-                queryable = queryable.
-                    Sort( sortProperty );
+            {
+                queryable = queryable.Sort( sortProperty );
+            }
             else
-                queryable = queryable.
-                    OrderBy( a => a.Category ).
-                    ThenBy( a => a.Title );
+            {
+                queryable = queryable.OrderBy( a => a.Category ).ThenBy( a => a.Title );
+            }
 
-            rGridMetric.DataSource = queryable.ToList();
-            rGridMetric.DataBind();
+            gMetrics.DataSource = queryable.ToList();
+            gMetrics.DataBind();
         }       
 
         #endregion

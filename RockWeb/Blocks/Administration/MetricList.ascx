@@ -10,7 +10,7 @@
             <Rock:GridFilter ID="rFilter" runat="server">
                 <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" />
             </Rock:GridFilter>
-            <Rock:Grid ID="rGridMetric" runat="server" AllowSorting="true" EmptyDataText="No Metrics Found" RowItemText="Metric" OnRowSelected="rGridMetric_Edit">
+            <Rock:Grid ID="gMetrics" runat="server" AllowSorting="true" EmptyDataText="No Metrics Found" RowItemText="Metric" OnRowSelected="gMetrics_Edit">
                 <Columns>
                     <asp:BoundField DataField="Id" HeaderText="ID" SortExpression="Id" />
                     <asp:BoundField DataField="Category" HeaderText="Category" SortExpression="Category" />
@@ -20,7 +20,7 @@
                     <asp:BoundField DataField="MaxValue" HeaderText="Maximum Value" SortExpression="MaxValue" />
                     <asp:BoundField DataField="CollectionFrequencyValue.Name" HeaderText="Collection Frequency" SortExpression="CollectionFrequencyValue.Name" />
                     <asp:BoundField DataField="Source" HeaderText="Source" SortExpression="Source" />
-                    <Rock:DeleteField OnClick="rGridMetric_Delete" />
+                    <Rock:DeleteField OnClick="gMetrics_Delete" />
                 </Columns>
             </Rock:Grid>
 
