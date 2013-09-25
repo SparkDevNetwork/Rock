@@ -16,8 +16,127 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public abstract class ItemPicker : CompositeControl, IRequiredControl
+    public abstract class ItemPicker : CompositeControl, IRockControl
     {
+        #region IRockControl implementation
+
+        /// <summary>
+        /// Gets or sets the label text.
+        /// </summary>
+        /// <value>
+        /// The label text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text for the label." )
+        ]
+        public string Label
+        {
+            get { return ViewState["Label"] as string ?? string.Empty; }
+            set { ViewState["Label"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the help text.
+        /// </summary>
+        /// <value>
+        /// The help text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The help block." )
+        ]
+        public string Help
+        {
+            get
+            {
+                return HelpBlock != null ? HelpBlock.Text : string.Empty;
+            }
+            set
+            {
+                if ( HelpBlock != null )
+                {
+                    HelpBlock.Text = value;
+                }
+            }
+        }
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "false" ),
+        Description( "Is the value required?" )
+        ]
+        public bool Required
+        {
+            get { return ViewState["Required"] as bool? ?? false; }
+            set { ViewState["Required"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the required error message.  If blank, the LabelName name will be used
+        /// </summary>
+        /// <value>
+        /// The required error message.
+        /// </value>
+        public string RequiredErrorMessage
+        {
+            get
+            {
+                return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
+            }
+            set
+            {
+                if ( RequiredFieldValidator != null )
+                {
+                    RequiredFieldValidator.ErrorMessage = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool IsValid
+        {
+            get
+            {
+                return !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the help block.
+        /// </summary>
+        /// <value>
+        /// The help block.
+        /// </value>
+        public HelpBlock HelpBlock { get; set; }
+
+        /// <summary>
+        /// Gets or sets the required field validator.
+        /// </summary>
+        /// <value>
+        /// The required field validator.
+        /// </value>
+        public RequiredFieldValidator RequiredFieldValidator { get; set; }
+
+        #endregion
+
+        #region Controls
+
         private HiddenField _hfItemId;
         private HiddenField _hfInitialItemParentIds;
         private HiddenField _hfItemName;
@@ -25,10 +144,9 @@ namespace Rock.Web.UI.Controls
         private LinkButton _btnSelect;
         private LinkButton _btnSelectNone;
 
-        /// <summary>
-        /// The required validator
-        /// </summary>
-        protected HiddenFieldValidator RequiredValidator;
+        #endregion
+
+        #region Properties
 
         public abstract string ItemRestUrl { get; }
 
@@ -165,6 +283,241 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the name of the item.
+        /// </summary>
+        /// <value>
+        /// The name of the item.
+        /// </value>
+        public string ItemName
+        {
+            get
+            {
+                EnsureChildControls();
+                if ( string.IsNullOrWhiteSpace( _hfItemName.Value ) )
+                {
+                    _hfItemName.Value = !string.IsNullOrWhiteSpace( DefaultText ) ? DefaultText : Constants.None.TextHtml;
+                }
+
+                return _hfItemName.Value;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _hfItemName.Value = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the item names.
+        /// </summary>
+        /// <value>
+        /// The item names.
+        /// </value>
+        public IEnumerable<string> ItemNames
+        {
+            get
+            {
+                EnsureChildControls();
+                var names = new List<string>();
+
+                if ( !string.IsNullOrWhiteSpace( _hfItemName.Value ) )
+                {
+                    names.AddRange( _hfItemName.Value.Split( ',' ) );
+                }
+
+                return names;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _hfItemName.Value = string.Join( ",", value );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [allow multi select].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [allow multi select]; otherwise, <c>false</c>.
+        /// </value>
+        public bool AllowMultiSelect { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default text.
+        /// </summary>
+        /// <value>
+        /// The default text.
+        /// </value>
+        public string DefaultText { get; set; }
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ItemPicker" /> class.
+        /// </summary>
+        public ItemPicker()
+            : base()
+        {
+            RequiredFieldValidator = new HiddenFieldValidator();
+            HelpBlock = new HelpBlock();
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+            RegisterJavaScript();
+            var sm = ScriptManager.GetCurrent( this.Page );
+            EnsureChildControls();
+
+            if ( sm != null )
+            {
+                sm.RegisterAsyncPostBackControl( _btnSelect );
+                sm.RegisterAsyncPostBackControl( _btnSelectNone );
+            }
+        }
+
+        /// <summary>
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+        /// </summary>
+        protected override void CreateChildControls()
+        {
+            base.CreateChildControls();
+
+            Controls.Clear();
+
+            _hfItemId = new HiddenField();
+            _hfItemId.ClientIDMode = ClientIDMode.Static;
+            _hfItemId.ID = string.Format( "hfItemId_{0}", this.ID );
+            _hfInitialItemParentIds = new HiddenField();
+            _hfInitialItemParentIds.ClientIDMode = ClientIDMode.Static;
+            _hfInitialItemParentIds.ID = string.Format( "hfInitialItemParentIds_{0}", this.ID );
+            _hfItemName = new HiddenField();
+            _hfItemName.ClientIDMode = ClientIDMode.Static;
+            _hfItemName.ID = string.Format( "hfItemName_{0}", this.ID );
+            _hfItemRestUrlExtraParams = new HiddenField();
+            _hfItemRestUrlExtraParams.ClientIDMode = ClientIDMode.Static;
+            _hfItemRestUrlExtraParams.ID = string.Format( "hfItemRestUrlExtraParams_{0}", this.ID );
+
+            _btnSelect = new LinkButton();
+            _btnSelect.ClientIDMode = ClientIDMode.Static;
+            _btnSelect.CssClass = "btn btn-xs btn-primary";
+            _btnSelect.ID = string.Format( "btnSelect_{0}", this.ID );
+            _btnSelect.Text = "Select";
+            _btnSelect.CausesValidation = false;
+            _btnSelect.Click += btnSelect_Click;
+
+            _btnSelectNone = new LinkButton();
+            _btnSelectNone.ClientIDMode = ClientIDMode.Static;
+            _btnSelectNone.CssClass = "picker-select-none";
+            _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ID );
+            _btnSelectNone.Text = "<i class='icon-remove'></i>";
+            _btnSelectNone.CausesValidation = false;
+            _btnSelectNone.Visible = false;
+            _btnSelectNone.Click += btnSelect_Click;
+
+            Controls.Add( _hfItemId );
+            Controls.Add( _hfInitialItemParentIds );
+            Controls.Add( _hfItemName );
+            Controls.Add( _hfItemRestUrlExtraParams );
+            Controls.Add( _btnSelect );
+            Controls.Add( _btnSelectNone );
+
+            RequiredFieldValidator.InitialValue = "0";
+            RockControlHelper.CreateChildControls( this, Controls );
+        }
+
+        public override void RenderControl( HtmlTextWriter writer )
+        {
+            if ( this.Visible )
+            {
+                RockControlHelper.RenderControl( this, writer );
+            }
+        }
+
+        public virtual void RenderBaseControl( HtmlTextWriter writer)
+        {
+            _hfItemId.RenderControl( writer );
+            _hfInitialItemParentIds.RenderControl( writer );
+            _hfItemName.RenderControl( writer );
+            _hfItemRestUrlExtraParams.RenderControl( writer );
+
+            if ( this.Enabled )
+            {
+                string controlHtmlFormatStart = @"
+        <div id='{0}' class='picker picker-select'> 
+            <a class='picker-label' href='#'>
+                <i class='icon-folder-open'></i>
+                <span id='selectedItemLabel_{0}'>{1}</span>
+                <b class='caret'></b>
+            </a>
+";
+                writer.Write( controlHtmlFormatStart, this.ID, this.ItemName );
+
+                // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
+                if ( SelectItem != null )
+                {
+                    _btnSelectNone.RenderControl( writer );
+                }
+                else
+                {
+                    writer.Write( "<a class='picker-select-none' id='btnSelectNone_{0}' href='#' style='display:none'><i class='icon-remove'></i></a>", this.ID );
+                }
+
+                string controlHtmlFormatMiddle = @"
+          <div class='picker-menu dropdown-menu'>
+
+            <div id='treeview-scroll-container_{0}' class='scroll-container scroll-container-picker'>
+                <div class='scrollbar'>
+                    <div class='track'>
+                        <div class='thumb'>
+                            <div class='end'></div>
+                        </div>
+                    </div>
+                </div>
+                <div class='viewport'>
+                    <div class='overview'>
+                        <div id='treeviewItems_{0}' class='treeview treeview-items'></div>        
+                    </div>
+                </div>
+            </div>
+
+            <div class='picker-actions'>
+";
+                writer.Write( controlHtmlFormatMiddle, this.ID );
+
+                _btnSelect.RenderControl( writer );
+
+                string controlHtmlFormatEnd = @"
+            <a class='btn btn-xs' id='btnCancel_{0}'>Cancel</a>
+            </div>
+          </div>
+        </div>
+";
+                writer.Write( controlHtmlFormatEnd, this.ID );
+            }
+            else
+            {
+                // this picker is not enabled (readonly), so just render a readonly version
+                string controlHtmlFormatDisabled = @"
+        <i class='icon-file-alt'></i>
+        <span id='selectedItemLabel_{0}'>{1}</span>
+";
+                writer.Write( controlHtmlFormatDisabled, this.ID, this.ItemName );
+            }
+        }
+        /// <summary>
         /// Gets the selected value as int.
         /// </summary>
         /// <param name="noneAsNull">if set to <c>true</c> [none as null].</param>
@@ -242,164 +595,8 @@ namespace Rock.Web.UI.Controls
             }
 
             return ids;
-        }
-
-        /// <summary>
-        /// Gets or sets the name of the item.
-        /// </summary>
-        /// <value>
-        /// The name of the item.
-        /// </value>
-        public string ItemName
-        {
-            get
-            {
-                EnsureChildControls();
-                if ( string.IsNullOrWhiteSpace( _hfItemName.Value ) )
-                {
-                    _hfItemName.Value = !string.IsNullOrWhiteSpace( DefaultText ) ? DefaultText : Constants.None.TextHtml;
-                }
-
-                return _hfItemName.Value;
-            }
-
-            set
-            {
-                EnsureChildControls();
-                _hfItemName.Value = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the item names.
-        /// </summary>
-        /// <value>
-        /// The item names.
-        /// </value>
-        public IEnumerable<string> ItemNames
-        {
-            get
-            {
-                EnsureChildControls();
-                var names = new List<string>();
-
-                if ( !string.IsNullOrWhiteSpace( _hfItemName.Value ) )
-                {
-                    names.AddRange( _hfItemName.Value.Split( ',' ) );
-                }
-
-                return names;
-            }
-
-            set
-            {
-                EnsureChildControls();
-                _hfItemName.Value = string.Join( ",", value );
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="ItemPicker"/> is required.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if required; otherwise, <c>false</c>.
-        /// </value>
-        [
-        Bindable( true ),
-        Category( "Behavior" ),
-        DefaultValue( "false" ),
-        Description( "Is the value required?" )
-        ]
-        public bool Required
-        {
-            get
-            {
-                if ( ViewState["Required"] != null )
-                    return (bool)ViewState["Required"];
-
-                return false;
-            }
-            set
-            {
-                ViewState["Required"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether [allow multi select].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [allow multi select]; otherwise, <c>false</c>.
-        /// </value>
-        public bool AllowMultiSelect { get; set; }
-
-        /// <summary>
-        /// Gets or sets the default text.
-        /// </summary>
-        /// <value>
-        /// The default text.
-        /// </value>
-        public string DefaultText { get; set; }
-
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
-        {
-            base.OnInit( e );
-            RegisterJavaScript();
-            var sm = ScriptManager.GetCurrent( this.Page );
-            EnsureChildControls();
-
-            if ( sm != null )
-            {
-                sm.RegisterAsyncPostBackControl( _btnSelect );
-                sm.RegisterAsyncPostBackControl( _btnSelectNone );
-            }
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is valid.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
-        /// </value>
-        public virtual bool IsValid
-        {
-            get
-            {
-                return !Required || RequiredValidator.IsValid;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the required error message.  If blank, the LabelName name will be used
-        /// </summary>
-        /// <value>
-        /// The required error message.
-        /// </value>
-        public string RequiredErrorMessage
-        {
-            get
-            {
-                return RequiredValidator.ErrorMessage;
-            }
-            set
-            {
-                RequiredValidator.ErrorMessage = value;
-            }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ItemPicker" /> class.
-        /// </summary>
-        public ItemPicker()
-            : base()
-        {
-            RequiredValidator = new HiddenFieldValidator();
-        }
-
+        }        
+        
         /// <summary>
         /// Registers the java script.
         /// </summary>
@@ -465,146 +662,11 @@ namespace Rock.Web.UI.Controls
         /// <param name="errorMessage">The error message.</param>
         public void ShowErrorMessage( string errorMessage )
         {
-            RequiredValidator.ErrorMessage = errorMessage;
-            RequiredValidator.IsValid = false;
+            RequiredFieldValidator.ErrorMessage = errorMessage;
+            RequiredFieldValidator.IsValid = false;
         }
 
-        /// <summary>
-        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
-        /// </summary>
-        protected override void CreateChildControls()
-        {
-            base.CreateChildControls();
+        #endregion
 
-            Controls.Clear();
-
-            _hfItemId = new HiddenField();
-            _hfItemId.ClientIDMode = ClientIDMode.Static;
-            _hfItemId.ID = string.Format( "hfItemId_{0}", this.ID );
-            _hfInitialItemParentIds = new HiddenField();
-            _hfInitialItemParentIds.ClientIDMode = ClientIDMode.Static;
-            _hfInitialItemParentIds.ID = string.Format( "hfInitialItemParentIds_{0}", this.ID );
-            _hfItemName = new HiddenField();
-            _hfItemName.ClientIDMode = ClientIDMode.Static;
-            _hfItemName.ID = string.Format( "hfItemName_{0}", this.ID );
-            _hfItemRestUrlExtraParams = new HiddenField();
-            _hfItemRestUrlExtraParams.ClientIDMode = ClientIDMode.Static;
-            _hfItemRestUrlExtraParams.ID = string.Format( "hfItemRestUrlExtraParams_{0}", this.ID );
-
-            _btnSelect = new LinkButton();
-            _btnSelect.ClientIDMode = ClientIDMode.Static;
-            _btnSelect.CssClass = "btn btn-xs btn-primary";
-            _btnSelect.ID = string.Format( "btnSelect_{0}", this.ID );
-            _btnSelect.Text = "Select";
-            _btnSelect.CausesValidation = false;
-            _btnSelect.Click += btnSelect_Click;
-
-            _btnSelectNone = new LinkButton();
-            _btnSelectNone.ClientIDMode = ClientIDMode.Static;
-            _btnSelectNone.CssClass = "picker-select-none";
-            _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ID );
-            _btnSelectNone.Text = "<i class='icon-remove'></i>";
-            _btnSelectNone.CausesValidation = false;
-            _btnSelectNone.Visible = false;
-            _btnSelectNone.Click += btnSelect_Click;
-
-            Controls.Add( _hfItemId );
-            Controls.Add( _hfInitialItemParentIds );
-            Controls.Add( _hfItemName );
-            Controls.Add( _hfItemRestUrlExtraParams );
-            Controls.Add( _btnSelect );
-            Controls.Add( _btnSelectNone );
-
-            RequiredValidator.ID = this.ID + "_rfv";
-            RequiredValidator.InitialValue = "0";
-            RequiredValidator.ControlToValidate = _hfItemId.ID;
-            RequiredValidator.Display = ValidatorDisplay.Dynamic;
-            RequiredValidator.CssClass = "validation-error help-inline";
-            RequiredValidator.Enabled = false;
-
-            Controls.Add( RequiredValidator );
-        }
-
-        /// <summary>
-        /// Renders the <see cref="T:System.Web.UI.WebControls.TextBox" /> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter" /> object.
-        /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> that receives the rendered output.</param>
-        protected override void Render( HtmlTextWriter writer )
-        {
-            if ( Required )
-            {
-                RequiredValidator.Enabled = true;
-                RequiredValidator.RenderControl( writer );
-            }
-
-            _hfItemId.RenderControl( writer );
-            _hfInitialItemParentIds.RenderControl( writer );
-            _hfItemName.RenderControl( writer );
-            _hfItemRestUrlExtraParams.RenderControl( writer );
-
-            if ( this.Enabled )
-            {
-                string controlHtmlFormatStart = @"
-        <div id='{0}' class='picker picker-select'> 
-            <a class='picker-label' href='#'>
-                <i class='icon-folder-open'></i>
-                <span id='selectedItemLabel_{0}'>{1}</span>
-                <b class='caret'></b>
-            </a>
-";
-                writer.Write( controlHtmlFormatStart, this.ID, this.ItemName );
-
-                // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
-                if ( SelectItem != null )
-                {
-                    _btnSelectNone.RenderControl( writer );
-                }
-                else
-                {
-                    writer.Write( "<a class='picker-select-none' id='btnSelectNone_{0}' href='#' style='display:none'><i class='icon-remove'></i></a>", this.ID );
-                }
-
-                string controlHtmlFormatMiddle = @"
-          <div class='picker-menu dropdown-menu'>
-
-            <div id='treeview-scroll-container_{0}' class='scroll-container scroll-container-picker'>
-                <div class='scrollbar'>
-                    <div class='track'>
-                        <div class='thumb'>
-                            <div class='end'></div>
-                        </div>
-                    </div>
-                </div>
-                <div class='viewport'>
-                    <div class='overview'>
-                        <div id='treeviewItems_{0}' class='treeview treeview-items'></div>        
-                    </div>
-                </div>
-            </div>
-
-            <div class='picker-actions'>
-";
-                writer.Write( controlHtmlFormatMiddle, this.ID );
-
-                _btnSelect.RenderControl( writer );
-
-                string controlHtmlFormatEnd = @"
-            <a class='btn btn-xs' id='btnCancel_{0}'>Cancel</a>
-            </div>
-          </div>
-        </div>
-";
-                writer.Write( controlHtmlFormatEnd, this.ID );
-            }
-            else
-            {
-                // this picker is not enabled (readonly), so just render a readonly version
-                string controlHtmlFormatDisabled = @"
-        <i class='icon-file-alt'></i>
-        <span id='selectedItemLabel_{0}'>{1}</span>
-";
-                writer.Write( controlHtmlFormatDisabled, this.ID, this.ItemName );
-            }
-        }
     }
 }
