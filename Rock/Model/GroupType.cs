@@ -20,7 +20,7 @@ namespace Rock.Model
     [Table( "GroupType" )]
     [FriendlyTypeName( "Group Type" )]
     [DataContract]
-    public partial class GroupType : Model<GroupType>
+    public partial class GroupType : Model<GroupType>, IOrdered
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupType"/> class.

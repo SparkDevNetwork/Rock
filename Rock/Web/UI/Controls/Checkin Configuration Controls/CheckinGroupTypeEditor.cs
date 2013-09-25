@@ -361,7 +361,7 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
             lbDeleteGroupType = new LinkButton();
             lbDeleteGroupType.CausesValidation = false;
             lbDeleteGroupType.ID = this.ID + "_lbDeleteGroupType";
-            lbDeleteGroupType.CssClass = "btn btn-mini btn-danger";
+            lbDeleteGroupType.CssClass = "btn btn-xs btn-danger";
             lbDeleteGroupType.Click += lbDeleteGroupType_Click;
             lbDeleteGroupType.Controls.Add( new LiteralControl { Text = "<i class='icon-remove'></i>" } );
             lbDeleteGroupType.Attributes["onclick"] = string.Format( "javascript: return Rock.controls.grid.confirmDelete(event, '{0}', '{1}');", "check-in area", "Once saved, you will lose all attendance data." );
@@ -393,14 +393,14 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
 
             lbAddCheckinGroupType = new LinkButton();
             lbAddCheckinGroupType.ID = this.ID + "_lblbAddCheckinGroupType";
-            lbAddCheckinGroupType.CssClass = "btn btn-mini btn-primary checkin-grouptype-add-sub-area";
+            lbAddCheckinGroupType.CssClass = "btn btn-xs btn-primary checkin-grouptype-add-sub-area";
             lbAddCheckinGroupType.Click += lbAddCheckinGroupType_Click;
             lbAddCheckinGroupType.CausesValidation = false;
             lbAddCheckinGroupType.Controls.Add( new LiteralControl { Text = "<i class='icon-plus'></i> Add Sub-Area" } );
 
             lbAddCheckinGroup = new LinkButton();
             lbAddCheckinGroup.ID = this.ID + "_lbAddCheckinGroup";
-            lbAddCheckinGroup.CssClass = "btn btn-mini btn-primary checkin-grouptype-add-checkin-group";
+            lbAddCheckinGroup.CssClass = "btn btn-xs btn-primary checkin-grouptype-add-checkin-group";
             lbAddCheckinGroup.Click += lbAddGroup_Click;
             lbAddCheckinGroup.CausesValidation = false;
             lbAddCheckinGroup.Controls.Add( new LiteralControl { Text = "<i class='icon-plus'></i> Add Check-in Group" } );
@@ -528,8 +528,8 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
             lbAddCheckinGroup.RenderControl( writer );
             writer.WriteLine();
 
-            writer.WriteLine( "<a class='btn btn-mini checkin-grouptype-reorder'><i class='icon-reorder'></i></a>" );
-            writer.WriteLine( "<a class='btn btn-mini'><i class='checkin-grouptype-state icon-chevron-down'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-xs checkin-grouptype-reorder'><i class='icon-reorder'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-xs'><i class='checkin-grouptype-state icon-chevron-down'></i></a>" );
 
             if ( IsDeleteEnabled )
             {
