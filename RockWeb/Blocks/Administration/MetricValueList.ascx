@@ -33,7 +33,7 @@
                 </legend>
                 <fieldset>
                     <div class="span6">
-                        <Rock:RockDropDownList ID="ddlMetricFilter" runat="server" LabelText="Metric" />
+                        <Rock:RockDropDownList ID="ddlMetricFilter" runat="server" Label="Metric" />
                         <Rock:DataTextBox ID="tbValue" runat="server" LabelText="Value"
                             SourceTypeName="Rock.Model.MetricValue, Rock" PropertyName="Value" />
                         <Rock:DataTextBox ID="tbValueDescription" runat="server" LabelText="Description"
@@ -42,7 +42,7 @@
                             SourceTypeName="Rock.Model.MetricValue, Rock" PropertyName="xValue" />
                         <Rock:DataTextBox ID="tbLabel" runat="server" LabelText="Label"
                             SourceTypeName="Rock.Model.MetricValue, Rock" PropertyName="Label" />
-                        <Rock:RockCheckBox ID="cbIsDateBased" runat="server" LabelText="Is Date Based"
+                        <Rock:RockCheckBox ID="cbIsDateBased" runat="server" Text="Is Date Based"
                             SourceTypeName="Rock.Model.MetricValue, Rock" PropertyName="isDateBased" />
                     </div>
                 </fieldset>

@@ -23,11 +23,11 @@
                                 SourceTypeName="Rock.Model.Metric, Rock" PropertyName="Subtitle" />
                             <Rock:DataTextBox ID="tbDescription" runat="server"
                                 SourceTypeName="Rock.Model.Metric, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
-                            <Rock:RockCheckBox ID="cbType" runat="server" LabelText="Allow Multiple Values" />
+                            <Rock:RockCheckBox ID="cbType" runat="server" Text="Allow Multiple Values" />
                         </div>
                         <div class="col-md-6">
                             <Rock:RockDropDownList ID="ddlCollectionFrequency" runat="server"
-                                LabelText="Collection Frequency" />
+                                Label="Collection Frequency" />
                             <Rock:DataTextBox ID="tbMinValue" runat="server" LabelText="Minimum Value"
                                 SourceTypeName="Rock.Model.Metric, Rock" PropertyName="MinValue" />
                             <Rock:DataTextBox ID="tbMaxValue" runat="server" LabelText="Maximum Value"
