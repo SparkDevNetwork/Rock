@@ -24,7 +24,7 @@ namespace Rock.Web.UI.Controls
         private Label lblGroupTypeName;
         private LinkButton lbDeleteGroupType;
 
-        private LabeledDropDownList ddlGroupTypeInheritFrom;
+        private RockDropDownList ddlGroupTypeInheritFrom;
 
         private DataTextBox tbGroupTypeName;
         private PlaceHolder phGroupTypeAttributes;
@@ -366,9 +366,9 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
             lbDeleteGroupType.Controls.Add( new LiteralControl { Text = "<i class='icon-remove'></i>" } );
             lbDeleteGroupType.Attributes["onclick"] = string.Format( "javascript: return Rock.controls.grid.confirmDelete(event, '{0}', '{1}');", "check-in area", "Once saved, you will lose all attendance data." );
 
-            ddlGroupTypeInheritFrom = new LabeledDropDownList();
+            ddlGroupTypeInheritFrom = new RockDropDownList();
             ddlGroupTypeInheritFrom.ID = this.ID + "_ddlGroupTypeInheritFrom";
-            ddlGroupTypeInheritFrom.LabelText = "Inherit from";
+            ddlGroupTypeInheritFrom.Label = "Inherit from";
             ddlGroupTypeInheritFrom.AutoPostBack = true;
             ddlGroupTypeInheritFrom.SelectedIndexChanged += ddlGroupTypeInheritFrom_SelectedIndexChanged;
 
@@ -381,7 +381,7 @@ $('.checkin-grouptype a.checkin-grouptype-add-checkin-group').click(function (ev
 
             tbGroupTypeName = new DataTextBox();
             tbGroupTypeName.ID = this.ID + "_tbGroupTypeName";
-            tbGroupTypeName.LabelText = "Check-in Area Name";
+            tbGroupTypeName.Label = "Check-in Area Name";
 
             // set label when they exit the edit field
             tbGroupTypeName.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", lblGroupTypeName.ClientID );

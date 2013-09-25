@@ -4,7 +4,7 @@
     <ContentTemplate>
         <asp:HiddenField ID="hfDefinedTypeId" runat="server" />
 
-        <asp:Panel ID="pnlDetails" runat="server" Visible="false">
+        <asp:Panel ID="pnlList" runat="server" Visible="false">
 
             <div class="row-fluid">
                 <h4>Values for Defined Type</h4>
@@ -24,13 +24,15 @@
 
         </asp:Panel>
 
-        <asp:Panel ID="pnlDefinedValueEditor" runat="server" Visible="false">
+        <Rock:ModalDialog ID="modalValue" runat="server">
+            <Content>
+
             <asp:HiddenField ID="hfDefinedValueId" runat="server" />
-            <asp:ValidationSummary ID="vsDetails" runat="server" CssClass="alert alert-error" />
-            <fieldset>
-                <legend>
-                    <asp:Literal ID="lActionTitleDefinedValue" runat="server" />
-                </legend>
+            <asp:ValidationSummary ID="valSummaryValue" runat="server" CssClass="alert alert-error" />
+            <legend>
+                <asp:Literal ID="lActionTitleDefinedValue" runat="server" />
+            </legend>
+            <fieldset>                
                 <div class="row-fluid">
                     <div class="span12">
                         <Rock:DataTextBox ID="tbValueName" runat="server" SourceTypeName="Rock.Model.DefinedValue, Rock" PropertyName="Name" />
@@ -42,11 +44,8 @@
                 </div>
             </fieldset>
 
-            <div class="actions">
-                <asp:LinkButton ID="btnSaveDefinedValue" runat="server" Text="Save" CssClass="btn primary" OnClick="btnSaveDefinedValue_Click" />
-                <asp:LinkButton ID="btnCancelDefinedValue" runat="server" Text="Cancel" CssClass="btn secondary" CausesValidation="false" OnClick="btnCancelDefinedValue_Click" />
-            </div>
-        </asp:Panel>
+            </Content>
+        </Rock:ModalDialog>
         
     </ContentTemplate>
 </asp:UpdatePanel>

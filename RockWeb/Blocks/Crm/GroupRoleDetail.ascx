@@ -18,12 +18,12 @@
                     <div class="span6">
                         <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="Name" />
                         <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
-                        <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" LabelText="Group Type" />
+                        <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" Label="Group Type" />
                     </div>
                     <div class="span6">
-                        <Rock:DataTextBox ID="tbSortOrder" runat="server" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="SortOrder" LabelText="Sort Order" Required="true" />
-                        <Rock:DataTextBox ID="tbMinCount" runat="server" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="MinCount" LabelText="Min Group Members with this Role" />
-                        <Rock:DataTextBox ID="tbMaxCount" runat="server" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="MaxCount" LabelText="Max Group Members with this Role" />
+                        <Rock:DataTextBox ID="tbSortOrder" runat="server" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="SortOrder" Label="Sort Order" Required="true" />
+                        <Rock:DataTextBox ID="tbMinCount" runat="server" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="MinCount" Label="Min Group Members with this Role" />
+                        <Rock:DataTextBox ID="tbMaxCount" runat="server" SourceTypeName="Rock.Model.GroupRole, Rock" PropertyName="MaxCount" Label="Max Group Members with this Role" />
                         <asp:PlaceHolder ID="phAttributes" runat="server" />
                     </div>
                 </div>

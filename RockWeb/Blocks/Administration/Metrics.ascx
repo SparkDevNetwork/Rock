@@ -8,7 +8,7 @@
         <asp:Panel ID="pnlMetricList" runat="server">
 
             <Rock:GridFilter ID="rFilter" runat="server">
-                <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" />
+                <Rock:RockDropDownList ID="ddlCategoryFilter" runat="server" Label="Category" />
             </Rock:GridFilter>
             <Rock:Grid ID="rGridMetric" runat="server" AllowSorting="true" EmptyDataText="No Metrics Found" RowItemText="Metric" OnRowSelected="rGridMetric_Edit">
                 <Columns>
@@ -53,18 +53,18 @@
                 <div class="span6">
                     <fieldset>
                         <legend>&nbsp;</legend>
-                        <Rock:LabeledDropDownList ID="ddlCollectionFrequency" runat="server"
-                            LabelText="Collection Frequency"  />
-                        <Rock:DataTextBox ID="tbMinValue" runat="server" LabelText="Minimum Value"
+                        <Rock:RockDropDownList ID="ddlCollectionFrequency" runat="server"
+                            Label="Collection Frequency"  />
+                        <Rock:DataTextBox ID="tbMinValue" runat="server" Label="Minimum Value"
                             SourceTypeName="Rock.Model.Metric, Rock" PropertyName="MinValue" />
-                        <Rock:DataTextBox ID="tbMaxValue" runat="server" LabelText="Maximum Value"
+                        <Rock:DataTextBox ID="tbMaxValue" runat="server" Label="Maximum Value"
                             SourceTypeName="Rock.Model.Metric, Rock" PropertyName="MaxValue" />
-                        <Rock:DataTextBox ID="tbSource" runat="server" LabelText="Data Source"
+                        <Rock:DataTextBox ID="tbSource" runat="server" Label="Data Source"
                             SourceTypeName="Rock.Model.Metric, Rock" PropertyName="Source" />
-                        <Rock:DataTextBox ID="tbSourceSQL" runat="server" LabelText="Source SQL"
+                        <Rock:DataTextBox ID="tbSourceSQL" runat="server" Label="Source SQL"
                             SourceTypeName="Rock.Model.Metric, Rock" TextMode="MultiLine" Rows="3"
                             PropertyName="SourceSQL" />
-                        <Rock:LabeledCheckBox ID="cbType" runat="server" LabelText="Allow Multiple Values" />
+                        <Rock:RockCheckBox ID="cbType" runat="server" Label="Allow Multiple Values" />
                     </fieldset>
                 </div>
             </div>
@@ -109,16 +109,16 @@
 
                 <fieldset>
                     <div class="span6">
-                        <Rock:LabeledDropDownList ID="ddlMetricFilter" runat="server" LabelText="Metric" />
-                        <Rock:DataTextBox ID="tbValue" runat="server" LabelText="Value"
+                        <Rock:RockDropDownList ID="ddlMetricFilter" runat="server" Label="Metric" />
+                        <Rock:DataTextBox ID="tbValue" runat="server" Label="Value"
                             SourceTypeName="Rock.Model.MetricValue, Rock" PropertyName="Value" />
-                        <Rock:DataTextBox ID="tbValueDescription" runat="server" LabelText="Description"
+                        <Rock:DataTextBox ID="tbValueDescription" runat="server" Label="Description"
                             SourceTypeName="Rock.Model.MetricValue, Rock" PropertyName="Description" />
-                        <Rock:DataTextBox ID="tbXValue" runat="server" LabelText="X-Value"
+                        <Rock:DataTextBox ID="tbXValue" runat="server" Label="X-Value"
                             SourceTypeName="Rock.Model.MetricValue, Rock" PropertyName="xValue" />
-                        <Rock:DataTextBox ID="tbLabel" runat="server" LabelText="Label"
+                        <Rock:DataTextBox ID="tbLabel" runat="server" Label="Label"
                             SourceTypeName="Rock.Model.MetricValue, Rock" PropertyName="Label" />
-                        <Rock:LabeledCheckBox ID="cbIsDateBased" runat="server" LabelText="Is Date Based"
+                        <Rock:RockCheckBox ID="cbIsDateBased" runat="server" Label="Is Date Based"
                             SourceTypeName="Rock.Model.MetricValue, Rock" PropertyName="isDateBased" />
 
                     </div>

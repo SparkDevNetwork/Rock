@@ -70,113 +70,61 @@ namespace Rock.Web.UI.Adapters
                     }
                 }
 
-                if (cbl.RepeatDirection == RepeatDirection.Horizontal)
+                int i = 0;
+                foreach (ListItem li in cbl.Items)
                 {
+                    writer.WriteLine();
 
-                    writer.AddAttribute("class", "controls");
-                    writer.RenderBeginTag(HtmlTextWriterTag.Div);
-                    
-                    int i = 0;
-                    foreach (ListItem li in cbl.Items)
+                    if ( cbl.RepeatDirection == RepeatDirection.Vertical )
                     {
-                        writer.WriteLine();
-
-                        writer.AddAttribute("class", "checkbox-inline");
-                        writer.RenderBeginTag(HtmlTextWriterTag.Label);
-
-                        string itemId = string.Format("{0}_{1}", cbl.ClientID, i);
-                        writer.AddAttribute("id", itemId);
-                        writer.AddAttribute("type", "checkbox");
-                        writer.AddAttribute("name", string.Format("{0}${1}", cbl.UniqueID, i++));
-                        writer.AddAttribute("value", li.Value);
-                        if (li.Selected)
-                        {
-                            writer.AddAttribute("checked", "checked");
-                        }
-
-                        foreach (var attributeKey in li.Attributes.Keys)
-                        {
-                            var key = attributeKey as string;
-                            writer.AddAttribute(key, li.Attributes[key]);
-                        }
-
-                        if (postBackOption != null)
-                        {
-                            writer.AddAttribute(HtmlTextWriterAttribute.Onclick, Page.ClientScript.GetPostBackEventReference(postBackOption, true));
-                        }
-
-                        writer.RenderBeginTag(HtmlTextWriterTag.Input);
-                        writer.RenderEndTag();
-
-                        writer.Write(li.Text);
-
-                        writer.RenderEndTag();
-
-                        if (Page != null && Page.ClientScript != null)
-                        {
-                            Page.ClientScript.RegisterForEventValidation(cbl.UniqueID, li.Value);
-                        }
+                        writer.AddAttribute( "class", "checkbox" );
+                        writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    }
+                    else
+                    {
+                        writer.AddAttribute( "class", "checkbox-inline" );
                     }
 
-                    writer.RenderEndTag();
-                }
-                else
-                {
-                    writer.AddAttribute("class", "controls");
-                    writer.RenderBeginTag(HtmlTextWriterTag.Div);
+                    writer.RenderBeginTag(HtmlTextWriterTag.Label);
 
-                    
-
-                    int i = 0;
-                    foreach (ListItem li in cbl.Items)
+                    string itemId = string.Format("{0}_{1}", cbl.ClientID, i);
+                    writer.AddAttribute("id", itemId);
+                    writer.AddAttribute("type", "checkbox");
+                    writer.AddAttribute("name", string.Format("{0}${1}", cbl.UniqueID, i++));
+                    writer.AddAttribute("value", li.Value);
+                    if (li.Selected)
                     {
-                        writer.WriteLine();
-
-                        writer.AddAttribute("class", "checkbox");
-                        writer.RenderBeginTag(HtmlTextWriterTag.Div);
-
-                        writer.RenderBeginTag(HtmlTextWriterTag.Label);
-
-                        string itemId = string.Format("{0}_{1}", cbl.ClientID, i);
-                        writer.AddAttribute("id", itemId);
-                        writer.AddAttribute("type", "checkbox");
-                        writer.AddAttribute("name", string.Format("{0}${1}", cbl.UniqueID, i++));
-                        writer.AddAttribute("value", li.Value);
-                        if (li.Selected)
-                        {
-                            writer.AddAttribute("checked", "checked");
-                        }
-
-                        foreach (var attributeKey in li.Attributes.Keys)
-                        {
-                            var key = attributeKey as string;
-                            writer.AddAttribute(key, li.Attributes[key]);
-                        }
-
-                        if (postBackOption != null)
-                        {
-                            writer.AddAttribute(HtmlTextWriterAttribute.Onclick, Page.ClientScript.GetPostBackEventReference(postBackOption, true));
-                        }
-
-                        writer.RenderBeginTag(HtmlTextWriterTag.Input);
-                        writer.RenderEndTag();
-
-                        writer.Write(li.Text);
-
-                        writer.RenderEndTag();
-                        writer.RenderEndTag();
-
-                        if (Page != null && Page.ClientScript != null)
-                        {
-                            Page.ClientScript.RegisterForEventValidation(cbl.UniqueID, li.Value);
-                        }
+                        writer.AddAttribute("checked", "checked");
                     }
 
+                    foreach (var attributeKey in li.Attributes.Keys)
+                    {
+                        var key = attributeKey as string;
+                        writer.AddAttribute(key, li.Attributes[key]);
+                    }
+
+                    if (postBackOption != null)
+                    {
+                        writer.AddAttribute(HtmlTextWriterAttribute.Onclick, Page.ClientScript.GetPostBackEventReference(postBackOption, true));
+                    }
+
+                    writer.RenderBeginTag(HtmlTextWriterTag.Input);
                     writer.RenderEndTag();
-                    
+
+                    writer.Write(li.Text);
+
+                    writer.RenderEndTag();      // Label
+
+                    if ( cbl.RepeatDirection == RepeatDirection.Vertical )
+                    {
+                        writer.RenderEndTag();   // div
+                    }
+
+                    if ( Page != null && Page.ClientScript != null )
+                    {
+                        Page.ClientScript.RegisterForEventValidation(cbl.UniqueID, li.Value);
+                    }
                 }
-                
-                
                 
                 if ( Page != null && Page.ClientScript != null )
                 {

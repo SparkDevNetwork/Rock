@@ -67,7 +67,7 @@
 
                             <div id="divCampus" runat="server">                                                            
                                 <div class="row-fluid">
-                                    <Rock:ButtonDropDownList ID="btnCampusList" runat="server" CssClass="btn btn-primary" LabelText="Campus" />
+                                    <Rock:ButtonDropDownList ID="btnCampusList" runat="server" CssClass="btn btn-primary" Label="Campus" />
                                 </div>                                
                             </div>
                                                         
@@ -83,7 +83,7 @@
                                     <div class="row-fluid">
                                         <asp:HiddenField ID="hfAccountId" runat="server" Value='<%# DataBinder.Eval(Container.DataItem, "Key.Id") %>'/>
 	                                    <Rock:NumberBox ID="txtAccountAmount" runat="server" CssClass="input-small contribution-calculate" PrependText="$"
-                                            LabelText='<%# DataBinder.Eval(Container.DataItem, "Key.Name") %>'
+                                            Label='<%# DataBinder.Eval(Container.DataItem, "Key.Name") %>'
                                             Text='<%# Decimal.Parse(DataBinder.Eval(Container.DataItem, "Value").ToString()) != 0 ? DataBinder.Eval(Container.DataItem, "Value", "{0:f2}") : "" %>'
                                             NumberType="Double">
 	                                    </Rock:NumberBox>                                        
@@ -112,17 +112,17 @@
                             <div id="divFrequency" runat="server" visible="false">                                
                                 
                                 <div class="row-fluid">
-                                    <Rock:ButtonDropDownList ID="btnFrequency" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnFrequency_SelectionChanged" LabelText="Frequency" CausesValidation="true" />
+                                    <Rock:ButtonDropDownList ID="btnFrequency" runat="server" CssClass="btn btn-primary" OnSelectionChanged="btnFrequency_SelectionChanged" Label="Frequency" CausesValidation="true" />
                                 </div>                                    
                             
                                 <div id="divRecurrence" runat="server" visible="false">
 
                                     <div class="row-fluid"> 
-                                        <Rock:DatePicker ID="dtpStartDate" runat="server" LabelText="Starting On" data-date-format="dd-mm-yyyy" DatePickerType="Date" />
+                                        <Rock:DatePicker ID="dtpStartDate" runat="server" Label="Starting On" data-date-format="dd-mm-yyyy" DatePickerType="Date" />
                                     </div>
                                     
                                     <div id="divLimitGifts" runat="server" class="row-fluid align-middle">
-                                        <Rock:LabeledCheckBox ID="chkLimitGifts" runat="server" Text="Limit number of gifts" CssClass="toggle-input" />
+                                        <Rock:RockCheckBox ID="chkLimitGifts" runat="server" Text="Limit number of gifts" CssClass="toggle-input" />
                                     
                                         <div id="divLimitNumber" runat="server" class="toggle-content label-padding" style="display: none">
                                             <Rock:NumberBox ID="txtLimitNumber" runat="server" class="input-small" Text="0" />
@@ -158,7 +158,7 @@
                         <div class="row-fluid">
                             
                             <div class="span6">
-                                <Rock:DataTextBox ID="txtFirstName" LabelText="First Name" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="GivenName" Required="true" CssClass="input-inherit" AutoCompleteType="FirstName" />
+                                <Rock:DataTextBox ID="txtFirstName" Label="First Name" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="GivenName" Required="true" CssClass="input-inherit" AutoCompleteType="FirstName" />
                             </div>
 
                         <% if ( _spanClass != "span6" ) { %>
@@ -168,40 +168,40 @@
                         <% } %>
 
                             <div class="span6">
-                                <Rock:DataTextBox ID="txtLastName" LabelText="Last Name" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" Required="true" CssClass="input-inherit calc-name" AutoCompleteType="LastName" />
+                                <Rock:DataTextBox ID="txtLastName" Label="Last Name" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" Required="true" CssClass="input-inherit calc-name" AutoCompleteType="LastName" />
                             </div>        
                             
                         </div>
 
                         <div class="row-fluid">
                             <div class="span12">
-                                <Rock:DataTextBox ID="txtStreet" LabelText="Street" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Street1" Required="true" AutoCompleteType="HomeStreetAddress" />
+                                <Rock:DataTextBox ID="txtStreet" Label="Street" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Street1" Required="true" AutoCompleteType="HomeStreetAddress" />
                             </div>
                         </div>
 
                         <div class="row-fluid">
 
                             <div ID="divCity" runat="server">
-                                <Rock:DataTextBox ID="txtCity" LabelText="City" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="City" Required="true" CssClass="input-inherit" AutoCompleteType="HomeCity" />    
+                                <Rock:DataTextBox ID="txtCity" Label="City" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="City" Required="true" CssClass="input-inherit" AutoCompleteType="HomeCity" />    
                             </div>
                             <div id="divState" runat="server">
-                                <Rock:StateDropDownList ID="ddlState" runat="server" LabelText="State" SourceTypeName="Rock.Model.Location, Rock" PropertyName="State" Required="true" CssClass="input-inherit address-line" AutoCompleteType="HomeState"/>
+                                <Rock:StateDropDownList ID="ddlState" runat="server" Label="State" SourceTypeName="Rock.Model.Location, Rock" PropertyName="State" Required="true" CssClass="input-inherit address-line" AutoCompleteType="HomeState"/>
                             </div>
                             <div id="divZip" runat="server">
-                                <Rock:DataTextBox ID="txtZip" LabelText="Zip" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Zip" Required="true" CssClass="input-mini input-inherit address-line" AutoCompleteType="HomeZipCode" />
+                                <Rock:DataTextBox ID="txtZip" Label="Zip" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Zip" Required="true" CssClass="input-mini input-inherit address-line" AutoCompleteType="HomeZipCode" />
                             </div>
                             
                         </div>                    
 
                         <div class="row-fluid">   
                             <div class="span12" >
-                                <Rock:DataTextBox ID="txtEmail" LabelText="Email" runat="server" TextMode="Email" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" Required="true" AutoCompleteType="Email" />
+                                <Rock:DataTextBox ID="txtEmail" Label="Email" runat="server" TextMode="Email" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" Required="true" AutoCompleteType="Email" />
                             </div>
                         </div>
 
                         <div class="row-fluid">   
                             <div class="span12" >
-                                <Rock:DataTextBox ID="txtPhone" LabelText="Phone" runat="server" SourceTypeName="Rock.Model.PhoneNumber, Rock" PropertyName="Number" CssClass="input-medium" Required="true" AutoCompleteType="HomePhone" />
+                                <Rock:DataTextBox ID="txtPhone" Label="Phone" runat="server" SourceTypeName="Rock.Model.PhoneNumber, Rock" PropertyName="Number" CssClass="input-medium" Required="true" AutoCompleteType="HomePhone" />
                             </div>
                         </div>
 
@@ -234,7 +234,7 @@
                                 <asp:Repeater ID="rptPaymentType" runat="server">
                                     <ItemTemplate>
                                         <li id="liSelectedTab" runat="server">
-                                            <asp:LinkButton ID="lbPaymentType" runat="server" Text='<%# DataBinder.Eval(Container.DataItem, "Name") %>' OnClick="lbPaymentType_Click" CausesValidation="false" />
+                                            <asp:LinkButton ID="lbPaymentType" runat="server" Text='<%# Container.DataItem %>' OnClick="lbPaymentType_Click" CausesValidation="false" />
                                         </li>
                                     </ItemTemplate>
                                 </asp:Repeater>
@@ -253,7 +253,7 @@
                             <div ID="divCreditCard" runat="server" CssClass="tab-pane">
                                                        
                                 <div id="divSavedCard" runat="server" class="radio-list">
-                                    <Rock:LabeledRadioButtonList ID="rblSavedCard" runat="server" RepeatDirection="Vertical" />
+                                    <Rock:RockRadioButtonList ID="rblSavedCard" runat="server" RepeatDirection="Vertical" />
                                 </div>
                                 
                                 <div id="divNewCard" runat="server" class="radio-content">
@@ -261,7 +261,7 @@
                                     <div class="row-fluid">
 
                                         <div id="divCardNumber" runat="server">
-                                            <Rock:LabeledTextBox ID="txtCreditCard" runat="server" LabelText="Credit Card #" MaxLength="19" MinimumValue="1000000000" MaximumValue="9999999999999999" CssClass="credit-card input-inherit" />
+                                            <Rock:RockTextBox ID="txtCreditCard" runat="server" Label="Credit Card #" MaxLength="19" MinimumValue="1000000000" MaximumValue="9999999999999999" CssClass="credit-card input-inherit" />
                                         </div>
                                                                         
                                         <div ID="divCardType" runat="server">
@@ -278,17 +278,17 @@
                                     <div class="row-fluid">
 
                                         <div id="divExpiration" runat="server">
-                                            <Rock:MonthYearPicker ID="mypExpiration" runat="server" LabelText="Expiration Date" />
+                                            <Rock:MonthYearPicker ID="mypExpiration" runat="server" Label="Expiration Date" />
                                         </div>
 
                                         <div id="divCVV" runat="server">
-                                            <Rock:NumberBox ID="txtCVV" LabelText="CVV #" runat="server" MaxLength="3" CssClass="input-mini" />
+                                            <Rock:NumberBox ID="txtCVV" Label="CVV #" runat="server" MaxLength="3" CssClass="input-mini" />
                                         </div>
 
                                     </div>
 
                                     <div class="row-fluid">
-                                        <Rock:LabeledTextBox ID="txtCardName" runat="server" LabelText="Name on Card" />
+                                        <Rock:RockTextBox ID="txtCardName" runat="server" Label="Name on Card" />
                                     </div>
 
                                 </div>                            
@@ -298,21 +298,21 @@
                             <div ID="divChecking" runat="server" CssClass="tab-pane">
                                 
                                 <div id="divSavedCheck" runat="server" class="radio-list">                                                              
-                                    <Rock:LabeledRadioButtonList ID="rblSavedCheck" runat="server" RepeatDirection="Vertical" />
+                                    <Rock:RockRadioButtonList ID="rblSavedCheck" runat="server" RepeatDirection="Vertical" />
                                 </div>
                             
                                 <div id="divNewCheck" runat="server" class="row-fluid radio-content">
                                     
                                     <div ID="divCheckDetail" runat="server">
                                         <fieldset>
-                                            <Rock:LabeledTextBox ID="txtBankName" runat="server" LabelText="Bank Name" CssClass="input-inherit" />
-                                            <Rock:NumberBox ID="txtRoutingNumber" runat="server" LabelText="Routing #" MinimumValue="0.0" CssClass="input-inherit" />
-                                            <Rock:NumberBox ID="txtAccountNumber" runat="server" LabelText="Account #" MinimumValue="0.0" CssClass="input-inherit" />
+                                            <Rock:RockTextBox ID="txtBankName" runat="server" Label="Bank Name" CssClass="input-inherit" />
+                                            <Rock:NumberBox ID="txtRoutingNumber" runat="server" Label="Routing #" MinimumValue="0.0" CssClass="input-inherit" />
+                                            <Rock:NumberBox ID="txtAccountNumber" runat="server" Label="Account #" MinimumValue="0.0" CssClass="input-inherit" />
 
-                                            <Rock:LabeledRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" LabelText="Account Type" CssClass="remove-margin">
+                                            <Rock:RockRadioButtonList ID="rblAccountType" runat="server" RepeatDirection="Horizontal" Label="Account Type" CssClass="remove-margin">
                                                 <asp:ListItem Text="Checking" Selected="true"  />
                                                 <asp:ListItem Text="Savings" />
-                                            </Rock:LabeledRadioButtonList>
+                                            </Rock:RockRadioButtonList>
                                         </fieldset>
                                     </div>
 
@@ -331,26 +331,26 @@
                     <div class="tabFooter">
 
                         <div ID="divDefaultAddress" runat="server" class="row-fluid">
-                            <Rock:LabeledCheckBox ID="chkNewAddress" runat="server" Text="Enter a different billing address" CssClass="toggle-input" />
+                            <Rock:RockCheckBox ID="chkNewAddress" runat="server" Text="Enter a different billing address" CssClass="toggle-input" />
                         </div>
 
                         <div id="divNewAddress" runat="server" class="toggle-content label-padding" style="display:none">
 
                             <div class="row-fluid">
                                 <div class="span12">
-                                    <Rock:DataTextBox ID="txtNewStreet" LabelText="Street" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Street1" />
+                                    <Rock:DataTextBox ID="txtNewStreet" Label="Street" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Street1" />
                                 </div>
                             </div>
 
                             <div class="row-fluid">
                                 <div ID="divNewCity" runat="server">
-                                    <Rock:DataTextBox ID="txtNewCity" LabelText="City" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="City" CssClass="input-inherit" />
+                                    <Rock:DataTextBox ID="txtNewCity" Label="City" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="City" CssClass="input-inherit" />
                                 </div>
                                 <div ID="divNewState" runat="server" >
-                                    <Rock:StateDropDownList ID="ddlNewState" runat="server" LabelText="State" SourceTypeName="Rock.Model.Location, Rock" PropertyName="State" CssClass="input-inherit" />
+                                    <Rock:StateDropDownList ID="ddlNewState" runat="server" Label="State" SourceTypeName="Rock.Model.Location, Rock" PropertyName="State" CssClass="input-inherit" />
                                 </div>
                                 <div ID="divNewZip" runat="server" >
-                                    <Rock:DataTextBox ID="txtNewZip" LabelText="Zip" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Zip" CssClass="input-inherit" />
+                                    <Rock:DataTextBox ID="txtNewZip" Label="Zip" runat="server" SourceTypeName="Rock.Model.Location, Rock" PropertyName="Zip" CssClass="input-inherit" />
                                 </div>
                             </div>
 
@@ -412,10 +412,10 @@
                 <asp:UpdatePanel id="pnlSavePayment" runat="server" UpdateMode="Conditional" Visible="false">
                 <ContentTemplate>
 
-                    <Rock:LabeledCheckBox ID="chkSavePayment" runat="server" Text="Save My Payment Information" CssClass="toggle-input" />                                                                                
+                    <Rock:RockCheckBox ID="chkSavePayment" runat="server" Text="Save My Payment Information" CssClass="toggle-input" />                                                                                
                     <div id="divPaymentNick" runat="server" class="toggle-content label-padding" style="display: none">
                         <div class="span6">
-                            <Rock:LabeledTextBox ID="txtPaymentNick" runat="server" LabelText="Account nickname:" CssClass="input-medium" />                                    
+                            <Rock:RockTextBox ID="txtPaymentNick" runat="server" Label="Account nickname:" CssClass="input-medium" />                                    
                         </div>
                         <div class="span6">
                             <asp:LinkButton ID="btnSavePaymentInfo" runat="server" Text="Save" CssClass="btn btn-primary padding-label" OnClick="btnSavePaymentInfo_Click" />                                    
@@ -428,15 +428,15 @@
                 <asp:UpdatePanel id="pnlCreateAccount" runat="server" updatemode="Conditional">
                 <ContentTemplate>
 
-                    <Rock:LabeledCheckBox ID="chkCreateAccount" runat="server" LabelText="Create An Account" CssClass="toggle-input"/>                
+                    <Rock:RockCheckBox ID="chkCreateAccount" runat="server" Label="Create An Account" CssClass="toggle-input"/>                
                     <div id="divCredentials" runat="server" class="toggle-content" style="display:none">
 
 				        <div class="span6">
                             <div class="row-fluid">
-                                <Rock:LabeledTextBox ID="txtUserName" runat="server" LabelText="Enter a username" />
+                                <Rock:RockTextBox ID="txtUserName" runat="server" Label="Enter a username" />
                             </div>
                             <div class="row-fluid">
-                                <Rock:LabeledTextBox ID="txtPassword" runat="server" TextMode="Password" LabelText="Enter a password" />
+                                <Rock:RockTextBox ID="txtPassword" runat="server" TextMode="Password" Label="Enter a password" />
                             </div>
                         </div>    
                                                  

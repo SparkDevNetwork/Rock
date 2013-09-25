@@ -58,7 +58,7 @@ namespace Rock.Model
         /// The gateway id.
         /// </value>
         [DataMember]
-        public int? GatewayId { get; set; }
+        public int? GatewayEntityTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction date time.
@@ -147,6 +147,15 @@ namespace Rock.Model
         [DataMember]
         public string CheckMicrEncrypted { get; set; }
 
+        /// <summary>
+        /// Gets or sets the scheduled transaction id.
+        /// </summary>
+        /// <value>
+        /// The scheduled transaction id.
+        /// </value>
+        [DataMember]
+        public int? ScheduledTransactionId { get; set; }
+
         #endregion
 
         #region Virtual Properties
@@ -175,7 +184,7 @@ namespace Rock.Model
         /// The gateway.
         /// </value>
         [DataMember]
-        public virtual FinancialGateway Gateway { get; set; }
+        public virtual EntityType GatewayEntityType { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction type value.
@@ -221,6 +230,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual FinancialTransactionRefund Refund { get; set; }
+
+        /// <summary>
+        /// Gets or sets the scheduled transaction.
+        /// </summary>
+        /// <value>
+        /// The scheduled transaction.
+        /// </value>
+        [DataMember]
+        public virtual FinancialScheduledTransaction ScheduledTransaction { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction details.
@@ -304,12 +322,13 @@ namespace Rock.Model
         {
             this.HasRequired( t => t.AuthorizedPerson ).WithMany().HasForeignKey( t => t.AuthorizedPersonId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.Batch ).WithMany( t => t.Transactions ).HasForeignKey( t => t.BatchId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.Gateway ).WithMany().HasForeignKey( t => t.GatewayId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.GatewayEntityType ).WithMany().HasForeignKey( t => t.GatewayEntityTypeId ).WillCascadeOnDelete( false );
             this.HasRequired( t => t.TransactionTypeValue ).WithMany().HasForeignKey( t => t.TransactionTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.CurrencyTypeValue ).WithMany().HasForeignKey( t => t.CurrencyTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.CreditCardTypeValue ).WithMany().HasForeignKey( t => t.CreditCardTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.SourceTypeValue ).WithMany().HasForeignKey( t => t.SourceTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.Refund ).WithRequired().WillCascadeOnDelete( true );
+            this.HasOptional( t => t.ScheduledTransaction ).WithMany( s => s.Transactions ).HasForeignKey( t => t.ScheduledTransactionId ).WillCascadeOnDelete( false );
         }
     }
 

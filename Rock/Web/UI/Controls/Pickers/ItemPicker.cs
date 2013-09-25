@@ -495,7 +495,7 @@ namespace Rock.Web.UI.Controls
             _btnSelect.ClientIDMode = ClientIDMode.Static;
             _btnSelect.CssClass = "btn btn-xs btn-primary";
             _btnSelect.ID = string.Format( "btnSelect_{0}", this.ID );
-            _btnSelect.Text = "Select Item";
+            _btnSelect.Text = "Select";
             _btnSelect.CausesValidation = false;
             _btnSelect.Click += btnSelect_Click;
 

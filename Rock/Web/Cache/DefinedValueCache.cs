@@ -252,6 +252,7 @@ namespace Rock.Web.Cache
             }
             else
             {
+                definedValueModel.LoadAttributes();
                 definedValue = new DefinedValueCache( definedValueModel );
 
                 var cachePolicy = new CacheItemPolicy();
