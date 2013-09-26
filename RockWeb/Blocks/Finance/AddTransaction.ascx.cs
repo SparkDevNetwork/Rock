@@ -44,7 +44,7 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Scheduled Transactions", "Allow", "Don't Allow", 
         "If the selected gateway(s) allow scheduled transactions, should that option be provided to user", true, "", 9, "AllowScheduled" )]
 
-    [BooleanField( "Impersonation", "Allow (only use on internal page used by staff)", "Don't Allow", 
+    [BooleanField( "Impersonation", "Allow (only use on an internal page used by staff)", "Don't Allow", 
         "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users", false, "", 10)]
     [BooleanField( "Prompt for Phone", "Should the user be prompted for their phone number?", false, "", 11, "DisplayPhone" )]
     [BooleanField( "Prompt for Email", "Should the user be prompted for their email address?", true, "", 12, "DisplayEmail" )]
