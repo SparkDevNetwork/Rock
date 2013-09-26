@@ -112,6 +112,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets a value indicating whether [show nick name].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show nick name]; otherwise, <c>false</c>.
+        /// </value>
+        internal bool ShowNickName
+        {
+            get { return ViewState["ShowNickName"] as bool? ?? false; }
+            set { ViewState["ShowNickName"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the last name.
         /// </summary>
         /// <value>
@@ -426,9 +438,12 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
                 writer.RenderEndTag();
 
-                writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                tbNickName.RenderControl( writer );
-                writer.RenderEndTag();
+                if ( ShowNickName )
+                {
+                    writer.RenderBeginTag( HtmlTextWriterTag.Td );
+                    tbNickName.RenderControl( writer );
+                    writer.RenderEndTag();
+                }
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( rfvLastName .IsValid ? "" : " error" ) );

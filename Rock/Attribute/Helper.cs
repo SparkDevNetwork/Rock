@@ -642,50 +642,8 @@ namespace Rock.Attribute
 
                 if ( !exclude.Contains( attribute.Name ) )
                 {
-                    // Get the control for editing the attribute value based on the attribute's field type
-                    Control attributeControl = attribute.CreateControl( item.AttributeValues[attribute.Key][0].Value, setValue, true );
-
-                    // If the control is a RockControl
-                    var rockControl = attributeControl as IRockControl;
-                    if ( rockControl != null )
-                    {
-                        rockControl.Label = attribute.Name;
-                        rockControl.Help = attribute.Description;
-                        rockControl.Required = attribute.IsRequired;
-                        fieldSet.Controls.Add( attributeControl );
-                    }
-                    else
-                    {
-                        // If control is not a rockControl, then create the form-group, label, and control elements
-                        var checkBoxControl = attributeControl as CheckBox;
-
-                        HtmlGenericControl div = new HtmlGenericControl( "div" );
-                        fieldSet.Controls.Add( div );
-                        div.Controls.Clear();
-                        div.AddCssClass( "form-group" );
-                        if ( attribute.IsRequired )
-                        {
-                            div.AddCssClass( "required" );
-                        }
-                        div.ClientIDMode = ClientIDMode.AutoID;
-
-                        var HelpBlock = new Rock.Web.UI.Controls.HelpBlock();
-                        HelpBlock.ClientIDMode = ClientIDMode.AutoID;
-                        HelpBlock.Text = attribute.Description;
-
-                        Label label = new Label();
-                        div.Controls.Add( label );
-                        label.Text = attribute.Name;
-                        label.AssociatedControlID = attributeControl.ID;
-                        label.ClientIDMode = ClientIDMode.AutoID;
-
-                        if ( !string.IsNullOrWhiteSpace( HelpBlock.Text ) )
-                        {
-                            div.Controls.Add( HelpBlock );
-                        }
-
-                        div.Controls.Add( attributeControl );
-                    }
+                    // Add the control for editing the attribute value
+                    attribute.AddControl( fieldSet.Controls, item.AttributeValues[attribute.Key][0].Value, setValue, true );
                 }
             }
         }

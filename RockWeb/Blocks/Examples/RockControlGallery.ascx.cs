@@ -32,8 +32,6 @@ namespace RockWeb.Blocks.Examples
             gExample.GridRebind += gExample_GridRebind;
         }
 
-
-
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
         /// </summary>
@@ -109,9 +107,9 @@ namespace RockWeb.Blocks.Examples
         {
             foreach ( var control in pnlDetails.Controls )
             {
-                if ( control is ILabeledControl )
+                if ( control is IRockControl )
                 {
-                    ILabeledControl labeledControl = control as ILabeledControl;
+                    IRockControl labeledControl = control as IRockControl;
                     if ( string.IsNullOrWhiteSpace( labeledControl.Label ) )
                     {
                         labeledControl.Label = string.Format( "Rock:{0}", labeledControl.GetType().Name );
@@ -131,26 +129,6 @@ namespace RockWeb.Blocks.Examples
                 }
 
             }
-        }
-
-        /// <summary>
-        /// Handles the TextChanged event of the monthYearPicker control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void monthYearPicker_TextChanged( object sender, EventArgs e )
-        {
-            var date = monthYearPicker.SelectedDate;
-        }
-
-        /// <summary>
-        /// Handles the TextChanged event of the monthDayPicker control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void monthDayPicker_TextChanged( object sender, EventArgs e )
-        {
-            var date = monthDayPicker.SelectedDate;
         }
 
         /// <summary>
@@ -224,10 +202,28 @@ namespace RockWeb.Blocks.Examples
 
             SortProperty sortProperty = gExample.SortProperty ?? new SortProperty( new GridViewSortEventArgs( "DefinedValueTypeName", SortDirection.Ascending ) );
 
-            gExample.DataSource = dataList.AsQueryable().Sort(sortProperty).ToList();
+            gExample.DataSource = dataList.AsQueryable().Sort( sortProperty ).ToList();
             gExample.DataBind();
         }
 
+        /// <summary>
+        /// Handles the SelectedMonthYearChanged event of the monthYearPicker control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void monthYearPicker_SelectedMonthYearChanged( object sender, EventArgs e )
+        {
+            var dateTime = monthDayPicker.SelectedDate;
+        }
 
+        /// <summary>
+        /// Handles the SelectedMonthDayChanged event of the monthDayPicker control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void monthDayPicker_SelectedMonthDayChanged( object sender, EventArgs e )
+        {
+            var dateTime = monthDayPicker.SelectedDate;
+        }
     }
 }

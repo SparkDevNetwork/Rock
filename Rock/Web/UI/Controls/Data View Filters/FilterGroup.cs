@@ -128,7 +128,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( lbDelete );
             lbDelete.ID = this.ID + "_lbDelete";
             lbDelete.Click += lbDelete_Click;
-            lbDelete.AddCssClass( "btn btn-mini btn-danger" );
+            lbDelete.AddCssClass( "btn btn-xs btn-danger" );
             lbDelete.CausesValidation = false;
 
             var iDeleteGroup = new HtmlGenericControl( "i" );

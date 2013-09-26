@@ -263,7 +263,7 @@ $('.filter-item-select').click(function (event) {
             lbDelete = new LinkButton();
             Controls.Add( lbDelete );
             lbDelete.ID = this.ID + "_lbDelete";
-            lbDelete.CssClass = "btn btn-mini btn-danger ";
+            lbDelete.CssClass = "btn btn-xs btn-danger ";
             lbDelete.Click += lbDelete_Click;
             lbDelete.CausesValidation = false;
 
@@ -335,7 +335,7 @@ $('.filter-item-select').click(function (event) {
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Onclick, clientFormatString);
             }
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-mini filter-view-state" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-xs filter-view-state" );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "icon-chevron-up" : "icon-chevron-down" );
             writer.RenderBeginTag( HtmlTextWriterTag.I );

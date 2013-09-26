@@ -7512,6 +7512,7 @@ td.visible-print {
     10. Title - markup for styling header titles
     11. Notifications - additional styles to the Bootstrap notifications
     12. Labels - additional label defintions that extend Boostrap labels (eg label-campus)
+    13. Datepicker - styles for the date picker
 
 */
 .picker {
@@ -8386,6 +8387,40 @@ div.tagsinput div {
 }
 .label-type {
   background-color: #87a8ba;
+}
+.datepicker {
+  padding: 10px;
+}
+.datepicker table thead th.datepicker-switch {
+  text-align: center;
+}
+.datepicker table thead th.next {
+  text-align: right;
+}
+.datepicker table td.active {
+  background-color: #d9e1e8;
+  color: #d4d4d4;
+}
+.datepicker table td.day {
+  text-align: center;
+}
+.datepicker table td.old,
+.datepicker table td.new {
+  color: #ffffff;
+}
+.datepicker table tfoot {
+  display: none;
+}
+.datepicker table td span.month {
+  margin-left: 2px;
+  padding: 2px;
+}
+.datepicker table td span.month:hover {
+  background-color: #d9e1e8;
+  color: #d4d4d4;
+}
+.datepicker table td span.month:first-child {
+  margin-left: 0;
 }
 /*
     Used to manage styles for specific blocks.
