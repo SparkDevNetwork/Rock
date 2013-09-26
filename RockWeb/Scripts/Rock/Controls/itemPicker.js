@@ -128,9 +128,7 @@
             controls: {},
             initialize: function (options) {
                 var settings = $.extend({}, exports.defaults, options),
-                    itemPicker,
-                    $hfItemIds,
-                    selectedIds = null;
+                    itemPicker;
 
                 if (!settings.controlId) throw 'controlId must be set';
                 if (!settings.restUrl) throw 'restUrl must be set';
