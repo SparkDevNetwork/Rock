@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Configuration;
 using System.Net;
 using System.Web.Services.Protocols;
 
@@ -99,7 +100,7 @@ namespace Rock.CyberSource
             card.expirationMonth = "8";
             card.expirationYear = "2015";
             request.card = card;
-            
+
             // there is one item in this sample
             request.item = new Item[1];
             Item item = new Item();
@@ -288,10 +289,7 @@ namespace Rock.CyberSource
             return null;
         }
 
-
+        #endregion
 
     }
 }
-
-
-        #endregion
