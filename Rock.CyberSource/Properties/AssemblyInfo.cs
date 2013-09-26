@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Rock.PayFlowPro")]
+[assembly: AssemblyTitle("Rock.CyberSource")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Rock.PayFlowPro")]
+[assembly: AssemblyProduct("Rock.CyberSource")]
 [assembly: AssemblyCopyright("Copyright ©  2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("1189596c-6691-4301-8972-d2362836634b")]
+[assembly: Guid("b811d481-afa8-448f-b764-94ab9fde5334")]
 
 // Version information for an assembly consists of the following four values:
 //

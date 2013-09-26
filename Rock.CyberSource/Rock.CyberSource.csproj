@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{55776E91-7E17-42DE-9489-A2A8140E1794}</ProjectGuid>
+    <ProjectGuid>{EE799010-1B5C-48B6-BC9A-9ADE0B7A5852}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Rock.CyberSource</RootNamespace>
@@ -30,16 +30,19 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CyberSource.Base">
+      <HintPath>..\libs\CyberSource\CyberSource.Base.dll</HintPath>
+    </Reference>
+    <Reference Include="CyberSource.Clients">
+      <HintPath>..\libs\CyberSource\CyberSource.Clients.dll</HintPath>
+    </Reference>
     <Reference Include="DotLiquid">
       <HintPath>..\libs\DotLiquid v1.7.0\NET40\DotLiquid.dll</HintPath>
-    </Reference>
-    <Reference Include="Payflow_dotNET">
-      <HintPath>..\libs\PayFlow\Payflow_dotNET.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Services" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -49,18 +52,6 @@
   <ItemGroup>
     <Compile Include="Gateway.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Reporting\Api.cs" />
-    <Compile Include="Reporting\SearchResponse.cs" />
-    <Compile Include="Reporting\SearchRequest.cs" />
-    <Compile Include="Reporting\ResultRequest.cs" />
-    <Compile Include="Reporting\ResultResponse.cs" />
-    <Compile Include="Reporting\DataResponse.cs" />
-    <Compile Include="Reporting\DataRequest.cs" />
-    <Compile Include="Reporting\MetaDataResponse.cs" />
-    <Compile Include="Reporting\MetaDataRequest.cs" />
-    <Compile Include="Reporting\ReportResponse.cs" />
-    <Compile Include="Reporting\RequestResponse.cs" />
-    <Compile Include="Reporting\ReportRequest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Rock\Rock.csproj">
@@ -68,12 +59,10 @@
       <Name>Rock</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(TargetDir)$(ProjectName).dll" "$(SolutionDir)RockWeb\Plugins\$(ProjectName).dll"
-copy /Y "$(TargetDir)$(ProjectName).pdb" "$(SolutionDir)RockWeb\Plugins\$(ProjectName).pdb"
-copy /Y "$(TargetDir)Payflow_dotNET.dll" "$(SolutionDir)RockWeb\Plugins\Payflow_dotNET.dll"</PostBuildEvent>
-  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

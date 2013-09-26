@@ -46,7 +46,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Version", "Rock.Versio
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.PayFlowPro", "Rock.PayFlowPro\Rock.PayFlowPro.csproj", "{05F3587D-86DD-4CF3-A80A-D8CF598E1FD1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.CyberSource", "Rock.CyberSource\Rock.CyberSource.csproj", "{55776E91-7E17-42DE-9489-A2A8140E1794}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.CyberSource", "Rock.CyberSource\Rock.CyberSource.csproj", "{EE799010-1B5C-48B6-BC9A-9ADE0B7A5852}"
 EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
@@ -141,16 +141,16 @@ Global
 		{05F3587D-86DD-4CF3-A80A-D8CF598E1FD1}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{05F3587D-86DD-4CF3-A80A-D8CF598E1FD1}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{05F3587D-86DD-4CF3-A80A-D8CF598E1FD1}.Release|x86.ActiveCfg = Release|Any CPU
-		{55776E91-7E17-42DE-9489-A2A8140E1794}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{55776E91-7E17-42DE-9489-A2A8140E1794}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{55776E91-7E17-42DE-9489-A2A8140E1794}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
-		{55776E91-7E17-42DE-9489-A2A8140E1794}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
-		{55776E91-7E17-42DE-9489-A2A8140E1794}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{55776E91-7E17-42DE-9489-A2A8140E1794}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{55776E91-7E17-42DE-9489-A2A8140E1794}.Release|Any CPU.Build.0 = Release|Any CPU
-		{55776E91-7E17-42DE-9489-A2A8140E1794}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
-		{55776E91-7E17-42DE-9489-A2A8140E1794}.Release|Mixed Platforms.Build.0 = Release|Any CPU
-		{55776E91-7E17-42DE-9489-A2A8140E1794}.Release|x86.ActiveCfg = Release|Any CPU
+		{EE799010-1B5C-48B6-BC9A-9ADE0B7A5852}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EE799010-1B5C-48B6-BC9A-9ADE0B7A5852}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EE799010-1B5C-48B6-BC9A-9ADE0B7A5852}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{EE799010-1B5C-48B6-BC9A-9ADE0B7A5852}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{EE799010-1B5C-48B6-BC9A-9ADE0B7A5852}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EE799010-1B5C-48B6-BC9A-9ADE0B7A5852}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EE799010-1B5C-48B6-BC9A-9ADE0B7A5852}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EE799010-1B5C-48B6-BC9A-9ADE0B7A5852}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{EE799010-1B5C-48B6-BC9A-9ADE0B7A5852}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{EE799010-1B5C-48B6-BC9A-9ADE0B7A5852}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
