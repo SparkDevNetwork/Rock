@@ -19,17 +19,17 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// The label
         /// </summary>
-        protected Literal label;
+        private Literal _label;
 
         /// <summary>
         /// The help block
         /// </summary>
-        protected HelpBlock helpBlock;
+        private HelpBlock _helpBlock;
 
         /// <summary>
         /// The merge fields picker
         /// </summary>
-        protected MergeFieldPicker mergeFieldPicker;
+        private MergeFieldPicker _mergeFieldPicker;
 
         /// <summary>
         /// Gets or sets the help block.
@@ -45,8 +45,8 @@ namespace Rock.Web.UI.Controls
         ]
         public string Help
         {
-            get { return helpBlock.Text; }
-            set { helpBlock.Text = value; }
+            get { return _helpBlock.Text; }
+            set { _helpBlock.Text = value; }
         }
 
         /// <summary>
@@ -63,8 +63,8 @@ namespace Rock.Web.UI.Controls
         ]
         public string Label
         {
-            get { return label.Text; }
-            set { label.Text = value; }
+            get { return _label.Text; }
+            set { _label.Text = value; }
         }
 
         /// <summary>
@@ -93,8 +93,8 @@ namespace Rock.Web.UI.Controls
         public HtmlEditor()
             : base()
         {
-            label = new Literal();
-            helpBlock = new HelpBlock();
+            _label = new Literal();
+            _helpBlock = new HelpBlock();
         }
 
         /// <summary>
@@ -106,17 +106,17 @@ namespace Rock.Web.UI.Controls
             
             Controls.Clear();
 
-            label.ID = string.Format( "{0}_lbl", this.ID );
-            Controls.Add( label );
+            _label.ID = string.Format( "{0}_lbl", this.ID );
+            Controls.Add( _label );
 
-            mergeFieldPicker = new MergeFieldPicker();
-            mergeFieldPicker.ID = string.Format( "{0}_mfPicker", this.ID );
-            mergeFieldPicker.SetValue( string.Empty );
-            Controls.Add( mergeFieldPicker );
+            _mergeFieldPicker = new MergeFieldPicker();
+            _mergeFieldPicker.ID = string.Format( "{0}_mfPicker", this.ID );
+            _mergeFieldPicker.SetValue( string.Empty );
+            Controls.Add( _mergeFieldPicker );
 
-            helpBlock = new HelpBlock();
-            helpBlock.ID = string.Format( "{0}_help", this.ID );
-            Controls.Add( helpBlock );
+            _helpBlock = new HelpBlock();
+            _helpBlock.ID = string.Format( "{0}_help", this.ID );
+            Controls.Add( _helpBlock );
         }
 
         /// <summary>
@@ -136,14 +136,14 @@ namespace Rock.Web.UI.Controls
 
                 writer.AddAttribute( "class", "control-label" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                label.Visible = this.Visible;
-                label.RenderControl( writer );
+                _label.Visible = this.Visible;
+                _label.RenderControl( writer );
                 writer.Write( " " );
 
                 if ( MergeFields.Any() )
                 {
-                    mergeFieldPicker.MergeFields = this.MergeFields;
-                    mergeFieldPicker.RenderControl( writer );
+                    _mergeFieldPicker.MergeFields = this.MergeFields;
+                    _mergeFieldPicker.RenderControl( writer );
                     writer.Write( " " );
 
                     string scriptFormat = @"
@@ -184,11 +184,11 @@ namespace Rock.Web.UI.Controls
             }});
         }});
 ";
-                    string script = string.Format( scriptFormat, mergeFieldPicker.ID, this.ClientID );
-                    ScriptManager.RegisterStartupScript( mergeFieldPicker, mergeFieldPicker.GetType(), "merge_field_extension-" + mergeFieldPicker.ID.ToString(), script, true );
+                    string script = string.Format( scriptFormat, _mergeFieldPicker.ID, this.ClientID );
+                    ScriptManager.RegisterStartupScript( _mergeFieldPicker, _mergeFieldPicker.GetType(), "merge_field_extension-" + _mergeFieldPicker.ID.ToString(), script, true );
                 }
 
-                helpBlock.RenderControl( writer );
+                _helpBlock.RenderControl( writer );
 
                 writer.RenderEndTag();
 

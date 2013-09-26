@@ -18,7 +18,7 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:PersonLink runat=server></{0}:PersonLink>" )]
     public class PersonLink : HtmlAnchor
     {
-        Literal personName;
+        private Literal _personName;
 
         public int PersonId
         {
@@ -28,8 +28,8 @@ namespace Rock.Web.UI.Controls
 
         public string PersonName
         {
-            get { return personName.Text; }
-            set { personName.Text = value; }
+            get { return _personName.Text; }
+            set { _personName.Text = value; }
         }
 
         public string Role
@@ -46,7 +46,7 @@ namespace Rock.Web.UI.Controls
 
         public PersonLink()
         {
-            personName = new Literal();
+            _personName = new Literal();
         }
 
         protected override void OnInit( System.EventArgs e )
@@ -73,7 +73,7 @@ namespace Rock.Web.UI.Controls
             }
 
             writer.RenderBeginTag( HtmlTextWriterTag.Strong );
-            personName.RenderControl(writer);
+            _personName.RenderControl(writer);
             writer.RenderEndTag();
 
             base.RenderEndTag( writer );

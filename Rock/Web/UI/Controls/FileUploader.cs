@@ -22,12 +22,12 @@ namespace Rock.Web.UI.Controls
 
         #region UI Controls
 
-        private Label lblTitle;
-        private HiddenField hfBinaryFileId;
-        private HiddenField hfBinaryFileTypeGuid;
-        private HtmlAnchor aFileName;
-        private HtmlAnchor aRemove;
-        private FileUpload fileUpload;
+        private Label _lblTitle;
+        private HiddenField _hfBinaryFileId;
+        private HiddenField _hfBinaryFileTypeGuid;
+        private HtmlAnchor _aFileName;
+        private HtmlAnchor _aRemove;
+        private FileUpload _fileUpload;
 
         #endregion
 
@@ -38,9 +38,9 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public FileUploader()
         {
-            lblTitle = new Label();
-            hfBinaryFileId = new HiddenField();
-            hfBinaryFileTypeGuid = new HiddenField();
+            _lblTitle = new Label();
+            _hfBinaryFileId = new HiddenField();
+            _hfBinaryFileTypeGuid = new HiddenField();
         }
 
         #endregion
@@ -58,13 +58,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return lblTitle.Text;
+                return _lblTitle.Text;
             }
 
             set
             {
                 EnsureChildControls();
-                lblTitle.Text = value;
+                _lblTitle.Text = value;
             }
         }
 
@@ -79,7 +79,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                int? result = hfBinaryFileId.ValueAsInt();
+                int? result = _hfBinaryFileId.ValueAsInt();
                 if ( result > 0 )
                 {
                     return result;
@@ -94,7 +94,7 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
-                hfBinaryFileId.Value = value.ToString();
+                _hfBinaryFileId.Value = value.ToString();
             }
         }
 
@@ -104,13 +104,13 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 Guid guid;
-                return Guid.TryParse( hfBinaryFileTypeGuid.Value, out guid ) ? guid : new Guid( SystemGuid.BinaryFiletype.DEFAULT );
+                return Guid.TryParse( _hfBinaryFileTypeGuid.Value, out guid ) ? guid : new Guid( SystemGuid.BinaryFiletype.DEFAULT );
             }
 
             set
             {
                 EnsureChildControls();
-                hfBinaryFileTypeGuid.Value = value.ToString();
+                _hfBinaryFileTypeGuid.Value = value.ToString();
             }
         }
 
@@ -128,30 +128,30 @@ namespace Rock.Web.UI.Controls
             base.CreateChildControls();
             Controls.Clear();
 
-            Controls.Add( lblTitle );
-            lblTitle.ID = "lblTitle";
+            Controls.Add( _lblTitle );
+            _lblTitle.ID = "lblTitle";
 
-            Controls.Add( hfBinaryFileId );
-            hfBinaryFileId.ID = "hfBinaryFileId";
+            Controls.Add( _hfBinaryFileId );
+            _hfBinaryFileId.ID = "hfBinaryFileId";
 
-            Controls.Add( hfBinaryFileTypeGuid );
-            hfBinaryFileTypeGuid.ID = "hfBinaryFileTypeGuid";
+            Controls.Add( _hfBinaryFileTypeGuid );
+            _hfBinaryFileTypeGuid.ID = "hfBinaryFileTypeGuid";
 
-            aFileName = new HtmlAnchor();
-            Controls.Add( aFileName );
-            aFileName.ID = "fn";
-            aFileName.Target = "_blank";
+            _aFileName = new HtmlAnchor();
+            Controls.Add( _aFileName );
+            _aFileName.ID = "fn";
+            _aFileName.Target = "_blank";
 
-            aRemove = new HtmlAnchor();
-            Controls.Add( aRemove );
-            aRemove.ID = "rmv";
-            aRemove.HRef = "#";
-            aRemove.InnerText = "Remove";
-            aRemove.Attributes["class"] = "remove-file";
+            _aRemove = new HtmlAnchor();
+            Controls.Add( _aRemove );
+            _aRemove.ID = "rmv";
+            _aRemove.HRef = "#";
+            _aRemove.InnerText = "Remove";
+            _aRemove.Attributes["class"] = "remove-file";
 
-            fileUpload = new FileUpload();
-            Controls.Add( fileUpload );
-            fileUpload.ID = "fu";
+            _fileUpload = new FileUpload();
+            Controls.Add( _fileUpload );
+            _fileUpload.ID = "fu";
         }
 
         /// <summary>
@@ -169,7 +169,7 @@ namespace Rock.Web.UI.Controls
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                lblTitle.RenderControl( writer );
+                _lblTitle.RenderControl( writer );
                 writer.RenderEndTag();
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "controls" );
@@ -178,31 +178,31 @@ namespace Rock.Web.UI.Controls
 
             if ( BinaryFileId != null )
             {
-                aFileName.HRef = string.Format( "{0}GetFile.ashx?id={1}", ResolveUrl( "~" ), BinaryFileId );
-                aFileName.InnerText = new BinaryFileService().Queryable().Where( f => f.Id == BinaryFileId ).Select( f => f.FileName ).FirstOrDefault();
-                aFileName.Style[HtmlTextWriterStyle.Display] = "inline";
-                aRemove.Style[HtmlTextWriterStyle.Display] = "inline";
+                _aFileName.HRef = string.Format( "{0}GetFile.ashx?id={1}", ResolveUrl( "~" ), BinaryFileId );
+                _aFileName.InnerText = new BinaryFileService().Queryable().Where( f => f.Id == BinaryFileId ).Select( f => f.FileName ).FirstOrDefault();
+                _aFileName.Style[HtmlTextWriterStyle.Display] = "inline";
+                _aRemove.Style[HtmlTextWriterStyle.Display] = "inline";
             }
             else
             {
-                aFileName.HRef = string.Empty;
-                aFileName.InnerText = string.Empty;
-                aFileName.Style[HtmlTextWriterStyle.Display] = "none";
-                aRemove.Style[HtmlTextWriterStyle.Display] = "none";
+                _aFileName.HRef = string.Empty;
+                _aFileName.InnerText = string.Empty;
+                _aFileName.Style[HtmlTextWriterStyle.Display] = "none";
+                _aRemove.Style[HtmlTextWriterStyle.Display] = "none";
             }
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            hfBinaryFileId.RenderControl( writer );
-            hfBinaryFileTypeGuid.RenderControl( writer );
-            aFileName.RenderControl( writer );
+            _hfBinaryFileId.RenderControl( writer );
+            _hfBinaryFileTypeGuid.RenderControl( writer );
+            _aFileName.RenderControl( writer );
             writer.Write( " " );
-            aRemove.RenderControl( writer );
+            _aRemove.RenderControl( writer );
             writer.RenderEndTag();
             
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            fileUpload.Attributes["name"] = string.Format( "{0}[]", base.ID );
-            fileUpload.RenderControl( writer );
+            _fileUpload.Attributes["name"] = string.Format( "{0}[]", base.ID );
+            _fileUpload.RenderControl( writer );
             writer.RenderEndTag();
 
             if ( renderWithLabel )
@@ -230,14 +230,14 @@ Rock.controls.fileUploader.initialize({{
     postbackScript: '{6}',
     fileType: 'file'
 }});", 
-                fileUpload.ClientID,
+                _fileUpload.ClientID,
                 BinaryFileId,
                 BinaryFileTypeGuid,
-                hfBinaryFileId.ClientID,
-                aFileName.ClientID,
-                aRemove.ClientID,
+                _hfBinaryFileId.ClientID,
+                _aFileName.ClientID,
+                _aRemove.ClientID,
                 postBackScript );
-            ScriptManager.RegisterStartupScript( fileUpload, fileUpload.GetType(), "KendoImageScript_" + this.ID, script, true );
+            ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "KendoImageScript_" + this.ID, script, true );
         }
 
         /// <summary>
@@ -254,8 +254,8 @@ Rock.controls.fileUploader.initialize({{
             set
             {
                 base.Enabled = value;
-                fileUpload.Visible = value;
-                aRemove.Visible = value;
+                _fileUpload.Visible = value;
+                _aRemove.Visible = value;
             }
         }
 

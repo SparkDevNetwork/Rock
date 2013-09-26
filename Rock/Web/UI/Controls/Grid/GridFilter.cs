@@ -19,8 +19,8 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:GridFilter runat=server></{0}:GridFilter>" )]
     public class GridFilter : PlaceHolder, INamingContainer
     {
-        private HiddenField hfVisible;
-        private LinkButton lbFilter;
+        private HiddenField _hfVisible;
+        private LinkButton _lbFilter;
         private Dictionary<string, string> _userPreferences;
 
         /// <summary>
@@ -74,18 +74,18 @@ Sys.Application.add_load(function () {
         {
             base.CreateChildControls();
 
-            hfVisible = new HiddenField();
-            Controls.Add( hfVisible );
-            hfVisible.ID = "hfVisible";
+            _hfVisible = new HiddenField();
+            Controls.Add( _hfVisible );
+            _hfVisible.ID = "hfVisible";
 
-            lbFilter = new LinkButton();
-            Controls.Add( lbFilter );
-            lbFilter.ID = "lbFilter";
-            lbFilter.CssClass = "filter btn btn-primary btn-xs";
-            lbFilter.ToolTip = "Apply Filter";
-            lbFilter.Text = "Apply Filter";
-            lbFilter.CausesValidation = false;
-            lbFilter.Click += lbFilter_Click;
+            _lbFilter = new LinkButton();
+            Controls.Add( _lbFilter );
+            _lbFilter.ID = "lbFilter";
+            _lbFilter.CssClass = "filter btn btn-primary btn-xs";
+            _lbFilter.ToolTip = "Apply Filter";
+            _lbFilter.Text = "Apply Filter";
+            _lbFilter.CausesValidation = false;
+            _lbFilter.Click += lbFilter_Click;
         }
 
         /// <summary>
@@ -95,7 +95,7 @@ Sys.Application.add_load(function () {
         /// <param name="e">The <see cref="System.EventArgs" /> instance containing the event data.</param>
         protected void lbFilter_Click( object sender, System.EventArgs e )
         {
-            hfVisible.Value = "false";
+            _hfVisible.Value = "false";
 
             if ( ApplyFilterClick != null )
             {
@@ -109,7 +109,7 @@ Sys.Application.add_load(function () {
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            bool visible = hfVisible.Value == "true";
+            bool visible = _hfVisible.Value == "true";
 
             writer.AddAttribute( "class", "grid-filter" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -120,7 +120,7 @@ Sys.Application.add_load(function () {
             writer.Write( "Filter Options" );
             writer.RenderEndTag();
 
-            hfVisible.RenderControl( writer );
+            _hfVisible.RenderControl( writer );
 
             writer.AddAttribute( "class", visible ? "icon-chevron-up toggle-filter" : "icon-chevron-down toggle-filter" );
             writer.RenderBeginTag( HtmlTextWriterTag.I );
@@ -180,7 +180,7 @@ Sys.Application.add_load(function () {
 
             writer.RenderEndTag();
 
-            lbFilter.RenderControl( writer );
+            _lbFilter.RenderControl( writer );
 
             writer.RenderEndTag();
 
@@ -216,7 +216,7 @@ Sys.Application.add_load(function () {
                         cellCount = 0;
                     }
 
-                    if ( child != lbFilter && child != hfVisible )
+                    if ( child != _lbFilter && child != _hfVisible )
                     {
                         // add row column
                         writer.AddAttribute("class", "col-md-4");
