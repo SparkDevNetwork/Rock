@@ -1,9 +1,0 @@
-﻿<li class="dropdown-header">{{ PageNavSecond.title }}</li>
-{% if PageNavSecond.display-child-pages == 'true' %}
-    {% for page in PageNavSecond.pages %}
-        <li role="presentation">
-            <a role="menu-item" href="{{ page.url }}">{{ page.title }}</a>
-        </li>
-    {% endfor %}
-    <li class="divider"></li>
-{% endif %}
