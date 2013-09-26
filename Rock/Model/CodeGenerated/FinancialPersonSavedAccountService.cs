@@ -82,11 +82,9 @@ namespace Rock.Model
             {
                 var target = new FinancialPersonSavedAccount();
                 target.PersonId = source.PersonId;
-              //  target.GatewayEntityTypeId = source.GatewayEntityTypeId;
+                target.FinancialTransactionId = source.FinancialTransactionId;
                 target.Name = source.Name;
-              //  target.PaymentMethod = source.PaymentMethod;
                 target.MaskedAccountNumber = source.MaskedAccountNumber;
-              //  target.TransactionCode = source.TransactionCode;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 
