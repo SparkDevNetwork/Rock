@@ -10,7 +10,12 @@
                     throw 'id is required';
                 }
 
-                $('#' + options.id).kendoTimePicker();
+                // bootstrap-timepicker requires that the parent div have bootstrap-timepicker, input-append classes
+                $('#' + options.id).closest('div').addClass('bootstrap-timepicker').addClass('input-append');
+
+
+                // uses https://github.com/jdewit/bootstrap-timepicker
+                $('#' + options.id).timepicker();
             }
         };
 

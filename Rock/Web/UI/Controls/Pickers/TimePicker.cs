@@ -22,6 +22,8 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
 
+            this.AppendText = "<span class='add-on'><i class='icon-time'></i></span>";
+
             if ( string.IsNullOrWhiteSpace( this.SourceTypeName ) )
             {
                 this.LabelTextFromPropertyName = false;
@@ -29,7 +31,6 @@ namespace Rock.Web.UI.Controls
                 this.PropertyName = "SelectedTime";
             }
 
-            // #TODO# Decide how we want to design this control.  Editable DropDownList with 30minute increments, and enforces formatting?
             var script = string.Format( @"Rock.controls.timePicker.initialize({{ id: '{0}' }});", this.ClientID );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "time_picker-" + this.ClientID, script, true );
         }
