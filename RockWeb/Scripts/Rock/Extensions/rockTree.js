@@ -73,6 +73,11 @@
 
             this.showLoading(this.$el);
             promise.done(function () {
+                if (self.options.selectedIds && typeof self.options.selectedIds.length === 'number') {
+                    self.clear();
+                    self.setSelected(self.options.selectedIds);
+                }
+
                 self.render();
                 self.discardLoading(self.$el);
                 self.initTreeEvents();
@@ -228,6 +233,18 @@
             _clearSelectedNodes(this.nodes);
             this.render();
         },
+        setSelected: function (array) {
+            var currentNode,
+                i;
+
+            for (i = 0; i < array.length; i++) {
+                currentNode = _findNodeById(array[i], this.nodes);
+
+                if (currentNode) {
+                    currentNode.isSelected = true;
+                }
+            }
+        },
         initTreeEvents: function () {
             var self = this;
 
@@ -305,7 +322,7 @@
     };
 
     $.fn.rockTree = function (options) {
-        var settings = $.extend(true, $.fn.rockTree.defaults, options);
+        var settings = $.extend(true, {}, $.fn.rockTree.defaults, options);
 
         return this.each(function () {
             var $el = $(this),

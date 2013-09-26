@@ -5,8 +5,8 @@
 
     Rock.controls.itemPicker = (function () {
         var ItemPicker = function (options) {
-            this.options = options;
-        },
+                this.options = options;
+            },
             exports;
 
         ItemPicker.prototype = {
@@ -17,7 +17,8 @@
                     treeOptions = {
                         multiselect: this.options.allowMultiSelect,
                         restUrl: this.options.restUrl
-                    };
+                    },
+                    $hfItemIds = $('#hfItemId_' + this.options.controlId);
 
                 if (typeof this.options.mapItems === 'function') {
                     treeOptions.mapping = {
@@ -28,6 +29,11 @@
                 $control.find('.scroll-container').tinyscrollbar({ size: 120 });
                 // Since some hanlers are "live" events, they need to be bound before tree is initialized
                 this.initializeEventHandlers();
+
+                if ($hfItemIds.val() && $hfItemIds !== '0') {
+                    treeOptions.selectedIds = $hfItemIds.val().split(',');
+                }
+
                 $tree.rockTree(treeOptions);
             },
             initializeEventHandlers: function () {
@@ -67,18 +73,18 @@
                 $control.hover(
                     function () {
                         if ($hfItemIds.val() && $hfItemIds.val() !== '0') {
-                            $control.find('.rock-picker-select-none').show();
+                            $control.find('.picker-select-none').show();
                         }
                     },
                     function () {
                         $control.find('.rock-picker-select-none').fadeOut(500);
                     });
 
-                $control.find('.cancel, .select').click(function () {
+                $control.find('.cancel, .picker-select').click(function () {
                     $(this).closest('.picker-menu').slideUp();
                 });
 
-                $control.find('.rock-picker-select-none').click(function (e) {
+                $control.find('.picker-select-none').click(function (e) {
                     e.stopImmediatePropagation();
                     var rockTree = $control.find('.treeview').data('rockTree');
                     rockTree.clear();
@@ -117,15 +123,21 @@
                 controlId: null,
                 restUrl: null,
                 allowMultiSelect: false,
-                defaultText: '&lt;none&gt;'
+                defaultText: '<none>'
             },
             controls: {},
             initialize: function (options) {
-                var settings = $.extend(exports.defaults, options),
-                    itemPicker;
+                var settings = $.extend({}, exports.defaults, options),
+                    itemPicker,
+                    $hfItemIds,
+                    selectedIds = null;
 
                 if (!settings.controlId) throw 'controlId must be set';
                 if (!settings.restUrl) throw 'restUrl must be set';
+
+                if (!settings.defaultText) {
+                    settings.defaultText = exports.defaults.defaultText;
+                }
 
                 itemPicker = new ItemPicker(settings);
                 exports.controls[settings.controlId] = itemPicker;

@@ -417,7 +417,11 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnSelect_Click( object sender, EventArgs e )
         {
-            SetValueOnSelect();
+            if (AllowMultiSelect)
+                SetValuesOnSelect();
+            else
+                SetValueOnSelect();
+
             if ( SelectItem != null )
             {
                 SelectItem( sender, e );
@@ -493,7 +497,7 @@ namespace Rock.Web.UI.Controls
 
             _btnSelect = new LinkButton();
             _btnSelect.ClientIDMode = ClientIDMode.Static;
-            _btnSelect.CssClass = "btn btn-xs btn-primary";
+            _btnSelect.CssClass = "btn btn-xs btn-primary picker-select";
             _btnSelect.ID = string.Format( "btnSelect_{0}", this.ID );
             _btnSelect.Text = "Select";
             _btnSelect.CausesValidation = false;
@@ -548,7 +552,7 @@ namespace Rock.Web.UI.Controls
         <div id='{0}' class='picker picker-select'> 
             <a class='picker-label' href='#'>
                 <i class='icon-folder-open'></i>
-                <span id='selectedItemLabel_{0}'>{1}</span>
+                <span id='selectedItemLabel_{0}' class='selected-names'>{1}</span>
                 <b class='caret'></b>
             </a>
 ";
@@ -589,7 +593,7 @@ namespace Rock.Web.UI.Controls
                 _btnSelect.RenderControl( writer );
 
                 string controlHtmlFormatEnd = @"
-            <a class='btn btn-xs' id='btnCancel_{0}'>Cancel</a>
+            <a class='btn btn-xs cancel' id='btnCancel_{0}'>Cancel</a>
             </div>
           </div>
         </div>
