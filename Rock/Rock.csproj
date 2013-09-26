@@ -225,6 +225,10 @@
     <Compile Include="Migrations\201309251315512_RefactorMetrics.Designer.cs">
       <DependentUpon>201309251315512_RefactorMetrics.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201309260255120_XSLTToLiquid.cs" />
+    <Compile Include="Migrations\201309260255120_XSLTToLiquid.Designer.cs">
+      <DependentUpon>201309260255120_XSLTToLiquid.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\FinancialPersonSavedAccountService.Partial.cs" />
     <Compile Include="Services\NuGet\NuGetExtensionsMethods.cs" />
     <Compile Include="Storage\ProviderComponent.cs" />
@@ -1055,6 +1059,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201309251315512_RefactorMetrics.resx">
       <DependentUpon>201309251315512_RefactorMetrics.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201309260255120_XSLTToLiquid.resx">
+      <DependentUpon>201309260255120_XSLTToLiquid.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
