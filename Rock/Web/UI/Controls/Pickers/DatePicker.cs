@@ -65,6 +65,7 @@ namespace Rock.Web.UI.Controls
                 if ( value != null )
                 {
                     this.Text = value.Value.ToShortDateString();
+                    this.Attributes["value"] = this.Text;
                 }
                 else
                 {
