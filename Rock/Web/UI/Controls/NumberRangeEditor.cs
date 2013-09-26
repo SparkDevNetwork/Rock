@@ -15,17 +15,17 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// The label
         /// </summary>
-        private Literal label;
+        private Literal _label;
 
         /// <summary>
         /// The lower value edit box
         /// </summary>
-        private NumberBox tbLowerValue;
+        private NumberBox _tbLowerValue;
 
         /// <summary>
         /// The upper value edit box
         /// </summary>
-        private NumberBox tbUpperValue;
+        private NumberBox _tbUpperValue;
 
         /// <summary>
         /// Gets or sets the label text.
@@ -44,13 +44,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return label.Text;
+                return _label.Text;
             }
 
             set
             {
                 EnsureChildControls();
-                label.Text = value;
+                _label.Text = value;
             }
         }
 
@@ -72,14 +72,14 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return tbLowerValue.NumberType;
+                return _tbLowerValue.NumberType;
             }
 
             set 
             {
                 EnsureChildControls();
-                tbLowerValue.NumberType = value;
-                tbUpperValue.NumberType = value;
+                _tbLowerValue.NumberType = value;
+                _tbUpperValue.NumberType = value;
             }
         }
 
@@ -99,13 +99,13 @@ namespace Rock.Web.UI.Controls
         {
             get {
                 EnsureChildControls();
-                return tbLowerValue.MinimumValue; 
+                return _tbLowerValue.MinimumValue; 
             }
 
             set {
                 EnsureChildControls();
-                tbLowerValue.MinimumValue = value;
-                tbUpperValue.MinimumValue = value;
+                _tbLowerValue.MinimumValue = value;
+                _tbUpperValue.MinimumValue = value;
             }
         }
 
@@ -126,14 +126,14 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return tbLowerValue.MaximumValue;
+                return _tbLowerValue.MaximumValue;
             }
 
             set
             {
                 EnsureChildControls();
-                tbLowerValue.MaximumValue = value;
-                tbUpperValue.MaximumValue = value;
+                _tbLowerValue.MaximumValue = value;
+                _tbUpperValue.MaximumValue = value;
             }
 
         }
@@ -155,14 +155,14 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return tbLowerValue.Required;
+                return _tbLowerValue.Required;
             }
 
             set
             {
                 EnsureChildControls();
-                tbLowerValue.Required = value;
-                tbUpperValue.Required = value;
+                _tbLowerValue.Required = value;
+                _tbUpperValue.Required = value;
             }
         }
 
@@ -185,13 +185,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return tbLowerValue.RequiredErrorMessage;
+                return _tbLowerValue.RequiredErrorMessage;
             }
 
             set
             {
-                tbLowerValue.RequiredErrorMessage = value;
-                tbUpperValue.RequiredErrorMessage = value;
+                _tbLowerValue.RequiredErrorMessage = value;
+                _tbUpperValue.RequiredErrorMessage = value;
             }
         }
 
@@ -206,7 +206,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return tbLowerValue.IsValid && tbUpperValue.IsValid;
+                return _tbLowerValue.IsValid && _tbUpperValue.IsValid;
             }
         }
 
@@ -219,19 +219,19 @@ namespace Rock.Web.UI.Controls
 
             Controls.Clear();
 
-            label = new Literal();
-            Controls.Add( label );
+            _label = new Literal();
+            Controls.Add( _label );
 
-            tbLowerValue = new NumberBox();
-            tbLowerValue.ID = this.ID + "_lower";
-            tbLowerValue.CssClass = "input-small";
+            _tbLowerValue = new NumberBox();
+            _tbLowerValue.ID = this.ID + "_lower";
+            _tbLowerValue.CssClass = "input-small";
 
-            Controls.Add( tbLowerValue );
+            Controls.Add( _tbLowerValue );
 
-            tbUpperValue = new NumberBox();
-            tbUpperValue.ID = this.ID + "_upper";
-            tbUpperValue.CssClass = "input-small";
-            Controls.Add( tbUpperValue );
+            _tbUpperValue = new NumberBox();
+            _tbUpperValue.ID = this.ID + "_upper";
+            _tbUpperValue.CssClass = "input-small";
+            Controls.Add( _tbUpperValue );
         }
 
         /// <summary>
@@ -253,7 +253,7 @@ namespace Rock.Web.UI.Controls
                     writer.AddAttribute( "class", "control-label" );
 
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    label.RenderControl( writer );
+                    _label.RenderControl( writer );
                     writer.RenderEndTag();
                 }
 
@@ -261,9 +261,9 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "controls input-xxlarge" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                tbLowerValue.RenderControl( writer );
+                _tbLowerValue.RenderControl( writer );
                 writer.Write( "<span> to </span>" );
-                tbUpperValue.RenderControl( writer );
+                _tbUpperValue.RenderControl( writer );
 
                 writer.RenderEndTag();
 
@@ -286,7 +286,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
 
                 decimal result;
-                if (decimal.TryParse(tbLowerValue.Text, out result))
+                if (decimal.TryParse(_tbLowerValue.Text, out result))
                 {
                     return result;
                 }
@@ -297,7 +297,7 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
-                tbLowerValue.Text = value.ToString();
+                _tbLowerValue.Text = value.ToString();
             }
         }
 
@@ -314,7 +314,7 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
 
                 decimal result;
-                if (decimal.TryParse(tbUpperValue.Text, out result))
+                if (decimal.TryParse(_tbUpperValue.Text, out result))
                 {
                     return result;
                 }
@@ -325,7 +325,7 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
-                tbUpperValue.Text = value.ToString();
+                _tbUpperValue.Text = value.ToString();
             }
         }
     }

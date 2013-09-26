@@ -15,8 +15,8 @@ namespace Rock.Web
     {
         #region Static privates
 
-        private static bool applicationStarted = false;
-        private static object applicationStartLock = new object();
+        private static bool _applicationStarted = false;
+        private static object _applicationStartLock = new object();
 
         #endregion
 
@@ -35,14 +35,14 @@ namespace Rock.Web
         /// <param name="context">An <see cref="T:System.Web.HttpApplication"/> that provides access to the methods, properties, and events common to all application objects within an ASP.NET application</param>
         public virtual void Init( HttpApplication context )
         {
-            if ( !applicationStarted )
+            if ( !_applicationStarted )
             {
-                lock ( applicationStartLock )
+                lock ( _applicationStartLock )
                 {
-                    if ( !applicationStarted )
+                    if ( !_applicationStarted )
                     {
                         this.Application_Start( context );
-                        applicationStarted = true;
+                        _applicationStarted = true;
                     }
                 }
             }

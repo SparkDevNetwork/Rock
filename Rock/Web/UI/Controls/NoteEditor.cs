@@ -21,12 +21,12 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:NoteEditor runat=server></{0}:NoteEditor>" )]
     public class NoteEditor : CompositeControl
     {
-        private RockTextBox tbNote;
-        private CheckBox cbAlert;
-        private CheckBox cbPrivate;
-        private LinkButton lbSaveNote;
-        private LinkButton lbEditNote;
-        private LinkButton lbDeleteNote;
+        private RockTextBox _tbNote;
+        private CheckBox _cbAlert;
+        private CheckBox _cbPrivate;
+        private LinkButton _lbSaveNote;
+        private LinkButton _lbEditNote;
+        private LinkButton _lbDeleteNote;
 
         public Rock.Model.Note Note
         {
@@ -67,20 +67,20 @@ namespace Rock.Web.UI.Controls
 
         public string Text
         {
-            get { return tbNote.Text; }
-            set { tbNote.Text = value; }
+            get { return _tbNote.Text; }
+            set { _tbNote.Text = value; }
         }
 
         public bool IsAlert
         {
-            get { return cbAlert.Checked; }
-            set { cbAlert.Checked = value; }
+            get { return _cbAlert.Checked; }
+            set { _cbAlert.Checked = value; }
         }
 
         public bool IsPrivate
         {
-            get { return cbPrivate.Checked; }
-            set { cbPrivate.Checked = value; }
+            get { return _cbPrivate.Checked; }
+            set { _cbPrivate.Checked = value; }
         }
 
         public bool CanEdit
@@ -148,12 +148,12 @@ namespace Rock.Web.UI.Controls
 
         public NoteEditor()
         {
-            tbNote = new RockTextBox();
-            cbAlert = new CheckBox();
-            cbPrivate = new CheckBox();
-            lbSaveNote = new LinkButton();
-            lbEditNote = new LinkButton();
-            lbDeleteNote = new LinkButton();
+            _tbNote = new RockTextBox();
+            _cbAlert = new CheckBox();
+            _cbPrivate = new CheckBox();
+            _lbSaveNote = new LinkButton();
+            _lbEditNote = new LinkButton();
+            _lbDeleteNote = new LinkButton();
         }
 
         protected override void OnInit( EventArgs e )
@@ -177,37 +177,37 @@ namespace Rock.Web.UI.Controls
         {
             base.CreateChildControls();
 
-            tbNote.ID = this.ID + "_tbNewNote";
-            tbNote.TextMode = TextBoxMode.MultiLine;
-            Controls.Add(tbNote);
+            _tbNote.ID = this.ID + "_tbNewNote";
+            _tbNote.TextMode = TextBoxMode.MultiLine;
+            Controls.Add(_tbNote);
 
-            cbAlert.ID = this.ID + "_cbAlert";
-            cbAlert.Text = "Alert";
-            Controls.Add(cbAlert);
+            _cbAlert.ID = this.ID + "_cbAlert";
+            _cbAlert.Text = "Alert";
+            Controls.Add(_cbAlert);
 
-            cbPrivate.ID = this.ID + "_cbPrivate";
-            cbPrivate.Text = "Private";
-            Controls.Add(cbPrivate);
+            _cbPrivate.ID = this.ID + "_cbPrivate";
+            _cbPrivate.Text = "Private";
+            Controls.Add(_cbPrivate);
 
-            lbSaveNote.ID = this.ID + "_lbSaveNote";
-            lbSaveNote.Attributes["class"] = "btn btn-primary btn-xs";
-            lbSaveNote.Text = "Save Note";
-            lbSaveNote.Click += lbSaveNote_Click;
+            _lbSaveNote.ID = this.ID + "_lbSaveNote";
+            _lbSaveNote.Attributes["class"] = "btn btn-primary btn-xs";
+            _lbSaveNote.Text = "Save Note";
+            _lbSaveNote.Click += lbSaveNote_Click;
 
-            Controls.Add(lbSaveNote);
+            Controls.Add(_lbSaveNote);
 
             var iEdit = new HtmlGenericControl( "i" );
             iEdit.Attributes["class"] = "icon-pencil";
-            lbEditNote.Controls.Add( iEdit );
+            _lbEditNote.Controls.Add( iEdit );
 
-            lbDeleteNote.ID = this.ID + "_lbDeleteNote";
-            lbDeleteNote.Attributes["class"] = "remove-note";
-            lbDeleteNote.Click += lbDeleteNote_Click;
-            Controls.Add( lbDeleteNote );
+            _lbDeleteNote.ID = this.ID + "_lbDeleteNote";
+            _lbDeleteNote.Attributes["class"] = "remove-note";
+            _lbDeleteNote.Click += lbDeleteNote_Click;
+            Controls.Add( _lbDeleteNote );
 
             var iDelete = new HtmlGenericControl( "i" );
             iDelete.Attributes["class"] = "icon-remove";
-            lbDeleteNote.Controls.Add( iDelete );
+            _lbDeleteNote.Controls.Add( iDelete );
         }
 
         public event EventHandler SaveButtonClick;
@@ -240,9 +240,9 @@ namespace Rock.Web.UI.Controls
             // label and text
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            tbNote.Label = "Note";
-            tbNote.Text = Text;
-            tbNote.RenderControl( writer );
+            _tbNote.Label = "Note";
+            _tbNote.Text = Text;
+            _tbNote.RenderControl( writer );
             
 
             // Options
@@ -254,12 +254,12 @@ namespace Rock.Web.UI.Controls
 
             if ( ShowAlertCheckBox )
             {
-                cbAlert.RenderControl( writer );
+                _cbAlert.RenderControl( writer );
             }
 
             if ( ShowPrivateCheckBox )
             {
-                cbPrivate.RenderControl( writer );
+                _cbPrivate.RenderControl( writer );
             }
 
             writer.RenderEndTag();
@@ -281,7 +281,7 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-footer" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            lbSaveNote.RenderControl( writer );
+            _lbSaveNote.RenderControl( writer );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "edit-note-cancel btn btn-xs" );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
             writer.Write( "Cancel" );
@@ -330,7 +330,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.RenderEndTag();  // A
-                lbDeleteNote.RenderControl( writer );
+                _lbDeleteNote.RenderControl( writer );
                 writer.RenderEndTag();  // actions
             }
 

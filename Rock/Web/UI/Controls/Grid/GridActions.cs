@@ -23,18 +23,18 @@ namespace Rock.Web.UI.Controls
         /// <param name="parentGrid">The parent grid.</param>
         public GridActions( Grid parentGrid )
         {
-            ParentGrid = parentGrid;
+            _parentGrid = parentGrid;
         }
 
-        Grid ParentGrid;
+        private Grid _parentGrid;
 
-        LinkButton lbCommunicate;
+        private LinkButton _lbCommunicate;
 
-        HtmlGenericControl aAdd;
-        LinkButton lbAdd;
+        private HtmlGenericControl _aAdd;
+        private LinkButton _lbAdd;
 
-        HtmlGenericControl aExcelExport;
-        LinkButton lbExcelExport;
+        private HtmlGenericControl _aExcelExport;
+        private LinkButton _lbExcelExport;
 
         /// <summary>
         /// Gets or sets a value indicating whether [show communicate].
@@ -47,7 +47,7 @@ namespace Rock.Web.UI.Controls
             get 
             { 
                 // if the Grid has the PersonIdField set, default ShowCommunicate to True
-                bool hasPersonIdField = !string.IsNullOrWhiteSpace(ParentGrid.PersonIdField);
+                bool hasPersonIdField = !string.IsNullOrWhiteSpace(_parentGrid.PersonIdField);
                 
                 return ViewState["ShowCommunicate"] as bool? ?? hasPersonIdField; 
             }
@@ -93,13 +93,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return aAdd.Attributes["onclick"];
+                return _aAdd.Attributes["onclick"];
             }
             
             set
             {
                 EnsureChildControls();
-                aAdd.Attributes["onclick"] = value;
+                _aAdd.Attributes["onclick"] = value;
             }
         }
 
@@ -114,13 +114,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return aExcelExport.Attributes["onclick"];
+                return _aExcelExport.Attributes["onclick"];
             }
 
             set
             {
                 EnsureChildControls();
-                aExcelExport.Attributes["onclick"] = value;
+                _aExcelExport.Attributes["onclick"] = value;
             }
         }
 
@@ -133,7 +133,7 @@ namespace Rock.Web.UI.Controls
             base.OnInit( e );
 
             EnsureChildControls();
-            ScriptManager.GetCurrent( Page ).RegisterPostBackControl( lbExcelExport );
+            ScriptManager.GetCurrent( Page ).RegisterPostBackControl( _lbExcelExport );
         }
 
         /// <summary>
@@ -142,13 +142,13 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            lbCommunicate.Visible = ShowCommunicate;
+            _lbCommunicate.Visible = ShowCommunicate;
 
-            aAdd.Visible = ShowAdd && !String.IsNullOrWhiteSpace( ClientAddScript );
-            lbAdd.Visible = ShowAdd && String.IsNullOrWhiteSpace( ClientAddScript );
+            _aAdd.Visible = ShowAdd && !String.IsNullOrWhiteSpace( ClientAddScript );
+            _lbAdd.Visible = ShowAdd && String.IsNullOrWhiteSpace( ClientAddScript );
 
-            aExcelExport.Visible = ShowExcelExport && !String.IsNullOrWhiteSpace( ClientExcelExportScript );
-            lbExcelExport.Visible = ShowExcelExport && String.IsNullOrWhiteSpace( ClientExcelExportScript );
+            _aExcelExport.Visible = ShowExcelExport && !String.IsNullOrWhiteSpace( ClientExcelExportScript );
+            _lbExcelExport.Visible = ShowExcelExport && String.IsNullOrWhiteSpace( ClientExcelExportScript );
 
             base.RenderControl( writer );
         }
@@ -204,59 +204,59 @@ namespace Rock.Web.UI.Controls
             Controls.Clear();
 
             // control for communicate
-            lbCommunicate = new LinkButton();
-            Controls.Add( lbCommunicate );
-            lbCommunicate.ID = "lbCommunicate";
-            lbCommunicate.CssClass = "btn-communicate btn btn-default btn-sm";
-            lbCommunicate.ToolTip = "Communicate";
-            lbCommunicate.Click += lbCommunicate_Click;
-            lbCommunicate.CausesValidation = false;
-            lbCommunicate.PreRender += lb_PreRender;
-            Controls.Add( lbCommunicate );
+            _lbCommunicate = new LinkButton();
+            Controls.Add( _lbCommunicate );
+            _lbCommunicate.ID = "lbCommunicate";
+            _lbCommunicate.CssClass = "btn-communicate btn btn-default btn-sm";
+            _lbCommunicate.ToolTip = "Communicate";
+            _lbCommunicate.Click += lbCommunicate_Click;
+            _lbCommunicate.CausesValidation = false;
+            _lbCommunicate.PreRender += lb_PreRender;
+            Controls.Add( _lbCommunicate );
             HtmlGenericControl iCommunicate = new HtmlGenericControl( "i" );
             iCommunicate.Attributes.Add( "class", "icon-comment" );
-            lbCommunicate.Controls.Add( iCommunicate );
+            _lbCommunicate.Controls.Add( iCommunicate );
 
             // controls for add
-            aAdd = new HtmlGenericControl( "a" );
-            Controls.Add( aAdd );
-            aAdd.ID = "aAdd";
-            aAdd.Attributes.Add( "href", "#" );
-            aAdd.Attributes.Add("class", "btn-add btn btn-default btn-sm");
-            aAdd.InnerText = "Add";
+            _aAdd = new HtmlGenericControl( "a" );
+            Controls.Add( _aAdd );
+            _aAdd.ID = "aAdd";
+            _aAdd.Attributes.Add( "href", "#" );
+            _aAdd.Attributes.Add("class", "btn-add btn btn-default btn-sm");
+            _aAdd.InnerText = "Add";
 
-            lbAdd = new LinkButton();
-            Controls.Add( lbAdd );
-            lbAdd.ID = "lbAdd";
-            lbAdd.CssClass = "btn-add btn btn-default btn-sm";
-            lbAdd.ToolTip = "Add";
-            lbAdd.Click += lbAdd_Click;
-            lbAdd.CausesValidation = false;
-            lbAdd.PreRender += lb_PreRender;
-            Controls.Add( lbAdd );
+            _lbAdd = new LinkButton();
+            Controls.Add( _lbAdd );
+            _lbAdd.ID = "lbAdd";
+            _lbAdd.CssClass = "btn-add btn btn-default btn-sm";
+            _lbAdd.ToolTip = "Add";
+            _lbAdd.Click += lbAdd_Click;
+            _lbAdd.CausesValidation = false;
+            _lbAdd.PreRender += lb_PreRender;
+            Controls.Add( _lbAdd );
             HtmlGenericControl iAdd = new HtmlGenericControl( "i" );
             iAdd.Attributes.Add( "class", "icon-plus-sign" );
-            lbAdd.Controls.Add( iAdd );
+            _lbAdd.Controls.Add( iAdd );
 
             // controls for excel export
-            aExcelExport = new HtmlGenericControl( "a" );
-            Controls.Add( aExcelExport );
-            aExcelExport.ID = "aExcelExport";
-            aExcelExport.Attributes.Add( "href", "#" );
-            aExcelExport.Attributes.Add( "class", "btn-excelexport" );
-            aExcelExport.InnerText = "Export To Excel";
+            _aExcelExport = new HtmlGenericControl( "a" );
+            Controls.Add( _aExcelExport );
+            _aExcelExport.ID = "aExcelExport";
+            _aExcelExport.Attributes.Add( "href", "#" );
+            _aExcelExport.Attributes.Add( "class", "btn-excelexport" );
+            _aExcelExport.InnerText = "Export To Excel";
 
-            lbExcelExport = new LinkButton();
-            Controls.Add( lbExcelExport );
-            lbExcelExport.ID = "lbExcelExport";
-            lbExcelExport.CssClass = "btn-excelexport btn btn-default btn-sm";
-            lbExcelExport.ToolTip = "Export to Excel";
-            lbExcelExport.Click += lbExcelExport_Click;
-            lbExcelExport.CausesValidation = false;
-            Controls.Add( lbExcelExport );
+            _lbExcelExport = new LinkButton();
+            Controls.Add( _lbExcelExport );
+            _lbExcelExport.ID = "lbExcelExport";
+            _lbExcelExport.CssClass = "btn-excelexport btn btn-default btn-sm";
+            _lbExcelExport.ToolTip = "Export to Excel";
+            _lbExcelExport.Click += lbExcelExport_Click;
+            _lbExcelExport.CausesValidation = false;
+            Controls.Add( _lbExcelExport );
             HtmlGenericControl iExcelExport = new HtmlGenericControl( "i" );
             iExcelExport.Attributes.Add( "class", "icon-table" );
-            lbExcelExport.Controls.Add( iExcelExport );
+            _lbExcelExport.Controls.Add( iExcelExport );
         }
 
         /// <summary>
@@ -269,7 +269,7 @@ namespace Rock.Web.UI.Controls
             var lb = sender as LinkButton;
             if ( lb != null )
             {
-                lb.Enabled = ParentGrid.Enabled;
+                lb.Enabled = _parentGrid.Enabled;
                 if ( lb.Enabled )
                 {
                     lb.Attributes.Remove( "disabled" );

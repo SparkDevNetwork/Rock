@@ -34,7 +34,7 @@ namespace Rock.Web.UI.Controls
         private GridViewRow _actionRow;
         private GridActions _gridActions;
         private const string DefaultEmptyDataText = "No Results Found";
-        private Dictionary<int, string> DataBoundColumns = new Dictionary<int, string>();
+        private Dictionary<int, string> _dataBoundColumns = new Dictionary<int, string>();
 
         #region Properties
 
@@ -837,10 +837,10 @@ namespace Rock.Web.UI.Controls
 
                 for ( int i = 0; i < e.Row.Cells.Count; i++ )
                 {
-                    if ( DataBoundColumns.ContainsKey( i ) )
+                    if ( _dataBoundColumns.ContainsKey( i ) )
                     {
                         var cell = e.Row.Cells[i];
-                        cell.AddCssClass( DataBoundColumns[i] );
+                        cell.AddCssClass( _dataBoundColumns[i] );
                         cell.AddCssClass( "grid-select-cell" );
                         cell.Attributes["onclick"] = clickUrl;
                     }
@@ -858,13 +858,13 @@ namespace Rock.Web.UI.Controls
         {
             _table = base.CreateChildTable();
 
-            DataBoundColumns = new Dictionary<int, string>();
+            _dataBoundColumns = new Dictionary<int, string>();
             for ( int i = 0; i < this.Columns.Count; i++ )
             {
                 BoundField column = this.Columns[i] as BoundField;
                 if ( column != null && !( column is INotRowSelectedField ) )
                 {
-                    DataBoundColumns.Add( i, column.ItemStyle.CssClass );
+                    _dataBoundColumns.Add( i, column.ItemStyle.CssClass );
                 }
             }
 

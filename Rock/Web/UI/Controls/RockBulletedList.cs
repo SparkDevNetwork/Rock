@@ -135,7 +135,7 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
-        private BulletedList bulletedList;
+        private BulletedList _bulletedList;
 
         /// <summary>
         /// Gets or sets the label text.
@@ -154,16 +154,16 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return bulletedList.Items;
+                return _bulletedList.Items;
             }
 
             set
             {
                 EnsureChildControls();
-                bulletedList.Items.Clear();
+                _bulletedList.Items.Clear();
                 foreach ( string item in value )
                 {
-                    bulletedList.Items.Add( item );
+                    _bulletedList.Items.Add( item );
                 }
             }
         }
@@ -187,9 +187,9 @@ namespace Rock.Web.UI.Controls
             Controls.Clear();
             RockControlHelper.CreateChildControls( this, Controls );
 
-            bulletedList = new BulletedList();
-            bulletedList.ID = this.ID;
-            Controls.Add( bulletedList );
+            _bulletedList = new BulletedList();
+            _bulletedList.ID = this.ID;
+            Controls.Add( _bulletedList );
         }
 
         /// <summary>
@@ -210,8 +210,8 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            bulletedList.CssClass = this.CssClass;
-            bulletedList.RenderControl( writer );
+            _bulletedList.CssClass = this.CssClass;
+            _bulletedList.RenderControl( writer );
         }
 
     }
