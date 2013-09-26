@@ -427,12 +427,15 @@ ul.rock-tree ul {
 	margin: 0px;
 }
 
-.rock-tree span {
+.rock-tree span,
+.rock-tree a {
 	margin: 1px;
 	display: inline-block;
 }
 
-.rock-tree .rock-tree-name:hover {
+.rock-tree .rock-tree-name:hover,
+.rock-tree span:hover,
+.rock-tree a:hover {
 	background: #59849C;
     color: #fff;
 }

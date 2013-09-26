@@ -62,7 +62,7 @@
 		        return node;
 		    });
 		},
-        _mapFromHtml = function ($el) {
+        _mapFromHtml = function ($el, attrs) {
             var nodes = [],
                 $ul = $el.children('ul');
 
@@ -75,8 +75,14 @@
                         isOpen: $li.attr('data-expanded') === 'true'
                     };
                 
+                if (attrs && typeof attrs.length === 'number') {
+                    for (var i = 0; i < attrs.length; i++) {
+                        node[attrs[i]] = $li.attr('data-' + attrs[i]);
+                    }   
+                }
+
                 if (node.hasChildren) {
-                    node.children = _mapFromHtml($li);
+                    node.children = _mapFromHtml($li, attrs);
                 }
                 
                 nodes.push(node);
@@ -94,7 +100,7 @@
             // If there are no options, assume the tree has been rendered by the server.
             // So attempt to load from $el's HTML, load nodes and re-render.
             if (!this.options.local && !this.options.restUrl) {
-                this.nodes = _mapFromHtml(this.$el);
+                this.nodes = _mapFromHtml(this.$el, this.options.mapping.include);
                 this.render();
                 this.initTreeEvents();
                 return;
