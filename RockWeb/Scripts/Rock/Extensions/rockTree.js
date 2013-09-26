@@ -1,7 +1,5 @@
 ﻿(function ($) {
     'use strict';
-
-    // Data container "class" to generically represent data from the server.
     var RockTree = function (element, options) {
             this.$el = $(element);
             this.options = options;
@@ -69,14 +67,19 @@
                 $ul = $el.children('ul');
 
             $ul.children('li').each(function () {
-                var $li = $(this);
+                var $li = $(this),
+                    node = {
+                        id: $li.attr('data-id'),
+                        name: $li.children('span').first().html(),
+                        hasChildren: $li.children('ul').length > 0,
+                        isOpen: $li.attr('data-expanded') === 'true'
+                    };
                 
-                nodes.push({
-                    id: $li.attr('data-id'),
-                    name: $li.children('span').text(),
-                    hasChildren: $li.children('ul').length > 0,
-                    children: _mapFromHtml($li)
-                });
+                if (node.hasChildren) {
+                    node.children = _mapFromHtml($li);
+                }
+                
+                nodes.push(node);
             });
 
             return nodes;
@@ -173,7 +176,7 @@
                 this.nodes = nodeArray;
             }
 
-            this.$el.trigger('dataBound');
+            this.$el.trigger('rockTree:dataBound');
             return nodeArray;
         },
         render: function () {
@@ -239,7 +242,7 @@
                 renderNode($ul, node);
             });
 
-            this.$el.trigger('rendered');
+            this.$el.trigger('rockTree:rendered');
         },
         renderError: function (msg) {
             var $warning = $('<div class="alert alert-warning"/>').append('<p/>');
@@ -289,7 +292,7 @@
                     $ul.hide();
                     node.isOpen = false;
                     $icon.removeClass(openClass).addClass(closedClass);
-                    self.$el.trigger('close');
+                    self.$el.trigger('rockTree:close');
                 } else {
                     node.isOpen = true;
                     $icon.removeClass(closedClass).addClass(openClass);
@@ -298,11 +301,11 @@
                         self.showLoading($icon.parent('li'));
                         self.fetch(node.id).done(function () {
                             self.render();
-                            self.$el.trigger('open');
+                            self.$el.trigger('rockTree:open');
                         });
                     } else {
                         $ul.show();
-                        self.$el.trigger('open');
+                        self.$el.trigger('rockTree:open');
                     }
                 }
             });
@@ -315,7 +318,9 @@
                     $item = $(this),
                     id = $item.parent('li').attr('data-id'),
                     node = _findNodeById(id, self.nodes),
-                    selectedNodes = [];
+                    selectedNodes = [],
+                    onSelected = self.options.onSelected,
+                    i;
 
                 if (!self.options.multiselect) {
                     $rockTree.find('.selected').removeClass('selected');
@@ -333,7 +338,15 @@
                 });
 
                 self.selectedNodes = selectedNodes;
-                self.$el.trigger('selected', id);
+                self.$el.trigger('rockTree:selected', id);
+                
+                if (!onSelected || typeof onSelected.length !== 'number') {
+                    return;
+                }
+
+                for (i = 0; i < onSelected.length; i++) {
+                    $(document).trigger(onSelected[i], id);
+                }
             });
         },
         initErrorEvents: function () {
@@ -365,7 +378,7 @@
         restUrl: null,
         local: null,
         multiselect: false,
-        loadingHtml: '<span class="rock-tree-loading"><i class="icon-refresh icon-spin"></i>Loading...</span>',
+        loadingHtml: '<span class="rock-tree-loading"><i class="icon-refresh icon-spin"></i></span>',
         iconClasses: {
             branchOpen: 'icon-folder-open',
             branchClosed: 'icon-folder-close',
@@ -374,6 +387,7 @@
         mapping: {
             include: [],
             mapData: _mapArrayDefault
-        }
+        },
+        onSelected: []
     };
 }(jQuery));
