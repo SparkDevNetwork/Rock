@@ -120,7 +120,7 @@ namespace Rock.Model
         /// A <see cref="Rock.Model.Location"/> entity that represents the physical location of or the geographic fence for the device.
         /// </value>
         /// <remarks>
-        /// A physical location would signify where the device is at. A situation where a geographic fence could be used would be for mobile checkin, 
+        /// A physical location would signify where the device is at. A situation where a geographic fence could be used would be for mobile check in, 
         /// where if the device is within the fence, a user would be able to check in from their mobile device.
         /// </remarks>
         public virtual Location Location { get; set; }
