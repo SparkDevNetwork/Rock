@@ -6,12 +6,13 @@
         <asp:Panel ID="pnlDetails" runat="server">
             <div id="pages">
                 <asp:Literal ID="lPages" runat="server"></asp:Literal>
+                <div id="page-tree"></div>
             </div>
         </asp:Panel>
 
         <script>
-            $(document).ready(function () {
-                $('#treeview').kendoTreeView();
+            $(function () {
+                $('#page-tree').rockTree();
             });
         </script>
 

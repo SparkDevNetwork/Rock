@@ -63,13 +63,39 @@
 
 		        return node;
 		    });
-		};;
+		},
+        _mapFromHtml = function ($el) {
+            var nodes = [],
+                $ul = $el.children('ul');
+
+            $ul.children('li').each(function () {
+                var $li = $(this);
+                
+                nodes.push({
+                    id: $li.attr('data-id'),
+                    name: $li.children('span').text(),
+                    hasChildren: $li.children('ul').length > 0,
+                    children: _mapFromHtml($li)
+                });
+            });
+
+            return nodes;
+        };
 
     RockTree.prototype = {
         constructor: RockTree,
         init: function () {
             var promise = this.fetch(this.options.id),
 				self = this;
+
+            // If there are no options, assume the tree has been rendered by the server.
+            // So attempt to load from $el's HTML, load nodes and re-render.
+            if (!this.options.local && !this.options.restUrl) {
+                this.nodes = _mapFromHtml(this.$el);
+                this.render();
+                this.initTreeEvents();
+                return;
+            }
 
             this.showLoading(this.$el);
             promise.done(function () {
