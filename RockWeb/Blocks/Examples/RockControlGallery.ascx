@@ -168,12 +168,17 @@
             <Rock:Badge ID="badge" runat="server" ToolTip="you have new messages waiting">99</Rock:Badge>
             </div>
 
-            <h2>Bootstrap Label</h2>
+            <h2>Rock:HighlightLabel</h2>
             <div runat="server" class="r-example">
-            <span class="label label-default">Default</span>
-            <span class="label label-success">Success</span>
-            <span class="label label-warning">Warning</span>
-            <span class="label label-danger">Danger</span>
+            <Rock:HighlightLabel ID="hlDefault" runat="server" LabelType="Default" Text="Default" />
+            <Rock:HighlightLabel ID="hlPrimary" runat="server" LabelType="Primary" Text="Primary" />
+            <Rock:HighlightLabel ID="hlSuccess" runat="server" LabelType="Success" Text="Success" />
+            <Rock:HighlightLabel ID="hlInfo" runat="server" LabelType="Info" Text="Info" />
+            <Rock:HighlightLabel ID="hlWarning" runat="server" LabelType="Warning" Text="Warning" />
+            <Rock:HighlightLabel ID="hlDanger" runat="server" LabelType="Danger" Text="Danger" />
+            <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" Text="Campus" />
+            <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" Text="Type" />
+            <Rock:HighlightLabel ID="hlCustom" runat="server" LabelType="Custom" CustomClass="danger" Text="Custom" />
             </div>
 
             <h2>Rock:BootstrapButton</h2>
