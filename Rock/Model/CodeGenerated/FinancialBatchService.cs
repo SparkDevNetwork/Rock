@@ -88,7 +88,8 @@ namespace Rock.Model
             {
                 var target = new FinancialBatch();
                 target.Name = source.Name;
-               // target.BatchDate = source.BatchDate;
+                target.BatchStartDateTime = source.BatchStartDateTime;
+                target.BatchEndDateTime = source.BatchEndDateTime;
                 target.CreatedByPersonId = source.CreatedByPersonId;
                 target.Status = source.Status;
                 target.CampusId = source.CampusId;
@@ -97,6 +98,7 @@ namespace Rock.Model
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 
+            
                 return target;
             }
         }
