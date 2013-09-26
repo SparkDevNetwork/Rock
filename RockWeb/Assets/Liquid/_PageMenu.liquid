@@ -1,0 +1,8 @@
+﻿<li>
+    <a href="{{ PageMenu.url }}">{{ PageMenu.title }}</a>
+    {% if PageMenu.display-child-pages %}
+        <ul>
+            {% include 'PageMenu' with PageMenu.pages %}
+        </ul>
+    {% endif %}
+</li>
