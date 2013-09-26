@@ -45,7 +45,7 @@
 
                 // Bind tree events
                 $control.find('.treeview')
-                    .on('selected', function () {
+                    .on('rockTree:selected', function () {
                         var rockTree = $(this).data('rockTree'),
                             selectedNodes = rockTree.selectedNodes,
                             selectedIds = [],
