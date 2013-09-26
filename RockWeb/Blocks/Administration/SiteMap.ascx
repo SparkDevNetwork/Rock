@@ -13,6 +13,8 @@
             $(function () {
                 $('#pages')
                     .on('rockTree:selected', function (e, id) {
+                        // TODO: Redirect on select if page.
+                        // TODO: Open modal on select if block.
                     })
                     .rockTree();
             });
