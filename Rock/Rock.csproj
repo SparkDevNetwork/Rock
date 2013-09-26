@@ -475,6 +475,7 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
+    <Compile Include="Web\UI\Controls\HighlightLabel.cs" />
     <Compile Include="Web\UI\Controls\ILabeledControl.cs" />
     <Compile Include="Web\UI\Controls\IRequiredControl.cs" />
     <Compile Include="Web\UI\Controls\RockControlHelper.cs" />

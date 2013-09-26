@@ -38,21 +38,11 @@ namespace Rock.PersonProfile.Badge
         }
 
         /// <summary>
-        /// Gets the type of the badge.
+        /// Gets the badge label
         /// </summary>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public override string GetBadgeType( Person person )
-        {
-            return "Campus";
-        }
-
-        /// <summary>
-        /// Gets the text.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <returns></returns>
-        public override string GetText( Person person )
+        public override HighlightLabel GetLabel( Person person )
         {
             if ( ParentPersonBlock != null )
             {
@@ -60,6 +50,9 @@ namespace Rock.PersonProfile.Badge
                 var families = ParentPersonBlock.PersonGroups( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
                 if ( families != null )
                 {
+                    var label = new HighlightLabel();
+                    label.LabelType = LabelType.Campus;
+
                     var campusNames = new List<string>();
                     foreach ( int campusId in families
                         .Where( g => g.CampusId.HasValue )
@@ -67,11 +60,14 @@ namespace Rock.PersonProfile.Badge
                         .Distinct()
                         .ToList() )
                         campusNames.Add( Rock.Web.Cache.CampusCache.Read( campusId ).Name );
-                    return campusNames.OrderBy( n => n ).ToList().AsDelimited( ", " );
+
+                    label.Text = campusNames.OrderBy( n => n ).ToList().AsDelimited( ", " );
+
+                    return label;
                 }
             }
 
-            return string.Empty;
+            return null;
 
         }
 
