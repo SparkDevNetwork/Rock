@@ -2,14 +2,11 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Configuration;
 using System.Net;
-using System.Web.Services.Protocols;
-
-using CyberSource.Clients;
-using CyberSource.Clients.SoapWebReference;
-
+using System.ServiceModel;
 using Rock.Attribute;
+using Rock.CyberSource.Test;
+//using Rock.CyberSource.Live;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -23,11 +20,33 @@ namespace Rock.CyberSource
     [Export( typeof( GatewayComponent ) )]
     [ExportMetadata( "ComponentName", "CyberSource" )]
 
-    [TextField( "CyberSource Merchant ID", "The CyberSource Merchant ID", true, "", "", 0, "MerchantID" )]
+    [TextField( "Merchant ID", "The CyberSource merchant ID (case-sensitive)", true, "", "", 0, "MerchantID" )]
+    [MemoField( "Transaction Key", "The CyberSource transaction key", true, "", "", 0, "TransactionKey" )]
     [CustomRadioListField( "Mode", "Mode to use for transactions", "Live,Test", true, "Live", "", 4 )]
     [TimeField( "Batch Process Time", "The Batch processing cut-off time.  When batches are created by Rock, they will use this for the start/stop when creating new batches", false, "00:00:00", "", 5 )]
     public class Gateway : GatewayComponent
     {
+        /// <summary>
+        /// Gets the gateway URL.
+        /// </summary>
+        /// <value>
+        /// The gateway URL.
+        /// </value>
+        private string GatewayUrl
+        {
+            get
+            {
+                if ( GetAttributeValue( "Mode" ).Equals( "Live", StringComparison.CurrentCultureIgnoreCase ) )
+                {
+                    return "https://ics2ws.ic3.com/commerce/1.x/transactionProcessor/CyberSourceTransaction_1.91.wsdl";
+                }
+                else
+                {
+                    return "https://ics2wstest.ic3.com/commerce/1.x/transactionProcessor/CyberSourceTransaction_1.91.wsdl";
+                }
+            }
+        }
+
         /// <summary>
         /// Gets the supported payment schedules.
         /// </summary>
@@ -72,12 +91,21 @@ namespace Rock.CyberSource
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
         public override FinancialTransaction Charge( PaymentInfo paymentInfo, out string errorMessage )
-        {
-            RequestMessage request = new RequestMessage();
+        {                        
 
             int newspringTransactionNumber = 1;
-            request.merchantID = "newspringcc";
+            
+
+            RequestMessage request = new RequestMessage();            
+            request.merchantID = GetAttributeValue( "MerchantID" );            
             request.merchantReferenceCode = newspringTransactionNumber.ToString();
+            request.clientLibraryVersion = Environment.Version.ToString();
+            request.clientEnvironment =
+                Environment.OSVersion.Platform +
+                Environment.OSVersion.Version.ToString() + "-CLR" +
+                Environment.Version.ToString();
+
+
             request.ccAuthService = new CCAuthService();
             request.ccAuthService.run = "true";
             request.ccCaptureService = new CCCaptureService();
@@ -86,21 +114,27 @@ namespace Rock.CyberSource
             BillTo billTo = new BillTo();
             billTo.firstName = "Jane";
             billTo.lastName = "Smith";
-            billTo.email = "david.stevens@newspring.cc";
+            billTo.email = "null@cybersource.com";
             billTo.street1 = "1 Linwa Blvd";
             billTo.city = "Anderson";
             billTo.state = "SC";
             billTo.postalCode = "29621";
-            billTo.country = "USA";
+            billTo.country = "US";
+            //billTo.ipAddress = Request.ServerVariables["REMOTE_ADDR"];
             request.billTo = billTo;
 
             Card card = new Card();
             card.accountNumber = "4111111111111111";
             card.cardType = "Visa";
-            card.expirationMonth = "8";
-            card.expirationYear = "2015";
+            card.expirationMonth = "12";
+            card.expirationYear = "2020";
             request.card = card;
 
+            PurchaseTotals purchaseTotals = new PurchaseTotals();
+            purchaseTotals.currency = "USD";
+            request.purchaseTotals = purchaseTotals;
+
+            // foreach item purchased
             // there is one item in this sample
             request.item = new Item[1];
             Item item = new Item();
@@ -108,38 +142,32 @@ namespace Rock.CyberSource
             item.unitPrice = "29.95";
             item.totalAmount = "29.95";
             request.item[0] = item;
-            request.purchaseTotals.currency = "USD";
+
+            string transactionkey = GetAttributeValue( "TransactionKey" );
 
             try
             {
-                ReplyMessage reply = SoapClient.RunTransaction( request );
+                TransactionProcessorClient client = new TransactionProcessorClient();
+                client.Endpoint.Address = new EndpointAddress( GatewayUrl );
+                client.ChannelFactory.Credentials.UserName.UserName = request.merchantID;
+                client.ChannelFactory.Credentials.UserName.Password = transactionkey;                
+
+                ReplyMessage reply = client.runTransaction( request );
                 //SaveOrderState();
-                // Using the Decision and Reason Code describes the ProcessReply
-                // method.
+                
                 ProcessReply( reply );
+
             }
-            catch ( SignException se )
+            catch ( TimeoutException e )
             {
                 //SaveOrderState();
-                Console.WriteLine( se.ToString() );
+                Console.WriteLine( "TimeoutException: " + e.Message + "\n" + e.StackTrace );
             }
-            catch ( SoapHeaderException she )
+            catch ( FaultException e )
             {
                 //SaveOrderState();
-                Console.WriteLine( she.ToString() );
-            }
-            catch ( SoapBodyException sbe )
-            {
-                //SaveOrderState();
-                /*
-                 * Some types of SoapBodyException indicate that the transaction may have been
-                 * completed by CyberSource. The sample code shows how to identify these exceptions.
-                 * If you receive such an exception, and your request included a payment service,
-                 * you should use the CyberSource transaction search screens to determine whether
-                 * the transaction was processed.
-                 */
-                Console.WriteLine( sbe.ToString() );
-            }
+                Console.WriteLine( "FaultException: " + e.Message + "\n" + e.StackTrace );
+            }            
             catch ( WebException we )
             {
                 //SaveOrderState();
