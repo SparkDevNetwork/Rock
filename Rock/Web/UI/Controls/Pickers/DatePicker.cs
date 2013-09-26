@@ -21,6 +21,8 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
 
+            this.AppendText = "<i class='icon-calendar'></i>";
+
             if ( string.IsNullOrWhiteSpace( this.SourceTypeName ) )
             {
                 this.LabelTextFromPropertyName = false;
@@ -70,5 +72,6 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
+
     }
 }

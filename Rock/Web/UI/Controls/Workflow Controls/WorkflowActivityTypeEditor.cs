@@ -152,7 +152,7 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
             lbDeleteActivityType = new LinkButton();
             lbDeleteActivityType.CausesValidation = false;
             lbDeleteActivityType.ID = this.ID + "_lbDeleteActivityType";
-            lbDeleteActivityType.CssClass = "btn btn-mini btn-danger";
+            lbDeleteActivityType.CssClass = "btn btn-xs btn-danger";
             lbDeleteActivityType.Click += lbDeleteActivityType_Click;
             lbDeleteActivityType.Controls.Add( new LiteralControl { Text = "<i class='icon-remove'></i>" } );
 
@@ -197,7 +197,7 @@ javascript:
 
             lbAddActionType = new LinkButton();
             lbAddActionType.ID = this.ID + "_lbAddAction";
-            lbAddActionType.CssClass = "btn btn-mini";
+            lbAddActionType.CssClass = "btn btn-xs";
             lbAddActionType.Click += lbAddActionType_Click;
             lbAddActionType.CausesValidation = false;
             lbAddActionType.Controls.Add( new LiteralControl { Text = "<i class='icon-plus'></i> Add Action" } );
@@ -253,8 +253,8 @@ javascript:
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.WriteLine( "<a class='btn btn-mini workflow-activity-reorder'><i class='icon-reorder'></i></a>" );
-            writer.WriteLine( "<a class='btn btn-mini'><i class='workflow-activity-state icon-chevron-down'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-xs workflow-activity-reorder'><i class='icon-reorder'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-xs'><i class='workflow-activity-state icon-chevron-down'></i></a>" );
 
             if ( IsDeleteEnabled )
             {

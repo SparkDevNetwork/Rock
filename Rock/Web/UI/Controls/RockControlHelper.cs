@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
+
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -23,7 +24,7 @@ namespace Rock.Web.UI.Controls
             rockControl.HelpBlock = new HelpBlock();
         }
 
-        /// <summary>
+        /// <summary> 
         /// Creates the child controls.
         /// </summary>
         /// <param name="rockControl">The rock control.</param>
@@ -62,7 +63,10 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "form-group" + ( rockControl.IsValid ? "" : " error" ) + ( rockControl.Required ? " required" : "" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( "for", rockControl.ClientID );
+                if ( !( rockControl is RockLiteral ) )
+                {
+                    writer.AddAttribute( "for", rockControl.ClientID );
+                }
                 writer.RenderBeginTag( HtmlTextWriterTag.Label );
                 writer.Write( rockControl.Label );
 
@@ -96,5 +100,30 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
             }
         }
+
+        public static void RenderControl( string label, Control control, HtmlTextWriter writer )
+        {
+            bool renderLabel = ( !string.IsNullOrEmpty( label ) );
+
+            if ( renderLabel )
+            {
+                writer.AddAttribute( "class", "form-group" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( "for", control.ClientID );
+                writer.RenderBeginTag( HtmlTextWriterTag.Label );
+                writer.Write( label );
+                writer.RenderEndTag();  // label
+
+                control.RenderControl( writer );
+
+                writer.RenderEndTag();  // form-group
+            }
+            else
+            {
+                control.RenderControl( writer );
+            }
+        }
+
     }
 }
