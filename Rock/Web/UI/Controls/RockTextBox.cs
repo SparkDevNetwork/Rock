@@ -171,6 +171,18 @@ namespace Rock.Web.UI.Controls
             set { ViewState["AppendText"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the placeholder text to display inside textbox when it is empty
+        /// </summary>
+        /// <value>
+        /// The placeholder text
+        /// </value>
+        public string Placeholder
+        {
+            get { return ViewState["Placeholder"] as string ?? string.Empty; }
+            set { ViewState["Placeholder"] = value; }
+        }
+
         #endregion
 
         /// <summary>
@@ -235,6 +247,10 @@ namespace Rock.Web.UI.Controls
             }
 
             ( (WebControl)this ).AddCssClass( "form-control" );
+            if (!string.IsNullOrWhiteSpace(Placeholder))
+            {
+                this.Attributes["placeholder"] = Placeholder;
+            }
             base.RenderControl( writer );
 
             if ( !string.IsNullOrWhiteSpace( AppendText ) )
