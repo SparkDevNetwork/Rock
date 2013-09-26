@@ -528,7 +528,6 @@ namespace Rock.Web.UI.Controls
             <div class='picker-actions'>
 ";
                 writer.Write( controlHtmlFormatMiddle, this.ID );
-
                 _btnSelect.RenderControl( writer );
 
                 string controlHtmlFormatEnd = @"
@@ -606,7 +605,6 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Selecteds the values as int.
         /// </summary>
-        /// <param name="noneAsNull">if set to <c>true</c> [none as null].</param>
         /// <returns></returns>
         public IEnumerable<int> SelectedValuesAsInt()
         {
@@ -619,7 +617,8 @@ namespace Rock.Web.UI.Controls
 
             foreach ( string keyVal in ItemIds )
             {
-                int id = int.MinValue;
+                int id;
+
                 if ( int.TryParse( keyVal, out id ) )
                 {
                     ids.Add( id );
