@@ -87,12 +87,12 @@ namespace Rock.Field.Types
         {
             List<Control> controls = new List<Control>();
 
-            TextBox tbTrue = new TextBox();
+            RockTextBox tbTrue = new RockTextBox();
             controls.Add( tbTrue );
             tbTrue.AutoPostBack = true;
             tbTrue.TextChanged += OnQualifierUpdated;
 
-            TextBox tbFalse = new TextBox();
+            RockTextBox tbFalse = new RockTextBox();
             controls.Add( tbFalse );
             tbFalse.AutoPostBack = true;
             tbFalse.TextChanged += OnQualifierUpdated;
