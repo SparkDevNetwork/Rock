@@ -130,7 +130,8 @@ namespace Rock.Web.UI.Controls
         /// <exception cref="System.NotImplementedException"></exception>
         protected override void SetValuesOnSelect()
         {
-            var items = new FinancialAccountService().Queryable().Where( i => ItemIds.Contains( i.ToString() ) );
+            var itemIds = ItemIds.Select( int.Parse );
+            var items = new FinancialAccountService().Queryable().Where( i => itemIds.Contains( i.Id ) );
             this.SetValues( items );
         }
 
