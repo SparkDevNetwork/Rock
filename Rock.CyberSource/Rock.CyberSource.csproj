@@ -4,7 +4,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{EE799010-1B5C-48B6-BC9A-9ADE0B7A5852}</ProjectGuid>
+    <ProjectGuid>{F68590B1-0090-400C-B5AA-89078E1DCFC6}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Rock.CyberSource</RootNamespace>
@@ -30,9 +30,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CyberSource.Base">
-      <HintPath>..\libs\CyberSource\CyberSource.Base.dll</HintPath>
-    </Reference>
     <Reference Include="CyberSource.Clients">
       <HintPath>..\libs\CyberSource\CyberSource.Clients.dll</HintPath>
     </Reference>
@@ -59,10 +56,12 @@
       <Name>Rock</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <WCFMetadata Include="Service References\" />
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>copy /Y "$(TargetDir)$(ProjectName).dll" "$(SolutionDir)RockWeb\Plugins\$(ProjectName).dll"
+copy /Y "$(TargetDir)$(ProjectName).pdb" "$(SolutionDir)RockWeb\Plugins\$(ProjectName).pdb"
+copy /Y "$(TargetDir)CyberSource.Clients.dll" "$(SolutionDir)RockWeb\Plugins\CyberSource.Clients.dll"</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
