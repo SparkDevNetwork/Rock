@@ -1058,8 +1058,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PreBuildEvent>IF EXIST $(TargetPath).LOCKED  (del $(TargetPath).LOCKED)
-ELSE (IF EXIST $(TargetPath) (move $(TargetPath) $(TargetPath).LOCKED))</PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

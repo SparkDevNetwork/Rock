@@ -1,17 +1,12 @@
-﻿//
-// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
-// SHAREALIKE 3.0 UNPORTED LICENSE:
-// http://creativecommons.org/licenses/by-nc-sa/3.0/
-//
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Data;
+using System.Net;
+using System.Web.Services.Protocols;
 
-using PayPal.Payments.Common.Utility;
-using PayPal.Payments.DataObjects;
-using PayPal.Payments.Transactions;
+using CyberSource.Clients;
+using CyberSource.Clients.SoapWebReference;
 
 using Rock.Attribute;
 using Rock.Financial;
@@ -27,17 +22,11 @@ namespace Rock.CyberSource
     [Export( typeof( GatewayComponent ) )]
     [ExportMetadata( "ComponentName", "CyberSource" )]
 
-    [TextField( "PayPal Partner", "", true, "", "", 0, "Partner" )]
-    [TextField( "PayPal Merchant Login", "", true, "", "", 1, "Vendor" )]
-    [TextField( "PayPal User", "", false, "", "", 2, "User" )]
-    [TextField( "PayPal Password", "", true, "", "", 3, "Password" )]
+    [TextField( "CyberSource Merchant ID", "The CyberSource Merchant ID", true, "", "", 0, "MerchantID" )]
     [CustomRadioListField( "Mode", "Mode to use for transactions", "Live,Test", true, "Live", "", 4 )]
-    [TimeField( "Batch Process Time", "The Paypal Batch processing cut-off time.  When batches are created by Rock, they will use this for the start/stop when creating new batches", false, "00:00:00", "", 5)]
-
+    [TimeField( "Batch Process Time", "The Batch processing cut-off time.  When batches are created by Rock, they will use this for the start/stop when creating new batches", false, "00:00:00", "", 5 )]
     public class Gateway : GatewayComponent
     {
-        #region Gateway Component Implementation
-
         /// <summary>
         /// Gets the supported payment schedules.
         /// </summary>
@@ -54,6 +43,7 @@ namespace Rock.CyberSource
                 values.Add( DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY ) );
                 values.Add( DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY ) );
                 values.Add( DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY ) );
+                values.Add( DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_YEARLY ) );
                 return values;
             }
         }
@@ -66,7 +56,7 @@ namespace Rock.CyberSource
             get
             {
                 var timeValue = new TimeSpan( 0 );
-                if ( TimeSpan.TryParse( GetAttributeValue("BatchProcessTime"), out timeValue ) )
+                if ( TimeSpan.TryParse( GetAttributeValue( "BatchProcessTime" ), out timeValue ) )
                 {
                     return timeValue;
                 }
@@ -82,59 +72,158 @@ namespace Rock.CyberSource
         /// <returns></returns>
         public override FinancialTransaction Charge( PaymentInfo paymentInfo, out string errorMessage )
         {
+            RequestMessage request = new RequestMessage();
+
+            int newspringTransactionNumber = 1;
+            request.merchantID = "newspringcc";
+            request.merchantReferenceCode = newspringTransactionNumber.ToString();
+            request.ccAuthService = new CCAuthService();
+            request.ccAuthService.run = "true";
+            request.ccCaptureService = new CCCaptureService();
+            request.ccCaptureService.run = "true";
+
+            BillTo billTo = new BillTo();
+            billTo.firstName = "Jane";
+            billTo.lastName = "Smith";
+            billTo.email = "david.stevens@newspring.cc";
+            billTo.street1 = "1 Linwa Blvd";
+            billTo.city = "Anderson";
+            billTo.state = "SC";
+            billTo.postalCode = "29621";
+            billTo.country = "USA";
+            request.billTo = billTo;
+
+            Card card = new Card();
+            card.accountNumber = "4111111111111111";
+            card.cardType = "Visa";
+            card.expirationMonth = "8";
+            card.expirationYear = "2015";
+            request.card = card;
+            
+            // there is one item in this sample
+            request.item = new Item[1];
+            Item item = new Item();
+            item.id = "0";
+            item.unitPrice = "29.95";
+            item.totalAmount = "29.95";
+            request.item[0] = item;
+            request.purchaseTotals.currency = "USD";
+
+            try
+            {
+                ReplyMessage reply = SoapClient.RunTransaction( request );
+                //SaveOrderState();
+                // Using the Decision and Reason Code describes the ProcessReply
+                // method.
+                ProcessReply( reply );
+            }
+            catch ( SignException se )
+            {
+                //SaveOrderState();
+                Console.WriteLine( se.ToString() );
+            }
+            catch ( SoapHeaderException she )
+            {
+                //SaveOrderState();
+                Console.WriteLine( she.ToString() );
+            }
+            catch ( SoapBodyException sbe )
+            {
+                //SaveOrderState();
+                /*
+                 * Some types of SoapBodyException indicate that the transaction may have been
+                 * completed by CyberSource. The sample code shows how to identify these exceptions.
+                 * If you receive such an exception, and your request included a payment service,
+                 * you should use the CyberSource transaction search screens to determine whether
+                 * the transaction was processed.
+                 */
+                Console.WriteLine( sbe.ToString() );
+            }
+            catch ( WebException we )
+            {
+                //SaveOrderState();
+                /*
+                 * Some types of WebException indicate that the transaction may have been
+                 * completed by CyberSource. The sample code shows how to identify these exceptions.
+                 * If you receive such an exception, and your request included a payment service,
+                 * you should use the CyberSource transaction search screens to determine whether
+                 * the transaction was processed.
+                 */
+                Console.WriteLine( we.ToString() );
+            }
+
             errorMessage = string.Empty;
-            Response ppResponse = null;
-
-            var invoice = GetInvoice( paymentInfo );
-            var tender = GetTender( paymentInfo );
-
-            if ( tender != null )
-            {
-                if ( paymentInfo is ReferencePaymentInfo )
-                {
-                    var reference = paymentInfo as ReferencePaymentInfo;
-                    var ppTransaction = new ReferenceTransaction( "Sale", reference.ReferenceNumber, GetUserInfo(), GetConnection(), invoice, tender, PayflowUtility.RequestId );
-                    ppResponse = ppTransaction.SubmitTransaction();
-                }
-                else
-                {
-                    var ppTransaction = new SaleTransaction( GetUserInfo(), GetConnection(), invoice, tender, PayflowUtility.RequestId );
-                    ppResponse = ppTransaction.SubmitTransaction();
-                }
-            }
-            else
-            {
-                errorMessage = "Could not create tender from PaymentInfo";
-            }
-
-            if ( ppResponse != null )
-            {
-                TransactionResponse txnResponse = ppResponse.TransactionResponse;
-                if ( txnResponse != null )
-                {
-                    if ( txnResponse.Result == 0 ) // Success
-                    {
-                        var transaction = new FinancialTransaction();
-                        transaction.TransactionCode = txnResponse.Pnref;
-                        return transaction;
-                    }
-                    else
-                    {
-                        errorMessage = string.Format( "[{0}] {1}", txnResponse.Result, txnResponse.RespMsg );
-                    }
-                }
-                else
-                {
-                    errorMessage = "Invalid transaction response from the financial gateway";
-                }
-            }
-            else
-            {
-                errorMessage = "Invalid response from the financial gateway.";
-            }
-
             return null;
         }
+
+        private static bool ProcessReply( ReplyMessage reply )
+        {
+            string template = GetTemplate( reply.decision.ToUpper() );
+            string content = GetContent( reply );
+            // This example writes the message to the console. Choose an appropriate display
+            // method for your own application.
+            Console.WriteLine( template, content );
+            return false;
+        }
+        private static string GetTemplate( string decision )
+        {
+            // Retrieves the text that corresponds to the decision.
+            if ( "ACCEPT".Equals( decision ) )
+            {
+                return ( "The order succeeded.{0}" );
+            }
+            if ( "REJECT".Equals( decision ) )
+            {
+                return ( "Your order was not approved.{0}" );
+            }
+
+            // ERROR, or an unknown decision
+            return ( "Your order could not be completed at this time.{0}" +
+                    "\nPlease try again later." );
+        }
+        private static string GetContent( ReplyMessage reply )
+        {
+            /*
+             * Uses the reason code to retrieve more details to add to the template.
+             * The messages returned in this example are meant to demonstrate how to retrieve
+             * the reply fields. Your application should display user-friendly messages.
+             */
+            int reasonCode = int.Parse( reply.reasonCode );
+            switch ( reasonCode )
+            {
+                // Success
+                case 100:
+                    return ( "\nRequest ID: " + reply.requestID );
+                // Missing field or fields
+                case 101:
+                    return ( "\nThe following required fields are missing: " +
+                            EnumerateValues( reply.missingField ) );
+                // Invalid field or fields
+                case 102:
+                    return ( "\nThe following fields are invalid: " +
+                            EnumerateValues( reply.invalidField ) );
+                // Insufficient funds
+                case 204:
+                    return ( "\nInsufficient funds in the account. Please use a " +
+                            "different card or select another form of payment." );
+                // Add additional reason codes here that you must handle more specifically.
+                default:
+                    // For all other reason codes, such as unrecognized reason codes or codes
+                    // that do not require special handling, return an empty string.
+                    return ( String.Empty );
+            }
+        }
+        private static string EnumerateValues( string[] array )
+        {
+            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+            foreach ( string val in array )
+            {
+                sb.Append( val + "\n" );
+            }
+            return ( sb.ToString() );
+        }
+
+        #region Scheduled Payments
 
         /// <summary>
         /// Adds the scheduled payment.
@@ -146,63 +235,6 @@ namespace Rock.CyberSource
         public override FinancialScheduledTransaction AddScheduledPayment( PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage )
         {
             errorMessage = string.Empty;
-
-            var recurring = GetReccurring( schedule );
-
-            if ( paymentInfo is CreditCardPaymentInfo )
-            {
-                recurring.OptionalTrx = "A";
-            }
-
-            var ppTransaction = new RecurringAddTransaction( GetUserInfo(), GetConnection(), GetInvoice( paymentInfo ), GetTender( paymentInfo ), 
-                recurring, PayflowUtility.RequestId );
-
-            if ( paymentInfo is ReferencePaymentInfo )
-            {
-                var reference = paymentInfo as ReferencePaymentInfo;
-                ppTransaction.OrigId = reference.ReferenceNumber;
-            }
-            var ppResponse = ppTransaction.SubmitTransaction();
-
-            if ( ppResponse != null )
-            {
-                TransactionResponse txnResponse = ppResponse.TransactionResponse;
-                if ( txnResponse != null )
-                {
-                    if ( txnResponse.Result == 0 ) // Success
-                    {
-                        RecurringResponse recurringResponse = ppResponse.RecurringResponse;
-
-                        if ( recurringResponse != null )
-                        {
-                            var scheduledTransaction = new FinancialScheduledTransaction();
-                            scheduledTransaction.TransactionCode = recurringResponse.TrxPNRef;
-                            scheduledTransaction.GatewayScheduleId = recurringResponse.ProfileId;
-
-                            GetScheduledPaymentStatus( scheduledTransaction, out errorMessage );
-                            return scheduledTransaction;
-
-                        }
-                        else
-                        {
-                            errorMessage = "Invalid recurring response from the financial gateway";
-                        }
-                    }
-                    else
-                    {
-                        errorMessage = string.Format( "[{0}] {1}", txnResponse.Result, txnResponse.RespMsg );
-                    }
-                }
-                else
-                {
-                    errorMessage = "Invalid transaction response from the financial gateway";
-                }
-            }
-            else
-            {
-                errorMessage = "Invalid response from the financial gateway.";
-            }
-
             return null;
         }
 
@@ -216,52 +248,6 @@ namespace Rock.CyberSource
         public override bool UpdateScheduledPayment( FinancialScheduledTransaction transaction, PaymentInfo paymentInfo, out string errorMessage )
         {
             errorMessage = string.Empty;
-
-            RecurringModifyTransaction ppTransaction = null;
-
-            if ( paymentInfo != null )
-            {
-                ppTransaction = new RecurringModifyTransaction( GetUserInfo(), GetConnection(), GetReccurring( transaction ), GetInvoice( paymentInfo ), GetTender( paymentInfo ), PayflowUtility.RequestId );
-            }
-            else
-            {
-                ppTransaction = new RecurringModifyTransaction( GetUserInfo(), GetConnection(), GetReccurring( transaction ), PayflowUtility.RequestId );
-            }
-
-            var ppResponse = ppTransaction.SubmitTransaction();
-
-            if ( ppResponse != null )
-            {
-                TransactionResponse txnResponse = ppResponse.TransactionResponse;
-                if ( txnResponse != null )
-                {
-                    if ( txnResponse.Result == 0 ) // Success
-                    {
-                        RecurringResponse recurringResponse = ppResponse.RecurringResponse;
-                        if ( recurringResponse != null )
-                        {
-                            return true;
-                        }
-                        else
-                        {
-                            errorMessage = "Invalid recurring response from the financial gateway";
-                        }
-                    }
-                    else
-                    {
-                        errorMessage = string.Format( "[{0}] {1}", txnResponse.Result, txnResponse.RespMsg );
-                    }
-                }
-                else
-                {
-                    errorMessage = "Invalid transaction response from the financial gateway";
-                }
-            }
-            else
-            {
-                errorMessage = "Invalid response from the financial gateway.";
-            }
-
             return false;
         }
 
@@ -274,38 +260,6 @@ namespace Rock.CyberSource
         public override bool CancelScheduledPayment( FinancialScheduledTransaction transaction, out string errorMessage )
         {
             errorMessage = string.Empty;
-
-            var ppTransaction = new RecurringCancelTransaction( GetUserInfo(), GetConnection(), GetReccurring(transaction), PayflowUtility.RequestId );
-            var ppResponse = ppTransaction.SubmitTransaction();
-
-            if ( ppResponse != null )
-            {
-                TransactionResponse txnResponse = ppResponse.TransactionResponse;
-                if ( txnResponse != null )
-                {
-                    if ( txnResponse.Result == 0 ) // Success
-                    {
-                        RecurringResponse recurringResponse = ppResponse.RecurringResponse;
-                        if ( recurringResponse != null )
-                        {
-                            return true;
-                        }
-                    }
-                    else
-                    {
-                        errorMessage = string.Format( "[{0}] {1}", txnResponse.Result, txnResponse.RespMsg );
-                    }
-                }
-                else
-                {
-                    errorMessage = "Invalid transaction response from the financial gateway";
-                }
-            }
-            else
-            {
-                errorMessage = "Invalid response from the financial gateway.";
-            }
-
             return false;
         }
 
@@ -318,44 +272,6 @@ namespace Rock.CyberSource
         public override bool GetScheduledPaymentStatus( FinancialScheduledTransaction transaction, out string errorMessage )
         {
             errorMessage = string.Empty;
-
-            var ppTransaction = new RecurringInquiryTransaction( GetUserInfo(), GetConnection(), GetReccurring( transaction ), PayflowUtility.RequestId );
-            var ppResponse = ppTransaction.SubmitTransaction();
-
-            if ( ppResponse != null )
-            {
-                TransactionResponse txnResponse = ppResponse.TransactionResponse;
-                if ( txnResponse != null )
-                {
-                    if ( txnResponse.Result == 0 ) // Success
-                    {
-                        RecurringResponse recurringResponse = ppResponse.RecurringResponse;
-                        if ( recurringResponse != null )
-                        {
-                            transaction.IsActive = recurringResponse.Status.ToUpper() == "ACTIVE";
-                            transaction.StartDate = GetDate( recurringResponse.Start ) ?? transaction.StartDate;
-                            transaction.NextPaymentDate = GetDate( recurringResponse.NextPayment ) ?? transaction.NextPaymentDate;
-                            transaction.NumberOfPayments = recurringResponse.Term.AsInteger( false ) ?? transaction.NumberOfPayments;
-                            transaction.LastStatusUpdateDateTime = DateTime.Now;
-                            return true;
-                        }
-                        return true;
-                    }
-                    else
-                    {
-                        errorMessage = string.Format( "[{0}] {1}", txnResponse.Result, txnResponse.RespMsg );
-                    }
-                }
-                else
-                {
-                    errorMessage = "Invalid transaction response from the financial gateway";
-                }
-            }
-            else
-            {
-                errorMessage = "Invalid response from the financial gateway.";
-            }
-
             return false;
         }
 
@@ -368,227 +284,14 @@ namespace Rock.CyberSource
         /// <returns></returns>
         public override List<Payment> GetPayments( DateTime startDate, DateTime endDate, out string errorMessage )
         {
-            var reportingApi = new Reporting.Api(
-                GetAttributeValue( "User" ),
-                GetAttributeValue( "Vendor" ),
-                GetAttributeValue( "Partner" ),
-                GetAttributeValue( "Password" ) );
-
-            var reportParams = new Dictionary<string, string>();
-            reportParams.Add( "start_date", startDate.ToString( "yyyy-MM-dd HH:mm:ss" ) );
-            reportParams.Add( "end_date", endDate.ToString( "yyyy-MM-dd HH:mm:ss" ) );
-
-            DataTable dt = reportingApi.GetReport( "RecurringBillingReport", reportParams, out errorMessage );
-            if ( dt != null )
-            {
-                var txns = new List<Payment>();
-
-                // The Recurring Billing Report items does not include the amounts for each transaction, so need 
-                // to do a transactionIDSearch to get the amount for each transaction
-
-                reportParams = new Dictionary<string, string>();
-                reportParams.Add( "transaction_id", string.Empty );
-
-                foreach ( DataRow row in dt.Rows )
-                {
-                    reportParams["transaction_id"] = row["Transaction ID"].ToString();
-                    DataTable dtTxn = reportingApi.GetSearch( "TransactionIDSearch", reportParams, out errorMessage );
-                    if ( dtTxn != null && dtTxn.Rows.Count == 1 )
-                    {
-                        var payment = new Payment();
-
-                        decimal amount = decimal.MinValue;
-                        payment.Amount = decimal.TryParse( dtTxn.Rows[0]["Amount"].ToString(), out amount ) ? (amount / 100) : 0.0M;
-
-                        var time = DateTime.MinValue;
-                        payment.TransactionDateTime = DateTime.TryParse( row["Time"].ToString(), out time ) ? time : DateTime.MinValue;
-
-                        payment.TransactionCode = row["Transaction ID"].ToString();
-                        payment.GatewayScheduleId = row["Profile ID"].ToString();
-                        payment.ScheduleActive = row["Status"].ToString() == "Active";
-                        txns.Add( payment );
-                    }
-                    else
-                    {
-                        errorMessage = "The TransactionIDSearch report did not return a value for transaction: " + row["Transaction ID"].ToString();
-                        return null;
-                    }
-                }
-
-                return txns;
-            }
-
-            errorMessage = "The RecurringBillingReport report did not return any data";
+            errorMessage = string.Empty;
             return null;
         }
 
-        #endregion
 
-        #region CyberSource Object Helper Methods
-
-        private string GatewayUrl
-        {
-            get
-            {
-                if ( GetAttributeValue( "Mode" ).Equals( "Live", StringComparison.CurrentCultureIgnoreCase ) )
-                {
-                    return "payflowpro.paypal.com";
-                }
-                else
-                {
-                    return "pilot-payflowpro.paypal.com";
-                }
-            }
-        }
-
-        private PayflowConnectionData GetConnection()
-        {
-            return new PayflowConnectionData( GatewayUrl );
-        }
-
-        private UserInfo GetUserInfo()
-        {
-            return new UserInfo(
-                GetAttributeValue( "User" ),
-                GetAttributeValue( "Vendor" ),
-                GetAttributeValue( "Partner" ),
-                GetAttributeValue( "Password" ) );
-        }
-
-        private Invoice GetInvoice( PaymentInfo paymentInfo )
-        {
-            var ppBillingInfo = new BillTo();
-            
-            ppBillingInfo.FirstName = paymentInfo.FirstName;
-            ppBillingInfo.LastName = paymentInfo.LastName;
-            ppBillingInfo.Email = paymentInfo.Email;
-            ppBillingInfo.PhoneNum = paymentInfo.Phone;
-            ppBillingInfo.Street = paymentInfo.Street;
-            ppBillingInfo.State = paymentInfo.State;
-            ppBillingInfo.Zip = paymentInfo.Zip;
-
-            if ( paymentInfo is CreditCardPaymentInfo )
-            {
-                var cc = paymentInfo as CreditCardPaymentInfo;
-                ppBillingInfo.Street = cc.BillingStreet;
-                ppBillingInfo.City = cc.BillingCity;
-                ppBillingInfo.State = cc.BillingState;
-                ppBillingInfo.Zip = cc.BillingZip;
-            }
-
-            var ppAmount = new Currency( paymentInfo.Amount );
-
-            var ppInvoice = new Invoice();
-            ppInvoice.Amt = ppAmount;
-            ppInvoice.BillTo = ppBillingInfo;
-
-            return ppInvoice;
-        }
-
-        private BaseTender GetTender( PaymentInfo paymentInfo )
-        {
-            if (paymentInfo is CreditCardPaymentInfo)
-            {
-                var cc = paymentInfo as CreditCardPaymentInfo;
-                var ppCreditCard = new CreditCard( cc.Number, cc.ExpirationDate.ToString( "MMyy" ) );
-                ppCreditCard.Cvv2 = cc.Code;
-                return new CardTender( ppCreditCard );
-            }
-
-            if ( paymentInfo is ACHPaymentInfo )
-            {
-                var ach = paymentInfo as ACHPaymentInfo;
-                var ppBankAccount = new BankAcct( ach.BankAccountNumber, ach.BankRoutingNumber );
-                ppBankAccount.AcctType = ach.AccountType == BankAccountType.Checking ? "C" : "S";
-                ppBankAccount.Name = ach.BankName;
-                return new ACHTender( ppBankAccount );
-            }
-
-            if ( paymentInfo is SwipePaymentInfo )
-            {
-                var swipe = paymentInfo as SwipePaymentInfo;
-                var ppSwipeCard = new SwipeCard( swipe.SwipeInfo );
-                return new CardTender( ppSwipeCard );
-            }
-
-            if ( paymentInfo is ReferencePaymentInfo )
-            {
-                var reference = paymentInfo as ReferencePaymentInfo;
-                if ( reference.CurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) ) )
-                {
-                    return new ACHTender( (BankAcct)null );
-                }
-                else
-                {
-                    return new CardTender( (CreditCard)null );
-                }
-            }
-            return null;
-        }
-
-        private RecurringInfo GetReccurring( PaymentSchedule schedule )
-        {
-            var ppRecurringInfo = new RecurringInfo();
-
-            ppRecurringInfo.ProfileName = schedule.PersonId.ToString();
-            ppRecurringInfo.Start = schedule.StartDate.ToString( "MMddyyyy" );
-            SetPayPeriod( ppRecurringInfo, schedule.TransactionFrequencyValue );
-
-            return ppRecurringInfo;
-        }
-
-        private RecurringInfo GetReccurring( FinancialScheduledTransaction schedule )
-        {
-            var ppRecurringInfo = new RecurringInfo();
-            
-            ppRecurringInfo.OrigProfileId = schedule.GatewayScheduleId;
-            ppRecurringInfo.Start = schedule.StartDate.ToString( "MMddyyyy" );
-            if ( schedule.TransactionFrequencyValueId > 0 )
-            {
-                SetPayPeriod( ppRecurringInfo, DefinedValueCache.Read( schedule.TransactionFrequencyValueId ) );
-            }
-
-            return ppRecurringInfo;
-        }
-
-        private void SetPayPeriod( RecurringInfo recurringInfo, DefinedValueCache transactionFrequencyValue )
-        {
-            var selectedFrequencyGuid = transactionFrequencyValue.Guid.ToString().ToUpper();
-            switch ( selectedFrequencyGuid )
-            {
-                case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME:
-                    recurringInfo.PayPeriod = "YEAR";
-                    recurringInfo.Term = 1;
-                    break;
-                case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY:
-                    recurringInfo.PayPeriod = "WEEK";
-                    break;
-                case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY:
-                    recurringInfo.PayPeriod = "BIWK";
-                    break;
-                case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY:
-                    recurringInfo.PayPeriod = "SMMO";
-                    break;
-                case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY:
-                    recurringInfo.PayPeriod = "MONT";
-                    break;
-            }
-        }
-
-        private DateTime? GetDate( string date )
-        {
-            DateTime dt = DateTime.MinValue;
-            if (DateTime.TryParseExact( date, "MMddyyyy", null, System.Globalization.DateTimeStyles.None, out dt ))
-            {
-                return dt;
-            }
-            else
-            {
-                return null;
-            }
-        }
-
-        #endregion
 
     }
 }
+
+
+        #endregion
