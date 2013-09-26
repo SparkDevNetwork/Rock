@@ -16,17 +16,55 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// The label
         /// </summary>
-        private Literal label;
+        private Literal _label;
 
         /// <summary>
         /// The lower value 
         /// </summary>
-        private DatePicker tbLowerValue;
+        private DatePicker _tbLowerValue;
 
         /// <summary>
         /// The upper value 
         /// </summary>
-        private DatePicker tbUpperValue;
+        private DatePicker _tbUpperValue;
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            // a little javascript to make the daterange picker behave similar to the bootstrap-datepicker demo site's date range picker
+            var scriptFormat = @"
+$('#{0}').datepicker().on('changeDate', function (ev) {{
+
+    // if the startdate is later than the enddate, change the end date to be startdate+1
+    if (ev.date.valueOf() > $('#{1}').data('datepicker').date.valueOf()) {{
+        var newDate = new Date(ev.date)
+        newDate.setDate(newDate.getDate() + 1);
+        $('#{1}').datepicker('update', newDate);
+
+        // disable date selection in the EndDatePicker that are earlier than the startDate
+        $('#{1}').datepicker('setStartDate', ev.date);
+    }}
+    
+    // close the start date picker and set focus to the end date
+    $('#{0}').data('datepicker').hide();
+    $('#{1}')[0].focus();
+}});
+
+$('#{1}').datepicker().on('changeDate', function (ev) {{
+    // close the enddate picker immediately after selecting an end date
+    $('#{1}').data('datepicker').hide();
+}});
+
+";
+
+            var script = string.Format( scriptFormat, _tbLowerValue.ClientID, _tbUpperValue.ClientID );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "daterange_picker-" + this.ClientID, script, true );
+        }
 
         /// <summary>
         /// Gets or sets the label text.
@@ -45,13 +83,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return label.Text;
+                return _label.Text;
             }
 
             set
             {
                 EnsureChildControls();
-                label.Text = value;
+                _label.Text = value;
             }
         }
 
@@ -100,13 +138,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return tbLowerValue.RequiredErrorMessage;
+                return _tbLowerValue.RequiredErrorMessage;
             }
 
             set
             {
-                tbLowerValue.RequiredErrorMessage = value;
-                tbUpperValue.RequiredErrorMessage = value;
+                _tbLowerValue.RequiredErrorMessage = value;
+                _tbUpperValue.RequiredErrorMessage = value;
             }
         }
 
@@ -121,7 +159,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return tbLowerValue.IsValid && tbUpperValue.IsValid;
+                return _tbLowerValue.IsValid && _tbUpperValue.IsValid;
             }
         }
 
@@ -134,17 +172,17 @@ namespace Rock.Web.UI.Controls
 
             Controls.Clear();
 
-            label = new Literal();
-            Controls.Add( label );
+            _label = new Literal();
+            Controls.Add( _label );
 
-            tbLowerValue = new DatePicker();
-            tbLowerValue.ID = this.ID + "_lower";
+            _tbLowerValue = new DatePicker();
+            _tbLowerValue.ID = this.ID + "_lower";
 
-            Controls.Add( tbLowerValue );
+            Controls.Add( _tbLowerValue );
 
-            tbUpperValue = new DatePicker();
-            tbUpperValue.ID = this.ID + "_upper";
-            Controls.Add( tbUpperValue );
+            _tbUpperValue = new DatePicker();
+            _tbUpperValue.ID = this.ID + "_upper";
+            Controls.Add( _tbUpperValue );
         }
 
         /// <summary>
@@ -166,7 +204,7 @@ namespace Rock.Web.UI.Controls
                     writer.AddAttribute( "class", "control-label" );
 
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    label.RenderControl( writer );
+                    _label.RenderControl( writer );
                     writer.RenderEndTag();
                 }
 
@@ -175,9 +213,9 @@ namespace Rock.Web.UI.Controls
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                tbLowerValue.RenderControl( writer );
+                _tbLowerValue.RenderControl( writer );
                 writer.Write( "<span> to </span>" );
-                tbUpperValue.RenderControl( writer );
+                _tbUpperValue.RenderControl( writer );
 
                 writer.RenderEndTag();
 
@@ -198,13 +236,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return tbLowerValue.SelectedDate;
+                return _tbLowerValue.SelectedDate;
             }
 
             set
             {
                 EnsureChildControls();
-                tbLowerValue.SelectedDate = value;
+                _tbLowerValue.SelectedDate = value;
             }
         }
 
@@ -219,13 +257,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return tbUpperValue.SelectedDate;
+                return _tbUpperValue.SelectedDate;
             }
 
             set
             {
                 EnsureChildControls();
-                tbUpperValue.SelectedDate = value;
+                _tbUpperValue.SelectedDate = value;
             }
         }
     }
