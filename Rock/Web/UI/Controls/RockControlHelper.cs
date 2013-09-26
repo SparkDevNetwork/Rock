@@ -25,7 +25,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary> 
-        /// Creates the child controls.
+        /// Creates the child controls and handles adding the required field validator control.
         /// </summary>
         /// <param name="rockControl">The rock control.</param>
         /// <param name="controls">The controls.</param>
@@ -49,7 +49,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Renders the control.
+        /// Renders the control which handles adding all the IRockControl common pieces (Label, Help, etc.).
         /// </summary>
         /// <param name="rockControl">The rock control.</param>
         /// <param name="writer">The writer.</param>

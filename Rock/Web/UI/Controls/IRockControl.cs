@@ -9,7 +9,8 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// 
+    /// This is the generic interface that most Rock UI controls should implement.  Use along with the
+    /// RockControlHelper's CreateChildControls() and RenderControl() methods.
     /// </summary>
     public interface IRockControl
     {
@@ -86,7 +87,8 @@ namespace Rock.Web.UI.Controls
         RequiredFieldValidator RequiredFieldValidator { get; set; }
 
         /// <summary>
-        /// Renders the base control.
+        /// This is where you implment the simple aspects of rendering your control.  The rest
+        /// will be handled by calling RenderControlHelper's RenderControl() method.
         /// </summary>
         /// <param name="writer">The writer.</param>
         void RenderBaseControl( HtmlTextWriter writer );
