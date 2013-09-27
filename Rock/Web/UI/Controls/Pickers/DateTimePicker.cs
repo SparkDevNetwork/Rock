@@ -175,11 +175,13 @@ namespace Rock.Web.UI.Controls
 
             _datePicker = new DatePicker();
             _datePicker.ID = this.ID + "_datePicker";
+            _datePicker.CssClass = "input-width-md";
 
             Controls.Add( _datePicker );
 
             _timePicker = new TimePicker();
             _timePicker.ID = this.ID + "_timePicker";
+            _timePicker.CssClass = "input-width-md";
             Controls.Add( _timePicker );
         }
 
@@ -204,8 +206,8 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                // todo, figure out which class to set for this div
-                // writer.AddAttribute( "class", "" );
+
+                writer.AddAttribute( "class", "form-control-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 _datePicker.RenderControl( writer );
