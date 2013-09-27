@@ -23,6 +23,41 @@
 
 .picker {
     position: relative;
+    .clearfix();
+
+    .picker-label {
+        padding: @padding-base-vertical @padding-base-horizontal;
+        font-size: @font-size-base;
+        color: @input-color;
+        background-color: @input-group-addon-bg;
+        border: 1px solid @input-group-addon-border-color;
+        border-radius: @border-radius-base;
+        display: inline-block;
+        min-width: 200px;
+        float: left;
+
+        i {
+            margin-right: 6px;
+            float: left;
+            margin-top: 2px
+        }
+
+        span {
+            float: left;
+            margin-right: 6px;
+        }
+
+        .caret {
+            border-top: 4px solid @input-color;
+            margin-top: 9px;
+        }
+    }
+
+    .picker-select-none {
+        display: block;
+        float: left;
+        margin: 6px 0 0 6px;
+    }
 
     .scroll-container-picker { 
         width: 355px; 
