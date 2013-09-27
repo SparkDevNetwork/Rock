@@ -8407,6 +8407,7 @@ div.tagsinput div {
 }
 .datepicker table td.day {
   text-align: center;
+  cursor: pointer;
 }
 .datepicker table td.old,
 .datepicker table td.new {
