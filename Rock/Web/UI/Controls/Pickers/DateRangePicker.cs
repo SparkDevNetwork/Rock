@@ -136,6 +136,9 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DateRangePicker"/> class.
+        /// </summary>
         public DateRangePicker()
             : base()
         {
@@ -209,7 +212,6 @@ $('#{1}').datepicker().on('changeDate', function (ev) {{
             _tbLowerValue = new DatePicker();
             _tbLowerValue.ID = this.ID + "_lower";
             _tbLowerValue.CssClass = "input-width-md";
-
             Controls.Add( _tbLowerValue );
 
             _tbUpperValue = new DatePicker();
@@ -237,18 +239,14 @@ $('#{1}').datepicker().on('changeDate', function (ev) {{
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            if ( this.Visible )
-            {
+            writer.AddAttribute( "class", "form-control-group" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( "class", "form-control-group" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            _tbLowerValue.RenderControl( writer );
+            writer.Write( "<span class='to'> to </span>" );
+            _tbUpperValue.RenderControl( writer );
 
-                _tbLowerValue.RenderControl( writer );
-                writer.Write( "<span class='to'> to </span>" );
-                _tbUpperValue.RenderControl( writer );
-
-                writer.RenderEndTag();
-            }
+            writer.RenderEndTag();
         }
 
         /// <summary>

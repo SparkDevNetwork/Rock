@@ -10,6 +10,9 @@ using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
 {
+    /// <summary>
+    /// control to select a date time
+    /// </summary>
     [ToolboxData( "<{0}:DateTimePicker runat=server></{0}:DateTimePicker>" )]
     public class DateTimePicker : CompositeControl, IRockControl
     {
@@ -133,6 +136,9 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DateTimePicker"/> class.
+        /// </summary>
         public DateTimePicker()
             : base()
         {
