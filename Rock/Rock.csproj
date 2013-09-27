@@ -237,6 +237,10 @@
     <Compile Include="Migrations\201309271956487_MoveLiquidToTheme.Designer.cs">
       <DependentUpon>201309271956487_MoveLiquidToTheme.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201309272221418_AddPasswordWarningDate.cs" />
+    <Compile Include="Migrations\201309272221418_AddPasswordWarningDate.Designer.cs">
+      <DependentUpon>201309272221418_AddPasswordWarningDate.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\FinancialPersonSavedAccountService.Partial.cs" />
     <Compile Include="Services\NuGet\NuGetExtensionsMethods.cs" />
     <Compile Include="Storage\ProviderComponent.cs" />
@@ -1077,6 +1081,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201309271956487_MoveLiquidToTheme.resx">
       <DependentUpon>201309271956487_MoveLiquidToTheme.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201309272221418_AddPasswordWarningDate.resx">
+      <DependentUpon>201309272221418_AddPasswordWarningDate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
