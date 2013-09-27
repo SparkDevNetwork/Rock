@@ -9157,7 +9157,8 @@ dl dd {
 .form-control-group:after {
   clear: both;
 }
-.form-control-group .form-control {
+.form-control-group .form-control,
+.form-control-group .input-group {
   margin-right: 12px;
   float: left;
 }
