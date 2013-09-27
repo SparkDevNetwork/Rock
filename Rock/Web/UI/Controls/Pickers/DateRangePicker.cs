@@ -14,12 +14,136 @@ namespace Rock.Web.UI.Controls
     /// Control for selecting a date range
     /// </summary>
     [ToolboxData( "<{0}:DateRangePicker runat=server></{0}:DateRangePicker>" )]
-    public class DateRangePicker : CompositeControl, ILabeledControl, IRequiredControl
+    public class DateRangePicker : CompositeControl, IRockControl
     {
+        #region IRockControl implementation
+
         /// <summary>
-        /// The label
+        /// Gets or sets the label text.
         /// </summary>
-        private Literal _label;
+        /// <value>
+        /// The label text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text for the label." )
+        ]
+        public string Label
+        {
+            get { return ViewState["Label"] as string ?? string.Empty; }
+            set { ViewState["Label"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the help text.
+        /// </summary>
+        /// <value>
+        /// The help text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The help block." )
+        ]
+        public string Help
+        {
+            get
+            {
+                return HelpBlock != null ? HelpBlock.Text : string.Empty;
+            }
+
+            set
+            {
+                if ( HelpBlock != null )
+                {
+                    HelpBlock.Text = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "false" ),
+        Description( "Is the value required?" )
+        ]
+        public bool Required
+        {
+            get { return ViewState["Required"] as bool? ?? false; }
+            set { ViewState["Required"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the required error message.  If blank, the LabelName name will be used
+        /// </summary>
+        /// <value>
+        /// The required error message.
+        /// </value>
+        public string RequiredErrorMessage
+        {
+            get
+            {
+                return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
+            }
+
+            set
+            {
+                if ( RequiredFieldValidator != null )
+                {
+                    RequiredFieldValidator.ErrorMessage = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool IsValid
+        {
+            get
+            {
+                return !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the help block.
+        /// </summary>
+        /// <value>
+        /// The help block.
+        /// </value>
+        public HelpBlock HelpBlock { get; set; }
+
+        /// <summary>
+        /// Gets or sets the required field validator.
+        /// </summary>
+        /// <value>
+        /// The required field validator.
+        /// </value>
+        public RequiredFieldValidator RequiredFieldValidator { get; set; }
+
+        #endregion
+
+        public DateRangePicker()
+            : base()
+        {
+            RequiredFieldValidator = new HiddenFieldValidator();
+            HelpBlock = new HelpBlock();
+        }
+
+        #region Controls
 
         /// <summary>
         /// The lower value 
@@ -30,6 +154,8 @@ namespace Rock.Web.UI.Controls
         /// The upper value 
         /// </summary>
         private DatePicker _tbUpperValue;
+
+        #endregion
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -70,103 +196,6 @@ $('#{1}').datepicker().on('changeDate', function (ev) {{
         }
 
         /// <summary>
-        /// Gets or sets the label text.
-        /// </summary>
-        /// <value>
-        /// The label text.
-        /// </value>
-        [
-        Bindable( true ),
-        Category( "Appearance" ),
-        DefaultValue( "" ),
-        Description( "The text for the label." )
-        ]
-        public string Label
-        {
-            get
-            {
-                EnsureChildControls();
-                return _label.Text;
-            }
-
-            set
-            {
-                EnsureChildControls();
-                _label.Text = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="IRequiredControl" /> is required.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if required; otherwise, <c>false</c>.
-        /// </value>
-        [
-        Bindable( true ),
-        Category( "Behavior" ),
-        DefaultValue( "false" ),
-        Description( "Is the value required?" )
-        ]
-        public bool Required
-        {
-            get
-            {
-                if ( ViewState["Required"] != null )
-                {
-                    return (bool)ViewState["Required"];
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
-            set
-            {
-                ViewState["Required"] = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the required error message.  If blank, the LabelName name will be used
-        /// </summary>
-        /// <value>
-        /// The required error message.
-        /// </value>
-        /// <exception cref="System.NotImplementedException">
-        /// </exception>
-        public string RequiredErrorMessage
-        {
-            get
-            {
-                EnsureChildControls();
-                return _tbLowerValue.RequiredErrorMessage;
-            }
-
-            set
-            {
-                _tbLowerValue.RequiredErrorMessage = value;
-                _tbUpperValue.RequiredErrorMessage = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is valid.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
-        /// </value>
-        public bool IsValid
-        {
-            get
-            {
-                EnsureChildControls();
-                return _tbLowerValue.IsValid && _tbUpperValue.IsValid;
-            }
-        }
-
-        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -174,9 +203,7 @@ $('#{1}').datepicker().on('changeDate', function (ev) {{
             base.CreateChildControls();
 
             Controls.Clear();
-
-            _label = new Literal();
-            Controls.Add( _label );
+            RockControlHelper.CreateChildControls( this, Controls );
 
             _tbLowerValue = new DatePicker();
             _tbLowerValue.ID = this.ID + "_lower";
@@ -196,24 +223,21 @@ $('#{1}').datepicker().on('changeDate', function (ev) {{
         {
             if ( this.Visible )
             {
-                bool renderControlGroupDiv = !string.IsNullOrWhiteSpace( Label );
+                RockControlHelper.RenderControl( this, writer );
+            }
+        }
 
-                if ( renderControlGroupDiv )
-                {
-                    writer.AddAttribute( "class", "control-group" + ( IsValid ? "" : " error" ) + ( Required ? " required" : "" ) );
-
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                    writer.AddAttribute( "class", "control-label" );
-
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    _label.RenderControl( writer );
-                    writer.RenderEndTag();
-                }
-
-                // mark as input-xxlarge since we want the 2 pickers to stay on the same line
-                writer.AddAttribute( "class", "controls input-xxlarge" );
-
+        /// <summary>
+        /// This is where you implment the simple aspects of rendering your control.  The rest
+        /// will be handled by calling RenderControlHelper's RenderControl() method.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public void RenderBaseControl( HtmlTextWriter writer )
+        {
+            if ( this.Visible )
+            {
+                // todo, figure out which class to set for this div
+                // writer.AddAttribute( "class", "" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 _tbLowerValue.RenderControl( writer );
@@ -221,11 +245,6 @@ $('#{1}').datepicker().on('changeDate', function (ev) {{
                 _tbUpperValue.RenderControl( writer );
 
                 writer.RenderEndTag();
-
-                if ( renderControlGroupDiv )
-                {
-                    writer.RenderEndTag();
-                }
             }
         }
 

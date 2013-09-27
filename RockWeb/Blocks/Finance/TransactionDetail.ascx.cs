@@ -89,7 +89,7 @@ namespace RockWeb.Blocks.Finance.Administration
                 ddlTransactionType.SetValue( transaction.TransactionTypeValueId );
                 tbSummary.Text = transaction.Summary;
                 tbTransactionCode.Text = transaction.TransactionCode;
-                dtTransactionDateTime.Text = transaction.TransactionDateTime.ToString();
+                dtTransactionDateTime.SelectedDateTime = transaction.TransactionDateTime;
             }
             else
             {
