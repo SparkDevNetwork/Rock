@@ -101,7 +101,7 @@ namespace Rock.Model
         /// Gets or sets the first line of the Location's Street/Mailing Address.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"> representing the First line of the Location's Street/Mailing Address. If the Location does not have
+        /// A <see cref="System.String"/> representing the First line of the Location's Street/Mailing Address. If the Location does not have
         /// a Street/Mailing address, this value is null.
         /// </value>
         [MaxLength( 100 )]

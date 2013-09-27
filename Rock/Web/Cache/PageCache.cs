@@ -371,13 +371,33 @@ namespace Rock.Web.Cache
         }
         private Dictionary<string, Data.KeyEntity> _context;
 
+        /// <summary>
+        /// Helper class for PageRoute information
+        /// </summary>
         public class PageRouteInfo
         {
+            /// <summary>
+            /// The id
+            /// </summary>
             public int Id;
+
+            /// <summary>
+            /// The GUID
+            /// </summary>
             public Guid Guid;
+
+            /// <summary>
+            /// The route
+            /// </summary>
             public string Route;
         }
 
+        /// <summary>
+        /// Gets or sets the page routes.
+        /// </summary>
+        /// <value>
+        /// The page routes.
+        /// </value>
         public List<PageRouteInfo> PageRoutes { get; set; }
 
         /// <summary>
@@ -531,8 +551,8 @@ namespace Rock.Web.Cache
 
                     if ( modelType != null )
                     {
-                        /// In the case of core Rock.dll Types, we'll just use Rock.Data.Service<> and Rock.Data.RockContext<>
-                        /// otherwise find the first (and hopefully only) Service<> and dbContext we can find in the Assembly.  
+                        // In the case of core Rock.dll Types, we'll just use Rock.Data.Service<> and Rock.Data.RockContext<>
+                        // otherwise find the first (and hopefully only) Service<> and dbContext we can find in the Assembly.  
                         Type serviceType = typeof( Rock.Data.Service<> );
                         Type contextType = typeof( Rock.Data.RockContext );
                         if ( modelType.Assembly != serviceType.Assembly )
@@ -743,6 +763,9 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="levelsDeep">The page levels deep.</param>
         /// <param name="person">The person.</param>
+        /// <param name="currentPage">The current page.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <param name="queryString">The query string.</param>
         /// <returns></returns>
         public XDocument MenuXml( int levelsDeep, Person person, PageCache currentPage = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
         {

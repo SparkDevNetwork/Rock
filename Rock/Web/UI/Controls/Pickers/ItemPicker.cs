@@ -148,6 +148,12 @@ namespace Rock.Web.UI.Controls
 
         #region Properties
 
+        /// <summary>
+        /// Gets the item rest URL.
+        /// </summary>
+        /// <value>
+        /// The item rest URL.
+        /// </value>
         public abstract string ItemRestUrl { get; }
 
         /// <summary>
@@ -438,6 +444,10 @@ namespace Rock.Web.UI.Controls
             RockControlHelper.CreateChildControls( this, Controls );
         }
 
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
             if ( this.Visible )
@@ -446,6 +456,11 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// This is where you implment the simple aspects of rendering your control.  The rest
+        /// will be handled by calling RenderControlHelper's RenderControl() method.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
         public virtual void RenderBaseControl( HtmlTextWriter writer)
         {
             _hfItemId.RenderControl( writer );
@@ -574,7 +589,6 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Selecteds the values as int.
         /// </summary>
-        /// <param name="noneAsNull">if set to <c>true</c> [none as null].</param>
         /// <returns></returns>
         public IEnumerable<int> SelectedValuesAsInt()
         {

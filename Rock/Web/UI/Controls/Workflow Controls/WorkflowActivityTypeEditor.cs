@@ -31,6 +31,12 @@ namespace Rock.Web.UI.Controls
 
         private LinkButton _lbAddActionType;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to force content visible.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [force content visible]; otherwise, <c>false</c>.
+        /// </value>
         public bool ForceContentVisible { private get; set; }
 
         /// <summary>

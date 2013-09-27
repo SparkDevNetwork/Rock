@@ -33,6 +33,12 @@ namespace Rock.Web.UI.Controls
         private RockCheckBox _cbIsActivityCompletedOnSuccess;
         private PlaceHolder _phActionAttributes;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to force content visible.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [force content visible]; otherwise, <c>false</c>.
+        /// </value>
         public bool ForceContentVisible { get; set; }
 
         /// <summary>

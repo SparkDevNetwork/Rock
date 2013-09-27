@@ -246,6 +246,10 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// To the dictionary.
+        /// </summary>
+        /// <returns></returns>
         public override System.Collections.Generic.Dictionary<string, object> ToDictionary()
         {
             var dictionary = base.ToDictionary();

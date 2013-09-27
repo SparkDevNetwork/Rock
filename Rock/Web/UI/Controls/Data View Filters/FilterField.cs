@@ -25,11 +25,30 @@ namespace Rock.Web.UI.Controls
     {
         Dictionary<string, Dictionary<string, string>> AuthorizedComponents;
 
+        /// <summary>
+        /// The filter type dropdown
+        /// </summary>
         protected RockDropDownList ddlFilterType;
+
+        /// <summary>
+        /// The delte button
+        /// </summary>
         protected LinkButton lbDelete;
+
+        /// <summary>
+        /// The hidden field for tracking expanded
+        /// </summary>
         protected HiddenField hfExpanded;
+
+        /// <summary>
+        /// The filter controls
+        /// </summary>
         protected Control[] filterControls;
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
@@ -386,6 +405,9 @@ $('.filter-item-select').click(function (event) {
         /// </summary>
         public event EventHandler DeleteClick;
 
+        /// <summary>
+        /// Occurs when [selection changed].
+        /// </summary>
         public event EventHandler SelectionChanged;
 
 

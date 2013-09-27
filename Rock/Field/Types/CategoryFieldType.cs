@@ -22,8 +22,19 @@ namespace Rock.Field.Types
     /// </summary>
     public class CategoryFieldType : FieldType
     {
+        /// <summary>
+        /// Entity Type Name Key
+        /// </summary>
         protected const string ENTITY_TYPE_NAME_KEY = "entityTypeName";
+
+        /// <summary>
+        /// Qualifier Column Key
+        /// </summary>
         protected const string QUALIFIER_COLUMN_KEY = "qualifierColumn";
+
+        /// <summary>
+        /// Qualifier Value Key
+        /// </summary>
         protected const string QUALIFIER_VALUE_KEY = "qualifierValue";
 
         /// <summary>
@@ -145,6 +156,7 @@ namespace Rock.Field.Types
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
         /// <returns>
         /// The control
         /// </returns>

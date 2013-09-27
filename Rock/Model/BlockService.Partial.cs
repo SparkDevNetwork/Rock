@@ -47,7 +47,7 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns an enumerable collection of <see cref="Rock.Model.Blocks">Blocks</see> that are implemented in a specific zone on a Site Layout template.
+        /// Returns an enumerable collection of <see cref="Rock.Model.Block">Blocks</see> that are implemented in a specific zone on a Site Layout template.
         /// </summary>
         /// <param name="siteId">A <see cref="System.Int32"/> representing the Id of the <see cref="Site"/> that the Layout belongs to.</param>
         /// <param name="layout">A <see cref="System.String"/> representing the name of the Layout.</param>

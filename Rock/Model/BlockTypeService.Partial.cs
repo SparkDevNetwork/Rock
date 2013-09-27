@@ -13,7 +13,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// The data access/service class for <see cref="Rock.Model.BlockType"/> entity type objects, and extends the functionality of <see cref="Rock.Model.Service"/>
+    /// The data access/service class for <see cref="Rock.Model.BlockType"/> entity type objects, and extends the functionality of <see cref="Rock.Data.Service"/>
     /// </summary>
     public partial class BlockTypeService 
     {
@@ -22,7 +22,7 @@ namespace Rock.Model
         /// Gets a <see cref="Rock.Model.BlockType"/> by it's Guid.
         /// </summary>
         /// <param name="guid"><see cref="System.Guid"/> identifier  filter to search by.</param>
-        /// <returns>The <see cref="Rock.BlockType"/> that has a Guid that matches the provided value, if none are found returns null. </returns>
+        /// <returns>The <see cref="Rock.Model.BlockType"/> that has a Guid that matches the provided value, if none are found returns null. </returns>
         public BlockType GetByGuid( Guid guid )
         {
             return Repository.FirstOrDefault( t => t.Guid == guid );
@@ -113,7 +113,7 @@ namespace Rock.Model
         /// Finds all the <see cref="Rock.Model.BlockType">BlockTypes</see> within a given path.
         /// </summary>
         /// <param name="physWebAppPath">The physical web application path.</param>
-        /// <param name="list">A <see cref="System.Collection.Generic.Dictionary"/> containing all the <see cref="BlockTypes">BlockTypes</see> that have been found.</param>
+        /// <param name="list">A <see cref="System.Collections.Generic.Dictionary{String, String}"/> containing all the <see cref="Rock.Model.BlockType">BlockTypes</see> that have been found.</param>
         /// <param name="folder">A <see cref="System.String"/> containing the subdirectory to to search through.</param>
         private static void FindAllBlocksInPath( string physWebAppPath, Dictionary<string, string> list, string folder )
         {

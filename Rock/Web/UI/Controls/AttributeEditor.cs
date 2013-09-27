@@ -16,6 +16,9 @@ using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
+    /// <summary>
+    /// Custom attribute editor control
+    /// </summary>
     public class AttributeEditor : CompositeControl
     {
         #region UI Controls

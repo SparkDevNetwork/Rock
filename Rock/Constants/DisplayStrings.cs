@@ -67,12 +67,12 @@ namespace Rock.Constants
         public const string IdValue = "0";
 
         /// <summary>
-        /// "<none>"
+        /// <!--<none>-->
         /// </summary>
         public const string Text = "<none>";
 
         /// <summary>
-        /// 
+        /// &lt;none&gt;
         /// </summary>
         public const string TextHtml = "&lt;none&gt;";
 

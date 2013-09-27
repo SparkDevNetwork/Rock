@@ -21,6 +21,12 @@ namespace Rock.Web.UI.Controls
     {
         private LinkButton _lbAddFamilyMember;
 
+        /// <summary>
+        /// Gets the family member rows.
+        /// </summary>
+        /// <value>
+        /// The family member rows.
+        /// </value>
         public List<NewFamilyMembersRow> FamilyMemberRows
         {
             get
@@ -74,6 +80,11 @@ namespace Rock.Web.UI.Controls
             _lbAddFamilyMember.Controls.Add( iAddFilter );
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbAddFamilyMember control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddFamilyMember_Click( object sender, EventArgs e )
         {
             if ( AddFamilyMemberClick != null )
@@ -187,9 +198,9 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        ///// <summary>
-        ///// Occurs when [add filter click].
-        ///// </summary>
+        /// <summary>
+        /// Occurs when [add family member click].
+        /// </summary>
         public event EventHandler AddFamilyMemberClick;
         
     }

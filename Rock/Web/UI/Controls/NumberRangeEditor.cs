@@ -9,6 +9,9 @@ using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
 {
+    /// <summary>
+    /// Control for selecting a number range
+    /// </summary>
     [ToolboxData( "<{0}:NumberRangeEditor runat=server></{0}:NumberRangeEditor>" )]
     public class NumberRangeEditor : CompositeControl, ILabeledControl, IRequiredControl
     {
