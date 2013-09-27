@@ -157,11 +157,11 @@ namespace Rock.Web.UI.Controls
             RockControlHelper.CreateChildControls( this, Controls );
 
             monthDropDownList = new DropDownList();
-            monthDropDownList.CssClass = "form-control";
+            monthDropDownList.CssClass = "form-control input-width-sm";
             monthDropDownList.ID = "monthDropDownList_" + this.ID;
             monthDropDownList.SelectedIndexChanged += monthDayDropDownList_SelectedIndexChanged;
             dayDropDownList = new DropDownList();
-            dayDropDownList.CssClass = "form-control";
+            dayDropDownList.CssClass = "form-control input-width-sm";
             dayDropDownList.ID = "dayDropDownList_" + this.ID;
             dayDropDownList.SelectedIndexChanged += monthDayDropDownList_SelectedIndexChanged;
 
@@ -237,10 +237,15 @@ namespace Rock.Web.UI.Controls
             bool needsAutoPostBack = SelectedMonthDayChanged != null;
             monthDropDownList.AutoPostBack = needsAutoPostBack;
             dayDropDownList.AutoPostBack = needsAutoPostBack;
-            
+
+            writer.AddAttribute("class", "form-control-group");
+            writer.RenderBeginTag(HtmlTextWriterTag.Div);
+
             monthDropDownList.RenderControl( writer );
-            writer.WriteLine();
+            writer.Write(" <span class='separator'>/</span> ");
             dayDropDownList.RenderControl( writer );
+
+            writer.RenderEndTag();
         }
 
         /// <summary>

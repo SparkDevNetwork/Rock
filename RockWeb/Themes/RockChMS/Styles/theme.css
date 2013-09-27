@@ -8956,6 +8956,8 @@ td[align=center] {
     
     1. Bootstrap Overrides / Additions
     2. Data Lists
+    3. Input Sizing
+    4. Control Specific Styles
 
 */
 .form-actions {
@@ -8983,6 +8985,61 @@ dl dt:first-child {
 }
 dl dd {
   margin-left: 0;
+}
+/* form styles - not enough yet for it's own file */fieldset .actions {
+  margin-top: 36px;
+}
+.form-control.input-width-xs {
+  width: 60px;
+}
+.form-control.input-width-sm {
+  width: 90px;
+}
+.form-control.input-width-md {
+  width: 150px;
+}
+.form-control.input-width-lg {
+  width: 210px;
+}
+.form-control.input-width-xl {
+  width: 270px;
+}
+.form-control.input-width-xxl {
+  width: 530px;
+}
+.form-control-group:before,
+.form-control-group:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.form-control-group:after {
+  clear: both;
+}
+.form-control-group:before,
+.form-control-group:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.form-control-group:after {
+  clear: both;
+}
+.form-control-group .form-control {
+  margin-right: 12px;
+  float: left;
+}
+.separator {
+  float: left;
+  font-size: 20px;
+  margin: 4px 8px 0 -2px;
+  color: #aaaaaa;
 }
 /*
     Used to manage styles related to the person details page
@@ -10419,10 +10476,6 @@ a.help {
   outline: 0;
   color: #bbbbbb;
 }
-/* form styles - not enough yet for it's own file */
-fieldset .actions {
-  margin-top: 36px;
-}
 /* extension of Bootstrap 3 panel */
 .panel legend {
   border-color: #d9e1e8;
@@ -10537,11 +10590,6 @@ a:hover i[class^="icon-"] {
 .navbar {
   position: static;
 }
-.modal-header .close {
-  color: #bbbbbb;
-  opacity: 1;
-  text-shadow: none;
-}
 .nav-pills > .active > a,
 .nav-pills > .active > a:hover {
   background-color: #779cb1;
@@ -10603,6 +10651,9 @@ header .nav a:hover .caret {
   background-repeat: repeat-x;
   filter: initial;
 }
+.pagenav .navbar-nav {
+  margin: 0;
+}
 .pagenav .nav {
   border-left: 1px solid #545454;
   width: 100%;
@@ -10616,6 +10667,8 @@ header .nav a:hover .caret {
   width: 12.5%;
   /* set to allow 8 nav items */
 
+  min-width: 120px;
+  float: left;
 }
 .pagenav .nav > li:last-child:after {
   /* add the final shadow to the last nav element */
@@ -10648,6 +10701,25 @@ header .nav a:hover .caret {
 .pagenav .dropdown-menu {
   left: -2px;
   width: 240px;
+}
+@media (max-width: 767px) {
+  .pagenav .nav {
+    border: 0;
+  }
+  .pagenav .nav > li {
+    width: 33%;
+    height: auto;
+    border: 0;
+  }
+  .pagenav .nav > li:last-child:after {
+    border-right: 0;
+  }
+  .pagenav .nav > li .dropdown-menu > li > a {
+    color: white;
+  }
+  .pagenav .nav > li .dropdown-menu > li.divider {
+    display: none;
+  }
 }
 .pagetitle {
   background-color: #c7cacd;

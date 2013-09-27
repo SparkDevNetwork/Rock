@@ -7,6 +7,7 @@ using System;
 using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using System.Web.UI.HtmlControls;
 
 namespace Rock.Web.UI.Controls
 {
@@ -135,8 +136,8 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
-        private DropDownList monthDropDownList;
-        private DropDownList yearDropDownList;
+        private DropDownList _monthDropDownList;
+        private DropDownList _yearDropDownList;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MonthYearPicker"/> class.
@@ -210,16 +211,16 @@ namespace Rock.Web.UI.Controls
             Controls.Clear();
             RockControlHelper.CreateChildControls( this, Controls );
 
-            monthDropDownList = new DropDownList();
-            monthDropDownList.CssClass = "form-control";
-            monthDropDownList.ID = "monthDropDownList_" + this.ID;
-            monthDropDownList.SelectedIndexChanged += monthYearDropDownList_SelectedIndexChanged;
-            yearDropDownList = new DropDownList();
-            yearDropDownList.CssClass = "form-control";
-            yearDropDownList.ID = "yearDropDownList_" + this.ID;
+            _monthDropDownList = new DropDownList();
+            _monthDropDownList.CssClass = "form-control input-width-sm";
+            _monthDropDownList.ID = "monthDropDownList_" + this.ID;
+            _monthDropDownList.SelectedIndexChanged += monthYearDropDownList_SelectedIndexChanged;
+            _yearDropDownList = new DropDownList();
+            _yearDropDownList.CssClass = "form-control input-width-sm";
+            _yearDropDownList.ID = "yearDropDownList_" + this.ID;
 
-            Controls.Add( monthDropDownList );
-            Controls.Add( yearDropDownList );
+            Controls.Add( _monthDropDownList );
+            Controls.Add( _yearDropDownList );
 
             PopulateDropDowns();
         }
@@ -248,24 +249,24 @@ namespace Rock.Web.UI.Controls
         private void PopulateDropDowns()
         {
             EnsureChildControls();
-            monthDropDownList.Items.Clear();
-            monthDropDownList.Items.Add( new ListItem( string.Empty, string.Empty ) );
+            _monthDropDownList.Items.Clear();
+            _monthDropDownList.Items.Add( new ListItem( string.Empty, string.Empty ) );
             for ( int month = 1; month <= 12; month++ )
             {
-                monthDropDownList.Items.Add( new ListItem( month.ToString(), month.ToString() ) );
+                _monthDropDownList.Items.Add( new ListItem( month.ToString(), month.ToString() ) );
             }
 
-            yearDropDownList.Items.Clear();
-            yearDropDownList.Items.Add( new ListItem( string.Empty, string.Empty ) );
+            _yearDropDownList.Items.Clear();
+            _yearDropDownList.Items.Add( new ListItem( string.Empty, string.Empty ) );
             for ( int year = this.MinimumYear; year <= this.MaximumYear; year++ )
             {
-                yearDropDownList.Items.Add( new ListItem( year.ToString(), year.ToString() ) );
+                _yearDropDownList.Items.Add( new ListItem( year.ToString(), year.ToString() ) );
             }
 
             if ( this.SelectedDate.HasValue )
             {
-                monthDropDownList.SelectedValue = this.SelectedDate.Value.Month.ToString();
-                yearDropDownList.SelectedValue = this.SelectedDate.Value.Year.ToString();
+                _monthDropDownList.SelectedValue = this.SelectedDate.Value.Month.ToString();
+                _yearDropDownList.SelectedValue = this.SelectedDate.Value.Year.ToString();
             }
         }
 
@@ -288,12 +289,17 @@ namespace Rock.Web.UI.Controls
         public void RenderBaseControl( HtmlTextWriter writer )
         {
             bool needsAutoPostBack = SelectedMonthYearChanged != null;
-            monthDropDownList.AutoPostBack = needsAutoPostBack;
-            yearDropDownList.AutoPostBack = needsAutoPostBack;
-            
-            monthDropDownList.RenderControl( writer );
-            writer.WriteLine();
-            yearDropDownList.RenderControl( writer );
+            _monthDropDownList.AutoPostBack = needsAutoPostBack;
+            _yearDropDownList.AutoPostBack = needsAutoPostBack;
+
+            writer.AddAttribute("class", "form-control-group");
+            writer.RenderBeginTag(HtmlTextWriterTag.Div);
+
+            _monthDropDownList.RenderControl( writer );
+            writer.Write(" <span class='separator'>/</span> ");
+            _yearDropDownList.RenderControl( writer );
+
+            writer.RenderEndTag();
         }
 
         /// <summary>
@@ -306,8 +312,8 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                int? selectedMonth = monthDropDownList.SelectedValueAsInt( true );
-                int? selectedYear = yearDropDownList.SelectedValueAsInt( true );
+                int? selectedMonth = _monthDropDownList.SelectedValueAsInt( true );
+                int? selectedYear = _yearDropDownList.SelectedValueAsInt( true );
 
                 if ( selectedMonth.HasValue && selectedYear.HasValue )
                 {
@@ -321,13 +327,13 @@ namespace Rock.Web.UI.Controls
             {
                 if ( value != null )
                 {
-                    monthDropDownList.SelectedValue = value.Value.Month.ToString();
-                    yearDropDownList.SelectedValue = value.Value.Year.ToString();
+                    _monthDropDownList.SelectedValue = value.Value.Month.ToString();
+                    _yearDropDownList.SelectedValue = value.Value.Year.ToString();
                 }
                 else
                 {
-                    monthDropDownList.SelectedValue = string.Empty;
-                    yearDropDownList.SelectedValue = string.Empty;
+                    _monthDropDownList.SelectedValue = string.Empty;
+                    _yearDropDownList.SelectedValue = string.Empty;
                 }
             }
         }
