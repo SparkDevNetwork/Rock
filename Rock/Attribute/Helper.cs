@@ -107,6 +107,10 @@ namespace Rock.Attribute
         /// <summary>
         /// Adds or Updates a <see cref="Rock.Model.Attribute" /> item for the attribute.
         /// </summary>
+        /// <param name="attributeService">The attribute service.</param>
+        /// <param name="attributeQualifierService">The attribute qualifier service.</param>
+        /// <param name="fieldTypeService">The field type service.</param>
+        /// <param name="categoryService">The category service.</param>
         /// <param name="property">The property.</param>
         /// <param name="entityTypeId">The entity type id.</param>
         /// <param name="entityQualifierColumn">The entity qualifier column.</param>

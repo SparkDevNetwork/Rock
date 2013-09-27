@@ -90,6 +90,9 @@ namespace Rock.Web.UI.Controls
 
     }
 
+    /// <summary>
+    /// The type of highlighting to use.  Each type is associated with a particular css class to control the look (color)
+    /// </summary>
     public enum LabelType
     {
         /// <summary>

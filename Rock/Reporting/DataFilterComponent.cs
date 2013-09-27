@@ -88,7 +88,9 @@ namespace Rock.Reporting
         /// <summary>
         /// Formats the selection.
         /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
         /// <param name="selection">The selection.</param>
+        /// <returns></returns>
         public virtual string FormatSelection( Type entityType, string selection )
         {
             ComparisonType comparisonType = ComparisonType.StartsWith;
@@ -128,6 +130,8 @@ namespace Rock.Reporting
         /// <summary>
         /// Renders the controls.
         /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="filterControl">The filter control.</param>
         /// <param name="writer">The writer.</param>
         /// <param name="controls">The controls.</param>
         public virtual void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
@@ -141,6 +145,7 @@ namespace Rock.Reporting
         /// <summary>
         /// Gets the selection.
         /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
         public virtual string GetSelection( Type entityType, Control[] controls )
@@ -153,6 +158,7 @@ namespace Rock.Reporting
         /// <summary>
         /// Sets the selection.
         /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
         /// <param name="controls">The controls.</param>
         /// <param name="selection">The selection.</param>
         public virtual void SetSelection( Type entityType, Control[] controls, string selection )
@@ -168,6 +174,7 @@ namespace Rock.Reporting
         /// <summary>
         /// Gets the expression.
         /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
@@ -312,6 +319,12 @@ namespace Rock.Reporting
             }
         }
 
+        /// <summary>
+        /// Gets the date filter comparison types.
+        /// </summary>
+        /// <value>
+        /// The date filter comparison types.
+        /// </value>
         public static ComparisonType DateFilterComparisonTypes
         {
             get

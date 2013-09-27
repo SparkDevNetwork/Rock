@@ -28,6 +28,12 @@ namespace Rock.Web.UI.Controls
         private LinkButton _lbEditNote;
         private LinkButton _lbDeleteNote;
 
+        /// <summary>
+        /// Sets the note.
+        /// </summary>
+        /// <value>
+        /// The note.
+        /// </value>
         public Rock.Model.Note Note
         {
             set
@@ -41,66 +47,132 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the note id.
+        /// </summary>
+        /// <value>
+        /// The note id.
+        /// </value>
         public int NoteId
         {
             get { return ViewState["NoteId"] as int? ?? 0; }
             set { ViewState["NoteId"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the source type value id.
+        /// </summary>
+        /// <value>
+        /// The source type value id.
+        /// </value>
         public int? SourceTypeValueId
         {
             get { return ViewState["SourceTypeValueId"] as int?; }
             set { ViewState["SourceTypeValueId"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the caption.
+        /// </summary>
+        /// <value>
+        /// The caption.
+        /// </value>
         public string Caption
         {
             get { return ViewState["Caption"] as string ?? string.Empty; }
             set { ViewState["Caption"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the created date time.
+        /// </summary>
+        /// <value>
+        /// The created date time.
+        /// </value>
         public DateTime? CreatedDateTime
         {
             get { return ViewState["CreatedDateTime"] as DateTime?; }
             set { ViewState["CreatedDateTime"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the text.
+        /// </summary>
+        /// <value>
+        /// The text.
+        /// </value>
         public string Text
         {
             get { return _tbNote.Text; }
             set { _tbNote.Text = value; }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is alert.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is alert; otherwise, <c>false</c>.
+        /// </value>
         public bool IsAlert
         {
             get { return _cbAlert.Checked; }
             set { _cbAlert.Checked = value; }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is private.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if this instance is private; otherwise, <c>false</c>.
+        /// </value>
         public bool IsPrivate
         {
             get { return _cbPrivate.Checked; }
             set { _cbPrivate.Checked = value; }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can edit.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance can edit; otherwise, <c>false</c>.
+        /// </value>
         public bool CanEdit
         {
             get { return ViewState["CanEdit"] as bool? ?? false; }
             set { ViewState["CanEdit"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [show alert check box].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show alert check box]; otherwise, <c>false</c>.
+        /// </value>
         public bool ShowAlertCheckBox
         {
             get { return ViewState["ShowAlertCheckBox"] as bool? ?? false; }
             set { ViewState["ShowAlertCheckBox"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [show private check box].
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [show private check box]; otherwise, <c>false</c>.
+        /// </value>
         public bool ShowPrivateCheckBox
         {
             get { return ViewState["ShowPrivateCheckBox"] as bool? ?? false; }
             set { ViewState["ShowPrivateCheckBox"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [show security button].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show security button]; otherwise, <c>false</c>.
+        /// </value>
         public bool ShowSecurityButton
         {
             get { return ViewState["ShowSecurityButton"] as bool? ?? false; }
@@ -146,6 +218,9 @@ namespace Rock.Web.UI.Controls
 
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NoteEditor"/> class.
+        /// </summary>
         public NoteEditor()
         {
             _tbNote = new RockTextBox();
@@ -156,6 +231,10 @@ namespace Rock.Web.UI.Controls
             _lbDeleteNote = new LinkButton();
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             string script = @"
@@ -173,6 +252,9 @@ namespace Rock.Web.UI.Controls
             ScriptManager.RegisterStartupScript( this, this.GetType(), "edit-note", script, true );
         }
 
+        /// <summary>
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+        /// </summary>
         protected override void CreateChildControls()
         {
             base.CreateChildControls();
@@ -210,7 +292,16 @@ namespace Rock.Web.UI.Controls
             _lbDeleteNote.Controls.Add( iDelete );
         }
 
+        /// <summary>
+        /// Occurs when [save button click].
+        /// </summary>
         public event EventHandler SaveButtonClick;
+
+        /// <summary>
+        /// Handles the Click event of the lbSaveNote control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbSaveNote_Click( object sender, EventArgs e )
         {
             if ( SaveButtonClick != null )
@@ -219,7 +310,16 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Occurs when [delete button click].
+        /// </summary>
         public event EventHandler DeleteButtonClick;
+
+        /// <summary>
+        /// Handles the Click event of the lbDeleteNote control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbDeleteNote_Click( object sender, EventArgs e )
         {
             if ( DeleteButtonClick != null )
@@ -228,6 +328,10 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -341,6 +445,9 @@ namespace Rock.Web.UI.Controls
 
     }
 
+    /// <summary>
+    /// Event argument to track which note fired an event
+    /// </summary>
     public class IdEventArgs : EventArgs
     {
         /// <summary>
@@ -354,7 +461,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Initializes a new instance of the <see cref="RowEventArgs" /> class.
         /// </summary>
-        /// <param name="row">The row.</param>
+        /// <param name="id">The id.</param>
         public IdEventArgs( int id )
         {
             Id = id;

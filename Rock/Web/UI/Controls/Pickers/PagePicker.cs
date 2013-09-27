@@ -287,8 +287,6 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Handles the Click event of the btnSelect control.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected override void SetValueOnSelect()
         {
             var page = new PageService().Get( int.Parse( ItemId ) );
@@ -372,6 +370,11 @@ namespace Rock.Web.UI.Controls
             SetValue( pageRoute );
         }
 
+        /// <summary>
+        /// This is where you implment the simple aspects of rendering your control.  The rest
+        /// will be handled by calling RenderControlHelper's RenderControl() method.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
         public override void RenderBaseControl( HtmlTextWriter writer )
         {
             base.RenderBaseControl( writer );

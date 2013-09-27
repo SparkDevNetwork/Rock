@@ -20,35 +20,66 @@ namespace Rock.Web.UI.Controls
     {
         private Literal _personName;
 
+        /// <summary>
+        /// Gets or sets the person id.
+        /// </summary>
+        /// <value>
+        /// The person id.
+        /// </value>
         public int PersonId
         {
             get { return ViewState["PersonId"] as int? ?? 0; }
             set { ViewState["PersonId"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the name of the person.
+        /// </summary>
+        /// <value>
+        /// The name of the person.
+        /// </value>
         public string PersonName
         {
             get { return _personName.Text; }
             set { _personName.Text = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the role.
+        /// </summary>
+        /// <value>
+        /// The role.
+        /// </value>
         public string Role
         {
             get { return ViewState["Role"] as string; }
             set { ViewState["Role"] = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the photo id.
+        /// </summary>
+        /// <value>
+        /// The photo id.
+        /// </value>
         public int? PhotoId
         {
             get { return ViewState["PhotoId"] as int?; }
             set { ViewState["PhotoId"] = value; }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PersonLink"/> class.
+        /// </summary>
         public PersonLink()
         {
             _personName = new Literal();
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( System.EventArgs e )
         {
             base.OnInit( e );
@@ -56,6 +87,10 @@ namespace Rock.Web.UI.Controls
             RockPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/jquery.tooltipster.min.js" ) );
         }
 
+        /// <summary>
+        /// Renders the <see cref="T:System.Web.UI.HtmlControls.HtmlContainerControl" /> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter" /> object.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> that receives the <see cref="T:System.Web.UI.HtmlControls.HtmlContainerControl" /> content.</param>
         protected override void Render( HtmlTextWriter writer )
         {
             this.AddCssClass( "popover-person" );

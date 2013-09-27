@@ -13,6 +13,9 @@ using CKEditor.NET;
 
 namespace Rock.Web.UI.Controls
 {
+    /// <summary>
+    /// Control for rendering an html editor
+    /// </summary>
     [ToolboxData( "<{0}:LabeledHtmlEditor runat=server></{0}:LabeledHtmlEditor>" )]
     public class HtmlEditor : CKEditorControl, ILabeledControl
     {
@@ -90,6 +93,9 @@ namespace Rock.Web.UI.Controls
             set { ViewState["MergeFields"] = value; }
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HtmlEditor"/> class.
+        /// </summary>
         public HtmlEditor()
             : base()
         {

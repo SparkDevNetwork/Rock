@@ -1454,6 +1454,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="pageIndex">The current page index</param>
         /// <param name="pageSize">The number of items on each page</param>
         /// <param name="itemCount">The item count.</param>
+        /// <param name="rowItemText">The row item text.</param>
         public void SetNavigation( int pageCount, int pageIndex, int pageSize, int itemCount, string rowItemText  )
         {
             // Set navigation controls

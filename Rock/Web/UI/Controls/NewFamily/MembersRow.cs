@@ -23,6 +23,9 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class NewFamilyMembersRow : CompositeControl
     {
+        /// <summary>
+        /// The Family role key
+        /// </summary>
         public static string FAMILY_ROLE_KEY = "NewFamilyMembersRow_FamilyRoles";
 
         private RadioButtonList _rblRole;

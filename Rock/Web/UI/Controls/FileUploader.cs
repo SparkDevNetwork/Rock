@@ -34,7 +34,7 @@ namespace Rock.Web.UI.Controls
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="LabeledFileUploader" /> class.
+        /// Initializes a new instance of the <see cref="FileUploader" /> class.
         /// </summary>
         public FileUploader()
         {
@@ -98,6 +98,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the binary file type GUID.
+        /// </summary>
+        /// <value>
+        /// The binary file type GUID.
+        /// </value>
         public Guid BinaryFileTypeGuid
         {
             get

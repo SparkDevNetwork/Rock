@@ -10,6 +10,9 @@ using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
 {
+    /// <summary>
+    /// Control for selecting a date range
+    /// </summary>
     [ToolboxData( "<{0}:DateRangePicker runat=server></{0}:DateRangePicker>" )]
     public class DateRangePicker : CompositeControl, ILabeledControl, IRequiredControl
     {

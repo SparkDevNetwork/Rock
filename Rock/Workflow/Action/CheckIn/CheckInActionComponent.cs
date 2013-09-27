@@ -18,7 +18,7 @@ namespace Rock.Workflow.Action.CheckIn
         /// <summary>
         /// Gets the state of the check-in.
         /// </summary>
-        /// <param name="action">The action.</param>
+        /// <param name="entity">The entity.</param>
         /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         protected CheckInState GetCheckInState( Object entity, out List<string> errorMessages )
