@@ -207,11 +207,13 @@ $('#{1}').datepicker().on('changeDate', function (ev) {{
 
             _tbLowerValue = new DatePicker();
             _tbLowerValue.ID = this.ID + "_lower";
+            _tbLowerValue.CssClass = "input-width-md";
 
             Controls.Add( _tbLowerValue );
 
             _tbUpperValue = new DatePicker();
             _tbUpperValue.ID = this.ID + "_upper";
+            _tbUpperValue.CssClass = "input-width-md";
             Controls.Add( _tbUpperValue );
         }
 
@@ -236,12 +238,12 @@ $('#{1}').datepicker().on('changeDate', function (ev) {{
         {
             if ( this.Visible )
             {
-                // todo, figure out which class to set for this div
-                // writer.AddAttribute( "class", "" );
+
+                writer.AddAttribute( "class", "form-control-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 _tbLowerValue.RenderControl( writer );
-                writer.Write( "<span> to </span>" );
+                writer.Write( "<span class='to'> to </span>" );
                 _tbUpperValue.RenderControl( writer );
 
                 writer.RenderEndTag();
