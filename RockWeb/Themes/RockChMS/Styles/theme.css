@@ -9170,7 +9170,8 @@ dl dd {
   margin: 4px 8px 0 -2px;
   color: #aaaaaa;
 }
-.date-range-picker span.to {
+.date-range-picker span.to,
+.number-range-editor span.to {
   float: left;
   margin: 8px 12px 0 0;
 }
