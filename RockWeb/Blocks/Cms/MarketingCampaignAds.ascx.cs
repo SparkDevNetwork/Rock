@@ -43,16 +43,16 @@ namespace RockWeb.Blocks.Cms
     [ContextAware( typeof( Campus ) )]
     public partial class MarketingCampaignAds : RockBlock
     {
+
         /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
         /// </summary>
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
+        protected override void OnPreRender( EventArgs e )
         {
-            base.OnInit( e );
+            base.OnPreRender( e );
             Render();
         }
-
 
         /// <summary>
         /// Renders the Ads using Liquid.
@@ -291,6 +291,10 @@ namespace RockWeb.Blocks.Cms
 
         private Template GetTemplate()
         {
+            string liquidFolder = System.Web.HttpContext.Current.Server.MapPath( string.Format( "~/{0}/Assets/Liquid", CurrentTheme ) );
+            Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
+            Template.FileSystem = new DotLiquid.FileSystems.LocalFileSystem( liquidFolder );
+
             string cacheKey = CacheKey();
 
             ObjectCache cache = MemoryCache.Default;
@@ -302,9 +306,6 @@ namespace RockWeb.Blocks.Cms
             }
             else
             {
-                Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
-                //TODO: This should probably use the theme assets folder
-                Template.FileSystem = new DotLiquid.FileSystems.LocalFileSystem( System.Web.HttpContext.Current.Server.MapPath( "~/Assets/Liquid" ) );
                 template = Template.Parse( GetAttributeValue( "Template" ) );
 
                 var cachePolicy = new CacheItemPolicy();

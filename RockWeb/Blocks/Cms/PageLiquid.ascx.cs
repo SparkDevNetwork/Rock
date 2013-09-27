@@ -48,17 +48,27 @@ namespace RockWeb.Blocks.Cms
             // add css file to page
             if (GetAttributeValue( "CSSFile" ).Trim() != string.Empty)
                 CurrentPage.AddCSSLink( Page, ResolveUrl("~/CSS/jquery.tagsinput.css"));
-
-            Render();
-
         }
 
-        void PageLiquid_AttributesUpdated( object sender, EventArgs e )
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.PreRender" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnPreRender( EventArgs e )
+        {
+            base.OnPreRender( e );
+            Render();
+        }
+        
+        /// <summary>
+        /// Handles the AttributesUpdated event of the PageLiquid control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void PageLiquid_AttributesUpdated( object sender, EventArgs e )
         {
             ObjectCache cache = MemoryCache.Default;
             cache.Remove( CacheKey() );
-
-            Render();
         }
 
         private void Render()
@@ -106,6 +116,10 @@ namespace RockWeb.Blocks.Cms
 
         private Template GetTemplate()
         {
+            string liquidFolder = System.Web.HttpContext.Current.Server.MapPath( string.Format( "~/{0}/Assets/Liquid", CurrentTheme ) );
+            Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
+            Template.FileSystem = new DotLiquid.FileSystems.LocalFileSystem( liquidFolder );
+
             string cacheKey = CacheKey();
 
             ObjectCache cache = MemoryCache.Default;
@@ -117,9 +131,6 @@ namespace RockWeb.Blocks.Cms
             }
             else
             {
-                Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
-                //TODO: This should probably use the theme assets folder
-                Template.FileSystem = new DotLiquid.FileSystems.LocalFileSystem( System.Web.HttpContext.Current.Server.MapPath( "~/Assets/Liquid" ) );
                 template = Template.Parse( GetAttributeValue( "Template" ) );
 
                 var cachePolicy = new CacheItemPolicy();
