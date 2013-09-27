@@ -87,19 +87,27 @@
             </div>
             
             <div runat="server" class="r-example">
-            <Rock:RockCheckBox ID="labeledCheckBox" runat="server" Label="Rock:RockCheckBox" />
+            <Rock:RockCheckBox ID="RockCheckBox" runat="server" Label="Rock:RockCheckBox" />
             </div>
 
             <div runat="server" class="r-example">
-            <Rock:RockCheckBoxList ID="labeledCheckBoxList" runat="server" Label="Rock:RockCheckBoxList"  />
+            <Rock:RockCheckBoxList ID="RockCheckBoxList" runat="server" Label="Rock:RockCheckBoxList"  />
             </div>
 
             <div runat="server" class="r-example">
-            <Rock:RockRadioButtonList ID="labeledRadioButtonList" runat="server" Label="Rock:RockRadioButtonList"  />
+            <Rock:RockCheckBoxList ID="RockCheckBoxList1" runat="server" Label="Rock:RockCheckBoxList (horizontal)" RepeatDirection="Horizontal"  />
             </div>
 
             <div runat="server" class="r-example">
-            <Rock:NumberRangeEditor ID="numberRangeEditor" runat="server" Label="Rock:NumberRangeEditor" LowerValue="10" UpperValue="25" />
+            <Rock:RockRadioButtonList ID="RockRadioButtonList" runat="server" Label="Rock:RockRadioButtonList"  />
+            </div>
+
+            <div runat="server" class="r-example">
+            <Rock:RockRadioButtonList ID="RockRadioButtonList1" runat="server" Label="Rock:RockRadioButtonList (horizontal)" RepeatDirection="Horizontal"  />
+            </div>
+
+            <div runat="server" class="r-example">
+            <Rock:NumberRangeEditor ID="NumberRangeEditor" runat="server" Label="Rock:NumberRangeEditor" LowerValue="10" UpperValue="25" />
             </div>
 
 
