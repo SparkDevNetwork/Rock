@@ -97,9 +97,18 @@ fieldset .actions {
 // 4. Control Specific Styling
 // -------------------------
 
-.separator {  //todo wrap this in a .rock-monthdaypicker, monthday too
+.month-year-picker .separator,
+.month-day-picker .separator
+ {  
     float: left;
     font-size: 20px;
     margin: 4px 8px 0 -2px;
     color: lighten(@text-color, 35%);
+}
+
+.date-range-picker {
+    span.to {
+        float: left;
+        margin: 8px 12px 0 0;
+    }
 }

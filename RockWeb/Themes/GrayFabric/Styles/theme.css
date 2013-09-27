@@ -9162,11 +9162,16 @@ dl dd {
   margin-right: 12px;
   float: left;
 }
-.separator {
+.month-year-picker .separator,
+.month-day-picker .separator {
   float: left;
   font-size: 20px;
   margin: 4px 8px 0 -2px;
   color: #ffffff;
+}
+.date-range-picker span.to {
+  float: left;
+  margin: 8px 12px 0 0;
 }
 /*
     Used to manage styles related to the person details page
