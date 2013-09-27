@@ -121,8 +121,10 @@ namespace RockWeb.Blocks.Examples
 
                 ddlDataExample.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
 
-                labeledCheckBoxList.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
-                labeledRadioButtonList.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
+                RockCheckBoxList.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
+                RockCheckBoxList1.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
+                RockRadioButtonList.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
+                RockRadioButtonList1.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
 
                 BindGrid();
             }
@@ -179,14 +181,14 @@ namespace RockWeb.Blocks.Examples
             {
                 if ( control is IRockControl )
                 {
-                    IRockControl labeledControl = control as IRockControl;
-                    if ( string.IsNullOrWhiteSpace( labeledControl.Label ) )
+                    IRockControl rockControl = control as IRockControl;
+                    if ( string.IsNullOrWhiteSpace( rockControl.Label ) )
                     {
-                        labeledControl.Label = string.Format( "Rock:{0}", labeledControl.GetType().Name );
+                        rockControl.Label = string.Format( "Rock:{0}", rockControl.GetType().Name );
                     }
                     else
                     {
-                        labeledControl.Label = string.Empty;
+                        rockControl.Label = string.Empty;
                     }
                 }
                 else if ( control is HtmlGenericControl )
