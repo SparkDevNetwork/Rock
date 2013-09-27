@@ -226,6 +226,7 @@ namespace Rock.Web.UI.Controls
         {
             // logic to add input groups for preappend and append labels
             bool renderInputGroup = false;
+            string cssClass = this.CssClass;
 
             if ( !string.IsNullOrWhiteSpace( PrependText ) || !string.IsNullOrWhiteSpace( AppendText ) )
             {
@@ -234,8 +235,10 @@ namespace Rock.Web.UI.Controls
 
             if ( renderInputGroup )
             {
-                writer.AddAttribute( "class", "input-group" );
+                writer.AddAttribute( "class", "input-group " + cssClass );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                this.CssClass = string.Empty;
             }
 
             if ( !string.IsNullOrWhiteSpace( PrependText ) )
@@ -251,6 +254,7 @@ namespace Rock.Web.UI.Controls
             {
                 this.Attributes["placeholder"] = Placeholder;
             }
+            
             base.RenderControl( writer );
 
             if ( !string.IsNullOrWhiteSpace( AppendText ) )
@@ -264,6 +268,7 @@ namespace Rock.Web.UI.Controls
             if ( renderInputGroup )
             {
                 writer.RenderEndTag();  // input-group
+                this.CssClass = cssClass;
             }
 
             RenderDataValidator( writer );
