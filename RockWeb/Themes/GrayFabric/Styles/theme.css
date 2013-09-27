@@ -8956,6 +8956,8 @@ td[align=center] {
     
     1. Bootstrap Overrides / Additions
     2. Data Lists
+    3. Input Sizing
+    4. Control Specific Styles
 
 */
 .form-actions {
@@ -8983,6 +8985,61 @@ dl dt:first-child {
 }
 dl dd {
   margin-left: 0;
+}
+/* form styles - not enough yet for it's own file */fieldset .actions {
+  margin-top: 36px;
+}
+.form-control.input-width-xs {
+  width: 60px;
+}
+.form-control.input-width-sm {
+  width: 90px;
+}
+.form-control.input-width-md {
+  width: 150px;
+}
+.form-control.input-width-lg {
+  width: 210px;
+}
+.form-control.input-width-xl {
+  width: 270px;
+}
+.form-control.input-width-xxl {
+  width: 530px;
+}
+.form-control-group:before,
+.form-control-group:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.form-control-group:after {
+  clear: both;
+}
+.form-control-group:before,
+.form-control-group:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.form-control-group:after {
+  clear: both;
+}
+.form-control-group .form-control {
+  margin-right: 12px;
+  float: left;
+}
+.separator {
+  float: left;
+  font-size: 20px;
+  margin: 4px 8px 0 -2px;
+  color: #ffffff;
 }
 /*
     Used to manage styles related to the person details page
@@ -10418,10 +10475,6 @@ a.help {
   margin-left: 6px;
   outline: 0;
   color: #bbbbbb;
-}
-/* form styles - not enough yet for it's own file */
-fieldset .actions {
-  margin-top: 36px;
 }
 /* extension of Bootstrap 3 panel */
 .panel legend {
