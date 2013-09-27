@@ -99,7 +99,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFBFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFBFilter.SaveUserPreference( "Start Date", dtpGivingProfileDate.Text );
+            rFBFilter.SaveUserPreference( "Start Date", dtpGivingProfileDate.SelectedDateTime.ToString() );
             
             BindGrid();
         }
@@ -157,7 +157,7 @@ namespace RockWeb.Blocks.Finance
             {
                 fromDate = DateTime.Today;
             }
-            dtpGivingProfileDate.Text = fromDate.ToShortDateString();
+            dtpGivingProfileDate.SelectedDateTime = fromDate;
 
         }
 

@@ -15,7 +15,7 @@
 
 
                 // uses https://github.com/jdewit/bootstrap-timepicker
-                $('#' + options.id).timepicker();
+                $('#' + options.id).timepicker({ defaultTime: false });
             }
         };
 
