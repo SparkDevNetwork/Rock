@@ -191,6 +191,7 @@ $('#{1}').datepicker().on('changeDate', function (ev) {{
 
 ";
 
+            EnsureChildControls();
             var script = string.Format( scriptFormat, _tbLowerValue.ClientID, _tbUpperValue.ClientID );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "daterange_picker-" + this.ClientID, script, true );
         }
