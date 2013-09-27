@@ -336,7 +336,7 @@ namespace Rock.Web.UI.Controls
             <a class='picker-label' href='#'>
                 <i class='icon-user'></i>
                 <span id='selectedPersonLabel_{0}'>{1}</span>
-                <b class='caret'></b>
+                <b class='caret pull-right'></b>
             </a>
 ";
 

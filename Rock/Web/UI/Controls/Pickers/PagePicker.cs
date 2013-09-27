@@ -77,6 +77,8 @@ namespace Rock.Web.UI.Controls
             base.OnInit( e );
             ItemRestUrlExtraParams = string.Empty;
 
+            this.IconCssClass = "icon-file";
+
             string scriptFormat = @"
 
                 $('#{0}').click(function () {{

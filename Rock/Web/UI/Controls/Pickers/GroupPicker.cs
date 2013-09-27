@@ -26,6 +26,8 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
             ItemRestUrlExtraParams = "/0/false/0";
+
+            this.IconCssClass = "icon-group";
         }
         
         /// <summary>

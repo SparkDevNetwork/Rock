@@ -39,6 +39,24 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the CSS Icon text.
+        /// </summary>
+        /// <value>
+        /// The CSS icon class.
+        /// </value>
+        [
+        Bindable(true),
+        Category("Appearance"),
+        DefaultValue(""),
+        Description("The text for the label.")
+        ]
+        public string IconCssClass
+        {
+            get { return ViewState["IconCssClass"] as string ?? string.Empty; }
+            set { ViewState["IconCssClass"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the help text.
         /// </summary>
         /// <value>
@@ -473,12 +491,12 @@ namespace Rock.Web.UI.Controls
                 string controlHtmlFormatStart = @"
         <div id='{0}' class='picker picker-select'> 
             <a class='picker-label' href='#'>
-                <i class='icon-folder-open'></i>
+                <i class='{2}'></i>
                 <span id='selectedItemLabel_{0}'>{1}</span>
-                <b class='caret'></b>
+                <b class='caret pull-right'></b>
             </a>
 ";
-                writer.Write( controlHtmlFormatStart, this.ID, this.ItemName );
+                writer.Write( controlHtmlFormatStart, this.ID, this.ItemName, this.IconCssClass );
 
                 // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
                 if ( SelectItem != null )

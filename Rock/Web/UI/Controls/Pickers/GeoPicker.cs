@@ -486,7 +486,7 @@ namespace Rock.Web.UI.Controls
             <a class='picker-label' href='#'>
                 <i class='icon-map-marker'></i>
                 <span id='selectedGeographyLabel_{0}'>{1}</span>
-                <b class='caret'></b>
+                <b class='caret pull-right'></b>
             </a>
 ";
 

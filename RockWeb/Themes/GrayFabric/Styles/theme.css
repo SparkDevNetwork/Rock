@@ -7519,6 +7519,59 @@ td.visible-print {
 .picker {
   position: relative;
 }
+.picker:before,
+.picker:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.picker:after {
+  clear: both;
+}
+.picker:before,
+.picker:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.picker:after {
+  clear: both;
+}
+.picker .picker-label {
+  padding: 6px 12px;
+  font-size: 14px;
+  color: #555555;
+  background-color: #eeeeee;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  display: inline-block;
+  min-width: 200px;
+  float: left;
+}
+.picker .picker-label i {
+  margin-right: 6px;
+  float: left;
+  margin-top: 2px;
+}
+.picker .picker-label span {
+  float: left;
+  margin-right: 6px;
+}
+.picker .picker-label .caret {
+  border-top: 4px solid #555555;
+  margin-top: 9px;
+}
+.picker .picker-select-none {
+  display: block;
+  float: left;
+  margin: 6px 0 0 6px;
+}
 .picker .scroll-container-picker {
   width: 355px;
 }

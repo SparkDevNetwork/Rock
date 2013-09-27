@@ -27,6 +27,7 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
             SetExtraRestParams();
+            this.IconCssClass = "icon-folder-open";
         }
 
         /// <summary>

@@ -69,12 +69,12 @@ namespace Rock.Constants
         /// <summary>
         /// <!--<none>-->
         /// </summary>
-        public const string Text = "<none>";
+        public const string Text = "";
 
         /// <summary>
         /// &lt;none&gt;
         /// </summary>
-        public const string TextHtml = "&lt;none&gt;";
+        public const string TextHtml = "";
 
         /// <summary>
         /// Return a ListItem with Text: "None", Value: 0
