@@ -218,7 +218,7 @@ Sys.Application.add_load(function () {
 
                     if ( child != _lbFilter && child != _hfVisible )
                     {
-                        // add row column
+                        // add column
                         writer.AddAttribute("class", "col-md-4");
                         writer.RenderBeginTag(HtmlTextWriterTag.Div);
 
