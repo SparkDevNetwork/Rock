@@ -4,11 +4,11 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -17,12 +17,130 @@ namespace Rock.Web.UI.Controls
     /// A control to select a file and set any attributes
     /// </summary>
     [ToolboxData( "<{0}:FileUploader runat=server></{0}:FileUploader>" )]
-    public class FileUploader : CompositeControl, IPostBackEventHandler, ILabeledControl
+    public class FileUploader : CompositeControl, IPostBackEventHandler, IRockControl
     {
+        #region IRockControl implementation
+
+        /// <summary>
+        /// Gets or sets the label text.
+        /// </summary>
+        /// <value>
+        /// The label text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text for the label." )
+        ]
+        public string Label
+        {
+            get { return ViewState["Label"] as string ?? string.Empty; }
+            set { ViewState["Label"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the help text.
+        /// </summary>
+        /// <value>
+        /// The help text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The help block." )
+        ]
+        public string Help
+        {
+            get
+            {
+                return HelpBlock != null ? HelpBlock.Text : string.Empty;
+            }
+
+            set
+            {
+                if ( HelpBlock != null )
+                {
+                    HelpBlock.Text = value;
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "false" ),
+        Description( "Is the value required?" )
+        ]
+        public bool Required
+        {
+            get { return ViewState["Required"] as bool? ?? false; }
+            set { ViewState["Required"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the required error message.  If blank, the LabelName name will be used
+        /// </summary>
+        /// <value>
+        /// The required error message.
+        /// </value>
+        public string RequiredErrorMessage
+        {
+            get
+            {
+                return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
+            }
+
+            set
+            {
+                if ( RequiredFieldValidator != null )
+                {
+                    RequiredFieldValidator.ErrorMessage = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool IsValid
+        {
+            get
+            {
+                return !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the help block.
+        /// </summary>
+        /// <value>
+        /// The help block.
+        /// </value>
+        public HelpBlock HelpBlock { get; set; }
+
+        /// <summary>
+        /// Gets or sets the required field validator.
+        /// </summary>
+        /// <value>
+        /// The required field validator.
+        /// </value>
+        public RequiredFieldValidator RequiredFieldValidator { get; set; }
+
+        #endregion
 
         #region UI Controls
 
-        private Label _lblTitle;
         private HiddenField _hfBinaryFileId;
         private HiddenField _hfBinaryFileTypeGuid;
         private HtmlAnchor _aFileName;
@@ -37,36 +155,27 @@ namespace Rock.Web.UI.Controls
         /// Initializes a new instance of the <see cref="FileUploader" /> class.
         /// </summary>
         public FileUploader()
+            : base()
         {
-            _lblTitle = new Label();
+            HelpBlock = new HelpBlock();
             _hfBinaryFileId = new HiddenField();
             _hfBinaryFileTypeGuid = new HiddenField();
         }
 
         #endregion
 
-        #region Properties
-
         /// <summary>
-        /// Gets or sets the label text.
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
-        /// <value>
-        /// The label text.
-        /// </value>
-        public string Label
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
         {
-            get
-            {
-                EnsureChildControls();
-                return _lblTitle.Text;
-            }
+            base.OnInit( e );
 
-            set
-            {
-                EnsureChildControls();
-                _lblTitle.Text = value;
-            }
+            // NOTE: The Script Registration is done in RenderBaseControl because Render has to be called before calling GetPostBackEventReference
         }
+
+        #region Properties
 
         /// <summary>
         /// Gets or sets the binary file id.
@@ -122,10 +231,6 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
-        #region Control Methods
-
-        #endregion
-
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
@@ -133,9 +238,7 @@ namespace Rock.Web.UI.Controls
         {
             base.CreateChildControls();
             Controls.Clear();
-
-            Controls.Add( _lblTitle );
-            _lblTitle.ID = "lblTitle";
+            RockControlHelper.CreateChildControls( this, Controls );
 
             Controls.Add( _hfBinaryFileId );
             _hfBinaryFileId.ID = "hfBinaryFileId";
@@ -161,27 +264,30 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            bool renderWithLabel = !string.IsNullOrEmpty( Label );
-
-            if ( renderWithLabel )
+            if ( this.Visible )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-group" );
+                // make a named div so we have an area to limit the drag/drop to
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fileupload-drop-zone" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                _lblTitle.RenderControl( writer );
+                RockControlHelper.RenderControl( this, writer );
+
                 writer.RenderEndTag();
-
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "controls" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
             }
+        }
 
+        /// <summary>
+        /// This is where you implment the simple aspects of rendering your control.  The rest
+        /// will be handled by calling RenderControlHelper's RenderControl() method.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public void RenderBaseControl( HtmlTextWriter writer )
+        {
             if ( BinaryFileId != null )
             {
                 _aFileName.HRef = string.Format( "{0}GetFile.ashx?id={1}", ResolveUrl( "~" ), BinaryFileId );
@@ -198,34 +304,30 @@ namespace Rock.Web.UI.Controls
             }
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
             _hfBinaryFileId.RenderControl( writer );
             _hfBinaryFileTypeGuid.RenderControl( writer );
             _aFileName.RenderControl( writer );
             writer.Write( " " );
             _aRemove.RenderControl( writer );
             writer.RenderEndTag();
-            
+
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            _fileUpload.Attributes["name"] = string.Format( "{0}[]", base.ID );
+            _fileUpload.Attributes["name"] = string.Format( "{0}[]", this.ID );
             _fileUpload.RenderControl( writer );
             writer.RenderEndTag();
-
-            if ( renderWithLabel )
-            {
-                writer.RenderEndTag();
-
-                writer.RenderEndTag();
-            }
 
             RegisterStartupScript();
         }
 
+        /// <summary>
+        /// Registers the startup script.
+        /// </summary>
         private void RegisterStartupScript()
         {
-            var postBackScript = this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "FileUploaded" ), true );
+            var postBackScript = this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this._fileUpload, "FileUploaded" ), true );
             postBackScript = postBackScript.Replace( '\'', '"' );
-            var script = string.Format( @"
+            var script = string.Format( 
+@"
 Rock.controls.fileUploader.initialize({{
     controlId: '{0}',
     fileId: '{1}',
@@ -235,7 +337,7 @@ Rock.controls.fileUploader.initialize({{
     aRemove: '{5}',
     postbackScript: '{6}',
     fileType: 'file'
-}});", 
+}});",
                 _fileUpload.ClientID,
                 BinaryFileId,
                 BinaryFileTypeGuid,
@@ -243,7 +345,7 @@ Rock.controls.fileUploader.initialize({{
                 _aFileName.ClientID,
                 _aRemove.ClientID,
                 postBackScript );
-            ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "KendoImageScript_" + this.ID, script, true );
+            ScriptManager.RegisterStartupScript( _fileUpload, _fileUpload.GetType(), "FileUploaderScript_" + this.ClientID, script, true );
         }
 
         /// <summary>

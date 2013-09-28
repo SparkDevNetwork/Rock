@@ -49,6 +49,7 @@ public class BundleConfig
             "~/Scripts/bootstrap-timepicker/bootstrap-timepicker.js",
             "~/Scripts/bootstrap.min.js",
             "~/Scripts/bootbox.min.js",
+            "~/Scripts/jquery.fileupload.js",
             "~/Scripts/jquery.tinyscrollbar.js" ) );
 
         bundles.Add( new ScriptBundle( "~/bundles/RockUi" ).Include( 

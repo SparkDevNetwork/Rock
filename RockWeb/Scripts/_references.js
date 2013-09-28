@@ -1,6 +1,7 @@
 ﻿/// <reference path="bootstrap.min.js" />
 /// <reference path="jquery.js" />
 /// <reference path="jquery.tinyscrollbar.js" />
+/// <reference path="jquery.fileupload.js" />
 /// <reference path="Rock/controls/timePicker.js" />
 /// <reference path="Rock/controls/datePicker.js" />
 /// <reference path="Rock/controls/grid.js" />
