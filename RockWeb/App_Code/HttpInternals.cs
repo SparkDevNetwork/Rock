@@ -19,6 +19,7 @@ internal static class HttpInternals
     private static readonly FieldInfo s_TheRuntime = typeof( HttpRuntime ).GetField( "_theRuntime", BindingFlags.NonPublic | BindingFlags.Static );
     private static readonly FieldInfo s_FileChangesMonitor = typeof( HttpRuntime ).GetField( "_fcm", BindingFlags.NonPublic | BindingFlags.Instance );
     private static readonly MethodInfo s_FileChangesMonitorStop = s_FileChangesMonitor.FieldType.GetMethod( "Stop", BindingFlags.NonPublic | BindingFlags.Instance );
+    private static bool shuttingDown = false;
 
     /// <summary>
     /// Gets the HTTP runtime.
@@ -61,6 +62,7 @@ internal static class HttpInternals
     /// </summary>
     public static void RockWebFileChangeMonitor()
     {
+        shuttingDown = false;
         StopFileMonitoring();
         HttpInternals.StopFileMonitoring();
         DirectoryInfo rockWebPath = new DirectoryInfo(HttpRuntime.AppDomainAppPath);
@@ -68,8 +70,9 @@ internal static class HttpInternals
         FileSystemWatcher rockWebFsw = new FileSystemWatcher( rockWebPath.FullName );
         rockWebFsw.NotifyFilter = NotifyFilters.LastWrite;
         rockWebFsw.IncludeSubdirectories = true;
-        rockWebFsw.Changed += fsw_Changed;
+        rockWebFsw.Changed += rockWebFsw_Changed;
         rockWebFsw.EnableRaisingEvents = true;
+        rockWebFsw.Error += rockWebFsw_Error;
 
         // also restart if any .cs files are modified in the solution
         var solutionPath = Path.Combine( rockWebPath.Parent.FullName );
@@ -82,15 +85,29 @@ internal static class HttpInternals
     }
 
     /// <summary>
+    /// Handles the Error event of the rockWebFsw control.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="ErrorEventArgs"/> instance containing the event data.</param>
+    static void rockWebFsw_Error( object sender, ErrorEventArgs e )
+    {
+        System.Diagnostics.Debug.WriteLine( string.Format( "HttpInternals got an error: {0}", e.GetException().Message ) );   
+    }
+
+    /// <summary>
     /// Handles the Changed event of the sourceFileFsw control.
     /// </summary>
     /// <param name="sender">The source of the event.</param>
     /// <param name="e">The <see cref="FileSystemEventArgs"/> instance containing the event data.</param>
     static void sourceFileFsw_Changed( object sender, FileSystemEventArgs e )
     {
-        // send debug info to debug window
-        System.Diagnostics.Debug.WriteLine( string.Format( "Initiate shutdown due to .cs source file change: {0}", e.FullPath ) );
-        HostingEnvironment.InitiateShutdown();
+        if ( !shuttingDown )
+        {
+            // send debug info to debug window
+            System.Diagnostics.Debug.WriteLine( string.Format( "Initiate shutdown due to .cs source file change: {0}", e.FullPath ) );            
+            shuttingDown = true;
+            HostingEnvironment.InitiateShutdown();
+        }
     }
 
     /// <summary>
@@ -98,11 +115,11 @@ internal static class HttpInternals
     /// </summary>
     /// <param name="sender">The source of the event.</param>
     /// <param name="e">The <see cref="FileSystemEventArgs"/> instance containing the event data.</param>
-    public static void fsw_Changed( object sender, FileSystemEventArgs e )
+    public static void rockWebFsw_Changed( object sender, FileSystemEventArgs e )
     {
         FileInfo fileInfo = new FileInfo( e.FullPath );
 
-        string[] extensionIgnoreFilter = new string[] { ".csv", ".ignore2", ".nupkg" };
+        string[] extensionIgnoreFilter = new string[] { ".csv", ".nupkg" };
         string[] dirIgnoreFilter = new string[] { "Cache", "Logs", "App_Data" };
 
         if ( fileInfo.Attributes.HasFlag( FileAttributes.Directory ) )
@@ -124,8 +141,12 @@ internal static class HttpInternals
         {
             if ( !dirIgnoreFilter.Contains( fileInfo.Name ) )
             {
-                System.Diagnostics.Debug.WriteLine( string.Format( "Initiate shutdown due to RockWeb file change: {0}", e.FullPath ) );
-                HostingEnvironment.InitiateShutdown();
+                if ( !shuttingDown )
+                {
+                    System.Diagnostics.Debug.WriteLine( string.Format( "Initiate shutdown due to RockWeb file change: {0}", e.FullPath ) );
+                    shuttingDown = true;
+                    HostingEnvironment.InitiateShutdown();
+                }
             }
         }
     }
