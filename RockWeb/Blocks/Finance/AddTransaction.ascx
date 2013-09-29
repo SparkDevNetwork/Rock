@@ -225,7 +225,7 @@
 
                                 </asp:PlaceHolder>
 
-                                <Rock:NotificationBox ID="nbSaveAccount" runat="server" Visible="false" NotificationBoxType="Error"></Rock:NotificationBox>
+                                <Rock:NotificationBox ID="nbSaveAccount" runat="server" Visible="false" NotificationBoxType="Danger"></Rock:NotificationBox>
 
                                 <div id="divSaveActions" runat="server" class="actions">
                                     <asp:LinkButton ID="lbSaveAccount" runat="server" Text="Save Account" CssClass="btn btn-primary" OnClick="lbSaveAccount_Click" />
