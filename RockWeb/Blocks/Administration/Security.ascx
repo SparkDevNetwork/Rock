@@ -136,7 +136,7 @@
 
     </div>
 
-    <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Error" Visible="false" />
+    <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Danger" Visible="false" />
 
 </ContentTemplate>
 </asp:UpdatePanel>

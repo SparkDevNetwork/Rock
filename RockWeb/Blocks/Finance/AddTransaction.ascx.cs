@@ -448,7 +448,7 @@ achieve our mission.  We are so grateful for your commitment.
             else
             {
                 SetPage( 0 );
-                ShowMessage( NotificationBoxType.Error, "Configuration Error", "Please check the configuration of this block and make sure a valid Credit Card and/or ACH Finacial Gateway has been selected." );
+                ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Please check the configuration of this block and make sure a valid Credit Card and/or ACH Finacial Gateway has been selected." );
             }
             
         }
@@ -517,7 +517,7 @@ achieve our mission.  We are so grateful for your commitment.
                     }
                     else
                     {
-                        ShowMessage( NotificationBoxType.Error, "Oops!", errorMessage );
+                        ShowMessage( NotificationBoxType.Danger, "Oops!", errorMessage );
                     }
 
                     break;
@@ -531,7 +531,7 @@ achieve our mission.  We are so grateful for your commitment.
                     }
                     else
                     {
-                        ShowMessage( NotificationBoxType.Error, "Payment Error", errorMessage );
+                        ShowMessage( NotificationBoxType.Danger, "Payment Error", errorMessage );
                     }
 
                     break;
@@ -554,7 +554,7 @@ achieve our mission.  We are so grateful for your commitment.
             }
             else
             {
-                ShowMessage( NotificationBoxType.Error, "Payment Error", errorMessage );
+                ShowMessage( NotificationBoxType.Danger, "Payment Error", errorMessage );
             }
         }
 
@@ -578,7 +578,7 @@ achieve our mission.  We are so grateful for your commitment.
                 {
                     nbSaveAccount.Title = "Missing Informaton";
                     nbSaveAccount.Text = "A username and password are required when saving an account";
-                    nbSaveAccount.NotificationBoxType = NotificationBoxType.Error;
+                    nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
                     nbSaveAccount.Visible = true;
                     return;
                 }
@@ -587,7 +587,7 @@ achieve our mission.  We are so grateful for your commitment.
                 {
                     nbSaveAccount.Title = "Invalid Username";
                     nbSaveAccount.Text = "The selected Username is already being used.  Please select a different Username";
-                    nbSaveAccount.NotificationBoxType = NotificationBoxType.Error;
+                    nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
                     nbSaveAccount.Visible = true;
                     return;
                 }
@@ -596,7 +596,7 @@ achieve our mission.  We are so grateful for your commitment.
                 {
                     nbSaveAccount.Title = "Invalid Password";
                     nbSaveAccount.Text = "The password and password confirmation do not match";
-                    nbSaveAccount.NotificationBoxType = NotificationBoxType.Error;
+                    nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
                     nbSaveAccount.Visible = true;
                     return;
                 }
@@ -656,7 +656,7 @@ achieve our mission.  We are so grateful for your commitment.
                     {
                         nbSaveAccount.Title = "Invalid Transaction";
                         nbSaveAccount.Text = "Sorry, the account information cannot be saved as there's not a valid transaction code to reference";
-                        nbSaveAccount.NotificationBoxType = NotificationBoxType.Error;
+                        nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
                         nbSaveAccount.Visible = true;
                     }
                 }
@@ -665,7 +665,7 @@ achieve our mission.  We are so grateful for your commitment.
             {
                 nbSaveAccount.Title = "Missing Account Name";
                 nbSaveAccount.Text = "Please enter a name to use for this account";
-                nbSaveAccount.NotificationBoxType = NotificationBoxType.Error;
+                nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
                 nbSaveAccount.Visible = true;
             }
         }

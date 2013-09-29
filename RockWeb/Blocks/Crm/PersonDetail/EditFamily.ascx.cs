@@ -63,7 +63,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     nbNotice.Heading = "Invalid Family";
                     nbNotice.Text = "Sorry, but the group selected is not a Family group";
-                    nbNotice.NotificationBoxType = NotificationBoxType.Error;
+                    nbNotice.NotificationBoxType = NotificationBoxType.Danger;
                     nbNotice.Visible = true;
 
                     _family = null;
