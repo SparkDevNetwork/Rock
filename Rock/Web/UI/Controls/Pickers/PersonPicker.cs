@@ -1,4 +1,4 @@
-//
+ //
 // THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
@@ -328,7 +328,12 @@ namespace Rock.Web.UI.Controls
             _btnSelect.ID = string.Format( "btnSelect_{0}", this.ID );
             _btnSelect.Text = "Select";
             _btnSelect.CausesValidation = false;
-            _btnSelect.Click += btnSelect_Click;
+
+            // we only need the postback on Select if SelectPerson is assigned
+            if ( SelectPerson != null )
+            {
+                _btnSelect.Click += btnSelect_Click;
+            }
 
             _btnSelectNone = new LinkButton();
             _btnSelectNone.ClientIDMode = ClientIDMode.Static;
@@ -336,7 +341,13 @@ namespace Rock.Web.UI.Controls
             _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ID );
             _btnSelectNone.Text = "<i class='icon-remove'></i>";
             _btnSelectNone.CausesValidation = false;
-            _btnSelectNone.Click += btnSelect_Click;
+            _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
+
+            // we only need the postback on SelectNone if SelectPerson is assigned
+            if ( SelectPerson != null )
+            {
+                _btnSelectNone.Click += btnSelect_Click;
+            }
 
             Controls.Add( _hfPersonId );
             Controls.Add( _hfPersonName );
@@ -383,15 +394,7 @@ namespace Rock.Web.UI.Controls
 ";
                 writer.Write( string.Format( controlHtmlFormatStart, this.ID, this.PersonName ) );
 
-                // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
-                if ( SelectPerson != null )
-                {
-                    _btnSelectNone.RenderControl( writer );
-                }
-                else
-                {
-                    writer.Write( "<a class='picker-select-none' id='btnSelectNone_{0}' href='#' style='display:none'><i class='icon-remove'></i></a>", this.ID );
-                }
+                _btnSelectNone.RenderControl( writer );
 
                 string controlHtmlFormatMiddle = @"
           <div class='picker-menu dropdown-menu'>

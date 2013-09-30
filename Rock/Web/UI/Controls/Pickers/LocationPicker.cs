@@ -18,6 +18,8 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class LocationPicker : ItemPicker
     {
+        #region OnInit
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -29,6 +31,27 @@ namespace Rock.Web.UI.Controls
             this.AllowMultiSelect = false;
         }
 
+        #endregion
+
+        #region LocationPicker specific
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [limit automatic named locations]. True by default.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [limit automatic named locations]; otherwise, <c>false</c>.
+        /// </value>
+        public bool LimitToNamedLocations
+        {
+            get { return ViewState["LimitToNamedLocations"] as bool? ?? true; }
+
+            set { ViewState["LimitToNamedLocations"] = value; }
+        }
+
+        #endregion
+
+        #region Implementation of ItemPicker
+
         /// <summary>
         /// Sets the value.
         /// </summary>
@@ -38,7 +61,7 @@ namespace Rock.Web.UI.Controls
             if ( location != null )
             {
                 ItemId = location.Id.ToString();
-                
+
                 string parentLocationIds = string.Empty;
                 var parentLocation = location.ParentLocation;
                 while ( parentLocation != null )
@@ -86,6 +109,8 @@ namespace Rock.Web.UI.Controls
         {
             get { return "~/api/locations/getchildren/"; }
         }
+
+        #endregion
 
     }
 }
