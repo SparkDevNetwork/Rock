@@ -414,7 +414,12 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MergeField]
-        public virtual ICollection<UserLogin> Users { get; set; }
+        public virtual ICollection<UserLogin> Users 
+        {
+            get { return _users ?? ( _users = new Collection<UserLogin>() ); }
+            set { _users = value; }
+        }
+        private ICollection<UserLogin> _users;
 
         /// <summary>
         /// Gets or sets the Email Templates.
@@ -423,7 +428,12 @@ namespace Rock.Model
         /// Collection of Email Templates.
         /// </value>
         [DataMember]
-        public virtual ICollection<EmailTemplate> EmailTemplates { get; set; }
+        public virtual ICollection<EmailTemplate> EmailTemplates
+        {
+            get { return _emailTemplates ?? ( _emailTemplates = new Collection<EmailTemplate>() ); }
+            set { _emailTemplates = value; }
+        }
+        private ICollection<EmailTemplate> _emailTemplates;
 
         /// <summary>
         /// Gets or sets the Phone Numbers.
@@ -433,7 +443,12 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MergeField]
-        public virtual ICollection<PhoneNumber> PhoneNumbers { get; set; }
+        public virtual ICollection<PhoneNumber> PhoneNumbers
+        {
+            get { return _phoneNumbers ?? ( _phoneNumbers = new Collection<PhoneNumber>() ); }
+            set { _phoneNumbers = value; }
+        }
+        private ICollection<PhoneNumber> _phoneNumbers;
 
         /// <summary>
         /// Gets or sets the Members.
@@ -443,7 +458,12 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MergeField]
-        public virtual ICollection<GroupMember> Members { get; set; }
+        public virtual ICollection<GroupMember> Members
+        {
+            get { return _members ?? ( _members = new Collection<GroupMember>() ); }
+            set { _members = value; }
+        }
+        private ICollection<GroupMember> _members;
 
         /// <summary>
         /// Gets or sets the attendances.
