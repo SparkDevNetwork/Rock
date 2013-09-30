@@ -71,12 +71,13 @@ namespace Rock.Web.UI.Controls
                     cssClass.Append( " required" );
                 }
 
-                writer.AddAttribute( "class", cssClass.ToString() );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, cssClass.ToString() );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 if ( !( rockControl is RockLiteral ) )
                 {
-                    writer.AddAttribute( "for", rockControl.ClientID );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.For, rockControl.ClientID );
                 }
                 writer.RenderBeginTag( HtmlTextWriterTag.Label );
                 writer.Write( rockControl.Label );
@@ -118,10 +119,11 @@ namespace Rock.Web.UI.Controls
 
             if ( renderLabel )
             {
-                writer.AddAttribute( "class", "form-group" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( "for", control.ClientID );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
+                writer.AddAttribute( HtmlTextWriterAttribute.For, control.ClientID );
                 writer.RenderBeginTag( HtmlTextWriterTag.Label );
                 writer.Write( label );
                 writer.RenderEndTag();  // label
