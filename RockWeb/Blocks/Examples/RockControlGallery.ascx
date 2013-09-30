@@ -9,7 +9,7 @@
         <asp:Panel ID="pnlDetails" runat="server">
             <asp:LinkButton runat="server" ID="btnToggleLabels" Text="Toggle Labels" CausesValidation="false" OnClick="btnToggleLabels_Click"
                 OnClientClick="javascript: $(':header').toggle()" />
-            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
+            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" />
 
             <h1>General Information</h1>
 

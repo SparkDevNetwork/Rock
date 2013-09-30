@@ -28,7 +28,7 @@
             <Content>
 
             <asp:HiddenField ID="hfDefinedValueId" runat="server" />
-            <asp:ValidationSummary ID="valSummaryValue" runat="server" CssClass="alert alert-error" />
+            <asp:ValidationSummary ID="valSummaryValue" runat="server" CssClass="alert alert-danger" />
             <legend>
                 <asp:Literal ID="lActionTitleDefinedValue" runat="server" />
             </legend>

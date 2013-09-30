@@ -6,7 +6,7 @@
 
             <asp:HiddenField ID="hfSiteId" runat="server" />
 
-            <asp:ValidationSummary runat="server" CssClass="alert alert-error" />
+            <asp:ValidationSummary runat="server" CssClass="alert alert-danger" />
 
             <fieldset>
                 <legend>

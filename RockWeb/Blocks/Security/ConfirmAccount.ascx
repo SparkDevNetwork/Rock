@@ -4,7 +4,7 @@
 
     <asp:Panel ID="pnlCode" runat="server" Visible="false">
 
-        <asp:Panel ID="pnlInvalid" runat="server" CssClass="alert alert-error error">
+        <asp:Panel ID="pnlInvalid" runat="server" CssClass="alert alert-danger error">
             <asp:Literal ID="lInvalid" runat="server" ></asp:Literal> 
         </asp:Panel>
 
