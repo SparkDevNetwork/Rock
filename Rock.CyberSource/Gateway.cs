@@ -4,9 +4,9 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Net;
 using System.ServiceModel;
+
+using Rock.CyberSource;
 using Rock.Attribute;
-using Rock.CyberSource.Live;
-//using Rock.CyberSource.Live;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -94,7 +94,7 @@ namespace Rock.CyberSource
         {                        
 
             int newspringTransactionNumber = 1;
-            
+            TransactionProcessorClient asdf = new TransactionProcessorClient();
 
             RequestMessage request = new RequestMessage();            
             request.merchantID = GetAttributeValue( "MerchantID" );            
@@ -144,11 +144,14 @@ namespace Rock.CyberSource
             request.item[0] = item;
 
             string transactionkey = GetAttributeValue( "TransactionKey" );
+            BasicHttpBinding binding = new BasicHttpBinding( BasicHttpSecurityMode.TransportWithMessageCredential );
+            EndpointAddress endpoint = new EndpointAddress( GatewayUrl );
+            
 
-            try
+            try            
             {
-                TransactionProcessorClient client = new TransactionProcessorClient();
-                client.Endpoint.Address = new EndpointAddress( GatewayUrl );
+                TransactionProcessorClient client = new TransactionProcessorClient( binding, endpoint );
+                
                 client.ChannelFactory.Credentials.UserName.UserName = request.merchantID;
                 client.ChannelFactory.Credentials.UserName.Password = transactionkey;                
 

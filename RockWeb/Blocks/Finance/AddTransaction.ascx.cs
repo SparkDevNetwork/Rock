@@ -1361,22 +1361,22 @@ achieve our mission.  We are so grateful for your commitment.
 
         // As amounts are entered, validate that they are numeric and recalc total
         $('.account-amount').on('change', function() {{
-            var totalAmt = Number(0);
-            $('input.account-amount').each(function (index) {{
+            var totalAmt = Number(0);            
+            $('.account-amount .form-control').each(function (index) {{
                 var itemValue = $(this).val();
                 if (itemValue != null && itemValue != '') {{
                     if (isNaN(itemValue)) {{
-                        $(this).parents('div.control-group').addClass('error');
+                        $(this).parents('div.input-group').addClass('error');
                     }}
                     else {{
-                        $(this).parents('div.control-group').removeClass('error');
+                        $(this).parents('div.input-group').removeClass('error');
                         var num = Number(itemValue);
                         $(this).val(num.toFixed(2));
                         totalAmt = totalAmt + num;
                     }}
                 }}
                 else {{
-                    $(this).parents('div.control-group').removeClass('error');
+                    $(this).parents('div.input-group').removeClass('error');
                 }}
             }});
             $('.total-amount').html('$ ' + totalAmt.toFixed(2));
