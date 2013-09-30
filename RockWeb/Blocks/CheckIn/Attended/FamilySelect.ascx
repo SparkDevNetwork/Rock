@@ -203,10 +203,10 @@
         <div class="checkin-body">
             <div class="row">
                 <div class="col-md-2">
-                    <Rock:LabeledTextBox ID="tbFirstNameSearch" runat="server" CssClass="col-md-12" LabelText="First Name" Required="true" RequiredErrorMessage="Required" ValidationGroup="test" />
+                    <Rock:RockTextBox ID="tbFirstNameSearch" runat="server" CssClass="col-md-12" LabelText="First Name" Required="true" RequiredErrorMessage="Required" ValidationGroup="test" />
                 </div>
                 <div class="col-md-3">
-                    <Rock:LabeledTextBox ID="tbLastNameSearch" runat="server" CssClass="col-md-12" LabelText="Last Name" Required="true" RequiredErrorMessage="Required" ValidationGroup="test" />
+                    <Rock:RockTextBox ID="tbLastNameSearch" runat="server" CssClass="col-md-12" LabelText="Last Name" Required="true" RequiredErrorMessage="Required" ValidationGroup="test" />
                 </div>
                 <div class="col-md-2">
                     <Rock:DatePicker ID="dpDOBSearch" runat="server" LabelText="DOB" CssClass="col-md-12" Required="true" RequiredErrorMessage="Required" ValidationGroup="test" />
@@ -293,10 +293,10 @@
             <ItemTemplate>
                 <div class="row">
                     <div class="col-md-2">
-                        <Rock:LabeledTextBox ID="tbFirstName" runat="server" CssClass="col-md-12" Text='<%# ((NewPerson)Container.DataItem).FirstName %>' />
+                        <Rock:RockTextBox ID="tbFirstName" runat="server" CssClass="col-md-12" Text='<%# ((NewPerson)Container.DataItem).FirstName %>' />
                     </div>
                     <div class="col-md-3">
-                        <Rock:LabeledTextBox ID="tbLastName" runat="server" CssClass="col-md-12" Text='<%# ((NewPerson)Container.DataItem).LastName %>' />
+                        <Rock:RockTextBox ID="tbLastName" runat="server" CssClass="col-md-12" Text='<%# ((NewPerson)Container.DataItem).LastName %>' />
                     </div>
                     <div class="col-md-2">
                         <Rock:DatePicker ID="dpBirthDate" runat="server" CssClass="col-md-12" SelectedDate='<%# ((NewPerson)Container.DataItem).BirthDate %>' />
