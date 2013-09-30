@@ -9164,30 +9164,6 @@ dl dd {
 /* form styles - not enough yet for it's own file */fieldset .actions {
   margin-top: 36px;
 }
-fieldset .actions:before,
-fieldset .actions:after {
-  content: " ";
-  /* 1 */
-
-  display: table;
-  /* 2 */
-
-}
-fieldset .actions:after {
-  clear: both;
-}
-fieldset .actions:before,
-fieldset .actions:after {
-  content: " ";
-  /* 1 */
-
-  display: table;
-  /* 2 */
-
-}
-fieldset .actions:after {
-  clear: both;
-}
 .form-control.input-width-xs,
 .input-group.input-width-xs {
   width: 60px;

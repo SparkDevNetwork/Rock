@@ -277,8 +277,7 @@ Rock.controls.fileUploader.initialize({{
 
             _aRemove = new HtmlAnchor();
             _aRemove.ID = "rmv";
-            _aRemove.InnerText = "Remove";
-            _aRemove.Attributes["class"] = "remove-imgThumbnail";
+            _aRemove.InnerHtml = "<i class='icon-remove'></i>";
             Controls.Add( _aRemove );
 
             _fileUpload = new FileUpload();
@@ -295,12 +294,12 @@ Rock.controls.fileUploader.initialize({{
             if ( this.Visible )
             {
                 // make a named div so we have an area to limit the drag/drop to
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fileupload-drop-zone" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                //writer.AddAttribute( "class", "fileupload-dropzone" );
+                //writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 RockControlHelper.RenderControl( this, writer );
 
-                writer.RenderEndTag();
+                //writer.RenderEndTag();
             }
         }
 
@@ -311,19 +310,21 @@ Rock.controls.fileUploader.initialize({{
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( "class", "rock-imgThumbnail" );
+            writer.AddAttribute("class", "imageupload-group");
+            writer.RenderBeginTag(HtmlTextWriterTag.Div);
+            
+            writer.AddAttribute("class", "imageupload-thumbnail");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             if ( BinaryFileId != null )
             {
-                _imgThumbnail.Style["display"] = "inline";
-                _imgThumbnail.ImageUrl = "~/GetImage.ashx?id=" + BinaryFileId.ToString() + "&width=50&height=50";
+                _imgThumbnail.ImageUrl = "~/GetImage.ashx?id=" + BinaryFileId.ToString() + "&width=50";
                 _aRemove.Style[HtmlTextWriterStyle.Display] = "inline";
             }
             else
             {
-                _imgThumbnail.Style["display"] = "none";
-                _imgThumbnail.ImageUrl = string.Empty;
+                //_imgThumbnail.Style["display"] = "none";
+                _imgThumbnail.ImageUrl = "/Assets/Images/no-picture.svg";
                 _aRemove.Style[HtmlTextWriterStyle.Display] = "none";
             }
 
@@ -331,14 +332,29 @@ Rock.controls.fileUploader.initialize({{
 
             _hfBinaryFileId.RenderControl( writer );
             _hfBinaryFileTypeGuid.RenderControl( writer );
-            _aRemove.RenderControl( writer );
+            
+            writer.RenderEndTag();
 
+            writer.AddAttribute("class", "imageupload-remove");
+            writer.RenderBeginTag(HtmlTextWriterTag.Div);
+
+            _aRemove.RenderControl(writer);
+
+            writer.RenderEndTag();
+
+            writer.AddAttribute("class", "imageupload-dropzone");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.RenderBeginTag(HtmlTextWriterTag.Span);
+            writer.Write("drop / click to upload");
+            writer.RenderEndTag();
+
             _fileUpload.Attributes["name"] = string.Format( "{0}[]", this.ID );
             _fileUpload.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();
+
         }
 
         /// <summary>
