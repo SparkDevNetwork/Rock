@@ -265,6 +265,10 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string BadgeType { get; set; }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BadgeRowEventArgs"/> class.
+        /// </summary>
+        /// <param name="fieldValue">The field value.</param>
         public BadgeRowEventArgs(object fieldValue)
         {
             FieldValue = fieldValue;

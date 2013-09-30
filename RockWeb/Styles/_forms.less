@@ -3,6 +3,8 @@
     
     1. Bootstrap Overrides / Additions
     2. Data Lists
+    3. Input Sizing
+    4. Control Specific Styles
 
 */
 
@@ -24,7 +26,7 @@ legend {
 // 2. Data Lists
 // -------------------------
 
-dl {
+dl { // todo this is needed? 9/27/13
     margin-bottom: 0;
 
     dt {
@@ -42,6 +44,72 @@ dl {
     }
 }
 
-// 2. Form Action
+/* form styles - not enough yet for it's own file */  // todo needed 9/27/13
+fieldset .actions {
+    margin-top: 36px;
+}
+
+// 3. Input Sizing
 // -------------------------
 
+// form control sizing for bs3 - to be used only in specific cases
+// added on 9/27/13
+.form-control.input-width-xs,
+.input-group.input-width-xs {
+    width: 60px;
+}
+
+.form-control.input-width-sm,
+.input-group.input-width-sm {
+    width: 90px;
+}
+
+.form-control.input-width-md,
+.input-group.input-width-md {
+    width: 150px;
+}
+
+.form-control.input-width-lg,
+.input-group.input-width-lg {
+    width: 210px;
+}
+
+.form-control.input-width-xl,
+.input-group.input-width-xl {
+    width: 270px;
+}
+
+.form-control.input-width-xxl,
+.input-group.input-width-xxl {
+    width: 530px;
+}
+
+.form-control-group {
+    .clearfix();
+
+    .form-control,
+    .input-group {
+        margin-right: 12px;
+        float: left;
+    }
+}
+
+// 4. Control Specific Styling
+// -------------------------
+
+.month-year-picker .separator,
+.month-day-picker .separator
+ {  
+    float: left;
+    font-size: 20px;
+    margin: 4px 8px 0 -2px;
+    color: lighten(@text-color, 35%);
+}
+
+.date-range-picker,
+.number-range-editor {
+    span.to {
+        float: left;
+        margin: 8px 12px 0 0;
+    }
+}

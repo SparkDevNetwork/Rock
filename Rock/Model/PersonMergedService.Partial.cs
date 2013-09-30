@@ -16,22 +16,42 @@ namespace Rock.Model
     /// </summary>
     public partial class PersonMergedService 
     {
+        /// <summary>
+        /// Gets the new.
+        /// </summary>
+        /// <param name="previousPersonId">The previous person id.</param>
+        /// <returns></returns>
         public PersonMerged GetNew( int previousPersonId )
         {
             return Repository.FirstOrDefault( t => t.PreviousPersonId == previousPersonId );
         }
 
+        /// <summary>
+        /// Gets the new.
+        /// </summary>
+        /// <param name="previousPersonGuid">The previous person GUID.</param>
+        /// <returns></returns>
         public PersonMerged GetNew( Guid previousPersonGuid )
         {
             return Repository.FirstOrDefault( t => t.PreviousPersonGuid == previousPersonGuid );
         }
 
+        /// <summary>
+        /// Gets the new by previous encrypted key.
+        /// </summary>
+        /// <param name="encryptedKey">The encrypted key.</param>
+        /// <returns></returns>
         public virtual PersonMerged GetNewByPreviousEncryptedKey( string encryptedKey )
         {
             string publicKey = Rock.Security.Encryption.DecryptString( encryptedKey );
             return GetNewByPreviousPublicKey( publicKey );
         }
 
+        /// <summary>
+        /// Gets the new by previous public key.
+        /// </summary>
+        /// <param name="publicKey">The public key.</param>
+        /// <returns></returns>
         public virtual PersonMerged GetNewByPreviousPublicKey( string publicKey )
         {
             try

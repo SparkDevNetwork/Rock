@@ -604,6 +604,12 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Gets the days to birthday.
+        /// </summary>
+        /// <value>
+        /// The days to birthday.
+        /// </value>
         [MergeField]
         public virtual int DaysToBirthday
         {

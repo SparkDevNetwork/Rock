@@ -80,6 +80,7 @@ namespace Rock.Model
                 target.CreditCardTypeValueId = source.CreditCardTypeValueId;
                 target.SourceTypeValueId = source.SourceTypeValueId;
                 target.CheckMicrEncrypted = source.CheckMicrEncrypted;
+                target.ScheduledTransactionId = source.ScheduledTransactionId;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

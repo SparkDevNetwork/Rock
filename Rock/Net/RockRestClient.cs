@@ -34,8 +34,9 @@ namespace Rock.Net
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RockRestClient"/> class.
+        /// Initializes a new instance of the <see cref="RockRestClient" /> class.
         /// </summary>
+        /// <param name="rockBaseUrl">The rock base URL.</param>
         /// <param name="c">The c.</param>
         public RockRestClient( string rockBaseUrl, CookieContainer c )
         {
@@ -127,7 +128,6 @@ namespace Rock.Net
         /// </summary>
         /// <param name="username">The username.</param>
         /// <param name="password">The password.</param>
-        /// <param name="rockBaseUrl">The rock base URL.</param>
         /// <param name="rockLoginUrl">The rock login URL.</param>
         public void Login( string username, string password, string rockLoginUrl = "api/auth/login" )
         {

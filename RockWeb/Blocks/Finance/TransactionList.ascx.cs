@@ -11,6 +11,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -21,12 +22,15 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// 
     /// </summary>
+    [ContextAware]
     [LinkedPage("Detail Page")]
     public partial class TransactionList : Rock.Web.UI.RockBlock
     {
         #region Fields
         
         private bool _canConfigure = false;
+        private FinancialBatch _batch = null;
+        private Person _person = null;
 
         #endregion
 
@@ -67,6 +71,27 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
+            base.OnLoad(e);
+
+            var contextEntity = this.ContextEntity();
+            if (contextEntity != null)
+            {
+                dtStartDate.Visible = false;
+                dtEndDate.Visible = false;
+                txtFromAmount.Visible = false;
+                txtToAmount.Visible = false;
+                txtTransactionCode.Visible = false;
+
+                if (contextEntity is Person)
+                {
+                    _person = contextEntity as Person;
+                }
+                else if (contextEntity is FinancialBatch)
+                {
+                    _batch = contextEntity as FinancialBatch;
+                }
+            }
+
             if ( !Page.IsPostBack )
             {
                 BindFilter();
@@ -253,6 +278,16 @@ namespace RockWeb.Blocks.Finance
             
             var transactionService = new FinancialTransactionService();
             var queryable = transactionService.Get( searchValue );
+
+            if ( _batch != null )
+            {
+                queryable = queryable.Where( t => t.BatchId.HasValue && t.BatchId.Value == _batch.Id );
+            }
+
+            if ( _person != null )
+            {
+                queryable = queryable.Where( t => t.AuthorizedPersonId == _person.Id );
+            }
 
             if ( sortProperty != null )
             {

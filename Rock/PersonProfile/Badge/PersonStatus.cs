@@ -36,28 +36,21 @@ namespace Rock.PersonProfile.Badge
         }
 
         /// <summary>
-        /// Gets the type of the badge.
+        /// Gets the badge label
         /// </summary>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public override string GetBadgeType( Person person )
-        {
-            return "Success";
-        }
-
-        /// <summary>
-        /// Gets the text.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <returns></returns>
-        public override string GetText(Person person )
+        public override HighlightLabel GetLabel(Person person)
         {
             if ( Person != null )
             {
-                return Person.PersonStatusValueId.DefinedValue();
+                var label = new HighlightLabel();
+                label.LabelType = LabelType.Success;
+                label.Text = Person.PersonStatusValueId.DefinedValue();
+                return label;
             }
 
-            return string.Empty;
+            return null;
         } 
     }
 }

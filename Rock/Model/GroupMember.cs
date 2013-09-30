@@ -59,6 +59,12 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public int GroupRoleId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the group member status.
+        /// </summary>
+        /// <value>
+        /// The group member status.
+        /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public GroupMemberStatus GroupMemberStatus { get; set; }
@@ -120,10 +126,24 @@ namespace Rock.Model
         }
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
     public enum GroupMemberStatus
     {
+        /// <summary>
+        /// inactive
+        /// </summary>
         Inactive = 0,
-        Active = 1, 
+
+        /// <summary>
+        /// active
+        /// </summary>
+        Active = 1,
+
+        /// <summary>
+        /// pending
+        /// </summary>
         Pending = 2 
     }
 }

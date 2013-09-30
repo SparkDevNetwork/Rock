@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿//
+// THIS WORK IS LICENSED UNDER A CREATIVE COMMONS ATTRIBUTION-NONCOMMERCIAL-
+// SHAREALIKE 3.0 UNPORTED LICENSE:
+// http://creativecommons.org/licenses/by-nc-sa/3.0/
+//
 using System.Text;
-using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -23,8 +24,8 @@ namespace Rock.Web.UI.Controls
             rockControl.HelpBlock = new HelpBlock();
         }
 
-        /// <summary>
-        /// Creates the child controls.
+        /// <summary> 
+        /// Creates the child controls and handles adding the required field validator control.
         /// </summary>
         /// <param name="rockControl">The rock control.</param>
         /// <param name="controls">The controls.</param>
@@ -48,7 +49,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Renders the control.
+        /// Renders the control which handles adding all the IRockControl common pieces (Label, Help, etc.).
         /// </summary>
         /// <param name="rockControl">The rock control.</param>
         /// <param name="writer">The writer.</param>
@@ -59,10 +60,24 @@ namespace Rock.Web.UI.Controls
 
             if ( renderLabel )
             {
-                writer.AddAttribute( "class", "form-group" + ( rockControl.IsValid ? "" : " error" ) + ( rockControl.Required ? " required" : "" ) );
+                var cssClass = new StringBuilder();
+                cssClass.AppendFormat( "form-group {0}", rockControl.GetType().Name.SplitCase().Replace(' ', '-').ToLower());
+                if ( !rockControl.IsValid )
+                {
+                    cssClass.Append(" error" );
+                }
+                if ( rockControl.Required )
+                {
+                    cssClass.Append( "required" );
+                }
+
+                writer.AddAttribute( "class", cssClass.ToString() );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.AddAttribute( "for", rockControl.ClientID );
+                if ( !( rockControl is RockLiteral ) )
+                {
+                    writer.AddAttribute( "for", rockControl.ClientID );
+                }
                 writer.RenderBeginTag( HtmlTextWriterTag.Label );
                 writer.Write( rockControl.Label );
 
@@ -96,5 +111,30 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
             }
         }
+
+        public static void RenderControl( string label, Control control, HtmlTextWriter writer )
+        {
+            bool renderLabel = ( !string.IsNullOrEmpty( label ) );
+
+            if ( renderLabel )
+            {
+                writer.AddAttribute( "class", "form-group" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.AddAttribute( "for", control.ClientID );
+                writer.RenderBeginTag( HtmlTextWriterTag.Label );
+                writer.Write( label );
+                writer.RenderEndTag();  // label
+
+                control.RenderControl( writer );
+
+                writer.RenderEndTag();  // form-group
+            }
+            else
+            {
+                control.RenderControl( writer );
+            }
+        }
+
     }
 }

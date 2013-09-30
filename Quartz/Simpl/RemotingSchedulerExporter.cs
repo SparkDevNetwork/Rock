@@ -71,15 +71,15 @@ namespace Quartz.Simpl
             {
                 RemotingServices.Marshal((MarshalByRefObject)scheduler, bindName);
             }
-            catch (RemotingException ex)
+            catch (RemotingException)
             {
 
             }
-            catch (SecurityException ex)
+            catch (SecurityException)
             {
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
             }
@@ -144,15 +144,15 @@ namespace Quartz.Simpl
                 RemotingServices.Disconnect((MarshalByRefObject)scheduler);
 
             }
-            catch (ArgumentException ex)
+            catch (ArgumentException)
             {
 
             }
-            catch (SecurityException ex)
+            catch (SecurityException)
             {
 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
 
             }

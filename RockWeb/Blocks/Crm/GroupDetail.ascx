@@ -12,9 +12,10 @@
                     <asp:Literal ID="lReadOnlyTitle" runat="server" />
                 </h1>
 
-                <asp:Literal ID="lblActiveHtml" runat="server" />
-                <div class="label label-type"><asp:Literal ID="lGroupType" runat="server"></asp:Literal></div>
-                <div class="label label-campus"><asp:Literal ID="lCampus" runat="server"></asp:Literal></div>
+                <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
+                <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
+                <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
+
             </div>
 
             <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />

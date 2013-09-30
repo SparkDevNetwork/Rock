@@ -16,36 +16,13 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class PagePicker : ItemPicker, ILabeledControl
+    public class PagePicker : ItemPicker
     {
-        private Label label;
         private HiddenField _hfPageRouteId;
         private HyperLink _btnShowPageRoutePicker;
         private RockRadioButtonList _rblSelectPageRoute;
         private LinkButton _btnSelectPageRoute;
         private HyperLink _btnCancelPageRoute;
-
-        /// <summary>
-        /// Gets or sets the label text.
-        /// </summary>
-        /// <value>
-        /// The label text.
-        /// </value>
-        public string Label
-        {
-            get
-            {
-                EnsureChildControls();
-                return label.Text;
-            }
-
-            set
-            {
-                EnsureChildControls();
-                label.Text = value;
-                RequiredErrorMessage = string.IsNullOrWhiteSpace( value ) ? "Page value is required" : value + " is required";
-            }
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AccountPicker" /> class.
@@ -99,6 +76,8 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
             ItemRestUrlExtraParams = string.Empty;
+
+            this.IconCssClass = "icon-file";
 
             string scriptFormat = @"
 
@@ -310,8 +289,6 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Handles the Click event of the btnSelect control.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected override void SetValueOnSelect()
         {
             var page = new PageService().Get( int.Parse( ItemId ) );
@@ -346,8 +323,6 @@ namespace Rock.Web.UI.Controls
         {
             base.CreateChildControls();
 
-            label = new Label();
-
             _hfPageRouteId = new HiddenField();
             _hfPageRouteId.ClientIDMode = ClientIDMode.Static;
             _hfPageRouteId.ID = string.Format( "hfPageRouteId_{0}", this.ID );
@@ -375,7 +350,6 @@ namespace Rock.Web.UI.Controls
             _btnCancelPageRoute.ID = string.Format( "btnCancelPageRoute_{0}", this.ID );
             _btnCancelPageRoute.Text = "Cancel";
 
-            Controls.Add( label );
             Controls.Add( _hfPageRouteId );
             Controls.Add( _rblSelectPageRoute );
             Controls.Add( _btnShowPageRoutePicker );
@@ -399,46 +373,14 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
-        /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
-        protected override void Render( HtmlTextWriter writer )
-        {
-            if ( string.IsNullOrEmpty( Label ) )
-            {
-                base.Render( writer );
-
-                RenderPageRoutePicker( writer );
-            }
-            else
-            {
-                writer.AddAttribute( "class", "control-group" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                label.AddCssClass( "control-label" );
-
-                label.RenderControl( writer );
-
-                writer.AddAttribute( "class", "controls" );
-
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                base.Render( writer );
-
-                RenderPageRoutePicker( writer );
-
-                writer.RenderEndTag();
-
-                writer.RenderEndTag();
-            }
-        }
-
-        /// <summary>
-        /// Renders the page route picker.
+        /// This is where you implment the simple aspects of rendering your control.  The rest
+        /// will be handled by calling RenderControlHelper's RenderControl() method.
         /// </summary>
         /// <param name="writer">The writer.</param>
-        private void RenderPageRoutePicker( HtmlTextWriter writer )
+        public override void RenderBaseControl( HtmlTextWriter writer )
         {
+            base.RenderBaseControl( writer );
+
             // don't show the PageRoutePicker if this control is not enabled (readonly)
             if ( this.Enabled )
             {

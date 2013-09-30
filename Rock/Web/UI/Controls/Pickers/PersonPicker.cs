@@ -315,13 +315,9 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "control-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                _label.AddCssClass( "control-label" );
-
-                _label.RenderControl( writer );
-
-                writer.AddAttribute( "class", "controls" );
-
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.RenderBeginTag(HtmlTextWriterTag.Label);
+                writer.Write(_label.Text);
+                writer.RenderEndTag();
             }
 
             if ( Required )
@@ -340,7 +336,7 @@ namespace Rock.Web.UI.Controls
             <a class='picker-label' href='#'>
                 <i class='icon-user'></i>
                 <span id='selectedPersonLabel_{0}'>{1}</span>
-                <b class='caret'></b>
+                <b class='caret pull-right'></b>
             </a>
 ";
 
@@ -403,8 +399,6 @@ namespace Rock.Web.UI.Controls
 
             if ( renderLabel )
             {
-                writer.RenderEndTag();
-
                 writer.RenderEndTag();
             }
         }
