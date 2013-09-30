@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="e189b7fb-34c3-4b93-a679-50e9f268e0cf" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
+<ReferenceGroup xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" ID="8877a777-afef-410b-b28b-e817e8103fcb" xmlns="urn:schemas-microsoft-com:xml-wcfservicemap">
   <ClientOptions>
     <GenerateAsynchronousMethods>false</GenerateAsynchronousMethods>
     <GenerateTaskBasedAsynchronousMethod>true</GenerateTaskBasedAsynchronousMethod>
@@ -22,8 +22,8 @@
     <MetadataSource Address="https://ics2wstest.ic3.com/commerce/1.x/transactionProcessor/CyberSourceTransaction_1.91.wsdl" Protocol="http" SourceId="1" />
   </MetadataSources>
   <Metadata>
-    <MetadataFile FileName="CyberSourceTransactionWS.wsdl" MetadataType="Wsdl" ID="ce283f12-6bee-4f73-8268-32d4610fe5dd" SourceId="1" SourceUrl="https://ics2wstest.ic3.com/commerce/1.x/transactionProcessor/CyberSourceTransaction_1.91.wsdl" />
-    <MetadataFile FileName="CyberSourceTransaction_1.xsd" MetadataType="Schema" ID="12228cb6-3e72-4279-9137-d102bb52aabc" SourceId="1" SourceUrl="https://ics2wstest.ic3.com/commerce/1.x/transactionProcessor/CyberSourceTransaction_1.91.xsd" />
+    <MetadataFile FileName="CyberSourceTransactionWS.wsdl" MetadataType="Wsdl" ID="ba17bf50-b547-4be1-a590-0d4bb996af37" SourceId="1" SourceUrl="https://ics2wstest.ic3.com/commerce/1.x/transactionProcessor/CyberSourceTransaction_1.91.wsdl" />
+    <MetadataFile FileName="CyberSourceTransaction_1.xsd" MetadataType="Schema" ID="569e5c08-bb74-4d86-bada-a2082f70fac9" SourceId="1" SourceUrl="https://ics2wstest.ic3.com/commerce/1.x/transactionProcessor/CyberSourceTransaction_1.91.xsd" />
   </Metadata>
   <Extensions>
     <ExtensionFile FileName="configuration91.svcinfo" Name="configuration91.svcinfo" />
