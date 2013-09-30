@@ -45,10 +45,10 @@ namespace Rock.Web.UI.Controls
         /// The CSS icon class.
         /// </value>
         [
-        Bindable(true),
-        Category("Appearance"),
-        DefaultValue(""),
-        Description("The text for the label.")
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text for the label." )
         ]
         public string IconCssClass
         {
@@ -74,6 +74,7 @@ namespace Rock.Web.UI.Controls
             {
                 return HelpBlock != null ? HelpBlock.Text : string.Empty;
             }
+
             set
             {
                 if ( HelpBlock != null )
@@ -82,6 +83,7 @@ namespace Rock.Web.UI.Controls
                 }
             }
         }
+        
         /// <summary>
         /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
         /// </summary>
@@ -112,6 +114,7 @@ namespace Rock.Web.UI.Controls
             {
                 return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
             }
+
             set
             {
                 if ( RequiredFieldValidator != null )
@@ -450,7 +453,12 @@ namespace Rock.Web.UI.Controls
             _btnSelect.ID = string.Format( "btnSelect_{0}", this.ID );
             _btnSelect.Text = "Select";
             _btnSelect.CausesValidation = false;
-            _btnSelect.Click += btnSelect_Click;
+
+            // we only need the postback on Select if SelectItem is assigned or if this is PagePicker
+            if ( SelectItem != null || (this is PagePicker) )
+            {
+                _btnSelect.Click += btnSelect_Click;
+            }
 
             _btnSelectNone = new LinkButton();
             _btnSelectNone.ClientIDMode = ClientIDMode.Static;
@@ -458,8 +466,13 @@ namespace Rock.Web.UI.Controls
             _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ID );
             _btnSelectNone.Text = "<i class='icon-remove'></i>";
             _btnSelectNone.CausesValidation = false;
-            _btnSelectNone.Visible = false;
-            _btnSelectNone.Click += btnSelect_Click;
+            _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
+
+            // we only need the postback on SelectNone if SelectItem is assigned or if this is PagePicker
+            if ( SelectItem != null || ( this is PagePicker ) )
+            {
+                _btnSelectNone.Click += btnSelect_Click;
+            }
 
             Controls.Add( _hfItemId );
             Controls.Add( _hfInitialItemParentIds );
@@ -489,7 +502,7 @@ namespace Rock.Web.UI.Controls
         /// will be handled by calling RenderControlHelper's RenderControl() method.
         /// </summary>
         /// <param name="writer">The writer.</param>
-        public virtual void RenderBaseControl( HtmlTextWriter writer)
+        public virtual void RenderBaseControl( HtmlTextWriter writer )
         {
             _hfItemId.RenderControl( writer );
             _hfInitialItemParentIds.RenderControl( writer );
@@ -498,68 +511,61 @@ namespace Rock.Web.UI.Controls
 
             if ( this.Enabled )
             {
-                string controlHtmlFormatStart = @"
-        <div id='{0}' class='picker picker-select'> 
-            <a class='picker-label' href='#'>
-                <i class='{2}'></i>
-                <span id='selectedItemLabel_{0}'>{1}</span>
-                <b class='caret pull-right'></b>
-            </a>
-";
-                writer.Write( controlHtmlFormatStart, this.ID, this.ItemName, this.IconCssClass );
+                writer.AddAttribute( "id", this.ID.ToString() );
+                writer.AddAttribute( "class", "picker picker-select" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.Write( @"
+                    <a class='picker-label' href='#'>
+                        <i class='{2}'></i>
+                        <span id='selectedItemLabel_{0}'>{1}</span>
+                        <b class='caret pull-right'></b>
+                    </a>", this.ID, this.ItemName, this.IconCssClass );
+                writer.WriteLine();
 
-                // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
-                if ( SelectItem != null )
-                {
-                    _btnSelectNone.RenderControl( writer );
-                }
-                else
-                {
-                    writer.Write( "<a class='picker-select-none' id='btnSelectNone_{0}' href='#' style='display:none'><i class='icon-remove'></i></a>", this.ID );
-                }
+                _btnSelectNone.RenderControl( writer );
 
-                string controlHtmlFormatMiddle = @"
-          <div class='picker-menu dropdown-menu'>
+                // picker menu
+                writer.AddAttribute( "class", "picker-menu dropdown-menu" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            <div id='treeview-scroll-container_{0}' class='scroll-container scroll-container-picker'>
-                <div class='scrollbar'>
-                    <div class='track'>
-                        <div class='thumb'>
-                            <div class='end'></div>
+                // treeview
+                writer.Write( @"
+                    <div id='treeview-scroll-container_{0}' class='scroll-container scroll-container-picker'>
+                        <div class='scrollbar'>
+                            <div class='track'>
+                                <div class='thumb'>
+                                    <div class='end'></div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                </div>
-                <div class='viewport'>
-                    <div class='overview'>
-                        <div id='treeviewItems_{0}' class='treeview treeview-items'></div>        
-                    </div>
-                </div>
-            </div>
+                        <div class='viewport'>
+                            <div class='overview'>
+                                <div id='treeviewItems_{0}' class='treeview treeview-items'></div>        
+                            </div>
+                        </div>
+                    </div>", this.ID );
 
-            <div class='picker-actions'>
-";
-                writer.Write( controlHtmlFormatMiddle, this.ID );
-
+                // picker actions
+                writer.AddAttribute( "class", "picker-actions" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _btnSelect.RenderControl( writer );
+                writer.Write( "<a class='btn btn-xs' id='btnCancel_{0}'>Cancel</a>", this.ID );
+                writer.WriteLine();
+                writer.RenderEndTag();
+                
+                // closing div of picker-menu
+                writer.RenderEndTag();
 
-                string controlHtmlFormatEnd = @"
-            <a class='btn btn-xs' id='btnCancel_{0}'>Cancel</a>
-            </div>
-          </div>
-        </div>
-";
-                writer.Write( controlHtmlFormatEnd, this.ID );
+                // closing div of picker
+                writer.RenderEndTag();
             }
             else
             {
                 // this picker is not enabled (readonly), so just render a readonly version
-                string controlHtmlFormatDisabled = @"
-        <i class='icon-file-alt'></i>
-        <span id='selectedItemLabel_{0}'>{1}</span>
-";
-                writer.Write( controlHtmlFormatDisabled, this.ID, this.ItemName );
+                writer.Write( @"<i class='icon-file-alt'></i><span id='selectedItemLabel_{0}'>{1}</span>", this.ID, this.ItemName );
             }
         }
+        
         /// <summary>
         /// Gets the selected value as int.
         /// </summary>
@@ -637,9 +643,7 @@ namespace Rock.Web.UI.Controls
             }
 
             return ids;
-        }        
-        
-        
+        }
 
         /// <summary>
         /// Handles the Click event of the _btnSelect control.
@@ -701,6 +705,5 @@ namespace Rock.Web.UI.Controls
         }
 
         #endregion
-
     }
 }
