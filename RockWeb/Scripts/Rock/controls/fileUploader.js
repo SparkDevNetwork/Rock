@@ -13,7 +13,7 @@
         },
             _configure = function (options) {
                 var isImage = options.fileType === 'image',
-                    wsUrl = isImage ? '/ImageUploader.ashx?' : '/FileUploader.ashx?';
+                    wsUrl = isImage ? Rock.settings.get('baseUrl') + 'ImageUploader.ashx?' : Rock.settings.get('baseUrl') + 'FileUploader.ashx?';
 
                 if (options.fileId) {
                     wsUrl += 'fileId=' + options.fileId;
@@ -34,25 +34,25 @@
                     dropZone: $('#' + options.controlId).closest('.fileupload-drop-zone'),
                     autoUpload: true,
                     done: function (e, data) {
-
                         var $el = isImage ? $('#' + options.imgThumbnail) : $('#' + options.aFileName);
                         $('#' + options.hfFileId).val(data.response().result.Id);
-                        $el.hide();
 
                         if (isImage) {
-                            $el.attr('src', '/GetImage.ashx?id=' + data.response().result.Id + '&width=50&height=50');
+                            $el.attr('src', Rock.settings.get('baseUrl') + 'GetImage.ashx?id=' + data.response().result.Id + '&width=50');
                         } else {
-                            $el.text(data.response().result.FileName).attr('href', '/GetFile.ashx?id=' + data.response().result.Id);
+                            $el.text(data.response.FileName).attr('href', Rock.settings.get('baseUrl') + 'GetFile.ashx?id=' + data.response().result.Id);
                         }
 
-                        $el.show(0, _updateScrollbar);
                         $('#' + options.aRemove).show();
 
                         if (options.postbackScript) {
                             eval(options.postbackScript);
                         }
+
                     }
                 });
+
+                $('#' + options.controlId).find()
 
                 $('#' + options.aRemove).click(function () {
                     $(this).hide();
@@ -60,12 +60,13 @@
                     $('#' + options.hfFileId).val('0');
 
                     if (isImage) {
-                        $el.attr('src', '');
+                        $el.attr('src', Rock.settings.get('baseUrl') + 'Assets/Images/no-picture.svg');
+                        //$('.imageupload-thumbnail img').css('width', "49px"); // hack for chrome 9/30/2013
+
                     } else {
                         $el.attr('href', '#');
                     }
 
-                    $el.hide(0, _updateScrollbar);
                     return false;
                 });
             },
