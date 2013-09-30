@@ -12,11 +12,14 @@ using System.Web.UI.WebControls;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock;
+using System.Collections;
+using System.Text;
+using System.Text.RegularExpressions;
 
 namespace RockWeb.Blocks.Examples
 {
     /// <summary>
-    /// 
+    /// A sample block that uses many of the Rock UI controls.
     /// </summary>
     public partial class RockControlGallery : RockBlock
     {
@@ -27,12 +30,77 @@ namespace RockWeb.Blocks.Examples
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+            InitSyntaxHighlighting();
 
             gExample.DataKeyNames = new string[] { "id" };
             gExample.GridRebind += gExample_GridRebind;
+
+            List<string> list = ReadExamples();
+            int i = -1;
+            foreach ( var example in upDetail.ControlsOfTypeRecursive<HtmlControl>() )
+            {
+                if ( example.Attributes["class"] == "r-example" )
+                {
+                    i++;
+                    example.Controls.Add( new LiteralControl( string.Format( "<pre class='prettyprint'>{0}</pre>", Server.HtmlEncode( list[i] ) ) ) );
+                }
+            }
         }
 
+        /// <summary>
+        /// Initialize stuff required for syntax highlighting.
+        /// </summary>
+        private void InitSyntaxHighlighting()
+        {
+            CurrentPage.AddCSSLink( Page, ResolveUrl( "~/Blocks/Examples/prettify.css" ) );
+            CurrentPage.AddScriptLink( Page, "//cdnjs.cloudflare.com/ajax/libs/prettify/r298/prettify.js" );
+        }
 
+        /// <summary>
+        /// Reads this block to find embedded examples and returns them in a indexed list.
+        /// </summary>
+        /// <returns>code examples by postion index</returns>
+        private List<string> ReadExamples()
+        {
+            var list = new List<string>();
+            string[] lines = System.IO.File.ReadAllLines( Server.MapPath( "~/Blocks/Examples/RockControlGallery.ascx" ) );
+            var foundExample = false;
+            var firstLine = false;
+            int numSpaces = 0;
+            Regex rgx = new Regex( @"^\s+" );
+            Regex divExample = new Regex( @"<div (id=.* )*runat=""server"" (id=.* )*class=""r-example"">", RegexOptions.IgnoreCase );
+            StringBuilder sb = new StringBuilder();
+            foreach ( string line in lines )
+            {
+                if ( divExample.IsMatch( line ) )
+                {
+                    foundExample = true;
+                    firstLine = true;
+                    continue;
+                }
+                else if ( foundExample && line.Contains( "</div>" ) )
+                {
+                    foundExample = false;
+                    list.Add( sb.ToString() );
+                    sb.Clear();
+                }
+
+                if ( foundExample )
+                {
+                    // build regex used to trim off the correct number of spaces we see
+                    // in the first line of the example.
+                    if ( firstLine )
+                    {
+                        numSpaces = line.Length - line.TrimStart( ' ' ).Length;
+                        rgx = new Regex( @"^\s{" + numSpaces + "}" );
+                        firstLine = false;
+                    }
+                    sb.AppendLine( rgx.Replace( line, "" ) );
+                }
+            }
+
+            return list;
+        }
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
@@ -53,8 +121,10 @@ namespace RockWeb.Blocks.Examples
 
                 ddlDataExample.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
 
-                labeledCheckBoxList.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
-                labeledRadioButtonList.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
+                RockCheckBoxList.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
+                RockCheckBoxList1.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
+                RockRadioButtonList.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
+                RockRadioButtonList1.Items.AddRange( bddlExample.Items.OfType<ListItem>().ToArray() );
 
                 BindGrid();
             }
@@ -109,16 +179,16 @@ namespace RockWeb.Blocks.Examples
         {
             foreach ( var control in pnlDetails.Controls )
             {
-                if ( control is ILabeledControl )
+                if ( control is IRockControl )
                 {
-                    ILabeledControl labeledControl = control as ILabeledControl;
-                    if ( string.IsNullOrWhiteSpace( labeledControl.Label ) )
+                    IRockControl rockControl = control as IRockControl;
+                    if ( string.IsNullOrWhiteSpace( rockControl.Label ) )
                     {
-                        labeledControl.Label = string.Format( "Rock:{0}", labeledControl.GetType().Name );
+                        rockControl.Label = string.Format( "Rock:{0}", rockControl.GetType().Name );
                     }
                     else
                     {
-                        labeledControl.Label = string.Empty;
+                        rockControl.Label = string.Empty;
                     }
                 }
                 else if ( control is HtmlGenericControl )
@@ -129,28 +199,7 @@ namespace RockWeb.Blocks.Examples
                         hg.Visible = !hg.Visible;
                     }
                 }
-
             }
-        }
-
-        /// <summary>
-        /// Handles the TextChanged event of the monthYearPicker control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void monthYearPicker_TextChanged( object sender, EventArgs e )
-        {
-            var date = monthYearPicker.SelectedDate;
-        }
-
-        /// <summary>
-        /// Handles the TextChanged event of the monthDayPicker control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void monthDayPicker_TextChanged( object sender, EventArgs e )
-        {
-            var date = monthDayPicker.SelectedDate;
         }
 
         /// <summary>
@@ -224,10 +273,28 @@ namespace RockWeb.Blocks.Examples
 
             SortProperty sortProperty = gExample.SortProperty ?? new SortProperty( new GridViewSortEventArgs( "DefinedValueTypeName", SortDirection.Ascending ) );
 
-            gExample.DataSource = dataList.AsQueryable().Sort(sortProperty).ToList();
+            gExample.DataSource = dataList.AsQueryable().Sort( sortProperty ).ToList();
             gExample.DataBind();
         }
 
+        /// <summary>
+        /// Handles the SelectedMonthYearChanged event of the monthYearPicker control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void monthYearPicker_SelectedMonthYearChanged( object sender, EventArgs e )
+        {
+            var dateTime = monthDayPicker.SelectedDate;
+        }
 
+        /// <summary>
+        /// Handles the SelectedMonthDayChanged event of the monthDayPicker control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void monthDayPicker_SelectedMonthDayChanged( object sender, EventArgs e )
+        {
+            var dateTime = monthDayPicker.SelectedDate;
+        }
     }
 }

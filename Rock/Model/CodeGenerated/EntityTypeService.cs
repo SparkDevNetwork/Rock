@@ -110,9 +110,21 @@ namespace Rock.Model
                 return false;
             }  
  
+            if ( new Service<FinancialScheduledTransaction>().Queryable().Any( a => a.GatewayEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialScheduledTransaction.FriendlyTypeName );
+                return false;
+            }  
+ 
             if ( new Service<FinancialScheduledTransactionDetail>().Queryable().Any( a => a.EntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialScheduledTransactionDetail.FriendlyTypeName );
+                return false;
+            }  
+ 
+            if ( new Service<FinancialTransaction>().Queryable().Any( a => a.GatewayEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
                 return false;
             }  
  
@@ -174,6 +186,7 @@ namespace Rock.Model
                 target.FriendlyName = source.FriendlyName;
                 target.IsEntity = source.IsEntity;
                 target.IsSecured = source.IsSecured;
+                target.IsCommon = source.IsCommon;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

@@ -74,19 +74,11 @@
             <Content>
                 <asp:HiddenField ID="hfIdValues" runat="server" />
                 <asp:ValidationSummary ID="ValidationSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
-                <fieldset>
-                    <div class="control-group">
-                        <label class="control-label">
-                            <asp:Literal ID="lCaption" runat="server"></asp:Literal></label>
-                        <div class="controls">
-                            <asp:PlaceHolder ID="phEditControl" runat="server"></asp:PlaceHolder>
-                        </div>
-                    </div>
-                </fieldset>
+                <fieldset id="fsEditControl" runat="server"/>
             </Content>
         </Rock:ModalDialog>
 
-        <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Error" Visible="false" />
+        <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Danger" Visible="false" />
 
     </ContentTemplate>
 </asp:UpdatePanel>

@@ -92,6 +92,7 @@ namespace Rock.Model
                 target.Description = source.Description;
                 target.Theme = source.Theme;
                 target.DefaultPageId = source.DefaultPageId;
+                target.DefaultPageRouteId = source.DefaultPageRouteId;
                 target.FaviconUrl = source.FaviconUrl;
                 target.AppleTouchIconUrl = source.AppleTouchIconUrl;
                 target.FacebookAppId = source.FacebookAppId;

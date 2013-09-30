@@ -16,7 +16,7 @@ namespace Rock.Web
         /// <summary>
         /// The term description list
         /// </summary>
-        private Dictionary<string, string> termDescriptionList = new Dictionary<string, string>();
+        private Dictionary<string, string> _termDescriptionList = new Dictionary<string, string>();
 
         /// <summary>
         /// Adds the specified term.
@@ -26,7 +26,7 @@ namespace Rock.Web
         /// <returns></returns>
         public DescriptionList Add( string term, string description )
         {
-            termDescriptionList.Add( term, description );
+            _termDescriptionList.Add( term, description );
             return this;
         }
 
@@ -40,11 +40,11 @@ namespace Rock.Web
         {
             if ( person != null )
             {
-                termDescriptionList.Add( term, person.FullName );
+                _termDescriptionList.Add( term, person.FullName );
             }
             else
             {
-                termDescriptionList.Add( term, null );
+                _termDescriptionList.Add( term, null );
             }
             
             return this;
@@ -61,11 +61,11 @@ namespace Rock.Web
         {
             if ( dateTime != null )
             {
-                termDescriptionList.Add( term, dateTime.Value.ToString(format) );
+                _termDescriptionList.Add( term, dateTime.Value.ToString(format) );
             }
             else
             {
-                termDescriptionList.Add( term, null );
+                _termDescriptionList.Add( term, null );
             }
 
             return this;
@@ -81,11 +81,11 @@ namespace Rock.Web
         {
             if ( value != null )
             {
-                termDescriptionList.Add( term, value.ToString() );
+                _termDescriptionList.Add( term, value.ToString() );
             }
             else
             {
-                termDescriptionList.Add( term, null );
+                _termDescriptionList.Add( term, null );
             }
 
             return this;
@@ -97,7 +97,7 @@ namespace Rock.Web
         /// <returns></returns>
         public DescriptionList StartSecondColumn()
         {
-            termDescriptionList.Add( ColumnBreak, string.Empty );
+            _termDescriptionList.Add( ColumnBreak, string.Empty );
             return this;
         }
 
@@ -115,7 +115,7 @@ namespace Rock.Web
 
                 string result = @"<div class='span6'><dl>";
 
-                foreach ( var pair in termDescriptionList )
+                foreach ( var pair in _termDescriptionList )
                 {
                     string displayValue = pair.Value;
                     if ( string.IsNullOrWhiteSpace( displayValue ) )

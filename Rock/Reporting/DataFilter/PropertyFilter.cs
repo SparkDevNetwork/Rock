@@ -104,6 +104,7 @@ namespace Rock.Reporting.DataFilter
         /// <summary>
         /// Formats the selection.
         /// </summary>
+        /// <param name="entityType"></param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
         public override string FormatSelection( Type entityType, string selection )
@@ -328,6 +329,8 @@ namespace Rock.Reporting.DataFilter
         /// <summary>
         /// Renders the controls.
         /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
+        /// <param name="filterControl">The filter control.</param>
         /// <param name="writer">The writer.</param>
         /// <param name="controls">The controls.</param>
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
@@ -429,7 +432,8 @@ namespace Rock.Reporting.DataFilter
         /// <summary>
         /// Gets the selection.
         /// </summary>
-        /// <param name="controls"></param>
+        /// <param name="entityType"></param>
+        /// <param name="controls">The controls.</param>
         /// <returns></returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
@@ -514,6 +518,7 @@ namespace Rock.Reporting.DataFilter
         /// <summary>
         /// Sets the selection.
         /// </summary>
+        /// <param name="entityType"></param>
         /// <param name="controls">The controls.</param>
         /// <param name="selection">The selection.</param>
         public override void SetSelection( Type entityType, Control[] controls, string selection )
@@ -599,6 +604,7 @@ namespace Rock.Reporting.DataFilter
         /// <summary>
         /// Gets the expression.
         /// </summary>
+        /// <param name="entityType"></param>
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
@@ -1104,6 +1110,7 @@ namespace Rock.Reporting.DataFilter
         /// <summary>
         /// Groups all the controls for each field
         /// </summary>
+        /// <param name="entityType">Type of the entity.</param>
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
         private Dictionary<string, List<Control>> GroupControls( Type entityType, Control[] controls )

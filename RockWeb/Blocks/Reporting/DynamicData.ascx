@@ -65,7 +65,7 @@ form, or page route) will have it's value replaced with the page's current value
 
             </asp:PlaceHolder>
 
-            <Rock:NotificationBox ID="nbError" runat="server" Heading="Error" Title="Query Error!" NotificationBoxType="Error" Visible="false" />
+            <Rock:NotificationBox ID="nbError" runat="server" Heading="Error" Title="Query Error!" NotificationBoxType="Danger" Visible="false" />
 
             <Rock:Grid ID="gReport" runat="server" AllowSorting="true" EmptyDataText="No Results" />
             <asp:PlaceHolder ID="phHtml" runat="server" Visible="false" />

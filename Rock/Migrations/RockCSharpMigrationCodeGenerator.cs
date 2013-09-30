@@ -19,10 +19,10 @@ using Rock.Data;
 
 namespace Rock.Migrations
 {
-    /// *************** NOTE!! ***************
-    /// To Debug this, put these Debugger calls wherever you want to set your breakpoint, then run Add-Migration
-    /// System.Diagnostics.Debugger.Launch();
-    /// System.Diagnostics.Debugger.Break();
+    // *************** NOTE!! ***************
+    // To Debug this, put these Debugger calls wherever you want to set your breakpoint, then run Add-Migration
+    // System.Diagnostics.Debugger.Launch();
+    // System.Diagnostics.Debugger.Break();
 
     /// <summary>
     /// 

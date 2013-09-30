@@ -44,32 +44,32 @@ namespace RockWeb.Blocks.Finance
     [BooleanField( "Scheduled Transactions", "Allow", "Don't Allow", 
         "If the selected gateway(s) allow scheduled transactions, should that option be provided to user", true, "", 9, "AllowScheduled" )]
 
-    [BooleanField( "Impersonation", "Allow (only use on internal page used by staff)", "Don't Allow", 
+    [BooleanField( "Impersonation", "Allow (only use on an internal page used by staff)", "Don't Allow", 
         "Should the current user be able to view and edit other people's transactions?  IMPORTANT: This should only be enabled on an internal page that is secured to trusted users", false, "", 10)]
     [BooleanField( "Prompt for Phone", "Should the user be prompted for their phone number?", false, "", 11, "DisplayPhone" )]
     [BooleanField( "Prompt for Email", "Should the user be prompted for their email address?", true, "", 12, "DisplayEmail" )]
 
-    [MemoField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section?", true, @"
+    [MemoField( "Confirmation Header", "The text (HTML) to display at the top of the confirmation section.", true, @"
 <p>
 Please confirm the information below. Once you have confirmed that the information is accurate click the 'Finish' button to complete your transaction. 
 </p>
 ", "Text Options", 13 )]
 
-    [MemoField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section?", true, @"
+    [MemoField( "Confirmation Footer", "The text (HTML) to display at the bottom of the confirmation section.", true, @"
 <div class='alert alert-info'>
 By clicking the 'finish' button below I agree to allow {{ OrganizationName }} to debit the amount above from my account. I acknowledge that I may 
 update the transaction information at any time by returning to this website. Please call the Finance Office if you have any additional questions. 
 </div>
 ", "Text Options", 14 )]
 
-    [MemoField( "Success Header", "The text (HTML) to display at the top of the confirmation section?", true, @"
+    [MemoField( "Success Header", "The text (HTML) to display at the top of the success section.", true, @"
 <p>
 Thank-you for your generous contribution.  Your support is helping {{ OrganizationName }} actively 
 achieve our mission.  We are so grateful for your commitment. 
 </p>
 ", "Text Options", 15 )]
 
-    [MemoField( "Success Footer", "The text (HTML) to display at the bottom of the confirmation section?", true, @"
+    [MemoField( "Success Footer", "The text (HTML) to display at the bottom of the success section.", true, @"
 ", "Text Options", 16 )]
 
     #endregion
@@ -448,7 +448,7 @@ achieve our mission.  We are so grateful for your commitment.
             else
             {
                 SetPage( 0 );
-                ShowMessage( NotificationBoxType.Error, "Configuration Error", "Please check the configuration of this block and make sure a valid Credit Card and/or ACH Finacial Gateway has been selected." );
+                ShowMessage( NotificationBoxType.Danger, "Configuration Error", "Please check the configuration of this block and make sure a valid Credit Card and/or ACH Finacial Gateway has been selected." );
             }
             
         }
@@ -517,7 +517,7 @@ achieve our mission.  We are so grateful for your commitment.
                     }
                     else
                     {
-                        ShowMessage( NotificationBoxType.Error, "Oops!", errorMessage );
+                        ShowMessage( NotificationBoxType.Danger, "Oops!", errorMessage );
                     }
 
                     break;
@@ -531,7 +531,7 @@ achieve our mission.  We are so grateful for your commitment.
                     }
                     else
                     {
-                        ShowMessage( NotificationBoxType.Error, "Payment Error", errorMessage );
+                        ShowMessage( NotificationBoxType.Danger, "Payment Error", errorMessage );
                     }
 
                     break;
@@ -554,7 +554,7 @@ achieve our mission.  We are so grateful for your commitment.
             }
             else
             {
-                ShowMessage( NotificationBoxType.Error, "Payment Error", errorMessage );
+                ShowMessage( NotificationBoxType.Danger, "Payment Error", errorMessage );
             }
         }
 
@@ -578,7 +578,7 @@ achieve our mission.  We are so grateful for your commitment.
                 {
                     nbSaveAccount.Title = "Missing Informaton";
                     nbSaveAccount.Text = "A username and password are required when saving an account";
-                    nbSaveAccount.NotificationBoxType = NotificationBoxType.Error;
+                    nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
                     nbSaveAccount.Visible = true;
                     return;
                 }
@@ -587,7 +587,7 @@ achieve our mission.  We are so grateful for your commitment.
                 {
                     nbSaveAccount.Title = "Invalid Username";
                     nbSaveAccount.Text = "The selected Username is already being used.  Please select a different Username";
-                    nbSaveAccount.NotificationBoxType = NotificationBoxType.Error;
+                    nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
                     nbSaveAccount.Visible = true;
                     return;
                 }
@@ -596,7 +596,7 @@ achieve our mission.  We are so grateful for your commitment.
                 {
                     nbSaveAccount.Title = "Invalid Password";
                     nbSaveAccount.Text = "The password and password confirmation do not match";
-                    nbSaveAccount.NotificationBoxType = NotificationBoxType.Error;
+                    nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
                     nbSaveAccount.Visible = true;
                     return;
                 }
@@ -656,7 +656,7 @@ achieve our mission.  We are so grateful for your commitment.
                     {
                         nbSaveAccount.Title = "Invalid Transaction";
                         nbSaveAccount.Text = "Sorry, the account information cannot be saved as there's not a valid transaction code to reference";
-                        nbSaveAccount.NotificationBoxType = NotificationBoxType.Error;
+                        nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
                         nbSaveAccount.Visible = true;
                     }
                 }
@@ -665,7 +665,7 @@ achieve our mission.  We are so grateful for your commitment.
             {
                 nbSaveAccount.Title = "Missing Account Name";
                 nbSaveAccount.Text = "Please enter a name to use for this account";
-                nbSaveAccount.NotificationBoxType = NotificationBoxType.Error;
+                nbSaveAccount.NotificationBoxType = NotificationBoxType.Danger;
                 nbSaveAccount.Visible = true;
             }
         }

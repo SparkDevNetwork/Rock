@@ -20,15 +20,15 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:CheckinGroupEditor runat=server></{0}:CheckinGroupEditor>" )]
     public class CheckinGroupEditor : CompositeControl
     {
-        private HiddenField hfGroupGuid;
-        private HiddenField hfGroupId;
-        private HiddenField hfGroupTypeId;
-        private Literal lblGroupName;
-        private LinkButton lbDeleteGroup;
+        private HiddenField _hfGroupGuid;
+        private HiddenField _hfGroupId;
+        private HiddenField _hfGroupTypeId;
+        private Literal _lblGroupName;
+        private LinkButton _lbDeleteGroup;
 
-        private DataTextBox tbGroupName;
-        private PlaceHolder phGroupAttributes;
-        private Grid gLocations;
+        private DataTextBox _tbGroupName;
+        private PlaceHolder _phGroupAttributes;
+        private Grid _gLocations;
 
         /// <summary>
         /// Gets or sets a value indicating whether [force content visible].
@@ -112,12 +112,12 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
         {
             // manually wireup the grid events since they don't seem to do it automatically 
             string eventTarget = Page.Request.Params["__EVENTTARGET"];
-            if ( eventTarget.StartsWith( gLocations.UniqueID ) )
+            if ( eventTarget.StartsWith( _gLocations.UniqueID ) )
             {
-                List<string> subTargetList = eventTarget.Replace( gLocations.UniqueID, string.Empty ).Split( new char[] { '$' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
+                List<string> subTargetList = eventTarget.Replace( _gLocations.UniqueID, string.Empty ).Split( new char[] { '$' }, StringSplitOptions.RemoveEmptyEntries ).ToList();
                 EnsureChildControls();
                 string lblAddControlId = subTargetList.Last();
-                var lblAdd = gLocations.Actions.FindControl( lblAddControlId );
+                var lblAdd = _gLocations.Actions.FindControl( lblAddControlId );
                 if ( lblAdd != null )
                 {
                     AddLocation_Click( this, new EventArgs() );
@@ -206,7 +206,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
         {
             get
             {
-                return new Guid( hfGroupGuid.Value );
+                return new Guid( _hfGroupGuid.Value );
             }
         }
 
@@ -220,7 +220,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
         {
             get
             {
-                return hfGroupTypeId.ValueAsInt();
+                return _hfGroupTypeId.ValueAsInt();
             }
         }
 
@@ -235,9 +235,9 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             EnsureChildControls();
             Group result = new Group();
 
-            result.Id = hfGroupTypeId.ValueAsInt();
-            result.Guid = new Guid( hfGroupGuid.Value );
-            result.GroupTypeId = hfGroupTypeId.ValueAsInt();
+            result.Id = _hfGroupTypeId.ValueAsInt();
+            result.Guid = new Guid( _hfGroupGuid.Value );
+            result.GroupTypeId = _hfGroupTypeId.ValueAsInt();
 
             // get the current InheritedGroupTypeId from the Parent Editor just in case it hasn't been saved to the database
             CheckinGroupTypeEditor checkinGroupTypeEditor = this.Parent as CheckinGroupTypeEditor;
@@ -249,7 +249,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
                 result.GroupType.InheritedGroupTypeId = checkinGroupTypeEditor.InheritedGroupTypeId;
             }
 
-            result.Name = tbGroupName.Text;
+            result.Name = _tbGroupName.Text;
             result.LoadAttributes();
 
             // populate groupLocations with whatever is currently in the grid, with just enough info to repopulate it and save it later
@@ -262,7 +262,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
                 result.GroupLocations.Add( groupLocation );
             }
 
-            Rock.Attribute.Helper.GetEditValues( phGroupAttributes, result );
+            Rock.Attribute.Helper.GetEditValues( _phGroupAttributes, result );
             return result;
         }
 
@@ -278,10 +278,10 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             //// So, we'll use Guid to uniquely identify in this Control since that'll work in both Saved and Unsaved cases.
             //// If it is saved, we do need the Id so that Attributes will work
 
-            hfGroupGuid.Value = value.Guid.ToString();
-            hfGroupId.Value = value.Id.ToString();
-            hfGroupTypeId.Value = value.GroupTypeId.ToString();
-            tbGroupName.Text = value.Name;
+            _hfGroupGuid.Value = value.Guid.ToString();
+            _hfGroupId.Value = value.Id.ToString();
+            _hfGroupTypeId.Value = value.GroupTypeId.ToString();
+            _tbGroupName.Text = value.Name;
 
             CreateGroupAttributeControls( value );
         }
@@ -293,53 +293,53 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
         {
             Controls.Clear();
 
-            hfGroupGuid = new HiddenField();
-            hfGroupGuid.ID = this.ID + "_hfGroupGuid";
+            _hfGroupGuid = new HiddenField();
+            _hfGroupGuid.ID = this.ID + "_hfGroupGuid";
 
-            hfGroupId = new HiddenField();
-            hfGroupId.ID = this.ID + "_hfGroupId";
+            _hfGroupId = new HiddenField();
+            _hfGroupId.ID = this.ID + "_hfGroupId";
 
-            hfGroupTypeId = new HiddenField();
-            hfGroupTypeId.ID = this.ID + "_hfGroupTypeId";
+            _hfGroupTypeId = new HiddenField();
+            _hfGroupTypeId.ID = this.ID + "_hfGroupTypeId";
 
-            lblGroupName = new Literal();
-            lblGroupName.ClientIDMode = ClientIDMode.Static;
-            lblGroupName.ID = this.ID + "_lblGroupName";
+            _lblGroupName = new Literal();
+            _lblGroupName.ClientIDMode = ClientIDMode.Static;
+            _lblGroupName.ID = this.ID + "_lblGroupName";
 
-            lbDeleteGroup = new LinkButton();
-            lbDeleteGroup.CausesValidation = false;
-            lbDeleteGroup.ID = this.ID + "_lbDeleteGroup";
-            lbDeleteGroup.CssClass = "btn btn-mini btn-danger";
-            lbDeleteGroup.Click += lbDeleteGroup_Click;
-            lbDeleteGroup.Attributes["onclick"] = string.Format( "javascript: return Rock.controls.grid.confirmDelete(event, '{0}', '{1}');", "group", "Once saved, you will lose all attendance data." );
+            _lbDeleteGroup = new LinkButton();
+            _lbDeleteGroup.CausesValidation = false;
+            _lbDeleteGroup.ID = this.ID + "_lbDeleteGroup";
+            _lbDeleteGroup.CssClass = "btn btn-xs btn-danger";
+            _lbDeleteGroup.Click += lbDeleteGroup_Click;
+            _lbDeleteGroup.Attributes["onclick"] = string.Format( "javascript: return Rock.controls.grid.confirmDelete(event, '{0}', '{1}');", "group", "Once saved, you will lose all attendance data." );
 
             var iDelete = new HtmlGenericControl( "i" );
-            lbDeleteGroup.Controls.Add( iDelete );
+            _lbDeleteGroup.Controls.Add( iDelete );
             iDelete.AddCssClass( "icon-remove" );
 
-            tbGroupName = new DataTextBox();
-            tbGroupName.ID = this.ID + "_tbGroupName";
-            tbGroupName.Label = "Check-in Group Name";
+            _tbGroupName = new DataTextBox();
+            _tbGroupName.ID = this.ID + "_tbGroupName";
+            _tbGroupName.Label = "Check-in Group Name";
 
             // set label when they exit the edit field
-            tbGroupName.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", lblGroupName.ID );
-            tbGroupName.SourceTypeName = "Rock.Model.Group, Rock";
-            tbGroupName.PropertyName = "Name";
+            _tbGroupName.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", _lblGroupName.ID );
+            _tbGroupName.SourceTypeName = "Rock.Model.Group, Rock";
+            _tbGroupName.PropertyName = "Name";
 
-            phGroupAttributes = new PlaceHolder();
-            phGroupAttributes.ID = this.ID + "_phGroupAttributes";
+            _phGroupAttributes = new PlaceHolder();
+            _phGroupAttributes.ID = this.ID + "_phGroupAttributes";
 
-            Controls.Add( hfGroupGuid );
-            Controls.Add( hfGroupId );
-            Controls.Add( hfGroupTypeId );
-            Controls.Add( lblGroupName );
-            Controls.Add( tbGroupName );
-            Controls.Add( phGroupAttributes );
+            Controls.Add( _hfGroupGuid );
+            Controls.Add( _hfGroupId );
+            Controls.Add( _hfGroupTypeId );
+            Controls.Add( _lblGroupName );
+            Controls.Add( _tbGroupName );
+            Controls.Add( _phGroupAttributes );
 
             // Locations Grid
             CreateLocationsGrid();
 
-            Controls.Add( lbDeleteGroup );
+            Controls.Add( _lbDeleteGroup );
         }
 
         /// <summary>
@@ -347,31 +347,31 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
         /// </summary>
         private void CreateLocationsGrid()
         {
-            gLocations = new Grid();
+            _gLocations = new Grid();
 
             // make the ID static so we can handle Postbacks from the Add and Delete actions
-            gLocations.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-            gLocations.ID = this.ClientID + "_gCheckinLabels";
+            _gLocations.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+            _gLocations.ID = this.ClientID + "_gCheckinLabels";
 
-            gLocations.DisplayType = GridDisplayType.Light;
-            gLocations.ShowActionRow = true;
-            gLocations.RowItemText = "Location";
-            gLocations.Actions.ShowAdd = true;
+            _gLocations.DisplayType = GridDisplayType.Light;
+            _gLocations.ShowActionRow = true;
+            _gLocations.RowItemText = "Location";
+            _gLocations.Actions.ShowAdd = true;
 
             //// Handle AddClick manually in OnLoad()
-            gLocations.Actions.AddClick += AddLocation_Click;
+            _gLocations.Actions.AddClick += AddLocation_Click;
 
-            gLocations.DataKeyNames = new string[] { "LocationId" };
-            gLocations.Columns.Add( new BoundField { DataField = "Name", HeaderText = "Name" } );
+            _gLocations.DataKeyNames = new string[] { "LocationId" };
+            _gLocations.Columns.Add( new BoundField { DataField = "Name", HeaderText = "Name" } );
 
             DeleteField deleteField = new DeleteField();
 
             //// handle manually in OnLoad()
             deleteField.Click += DeleteLocation_Click;
 
-            gLocations.Columns.Add( deleteField );
+            _gLocations.Columns.Add( deleteField );
 
-            Controls.Add( gLocations );
+            Controls.Add( _gLocations );
         }
 
         /// <summary>
@@ -407,7 +407,7 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
         public override void RenderControl( HtmlTextWriter writer )
         {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget checkin-group" );
-            writer.AddAttribute( "data-key", hfGroupGuid.Value );
+            writer.AddAttribute( "data-key", _hfGroupGuid.Value );
             writer.RenderBeginTag( "article" );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "clearfix clickable" );
@@ -415,25 +415,25 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-left" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            lblGroupName.Text = tbGroupName.Text;
-            lblGroupName.RenderControl( writer );
+            _lblGroupName.Text = _tbGroupName.Text;
+            _lblGroupName.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.WriteLine( "<a class='btn btn-mini checkin-group-reorder'><i class='icon-reorder'></i></a>" );
-            writer.WriteLine( "<a class='btn btn-mini'><i class='checkin-group-state icon-chevron-down'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-xs checkin-group-reorder'><i class='icon-reorder'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-xs'><i class='checkin-group-state icon-chevron-down'></i></a>" );
 
             if ( IsDeleteEnabled )
             {
-                lbDeleteGroup.Visible = true;
+                _lbDeleteGroup.Visible = true;
 
-                lbDeleteGroup.RenderControl( writer );
+                _lbDeleteGroup.RenderControl( writer );
             }
             else
             {
-                lbDeleteGroup.Visible = false;
+                _lbDeleteGroup.Visible = false;
             }
 
             // Add/ChevronUpDown/Delete div
@@ -464,10 +464,10 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // edit fields
-            tbGroupName.RenderControl( writer );
+            _tbGroupName.RenderControl( writer );
 
             // attributes
-            phGroupAttributes.RenderControl( writer );
+            _phGroupAttributes.RenderControl( writer );
 
             writer.RenderEndTag();
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
@@ -475,9 +475,9 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
 
             // Locations grid
             writer.WriteLine( "<h3>Locations</h3>" );
-            gLocations.DataSource = this.Locations;
-            gLocations.DataBind();
-            gLocations.RenderControl( writer );
+            _gLocations.DataSource = this.Locations;
+            _gLocations.DataBind();
+            _gLocations.RenderControl( writer );
 
             // span6
             writer.RenderEndTag();
@@ -511,8 +511,8 @@ $('.checkin-group a.checkin-group-reorder').click(function (event) {
                 group.LoadAttributes();
             }
 
-            phGroupAttributes.Controls.Clear();
-            Rock.Attribute.Helper.AddEditControls( group, phGroupAttributes, true );
+            _phGroupAttributes.Controls.Clear();
+            Rock.Attribute.Helper.AddEditControls( group, _phGroupAttributes, true );
         }
 
         /// <summary>

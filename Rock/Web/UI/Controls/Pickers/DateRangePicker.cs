@@ -10,23 +10,13 @@ using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
 {
+    /// <summary>
+    /// Control for selecting a date range
+    /// </summary>
     [ToolboxData( "<{0}:DateRangePicker runat=server></{0}:DateRangePicker>" )]
-    public class DateRangePicker : CompositeControl, ILabeledControl, IRequiredControl
+    public class DateRangePicker : CompositeControl, IRockControl
     {
-        /// <summary>
-        /// The label
-        /// </summary>
-        private Literal label;
-
-        /// <summary>
-        /// The lower value 
-        /// </summary>
-        private DatePicker tbLowerValue;
-
-        /// <summary>
-        /// The upper value 
-        /// </summary>
-        private DatePicker tbUpperValue;
+        #region IRockControl implementation
 
         /// <summary>
         /// Gets or sets the label text.
@@ -42,21 +32,40 @@ namespace Rock.Web.UI.Controls
         ]
         public string Label
         {
+            get { return ViewState["Label"] as string ?? string.Empty; }
+            set { ViewState["Label"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the help text.
+        /// </summary>
+        /// <value>
+        /// The help text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The help block." )
+        ]
+        public string Help
+        {
             get
             {
-                EnsureChildControls();
-                return label.Text;
+                return HelpBlock != null ? HelpBlock.Text : string.Empty;
             }
 
             set
             {
-                EnsureChildControls();
-                label.Text = value;
+                if ( HelpBlock != null )
+                {
+                    HelpBlock.Text = value;
+                }
             }
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="IRequiredControl" /> is required.
+        /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
         /// </summary>
         /// <value>
         ///   <c>true</c> if required; otherwise, <c>false</c>.
@@ -69,22 +78,8 @@ namespace Rock.Web.UI.Controls
         ]
         public bool Required
         {
-            get
-            {
-                if ( ViewState["Required"] != null )
-                {
-                    return (bool)ViewState["Required"];
-                }
-                else
-                {
-                    return false;
-                }
-            }
-
-            set
-            {
-                ViewState["Required"] = value;
-            }
+            get { return ViewState["Required"] as bool? ?? false; }
+            set { ViewState["Required"] = value; }
         }
 
         /// <summary>
@@ -93,36 +88,115 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The required error message.
         /// </value>
-        /// <exception cref="System.NotImplementedException">
-        /// </exception>
         public string RequiredErrorMessage
         {
             get
             {
-                EnsureChildControls();
-                return tbLowerValue.RequiredErrorMessage;
+                return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
             }
 
             set
             {
-                tbLowerValue.RequiredErrorMessage = value;
-                tbUpperValue.RequiredErrorMessage = value;
+                if ( RequiredFieldValidator != null )
+                {
+                    RequiredFieldValidator.ErrorMessage = value;
+                }
             }
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this instance is valid.
+        /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
         ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
         /// </value>
-        public bool IsValid
+        public virtual bool IsValid
         {
             get
             {
-                EnsureChildControls();
-                return tbLowerValue.IsValid && tbUpperValue.IsValid;
+                return !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid;
             }
+        }
+
+        /// <summary>
+        /// Gets or sets the help block.
+        /// </summary>
+        /// <value>
+        /// The help block.
+        /// </value>
+        public HelpBlock HelpBlock { get; set; }
+
+        /// <summary>
+        /// Gets or sets the required field validator.
+        /// </summary>
+        /// <value>
+        /// The required field validator.
+        /// </value>
+        public RequiredFieldValidator RequiredFieldValidator { get; set; }
+
+        #endregion
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DateRangePicker"/> class.
+        /// </summary>
+        public DateRangePicker()
+            : base()
+        {
+            RequiredFieldValidator = new HiddenFieldValidator();
+            HelpBlock = new HelpBlock();
+        }
+
+        #region Controls
+
+        /// <summary>
+        /// The lower value 
+        /// </summary>
+        private DatePicker _tbLowerValue;
+
+        /// <summary>
+        /// The upper value 
+        /// </summary>
+        private DatePicker _tbUpperValue;
+
+        #endregion
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            // a little javascript to make the daterange picker behave similar to the bootstrap-datepicker demo site's date range picker
+            var scriptFormat = @"
+$('#{0}').datepicker().on('changeDate', function (ev) {{
+
+    // if the startdate is later than the enddate, change the end date to be startdate+1
+    if (ev.date.valueOf() > $('#{1}').data('datepicker').date.valueOf()) {{
+        var newDate = new Date(ev.date)
+        newDate.setDate(newDate.getDate() + 1);
+        $('#{1}').datepicker('update', newDate);
+
+        // disable date selection in the EndDatePicker that are earlier than the startDate
+        $('#{1}').datepicker('setStartDate', ev.date);
+    }}
+    
+    // close the start date picker and set focus to the end date
+    $('#{0}').data('datepicker').hide();
+    $('#{1}')[0].focus();
+}});
+
+$('#{1}').datepicker().on('changeDate', function (ev) {{
+    // close the enddate picker immediately after selecting an end date
+    $('#{1}').data('datepicker').hide();
+}});
+
+";
+
+            EnsureChildControls();
+            var script = string.Format( scriptFormat, _tbLowerValue.ClientID, _tbUpperValue.ClientID );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "daterange_picker-" + this.ClientID, script, true );
         }
 
         /// <summary>
@@ -133,18 +207,17 @@ namespace Rock.Web.UI.Controls
             base.CreateChildControls();
 
             Controls.Clear();
+            RockControlHelper.CreateChildControls( this, Controls );
 
-            label = new Literal();
-            Controls.Add( label );
+            _tbLowerValue = new DatePicker();
+            _tbLowerValue.ID = this.ID + "_lower";
+            _tbLowerValue.CssClass = "input-width-md";
+            Controls.Add( _tbLowerValue );
 
-            tbLowerValue = new DatePicker();
-            tbLowerValue.ID = this.ID + "_lower";
-
-            Controls.Add( tbLowerValue );
-
-            tbUpperValue = new DatePicker();
-            tbUpperValue.ID = this.ID + "_upper";
-            Controls.Add( tbUpperValue );
+            _tbUpperValue = new DatePicker();
+            _tbUpperValue.ID = this.ID + "_upper";
+            _tbUpperValue.CssClass = "input-width-md";
+            Controls.Add( _tbUpperValue );
         }
 
         /// <summary>
@@ -155,37 +228,25 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                bool renderControlGroupDiv = !string.IsNullOrWhiteSpace( Label );
-
-                if ( renderControlGroupDiv )
-                {
-                    writer.AddAttribute( "class", "control-group" + ( IsValid ? "" : " error" ) + ( Required ? " required" : "" ) );
-
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                    writer.AddAttribute( "class", "control-label" );
-
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    label.RenderControl( writer );
-                    writer.RenderEndTag();
-                }
-
-                // mark as input-xxlarge since we want the 2 pickers to stay on the same line
-                writer.AddAttribute( "class", "controls input-xxlarge" );
-
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                tbLowerValue.RenderControl( writer );
-                writer.Write( "<span> to </span>" );
-                tbUpperValue.RenderControl( writer );
-
-                writer.RenderEndTag();
-
-                if ( renderControlGroupDiv )
-                {
-                    writer.RenderEndTag();
-                }
+                RockControlHelper.RenderControl( this, writer );
             }
+        }
+
+        /// <summary>
+        /// This is where you implment the simple aspects of rendering your control.  The rest
+        /// will be handled by calling RenderControlHelper's RenderControl() method.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public void RenderBaseControl( HtmlTextWriter writer )
+        {
+            writer.AddAttribute( "class", "form-control-group" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            _tbLowerValue.RenderControl( writer );
+            writer.Write( "<span class='to'> to </span>" );
+            _tbUpperValue.RenderControl( writer );
+
+            writer.RenderEndTag();
         }
 
         /// <summary>
@@ -198,13 +259,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return tbLowerValue.SelectedDate;
+                return _tbLowerValue.SelectedDate;
             }
 
             set
             {
                 EnsureChildControls();
-                tbLowerValue.SelectedDate = value;
+                _tbLowerValue.SelectedDate = value;
             }
         }
 
@@ -219,13 +280,13 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return tbUpperValue.SelectedDate;
+                return _tbUpperValue.SelectedDate;
             }
 
             set
             {
                 EnsureChildControls();
-                tbUpperValue.SelectedDate = value;
+                _tbUpperValue.SelectedDate = value;
             }
         }
     }

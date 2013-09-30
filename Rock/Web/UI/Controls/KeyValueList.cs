@@ -34,6 +34,10 @@ namespace Rock.Web.UI.Controls
             set { ViewState["DefinedTypeId"] = value; }
         }
 
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "key-value-list" );
@@ -138,7 +142,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        /// <param name="values">The values.</param>
         private void RegisterClientScript( List<DefinedValue> values )
         {
             StringBuilder script = new StringBuilder();

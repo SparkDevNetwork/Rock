@@ -16,12 +16,21 @@ using Rock.Model;
 
 namespace Rock.Storage.Provider
 {
+    /// <summary>
+    /// Storage provider for saving binary files to file system
+    /// </summary>
     [Description( "File System-driven document storage" )]
     [Export( typeof( ProviderComponent ) )]
     [ExportMetadata( "ComponentName", "FileSystem" )]
     [TextField( "Root Path", "Root path where the files will be stored on disk." )]
     public class FileSystem : ProviderComponent
     {
+        /// <summary>
+        /// Gets the root path.
+        /// </summary>
+        /// <value>
+        /// The root path.
+        /// </value>
         public string RootPath
         {
             get { return GetAttributeValue( "RootPath" ); }

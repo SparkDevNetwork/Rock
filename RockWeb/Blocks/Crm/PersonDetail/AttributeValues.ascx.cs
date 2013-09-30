@@ -14,8 +14,9 @@ using System.Web.UI.HtmlControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Model;
-using Rock.Web.UI;
 using Rock.Web.Cache;
+using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
@@ -101,7 +102,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         private void CreateControls( bool setValues )
         {
-            phAttributes.Controls.Clear();
+            fsAttributes.Controls.Clear();
 
             if ( Person != null )
             {
@@ -111,39 +112,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     string attributeValue = Person.GetAttributeValue( attribute.Key );
                     string formattedValue = string.Empty;
 
-                    var li = new HtmlGenericControl( "li" );
-
-                    if (!EditMode)
+                    if ( !EditMode )
                     {
-                        formattedValue = attribute.FieldType.Field.FormatValue( li, attributeValue, attribute.QualifierValues, false );
-                        if (string.IsNullOrWhiteSpace(formattedValue))
+                        formattedValue = attribute.FieldType.Field.FormatValue( fsAttributes, attributeValue, attribute.QualifierValues, false );
+                        if ( !string.IsNullOrWhiteSpace( formattedValue ) )
                         {
-                            continue;
+                            fsAttributes.Controls.Add( new RockLiteral { Label = attribute.Name, Text = formattedValue } );
                         }
-                    }
-
-                    phAttributes.Controls.Add( li );
-
-                    var label = new HtmlGenericControl( "strong" );
-                    li.Controls.Add( label );
-                    label.Controls.Add( new LiteralControl( attribute.Name ) );
-
-                    li.Controls.Add( new LiteralControl( " " ) );
-
-                    if ( EditMode )
-                    {
-                        Control attributeControl = attribute.CreateControl( attributeValue, setValues, true );
-                        if ( attributeControl is Rock.Web.UI.Controls.IRequiredControl )
-                        {
-                            var requiredControl = attributeControl as Rock.Web.UI.Controls.IRequiredControl;
-                            requiredControl.Required = attribute.IsRequired;
-                            requiredControl.RequiredErrorMessage = attribute.Name + " is required.";
-                        }
-                        li.Controls.Add( attributeControl );
                     }
                     else
                     {
-                        li.Controls.Add( new LiteralControl( formattedValue ) );
+                        attribute.AddControl( fsAttributes.Controls, attributeValue, setValues, true );
                     }
                 }
             }
@@ -167,7 +146,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                     if ( Person != null && EditMode )
                     {
-                        Control attributeControl = phAttributes.FindControl( string.Format( "attribute_field_{0}", attribute.Id ) );
+                        Control attributeControl = fsAttributes.FindControl( string.Format( "attribute_field_{0}", attribute.Id ) );
                         if ( attributeControl != null )
                         {
                             string value = attribute.FieldType.Field.GetEditValue( attributeControl, attribute.QualifierValues );

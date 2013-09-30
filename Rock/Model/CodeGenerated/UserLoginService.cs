@@ -95,6 +95,7 @@ namespace Rock.Model
                 target.LastLockedOutDateTime = source.LastLockedOutDateTime;
                 target.FailedPasswordAttemptCount = source.FailedPasswordAttemptCount;
                 target.FailedPasswordAttemptWindowStartDateTime = source.FailedPasswordAttemptWindowStartDateTime;
+                target.LastPasswordExpirationWarningDateTime = source.LastPasswordExpirationWarningDateTime;
                 target.ApiKey = source.ApiKey;
                 target.PersonId = source.PersonId;
                 target.Id = source.Id;

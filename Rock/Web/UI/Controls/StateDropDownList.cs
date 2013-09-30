@@ -15,7 +15,7 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class StateDropDownList : RockDropDownList
     {
-        private bool RebindRequired = false;
+        private bool _rebindRequired = false;
 
         /// <summary>
         /// Display an abbreviated state name
@@ -25,7 +25,7 @@ namespace Rock.Web.UI.Controls
             get { return ViewState["UseAbbreviation"] as bool? ?? false; }
             set 
             {
-                RebindRequired = (ViewState["UseAbbreviation"] as bool? ?? false) != value;
+                _rebindRequired = ( ViewState["UseAbbreviation"] as bool? ?? false ) != value;
                 ViewState["UseAbbreviation"] = value; 
             }
         }
@@ -41,7 +41,7 @@ namespace Rock.Web.UI.Controls
             this.DataValueField = "Id";
             this.DataTextField = UseAbbreviation ? "Id" : "Value";
 
-            RebindRequired = false;
+            _rebindRequired = false;
             var definedType = DefinedTypeCache.Read( new Guid( SystemGuid.DefinedType.LOCATION_ADDRESS_STATE ) );
             this.DataSource = definedType.DefinedValues.OrderBy( v => v.Order ).Select( v => new { Id = v.Name, Value = v.Description } );
             this.DataBind();
@@ -74,7 +74,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( System.Web.UI.HtmlTextWriter writer )
         {
-            if ( RebindRequired )
+            if ( _rebindRequired )
             {
                 string value = this.SelectedValue;
 

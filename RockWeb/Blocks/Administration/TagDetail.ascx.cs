@@ -339,7 +339,7 @@ namespace RockWeb.Blocks.Administration
         {
             SetEditMode( false );
             lReadOnlyTitle.Text = tag.Name.FormatAsHtmlTitle();
-            lEntityType.Text = tag.EntityType.FriendlyName;
+            hlEntityType.Text = tag.EntityType.FriendlyName;
         }
 
         #endregion

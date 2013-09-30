@@ -20,7 +20,7 @@ namespace Rock.CheckIn
     public class KioskDevice
     {
         /// <summary>
-        /// Prevents a default instance of the <see cref="KioskStatus"/> class from being created.
+        /// Prevents a default instance of the <see cref="KioskDevice" /> class from being created.
         /// </summary>
         private KioskDevice()
         {
@@ -28,7 +28,7 @@ namespace Rock.CheckIn
         }
 
         /// <summary>
-        /// Prevents a default instance of the <see cref="KioskStatus"/> class from being created.
+        /// Prevents a default instance of the <see cref="KioskDevice" /> class from being created.
         /// </summary>
         /// <param name="device">The device.</param>
         private KioskDevice( Device device )
