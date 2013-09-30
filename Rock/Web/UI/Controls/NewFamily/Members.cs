@@ -19,8 +19,14 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:NewFamilyMembers runat=server></{0}:NewFamilyMembers>" )]
     public class NewFamilyMembers : CompositeControl, INamingContainer
     {
-        LinkButton lbAddFamilyMember;
+        private LinkButton _lbAddFamilyMember;
 
+        /// <summary>
+        /// Gets the family member rows.
+        /// </summary>
+        /// <value>
+        /// The family member rows.
+        /// </value>
         public List<NewFamilyMembersRow> FamilyMemberRows
         {
             get
@@ -62,18 +68,23 @@ namespace Rock.Web.UI.Controls
         {
             Controls.Clear();
 
-            lbAddFamilyMember = new LinkButton();
-            Controls.Add( lbAddFamilyMember );
-            lbAddFamilyMember.ID = this.ID + "_btnAddFamilyMember";
-            lbAddFamilyMember.Click += lbAddFamilyMember_Click;
-            lbAddFamilyMember.AddCssClass( "add btn btn-default" );
-            lbAddFamilyMember.CausesValidation = false;
+            _lbAddFamilyMember = new LinkButton();
+            Controls.Add( _lbAddFamilyMember );
+            _lbAddFamilyMember.ID = this.ID + "_btnAddFamilyMember";
+            _lbAddFamilyMember.Click += lbAddFamilyMember_Click;
+            _lbAddFamilyMember.AddCssClass( "add btn btn-default" );
+            _lbAddFamilyMember.CausesValidation = false;
 
             var iAddFilter = new HtmlGenericControl( "i" );
             iAddFilter.AddCssClass( "icon-plus-sign" );
-            lbAddFamilyMember.Controls.Add( iAddFilter );
+            _lbAddFamilyMember.Controls.Add( iAddFilter );
         }
 
+        /// <summary>
+        /// Handles the Click event of the lbAddFamilyMember control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddFamilyMember_Click( object sender, EventArgs e )
         {
             if ( AddFamilyMemberClick != null )
@@ -163,7 +174,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                lbAddFamilyMember.RenderControl( writer );
+                _lbAddFamilyMember.RenderControl( writer );
                 writer.RenderEndTag();
 
                 writer.RenderEndTag();  // tr
@@ -187,9 +198,9 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        ///// <summary>
-        ///// Occurs when [add filter click].
-        ///// </summary>
+        /// <summary>
+        /// Occurs when [add family member click].
+        /// </summary>
         public event EventHandler AddFamilyMemberClick;
         
     }

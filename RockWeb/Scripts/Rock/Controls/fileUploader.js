@@ -5,16 +5,16 @@
 
     Rock.controls.fileUploader = (function () {
         var _updateScrollbar = function () {
-                // TODO: Update this selector to be relative to the current instance of the control and use '.scroll-container' class rather than id.
-                var $scrollContainer = $('#modal-scroll-ontainer');
-                if ($scrollContainer.length) {
-                    $scrollContainer.tinyscrollbar_update('relative');
-                }
-            },
+            // TODO: Update this selector to be relative to the current instance of the control and use '.scroll-container' class rather than id.
+            var $scrollContainer = $('#modal-scroll-ontainer');
+            if ($scrollContainer.length) {
+                $scrollContainer.tinyscrollbar_update('relative');
+            }
+        },
             _configure = function (options) {
                 var isImage = options.fileType === 'image',
                     wsUrl = isImage ? '/ImageUploader.ashx?' : '/FileUploader.ashx?';
-                
+
                 if (options.fileId) {
                     wsUrl += 'fileId=' + options.fileId;
                 }
@@ -23,43 +23,44 @@
                     if (/fileId/.test(wsUrl)) {
                         wsUrl += '&';
                     }
-                    
+
                     wsUrl += 'fileTypeGuid=' + options.fileTypeGuid;
                 }
 
-                $('#' + options.controlId).kendoUpload({
-                    multiple: false,
-                    showFileList: false,
-                    async: {
-                        saveUrl: wsUrl
-                    },
-                    success: function (e) {
+                // uses https://github.com/blueimp/jQuery-File-Upload
+                $('#' + options.controlId).fileupload({
+                    url: wsUrl,
+                    dataType: 'json',
+                    dropZone: $('#' + options.controlId).closest('.fileupload-drop-zone'),
+                    autoUpload: true,
+                    done: function (e, data) {
                         var $el = isImage ? $('#' + options.imgThumbnail) : $('#' + options.aFileName);
-                        if (e.operation === 'upload' && e.response.toString() !== '0') {
-                            $('#' + options.hfFileId).val(e.response.Id);
-                            $el.hide();
+                        $('#' + options.hfFileId).val(data.response().result.Id);
+                        $el.hide();
 
-                            if (isImage) {
-                                $el.attr('src', '/GetImage.ashx?id=' + e.response.Id + '&width=50&height=50');
-                            } else {
-                                $el.text(e.response.FileName).attr('href', '/GetFile.ashx?id=' + e.response.Id);
-                            }
-                            
-                            $el.show(0, _updateScrollbar);
-                            $('#' + options.aRemove).show();
-
-                            if (options.postbackScript) {
-                                eval(options.postbackScript);
-                            }
+                        if (isImage) {
+                            $el.attr('src', '/GetImage.ashx?id=' + data.response().result.Id + '&width=50&height=50');
+                        } else {
+                            $el.text(data.response.FileName).attr('href', '/GetFile.ashx?id=' + data.response().result.Id);
                         }
+
+                        $el.show(0, _updateScrollbar);
+                        $('#' + options.aRemove).show();
+
+                        if (options.postbackScript) {
+                            eval(options.postbackScript);
+                        }
+
                     }
                 });
-            
+
+                $('#' + options.controlId).find()
+
                 $('#' + options.aRemove).click(function () {
                     $(this).hide();
                     var $el = isImage ? $('#' + options.imgThumbnail) : $('#' + options.aFileName);
                     $('#' + options.hfFileId).val('0');
-                    
+
                     if (isImage) {
                         $el.attr('src', '');
                     } else {

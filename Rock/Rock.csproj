@@ -38,12 +38,16 @@
     <Reference Include="Accessibility">
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
-    <Reference Include="AjaxControlToolkit, Version=4.5.7.429, Culture=neutral, PublicKeyToken=28f01b0e84b6d53e, processorArchitecture=MSIL">
+    <Reference Include="AjaxControlToolkit, Version=4.5.7.725, Culture=neutral, PublicKeyToken=28f01b0e84b6d53e, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\AjaxControlToolkit.7.0429\lib\45\AjaxControlToolkit.dll</HintPath>
+      <HintPath>..\packages\AjaxControlToolkit.7.0725\lib\45\AjaxControlToolkit.dll</HintPath>
     </Reference>
-    <Reference Include="Antlr3.Runtime">
-      <HintPath>..\packages\WebGrease.1.1.0\lib\Antlr3.Runtime.dll</HintPath>
+    <Reference Include="AjaxMin">
+      <HintPath>..\packages\AjaxMin.4.97.4951.28483\lib\net40\AjaxMin.dll</HintPath>
+    </Reference>
+    <Reference Include="Antlr3.Runtime, Version=3.3.1.7705, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\WebGrease.1.3.0\lib\Antlr3.Runtime.dll</HintPath>
     </Reference>
     <Reference Include="CKEditor.NET">
       <HintPath>..\packages\CKEditor.3.6.4\CKEditor.NET.dll</HintPath>
@@ -70,9 +74,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Facebook.6.4.0\lib\net45\Facebook.dll</HintPath>
     </Reference>
-    <Reference Include="HtmlAgilityPack, Version=1.4.0.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+    <Reference Include="HtmlAgilityPack, Version=1.4.6.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\AjaxControlToolkit.7.0429\lib\45\SanitizerProviders\HtmlAgilityPack.dll</HintPath>
+      <HintPath>..\packages\HtmlAgilityPack.1.4.6\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -81,15 +85,11 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.5.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.5.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="NuGet.Core, Version=2.2.31210.9045, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\NuGet.Core.2.2.0\lib\net40-Client\NuGet.Core.dll</HintPath>
-    </Reference>
-    <Reference Include="SanitizerProviders, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\AjaxControlToolkit.7.0429\lib\45\SanitizerProviders\SanitizerProviders.dll</HintPath>
     </Reference>
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -123,14 +123,8 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\RockWeb\Bin\System.Web.Http.dll</HintPath>
     </Reference>
-    <Reference Include="System.Web.Optimization">
-      <HintPath>..\packages\Microsoft.AspNet.Web.Optimization.1.0.0\lib\net40\System.Web.Optimization.dll</HintPath>
-    </Reference>
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
-    <Reference Include="WebGrease">
-      <HintPath>..\packages\WebGrease.1.1.0\lib\WebGrease.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Address\GeocodeContainer.cs">
@@ -224,6 +218,22 @@
     <Compile Include="Migrations\201309251315512_RefactorMetrics.cs" />
     <Compile Include="Migrations\201309251315512_RefactorMetrics.Designer.cs">
       <DependentUpon>201309251315512_RefactorMetrics.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201309260255120_XSLTToLiquid.cs" />
+    <Compile Include="Migrations\201309260255120_XSLTToLiquid.Designer.cs">
+      <DependentUpon>201309260255120_XSLTToLiquid.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201309261219018_LiquidPromotions.cs" />
+    <Compile Include="Migrations\201309261219018_LiquidPromotions.Designer.cs">
+      <DependentUpon>201309261219018_LiquidPromotions.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201309271956487_MoveLiquidToTheme.cs" />
+    <Compile Include="Migrations\201309271956487_MoveLiquidToTheme.Designer.cs">
+      <DependentUpon>201309271956487_MoveLiquidToTheme.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201309272221418_AddPasswordWarningDate.cs" />
+    <Compile Include="Migrations\201309272221418_AddPasswordWarningDate.Designer.cs">
+      <DependentUpon>201309272221418_AddPasswordWarningDate.cs</DependentUpon>
     </Compile>
     <Compile Include="Model\FinancialPersonSavedAccountService.Partial.cs" />
     <Compile Include="Services\NuGet\NuGetExtensionsMethods.cs" />
@@ -467,6 +477,7 @@
     <Compile Include="Web\UI\Controls\Communication\Email.cs" />
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
+    <Compile Include="Web\UI\Controls\HighlightLabel.cs" />
     <Compile Include="Web\UI\Controls\ILabeledControl.cs" />
     <Compile Include="Web\UI\Controls\IRequiredControl.cs" />
     <Compile Include="Web\UI\Controls\RockControlHelper.cs" />
@@ -1055,6 +1066,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201309251315512_RefactorMetrics.resx">
       <DependentUpon>201309251315512_RefactorMetrics.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201309260255120_XSLTToLiquid.resx">
+      <DependentUpon>201309260255120_XSLTToLiquid.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201309261219018_LiquidPromotions.resx">
+      <DependentUpon>201309261219018_LiquidPromotions.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201309271956487_MoveLiquidToTheme.resx">
+      <DependentUpon>201309271956487_MoveLiquidToTheme.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201309272221418_AddPasswordWarningDate.resx">
+      <DependentUpon>201309272221418_AddPasswordWarningDate.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

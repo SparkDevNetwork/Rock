@@ -11,10 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Rest", "Rock.Rest\Rock
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CEF5DC8B-8F73-4CA9-A93F-554338D3EBB0}"
 	ProjectSection(SolutionItems) = preProject
-		Local.testsettings = Local.testsettings
-		Rock.vsmdi = Rock.vsmdi
 		Settings.StyleCop = Settings.StyleCop
-		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Tests", "Rock.Tests\Rock.Tests.csproj", "{6DF0A8C5-8A1F-477E-B382-2A40EF8B213D}"
@@ -47,9 +44,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.PayFlowPro", "Rock.PayFlowPro\Rock.PayFlowPro.csproj", "{05F3587D-86DD-4CF3-A80A-D8CF598E1FD1}"
 EndProject
 Global
-	GlobalSection(TestCaseManagementSettings) = postSolution
-		CategoryFile = Rock.vsmdi
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|Mixed Platforms = Debug|Mixed Platforms

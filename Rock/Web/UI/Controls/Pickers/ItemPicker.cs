@@ -39,6 +39,24 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets the CSS Icon text.
+        /// </summary>
+        /// <value>
+        /// The CSS icon class.
+        /// </value>
+        [
+        Bindable(true),
+        Category("Appearance"),
+        DefaultValue(""),
+        Description("The text for the label.")
+        ]
+        public string IconCssClass
+        {
+            get { return ViewState["IconCssClass"] as string ?? string.Empty; }
+            set { ViewState["IconCssClass"] = value; }
+        }
+
+        /// <summary>
         /// Gets or sets the help text.
         /// </summary>
         /// <value>
@@ -148,6 +166,12 @@ namespace Rock.Web.UI.Controls
 
         #region Properties
 
+        /// <summary>
+        /// Gets the item rest URL.
+        /// </summary>
+        /// <value>
+        /// The item rest URL.
+        /// </value>
         public abstract string ItemRestUrl { get; }
 
         /// <summary>
@@ -470,6 +494,10 @@ namespace Rock.Web.UI.Controls
             RockControlHelper.CreateChildControls( this, Controls );
         }
 
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
             if ( this.Visible )
@@ -478,6 +506,11 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// This is where you implment the simple aspects of rendering your control.  The rest
+        /// will be handled by calling RenderControlHelper's RenderControl() method.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
         public virtual void RenderBaseControl( HtmlTextWriter writer)
         {
             _hfItemId.RenderControl( writer );
@@ -490,12 +523,12 @@ namespace Rock.Web.UI.Controls
                 string controlHtmlFormatStart = @"
         <div id='{0}' class='picker picker-select'> 
             <a class='picker-label' href='#'>
-                <i class='icon-folder-open'></i>
+                <i class='{2}'></i>
                 <span id='selectedItemLabel_{0}' class='selected-names'>{1}</span>
-                <b class='caret'></b>
+                <b class='caret pull-right'></b>
             </a>
 ";
-                writer.Write( controlHtmlFormatStart, this.ID, this.ItemName );
+                writer.Write( controlHtmlFormatStart, this.ID, this.ItemName, this.IconCssClass );
 
                 // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
                 if ( SelectItem != null )

@@ -9,7 +9,7 @@
 
 <asp:UpdatePanel ID="upRockPackages" runat="server">
 <ContentTemplate>
-    <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Error" Visible="false" />
+    <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Danger" Visible="false" />
     <asp:Panel id="pnlPackageList" runat="server" DefaultButton="ibSearch">
         <div class="container">
             <div class="row">

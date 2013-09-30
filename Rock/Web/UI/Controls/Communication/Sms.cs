@@ -43,6 +43,12 @@ namespace Rock.Web.UI.Controls.Communication
 
         #region Properties
 
+        /// <summary>
+        /// Gets or sets the channel data.
+        /// </summary>
+        /// <value>
+        /// The channel data.
+        /// </value>
         public override Dictionary<string, string> ChannelData
         {
             get

@@ -23,7 +23,8 @@ namespace Rock.Field.Types
         /// <summary>
         /// Renders the controls neccessary for prompting user for a new value and adds them to the parentControl
         /// </summary>
-        /// <param name="configurationValues"></param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
         /// <returns>
         /// The control
         /// </returns>

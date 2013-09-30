@@ -159,7 +159,17 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? FailedPasswordAttemptWindowStartDateTime { get; set; }
-        
+
+        /// <summary>
+        /// Gets or sets the last time that user was notified about their password expiring.
+        /// </summary>
+        /// <value>
+        /// The last password expiration warning date time.
+        /// </value>
+        [DataMember]
+        [MergeField]
+        public DateTime? LastPasswordExpirationWarningDateTime { get; set; }
+
         /// <summary>
         /// Gets or sets the Api Key.
         /// </summary>
@@ -246,6 +256,10 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// To the dictionary.
+        /// </summary>
+        /// <returns></returns>
         public override System.Collections.Generic.Dictionary<string, object> ToDictionary()
         {
             var dictionary = base.ToDictionary();

@@ -28,7 +28,7 @@
             
             <asp:Panel ID="pnlBasicProperty" runat="server" Visible="true" >
                 <div class="row">
-                    <div class="span6">
+                    <div class="col-md-6">
                         <fieldset>
                             <Rock:PagePicker ID="ppParentPage" runat="server" Label="Parent Page" Required="false" />
                             <Rock:DataTextBox ID="tbPageName" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Name" Required="true" />
@@ -44,7 +44,7 @@
                             <Rock:DataTextBox ID="tbIconCssClass" runat="server" SourceTypeName="Rock.Model.Page, Rock" PropertyName="IconCssClass" Label="Icon CSS Class"/>
                         </fieldset>
                     </div>
-                    <div class="span6">
+                    <div class="col-md-6">
                         <fieldset>
                             <Rock:DataTextBox ID="tbDescription" runat="server" TextMode="MultiLine" Rows="3" SourceTypeName="Rock.Model.Page, Rock" PropertyName="Description" />
                         </fieldset>
@@ -75,7 +75,7 @@
 
             <asp:Panel ID="pnlAdvancedSettings" runat="server" Visible="false" >
                 <div class="row">
-                    <div class="span6">
+                    <div class="col-md-6">
                         <fieldset>
                             <Rock:RockCheckBox ID="cbRequiresEncryption" runat="server" Text="Force SSL"/>
                             <Rock:RockCheckBox ID="cbEnableViewState" runat="server" Text="Enable ViewState"/>
@@ -83,7 +83,7 @@
                             <Rock:DataTextBox ID="tbCacheDuration" runat="server" Label="Cache Duration" SourceTypeName="Rock.Model.Page, Rock" PropertyName="OutputCacheDuration"/>
                         </fieldset>
                     </div>
-                    <div class="span6">
+                    <div class="col-md-6">
                         <fieldset>                
                             <Rock:DataTextBox ID="tbPageRoute" runat="server" TextMode="MultiLine" Rows="3" Label="Page Routes" SourceTypeName="Rock.Model.Page, Rock" PropertyName="PageRoutes"  />
                         </fieldset>
@@ -102,7 +102,7 @@
             
             <asp:Panel ID="pnlImportExport" runat="server" Visible="False">
                 <div class="row">
-                    <div class="span6">
+                    <div class="col-md-6">
                         <fieldset>
                             <legend>Import Pages</legend>
                             <asp:Panel runat="server" ID="pnlImportSuccess" CssClass="row-fluid" Visible="False">
@@ -144,7 +144,7 @@
                             </asp:LinkButton>
                         </fieldset>
                     </div>
-                    <div class="span6">
+                    <div class="col-md-6">
                         <fieldset>
                             <legend>Export Pages</legend>
                             <label class="checkbox">

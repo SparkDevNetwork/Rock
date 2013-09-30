@@ -24,7 +24,7 @@ namespace Rock.Web.UI.Controls
     /// To use on a page or usercontrol:
     /// <example>
     /// <code>
-    ///     <Rock:GeoPicker ID="gpGeoPoint" runat="server" Required="false" Label="Geo Point" DrawingMode="Point" />
+    ///     <![CDATA[<Rock:GeoPicker ID="gpGeoPoint" runat="server" Required="false" Label="Geo Point" DrawingMode="Point" />]]>
     /// </code>
     /// </example>
     /// To set an initial value:
@@ -163,7 +163,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Sets the value. Necessary to preload the geo fence or geo point.
         /// </summary>
-        /// <param name="person">The dbGeography to plot/edit.</param>
+        /// <param name="dbGeography">The db geography.</param>
         public void SetValue( DbGeography dbGeography )
         {
             if ( dbGeography != null )
@@ -486,7 +486,7 @@ namespace Rock.Web.UI.Controls
             <a class='picker-label' href='#'>
                 <i class='icon-map-marker'></i>
                 <span id='selectedGeographyLabel_{0}'>{1}</span>
-                <b class='caret'></b>
+                <b class='caret pull-right'></b>
             </a>
 ";
 
@@ -675,9 +675,19 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
+        /// <summary>
+        /// Which type of selection to enable
+        /// </summary>
         public enum ManagerDrawingMode
         {
+            /// <summary>
+            /// point
+            /// </summary>
             Point = 0,
+
+            /// <summary>
+            /// polygon
+            /// </summary>
             Polygon = 1
         };
     }

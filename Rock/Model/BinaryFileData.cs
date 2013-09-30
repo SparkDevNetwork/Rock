@@ -43,7 +43,7 @@ namespace Rock.Model
     public partial class BinaryFileDataConfiguration : EntityTypeConfiguration<BinaryFileData>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="BinaryFileDatConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="BinaryFileDataConfiguration"/> class.
         /// </summary>
         public BinaryFileDataConfiguration()
         {

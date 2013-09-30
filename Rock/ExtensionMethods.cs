@@ -46,7 +46,7 @@ namespace Rock
         /// Gets the property value.
         /// </summary>
         /// <param name="rootObj">The root obj.</param>
-        /// <param name="propertyNamePath">The property path name (i.e. FirstName, Owner.FirstName, etc).</param>
+        /// <param name="propertyPathName">Name of the property path.</param>
         /// <returns></returns>
         public static object GetPropertyValue( this object rootObj, string propertyPathName )
         {
@@ -355,6 +355,8 @@ namespace Rock
                 return content;
 
             Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
+            //TODO: This should probably use the theme assets folder
+            Template.FileSystem = new DotLiquid.FileSystems.LocalFileSystem( System.Web.HttpContext.Current.Server.MapPath( "~/Assets/Liquid" ) );
             Template template = Template.Parse( content );
 
             return template.Render( Hash.FromDictionary( mergeObjects ) );
@@ -391,6 +393,11 @@ namespace Rock
                 : default( T );
         }
 
+        /// <summary>
+        /// Maskeds the specified value.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
         public static string Masked( this string value )
         {
             if ( value.Length > 4 )
@@ -943,6 +950,7 @@ namespace Rock
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="enumType">Type of the enum.</param>
+        /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
         public static void BindToEnum( this ListControl listControl, Type enumType, bool insertBlankOption = false )
         {
             var dictionary = new Dictionary<int, string>();
@@ -967,6 +975,7 @@ namespace Rock
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="definedType">Type of the defined.</param>
+        /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
         public static void BindToDefinedType( this ListControl listControl, Rock.Web.Cache.DefinedTypeCache definedType, bool insertBlankOption = false )
         {
             var ds = definedType.DefinedValues

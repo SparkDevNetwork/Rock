@@ -10,9 +10,7 @@
                 <h1>
                     <asp:Literal ID="lReadOnlyTitle" runat="server" />
                 </h1>
-                <div class="label label-type">
-                    <asp:Literal ID="lEntityType" runat="server"></asp:Literal>
-                </div>
+                <Rock:HighlightLabel ID="hlEntityType" runat="server" LabelType="Type" />
             </div>
             <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
 

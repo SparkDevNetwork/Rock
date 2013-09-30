@@ -464,7 +464,7 @@ namespace Rock.Web.UI
         /// If the attribute doesn't exist an empty list is returned.
         /// </summary>
         /// <param name="key">the block attribute key</param>
-        /// <returns>a list of strings or an empty list if none exists</string></returns>
+        /// <returns>a list of strings or an empty list if none exists</returns>
         public List<string> GetAttributeValues( string key )
         {
             if ( CurrentBlock != null )

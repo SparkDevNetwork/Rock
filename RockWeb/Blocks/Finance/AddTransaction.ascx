@@ -18,7 +18,7 @@
 
                                 <asp:Repeater ID="rptAccountList" runat="server">
                                     <ItemTemplate>
-                                        <Rock:RockTextBox ID="txtAccountAmount" runat="server" PrependText="$" Label='<%# Eval("Name") %>' Text='<%# Eval("AmountFormatted") %>' CssClass="account-amount" />
+                                        <Rock:RockTextBox ID="txtAccountAmount" runat="server" PrependText="$" Label='<%# Eval("Name") %>' Text='<%# Eval("AmountFormatted") %>' Placeholder="0.00" CssClass="account-amount" />
                                     </ItemTemplate>
                                 </asp:Repeater>
                                 <Rock:ButtonDropDownList ID="btnAddAccount" runat="server" CssClass="btn btn-primary" Visible="false" Label=" "
@@ -225,7 +225,7 @@
 
                                 </asp:PlaceHolder>
 
-                                <Rock:NotificationBox ID="nbSaveAccount" runat="server" Visible="false" NotificationBoxType="Error"></Rock:NotificationBox>
+                                <Rock:NotificationBox ID="nbSaveAccount" runat="server" Visible="false" NotificationBoxType="Danger"></Rock:NotificationBox>
 
                                 <div id="divSaveActions" runat="server" class="actions">
                                     <asp:LinkButton ID="lbSaveAccount" runat="server" Text="Save Account" CssClass="btn btn-primary" OnClick="lbSaveAccount_Click" />
