@@ -7,8 +7,16 @@ using NuGet;
 
 namespace Rock.Services.NuGet
 {
+    /// <summary>
+    /// NuGet specific extension methods
+    /// </summary>
     public static class NuGetExtensionsMethods
     {
+        /// <summary>
+        /// Flattens the specified dependency sets.
+        /// </summary>
+        /// <param name="dependencySets">The dependency sets.</param>
+        /// <returns></returns>
         public static string Flatten( this IEnumerable<PackageDependencySet> dependencySets )
         {
             var dependencies = new List<dynamic>();
@@ -44,6 +52,11 @@ namespace Rock.Services.NuGet
             return FlattenDependencies( dependencies );
         }
 
+        /// <summary>
+        /// Flattens the specified dependencies.
+        /// </summary>
+        /// <param name="dependencies">The dependencies.</param>
+        /// <returns></returns>
         public static string Flatten( this ICollection<PackageDependency> dependencies )
         {
             return

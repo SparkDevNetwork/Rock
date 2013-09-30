@@ -19,7 +19,7 @@ namespace Rock.Attribute
         /// <summary>
         /// Initializes a new instance of the <see cref="DefinedValueFieldAttribute" /> class.
         /// </summary>
-        /// <param name="definedTypeGuid">The defined type GUID.</param>
+        /// <param name="groupTypeGuid">The group type GUID.</param>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>

@@ -51,7 +51,7 @@ namespace Rock.Model
         /// Gets or sets the Id of the <see cref="Rock.Model.GroupType"/> that this Group is a member belongs to. This property is required.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.ModelGroupType"/> that this group is a member of.
+        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupType"/> that this group is a member of.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
@@ -256,6 +256,7 @@ namespace Rock.Model
 
     /// <summary>
     /// Represents a circular reference exception. This occurs when a group is set as a parent of a group that is higher in the group hierarchy. 
+    /// </summary>
     /// <remarks>
     ///  An example of this is when a child group is set as the parent of it's parent group.
     /// </remarks>

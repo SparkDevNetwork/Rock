@@ -246,6 +246,7 @@ namespace Rock.Migrations
         /// <param name="description">The description.</param>
         /// <param name="layout">The layout.</param>
         /// <param name="guid">The GUID.</param>
+        /// <param name="iconCssClass">The icon CSS class.</param>
         public void AddPage( string parentPageGuid, string name, string description, string layout, string guid, string iconCssClass = ""  )
         {
             Sql( string.Format( @"

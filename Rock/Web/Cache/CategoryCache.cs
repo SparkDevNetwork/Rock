@@ -175,7 +175,7 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Copies from model.
         /// </summary>
-        /// <param name="category">The category.</param>
+        /// <param name="model">The model.</param>
         public override void CopyFromModel( Data.IEntity model )
         {
             base.CopyFromModel( model );

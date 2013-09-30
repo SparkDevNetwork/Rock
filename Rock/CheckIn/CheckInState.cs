@@ -60,7 +60,8 @@ namespace Rock.CheckIn
         /// <summary>
         /// Initializes a new instance of the <see cref="CheckInState" /> class.
         /// </summary>
-        /// <param name="kioskStatus">The kiosk status.</param>
+        /// <param name="deviceId">The device id.</param>
+        /// <param name="configuredGroupTypes">The configured group types.</param>
         public CheckInState( int deviceId, List<int> configuredGroupTypes )
         {
             DeviceId = deviceId;

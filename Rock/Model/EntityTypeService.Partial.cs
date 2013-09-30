@@ -61,7 +61,6 @@ namespace Rock.Model
         /// Gets the specified name.
         /// </summary>
         /// <param name="name">The name.</param>
-        /// <param name="friendlyName">Name of the friendly.</param>
         /// <param name="createIfNotFound">if set to <c>true</c> [create if not found].</param>
         /// <param name="personId">The person id.</param>
         /// <returns></returns>

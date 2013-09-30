@@ -216,13 +216,19 @@ Sys.Application.add_load(function () {
 
                     if ( child != _lbFilter && child != _hfVisible )
                     {
-                        // add row column
-                        writer.AddAttribute("class", "col-md-4");
-                        writer.RenderBeginTag(HtmlTextWriterTag.Div);
+                        // add column
+                        if (child.Visible)
+                        {
+                            writer.AddAttribute("class", "col-md-4");
+                            writer.RenderBeginTag(HtmlTextWriterTag.Div);
+                        }
 
                         child.RenderControl( writer );
 
-                        writer.RenderEndTag();
+                        if (child.Visible)
+                        {
+                            writer.RenderEndTag();
+                        }
 
                         cellCount++;
                     }

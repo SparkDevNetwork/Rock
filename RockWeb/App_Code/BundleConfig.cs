@@ -46,10 +46,12 @@ public class BundleConfig
             "~/Scripts/jquery-ui-1.10.0.custom.min.js",
             "~/Scripts/Kendo/kendo.web.min.js",
             "~/Scripts/bootstrap.min.js",
+            "~/Scripts/bootstrap-timepicker.js",
             "~/Scripts/bootstrap-datepicker.js",
             "~/Scripts/bootbox.min.js",
+            "~/Scripts/jquery.fileupload.js",
             "~/Scripts/jquery.tinyscrollbar.js",
-            "~/Scripts/Rock/Extensions/*.js") );
+            "~/Scripts/Rock/Extensions/*.js" ) );
 
         bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockUi" ).Include( 
             "~/Scripts/Rock/settings.js",

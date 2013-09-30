@@ -54,9 +54,11 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the device by IP address.  
+        /// Gets the device by IP address.
         /// </summary>
         /// <param name="ipAddress">The ip address.</param>
+        /// <param name="deviceTypeValueId">The device type value id.</param>
+        /// <param name="skipReverseLookup">if set to <c>true</c> [skip reverse lookup].</param>
         /// <returns></returns>
         public Device GetByIPAddress( string ipAddress, int deviceTypeValueId, bool skipReverseLookup = true )
         {

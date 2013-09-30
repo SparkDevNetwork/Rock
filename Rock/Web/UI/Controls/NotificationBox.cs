@@ -51,10 +51,6 @@ namespace Rock.Web.UI.Controls
             if ( this.Visible )
             {
                 string alertType = NotificationBoxType.ToString().ToLower();
-                if ( alertType == "warning" )
-                {
-                    alertType = "block";
-                }
 
                 bool showMessage = !string.IsNullOrWhiteSpace( Heading ) || !string.IsNullOrWhiteSpace( Title ) || !string.IsNullOrWhiteSpace( this.Text );
 
@@ -104,7 +100,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Display an error box
         /// </summary>
-        Error,
+        Danger,
 
         /// <summary>
         /// Display a success box

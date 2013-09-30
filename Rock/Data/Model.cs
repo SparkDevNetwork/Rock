@@ -188,7 +188,7 @@ namespace Rock.Data
         /// Gets the first value of an attribute key - splitting that delimited value into a list of strings.
         /// </summary>
         /// <param name="key">The key.</param>
-        /// <returns>A list of strings or an empty list if none exists.</string></returns>
+        /// <returns>A list of strings or an empty list if none exists.</returns>
         public List<string> GetAttributeValues( string key )
         {
             if ( this.AttributeValues != null &&
