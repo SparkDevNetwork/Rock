@@ -5,7 +5,7 @@ using System.ComponentModel.Composition;
 using System.Net;
 using System.ServiceModel;
 using Rock.Attribute;
-using Rock.CyberSource.Test;
+using Rock.CyberSource.Live;
 //using Rock.CyberSource.Live;
 using Rock.Financial;
 using Rock.Model;
