@@ -40,7 +40,7 @@
                         if (isImage) {
                             $el.attr('src', Rock.settings.get('baseUrl') + 'GetImage.ashx?id=' + data.response().result.Id + '&width=50');
                         } else {
-                            $el.text(data.response.FileName).attr('href', Rock.settings.get('baseUrl') + 'GetFile.ashx?id=' + data.response().result.Id);
+                            $el.text(data.response().result.FileName).attr('href', Rock.settings.get('baseUrl') + 'GetFile.ashx?id=' + data.response().result.Id);
                         }
 
                         $('#' + options.aRemove).show();
@@ -48,11 +48,8 @@
                         if (options.postbackScript) {
                             eval(options.postbackScript);
                         }
-
                     }
                 });
-
-                $('#' + options.controlId).find()
 
                 $('#' + options.aRemove).click(function () {
                     $(this).hide();
