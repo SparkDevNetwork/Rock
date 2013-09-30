@@ -34,6 +34,7 @@
                     dropZone: $('#' + options.controlId).closest('.fileupload-drop-zone'),
                     autoUpload: true,
                     done: function (e, data) {
+
                         var $el = isImage ? $('#' + options.imgThumbnail) : $('#' + options.aFileName);
                         $('#' + options.hfFileId).val(data.response().result.Id);
                         $el.hide();
@@ -41,7 +42,7 @@
                         if (isImage) {
                             $el.attr('src', '/GetImage.ashx?id=' + data.response().result.Id + '&width=50&height=50');
                         } else {
-                            $el.text(data.response.FileName).attr('href', '/GetFile.ashx?id=' + data.response().result.Id);
+                            $el.text(data.response().result.FileName).attr('href', '/GetFile.ashx?id=' + data.response().result.Id);
                         }
 
                         $el.show(0, _updateScrollbar);
@@ -50,11 +51,8 @@
                         if (options.postbackScript) {
                             eval(options.postbackScript);
                         }
-
                     }
                 });
-
-                $('#' + options.controlId).find()
 
                 $('#' + options.aRemove).click(function () {
                     $(this).hide();
