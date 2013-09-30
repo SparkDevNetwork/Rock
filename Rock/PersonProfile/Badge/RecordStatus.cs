@@ -37,21 +37,11 @@ namespace Rock.PersonProfile.Badge
         }
 
         /// <summary>
-        /// Gets the type of the badge.
+        /// Gets the badge label
         /// </summary>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public override string GetBadgeType( Person person )
-        {
-            return "Important";
-        }
-
-        /// <summary>
-        /// Gets the text.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <returns></returns>
-        public override string GetText( Person person )
+        public override HighlightLabel GetLabel( Person person )
         {
             if ( Person != null )
             {
@@ -61,13 +51,15 @@ namespace Rock.PersonProfile.Badge
                     var recordStatusValue = DefinedValueCache.Read( Person.RecordStatusValueId.Value );
                     if ( string.Compare( recordStatusValue.Guid.ToString(), Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE, true ) != 0 )
                     {
-                        return recordStatusValue.Name;
+                        var label = new HighlightLabel();
+                        label.LabelType = LabelType.Danger;
+                        label.Text = recordStatusValue.Name;
+                        return label;
                     }
                 }
             }
 
-            return string.Empty;
+            return null;
         }
-
     }
 }

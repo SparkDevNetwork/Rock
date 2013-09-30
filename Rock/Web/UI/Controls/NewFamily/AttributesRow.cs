@@ -23,8 +23,6 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class NewFamilyAttributesRow : CompositeControl
     {
-        List<Control> attributeControls;
-
         /// <summary>
         /// Gets or sets the person GUID.
         /// </summary>
@@ -89,15 +87,6 @@ namespace Rock.Web.UI.Controls
         private List<AttributeCache> _attributeList = null;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="NewFamilyAttributesRow" /> class.
-        /// </summary>
-        public NewFamilyAttributesRow()
-            : base()
-        {
-            attributeControls = new List<Control>();
-        }
-
-        /// <summary>
         /// Sets the edit values.
         /// </summary>
         /// <param name="person">The person.</param>
@@ -108,7 +97,7 @@ namespace Rock.Web.UI.Controls
             int i = 0;
             foreach ( var attribute in AttributeList )
             {
-                attribute.FieldType.Field.SetEditValue(attributeControls[i], attribute.QualifierValues, person.GetAttributeValue(attribute.Key));
+                attribute.FieldType.Field.SetEditValue(attribute.GetControl( Controls[i]), attribute.QualifierValues, person.GetAttributeValue(attribute.Key));
                 i++;
             }
         }
@@ -124,7 +113,7 @@ namespace Rock.Web.UI.Controls
             int i = 0;
             foreach ( var attribute in AttributeList )
             {
-                person.SetAttributeValue( attribute.Key, attribute.FieldType.Field.GetEditValue( attributeControls[i], attribute.QualifierValues ) );
+                person.SetAttributeValue( attribute.Key, attribute.FieldType.Field.GetEditValue( attribute.GetControl( Controls[i] ), attribute.QualifierValues ) );
                 i++;
             }
         }
@@ -135,24 +124,21 @@ namespace Rock.Web.UI.Controls
         protected override void CreateChildControls()
         {
             base.CreateChildControls();
-            Controls.Clear();
-            attributeControls.Clear();
 
-            int i = 0;
+            Controls.Clear();
             foreach ( var attribute in AttributeList )
             {
-                Control control = attribute.CreateControl();
-                control.ID = string.Format( "{0}_{1}", this.ID, i++ );
+                // Temporarily set name and description to empty so that wrapping html will not be generated
+                string name = attribute.Name;
+                string desc = attribute.Description;
+                attribute.Name = string.Empty;
+                attribute.Description = string.Empty;
 
-                if ( control is Rock.Web.UI.Controls.IRequiredControl )
-                {
-                    var requiredControl = control as Rock.Web.UI.Controls.IRequiredControl;
-                    requiredControl.Required = attribute.IsRequired;
-                    requiredControl.RequiredErrorMessage = attribute.Name + " is required.";
-                }
+                attribute.AddControl(Controls, string.Empty, false, true);
 
-                attributeControls.Add( control );
-                Controls.Add( control );
+                // Set name and description back
+                attribute.Name = name;
+                attribute.Description = desc;
             }
         }
 
@@ -171,20 +157,10 @@ namespace Rock.Web.UI.Controls
                 writer.Write( PersonName );
                 writer.RenderEndTag();
 
-                foreach ( Control control in attributeControls )
+                foreach ( Control control in Controls )
                 {
-                    string errorCss = string.Empty;
-                    if ( control is Rock.Web.UI.Controls.IRequiredControl )
-                    {
-                        var requiredControl = control as Rock.Web.UI.Controls.IRequiredControl;
-                        errorCss = requiredControl.IsValid ? "" : " error";
-                    }
-
                     writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-group" + errorCss );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     control.RenderControl( writer );
-                    writer.RenderEndTag();
                     writer.RenderEndTag();
                 }
 

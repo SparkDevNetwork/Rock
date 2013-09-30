@@ -77,12 +77,19 @@ namespace RockWeb.Blocks.Finance.Administration
                 hfBatchId.Value = transaction.BatchId.ToString();
                 ddlCreditCardType.SetValue( transaction.CreditCardTypeValueId );
                 ddlCurrencyType.SetValue( transaction.CurrencyTypeValueId );
-                ddlPaymentGateway.SetValue( transaction.GatewayId );
+                if ( transaction.GatewayEntityTypeId.HasValue )
+                {
+                    var gatewayEntity = Rock.Web.Cache.EntityTypeCache.Read( transaction.GatewayEntityTypeId.Value );
+                    if ( gatewayEntity != null )
+                    {
+                        ddlPaymentGateway.SetValue( gatewayEntity.Guid.ToString() );
+                    }
+                }
                 ddlSourceType.SetValue( transaction.SourceTypeValueId );
                 ddlTransactionType.SetValue( transaction.TransactionTypeValueId );
                 tbSummary.Text = transaction.Summary;
                 tbTransactionCode.Text = transaction.TransactionCode;
-                dtTransactionDateTime.Text = transaction.TransactionDateTime.ToString();
+                dtTransactionDateTime.SelectedDateTime = transaction.TransactionDateTime;
             }
             else
             {
@@ -134,7 +141,11 @@ namespace RockWeb.Blocks.Finance.Administration
 
                 if ( !string.IsNullOrEmpty( ddlPaymentGateway.SelectedValue ) && ddlPaymentGateway.SelectedValue != Rock.Constants.All.IdValue )
                 {
-                    financialTransaction.GatewayId = int.Parse( ddlPaymentGateway.SelectedValue );
+                    var gatewayEntity = Rock.Web.Cache.EntityTypeCache.Read( new Guid( ddlPaymentGateway.SelectedValue ) );
+                    if ( gatewayEntity != null )
+                    {
+                        financialTransaction.GatewayEntityTypeId = gatewayEntity.Id;
+                    }
                 }
                 if ( ddlSourceType.SelectedValue != Rock.Constants.All.IdValue )
                 {

@@ -66,6 +66,18 @@
                 $(this).find('.picker-select-item-details:hidden').slideDown();
             });
 
+            $('#' + controlId).hover(
+                function () {
+
+                    // only show the X if there there is something picked
+                    if ($('#hfPersonId_' + controlId).val() || '0' !== '0') {
+                        $('#btnSelectNone_' + controlId).stop().show();
+                    }
+                },
+                function () {
+                    $('#btnSelectNone_' + controlId).fadeOut(500);
+                });
+
             $('#btnCancel_' + controlId).click(function () {
                 $(this).closest('.picker-menu').slideUp();
             });
@@ -98,7 +110,11 @@
                         // override jQueryUI autocomplete's _renderItem so that we can do Html for the listitems
                         // derived from http://github.com/scottgonzalez/jquery-ui-extensions
 
-                        var $label = $('<label/>').text(item.Name),
+                        var $div = $('<div/>').attr('class', 'radio'),
+
+                            $label = $('<label/>')
+                                .text(item.Name)
+                                .prependTo($div),
 
                             $radio = $('<input type="radio" name="person-id" />')
                                 .attr('id', item.Id)
@@ -108,7 +124,7 @@
                             $li = $('<li/>')
                                 .addClass('picker-select-item')
                                 .attr('data-person-id', item.Id)
-                                .html($label),
+                                .html($div),
 
                             $resultSection = $(this.options.appendTo);
 

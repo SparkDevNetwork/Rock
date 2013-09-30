@@ -74,7 +74,7 @@ namespace Quartz.Impl.AdoJobStore
             {
                 DBConnectionManager.Instance.Shutdown(DataSource);
             }
-            catch (SqlException sqle)
+            catch (SqlException)
             {
             }
         }

@@ -102,7 +102,7 @@ namespace RockWeb.Blocks.Finance.Administration
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
             pnlDetails.Visible = true;
-            var frequencyTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_PLEDGE_FREQUENCY );
+            var frequencyTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY );
             ddlFrequencyType.BindToDefinedType( DefinedTypeCache.Read( frequencyTypeGuid ) );
             FinancialPledge pledge;
 

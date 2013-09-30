@@ -40,6 +40,16 @@ namespace Rock.Model
         /// <returns>The first <see cref="Rock.Model.Location"/> where an address match is found, if no match is found a new <see cref="Rock.Model.Location"/> is created and returned.</returns>
         public Location Get( string street1, string street2, string city, string state, string zip )
         {
+            // Make sure it's not an empty address
+            if ( string.IsNullOrWhiteSpace( street1 ) &&
+                string.IsNullOrWhiteSpace( street2 ) &&
+                string.IsNullOrWhiteSpace( city ) &&
+                string.IsNullOrWhiteSpace( state ) &&
+                string.IsNullOrWhiteSpace( zip ) )
+            {
+                return null;
+            }
+
             // First check if a location exists with the entered values
             Location existingLoction = Repository.FirstOrDefault( t =>
                 ( t.Street1 == street1 || ( street1 == null && t.Street1 == null ) ) &&
@@ -171,7 +181,7 @@ namespace Rock.Model
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.Location">Locations</see> that are descendants of a <see cref="Rock.Model.Location"/>
         /// </summary>
-        /// <param name="parentLocationId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.mO"/></param>
+        /// <param name="parentLocationId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Location"/></param>
         /// <returns>A collection of <see cref="Rock.Model.Location"/> entities that are descendants of the provided parent <see cref="Rock.Model.Location"/>.</returns>
         public IEnumerable<Location> GetAllDescendents( int parentLocationId )
         {

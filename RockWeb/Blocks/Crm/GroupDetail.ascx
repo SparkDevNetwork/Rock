@@ -12,12 +12,13 @@
                     <asp:Literal ID="lReadOnlyTitle" runat="server" />
                 </h1>
 
-                <asp:Literal ID="lblActiveHtml" runat="server" />
-                <div class="label label-type"><asp:Literal ID="lGroupType" runat="server"></asp:Literal></div>
-                <div class="label label-campus"><asp:Literal ID="lCampus" runat="server"></asp:Literal></div>
+                <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
+                <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
+                <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
+
             </div>
 
-            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
+            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" />
 
 
 
@@ -30,7 +31,7 @@
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:LabeledCheckBox ID="cbIsActive" runat="server" Text="Active" />
+                            <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
                         </div>
                     </div>
 
@@ -42,13 +43,13 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" LabelText="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged"/>
+                            <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" Label="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged"/>
                             
-                            <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" LabelText="Group Type" />
+                            <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" Label="Group Type" />
                         
-                            <Rock:DataDropDownList ID="ddlCampus" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" LabelText="Campus" />
+                            <Rock:DataDropDownList ID="ddlCampus" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" Label="Campus" />
                             
-                            <Rock:LabeledCheckBox ID="cbIsSecurityRole" runat="server" Text="Security Role" />
+                            <Rock:RockCheckBox ID="cbIsSecurityRole" runat="server" Text="Security Role" />
                         </div>
                         <div class="col-md-6">
                              <div class="control-label">Group Member Attributes</div>

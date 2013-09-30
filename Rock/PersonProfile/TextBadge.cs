@@ -20,20 +20,13 @@ namespace Rock.PersonProfile
     public abstract class TextBadge : BadgeComponent
     {
         /// <summary>
-        /// Gets the text.
+        /// Gets the badge label
         /// </summary>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        public abstract string GetText( Person person );
-
-        /// <summary>
-        /// Gets the type of the badge.
-        /// </summary>
-        /// <param name="person">The person.</param>
-        /// <returns></returns>
-        public virtual string GetBadgeType( Person person )
+        public virtual HighlightLabel GetLabel( Person person )
         {
-            return string.Empty;
+            return new HighlightLabel();
         }
 
         /// <summary>
@@ -44,20 +37,10 @@ namespace Rock.PersonProfile
         {
             if ( Person != null )
             {
-                string text = GetText( Person );
-                string badgeType = GetBadgeType( Person );
-
-                if ( !string.IsNullOrWhiteSpace( text ) )
+                var label = GetLabel( Person );
+                if ( label != null )
                 {
-                    string css = "label";
-                    if ( !string.IsNullOrWhiteSpace( badgeType ) )
-                    {
-                        css += " label-" + badgeType.ToLower();
-                    }
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, css );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                    writer.Write( text );
-                    writer.RenderEndTag();
+                    label.RenderControl( writer );
                 }
             }
         }

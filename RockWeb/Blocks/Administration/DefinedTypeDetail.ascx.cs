@@ -5,12 +5,14 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web;
+using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Attribute = Rock.Model.Attribute;
@@ -82,7 +84,7 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                Rock.Web.Cache.DefinedTypeCache.Flush( definedTypeId );
+                DefinedTypeCache.Flush( definedTypeId );
                 definedType = typeService.Get( definedTypeId );
             }
 
@@ -105,7 +107,9 @@ namespace RockWeb.Blocks.Administration
                 definedType = typeService.Get( definedType.Guid );
             } );
 
-            ShowReadonlyDetails( definedType );
+            var qryParams = new Dictionary<string, string>();
+            qryParams["definedTypeId"] = definedType.Id.ToString();
+            NavigateToPage( this.CurrentPage.Guid, qryParams );
         }
 
         /// <summary>
@@ -332,7 +336,7 @@ namespace RockWeb.Blocks.Administration
                     return;
                 }
 
-                Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
+                AttributeCache.Flush( attribute.Id );
                 attributeService.Delete( attribute, CurrentPersonId );
                 attributeService.Save( attribute, CurrentPersonId );
             }
@@ -382,13 +386,13 @@ namespace RockWeb.Blocks.Administration
             {
                 if ( attribute.Id.Equals( 0 ) )
                 {
-                    attribute.EntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( typeof( DefinedValue ) ).Id;
+                    attribute.EntityTypeId = EntityTypeCache.Read( typeof( DefinedValue ) ).Id;
                     attribute.EntityTypeQualifierColumn = "DefinedTypeId";
                     attribute.EntityTypeQualifierValue = hfDefinedTypeId.Value;
                     attributeService.Add( attribute, CurrentPersonId );
                 }
 
-                Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
+                AttributeCache.Flush( attribute.Id );
                 attributeService.Save( attribute, CurrentPersonId );
             } );
 

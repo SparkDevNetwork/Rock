@@ -172,7 +172,7 @@ END:VCALENDAR
         DefaultValue( "" ),
         Description( "The text for the label." )
         ]
-        public string LabelText
+        public string Label
         {
             get
             {
@@ -694,6 +694,8 @@ END:VCALENDAR
             ScriptManager.RegisterStartupScript( this, this.GetType(), "schedule_builder-init_" + this.ClientID, script, true );
         }
 
+        /// <summary>
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
         {
@@ -712,7 +714,7 @@ END:VCALENDAR
 
             _dpStartDateTime.ClientIDMode = ClientIDMode.Static;
             _dpStartDateTime.ID = "dpStartDateTime_" + this.ClientID;
-            _dpStartDateTime.LabelText = "Start Date / Time";
+            _dpStartDateTime.Label = "Start Date / Time";
             _dpStartDateTime.Required = false;
             _dpStartDateTime.ValidationGroup = validationGroup;
 
@@ -1018,7 +1020,7 @@ END:VCALENDAR
             }
 
             string controlHtmlFormatString = @"
-    <a id='schedule-builder-button_{0}' role='button' class='btn btn-small'>
+    <a id='schedule-builder-button_{0}' role='button' class='btn btn-sm'>
         <i class='icon-calendar'></i> ";
 
             string controlHtmlFragment = string.Format( controlHtmlFormatString, this.ClientID );
@@ -1029,7 +1031,9 @@ END:VCALENDAR
             controlHtmlFormatString = @"
     </a>
 
-    <div id='schedule-builder-modal_{0}' class='modal hide fade schedule-builder'>
+    <div id='schedule-builder-modal_{0}' class='modal fade' >
+      <div class='modal-dialog'>
+        <div class='modal-content '>
         <div class='modal-header'>";
             controlHtmlFragment = string.Format( controlHtmlFormatString, this.ClientID );
 
@@ -1131,7 +1135,7 @@ END:VCALENDAR
 
             writer.Write( @"
                 </ul>
-                <a class='btn btn-small add-specific-date'><i class='icon-plus'></i>
+                <a class='btn btn-sm add-specific-date'><i class='icon-plus'></i>
                     <span> Add Date</span>
                 </a>" );
 
@@ -1142,10 +1146,10 @@ END:VCALENDAR
             _dpSpecificDate.AddCssClass( "specific-date" );
             _dpSpecificDate.RenderControl( writer );
             writer.Write( @"
-                <a class='btn btn-primary btn-mini add-specific-date-ok'></i>
+                <a class='btn btn-primary btn-xs add-specific-date-ok'></i>
                     <span>OK</span>
                 </a>
-                <a class='btn btn-mini add-specific-date-cancel'></i>
+                <a class='btn btn-xs add-specific-date-cancel'></i>
                     <span>Cancel</span>
                 </a>" );
 
@@ -1297,7 +1301,7 @@ END:VCALENDAR
 
             writer.Write( @"
                 </ul>
-                <a class='btn btn-small add-exclusion-daterange'><i class='icon-plus'></i>
+                <a class='btn btn-sm add-exclusion-daterange'><i class='icon-plus'></i>
                     <span> Add Date Range</span>
                 </a>" );
 
@@ -1308,10 +1312,10 @@ END:VCALENDAR
             writer.Write( "<span> to </span>" );
             _dpExclusionDateEnd.RenderControl( writer );
             writer.Write( @"
-                <a class='btn btn-primary btn-mini add-exclusion-daterange-ok'></i>
+                <a class='btn btn-primary btn-xs add-exclusion-daterange-ok'></i>
                     <span>OK</span>
                 </a>
-                <a class='btn btn-mini add-exclusion-daterange-cancel'></i>
+                <a class='btn btn-xs add-exclusion-daterange-cancel'></i>
                     <span>Cancel</span>
                 </a>" );
 
@@ -1338,6 +1342,8 @@ END:VCALENDAR
             writer.RenderEndTag();
 
             // write out the closing divs that go after the modal footer
+            writer.Write( "</div>" );
+            writer.Write( "</div>" );
             writer.Write( "</div>" );
         }
     }

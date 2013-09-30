@@ -18,7 +18,7 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class PersonProfileBadgeList : CompositeControl
     {
-        private List<PersonProfileBadge> badges = new List<PersonProfileBadge>();
+        private List<PersonProfileBadge> _badges = new List<PersonProfileBadge>();
 
         /// <summary>
         /// Gets or sets the component guids.
@@ -44,7 +44,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected override void CreateChildControls()
         {
-            badges.Clear();
+            _badges.Clear();
 
             if ( !string.IsNullOrWhiteSpace( ComponentGuids ) )
             {
@@ -58,7 +58,7 @@ namespace Rock.Web.UI.Controls
                     {
                         var badgeControl = new PersonProfileBadge();
                         badgeControl.BadgeEntityTypeName = badge.EntityType.Name;
-                        badges.Add( badgeControl );
+                        _badges.Add( badgeControl );
                     }
                 }
             }
@@ -66,7 +66,7 @@ namespace Rock.Web.UI.Controls
             base.CreateChildControls();
             Controls.Clear();
 
-            badges.ForEach( b => Controls.Add( b ) );
+            _badges.ForEach( b => Controls.Add( b ) );
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            foreach ( var badgeControl in badges )
+            foreach ( var badgeControl in _badges )
             {
                 badgeControl.RenderControl( writer );
                 writer.Write( " " );

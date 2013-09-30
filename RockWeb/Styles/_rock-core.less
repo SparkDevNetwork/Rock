@@ -47,17 +47,13 @@ a.help {
     color: @header-text-color;
 }
 
-/* form styles - not enough yet for it's own file */
-fieldset .actions {
-    margin-top: 36px;
-}
-
 /* extension of Bootstrap 3 panel */
 .panel {
     legend {
         border-color: @accent-color;
     }
 
+    // add an action container to the .panel heading
     .panel-heading {
         .actions {
             display: none;
@@ -81,6 +77,10 @@ fieldset .actions {
 {
     padding: 2px 12px;
     border: 1px solid transparent;
+}
+
+.k-treeview .k-item {
+    padding: 0;
 }
 
 /* user registration styles */

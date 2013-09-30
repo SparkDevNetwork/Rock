@@ -19,7 +19,7 @@ namespace Rock.Field
     public class ConfigurationValue
     {
         /// <summary>
-        /// Gets or sets the name. The name is used as the field label heading.</param>
+        /// Gets or sets the name. The name is used as the field label heading.
         /// </summary>
         /// <value>
         /// The name/label to use as the field label heading.

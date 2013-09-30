@@ -211,7 +211,7 @@ namespace Quartz.Impl
                     PropertiesParser pp = PropertiesParser.ReadFromFileResource(propFileName);
                     props = pp.UnderlyingProperties;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
 
                 }
@@ -225,7 +225,7 @@ namespace Quartz.Impl
                     PropertiesParser pp = PropertiesParser.ReadFromEmbeddedAssemblyResource("Quartz.quartz.config");
                     props = pp.UnderlyingProperties;
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                 }
             }
@@ -894,7 +894,7 @@ Please add configuration to your application config file to correctly initialize
                     }
                     catch (Exception e)
                     {
-                        throw new SystemException("Cannot run without an instance id.");
+                        throw new SystemException("Cannot run without an instance id.", e);
                     }
                 }
 

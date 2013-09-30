@@ -6,17 +6,17 @@
             <div class="span12">
                 <fieldset>
                     <legend><asp:Literal ID="lLegendText" runat="server"/></legend>
-                    <Rock:DataTextBox ID="tbFirstName" runat="server" LabelText="First Name" SourceTypeName="Rock.Model.Person, Rock" PropertyName="NickName"/>
-                    <Rock:DataTextBox ID="tbLastName" runat="server" LabelText="Last Name" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName"/>
+                    <Rock:DataTextBox ID="tbFirstName" runat="server" Label="First Name" SourceTypeName="Rock.Model.Person, Rock" PropertyName="NickName"/>
+                    <Rock:DataTextBox ID="tbLastName" runat="server" Label="Last Name" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName"/>
                     <asp:Repeater ID="rptAccounts" runat="server" OnItemDataBound="rptAccounts_ItemDataBound">
                         <ItemTemplate>
                             <asp:HiddenField ID="hfId" runat="server"/>
-                            <Rock:LabeledTextBox ID="tbAmount" runat="server" PrependText="$"/>
+                            <Rock:RockTextBox ID="tbAmount" runat="server" PrependText="$"/>
                         </ItemTemplate>
                     </asp:Repeater>
-                    <Rock:DataTextBox ID="tbEmail" runat="server" LabelText="Email" TextMode="Email" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email"/>
-                    <Rock:DatePicker ID="dtpStartDate" runat="server" LabelText="Start Date" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="StartDate" Visible="False"/>
-                    <Rock:DatePicker ID="dtpEndDate" runat="server" LabelText="End Date" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="EndDate" Visible="False"/>
+                    <Rock:DataTextBox ID="tbEmail" runat="server" Label="Email" TextMode="Email" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email"/>
+                    <Rock:DatePicker ID="dtpStartDate" runat="server" Label="Start Date" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="StartDate" Visible="False"/>
+                    <Rock:DatePicker ID="dtpEndDate" runat="server" Label="End Date" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="EndDate" Visible="False"/>
                     <Rock:DataDropDownList ID="ddlFrequencyType" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="PledgeFrequencyValueId"/>
                     <asp:Panel ID="pnlConfirm" runat="server" CssClass="alert alert-info" Visible="False">
                         <p><strong>Information</strong> A pledge already exists for you.  Would your like to create an additional pledge?</p>

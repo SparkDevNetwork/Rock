@@ -5,20 +5,20 @@
         <asp:Panel ID="pnlDetails" runat="server" Visible="False">
             <asp:HiddenField ID="hfPledgeId" runat="server" />
 
-            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error alert" />
+            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error alert" />
             <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
         
             <fieldset>
                 <legend><asp:Literal ID="lActionTitle" runat="server"/></legend>
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
             
-                <Rock:PersonPicker ID="ppPerson" runat="server" LabelText="Person" Required="True"/>
-                <Rock:AccountPicker ID="fpFund" runat="server" LabelText="Fund" Required="True"/>
+                <Rock:PersonPicker ID="ppPerson" runat="server" Label="Person" Required="True"/>
+                <Rock:AccountPicker ID="fpFund" runat="server" Label="Fund" Required="True"/>
             
-                <Rock:DataTextBox ID="tbAmount" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="TotalAmount" LabelText="Total Amount" PrependText="$" Required="True" />
-                <Rock:DatePicker ID="dtpStartDate" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="StartDate" LabelText="Start Date" Required="True"/>
-                <Rock:DatePicker ID="dtpEndDate" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="EndDate" LabelText="End Date" Required="True"/>
-                <Rock:DataDropDownList ID="ddlFrequencyType" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="PledgeFrequencyValue" LabelText="Payment Schedule" Required="True"/>
+                <Rock:DataTextBox ID="tbAmount" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="TotalAmount" Label="Total Amount" PrependText="$" Required="True" />
+                <Rock:DatePicker ID="dtpStartDate" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="StartDate" Label="Start Date" Required="True"/>
+                <Rock:DatePicker ID="dtpEndDate" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="EndDate" Label="End Date" Required="True"/>
+                <Rock:DataDropDownList ID="ddlFrequencyType" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="PledgeFrequencyValue" Label="Payment Schedule" Required="True"/>
             </fieldset>
 
             <div class="actions">

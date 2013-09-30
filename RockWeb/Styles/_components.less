@@ -13,6 +13,8 @@
     10. Title - markup for styling header titles
     11. Notifications - additional styles to the Bootstrap notifications
     12. Labels - additional label defintions that extend Boostrap labels (eg label-campus)
+    13. Datepicker - styles for the date picker
+    14. Timepicker - styles for the time picker
 
 */
 
@@ -21,9 +23,44 @@
 
 .picker {
     position: relative;
+    .clearfix();
+
+    .picker-label {
+        padding: @padding-base-vertical @padding-base-horizontal;
+        font-size: @font-size-base;
+        color: @input-color;
+        background-color: @input-group-addon-bg;
+        border: 1px solid @input-group-addon-border-color;
+        border-radius: @border-radius-base;
+        display: inline-block;
+        min-width: 200px;
+        float: left;
+
+        i {
+            margin-right: 6px;
+            float: left;
+            margin-top: 2px
+        }
+
+        span {
+            float: left;
+            margin-right: 6px;
+        }
+
+        .caret {
+            border-top: 4px solid @input-color;
+            margin-top: 9px;
+        }
+    }
+
+    .picker-select-none {
+        display: block;
+        float: left;
+        margin: 6px 0 0 6px;
+    }
 
     .scroll-container-picker { 
-        width: 360px; 
+        width: 355px; 
 
         .viewport { 
             width: 340px;  
@@ -35,12 +72,50 @@
         }
     }
 
+    h4 {
+        font-size: 14px;
+        font-weight: @font-weight-semibold;
+    }
+
+    .picker-select {
+        padding: 0;
+    }
+
+    .picker-menu {
+        width: 370px;
+        padding: 10px;
+
+        h4:first-child {
+            margin-top: 0;
+        }
+    }
+
     .picker-actions {
         background-color: @accent-light-color;
         padding: 10px;
         border-top: 1px solid @accent-color;
         border-radius: 0 0 @border-radius-base @border-radius-base;
-        margin-bottom: -5px;
+        margin: 10px -10px -10px -10px;
+    }
+
+    // details used for pickers like person picker to show the details of the selected item
+    .picker-select-item-details {
+        margin-left: 20px;
+
+        img {
+            float: left;
+        }
+
+        .contents {
+            float: left;
+            margin-left: 5px;
+        }
+    }
+
+    &.picker-geography {
+        .picker-menu {
+            width: 520px;
+        }
     }
 }
 
@@ -974,3 +1049,194 @@ div.tagsinput div
     background-color: @label-type;
 }
 
+
+// 13. Datepicker
+// -------------------------
+.datepicker {
+    padding: 10px;
+
+    table {
+        thead {
+            th.datepicker-switch {
+                text-align: center;
+            }
+
+            th.next {
+                text-align: right;
+            }
+        }
+
+        td.active {
+            background-color: @accent-color;
+            color: @accent-text-color;
+        }
+
+        td.day {
+            text-align: center;
+            cursor: pointer;
+        }
+
+        td.old, td.new {
+            color: lighten(@text-color, 60%);
+        }
+
+        tfoot {
+            display: none;
+        }
+
+        td span.month {
+            margin-left: 2px;
+            padding: 2px;
+
+            &:hover {
+                background-color: @accent-color;
+                color: @accent-text-color;
+            }
+        }
+
+        td span.month:first-child {
+            margin-left: 0;
+        }
+    }
+}
+
+// 14. Time Picker
+// -------------------------
+
+.bootstrap-timepicker {
+    position: relative;
+
+    &.pull-right {
+        .bootstrap-timepicker-widget {
+            &.dropdown-menu {
+                left: auto;
+                right: 0;
+
+                &:before {
+                    left: auto;
+                    right: 12px;
+                }
+                &:after {
+                    left: auto;
+                    right: 13px;
+                }
+            }
+        }
+    }
+
+    .add-on {
+        cursor: pointer;
+        i {
+           display: inline-block;
+           width: 16px;
+           height: 16px;
+        }
+    }
+}
+.bootstrap-timepicker-widget {
+    &.dropdown-menu {
+        padding: 2px 3px 2px 2px;
+        &.open {
+            display: inline-block;
+        }
+        &:before {
+            border-bottom: 7px solid rgba(0, 0, 0, 0.2);
+            border-left: 7px solid transparent;
+            border-right: 7px solid transparent;
+            content: "";
+            display: inline-block;
+            left: 9px;
+            position: absolute;
+            top: -7px;
+        }
+        &:after {
+            border-bottom: 6px solid #FFFFFF;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            content: "";
+            display: inline-block;
+            left: 10px;
+            position: absolute;
+            top: -6px;
+        }
+    }
+
+    a.btn, input {
+        border-radius: 4px;
+    }
+
+    table {
+        width: 100%;
+        margin: 0;
+
+        td {
+            text-align: center;
+            height: 30px;
+            margin: 0;
+            padding: 2px;
+
+            &:not(.separator) {
+                min-width: 30px;
+            }
+
+            span {
+                width: 100%;
+            }
+            a {
+                border: 1px transparent solid;
+                width: 100%;
+                display: inline-block;
+                margin: 0;
+                padding: 8px 0;
+                outline: 0;
+                color: #333;
+
+                &:hover {
+                    text-decoration: none;
+                    background-color: #eee;
+                    -webkit-border-radius: 4px;
+                    -moz-border-radius: 4px;
+                    border-radius: 4px;
+                    border-color: #ddd;
+                }
+
+                i {
+                    margin-top: 2px;
+                }
+            }
+            input {
+                width: 45px;
+                margin: 0;
+                text-align: center;
+                border-radius: @border-radius-base;
+                box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+                .box-shadow(inset 0 1px 1px rgba(0,0,0,.075));
+                .transition(~"border-color ease-in-out .15s, box-shadow ease-in-out .15s");
+                border: 1px solid @input-border;
+                padding: @padding-base-vertical @padding-base-horizontal;
+                font-size: 12px;
+            }
+        }
+    }
+}
+
+.bootstrap-timepicker-widget .modal-content {
+    padding: 4px;
+}
+
+@media (min-width: 767px) {
+    .bootstrap-timepicker-widget.modal {
+        width: 200px;
+        margin-left: -100px;
+    }
+}
+
+@media (max-width: 767px) {
+    .bootstrap-timepicker {
+        width: 100%;
+
+        .dropdown-menu {
+            width: 100%;
+        }
+    }
+}

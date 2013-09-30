@@ -13,25 +13,9 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class PersonPicker : CompositeControl, ILabeledControl
+    public class PersonPicker : CompositeControl, IRockControl
     {
-        private Label _label;
-        private HiddenField _hfPersonId;
-        private HiddenField _hfPersonName;
-        private LinkButton _btnSelect;
-        private LinkButton _btnSelectNone;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PersonPicker" /> class.
-        /// </summary>
-        public PersonPicker()
-        {
-            _label = new Label();
-            _btnSelect = new LinkButton();
-            _btnSelectNone = new LinkButton();
-            RequiredValidator = new HiddenFieldValidator();
-        }
-
+        #region IRockControl implementation
 
         /// <summary>
         /// Gets or sets the label text.
@@ -39,16 +23,79 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The label text.
         /// </value>
-        public string LabelText
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text for the label." )
+        ]
+        public string Label
         {
-            get { return _label.Text; }
-            set { _label.Text = value; }
+            get { return ViewState["Label"] as string ?? string.Empty; }
+            set { ViewState["Label"] = value; }
         }
 
         /// <summary>
-        /// The required validator
+        /// Gets or sets the CSS Icon text.
         /// </summary>
-        protected HiddenFieldValidator RequiredValidator;
+        /// <value>
+        /// The CSS icon class.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text for the label." )
+        ]
+        public string IconCssClass
+        {
+            get { return ViewState["IconCssClass"] as string ?? string.Empty; }
+            set { ViewState["IconCssClass"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the help text.
+        /// </summary>
+        /// <value>
+        /// The help text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The help block." )
+        ]
+        public string Help
+        {
+            get
+            {
+                return HelpBlock != null ? HelpBlock.Text : string.Empty;
+            }
+            set
+            {
+                if ( HelpBlock != null )
+                {
+                    HelpBlock.Text = value;
+                }
+            }
+        }
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "false" ),
+        Description( "Is the value required?" )
+        ]
+        public bool Required
+        {
+            get { return ViewState["Required"] as bool? ?? false; }
+            set { ViewState["Required"] = value; }
+        }
 
         /// <summary>
         /// Gets or sets the required error message.  If blank, the LabelName name will be used
@@ -60,13 +107,59 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return RequiredValidator.ErrorMessage;
+                return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
             }
             set
             {
-                RequiredValidator.ErrorMessage = value;
+                if ( RequiredFieldValidator != null )
+                {
+                    RequiredFieldValidator.ErrorMessage = value;
+                }
             }
         }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool IsValid
+        {
+            get
+            {
+                return !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the help block.
+        /// </summary>
+        /// <value>
+        /// The help block.
+        /// </value>
+        public HelpBlock HelpBlock { get; set; }
+
+        /// <summary>
+        /// Gets or sets the required field validator.
+        /// </summary>
+        /// <value>
+        /// The required field validator.
+        /// </value>
+        public RequiredFieldValidator RequiredFieldValidator { get; set; }
+
+        #endregion
+
+        #region Controls
+
+        private HiddenField _hfPersonId;
+        private HiddenField _hfPersonName;
+        private LinkButton _btnSelect;
+        private LinkButton _btnSelectNone;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets or sets the person id.
@@ -164,40 +257,25 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="PersonPicker"/> is required.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if required; otherwise, <c>false</c>.
-        /// </value>
-        [
-        Bindable( true ),
-        Category( "Behavior" ),
-        DefaultValue( "false" ),
-        Description( "Is the value required?" )
-        ]
-        public bool Required
-        {
-            get
-            {
-                if ( ViewState["Required"] != null )
-                    return (bool)ViewState["Required"];
-                else
-                    return false;
-            }
-            set
-            {
-                ViewState["Required"] = value;
-            }
-        }
+        #endregion
+
+        #region Constructors
 
         /// <summary>
-        /// Gets or sets the select person.
+        /// Initializes a new instance of the <see cref="PersonPicker" /> class.
         /// </summary>
-        /// <value>
-        /// The select person.
-        /// </value>
-        public event EventHandler SelectPerson;
+        public PersonPicker()
+        {
+            // note we are using HiddenFieldValidator instead of RequiredFieldValidator
+            RequiredFieldValidator = new HiddenFieldValidator();
+
+            HelpBlock = new HelpBlock();
+        }
+
+        #endregion
+      
+
+        #region Methods
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -208,6 +286,7 @@ namespace Rock.Web.UI.Controls
             base.OnInit( e );
             RegisterJavaScript();
             var sm = ScriptManager.GetCurrent( this.Page );
+            EnsureChildControls();
 
             if ( sm != null )
             {
@@ -228,20 +307,6 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets a value indicating whether this instance is valid.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
-        /// </value>
-        public virtual bool IsValid
-        {
-            get
-            {
-                return !Required || RequiredValidator.IsValid;
-            }
-        }
-
-        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -257,6 +322,7 @@ namespace Rock.Web.UI.Controls
             _hfPersonName.ClientIDMode = System.Web.UI.ClientIDMode.Static;
             _hfPersonName.ID = string.Format( "hfPersonName_{0}", this.ID );
 
+            _btnSelect = new LinkButton();
             _btnSelect.ClientIDMode = System.Web.UI.ClientIDMode.Static;
             _btnSelect.CssClass = "btn btn-xs btn-primary";
             _btnSelect.ID = string.Format( "btnSelect_{0}", this.ID );
@@ -264,41 +330,35 @@ namespace Rock.Web.UI.Controls
             _btnSelect.CausesValidation = false;
             _btnSelect.Click += btnSelect_Click;
 
+            _btnSelectNone = new LinkButton();
             _btnSelectNone.ClientIDMode = ClientIDMode.Static;
             _btnSelectNone.CssClass = "picker-select-none";
             _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ID );
             _btnSelectNone.Text = "<i class='icon-remove'></i>";
             _btnSelectNone.CausesValidation = false;
-            _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
             _btnSelectNone.Click += btnSelect_Click;
 
-            Controls.Add( _label );
             Controls.Add( _hfPersonId );
             Controls.Add( _hfPersonName );
             Controls.Add( _btnSelect );
             Controls.Add( _btnSelectNone );
 
-            RequiredValidator.ID = this.ID + "_rfv";
-            RequiredValidator.InitialValue = "0";
-            RequiredValidator.ControlToValidate = _hfPersonId.ID;
-            RequiredValidator.Display = ValidatorDisplay.Dynamic;
-            RequiredValidator.CssClass = "validation-error help-inline";
-            RequiredValidator.Enabled = false;
+            RockControlHelper.CreateChildControls( this, Controls );
 
-            Controls.Add( RequiredValidator );
+            // override a couple of property values on RequiredFieldValidator so that Validation works correctly
+            RequiredFieldValidator.InitialValue = "0";
+            RequiredFieldValidator.ControlToValidate = _hfPersonId.ID;
         }
 
         /// <summary>
-        /// Handles the Click event of the btnSelect control.
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        protected void btnSelect_Click( object sender, EventArgs e )
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( HtmlTextWriter writer )
         {
-            if ( SelectPerson != null )
+            if ( this.Visible )
             {
-                SelectPerson( sender, e );
+                RockControlHelper.RenderControl( this, writer );
             }
         }
 
@@ -306,44 +366,21 @@ namespace Rock.Web.UI.Controls
         /// Renders the <see cref="T:System.Web.UI.WebControls.TextBox" /> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter" /> object.
         /// </summary>
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> that receives the rendered output.</param>
-        protected override void Render( HtmlTextWriter writer )
+        public void RenderBaseControl( HtmlTextWriter writer )
         {
-            bool renderLabel = !string.IsNullOrEmpty( LabelText );
-
-            if ( renderLabel )
-            {
-                writer.AddAttribute( "class", "control-group" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                _label.AddCssClass( "control-label" );
-
-                _label.RenderControl( writer );
-
-                writer.AddAttribute( "class", "controls" );
-
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            }
-
-            if ( Required )
-            {
-                RequiredValidator.Enabled = true;
-                RequiredValidator.RenderControl( writer );
-            }
-
             _hfPersonId.RenderControl( writer );
             _hfPersonName.RenderControl( writer );
 
             if ( this.Enabled )
             {
                 string controlHtmlFormatStart = @"
-        <div id='{0}' class='picker picker-select' > 
+        <div id='{0}' class='picker picker-select picker-person' > 
             <a class='picker-label' href='#'>
                 <i class='icon-user'></i>
                 <span id='selectedPersonLabel_{0}'>{1}</span>
-                <b class='caret'></b>
+                <b class='caret pull-right'></b>
             </a>
 ";
-
                 writer.Write( string.Format( controlHtmlFormatStart, this.ID, this.PersonName ) );
 
                 // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
@@ -357,12 +394,15 @@ namespace Rock.Web.UI.Controls
                 }
 
                 string controlHtmlFormatMiddle = @"
-          <div class='picker-menu dropdown-menu picker-person'>
+          <div class='picker-menu dropdown-menu'>
 
              <h4>Search</h4>
-             <input id='personPicker_{0}' type='text' class='picker-search' />
+             <input id='personPicker_{0}' type='text' class='picker-search form-control input-sm' />
+
+             <hr />             
+
              <h4>Results</h4>
-             <hr />
+             
              <ul class='picker-select' id='personPickerItems_{0}'>
              </ul>
              <div class='picker-actions'>
@@ -370,15 +410,7 @@ namespace Rock.Web.UI.Controls
 
                 writer.Write( controlHtmlFormatMiddle, this.ID, this.PersonName );
 
-                // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
-                if ( SelectPerson != null )
-                {
-                    _btnSelect.RenderControl( writer );
-                }
-                else
-                {
-                    writer.Write( string.Format( "<a class='btn btn-xs btn-primary' id='btnSelect_{0}'>Select</a>", this.ID ) );
-                }
+                _btnSelect.RenderControl( writer );
 
                 string controlHtmlFormatEnd = @"
             <a class='btn btn-xs' id='btnCancel_{0}'>Cancel</a>
@@ -397,13 +429,30 @@ namespace Rock.Web.UI.Controls
 ";
                 writer.Write( controlHtmlFormatDisabled, this.ID, this.PersonName );
             }
+        }
 
-            if ( renderLabel )
+        /// <summary>
+        /// Handles the Click event of the btnSelect control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void btnSelect_Click( object sender, EventArgs e )
+        {
+            if ( SelectPerson != null )
             {
-                writer.RenderEndTag();
-
-                writer.RenderEndTag();
+                SelectPerson( sender, e );
             }
         }
+
+        /// <summary>
+        /// Gets or sets the select person.
+        /// </summary>
+        /// <value>
+        /// The select person.
+        /// </value>
+        public event EventHandler SelectPerson;
+
+        #endregion
     }
 }
