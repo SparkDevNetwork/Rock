@@ -283,6 +283,7 @@ namespace Rock.Model
                 ( includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value ) &&
                 p.LastName.ToLower().StartsWith( lastName )
             );
+        }
 
         /// Gets the families.
         /// </summary>
