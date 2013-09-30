@@ -8399,6 +8399,7 @@ div.tagsinput div {
 }
 .smartsearch input:focus {
   box-shadow: 0 0 0 0;
+  outline: 0;
 }
 .smartsearch .dropdown-menu {
   font-size: 11px;
