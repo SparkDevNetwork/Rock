@@ -64,11 +64,11 @@ namespace Rock.Web.UI.Controls
                 cssClass.AppendFormat( "form-group {0}", rockControl.GetType().Name.SplitCase().Replace(' ', '-').ToLower());
                 if ( !rockControl.IsValid )
                 {
-                    cssClass.Append(" error" );
+                    cssClass.Append(" has-error" );
                 }
                 if ( rockControl.Required )
                 {
-                    cssClass.Append( "required" );
+                    cssClass.Append( " required" );
                 }
 
                 writer.AddAttribute( "class", cssClass.ToString() );
