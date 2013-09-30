@@ -10,7 +10,6 @@
 	  	<header>
 		  	<div class="row-fluid identity">
 			  	<div class="span6">
-			  		<img class="logo" src="./assets/img/rocksolidchurchlogo.svg">
                     <asp:HyperLink ID="hlLogo" runat="server" NavigateUrl="~" >
                         <asp:Image ID="imgLogo" runat="server" ImageUrl="~/Themes/GrayFabric/Assets/Images/rocksolidchurchlogo.svg" CssClass="logo" />
                     </asp:HyperLink>
@@ -60,7 +59,7 @@
 
     
                     <!-- display any ajax error messages here (use with ajax-client-error-handler.js) -->
-                    <div class="alert alert-error ajax-error" style="display:none">
+                    <div class="alert alert-danger ajax-error" style="display:none">
                         <strong>Ooops!</strong>
                         <span class="ajax-error-message"></span>
                     </div>

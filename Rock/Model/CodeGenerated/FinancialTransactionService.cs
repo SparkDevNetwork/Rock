@@ -63,12 +63,6 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialTransaction.FriendlyTypeName, FinancialTransactionImage.FriendlyTypeName );
                 return false;
             }  
- 
-            if ( new Service<FinancialTransactionRefund>().Queryable().Any( a => a.Id == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialTransaction.FriendlyTypeName, FinancialTransactionRefund.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -95,7 +89,7 @@ namespace Rock.Model
                 var target = new FinancialTransaction();
                 target.AuthorizedPersonId = source.AuthorizedPersonId;
                 target.BatchId = source.BatchId;
-                target.GatewayId = source.GatewayId;
+                target.GatewayEntityTypeId = source.GatewayEntityTypeId;
                 target.TransactionDateTime = source.TransactionDateTime;
                 target.Amount = source.Amount;
                 target.TransactionCode = source.TransactionCode;
@@ -105,6 +99,7 @@ namespace Rock.Model
                 target.CreditCardTypeValueId = source.CreditCardTypeValueId;
                 target.SourceTypeValueId = source.SourceTypeValueId;
                 target.CheckMicrEncrypted = source.CheckMicrEncrypted;
+                target.ScheduledTransactionId = source.ScheduledTransactionId;
                 target.Id = source.Id;
                 target.Guid = source.Guid;
 

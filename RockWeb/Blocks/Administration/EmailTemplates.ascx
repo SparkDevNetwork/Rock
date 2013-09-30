@@ -6,7 +6,7 @@
         <asp:Panel ID="pnlList" runat="server">
 
             <Rock:GridFilter ID="rFilter" runat="server">
-                <Rock:LabeledDropDownList ID="ddlCategoryFilter" runat="server" LabelText="Category" />
+                <Rock:RockDropDownList ID="ddlCategoryFilter" runat="server" Label="Category" />
             </Rock:GridFilter>
             <Rock:Grid ID="gEmailTemplates" runat="server" AllowSorting="true" OnRowSelected="gEmailTemplates_Edit">
                 <Columns>
@@ -24,7 +24,7 @@
 
             <asp:HiddenField ID="hfEmailTemplateId" runat="server" />
 
-            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
+            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
 
             <fieldset>
                 <legend>
@@ -47,7 +47,7 @@
 
         </asp:Panel>
 
-        <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Error" Visible="false" />
+        <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Danger" Visible="false" />
 
     </ContentTemplate>
 </asp:UpdatePanel>

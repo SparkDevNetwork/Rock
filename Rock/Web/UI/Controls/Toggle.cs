@@ -22,12 +22,12 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// The label
         /// </summary>
-        protected Literal label;
+        private Literal _label;
 
         /// <summary>
         /// The help block
         /// </summary>
-        protected HelpBlock helpBlock;
+        private HelpBlock _helpBlock;
 
         /// <summary>
         /// Gets or sets the help tip.
@@ -61,8 +61,8 @@ namespace Rock.Web.UI.Controls
         ]
         public string Help
         {
-            get { return helpBlock.Text; }
-            set { helpBlock.Text = value; }
+            get { return _helpBlock.Text; }
+            set { _helpBlock.Text = value; }
         }
 
         /// <summary>
@@ -77,10 +77,10 @@ namespace Rock.Web.UI.Controls
         DefaultValue( "" ),
         Description( "The text for the label." )
         ]
-        public string LabelText
+        public string Label
         {
-            get { return label.Text; }
-            set { label.Text = value; }
+            get { return _label.Text; }
+            set { _label.Text = value; }
         }
 
         /// <summary>
@@ -125,8 +125,8 @@ namespace Rock.Web.UI.Controls
         public Toggle()
             : base()
         {
-            label = new Literal();
-            helpBlock = new HelpBlock();
+            _label = new Literal();
+            _helpBlock = new HelpBlock();
         }
 
         /// <summary>
@@ -160,8 +160,8 @@ $(document).ready(function() {
             base.CreateChildControls();
             Controls.Clear();
 
-            Controls.Add( label );
-            Controls.Add( helpBlock );
+            Controls.Add( _label );
+            Controls.Add( _helpBlock );
         }
 
         /// <summary>
@@ -170,7 +170,7 @@ $(document).ready(function() {
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            bool renderWithLabel = ( !string.IsNullOrEmpty( LabelText ) ) ||
+            bool renderWithLabel = ( !string.IsNullOrEmpty( Label ) ) ||
                 ( !string.IsNullOrEmpty( Help ) );
 
             if ( renderWithLabel )
@@ -178,12 +178,12 @@ $(document).ready(function() {
                 writer.AddAttribute( "class", "control-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                if ( label.Text.Trim() != string.Empty )
+                if ( _label.Text.Trim() != string.Empty )
                 {
                     writer.AddAttribute( "class", "control-label" );
                     writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    label.RenderControl( writer );
-                    helpBlock.RenderControl( writer );
+                    _label.RenderControl( writer );
+                    _helpBlock.RenderControl( writer );
                     writer.RenderEndTag();
                 }
 
@@ -253,9 +253,9 @@ $(document).ready(function() {
 
             if ( renderWithLabel )
             {
-                if ( label.Text.Trim() == string.Empty )
+                if ( _label.Text.Trim() == string.Empty )
                 {
-                    helpBlock.RenderControl( writer );
+                    _helpBlock.RenderControl( writer );
                 }
 
                 if ( Tip.Trim() != string.Empty )

@@ -72,6 +72,16 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string CURRENCY_TYPE_CHECK =	"8B086A19-405A-451F-8D44-174E92D6B402";
 
+        /// <summary>
+        /// Credit Card
+        /// </summary>
+        public const string CURRENCY_TYPE_CREDIT_CARD = "928A2E04-C77B-4282-888F-EC549CEE026A";
+
+        /// <summary>
+        /// ACH
+        /// </summary>
+        public const string CURRENCY_TYPE_ACH = "DABEE8FD-AEDF-43E1-8547-4C97FA14D9B6";
+
         #endregion
 
         #region Financial Transaction Type
@@ -131,27 +141,43 @@ namespace Rock.SystemGuid
         /// <summary>
         /// One Time
         /// </summary>
-        public const string TRANSACTION_FREQUENCY_TYPE_ONE_TIME = "82614683-7FB4-4F16-9087-6F85945A7B16";
+        public const string TRANSACTION_FREQUENCY_ONE_TIME = "82614683-7FB4-4F16-9087-6F85945A7B16";
 
         /// <summary>
-        /// One Time (Future)
+        /// Weekly
         /// </summary>
-        public const string TRANSACTION_FREQUENCY_TYPE_ONE_TIME_FUTURE = "A5A12067-322E-44A4-94C4-561312F9913C";
-
-        #endregion
-
-        #region Transaction Payment Type
+        public const string TRANSACTION_FREQUENCY_WEEKLY = "35711E44-131B-4534-B0B2-F0A749292362";
 
         /// <summary>
-        /// Credit Card
+        /// Every two weeks
         /// </summary>
-        public const string TRANSACTION_PAYMENT_TYPE_CREDIT_CARD = "09412338-AAAA-4644-BA2A-4CADBE653468";
+        public const string TRANSACTION_FREQUENCY_BIWEEKLY = "72990023-0D43-4554-8D32-28461CAB8920";
 
         /// <summary>
-        /// Checking/ACH 
+        /// Twice a month
         /// </summary>
-        public const string TRANSACTION_PAYMENT_TYPE_CHECKING = "FFAD975C-7504-418F-8959-30BD0C62CD30";
-        
+        public const string TRANSACTION_FREQUENCY_TWICEMONTHLY = "791C863D-2600-445B-98F8-3E5B66A3DEC4";
+
+        /// <summary>
+        /// Monthly
+        /// </summary>
+        public const string TRANSACTION_FREQUENCY_MONTHLY = "1400753C-A0F9-4A45-8A1D-81C98450BD1F";
+
+        /// <summary>
+        /// Monthly
+        /// </summary>
+        public const string TRANSACTION_FREQUENCY_QUARTERLY = "BF08EA03-C52A-4364-B142-12EBCA7CA14A";
+
+        /// <summary>
+        /// Twice a year (every 6 months)
+        /// </summary>
+        public const string TRANSACTION_FREQUENCY_TWICEYEARLY = "691BB8AB-5F96-4E88-847C-CB970D9E87FA";
+
+        /// <summary>
+        /// Yearly
+        /// </summary>
+        public const string TRANSACTION_FREQUENCY_YEARLY = "AC88C37A-901E-4CBB-947B-11348C208192";
+
         #endregion
 
         #region Note Type

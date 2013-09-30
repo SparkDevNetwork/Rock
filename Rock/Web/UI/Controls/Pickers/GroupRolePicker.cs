@@ -17,11 +17,18 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class GroupRolePicker : CompositeControl, ILabeledControl, IRequiredControl
     {
-        private Literal _label;
+        /// <summary>
+        /// The _help block
+        /// </summary>
         protected HelpBlock _helpBlock;
+
+        private Literal _label;
         private DropDownList _ddlGroupType;
         private DropDownList _ddlGroupRole;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GroupRolePicker"/> class.
+        /// </summary>
         public GroupRolePicker()
             : base()
         {
@@ -34,12 +41,24 @@ namespace Rock.Web.UI.Controls
             _ddlGroupRole = new DropDownList();
         }
 
-        public string LabelText
+        /// <summary>
+        /// Gets or sets the label text.
+        /// </summary>
+        /// <value>
+        /// The label text.
+        /// </value>
+        public string Label
         {
             get { return _label.Text; }
             set { _label.Text = value; }
         }
 
+        /// <summary>
+        /// Gets or sets the help.
+        /// </summary>
+        /// <value>
+        /// The help.
+        /// </value>
         public string Help
         {
             get
@@ -52,6 +71,12 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the group type id.
+        /// </summary>
+        /// <value>
+        /// The group type id.
+        /// </value>
         public int? GroupTypeId
         {
             get { return ViewState["GroupTypeId"] as int?; }
@@ -192,11 +217,15 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
             if ( this.Visible )
             {
-                bool renderControlGroupDiv = ( !string.IsNullOrWhiteSpace( LabelText ) || !string.IsNullOrWhiteSpace( Help ) );
+                bool renderControlGroupDiv = ( !string.IsNullOrWhiteSpace( Label ) || !string.IsNullOrWhiteSpace( Help ) );
 
                 if ( renderControlGroupDiv )
                 {

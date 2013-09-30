@@ -1,26 +1,66 @@
-/*
-    Rock ChMS Theme Styles
+// Imports
+// -------------------------
 
-    1. Reusable Classes
-    2. Master Page Styles
-    3. Header
-    4. Homepage Layout
-    5. Inside Page Layout
-    6. Footer
-    7. Responsive Logic
-    8. Retina 
-
-*/
+@FontAwesomePath: '../../../../Assets/Fonts';
 
 
 // Load Master Styles
 // -------------------------
 @import "../../../Styles/FontAwesome/font-awesome.less";
 @import "../../../Styles/Bootstrap/bootstrap.less"; 
-@import "_variables.less";
 @import "../../../Styles/_rock-core.less";
+@import "_variables.less";
 
+// Fonts
+// -------------------------
 
+// regular (weight 'normal' aka 400)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.woff') format('woff'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.ttf') format('truetype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
+    font-weight: 400;
+    font-style: normal;
+}
+
+// light (weight 300)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot');
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.woff') format('woff'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.ttf') format('truetype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.svg#OpenSansLight') format('svg');
+    font-weight: 300;
+    font-style: normal;
+}
+
+// semi-bold (weight 600)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot');
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.woff') format('woff'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.ttf') format('truetype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.svg#OpenSansSemibold') format('svg');
+    font-weight: 600;
+    font-style: normal;
+}
+
+// bold (weight 700)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot');
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.woff') format('woff'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.ttf') format('truetype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.svg#OpenSansBold') format('svg');
+    font-weight: 700;
+    font-style: normal;
+}
 
 // 1. Reusable Classes
 // -------------------------
@@ -37,11 +77,6 @@
 	text-align: right;
 }
 
-.bold
-{
-    font-weight: @font-weight-bold;
-}
-
 a:hover
 {
     text-decoration: none;
@@ -51,8 +86,9 @@ a:hover
     width: 100%;
 }
 
-h1, h2, h3, h4, h5, h6 {
-    color: #c9c9c9;
+.panel-title {
+    font-size: 18px;
+    font-weight: @font-weight-semibold;
 }
 
 // 2. Master Page Styles
@@ -94,72 +130,65 @@ body {
 // -------------------------
 header {
 	margin-top: 24px;
-}
 
-header .identity {
-	margin-bottom: 8px;
+    .identity {
+	    margin-bottom: 8px;
 	
+        .logo {
+	        width: 100%;
+	        max-width: 400px;
+	        min-width: 200px;
+        }
+
+        .my-account {
+	        text-align: right;
+            margin-top: 14px;
+        }
+
+        .service-times {
+	        margin-top: 2px;
+
+            .bold,
+            i {
+	            font-size: 18px;
+            }
+        }
+    }
+
+    .navbar {
+	    margin-bottom: 0;
+	    box-shadow: 0 10px 18px -4px rgba(0,0,0,0.5);
+	    z-index: 10000;
+	    position: relative;
+        background: rgb(108,108,108);
+	    background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzZjNmM2YyIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM0YjRiNGIiIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
+	    background: -moz-linear-gradient(top,  rgba(108,108,108,1) 0%, rgba(75,75,75,1) 100%);
+	    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(108,108,108,1)), color-stop(100%,rgba(75,75,75,1)));
+	    background: -webkit-linear-gradient(top,  rgba(108,108,108,1) 0%,rgba(75,75,75,1) 100%);
+	    background: -o-linear-gradient(top,  rgba(108,108,108,1) 0%,rgba(75,75,75,1) 100%);
+	    background: -ms-linear-gradient(top,  rgba(108,108,108,1) 0%,rgba(75,75,75,1) 100%);
+	    background: linear-gradient(to bottom,  rgba(108,108,108,1) 0%,rgba(75,75,75,1) 100%);
+	    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#6c6c6c', endColorstr='#4b4b4b',GradientType=0 );
+	    border: 0;
+	    border-radius: 0;
+
+        .nav li {
+            border-right: 1px solid #a9a9a9;
+
+            &:first-child {
+                border-left: 1px solid #a9a9a9;
+            }
+
+            & > a {
+                color: #e6e4e4;
+	            text-shadow: 0 1px 0 rgba(0,0,0, 0.8);
+                font-weight: @font-weight-semibold;
+            }
+            
+        }
+    }
 }
 
-header .logo {
-	width: 100%;
-	max-width: 400px;
-	min-width: 200px;
-}
-
-header .my-account {
-	text-align: right;
-}
-
-header .service-times {
-	margin-top: 2px;
-}
-
-header .service-times .bold,
-header .service-times i {
-	font-size: 18px;
-}
-
-header .my-account {
-	margin-top: 14px;
-}
-
-// navbar overrides - template specific
-header .navbar {
-	margin-bottom: 0;
-	box-shadow: 0 10px 18px -4px rgba(0,0,0,0.5);
-	z-index: 10000;
-	position: relative;
-}
-
-header .navbar-inner {
-	background: rgb(108,108,108);
-	background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPGxpbmVhckdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeDE9IjAlIiB5MT0iMCUiIHgyPSIwJSIgeTI9IjEwMCUiPgogICAgPHN0b3Agb2Zmc2V0PSIwJSIgc3RvcC1jb2xvcj0iIzZjNmM2YyIgc3RvcC1vcGFjaXR5PSIxIi8+CiAgICA8c3RvcCBvZmZzZXQ9IjEwMCUiIHN0b3AtY29sb3I9IiM0YjRiNGIiIHN0b3Atb3BhY2l0eT0iMSIvPgogIDwvbGluZWFyR3JhZGllbnQ+CiAgPHJlY3QgeD0iMCIgeT0iMCIgd2lkdGg9IjEiIGhlaWdodD0iMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
-	background: -moz-linear-gradient(top,  rgba(108,108,108,1) 0%, rgba(75,75,75,1) 100%);
-	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(108,108,108,1)), color-stop(100%,rgba(75,75,75,1)));
-	background: -webkit-linear-gradient(top,  rgba(108,108,108,1) 0%,rgba(75,75,75,1) 100%);
-	background: -o-linear-gradient(top,  rgba(108,108,108,1) 0%,rgba(75,75,75,1) 100%);
-	background: -ms-linear-gradient(top,  rgba(108,108,108,1) 0%,rgba(75,75,75,1) 100%);
-	background: linear-gradient(to bottom,  rgba(108,108,108,1) 0%,rgba(75,75,75,1) 100%);
-	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#6c6c6c', endColorstr='#4b4b4b',GradientType=0 );
-	border: 0;
-	border-radius: 0;
-}
-
-header .navbar .nav > li > a {
-	color: #e6e4e4;
-	text-shadow: 0 1px 0 rgba(0,0,0, 0.8);
-    font-weight: @font-semibold-weight;
-}
-
-header .navbar .nav > li:hover > a {
-	color: #a9a9a9;
-}
-
-header .navbar .divider-vertical {
-	border-left: 1px solid #7c7c7c;
-    border-right: 0;
-}
 
 
 // 4. Homepage Layout
@@ -177,6 +206,7 @@ header .navbar .divider-vertical {
 .promo-secondary ul {
 	list-style: none;
 	margin: 40px 0 0 0;
+    padding: 0;
 }
 
 .promo-secondary li {
@@ -255,7 +285,7 @@ section.contact .traditional .info .bold {
 
 #content {
     margin-top: 48px;
-    color: @site-text-color;
+    color: @text-color;
 }
 
 
@@ -275,28 +305,29 @@ footer {
 	background: -ms-linear-gradient(top,  rgba(45,45,45,1) 0%,rgba(74,74,74,1) 26%,rgba(74,74,74,1) 100%);
 	background: linear-gradient(to bottom,  rgba(45,45,45,1) 0%,rgba(74,74,74,1) 26%,rgba(74,74,74,1) 100%);
 	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#2d2d2d', endColorstr='#4a4a4a',GradientType=0 );
+
+    a {
+	    color: #b3b2b2;
+
+        &:hover {
+	        color: #fff;
+	        text-decoration: none;
+        }
+    }
+
+    section {
+	    width: 50%;
+	    float: left;
+
+        &.author span:first-child:after {
+	        content: ' ';
+	        border-right: 1px solid #919090;
+	        margin-right: 6px;
+	        margin-left: 2px;
+        }
+    }
 }
 
-footer a {
-	color: #b3b2b2;
-}
-
-footer a:hover {
-	color: #fff;
-	text-decoration: none;
-}
-
-footer section {
-	width: 50%;
-	float: left;
-}
-
-footer section.author span:first-child:after {
-	content: ' ';
-	border-right: 1px solid #919090;
-	margin-right: 6px;
-	margin-left: 2px;
-}
 
 // 7. Responsive Logic
 // -------------------------

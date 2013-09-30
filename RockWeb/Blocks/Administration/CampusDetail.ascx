@@ -6,7 +6,7 @@
             
             <asp:HiddenField ID="hfCampusId" runat="server" />
 
-            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
+            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" />
             <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
             <fieldset>

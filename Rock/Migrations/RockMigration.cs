@@ -35,9 +35,9 @@ namespace Rock.Migrations
                 IF @Id IS NULL
                 BEGIN
                     INSERT INTO [EntityType] (
-                        [Name],[FriendlyName],[AssemblyName],[IsEntity],[IsSecured],[Guid])
+                        [Name],[FriendlyName],[AssemblyName],[IsEntity],[IsSecured],[IsCommon],[Guid])
                     VALUES(
-                        '{0}','{1}','{2}',{3},{4},'{5}')
+                        '{0}','{1}','{2}',{3},{4},0,'{5}')
                 END
                 ELSE
                 BEGIN
@@ -246,6 +246,7 @@ namespace Rock.Migrations
         /// <param name="description">The description.</param>
         /// <param name="layout">The layout.</param>
         /// <param name="guid">The GUID.</param>
+        /// <param name="iconCssClass">The icon CSS class.</param>
         public void AddPage( string parentPageGuid, string name, string description, string layout, string guid, string iconCssClass = ""  )
         {
             Sql( string.Format( @"

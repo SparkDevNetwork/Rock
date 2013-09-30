@@ -19,7 +19,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class ComponentsPicker : LabeledCheckBoxList
+    public class ComponentsPicker : RockCheckBoxList
     {
         /// <summary>
         /// Gets or sets the binary file type id.

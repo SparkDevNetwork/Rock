@@ -26,7 +26,7 @@
                     </div>
 
                     <asp:HiddenField ID="hfNoteId" runat="server" />
-                    <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
+                    <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" />
 
                     <!-- Edit -->
                     <div class="note-container overview">
@@ -41,7 +41,7 @@
                                 </div>
                                 <div class="row-fluid">
                                     <div class="span6">
-                                        <Rock:DataTextBox ID="tbCaption" runat="server" SourceTypeName="Rock.Model.Note, Rock" PropertyName="Caption" LabelText="by"></Rock:DataTextBox>
+                                        <Rock:DataTextBox ID="tbCaption" runat="server" SourceTypeName="Rock.Model.Note, Rock" PropertyName="Caption" Label="by"></Rock:DataTextBox>
                                     </div>
                                 </div>
                                 <div class="actions">

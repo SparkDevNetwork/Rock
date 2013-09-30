@@ -7512,13 +7512,68 @@ td.visible-print {
     10. Title - markup for styling header titles
     11. Notifications - additional styles to the Bootstrap notifications
     12. Labels - additional label defintions that extend Boostrap labels (eg label-campus)
+    13. Datepicker - styles for the date picker
+    14. Timepicker - styles for the time picker
 
 */
 .picker {
   position: relative;
 }
+.picker:before,
+.picker:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.picker:after {
+  clear: both;
+}
+.picker:before,
+.picker:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.picker:after {
+  clear: both;
+}
+.picker .picker-label {
+  padding: 6px 12px;
+  font-size: 14px;
+  color: #555555;
+  background-color: #eeeeee;
+  border: 1px solid #cccccc;
+  border-radius: 4px;
+  display: inline-block;
+  min-width: 200px;
+  float: left;
+}
+.picker .picker-label i {
+  margin-right: 6px;
+  float: left;
+  margin-top: 2px;
+}
+.picker .picker-label span {
+  float: left;
+  margin-right: 6px;
+}
+.picker .picker-label .caret {
+  border-top: 4px solid #555555;
+  margin-top: 9px;
+}
+.picker .picker-select-none {
+  display: block;
+  float: left;
+  margin: 6px 0 0 6px;
+}
 .picker .scroll-container-picker {
-  width: 360px;
+  width: 355px;
 }
 .picker .scroll-container-picker .viewport {
   width: 340px;
@@ -7527,12 +7582,39 @@ td.visible-print {
 .picker .scroll-container-picker .scrollbar {
   margin-top: 10px;
 }
+.picker h4 {
+  font-size: 14px;
+  font-weight: 600;
+}
+.picker .picker-select {
+  padding: 0;
+}
+.picker .picker-menu {
+  width: 370px;
+  padding: 10px;
+}
+.picker .picker-menu h4:first-child {
+  margin-top: 0;
+}
 .picker .picker-actions {
   background-color: #e7ecf0;
   padding: 10px;
   border-top: 1px solid #d9e1e8;
   border-radius: 0 0 4px 4px;
-  margin-bottom: -5px;
+  margin: 10px -10px -10px -10px;
+}
+.picker .picker-select-item-details {
+  margin-left: 20px;
+}
+.picker .picker-select-item-details img {
+  float: left;
+}
+.picker .picker-select-item-details .contents {
+  float: left;
+  margin-left: 5px;
+}
+.picker.picker-geography .picker-menu {
+  width: 520px;
 }
 #dialog .scroll-container-picker {
   width: 360px;
@@ -8363,6 +8445,160 @@ div.tagsinput div {
 .label-type {
   background-color: #87a8ba;
 }
+.datepicker {
+  padding: 10px;
+}
+.datepicker table thead th.datepicker-switch {
+  text-align: center;
+}
+.datepicker table thead th.next {
+  text-align: right;
+}
+.datepicker table td.active {
+  background-color: #d9e1e8;
+  color: #515151;
+}
+.datepicker table td.day {
+  text-align: center;
+  cursor: pointer;
+}
+.datepicker table td.old,
+.datepicker table td.new {
+  color: #eaeaea;
+}
+.datepicker table tfoot {
+  display: none;
+}
+.datepicker table td span.month {
+  margin-left: 2px;
+  padding: 2px;
+}
+.datepicker table td span.month:hover {
+  background-color: #d9e1e8;
+  color: #515151;
+}
+.datepicker table td span.month:first-child {
+  margin-left: 0;
+}
+.bootstrap-timepicker {
+  position: relative;
+}
+.bootstrap-timepicker.pull-right .bootstrap-timepicker-widget.dropdown-menu {
+  left: auto;
+  right: 0;
+}
+.bootstrap-timepicker.pull-right .bootstrap-timepicker-widget.dropdown-menu:before {
+  left: auto;
+  right: 12px;
+}
+.bootstrap-timepicker.pull-right .bootstrap-timepicker-widget.dropdown-menu:after {
+  left: auto;
+  right: 13px;
+}
+.bootstrap-timepicker .add-on {
+  cursor: pointer;
+}
+.bootstrap-timepicker .add-on i {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+}
+.bootstrap-timepicker-widget.dropdown-menu {
+  padding: 2px 3px 2px 2px;
+}
+.bootstrap-timepicker-widget.dropdown-menu.open {
+  display: inline-block;
+}
+.bootstrap-timepicker-widget.dropdown-menu:before {
+  border-bottom: 7px solid rgba(0, 0, 0, 0.2);
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  content: "";
+  display: inline-block;
+  left: 9px;
+  position: absolute;
+  top: -7px;
+}
+.bootstrap-timepicker-widget.dropdown-menu:after {
+  border-bottom: 6px solid #FFFFFF;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  content: "";
+  display: inline-block;
+  left: 10px;
+  position: absolute;
+  top: -6px;
+}
+.bootstrap-timepicker-widget a.btn,
+.bootstrap-timepicker-widget input {
+  border-radius: 4px;
+}
+.bootstrap-timepicker-widget table {
+  width: 100%;
+  margin: 0;
+}
+.bootstrap-timepicker-widget table td {
+  text-align: center;
+  height: 30px;
+  margin: 0;
+  padding: 2px;
+}
+.bootstrap-timepicker-widget table td:not(.separator) {
+  min-width: 30px;
+}
+.bootstrap-timepicker-widget table td span {
+  width: 100%;
+}
+.bootstrap-timepicker-widget table td a {
+  border: 1px transparent solid;
+  width: 100%;
+  display: inline-block;
+  margin: 0;
+  padding: 8px 0;
+  outline: 0;
+  color: #333;
+}
+.bootstrap-timepicker-widget table td a:hover {
+  text-decoration: none;
+  background-color: #eee;
+  -webkit-border-radius: 4px;
+  -moz-border-radius: 4px;
+  border-radius: 4px;
+  border-color: #ddd;
+}
+.bootstrap-timepicker-widget table td a i {
+  margin-top: 2px;
+}
+.bootstrap-timepicker-widget table td input {
+  width: 45px;
+  margin: 0;
+  text-align: center;
+  border-radius: 4px;
+  -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+  -webkit-transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+  transition: border-color ease-in-out .15s, box-shadow ease-in-out .15s;
+  border: 1px solid #cccccc;
+  padding: 6px 12px;
+  font-size: 12px;
+}
+.bootstrap-timepicker-widget .modal-content {
+  padding: 4px;
+}
+@media (min-width: 767px) {
+  .bootstrap-timepicker-widget.modal {
+    width: 200px;
+    margin-left: -100px;
+  }
+}
+@media (max-width: 767px) {
+  .bootstrap-timepicker {
+    width: 100%;
+  }
+  .bootstrap-timepicker .dropdown-menu {
+    width: 100%;
+  }
+}
 /*
     Used to manage styles for specific blocks.
     
@@ -8370,6 +8606,8 @@ div.tagsinput div {
     2. HTML Content - block to edit HTML on a page
     3. Login - block to allow logins
     4. Notes - block to display, add, edit, delete notes
+    5. Add Family - block to add families to the database
+    6. Contributions - block add a contribution transaction
 
 */
 .sql-comand .panel {
@@ -8516,6 +8754,12 @@ span.cke_skin_kama {
 .panel-noteentry .panel-footer {
   background-color: #d9e1e8;
 }
+.table-familymembers .radio:first-child {
+  margin-top: 0;
+}
+.contribution-payment .tab-content {
+  margin-top: 12px;
+}
 /*
     Used to manage styles related to the CMS admin UI for on page editing
     
@@ -8546,7 +8790,7 @@ span.cke_skin_kama {
   top: 1px;
   left: 1px;
   width: 25px;
-  z-index: 40;
+  z-index: 11000;
   right: auto;
 }
 .zone-configuration-bar {
@@ -8580,7 +8824,7 @@ span.cke_skin_kama {
   position: absolute;
   top: 2px;
   width: 26px;
-  z-index: 40;
+  z-index: 11000;
 }
 .block-instance.outline {
   min-height: 36px;
@@ -8840,7 +9084,7 @@ td[align=center] {
   width: 720px;
 }
 .modal-body .scroll-container .viewport {
-  width: 690px;
+  width: 670px;
 }
 .modal-body.iframe {
   background: url("../assets/images/ajax-loading.png") center center no-repeat;
@@ -8886,6 +9130,8 @@ td[align=center] {
     
     1. Bootstrap Overrides / Additions
     2. Data Lists
+    3. Input Sizing
+    4. Control Specific Styles
 
 */
 .form-actions {
@@ -8913,6 +9159,74 @@ dl dt:first-child {
 }
 dl dd {
   margin-left: 0;
+}
+/* form styles - not enough yet for it's own file */fieldset .actions {
+  margin-top: 36px;
+}
+.form-control.input-width-xs,
+.input-group.input-width-xs {
+  width: 60px;
+}
+.form-control.input-width-sm,
+.input-group.input-width-sm {
+  width: 90px;
+}
+.form-control.input-width-md,
+.input-group.input-width-md {
+  width: 150px;
+}
+.form-control.input-width-lg,
+.input-group.input-width-lg {
+  width: 210px;
+}
+.form-control.input-width-xl,
+.input-group.input-width-xl {
+  width: 270px;
+}
+.form-control.input-width-xxl,
+.input-group.input-width-xxl {
+  width: 530px;
+}
+.form-control-group:before,
+.form-control-group:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.form-control-group:after {
+  clear: both;
+}
+.form-control-group:before,
+.form-control-group:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.form-control-group:after {
+  clear: both;
+}
+.form-control-group .form-control,
+.form-control-group .input-group {
+  margin-right: 12px;
+  float: left;
+}
+.month-year-picker .separator,
+.month-day-picker .separator {
+  float: left;
+  font-size: 20px;
+  margin: 4px 8px 0 -2px;
+  color: #aaaaaa;
+}
+.date-range-picker span.to,
+.number-range-editor span.to {
+  float: left;
+  margin: 8px 12px 0 0;
 }
 /*
     Used to manage styles related to the person details page
@@ -9106,6 +9420,7 @@ dl dd {
   position: absolute;
   left: 0;
   top: 0;
+  width: 100%;
 }
 .scroll-container .scrollbar {
   position: relative;
@@ -10348,10 +10663,6 @@ a.help {
   outline: 0;
   color: #bbbbbb;
 }
-/* form styles - not enough yet for it's own file */
-fieldset .actions {
-  margin-top: 36px;
-}
 /* extension of Bootstrap 3 panel */
 .panel legend {
   border-color: #d9e1e8;
@@ -10369,6 +10680,9 @@ fieldset .actions {
 .k-treeview .k-in {
   padding: 2px 12px;
   border: 1px solid transparent;
+}
+.k-treeview .k-item {
+  padding: 0;
 }
 /* user registration styles */
 .not-me {

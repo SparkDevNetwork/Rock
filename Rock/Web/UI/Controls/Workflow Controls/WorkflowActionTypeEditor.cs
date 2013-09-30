@@ -23,16 +23,22 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:WorkflowActionTypeEditor runat=server></{0}:WorkflowActionTypeEditor>" )]
     public class WorkflowActionTypeEditor : CompositeControl
     {
-        private HiddenField hfActionTypeGuid;
-        private Label lblActionTypeName;
-        private LinkButton lbDeleteActionType;
+        private HiddenField _hfActionTypeGuid;
+        private Label _lblActionTypeName;
+        private LinkButton _lbDeleteActionType;
 
-        private DataTextBox tbActionTypeName;
-        private LabeledDropDownList ddlEntityType;
-        private LabeledCheckBox cbIsActionCompletedOnSuccess;
-        private LabeledCheckBox cbIsActivityCompletedOnSuccess;
-        private PlaceHolder phActionAttributes;
+        private DataTextBox _tbActionTypeName;
+        private RockDropDownList _ddlEntityType;
+        private RockCheckBox _cbIsActionCompletedOnSuccess;
+        private RockCheckBox _cbIsActivityCompletedOnSuccess;
+        private PlaceHolder _phActionAttributes;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to force content visible.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [force content visible]; otherwise, <c>false</c>.
+        /// </value>
         public bool ForceContentVisible { get; set; }
 
         /// <summary>
@@ -97,24 +103,24 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             {
                 EnsureChildControls();
                 WorkflowActionType result = new WorkflowActionType();
-                result.Guid = new Guid( hfActionTypeGuid.Value );
-                result.Name = tbActionTypeName.Text;
-                result.EntityTypeId = ddlEntityType.SelectedValueAsInt() ?? 0;
-                result.IsActionCompletedOnSuccess = cbIsActionCompletedOnSuccess.Checked;
-                result.IsActivityCompletedOnSuccess = cbIsActivityCompletedOnSuccess.Checked;
+                result.Guid = new Guid( _hfActionTypeGuid.Value );
+                result.Name = _tbActionTypeName.Text;
+                result.EntityTypeId = _ddlEntityType.SelectedValueAsInt() ?? 0;
+                result.IsActionCompletedOnSuccess = _cbIsActionCompletedOnSuccess.Checked;
+                result.IsActivityCompletedOnSuccess = _cbIsActivityCompletedOnSuccess.Checked;
                 result.LoadAttributes();
-                Rock.Attribute.Helper.GetEditValues( phActionAttributes, result );
+                Rock.Attribute.Helper.GetEditValues( _phActionAttributes, result );
                 return result;
             }
 
             set
             {
                 EnsureChildControls();
-                hfActionTypeGuid.Value = value.Guid.ToString();
-                tbActionTypeName.Text = value.Name;
-                ddlEntityType.SetValue( value.EntityTypeId );
-                cbIsActionCompletedOnSuccess.Checked = value.IsActionCompletedOnSuccess;
-                cbIsActivityCompletedOnSuccess.Checked = value.IsActivityCompletedOnSuccess;
+                _hfActionTypeGuid.Value = value.Guid.ToString();
+                _tbActionTypeName.Text = value.Name;
+                _ddlEntityType.SetValue( value.EntityTypeId );
+                _cbIsActionCompletedOnSuccess.Checked = value.IsActionCompletedOnSuccess;
+                _cbIsActivityCompletedOnSuccess.Checked = value.IsActivityCompletedOnSuccess;
 
                 var action = EntityTypeCache.Read( value.EntityTypeId );
                 if ( action != null )
@@ -126,8 +132,8 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
                     value.LoadAttributes();
                 }
 
-                phActionAttributes.Controls.Clear();
-                Rock.Attribute.Helper.AddEditControls( value, phActionAttributes, true, new List<string>() { "Active", "Order" } );
+                _phActionAttributes.Controls.Clear();
+                Rock.Attribute.Helper.AddEditControls( value, _phActionAttributes, true, new List<string>() { "Active", "Order" } );
             }
         }
 
@@ -138,63 +144,63 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
         {
             Controls.Clear();
 
-            hfActionTypeGuid = new HiddenField();
-            hfActionTypeGuid.ID = this.ID + "_hfActionTypeGuid";
+            _hfActionTypeGuid = new HiddenField();
+            _hfActionTypeGuid.ID = this.ID + "_hfActionTypeGuid";
 
-            lblActionTypeName = new Label();
-            lblActionTypeName.ClientIDMode = ClientIDMode.Static;
-            lblActionTypeName.ID = this.ID + "_lblActionTypeName";
+            _lblActionTypeName = new Label();
+            _lblActionTypeName.ClientIDMode = ClientIDMode.Static;
+            _lblActionTypeName.ID = this.ID + "_lblActionTypeName";
 
-            lbDeleteActionType = new LinkButton();
-            lbDeleteActionType.CausesValidation = false;
-            lbDeleteActionType.ID = this.ID + "_lbDeleteActionType";
-            lbDeleteActionType.CssClass = "btn btn-mini btn-danger";
-            lbDeleteActionType.Click += lbDeleteActionType_Click;
+            _lbDeleteActionType = new LinkButton();
+            _lbDeleteActionType.CausesValidation = false;
+            _lbDeleteActionType.ID = this.ID + "_lbDeleteActionType";
+            _lbDeleteActionType.CssClass = "btn btn-xs btn-danger";
+            _lbDeleteActionType.Click += lbDeleteActionType_Click;
 
             var iDelete = new HtmlGenericControl( "i" );
-            lbDeleteActionType.Controls.Add( iDelete );
+            _lbDeleteActionType.Controls.Add( iDelete );
             iDelete.AddCssClass( "icon-remove" );
 
-            tbActionTypeName = new DataTextBox();
-            tbActionTypeName.ID = this.ID + "_tbActionTypeName";
-            tbActionTypeName.LabelText = "Name";
+            _tbActionTypeName = new DataTextBox();
+            _tbActionTypeName.ID = this.ID + "_tbActionTypeName";
+            _tbActionTypeName.Label = "Name";
 
-            ddlEntityType = new LabeledDropDownList();
-            ddlEntityType.ID = this.ID + "_ddlEntityType";
-            ddlEntityType.LabelText = "Action Type";
+            _ddlEntityType = new RockDropDownList();
+            _ddlEntityType.ID = this.ID + "_ddlEntityType";
+            _ddlEntityType.Label = "Action Type";
 
             // make it autopostback since Attributes are dependant on which EntityType is selected
-            ddlEntityType.AutoPostBack = true;
-            ddlEntityType.SelectedIndexChanged += ddlEntityType_SelectedIndexChanged;
+            _ddlEntityType.AutoPostBack = true;
+            _ddlEntityType.SelectedIndexChanged += ddlEntityType_SelectedIndexChanged;
 
             foreach ( var item in WorkflowActionContainer.Instance.Components.Values.OrderBy( a => a.Value.EntityType.FriendlyName ) )
             {
                 var entityType = item.Value.EntityType;
-                ddlEntityType.Items.Add( new ListItem( entityType.FriendlyName, entityType.Id.ToString() ) );
+                _ddlEntityType.Items.Add( new ListItem( entityType.FriendlyName, entityType.Id.ToString() ) );
             }
 
             // set label when they exit the edit field
-            tbActionTypeName.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", lblActionTypeName.ID );
-            tbActionTypeName.SourceTypeName = "Rock.Model.WorkflowActionType, Rock";
-            tbActionTypeName.PropertyName = "Name";
+            _tbActionTypeName.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", _lblActionTypeName.ID );
+            _tbActionTypeName.SourceTypeName = "Rock.Model.WorkflowActionType, Rock";
+            _tbActionTypeName.PropertyName = "Name";
 
-            cbIsActionCompletedOnSuccess = new LabeledCheckBox { LabelText = "Action is Completed on Success" };
-            cbIsActionCompletedOnSuccess.ID = this.ID + "_cbIsActionCompletedOnSuccess";
+            _cbIsActionCompletedOnSuccess = new RockCheckBox { Label = "Action is Completed on Success" };
+            _cbIsActionCompletedOnSuccess.ID = this.ID + "_cbIsActionCompletedOnSuccess";
 
-            cbIsActivityCompletedOnSuccess = new LabeledCheckBox { LabelText = "Activity is Completed on Success" };
-            cbIsActivityCompletedOnSuccess.ID = this.ID + "_cbIsActivityCompletedOnSuccess";
+            _cbIsActivityCompletedOnSuccess = new RockCheckBox { Label = "Activity is Completed on Success" };
+            _cbIsActivityCompletedOnSuccess.ID = this.ID + "_cbIsActivityCompletedOnSuccess";
 
-            phActionAttributes = new PlaceHolder();
-            phActionAttributes.ID = this.ID + "_phActionAttributes";
+            _phActionAttributes = new PlaceHolder();
+            _phActionAttributes.ID = this.ID + "_phActionAttributes";
 
-            Controls.Add( hfActionTypeGuid );
-            Controls.Add( lblActionTypeName );
-            Controls.Add( tbActionTypeName );
-            Controls.Add( ddlEntityType );
-            Controls.Add( cbIsActionCompletedOnSuccess );
-            Controls.Add( cbIsActivityCompletedOnSuccess );
-            Controls.Add( phActionAttributes );
-            Controls.Add( lbDeleteActionType );
+            Controls.Add( _hfActionTypeGuid );
+            Controls.Add( _lblActionTypeName );
+            Controls.Add( _tbActionTypeName );
+            Controls.Add( _ddlEntityType );
+            Controls.Add( _cbIsActionCompletedOnSuccess );
+            Controls.Add( _cbIsActivityCompletedOnSuccess );
+            Controls.Add( _phActionAttributes );
+            Controls.Add( _lbDeleteActionType );
         }
 
         /// <summary>
@@ -205,7 +211,7 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
         protected void ddlEntityType_SelectedIndexChanged( object sender, EventArgs e )
         {
             WorkflowActionType workflowActionType = WorkflowActionType;
-            workflowActionType.EntityTypeId = ddlEntityType.SelectedValueAsInt() ?? 0;
+            workflowActionType.EntityTypeId = _ddlEntityType.SelectedValueAsInt() ?? 0;
             WorkflowActionType = workflowActionType;
             this.ForceContentVisible = true;
         }
@@ -217,7 +223,7 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
         public override void RenderControl( HtmlTextWriter writer )
         {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget workflow-action" );
-            writer.AddAttribute( "data-key", hfActionTypeGuid.Value );
+            writer.AddAttribute( "data-key", _hfActionTypeGuid.Value );
             writer.RenderBeginTag( "article" );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "clearfix clickable" );
@@ -225,25 +231,25 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-left" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            lblActionTypeName.Text = tbActionTypeName.Text;
-            lblActionTypeName.RenderControl( writer );
+            _lblActionTypeName.Text = _tbActionTypeName.Text;
+            _lblActionTypeName.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.WriteLine( "<a class='btn btn-mini workflow-action-reorder'><i class='icon-reorder'></i></a>" );
-            writer.WriteLine( "<a class='btn btn-mini'><i class='workflow-action-state icon-chevron-down'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-xs workflow-action-reorder'><i class='icon-reorder'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-xs'><i class='workflow-action-state icon-chevron-down'></i></a>" );
 
             if ( IsDeleteEnabled )
             {
-                lbDeleteActionType.Visible = true;
+                _lbDeleteActionType.Visible = true;
 
-                lbDeleteActionType.RenderControl( writer );
+                _lbDeleteActionType.RenderControl( writer );
             }
             else
             {
-                lbDeleteActionType.Visible = false;
+                _lbDeleteActionType.Visible = false;
             }
 
             // Add/ChevronUpDown/Delete div
@@ -265,13 +271,13 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // action edit fields
-            tbActionTypeName.RenderControl( writer );
-            ddlEntityType.RenderControl( writer );
-            cbIsActionCompletedOnSuccess.RenderControl( writer );
-            cbIsActivityCompletedOnSuccess.RenderControl( writer );
+            _tbActionTypeName.RenderControl( writer );
+            _ddlEntityType.RenderControl( writer );
+            _cbIsActionCompletedOnSuccess.RenderControl( writer );
+            _cbIsActivityCompletedOnSuccess.RenderControl( writer );
 
             // action attributes
-            phActionAttributes.RenderControl( writer );
+            _phActionAttributes.RenderControl( writer );
 
             // widget-content div
             writer.RenderEndTag();

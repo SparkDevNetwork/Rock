@@ -64,7 +64,7 @@ namespace Rock.Model
         /// Gets or sets a flag indicating if the Page is part of the RockChMS core system/framework.
         /// </summary>
         /// <value>
-        /// A <see cref="String.Boolean"/> that is <c>true</c> if this Page is part of the RockChMS core system/framework, otherwise <c>false</c>.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if this Page is part of the RockChMS core system/framework, otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool IsSystem { get; set; }
@@ -73,7 +73,7 @@ namespace Rock.Model
         /// Gets or sets the Id of the <see cref="Rock.Model.Site"/> that this Page is on.
         /// </summary>
         /// <value>
-        /// An <see cref="String.Int32"/> that represents the Id of the <see cref="Rock.Model.Site"/> that this Page is a part of.
+        /// An <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Site"/> that this Page is a part of.
         /// </value>
         [DataMember]
         public int? SiteId { get; set; }
@@ -115,7 +115,7 @@ namespace Rock.Model
         /// Gets or sets a value indicating whether the Page Title should be displayed on the page (if the layout allows).
         /// </summary>
         /// <value>
-        ///   A <see cref="String.Boolean"/> that is <c>true</c> if the title should be displayed on the Page, otherwise <c>false</c>.
+        ///   A <see cref="System.Boolean"/> that is <c>true</c> if the title should be displayed on the Page, otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool PageDisplayTitle
@@ -196,7 +196,7 @@ namespace Rock.Model
         /// Gets or sets a flag indicating if the Page icon should be displayed in the menu.
         /// </summary>
         /// <value>
-        /// A <see cref="String.Boolean"/> value that is <c>true</c> if the Page description should be displayed, otherwise <c>false</c>.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the Page description should be displayed, otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]

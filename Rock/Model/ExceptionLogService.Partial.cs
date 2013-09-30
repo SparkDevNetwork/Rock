@@ -41,7 +41,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets a collection of <see cref="Rock.Model.ExceptionLog"/> entities by the Id of the <see cref="Rock.Model.Site"/> that they occurred on.
         /// </summary>
-        /// <param name="siteId">An <see cref="String.Int32"/> containing the Id of the <see cref="Rock.Model.Site"/> to search by.</param>
+        /// <param name="siteId">An <see cref="System.Int32"/> containing the Id of the <see cref="Rock.Model.Site"/> to search by.</param>
         /// <returns>An enumerable collection of <see cref="Rock.Model.ExceptionLog"/> entities who's SiteId matches the provided value.</returns>
         public IEnumerable<ExceptionLog> GetBySiteId( int? siteId )
         {
@@ -56,7 +56,7 @@ namespace Rock.Model
         /// <param name="context">The <see cref="System.Web.HttpContext"/></param>
         /// <param name="pageId">A <see cref="System.Int32"/> containing the Id of the <see cref="Rock.Model.Page"/> that the exception occurred on.
         ///     This parameter is nullable..</param>
-        /// <param name="siteId">A <see cref="System.Int32"/> containing the Id of the <see cref="Rock.Model.site"/> that the exception occurred on.</param>
+        /// <param name="siteId">A <see cref="System.Int32"/> containing the Id of the <see cref="Rock.Model.Site"/> that the exception occurred on.</param>
         /// <param name="parentId">The Id of the exception's parent <see cref="Rock.Model.ExceptionLog"/> entity.</param>
         /// <param name="personId">The Id of the <see cref="Rock.Model.Person"/> that caused the exception.</param>
         public static void LogException( Exception ex, HttpContext context, int? pageId = null, int? siteId = null, int? personId = null, int? parentId = null )

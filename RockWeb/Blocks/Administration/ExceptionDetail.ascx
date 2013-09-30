@@ -13,7 +13,7 @@
                                 <!-- Site -->
                             </div>
                             <div class="span10">
-                                <Rock:LabeledText LabelText="Site" ID="lblSite" runat="server" />
+                                <Rock:RockLiteral Label="Site" ID="lblSite" runat="server" />
                             </div>
                         </div>
                         <div class="row-fluid">
@@ -21,7 +21,7 @@
                                 Page
                             </div>
                             <div class="span4">
-                                <Rock:LabeledText ID="lblPage" runat="server" />
+                                <Rock:RockLiteral ID="lblPage" runat="server" />
                             </div>
                             <div class="span6">
                                 <asp:HyperLink ID="hlPageLink" runat="server" CssClass="btn btn-mini" Target="_blank"><i class="icon-arrow-right"></i></asp:HyperLink>
@@ -31,7 +31,7 @@
                     <div class="span6">
                         <div class="span2">User</div>
                         <div class="span10">
-                            <Rock:LabeledText ID="lblUser" runat="server" />
+                            <Rock:RockLiteral ID="lblUser" runat="server" />
                         </div>
                     </div>
                 </div>
@@ -43,10 +43,10 @@
                 </div>
                 <div class="row-fluid">
                     <div class="span2">
-                        <Rock:LabeledCheckBox ID="cbShowCookies" runat="server" TextAlign="Right" />
+                        <Rock:RockCheckBox ID="cbShowCookies" runat="server" TextAlign="Right" />
                     </div>
                     <div class="span2">
-                        <Rock:LabeledCheckBox ID="cbShowServerVariables" runat="server" TextAlign="Left" />
+                        <Rock:RockCheckBox ID="cbShowServerVariables" runat="server" TextAlign="Left" />
                     </div>
                 </div>
             </fieldset>

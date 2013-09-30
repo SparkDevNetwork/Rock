@@ -22,7 +22,7 @@
 	        <div class="span12">
                 <asp:Literal ID="litMessage" runat="server"></asp:Literal>
                 <Rock:NotificationBox ID="nbSuccess" runat="server" NotificationBoxType="Success" Visible="false" Heading="<i class='icon-ok-circle'></i> Success" />
-                <Rock:NotificationBox ID="nbErrors" runat="server" NotificationBoxType="Error" Visible="false" Heading="<i class='icon-frown'></i> Sorry..." />
+                <Rock:NotificationBox ID="nbErrors" runat="server" NotificationBoxType="Danger" Visible="false" Heading="<i class='icon-frown'></i> Sorry..." />
             </div>
         </div>
 

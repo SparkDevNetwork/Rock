@@ -12,6 +12,9 @@ using Rock.Model;
 
 namespace Rock.Storage.Provider
 {
+    /// <summary>
+    /// Storage provider for saving binary files to Rock database
+    /// </summary>
     [Description( "Database-driven document storage" )]
     [Export( typeof( ProviderComponent ) )]
     [ExportMetadata( "ComponentName", "Database" )]

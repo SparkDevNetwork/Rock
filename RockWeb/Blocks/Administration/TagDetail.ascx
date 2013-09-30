@@ -10,11 +10,9 @@
                 <h1>
                     <asp:Literal ID="lReadOnlyTitle" runat="server" />
                 </h1>
-                <div class="label label-type">
-                    <asp:Literal ID="lEntityType" runat="server"></asp:Literal>
-                </div>
+                <Rock:HighlightLabel ID="hlEntityType" runat="server" LabelType="Type" />
             </div>
-            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
+            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
 
             <div id="pnlEditDetails" runat="server">
 
@@ -22,18 +20,18 @@
 
                     <div class="row-fluid">
                         <div class="span6">
-                            <Rock:LabeledTextBox ID="tbName" runat="server" LabelText="Name" />
-                            <Rock:LabeledRadioButtonList ID="rblScope" runat="server" LabelText="Scope" RepeatDirection="Horizontal"
+                            <Rock:RockTextBox ID="tbName" runat="server" Label="Name" />
+                            <Rock:RockRadioButtonList ID="rblScope" runat="server" Label="Scope" RepeatDirection="Horizontal"
                                 AutoPostBack="true" OnSelectedIndexChanged="rblScope_SelectedIndexChanged">
                                 <asp:ListItem Value="Public" Text="Public" Selected="True" />
                                 <asp:ListItem Value="Private" Text="Private" />
-                            </Rock:LabeledRadioButtonList>
-                            <Rock:PersonPicker ID="ppOwner" runat="server" LabelText="Owner" />
+                            </Rock:RockRadioButtonList>
+                            <Rock:PersonPicker ID="ppOwner" runat="server" Label="Owner" />
                         </div>
                         <div class="span6">
-                            <Rock:LabeledDropDownList id="ddlEntityType" runat="server" LabelText="Entity Type" />
-                            <Rock:LabeledTextBox ID="tbEntityTypeQualifierColumn" runat="server" LabelText="Entity Type Qualifier Column" />
-                            <Rock:LabeledTextBox ID="tbEntityTypeQualifierValue" runat="server" LabelText="Entity Type Qualifier Value" />
+                            <Rock:RockDropDownList id="ddlEntityType" runat="server" Label="Entity Type" />
+                            <Rock:RockTextBox ID="tbEntityTypeQualifierColumn" runat="server" Label="Entity Type Qualifier Column" />
+                            <Rock:RockTextBox ID="tbEntityTypeQualifierValue" runat="server" Label="Entity Type Qualifier Value" />
                        </div>
                     </div>
 

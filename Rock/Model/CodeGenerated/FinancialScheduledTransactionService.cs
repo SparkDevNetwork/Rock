@@ -57,6 +57,12 @@ namespace Rock.Model
         public bool CanDelete( FinancialScheduledTransaction item, out string errorMessage )
         {
             errorMessage = string.Empty;
+ 
+            if ( new Service<FinancialTransaction>().Queryable().Any( a => a.ScheduledTransactionId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", FinancialScheduledTransaction.FriendlyTypeName, FinancialTransaction.FriendlyTypeName );
+                return false;
+            }  
             return true;
         }
     }
@@ -86,9 +92,12 @@ namespace Rock.Model
                 target.StartDate = source.StartDate;
                 target.EndDate = source.EndDate;
                 target.NumberOfPayments = source.NumberOfPayments;
+                target.NextPaymentDate = source.NextPaymentDate;
+                target.LastStatusUpdateDateTime = source.LastStatusUpdateDateTime;
                 target.IsActive = source.IsActive;
-                target.GatewayId = source.GatewayId;
+                target.GatewayEntityTypeId = source.GatewayEntityTypeId;
                 target.TransactionCode = source.TransactionCode;
+                target.GatewayScheduleId = source.GatewayScheduleId;
                 target.CardReminderDate = source.CardReminderDate;
                 target.LastRemindedDate = source.LastRemindedDate;
                 target.Id = source.Id;
