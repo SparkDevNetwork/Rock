@@ -37,7 +37,7 @@
 
     <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="admin-details">
         
-        <asp:ValidationSummary runat="server" CssClass="alert alert-error" />
+        <asp:ValidationSummary runat="server" CssClass="alert alert-danger" />
 
         <fieldset>
             <legend><asp:Literal ID="lProperties" runat="server"></asp:Literal></legend>

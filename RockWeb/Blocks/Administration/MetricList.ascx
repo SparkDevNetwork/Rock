@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
 
-        <asp:ValidationSummary ID="valSummary" runat="server" CssClass="alert alert-error" />
+        <asp:ValidationSummary ID="valSummary" runat="server" CssClass="alert alert-danger" />
 
         <asp:Panel ID="pnlMetricList" runat="server">
 

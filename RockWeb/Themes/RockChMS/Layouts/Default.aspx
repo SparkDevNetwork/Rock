@@ -61,7 +61,7 @@
                 <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
 
                 <!-- display any ajax error messages here (use with ajax-client-error-handler.js) -->
-                <div class="alert alert-error ajax-error" style="display:none">
+                <div class="alert alert-danger ajax-error" style="display:none">
                     <strong>Ooops!</strong>
                     <span class="ajax-error-message"></span>
                 </div>

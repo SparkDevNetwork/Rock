@@ -4,7 +4,7 @@
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" runat="server">
             <asp:HiddenField ID="hfPrayerRequestId" runat="server" />
-            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
+            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" />
 
             <!-- Read only -->
             <fieldset id="fieldsetViewDetails" runat="server">

@@ -422,7 +422,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Tr );
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _rfvRole.IsValid ? "" : " error" ) );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _rfvRole.IsValid ? "" : " has-error" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _rblRole.RenderControl( writer );
                 _rfvRole.RenderControl( writer );
@@ -434,7 +434,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _rfvFirstName.IsValid ? "" : " error" ) );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _rfvFirstName.IsValid ? "" : " has-error" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _tbFirstName.RenderControl( writer );
                 _rfvFirstName.RenderControl( writer );
@@ -449,7 +449,7 @@ namespace Rock.Web.UI.Controls
                 }
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _rfvLastName .IsValid ? "" : " error" ) );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _rfvLastName .IsValid ? "" : " has-error" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _tbLastName.RenderControl( writer );
                 _rfvLastName.RenderControl( writer );
@@ -457,7 +457,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderEndTag();
 
                 writer.RenderBeginTag( HtmlTextWriterTag.Td );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _rfvGender.IsValid ? "" : " error" ) );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "form-group" + ( _rfvGender.IsValid ? "" : " has-error" ) );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _rfvGender.Enabled = RequireGender;
                 _rblGender.RenderControl( writer );

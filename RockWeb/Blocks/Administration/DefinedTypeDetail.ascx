@@ -8,7 +8,7 @@
 
             <div id="pnlEditDetails" runat="server" class="well">
 
-                <asp:ValidationSummary ID="vsDetails" runat="server" CssClass="alert alert-error" />
+                <asp:ValidationSummary ID="vsDetails" runat="server" CssClass="alert alert-danger" />
 
                 <fieldset>
                     <legend>

@@ -15,7 +15,7 @@
                 <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
             </div>
             
-            <asp:ValidationSummary ID="vsDetails" runat="server" CssClass="alert alert-error" />
+            <asp:ValidationSummary ID="vsDetails" runat="server" CssClass="alert alert-danger" />
 
             <div id="pnlEditDetails" runat="server">
 
