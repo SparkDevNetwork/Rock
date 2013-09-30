@@ -61,7 +61,7 @@
         </div>
 
         <div id="pnl2"></div>
-        <asp:ScriptManager ID="sManager" runat="server"/>
+        <ajaxToolkit:ToolkitScriptManager ID="sManager" runat="server"/>
     </form>
 
     <script type="text/javascript">

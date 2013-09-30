@@ -313,7 +313,7 @@ namespace Rock.Web.UI
             
             if ( _scriptManager == null )
             {
-                _scriptManager = new ScriptManager { ID = "sManager" };
+                _scriptManager = new AjaxControlToolkit.ToolkitScriptManager { ID = "sManager" };
                 Page.Trace.Warn( "Adding script manager" );
                 Page.Form.Controls.AddAt( 0, _scriptManager );
             }
