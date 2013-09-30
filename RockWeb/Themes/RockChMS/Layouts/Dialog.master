@@ -57,7 +57,7 @@
             <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click " />
         </div>
 
-        <asp:ScriptManager ID="sManager" runat="server"/>
+        <ajaxToolkit:ToolkitScriptManager ID="sManager" runat="server"/>
     </form>
 
     <script type="text/javascript">
