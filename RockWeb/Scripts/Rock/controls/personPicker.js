@@ -66,6 +66,18 @@
                 $(this).find('.picker-select-item-details:hidden').slideDown();
             });
 
+            $('#' + controlId).hover(
+                function () {
+
+                    // only show the X if there there is something picked
+                    if ($('#hfPersonId_' + controlId).val() || '0' !== '0') {
+                        $('#btnSelectNone_' + controlId).stop().show();
+                    }
+                },
+                function () {
+                    $('#btnSelectNone_' + controlId).fadeOut(500);
+                });
+
             $('#btnCancel_' + controlId).click(function () {
                 $(this).closest('.picker-menu').slideUp();
             });
