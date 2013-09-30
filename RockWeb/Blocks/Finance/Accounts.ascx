@@ -38,7 +38,7 @@
     <asp:Panel ID="pnlAccountDetails" runat="server" Visible="false">
 
         <asp:HiddenField ID="hfAccountId" runat="server" />
-        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
+        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
         <fieldset>
             <legend>
                 <asp:Literal ID="lAction" runat="server">Account</asp:Literal>

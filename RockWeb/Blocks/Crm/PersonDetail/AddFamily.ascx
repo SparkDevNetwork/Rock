@@ -5,7 +5,7 @@
 
 
         <asp:ValidationSummary ID="valSummaryTop" runat="server"  
-            HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
+            HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
 
         <asp:Panel ID="pnlFamilyData" runat="server">
             <div class="row">
