@@ -239,6 +239,10 @@
     <Compile Include="Migrations\201309291500225_RefactorBatchDetail.Designer.cs">
       <DependentUpon>201309291500225_RefactorBatchDetail.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201310012025428_AttendedCheckin.cs" />
+    <Compile Include="Migrations\201310012025428_AttendedCheckin.Designer.cs">
+      <DependentUpon>201310012025428_AttendedCheckin.cs</DependentUpon>
+    </Compile>
     <Compile Include="Model\FinancialPersonSavedAccountService.Partial.cs" />
     <Compile Include="Services\NuGet\NuGetExtensionsMethods.cs" />
     <Compile Include="Storage\ProviderComponent.cs" />
@@ -1085,6 +1089,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201309291500225_RefactorBatchDetail.resx">
       <DependentUpon>201309291500225_RefactorBatchDetail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310012025428_AttendedCheckin.resx">
+      <DependentUpon>201310012025428_AttendedCheckin.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
