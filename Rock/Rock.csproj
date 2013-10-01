@@ -190,10 +190,6 @@
     <Compile Include="Migrations\201309070045381_CheckinConfigUI.cs" />
     <Compile Include="Migrations\201309070045381_CheckinConfigUI.Designer.cs">
       <DependentUpon>201309070045381_CheckinConfigUI.cs</DependentUpon>
-    </Compile>    
-    <Compile Include="Migrations\201309111746562_AddAttendedCheckinPages.cs" />
-    <Compile Include="Migrations\201309111746562_AddAttendedCheckinPages.Designer.cs">
-      <DependentUpon>201309111746562_AddAttendedCheckinPages.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\201309112300564_DefaultWorkflowActionAttributes.cs" />
     <Compile Include="Migrations\201309112300564_DefaultWorkflowActionAttributes.Designer.cs">
@@ -242,6 +238,10 @@
     <Compile Include="Migrations\201309291500225_RefactorBatchDetail.cs" />
     <Compile Include="Migrations\201309291500225_RefactorBatchDetail.Designer.cs">
       <DependentUpon>201309291500225_RefactorBatchDetail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201310012025428_AttendedCheckin.cs" />
+    <Compile Include="Migrations\201310012025428_AttendedCheckin.Designer.cs">
+      <DependentUpon>201310012025428_AttendedCheckin.cs</DependentUpon>
     </Compile>
     <Compile Include="Model\FinancialPersonSavedAccountService.Partial.cs" />
     <Compile Include="Services\NuGet\NuGetExtensionsMethods.cs" />
@@ -1054,9 +1054,6 @@
     <EmbeddedResource Include="Migrations\201309070045381_CheckinConfigUI.resx">
       <DependentUpon>201309070045381_CheckinConfigUI.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201309111746562_AddAttendedCheckinPages.resx">
-      <DependentUpon>201309111746562_AddAttendedCheckinPages.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201309112300564_DefaultWorkflowActionAttributes.resx">
       <DependentUpon>201309112300564_DefaultWorkflowActionAttributes.cs</DependentUpon>
     </EmbeddedResource>
@@ -1092,6 +1089,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201309291500225_RefactorBatchDetail.resx">
       <DependentUpon>201309291500225_RefactorBatchDetail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310012025428_AttendedCheckin.resx">
+      <DependentUpon>201310012025428_AttendedCheckin.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

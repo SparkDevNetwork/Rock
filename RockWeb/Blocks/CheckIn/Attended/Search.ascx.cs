@@ -22,6 +22,9 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.CheckIn.Attended
 {
+    /// <summary>
+    /// Search block for Attended Check-in
+    /// </summary>
     [Description( "Attended Check-In Search block" )]
     [LinkedPage( "Admin Page" )]
     [IntegerField( "Minimum Text Length", "Minimum length for text searches (defaults to 4).", false, 4 )]

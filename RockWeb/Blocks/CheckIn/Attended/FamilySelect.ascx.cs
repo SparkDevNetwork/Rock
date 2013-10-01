@@ -22,6 +22,9 @@ using System.Runtime.InteropServices;
 
 namespace RockWeb.Blocks.CheckIn.Attended
 {
+    /// <summary>
+    /// Family Select block for Attended Check-in
+    /// </summary>
     [Description( "Attended Check-In Family Select Block" )]
     public partial class FamilySelect : CheckInBlock
     {
@@ -337,7 +340,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     if ( personVisitorType.Value == "Person" )
                     {   // Family Member
                         var groupMember = AddGroupMember( family.Group, person );
-                        checkInPerson.FamilyMember = true;
+                        checkInPerson.FamilyMember = true;                        
                         hfSelectedPerson.Value += person.Id + ",";
                     }
                     else
@@ -347,6 +350,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         hfSelectedVisitor.Value += person.Id + ",";
                     }
 
+                    checkInPerson.Selected = true;
                     family.People.Add( checkInPerson );
                     lvPerson.DataSource = family.People.Where( p => p.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
                     lvPerson.DataBind();
@@ -373,16 +377,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             rGridPersonResults.Visible = true;
             dpDOBSearch.SelectedDate = storeDOB;
             mpeAddPerson.Show();
-        }
-
-        /// <summary>
-        /// Handles the Click event of the lbAddPersonCancel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbAddPersonCancel_Click( object sender, EventArgs e )
-        {
-            // if we need to do anything when we cancel this modal window...this would be the place to do it.
         }
 
         /// <summary>
@@ -480,16 +474,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
-        /// Handles the Click event of the lbAddFamilyCancel control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void lbAddFamilyCancel_Click( object sender, EventArgs e )
-        {
-            // if we need to clear out anything when we cancel the modal...this would be the place to do it.
-        }
-           
-        /// <summary>
         /// Handles the ServerValidate event of the cvDOBValidator control.
         /// </summary>
         /// <param name="source">The source of the event.</param>
@@ -555,6 +539,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                             hfSelectedVisitor.Value += personId + ",";
                         }
 
+                        checkInPerson.Selected = true;
                         family.People.Add( checkInPerson );
                         lvPerson.DataSource = family.People.Where( p => p.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
                         lvPerson.DataBind();

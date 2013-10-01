@@ -11,7 +11,7 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class AddAttendedCheckinPages : Rock.Migrations.RockMigration
+    public partial class AttendedCheckin : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
@@ -180,13 +180,37 @@ namespace Rock.Migrations
             // Attrib for BlockType: Attended Check In - Search:Minimum Text Length
             AddBlockTypeAttribute( "645D3F2F-0901-44FE-93E9-446DBC8A1680", "A75DFC58-7A1B-4799-BF31-451B2BBE38FF", "Minimum Text Length", "MinimumTextLength", "", "Minimum length for text searches (defaults to 4).", 0, "4", "09536DD6-8020-400F-856C-DF3BEA6F76C5" );
 
-        }
+            // Attrib for Person: Allergy Types
+            AddEntityAttribute( "Rock.Model.Person", "9C204CD0-1233-41C5-818A-C5DA439445AA", "", "", "Allergy", "", "The item(s) this person is allergic to.", 0, "", "DBD192C9-0AA1-46EC-92AB-A3DA8E056D31" );
 
+            Sql( @"
+                DECLARE @CheckinCategoryId int
+                SELECT @CheckinCategoryId = [Id] FROM [Category] WHERE [Name] = 'Childhood Information'
+
+                DECLARE @CheckinAttributeId int
+                SELECT @CheckinAttributeId = [Id] FROM [Attribute] WHERE [Guid] = 'DBD192C9-0AA1-46EC-92AB-A3DA8E056D31'
+
+                INSERT INTO [AttributeCategory] ([AttributeId], [CategoryId]) VALUES (@CheckinAttributeId, @CheckinCategoryId)
+            " );
+        }
+        
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {
+            Sql( @"
+                DECLARE @CheckinCategoryId int
+                SELECT @CheckinCategoryId = [Id] FROM [Category] WHERE [Name] = 'Childhood Information'
+
+                DECLARE @CheckinAttributeId int
+                SELECT @CheckinAttributeId = [Id] FROM [Attribute] WHERE [Guid] = 'DBD192C9-0AA1-46EC-92AB-A3DA8E056D31'
+
+                DELETE FROM [AttributeCategory] WHERE [AttributeId] = @CheckinAttributeId AND [CategoryId] = @CheckinCategoryId
+            " );
+
+            DeleteAttribute( "DBD192C9-0AA1-46EC-92AB-A3DA8E056D31" );    // Rock.Model.Person: Allergy
+
             // Delete Attended check-in site
             Sql( @"
                 DECLARE @SiteId int
