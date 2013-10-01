@@ -233,17 +233,16 @@ namespace Rock.Model
         /// <param name="partialPhoneNumber">The partial phone number.</param>
         /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
         /// <returns></returns>
-        public IEnumerable<Person> GetByPhonePartial( string partialPhoneNumber, bool includeDeceased = false )
+        public IQueryable<Person> GetByPhonePartial( string partialPhoneNumber, bool includeDeceased = false )
         {
             string numericPhone = partialPhoneNumber.AsNumeric();
 
-            return Repository.Find( p =>
+            return Repository.AsQueryable().Where( p =>
                 ( includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value ) &&
                 p.PhoneNumbers.Any( n => n.Number.Contains( numericPhone ) )
             );
         }
 
-        /// <summary>
         /// Gets the families.
         /// </summary>
         /// <param name="person">The person.</param>
