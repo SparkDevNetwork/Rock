@@ -35,6 +35,10 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string CHECKIN_SEARCH_TYPE_BARCODE = "9A66BFCD-0F16-4EAE-BE35-B3FAF4B817BE";
 
+        /// <summary>
+        /// Name Search Type
+        /// </summary>
+        public const string CHECKIN_SEARCH_TYPE_NAME = "071D6DAA-3063-463A-B8A1-7D9A1BE1BB31";
         #endregion
 
         #region Device Type
@@ -263,6 +267,20 @@ namespace Rock.SystemGuid
         /// Work Record Type
         /// </summary>
         public const string LOCATION_TYPE_PREVIOUS = "853D98F1-6E08-4321-861B-520B4106CFE0";
+
+        #endregion
+
+        #region Person Status
+
+        /// <summary>
+        /// Member Person Status
+        /// </summary>
+        public const string PERSON_STATUS_MEMBER = "E8848110-CDE3-400E-B6CD-C2BD309FAF38";
+
+        /// <summary>
+        /// Visitor Person Status
+        /// </summary>
+        public const string PERSON_STATUS_VISITOR = "1B439C81-68B1-44F1-8DDF-0B555823D0F8";
 
         #endregion
     }

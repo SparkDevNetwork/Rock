@@ -241,23 +241,22 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets an enumerable collection of <see cref="Rock.Model.Person"/> entities where their phone number partially matches the provided value.
+        /// Gets an queryable collection of <see cref="Rock.Model.Person"/> entities where their phone number partially matches the provided value.
         /// </summary>
         /// <param name="partialPhoneNumber">A <see cref="System.String"/> containing a partial phone number to match.</param>
         /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be 
         /// included, otherwise <c>false</c>.</param>
-        /// <returns>An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.</returns>
-        public IEnumerable<Person> GetByPhonePartial( string partialPhoneNumber, bool includeDeceased = false )
+        /// <returns>An queryable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.</returns>
+        public IQueryable<Person> GetByPhonePartial( string partialPhoneNumber, bool includeDeceased = false )
         {
             string numericPhone = partialPhoneNumber.AsNumeric();
 
-            return Repository.Find( p =>
+            return Repository.AsQueryable().Where( p =>
                 ( includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value ) &&
                 p.PhoneNumbers.Any( n => n.Number.Contains( numericPhone ) )
             );
         }
 
-        /// <summary>
         /// Gets the families.
         /// </summary>
         /// <param name="person">The person.</param>

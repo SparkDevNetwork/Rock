@@ -54,7 +54,7 @@ namespace Rock.CheckIn
             var calEvent = Schedule.GetCalenderEvent();
             if ( calEvent != null && calEvent.DTStart != null )
             {
-                StartTime = calEvent.DTStart.Date;
+                StartTime = calEvent.DTStart.Value;
             }
 
         }
