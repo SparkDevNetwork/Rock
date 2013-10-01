@@ -25,49 +25,49 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the Temporary.
+        /// Gets or sets a flag indicating if this is a temporary file. This property is required.
         /// </summary>
         /// <value>
-        /// Temporary.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this is a temporary file, otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsTemporary { get; set; }
         
         /// <summary>
-        /// Gets or sets the System.
+        /// Gets or sets a flag indicating if this file is part of the RockChMS core system/framework.
         /// </summary>
         /// <value>
-        /// System.
+        /// A <see cref="System.Boolean" /> value that is <c>true</c> if this file is part of the core system/framework; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the binary file type id.
+        /// Gets or sets the id of the <see cref="Rock.Model.BinaryFileType"/> that this file belongs to.
         /// </summary>
         /// <value>
-        /// The binary file type id.
+        /// A <see cref="System.Int32"/> representing the <see cref="Rock.Model.BinaryFileType"/>.
         /// </value>
         [DataMember]
         public int? BinaryFileTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Url.
+        /// Gets or sets the Url to access the file.
         /// </summary>
         /// <value>
-        /// Url.
+        /// A <see cref="System.String"/> representing the Url to the file.
         /// </value>
         [MaxLength( 255 )]
         [DataMember]
         public string Url { get; set; }
         
         /// <summary>
-        /// Gets or sets the File Name.
+        /// Gets or sets the name of the file, including any extensions. This name is usually captured when the file is uploaded to RockChMS and this same name will be used when the file is downloaded. This property is required.
         /// </summary>
         /// <value>
-        /// File Name.
+        /// A <see cref="System.String"/> representing the name of the file, including the extension.
         /// </value>
         [Required] 
         [MaxLength( 255 )]
@@ -75,10 +75,10 @@ namespace Rock.Model
         public string FileName { get; set; }
         
         /// <summary>
-        /// Gets or sets the Mime Type.
+        /// Gets or sets the Mime Type for the file. This property is required
         /// </summary>
         /// <value>
-        /// Mime Type.
+        /// A <see cref="System.String"/> representing the Mime Type for the file.
         /// </value>
         [Required]
         [MaxLength( 255 )]
@@ -86,25 +86,25 @@ namespace Rock.Model
         public string MimeType { get; set; }
 
         /// <summary>
-        /// Gets or sets the last modified date time.
+        /// Gets or sets the date and time when the file was last modified.
         /// </summary>
         /// <value>
-        /// The last modified date time.
+        /// A <see cref="System.DateTime"/> representing the date and time that the file was last modified.
         /// </value>
         [DataMember]
         public DateTime? LastModifiedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets a user defined description of the file.
         /// </summary>
         /// <value>
-        /// Description.
+        /// A <see cref="System.String"/> representing the user defined description of the file.
         /// </value>
         [DataMember]
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the storage entity type id.
+        /// Gets or sets the Id of the Storage Service <see cref="Rock.Model.EntityType"/> that is used for storing files of this type.
         /// </summary>
         /// <value>
         /// The storage entity type id.
