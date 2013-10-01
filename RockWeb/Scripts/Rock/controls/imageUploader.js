@@ -3,10 +3,10 @@
     window.Rock = window.Rock || {};
     Rock.controls = Rock.controls || {};
 
-    Rock.controls.fileUploader = (function () {
+    Rock.controls.imageUploader = (function () {
         var _configure = function (options) {
             var wsUrl = Rock.settings.get('baseUrl')
-                        + 'FileUploader.ashx?'
+                        + 'ImageUploader.ashx?'
                         + 'fileId=' + options.fileId
                         + '&fileTypeGuid=' + options.fileTypeGuid;
 
@@ -14,12 +14,12 @@
             $('#' + options.controlId).fileupload({
                 url: wsUrl,
                 dataType: 'json',
-                dropZone: $('#' + options.controlId).closest('.fileupload-drop-zone'),
+                dropZone: $('#' + options.controlId).closest('.imageupload-dropzone'),
                 autoUpload: true,
                 done: function (e, data) {
-                    var $el = $('#' + options.aFileName);
+                    var $el = $('#' + options.imgThumbnail);
                     $('#' + options.hfFileId).val(data.response().result.Id);
-                    $el.text(data.response().result.FileName).attr('href', Rock.settings.get('baseUrl') + 'GetFile.ashx?id=' + data.response().result.Id);
+                    $el.attr('src', Rock.settings.get('baseUrl') + 'GetImage.ashx?id=' + data.response().result.Id + '&width=50');
                     $('#' + options.aRemove).show();
                     if (options.postbackScript) {
                         eval(options.postbackScript);
@@ -29,14 +29,10 @@
 
             $('#' + options.aRemove).click(function () {
                 $(this).hide();
-                var $el = $('#' + options.aFileName);
+                var $el = $('#' + options.imgThumbnail);
                 $('#' + options.hfFileId).val('0');
-                $el.attr('href', '#');
-
-                if (options.postbackScript) {
-                    eval(options.postbackScript);
-                }
-
+                $el.attr('src', Rock.settings.get('baseUrl') + 'Assets/Images/no-picture.svg');
+                //$('.imageupload-thumbnail img').css('width', "49px"); // hack for chrome 9/30/2013
                 return false;
             });
         },
