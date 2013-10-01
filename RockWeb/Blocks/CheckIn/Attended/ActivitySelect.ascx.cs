@@ -12,6 +12,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.CheckIn;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -40,13 +41,14 @@ namespace RockWeb.Blocks.CheckIn.Attended
             {
                 if ( !Page.IsPostBack )
                 {
+                    mpeAddNote.OnCancelScript = string.Format( "$('#{0}').val('');", hfAttributeId.ClientID );
                     Session["groupType"] = null;
                     Session["location"] = null;
                     Session["locationList"] = null;
                     Session["schedule"] = null;
                     CheckInPerson person = null;
                     var personId = Request.QueryString["personId"].AsType<int?>();
-                    
+
                     if ( personId != null )
                     {
                         person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
@@ -68,15 +70,19 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         BindLocations( person );
                         BindSchedules( person );
                         BindSelectedGrid();
-
-                        phNotes.Controls.Clear();
-                        var personB = person.Person;
-                        personB.LoadAttributes();
-                        Rock.Attribute.Helper.AddEditControls( personB, phNotes, true );
                     }
                     else
                     {
                         GoBack();
+                    }
+                }
+                else
+                {
+                    var entity = new EntityTypeService().Get( "Rock.Model.Person" );
+                    string attributeId = Request.Form[hfAttributeId.UniqueID];
+                    if (!string.IsNullOrEmpty(attributeId) )
+                    {
+                        ShowNoteModal( int.Parse( attributeId ), entity.Id );
                     }
                 }
             }
@@ -327,6 +333,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddNoteCancel_Click( object sender, EventArgs e )
         {
+            hfAttributeId.Value = string.Empty;
         }
 
         /// <summary>
@@ -336,6 +343,28 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddNoteSave_Click( object sender, EventArgs e )
         {
+            var personId = Request.QueryString["personId"].AsType<int?>();
+            var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
+                .People.Where( p => p.Person.Id == personId ).FirstOrDefault();
+
+            // Need to load a full person because the person.Person is only a clone.
+            Person Person = new PersonService().Get( person.Person.Id );
+
+            var entity = new EntityTypeService().Get( "Rock.Model.Person" );
+            var attributeId = new AttributeService().GetByEntityTypeId( entity.Id ).Where( a => a.Name.ToUpper() == "ALLERGY" ).FirstOrDefault().Id;
+            var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
+
+            Control attributeControl = fsNotes.FindControl( string.Format( "attribute_field_{0}", attributeId ) );
+            if ( attributeControl != null )
+            {
+                Person.LoadAttributes();
+                Person.SetAttributeValue( "Allergy", attribute.FieldType.Field.GetEditValue( attributeControl, attribute.QualifierValues ) );
+                Rock.Attribute.Helper.SaveAttributeValues( Person, CurrentPersonId );
+            }
+
+            hfAttributeId.Value = string.Empty;
+
+            mpeAddNote.Hide();
         }
 
         /// <summary>
@@ -345,7 +374,9 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddNote_Click( object sender, EventArgs e )
         {
-            mpeAddNote.Show();
+            var entity = new EntityTypeService().Get( "Rock.Model.Person" );
+            var attributeId = new AttributeService().GetByEntityTypeId( entity.Id ).Where( a => a.Name.ToUpper() == "ALLERGY" ).FirstOrDefault().Id;
+            ShowNoteModal( attributeId, entity.Id );
         }
 
         /// <summary>
@@ -621,6 +652,22 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 gSelectedList.DataBind();                
                 pnlSelectedGrid.Update();
             }            
+        }
+
+        protected void ShowNoteModal( int attributeId, int entityId )
+        {
+            var personId = Request.QueryString["personId"].AsType<int?>();
+            var person = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault()
+                .People.Where( p => p.Person.Id == personId ).FirstOrDefault();
+            Person Person = new PersonService().Get( person.Person.Id );
+
+            fsNotes.Controls.Clear();
+            var attribute = AttributeCache.Read( attributeId );
+            Person.LoadAttributes();
+            var attributeValue = Person.GetAttributeValue( attribute.Key );
+            attribute.AddControl( fsNotes.Controls, attributeValue, true, true );
+            hfAttributeId.Value = attribute.Id.ToString();
+            mpeAddNote.Show();
         }
 
         #endregion        
