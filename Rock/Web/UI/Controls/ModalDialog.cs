@@ -139,7 +139,7 @@ namespace Rock.Web.UI.Controls
             _dialogPanel = new Panel();
             base.Controls.Add( _dialogPanel );
             _dialogPanel.ID = "panel";
-            _dialogPanel.CssClass = "rock-modal";
+            _dialogPanel.CssClass = "rock-modal rock-modal-frame";
             _dialogPanel.Attributes.Add("style","display:none");
 
             _headerPanel = new Panel();
@@ -165,6 +165,7 @@ namespace Rock.Web.UI.Controls
             _closeLink.InnerHtml = "&times;";
 
             _titleH3 = new HtmlGenericControl( "h3" );
+            _titleH3.AddCssClass("modal-title");
             _headerPanel.Controls.Add( _titleH3 );
 
             _title = new LiteralControl();
