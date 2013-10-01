@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -903,6 +904,96 @@ namespace Rock.Model
         /// </summary>
         Female = 2
     }
+        
+    /// <summary>
+    /// A person's possible grade levels
+    /// </summary>
+    public enum GradeLevel
+    {
+        /// <summary>
+        /// Kindergarten
+        /// </summary>
+        [Description( "Pre-K" )]
+        PreK = -1,
+
+        /// <summary>
+        /// Kindergarten
+        /// </summary>
+        [Description("Kindergarten")]
+        Kindergarten = 0,
+
+        /// <summary>
+        /// 1st Grade
+        /// </summary>
+        [Description("1st Grade")]
+        First = 1,
+
+        /// <summary>
+        /// 2nd Grade
+        /// </summary>
+        [Description( "2nd Grade" )]
+        Second = 2,
+
+        /// <summary>
+        /// 3rd Grade
+        /// </summary>
+        [Description( "3rd Grade" )]
+        Third = 3,
+
+        /// <summary>
+        /// 4th Grade
+        /// </summary>
+        [Description( "4th Grade" )]
+        Fourth = 4,
+
+        /// <summary>
+        /// 5th Grade
+        /// </summary>
+        [Description( "5th Grade" )]
+        Fifth = 5,
+
+        /// <summary>
+        /// 6th Grade
+        /// </summary>
+        [Description( "6th Grade" )]
+        Sixth = 6,
+
+        /// <summary>
+        /// 7th Grade
+        /// </summary>
+        [Description( "7th Grade" )]
+        Seventh = 7,
+
+        /// <summary>
+        /// 8th Grade
+        /// </summary>
+        [Description( "8th Grade" )]
+        Eighth = 8,
+
+        /// <summary>
+        /// 9th Grade
+        /// </summary>
+        [Description( "9th Grade" )]
+        Ninth = 9,
+
+        /// <summary>
+        /// 10th Grade
+        /// </summary>
+        [Description( "10th Grade" )]
+        Tenth = 10,
+
+        /// <summary>
+        /// 11th Grade
+        /// </summary>
+        [Description( "11th Grade" )]
+        Eleventh = 11,
+
+        /// <summary>
+        /// 12th Grade
+        /// </summary>
+        [Description( "12th Grade" )]
+        Twelfth = 12
+    }
 
     #endregion
 
@@ -942,7 +1033,7 @@ namespace Rock.Model
         }
 
     }
-
+    
     #endregion
 
 }
