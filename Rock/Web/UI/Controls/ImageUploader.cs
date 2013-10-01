@@ -174,7 +174,7 @@ namespace Rock.Web.UI.Controls
 
             var script = string.Format( 
 @"
-Rock.controls.fileUploader.initialize({{
+Rock.controls.imageUploader.initialize({{
     controlId: '{0}',
     fileId: '{1}',
     fileTypeGuid: '{2}',
@@ -293,13 +293,7 @@ Rock.controls.fileUploader.initialize({{
         {
             if ( this.Visible )
             {
-                // make a named div so we have an area to limit the drag/drop to
-                //writer.AddAttribute( "class", "fileupload-dropzone" );
-                //writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
                 RockControlHelper.RenderControl( this, writer );
-
-                //writer.RenderEndTag();
             }
         }
 
@@ -323,7 +317,6 @@ Rock.controls.fileUploader.initialize({{
             }
             else
             {
-                //_imgThumbnail.Style["display"] = "none";
                 _imgThumbnail.ImageUrl = "/Assets/Images/no-picture.svg";
                 _aRemove.Style[HtmlTextWriterStyle.Display] = "none";
             }
