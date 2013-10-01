@@ -23,6 +23,9 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.CheckIn.Attended
 {
+    /// <summary>
+    /// Confirmation block for Attended Check-in
+    /// </summary>
     [Description( "Attended Check-In Confirmation Block" )]
     [LinkedPage("Activity Select Page")]
     public partial class Confirm : CheckInBlock
@@ -130,7 +133,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
             SaveAttendance();
             foreach ( DataKey dataKey in gPersonList.DataKeys )
             {               
-                //var dataKeyValues = gPersonList.DataKeys[index].Values;
                 var personId = Convert.ToInt32( dataKey["PersonId"] );
                 var locationId = Convert.ToInt32( dataKey["LocationId"] );
                 var scheduleId = Convert.ToInt32( dataKey["ScheduleId"] );

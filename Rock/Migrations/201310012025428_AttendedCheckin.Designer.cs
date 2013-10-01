@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "Rock 0.0.1")]
-    public sealed partial class AddAttendedCheckinPages : IMigrationMetadata
+    public sealed partial class AttendedCheckin : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(AddAttendedCheckinPages));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(AttendedCheckin));
         
         string IMigrationMetadata.Id
         {
-            get { return "201309091746562_AddAttendedCheckinPages"; }
+            get { return "201310012025428_AttendedCheckin"; }
         }
         
         string IMigrationMetadata.Source

@@ -244,15 +244,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         Session["location"] = checkInLocation.Location.Id;
                     }
                 }
-                //if ( checkInLocation.Selected )
-                //{
-                //    lbSelectLocation.AddCssClass( "active" );
-                //    Session["location"] = checkInLocation.Location.Id;
-                //}
-                //else
-                //{
-                //    lbSelectLocation.RemoveCssClass( "active " );
-                //}
             }
         }
 
@@ -654,6 +645,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }            
         }
 
+        /// <summary>
+        /// Shows the note modal.
+        /// </summary>
+        /// <param name="attributeId">The attribute id.</param>
+        /// <param name="entityId">The entity id.</param>
         protected void ShowNoteModal( int attributeId, int entityId )
         {
             var personId = Request.QueryString["personId"].AsType<int?>();

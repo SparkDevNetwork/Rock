@@ -187,7 +187,7 @@
         <div class="row checkin-header">
             <div class="checkin-actions">
                 <div class="col-md-3">
-                    <asp:LinkButton ID="lbAddPersonCancel" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddPersonCancel_Click" Text="Cancel" CausesValidation="false"/>
+                    <asp:LinkButton ID="lbAddPersonCancel" CssClass="btn btn-large btn-primary" runat="server" Text="Cancel" CausesValidation="false"/>
                 </div>
 
                 <div class="col-md-6">
@@ -203,19 +203,19 @@
         <div class="checkin-body">
             <div class="row">
                 <div class="col-md-2">
-                    <Rock:RockTextBox ID="tbFirstNameSearch" runat="server" CssClass="col-md-12" LabelText="First Name" Required="true" RequiredErrorMessage="Required" ValidationGroup="test" />
+                    <Rock:RockTextBox ID="tbFirstNameSearch" runat="server" CssClass="col-md-12" Label="First Name" Required="true" RequiredErrorMessage="Required" ValidationGroup="test" />
                 </div>
                 <div class="col-md-3">
-                    <Rock:RockTextBox ID="tbLastNameSearch" runat="server" CssClass="col-md-12" LabelText="Last Name" Required="true" RequiredErrorMessage="Required" ValidationGroup="test" />
+                    <Rock:RockTextBox ID="tbLastNameSearch" runat="server" CssClass="col-md-12" Label="Last Name" Required="true" RequiredErrorMessage="Required" ValidationGroup="test" />
                 </div>
                 <div class="col-md-2">
-                    <Rock:DatePicker ID="dpDOBSearch" runat="server" LabelText="DOB" CssClass="col-md-12" Required="true" RequiredErrorMessage="Required" ValidationGroup="test" />
+                    <Rock:DatePicker ID="dpDOBSearch" runat="server" Label="DOB" CssClass="col-md-12" Required="true" RequiredErrorMessage="Required" ValidationGroup="test" />
                 </div>
                 <div class="col-md-2">
-                    <Rock:DataDropDownList ID="ddlGenderSearch" runat="server" CssClass="col-md-12" LabelText="Gender" Required="true" RequiredErrorMessage="Required" ValidationGroup="test" />
+                    <Rock:DataDropDownList ID="ddlGenderSearch" runat="server" CssClass="col-md-12" Label="Gender" Required="true" RequiredErrorMessage="Required" ValidationGroup="test" />
                 </div>
                 <div class="col-md-3">
-                    <Rock:DataDropDownList ID="ddlAbilitySearch" runat="server" CssClass="col-md-12" LabelText="Ability/Grade" />
+                    <Rock:DataDropDownList ID="ddlAbilitySearch" runat="server" CssClass="col-md-12" Label="Ability/Grade" />
                 </div>
             </div>
             
@@ -256,7 +256,7 @@
 
         <div class="row checkin-header">
             <div class="col-md-3 checkin-actions">
-                <asp:LinkButton ID="lbAddFamilyCancel" CssClass="btn btn-large btn-primary" runat="server" OnClick="lbAddFamilyCancel_Click" Text="Cancel" CausesValidation="false" />
+                <asp:LinkButton ID="lbAddFamilyCancel" CssClass="btn btn-large btn-primary" runat="server" Text="Cancel" CausesValidation="false" />
             </div>
 
             <div class="col-md-6">
