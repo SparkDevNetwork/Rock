@@ -10,16 +10,12 @@
                     throw 'id is required';
                 }
 
-                if (!options.format) {
-                    $('#' + options.id).kendoDatePicker();
-                }
-                else {
-                    $('#' + options.id).kendoDatePicker({
-                        format: "" + options.format + "",
-                        depth: "" + options.depth + "",
-                        start: "" + options.start + ""
-                    });
-                }
+                // uses https://github.com/ianserlin/bootstrap-datepicker/tree/3.x
+                $('#' + options.id).datepicker({
+                    autoclose: true,
+                    todayBtn: true
+                });
+
             }
         };
 

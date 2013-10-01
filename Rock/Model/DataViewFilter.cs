@@ -160,7 +160,10 @@ namespace Rock.Model
         /// <summary>
         /// Gets the expression.
         /// </summary>
+        /// <param name="filteredEntityType">Type of the filtered entity.</param>
+        /// <param name="serviceInstance">The service instance.</param>
         /// <param name="parameter">The parameter.</param>
+        /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         public virtual Expression GetExpression( Type filteredEntityType, object serviceInstance, ParameterExpression parameter, List<string> errorMessages )
         {

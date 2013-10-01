@@ -134,7 +134,6 @@ namespace Rock.Model
     /// </summary>
     public enum GroupMemberStatus
     {
-
         /// <summary>
         /// The <see cref="Rock.Model.GroupMember"/> is not an active member of the <see cref="Rock.Model.Group"/>.
         /// </summary>

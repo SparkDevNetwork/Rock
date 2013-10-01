@@ -36,7 +36,7 @@ namespace Rock.Communication.Transport
         /// Sends the specified communication.
         /// </summary>
         /// <param name="communication">The communication.</param>
-        /// <returns></returns>
+        /// <param name="CurrentPersonId">The current person id.</param>
         /// <exception cref="System.NotImplementedException"></exception>
         public override void Send( Rock.Model.Communication communication, int? CurrentPersonId )
         {

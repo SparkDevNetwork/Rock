@@ -33,7 +33,7 @@
                 this.controlId = options.controlId;
                 this.restUrl = options.restUrl;
                 this.allowMultiSelect = options.allowMultiSelect;
-                this.defaultText = options.defaultText || '<none>';
+                this.defaultText = options.defaultText || '';
             };
 
         ItemPicker.prototype.updateScrollbar = function (e) {
@@ -184,7 +184,9 @@
 
             $('#' + controlId).hover(
                 function () {
-                    if ($('#hfItemId_' + controlId).val() !== '0') {
+
+                    // only show the X if there there is something picked
+                    if ($('#hfItemId_' + controlId).val() || '0' !== '0') {
                         $('#btnSelectNone_' + controlId).stop().show();
                     }
                 },
@@ -197,8 +199,6 @@
             });
 
             $('#btnSelectNone_' + controlId).click(function (e) {
-                e.stopImmediatePropagation();
-
                 var selectedValue = '0',
                     selectedText = defaultText,
                     $selectedItemLabel = $('#selectedItemLabel_' + controlId),
@@ -209,7 +209,6 @@
                 $hiddenItemName.val(selectedText);
                 $selectedItemLabel.val(selectedValue);
                 $selectedItemLabel.text(selectedText);
-                return false;
             });
 
             $('#btnSelect_' + controlId).click(function () {

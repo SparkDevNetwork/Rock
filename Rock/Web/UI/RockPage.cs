@@ -93,6 +93,10 @@ namespace Rock.Web.UI
                 }
             }
         }
+
+        /// <summary>
+        /// The _current page reference
+        /// </summary>
         public PageReference _currentPageReference = null;
 
         /// <summary>
@@ -309,7 +313,7 @@ namespace Rock.Web.UI
             
             if ( _scriptManager == null )
             {
-                _scriptManager = new ScriptManager { ID = "sManager" };
+                _scriptManager = new AjaxControlToolkit.ToolkitScriptManager { ID = "sManager" };
                 Page.Trace.Warn( "Adding script manager" );
                 Page.Form.Controls.AddAt( 0, _scriptManager );
             }
@@ -875,7 +879,7 @@ namespace Rock.Web.UI
         /// If the attribute doesn't exist an empty list is returned.
         /// </summary>
         /// <param name="key">the block attribute key</param>
-        /// <returns>a list of strings or an empty list if none exists</string></returns>
+        /// <returns>a list of strings or an empty list if none exists</returns>
         public List<string> GetAttributeValues( string key )
         {
             if ( CurrentPage != null )
@@ -1279,6 +1283,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="page">The page.</param>
         /// <param name="htmlLink">The HTML link.</param>
+        /// <param name="contentPlaceHolderId">The content place holder id.</param>
         public static void AddHtmlLink( Page page, HtmlLink htmlLink, string contentPlaceHolderId = "" )
         {
             if ( page != null && page.Header != null )
@@ -1320,7 +1325,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// HTMLs the link exists.
         /// </summary>
-        /// <param name="header">The header.</param>
+        /// <param name="parentControl">The parent control.</param>
         /// <param name="newLink">The new link.</param>
         /// <returns></returns>
         private static bool HtmlLinkExists( Control parentControl, HtmlLink newLink )
@@ -1498,6 +1503,11 @@ namespace Rock.Web.UI
         //    }
         //}
 
+        /// <summary>
+        /// Handles the Navigate event of the scriptManager control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="HistoryEventArgs"/> instance containing the event data.</param>
         protected void scriptManager_Navigate(object sender, HistoryEventArgs e)
         {
             if (PageNavigate != null)

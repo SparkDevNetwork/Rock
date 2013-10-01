@@ -7,32 +7,33 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
-using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Web.UI;
-using Rock.Web.UI.Controls;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Crm.PersonDetail
 {
-    [BooleanField("Require Gender", "Should Gender be required")]
-    [BooleanField("Require Grade", "Should Grade by required")]
-    [AttributeCategoryField("Category", "The Attribute Categories to display attributes from", true, "Rock.Model.Person")]
-    [DefinedValueField(Rock.SystemGuid.DefinedType.LOCATION_LOCATION_TYPE, "Location Type", "The type of location that address should use")]
+    /// <summary>
+    /// Block for adding new families
+    /// </summary>
+    [DefinedValueField( Rock.SystemGuid.DefinedType.LOCATION_LOCATION_TYPE, "Location Type",
+        "The type of location that address should use", false, Rock.SystemGuid.DefinedValue.LOCATION_TYPE_HOME, "", 0 )]
+    [BooleanField( "Nick Name", "Show Nick Name column", "Hide Nick Name column", "Should the Nick Name field be displayed?", false, "", 1 )]
+    [BooleanField( "Gender", "Require a gender for each person", "Don't require", "Should Gender be required for each person added?", false, "", 2 )]
+    [BooleanField( "Grade", "Require a grade for each child", "Don't require", "Should Grade be required for each child added?", false, "", 3 )]
+    [AttributeCategoryField( "Attribute Categories", "The Attribute Categories to display attributes from", true, "Rock.Model.Person", false, "", "", 4 )]
     public partial class AddFamily : Rock.Web.UI.RockBlock
     {
         private bool _requireGender = false;
         private bool _requireGrade = false;
         private int _childRoleId = 0;
 
-        
+
         /// <summary>
         /// Gets or sets the index of the current category.
         /// </summary>
@@ -44,7 +45,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             get { return ViewState["CurrentCategoryIndex"] as int? ?? 0; }
             set { ViewState["CurrentCategoryIndex"] = value; }
         }
-        
+
         private List<NewFamilyAttributes> attributeControls = new List<NewFamilyAttributes>();
 
         /// <summary>
@@ -59,14 +60,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             cpCampus.Campuses = campusi;
             cpCampus.Visible = campusi.Any();
 
-            var childRole = new GroupRoleService().Get(new Guid(Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD));
+            var childRole = new GroupRoleService().Get( new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD ) );
             if ( childRole != null )
             {
                 _childRoleId = childRole.Id;
             }
 
-            bool.TryParse( GetAttributeValue( "RequireGender" ), out _requireGender );
-            bool.TryParse( GetAttributeValue( "RequireGrade" ), out _requireGrade );
+            bool.TryParse( GetAttributeValue( "Gender" ), out _requireGender );
+            bool.TryParse( GetAttributeValue( "Grade" ), out _requireGrade );
+
+            bool showNickName = false;
+            nfmMembers.ShowNickName = bool.TryParse( GetAttributeValue( "NickName" ), out showNickName ) && showNickName;
         }
 
         /// <summary>
@@ -87,14 +91,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 // Update the name on attribute panels
                 if ( CurrentCategoryIndex == 0 )
                 {
-                    foreach(var familyMemberRow in nfmMembers.FamilyMemberRows)
+                    foreach ( var familyMemberRow in nfmMembers.FamilyMemberRows )
                     {
-                        foreach(var attributeControl in attributeControls)
+                        foreach ( var attributeControl in attributeControls )
                         {
                             var attributeRow = attributeControl.AttributesRows.FirstOrDefault( r => r.PersonGuid == familyMemberRow.PersonGuid );
                             if ( attributeRow != null )
                             {
-                                attributeRow.PersonName = string.Format("{0} {1}", familyMemberRow.FirstName, familyMemberRow.LastName);
+                                attributeRow.PersonName = string.Format( "{0} {1}", familyMemberRow.FirstName, familyMemberRow.LastName );
                             }
                         }
                     }
@@ -110,7 +114,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             base.LoadViewState( savedState );
 
-            var familyMembers = new List<GroupMember> ();
+            var familyMembers = new List<GroupMember>();
             List<string> jsonStrings = ViewState["FamilyMembers"] as List<string>;
             jsonStrings.ForEach( j => familyMembers.Add( GroupMember.FromJson( j ) ) );
             CreateControls( familyMembers, false );
@@ -180,7 +184,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             attributeControls.Clear();
             pnlAttributes.Controls.Clear();
 
-            foreach ( string categoryGuid in GetAttributeValue( "Category" ).SplitDelimitedValues( false ) )
+            foreach ( string categoryGuid in GetAttributeValue( "AttributeCategories" ).SplitDelimitedValues( false ) )
             {
                 Guid guid = Guid.Empty;
                 if ( Guid.TryParse( categoryGuid, out guid ) )
@@ -213,7 +217,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             {
                 var familyMemberRow = new NewFamilyMembersRow();
                 nfmMembers.Controls.Add( familyMemberRow );
-                familyMemberRow.ID = string.Format( "row_{0}", familyMember.Person.Guid.ToString().Replace("-", "_") );
+                familyMemberRow.ID = string.Format( "row_{0}", familyMember.Person.Guid.ToString().Replace( "-", "_" ) );
                 familyMemberRow.RoleUpdated += familyMemberRow_RoleUpdated;
                 familyMemberRow.DeleteClick += familyMemberRow_DeleteClick;
                 familyMemberRow.PersonGuid = familyMember.Person.Guid;
@@ -236,17 +240,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
                 }
 
-                foreach(var attributeControl in attributeControls)
+                foreach ( var attributeControl in attributeControls )
                 {
                     var attributeRow = new NewFamilyAttributesRow();
-                    attributeControl.Controls.Add(attributeRow);
+                    attributeControl.Controls.Add( attributeRow );
                     attributeRow.ID = string.Format( "{0}_{1}", attributeControl.ID, familyMember.Person.Guid );
                     attributeRow.AttributeList = attributeControl.AttributeList;
                     attributeRow.PersonGuid = familyMember.Person.Guid;
 
-                    if (setSelection)
+                    if ( setSelection )
                     {
-                        attributeRow.SetEditValues(familyMember.Person);
+                        attributeRow.SetEditValues( familyMember.Person );
                     }
                 }
 
@@ -272,7 +276,10 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 }
                 groupMember.Person.TitleValueId = row.TitleValueId;
                 groupMember.Person.GivenName = row.FirstName;
-                groupMember.Person.NickName = row.NickName;
+                if ( nfmMembers.ShowNickName )
+                {
+                    groupMember.Person.NickName = row.NickName;
+                }
                 groupMember.Person.LastName = row.LastName;
                 groupMember.Person.Gender = row.Gender;
                 groupMember.Person.BirthDate = row.BirthDate;
@@ -284,14 +291,15 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                 foreach ( var attributeControl in attributeControls )
                 {
-                    attributeControl.AttributeList.ForEach( a => {
-                        groupMember.Person.Attributes.Add( a.Key, a);
+                    attributeControl.AttributeList.ForEach( a =>
+                    {
+                        groupMember.Person.Attributes.Add( a.Key, a );
                         groupMember.Person.AttributeValues.Add( a.Key, new List<AttributeValue>() );
                         groupMember.Person.AttributeValues[a.Key].Add( new AttributeValue { AttributeId = a.Id } );
-                    });
+                    } );
 
                     NewFamilyAttributesRow attributeRow = attributeControl.AttributesRows.FirstOrDefault( r => r.PersonGuid == row.PersonGuid );
-                    if (attributeRow != null)
+                    if ( attributeRow != null )
                     {
                         attributeRow.GetEditValues( groupMember.Person );
                     }
@@ -310,14 +318,13 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
             var familyMemberRow = new NewFamilyMembersRow();
             nfmMembers.Controls.Add( familyMemberRow );
-            familyMemberRow.ID = string.Format( "row_{0}", familyMemberGuid.ToString().Replace("-", "_") );
+            familyMemberRow.ID = string.Format( "row_{0}", familyMemberGuid.ToString().Replace( "-", "_" ) );
             familyMemberRow.RoleUpdated += familyMemberRow_RoleUpdated;
             familyMemberRow.DeleteClick += familyMemberRow_DeleteClick;
             familyMemberRow.PersonGuid = familyMemberGuid;
             familyMemberRow.Gender = Gender.Unknown;
             familyMemberRow.RequireGender = _requireGender;
             familyMemberRow.RequireGrade = _requireGrade;
-
 
             var familyGroupType = new GroupTypeService().Get( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) );
             if ( familyGroupType != null && familyGroupType.DefaultGroupRoleId.HasValue )
@@ -394,7 +401,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                                     if ( Guid.TryParse( GetAttributeValue( "LocationType" ), out locationTypeGuid ) )
                                     {
                                         var locationType = Rock.Web.Cache.DefinedValueCache.Read( locationTypeGuid );
-                                        if (locationType != null)
+                                        if ( locationType != null )
                                         {
                                             groupLocation.GroupLocationTypeValueId = locationType.Id;
                                         }
@@ -428,14 +435,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
         }
 
-        private void ShowAttributeCategory(int index)
+        private void ShowAttributeCategory( int index )
         {
-            pnlFamilyData.Visible = (index == 0);
+            pnlFamilyData.Visible = ( index == 0 );
 
-            attributeControls.ForEach( c => c.Visible = false);
-            if (index > 0 && attributeControls.Count >= index)
+            attributeControls.ForEach( c => c.Visible = false );
+            if ( index > 0 && attributeControls.Count >= index )
             {
-                attributeControls[index-1].Visible = true;
+                attributeControls[index - 1].Visible = true;
             }
 
             btnPrevious.Visible = index > 0;

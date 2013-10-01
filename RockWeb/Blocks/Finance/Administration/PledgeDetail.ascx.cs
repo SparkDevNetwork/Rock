@@ -109,12 +109,12 @@ namespace RockWeb.Blocks.Finance.Administration
             if ( itemKeyValue > 0 )
             {
                 pledge = new FinancialPledgeService().Get( itemKeyValue );
-                lActionTitle.Text = ActionTitle.Edit( FinancialPledge.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Edit(FinancialPledge.FriendlyTypeName).FormatAsHtmlTitle();
             }
             else
             {
                 pledge = new FinancialPledge();
-                lActionTitle.Text = ActionTitle.Add( FinancialPledge.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Add(FinancialPledge.FriendlyTypeName).FormatAsHtmlTitle();
             }
 
             var isReadOnly = !IsUserAuthorized( "Edit" );

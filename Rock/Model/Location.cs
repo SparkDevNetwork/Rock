@@ -54,7 +54,12 @@ namespace Rock.Model
         /// A <see cref="System.Boolean"/> that is  <c>true</c> if this instance is active; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public bool IsActive { get; set; }
+        public bool IsActive
+        {
+            get { return _isActive; }
+            set { _isActive = value; }
+        }
+        private bool _isActive = true;
 
         /// <summary>
         /// Gets or sets the GeoPoint (geolocation) for the location
@@ -101,7 +106,7 @@ namespace Rock.Model
         /// Gets or sets the first line of the Location's Street/Mailing Address.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"> representing the First line of the Location's Street/Mailing Address. If the Location does not have
+        /// A <see cref="System.String"/> representing the First line of the Location's Street/Mailing Address. If the Location does not have
         /// a Street/Mailing address, this value is null.
         /// </value>
         [MaxLength( 100 )]

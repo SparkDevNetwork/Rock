@@ -60,7 +60,7 @@
         <asp:Panel ID="pnlDetails" runat="server" Visible="false">
 
             <asp:ValidationSummary ID="valSummaryTop" runat="server"  
-                HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
+                HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
 
             <Rock:RockDropDownList ID="ddlAttrEntityType" runat="server" Label="Entity Type" />
             <Rock:RockTextBox ID="tbAttrQualifierField" runat="server" Label="Qualifier Field" />
@@ -73,20 +73,12 @@
         <Rock:ModalDialog ID="modalDetails" runat="server" Title="Attribute">
             <Content>
                 <asp:HiddenField ID="hfIdValues" runat="server" />
-                <asp:ValidationSummary ID="ValidationSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
-                <fieldset>
-                    <div class="control-group">
-                        <label class="control-label">
-                            <asp:Literal ID="lCaption" runat="server"></asp:Literal></label>
-                        <div class="controls">
-                            <asp:PlaceHolder ID="phEditControl" runat="server"></asp:PlaceHolder>
-                        </div>
-                    </div>
-                </fieldset>
+                <asp:ValidationSummary ID="ValidationSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
+                <fieldset id="fsEditControl" runat="server"/>
             </Content>
         </Rock:ModalDialog>
 
-        <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Error" Visible="false" />
+        <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Danger" Visible="false" />
 
     </ContentTemplate>
 </asp:UpdatePanel>

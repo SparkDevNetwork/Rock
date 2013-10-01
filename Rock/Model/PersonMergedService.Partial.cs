@@ -16,7 +16,6 @@ namespace Rock.Model
     /// </summary>
     public partial class PersonMergedService 
     {
-
         /// <summary>
         /// Gets a <see cref="Rock.Model.PersonMerged"/> entity based on a <see cref="Rock.Model.Person">Person's</see> previous PersonId.
         /// </summary>
