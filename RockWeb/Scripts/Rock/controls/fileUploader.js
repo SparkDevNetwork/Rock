@@ -31,7 +31,7 @@
                 $('#' + options.controlId).fileupload({
                     url: wsUrl,
                     dataType: 'json',
-                    dropZone: $('#' + options.controlId).closest('.fileupload-drop-zone'),
+                    dropZone: isImage ? $('#' + options.controlId).closest('.imageupload-dropzone') : $('#' + options.controlId).closest('.fileupload-drop-zone'),
                     autoUpload: true,
                     done: function (e, data) {
                         var $el = isImage ? $('#' + options.imgThumbnail) : $('#' + options.aFileName);
