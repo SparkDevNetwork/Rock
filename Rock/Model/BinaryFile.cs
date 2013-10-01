@@ -15,7 +15,7 @@ using Rock.Web.Cache;
 namespace Rock.Model
 {
     /// <summary>
-    /// File POCO Entity.
+    /// Represents any file that has either been uploaded to or generated and saved to RockChMS.  
     /// </summary>
     [Table( "BinaryFile" )]
     [DataContract]
@@ -104,10 +104,10 @@ namespace Rock.Model
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the Storage Service <see cref="Rock.Model.EntityType"/> that is used for storing files of this type.
+        /// Gets or sets the Id of the Storage Service <see cref="Rock.Model.EntityType"/> that is used to store this file.
         /// </summary>
         /// <value>
-        /// The storage entity type id.
+        /// A <see cref="System.Int32"/> representing the ID of the Storage Service <see cref="Rock.Model.EntityType"/> that is being used to store this file.
         /// </value>
         [DataMember]
         public int? StorageEntityTypeId { get; set; }
@@ -117,26 +117,26 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the binary file type.
+        /// Gets or sets the <see cref="Rock.Model.BinaryFileType"/> of the file.
         /// </summary>
         /// <value>
-        /// The binary file type.
+        /// The <see cref="Rock.Model.BinaryFileType"/> of the file.
         /// </value>
         public virtual BinaryFileType BinaryFileType { get; set; }
 
         /// <summary>
-        /// Gets or sets the binary file data.
+        /// Gets or sets a <see cref="Rock.Model.BinaryFileData"/> that contains the content of the file. This object can be used for temporary storage or be persisted to the database.
         /// </summary>
         /// <value>
-        /// The binary file data.
+        /// The <see cref="Rock.Model.BinaryFileData"/> that contains the content of the file. 
         /// </value>
         public virtual BinaryFileData Data { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the storage entity.
+        /// Gets or sets the Storage Service <see cref="Rock.Model.EntityType"/>
         /// </summary>
         /// <value>
-        /// The type of the storage entity.
+        /// The <see cref="Rock.Model.EntityType"/> representing the Storage Service that is being used.
         /// </value>
         public virtual EntityType StorageEntityType { get; set; }
 
@@ -145,10 +145,10 @@ namespace Rock.Model
         #region Methods
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Returns a <see cref="System.String" /> containing the name of the file and  represents this instance.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
+        /// A <see cref="System.String" /> containing the name of the file and represents this instance.
         /// </returns>
         public override string ToString()
         {
@@ -156,9 +156,9 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the URL.
+        /// Gets the URL where the file can be accessed.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A <see cref="System.String"/> that represents the URL of the file.</returns>
         public string GetUrl()
         {
             var provider = ProviderContainer.GetComponent( StorageEntityType.Name );
@@ -170,9 +170,9 @@ namespace Rock.Model
         #region StaticMethods
 
         /// <summary>
-        /// Makes a comma delimited list of the permanent.
+        /// Makes the <see cref="Rock.Model.BinaryFile">BinaryFiles</see> represented in the comma delimited list of BinaryFileIds permanent.
         /// </summary>
-        /// <param name="commaDelimitedIds">The comma delimited ids.</param>
+        /// <param name="commaDelimitedIds">A <see cref="System.String"/> containing a comma delimited list of BinaryFileIDs representing the <see cref="Rock.Model.BinaryFile">BinaryFiles</see> that are to be marked as permanent.</param>
         public static void MakePermanent( string commaDelimitedIds )
         {
             string query = string.Format( "UPDATE BinaryFile SET IsTemporary = 0 WHERE Id IN ({0})", commaDelimitedIds );
@@ -181,9 +181,9 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Makes the binary file permanent.
+        /// Makes the <see cref="Rock.Model.BinaryFile"/> represented by the provided BinaryFileId permanent.
         /// </summary>
-        /// <param name="id">The id.</param>
+        /// <param name="id">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.BinaryFile"/> to be made permanent.</param>
         public static void MakePermanent( int id)
         {
             string query = string.Format("UPDATE BinaryFile SET IsTemporary = 0 WHERE Id = {0}", id);
