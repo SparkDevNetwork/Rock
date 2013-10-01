@@ -7798,6 +7798,9 @@ body {
   width: 60%;
   height: auto;
 }
+.attended.modal-foreground.small .checkin-actions a.btn-primary {
+  font-size: 1.4em;
+}
 .attended.modal-foreground .checkin-header,
 .attended.modal-foreground .checkin-body {
   width: 95%;
@@ -7818,6 +7821,15 @@ body {
 }
 .attended .help-inline {
   color: #9d0f12;
+}
+.attended a.help {
+  margin-left: 6px;
+  outline: 0;
+  color: #bbbbbb;
+}
+.attended .rock-text-box input[type="text"] {
+  width: 75%;
+  margin: 0 auto;
 }
 @font-face {
   font-family: 'OpenSans';

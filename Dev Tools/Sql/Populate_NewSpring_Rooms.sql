@@ -65,9 +65,7 @@ INSERT [DefinedValue]
 VALUES ( 0, @AllergyDefinedTypeId, 0, 'Latex', 'Latex Allergy', NEWID() )
 
 DECLARE @CheckinCategoryId int
-INSERT Category ([IsSystem], [ParentCategoryId], [EntityTypeId], [EntityTypeQualifierColumn], [EntityTypeQualifierValue], [Name], [IconSmallFileId], [IconLargeFileId], [IconCssClass], [Guid]) 
-VALUES (0, NULL, @AttributeEntityTypeId, 'EntityTypeId', @PersonEntityTypeId, 'Checkin', NULL, NULL, NULL, NEWID())
-SET @CheckinCategoryId = SCOPE_IDENTITY()
+SELECT @CheckinCategoryId = [Id] FROM [Category] WHERE [Name] = 'Childhood Information'
 
 DECLARE @CheckinAttributeId int
 INSERT Attribute ([IsSystem],[FieldTypeId],[EntityTypeId],[EntityTypeQualifierColumn],[EntityTypeQualifierValue],[Key],[Name],[Description],[Order],[IsGridColumn],[DefaultValue],[IsMultiValue],[IsRequired],[Guid])

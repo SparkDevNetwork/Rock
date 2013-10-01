@@ -22,6 +22,7 @@
 <ContentTemplate>
 
     <Rock:ModalAlert ID="maWarning" runat="server" />
+    <asp:HiddenField ID="hfAttributeId" runat="server" />
 
     <asp:Panel ID="pnlActivitySelect" runat="server" CssClass="attended" >
         <div class="row checkin-header">
@@ -121,7 +122,8 @@
 		
         <div class="checkin-body">
             <div class="row">
-                <asp:PlaceHolder ID="phNotes" runat="server"></asp:PlaceHolder>
+                <%--<asp:PlaceHolder ID="phNotes" runat="server"></asp:PlaceHolder>--%>
+                <fieldset id="fsNotes" runat="server"/>
             </div>
         </div>
     </asp:Panel>
