@@ -66,6 +66,7 @@ namespace Rock.Field
         /// Creates an HTML control.
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id">The id.</param>
         /// <returns></returns>
         Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id );
 

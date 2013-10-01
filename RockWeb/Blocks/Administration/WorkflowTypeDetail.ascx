@@ -11,13 +11,11 @@
                     <asp:Literal ID="lReadOnlyTitle" runat="server" />
                 </h1>
 
-                <asp:Label ID="lblWorkflowTypeInactive" runat="server" CssClass="label label-important pull-right" Text="Inactive" />
-                <div class="label">
-                    <asp:Literal ID="lWorkflowTypeCategory" runat="server"></asp:Literal>
-                </div> 
+                <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
+                <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
             </div>
             
-            <asp:ValidationSummary ID="vsDetails" runat="server" CssClass="alert alert-error" />
+            <asp:ValidationSummary ID="vsDetails" runat="server" CssClass="alert alert-danger" />
 
             <div id="pnlEditDetails" runat="server">
 

@@ -41,6 +41,7 @@ namespace Rock.Web.UI
         /// Initializes a new instance of the <see cref="BreadCrumb" /> class.
         /// </summary>
         /// <param name="name">The name.</param>
+        /// <param name="active">if set to <c>true</c> [active].</param>
         public BreadCrumb( string name, bool active = false )
         {
             Name = name;
@@ -52,6 +53,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="url">The URL.</param>
+        /// <param name="active">if set to <c>true</c> [active].</param>
         public BreadCrumb( string name, string url, bool active = false )
             : this( name, active )
         {
@@ -63,6 +65,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="pageReference">The page reference.</param>
+        /// <param name="active">if set to <c>true</c> [active].</param>
         public BreadCrumb( string name, PageReference pageReference, bool active = false )
             : this( name, active )
         {

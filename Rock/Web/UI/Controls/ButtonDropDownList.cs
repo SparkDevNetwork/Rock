@@ -18,6 +18,9 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:ButtonDropDownList runat=server></{0}:ButtonDropDownList>" )]
     public class ButtonDropDownList : ListControl, ILabeledControl
     {
+        /// <summary>
+        /// The label
+        /// </summary>
         protected Literal label;
 
         private String _btnTitle = string.Empty;

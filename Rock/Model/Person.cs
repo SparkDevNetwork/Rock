@@ -432,7 +432,12 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MergeField]
-        public virtual ICollection<UserLogin> Users { get; set; }
+        public virtual ICollection<UserLogin> Users 
+        {
+            get { return _users ?? ( _users = new Collection<UserLogin>() ); }
+            set { _users = value; }
+        }
+        private ICollection<UserLogin> _users;
 
 
         /// <summary>
@@ -442,7 +447,12 @@ namespace Rock.Model
         /// A collection containing the <see cref="Rock.Model.EmailTemplate">EmailTemplates</see> that were created by this Person.
         /// </value>
         [DataMember]
-        public virtual ICollection<EmailTemplate> EmailTemplates { get; set; }
+        public virtual ICollection<EmailTemplate> EmailTemplates
+        {
+            get { return _emailTemplates ?? ( _emailTemplates = new Collection<EmailTemplate>() ); }
+            set { _emailTemplates = value; }
+        }
+        private ICollection<EmailTemplate> _emailTemplates;
 
         /// <summary>
         /// Gets or sets a collection of <see cref="Rock.Model.PhoneNumber">PhoneNumbers</see> 
@@ -452,7 +462,12 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MergeField]
-        public virtual ICollection<PhoneNumber> PhoneNumbers { get; set; }
+        public virtual ICollection<PhoneNumber> PhoneNumbers
+        {
+            get { return _phoneNumbers ?? ( _phoneNumbers = new Collection<PhoneNumber>() ); }
+            set { _phoneNumbers = value; }
+        }
+        private ICollection<PhoneNumber> _phoneNumbers;
 
         /// <summary>
         /// Gets or sets a collection of <see cref="Rock.Model.GroupMember">GroupMember</see> entities representing the group memberships that are associated
@@ -463,7 +478,12 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [MergeField]
-        public virtual ICollection<GroupMember> Members { get; set; }
+        public virtual ICollection<GroupMember> Members
+        {
+            get { return _members ?? ( _members = new Collection<GroupMember>() ); }
+            set { _members = value; }
+        }
+        private ICollection<GroupMember> _members;
 
         /// <summary>
         /// Gets or set a collection containing the Person's <see cref="Rock.Model.Attendance"/> history.

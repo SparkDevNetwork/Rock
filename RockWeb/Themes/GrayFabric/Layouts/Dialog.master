@@ -1,4 +1,4 @@
-﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Dialog.master.cs" Inherits="RockWeb.Themes.RockChMS.Layouts.Dialog" %>
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Dialog.master.cs" Inherits="RockWeb.Themes.GrayFabric.Layouts.Dialog" %>
 <%@ Import Namespace="System.Web.Optimization" %>
 <!DOCTYPE html>
 <html>
@@ -61,7 +61,7 @@
         </div>
 
         <div id="pnl2"></div>
-        <asp:ScriptManager ID="sManager" runat="server"/>
+        <ajaxToolkit:ToolkitScriptManager ID="sManager" runat="server"/>
     </form>
 
     <script type="text/javascript">

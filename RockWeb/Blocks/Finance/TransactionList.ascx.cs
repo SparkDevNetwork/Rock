@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -11,6 +12,7 @@ using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -21,12 +23,15 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// 
     /// </summary>
+    [ContextAware]
     [LinkedPage("Detail Page")]
     public partial class TransactionList : Rock.Web.UI.RockBlock
     {
         #region Fields
         
         private bool _canConfigure = false;
+        private FinancialBatch _batch = null;
+        private Person _person = null;
 
         #endregion
 
@@ -67,6 +72,27 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnLoad( EventArgs e )
         {
+            base.OnLoad(e);
+
+            var contextEntity = this.ContextEntity();
+            if (contextEntity != null)
+            {
+                dtStartDate.Visible = false;
+                dtEndDate.Visible = false;
+                txtFromAmount.Visible = false;
+                txtToAmount.Visible = false;
+                txtTransactionCode.Visible = false;
+
+                if (contextEntity is Person)
+                {
+                    _person = contextEntity as Person;
+                }
+                else if (contextEntity is FinancialBatch)
+                {
+                    _batch = contextEntity as FinancialBatch;
+                }
+            }
+
             if ( !Page.IsPostBack )
             {
                 BindFilter();
@@ -254,6 +280,16 @@ namespace RockWeb.Blocks.Finance
             var transactionService = new FinancialTransactionService();
             var queryable = transactionService.Get( searchValue );
 
+            if ( _batch != null )
+            {
+                queryable = queryable.Where( t => t.BatchId.HasValue && t.BatchId.Value == _batch.Id );
+            }
+
+            if ( _person != null )
+            {
+                queryable = queryable.Where( t => t.AuthorizedPersonId == _person.Id );
+            }
+
             if ( sortProperty != null )
             {
                 queryable = queryable.Sort( sortProperty );
@@ -273,7 +309,24 @@ namespace RockWeb.Blocks.Finance
         /// <param name="id">The id.</param>
         protected void ShowDetailForm( int id )
         {
-            NavigateToLinkedPage( "DetailPage", "transactionId", id );
+            if ( _batch != null )
+            {
+                Dictionary<string, string> qryParams = new Dictionary<string, string>();
+                qryParams.Add( "financialBatchId", _batch.Id.ToString() );
+                qryParams.Add( "transactionid", id.ToString() );
+                NavigateToLinkedPage( "DetailPage", qryParams );
+            }
+            else if ( _person != null )
+            {
+                Dictionary<string, string> qryParams = new Dictionary<string, string>();
+                qryParams.Add( "personId", _person.Id.ToString() );
+                qryParams.Add( "transactionid", id.ToString() );
+                NavigateToLinkedPage( "DetailPage", qryParams );
+            }
+            else
+            {
+                NavigateToLinkedPage( "DetailPage", "transactionId", id );
+            }
         }
 
         /// <summary>

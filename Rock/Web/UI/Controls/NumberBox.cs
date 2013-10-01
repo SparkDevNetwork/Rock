@@ -17,7 +17,7 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:NumberBox runat=server></{0}:NumberBox>" )]
     public class NumberBox : RockTextBox
     {
-        private RangeValidator rangeValidator;
+        private RangeValidator _rangeValidator;
 
         /// <summary>
         /// Gets or sets the name of the field (for range validation messages when Label is not provided)
@@ -88,7 +88,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return base.IsValid && rangeValidator.IsValid;
+                return base.IsValid && _rangeValidator.IsValid;
             }
         }
 
@@ -99,17 +99,17 @@ namespace Rock.Web.UI.Controls
         {
             base.CreateChildControls();
 
-            rangeValidator = new RangeValidator();
-            rangeValidator.ID = this.ID + "_RV";
-            rangeValidator.ControlToValidate = this.ID;
-            rangeValidator.Display = ValidatorDisplay.Dynamic;
-            rangeValidator.CssClass = "validation-error help-inline";
+            _rangeValidator = new RangeValidator();
+            _rangeValidator.ID = this.ID + "_RV";
+            _rangeValidator.ControlToValidate = this.ID;
+            _rangeValidator.Display = ValidatorDisplay.Dynamic;
+            _rangeValidator.CssClass = "validation-error help-inline";
             
-            rangeValidator.Type = System.Web.UI.WebControls.ValidationDataType.Integer;
-            rangeValidator.MinimumValue = int.MinValue.ToString();
-            rangeValidator.MaximumValue = int.MaxValue.ToString();
+            _rangeValidator.Type = System.Web.UI.WebControls.ValidationDataType.Integer;
+            _rangeValidator.MinimumValue = int.MinValue.ToString();
+            _rangeValidator.MaximumValue = int.MaxValue.ToString();
 
-            Controls.Add( rangeValidator );
+            Controls.Add( _rangeValidator );
         }
 
         /// <summary>
@@ -118,9 +118,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         protected override void RenderDataValidator( HtmlTextWriter writer )
         {
-            rangeValidator.Type = NumberType;
-            rangeValidator.MinimumValue = this.MinimumValue;
-            rangeValidator.MaximumValue = this.MaximumValue;
+            _rangeValidator.Type = NumberType;
+            _rangeValidator.MinimumValue = this.MinimumValue;
+            _rangeValidator.MaximumValue = this.MaximumValue;
             string dataTypeText = string.Empty;
 
             int minValue = MinimumValue.AsInteger() ?? int.MinValue;
@@ -128,7 +128,7 @@ namespace Rock.Web.UI.Controls
 
             string rangeMessageFormat = null;
 
-            if ( rangeValidator.Type == ValidationDataType.Integer )
+            if ( _rangeValidator.Type == ValidationDataType.Integer )
             {
                 // if they are in the valid range, but not an integer, they'll see this message
                 rangeMessageFormat = "{0} must be an integer";
@@ -151,11 +151,11 @@ namespace Rock.Web.UI.Controls
 
             if ( !string.IsNullOrWhiteSpace( rangeMessageFormat ) )
             {
-                rangeValidator.ErrorMessage = string.Format( rangeMessageFormat, string.IsNullOrWhiteSpace(FieldName) ? "Value" : FieldName );
+                _rangeValidator.ErrorMessage = string.Format( rangeMessageFormat, string.IsNullOrWhiteSpace(FieldName) ? "Value" : FieldName );
             }
 
-            rangeValidator.ValidationGroup = this.ValidationGroup;
-            rangeValidator.RenderControl( writer );
+            _rangeValidator.ValidationGroup = this.ValidationGroup;
+            _rangeValidator.RenderControl( writer );
         }
     }
 }

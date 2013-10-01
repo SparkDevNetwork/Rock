@@ -64,6 +64,12 @@ namespace Rock.Reporting
     /// <typeparam name="T"></typeparam>
     public abstract class DataTransformComponent<T> : DataTransformComponent 
     {
+        /// <summary>
+        /// Gets the expression.
+        /// </summary>
+        /// <param name="query">The query.</param>
+        /// <param name="parameterExpression">The parameter expression.</param>
+        /// <returns></returns>
         public abstract Expression GetExpression ( IQueryable<T> query, Expression parameterExpression);
     }
 }

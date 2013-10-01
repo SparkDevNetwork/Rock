@@ -16,34 +16,9 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class LocationPicker : ItemPicker, ILabeledControl
+    public class LocationPicker : ItemPicker
     {
-        private Label label;
-
-        /// <summary>
-        /// Gets or sets the label text.
-        /// </summary>
-        /// <value>
-        /// The label text.
-        /// </value>
-        public string Label
-        {
-            get { return label.Text; }
-            set 
-            { 
-                label.Text = value;
-                base.RequiredErrorMessage = string.IsNullOrWhiteSpace( value ) ? "Location value is required" : value + " is required";
-            }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="LocationPicker"/> class.
-        /// </summary>
-        public LocationPicker()
-            : base()
-        {
-            label = new Label();
-        }
+        #region OnInit
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -56,6 +31,27 @@ namespace Rock.Web.UI.Controls
             this.AllowMultiSelect = false;
         }
 
+        #endregion
+
+        #region LocationPicker specific
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [limit automatic named locations]. True by default.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if [limit automatic named locations]; otherwise, <c>false</c>.
+        /// </value>
+        public bool LimitToNamedLocations
+        {
+            get { return ViewState["LimitToNamedLocations"] as bool? ?? true; }
+
+            set { ViewState["LimitToNamedLocations"] = value; }
+        }
+
+        #endregion
+
+        #region Implementation of ItemPicker
+
         /// <summary>
         /// Sets the value.
         /// </summary>
@@ -65,7 +61,7 @@ namespace Rock.Web.UI.Controls
             if ( location != null )
             {
                 ItemId = location.Id.ToString();
-                
+
                 string parentLocationIds = string.Empty;
                 var parentLocation = location.ParentLocation;
                 while ( parentLocation != null )
@@ -113,44 +109,8 @@ namespace Rock.Web.UI.Controls
         {
             get { return "~/api/locations/getchildren/"; }
         }
-        /// <summary>
-        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
-        /// </summary>
-        protected override void CreateChildControls()
-        {
-            base.CreateChildControls();
-            Controls.Add( label );
-        }
 
-        /// <summary>
-        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
-        /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
-        public override void RenderControl( HtmlTextWriter writer )
-        {
-            if ( string.IsNullOrEmpty( Label ) )
-            {
-                base.RenderControl( writer );
-            }
-            else
-            {
-                writer.AddAttribute( "class", "control-group" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+        #endregion
 
-                label.AddCssClass( "control-label" );
-
-                label.RenderControl( writer );
-
-                writer.AddAttribute( "class", "controls" );
-
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                base.Render( writer );
-
-                writer.RenderEndTag();
-
-                writer.RenderEndTag();
-            }
-        }
     }
 }

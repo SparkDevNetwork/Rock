@@ -56,7 +56,7 @@ namespace Rock.Model
         /// <summary>
         /// Gets Categories for the given Entity Type
         /// </summary>
-        /// <param name="categoryId">The category id.</param>
+        /// <param name="entityTypeId">The entity type id.</param>
         /// <returns></returns>
         public IEnumerable<Category> GetByEntityTypeId( int? entityTypeId )
         {

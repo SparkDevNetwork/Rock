@@ -49,7 +49,7 @@
         <asp:HiddenField ID="hfBlockLocation" runat="server" />
         <asp:HiddenField ID="hfBlockId" runat="server" />
 
-        <asp:ValidationSummary ID="vsZoneBlocks" runat="server" CssClass="alert alert-error" ValidationGroup="ZoneBlockValidationGroup"/>
+        <asp:ValidationSummary ID="vsZoneBlocks" runat="server" CssClass="alert alert-danger" ValidationGroup="ZoneBlockValidationGroup"/>
         <fieldset>
             <legend><asp:Literal ID="lAction" runat="server"></asp:Literal> Block</legend>
             <Rock:DataTextBox ID="tbBlockName" runat="server" SourceTypeName="Rock.Model.Block, Rock" PropertyName="Name" Required="true" ValidationGroup="ZoneBlockValidationGroup" CssClass="input-large"/>
@@ -64,7 +64,7 @@
 
     </asp:Panel>
 
-    <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Error" Visible="false" />
+    <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Danger" Visible="false" />
 
 </ContentTemplate>
 </asp:UpdatePanel>

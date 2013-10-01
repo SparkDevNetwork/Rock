@@ -101,6 +101,7 @@ namespace Rock.CheckIn
         /// Initializes a new instance of the <see cref="CheckInLabel" /> class.
         /// </summary>
         /// <param name="kioskLabel">The label.</param>
+        /// <param name="mergeObjects">The merge objects.</param>
         public CheckInLabel( KioskLabel kioskLabel, Dictionary<string, object> mergeObjects )
         {
             LabelKey = kioskLabel.Guid.ToString();

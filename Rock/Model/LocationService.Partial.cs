@@ -181,7 +181,7 @@ namespace Rock.Model
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.Location">Locations</see> that are descendants of a <see cref="Rock.Model.Location"/>
         /// </summary>
-        /// <param name="parentLocationId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.mO"/></param>
+        /// <param name="parentLocationId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Location"/></param>
         /// <returns>A collection of <see cref="Rock.Model.Location"/> entities that are descendants of the provided parent <see cref="Rock.Model.Location"/>.</returns>
         public IEnumerable<Location> GetAllDescendents( int parentLocationId )
         {

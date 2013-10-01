@@ -16,32 +16,35 @@ using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
+    /// <summary>
+    /// Custom attribute editor control
+    /// </summary>
     public class AttributeEditor : CompositeControl
     {
         #region UI Controls
 
-        private Literal lAttributeActionTitle;
+        private Literal _lAttributeActionTitle;
 
         // column 1
-        private DataTextBox tbName;
-        private DataTextBox tbKey;
-        private CustomValidator cvKey;
-        private CategoryPicker cpCategories;
-        private DataTextBox tbDescription;
+        private DataTextBox _tbName;
+        private DataTextBox _tbKey;
+        private CustomValidator _cvKey;
+        private CategoryPicker _cpCategories;
+        private DataTextBox _tbDescription;
 
         // column 2
-        private DataDropDownList ddlFieldType;
+        private DataDropDownList _ddlFieldType;
 
-        private List<Control> QualifierControls;
-        private Control DefaultValueControl;
+        private List<Control> _qualifierControls;
+        private Control _defaultValueControl;
 
-        private RockCheckBox cbMultiValue;
-        private RockCheckBox cbRequired;
-        private RockCheckBox cbShowInGrid;
+        private RockCheckBox _cbMultiValue;
+        private RockCheckBox _cbRequired;
+        private RockCheckBox _cbShowInGrid;
 
         // buttons
-        private LinkButton btnSave;
-        private LinkButton btnCancel;
+        private LinkButton _btnSave;
+        private LinkButton _btnCancel;
 
         #endregion
 
@@ -52,29 +55,29 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         public AttributeEditor()
         {
-            lAttributeActionTitle = new Literal();
-            tbName = new DataTextBox();
-            tbKey = new DataTextBox();
-            cvKey = new CustomValidator();
-            cpCategories = new CategoryPicker();
-            tbDescription = new DataTextBox();
+            _lAttributeActionTitle = new Literal();
+            _tbName = new DataTextBox();
+            _tbKey = new DataTextBox();
+            _cvKey = new CustomValidator();
+            _cpCategories = new CategoryPicker();
+            _tbDescription = new DataTextBox();
 
             // Create FieldType Dropdown
             FieldTypeService fieldTypeService = new FieldTypeService();
             fieldTypeService.RegisterFieldTypes( System.Web.HttpContext.Current.Server.MapPath( "~" ) );
             List<Rock.Model.FieldType> fieldTypes = fieldTypeService.Queryable().OrderBy( a => a.Name ).ToList();
 
-            ddlFieldType = new DataDropDownList();
-            ddlFieldType.DataValueField = "Id";
-            ddlFieldType.DataTextField = "Name";
-            ddlFieldType.DataSource = fieldTypes;
-            ddlFieldType.DataBind();
-            ddlFieldType.AutoPostBack = true;
-            ddlFieldType.SelectedIndexChanged += ddlFieldType_SelectedIndexChanged;
+            _ddlFieldType = new DataDropDownList();
+            _ddlFieldType.DataValueField = "Id";
+            _ddlFieldType.DataTextField = "Name";
+            _ddlFieldType.DataSource = fieldTypes;
+            _ddlFieldType.DataBind();
+            _ddlFieldType.AutoPostBack = true;
+            _ddlFieldType.SelectedIndexChanged += ddlFieldType_SelectedIndexChanged;
 
-            cbMultiValue = new RockCheckBox();
-            cbRequired = new RockCheckBox();
-            cbShowInGrid = new RockCheckBox();
+            _cbMultiValue = new RockCheckBox();
+            _cbRequired = new RockCheckBox();
+            _cbShowInGrid = new RockCheckBox();
         }
 
         void ddlFieldType_SelectedIndexChanged( object sender, EventArgs e )
@@ -93,8 +96,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string ActionTitle
         {
-            get { return lAttributeActionTitle.Text; }
-            set { lAttributeActionTitle.Text = value; }
+            get { return _lAttributeActionTitle.Text; }
+            set { _lAttributeActionTitle.Text = value; }
         }
 
         /// <summary>
@@ -140,8 +143,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string Name
         {
-            get { return tbName.Text; }
-            set { tbName.Text = value; }
+            get { return _tbName.Text; }
+            set { _tbName.Text = value; }
         }
 
         /// <summary>
@@ -152,8 +155,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string Key
         {
-            get { return tbKey.Text; }
-            set { tbKey.Text = value; }
+            get { return _tbKey.Text; }
+            set { _tbKey.Text = value; }
         }
 
         /// <summary>
@@ -164,8 +167,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string Description
         {
-            get { return tbDescription.Text; }
-            set { tbDescription.Text = value; }
+            get { return _tbDescription.Text; }
+            set { _tbDescription.Text = value; }
         }
 
         /// <summary>
@@ -176,8 +179,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public IEnumerable<int> CategoryIds
         {
-            get { return cpCategories.SelectedValuesAsInt();  }
-            set { cpCategories.SetValues(value); }
+            get { return _cpCategories.SelectedValuesAsInt();  }
+            set { _cpCategories.SetValues(value); }
         }
 
         /// <summary>
@@ -251,8 +254,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool MultiValue
         {
-            get { return cbMultiValue.Checked; }
-            set { cbMultiValue.Checked = value; }
+            get { return _cbMultiValue.Checked; }
+            set { _cbMultiValue.Checked = value; }
         }
 
         /// <summary>
@@ -263,8 +266,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool Required
         {
-            get { return cbRequired.Checked; }
-            set { cbRequired.Checked = value; }
+            get { return _cbRequired.Checked; }
+            set { _cbRequired.Checked = value; }
         }
 
         /// <summary>
@@ -275,8 +278,8 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool ShowInGrid
         {
-            get { return cbShowInGrid.Checked; }
-            set { cbShowInGrid.Checked = value; }
+            get { return _cbShowInGrid.Checked; }
+            set { _cbShowInGrid.Checked = value; }
         }
 
         #endregion
@@ -293,19 +296,19 @@ namespace Rock.Web.UI.Controls
 
             if ( Page.IsPostBack )
             {
-                FieldTypeId = ddlFieldType.SelectedValueAsInt();
+                FieldTypeId = _ddlFieldType.SelectedValueAsInt();
                 if ( FieldTypeId.HasValue && FieldTypeId != 0 )
                 {
                     var field = Rock.Web.Cache.FieldTypeCache.Read( FieldTypeId.Value ).Field;
 
-                    if ( QualifierControls != null )
+                    if ( _qualifierControls != null )
                     {
-                        Qualifiers = field.ConfigurationValues( QualifierControls );
+                        Qualifiers = field.ConfigurationValues( _qualifierControls );
                     }
 
-                    if ( DefaultValueControl != null )
+                    if ( _defaultValueControl != null )
                     {
-                        DefaultValue = field.GetEditValue( DefaultValueControl, Qualifiers );
+                        DefaultValue = field.GetEditValue( _defaultValueControl, Qualifiers );
                     }
                 }
             }
@@ -420,99 +423,103 @@ namespace Rock.Web.UI.Controls
             base.CreateChildControls();
             Controls.Clear();
 
-            lAttributeActionTitle = new Literal { ID = string.Format( "lAttributeActionTitle_{0}", this.ID ) };
-            Controls.Add( lAttributeActionTitle );
+            _lAttributeActionTitle = new Literal { ID = string.Format( "lAttributeActionTitle_{0}", this.ID ) };
+            Controls.Add( _lAttributeActionTitle );
 
-            tbName.ID = string.Format( "tbName_{0}", this.ID );
-            tbName.SourceTypeName = "Rock.Model.Attribute, Rock";
-            tbName.PropertyName = "Name";
-            tbName.Required = true;
-            Controls.Add( tbName );
+            _tbName.ID = string.Format( "tbName_{0}", this.ID );
+            _tbName.SourceTypeName = "Rock.Model.Attribute, Rock";
+            _tbName.PropertyName = "Name";
+            _tbName.Required = true;
+            Controls.Add( _tbName );
 
-            tbKey.ID = string.Format( "tbKey_{0}", this.ID );
-            tbKey.SourceTypeName = "Rock.Model.Attribute, Rock";
-            tbKey.PropertyName = "Key";
-            tbKey.Required = true;
-            Controls.Add( tbKey );
+            _tbKey.ID = string.Format( "tbKey_{0}", this.ID );
+            _tbKey.SourceTypeName = "Rock.Model.Attribute, Rock";
+            _tbKey.PropertyName = "Key";
+            _tbKey.Required = true;
+            Controls.Add( _tbKey );
 
-            cvKey.ID = string.Format("cvKey_{0}", this.ID);
-            cvKey.ControlToValidate = tbKey.ID;
-            cvKey.ClientValidationFunction = "validateKey";
-            cvKey.ServerValidate += cvKey_ServerValidate;
-            cvKey.Display = ValidatorDisplay.Dynamic;
-            cvKey.CssClass = "validation-error help-inline";
-            cvKey.ErrorMessage = "There is already an existing property with the key value you entered.  Please select a different key value";
-            Controls.Add( cvKey );
+            _cvKey.ID = string.Format("cvKey_{0}", this.ID);
+            _cvKey.ControlToValidate = _tbKey.ID;
+            _cvKey.ClientValidationFunction = "validateKey";
+            _cvKey.ServerValidate += cvKey_ServerValidate;
+            _cvKey.Display = ValidatorDisplay.Dynamic;
+            _cvKey.CssClass = "validation-error help-inline";
+            _cvKey.ErrorMessage = "There is already an existing property with the key value you entered.  Please select a different key value";
+            Controls.Add( _cvKey );
 
-            cpCategories.Label = "Categories";
-            cpCategories.ID = string.Format( "cpCategories_{0}", this.ID );
-            cpCategories.AllowMultiSelect = true;
-            cpCategories.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
-            cpCategories.EntityTypeQualifierColumn = "EntityTypeId";
-            Controls.Add( cpCategories );
+            _cpCategories.Label = "Categories";
+            _cpCategories.ID = string.Format( "cpCategories_{0}", this.ID );
+            _cpCategories.AllowMultiSelect = true;
+            _cpCategories.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
+            _cpCategories.EntityTypeQualifierColumn = "EntityTypeId";
+            Controls.Add( _cpCategories );
 
-            tbDescription.ID = string.Format( "tbDescription_{0}", this.ID );
-            tbDescription.TextMode = TextBoxMode.MultiLine;
-            tbDescription.Rows = 3;
-            tbDescription.SourceTypeName = "Rock.Model.Attribute, Rock";
-            tbDescription.PropertyName = "Description";
-            Controls.Add( tbDescription );
+            _tbDescription.ID = string.Format( "tbDescription_{0}", this.ID );
+            _tbDescription.TextMode = TextBoxMode.MultiLine;
+            _tbDescription.Rows = 3;
+            _tbDescription.SourceTypeName = "Rock.Model.Attribute, Rock";
+            _tbDescription.PropertyName = "Description";
+            Controls.Add( _tbDescription );
 
-            ddlFieldType.ID = string.Format( "ddlFieldType_{0}", this.ID );
-            ddlFieldType.Label = "Field Type";
-            ddlFieldType.SourceTypeName = "Rock.Model.FieldType, Rock";
-            ddlFieldType.PropertyName = "Name";
-            ddlFieldType.AutoPostBack = true;
-            Controls.Add( ddlFieldType );
+            _ddlFieldType.ID = string.Format( "ddlFieldType_{0}", this.ID );
+            _ddlFieldType.Label = "Field Type";
+            _ddlFieldType.SourceTypeName = "Rock.Model.FieldType, Rock";
+            _ddlFieldType.PropertyName = "Name";
+            _ddlFieldType.AutoPostBack = true;
+            Controls.Add( _ddlFieldType );
 
             if ( FieldTypeId.HasValue && FieldTypeId != 0 )
             {
                 var field = Rock.Web.Cache.FieldTypeCache.Read( FieldTypeId.Value ).Field;
 
-                QualifierControls = field.ConfigurationControls();
+                _qualifierControls = field.ConfigurationControls();
                 int i= 0;
-                foreach ( var control in QualifierControls )
+                foreach ( var control in _qualifierControls )
                 {
                     control.ID = string.Format( "qualifier{0}_{1}_{2}", i++, FieldTypeId.Value, this.ID );
                     Controls.Add( control );
                 }
 
-                DefaultValueControl = field.EditControl( Qualifiers, string.Format( "defaultValue_{0}_{1}", FieldTypeId.Value, this.ID ) );
-                if ( DefaultValueControl != null )
+                _defaultValueControl = field.EditControl( Qualifiers, string.Format( "defaultValue_{0}_{1}", FieldTypeId.Value, this.ID ) );
+                if ( _defaultValueControl != null )
                 {
-                    if ( DefaultValueControl is IRequiredControl )
+                    if ( _defaultValueControl is IRequiredControl )
                     {
-                        ( (IRequiredControl)DefaultValueControl ).Required = false;
+                        ( (IRequiredControl)_defaultValueControl ).Required = false;
                     }
 
-                    Controls.Add( DefaultValueControl );
+                    Controls.Add( _defaultValueControl );
                 }
             }
 
-            cbMultiValue.ID = string.Format( "cbMultiValue_{0}", this.ID );
-            cbMultiValue.Text = "Allow Multiple Values";
-            Controls.Add( cbMultiValue );
+            _cbMultiValue.ID = string.Format( "cbMultiValue_{0}", this.ID );
+            _cbMultiValue.Label = "Allow Multiple Values";
+            _cbMultiValue.Text = "Yes";
+            Controls.Add( _cbMultiValue );
 
-            cbRequired.ID = string.Format( "cbRequired_{0}", this.ID );
-            cbRequired.Text = "Required";
-            Controls.Add( cbRequired );
+            _cbRequired.ID = string.Format( "cbRequired_{0}", this.ID );
+            _cbRequired.Label = "Required";
+            _cbRequired.Text = "Require a value";
+            Controls.Add( _cbRequired );
 
-            cbShowInGrid.ID = string.Format( "cbShowInGrid_{0}", this.ID );
-            cbShowInGrid.Text = "Show in Grid";
-            Controls.Add( cbShowInGrid );
+            _cbShowInGrid.ID = string.Format( "cbShowInGrid_{0}", this.ID );
+            _cbShowInGrid.Label = "Show in Grid";
+            _cbShowInGrid.Text = "Yes";
+            _cbShowInGrid.Help = "When items are displayed in a grid, should this attribute be included as a column on the grid?"; 
+            Controls.Add( _cbShowInGrid );
 
-            btnSave = new LinkButton { ID = string.Format( "btnSave_{0}", this.ID ) };
-            btnSave.Text = "OK";
-            btnSave.CssClass = "btn btn-primary";
-            btnSave.Click += btnSave_Click;
-            Controls.Add( btnSave );
+            _btnSave = new LinkButton { ID = string.Format( "btnSave_{0}", this.ID ) };
+            _btnSave.Text = "OK";
+            _btnSave.CssClass = "btn btn-primary";
+            _btnSave.Click += btnSave_Click;
+            Controls.Add( _btnSave );
 
-            btnCancel = new LinkButton { ID = string.Format( "btnCancel_{0}", this.ID ) };
-            btnCancel.Text = "Cancel";
-            btnCancel.CssClass = "btn";
-            btnCancel.CausesValidation = false;
-            btnCancel.Click += btnCancel_Click;
-            Controls.Add( btnCancel );
+            _btnCancel = new LinkButton { ID = string.Format( "btnCancel_{0}", this.ID ) };
+            _btnCancel.Text = "Cancel";
+            _btnCancel.CssClass = "btn";
+            _btnCancel.CausesValidation = false;
+            _btnCancel.Click += btnCancel_Click;
+            Controls.Add( _btnCancel );
         }
 
         /// <summary>
@@ -524,7 +531,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
             
             writer.RenderBeginTag( HtmlTextWriterTag.Legend );
-            lAttributeActionTitle.RenderControl( writer );
+            _lAttributeActionTitle.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "row-fluid" );
@@ -532,78 +539,69 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            tbName.Attributes["onblur"] = string.Format( "populateAttributeKey('{0}','{1}')", tbName.ClientID, tbKey.ClientID );
-            tbName.RenderControl( writer );
-            tbKey.RenderControl( writer );
-            cvKey.RenderControl( writer );
+            _tbName.Attributes["onblur"] = string.Format( "populateAttributeKey('{0}','{1}')", _tbName.ClientID, _tbKey.ClientID );
+            _tbName.RenderControl( writer );
+            _tbKey.RenderControl( writer );
+            _cvKey.RenderControl( writer );
 
             if ( this.AttributeEntityTypeId.HasValue )
             {
-                cpCategories.EntityTypeQualifierValue = this.AttributeEntityTypeId.Value.ToString();
+                _cpCategories.EntityTypeQualifierValue = this.AttributeEntityTypeId.Value.ToString();
             }
-            cpCategories.RenderControl( writer );
+            _cpCategories.RenderControl( writer );
 
-            tbDescription.RenderControl( writer );
+            _tbDescription.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            ddlFieldType.SetValue( FieldTypeId );
-            ddlFieldType.RenderControl( writer );
+            _ddlFieldType.SetValue( FieldTypeId );
+            _ddlFieldType.RenderControl( writer );
 
             if ( FieldTypeId.HasValue && FieldTypeId != 0 )
             {
                 var field = Rock.Web.Cache.FieldTypeCache.Read( FieldTypeId.Value ).Field;
 
-                if ( QualifierControls != null )
+                if ( _qualifierControls != null )
                 {
-                    field.SetConfigurationValues( QualifierControls, Qualifiers );
+                    field.SetConfigurationValues( _qualifierControls, Qualifiers );
 
                     int i = 0;
                     foreach ( var configValue in field.ConfigurationValues( null ) )
                     {
-                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-group" );
-                        writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
-                        writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                        writer.Write( configValue.Value.Name );
-                        writer.RenderEndTag();
-
-                        writer.AddAttribute( HtmlTextWriterAttribute.Class, "controls" );
-                        writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                        QualifierControls[i].RenderControl( writer );
-                        writer.RenderEndTag();
-
-                        writer.RenderEndTag();
+                        var rockControl = _qualifierControls[i] as IRockControl;
+                        if ( rockControl != null )
+                        {
+                            rockControl.Label = configValue.Value.Name;
+                            RockControlHelper.RenderControl( rockControl, writer );
+                        }
+                        else
+                        {
+                            RockControlHelper.RenderControl( configValue.Value.Name, _qualifierControls[i], writer );
+                        }
 
                         i++;
                     }
                 }
-                if ( DefaultValueControl != null )
+
+                if ( _defaultValueControl != null )
                 {
-                    field.SetEditValue( DefaultValueControl, Qualifiers, DefaultValue );
-
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-group" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "control-label" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    writer.Write( "Default Value" );
-                    writer.RenderEndTag();
-
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "controls" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    DefaultValueControl.RenderControl( writer );
-                    writer.RenderEndTag();
-
-                    writer.RenderEndTag();
+                    var rockControl = _defaultValueControl as IRockControl;
+                    if ( rockControl != null )
+                    {
+                        rockControl.Label = "Default Value";
+                        RockControlHelper.RenderControl( rockControl, writer );
+                    }
+                    else
+                    {
+                        RockControlHelper.RenderControl( "Default Value", _defaultValueControl, writer );
+                    }
                 }
             }
 
-            cbMultiValue.RenderControl( writer );
-            cbRequired.RenderControl( writer );
-            cbShowInGrid.RenderControl( writer );
+            _cbMultiValue.RenderControl( writer );
+            _cbRequired.RenderControl( writer );
+            _cbShowInGrid.RenderControl( writer );
             writer.RenderEndTag();
             
             // row-fluid </div>
@@ -614,9 +612,9 @@ namespace Rock.Web.UI.Controls
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "actions" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            btnSave.RenderControl( writer );
+            _btnSave.RenderControl( writer );
             writer.Write( Environment.NewLine );
-            btnCancel.RenderControl( writer );
+            _btnCancel.RenderControl( writer );
             writer.RenderEndTag();
 
             RegisterClientScript();
@@ -657,7 +655,7 @@ function validateKey(sender, args) {{
     args.IsValid = ( $.inArray( $('#{1}').val(), reservedKeyNames ) < 0 );
 }}
 ",
-                ReservedKeyNames.ToJson(), tbKey.ClientID);
+                ReservedKeyNames.ToJson(), _tbKey.ClientID);
 
             ScriptManager.RegisterStartupScript( this, this.GetType(), "AttributeEditor", script, true );
         }
@@ -687,7 +685,7 @@ function validateKey(sender, args) {{
         /// <param name="args">The <see cref="ServerValidateEventArgs" /> instance containing the event data.</param>
         void cvKey_ServerValidate( object source, ServerValidateEventArgs args )
         {
-            args.IsValid = !ReservedKeyNames.Contains( tbKey.Text.Trim(), StringComparer.CurrentCultureIgnoreCase );
+            args.IsValid = !ReservedKeyNames.Contains( _tbKey.Text.Trim(), StringComparer.CurrentCultureIgnoreCase );
         }
 
         /// <summary>

@@ -45,7 +45,7 @@ namespace Rock.Financial
         /// <summary>
         /// Gets the component with the matching Entity Type Name.
         /// </summary>
-        /// <param name="entityTypeName">Name or Guid of the entity type.</param>
+        /// <param name="entityType">Type of the entity.</param>
         /// <returns></returns>
         public static GatewayComponent GetComponent( string entityType )
         {

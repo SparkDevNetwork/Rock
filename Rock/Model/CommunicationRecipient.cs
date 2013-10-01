@@ -53,6 +53,12 @@ namespace Rock.Model
         [DataMember]
         public CommunicationRecipientStatus Status { get; set; }
 
+        /// <summary>
+        /// Gets or sets the status note.
+        /// </summary>
+        /// <value>
+        /// The status note.
+        /// </value>
         [DataMember]
         public string StatusNote { get; set; }
 

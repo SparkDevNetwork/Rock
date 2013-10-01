@@ -12,6 +12,9 @@ using Rock.Model;
 
 namespace Rock.Storage.Provider
 {
+    /// <summary>
+    /// Storage provider for saving binary files to Rock database
+    /// </summary>
     [Description( "Database-driven document storage" )]
     [Export( typeof( ProviderComponent ) )]
     [ExportMetadata( "ComponentName", "Database" )]
@@ -27,11 +30,21 @@ namespace Rock.Storage.Provider
         {
             var fileService = new BinaryFileService();
 
-            foreach ( var file in files )
+            foreach ( var fileItem in files )
             {
+                var file = fileItem;
+                
                 if ( file.Id == 0 )
                 {
                     fileService.Add( file, personId );
+                }
+                else
+                {
+                    // get it fresh from the database so EF change tracking works and saves it
+                    file = fileService.Get( file.Id );
+                    file.MimeType = fileItem.MimeType;
+                    file.FileName = fileItem.FileName;
+                    file.Data.Content = fileItem.Data.Content;
                 }
 
                 // Since we're expecting a hydrated model, throw if no binary

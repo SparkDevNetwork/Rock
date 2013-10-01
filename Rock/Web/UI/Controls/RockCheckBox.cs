@@ -133,6 +133,9 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockCheckBox"/> class.
+        /// </summary>
         public RockCheckBox()
             : base()
         {
@@ -149,10 +152,15 @@ namespace Rock.Web.UI.Controls
             RockControlHelper.CreateChildControls( this, Controls );
         }
 
+        /// <summary>
+        /// Registers client script for generating postback prior to rendering on the client if <see cref="P:System.Web.UI.WebControls.CheckBox.AutoPostBack" /> is true.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> that contains the event data.</param>
         protected override void OnPreRender( System.EventArgs e )
         {
             base.OnPreRender( e );
         }
+
         /// <summary>
         /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>

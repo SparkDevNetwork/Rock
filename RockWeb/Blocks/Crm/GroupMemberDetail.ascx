@@ -3,8 +3,8 @@
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" runat="server" Visible="false">
-            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
-            <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Error" />
+            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" />
+            <Rock:NotificationBox ID="nbErrorMessage" runat="server" NotificationBoxType="Danger" />
             <asp:HiddenField ID="hfGroupId" runat="server" />
             <asp:HiddenField ID="hfGroupMemberId" runat="server" />
 

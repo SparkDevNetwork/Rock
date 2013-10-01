@@ -7,7 +7,7 @@
             <asp:HiddenField ID="hfMarketingCampaignId" runat="server" />
 
             <div id="pnlEditDetails" runat="server" class="well">
-                <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
+                <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" />
                 <fieldset>
                     <legend>
                         <asp:Literal ID="lActionTitle" runat="server" /></legend>
