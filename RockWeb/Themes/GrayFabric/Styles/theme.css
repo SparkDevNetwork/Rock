@@ -8601,9 +8601,6 @@ div.tagsinput div {
     width: 100%;
   }
 }
-.imageupload-group {
-  margin-bottom: 15px;
-}
 .imageupload-group:before,
 .imageupload-group:after {
   content: " ";
@@ -8683,10 +8680,27 @@ div.tagsinput div {
 .sql-comand .panel {
   margin-bottom: 24px;
 }
-.htmlcontent-edit-header {
+.html-content-editor-panel .editor-buttons {
+  float: right;
+  margin-top: 6px;
+}
+.html-content-version-label {
+  background-color: #6d6d6d;
+  padding: 2px 8px;
+  float: left;
+  margin: 6px 0 0 16px;
+  -moz-border-radius: 4px;
+  -webkit-border-radius: 4px;
+  border-radius: 4px;
+  color: #bbbbbb;
+}
+.html-content-version-label:hover {
+  color: inherit;
+}
+.html-content-edit-header {
   padding: 6px 16px 0 16px;
 }
-.htmlcontent-edit-header .html-content-approve {
+.html-content-approve {
   float: right;
   margin-top: 4px;
 }
@@ -9110,55 +9124,25 @@ td[align=center] {
     Used to manage styles related to modal dialog.
 
 */
-.rock-modal-frame {
+.rock-modal {
   width: 750px;
 }
-.rock-modal {
-  background-color: #f4f4f4;
-}
-.rock-modal .modal-header {
+#dialog .modal-header {
   background-color: #3a3a3a;
   color: #bbbbbb;
   padding: 5px 15px;
   min-height: 34px;
 }
-.rock-modal .modal-header:before,
-.rock-modal .modal-header:after {
-  content: " ";
-  /* 1 */
-
-  display: table;
-  /* 2 */
-
-}
-.rock-modal .modal-header:after {
-  clear: both;
-}
-.rock-modal .modal-header:before,
-.rock-modal .modal-header:after {
-  content: " ";
-  /* 1 */
-
-  display: table;
-  /* 2 */
-
-}
-.rock-modal .modal-header:after {
-  clear: both;
-}
-.rock-modal .modal-header h3 {
+#dialog .modal-header h3 {
   float: left;
 }
-.rock-modal .modal-header .close {
+#dialog .modal-header .close {
   margin: 0;
   padding: 6px;
   color: #bbbbbb;
   text-shadow: none;
 }
-.rock-modal .modal-header .label {
-  margin-top: 8px;
-}
-.rock-modal .modal-footer {
+#dialog .modal-footer {
   padding: 8px;
   margin-top: 10px;
   background-color: #e7ecf0;
