@@ -74,20 +74,12 @@ namespace Rock.Web.Cache
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the site id.
+        /// Gets or sets the layout id.
         /// </summary>
         /// <value>
-        /// The site id.
+        /// The layout id.
         /// </value>
-        public int? SiteId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the layout.
-        /// </summary>
-        /// <value>
-        /// The layout.
-        /// </value>
-        public string Layout { get; set; }
+        public int LayoutId { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [requires encryption].
@@ -257,18 +249,11 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the <see cref="Site"/> object for the page.
         /// </summary>
-        public SiteCache Site
+        public LayoutCache Layout
         {
             get
             {
-                if ( SiteId != null && SiteId.Value != 0 )
-                {
-                    return SiteCache.Read( SiteId.Value );
-                }
-                else
-                {
-                    return null;
-                }
+                return LayoutCache.Read( LayoutId );
             }
         }
 
@@ -319,7 +304,7 @@ namespace Rock.Web.Cache
                 {
                     foreach ( int id in blockIds.ToList() )
                     {
-                        BlockCache block = BlockCache.Read( id, SiteId );
+                        BlockCache block = BlockCache.Read( id );
                         if ( block != null )
                         {
                             blocks.Add( block );
@@ -332,11 +317,11 @@ namespace Rock.Web.Cache
 
                     // Load Layout Blocks
                     BlockService blockService = new BlockService();
-                    foreach ( Block block in blockService.GetByLayout( this.SiteId.Value, this.Layout ) )
+                    foreach ( Block block in blockService.GetByLayout( this.LayoutId ) )
                     {
                         blockIds.Add( block.Id );
                         block.LoadAttributes();
-                        blocks.Add( BlockCache.Read( block, SiteId ) );
+                        blocks.Add( BlockCache.Read( block ) );
                     }
 
                     // Load Page Blocks
@@ -344,7 +329,7 @@ namespace Rock.Web.Cache
                     {
                         blockIds.Add( block.Id );
                         block.LoadAttributes();
-                        blocks.Add( BlockCache.Read( block, SiteId ) );
+                        blocks.Add( BlockCache.Read( block ) );
                     }
 
                 }
@@ -416,7 +401,7 @@ namespace Rock.Web.Cache
                 }
                 else
                 {
-                    return this.Site;
+                    return this.Layout.Site;
                 }
             }
         }
@@ -463,10 +448,9 @@ namespace Rock.Web.Cache
                 var page = (Page)model;
                 this.Name = page.Name;
                 this.ParentPageId = page.ParentPageId;
+                this.LayoutId = page.LayoutId;
                 this.Title = page.Title;
                 this.IsSystem = page.IsSystem;
-                this.SiteId = page.SiteId;
-                this.Layout = page.Layout;
                 this.RequiresEncryption = page.RequiresEncryption;
                 this.EnableViewState = page.EnableViewState;
                 this.PageDisplayTitle = page.PageDisplayTitle;
@@ -1054,14 +1038,14 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Flushes all the pages that use a specific layout.
         /// </summary>
-        public static void FlushLayout( string layout )
+        public static void FlushLayout( int layoutId )
         {
             ObjectCache cache = MemoryCache.Default;
             foreach ( var item in cache )
                 if ( item.Key.StartsWith( "Rock:Page:" ) )
                 {
                     PageCache page = cache[item.Key] as PageCache;
-                    if ( page != null && page.Layout == layout )
+                    if ( page != null && page.LayoutId == layoutId )
                         cache.Remove( item.Key );
                 }
         }
@@ -1069,14 +1053,14 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Flushes the block instances for all the pages that use a specific layout.
         /// </summary>
-        public static void FlushLayoutBlocks( string layout )
+        public static void FlushLayoutBlocks( int layoutId )
         {
             ObjectCache cache = MemoryCache.Default;
             foreach ( var item in cache )
                 if ( item.Key.StartsWith( "Rock:Page:" ) )
                 {
                     PageCache page = cache[item.Key] as PageCache;
-                    if ( page != null && page.Layout == layout )
+                    if ( page != null && page.LayoutId == layoutId )
                         page.FlushBlocks();
                 }
         }
