@@ -24,43 +24,37 @@ namespace Rock.Model
         public IEnumerable<Block> GetByBlockTypeId( int blockTypeId )
         {
             return Repository
-                .Find( t => 
-                    t.BlockTypeId == blockTypeId )
+                .Find( t => t.BlockTypeId == blockTypeId )
                 .OrderBy( t => t.Order );
         }
 
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.Block">Blocks</see> that are implemented as part of a <see cref="Rock.Model.Site" /> layout.
         /// </summary>
-        /// <param name="siteId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Site"/> that the Layout belongs to.</param>
-        /// <param name="layout">A <see cref="System.String"/> representing the name of the Layout to search for.</param>
+        /// <param name="layoutId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Layout"/> that the block belongs to.</param>
         /// <returns>
         /// An enumerable collection of <see cref="Rock.Model.Block">Blocks</see> that are implemented as part of the provided site layout.
         /// </returns>
-        public IEnumerable<Block> GetByLayout( int siteId, string layout )
+        public IEnumerable<Block> GetByLayout( int layoutId )
         {
             return Repository
-                .Find( t => 
-                    t.SiteId == siteId && 
-                    string.Compare(t.Layout, layout, true) == 0 )
+                .Find( t => t.LayoutId == layoutId)
                 .OrderBy( t => t.Order );
         }
 
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.Block">Blocks</see> that are implemented in a specific zone on a Site Layout template.
         /// </summary>
-        /// <param name="siteId">A <see cref="System.Int32"/> representing the Id of the <see cref="Site"/> that the Layout belongs to.</param>
-        /// <param name="layout">A <see cref="System.String"/> representing the name of the Layout.</param>
+        /// <param name="layoutId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Layout"/> that the block belongs to.</param>
         /// <param name="zone">A <see cref="System.String"/> representing the name of the Zone to search by.</param>
         /// <returns>
         /// An enumerable collection of <see cref="Block">Blocks</see> that are implemented in a Zone of a <see cref="Rock.Model.Site"/> Layout.
         /// </returns>
-        public IEnumerable<Block> GetByLayoutAndZone( int siteId, string layout, string zone )
+        public IEnumerable<Block> GetByLayoutAndZone( int layoutId, string zone )
         {
             return Repository
                 .Find( t => 
-                    t.SiteId == siteId && 
-                    string.Compare(t.Layout, layout, true) == 0 && 
+                    t.LayoutId == layoutId && 
                     string.Compare(t.Zone, zone ) == 0)
                 .OrderBy( t => t.Order );
         }
@@ -73,8 +67,7 @@ namespace Rock.Model
         public IEnumerable<Block> GetByPage( int pageId )
         {
             return Repository
-                .Find( t =>
-                    t.PageId == pageId )
+                .Find( t => t.PageId == pageId )
                 .OrderBy( t => t.Order );
         }
 
@@ -104,8 +97,7 @@ namespace Rock.Model
 
             int? order = Queryable()
                 .Where( b => 
-                    b.SiteId == block.SiteId &&
-                    b.Layout == block.Layout &&
+                    b.LayoutId == block.LayoutId &&
                     b.PageId == block.PageId &&
                     b.Zone == block.Zone )
                 .Select( b => ( int? )b.Order ).Max();

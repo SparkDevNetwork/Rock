@@ -11,14 +11,14 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class AttendedCheckin : Rock.Migrations.RockMigration
+    public partial class AttendedCheckin : Rock.Migrations.RockMigration1
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
         {
-            AddPage( "20F97A93-7949-4C2A-8A5E-C756FE8585CA", "Attended Check-in", "Screens for managing Attended Check-in", "32A132A6-63A2-4840-B4A5-23D80994CCBD" );
+            AddPage( "20F97A93-7949-4C2A-8A5E-C756FE8585CA", "Attended Check-in", "Screens for managing Attended Check-in", "Default", "32A132A6-63A2-4840-B4A5-23D80994CCBD" );
             Sql( " UPDATE [Page] SET [ParentPageId] = NULL WHERE [Guid] = '32A132A6-63A2-4840-B4A5-23D80994CCBD' " );
             AddPage( "32A132A6-63A2-4840-B4A5-23D80994CCBD", "Admin", "Admin screen for Attended Check-in", "Checkin", "771E3CF1-63BD-4880-BC43-AC29B4CCE963" );
             AddPage( "32A132A6-63A2-4840-B4A5-23D80994CCBD", "Search", "Search screen for Attended Check-in", "Checkin", "8F618315-F554-4751-AB7F-00CC5658120A" );
