@@ -166,7 +166,7 @@ namespace Rock.Web.UI.Controls
             _saveLink = new HtmlAnchor();
             _footerPanel.Controls.Add( _saveLink );
             _saveLink.ID = "saveLink";
-            _saveLink.Attributes.Add( "class", "btn btn-primary" );
+            _saveLink.Attributes.Add( "class", "btn btn-primary modaldialog-save-button" );
             _saveLink.ValidationGroup = this.ID + "ValidationGroup";
 
             this.PopupControlID = _dialogPanel.ID;
