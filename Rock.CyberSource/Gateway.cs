@@ -4,8 +4,8 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Net;
 using System.ServiceModel;
+using System.ServiceModel.Description;
 
-using Rock.CyberSource;
 using Rock.Attribute;
 using Rock.Financial;
 using Rock.Model;
@@ -94,8 +94,7 @@ namespace Rock.CyberSource
         {                        
 
             int newspringTransactionNumber = 1;
-            TransactionProcessorClient asdf = new TransactionProcessorClient();
-
+            
             RequestMessage request = new RequestMessage();            
             request.merchantID = GetAttributeValue( "MerchantID" );            
             request.merchantReferenceCode = newspringTransactionNumber.ToString();
@@ -143,19 +142,34 @@ namespace Rock.CyberSource
             item.totalAmount = "29.95";
             request.item[0] = item;
 
+            // set up WCF consumption
             string transactionkey = GetAttributeValue( "TransactionKey" );
-            BasicHttpBinding binding = new BasicHttpBinding( BasicHttpSecurityMode.TransportWithMessageCredential );
-            EndpointAddress endpoint = new EndpointAddress( GatewayUrl );
-            
 
+            ChannelFactory<ITransactionProcessor> channelFactory = null;
+            BasicHttpBinding binding = new BasicHttpBinding();
+            binding.Name = "ITransactionProcessor";
+            binding.Security.Mode = BasicHttpSecurityMode.TransportWithMessageCredential;
+            binding.MaxBufferSize = 2147483647;
+            binding.MaxBufferPoolSize = 2147483647;
+            binding.MaxReceivedMessageSize = 2147483647;
+
+            channelFactory = new ChannelFactory<ITransactionProcessor>( binding );
+            channelFactory.Credentials.UserName.UserName = request.merchantID;
+            channelFactory.Credentials.UserName.Password = transactionkey;
+            EndpointAddress address = new EndpointAddress( new Uri( GatewayUrl ) );
+
+            ITransactionProcessor test = channelFactory.CreateChannel( address );
+                        
             try            
             {
-                TransactionProcessorClient client = new TransactionProcessorClient( binding, endpoint );
+                TransactionProcessorClient proxy = new TransactionProcessorClient( binding, address );
+                proxy.Endpoint.Address = address;
+                proxy.Endpoint.Binding = binding;
                 
-                client.ChannelFactory.Credentials.UserName.UserName = request.merchantID;
-                client.ChannelFactory.Credentials.UserName.Password = transactionkey;                
+                
+                
 
-                ReplyMessage reply = client.runTransaction( request );
+                ReplyMessage reply = proxy.runTransaction( request );
                 //SaveOrderState();
                 
                 ProcessReply( reply );
@@ -322,5 +336,69 @@ namespace Rock.CyberSource
 
         #endregion
 
+    }
+
+
+    public static class ServiceConfig
+    {
+        public static BasicHttpBinding DefaultBinding
+        {
+            get
+            {
+                    var binding = new BasicHttpBinding();
+                    Configure(binding);
+                    return binding;
+                } 
+            } 
+     
+            public static void Configure(HttpBindingBase binding)
+            {
+                if (binding == null)
+                {
+                    throw new ArgumentException("Argument 'binding' cannot be null. Cannot configure binding.");
+                }
+     
+                binding.SendTimeout = new TimeSpan(0, 0, 30, 0); // 30 minute timeout
+                binding.MaxBufferSize = 2147483647;
+                binding.MaxBufferPoolSize = 2147483647;
+                binding.MaxReceivedMessageSize = 2147483647;
+                binding.ReaderQuotas.MaxArrayLength = 2147483647;                
+                binding.ReaderQuotas.MaxBytesPerRead = 2147483647;
+                binding.ReaderQuotas.MaxDepth = 2147483647;                
+                binding.ReaderQuotas.MaxStringContentLength = 2147483647;
+            }
+     
+            public static ServiceMetadataBehavior ServiceMetadataBehavior
+            {
+                get
+                {
+                    return new ServiceMetadataBehavior
+                    {
+                        HttpGetEnabled = true, 
+                        MetadataExporter = {PolicyVersion = PolicyVersion.Policy15}
+                    };
+                }
+            }
+     
+            public static ServiceDebugBehavior ServiceDebugBehavior
+            {
+                get
+                {
+                    var smb = new ServiceDebugBehavior();
+                    Configure(smb);
+                    return smb;
+                }
+            }
+     
+     
+            public static void Configure(ServiceDebugBehavior behavior)
+            {
+                if (behavior == null)
+                {
+                    throw new ArgumentException("Argument 'behavior' cannot be null. Cannot configure debug behavior.");
+                }
+                
+                behavior.IncludeExceptionDetailInFaults = true;
+            }
     }
 }
