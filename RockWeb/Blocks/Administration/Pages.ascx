@@ -13,7 +13,7 @@
                 <Rock:ReorderField />
                 <asp:BoundField DataField="Id" HeaderText="Id" />
                 <asp:HyperLinkField DataNavigateUrlFormatString="~/page/{0}" DataNavigateUrlFields="Id" DataTextField="Name" HeaderText="Name" Target="_parent" />
-                <asp:BoundField DataField="Layout" HeaderText="Layout"  />
+                <asp:BoundField DataField="Layout.Name" HeaderText="Layout"  />
                 <Rock:DeleteField OnClick="rGrid_Delete" />
             </Columns>
         </Rock:Grid>

@@ -76,12 +76,12 @@ namespace RockWeb.Blocks.Administration
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 pageRoute = new PageRouteService().Get( itemKeyValue );
-                lActionTitle.Text = ActionTitle.Edit( PageRoute.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Edit( PageRoute.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
                 pageRoute = new PageRoute { Id = 0 };
-                lActionTitle.Text = ActionTitle.Add( PageRoute.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Add(PageRoute.FriendlyTypeName).FormatAsHtmlTitle();
             }
 
             hfPageRouteId.Value = pageRoute.Id.ToString();

@@ -89,6 +89,7 @@
     <Compile Include="Controllers\CodeGenerated\FinancialTransactionImagesController.cs" />
     <Compile Include="Controllers\CodeGenerated\FinancialTransactionRefundsController.cs" />
     <Compile Include="Controllers\CodeGenerated\FinancialTransactionScannedChecksController.cs" />
+    <Compile Include="Controllers\CodeGenerated\LayoutsController.cs" />
     <Compile Include="Controllers\CodeGenerated\NotesController.cs" />
     <Compile Include="Controllers\CodeGenerated\NoteTypesController.cs" />
     <Compile Include="Controllers\CodeGenerated\PrayerRequestsController.cs" />

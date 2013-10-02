@@ -9,12 +9,6 @@
             </div>
         </asp:Panel>
 
-        <script>
-            $(document).ready(function () {
-                $('#treeview').kendoTreeView();
-            });
-        </script>
-
     </ContentTemplate>
 </asp:UpdatePanel>
 

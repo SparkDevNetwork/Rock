@@ -34,9 +34,9 @@
 
 </head>
 
-<body id="dialog">
+<body id="dialog" class="rock-modal">
     <form id="form1" runat="server">
-        <div id="headerPanel" class="modal-header clearfix">
+        <div id="headerPanel" class="modal-header">
             <a id="closeLink" href="#" class="close" onclick="window.parent.Rock.controls.modal.close();">&times;</a>
             <h3 class="modal-title"><asp:Literal ID="lTitle" runat="server"></asp:Literal></h3>
         </div>

@@ -7514,6 +7514,7 @@ td.visible-print {
     12. Labels - additional label defintions that extend Boostrap labels (eg label-campus)
     13. Datepicker - styles for the date picker
     14. Timepicker - styles for the time picker
+    15. File Upload / Image Upload - styles for the file / image uploader
 
 */
 .picker {
@@ -8399,6 +8400,7 @@ div.tagsinput div {
 }
 .smartsearch input:focus {
   box-shadow: 0 0 0 0;
+  outline: 0;
 }
 .smartsearch .dropdown-menu {
   font-size: 11px;
@@ -8599,6 +8601,74 @@ div.tagsinput div {
     width: 100%;
   }
 }
+.imageupload-group {
+  margin-bottom: 15px;
+}
+.imageupload-group:before,
+.imageupload-group:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.imageupload-group:after {
+  clear: both;
+}
+.imageupload-group:before,
+.imageupload-group:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.imageupload-group:after {
+  clear: both;
+}
+.imageupload-group .imageupload-thumbnail {
+  float: left;
+  border: 1px solid #99afc2;
+  border-radius: 4px;
+  padding: 2px;
+}
+.imageupload-group .imageupload-thumbnail img {
+  width: 50px;
+  height: 50px;
+  border-radius: 3px;
+}
+.imageupload-group .imageupload-remove {
+  float: left;
+  margin: 18px 4px 0;
+  width: 11px;
+}
+.imageupload-group .imageupload-dropzone {
+  float: left;
+  width: 100px;
+  height: 55px;
+  border: 1px dotted #a8bac9;
+  border-radius: 4px;
+  background-color: #e7ecf0;
+  text-align: center;
+  padding-top: 14px;
+  position: relative;
+  line-height: 12px;
+}
+.imageupload-group .imageupload-dropzone input {
+  opacity: 0;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.imageupload-group .imageupload-dropzone span {
+  font-size: 11px;
+  color: #a8bac9;
+  width: 100%;
+}
 /*
     Used to manage styles for specific blocks.
     
@@ -8613,27 +8683,10 @@ div.tagsinput div {
 .sql-comand .panel {
   margin-bottom: 24px;
 }
-.html-content-editor-panel .editor-buttons {
-  float: right;
-  margin-top: 6px;
-}
-.html-content-version-label {
-  background-color: #6d6d6d;
-  padding: 2px 8px;
-  float: left;
-  margin: 6px 0 0 16px;
-  -moz-border-radius: 4px;
-  -webkit-border-radius: 4px;
-  border-radius: 4px;
-  color: #bbbbbb;
-}
-.html-content-version-label:hover {
-  color: inherit;
-}
-.html-content-edit-header {
+.htmlcontent-edit-header {
   padding: 6px 16px 0 16px;
 }
-.html-content-approve {
+.htmlcontent-edit-header .html-content-approve {
   float: right;
   margin-top: 4px;
 }
@@ -9057,25 +9110,55 @@ td[align=center] {
     Used to manage styles related to modal dialog.
 
 */
-.rock-modal {
+.rock-modal-frame {
   width: 750px;
 }
-#dialog .modal-header {
+.rock-modal {
+  background-color: #f4f4f4;
+}
+.rock-modal .modal-header {
   background-color: #3a3a3a;
   color: #bbbbbb;
   padding: 5px 15px;
   min-height: 34px;
 }
-#dialog .modal-header h3 {
+.rock-modal .modal-header:before,
+.rock-modal .modal-header:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.rock-modal .modal-header:after {
+  clear: both;
+}
+.rock-modal .modal-header:before,
+.rock-modal .modal-header:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.rock-modal .modal-header:after {
+  clear: both;
+}
+.rock-modal .modal-header h3 {
   float: left;
 }
-#dialog .modal-header .close {
+.rock-modal .modal-header .close {
   margin: 0;
   padding: 6px;
   color: #bbbbbb;
   text-shadow: none;
 }
-#dialog .modal-footer {
+.rock-modal .modal-header .label {
+  margin-top: 8px;
+}
+.rock-modal .modal-footer {
   padding: 8px;
   margin-top: 10px;
   background-color: #e7ecf0;
@@ -9162,6 +9245,30 @@ dl dd {
 }
 /* form styles - not enough yet for it's own file */fieldset .actions {
   margin-top: 36px;
+}
+fieldset .actions:before,
+fieldset .actions:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+fieldset .actions:after {
+  clear: both;
+}
+fieldset .actions:before,
+fieldset .actions:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+fieldset .actions:after {
+  clear: both;
 }
 .form-control.input-width-xs,
 .input-group.input-width-xs {
