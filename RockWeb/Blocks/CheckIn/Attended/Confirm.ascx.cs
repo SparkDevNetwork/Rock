@@ -233,18 +233,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 maWarning.Show( errorMsg, Rock.Web.UI.Controls.ModalAlertType.Warning );
             }
         }
-               
-        /// <summary>
-        /// Goes the back.
-        /// </summary>
-        private void GoBack()
-        {            
-            SaveState();
-            NavigateToPreviousPage();
-        }
+             
+        // GoBack() handled by Rock.Model.CheckInBlock
 
         /// <summary>
-        /// Goes the next.
+        /// Goes to the next page.
         /// </summary>
         private void GoNext()
         {
