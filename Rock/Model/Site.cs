@@ -164,13 +164,13 @@ namespace Rock.Model
         public string ErrorPage { get; set; }
         
         /// <summary>
-        /// Gets or sets a collection of <see cref="Rock.Model.Page"/> entities that are a part of the Site.
+        /// Gets or sets a collection of <see cref="Rock.Model.Layout"/> entities that are a part of the Site.
         /// </summary>
         /// <value>
-        /// A collection of <see cref="Rock.Model.Page"/> entities that are a part of the site.
+        /// A collection of <see cref="Rock.Model.Layout"/> entities that are a part of the site.
         /// </value>
         [DataMember]
-        public virtual ICollection<Page> Pages { get; set; }
+        public virtual ICollection<Layout> Layouts { get; set; }
         
         /// <summary>
         /// Gets or sets the collection of <see cref="Rock.Model.SiteDomain"/> entities that reference the Site.
