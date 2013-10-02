@@ -25,13 +25,11 @@
 
                         // Set the appropriate parent value (layout or page)
                         if ($('#block-move-Location_0').attr('checked') == 'checked') {
-                            getData.SiteId = null;
-                            getData.Layout = null;
+                            getData.LayoutId = null;
                             getData.PageId = Rock.settings.get('pageId');
                         }
                         else {
-                            getData.SiteId = Rock.settings.get('siteId');
-                            getData.Layout = Rock.settings.get('layout');
+                            getData.LayoutId = Rock.settings.get('layoutId');
                             getData.PageId = null;
                         }
 
@@ -92,9 +90,9 @@
                 // Bind the block configure icon so that edit icons are displayed on hover
                 $(".block-configuration").hover(function (e) {
                     var barWidth = $('.block-configuration-bar', this).outerWidth() + 45 + 'px';
-                    $(this).stop(true, true).animate({ width: barWidth }, 200).css({ 'z-index': '10' });
+                    $(this).stop(true, true).animate({ width: barWidth }, 200).css({ 'z-index': '11001' });
                 }, function () {
-                    $(this).stop(true, true).delay(500).animate({ width: '26px' }, 500).css({ 'z-index': '1' });
+                    $(this).stop(true, true).delay(500).animate({ width: '26px' }, 500).css({ 'z-index': '11000' });
                 });
 
                 // Bind the block instance delete anchor

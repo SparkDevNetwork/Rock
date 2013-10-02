@@ -105,10 +105,14 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     System.Web.UI.WebControls.Image imgPerson = e.Item.FindControl( "imgPerson" ) as System.Web.UI.WebControls.Image;
                     if ( imgPerson != null )
                     {
-                        imgPerson.Visible = fm.PhotoId.HasValue;
-                        if ( fm.PhotoId.HasValue )
+                        //imgPerson.Visible = fm.PhotoId.HasValue;
+                        if (fm.PhotoId.HasValue)
                         {
-                            imgPerson.ImageUrl = string.Format( "~/GetImage.ashx?id={0}", fm.PhotoId );
+                            imgPerson.ImageUrl = string.Format("~/GetImage.ashx?id={0}", fm.PhotoId);
+                        }
+                        else
+                        {
+                            imgPerson.ImageUrl = "~/Assets/Images/person-no-photo.svg";
                         }
                     }
 

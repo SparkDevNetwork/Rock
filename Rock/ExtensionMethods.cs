@@ -7,6 +7,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -15,7 +16,6 @@ using System.Web.Routing;
 using System.Web.UI.WebControls;
 using DotLiquid;
 using Newtonsoft.Json;
-using Rock.Data;
 using Rock.Model;
 
 namespace Rock
@@ -46,7 +46,7 @@ namespace Rock
         /// Gets the property value.
         /// </summary>
         /// <param name="rootObj">The root obj.</param>
-        /// <param name="propertyNamePath">The property path name (i.e. FirstName, Owner.FirstName, etc).</param>
+        /// <param name="propertyPathName">Name of the property path.</param>
         /// <returns></returns>
         public static object GetPropertyValue( this object rootObj, string propertyPathName )
         {
@@ -73,6 +73,19 @@ namespace Rock
             return obj;
         }
 
+        /// <summary>
+        /// Safely ToString() this item, even if it's null.
+        /// </summary>
+        /// <param name="obj">an object</param>
+        /// <returns>The ToString or the empty string if the item is null.</returns>
+        public static string ToStringSafe( this object obj )
+        {
+            if ( obj != null )
+            {
+                return obj.ToString();
+            }
+            return String.Empty;
+        }
         #endregion
 
         #region Type Extensions
@@ -113,7 +126,7 @@ namespace Rock
                 }
             }
         }
-
+        
         #endregion
 
         #region String Extensions
@@ -225,7 +238,7 @@ namespace Rock
         /// <param name="str"></param>
         /// <param name="maxLength"></param>
         /// <returns></returns>
-        public static string Ellipsis( this string str, int maxLength )
+        public static string Truncate( this string str, int maxLength )
         {
             if ( str == null )
                 return null;
@@ -342,6 +355,8 @@ namespace Rock
                 return content;
 
             Template.NamingConvention = new DotLiquid.NamingConventions.CSharpNamingConvention();
+            //TODO: This should probably use the theme assets folder
+            Template.FileSystem = new DotLiquid.FileSystems.LocalFileSystem( System.Web.HttpContext.Current.Server.MapPath( "~/Assets/Liquid" ) );
             Template template = Template.Parse( content );
 
             return template.Render( Hash.FromDictionary( mergeObjects ) );
@@ -364,6 +379,36 @@ namespace Rock
                 return "<span class='first-word'>" + str + " </span>";
         }
 
+        /// <summary>
+        /// Converts the value to Type, or if unsuccessful, returns the default value of Type.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static T AsType<T>( this string value )
+        {
+            var converter = TypeDescriptor.GetConverter( typeof( T ) );
+            return converter.IsValid( value )
+                ? (T)converter.ConvertFrom( value )
+                : default( T );
+        }
+
+        /// <summary>
+        /// Maskeds the specified value.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static string Masked( this string value )
+        {
+            if ( value.Length > 4 )
+            {
+                return string.Concat(new string('*', 12 ), value.Substring( value.Length - 4 ) );
+            }
+            else
+            {
+                return value;
+            }
+        }
         #endregion
 
         #region Int Extensions
@@ -817,7 +862,7 @@ namespace Rock
         /// <param name="className">Name of the class.</param>
         public static void RemoveCssClass( this System.Web.UI.WebControls.WebControl webControl, string className )
         {
-            string match = @"\s*\b" + className + "\b";
+            string match = @"\s*\b" + className + @"\b";
             string css = webControl.CssClass;
 
             if ( Regex.IsMatch( css, match, RegexOptions.IgnoreCase ) )
@@ -905,6 +950,7 @@ namespace Rock
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="enumType">Type of the enum.</param>
+        /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
         public static void BindToEnum( this ListControl listControl, Type enumType, bool insertBlankOption = false )
         {
             var dictionary = new Dictionary<int, string>();
@@ -929,6 +975,7 @@ namespace Rock
         /// </summary>
         /// <param name="listControl">The list control.</param>
         /// <param name="definedType">Type of the defined.</param>
+        /// <param name="insertBlankOption">if set to <c>true</c> [insert blank option].</param>
         public static void BindToDefinedType( this ListControl listControl, Rock.Web.Cache.DefinedTypeCache definedType, bool insertBlankOption = false )
         {
             var ds = definedType.DefinedValues
@@ -1021,6 +1068,31 @@ namespace Rock
         {
             return Enum.GetName( eff.GetType(), eff ).SplitCase();
         }
+
+        /// <summary>
+        /// Gets the enum description.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public static string GetDescription( this Enum value )
+        {
+            var type = value.GetType();
+            string name = Enum.GetName( type, value );
+            if ( name != null )
+            {
+                System.Reflection.FieldInfo field = type.GetField( name );
+                if ( field != null )
+                {
+                    var attr = System.Attribute.GetCustomAttribute( field,
+                        typeof( DescriptionAttribute ) ) as DescriptionAttribute;
+                    if ( attr != null )
+                    {
+                        return attr.Description;
+                    }
+                }
+            }
+            return null;
+        }        
 
         /// <summary>
         /// Converts to int.

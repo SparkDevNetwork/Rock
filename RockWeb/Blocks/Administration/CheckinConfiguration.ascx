@@ -10,7 +10,7 @@
         <asp:Panel ID="pnlDetails" runat="server">
 
             <asp:HiddenField ID="hfParentGroupTypeId" runat="server" />
-            <asp:ValidationSummary ID="vsDetails" runat="server" CssClass="alert alert-error" />
+            <asp:ValidationSummary ID="vsDetails" runat="server" CssClass="alert alert-danger" />
 
             <fieldset>
                 <legend>
@@ -29,11 +29,13 @@
                 <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
             </div>
 
+            <Rock:ConfirmPageUnload ID="confirmExit" runat="server" ConfirmationMessage="Changes have been made to this check-in configuration that have not yet been saved." Enabled="false" />
+
         </asp:Panel>
 
         <asp:Panel ID="pnlCheckinLabelPicker" runat="server" Visible="false">
             <asp:HiddenField ID="hfAddCheckinLabelGroupTypeGuid" runat="server" />
-            <Rock:LabeledDropDownList ID="ddlCheckinLabel" runat="server" LabelText="Select Check-in Label" />
+            <Rock:RockDropDownList ID="ddlCheckinLabel" runat="server" Label="Select Check-in Label" />
 
             <div class="actions">
                 <asp:LinkButton ID="btnAddCheckinLabel" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddCheckinLabel_Click"></asp:LinkButton>
@@ -43,7 +45,7 @@
 
         <asp:Panel ID="pnlLocationPicker" runat="server" Visible="false">
             <asp:HiddenField ID="hfAddLocationGroupGuid" runat="server" />
-            <Rock:LabeledDropDownList ID="ddlLocation" runat="server" LabelText="Select Check-in Location" />
+            <Rock:RockDropDownList ID="ddlLocation" runat="server" Label="Select Check-in Location" />
 
             <div class="actions">
                 <asp:LinkButton ID="btnAddLocation" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddLocation_Click"></asp:LinkButton>
@@ -75,6 +77,7 @@
                     },
                     update: function (event, ui) {
                         {
+                            $('#' + '<%=btnSave.ClientID %>').addClass('disabled');
                             __doPostBack('<%=upDetail.ClientID %>', 're-order-grouptype:' + ui.item.attr('data-key') + ';' + ui.item.index());
                         }
                     }
@@ -94,6 +97,7 @@
                     },
                     update: function (event, ui) {
                         {
+                            $('#' + '<%=btnSave.ClientID %>').addClass('disabled');
                             __doPostBack('<%=upDetail.ClientID %>', 're-order-group:' + ui.item.attr('data-key') + ';' + ui.item.index());
                         }
                     }

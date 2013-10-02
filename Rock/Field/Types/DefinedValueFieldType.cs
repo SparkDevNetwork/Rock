@@ -151,7 +151,8 @@ namespace Rock.Field.Types
         /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
-        /// <param name="configurationValues"></param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
         /// <returns>
         /// The control
         /// </returns>
@@ -161,12 +162,12 @@ namespace Rock.Field.Types
 
             if ( configurationValues != null && configurationValues.ContainsKey( ALLOW_MULTIPLE_KEY ) && configurationValues[ ALLOW_MULTIPLE_KEY ].Value.AsBoolean() )
             {
-                editControl = new Rock.Web.UI.Controls.LabeledCheckBoxList { ID = id }; 
+                editControl = new Rock.Web.UI.Controls.RockCheckBoxList { ID = id }; 
                 editControl.AddCssClass( "checkboxlist-group" );
             }
             else
             {
-                editControl = new Rock.Web.UI.Controls.LabeledDropDownList { ID = id }; 
+                editControl = new Rock.Web.UI.Controls.RockDropDownList { ID = id }; 
                 editControl.Items.Add( new ListItem() );
             }
 
@@ -198,13 +199,13 @@ namespace Rock.Field.Types
 
             if ( control != null && control is ListControl )
             {
-                if ( control is Rock.Web.UI.Controls.LabeledDropDownList )
+                if ( control is Rock.Web.UI.Controls.RockDropDownList )
                 {
                     ids.Add( ( (ListControl)control ).SelectedValue );
                 }
-                else if ( control is Rock.Web.UI.Controls.LabeledCheckBoxList )
+                else if ( control is Rock.Web.UI.Controls.RockCheckBoxList )
                 {
-                    var cblControl = control as Rock.Web.UI.Controls.LabeledCheckBoxList;
+                    var cblControl = control as Rock.Web.UI.Controls.RockCheckBoxList;
 
                     ids.AddRange( cblControl.Items.Cast<ListItem>()
                         .Where( i => i.Selected )

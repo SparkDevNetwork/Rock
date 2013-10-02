@@ -180,6 +180,10 @@ namespace Rock.Model
             service.ExecuteCommand( query );
         }
 
+        /// <summary>
+        /// Makes the binary file permanent.
+        /// </summary>
+        /// <param name="id">The id.</param>
         public static void MakePermanent( int id)
         {
             string query = string.Format("UPDATE BinaryFile SET IsTemporary = 0 WHERE Id = {0}", id);

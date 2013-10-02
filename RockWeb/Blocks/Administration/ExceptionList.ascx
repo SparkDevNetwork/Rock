@@ -17,12 +17,12 @@
                 </div>
             </div>
             <Rock:GridFilter ID="fExceptionList" runat="server">
-                <Rock:LabeledDropDownList ID="ddlSite" runat="server" LabelText="Site" />
-                <Rock:PagePicker ID="ppPage" runat="server" LabelText="Page" />
-                <Rock:PersonPicker ID="ppUser" runat="server" LabelText="User" />
-                <Rock:LabeledTextBox ID="txtStatusCode" runat="server" LabelText="Status Code" />
-                <Rock:DatePicker ID="dpStartDate" runat="server"   LabelText="Start Date" />
-                <Rock:DatePicker ID="dpEndDate" runat="server" LabelText="End Date" />
+                <Rock:RockDropDownList ID="ddlSite" runat="server" Label="Site" />
+                <Rock:PagePicker ID="ppPage" runat="server" Label="Page" />
+                <Rock:PersonPicker ID="ppUser" runat="server" Label="User" />
+                <Rock:RockTextBox ID="txtStatusCode" runat="server" Label="Status Code" />
+                <Rock:DatePicker ID="dpStartDate" runat="server"   Label="Start Date" />
+                <Rock:DatePicker ID="dpEndDate" runat="server" Label="End Date" />
             </Rock:GridFilter>
             <Rock:Grid ID="gExceptionList" runat="server" AllowSorting="true" OnRowSelected="gExceptionList_RowSelected" EmptyDataText="No Exceptions Found">
                 <Columns>

@@ -464,7 +464,7 @@ namespace Rock.Web.UI
         /// If the attribute doesn't exist an empty list is returned.
         /// </summary>
         /// <param name="key">the block attribute key</param>
-        /// <returns>a list of strings or an empty list if none exists</string></returns>
+        /// <returns>a list of strings or an empty list if none exists</returns>
         public List<string> GetAttributeValues( string key )
         {
             if ( CurrentBlock != null )
@@ -476,7 +476,7 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Sets the attribute value.
+        /// Sets the value of an attribute key in memory. Once values have been set, use the <see cref="SaveAttributeValues(int?)" /> method to save all values to database 
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
@@ -552,11 +552,30 @@ namespace Rock.Web.UI
         /// <param name="queryParams">The query params.</param>
         public void NavigateToLinkedPage( string attributeKey, Dictionary<string, string> queryParams = null )
         {
-            Guid pageGuid = Guid.Empty;
-            if ( Guid.TryParse( GetAttributeValue( attributeKey ), out pageGuid ) )
+            var pageReference = new PageReference( GetAttributeValue( attributeKey ), queryParams );
+            string pageUrl = pageReference.BuildUrl();
+            Response.Redirect( pageUrl, false );
+            Context.ApplicationInstance.CompleteRequest();
+        }
+
+        /// <summary>
+        /// Navigates the automatic linked page.
+        /// </summary>
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="itemKey">The item key.</param>
+        /// <param name="itemKeyValue">The item key value.</param>
+        /// <param name="itemParentKey">The item parent key.</param>
+        /// <param name="itemParentValue">The item parent value.</param>
+        public void NavigateToLinkedPage( string attributeKey, string itemKey, int itemKeyValue, string itemParentKey = null, int? itemParentValue = null )
+        {
+            Dictionary<string, string> queryParams = new Dictionary<string, string>();
+            queryParams.Add( itemKey, itemKeyValue.ToString() );
+            if ( !string.IsNullOrWhiteSpace( itemParentKey ) )
             {
-                NavigateToPage( pageGuid, queryParams );
+                queryParams.Add( itemParentKey, ( itemParentValue ?? 0 ).ToString() );
             }
+
+            NavigateToLinkedPage( attributeKey, queryParams );
         }
 
         /// <summary>
@@ -568,44 +587,33 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Shows the detail page.
+        /// Navigates the automatic page.
         /// </summary>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        /// <param name="itemParentKey">The item parent key.</param>
-        /// <param name="itemParentValue">The item parent value.</param>
-        public void NavigateToDetailPage( string itemKey, int itemKeyValue, string itemParentKey = null, int? itemParentValue = null )
+        /// <param name="pageGuid">The page unique identifier.</param>
+        /// <param name="queryString">The query string.</param>
+        public void NavigateToPage( Guid pageGuid, Dictionary<string, string> queryString )
         {
-            string pageGuid = GetAttributeValue( DetailPageAttribute.Key );
-
-            if ( !string.IsNullOrWhiteSpace( pageGuid ) )
-            {
-                Dictionary<string, string> queryString = new Dictionary<string, string>();
-                queryString.Add( itemKey, itemKeyValue.ToString() );
-                if ( !string.IsNullOrWhiteSpace( itemParentKey ) )
-                {
-                    queryString.Add( itemParentKey, ( itemParentValue ?? 0 ).ToString() );
-                }
-
-                NavigateToPage( new Guid( pageGuid ), queryString );
-            }
+            NavigateToPage(pageGuid, Guid.Empty, queryString);
         }
 
         /// <summary>
-        /// Navigates to page.
+        /// Navigates the automatic page.
         /// </summary>
-        /// <param name="pageGuid">The page GUID.</param>
-        /// <param name="itemKey">The item key.</param>
-        /// <param name="itemKeyValue">The item key value.</param>
-        /// <param name="additionalParams">The additional params.</param>
-        public void NavigateToPage( Guid pageGuid, Dictionary<string, string> queryString )
+        /// <param name="pageGuid">The page unique identifier.</param>
+        /// <param name="pageRouteGuid">The page route unique identifier.</param>
+        /// <param name="queryString">The query string.</param>
+        public void NavigateToPage( Guid pageGuid, Guid pageRouteGuid, Dictionary<string, string> queryString )
         {
             var pageCache = PageCache.Read( pageGuid );
             if ( pageCache != null )
             {
                 int routeId = 0;
                 {
-                    routeId = pageCache.PageRoutes.FirstOrDefault().Key;
+                    var pageRouteInfo = pageCache.PageRoutes.FirstOrDefault( a => a.Guid == pageRouteGuid);
+                    if (pageRouteInfo != null)
+                    {
+                        routeId = pageRouteInfo.Id;
+                    }
                 }
 
                 var pageReference = new PageReference( pageCache.Id, routeId, queryString, null );
@@ -779,7 +787,7 @@ namespace Rock.Web.UI
         /// <param name="ex">The System.Exception to log.</param>
         public void LogException( Exception ex )
         {
-            ExceptionLogService.LogException( ex, Context, CurrentPage.Id, CurrentPage.SiteId, CurrentPersonId );
+            ExceptionLogService.LogException( ex, Context, CurrentPage.Id, CurrentPage.Layout.SiteId, CurrentPersonId );
         }
 
         /// <summary>

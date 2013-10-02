@@ -202,7 +202,7 @@ namespace Rock.Security.ExternalAuthentication
         /// <exception cref="System.NotImplementedException"></exception>
         public override String ImageUrl()
         {
-            return "~/Assets/Images/facebook-login.png";
+            return ""; /*~/Assets/Images/facebook-login.png*/
         }
 
         private string GetRedirectUrl( HttpRequest request )
@@ -211,11 +211,25 @@ namespace Rock.Security.ExternalAuthentication
             return uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + uri.LocalPath;
         }
 
+        /// <summary>
+        /// Authenticates the user based on user name and password
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="password">The password.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
         public override bool Authenticate( UserLogin user, string password )
         {
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Encodes the password.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="password">The password.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
         public override string EncodePassword( UserLogin user, string password )
         {
             throw new NotImplementedException();

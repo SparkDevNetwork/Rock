@@ -93,7 +93,8 @@ namespace RockWeb.Blocks.Administration
                 site.Name = tbSiteName.Text;
                 site.Description = tbDescription.Text;
                 site.Theme = ddlTheme.Text;
-                site.DefaultPageId = int.Parse( ppDefaultPage.SelectedValue );
+                site.DefaultPageId = ppDefaultPage.PageId ?? 0;
+                site.DefaultPageRouteId = ppDefaultPage.PageRouteId;
                 site.LoginPageReference = tbLoginPageReference.Text;
 
                 var currentDomains = tbSiteDomains.Text.SplitDelimitedValues().ToList<string>();
@@ -137,7 +138,7 @@ namespace RockWeb.Blocks.Administration
 
                     if ( newSite )
                     {
-                        Rock.Security.Authorization.CopyAuthorization( CurrentPage.Site, site, CurrentPersonId );
+                        Rock.Security.Authorization.CopyAuthorization( CurrentPage.Layout.Site, site, CurrentPersonId );
                     }
                 } );
 
@@ -187,7 +188,7 @@ namespace RockWeb.Blocks.Administration
             {
                 site = new Site { Id = 0 };
                 site.SiteDomains = new List<SiteDomain>();
-                site.Theme = CurrentPage.Site.Theme;
+                site.Theme = CurrentPage.Layout.Site.Theme;
                 lActionTitle.Text = ActionTitle.Add( Rock.Model.Site.FriendlyTypeName );
             }
 
@@ -198,7 +199,15 @@ namespace RockWeb.Blocks.Administration
             tbSiteName.Text = site.Name;
             tbDescription.Text = site.Description;
             ddlTheme.SetValue( site.Theme );
-            ppDefaultPage.SetValue( site.DefaultPage );
+            if ( site.DefaultPageRoute != null )
+            {
+                ppDefaultPage.SetValue( site.DefaultPageRoute );
+            }
+            else
+            {
+                ppDefaultPage.SetValue( site.DefaultPage );
+            }
+
             tbLoginPageReference.Text = site.LoginPageReference;
 
             tbSiteDomains.Text = string.Join( "\n", site.SiteDomains.Select( dom => dom.Domain ).ToArray() );

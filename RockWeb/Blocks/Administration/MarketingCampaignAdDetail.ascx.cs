@@ -263,7 +263,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( string.IsNullOrWhiteSpace( ddlMarketingCampaignAdType.SelectedValue ) )
             {
-                ddlMarketingCampaignAdType.ShowErrorMessage( WarningMessage.CannotBeBlank( ddlMarketingCampaignAdType.LabelText ) );
+                ddlMarketingCampaignAdType.ShowErrorMessage( WarningMessage.CannotBeBlank( ddlMarketingCampaignAdType.Label ) );
                 return;
             }
 
@@ -383,7 +383,7 @@ namespace RockWeb.Blocks.Administration
             {
                 case MarketingCampaignAdStatus.Approved: ltMarketingCampaignAdStatus.TextCssClass = "alert MarketingCampaignAdStatus alert-success";
                     break;
-                case MarketingCampaignAdStatus.Denied: ltMarketingCampaignAdStatus.TextCssClass = "alert MarketingCampaignAdStatus alert-error";
+                case MarketingCampaignAdStatus.Denied: ltMarketingCampaignAdStatus.TextCssClass = "alert MarketingCampaignAdStatus alert-danger";
                     break;
                 default: ltMarketingCampaignAdStatus.TextCssClass = "alert MarketingCampaignAdStatus alert-info";
                     break;

@@ -19,7 +19,7 @@ namespace RockWeb.Blocks.Crm
     /// 
     /// </summary>
     [GroupField( "Group", "Either pick a specific group or choose <none> to have group be determined by the groupId page parameter" )]
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     public partial class GroupMemberList : RockBlock, IDimmableBlock
     {
         #region Control Methods
@@ -104,7 +104,7 @@ namespace RockWeb.Blocks.Crm
         /// <exception cref="System.NotImplementedException"></exception>
         protected void gGroupMembers_AddClick( object sender, EventArgs e )
         {
-            NavigateToDetailPage( "groupMemberId", 0, "groupId", hfGroupId.ValueAsInt() );
+            NavigateToLinkedPage( "DetailPage", "groupMemberId", 0, "groupId", hfGroupId.ValueAsInt() );
         }
 
         /// <summary>
@@ -114,7 +114,7 @@ namespace RockWeb.Blocks.Crm
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gGroupMembers_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "groupMemberId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "groupMemberId", (int)e.RowKeyValue );
         }
 
         /// <summary>

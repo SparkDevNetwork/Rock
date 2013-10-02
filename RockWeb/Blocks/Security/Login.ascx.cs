@@ -49,12 +49,9 @@ namespace RockWeb.Blocks.Security
                         }
                     }
 
-                    var div = new HtmlGenericControl( "div" );
-                    phExternalLogins.Controls.Add( div );
-                    div.AddCssClass( loginTypeName + "-login" );
-
                     LinkButton lbLogin = new LinkButton();
-                    div.Controls.Add( lbLogin );
+                    phExternalLogins.Controls.Add(lbLogin);
+                    lbLogin.AddCssClass("btn btn-authenication " + loginTypeName.ToLower());
                     lbLogin.ID = "lb" + loginTypeName + "Login";
                     lbLogin.Click += lbLogin_Click;
                     lbLogin.CausesValidation = false;
@@ -68,7 +65,7 @@ namespace RockWeb.Blocks.Security
                     }
                     else
                     {
-                        lbLogin.Text = loginTypeName;
+                        lbLogin.Text = "Login Using " + loginTypeName;
                     }
                 }
             }

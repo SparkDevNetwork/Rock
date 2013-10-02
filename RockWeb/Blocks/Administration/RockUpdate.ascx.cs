@@ -232,7 +232,7 @@ namespace RockWeb.Blocks.Administration
             }
             catch ( InvalidOperationException ex )
             {
-                litMessage.Text = string.Format( "<div class='alert alert-error'>There is a problem with the packaging system. {0}</p>", ex.Message );
+                litMessage.Text = string.Format( "<div class='alert alert-danger'>There is a problem with the packaging system. {0}</p>", ex.Message );
             }
         }
 

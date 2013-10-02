@@ -57,12 +57,6 @@ namespace Rock.Model
         public bool CanDelete( Site item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<Page>().Queryable().Any( a => a.SiteId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Site.FriendlyTypeName, Page.FriendlyTypeName );
-                return false;
-            }  
             return true;
         }
     }
@@ -92,6 +86,7 @@ namespace Rock.Model
                 target.Description = source.Description;
                 target.Theme = source.Theme;
                 target.DefaultPageId = source.DefaultPageId;
+                target.DefaultPageRouteId = source.DefaultPageRouteId;
                 target.FaviconUrl = source.FaviconUrl;
                 target.AppleTouchIconUrl = source.AppleTouchIconUrl;
                 target.FacebookAppId = source.FacebookAppId;

@@ -296,12 +296,12 @@
                     startDateValue = Date.parse($datepicker.val()) || -1;
                 
                 if (startDateValue < 0) {
-                    $datepicker.parents(".control-group").first().toggleClass("error", 1);
+                    $datepicker.parents(".form-group").first().toggleClass("has-error", 1);
                     event.preventDefault();
                     return;
                 }
                 else {
-                    $datepicker.parents(".control-group").first().toggleClass("error", 0);
+                    $datepicker.parents(".form-group").first().toggleClass("has-error", 0);
                 }
 
                 if ($modal.is(':visible')) {

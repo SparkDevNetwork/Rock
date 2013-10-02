@@ -348,6 +348,12 @@ namespace RockWeb.Blocks.Administration
                     }
                 }
 
+                Literal lDescription = e.Row.FindControl( "lDescription" ) as Literal;
+                if ( lDescription != null )
+                {
+                    lDescription.Text = attribute.Description.Truncate( 100 );
+                }
+
                 if ( _displayValueEdit )
                 {
                     Literal lValue = e.Row.FindControl( "lValue" ) as Literal;
@@ -385,10 +391,11 @@ namespace RockWeb.Blocks.Administration
         {
             using ( new UnitOfWorkScope() )
             {
+                Rock.Model.Attribute attribute = null;
+
                 RockTransactionScope.WrapTransaction( () =>
                 {
                     var attributeService = new AttributeService();
-                    Rock.Model.Attribute attribute = null;
 
                     // remove old qualifier values in case they changed
                     if ( edtAttribute.AttributeId.HasValue )
@@ -429,10 +436,19 @@ namespace RockWeb.Blocks.Administration
                         return;
                     }
 
-                    Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
                     attributeService.Save( attribute, CurrentPersonId );
 
                 } );
+
+                if ( attribute != null )
+                {
+                    Rock.Web.Cache.AttributeCache.Flush( attribute.Id );
+                    if ( !_entityTypeId.HasValue && _entityQualifierColumn == string.Empty && _entityQualifierValue == string.Empty && !_entityId.HasValue )
+                    {
+                        Rock.Web.Cache.GlobalAttributesCache.Flush();
+                    }
+                }
+
             }
 
             BindGrid();
@@ -469,7 +485,7 @@ namespace RockWeb.Blocks.Administration
                     attributeId = 0;
                 }
 
-                if ( attributeId != 0 && phEditControl.Controls.Count > 0 )
+                if ( attributeId != 0 && fsEditControl.Controls.Count > 0 )
                 {
                     var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
 
@@ -484,7 +500,7 @@ namespace RockWeb.Blocks.Administration
                     }
 
                     var fieldType = Rock.Web.Cache.FieldTypeCache.Read( attribute.FieldType.Id );
-                    attributeValue.Value = fieldType.Field.GetEditValue( phEditControl.Controls[0], attribute.QualifierValues );
+                    attributeValue.Value = fieldType.Field.GetEditValue( attribute.GetControl( fsEditControl.Controls[0] ), attribute.QualifierValues );
 
                     attributeValueService.Save( attributeValue, CurrentPersonId );
 
@@ -650,26 +666,13 @@ namespace RockWeb.Blocks.Administration
         {
             if ( _displayValueEdit )
             {
+                fsEditControl.Controls.Clear();
+
                 var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
+                var attributeValue = new AttributeValueService().GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
+                attribute.AddControl( fsEditControl.Controls, attributeValue.Value, setValues, true );
 
                 hfIdValues.Value = attribute.Id.ToString();
-                lCaption.Text = attribute.Name;
-
-                AttributeValueService attributeValueService = new AttributeValueService();
-                var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
-
-                var fieldType = Rock.Web.Cache.FieldTypeCache.Read( attribute.FieldType.Id );
-
-                Control editControl = fieldType.Field.EditControl( attribute.QualifierValues, string.Format( "attribute_field_{0}", attribute.Id ) );
-                editControl.ClientIDMode = ClientIDMode.AutoID;
-
-                if ( setValues && attributeValue != null )
-                {
-                    fieldType.Field.SetEditValue( editControl, attribute.QualifierValues, attributeValue.Value );
-                }
-
-                phEditControl.Controls.Clear();
-                phEditControl.Controls.Add( editControl );
 
                 modalDetails.Show();
             }

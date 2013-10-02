@@ -7,7 +7,7 @@
 
             <asp:HiddenField ID="hfScheduleId" runat="server" />
 
-            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
+            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" />
             <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
             <div id="pnlEditDetails" runat="server" class="well">
@@ -21,12 +21,12 @@
 
                             <Rock:DataTextBox ID="tbScheduleName" runat="server" SourceTypeName="Rock.Model.Schedule, Rock" PropertyName="Name" />
                             <Rock:DataTextBox ID="tbScheduleDescription" runat="server" SourceTypeName="Rock.Model.Schedule, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
-                            <Rock:ScheduleBuilder ID="sbSchedule" runat="server" LabelText="Edit Schedule" OnSaveSchedule="sbSchedule_SaveSchedule" />
+                            <Rock:ScheduleBuilder ID="sbSchedule" runat="server" Label="Edit Schedule" OnSaveSchedule="sbSchedule_SaveSchedule" />
 
                         </div>
                         <div class="span6">
 
-                            <Rock:CategoryPicker ID="cpCategory" runat="server" EntityTypeName="Rock.Model.Schedule" LabelText="Category" Required="true" />
+                            <Rock:CategoryPicker ID="cpCategory" runat="server" EntityTypeName="Rock.Model.Schedule" Label="Category" Required="true" />
                             <div class="control-group">
                                 <div class="control-label">Enable Check-in</div>
                                 <div class="controls">

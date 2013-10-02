@@ -24,8 +24,8 @@ namespace Rock.Web.UI.Controls
             : base()
         {
             this.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
-            this.HeaderStyle.CssClass = "grid-col-command";
-            this.ItemStyle.CssClass = "grid-col-command";
+            this.HeaderStyle.CssClass = "grid-columncommand";
+            this.ItemStyle.CssClass = "grid-columncommand";
         }
 
         /// <summary>
@@ -108,7 +108,7 @@ namespace Rock.Web.UI.Controls
             {
                 HtmlGenericControl aSecure = new HtmlGenericControl( "a" );
                 cell.Controls.Add( aSecure );
-                aSecure.Attributes.Add( "class", "btn" );
+                aSecure.Attributes.Add("class", "btn btn-default btn-sm");
 
                 // height attribute is used by the modal that pops up when the button is clicked
                 aSecure.Attributes.Add( "height", "500px" );
