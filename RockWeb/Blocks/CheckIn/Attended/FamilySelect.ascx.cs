@@ -630,7 +630,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <summary>
         /// Goes back one page.
         /// </summary>
-        private void GoBack()
+        private new void GoBack()
         {
             // reset checkin state 
             if ( CurrentCheckInState != null && CurrentCheckInState.CheckIn != null )
@@ -853,7 +853,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 if ( optionGroup.Equals( "Grade" ) )
                 {
                     var grade = ddlAbilitySearch.SelectedValueAsEnum<GradeLevel>();
-                    if ( grade != null && (int)grade <= 12 )
+                    if ( (int)grade <= 12 )
                     {
                         peopleList = peopleList.Where( p => p.Grade == (int)grade ).ToList();
                     }
