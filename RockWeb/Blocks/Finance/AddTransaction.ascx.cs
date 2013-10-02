@@ -150,8 +150,7 @@ achieve our mission.  We are so grateful for your commitment.
             get { return ViewState["ScheduleId"] as string ?? string.Empty; }
             set { ViewState["ScheduleId"] = value; }
         }
-
-
+        
         #endregion
 
         #region overridden control methods
@@ -485,6 +484,11 @@ achieve our mission.  We are so grateful for your commitment.
             }
         }
 
+        /// <summary>
+        /// Handles the Click event of the btnPrev control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnPrev_Click( object sender, EventArgs e )
         {
             // Previous should only be enabled on the confirmation page (2)
@@ -510,7 +514,7 @@ achieve our mission.  We are so grateful for your commitment.
             {
                 case 1:
 
-                    if ( ProccessPaymentInfo( out errorMessage ) )
+                    if ( ProcessPaymentInfo( out errorMessage ) )
                     {
                         this.AddHistory( "GivingDetail", "1", null );
                         SetPage( 2 );
@@ -524,7 +528,7 @@ achieve our mission.  We are so grateful for your commitment.
 
                 case 2:
 
-                    if ( ProccessConfirmation( out errorMessage ) )
+                    if ( ProcessConfirmation( out errorMessage ) )
                     {
                         this.AddHistory( "GivingDetail", "2", null );
                         SetPage( 3 );
@@ -548,7 +552,7 @@ achieve our mission.  We are so grateful for your commitment.
             TransactionCode = string.Empty;
 
             string errorMessage = string.Empty;
-            if ( ProccessConfirmation( out errorMessage ) )
+            if ( ProcessConfirmation( out errorMessage ) )
             {
                 SetPage( 3 );
             }
@@ -676,6 +680,9 @@ achieve our mission.  We are so grateful for your commitment.
 
         #region Methods for the Payment Info Page (panel)
 
+        /// <summary>
+        /// Gets the accounts.
+        /// </summary>
         private void GetAccounts()
         {
             var selectedGuids = GetAttributeValues( "Accounts" ).Select( Guid.Parse ).ToList();
@@ -722,6 +729,9 @@ achieve our mission.  We are so grateful for your commitment.
             }
         }
 
+        /// <summary>
+        /// Binds the accounts.
+        /// </summary>
         private void BindAccounts()
         {
             rptAccountList.DataSource = SelectedAccounts;
@@ -732,6 +742,11 @@ achieve our mission.  We are so grateful for your commitment.
             btnAddAccount.DataBind();
         }
 
+        /// <summary>
+        /// Gets the person.
+        /// </summary>
+        /// <param name="create">if set to <c>true</c> [create].</param>
+        /// <returns></returns>
         private Person GetPerson( bool create )
         {
             Person person = null;
@@ -886,7 +901,12 @@ achieve our mission.  We are so grateful for your commitment.
             }
         }
 
-        private bool ProccessPaymentInfo( out string errorMessage )
+        /// <summary>
+        /// Processes the payment information.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        private bool ProcessPaymentInfo( out string errorMessage )
         {
             errorMessage = string.Empty;
 
@@ -1016,6 +1036,10 @@ achieve our mission.  We are so grateful for your commitment.
             return true;
         }
 
+        /// <summary>
+        /// Gets the payment information.
+        /// </summary>
+        /// <returns></returns>
         private PaymentInfo GetPaymentInfo()
         {
             PaymentInfo paymentInfo = null;
@@ -1053,6 +1077,10 @@ achieve our mission.  We are so grateful for your commitment.
             return paymentInfo;
         }
 
+        /// <summary>
+        /// Gets the credit card information.
+        /// </summary>
+        /// <returns></returns>
         private CreditCardPaymentInfo GetCCInfo()
         {
             var cc = new CreditCardPaymentInfo( txtCreditCard.Text, txtCVV.Text, mypExpiration.SelectedDate.Value );
@@ -1076,6 +1104,10 @@ achieve our mission.  We are so grateful for your commitment.
             return cc;
         }
 
+        /// <summary>
+        /// Gets the ACH information.
+        /// </summary>
+        /// <returns></returns>
         private ACHPaymentInfo GetACHInfo()
         {
             var ach = new ACHPaymentInfo( txtAccountNumber.Text, txtRoutingNumber.Text, rblAccountType.SelectedValue == "Savings" ? BankAccountType.Savings : BankAccountType.Checking );
@@ -1083,6 +1115,11 @@ achieve our mission.  We are so grateful for your commitment.
             return ach;
         }
 
+        /// <summary>
+        /// Gets the reference information.
+        /// </summary>
+        /// <param name="savedAccountId">The saved account unique identifier.</param>
+        /// <returns></returns>
         private ReferencePaymentInfo GetReferenceInfo( int savedAccountId )
         {
             using (new UnitOfWorkScope() )
@@ -1101,6 +1138,10 @@ achieve our mission.  We are so grateful for your commitment.
             return null;
         }
 
+        /// <summary>
+        /// Gets the payment schedule.
+        /// </summary>
+        /// <returns></returns>
         private PaymentSchedule GetSchedule()
         {
             // Figure out if this is a one-time transaction or a future scheduled transaction
@@ -1136,7 +1177,12 @@ achieve our mission.  We are so grateful for your commitment.
 
         #region Methods for the confirmation Page (panel)
 
-        private bool ProccessConfirmation( out string errorMessage )
+        /// <summary>
+        /// Processes the confirmation.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        private bool ProcessConfirmation( out string errorMessage )
         {
             if ( string.IsNullOrWhiteSpace( TransactionCode ) )
             {
@@ -1320,6 +1366,10 @@ achieve our mission.  We are so grateful for your commitment.
 
         #region Methods used globally
 
+        /// <summary>
+        /// Sets the page.
+        /// </summary>
+        /// <param name="page">The page.</param>
         private void SetPage( int page )
         {
             // Page 1 = Payment Info
@@ -1339,6 +1389,12 @@ achieve our mission.  We are so grateful for your commitment.
             hfCurrentPage.Value = page.ToString();
         }
 
+        /// <summary>
+        /// Shows the message.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <param name="title">The title.</param>
+        /// <param name="text">The text.</param>
         private void ShowMessage( NotificationBoxType type, string title, string text )
         {
             if ( !string.IsNullOrWhiteSpace( text ) )
@@ -1350,6 +1406,9 @@ achieve our mission.  We are so grateful for your commitment.
             }
         }
 
+        /// <summary>
+        /// Registers the startup script.
+        /// </summary>
         private void RegisterScript()
         {
             CurrentPage.AddScriptLink( Page, ResolveUrl( "~/Scripts/jquery.creditCardTypeDetector.js" ) );
@@ -1458,6 +1517,9 @@ achieve our mission.  We are so grateful for your commitment.
 
         #region Helper Classes 
 
+        /// <summary>
+        /// Lightweight object for each contribution item 
+        /// </summary>
         [Serializable]
         protected class AccountItem
         {
