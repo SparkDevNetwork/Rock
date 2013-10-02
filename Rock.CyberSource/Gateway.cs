@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.ServiceModel;
 using System.ServiceModel.Description;
 
@@ -46,6 +48,8 @@ namespace Rock.CyberSource
                 }
             }
         }
+
+
 
         /// <summary>
         /// Gets the supported payment schedules.
@@ -91,88 +95,111 @@ namespace Rock.CyberSource
         /// <param name="errorMessage">The error message.</param>
         /// <returns></returns>
         public override FinancialTransaction Charge( PaymentInfo paymentInfo, out string errorMessage )
-        {                        
+        {
+            errorMessage = string.Empty;
 
-            int newspringTransactionNumber = 1;
-            
-            RequestMessage request = new RequestMessage();            
-            request.merchantID = GetAttributeValue( "MerchantID" );            
-            request.merchantReferenceCode = newspringTransactionNumber.ToString();
-            request.clientLibraryVersion = Environment.Version.ToString();
-            request.clientEnvironment =
-                Environment.OSVersion.Platform +
-                Environment.OSVersion.Version.ToString() + "-CLR" +
-                Environment.Version.ToString();
+            RequestMessage request = GetMerchantInfo();
+            request.billTo = GetBillTo( paymentInfo );
 
+            // put this somewhere to reference the financial transaction
+            request.merchantReferenceCode = "RockTransactionNumber";
 
-            request.ccAuthService = new CCAuthService();
-            request.ccAuthService.run = "true";
-            request.ccCaptureService = new CCCaptureService();
-            request.ccCaptureService.run = "true";
+            // check payment type
+            if ( paymentInfo is CreditCardPaymentInfo )
+            {
+                var cc = paymentInfo as CreditCardPaymentInfo;
+                request.ccAuthService = new CCAuthService();
+                request.ccAuthService.run = "true";
+                request.ccCaptureService = new CCCaptureService();
+                request.ccCaptureService.run = "true";
 
-            BillTo billTo = new BillTo();
-            billTo.firstName = "Jane";
-            billTo.lastName = "Smith";
-            billTo.email = "null@cybersource.com";
-            billTo.street1 = "1 Linwa Blvd";
-            billTo.city = "Anderson";
-            billTo.state = "SC";
-            billTo.postalCode = "29621";
-            billTo.country = "US";
-            //billTo.ipAddress = Request.ServerVariables["REMOTE_ADDR"];
-            request.billTo = billTo;
+                Card card = new Card();
+                card.accountNumber = cc.AccountNumber;
+                card.cardType = cc.CreditCardTypeValue.Name;
+                card.expirationMonth = cc.ExpirationDate.Month.ToString();
+                card.expirationYear = cc.ExpirationDate.Year.ToString();
+                request.card = card;
+            }            
+            else if ( paymentInfo is ACHPaymentInfo )
+            {
+                var ach = paymentInfo as ACHPaymentInfo;
+                request.ecAuthenticateService = new ECAuthenticateService();
+                request.ecAuthenticateService.run = "true";
+                request.ecDebitService = new ECDebitService();
+                request.ecDebitService.run = "true";
 
-            Card card = new Card();
-            card.accountNumber = "4111111111111111";
-            card.cardType = "Visa";
-            card.expirationMonth = "12";
-            card.expirationYear = "2020";
-            request.card = card;
+                Check check = new Check();
+                check.accountNumber = ach.BankAccountNumber.AsNumeric();
+                check.accountType = ach.AccountType == BankAccountType.Checking ? "C" : "S";
+                check.bankTransitNumber = ach.BankRoutingNumber.AsNumeric();
+                request.check = check;
+                
+            }
+            else if ( paymentInfo is SwipePaymentInfo )
+            {
+                var swipe = paymentInfo as SwipePaymentInfo;
+                //var ppSwipeCard = new SwipeCard( swipe.SwipeInfo );
+                //create swipe
+                //return new CardTender( ppSwipeCard );
+            }
 
-            PurchaseTotals purchaseTotals = new PurchaseTotals();
-            purchaseTotals.currency = "USD";
-            request.purchaseTotals = purchaseTotals;
-
-            // foreach item purchased
-            // there is one item in this sample
+            /*
+            if ( paymentInfo is ReferencePaymentInfo )
+            {
+                var reference = paymentInfo as ReferencePaymentInfo;
+                if ( reference.CurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) ) )
+                {
+                    // ACH
+                    //return new ACHTender( (BankAcct)null );
+                }
+                else
+                {
+                    // card
+                    //return new CardTender( (CreditCard)null );
+                }
+            } */
+                        
             request.item = new Item[1];
-            Item item = new Item();
-            item.id = "0";
-            item.unitPrice = "29.95";
-            item.totalAmount = "29.95";
-            request.item[0] = item;
+            request.item[0] = GetItems( paymentInfo );
+            request.purchaseTotals = GetTotals( paymentInfo );
 
-            // set up WCF consumption
+            // start setting up WCF consumption
             string transactionkey = GetAttributeValue( "TransactionKey" );
 
-            ChannelFactory<ITransactionProcessor> channelFactory = null;
+            EndpointAddress address = new EndpointAddress( new Uri( GatewayUrl ) );
             BasicHttpBinding binding = new BasicHttpBinding();
             binding.Name = "ITransactionProcessor";
             binding.Security.Mode = BasicHttpSecurityMode.TransportWithMessageCredential;
             binding.MaxBufferSize = 2147483647;
             binding.MaxBufferPoolSize = 2147483647;
             binding.MaxReceivedMessageSize = 2147483647;
-
-            channelFactory = new ChannelFactory<ITransactionProcessor>( binding );
-            channelFactory.Credentials.UserName.UserName = request.merchantID;
-            channelFactory.Credentials.UserName.Password = transactionkey;
-            EndpointAddress address = new EndpointAddress( new Uri( GatewayUrl ) );
-
-            ITransactionProcessor test = channelFactory.CreateChannel( address );
-                        
+            binding.ReaderQuotas.MaxDepth = 2147483647;
+            binding.ReaderQuotas.MaxArrayLength = 2147483647;
+            binding.ReaderQuotas.MaxBytesPerRead = 2147483647;            
+            binding.ReaderQuotas.MaxStringContentLength = 2147483647;
+       
             try            
             {
                 TransactionProcessorClient proxy = new TransactionProcessorClient( binding, address );
                 proxy.Endpoint.Address = address;
                 proxy.Endpoint.Binding = binding;
                 
-                
-                
+                proxy.ClientCredentials.UserName.UserName = request.merchantID;
+                proxy.ClientCredentials.UserName.Password = transactionkey;                
 
                 ReplyMessage reply = proxy.runTransaction( request );
-                //SaveOrderState();
                 
-                ProcessReply( reply );
+                //SaveOrderState();  ????
+                
+                string template = GetTemplate( reply.decision.ToUpper() );
+                string content = GetContent( reply );
+
+                if ( "ACCEPT".Equals( reply.decision.ToUpper() ) )
+                {
+                    var transaction = new FinancialTransaction();
+                    transaction.TransactionCode = reply.merchantReferenceCode;
+                    return transaction;
+                }
 
             }
             catch ( TimeoutException e )
@@ -202,15 +229,11 @@ namespace Rock.CyberSource
             return null;
         }
 
-        private static bool ProcessReply( ReplyMessage reply )
-        {
-            string template = GetTemplate( reply.decision.ToUpper() );
-            string content = GetContent( reply );
-            // This example writes the message to the console. Choose an appropriate display
-            // method for your own application.
-            Console.WriteLine( template, content );
-            return false;
-        }
+        /// <summary>
+        /// Gets the template.
+        /// </summary>
+        /// <param name="decision">The decision.</param>
+        /// <returns></returns>
         private static string GetTemplate( string decision )
         {
             // Retrieves the text that corresponds to the decision.
@@ -227,6 +250,12 @@ namespace Rock.CyberSource
             return ( "Your order could not be completed at this time.{0}" +
                     "\nPlease try again later." );
         }
+
+        /// <summary>
+        /// Gets the content.
+        /// </summary>
+        /// <param name="reply">The reply.</param>
+        /// <returns></returns>
         private static string GetContent( ReplyMessage reply )
         {
             /*
@@ -259,6 +288,12 @@ namespace Rock.CyberSource
                     return ( String.Empty );
             }
         }
+
+        /// <summary>
+        /// Enumerates the values.
+        /// </summary>
+        /// <param name="array">The array.</param>
+        /// <returns></returns>
         private static string EnumerateValues( string[] array )
         {
             System.Text.StringBuilder sb = new System.Text.StringBuilder();
@@ -336,69 +371,86 @@ namespace Rock.CyberSource
 
         #endregion
 
-    }
+        #region Helper Methods
 
+        /// <summary>
+        /// Gets the billing details.
+        /// </summary>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <returns></returns>
+        private BillTo GetBillTo( PaymentInfo paymentInfo )
+        {            
+            BillTo billingInfo = new BillTo();
+            billingInfo.firstName = paymentInfo.FirstName;
+            billingInfo.lastName = paymentInfo.LastName;
+            billingInfo.email = paymentInfo.Email;
+            billingInfo.phoneNumber = paymentInfo.Phone;
+            billingInfo.street1 = paymentInfo.Street;
+            billingInfo.city = paymentInfo.City;
+            billingInfo.state = paymentInfo.State;
+            billingInfo.postalCode = paymentInfo.Zip;
+            billingInfo.country = "US";
+            billingInfo.ipAddress = "#TODO";
 
-    public static class ServiceConfig
-    {
-        public static BasicHttpBinding DefaultBinding
+            if ( paymentInfo is CreditCardPaymentInfo )
+            {
+                var cc = paymentInfo as CreditCardPaymentInfo;
+                billingInfo.street1 = cc.BillingStreet;
+                billingInfo.city = cc.BillingCity;
+                billingInfo.state = cc.BillingState;
+                billingInfo.postalCode = cc.BillingZip;
+            }
+
+            return billingInfo;
+        }
+
+        /// <summary>
+        /// Gets the detailed list of items.
+        /// </summary>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <returns></returns>
+        private Item GetItems( PaymentInfo paymentInfo )
         {
-            get
-            {
-                    var binding = new BasicHttpBinding();
-                    Configure(binding);
-                    return binding;
-                } 
-            } 
-     
-            public static void Configure(HttpBindingBase binding)
-            {
-                if (binding == null)
-                {
-                    throw new ArgumentException("Argument 'binding' cannot be null. Cannot configure binding.");
-                }
-     
-                binding.SendTimeout = new TimeSpan(0, 0, 30, 0); // 30 minute timeout
-                binding.MaxBufferSize = 2147483647;
-                binding.MaxBufferPoolSize = 2147483647;
-                binding.MaxReceivedMessageSize = 2147483647;
-                binding.ReaderQuotas.MaxArrayLength = 2147483647;                
-                binding.ReaderQuotas.MaxBytesPerRead = 2147483647;
-                binding.ReaderQuotas.MaxDepth = 2147483647;                
-                binding.ReaderQuotas.MaxStringContentLength = 2147483647;
-            }
-     
-            public static ServiceMetadataBehavior ServiceMetadataBehavior
-            {
-                get
-                {
-                    return new ServiceMetadataBehavior
-                    {
-                        HttpGetEnabled = true, 
-                        MetadataExporter = {PolicyVersion = PolicyVersion.Policy15}
-                    };
-                }
-            }
-     
-            public static ServiceDebugBehavior ServiceDebugBehavior
-            {
-                get
-                {
-                    var smb = new ServiceDebugBehavior();
-                    Configure(smb);
-                    return smb;
-                }
-            }
-     
-     
-            public static void Configure(ServiceDebugBehavior behavior)
-            {
-                if (behavior == null)
-                {
-                    throw new ArgumentException("Argument 'behavior' cannot be null. Cannot configure debug behavior.");
-                }
-                
-                behavior.IncludeExceptionDetailInFaults = true;
-            }
+            // #TODO this should really have a itemized list of charges
+            // List<Item> itemList = new List<Item>();
+
+            Item item = new Item();
+            item.id = "0";
+            item.unitPrice = paymentInfo.Amount.ToString();
+            item.totalAmount = paymentInfo.Amount.ToString();
+            return item;
+        }
+
+        /// <summary>
+        /// Gets the purchase totals.
+        /// </summary>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <returns></returns>
+        private PurchaseTotals GetTotals( PaymentInfo paymentInfo )
+        {
+            PurchaseTotals purchaseTotals = new PurchaseTotals();
+            purchaseTotals.currency = "USD";
+            return purchaseTotals;
+        }
+        
+        /// <summary>
+        /// Gets the merchant information.
+        /// </summary>
+        /// <returns></returns>
+        private RequestMessage GetMerchantInfo()
+        {
+            RequestMessage request = new RequestMessage();
+            
+            request.merchantID = GetAttributeValue( "MerchantID" );
+            request.clientLibraryVersion = Environment.Version.ToString();
+            request.clientEnvironment =
+                Environment.OSVersion.Platform +
+                Environment.OSVersion.Version.ToString() + "-CLR" +
+                Environment.Version.ToString();
+            
+            return request;
+        }
+
+        #endregion
     }
 }
