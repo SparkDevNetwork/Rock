@@ -177,7 +177,7 @@ namespace Rock.Web.UI.Controls
         /// Renders the base control.
         /// </summary>
         /// <param name="writer">The writer.</param>
-        public void RenderBaseControl( HtmlTextWriter writer )
+        public virtual void RenderBaseControl( HtmlTextWriter writer )
         {
             if (Enabled)
             {
