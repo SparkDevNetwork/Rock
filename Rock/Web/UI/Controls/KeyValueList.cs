@@ -179,7 +179,7 @@ namespace Rock.Web.UI.Controls
             $(this).prev().append(newKeyValue);
         }});
 
-        $('a.key-value-remove').live('click', function (e) {{
+        $('a.key-value-remove').on('click', function (e) {{
             e.preventDefault();
             var $rows = $(this).closest('span.key-value-rows');
             $(this).closest('div.controls-row').remove();
@@ -190,7 +190,7 @@ namespace Rock.Web.UI.Controls
             if ( values != null )
             {
                 script.Append( @"
-        $('span.key-value-rows > div.controls-row > select').live('click', function (e) {{
+        $('span.key-value-rows > div.controls-row > select').on('click', function (e) {{
             updateKeyValues($(this));            
         }});
 " );
@@ -198,7 +198,7 @@ namespace Rock.Web.UI.Controls
             else
             {
                 script.Append( @"
-        $('span.key-value-rows > div.controls-row > input').live('blur', function (e) {{
+        $('span.key-value-rows > div.controls-row > input').on('blur', function (e) {{
             updateKeyValues($(this));            
         }});
 " );
