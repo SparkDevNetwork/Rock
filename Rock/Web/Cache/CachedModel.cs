@@ -261,7 +261,7 @@ namespace Rock.Web.Cache
         /// Gets the first value of an attribute key - splitting that delimited value into a list of strings.
         /// </summary>
         /// <param name="key">The key.</param>
-        /// <returns>A list of strings or an empty list if none exists.</string></returns>
+        /// <returns>A list of strings or an empty list if none exists.</returns>
         public List<string> GetAttributeValues( string key )
         {
             if ( this.AttributeValues != null &&
@@ -275,7 +275,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Sets the first value of an attribute key.
+        /// Sets the value of an attribute key in memory. Once values have been set, use the <see cref="SaveAttributeValues(int?)" /> method to save all values to database 
         /// </summary>
         /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>

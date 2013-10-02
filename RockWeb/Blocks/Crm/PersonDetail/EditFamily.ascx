@@ -4,14 +4,14 @@
     <ContentTemplate>
 
         <asp:ValidationSummary ID="valSummaryTop" runat="server"
-            HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
+            HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
 
         <Rock:NotificationBox ID="nbNotice" runat="server" Visible="false" />
 
         <div class="row-fluid">
             <div class="span4 form-horizontal">
                 <fieldset>
-                    <Rock:LabeledTextBox ID="tbFamilyName" runat="server" LabelText="Family Name" Required="true" CssClass="input-meduim" AutoPostBack="true" OnTextChanged="tbFamilyName_TextChanged" />
+                    <Rock:RockTextBox ID="tbFamilyName" runat="server" Label="Family Name" Required="true" CssClass="input-meduim" AutoPostBack="true" OnTextChanged="tbFamilyName_TextChanged" />
                 </fieldset>
             </div>
             <div class="span4 form-horizontal">
@@ -21,8 +21,8 @@
             </div>
             <div class="span4 form-horizontal">
                 <fieldset>
-                    <Rock:LabeledDropDownList ID="ddlRecordStatus" runat="server" LabelText="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" /><br />
-                    <Rock:LabeledDropDownList ID="ddlReason" runat="server" LabelText="Reason" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="ddlReason_SelectedIndexChanged"></Rock:LabeledDropDownList>
+                    <Rock:RockDropDownList ID="ddlRecordStatus" runat="server" Label="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" /><br />
+                    <Rock:RockDropDownList ID="ddlReason" runat="server" Label="Reason" Visible="false" AutoPostBack="true" OnSelectedIndexChanged="ddlReason_SelectedIndexChanged"></Rock:RockDropDownList>
                 </fieldset>
 
             </div>
@@ -135,19 +135,11 @@
         </Rock:Grid>
 
         <div class="actions">
-            <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" OnClientClick="javascript:disableConfirmation();" />
+            <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
             <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
         </div>
 
         <Rock:ConfirmPageUnload ID="confirmExit" runat="server" ConfirmationMessage="Changes have been made to this family that have not yet been saved." Enabled="false" />
-        <script>
-            // Need to set the value of the confirmation's rendered hidden field prior to postback, since the save is doing a Redirect 
-            // and even though confirmation is disabled by the save, that information is not rendered when returning with a redirect
-            // If validation fails during the save, the confirmation will be re-enabled (and rendered correctly without the redirect)
-            function disableConfirmation() {
-                $('#<%=confirmExit.ClientID%>').val('');
-            }
-        </script>
 
         <Rock:ModalDialog ID="modalAddPerson" runat="server" Title="Add Person" Content-Height="380">
             <Content>
@@ -160,14 +152,14 @@
                 </ul>
 
                 <asp:ValidationSummary ID="valSummaryAddPerson" runat="server" ValidationGroup="modalAddPersonValidationGroup"
-                    HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
+                    HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
 
                 <div class="tab-content">
 
                     <div id="divExistingPerson" runat="server" class="tab-pane active">
                         <fieldset>
                             <Rock:PersonPicker2 ID="ppExistingPerson" runat="server" />
-                            <Rock:LabeledCheckBox ID="cbRemoveOtherFamilies" runat="server" Checked="true" Text="Remove person from other families" />
+                            <Rock:RockCheckBox ID="cbRemoveOtherFamilies" runat="server" Checked="true" Text="Remove person from other families" />
                         </fieldset>
                     </div>
 
@@ -175,31 +167,31 @@
                         <div class="row-fluid">
                             <div class="span4">
                                 <fieldset>
-                                    <Rock:LabeledTextBox ID="tbNewPersonFirstName" runat="server" LabelText="First Name" ValidationGroup="modalAddPersonValidationGroup" />
+                                    <Rock:RockTextBox ID="tbNewPersonFirstName" runat="server" Label="First Name" ValidationGroup="modalAddPersonValidationGroup" />
                                 </fieldset>
                             </div>
                             <div class="span4">
                                 <fieldset>
-                                    <Rock:LabeledTextBox ID="tbNewPersonLastName" runat="server" LabelText="Last Name" ValidationGroup="modalAddPersonValidationGroup" />
-                                </fieldset>
-                            </div>
-                        </div>
-                        <div class="row-fluid">
-                            <div class="span4">
-                                <fieldset>
-                                    <Rock:LabeledDropDownList ID="ddlNewPersonGender" runat="server" LabelText="Gender" />
-                                </fieldset>
-                            </div>
-                            <div class="span4">
-                                <fieldset>
-                                    <Rock:DatePicker ID="dpNewPersonBirthDate" runat="server" LabelText="Birthdate" />
+                                    <Rock:RockTextBox ID="tbNewPersonLastName" runat="server" Label="Last Name" ValidationGroup="modalAddPersonValidationGroup" />
                                 </fieldset>
                             </div>
                         </div>
                         <div class="row-fluid">
                             <div class="span4">
                                 <fieldset>
-                                    <Rock:LabeledRadioButtonList ID="rblNewPersonRole" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" LabelText="Role" />
+                                    <Rock:RockDropDownList ID="ddlNewPersonGender" runat="server" Label="Gender" />
+                                </fieldset>
+                            </div>
+                            <div class="span4">
+                                <fieldset>
+                                    <Rock:DatePicker ID="dpNewPersonBirthDate" runat="server" Label="Birthdate" />
+                                </fieldset>
+                            </div>
+                        </div>
+                        <div class="row-fluid">
+                            <div class="span4">
+                                <fieldset>
+                                    <Rock:RockRadioButtonList ID="rblNewPersonRole" runat="server" DataTextField="Name" DataValueField="Id" RepeatDirection="Horizontal" Label="Role" />
                                 </fieldset>
                             </div>
                         </div>

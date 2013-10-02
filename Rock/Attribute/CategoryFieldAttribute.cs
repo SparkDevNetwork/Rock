@@ -23,6 +23,7 @@ namespace Rock.Attribute
         /// </summary>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
+        /// <param name="allowMultiple">if set to <c>true</c> [allow multiple].</param>
         /// <param name="entityTypeName">Name of the entity type.</param>
         /// <param name="entityTypeQualifierColumn">The entity type qualifier column.</param>
         /// <param name="entityTypeQualifierValue">The entity type qualifier value.</param>

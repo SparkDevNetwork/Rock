@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Web.UI.Controls;
+
 namespace Rock.Field.Types
 {
     /// <summary>
@@ -18,12 +20,13 @@ namespace Rock.Field.Types
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
         /// <returns>
         /// The control
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new TextBox { ID = id, TextMode = TextBoxMode.MultiLine, Rows = 3 };
+            return new RockTextBox { ID = id, TextMode = TextBoxMode.MultiLine, Rows = 3 };
         }
     }
 }

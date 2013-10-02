@@ -46,7 +46,7 @@
                 }
             });
 
-            $('#personPickerItems_' + controlId).on('click', '.rock-picker-select-item', function () {
+            $('#personPickerItems_' + controlId).on('click', '.picker-select-item', function () {
                 $('#hfPersonId_' + controlId).val($(this).attr('data-person-id'));
             });
 
@@ -68,7 +68,7 @@
                             .prependTo($label),
 
                         $li = $('<li/>')
-                            .addClass('rock-picker-select-item')
+                            .addClass('picker-select-item')
                             .attr('data-person-id', item.Id)
                             .html($label),
 

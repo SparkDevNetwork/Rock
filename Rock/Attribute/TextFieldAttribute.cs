@@ -25,7 +25,10 @@ namespace Rock.Attribute
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>
+        /// <param name="defaultValue">The default value.</param>
+        /// <param name="category">The category.</param>
         /// <param name="order">The order.</param>
+        /// <param name="key">The key.</param>
         public TextFieldAttribute( string name, string description = "", bool required = true, string defaultValue = "", string category = "", int order = 0, string key = null)
             : base( name, description, required, defaultValue, category, order, key)
         {

@@ -4,10 +4,10 @@
     <ContentTemplate>
         <Rock:GridFilter ID="rFilter" runat="server" >
             <%-- Approval Status, Priority Range, Ad Type, Date Range --%>
-            <Rock:LabeledDropDownList ID="ddlApprovalStatus" runat="server" LabelText="Approval Status" />
-            <Rock:NumberRangeEditor ID="pPriorityRange" runat="server" LabelText="Priority Range" />
-            <Rock:LabeledDropDownList ID="ddlAdType" runat="server" LabelText="Ad Type" />
-            <Rock:DateRangePicker ID="pDateRange" runat="server" LabelText="Date Range" />
+            <Rock:RockDropDownList ID="ddlApprovalStatus" runat="server" Label="Approval Status" />
+            <Rock:NumberRangeEditor ID="pPriorityRange" runat="server" Label="Priority Range" />
+            <Rock:RockDropDownList ID="ddlAdType" runat="server" Label="Ad Type" />
+            <Rock:DateRangePicker ID="pDateRange" runat="server" Label="Date Range" />
         </Rock:GridFilter>
         <div id="pnlMarketingCampaignAds" runat="server">
             <asp:HiddenField ID="hfMarketingCampaignId" runat="server" />

@@ -14,25 +14,25 @@
 
     <Rock:ModalAlert ID="maWarning" runat="server" />
 
-    <div class="row-fluid checkin-header">
-        <div class="span12">
+    <div class="row checkin-header">
+        <div class="col-md-12">
             <h1>Check-in Configuration</h1>
         </div>
     </div>
     
     <asp:Panel runat="server" ID="pnlManualConfig" Visible="false">
 
-    <div class="row-fluid checkin-body">
-        <div class="span12">
+    <div class="row checkin-body">
+        <div class="col-md-12">
 
-            <Rock:LabeledDropDownList ID="ddlKiosk" runat="server" CssClass="input-xlarge" LabelText="Kiosk Device" OnSelectedIndexChanged="ddlKiosk_SelectedIndexChanged" AutoPostBack="true" DataTextField="Name" DataValueField="Id" ></Rock:LabeledDropDownList>
-            <Rock:LabeledCheckBoxList ID="cblGroupTypes" runat="server" LabelText="Group Type(s)" DataTextField="Name" DataValueField="Id" ></Rock:LabeledCheckBoxList>
+            <Rock:RockDropDownList ID="ddlKiosk" runat="server" CssClass="input-xlarge" Label="Kiosk Device" OnSelectedIndexChanged="ddlKiosk_SelectedIndexChanged" AutoPostBack="true" DataTextField="Name" DataValueField="Id" ></Rock:RockDropDownList>
+            <Rock:RockCheckBoxList ID="cblGroupTypes" runat="server" Label="Group Type(s)" DataTextField="Name" DataValueField="Id" ></Rock:RockCheckBoxList>
 
         </div>
     </div>
     </asp:Panel>
 
-    <div class="row-fluid checkin-footer">   
+    <div class="checkin-footer">   
         <div class="checkin-actions">
             <asp:LinkButton CssClass="btn btn-primary" ID="lbOk" runat="server" OnClick="lbOk_Click" Text="OK" Visible="false" />
             <a class="btn btn-primary" runat="server" ID="lbRetry" visible="false" href="javascript:window.location.href=window.location.href" >Retry</a>

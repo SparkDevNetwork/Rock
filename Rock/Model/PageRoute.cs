@@ -15,37 +15,42 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Page Route POCO Entity.
+    /// Represents a PageRoute object in RockChMS. All pages in RockChMS are accessed via a PageRoute. The default route that is used in RockChMS
+    /// is /page/{pageId} (for example /page/113 tells Rock to load the <see cref="Rock.Model.Page"/> associated with PageId 113). This model allows
+    /// for custom page routes to be created, which in turn allows us to use Friendlier Urls (for example the default New Account page can be accessed by /NewAccount 
+    /// as well as /page/4).
     /// </summary>
     [Table( "PageRoute" )]
     [DataContract]
     public partial class PageRoute : Model<PageRoute>
     {
         /// <summary>
-        /// Gets or sets the System.
+        /// Gets or sets a flag indicating if the PageRoute is part of of the RockChMS core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// System.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the PageRoute is part of the RockChMS core system/framework, otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
-        /// Gets or sets the Page Id.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Page"/> that the PageRoute is linked to. This property is required.
         /// </summary>
         /// <value>
-        /// Page Id.
+        /// A <see cref="System.Int32"/> containing the Id of the <see cref="Rock.Model.Page"/> that the PageRoute is linked to.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int PageId { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets the Route.
+        /// Gets or sets the format of the route path. Route examples include: Page <example>NewAccount</example> or <example>Checkin/Welcome</example>. 
+        /// A specific group <example>Group/{GroupId} (i.e. Group/16)</example>. A person's history <example>Person/{PersonId}/History (i.e. Person/12/History)</example>.
+        /// This property is required.
         /// </summary>
         /// <value>
-        /// Route.
+        /// A <see cref="System.String"/> containing the format of the RoutePath.
         /// </value>
         [Route]
         [Required]
@@ -54,19 +59,19 @@ namespace Rock.Model
         public string Route { get; set; }
         
         /// <summary>
-        /// Gets or sets the Page.
+        /// Gets or sets the <see cref="Rock.Model.Page"/> associated with the RoutePath.
         /// </summary>
         /// <value>
-        /// A <see cref="Page"/> object.
+        /// The <see cref="Rock.Model.Page"/> that is associated with the RoutePath.
         /// </value>
         [DataMember]
         public virtual Page Page { get; set; }
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Returns a <see cref="System.String" /> containing the Route and represents this PageRoute
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
+        /// A <see cref="System.String" /> containing the Route and represents this instance.
         /// </returns>
         public override string ToString()
         {

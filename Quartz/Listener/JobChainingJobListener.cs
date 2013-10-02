@@ -103,7 +103,7 @@ namespace Quartz.Listener
             {
                 context.Scheduler.TriggerJob(sj);
             }
-            catch (SchedulerException se)
+            catch (SchedulerException)
             {
                
             }

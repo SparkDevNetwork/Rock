@@ -126,6 +126,12 @@ namespace Rock.Model
         [DataMember]
         public virtual DataViewFilter DataViewFilter { get; set; }
 
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
         public override Security.ISecured ParentAuthority
         {
             get
@@ -156,6 +162,7 @@ namespace Rock.Model
         /// Binds the grid.
         /// </summary>
         /// <param name="grid">The grid.</param>
+        /// <param name="errorMessages">The error messages.</param>
         /// <param name="createColumns">if set to <c>true</c> [create columns].</param>
         /// <returns></returns>
         public object BindGrid(Grid grid, out List<string> errorMessages, bool createColumns = false)
@@ -219,6 +226,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="serviceInstance">The service instance.</param>
         /// <param name="paramExpression">The param expression.</param>
+        /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         public Expression GetExpression( object serviceInstance, ParameterExpression paramExpression, out List<string> errorMessages )
         {
@@ -252,6 +260,7 @@ namespace Rock.Model
         /// <param name="service">The service.</param>
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="whereExpression">The where expression.</param>
+        /// <param name="errorMessages">The error messages.</param>
         /// <returns></returns>
         private Expression GetTransformExpression( object service, Expression parameterExpression, Expression whereExpression, List<string> errorMessages )
         {

@@ -19,10 +19,11 @@ using System.Collections.Generic;
 
 namespace RockWeb.Blocks.Finance.Administration
 {
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     public partial class BatchList : Rock.Web.UI.RockBlock
     {
         #region Fields
+
         private bool _canConfigure = false;
 
         #endregion
@@ -155,6 +156,7 @@ namespace RockWeb.Blocks.Finance.Administration
         #endregion
 
         #region Internal Methods
+
         /// <summary>
         /// Binds the filter.
         /// </summary>
@@ -232,7 +234,7 @@ namespace RockWeb.Blocks.Finance.Administration
 
             if ( dtBatchDate.SelectedDate.HasValue )
             {
-                batches = batches.Where( batch => batch.BatchDate >= dtBatchDate.SelectedDate );
+                batches = batches.Where( batch => batch.BatchStartDateTime >= dtBatchDate.SelectedDate );
             }
 
             if ( (ddlStatus.SelectedValueAsInt() ?? 0) > 0 )
@@ -269,7 +271,7 @@ namespace RockWeb.Blocks.Finance.Administration
         /// <param name="id">The id.</param>
         protected void ShowDetailForm( int id )
         {
-            NavigateToDetailPage( "financialBatchId", id );
+            NavigateToLinkedPage( "DetailPage", "financialBatchId", id );
         }
 
         /// <summary>

@@ -28,33 +28,50 @@ namespace RockWeb.Blocks.Finance
     /// Front end block for giving: gift detail, user detail, and payment detail
     /// </summary>    
     [Description("Giving profile details UI")]
-    [LinkedPage( "New Accounts", "What page should users redirect to when creating a new account?", true, "7D4E2142-D24E-4DD2-84BC-B34C5C3D0D46", "Financial")]    
-    [CustomCheckboxListField( "Credit Card Provider", "Which payment processor should be used for credit cards?",
-        "SELECT [Name] AS [Text], [Id] AS [Value] FROM [FinancialGateway]", true, "", "Payment Options", 0 )]
-    [CustomCheckboxListField( "Checking/ACH Provider", "Which payment processor should be used for checking/ACH?",
-        "SELECT [Name] AS [Text], [Id] AS [Value] FROM [FinancialGateway]", true, "", "Payment Options", 1 )]
-    [AccountsField("Default Accounts", "Which accounts should be displayed by default?", true, "", "Payment Options", 2)]
-    [BooleanField( "Show Vertical Layout", "Should the giving page display vertically or horizontally?", true, "UI Options", 0 )]
-    [BooleanField( "Show Campuses", "Should giving be associated with a specific campus?", false, "UI Options", 1 )]
-    [BooleanField( "Show Additional Accounts", "Should users be allowed to give to additional accounts?", true, "UI Options", 2 )]
-    [BooleanField( "Show Credit Card", "Allow users to give using a credit card?", true, "UI Options", 3 )]
-    [BooleanField( "Show Checking/ACH", "Allow users to give using a checking account?", true, "UI Options", 4 )]
-    [BooleanField( "Show Frequencies", "Allow users to give recurring gifts?", true, "UI Options", 5 )]
-    [BooleanField( "Show State Name", "Should the address state show the full name (Arizona) or the abbreviation (AZ)?", true, "UI Options", 6 )]
-    [BooleanField( "Require Phone", "Should financial contributions require a user's phone number?", true, "UI Options", 7 )]
-    [DefinedValueField( Rock.SystemGuid.DefinedType.LOCATION_ADDRESS_STATE, "Default State", "Which state should be selected by default?", false, "", "UI Options", 8)]    
-    [MemoField( "Confirmation Message", "What text should be displayed on the confirmation page?", true,  @"{{ ContributionConfirmationHeader }}<br/><br/>{{ Person.FullName }},<br/><br/>
-        You are about to give a total of <strong>{{ TotalContribution }}</strong> using your {{ PaymentType }} ending in {{ PaymentLastFour }}.<br/><br/>
-        If this is correct, please press Give.  Otherwise, click Back to edit.<br/>Thank you,<br/><br/>{{ OrganizationName }}<br/>{{ ContributionConfirmFooter }}", "Message Options", 0)]
-    [MemoField( "Receipt Message", "What text should be displayed on the receipt page?", true, @"{{ ContributionReceiptHeader }}<br/>{{ Person.FullName }},<br/><br/>
-        Thank you for your generosity! You just gave a total of {{ TotalContribution }} to {{ OrganizationName }}.<br/><br/>{{ ContributionReceiptFooter }}", "Message Options", 1 )]
-    [MemoField( "Summary Message", "What text should be displayed on the transaction summary?", true, @"{{ Date }}: {{ TotalContribution }} given by {{ Person.FullName }} using a 
-        {{ PaymentType }} ending in {{ PaymentLastFour }}.", "Message Options", 2 )]
+
+    [ComponentField( "Rock.Financial.GatewayContainer, Rock", "Credit Card Gateway", "The payment gateway to use for Credit Card transactions", false, "", "", 0, "CCGateway")]
+    [ComponentField( "Rock.Financial.GatewayContainer, Rock", "ACH Card Gateway", "The payment gateway to use for ACH (bank account) transactions", false, "", "", 1, "ACHGateway" )]
+    [AccountsField( "Default Accounts", "The accounts that are initially displayed by default?", true, "", "", 2 )]
+    [BooleanField( "Allow Additional Accounts", "Should users be allowed to select  additional accounts?  If so, any active account with a Public Name value will be available", true, "", 3, "AdditionalAccounts"  )]
+    
+    [BooleanField( "Show Vertical Layout", "Should the giving page display vertically or horizontally?", true, "Display", 4 )]
+    [BooleanField( "Show Campuses", "Should giving be associated with a specific campus?", false, "Display", 5 )]
+    [BooleanField( "Show Frequencies", "Allow users to give recurring gifts?", true, "Display", 8 )]
+    [BooleanField( "Show State Name", "Should the address state show the full name (Arizona) or the abbreviation (AZ)?", true, "Display", 9 )]
+    [BooleanField( "Require Phone", "Should financial contributions require a user's phone number?", true, "Display", 10 )]
+
+    [MemoField( "Confirmation Message", "The text to display on the confirmation page?", true, @"
+{{ ContributionConfirmationHeader }}<br/>
+<br/>
+{{ Person.FullName }},<br/>
+<br/>
+You are about to give a total of <strong>{{ TotalContribution }}</strong> using your {{ PaymentType }} ending in {{ PaymentLastFour }}.<br/><br/>
+If this is correct, please press Give.  Otherwise, click Back to edit.<br/>
+Thank you,<br/>
+<br/>
+{{ OrganizationName }}<br/>
+{{ ContributionConfirmFooter }}
+", "Text Options", 11 )]
+
+    [MemoField( "Receipt Message", "The text to display on the receipt page?", true, @"
+{{ ContributionReceiptHeader }}<br/>
+{{ Person.FullName }},<br/>
+<br/>
+Thank you for your generosity! You just gave a total of {{ TotalContribution }} to {{ OrganizationName }}.<br/>
+<br/>
+{{ ContributionReceiptFooter }}
+", "Text Options", 12 )]
+
+    [MemoField( "Summary Message", "The text to save in the transaction summary field?", true, @"
+{{ Date }}: {{ TotalContribution }} given by {{ Person.FullName }} using a {{ PaymentType }} ending in {{ PaymentLastFour }}.
+", "Text Options", 13 )]
     public partial class GivingProfileDetail : RockBlock
     {
         #region Fields
 
         protected string _spanClass;
+        private Rock.Financial.GatewayComponent _ccGateway;
+        private Rock.Financial.GatewayComponent _achGateway;
         
         /// <summary>
         /// Gets or sets the current tab.
@@ -157,28 +174,28 @@ namespace RockWeb.Blocks.Finance
                 }
 
                 // Show Payment types
-                bool showCredit = Convert.ToBoolean( GetAttributeValue( "ShowCreditCard" ) );
-                bool showChecking = Convert.ToBoolean( GetAttributeValue( "ShowChecking/ACH" ) );
+                bool showCredit = false;
+                bool showChecking = false;
+
+                string ccGatewayGuid = GetAttributeValue( "CCGateway" );
+                if ( !string.IsNullOrWhiteSpace( ccGatewayGuid ) )
+                {
+                    _ccGateway = Rock.Financial.GatewayContainer.GetComponent( ccGatewayGuid );
+                    showCredit = _ccGateway != null;
+                }
+
+                string achGatewayGuid = GetAttributeValue( "ACHGateway" );
+                if ( !string.IsNullOrWhiteSpace( achGatewayGuid ) )
+                {
+                    _achGateway = Rock.Financial.GatewayContainer.GetComponent( achGatewayGuid );
+                    showChecking = _achGateway != null;
+                }
                 BindPaymentTypes( showCredit, showChecking );
 
                 // Customize State picker
                 if ( !Convert.ToBoolean( GetAttributeValue( "ShowStateName" ) ) )
                 {
                     ddlState.UseAbbreviation = true;
-                }
-
-                var defaultState = GetAttributeValue( "DefaultState" );
-                if ( !string.IsNullOrWhiteSpace( defaultState ) )
-                {
-                    Guid stateGuid = Guid.Empty;
-                    if (Guid.TryParse(defaultState, out stateGuid))
-                    {
-                        var definedValueState = DefinedValueCache.Read( stateGuid );
-                        if ( definedValueState != null )
-                        {
-                            ddlState.SelectedValue = definedValueState.Name;
-                        }
-                    }
                 }
 
                 // Require Phone
@@ -212,12 +229,12 @@ namespace RockWeb.Blocks.Finance
             // postback layout changes
             if ( _spanClass != "span6" )
             {
-                txtCity.LabelText = "City, State, Zip";
-                txtNewCity.LabelText = "City, State, Zip";
-                ddlState.LabelText = string.Empty;
-                ddlNewState.LabelText = string.Empty;
-                txtZip.LabelText = string.Empty;
-                txtNewZip.LabelText = string.Empty;                                
+                txtCity.Label = "City, State, Zip";
+                txtNewCity.Label = "City, State, Zip";
+                ddlState.Label = string.Empty;
+                ddlNewState.Label = string.Empty;
+                txtZip.Label = string.Empty;
+                txtNewZip.Label = string.Empty;                                
             }            
         }
        
@@ -262,8 +279,8 @@ namespace RockWeb.Blocks.Finance
         {
             SaveAmounts();
             
-            if ( btnFrequency.SelectedValueAsInt() != DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TYPE_ONE_TIME_FUTURE ).Id
-                && btnFrequency.SelectedValueAsInt() != DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TYPE_ONE_TIME ).Id )
+            if ( btnFrequency.SelectedValueAsInt() != DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id
+                && btnFrequency.SelectedValueAsInt() != 0 )
             {
                 if ( divRecurrence.Visible != true )
                 {
@@ -276,7 +293,7 @@ namespace RockWeb.Blocks.Finance
                     divLimitGifts.Visible = true;
                 }
             }
-            else if ( btnFrequency.SelectedValueAsInt() == DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TYPE_ONE_TIME_FUTURE ).Id )
+            else if ( btnFrequency.SelectedValueAsInt() == DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME ).Id )
             {
                 if ( divRecurrence.Visible != true )
                 {
@@ -540,29 +557,9 @@ namespace RockWeb.Blocks.Finance
             var summaryTemplate = GetAttributeValue( "SummaryMessage" );
             string summaryMessage = summaryTemplate.ResolveMergeFields( configValues );
 
-            var creditProcessorId = GetAttributeValue( "CreditCardProvider" );
-            var achProcessorId = GetAttributeValue( "Checking/ACHProvider" );
-            var gatewayService = new FinancialGatewayService();
-            FinancialGateway gateway;
-
-            if ( !string.IsNullOrEmpty( txtCreditCard.Text ) && !string.IsNullOrWhiteSpace( creditProcessorId ) )
-            {
-                int creditId = Convert.ToInt32( creditProcessorId );                
-                gateway = new FinancialGatewayService().Get( creditId );
-            }
-            else if ( !string.IsNullOrEmpty( txtAccountNumber.Text ) && !string.IsNullOrWhiteSpace( achProcessorId ) )
-            {
-                int achId = Convert.ToInt32( achProcessorId );
-                gateway = new FinancialGatewayService().Get( achId );
-            }
-            else 
-            {
-                gateway = gatewayService.Queryable().FirstOrDefault();
-            }
-
             // #TODO test card through gateway 
 
-            if ( btnFrequency.SelectedIndex > -1 && btnFrequency.SelectedValueAsInt() != DefinedValueCache.Read( Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TYPE_ONE_TIME ).Id )
+            if ( btnFrequency.SelectedIndex > -1 && btnFrequency.SelectedValueAsInt() > 0 )
             {
                 using ( new UnitOfWorkScope() )
                 {
@@ -684,20 +681,11 @@ namespace RockWeb.Blocks.Finance
 
             account.Name = accountNickname;
             // #TODO WITH GATEWAY CALL
-            account.TransactionCode = "Unknown";
+            account.FinancialTransactionId = 0;
             
             account.PersonId = person.Id;
             account.MaskedAccountNumber = configValues["PaymentLastFour"].ToString();
 
-            if ( !string.IsNullOrEmpty( txtCreditCard.Text ) )
-            {
-                account.PaymentMethod = PaymentMethod.CreditCard;
-            }
-            else if ( !string.IsNullOrEmpty( txtAccountNumber.Text ) )
-            {
-                account.PaymentMethod = PaymentMethod.ACH;
-            }            
-            
             accountService.Save( account, person.Id );
             divPaymentNick.Visible = false;
         }
@@ -789,12 +777,14 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         protected void BindFrequencies()
         {
-            var frequencyTypes = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_TRANSACTION_FREQUENCY ) );
+            var frequencyTypes = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY ) );
             if ( frequencyTypes != null )
             {
                 btnFrequency.BindToDefinedType( frequencyTypes );
-                btnFrequency.SelectedValue = btnFrequency.Items[0].Value;
-            }            
+            }
+
+            btnFrequency.Items.Insert( 0, new ListItem( "Now", "0" ) );
+            btnFrequency.SelectedValue = btnFrequency.Items[0].Value;
         }
         
         /// <summary>
@@ -853,7 +843,7 @@ namespace RockWeb.Blocks.Finance
                 }                  
             }
 
-            if ( activeAccounts.Count() > transactionList.Count() && Convert.ToBoolean( GetAttributeValue( "ShowAdditionalAccounts" ) ) )
+            if ( activeAccounts.Count() > transactionList.Count() && Convert.ToBoolean( GetAttributeValue( "AdditionalAccounts" ) ) )
             {
                 var unselectedAccounts = activeAccounts.Where( a => !accountGuids.Contains( a.Guid ) ).ToList();
 
@@ -882,25 +872,38 @@ namespace RockWeb.Blocks.Finance
         /// </summary>
         protected void BindPaymentTypes( bool showCredit, bool showChecking )
         {
-            var queryable = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_PAYMENT_TYPE ) )
-                .DefinedValues.AsQueryable();
-
-            if ( !showCredit )
+            var paymentTypes = new List<string>();
+            
+            if ( showCredit )
             {
-                queryable = queryable.Where( dv => dv.Guid != new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_PAYMENT_TYPE_CREDIT_CARD ) );
+                paymentTypes.Add( "Credit Card" );
+            }
+            else
+            {
                 divCreditCard.Visible = false;
                 mypExpiration.SelectedDate = DateTime.Now.AddYears( 2 );
             }
-            if ( !showChecking )
+            
+            if ( showChecking )
             {
-                queryable = queryable.Where( dv => dv.Guid != new Guid( Rock.SystemGuid.DefinedValue.TRANSACTION_PAYMENT_TYPE_CHECKING ) );
+                paymentTypes.Add( "Bank Account" );
+            }
+            else
+            {
                 divChecking.Visible = false;
             }
 
-            rptPaymentType.DataSource = queryable.ToList();
+            rptPaymentType.DataSource = paymentTypes;
             rptPaymentType.DataBind();
 
-            ( (HtmlGenericControl)rptPaymentType.Items[0].FindControl( "liSelectedTab" ) ).AddCssClass( "active" );
+            if ( rptPaymentType.Items.Count > 0 )
+            {
+                var selectedTag = ( (HtmlGenericControl)rptPaymentType.Items[0].FindControl( "liSelectedTab" ) );
+                if ( selectedTag != null )
+                {
+                    selectedTag.AddCssClass( "active" );
+                }
+            }
         }
         
         /// <summary>
@@ -955,9 +958,10 @@ namespace RockWeb.Blocks.Finance
 
             if ( accountsQueryable.Count() > 0 )
             {
-                if ( accountsQueryable.Where( a => a.PaymentMethod == PaymentMethod.CreditCard ).Any() )
+                var ccCurrencyType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) );
+                if ( accountsQueryable.Where( a => a.FinancialTransaction.CurrencyTypeValueId == ccCurrencyType.Id ).Any() )
                 {
-                    var savedCreditCard = accountsQueryable.Where( a => a.PaymentMethod == PaymentMethod.CreditCard )
+                    var savedCreditCard = accountsQueryable.Where( a => a.FinancialTransaction.CurrencyTypeValueId == ccCurrencyType.Id )
                         .ToDictionary( a => "Use " + a.Name + " ending in *************" + a.MaskedAccountNumber, a => a.Id );
                     savedCreditCard.Add( "Use a different card", 0 );
                     rblSavedCard.DataSource = savedCreditCard;
@@ -968,9 +972,10 @@ namespace RockWeb.Blocks.Finance
                     divNewCard.Style["display"] = "none";
                 }
 
-                if ( accountsQueryable.Where( a => a.PaymentMethod == PaymentMethod.ACH ).Any() )
+                var achCurrencyType = DefinedValueCache.Read( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) );
+                if ( accountsQueryable.Where( a => a.FinancialTransaction.CurrencyTypeValueId == achCurrencyType.Id ).Any() )
                 {
-                    var savedACH = accountsQueryable.Where( a => a.PaymentMethod == PaymentMethod.ACH )
+                    var savedACH = accountsQueryable.Where( a => a.FinancialTransaction.CurrencyTypeValueId == achCurrencyType.Id )
                         .ToDictionary( a => "Use " + a.Name + " account ending in *************" + a.MaskedAccountNumber, a => a.Id );
                     savedACH.Add( "Use a different account", 0 );
                     rblSavedCheck.DataSource = savedACH;

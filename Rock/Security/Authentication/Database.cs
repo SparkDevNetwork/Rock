@@ -85,21 +85,47 @@ namespace Rock.Security.Authentication
             return returnBytes;
         }
 
+        /// <summary>
+        /// Authenticates the user based on a request from a third-party provider.  Will set the username and returnUrl values.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <param name="userName">Name of the user.</param>
+        /// <param name="returnUrl">The return URL.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
         public override bool Authenticate( HttpRequest request, out string userName, out string returnUrl )
         {
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Generates the login URL.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
         public override Uri GenerateLoginUrl( HttpRequest request )
         {
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Tests the Http Request to determine if authentication should be tested by this
+        /// authentication provider.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
         public override bool IsReturningFromAuthentication( HttpRequest request )
         {
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// Gets the URL of an image that should be displayed.
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="System.NotImplementedException"></exception>
         public override string ImageUrl()
         {
             throw new NotImplementedException();

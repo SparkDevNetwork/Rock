@@ -52,7 +52,7 @@ namespace Quartz.Core
     /// <author>Marko Lahma (.NET)</author>
     public class QuartzScheduler : MarshalByRefObject, IRemotableQuartzScheduler
     {
-        private static readonly FileVersionInfo versionInfo;
+        //private static readonly FileVersionInfo versionInfo;
 
         private readonly QuartzSchedulerResources resources;
 
@@ -110,7 +110,11 @@ namespace Quartz.Core
         /// <value>The version major.</value>
         public static string VersionMajor
         {
-            get { return versionInfo.FileMajorPart.ToString(CultureInfo.InvariantCulture); }
+            get 
+            { 
+                // return versionInfo.FileMajorPart.ToString(CultureInfo.InvariantCulture);
+                return "1";
+            }
         }
 
         /// <summary>
@@ -119,7 +123,11 @@ namespace Quartz.Core
         /// <value>The version minor.</value>
         public static string VersionMinor
         {
-            get { return versionInfo.FileMinorPart.ToString(CultureInfo.InvariantCulture); }
+            get 
+            { 
+                // return versionInfo.FileMinorPart.ToString(CultureInfo.InvariantCulture);
+                return "0";
+            }
         }
 
         /// <summary>
@@ -128,7 +136,11 @@ namespace Quartz.Core
         /// <value>The version iteration.</value>
         public static string VersionIteration
         {
-            get { return versionInfo.FileBuildPart.ToString(CultureInfo.InvariantCulture); }
+            get 
+            { 
+                // return versionInfo.FileBuildPart.ToString(CultureInfo.InvariantCulture); 
+                return "0";
+            }
         }
 
         /// <summary>
@@ -472,7 +484,7 @@ namespace Quartz.Core
                 {
                     scheduler.Start();
                 }
-                catch (SchedulerException se)
+                catch (SchedulerException)
                 {
                 }
             }
@@ -573,7 +585,7 @@ namespace Quartz.Core
                         {
                             ((IInterruptableJob) job.JobInstance).Interrupt();
                         }
-                        catch (Exception ex)
+                        catch (Exception)
                         {
                             
                         }
@@ -1869,7 +1881,7 @@ namespace Quartz.Core
                 {
                     sl.SchedulerError(msg, se);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                 }
             }
@@ -1891,7 +1903,7 @@ namespace Quartz.Core
                 {
                     sl.JobScheduled(trigger);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                 }
             }
@@ -1919,7 +1931,7 @@ namespace Quartz.Core
                         sl.JobUnscheduled(triggerKey);
                     }
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
                 }
             }
@@ -1941,7 +1953,7 @@ namespace Quartz.Core
                 {
                     sl.TriggerFinalized(trigger);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
 
                 }
@@ -1964,7 +1976,7 @@ namespace Quartz.Core
                 {
                     sl.TriggersPaused(group);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
 
                 }
@@ -1986,7 +1998,7 @@ namespace Quartz.Core
                 {
                     sl.TriggerPaused(triggerKey);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
 
                 }
@@ -2009,7 +2021,7 @@ namespace Quartz.Core
                 {
                     sl.TriggersResumed(group);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
 
                 }
@@ -2031,7 +2043,7 @@ namespace Quartz.Core
                 {
                     sl.TriggerResumed(triggerKey);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
 
                 }
@@ -2053,7 +2065,7 @@ namespace Quartz.Core
                 {
                     sl.JobPaused(jobKey);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
 
                 }
@@ -2076,7 +2088,7 @@ namespace Quartz.Core
                 {
                     sl.JobsPaused(group);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
 
                 }
@@ -2098,7 +2110,7 @@ namespace Quartz.Core
                 {
                     sl.JobResumed(jobKey);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
 
                 }
@@ -2121,7 +2133,7 @@ namespace Quartz.Core
                 {
                     sl.JobsResumed(group);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
 
                 }
@@ -2137,7 +2149,7 @@ namespace Quartz.Core
                 {
                     listener.SchedulerInStandbyMode();
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
 
                 }
@@ -2153,7 +2165,7 @@ namespace Quartz.Core
                 {
                     listener.SchedulerStarted();
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
 
                 }
@@ -2175,7 +2187,7 @@ namespace Quartz.Core
                 {
                     sl.SchedulerShutdown();
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
 
                 }
@@ -2195,7 +2207,7 @@ namespace Quartz.Core
                 {
                     sl.SchedulerShuttingdown();
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
 
                 }
@@ -2212,7 +2224,7 @@ namespace Quartz.Core
                 {
                     listener.JobAdded(jobDetail);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
 
                 }
@@ -2228,7 +2240,7 @@ namespace Quartz.Core
                 {
                     listener.JobDeleted(jobKey);
                 }
-                catch (Exception e)
+                catch (Exception)
                 {
 
                 }

@@ -340,9 +340,9 @@ namespace RockWeb.Blocks.Cms
             if ( !string.IsNullOrEmpty( contextParameter ) )
                 entityValue = string.Format( "{0}={1}", contextParameter, PageParameter( contextParameter ) ?? string.Empty );
 
-            string contextParameterValue = PageParameter( contextParameter );
-            if ( !string.IsNullOrEmpty( contextParameterValue ) )
-                entityValue += "&ContextName=" + contextParameterValue;
+            string contextName = GetAttributeValue( "ContextName" );
+            if ( !string.IsNullOrEmpty( contextName ) )
+                entityValue += "&ContextName=" + contextName;
 
             return entityValue;
         }

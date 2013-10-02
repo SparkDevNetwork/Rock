@@ -15,7 +15,7 @@ using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
 {
-    [DetailPage] 
+    [LinkedPage("Detail Page")] 
     public partial class ScheduleList : RockBlock
     {
         #region Control Methods
@@ -64,7 +64,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gSchedules_Add( object sender, EventArgs e )
         {
-            NavigateToDetailPage( "scheduleId", 0 );
+            NavigateToLinkedPage( "DetailPage", "scheduleId", 0 );
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gSchedules_Edit( object sender, RowEventArgs e )
         {
-            NavigateToDetailPage( "scheduleId", (int)e.RowKeyValue );
+            NavigateToLinkedPage( "DetailPage", "scheduleId", (int)e.RowKeyValue );
         }
 
         /// <summary>

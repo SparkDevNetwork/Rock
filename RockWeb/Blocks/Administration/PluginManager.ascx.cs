@@ -12,10 +12,12 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using NuGet;
+
 using Rock;
 using Rock.Services.NuGet;
 using Rock.Web.Cache;
-using NuGet;
+using Rock.Web.UI;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -102,6 +104,13 @@ namespace RockWeb.Blocks.Administration
             base.OnInit( e );
             gPackageList.RowUpdating += gPackageList_RowUpdating;
             gvPackageVersions.RowUpdating += gvPackageVersions_RowUpdating;
+
+            // wire up page navigate
+            RockPage page = Page as RockPage;
+            if ( page != null )
+            {
+                page.PageNavigate += page_PageNavigate;
+            }
         }
 
         protected override void OnLoad( EventArgs e )
@@ -135,27 +144,45 @@ namespace RockWeb.Blocks.Administration
         protected void btnInstalled_Click( object sender, EventArgs e )
         {
             this.CurrentViewMode = ViewMode.Installed;
+            this.AddHistory( "CurrentViewMode", this.CurrentViewMode.ToString(), null );
             BindPackageListGrid();
         }
 
         protected void btnAvailable_Click( object sender, EventArgs e )
         {
             this.CurrentViewMode = ViewMode.Available;
+            this.AddHistory( "CurrentViewMode", this.CurrentViewMode.ToString(), null );
             BindPackageListGrid();
         }
 
         protected void bSearch_Click( object sender, EventArgs e )
         {
             this.CurrentViewMode = ViewMode.Search;
+            this.AddHistory( "CurrentViewMode", this.CurrentViewMode.ToString(), null );
             BindPackageListGrid();
         }
 
-        protected void lbBack_Click( object sender, EventArgs e )
+        //protected void lbBack_Click( object sender, EventArgs e )
+        //{
+        //    pnlPackageList.Visible = true;
+        //    pnlPackage.Visible = false;
+        //    BindPackageListGrid();
+        //}
+
+        void page_PageNavigate( object sender, HistoryEventArgs e )
         {
+            if ( e.State["CurrentViewMode"] != null )
+            {
+                this.CurrentViewMode = (ViewMode)Enum.Parse( typeof( ViewMode ), e.State["CurrentViewMode"] );
+            }
+            else
+            {
+                this.CurrentViewMode = ViewMode.Installed;
+            }
             pnlPackageList.Visible = true;
             pnlPackage.Visible = false;
             BindPackageListGrid();
-        } 
+        }
 
         #endregion
 
@@ -313,6 +340,7 @@ namespace RockWeb.Blocks.Administration
 
         private void ViewPackage( string packageId )
         {
+            this.AddHistory( "CurrentViewMode", this.CurrentViewMode.ToString(), null );
             pnlPackage.Visible = true;
             pnlPackageList.Visible = false;
 
@@ -324,8 +352,7 @@ namespace RockWeb.Blocks.Administration
             lAuthors.Text = string.Join( ",", package.Authors );
             lDescription.Text = package.Description;
             lTags.Text = package.Tags;
-            lDependencies.Text = ( package.DependencySets.Count() == 0 ) ? "This plugin has no dependencies." : 
-                package.DependencySets.Aggregate( new StringBuilder( "<ul>" ), ( sb, s ) => sb.AppendFormat( "<li>{0}</li>", s.ToString() ) ).Append( "</ul>" ).ToString();
+            lDependencies.Text = ( package.DependencySets.Count() == 0 ) ? "This plugin has no dependencies." : package.DependencySets.Flatten();
 
             lbPackageUninstall.CommandArgument = packageId;
             lbPackageUninstall.Visible = NuGetService.IsPackageInstalled( package, anyVersion: true );

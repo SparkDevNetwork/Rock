@@ -91,7 +91,10 @@ namespace Rock.Model
         /// <param name="groupId">Group Id.</param>
         /// <param name="personId">Person Id.</param>
         /// <param name="groupRoleId">Group Role Id.</param>
-        /// <returns>Member object.</returns>
+        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <returns>
+        /// Member object.
+        /// </returns>
         public GroupMember GetByGroupIdAndPersonIdAndGroupRoleId( int groupId, int personId, int groupRoleId, bool includeDeceased = false )
         {
             return GetByGroupIdAndPersonId( groupId, personId, includeDeceased ).Where( t => t.GroupRoleId == groupRoleId ).FirstOrDefault();
@@ -140,7 +143,11 @@ namespace Rock.Model
         /// Gets the inverse relationship.
         /// </summary>
         /// <param name="groupMember">The group member.</param>
-        /// <returns>GroupMember.</returns>
+        /// <param name="createGroup">if set to <c>true</c> [create group].</param>
+        /// <param name="personId">The person id.</param>
+        /// <returns>
+        /// GroupMember.
+        /// </returns>
         public GroupMember GetInverseRelationship( GroupMember groupMember, bool createGroup, int? personId )
         {
             var groupRole = groupMember.GroupRole;

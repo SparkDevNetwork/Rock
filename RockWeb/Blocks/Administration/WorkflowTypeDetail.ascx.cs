@@ -531,13 +531,17 @@ namespace RockWeb.Blocks.Administration
             SetEditMode( false );
             hfWorkflowTypeId.SetValue( workflowType.Id );
             lReadOnlyTitle.Text = workflowType.Name;
-            lblWorkflowTypeInactive.Visible = workflowType.IsActive == false;
+            hlInactive.Visible = workflowType.IsActive == false;
             lblActivitiesReadonlyHeaderLabel.Text = string.Format( "<strong>Activities</strong> ({0})", workflowType.ActivityTypes.Count() );
 
             if ( workflowType.Category != null )
             {
-                lWorkflowTypeCategory.Text = workflowType.Category.Name;
-                //descriptionList.Add("Category", workflowType.Category.Name );
+                hlType.Visible = true;
+                hlType.Text = workflowType.Category.Name;
+            }
+            else
+            {
+                hlType.Visible = false;
             }
 
             lWorkflowTypeDescription.Text = workflowType.Description;

@@ -10,10 +10,10 @@
                     <div class="span6">
                         <div class="row-fluid">
                             <div class="span2">
-                                Site
+                                <!-- Site -->
                             </div>
                             <div class="span10">
-                                <Rock:LabeledText ID="lblSite" runat="server" />
+                                <Rock:RockLiteral Label="Site" ID="lblSite" runat="server" />
                             </div>
                         </div>
                         <div class="row-fluid">
@@ -21,7 +21,7 @@
                                 Page
                             </div>
                             <div class="span4">
-                                <Rock:LabeledText ID="lblPage" runat="server" />
+                                <Rock:RockLiteral ID="lblPage" runat="server" />
                             </div>
                             <div class="span6">
                                 <asp:HyperLink ID="hlPageLink" runat="server" CssClass="btn btn-mini" Target="_blank"><i class="icon-arrow-right"></i></asp:HyperLink>
@@ -31,7 +31,7 @@
                     <div class="span6">
                         <div class="span2">User</div>
                         <div class="span10">
-                            <Rock:LabeledText ID="lblUser" runat="server" />
+                            <Rock:RockLiteral ID="lblUser" runat="server" />
                         </div>
                     </div>
                 </div>
@@ -43,10 +43,10 @@
                 </div>
                 <div class="row-fluid">
                     <div class="span2">
-                        <Rock:LabeledCheckBox ID="cbShowCookies" runat="server" TextAlign="Right" />
+                        <Rock:RockCheckBox ID="cbShowCookies" runat="server" TextAlign="Right" />
                     </div>
                     <div class="span2">
-                        <Rock:LabeledCheckBox ID="cbShowServerVariables" runat="server" TextAlign="Left" />
+                        <Rock:RockCheckBox ID="cbShowServerVariables" runat="server" TextAlign="Left" />
                     </div>
                 </div>
             </fieldset>
@@ -68,7 +68,7 @@
                 <fieldset>
                     <legend>Details</legend>
                     <div class="row-fluid">
-                        <asp:Table ID="tblExceptionDetails" runat="server" CssClass="table table-bordered table-striped table-full table-hover">
+                        <asp:Table ID="tblExceptionDetails" runat="server" CssClass="table table-bordered table-striped table-hover">
                             <asp:TableHeaderRow ID="thRowExceptionDetails"  runat="server">
                                 <asp:TableHeaderCell ID="thExceptionType" runat="server" CssClass="span2" Text="Exception Type" />
                                 <asp:TableHeaderCell ID="thExceptionSource" runat="server" CssClass="span2" Text=" Source" />

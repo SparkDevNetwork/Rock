@@ -19,7 +19,7 @@ using System.Collections.Generic;
 
 namespace RockWeb.Blocks.Finance
 {
-    [DetailPage]
+    [LinkedPage("Detail Page")]
     public partial class GivingProfileList : Rock.Web.UI.RockBlock
     {
         #region Fields
@@ -99,7 +99,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void rFBFilter_ApplyFilterClick( object sender, EventArgs e )
         {
-            rFBFilter.SaveUserPreference( "Start Date", dtpGivingProfileDate.Text );
+            rFBFilter.SaveUserPreference( "Start Date", dtpGivingProfileDate.SelectedDateTime.ToString() );
             
             BindGrid();
         }
@@ -157,7 +157,7 @@ namespace RockWeb.Blocks.Finance
             {
                 fromDate = DateTime.Today;
             }
-            dtpGivingProfileDate.Text = fromDate.ToShortDateString();
+            dtpGivingProfileDate.SelectedDateTime = fromDate;
 
         }
 
@@ -233,7 +233,7 @@ namespace RockWeb.Blocks.Finance
         /// <param name="id">The id.</param>
         protected void ShowDetailForm( int id )
         {
-            NavigateToDetailPage( "GivingProfileId", id );
+            NavigateToLinkedPage( "DetailPage", "GivingProfileId", id );
         }
 
         /// <summary>

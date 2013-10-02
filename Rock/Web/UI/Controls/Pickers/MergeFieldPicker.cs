@@ -18,6 +18,12 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class MergeFieldPicker : ItemPicker
     {
+        /// <summary>
+        /// Gets or sets the merge fields.
+        /// </summary>
+        /// <value>
+        /// The merge fields.
+        /// </value>
         public List<string> MergeFields
         {
             get
@@ -41,7 +47,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Sets the value.
         /// </summary>
-        /// <param name="category">The category.</param>
+        /// <param name="nodePath">The node path.</param>
         public void SetValue( string nodePath )
         {
             if ( ! string.IsNullOrWhiteSpace(nodePath))

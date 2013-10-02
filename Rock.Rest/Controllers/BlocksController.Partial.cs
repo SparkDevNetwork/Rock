@@ -54,11 +54,11 @@ namespace Rock.Rest.Controllers
                 if ( !model.IsAuthorized( "Edit", user.Person ) )
                     throw new HttpResponseException( HttpStatusCode.Unauthorized );
 
-                if ( model.Layout != null && model.Layout != block.Layout )
-                    Rock.Web.Cache.PageCache.FlushLayoutBlocks( model.Layout );
+                if ( model.LayoutId.HasValue && model.LayoutId != block.LayoutId )
+                    Rock.Web.Cache.PageCache.FlushLayoutBlocks( model.LayoutId.Value );
 
-                if ( block.Layout != null )
-                    Rock.Web.Cache.PageCache.FlushLayoutBlocks( block.Layout );
+                if ( block.LayoutId.HasValue )
+                    Rock.Web.Cache.PageCache.FlushLayoutBlocks( block.LayoutId.Value );
                 else
                 {
                     var page = Rock.Web.Cache.PageCache.Read( block.PageId.Value );
@@ -67,8 +67,7 @@ namespace Rock.Rest.Controllers
 
                 model.Zone = block.Zone;
                 model.PageId = block.PageId;
-                model.SiteId = block.SiteId;
-                model.Layout = block.Layout;
+                model.LayoutId = block.LayoutId;
 
                 if ( model.IsValid )
                 {

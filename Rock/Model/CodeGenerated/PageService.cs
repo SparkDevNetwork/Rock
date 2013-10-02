@@ -97,8 +97,7 @@ namespace Rock.Model
                 target.ParentPageId = source.ParentPageId;
                 target.Title = source.Title;
                 target.IsSystem = source.IsSystem;
-                target.SiteId = source.SiteId;
-                target.Layout = source.Layout;
+                target.LayoutId = source.LayoutId;
                 target.RequiresEncryption = source.RequiresEncryption;
                 target.EnableViewState = source.EnableViewState;
                 target.PageDisplayTitle = source.PageDisplayTitle;

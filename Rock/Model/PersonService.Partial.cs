@@ -233,14 +233,28 @@ namespace Rock.Model
         /// <param name="partialPhoneNumber">The partial phone number.</param>
         /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
         /// <returns></returns>
-        public IEnumerable<Person> GetByPhonePartial( string partialPhoneNumber, bool includeDeceased = false )
+        public IQueryable<Person> GetByPhonePartial( string partialPhoneNumber, bool includeDeceased = false )
         {
             string numericPhone = partialPhoneNumber.AsNumeric();
 
-            return Repository.Find( p =>
+            return Repository.AsQueryable().Where( p =>
                 ( includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value ) &&
                 p.PhoneNumbers.Any( n => n.Number.Contains( numericPhone ) )
             );
+        }
+
+        /// Gets the families.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public IQueryable<Group> GetFamilies( Person person )
+        {
+            Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+
+            return new GroupMemberService().Queryable()
+                .Where( m => m.PersonId == person.Id && m.Group.GroupType.Guid == familyGuid )
+                .Select( m => m.Group )
+                .Distinct();
         }
 
         /// <summary>
@@ -258,6 +272,34 @@ namespace Rock.Model
                 .SelectMany( m => m.Group.Members)
                 .Where( fm => includeSelf || fm.PersonId != person.Id)
                 .Distinct();
+        }
+
+        /// <summary>
+        /// Gets the first location.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="locationTypeValueId">The location type value id.</param>
+        /// <returns></returns>
+        public Location GetFirstLocation( Person person, int locationTypeValueId )
+        {
+            return GetFamilies( person )
+                .SelectMany( g => g.GroupLocations )
+                .Where( gl => gl.GroupLocationTypeValueId == locationTypeValueId )
+                .Select( gl => gl.Location )
+                .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets a phone number
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="phoneType">Type of the phone.</param>
+        /// <returns></returns>
+        public PhoneNumber GetPhoneNumber(Person person, Rock.Web.Cache.DefinedValueCache phoneType)
+        {
+            return new PhoneNumberService().Queryable()
+                .Where( n => n.PersonId == person.Id && n.NumberTypeValueId == phoneType.Id)
+                .FirstOrDefault();
         }
 
         #endregion

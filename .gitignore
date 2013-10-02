@@ -1,5 +1,6 @@
 #file types
 _ReSharper.*
+*.resharper
 *.DS_Store
 *.tlog
 *.vsp
@@ -25,3 +26,4 @@ StyleCop.Cache
 [Rr]elease*/
 RockWeb/Cache/*
 RockWeb/App_Data/PackageStaging
+/scaffolding.config
