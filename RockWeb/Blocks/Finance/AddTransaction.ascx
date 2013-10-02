@@ -64,7 +64,7 @@
                                         <Rock:StateDropDownList Label="State" ID="ddlState" runat="server" UseAbbreviation="true" />
                                     </div>
                                     <div class="col-md-3">
-                                        <Rock:RockTextBox  ID="txtZip" runat="server" />
+                                        <Rock:RockTextBox  ID="txtZip" runat="server" Label="Zip" />
                                     </div>
                                 </div>
                                 
@@ -114,13 +114,15 @@
                                     <Rock:RockCheckBox ID="cbBillingAddress" runat="server" Label=" " Text="Enter a different billing address" CssClass="toggle-input" />
                                     <div id="divBillingAddress" runat="server" class="toggle-content">
                                         <Rock:RockTextBox ID="txtBillingStreet" runat="server" Label="Billing Address"></Rock:RockTextBox>
-                                        <div class="control-group">
-                                            <div class="control-label">&nbsp;</div>
-                                            <div class="controls">
-                                                <asp:TextBox ID="txtBillingCity" runat="server" />
-                                                ,&nbsp;
-                                                <Rock:StateDropDownList ID="ddlBillingState" runat="server" UseAbbreviation="true" />&nbsp;
-                                                <asp:TextBox ID="txtBillingZip" runat="server" />
+                                        <div class="row">
+                                            <div class="col-md-7">
+                                                <Rock:RockTextBox ID="txtBillingCity" runat="server" Label="City" />
+                                            </div>
+                                            <div class="col-md-2">
+                                                <Rock:StateDropDownList ID="ddlBillingState" runat="server" Label="State" UseAbbreviation="true" />
+                                            </div>
+                                            <div class="col-md-3">                                                
+                                                <Rock:RockTextBox ID="txtBillingZip" runat="server" Label="Zip" />
                                             </div>
                                         </div>
                                     </div>
