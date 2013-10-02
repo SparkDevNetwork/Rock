@@ -15,7 +15,8 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Note Type POCO Entity.
+    /// Represents a type or category of <see cref="Rock.Model.Note">Notes</see> in RockChMS, and configures the type of entities that notes of this type apply to other settings
+    /// specific to the type of note.
     /// </summary>
     [Table( "NoteType" )]
     [DataContract]

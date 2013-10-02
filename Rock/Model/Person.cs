@@ -49,7 +49,6 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
-
         /// <summary>
         /// Gets or sets the Id of the Person Record Type <see cref="Rock.Model.DefinedValue" /> representing what type of Person Record this is.
         /// </summary>
@@ -271,7 +270,6 @@ namespace Rock.Model
         [DefinedValue( SystemGuid.DefinedType.PERSON_SUFFIX )]
         public int? SuffixValueId { get; set; }
 
-
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.BinaryFile"/> that contains the photo of the Person.
         /// </summary>
@@ -440,7 +438,6 @@ namespace Rock.Model
         }
         private ICollection<UserLogin> _users;
 
-
         /// <summary>
         /// Gets or sets a collection containing the <see cref="Rock.Model.EmailTemplate">EmailTemplates</see> that were created by this Person.
         /// </summary>
@@ -527,9 +524,6 @@ namespace Rock.Model
         /// <value>
         /// A <see cref="DefinedValue"/> object representing the record status.
         /// </value>
-        /// <remarks>
-        /// This 
-        /// </remarks>
         [DataMember]
         [MergeField]
         public virtual DefinedValue RecordStatusValue { get; set; }
@@ -927,7 +921,6 @@ namespace Rock.Model
         /// Male
         /// </summary>
         Male = 1,
-
 
         /// <summary>
         /// Female

@@ -91,7 +91,6 @@ namespace Rock.Model
         [MergeField]
         public DateTime? LastActivityDateTime { get; set; }
 
-
         /// <summary>
         /// Gets or sets the most recent date and time that a user successfully logged in using this UserLogin.
         /// </summary>

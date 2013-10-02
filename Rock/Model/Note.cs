@@ -15,7 +15,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents a note that is entered in RockChMS and is associated with a specific entity. For example, a note could be entered on a person, GroupMember, a device, etc.
+    /// Represents a note that is entered in RockChMS and is associated with a specific entity. For example, a note could be entered on a person, GroupMember, a device, etc or for a specific subset of an entity type.
     /// </summary>
     [Table( "Note" )]
     [DataContract]
