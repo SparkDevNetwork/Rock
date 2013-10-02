@@ -138,7 +138,7 @@ namespace RockWeb.Blocks.Administration
 
                     if ( newSite )
                     {
-                        Rock.Security.Authorization.CopyAuthorization( CurrentPage.Site, site, CurrentPersonId );
+                        Rock.Security.Authorization.CopyAuthorization( CurrentPage.Layout.Site, site, CurrentPersonId );
                     }
                 } );
 
@@ -188,7 +188,7 @@ namespace RockWeb.Blocks.Administration
             {
                 site = new Site { Id = 0 };
                 site.SiteDomains = new List<SiteDomain>();
-                site.Theme = CurrentPage.Site.Theme;
+                site.Theme = CurrentPage.Layout.Site.Theme;
                 lActionTitle.Text = ActionTitle.Add( Rock.Model.Site.FriendlyTypeName );
             }
 

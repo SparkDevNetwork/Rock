@@ -22,13 +22,13 @@
 
     <asp:HiddenField ID="hfAction" runat="server" />
     <asp:Button ID="btnDefault" runat="server" Text="Show" style="display:none"/>
-    <asp:Panel ID="pnlContentEditor" runat="server" CssClass="rock-modal" style="display:none">
+    <asp:Panel ID="pnlContentEditor" runat="server" CssClass="rock-modal htmlcontent-dialog" style="display:none">
 
         <div class="modal-header">
             <a id="aClose" runat="server" href="#" class="close">&times;</a>
-            <h3>HTML Content</h3>
+            <h3 class="modal-title">HTML Content</h3>
             <asp:PlaceHolder ID="phCurrentVersion" runat="server"><a id="html-content-version-<%=CurrentBlock.Id %>" 
-                class="html-content-version-label">Version <asp:Literal ID="lVersion" runat="server"></asp:Literal></a></asp:PlaceHolder>
+                class="label label-default pull-right">Version <asp:Literal ID="lVersion" runat="server"></asp:Literal></a></asp:PlaceHolder>
         </div>
 
         <div id="html-content-versions-<%=CurrentBlock.Id %>" style="display:none">
@@ -55,19 +55,21 @@
         </div>
 
         <div id="html-content-edit-<%=CurrentBlock.Id %>">
-            <asp:panel ID="pnlVersioningHeader" runat="server" class="html-content-edit-header">
+            <asp:panel ID="pnlVersioningHeader" runat="server" class="htmlcontent-edit-header">
                 <asp:HiddenField ID="hfVersion" runat="server" />
                 Start: <asp:TextBox ID="tbStartDate" runat="server" CssClass="date-picker"></asp:TextBox>
                 Expire: <asp:TextBox ID="tbExpireDate" runat="server" CssClass="date-picker"></asp:TextBox>
-                <div class="html-content-approve inline-form"><asp:CheckBox ID="cbApprove" runat="server" TextAlign="Right" Text="Approve" /></div>
+                <div class="html-content-approve"><asp:CheckBox ID="cbApprove" runat="server" TextAlign="Right" Text="Approve" /></div>
             </asp:panel>
             <div class="modal-body">
                 <Rock:CKEditorControl ID="edtHtmlContent" runat="server" Visible="false"/>
+
+                <div class="">
+                    <asp:CheckBox ID="cbOverwriteVersion" runat="server" TextAlign="Right" Text="don't save a new version" />
+                </div>
             </div>
             <div class="modal-footer">
-                <span class="inline-form">
-                    <asp:CheckBox ID="cbOverwriteVersion" runat="server" TextAlign="Right" Text="don't save a new version" />
-                </span>
+                
                 <asp:LinkButton ID="lbCancel" runat="server" cssclass="btn" Text="Cancel" />
                 <asp:LinkButton ID="lbOk" runat="server" cssclass="btn btn-primary" Text="Save" />
             </div>

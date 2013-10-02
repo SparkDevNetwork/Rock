@@ -132,7 +132,7 @@ namespace Rock.Services.NuGet
         /// <param name="personId">Id of the Person performing the import</param>
         /// <param name="pageId">The Id of the Page to save new data underneath</param>
         /// <param name="siteId">The Id of the Site tha the Page is being imported into</param>
-        public bool ImportPage( byte[] uploadedPackage, string fileName, int personId, int pageId, int? siteId )
+        public bool ImportPage( byte[] uploadedPackage, string fileName, int personId, int pageId, int siteId )
         {
             // Write .nupkg file to the PackageStaging folder...
             var path = Path.Combine( HttpContext.Current.Server.MapPath( "~/App_Data/PackageStaging" ), fileName );
@@ -386,14 +386,29 @@ namespace Rock.Services.NuGet
         /// <param name="personId">Id of the Person performing the "Import" operation</param>
         /// <param name="parentPageId">Id of the the current Page's parent</param>
         /// <param name="siteId">Id of the site the current Page is being imported into</param>
-        private void SavePages( Page page, IEnumerable<BlockType> newBlockTypes, int personId, int parentPageId, int? siteId )
+        private void SavePages( Page page, IEnumerable<BlockType> newBlockTypes, int personId, int parentPageId, int siteId )
         {
+            // find layout
+            var layoutService = new LayoutService();
+            var layout = layoutService.GetBySiteId(siteId).Where( l => l.Name == page.Layout.Name && l.FileName == page.Layout.FileName ).FirstOrDefault();
+            if ( layout == null )
+            {
+                layout = new Layout();
+                layout.FileName = page.Layout.FileName;
+                layout.Name = page.Layout.Name;
+                layout.SiteId = siteId;
+                layoutService.Add( layout, null );
+                layoutService.Save( layout, null );
+            }
+            int layoutId = layout.Id;
+
             // Force shallow copies on entities so save operations are more atomic and don't get hosed
             // by nested object references.
             var pg = page.Clone(deepCopy: false);
             var blockTypes = newBlockTypes.ToList();
             pg.ParentPageId = parentPageId;
-            pg.SiteId = siteId;
+            pg.LayoutId = layoutId;
+
             var pageService = new PageService();
             pageService.Add( pg, personId );
             pageService.Save( pg, personId );

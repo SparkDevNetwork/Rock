@@ -10,6 +10,8 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock;
+using Rock.Model;
 using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Administration
@@ -143,12 +145,12 @@ namespace RockWeb.Blocks.Administration
                 if ( _page != null )
                 {
                     page.ParentPageId = _page.Id;
-                    page.SiteId = _page.Site.Id;
+                    page.LayoutId = _page.LayoutId;
                 }
                 else
                 {
                     page.ParentPageId = null;
-                    page.SiteId = CurrentPage.Site.Id;
+                    page.LayoutId = CurrentPage.LayoutId;
                 }
 
                 page.Title = tbPageName.Text;
@@ -170,7 +172,7 @@ namespace RockWeb.Blocks.Administration
             else
                 page = pageService.Get( pageId );
 
-            page.Layout = ddlLayout.Text;
+            page.LayoutId = ddlLayout.SelectedValueAsInt().Value;
             page.Name = tbPageName.Text;
 
             pageService.Save( page, CurrentPersonId );
@@ -204,9 +206,11 @@ namespace RockWeb.Blocks.Administration
         private void LoadLayouts()
         {
             ddlLayout.Items.Clear();
-            DirectoryInfo di = new DirectoryInfo( Path.Combine( this.Page.Request.MapPath( this.CurrentTheme ), "Layouts" ) );
-            foreach ( FileInfo fi in di.GetFiles( "*.aspx" ) )
-                ddlLayout.Items.Add( new ListItem( fi.Name.Remove( fi.Name.IndexOf( ".aspx" ) ) ) );
+            int siteId = _page != null ? _page.Layout.SiteId : CurrentPage.Layout.SiteId;
+            foreach(var layout in new LayoutService().GetBySiteId(siteId))
+            {
+                ddlLayout.Items.Add( new ListItem( layout.Name, layout.Id.ToString() ) );
+            }
         }
 
         protected void ShowEdit( int pageId )
@@ -215,7 +219,7 @@ namespace RockWeb.Blocks.Administration
             if ( page != null )
             {
                 hfPageId.Value = page.Id.ToString();
-                try { ddlLayout.Text = page.Layout; }
+                try { ddlLayout.SelectedValue = page.LayoutId.ToString(); }
                 catch { }
                 tbPageName.Text = page.Name;
 
@@ -229,9 +233,9 @@ namespace RockWeb.Blocks.Administration
                 try
                 {
                     if ( _page != null )
-                        ddlLayout.Text = _page.Layout;
+                        ddlLayout.SelectedValue = _page.LayoutId.ToString();
                     else
-                        ddlLayout.Text = CurrentPage.Layout;
+                        ddlLayout.Text = CurrentPage.LayoutId.ToString();
                 }
                 catch { }
 
