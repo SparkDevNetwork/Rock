@@ -33,7 +33,6 @@ namespace Rock.Model
         [DataMember]
         public int? LocationId { get; set; }
 
-
         /// <summary>
         /// Gets or sets the Id of the schedule that the <see cref="Rock.Model.Person"/> checked in to.
         /// </summary>

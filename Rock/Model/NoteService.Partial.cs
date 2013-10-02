@@ -10,7 +10,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Note POCO Service class
+    /// Data access/service class for <see cref="Rock.Model.Note"/> entity objects.
     /// </summary>
     public partial class NoteService : Service<Note>
     {
