@@ -75,6 +75,13 @@ namespace RockWeb.Blocks.Administration
 
                 if ( _page.IsAuthorized( "Administrate", CurrentPerson ) )
                 {
+                    ddlLayout.Items.Clear();
+                    foreach(var layout in new LayoutService().GetBySiteId(_page.Layout.SiteId))
+                    {
+                        ddlLayout.Items.Add( new ListItem( layout.Name, layout.Id.ToString() ) );
+                    }
+                    ddlMenuWhen.BindToEnum( typeof( DisplayInNavWhen ) );
+
                     phAttributes.Controls.Clear();
                     Rock.Attribute.Helper.AddEditControls( _page, phAttributes, !Page.IsPostBack );
 
@@ -152,7 +159,7 @@ namespace RockWeb.Blocks.Administration
                 tbPageName.Text = _page.Name;
                 tbPageTitle.Text = _page.Title;
                 ppParentPage.SetValue( pageService.Get( page.ParentPageId ?? 0 ) );
-                ddlLayout.Text = _page.Layout;
+                ddlLayout.SelectedValue = _page.LayoutId.ToString();
                 imgIcon.BinaryFileId = page.IconFileId;
                 tbIconCssClass.Text = _page.IconCssClass;
 
@@ -249,7 +256,7 @@ namespace RockWeb.Blocks.Administration
                         page.ParentPageId = null;
                     }
 
-                    page.Layout = ddlLayout.Text;
+                    page.LayoutId = ddlLayout.SelectedValueAsInt().Value;
                     page.IconFileId = imgIcon.BinaryFileId;
                     page.IconCssClass = tbIconCssClass.Text;
 
@@ -372,7 +379,7 @@ namespace RockWeb.Blocks.Administration
 
             using ( new UnitOfWorkScope() )
             {
-                importResult = packageService.ImportPage( fuImport.FileBytes, fuImport.FileName, CurrentPerson.Id, _page.Id, _page.SiteId );
+                importResult = packageService.ImportPage( fuImport.FileBytes, fuImport.FileName, CurrentPerson.Id, _page.Id, _page.Layout.SiteId );
             }
 
             if ( !importResult )
@@ -406,14 +413,6 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void LoadDropdowns()
         {
-            ddlLayout.Items.Clear();
-            DirectoryInfo di = new DirectoryInfo( Path.Combine( this.Page.Request.MapPath( this.CurrentTheme ), "Layouts" ) );
-            foreach ( FileInfo fi in di.GetFiles( "*.aspx" ) )
-            {
-                ddlLayout.Items.Add( new ListItem( fi.Name.Remove( fi.Name.IndexOf( ".aspx" ) ) ) );
-            }
-
-            ddlMenuWhen.BindToEnum( typeof( DisplayInNavWhen ) );
         }
 
         /// <summary>

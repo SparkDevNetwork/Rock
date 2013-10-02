@@ -4,6 +4,7 @@
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -308,7 +309,24 @@ namespace RockWeb.Blocks.Finance
         /// <param name="id">The id.</param>
         protected void ShowDetailForm( int id )
         {
-            NavigateToLinkedPage( "DetailPage", "transactionId", id );
+            if ( _batch != null )
+            {
+                Dictionary<string, string> qryParams = new Dictionary<string, string>();
+                qryParams.Add( "financialBatchId", _batch.Id.ToString() );
+                qryParams.Add( "transactionid", id.ToString() );
+                NavigateToLinkedPage( "DetailPage", qryParams );
+            }
+            else if ( _person != null )
+            {
+                Dictionary<string, string> qryParams = new Dictionary<string, string>();
+                qryParams.Add( "personId", _person.Id.ToString() );
+                qryParams.Add( "transactionid", id.ToString() );
+                NavigateToLinkedPage( "DetailPage", qryParams );
+            }
+            else
+            {
+                NavigateToLinkedPage( "DetailPage", "transactionId", id );
+            }
         }
 
         /// <summary>

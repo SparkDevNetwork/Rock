@@ -184,7 +184,7 @@
 
             $('#' + controlId).hover(
                 function () {
-                    
+
                     // only show the X if there there is something picked
                     if ($('#hfItemId_' + controlId).val() || '0' !== '0') {
                         $('#btnSelectNone_' + controlId).stop().show();
@@ -199,8 +199,6 @@
             });
 
             $('#btnSelectNone_' + controlId).click(function (e) {
-                e.stopImmediatePropagation();
-
                 var selectedValue = '0',
                     selectedText = defaultText,
                     $selectedItemLabel = $('#selectedItemLabel_' + controlId),
@@ -211,7 +209,6 @@
                 $hiddenItemName.val(selectedText);
                 $selectedItemLabel.val(selectedValue);
                 $selectedItemLabel.text(selectedText);
-                return false;
             });
 
             $('#btnSelect_' + controlId).click(function () {

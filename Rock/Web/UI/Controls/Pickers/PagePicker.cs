@@ -225,7 +225,7 @@ namespace Rock.Web.UI.Controls
                 ItemName = Rock.Constants.None.TextHtml;
                 PageRouteId = null;
                 _rblSelectPageRoute.Visible = false;
-                _btnShowPageRoutePicker.Visible = false;
+                _btnShowPageRoutePicker.Style[HtmlTextWriterStyle.Display] = "none";
             }
         }
 

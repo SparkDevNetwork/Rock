@@ -23,6 +23,7 @@ namespace RockWeb.Blocks.Finance.Administration
     public partial class BatchList : Rock.Web.UI.RockBlock
     {
         #region Fields
+
         private bool _canConfigure = false;
 
         #endregion
@@ -155,6 +156,7 @@ namespace RockWeb.Blocks.Finance.Administration
         #endregion
 
         #region Internal Methods
+
         /// <summary>
         /// Binds the filter.
         /// </summary>

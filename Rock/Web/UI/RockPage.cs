@@ -58,8 +58,9 @@ namespace Rock.Web.UI
             set
             {
                 _currentPage = value;
-                HttpContext.Current.Items.Add( "Rock:SiteId", _currentPage.Site.Id );
                 HttpContext.Current.Items.Add( "Rock:PageId", _currentPage.Id );
+                HttpContext.Current.Items.Add( "Rock:LayoutId", _currentPage.LayoutId );
+                HttpContext.Current.Items.Add( "Rock:SiteId", _currentPage.Layout.SiteId );
             }
         }
         private PageCache _currentPage = null;
@@ -228,7 +229,7 @@ namespace Rock.Web.UI
         {
             get
             {
-                return ResolveUrl( string.Format( "~/Themes/{0}", CurrentPage.Site.Theme ) );
+                return ResolveUrl( string.Format( "~/Themes/{0}", CurrentPage.Layout.Site.Theme ) );
             }
         }
 
@@ -429,17 +430,17 @@ namespace Rock.Web.UI
                     if ( user == null )
                     {
                         Page.Trace.Warn( "Redirecting to login page" );
-                        if (!string.IsNullOrWhiteSpace(CurrentPage.Site.LoginPageReference))
+                        if (!string.IsNullOrWhiteSpace(CurrentPage.Layout.Site.LoginPageReference))
                         {
                             // if the QueryString already has a returnUrl, use that, otherwise redirect to RawUrl
                             string returnUrl = Request.QueryString["returnUrl"] ?? Server.UrlEncode(Request.RawUrl);
                             
-                            string loginPageRequestPath = ResolveUrl( CurrentPage.Site.LoginPageReference );
+                            string loginPageRequestPath = ResolveUrl( CurrentPage.Layout.Site.LoginPageReference );
 
                             if ( loginPageRequestPath.Equals( Request.Path ) )
                             {
                                 // The LoginPage security isn't set to Allow All, so throw exception to prevent recursive loop
-                                throw new Exception( string.Format("Page security for Site.LoginPageReference {0} is invalid", CurrentPage.Site.LoginPageReference));
+                                throw new Exception( string.Format("Page security for Site.LoginPageReference {0} is invalid", CurrentPage.Layout.Site.LoginPageReference));
                             }
                             else
                             {
@@ -504,11 +505,12 @@ namespace Rock.Web.UI
                     string script = string.Format( @"
     Rock.settings.initialize({{ 
         siteId: {0},
-        pageId: {1}, 
-        layout: '{2}',
-        baseUrl: '{3}' 
+        layoutId: {1},
+        pageId: {2}, 
+        layout: '{3}',
+        baseUrl: '{4}' 
     }});",
-                        CurrentPage.SiteId.Value, CurrentPage.Id, CurrentPage.Layout, AppPath );
+                        CurrentPage.Layout.SiteId, CurrentPage.LayoutId, CurrentPage.Id, CurrentPage.Layout.FileName, AppPath );
                     ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "rock-js-object", script, true );
 
                     // Add config elements
@@ -690,22 +692,22 @@ namespace Rock.Web.UI
 
                     // Add favicon and apple touch icons to page
                     Page.Trace.Warn( "Adding favicons and appletouch links" );
-                    if ( CurrentPage.Site.FaviconUrl != null )
+                    if ( CurrentPage.Layout.Site.FaviconUrl != null )
                     {
                         System.Web.UI.HtmlControls.HtmlLink faviconLink = new System.Web.UI.HtmlControls.HtmlLink();
 
                         faviconLink.Attributes.Add( "rel", "shortcut icon" );
-                        faviconLink.Attributes.Add( "href", ResolveUrl( "~/" + CurrentPage.Site.FaviconUrl ) );
+                        faviconLink.Attributes.Add( "href", ResolveUrl( "~/" + CurrentPage.Layout.Site.FaviconUrl ) );
 
                         CurrentPage.AddHtmlLink( this.Page, faviconLink );
                     }
 
-                    if ( CurrentPage.Site.AppleTouchIconUrl != null )
+                    if ( CurrentPage.Layout.Site.AppleTouchIconUrl != null )
                     {
                         System.Web.UI.HtmlControls.HtmlLink touchLink = new System.Web.UI.HtmlControls.HtmlLink();
 
                         touchLink.Attributes.Add( "rel", "apple-touch-icon" );
-                        touchLink.Attributes.Add( "href", ResolveUrl( "~/" + CurrentPage.Site.AppleTouchIconUrl ) );
+                        touchLink.Attributes.Add( "href", ResolveUrl( "~/" + CurrentPage.Layout.Site.AppleTouchIconUrl ) );
 
                         CurrentPage.AddHtmlLink( this.Page, touchLink );
                     }
@@ -830,7 +832,7 @@ namespace Rock.Web.UI
                 PageViewTransaction transaction = new PageViewTransaction();
                 transaction.DateViewed = DateTime.Now;
                 transaction.PageId = CurrentPage.Id;
-                transaction.SiteId = CurrentPage.Site.Id;
+                transaction.SiteId = CurrentPage.Layout.Site.Id;
                 if ( CurrentPersonId != null )
                     transaction.PersonId = (int)CurrentPersonId;
                 transaction.IPAddress = Request.UserHostAddress;
@@ -923,7 +925,7 @@ namespace Rock.Web.UI
         /// <param name="ex">The System.Exception to log.</param>
         public void LogException( Exception ex )
         {
-            ExceptionLogService.LogException( ex, Context, CurrentPage.Id, CurrentPage.SiteId, CurrentPersonId );
+            ExceptionLogService.LogException( ex, Context, CurrentPage.Id, CurrentPage.Layout.SiteId, CurrentPersonId );
         }
 
         /// <summary>
@@ -1110,7 +1112,7 @@ namespace Rock.Web.UI
             rblLocation.ID = "block-move-Location";
             rblLocation.CssClass = "inputs-list";
             rblLocation.Items.Add( new ListItem( "Current Page" ) );
-            rblLocation.Items.Add( new ListItem( string.Format( "All Pages Using the '{0}' Layout", CurrentPage.Layout ) ) );
+            rblLocation.Items.Add( new ListItem( string.Format( "All Pages Using the '{0}' Layout", CurrentPage.Layout.Name ) ) );
             rblLocation.Label = "Parent";
             fsZoneSelect.Controls.Add( rblLocation );
         }

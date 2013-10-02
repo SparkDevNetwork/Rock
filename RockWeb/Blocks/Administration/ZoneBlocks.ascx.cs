@@ -32,10 +32,9 @@ namespace RockWeb.Blocks.Administration
 
             string zoneName = this.PageParameter( "ZoneName" );
 
-            lAllPages.Text = string.Format( "All Pages Using '{0}' Layout", page.Layout );
+            lAllPages.Text = string.Format( "All Pages Using '{0}' Layout", page.Layout.Name );
 
-            // TODO: Managing layout block instances should probably be controlled by site security
-            if ( page.IsAuthorized( "Administrate", CurrentPerson ) )
+            if ( page.Layout.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 gLayoutBlocks.DataKeyNames = new string[] { "id" };
                 gLayoutBlocks.Actions.ShowAdd = true;
@@ -137,7 +136,7 @@ namespace RockWeb.Blocks.Administration
             Rock.Web.Cache.PageCache page = Rock.Web.Cache.PageCache.Read( pageId );
             string zoneName = this.PageParameter( "ZoneName" );
 
-            blockService.Reorder( blockService.GetByLayoutAndZone( page.SiteId.Value, page.Layout, zoneName ).ToList(), e.OldIndex, e.NewIndex, CurrentPersonId );
+            blockService.Reorder( blockService.GetByLayoutAndZone( page.LayoutId, zoneName ).ToList(), e.OldIndex, e.NewIndex, CurrentPersonId );
 
             BindGrids();
         }
@@ -168,7 +167,7 @@ namespace RockWeb.Blocks.Administration
             {
                 blockService.Delete( block, CurrentPersonId );
                 blockService.Save( block, CurrentPersonId );
-                Rock.Web.Cache.PageCache.FlushLayoutBlocks( page.Layout );
+                Rock.Web.Cache.PageCache.FlushLayoutBlocks( page.LayoutId );
             }
 
             BindGrids();
@@ -303,14 +302,12 @@ namespace RockWeb.Blocks.Administration
                 BlockLocation location = hfBlockLocation.Value.ConvertToEnum<BlockLocation>();
                 if ( location == BlockLocation.Layout )
                 {
-                    block.SiteId = page.SiteId;
-                    block.Layout = page.Layout;
+                    block.LayoutId = page.LayoutId;
                     block.PageId = null;
                 }
                 else
                 {
-                    block.SiteId = null;
-                    block.Layout = null;
+                    block.LayoutId = null;
                     block.PageId = page.Id;
                 }
 
@@ -343,7 +340,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( block.Layout != null )
             {
-                Rock.Web.Cache.PageCache.FlushLayoutBlocks( page.Layout );
+                Rock.Web.Cache.PageCache.FlushLayoutBlocks( page.LayoutId );
             }
             else
             {
@@ -379,7 +376,7 @@ namespace RockWeb.Blocks.Administration
             Rock.Web.Cache.PageCache page = Rock.Web.Cache.PageCache.Read( pageId );
             string zoneName = this.PageParameter( "ZoneName" );
 
-            gLayoutBlocks.DataSource = blockService.GetByLayoutAndZone( page.SiteId.Value, page.Layout, zoneName ).ToList();
+            gLayoutBlocks.DataSource = blockService.GetByLayoutAndZone( page.LayoutId, zoneName ).ToList();
             gLayoutBlocks.DataBind();
         }
 

@@ -329,11 +329,11 @@ namespace RockWeb.Blocks.Administration
         {
             if ( category.Id > 0 )
             {
-                lActionTitle.Text = ActionTitle.Edit( Category.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Edit( Category.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( Category.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Add( Category.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
             SetEditMode( true );
@@ -392,8 +392,7 @@ namespace RockWeb.Blocks.Administration
             }
 
             hfCategoryId.SetValue( category.Id );
-            lCategoryIconHtml.Text = categoryIconHtml;
-            lReadOnlyTitle.Text = category.Name;
+            lReadOnlyTitle.Text = category.Name.FormatAsHtmlTitle();
 
             lblMainDetails.Text = new DescriptionList()
                 .Add("Entity Type", category.EntityType.Name)

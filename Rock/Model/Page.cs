@@ -17,8 +17,8 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents an individual webpage in RockChMS. A page is a container on a <see cref="Rock.Model.Site"/> that has a layout with consists of one or more content area zones.  
-    /// Each content area zone on the page can contain zero or more <see cref="Rock.Model.Block">Blocks.</see>.
+    /// Represents an individual webpage in RockChMS. A page is a container on a <see cref="Rock.Model.Site"/> that has a <see cref="Rock.Model.Layout"/> which
+    /// consists of one or more content area zones. Each content area zone on the page can contain zero or more <see cref="Rock.Model.Block">Blocks.</see>.
     /// 
     /// Pages are hierarchical, and are used to create the structure of the site.  Each page can have one parent Page and zero or more children pages, and the 
     /// page hierarchy is used to create the SiteMap.
@@ -70,24 +70,14 @@ namespace Rock.Model
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the <see cref="Rock.Model.Site"/> that this Page is on.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Layout"/> that this Page uses.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Site"/> that this Page is a part of.
+        /// An <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Layout"/> that this Page uses.
         /// </value>
         [DataMember]
-        public int? SiteId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the the Page's Layout template.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.String"/> that represents the name of the Page's Layout template.
-        /// </value>
-        [MaxLength( 100 )]
-        [DataMember]
-        public string Layout { get; set; }
-
+        public int LayoutId { get; set; }
+        
         /// <summary>
         /// Gets or sets a flag that indicates if the Page requires SSL encryption.
         /// </summary>
@@ -112,7 +102,7 @@ namespace Rock.Model
         private bool _enableViewState = true;
 
         /// <summary>
-        /// Gets or sets a value indicating whether the Page Title should be displayed on the page (if the layout allows).
+        /// Gets or sets a value indicating whether the Page Title should be displayed on the page (if the <see cref="Rock.Model.Layout"/> supports it).
         /// </summary>
         /// <value>
         ///   A <see cref="System.Boolean"/> that is <c>true</c> if the title should be displayed on the Page, otherwise <c>false</c>.
@@ -312,13 +302,13 @@ namespace Rock.Model
         public virtual Page ParentPage { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Site"/> of the site that the page belongs to.
+        /// Gets or sets the <see cref="Rock.Model.Layout"/> that the pages uses.
         /// </summary>
         /// <value>
-        /// The <see cref="Rock.Model.Site"/> entity that the Page is associated with
+        /// The <see cref="Rock.Model.Layout"/> entity that the Page is using
         /// </value>
-        public virtual Site Site { get; set; }
-
+        public virtual Layout Layout { get; set; }
+        
         /// <summary>
         /// Gets or sets the page icon's <see cref="Rock.Model.BinaryFile"/> for file based icons.
         /// </summary>
@@ -385,7 +375,8 @@ namespace Rock.Model
         private ICollection<PageContext> _pageContexts;
 
         /// <summary>
-        /// Gets the parent authority for the page. Page security is automatically inherited from the parent page, unless explicitly overridden.
+        /// Gets the parent authority for the page. Page security is automatically inherited from the parent page, unless 
+        /// explicitly overridden.  If there is no parent page, it is inherited from the site (through the layout)
         /// </summary>
         /// <value>
         /// The parent authority.
@@ -400,7 +391,7 @@ namespace Rock.Model
                 }
                 else
                 {
-                    return this.Site;
+                    return this.Layout.Site;
                 }
             }
         }
@@ -423,6 +414,7 @@ namespace Rock.Model
         #endregion
 
     }
+
     #region Entity Configuration
 
     /// <summary>
@@ -436,7 +428,7 @@ namespace Rock.Model
         public PageConfiguration()
         {
             this.HasOptional( p => p.ParentPage ).WithMany( p => p.Pages ).HasForeignKey( p => p.ParentPageId ).WillCascadeOnDelete( false );
-            this.HasOptional( p => p.Site ).WithMany( p => p.Pages ).HasForeignKey( p => p.SiteId ).WillCascadeOnDelete( false );
+            this.HasRequired( p => p.Layout ).WithMany( p => p.Pages ).HasForeignKey( p => p.LayoutId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.IconFile ).WithMany().HasForeignKey( p => p.IconFileId ).WillCascadeOnDelete( false );
         }
     }

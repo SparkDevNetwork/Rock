@@ -33,7 +33,7 @@ namespace RockWeb.Blocks.Administration
             try
             {
                 int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
-                BlockCache _block = BlockCache.Read( blockId, CurrentPage.SiteId );
+                BlockCache _block = BlockCache.Read( blockId );
 
                 if ( _block.IsAuthorized( "Administrate", CurrentPerson ) )
                 {
@@ -60,7 +60,7 @@ namespace RockWeb.Blocks.Administration
         protected override void OnLoad( EventArgs e )
         {
             int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
-            BlockCache _block = BlockCache.Read( blockId, CurrentPage.SiteId );
+            BlockCache _block = BlockCache.Read( blockId );
 
             if ( !Page.IsPostBack && _block.IsAuthorized( "Administrate", CurrentPerson ) )
             {
@@ -80,7 +80,7 @@ namespace RockWeb.Blocks.Administration
         protected void masterPage_OnSave( object sender, EventArgs e )
         {
             int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
-            BlockCache _block = BlockCache.Read( blockId, CurrentPage.SiteId );
+            BlockCache _block = BlockCache.Read( blockId );
             if ( Page.IsValid )
             {
                 using ( new Rock.Data.UnitOfWorkScope() )
