@@ -7586,9 +7586,6 @@ td.visible-print {
   font-size: 14px;
   font-weight: 600;
 }
-.picker .picker-select {
-  padding: 0;
-}
 .picker .picker-menu {
   width: 370px;
   padding: 10px;

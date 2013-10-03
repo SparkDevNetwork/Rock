@@ -435,12 +435,13 @@ ul.rock-tree ul {
 
 .rock-tree .rock-tree-name:hover,
 .rock-tree span:hover,
-.rock-tree a:hover {
+.rock-tree span:hover a {
 	background: #59849C;
     color: #fff;
 }
 
-.rock-tree .selected {
+.rock-tree .selected,
+.rock-tree .selected a {
 	background: #779cb1;
     color: #fff
 }
