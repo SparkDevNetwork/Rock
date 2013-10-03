@@ -7,6 +7,7 @@
     4. Notes - block to display, add, edit, delete notes
     5. Add Family - block to add families to the database
     6. Contributions - block add a contribution transaction
+    7. Data Views - block for creating data views
 
 */
 
@@ -201,4 +202,39 @@ span.cke_skin_kama
 
 .contribution-payment .tab-content {
     margin-top: 12px;
+}
+
+
+// 7. Data Views
+// -------------------------
+
+/* data views */
+.filter-toogle {
+
+    & > span {
+        float: left;
+        padding-top: 6px;
+    }
+
+    .controls {
+        float: left;
+
+        .switch {
+	        margin: 0 6px;
+        }
+    }
+} 
+
+.filter-item-select {
+
+    span {
+        float: left;
+        padding: 8px 6px 0 0;
+    }
+
+    select {
+        float: left;
+        width: 250px;
+    }
+
 }

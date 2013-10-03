@@ -104,7 +104,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( btnAddGroup );
             btnAddGroup.ID = this.ID + "_btnAddGroup";
             btnAddGroup.ServerClick += btnAddGroup_ServerClick;
-            btnAddGroup.AddCssClass( "btn btn-inverse btn-action" );
+            btnAddGroup.AddCssClass( "btn btn-action" );
             btnAddGroup.CausesValidation = false;
 
             var iAddGroup = new HtmlGenericControl( "i" );
@@ -116,7 +116,7 @@ namespace Rock.Web.UI.Controls
             Controls.Add( btnAddFilter );
             btnAddFilter.ID = this.ID + "_btnAddFilter";
             btnAddFilter.ServerClick += btnAddFilter_ServerClick;
-            btnAddFilter.AddCssClass( "btn btn-inverse btn-action" );
+            btnAddFilter.AddCssClass( "btn btn-action" );
             btnAddFilter.CausesValidation = false;
 
             var iAddFilter = new HtmlGenericControl( "i" );
@@ -142,10 +142,10 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget widget-dark" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget" );
             writer.RenderBeginTag( "section" );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "clearfix" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix" );
             writer.RenderBeginTag( "header" );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toogle pull-left" );
@@ -159,7 +159,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn-group pull-right" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn-group btn-group-sm pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             btnAddGroup.RenderControl( writer );
@@ -179,7 +179,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget-content" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             foreach ( Control control in this.Controls )
