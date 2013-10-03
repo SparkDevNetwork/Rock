@@ -49,8 +49,6 @@ namespace Rock.CyberSource
             }
         }
 
-
-
         /// <summary>
         /// Gets the supported payment schedules.
         /// </summary>
@@ -108,17 +106,12 @@ namespace Rock.CyberSource
             if ( paymentInfo is CreditCardPaymentInfo )
             {
                 var cc = paymentInfo as CreditCardPaymentInfo;
+                request.card = GetCard( cc );
+
                 request.ccAuthService = new CCAuthService();
                 request.ccAuthService.run = "true";
                 request.ccCaptureService = new CCCaptureService();
-                request.ccCaptureService.run = "true";
-
-                Card card = new Card();
-                card.accountNumber = cc.AccountNumber;
-                card.cardType = cc.CreditCardTypeValue.Name;
-                card.expirationMonth = cc.ExpirationDate.Month.ToString();
-                card.expirationYear = cc.ExpirationDate.Year.ToString();
-                request.card = card;
+                request.ccCaptureService.run = "true";                
             }            
             else if ( paymentInfo is ACHPaymentInfo )
             {
@@ -132,8 +125,7 @@ namespace Rock.CyberSource
                 check.accountNumber = ach.BankAccountNumber.AsNumeric();
                 check.accountType = ach.AccountType == BankAccountType.Checking ? "C" : "S";
                 check.bankTransitNumber = ach.BankRoutingNumber.AsNumeric();
-                request.check = check;
-                
+                request.check = check;                
             }
             else if ( paymentInfo is SwipePaymentInfo )
             {
@@ -381,16 +373,16 @@ namespace Rock.CyberSource
         private BillTo GetBillTo( PaymentInfo paymentInfo )
         {            
             BillTo billingInfo = new BillTo();
-            billingInfo.firstName = paymentInfo.FirstName;
-            billingInfo.lastName = paymentInfo.LastName;
-            billingInfo.email = paymentInfo.Email;
-            billingInfo.phoneNumber = paymentInfo.Phone;
-            billingInfo.street1 = paymentInfo.Street;
-            billingInfo.city = paymentInfo.City;
-            billingInfo.state = paymentInfo.State;
-            billingInfo.postalCode = paymentInfo.Zip;
-            billingInfo.country = "US";
-            billingInfo.ipAddress = "#TODO";
+            billingInfo.firstName = paymentInfo.FirstName.Left( 50 );       // up to 50 chars
+            billingInfo.lastName = paymentInfo.LastName.Left( 60 );         // up to 60 chars
+            billingInfo.email = paymentInfo.Email;                          // up to 255 chars
+            billingInfo.phoneNumber = paymentInfo.Phone.Left( 15 );         // up to 15 chars
+            billingInfo.street1 = paymentInfo.Street.Left( 50 );            // up to 50 chars
+            billingInfo.city = paymentInfo.City.Left( 50 );                 // up to 50 chars
+            billingInfo.state = paymentInfo.State.Left( 2 );                // only 2 chars
+            billingInfo.postalCode = paymentInfo.Zip.Left( 10 );            // 9 chars with a separating -
+            billingInfo.country = "US";                                     // only 2 chars
+            billingInfo.ipAddress = "#TODO";                                // optional
 
             if ( paymentInfo is CreditCardPaymentInfo )
             {
@@ -432,6 +424,58 @@ namespace Rock.CyberSource
             purchaseTotals.currency = "USD";
             return purchaseTotals;
         }
+
+        /// <summary>
+        /// Gets the card information.
+        /// </summary>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <returns></returns>
+        private Card GetCard( CreditCardPaymentInfo cc )
+        {
+            var card = new Card();            
+            card.accountNumber = cc.AccountNumber.AsNumeric();
+            card.expirationMonth = cc.ExpirationDate.Month.ToString("D2");
+            card.expirationYear = cc.ExpirationDate.Year.ToString("D4");
+            card.cvNumber = cc.Code.Left( 4 );
+
+            switch(cc.CreditCardTypeValue.Name)
+            {
+                case "Visa":
+                    card.cardType = "001";
+                    break;
+                case "MasterCard":
+                    card.cardType = "002";
+                    break;
+                case "American Express":
+                    card.cardType = "003";
+                    break;
+                case "Discover":
+                    card.cardType = "004";
+                    break;                
+                case "Diners Club":
+                    card.cardType = "005";
+                    break;
+                default:
+                    card.cardType = null;
+                    break;
+            }
+
+            return card;
+        }
+
+        /// <summary>
+        /// Gets the check information.
+        /// </summary>
+        /// <param name="paymentInfo">The payment information.</param>
+        /// <returns></returns>
+        private Check GetCheck( PaymentInfo paymentInfo )
+        {
+            var check = new Check();
+
+
+            return check;
+        }
+
         
         /// <summary>
         /// Gets the merchant information.
