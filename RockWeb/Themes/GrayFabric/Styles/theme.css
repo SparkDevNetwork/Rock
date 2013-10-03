@@ -8601,6 +8601,9 @@ div.tagsinput div {
     width: 100%;
   }
 }
+.imageupload-group {
+  margin-bottom: 15px;
+}
 .imageupload-group:before,
 .imageupload-group:after {
   content: " ";
@@ -8680,27 +8683,10 @@ div.tagsinput div {
 .sql-comand .panel {
   margin-bottom: 24px;
 }
-.html-content-editor-panel .editor-buttons {
-  float: right;
-  margin-top: 6px;
-}
-.html-content-version-label {
-  background-color: #6d6d6d;
-  padding: 2px 8px;
-  float: left;
-  margin: 6px 0 0 16px;
-  -moz-border-radius: 4px;
-  -webkit-border-radius: 4px;
-  border-radius: 4px;
-  color: #bbbbbb;
-}
-.html-content-version-label:hover {
-  color: inherit;
-}
-.html-content-edit-header {
+.htmlcontent-edit-header {
   padding: 6px 16px 0 16px;
 }
-.html-content-approve {
+.htmlcontent-edit-header .html-content-approve {
   float: right;
   margin-top: 4px;
 }
@@ -9124,25 +9110,55 @@ td[align=center] {
     Used to manage styles related to modal dialog.
 
 */
-.rock-modal {
+.rock-modal-frame {
   width: 750px;
 }
-#dialog .modal-header {
+.rock-modal {
+  background-color: #f4f4f4;
+}
+.rock-modal .modal-header {
   background-color: #3a3a3a;
   color: #bbbbbb;
   padding: 5px 15px;
   min-height: 34px;
 }
-#dialog .modal-header h3 {
+.rock-modal .modal-header:before,
+.rock-modal .modal-header:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.rock-modal .modal-header:after {
+  clear: both;
+}
+.rock-modal .modal-header:before,
+.rock-modal .modal-header:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.rock-modal .modal-header:after {
+  clear: both;
+}
+.rock-modal .modal-header h3 {
   float: left;
 }
-#dialog .modal-header .close {
+.rock-modal .modal-header .close {
   margin: 0;
   padding: 6px;
   color: #bbbbbb;
   text-shadow: none;
 }
-#dialog .modal-footer {
+.rock-modal .modal-header .label {
+  margin-top: 8px;
+}
+.rock-modal .modal-footer {
   padding: 8px;
   margin-top: 10px;
   background-color: #e7ecf0;
@@ -10738,15 +10754,32 @@ div.k-imagebrowser-dropzone em {
 .clickable {
   cursor: pointer;
 }
-/* TODO Do we still need these */
-.light {
-  font-weight: 300;
+/* add badge colors back to BS3 */
+.badge-danger {
+  background-color: #d9534f;
 }
-.bold {
-  font-weight: 300;
+.badge-warning {
+  background-color: #f0ad4e;
 }
-.semibold {
-  font-weight: 600;
+.badge-success {
+  background-color: #5cb85c;
+}
+.badge-info {
+  background-color: #5bc0de;
+}
+.panel-widget {
+  border-color: #d9e1e8;
+}
+.panel-widget > .panel-heading {
+  color: #d4d4d4;
+  background-color: #d9e1e8;
+  border-color: #d9e1e8;
+}
+.panel-widget > .panel-heading + .panel-collapse .panel-body {
+  border-top-color: #d9e1e8;
+}
+.panel-widget > .panel-footer + .panel-collapse .panel-body {
+  border-bottom-color: #d9e1e8;
 }
 /* context help  */
 a.help {

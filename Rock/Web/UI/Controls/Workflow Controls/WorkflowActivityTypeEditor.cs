@@ -50,7 +50,7 @@ namespace Rock.Web.UI.Controls
             string script = @"
 // activity animation
 $('.workflow-activity > header').click(function () {
-    $(this).siblings('.widget-content').slideToggle();
+    $(this).siblings('.panel-body').slideToggle();
 
     $('i.workflow-activity-state', this).toggleClass('icon-chevron-down');
     $('i.workflow-activity-state', this).toggleClass('icon-chevron-up');
@@ -203,7 +203,7 @@ javascript:
 
             _lbAddActionType = new LinkButton();
             _lbAddActionType.ID = this.ID + "_lbAddAction";
-            _lbAddActionType.CssClass = "btn btn-xs";
+            _lbAddActionType.CssClass = "btn btn-xs btn-primary";
             _lbAddActionType.Click += lbAddActionType_Click;
             _lbAddActionType.CausesValidation = false;
             _lbAddActionType.Controls.Add( new LiteralControl { Text = "<i class='icon-plus'></i> Add Action" } );
@@ -228,7 +228,7 @@ javascript:
         {
             if ( _cbActivityTypeIsActive.Checked )
             {
-                writer.AddAttribute(HtmlTextWriterAttribute.Class, "panel panel-default workflow-activity");
+                writer.AddAttribute(HtmlTextWriterAttribute.Class, "panel panel-widget workflow-activity");
             }
             else
             {
@@ -297,7 +297,7 @@ javascript:
                 }
             }
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget-content" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
 
             if ( !forceContentVisible )
             {
@@ -308,17 +308,17 @@ javascript:
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // activity edit fields
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row-fluid" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             _tbActivityTypeName.RenderControl( writer );
             _tbActivityTypeDescription.RenderControl( writer );
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _cbActivityTypeIsActive.RenderControl( writer );
             _cbActivityTypeIsActivatedWithWorkflow.RenderControl( writer );

@@ -499,6 +499,7 @@ namespace RockWeb.Blocks.Administration
             if ( workflowType.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( WorkflowType.FriendlyTypeName );
+                hlInactive.Visible = false;
             }
 
             SetEditMode( true );
