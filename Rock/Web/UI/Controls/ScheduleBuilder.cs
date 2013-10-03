@@ -916,14 +916,14 @@ END:VCALENDAR
 
             _tbDurationHours.ClientIDMode = ClientIDMode.Static;
             _tbDurationHours.ID = "tbDurationHours_" + this.ClientID;
-            _tbDurationHours.CssClass = "input-mini";
+            _tbDurationHours.CssClass = "input-width-sm";
             _tbDurationHours.MinimumValue = "0";
             _tbDurationHours.MaximumValue = "24";
             _tbDurationHours.ValidationGroup = validationGroup;
 
             _tbDurationMinutes.ClientIDMode = ClientIDMode.Static;
             _tbDurationMinutes.ID = "tbDurationMinutes_" + this.ClientID;
-            _tbDurationMinutes.CssClass = "input-mini";
+            _tbDurationMinutes.CssClass = "input-width-sm";
             _tbDurationMinutes.MinimumValue = "0";
             _tbDurationMinutes.MaximumValue = "59";
             _tbDurationMinutes.ValidationGroup = validationGroup;
@@ -985,7 +985,7 @@ END:VCALENDAR
 
             _tbDailyEveryXDays.ClientIDMode = ClientIDMode.Static;
             _tbDailyEveryXDays.ID = "tbDailyEveryXDays_" + this.ClientID;
-            _tbDailyEveryXDays.CssClass = "input-mini";
+            _tbDailyEveryXDays.CssClass = "input-width-sm";
             _tbDailyEveryXDays.ValidationGroup = validationGroup;
 
             _radDailyEveryWeekday.ClientIDMode = ClientIDMode.Static;
@@ -999,7 +999,7 @@ END:VCALENDAR
             // weekly recurrence
             _tbWeeklyEveryX.ClientIDMode = ClientIDMode.Static;
             _tbWeeklyEveryX.ID = "tbWeeklyEveryX_" + this.ClientID;
-            _tbWeeklyEveryX.CssClass = "input-mini";
+            _tbWeeklyEveryX.CssClass = "input-width-sm";
             _tbWeeklyEveryX.MinimumValue = "1";
             _tbWeeklyEveryX.MaximumValue = "52";
             _tbWeeklyEveryX.ValidationGroup = validationGroup;
@@ -1033,14 +1033,14 @@ END:VCALENDAR
 
             _tbMonthlyDayX.ClientIDMode = ClientIDMode.Static;
             _tbMonthlyDayX.ID = "tbMonthlyDayX_" + this.ClientID;
-            _tbMonthlyDayX.CssClass = "input-mini";
+            _tbMonthlyDayX.CssClass = "input-width-sm";
             _tbMonthlyDayX.MinimumValue = "1";
             _tbMonthlyDayX.MaximumValue = "31";
             _tbMonthlyDayX.ValidationGroup = validationGroup;
 
             _tbMonthlyXMonths.ClientIDMode = ClientIDMode.Static;
             _tbMonthlyXMonths.ID = "tbMonthlyXMonths_" + this.ClientID;
-            _tbMonthlyXMonths.CssClass = "input-mini";
+            _tbMonthlyXMonths.CssClass = "input-width-sm";
             _tbMonthlyXMonths.MinimumValue = "1";
             _tbMonthlyXMonths.MaximumValue = "12";
             _tbMonthlyXMonths.ValidationGroup = validationGroup;
@@ -1051,7 +1051,7 @@ END:VCALENDAR
 
             _ddlMonthlyNth.ClientIDMode = ClientIDMode.Static;
             _ddlMonthlyNth.ID = "ddlMonthlyNth_" + this.ClientID;
-            _ddlMonthlyNth.CssClass = "input-small";
+            _ddlMonthlyNth.CssClass = "input-width-sm";
 
             _ddlMonthlyNth.Items.Add( string.Empty );
             foreach ( var nth in Rock.Model.Schedule.NthNames )
@@ -1061,7 +1061,7 @@ END:VCALENDAR
 
             _ddlMonthlyDayName.ClientIDMode = ClientIDMode.Static;
             _ddlMonthlyDayName.ID = "ddlMonthlyDayName_" + this.ClientID;
-            _ddlMonthlyDayName.CssClass = "input-medium";
+            _ddlMonthlyDayName.CssClass = "input-width-md";
 
             DateTimeFormatInfo dateTimeFormatInfo = new DateTimeFormatInfo();
             _ddlMonthlyDayName.Items.Add( string.Empty );
@@ -1089,7 +1089,7 @@ END:VCALENDAR
 
             _tbEndByOccurrenceCount.ClientIDMode = ClientIDMode.Static;
             _tbEndByOccurrenceCount.ID = "tbEndByOccurrenceCount_" + this.ClientID;
-            _tbEndByOccurrenceCount.CssClass = "input-mini";
+            _tbEndByOccurrenceCount.CssClass = "input-width-sm";
             _tbEndByOccurrenceCount.MinimumValue = "1";
             _tbEndByOccurrenceCount.MaximumValue = "999";
             _tbEndByOccurrenceCount.ValidationGroup = validationGroup;
