@@ -87,7 +87,7 @@
             </div>
 
             <div class="r-example">
-                <Rock:NumberBox ID="numberBox" runat="server" Label="Rock:NumberBox" LabelTextFromPropertyName="false" />
+                <Rock:NumberBox ID="numberBox" runat="server" Label="Rock:NumberBox" />
             </div>
 
             <div class="r-example">
