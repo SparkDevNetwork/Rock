@@ -10767,6 +10767,20 @@ div.k-imagebrowser-dropzone em {
 .badge-info {
   background-color: #5bc0de;
 }
+.panel-widget {
+  border-color: #d9e1e8;
+}
+.panel-widget > .panel-heading {
+  color: #515151;
+  background-color: #d9e1e8;
+  border-color: #d9e1e8;
+}
+.panel-widget > .panel-heading + .panel-collapse .panel-body {
+  border-top-color: #d9e1e8;
+}
+.panel-widget > .panel-footer + .panel-collapse .panel-body {
+  border-bottom-color: #d9e1e8;
+}
 /* context help  */
 a.help {
   margin-left: 6px;
@@ -10904,6 +10918,9 @@ a:hover i[class^="icon-"] {
 .label,
 .badge {
   font-weight: 300;
+}
+.control-label .alert {
+  font-weight: normal;
 }
 header .dropdown-menu li > a:hover,
 header .dropdown-menu li > a:focus,

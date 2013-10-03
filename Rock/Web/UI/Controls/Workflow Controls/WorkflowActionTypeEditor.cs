@@ -52,7 +52,7 @@ namespace Rock.Web.UI.Controls
             string script = @"
 // action animation
 $('.workflow-action > header').click(function () {
-    $(this).siblings('.widget-content').slideToggle();
+    $(this).siblings('.panel-body').slideToggle();
 
     $('i.workflow-action-state', this).toggleClass('icon-chevron-down');
     $('i.workflow-action-state', this).toggleClass('icon-chevron-up');
@@ -222,11 +222,11 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget workflow-action" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget workflow-action" );
             writer.AddAttribute( "data-key", _hfActionTypeGuid.Value );
             writer.RenderBeginTag( "article" );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "clearfix clickable" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "clearfix clickable panel-heading" );
             writer.RenderBeginTag( "header" );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-left" );
@@ -258,7 +258,7 @@ $('.workflow-action a.workflow-action-reorder').click(function (event) {
             // header div
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget-content" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
 
             bool forceContentVisible = !WorkflowActionType.IsValid || ForceContentVisible;
 
