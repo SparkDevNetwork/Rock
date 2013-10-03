@@ -124,7 +124,7 @@
 
     <script>
 
-        $('.persondetails-familybar .address').live({
+        $('.persondetails-familybar .address').on({
             mouseenter:
                 function () {
                     var actionsDiv = $('div.actions', this);
@@ -141,7 +141,7 @@
                 }
         });
 
-        $('.widget header').live({
+        $('.widget header').on({
             mouseenter:
                 function () {
                     var actionsDiv = $('.actions', this);
@@ -158,7 +158,7 @@
                 }
         });
 
-        $('.persondetails-familybar').live({
+        $('.persondetails-familybar').on({
             mouseenter:
                 function () {
                     var actionsDiv = $('.container-fluid > .actions', this);
@@ -175,7 +175,7 @@
                 }
         });
 
-        $('.persontimeline article').live({
+        $('.persontimeline article').on({
             mouseenter:
                 function () {
                     var actionsDiv = $('.actions', this);
@@ -192,7 +192,7 @@
                 }
         });
 
-        $('.persondetails-header').live({
+        $('.persondetails-header').on({
             mouseenter:
                 function () {
                     var actionsDiv = $('.actions', this);

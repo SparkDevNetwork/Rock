@@ -545,7 +545,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <summary>
         /// Goes back to the confirmation page hopefully with no changes.
         /// </summary>
-        private void GoBack()
+        private new void GoBack()
         {
             var personId = Request.QueryString["personId"].AsType<int?>();
             // if the user wants to go back, set the selected items to the preselected items.
