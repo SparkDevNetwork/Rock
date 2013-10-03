@@ -28,7 +28,7 @@
 
             </div>
 
-            <div id="Div1" runat="server" class="r-example">
+            <div runat="server" class="r-example">
                 <Rock:DataTextBox ID="DataTextBoxXs" runat="server" CssClass="input-width-xs" Label=".input-width-xs" LabelTextFromPropertyName="false" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
 
                 <Rock:DataTextBox ID="DataTextBox1" runat="server" CssClass="input-width-sm" Label=".input-width-sm" LabelTextFromPropertyName="false" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
@@ -48,7 +48,7 @@
 
 
 
-            <h2 id="H1" runat="server">Rock:Grid</h2>
+            <h2>Rock:Grid</h2>
             <div runat="server" class="r-example">
                 <Rock:Grid ID="gExample" runat="server" AllowSorting="true">
                     <Columns>
@@ -84,6 +84,10 @@
 
             <div runat="server" class="r-example">
                 <Rock:DataTextBox ID="dt" runat="server" Label="Rock:DataTextBox" LabelTextFromPropertyName="false" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
+            </div>
+
+            <div runat="server" class="r-example">
+                <Rock:NumberBox ID="numberBox" runat="server" Label="Rock:NumberBox" />
             </div>
 
             <div runat="server" class="r-example">
@@ -153,11 +157,6 @@
                 <Rock:PersonPicker ID="personPicker" runat="server" Label="Rock:PersonPicker" />
             </div>
 
-            <label>Rock:Schedule Builder</label>
-            <div runat="server" class="r-example">
-                <Rock:ScheduleBuilder ID="scheduleBuilder" runat="server" Label="Rock:ScheduleBuilder" />
-            </div>
-
             <div runat="server" class="r-example">
                 <Rock:AccountPicker ID="accountPicker" runat="server" Label="Rock:AccountPicker" />
             </div>
@@ -168,6 +167,20 @@
 
             <div runat="server" class="r-example">
                 <Rock:ComponentPicker ID="componentPicker" runat="server" Label="Rock:ComponentPicker" />
+            </div>
+
+            <div runat="server" class="r-example">
+                <Rock:LocationPicker ID="locationPicker" runat="server" Label="Rock:LocationPicker (Named Location Mode)" LimitToNamedLocations="true" />
+            </div>
+
+            <div id="Div1" runat="server" class="r-example">
+                <Rock:GroupRolePicker ID="groupRolePicker" runat="server" Label="Rock:GroupRolePicker" />
+            </div>
+
+            <h2>Other</h2>
+
+            <div runat="server" class="r-example">
+                <Rock:ScheduleBuilder ID="scheduleBuilder" runat="server" Label="Rock:ScheduleBuilder" OnSaveSchedule="scheduleBuilder_SaveSchedule" />
             </div>
 
             <div runat="server" class="r-example">
@@ -185,8 +198,11 @@
             <h2>BinaryFilePicker, BinaryFileTypePicker</h2>
 
             <div runat="server" class="r-example">
-                <Rock:BinaryFileTypePicker ID="binaryFileTypePicker" runat="server" OnSelectedIndexChanged="binaryFileTypePicker_SelectedIndexChanged" />
-                <Rock:BinaryFilePicker ID="binaryFilePicker" runat="server" />
+                <Rock:BinaryFileTypePicker ID="binaryFileTypePicker" runat="server" Label="Rock:BinaryFileTypePicker" OnSelectedIndexChanged="binaryFileTypePicker_SelectedIndexChanged" />
+            </div>
+
+            <div runat="server" class="r-example">
+                <Rock:BinaryFilePicker ID="binaryFilePicker" runat="server" Label="Rock:BinaryFilePicker" />
             </div>
 
 
@@ -209,7 +225,7 @@
             </div>
 
             <h2>Rock:Badge</h2>
-            <div id="Div18" runat="server" class="r-example">
+            <div runat="server" class="r-example">
                 <Rock:Badge ID="badge" runat="server" ToolTip="you have new messages waiting">99</Rock:Badge>
             </div>
 

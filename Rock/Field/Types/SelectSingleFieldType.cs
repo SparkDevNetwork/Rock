@@ -40,14 +40,14 @@ namespace Rock.Field.Types
         {
             List<Control> controls = new List<Control>();
 
-            TextBox tb = new TextBox();
+            var tb = new RockTextBox();
             controls.Add( tb );
             tb.TextMode = TextBoxMode.MultiLine;
             tb.Rows = 3;
             tb.AutoPostBack = true;
             tb.TextChanged += OnQualifierUpdated;
 
-            DropDownList ddl = new DropDownList();
+            var ddl = new RockDropDownList();
             controls.Add( ddl );
             ddl.Items.Add( new ListItem( "Drop Down List", "ddl" ) );
             ddl.Items.Add( new ListItem( "Radio Buttons", "rb" ) );

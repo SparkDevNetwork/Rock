@@ -16,19 +16,9 @@ namespace Rock.Web.UI.Controls
     /// 
     /// </summary>
     [ToolboxData( "<{0}:ButtonDropDownList runat=server></{0}:ButtonDropDownList>" )]
-    public class ButtonDropDownList : ListControl, ILabeledControl
+    public class ButtonDropDownList : ListControl, IRockControl
     {
-        /// <summary>
-        /// The label
-        /// </summary>
-        protected Literal label;
-
-        private String _btnTitle = string.Empty;
-        private HtmlGenericControl _divControl;
-        private HtmlGenericControl _btnSelect;
-        private HiddenField _hfSelectedItemId;
-        private HiddenField _hfSelectedItemText;
-        private HtmlGenericControl _listControl;
+        #region IRockControl implementation
 
         /// <summary>
         /// Gets or sets the label text.
@@ -36,19 +26,126 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The label text.
         /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text for the label." )
+        ]
         public string Label
+        {
+            get { return ViewState["Label"] as string ?? string.Empty; }
+            set { ViewState["Label"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the help text.
+        /// </summary>
+        /// <value>
+        /// The help text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The help block." )
+        ]
+        public string Help
         {
             get
             {
-                EnsureChildControls();
-                return label.Text;
+                return HelpBlock != null ? HelpBlock.Text : string.Empty;
             }
             set
             {
-                EnsureChildControls();
-                label.Text = value;
+                if ( HelpBlock != null )
+                {
+                    HelpBlock.Text = value;
+                }
             }
         }
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "false" ),
+        Description( "Is the value required?" )
+        ]
+        public bool Required
+        {
+            get { return ViewState["Required"] as bool? ?? false; }
+            set { ViewState["Required"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the required error message.  If blank, the LabelName name will be used
+        /// </summary>
+        /// <value>
+        /// The required error message.
+        /// </value>
+        public string RequiredErrorMessage
+        {
+            get
+            {
+                return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
+            }
+            set
+            {
+                if ( RequiredFieldValidator != null )
+                {
+                    RequiredFieldValidator.ErrorMessage = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool IsValid
+        {
+            get
+            {
+                return !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the help block.
+        /// </summary>
+        /// <value>
+        /// The help block.
+        /// </value>
+        public HelpBlock HelpBlock { get; set; }
+
+        /// <summary>
+        /// Gets or sets the required field validator.
+        /// </summary>
+        /// <value>
+        /// The required field validator.
+        /// </value>
+        public RequiredFieldValidator RequiredFieldValidator { get; set; }
+
+        #endregion
+
+        #region Controls
+
+        private HtmlGenericControl _divControl;
+        private HtmlGenericControl _btnSelect;
+        private HiddenField _hfSelectedItemId;
+        private HiddenField _hfSelectedItemText;
+        private HtmlGenericControl _listControl;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets or sets the title.
@@ -58,26 +155,62 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string Title
         {
+            get { return ViewState["Title"] as string ?? string.Empty; }
+            set { ViewState["Title"] = value; }
+        }
+
+        /// <summary>
+        /// Gets the selected item with the lowest index in the list control.
+        /// </summary>
+        /// <returns>A <see cref="T:System.Web.UI.WebControls.ListItem" /> that represents the lowest indexed item selected from the list control. The default is null.</returns>
+        public override ListItem SelectedItem
+        {
             get
             {
-                return _btnTitle;
-            }
-            set
-            {
-                _btnTitle = value;
+                ListItem result = Items.FindByValue( _hfSelectedItemId.Value );
+                return result;
             }
         }
 
         /// <summary>
-        /// Gets or sets the name of the field.
+        /// Gets the value of the selected item in the list control, or selects the item in the list control that contains the specified value.
         /// </summary>
-        /// <value>
-        /// The name of the field.
-        /// </value>
-        public string FieldName
+        /// <returns>The value of the selected item in the list control. The default is an empty string ("").</returns>
+        public override string SelectedValue
         {
-            get { return label.Text; }
-            set { label.Text = value; }
+            get
+            {
+                return _hfSelectedItemId.Value;
+            }
+
+            set
+            {
+                _hfSelectedItemId.Value = value;
+                base.SelectedValue = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the lowest ordinal index of the selected items in the list.
+        /// </summary>
+        /// <returns>The lowest ordinal index of the selected items in the list. The default is -1, which indicates that nothing is selected.</returns>
+        public override int SelectedIndex
+        {
+            get
+            {
+                return Items.IndexOf( SelectedItem );
+            }
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ButtonDropDownList"/> class.
+        /// </summary>
+        public ButtonDropDownList()
+            : base()
+        {
+            HelpBlock = new HelpBlock();
         }
 
         /// <summary>
@@ -154,59 +287,13 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets the selected item with the lowest index in the list control.
-        /// </summary>
-        /// <returns>A <see cref="T:System.Web.UI.WebControls.ListItem" /> that represents the lowest indexed item selected from the list control. The default is null.</returns>
-        public override ListItem SelectedItem
-        {
-            get
-            {
-                ListItem result = Items.FindByValue( _hfSelectedItemId.Value );
-                return result;
-            }
-        }
-
-        /// <summary>
-        /// Gets the value of the selected item in the list control, or selects the item in the list control that contains the specified value.
-        /// </summary>
-        /// <returns>The value of the selected item in the list control. The default is an empty string ("").</returns>
-        public override string SelectedValue
-        {
-            get
-            {
-                return _hfSelectedItemId.Value;
-            }
-
-            set
-            {
-                _hfSelectedItemId.Value = value;
-                base.SelectedValue = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the lowest ordinal index of the selected items in the list.
-        /// </summary>
-        /// <returns>The lowest ordinal index of the selected items in the list. The default is -1, which indicates that nothing is selected.</returns>
-        public override int SelectedIndex
-        {
-            get
-            {
-                return Items.IndexOf( SelectedItem );
-            }
-        }
-
-        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
         {
             base.CreateChildControls();
-
-			Controls.Clear();
-
-            label = new Literal();
-            Controls.Add( label );
+            Controls.Clear();
+            RockControlHelper.CreateChildControls( this, Controls );
 
             _divControl = new HtmlGenericControl( "div" );
             _divControl.Attributes["class"] = "btn-group";
@@ -222,14 +309,15 @@ namespace Rock.Web.UI.Controls
             _hfSelectedItemText.ID = string.Format( "hfSelectedItemText_{0}", this.ID );
 
             _btnSelect = new HtmlGenericControl( "button" );
+            _divControl.Controls.Add( _btnSelect );
             _btnSelect.ClientIDMode = ClientIDMode.Static;
             _btnSelect.ID = string.Format( "ButtonDropDown_btn_{0}", this.ID );
-            _btnSelect.Attributes["class"] = "btn dropdown-toggle";
+            _btnSelect.Attributes["type"] = "button";
+            _btnSelect.Attributes["class"] = "btn btn-default dropdown-toggle";
             _btnSelect.Attributes["data-toggle"] = "dropdown";
 
-            _divControl.Controls.Add( _btnSelect );
-
             _listControl = new HtmlGenericControl( "ul" );
+            _divControl.Controls.Add( _listControl );
             _listControl.Attributes["class"] = "dropdown-menu";
 
             Controls.Add( _divControl );
@@ -238,51 +326,41 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Writes the <see cref="T:System.Web.UI.WebControls.CompositeControl" /> content to the specified <see cref="T:System.Web.UI.HtmlTextWriter" /> object, for display on the client.
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
-        /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
-        protected override void Render( HtmlTextWriter writer )
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( HtmlTextWriter writer )
         {
             if ( this.Visible )
             {
-                bool renderControlGroupDiv = !string.IsNullOrEmpty( Label );
-
-                if ( renderControlGroupDiv )
-                {
-                    writer.AddAttribute( "class", "form-group" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                    writer.AddAttribute( HtmlTextWriterAttribute.For, this.ClientID );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Label );
-                    label.RenderControl( writer );
-                    writer.RenderEndTag();
-
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                }
-
-                foreach ( var item in this.Items.OfType<ListItem>() )
-                {
-                    string controlHtmlFormat = "<li><a href='#' data-id='{0}'>{1}</a></li>";
-                    _listControl.Controls.Add( new LiteralControl { Text = string.Format( controlHtmlFormat, item.Value, item.Text ) } );
-                }
-
-                _divControl.Controls.Add( _listControl );
-
-                string selectedText = SelectedItem != null ? SelectedItem.Text : _btnTitle;
-                _btnSelect.Controls.Clear();
-                _btnSelect.Controls.Add( new LiteralControl { Text = string.Format( "{0} <span class='caret'></span>", selectedText ) } );
-
-                _divControl.RenderControl( writer );
-
-                _hfSelectedItemId.RenderControl( writer );
-                _hfSelectedItemText.RenderControl( writer );
-
-                if ( renderControlGroupDiv )
-                {
-                    writer.RenderEndTag();
-                    writer.RenderEndTag();
-                }
+                RockControlHelper.RenderControl( this, writer );
             }
+        }
+
+        /// <summary>
+        /// Renders the base control.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public void RenderBaseControl( HtmlTextWriter writer )
+        {
+            writer.AddAttribute( "class", "controls" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            string selectedText = SelectedItem != null ? SelectedItem.Text : Title;
+            _btnSelect.Controls.Clear();
+            _btnSelect.Controls.Add( new LiteralControl { Text = string.Format( "{0} <span class='caret'></span>", selectedText ) } );
+
+            foreach ( var item in this.Items.OfType<ListItem>() )
+            {
+                string controlHtmlFormat = "<li><a href='#' data-id='{0}'>{1}</a></li>";
+                _listControl.Controls.Add( new LiteralControl { Text = string.Format( controlHtmlFormat, item.Value, item.Text ) } );
+            }
+            _divControl.RenderControl( writer );
+
+            _hfSelectedItemId.RenderControl( writer );
+            _hfSelectedItemText.RenderControl( writer );
+
+            writer.RenderEndTag();
         }
 
         /// <summary>

@@ -67,7 +67,7 @@ namespace Rock.Field.Types
         {
             var controls = base.ConfigurationControls();
 
-            TextBox tb = new TextBox();
+            var tb = new RockTextBox();
             controls.Add( tb );
 
             return controls;

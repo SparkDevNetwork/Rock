@@ -76,7 +76,9 @@ namespace RockWeb.Blocks.Administration
                 if ( _page.IsAuthorized( "Administrate", CurrentPerson ) )
                 {
                     ddlLayout.Items.Clear();
-                    foreach(var layout in new LayoutService().GetBySiteId(_page.Layout.SiteId))
+                    var layoutService = new LayoutService();
+                    layoutService.RegisterLayouts( Request.MapPath( "~" ), _page.Layout.Site, CurrentPersonId );
+                    foreach(var layout in layoutService.GetBySiteId(_page.Layout.SiteId))
                     {
                         ddlLayout.Items.Add( new ListItem( layout.Name, layout.Id.ToString() ) );
                     }

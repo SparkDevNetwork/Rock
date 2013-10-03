@@ -213,12 +213,17 @@ namespace Rock.Web.UI.Controls
             if ( this.Visible )
             {
 
+                writer.AddAttribute( "id", this.ClientID );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
                 writer.AddAttribute( "class", "form-control-group" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 _datePicker.RenderControl( writer );
                 writer.WriteLine();
                 _timePicker.RenderControl( writer );
+
+                writer.RenderEndTag();
 
                 writer.RenderEndTag();
             }

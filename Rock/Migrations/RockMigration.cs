@@ -346,9 +346,9 @@ namespace Rock.Migrations
         /// Adds the block.
         /// </summary>
         /// <param name="pageGuid">The page GUID.</param>
+        /// <param name="layoutGuid">The layout GUID.</param>
         /// <param name="blockTypeGuid">The block type GUID.</param>
         /// <param name="name">The name.</param>
-        /// <param name="layout">The layout.</param>
         /// <param name="zone">The zone.</param>
         /// <param name="order">The order.</param>
         /// <param name="guid">The GUID.</param>

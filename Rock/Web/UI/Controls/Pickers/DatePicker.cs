@@ -62,7 +62,7 @@ namespace Rock.Web.UI.Controls
 
             set
             {
-                if ( value != null )
+                if ( (value ?? DateTime.MinValue) != DateTime.MinValue )
                 {
                     this.Text = value.Value.ToShortDateString();
                     this.Attributes["value"] = this.Text;
@@ -70,6 +70,7 @@ namespace Rock.Web.UI.Controls
                 else
                 {
                     this.Text = string.Empty;
+                    this.Attributes["value"] = this.Text;
                 }
             }
         }

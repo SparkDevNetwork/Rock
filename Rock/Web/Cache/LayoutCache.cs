@@ -88,7 +88,13 @@ namespace Rock.Web.Cache
                 return SiteCache.Read( SiteId );
             }
         }
-        
+
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
         public override ISecured ParentAuthority
         {
             get

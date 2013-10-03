@@ -13,7 +13,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class BinaryFilePicker : DropDownList
+    public class BinaryFilePicker : RockDropDownList
     {
         /// <summary>
         /// Gets or sets the binary file type id.
