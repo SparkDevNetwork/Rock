@@ -34,7 +34,7 @@ namespace Rock.Web.UI.Controls
         ]
         public string DataLoadingText
         {
-            get { return ViewState["DataLoadingText"] as string ?? "loading..."; }
+            get { return ViewState["DataLoadingText"] as string ?? "<i class='icon-spinner icon-spin icon-large'></i>"; }
             set { ViewState["DataLoadingText"] = value; }
         }
 
