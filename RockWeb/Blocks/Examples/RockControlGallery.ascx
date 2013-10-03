@@ -86,6 +86,10 @@
                 <Rock:DataTextBox ID="dt" runat="server" Label="Rock:DataTextBox" LabelTextFromPropertyName="false" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
             </div>
 
+            <div id="Div4" runat="server" class="r-example">
+                <Rock:NumberBox ID="numberBox" runat="server" Label="Rock:NumberBox" LabelTextFromPropertyName="false" />
+            </div>
+
             <div runat="server" class="r-example">
                 <Rock:RockCheckBox ID="RockCheckBox" runat="server" Label="Rock:RockCheckBox" />
             </div>
@@ -153,11 +157,6 @@
                 <Rock:PersonPicker ID="personPicker" runat="server" Label="Rock:PersonPicker" />
             </div>
 
-            <label>Rock:Schedule Builder</label>
-            <div runat="server" class="r-example">
-                <Rock:ScheduleBuilder ID="scheduleBuilder" runat="server" Label="Rock:ScheduleBuilder" />
-            </div>
-
             <div runat="server" class="r-example">
                 <Rock:AccountPicker ID="accountPicker" runat="server" Label="Rock:AccountPicker" />
             </div>
@@ -168,6 +167,16 @@
 
             <div runat="server" class="r-example">
                 <Rock:ComponentPicker ID="componentPicker" runat="server" Label="Rock:ComponentPicker" />
+            </div>
+
+            <div id="Div2" runat="server" class="r-example">
+                <Rock:LocationPicker ID="locationPicker" runat="server" Label="Rock:LocationPicker (Named Location Mode)" LimitToNamedLocations="true" />
+            </div>
+
+            <h2>Other</h2>
+
+            <div id="Div3" runat="server" class="r-example">
+                <Rock:ScheduleBuilder ID="scheduleBuilder" runat="server" Label="Rock:ScheduleBuilder" OnSaveSchedule="scheduleBuilder_SaveSchedule" />
             </div>
 
             <div runat="server" class="r-example">
