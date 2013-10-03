@@ -589,6 +589,7 @@ namespace RockWeb.Blocks.Crm
             if (group.Id == 0)
             {
                 lReadOnlyTitle.Text = ActionTitle.Add(Group.FriendlyTypeName).FormatAsHtmlTitle();
+                hlInactive.Visible = false;
             }
             else
             {
