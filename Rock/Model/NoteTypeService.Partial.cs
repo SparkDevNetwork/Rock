@@ -8,16 +8,16 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// NoteType POCO Service class
+    /// Data access/Service class for entities of the <see cref="Rock.Model.NoteType"/>
     /// </summary>
     public partial class NoteTypeService : Service<NoteType>
     {
         /// <summary>
-        /// Gets the note type with the specified entity type id and name.
+        /// Gets the first <see cref="Rock.Model.NoteType"/> by Name and EntityType
         /// </summary>
-        /// <param name="entityTypeId">The entity type id.</param>
-        /// <param name="name">The name.</param>
-        /// <returns></returns>
+        /// <param name="entityTypeId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.EntityType"/> to search for.</param>
+        /// <param name="name">A <see cref="System.String"/> representing the Name of the </param>
+        /// <returns>The first <see cref="Rock.Model.NoteType"/> matching the provided values. If a match is not found, this value will be null.</returns>
         public NoteType Get( int entityTypeId, string name )
         {
             return Repository.FirstOrDefault( n => n.EntityTypeId == entityTypeId && n.Name == name );
