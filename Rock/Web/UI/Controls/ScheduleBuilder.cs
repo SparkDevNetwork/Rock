@@ -224,6 +224,7 @@ namespace Rock.Web.UI.Controls
 
             _scheduleBuilderPanel = new Panel();
             _scheduleBuilderPanel.ID = "scheduleBuilderPanel_" + this.ClientID;
+            _scheduleBuilderPanel.CssClass = "controls";
             _scheduleBuilderPanel.ClientIDMode = ClientIDMode.Static;
 
             _btnShowPopup = new LinkButton();
@@ -272,7 +273,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            this.Render( writer );
+            _scheduleBuilderPanel.RenderControl( writer );
         }
 
         /// <summary>
@@ -1454,6 +1455,7 @@ END:VCALENDAR
 
             // write out the closing divs that go after the recurrence panel
             writer.Write( @"
+                        </div>
                     </div>
                 </div>
             </div>
