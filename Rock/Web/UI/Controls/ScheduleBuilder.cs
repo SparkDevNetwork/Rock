@@ -1275,10 +1275,10 @@ END:VCALENDAR
             _dpSpecificDate.AddCssClass( "specific-date" );
             _dpSpecificDate.RenderControl( writer );
             writer.Write( @"
-                <a class='btn btn-primary btn-xs add-specific-date-ok'></i>
+                <a class='btn btn-primary btn-xs add-specific-date-ok'>
                     <span>OK</span>
                 </a>
-                <a class='btn btn-xs add-specific-date-cancel'></i>
+                <a class='btn btn-xs add-specific-date-cancel'>
                     <span>Cancel</span>
                 </a>
 " );
@@ -1334,7 +1334,7 @@ END:VCALENDAR
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.Write( "<span>Every </span>" );
             _tbWeeklyEveryX.RenderControl( writer );
-            writer.Write( "<span> weeks on</span></br>" );
+            writer.Write( "<span> weeks on</span><br/>" );
             writer.RenderEndTag();
 
             writer.AddAttribute( "class", "control-group controls" );
@@ -1442,10 +1442,10 @@ END:VCALENDAR
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _dpExclusionDateRange.RenderControl( writer );
             writer.Write( @"
-                <a class='btn btn-primary btn-xs add-exclusion-daterange-ok'></i>
+                <a class='btn btn-primary btn-xs add-exclusion-daterange-ok'>
                     <span>OK</span>
                 </a>
-                <a class='btn btn-xs add-exclusion-daterange-cancel'></i>
+                <a class='btn btn-xs add-exclusion-daterange-cancel'>
                     <span>Cancel</span>
                 </a>" );
 
