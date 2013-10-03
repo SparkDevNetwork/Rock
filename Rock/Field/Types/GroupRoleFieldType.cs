@@ -67,7 +67,7 @@ namespace Rock.Field.Types
 
             // build a drop down list of defined types (the one that gets selected is
             // used to build a list of defined values) 
-            DropDownList ddl = new DropDownList();
+            var ddl = new RockDropDownList();
             controls.Add( ddl );
             ddl.AutoPostBack = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;

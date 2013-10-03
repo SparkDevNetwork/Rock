@@ -241,7 +241,6 @@ namespace Rock.Web.Cache
         /// will be read and added to cache
         /// </summary>
         /// <param name="id">The id.</param>
-        /// <param name="siteId">The site id.</param>
         /// <returns></returns>
         public static BlockCache Read( int id )
         {
@@ -280,7 +279,6 @@ namespace Rock.Web.Cache
         /// Reads the specified GUID.
         /// </summary>
         /// <param name="guid">The GUID.</param>
-        /// <param name="siteId">The site id.</param>
         /// <returns></returns>
         public static BlockCache Read( Guid guid )
         {
@@ -317,7 +315,6 @@ namespace Rock.Web.Cache
         /// Adds Block model to cache, and returns cached object
         /// </summary>
         /// <param name="blockModel">The block model.</param>
-        /// <param name="siteId">The site id.</param>
         /// <returns></returns>
         public static BlockCache Read( Block blockModel )
         {

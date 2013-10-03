@@ -10,6 +10,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 
 using Rock.Model;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
@@ -28,7 +29,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl(Dictionary<string,ConfigurationValue> configurationValues, string id)
         {
-            ListControl editControl = new DropDownList { ID = id }; 
+            var editControl = new RockDropDownList { ID = id }; 
 
             var service = new EmailTemplateService();
             foreach ( var emailTemplate in service.Queryable().OrderBy( e => e.Title ) )
