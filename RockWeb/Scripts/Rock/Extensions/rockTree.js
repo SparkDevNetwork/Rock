@@ -97,15 +97,6 @@
             var promise = this.fetch(this.options.id),
 				self = this;
 
-            // If there are no options, assume the tree has been rendered by the server.
-            // So attempt to load from $el's HTML, load nodes and re-render.
-            if (!this.options.local && !this.options.restUrl) {
-                this.nodes = _mapFromHtml(this.$el, this.options.mapping.include);
-                this.render();
-                this.initTreeEvents();
-                return;
-            }
-
             this.showLoading(this.$el);
             promise.done(function () {
                 if (self.options.selectedIds && typeof self.options.selectedIds.length === 'number') {
@@ -154,7 +145,9 @@
                     dfd.reject(e);
                 }
             } else {
-                dfd.reject('No server endpoint or local data configured!');
+                nodes = _mapFromHtml(this.$el, this.options.mapping.include);
+                this.nodes = nodes;
+                dfd.resolve(nodes);
             }
 
             return dfd.promise();

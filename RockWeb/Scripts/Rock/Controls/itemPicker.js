@@ -127,11 +127,14 @@
             },
             controls: {},
             initialize: function (options) {
-                var settings = $.extend({}, exports.defaults, options),
+                var settings,
                     itemPicker;
 
-                if (!settings.controlId) throw 'controlId must be set';
-                if (!settings.restUrl) throw 'restUrl must be set';
+                if (!options.controlId) throw 'controlId must be set';
+                if (!options.restUrl) throw 'restUrl must be set';
+
+                // TODO: Build REST URL based on parent ids, extra params, etc...
+                settings = $.extend({}, exports.defaults, options);
 
                 if (!settings.defaultText) {
                     settings.defaultText = exports.defaults.defaultText;
