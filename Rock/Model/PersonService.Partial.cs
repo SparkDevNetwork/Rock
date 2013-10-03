@@ -243,6 +243,7 @@ namespace Rock.Model
             );
         }
 
+        /// <summary>
         /// Gets the families.
         /// </summary>
         /// <param name="person">The person.</param>
