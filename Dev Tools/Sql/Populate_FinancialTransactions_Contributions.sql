@@ -32,7 +32,6 @@ while @transactionCounter < @maxTransactionCount
         INSERT INTO [dbo].[FinancialTransaction]
                    ([AuthorizedPersonId]
                    ,[BatchId]
-                   ,[GatewayId]
                    ,[TransactionDateTime]
                    ,[Amount]
                    ,[TransactionCode]
@@ -45,7 +44,6 @@ while @transactionCounter < @maxTransactionCount
                    ,[Guid])
              VALUES
                    (@authorizedPersonId
-                   ,null
                    ,null
                    ,@transactionDateTime
                    ,@transactionAmount
