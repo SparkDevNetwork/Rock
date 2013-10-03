@@ -2,7 +2,6 @@
 
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
-
         <asp:Panel ID="pnlDetails" runat="server" Visible="false">
             <asp:HiddenField ID="hfWorkflowTypeId" runat="server" />
 
@@ -103,9 +102,9 @@
                 </div>
 
                 <div class="actions">
-                    <Rock:BootstrapButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-sm btn-primary" OnClick="btnEdit_Click" />
+                    <Rock:BootstrapButton ID="btnEdit" DataLoadingText="<i class='icon-spinner icon-spin icon-large'></i>" runat="server" Text="Edit" CssClass="btn btn-sm btn-primary" OnClick="btnEdit_Click" />
                 </div>
-
+                
             </fieldset>
 
         </asp:Panel>
