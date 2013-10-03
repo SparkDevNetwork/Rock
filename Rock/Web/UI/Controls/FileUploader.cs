@@ -175,6 +175,25 @@ namespace Rock.Web.UI.Controls
             // NOTE: The Script Registration is done in RenderBaseControl because Render has to be called before calling GetPostBackEventReference
         }
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+
+            if ( Page.IsPostBack )
+            {
+                string eventTarget = Page.Request.Params["__EVENTTARGET"] ?? string.Empty;
+                EnsureChildControls();
+                if ( eventTarget == _fileUpload.UniqueID )
+                {
+                    RaisePostBackEvent( Page.Request.Params["__EVENTARGUMENT"] );
+                }
+            }
+        }
+
         #region Properties
 
         /// <summary>

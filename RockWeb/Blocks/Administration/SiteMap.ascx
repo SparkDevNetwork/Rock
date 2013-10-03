@@ -8,8 +8,7 @@
                 <asp:Literal ID="lPages" runat="server"></asp:Literal>
             </div>
         </asp:Panel>
-
-        <script>
+        <script type="text/javascript">
             $(function () {
                 $('#pages')
                     .on('rockTree:selected', function (e, id) {
@@ -48,7 +47,6 @@
                     });
             });
         </script>
-
     </ContentTemplate>
 </asp:UpdatePanel>
 

@@ -14,7 +14,6 @@ namespace Rock.Migrations
     /// </summary>
     public abstract class RockMigration : DbMigration
     {
-
         #region Entity Type Methods
 
         /// <summary>
@@ -73,7 +72,6 @@ namespace Rock.Migrations
 
         #endregion
 
-
         #region Field Type Methods
 
         /// <summary>
@@ -115,28 +113,6 @@ namespace Rock.Migrations
                     className,
                     guid,
                     IsSystem ? "1" : "0") );
-        }
-
-        /// <summary>
-        /// Adds the type of the field.
-        /// </summary>
-        /// <param name="fieldType">Type of the field.</param>
-        public void AddFieldType( FieldType fieldType )
-        {
-            Sql( string.Format( @"
-                INSERT INTO [FieldType] (
-                    [IsSystem],[Name],[Description],[Assembly],[Class],
-                    [Guid])
-                VALUES(
-                    {0},'{1}','{2}','{3}','{4}',
-                    '{5}')
-",
-                    fieldType.IsSystem.Bit(),
-                    fieldType.Name,
-                    fieldType.Assembly,
-                    fieldType.Class,
-                    fieldType.Description.Replace( "'", "''" ),
-                    fieldType.Guid ) );
         }
 
         /// <summary>
@@ -182,27 +158,6 @@ namespace Rock.Migrations
         }
 
         /// <summary>
-        /// Adds the type of the block.
-        /// </summary>
-        /// <param name="blockType">Type of the block.</param>
-        public void AddBlockType( BlockType blockType )
-        {
-            Sql( string.Format( @"
-                INSERT INTO [BlockType] (
-                    [IsSystem],[Path],[Name],[Description],
-                    [Guid])
-                VALUES(
-                    {0},'{1}','{2}','{3}'
-                    '{4}')
-",
-                    blockType.IsSystem.Bit(),
-                    blockType.Path,
-                    blockType.Name,
-                    blockType.Description.Replace( "'", "''" ),
-                    blockType.Guid ) );
-        }
-
-        /// <summary>
         /// Deletes the type of the block.
         /// </summary>
         /// <param name="guid">The GUID.</param>
@@ -215,50 +170,79 @@ namespace Rock.Migrations
                     ) );
         }
 
+        #endregion
+
+        #region Layout Methods
+
         /// <summary>
-        /// Defaults the type of the system block.
+        /// Adds the Layout.
         /// </summary>
+        /// <param name="siteGuid">The site GUID.</param>
+        /// <param name="fileName">Name of the file.</param>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="guid">The GUID.</param>
-        /// <returns></returns>
-        public BlockType DefaultSystemBlockType( string name, string description, Guid guid )
+        public void AddLayout( string siteGuid, string fileName, string name, string description, string guid )
         {
-            var blockType = new BlockType();
+            Sql( string.Format( @"
 
-            blockType.IsSystem = true;
-            blockType.Name = name;
-            blockType.Description = description;
-            blockType.Guid = guid;
+                DECLARE @SiteId int
+                SET @LayoutId = (SELECT [Id] FROM [Site] WHERE [SiteID] = '{0}')
+                        
+                INSERT INTO [Layout] (
+                    [IsSystem],[SiteId],[FileName],[Name],[Description],[Guid])
+                VALUES(
+                    1,@SiteId,'{1}','{2}','{3}','{4}')
+",
+                    siteGuid,
+                    fileName,
+                    name,
+                    description.Replace( "'", "''" ),
+                    guid
+                    ) );
+        }
 
-            return blockType;
+        /// <summary>
+        /// Deletes the page.
+        /// </summary>
+        /// <param name="guid">The GUID.</param>
+        public void DeleteLayout( string guid )
+        {
+            Sql( string.Format( @"
+                DELETE [Layout] WHERE [Guid] = '{0}'
+",
+                    guid
+                    ) );
         }
 
         #endregion
-        
+
         #region Page Methods
 
         /// <summary>
         /// Adds the page.
         /// </summary>
         /// <param name="parentPageGuid">The parent page GUID.</param>
+        /// <param name="layoutGuid">The layout GUID.</param>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
-        /// <param name="layout">The layout.</param>
         /// <param name="guid">The GUID.</param>
         /// <param name="iconCssClass">The icon CSS class.</param>
-        public void AddPage( string parentPageGuid, string name, string description, string layout, string guid, string iconCssClass = ""  )
+        public void AddPage( string parentPageGuid, string layoutGuid, string name, string description, string guid, string iconCssClass = ""  )
         {
             Sql( string.Format( @"
-                
+
                 DECLARE @ParentPageId int
                 SET @ParentPageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{0}')
 
+                DECLARE @LayoutId int
+                SET @LayoutId = (SELECT [Id] FROM [Layout] WHERE [Guid] = '{1}')
+                        
                 DECLARE @Order int
                 SELECT @Order = ISNULL(MAX([order])+1,0) FROM [Page] WHERE [ParentPageId] = @ParentPageId;
 
                 INSERT INTO [Page] (
-                    [Name],[Title],[IsSystem],[ParentPageId],[SiteId],[Layout],
+                    [Name],[Title],[IsSystem],[ParentPageId],[LayoutId],
                     [RequiresEncryption],[EnableViewState],
                     [PageDisplayTitle],[PageDisplayBreadCrumb],[PageDisplayIcon],[PageDisplayDescription],
                     [MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],
@@ -266,92 +250,20 @@ namespace Rock.Migrations
                     [Order],[OutputCacheDuration],[Description],[IncludeAdminFooter],
                     [IconFileId],[IconCssClass],[Guid])
                 VALUES(
-                    '{1}','{1}',1,@ParentPageId,1,'{3}',
+                    '{2}','{2}',1,@ParentPageId,@LayoutId,
                     0,1,
                     1,1,1,1,
                     0,0,1,0,
                     1,0,
-                    @Order,0,'{2}',1,
+                    @Order,0,'{3}',1,
                     null,'{5}','{4}')
 ",
                     parentPageGuid,
+                    layoutGuid,
                     name,
                     description.Replace( "'", "''" ),
-                    layout,
                     guid,
                     iconCssClass
-                    ) );
-        }
-
-        /// <summary>
-        /// Adds the page.
-        /// </summary>
-        /// <param name="parentPageGuid">The parent page GUID.</param>
-        /// <param name="name">The name.</param>
-        /// <param name="description">The description.</param>
-        /// <param name="guid">The GUID.</param>
-        public void AddPage( string parentPageGuid, string name, string description, string guid )
-        {
-            AddPage( parentPageGuid, name, description, "Default", guid );
-        }
-
-        /// <summary>
-        /// Adds the page.
-        /// </summary>
-        /// <param name="parentPageGuid">The parent page GUID.</param>
-        /// <param name="page">The page.</param>
-        public void AddPage( string parentPageGuid, Page page )
-        {
-
-            Sql( string.Format( @"
-
-                DECLARE @ParentPageId int
-                SET @ParentPageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{0}')
-
-                DECLARE @Order int
-                SELECT @Order = ISNULL(MAX([order])+1,0) FROM [Page] WHERE [ParentPageId] = @ParentPageId;
-
-                INSERT INTO [Page] (
-                    [Name],[Title],[IsSystem],[ParentPageId],[SiteId],[Layout],
-                    [RequiresEncryption],[EnableViewState],
-                    [PageDisplayTitle],[PageDisplayBreadCrumb],[PageDisplayIcon],[PageDisplayDescription],
-                    [MenuDisplayDescription],[MenuDisplayIcon],[MenuDisplayChildPages],[DisplayInNavWhen],
-                    [BreadCrumbDisplayName],[BreadCrumbDisplayIcon],
-
-                    [Order],[OutputCacheDuration],[Description],[IncludeAdminFooter],
-                    [IconFileId],[Guid])
-                VALUES(
-                    '{1}','{2}',{3},@ParentPageId,{4},'{5}',
-                    {6},{7},
-                    {17},{18},{19},{20}.
-                    {8},{9},{10},{11},
-                    {21},{22},
-                    @Order,{12},'{13}',{14},
-                    {15},'{16}')
-",
-                    parentPageGuid,
-                    page.Name,
-                    page.Title,
-                    page.IsSystem.Bit(),
-                    page.SiteId,
-                    page.Layout,
-                    page.RequiresEncryption.Bit(),
-                    page.EnableViewState.Bit(),
-                    page.MenuDisplayDescription.Bit(),
-                    page.MenuDisplayIcon.Bit(),
-                    page.MenuDisplayChildPages.Bit(),
-                    (int)page.DisplayInNavWhen,
-                    page.OutputCacheDuration,
-                    page.Description.Replace( "'", "''" ),
-                    page.IncludeAdminFooter.Bit(),
-                    page.IconFileId.HasValue ? page.IconFileId.Value.ToString() : "NULL",
-                    page.Guid,
-                    page.PageDisplayTitle.Bit(),
-                    page.PageDisplayBreadCrumb.Bit(),
-                    page.PageDisplayIcon.Bit(),
-                    page.PageDisplayDescription.Bit(),
-                    page.BreadCrumbDisplayName.Bit(),
-                    page.BreadCrumbDisplayIcon.Bit()
                     ) );
         }
 
@@ -426,39 +338,6 @@ namespace Rock.Migrations
 
         }
         
-        /// <summary>
-        /// Defaults the system page.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="description">The description.</param>
-        /// <param name="guid">The GUID.</param>
-        /// <returns></returns>
-        public Page DefaultSystemPage( string name, string description, Guid guid )
-        {
-            var page = new Page();
-
-            page.Name = name;
-            page.Title = name;
-            page.IsSystem = true;
-            page.SiteId = 1;
-            page.Layout = "Default";
-            page.EnableViewState = true; ;
-            page.PageDisplayTitle = true;
-            page.PageDisplayBreadCrumb = true;
-            page.PageDisplayIcon = true;
-            page.PageDisplayDescription = true;
-            page.MenuDisplayDescription = true;
-            page.MenuDisplayChildPages = true;
-            page.DisplayInNavWhen = DisplayInNavWhen.WhenAllowed;
-            page.BreadCrumbDisplayName = true;
-            page.BreadCrumbDisplayIcon = false;
-            page.Description = description;
-            page.IncludeAdminFooter = true;
-            page.Guid = guid;
-
-            return page;
-        }
-
         #endregion
 
         #region Block Methods
@@ -467,36 +346,36 @@ namespace Rock.Migrations
         /// Adds the block.
         /// </summary>
         /// <param name="pageGuid">The page GUID.</param>
+        /// <param name="layoutGuid">The layout GUID.</param>
         /// <param name="blockTypeGuid">The block type GUID.</param>
         /// <param name="name">The name.</param>
-        /// <param name="layout">The layout.</param>
         /// <param name="zone">The zone.</param>
         /// <param name="order">The order.</param>
         /// <param name="guid">The GUID.</param>
-        public void AddBlock( string pageGuid, string blockTypeGuid, string name, string layout, string zone, int order, string guid )
+        public void AddBlock( string pageGuid, string layoutGuid, string blockTypeGuid, string name, string zone, int order, string guid )
         {
             var sb = new StringBuilder();
-            string layoutParam;
-            if ( string.IsNullOrWhiteSpace( layout ) )
-            {
-                layoutParam = "NULL";
-            }
-            else
-            {
-                layoutParam = string.Format( "'{0}'", layout );
-            }
-
             sb.Append( @"
                 DECLARE @PageId int
-" );
-            if ( string.IsNullOrWhiteSpace( pageGuid ) )
-                sb.Append( @"
-                SET @PageId = NULL
-" );
-            else
+                SET @PageId = null
+
+                DECLARE @LayoutId int
+                SET @LayoutId = null
+");
+
+            if ( !string.IsNullOrWhiteSpace( pageGuid ) )
+            {
                 sb.AppendFormat( @"
                 SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{0}')
 ", pageGuid );
+            }
+
+            if ( !string.IsNullOrWhiteSpace( layoutGuid ) )
+            {
+                sb.AppendFormat( @"
+                SET @LayoutId = (SELECT [Id] FROM [Layout] WHERE [Guid] = '{0}')
+", layoutGuid );
+            }
 
             sb.AppendFormat( @"
                 
@@ -507,11 +386,11 @@ namespace Rock.Migrations
 
                 DECLARE @BlockId int
                 INSERT INTO [Block] (
-                    [IsSystem],[PageId],[Layout],[BlockTypeId],[Zone],
+                    [IsSystem],[PageId],[LayoutId],[BlockTypeId],[Zone],
                     [Order],[Name],[OutputCacheDuration],
                     [Guid])
                 VALUES(
-                    1,@PageId,{5},@BlockTypeId,'{1}',
+                    1,@PageId,@LayoutId,@BlockTypeId,'{1}',
                     {2},'{3}',0,
                     '{4}')
                 SET @BlockId = SCOPE_IDENTITY()
@@ -520,69 +399,7 @@ namespace Rock.Migrations
                     zone,
                     order,
                     name,
-                    guid,
-                    layoutParam );
-
-            // If adding a layout block, give edit/configuration authorization to admin role
-            if ( string.IsNullOrWhiteSpace( pageGuid ) )
-                sb.Append( @"
-                INSERT INTO [Auth] ([EntityTypeId],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
-                    VALUES(@EntityTypeId,@BlockId,0,'Edit','A',0,NULL,2,NEWID())
-                INSERT INTO [Auth] ([EntityTypeId],[EntityId],[Order],[Action],[AllowOrDeny],[SpecialRole],[PersonId],[GroupId],[Guid])
-                    VALUES(@EntityTypeId,@BlockId,0,'Configure','A',0,NULL,2,NEWID())
-" );
-            Sql( sb.ToString() );
-        }
-
-        /// <summary>
-        /// Adds the block.
-        /// </summary>
-        /// <param name="pageGuid">The page GUID.</param>
-        /// <param name="blockTypeGuid">The block type GUID.</param>
-        /// <param name="block">The block.</param>
-        public void AddBlock( string pageGuid, string blockTypeGuid, Block block )
-        {
-            var sb = new StringBuilder();
-
-            sb.Append( @"
-                DECLARE @PageId int
-" );
-            if ( string.IsNullOrWhiteSpace( pageGuid ) )
-                sb.Append( @"
-                SET @PageId = NULL
-" );
-            else
-                sb.AppendFormat( @"
-                SET @PageId = (SELECT [Id] FROM [Page] WHERE [Guid] = '{0}')
-", pageGuid );
-
-            sb.AppendFormat( @"
-
-                DECLARE @BlockTypeId int
-                SET @BlockTypeId = (SELECT [Id] FROM [BlockType] WHERE [Guid] = '{0}')
-                DECLARE @EntityTypeId int                
-                SET @EntityTypeId = (SELECT [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Block')
-
-                DECLARE @BlockId int
-                INSERT INTO [Block] (
-                    [IsSystem],[PageId],[Layout],[BlockTypeId],[Zone],
-                    [Order],[Name],[OutputCacheDuration],
-                    [Guid],[SiteId])
-                VALUES(
-                    {1},@PageId,{2},@BlockTypeId,'{3}',
-                    {4},'{5}',{6},
-                    '{7}',{8})
-                SET @BlockId = SCOPE_IDENTITY()
-",
-                    blockTypeGuid,
-                     block.IsSystem.Bit(),
-                    block.Layout == null ? "NULL" : "'" + block.Layout + "'",
-                    block.Zone,
-                    block.Order,
-                    block.Name,
-                    block.OutputCacheDuration,
-                    block.Guid,
-                    block.SiteId == null ? "NULL" : block.SiteId.ToString());
+                    guid );
 
             // If adding a layout block, give edit/configuration authorization to admin role
             if ( string.IsNullOrWhiteSpace( pageGuid ) )
@@ -611,24 +428,6 @@ namespace Rock.Migrations
 ",
                     guid
                     ) );
-        }
-
-        /// <summary>
-        /// Defaults the system block.
-        /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="guid">The GUID.</param>
-        /// <returns></returns>
-        public Block DefaultSystemBlock( string name, Guid guid )
-        {
-            var block = new Block();
-
-            block.IsSystem = true;
-            block.Zone = "Content";
-            block.Name = name;
-            block.Guid = guid;
-
-            return block;
         }
 
         #endregion
@@ -883,17 +682,6 @@ namespace Rock.Migrations
                     value,
                     guid )
             );
-        }
-
-        /// <summary>
-        /// Updates a particular Attribute's column value.
-        /// </summary>
-        /// <param name="guid">the guid of the attribute to udpate.</param>
-        /// <param name="columnName">a column name.</param>
-        /// <param name="valueQuotedIfNecessary">the value, quoted if necessary, such as 1 or 'foo'.</param>
-        public void UpdateAttribute( string guid, string columnName, string valueQuotedIfNecessary )
-        {
-            Sql( string.Format( @"UPDATE [Attribute] SET [{1}] = {2} WHERE [Guid] = '{0}'", guid, columnName.Trim( '[', ']', ' ' ), valueQuotedIfNecessary ) );
         }
 
         /// <summary>

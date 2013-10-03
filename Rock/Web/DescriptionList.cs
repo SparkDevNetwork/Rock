@@ -113,7 +113,7 @@ namespace Rock.Web
             {
                 string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
 
-                string result = @"<div class='span6'><dl>";
+                string result = @"<div class='col-md-6'><dl>";
 
                 foreach ( var pair in _termDescriptionList )
                 {
@@ -126,7 +126,7 @@ namespace Rock.Web
 
                     if ( pair.Key == ColumnBreak )
                     {
-                        result += @"</dl></div><div class='span6'><dl>";
+                        result += @"</dl></div><div class='col-md-6'><dl>";
                     }
                     else
                     {

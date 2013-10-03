@@ -235,6 +235,29 @@
     <Compile Include="Migrations\201309272221418_AddPasswordWarningDate.Designer.cs">
       <DependentUpon>201309272221418_AddPasswordWarningDate.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201309291500225_RefactorBatchDetail.cs" />
+    <Compile Include="Migrations\201309291500225_RefactorBatchDetail.Designer.cs">
+      <DependentUpon>201309291500225_RefactorBatchDetail.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201310012025428_AttendedCheckin.cs" />
+    <Compile Include="Migrations\201310012025428_AttendedCheckin.Designer.cs">
+      <DependentUpon>201310012025428_AttendedCheckin.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201310012252403_AddLayout.cs" />
+    <Compile Include="Migrations\201310012252403_AddLayout.Designer.cs">
+      <DependentUpon>201310012252403_AddLayout.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201310021237541_FixSystemData.cs" />
+    <Compile Include="Migrations\201310021237541_FixSystemData.Designer.cs">
+      <DependentUpon>201310021237541_FixSystemData.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\RockMigration.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Migrations\RockMigration1.cs" />
+    <Compile Include="Model\CodeGenerated\LayoutService.cs" />
+    <Compile Include="Model\LayoutService.Partial.cs" />
+    <Compile Include="Model\Layout.cs" />
     <Compile Include="Model\FinancialPersonSavedAccountService.Partial.cs" />
     <Compile Include="Services\NuGet\NuGetExtensionsMethods.cs" />
     <Compile Include="Storage\ProviderComponent.cs" />
@@ -247,7 +270,6 @@
     <Compile Include="Field\Types\CategoriesFieldType.cs" />
     <Compile Include="Field\Types\LocationFieldType.cs" />
     <Compile Include="Field\Types\GroupRoleFieldType.cs" />
-    <Compile Include="Migrations\RockMigration.cs" />
     <Compile Include="Model\CodeGenerated\BinaryFileDataService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonBankAccountService.cs" />
     <Compile Include="Model\CodeGenerated\FinancialPersonSavedAccountService.cs" />
@@ -280,6 +302,7 @@
     <Compile Include="SystemGuid\EntityType.cs" />
     <Compile Include="Transactions\SendCommunicationTransaction.cs" />
     <Compile Include="Web\Cache\CategoryCache.cs" />
+    <Compile Include="Web\Cache\LayoutCache.cs" />
     <Compile Include="Web\DescriptionList.cs" />
     <Compile Include="Web\UI\Controls\BootstrapButton.cs" />
     <Compile Include="Web\UI\Controls\Checkin Configuration Controls\CheckinGroupEditor.cs" />
@@ -478,8 +501,6 @@
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
     <Compile Include="Web\UI\Controls\HighlightLabel.cs" />
-    <Compile Include="Web\UI\Controls\ILabeledControl.cs" />
-    <Compile Include="Web\UI\Controls\IRequiredControl.cs" />
     <Compile Include="Web\UI\Controls\RockControlHelper.cs" />
     <Compile Include="Web\UI\Controls\TermDescription.cs" />
     <Compile Include="Web\UI\Controls\Grid\DefinedValueField.cs" />
@@ -1078,6 +1099,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201309272221418_AddPasswordWarningDate.resx">
       <DependentUpon>201309272221418_AddPasswordWarningDate.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201309291500225_RefactorBatchDetail.resx">
+      <DependentUpon>201309291500225_RefactorBatchDetail.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310012025428_AttendedCheckin.resx">
+      <DependentUpon>201310012025428_AttendedCheckin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310012252403_AddLayout.resx">
+      <DependentUpon>201310012252403_AddLayout.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310021237541_FixSystemData.resx">
+      <DependentUpon>201310021237541_FixSystemData.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

@@ -121,7 +121,7 @@ namespace RockWeb.Blocks.Crm
         {
             if ( hfGroupId.Value.Equals( "0" ) )
             {
-                if ( this.CurrentPage.Layout.Equals( "TwoColumnLeft" ) )
+                if ( this.CurrentPage.Layout.FileName.Equals( "TwoColumnLeft" ) )
                 {
                     // Cancelling on Add.  Return to tree view with parent category selected
                     var qryParams = new Dictionary<string, string>();

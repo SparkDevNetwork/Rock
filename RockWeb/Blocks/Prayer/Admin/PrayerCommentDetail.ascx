@@ -26,7 +26,7 @@
                     </div>
 
                     <asp:HiddenField ID="hfNoteId" runat="server" />
-                    <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
+                    <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" />
 
                     <!-- Edit -->
                     <div class="note-container overview">

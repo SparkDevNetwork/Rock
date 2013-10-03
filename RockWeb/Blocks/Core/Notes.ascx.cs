@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Core
         $(this).parent().parent().slideToggle(""slow"");
     });
 
-    $('.panel-notes article').live({
+    $('.panel-notes article').on({
         mouseenter:
             function () {
                 var actionsDiv = $('.actions', this);

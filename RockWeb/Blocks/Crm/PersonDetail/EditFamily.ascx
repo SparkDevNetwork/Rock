@@ -4,7 +4,7 @@
     <ContentTemplate>
 
         <asp:ValidationSummary ID="valSummaryTop" runat="server"
-            HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
+            HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
 
         <Rock:NotificationBox ID="nbNotice" runat="server" Visible="false" />
 
@@ -152,7 +152,7 @@
                 </ul>
 
                 <asp:ValidationSummary ID="valSummaryAddPerson" runat="server" ValidationGroup="modalAddPersonValidationGroup"
-                    HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
+                    HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
 
                 <div class="tab-content">
 

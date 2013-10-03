@@ -58,7 +58,7 @@ namespace Rock.Field.Types
         {
             List<Control> controls = new List<Control>();
 
-            DropDownList ddl = new DropDownList();
+            var ddl = new RockDropDownList();
             controls.Add( ddl );
             ddl.Items.Add( new ListItem( None.Text, None.IdValue ) );
             foreach ( var entityType in new EntityTypeService().GetEntities().OrderBy( e => e.FriendlyName ).ThenBy( e => e.Name ) )
@@ -69,12 +69,12 @@ namespace Rock.Field.Types
             ddl.AutoPostBack = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
 
-            TextBox tbColumn = new TextBox();
+            var tbColumn = new RockTextBox();
             controls.Add( tbColumn );
             tbColumn.AutoPostBack = true;
             tbColumn.TextChanged += OnQualifierUpdated;
 
-            TextBox tbValue = new TextBox();
+            var tbValue = new RockTextBox();
             controls.Add( tbValue );
             tbValue.AutoPostBack = true;
             tbValue.TextChanged += OnQualifierUpdated;
