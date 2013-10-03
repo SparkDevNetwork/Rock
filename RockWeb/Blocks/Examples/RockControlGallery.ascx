@@ -247,7 +247,7 @@
             <h2>Rock:BootstrapButton</h2>
             <div runat="server" class="r-example">
                 <Rock:BootstrapButton ID="lbSave" runat="server" Text="Click Me"
-                    DataLoadingText="Disabled and Loading..." CssClass="btn btn-primary" />
+                    DataLoadingText="<i class='icon-spinner icon-spin icon-large'></i> Saving" CssClass="btn btn-primary" />
             </div>
 
             <h2>Rock:AttributeEditor</h2>
