@@ -255,7 +255,8 @@ $('#{1}').datepicker().on('changeDate', function (ev) {{
         /// <value>
         /// The lower value.
         /// </value>
-        public DateTime? LowerValue {
+        public DateTime? LowerValue
+        {
             get
             {
                 EnsureChildControls();
@@ -287,6 +288,50 @@ $('#{1}').datepicker().on('changeDate', function (ev) {{
             {
                 EnsureChildControls();
                 _tbUpperValue.SelectedDate = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [read only].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [read only]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ReadOnly
+        {
+            get
+            {
+                EnsureChildControls();
+                return _tbLowerValue.ReadOnly;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _tbLowerValue.ReadOnly = value;
+                _tbUpperValue.ReadOnly = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the validation group.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get
+            {
+                EnsureChildControls();
+                return _tbLowerValue.ValidationGroup;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _tbLowerValue.ValidationGroup = value;
+                _tbUpperValue.ValidationGroup = value;
             }
         }
     }

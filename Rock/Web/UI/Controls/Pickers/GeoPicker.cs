@@ -42,25 +42,9 @@ namespace Rock.Web.UI.Controls
     /// 
     /// If you wish to set an appropriate, initial center point you can use the <see cref="CenterPoint"/> property.
     /// </summary>
-    public class GeoPicker : CompositeControl, ILabeledControl
+    public class GeoPicker : CompositeControl, IRockControl
     {
-        private Label _label;
-        private HiddenField _hfGeoDisplayName;
-        private HiddenField _hfGeoPath;
-        private LinkButton _btnSelect;
-        private LinkButton _btnSelectNone;
-        private DbGeography _geoFence;
-        private DbGeography _geoPoint;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GeoPicker" /> class.
-        /// </summary>
-        public GeoPicker()
-        {
-            _label = new Label();
-            _btnSelect = new LinkButton();
-            _btnSelectNone = new LinkButton();
-        }
+        #region IRockControl implementation
 
         /// <summary>
         /// Gets or sets the label text.
@@ -68,29 +52,127 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The label text.
         /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text for the label." )
+        ]
         public string Label
         {
-            get { return _label.Text; }
-            set { _label.Text = value; }
+            get { return ViewState["Label"] as string ?? string.Empty; }
+            set { ViewState["Label"] = value; }
         }
 
         /// <summary>
-        /// Gets or sets the name of the field to display in validation messages
-        /// when a Label is not entered
+        /// Gets or sets the help text.
         /// </summary>
         /// <value>
-        /// The name of the field.
+        /// The help text.
         /// </value>
-        public string FieldName
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The help block." )
+        ]
+        public string Help
         {
-            get { return _label.Text; }
-            set { _label.Text = value; }
+            get
+            {
+                return HelpBlock != null ? HelpBlock.Text : string.Empty;
+            }
+            set
+            {
+                if ( HelpBlock != null )
+                {
+                    HelpBlock.Text = value;
+                }
+            }
+        }
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "false" ),
+        Description( "Is the value required?" )
+        ]
+        public bool Required
+        {
+            get { return ViewState["Required"] as bool? ?? false; }
+            set { ViewState["Required"] = value; }
         }
 
         /// <summary>
-        /// The required validator
+        /// Gets or sets the required error message.  If blank, the LabelName name will be used
         /// </summary>
-        protected HiddenFieldValidator RequiredValidator;
+        /// <value>
+        /// The required error message.
+        /// </value>
+        public string RequiredErrorMessage
+        {
+            get
+            {
+                return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
+            }
+            set
+            {
+                if ( RequiredFieldValidator != null )
+                {
+                    RequiredFieldValidator.ErrorMessage = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool IsValid
+        {
+            get
+            {
+                return !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the help block.
+        /// </summary>
+        /// <value>
+        /// The help block.
+        /// </value>
+        public HelpBlock HelpBlock { get; set; }
+
+        /// <summary>
+        /// Gets or sets the required field validator.
+        /// </summary>
+        /// <value>
+        /// The required field validator.
+        /// </value>
+        public RequiredFieldValidator RequiredFieldValidator { get; set; }
+
+        #endregion
+
+        #region Controls
+
+        private HiddenField _hfGeoDisplayName;
+        private HiddenField _hfGeoPath;
+        private LinkButton _btnSelect;
+        private LinkButton _btnSelectNone;
+        private DbGeography _geoFence;
+        private DbGeography _geoPoint;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets or sets the point that map should initially be centered on
@@ -157,22 +239,6 @@ namespace Rock.Web.UI.Controls
                 {
                     GeoFence = value;
                 }
-            }
-        }
-
-        /// <summary>
-        /// Sets the value. Necessary to preload the geo fence or geo point.
-        /// </summary>
-        /// <param name="dbGeography">The db geography.</param>
-        public void SetValue( DbGeography dbGeography )
-        {
-            if ( dbGeography != null )
-            {
-                SelectedValue = dbGeography;
-            }
-            else
-            {
-                GeoDisplayName = Rock.Constants.None.TextHtml;
             }
         }
 
@@ -301,40 +367,22 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="GeoPicker"/> is required.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if required; otherwise, <c>false</c>.
-        /// </value>
-        [
-        Bindable( true ),
-        Category( "Behavior" ),
-        DefaultValue( "false" ),
-        Description( "Is the value required?" )
-        ]
-        public bool Required
-        {
-            get
-            {
-                if ( ViewState["Required"] != null )
-                    return (bool)ViewState["Required"];
-                else
-                    return false;
-            }
-            set
-            {
-                ViewState["Required"] = value;
-            }
-        }
+        #endregion
+
+        #region Constructor
 
         /// <summary>
-        /// Gets or sets the select dbGeography.
+        /// Initializes a new instance of the <see cref="GeoPicker" /> class.
         /// </summary>
-        /// <value>
-        /// The select dbGeography.
-        /// </value>
-        public event EventHandler SelectGeography;
+        public GeoPicker()
+        {
+            RequiredFieldValidator = new HiddenFieldValidator();
+            HelpBlock = new HelpBlock();
+            _btnSelect = new LinkButton();
+            _btnSelectNone = new LinkButton();
+        }
+
+        #endregion
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -355,45 +403,13 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Registers the java script.
-        /// </summary>
-        protected virtual void RegisterJavaScript()
-        {
-            string options = string.Format( "controlId: '{0}', drawingMode: '{1}'", this.ClientID, this.DrawingMode );
-
-            DbGeography centerPoint = CenterPoint;
-            if ( centerPoint != null && centerPoint.Latitude != null && centerPoint.Longitude != null )
-            {
-                options += string.Format( ", centerLatitude: '{0}', centerLongitude: '{1}'", centerPoint.Latitude, centerPoint.Longitude );
-            }
-
-            string script = string.Format( "Rock.controls.geoPicker.initialize({{ {0} }});", options );
-            
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "geo_picker-" + this.ClientID, script, true );
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is valid.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
-        /// </value>
-        public virtual bool IsValid
-        {
-            get
-            {
-                return !Required || RequiredValidator.IsValid;
-            }
-        }
-
-        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
         {
             base.CreateChildControls();
-
             Controls.Clear();
+            RockControlHelper.CreateChildControls( this, Controls );
 
             // TBD TODO -- do I need this hfGeoDisplayName_???
             _hfGeoDisplayName = new HiddenField();
@@ -418,63 +434,37 @@ namespace Rock.Web.UI.Controls
             _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
             _btnSelectNone.Click += btnSelect_Click;
 
-            Controls.Add( _label );
             Controls.Add( _hfGeoDisplayName );
             Controls.Add( _hfGeoPath );
             Controls.Add( _btnSelect );
             Controls.Add( _btnSelectNone );
 
-            RequiredValidator = new HiddenFieldValidator();
-            RequiredValidator.ID = this.ClientID + "_rfv";
-            RequiredValidator.InitialValue = "0";
-            RequiredValidator.ControlToValidate = _hfGeoPath.ID;
-            RequiredValidator.Display = ValidatorDisplay.Dynamic;
-            RequiredValidator.CssClass = "validation-error help-inline";
-            RequiredValidator.Enabled = false;
-
-            Controls.Add( RequiredValidator );
+            RequiredFieldValidator.InitialValue = "0";
+            RequiredFieldValidator.ControlToValidate = _hfGeoPath.ID;
         }
 
         /// <summary>
-        /// Handles the Click event of the btnSelect control.
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
         /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        protected void btnSelect_Click( object sender, EventArgs e )
-        {
-            if ( SelectGeography != null )
-            {
-                SelectGeography( sender, e );
-            }
-        }
-
-        /// <summary>
-        /// Renders the <see cref="T:System.Web.UI.WebControls.TextBox" /> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter" /> object.
-        /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> that receives the rendered output.</param>
-        protected override void Render( HtmlTextWriter writer )
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( HtmlTextWriter writer )
         {
             RegisterJavaScript();
 
-            bool renderLabel = !string.IsNullOrEmpty( Label );
-
-            if ( renderLabel )
+            if ( this.Visible )
             {
-                writer.AddAttribute( "class", "form-group" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                writer.RenderBeginTag(HtmlTextWriterTag.Label);
-                writer.Write(_label.Text);
-                writer.RenderEndTag();
+                RockControlHelper.RenderControl( this, writer );
             }
+        }
 
-            if ( Required )
-            {
-                RequiredValidator.Enabled = true;
-                RequiredValidator.ErrorMessage = Label + " is Required.";
-                RequiredValidator.RenderControl( writer );
-            }
+        /// <summary>
+        /// Renders the base control.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public void RenderBaseControl( HtmlTextWriter writer )
+        {
+            writer.AddAttribute( "class", "controls" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             _hfGeoDisplayName.RenderControl( writer );
             _hfGeoPath.RenderControl( writer );
@@ -547,10 +537,42 @@ namespace Rock.Web.UI.Controls
                 writer.Write( controlHtmlFormatDisabled, this.ClientID, this.GeoDisplayName );
             }
 
-            if ( renderLabel )
+            writer.RenderEndTag();
+
+        }
+
+        /// <summary>
+        /// Sets the value. Necessary to preload the geo fence or geo point.
+        /// </summary>
+        /// <param name="dbGeography">The db geography.</param>
+        public void SetValue( DbGeography dbGeography )
+        {
+            if ( dbGeography != null )
             {
-                writer.RenderEndTag();
+                SelectedValue = dbGeography;
             }
+            else
+            {
+                GeoDisplayName = Rock.Constants.None.TextHtml;
+            }
+        }
+        
+        /// <summary>
+        /// Registers the java script.
+        /// </summary>
+        protected virtual void RegisterJavaScript()
+        {
+            string options = string.Format( "controlId: '{0}', drawingMode: '{1}'", this.ClientID, this.DrawingMode );
+
+            DbGeography centerPoint = CenterPoint;
+            if ( centerPoint != null && centerPoint.Latitude != null && centerPoint.Longitude != null )
+            {
+                options += string.Format( ", centerLatitude: '{0}', centerLongitude: '{1}'", centerPoint.Latitude, centerPoint.Longitude );
+            }
+
+            string script = string.Format( "Rock.controls.geoPicker.initialize({{ {0} }});", options );
+
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "geo_picker-" + this.ClientID, script, true );
         }
 
         #region utility methods
@@ -675,6 +697,34 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
+        #region Events
+
+        /// <summary>
+        /// Handles the Click event of the btnSelect control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void btnSelect_Click( object sender, EventArgs e )
+        {
+            if ( SelectGeography != null )
+            {
+                SelectGeography( sender, e );
+            }
+        }
+        
+        /// <summary>
+        /// Gets or sets the select dbGeography.
+        /// </summary>
+        /// <value>
+        /// The select dbGeography.
+        /// </value>
+        public event EventHandler SelectGeography;
+
+        #endregion
+
+        #region Enums
+
         /// <summary>
         /// Which type of selection to enable
         /// </summary>
@@ -690,5 +740,7 @@ namespace Rock.Web.UI.Controls
             /// </summary>
             Polygon = 1
         };
+
+        #endregion
     }
 }

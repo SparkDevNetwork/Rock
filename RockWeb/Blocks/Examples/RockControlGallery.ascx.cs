@@ -296,5 +296,10 @@ namespace RockWeb.Blocks.Examples
         {
             var dateTime = monthDayPicker.SelectedDate;
         }
-    }
+        
+        protected void scheduleBuilder_SaveSchedule( object sender, EventArgs e )
+        {
+            string debug = scheduleBuilder.iCalendarContent;
+        }
+}
 }
