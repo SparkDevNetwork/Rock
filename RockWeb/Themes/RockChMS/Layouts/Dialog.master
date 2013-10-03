@@ -1,4 +1,5 @@
 ﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Dialog.master.cs" Inherits="RockWeb.Themes.RockChMS.Layouts.Dialog" %>
+
 <%@ Import Namespace="System.Web.Optimization" %>
 <!DOCTYPE html>
 <html>
@@ -12,52 +13,61 @@
 
     <asp:ContentPlaceHolder ID="css" runat="server" />
 
-	<link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.common.min.css") %>"/>
-	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Styles/theme.css") %>"/>
-	<link rel="stylesheet" href="<%# ResolveUrl("~/Styles/developer.css") %>"/>
+    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.common.min.css") %>" />
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Styles/theme.css") %>" />
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Styles/developer.css") %>" />
 
     <style>
-        html, body 
-        {
+        html, body {
             height: 100%;
             min-height: 100%;
             width: 100%;
             min-width: 100%;
-            background-color: #ffffff;  
+            background-color: #ffffff;
             margin: 0 0 0 0;
             padding: 0 0 0 0;
             vertical-align: top;
         }
     </style>
 
-    <asp:ContentPlaceHolder id="head" runat="server"></asp:ContentPlaceHolder>
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
 </head>
 
 <body id="dialog" class="rock-modal">
     <form id="form1" runat="server">
-        <div id="headerPanel" class="modal-header">
-            <a id="closeLink" href="#" class="close" onclick="window.parent.Rock.controls.modal.close();">&times;</a>
-            <h3 class="modal-title"><asp:Literal ID="lTitle" runat="server"></asp:Literal></h3>
-        </div>
+        <ajaxToolkit:ToolkitScriptManager ID="sManager" runat="server" />
+        <asp:UpdatePanel ID="updatePanelDialog" runat="server">
+            <ContentTemplate>
+                <div id="headerPanel" class="modal-header">
+                    <a id="closeLink" href="#" class="close" onclick="window.parent.Rock.controls.modal.close();">&times;</a>
+                    <h3 class="modal-title">
+                        <asp:Literal ID="lTitle" runat="server"></asp:Literal></h3>
+                </div>
 
-        <div class="modal-body">
-            <div id="modal-scroll-container" class="scroll-container">
-	            <div class="scrollbar"><div class="track"><div class="thumb"><div class="end"></div></div></div></div>
-	            <div class="viewport">
-		            <div class="overview">
-                        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
-			        </div>
-	            </div>
-            </div>		
-        </div>
+                <div class="modal-body">
+                    <div id="modal-scroll-container" class="scroll-container">
+                        <div class="scrollbar">
+                            <div class="track">
+                                <div class="thumb">
+                                    <div class="end"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="viewport">
+                            <div class="overview">
+                                <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-        <div id="footerPanel" class="modal-footer">
-            <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" OnClick="btnCancel_Click " CausesValidation="false" />
-            <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click " />
-        </div>
-
-        <ajaxToolkit:ToolkitScriptManager ID="sManager" runat="server"/>
+                <div id="footerPanel" class="modal-footer">
+                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" OnClientClick="window.parent.Rock.controls.modal.close();" CausesValidation="false" />
+                    <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click " />
+                </div>
+            </ContentTemplate>
+        </asp:UpdatePanel>
     </form>
 
     <script type="text/javascript">

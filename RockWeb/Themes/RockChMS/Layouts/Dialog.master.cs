@@ -17,12 +17,6 @@ namespace RockWeb.Themes.RockChMS.Layouts
             base.FireSave( sender, e );
         }
 
-        protected void btnCancel_Click( object sender, EventArgs e )
-        {
-            string script = @"window.parent.Rock.controls.modal.close();";
-            ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
-        }
-
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
