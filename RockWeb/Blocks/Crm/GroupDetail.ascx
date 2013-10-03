@@ -90,7 +90,7 @@
 
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
-                <div class="row-fluid">
+                <div class="row">
                     <asp:Literal ID="lblMainDetails" runat="server" />
                 </div>
                 <div class="attributes">
