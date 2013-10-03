@@ -21,28 +21,28 @@
 
                 <fieldset>
 
-                    <div class="row-fluid">
-                        <div class="span6">
+                    <div class="row">
+                        <div class="col-md-6">
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Name" />
                         </div>
-                        <div class="span6">
+                        <div class="col-md-6">
                             <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
                             
                         </div>
                     </div>
 
-                    <div class="row-fluid">
-                        <div class="span12">
+                    <div class="row">
+                        <div class="col-md-12">
                             <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
                         </div>
                     </div>
 
-                     <div class="row-fluid">
-                        <div class="span6">
+                     <div class="row">
+                        <div class="col-md-6">
                             <Rock:DataTextBox ID="tbWorkTerm" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="WorkTerm" Label="Work Term" />
                             <Rock:RockDropDownList ID="ddlLoggingLevel" Help="The level you would like to audit.  Start and stop times can be logged for each workflow, workflow activity, or activity action." runat="server" Label="Logging Level" />
                         </div>
-                         <div class="span6">
+                         <div class="col-md-6">
                             <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" Label="Category" EntityTypeName="Rock.Model.WorkflowType" />
                             <Rock:DataTextBox ID="tbProcessingInterval" runat="server" SourceTypeName="Rock.Model.WorkflowType, Rock" PropertyName="ProcessingIntervalSeconds" Label="Processing Interval (seconds)" />
                             <Rock:RockCheckBox ID="cbIsPersisted" runat="server" Text="Persisted" />
@@ -55,16 +55,16 @@
                     <legend>
                         <asp:Literal ID="lActivitiesTitle" runat="server" Text="Activities" />
                         <span class="pull-right">
-                            <asp:LinkButton ID="lbAddActivityType" runat="server" CssClass="btn btn-mini" OnClick="lbAddActivityType_Click" CausesValidation="false"><i class="icon-plus"></i>Add Activity</asp:LinkButton>
+                            <asp:LinkButton ID="lbAddActivityType" runat="server" CssClass="btn btn-primary btn-xs" OnClick="lbAddActivityType_Click" CausesValidation="false"><i class="icon-plus"></i> Add Activity</asp:LinkButton>
                         </span>
                     </legend>
-                    <div class="row-fluid workflow-activity-list">
+                    <div class="workflow-activity-list">
                         <asp:PlaceHolder ID="phActivities" runat="server" />
                     </div>
                 </fieldset>
 
                 <div class="actions">
-                    <Rock:BootstrapButton ID="btnSave" runat="server" Text="Save" DataLoadingText="Saving..." CssClass="btn btn-primary" OnClick="btnSave_Click" />
+                    <Rock:BootstrapButton ID="btnSave" runat="server" Text="Save" DataLoadingText="<i class='icon-spinner icon-spin icon-large'></i> Saving" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                     <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
                 </div>
 
@@ -74,11 +74,11 @@
 
                 <p class="description"><asp:Literal ID="lWorkflowTypeDescription" runat="server"></asp:Literal></p>
 
-                <div class="row-fluid">
+                <div class="row">
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
                 </div>
-                <div class="row-fluid">
-                    <div class="span6">
+                <div class="row">
+                    <div class="col-md-6">
                         <a class="workflow-activities-readonly-header" href="#" onclick="javascxript: toggleReadOnlyActivitiesList();">
                             <asp:Label ID="lblActivitiesReadonlyHeaderLabel" runat="server" Text="Activities" />
                             <b class="caret"></b>
@@ -88,7 +88,7 @@
                             <asp:Literal ID="lblWorkflowActivitiesReadonly" runat="server" />
                         </div>
                     </div>
-                    <div class="span6">
+                    <div class="col-md-6">
                         <asp:Panel ID="pnlAttributeTypes" runat="server">
                             <Rock:ModalAlert ID="mdGridWarningAttributes" runat="server" />
                             <Rock:Grid ID="gWorkflowTypeAttributes" runat="server" AllowPaging="false" DisplayType="Light">

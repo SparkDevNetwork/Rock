@@ -228,22 +228,24 @@ javascript:
         {
             if ( _cbActivityTypeIsActive.Checked )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget widget-dark workflow-activity" );
+                writer.AddAttribute(HtmlTextWriterAttribute.Class, "panel panel-default workflow-activity");
             }
             else
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget widget-dark workflow-activity workflow-activity-inactive" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel workflow-activity workflow-activity-inactive" );
             }
 
             writer.AddAttribute( "data-key", _hfActivityTypeGuid.Value );
             writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ID + "_section" );
             writer.RenderBeginTag( "section" );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "clearfix clickable" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix clickable" );
             writer.RenderBeginTag( "header" );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toogle pull-left" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute("class", "panel-title");
             writer.RenderBeginTag( HtmlTextWriterTag.H3 );
             _lblActivityTypeName.Text = _tbActivityTypeName.Text;
             _lblActivityTypeName.RenderControl( writer );
