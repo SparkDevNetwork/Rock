@@ -13,7 +13,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class BinaryFileTypePicker : DropDownList
+    public class BinaryFileTypePicker : RockDropDownList
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="BinaryFileTypePicker" /> class.

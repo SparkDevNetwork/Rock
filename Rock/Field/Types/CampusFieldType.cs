@@ -6,8 +6,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web.UI.WebControls;
+
 using Rock.Constants;
 using Rock.Model;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
@@ -26,7 +28,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override System.Web.UI.Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            DropDownList editControl = new DropDownList { ID = id }; 
+            var editControl = new RockDropDownList { ID = id }; 
 
             CampusService campusService = new CampusService();
             var campusList = campusService.Queryable().OrderBy( a => a.Name ).ToList();
