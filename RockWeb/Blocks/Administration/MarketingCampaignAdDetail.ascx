@@ -4,7 +4,7 @@
     <ContentTemplate>
         <!-- Ad Details Controls -->
         <asp:Panel ID="pnlDetails" runat="server" Visible="false">
-            <asp:ValidationSummary ID="ValidationSummary2" runat="server" CssClass="alert alert-error" />
+            <asp:ValidationSummary ID="ValidationSummary2" runat="server" CssClass="alert alert-danger" />
             <asp:HiddenField ID="hfMarketingCampaignId" runat="server" />
             <asp:HiddenField ID="hfMarketingCampaignAdId" runat="server" />
             <asp:UpdatePanel ID="upAdApproval" runat="server">
@@ -52,7 +52,7 @@
             // change approval status to pending if any values are changed
             Sys.Application.add_load(function () {
                 $("#<%=upDetail.ClientID%> :input").change(function () {
-                    $(".MarketingCampaignAdStatus").removeClass('alert-success alert-error').addClass('alert-info');
+                    $(".MarketingCampaignAdStatus").removeClass('alert-success alert-danger').addClass('alert-info');
                     $(".MarketingCampaignAdStatus").text('Pending Approval');
 
                     $('#<%=hfMarketingCampaignAdStatus.ClientID%>').val("1");

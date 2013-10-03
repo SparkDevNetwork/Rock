@@ -105,7 +105,13 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        public bool IsActive { get; set; }
+        public bool IsActive
+        {
+            get { return _isActive; }
+            set { _isActive = value; }
+        }
+        private bool _isActive = true;
+        
 
         /// <summary>
         /// Gets or sets the display order of the group in the group list and group hierarchy. The lower the number the higher the 

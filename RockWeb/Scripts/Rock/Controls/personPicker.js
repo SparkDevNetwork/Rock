@@ -7,11 +7,13 @@
         var PersonPicker = function (options) {
             this.controlId = options.controlId;
             this.restUrl = options.restUrl;
+            this.defaultText = options.defaultText || '';
         };
 
         PersonPicker.prototype.initializeEventHandlers = function () {
             var controlId = this.controlId,
-                restUrl = this.restUrl;
+                restUrl = this.restUrl,
+                defaultText = this.defaultText;
 
             // TODO: Can we use TypeHead here (already integrated into BootStrap) instead of jQueryUI?
             // Might be a good opportunity to break the dependency on jQueryUI.
@@ -66,8 +68,34 @@
                 $(this).find('.picker-select-item-details:hidden').slideDown();
             });
 
+            $('#' + controlId).hover(
+                function () {
+
+                    // only show the X if there there is something picked
+                    if ($('#hfPersonId_' + controlId).val() || '0' !== '0') {
+                         $('#btnSelectNone_' + controlId).stop().show();
+                    }
+                },
+                function () {
+                    $('#btnSelectNone_' + controlId).fadeOut(500);
+                });
+
             $('#btnCancel_' + controlId).click(function () {
                 $(this).closest('.picker-menu').slideUp();
+            });
+
+            $('#btnSelectNone_' + controlId).click(function (e) {
+
+                var selectedValue = '0',
+                    selectedText = defaultText,
+                    $selectedItemLabel = $('#selectedItemLabel_' + controlId),
+                    $hiddenItemId = $('#hfPersonId_' + controlId),
+                    $hiddenItemName = $('#hfPersonName_' + controlId);
+
+                $hiddenItemId.val(selectedValue);
+                $hiddenItemName.val(selectedText);
+                $selectedItemLabel.val(selectedValue);
+                $selectedItemLabel.text(selectedText);
             });
 
             $('#btnSelect_' + controlId).click(function () {

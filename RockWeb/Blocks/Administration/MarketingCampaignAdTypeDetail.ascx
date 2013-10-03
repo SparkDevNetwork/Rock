@@ -6,7 +6,7 @@
 
             <asp:HiddenField ID="hfMarketingCampaignAdTypeId" runat="server" />
 
-            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
+            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" />
 
             <fieldset>
                 <legend>

@@ -10,8 +10,10 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Constants;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
@@ -79,7 +81,7 @@ namespace Rock.Field.Types
 
             // build a drop down list of defined types (the one that gets selected is
             // used to build a list of defined values) 
-            DropDownList ddl = new DropDownList();
+            var ddl = new RockDropDownList();
             controls.Add( ddl );
             ddl.AutoPostBack = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
@@ -92,11 +94,12 @@ namespace Rock.Field.Types
 
             // Add checkbox for deciding if the defined values list is renedered as a drop
             // down list or a checkbox list.
-            CheckBox cb = new CheckBox();
+            var cb = new RockCheckBox();
             controls.Add( cb );
             cb.AutoPostBack = true;
             cb.CheckedChanged += OnQualifierUpdated;
-            cb.Text = "Allow Multiple Values";
+            cb.Label = "Allow Multiple Values";
+            cb.Text = "Yes";
             return controls;
         }
 

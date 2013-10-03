@@ -5,7 +5,8 @@
 //
 using System.Collections.Generic;
 using System.Web.UI;
-using CKEditor.NET;
+
+using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
@@ -24,7 +25,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            CKEditorControl editor = new CKEditorControl { ID = id }; 
+            var editor = new HtmlEditor { ID = id }; 
             editor.Toolbar = "RockCustomConfigLight";
             return editor;
         }

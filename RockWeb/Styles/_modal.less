@@ -3,16 +3,21 @@
 
 */
 
-.rock-modal {
+.rock-modal-frame {
     width: 750px;
+    
 }
 
-#dialog {
+.rock-modal {
+
+     background-color: @body-bg;
+
     .modal-header {
         background-color: @modal-header-bg;  
         color: @modal-header-text-color;
         padding: 5px 15px;
         min-height: 34px;
+        .clearfix();
         
         h3 {
             float: left;
@@ -23,6 +28,10 @@
             padding: 6px;
             color: @modal-header-text-color;
             text-shadow: none;
+        }
+
+        .label {
+            margin-top: 8px;
         }
     }
 

@@ -116,28 +116,16 @@ namespace Rock.Web
                 {
                     page = Rock.Web.Cache.PageCache.Read( pageIdNumber );
                 }
-
-                if ( page == null )
-                {
-                    return new HttpHandlerError( 404 );
-                }
             }
 
-            string theme = "RockChMS";
-            string layout = "Default";
+            if ( page == null )
+            {
+                return new HttpHandlerError( 404 );
+            }
+
+            string theme = page.Layout.Site.Theme;
+            string layout = page.Layout.FileName;
             string layoutPath = Rock.Web.Cache.PageCache.FormatPath( theme, layout );
-
-            if ( page != null )
-            {
-                theme = page.Site.Theme;
-                layout = page.Layout;
-                layoutPath = Rock.Web.Cache.PageCache.FormatPath( theme, layout );
-            }
-            else
-            {
-                page = Cache.PageCache.Read( new Model.Page() );
-            }
-
 
             try
             {

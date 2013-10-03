@@ -186,6 +186,7 @@ namespace RockWeb.Blocks.Crm
                 new
                 {
                     a.Id,
+                    a.Order,
                     a.Name,
                     GroupTypeName = a.GroupType.Name,
                     MembersCount = a.Members.Count(),
@@ -195,7 +196,7 @@ namespace RockWeb.Blocks.Crm
             
             if ( sortProperty == null )
             {
-                sortProperty = new SortProperty(new GridViewSortEventArgs( "Name", SortDirection.Descending));
+                sortProperty = new SortProperty(new GridViewSortEventArgs( "Order, Name", SortDirection.Ascending));
             }
 
             var list = selectQry.Sort( sortProperty ).ToList();

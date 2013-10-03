@@ -23,8 +23,8 @@
         <div class="tabContent" >
 
             <asp:ValidationSummary ID="valSummaryTop" runat="server"  
-                HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
-            <asp:Panel ID="pnlError" runat="server" Visible="false" CssClass="alert alert-error block-message error"/>
+                HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
+            <asp:Panel ID="pnlError" runat="server" Visible="false" CssClass="alert alert-danger block-message error"/>
             
             <asp:Panel ID="pnlBasicProperty" runat="server" Visible="true" >
                 <div class="row">
@@ -125,7 +125,7 @@
                             <asp:Repeater runat="server" ID="rptImportErrors" Visible="False">
                                 <HeaderTemplate>
                                     <div class="row-fluid">
-                                        <div class="span12 alert alert-error">
+                                        <div class="span12 alert alert-danger">
                                             <p><strong>Uh oh!</strong> Looks like we ran into some trouble importing the package.</p>
                                             <ul>
                                 </HeaderTemplate>

@@ -10,7 +10,7 @@
         <asp:Panel ID="pnlDetails" runat="server">
 
             <asp:HiddenField ID="hfParentGroupTypeId" runat="server" />
-            <asp:ValidationSummary ID="vsDetails" runat="server" CssClass="alert alert-error" />
+            <asp:ValidationSummary ID="vsDetails" runat="server" CssClass="alert alert-danger" />
 
             <fieldset>
                 <legend>
