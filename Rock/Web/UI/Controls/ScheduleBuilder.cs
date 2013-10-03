@@ -161,6 +161,9 @@ namespace Rock.Web.UI.Controls
         private ModalDialog _modalDialog;
         private ScheduleBuilderPopupContents _scheduleBuilderPopupContents;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ScheduleBuilder"/> class.
+        /// </summary>
         public ScheduleBuilder()
         {
             RequiredFieldValidator = null;

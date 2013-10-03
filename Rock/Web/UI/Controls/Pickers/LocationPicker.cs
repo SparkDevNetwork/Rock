@@ -13,6 +13,9 @@ using Rock.Model;
 
 namespace Rock.Web.UI.Controls
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class LocationPicker : CompositeControl, IRockControl
     {
         #region IRockControl implementation

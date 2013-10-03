@@ -26,10 +26,12 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets an enumerable collection of <see cref="Rock.Model.Page"/> entities associated with a <see cref="Rock.Model.Layout"/>.
+        /// Gets an enumerable collection of <see cref="Rock.Model.Page" /> entities associated with a <see cref="Rock.Model.Layout" />.
         /// </summary>
-        /// <param name="siteId">The Id of the <see cref="Rock.Model.Layout"/> to search by.</param>
-        /// <returns>An enumerable collection of <see cref="Rock.Model.Page">Pages</see> that use the provided layout.</returns>
+        /// <param name="layoutId">The layout id.</param>
+        /// <returns>
+        /// An enumerable collection of <see cref="Rock.Model.Page">Pages</see> that use the provided layout.
+        /// </returns>
         public IEnumerable<Page> GetByLayoutId( int? layoutId )
         {
             return Repository.Find( t => ( t.LayoutId == layoutId || ( layoutId == null && t.LayoutId == null ) ) ).OrderBy( t => t.Order );
