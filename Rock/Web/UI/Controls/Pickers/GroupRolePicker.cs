@@ -17,7 +17,7 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class GroupRolePicker : CompositeControl, IRockControl
     {
-        #region IRockControl implementation (Has custom Required setter)
+        #region IRockControl implementation (Custom implementation)
 
         /// <summary>
         /// Gets or sets the label text.
@@ -77,15 +77,8 @@ namespace Rock.Web.UI.Controls
         ]
         public bool Required
         {
-            get { return ViewState["Required"] as bool? ?? false; }
-            set 
-            { 
-                ViewState["Required"] = value;
-                if ( GroupTypeId.HasValue )
-                {
-                    LoadGroupRoles( GroupTypeId.Value );
-                }
-            }
+            get { return _ddlGroupRole.Required; }
+            set { _ddlGroupRole.Required = value; }
         }
 
         /// <summary>
@@ -143,8 +136,8 @@ namespace Rock.Web.UI.Controls
 
         #region Controls
 
-        private DropDownList _ddlGroupType;
-        private DropDownList _ddlGroupRole;
+        private RockDropDownList _ddlGroupType;
+        private RockDropDownList _ddlGroupRole;
 
         #endregion
 
@@ -219,13 +212,10 @@ namespace Rock.Web.UI.Controls
         public GroupRolePicker()
             : base()
         {
-            RequiredFieldValidator = new RequiredFieldValidator();
-            HelpBlock = new HelpBlock();
-
-            _ddlGroupType = new DropDownList();
+            _ddlGroupType = new RockDropDownList();
             LoadGroupTypes();
 
-            _ddlGroupRole = new DropDownList();
+            _ddlGroupRole = new RockDropDownList();
         }
 
         /// <summary>
@@ -254,7 +244,21 @@ namespace Rock.Web.UI.Controls
         {
             if ( this.Visible )
             {
-                RockControlHelper.RenderControl( this, writer );
+                if ( !GroupTypeId.HasValue )
+                {
+                    _ddlGroupType.Label = this.Label;
+                    _ddlGroupType.Help = this.Help;
+                    _ddlGroupType.RenderControl( writer );
+
+                    _ddlGroupRole.Label = (_ddlGroupType.SelectedItem != null ? _ddlGroupType.SelectedItem.Text : this.Label) + " Role";
+                }
+                else
+                {
+                    _ddlGroupRole.Label = this.Label;
+                    _ddlGroupRole.Help = this.Help;
+                }
+
+                _ddlGroupRole.RenderControl( writer );
             }
         }
 
@@ -264,19 +268,6 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( "class", "controls" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-            if ( !GroupTypeId.HasValue )
-            {
-                writer.Write( "Group Type " );
-                _ddlGroupType.RenderControl( writer );
-                writer.Write( " Role " );
-            }
-
-            _ddlGroupRole.RenderControl(writer);
-
-            writer.RenderEndTag();
         }
 
         private void LoadGroupTypes()
