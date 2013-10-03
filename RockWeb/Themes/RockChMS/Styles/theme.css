@@ -10754,15 +10754,18 @@ div.k-imagebrowser-dropzone em {
 .clickable {
   cursor: pointer;
 }
-/* TODO Do we still need these */
-.light {
-  font-weight: 300;
+/* add badge colors back to BS3 */
+.badge-danger {
+  background-color: #d9534f;
 }
-.bold {
-  font-weight: 300;
+.badge-warning {
+  background-color: #f0ad4e;
 }
-.semibold {
-  font-weight: 600;
+.badge-success {
+  background-color: #5cb85c;
+}
+.badge-info {
+  background-color: #5bc0de;
 }
 /* context help  */
 a.help {
@@ -10901,12 +10904,6 @@ a:hover i[class^="icon-"] {
 .label,
 .badge {
   font-weight: 300;
-}
-.btn-primary.disabled,
-.btn-primary[disabled] {
-  color: #ffffff;
-  background-color: #ff0000;
-  cursor: not-allowed;
 }
 header .dropdown-menu li > a:hover,
 header .dropdown-menu li > a:focus,
