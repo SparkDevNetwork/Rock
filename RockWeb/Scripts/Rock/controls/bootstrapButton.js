@@ -8,8 +8,6 @@
         var exports = {
             showLoading: function (btn) {
 
-                debugger
-
                 if (typeof (Page_ClientValidate) == 'function') {
 
                     if (Page_IsValid) {
