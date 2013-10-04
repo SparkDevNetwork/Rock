@@ -49,7 +49,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "data-loading-text", DataLoadingText );
             }
 
-            this.OnClientClick = "$(this).button('loading')";
+            this.OnClientClick = "Rock.controls.bootstrapButton.showLoading(this);";
             base.RenderControl( writer );
         }
     }
