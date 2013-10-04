@@ -7721,43 +7721,33 @@ td.visible-print {
 }
 
     */
-/*
 .widget {
-    background-color: @body-bg;
-    border: 1px solid darken(@accent-light-color, @const-border-darken-amt);
-    border-radius: @border-radius-base;
-    margin-bottom: 2em;
-
-    h3 {
-        font-size: 15px;  
-        line-height: 15px;
-        margin: 0 0 6px 0;
-    }
-
-    header {
-        background-color: @widget-header-bg;
-        color: @widget-header-text-color;
-        padding: 6px 15px;
-        border-radius: @border-radius-base @border-radius-base 0 0 ;
-    }
+  background-color: #f4f4f4;
+  border: 1px solid #c8d3dc;
+  border-radius: 4px;
+  margin-bottom: 2em;
 }
-
+.widget h3 {
+  font-size: 15px;
+  line-height: 15px;
+  margin: 0 0 6px 0;
+}
+.widget header {
+  background-color: #e7ecf0;
+  color: #515151;
+  padding: 6px 15px;
+  border-radius: 4px 4px 0 0;
+}
 .filter-toogle > span {
-    vertical-align: 20%;
+  vertical-align: 20%;
 }
-
-.widget.widget-dark > header
-{
-	background-color: @widget-header-bg-dark;
-    color: @widget-header-text-color-dark;
+.widget.widget-dark > header {
+  background-color: #779cb1;
+  color: #ecf0f3;
 }
-
-
-.widget-content
-{
-    padding: 20px 15px 15px;
+.widget-content {
+  padding: 20px 15px 15px;
 }
-*/
 .tooltipster-default {
   border-radius: 5px;
   border: 2px solid #000;
@@ -8688,7 +8678,6 @@ div.tagsinput div {
     4. Notes - block to display, add, edit, delete notes
     5. Add Family - block to add families to the database
     6. Contributions - block add a contribution transaction
-    7. Data Views - block for creating data views
 
 */
 .sql-comand .panel {
@@ -8823,25 +8812,6 @@ span.cke_skin_kama {
 }
 .contribution-payment .tab-content {
   margin-top: 12px;
-}
-/* data views */
-.filter-toogle > span {
-  float: left;
-  padding-top: 6px;
-}
-.filter-toogle .controls {
-  float: left;
-}
-.filter-toogle .controls .switch {
-  margin: 0 6px;
-}
-.filter-item-select span {
-  float: left;
-  padding: 8px 6px 0 0;
-}
-.filter-item-select select {
-  float: left;
-  width: 250px;
 }
 /*
     Used to manage styles related to the CMS admin UI for on page editing
@@ -10845,6 +10815,10 @@ a.help {
 /* error page */
 #splash.error #content {
   width: 750px;
+}
+/* data views */
+.filter-toogle .switch {
+  margin: 0 6px;
 }
 /* security window */
 .security-inherited {

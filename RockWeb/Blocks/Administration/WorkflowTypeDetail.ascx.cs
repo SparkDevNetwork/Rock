@@ -498,7 +498,7 @@ namespace RockWeb.Blocks.Administration
         {
             if ( workflowType.Id == 0 )
             {
-                lReadOnlyTitle.Text = ActionTitle.Add( WorkflowType.FriendlyTypeName );
+                lReadOnlyTitle.Text = ActionTitle.Add( WorkflowType.FriendlyTypeName ).FormatAsHtmlTitle();
                 hlInactive.Visible = false;
             }
 
@@ -531,7 +531,7 @@ namespace RockWeb.Blocks.Administration
         {
             SetEditMode( false );
             hfWorkflowTypeId.SetValue( workflowType.Id );
-            lReadOnlyTitle.Text = workflowType.Name;
+            lReadOnlyTitle.Text = workflowType.Name.FormatAsHtmlTitle();
             hlInactive.Visible = workflowType.IsActive == false;
             lblActivitiesReadonlyHeaderLabel.Text = string.Format( "<strong>Activities</strong> ({0})", workflowType.ActivityTypes.Count() );
 
