@@ -72,6 +72,19 @@ a.help {
             }
         }
     }
+
+    // adjust the background color of pickers on a panel
+    .picker .picker-label {
+        background-color: @accent-color;
+        color: @accent-text-color;
+        border-color: darken(@accent-color, 10%)
+    }
+}
+
+// extensions for buttons
+
+.btn-action {
+    .button-variant(@accent-semibold-text-color; @accent-semibold-color; darken(@accent-semibold-color, 10%))
 }
 
 
