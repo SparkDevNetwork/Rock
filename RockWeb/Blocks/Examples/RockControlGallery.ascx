@@ -64,7 +64,7 @@
                 </Rock:Grid>
             </div>
 
-
+            <a id="DropDowns"></a>
             <h1>DropDowns</h1>
 
             <div runat="server" class="r-example">
@@ -79,7 +79,7 @@
                 <Rock:ButtonDropDownList ID="bddlExample" runat="server" Label="Rock:ButtonDropDownList" />
             </div>
 
-
+            <a id="Input"></a>
             <h1>Input</h1>
 
             <div runat="server" class="r-example">
@@ -114,7 +114,7 @@
                 <Rock:NumberRangeEditor ID="NumberRangeEditor" runat="server" Label="Rock:NumberRangeEditor" LowerValue="10" UpperValue="25" />
             </div>
 
-
+            <a id="Pickers"></a>
             <h1>Pickers</h1>
 
             <div runat="server" class="r-example">
@@ -168,7 +168,8 @@
             <div runat="server" class="r-example">
                 <Rock:ComponentPicker ID="componentPicker" runat="server" Label="Rock:ComponentPicker" />
             </div>
-
+            
+            <a id="LocationPicker" ></a>
             <div runat="server" class="r-example">
                 <Rock:LocationPicker ID="locationPicker" runat="server" Label="Rock:LocationPicker (Named Location Mode)" LimitToNamedLocations="true" />
             </div>
@@ -177,7 +178,8 @@
                 <Rock:GroupRolePicker ID="groupRolePicker" runat="server" Label="Rock:GroupRolePicker" />
             </div>
 
-            <h2>Other</h2>
+            <a id="Other" ></a>
+            <h1>Other</h1>
 
             <div runat="server" class="r-example">
                 <Rock:ScheduleBuilder ID="scheduleBuilder" runat="server" Label="Rock:ScheduleBuilder" OnSaveSchedule="scheduleBuilder_SaveSchedule" />
@@ -205,7 +207,7 @@
                 <Rock:BinaryFilePicker ID="binaryFilePicker" runat="server" Label="Rock:BinaryFilePicker" />
             </div>
 
-
+            <a id="Misc"></a>
             <h1>Misc</h1>
 
             <div runat="server" class="r-example">
