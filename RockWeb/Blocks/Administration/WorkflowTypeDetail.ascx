@@ -54,7 +54,7 @@
                     <legend>
                         <asp:Literal ID="lActivitiesTitle" runat="server" Text="Activities" />
                         <span class="pull-right">
-                            <asp:LinkButton ID="lbAddActivityType" runat="server" CssClass="btn btn-primary btn-xs" OnClick="lbAddActivityType_Click" CausesValidation="false"><i class="icon-plus"></i> Add Activity</asp:LinkButton>
+                            <asp:LinkButton ID="lbAddActivityType" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddActivityType_Click" CausesValidation="false"><i class="icon-plus"></i> Add Activity</asp:LinkButton>
                         </span>
                     </legend>
                     <div class="workflow-activity-list">

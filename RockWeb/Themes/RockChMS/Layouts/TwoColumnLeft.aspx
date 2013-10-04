@@ -79,7 +79,7 @@
                         </div>
                     </div>
                     <div id="right-column" class="col-md-9">
-                        <div class="panel">
+                        <div class="panel panel-default">
                             <div class="panel-body">
                                 <Rock:Zone ID="RightContent" runat="server" />
                             </div>

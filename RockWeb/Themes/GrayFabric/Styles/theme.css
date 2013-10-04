@@ -9066,6 +9066,11 @@ td[align=center] {
   width: 350px;
   float: left;
 }
+.grid-filter .picker .picker-label {
+  background-color: #e7ecf0;
+  color: #d4d4d4;
+  border-color: #c8d3dc;
+}
 .grid-filter + div .grid-table {
   margin-top: -12px;
 }
@@ -10778,13 +10783,13 @@ div.k-imagebrowser-dropzone em {
     border-radius: 1.8px 0 0 1.8px;
   }
 }
-/* bootstrap overrides */
-.control-label {
-  font-weight: 600;
-}
 /* global classes */
 .clickable {
   cursor: pointer;
+}
+/* bootstrap overrides */
+.control-label {
+  font-weight: 600;
 }
 /* add badge colors back to BS3 */
 .badge-danger {
@@ -10798,20 +10803,6 @@ div.k-imagebrowser-dropzone em {
 }
 .badge-info {
   background-color: #5bc0de;
-}
-.panel-widget {
-  border-color: #d9e1e8;
-}
-.panel-widget > .panel-heading {
-  color: #d4d4d4;
-  background-color: #d9e1e8;
-  border-color: #d9e1e8;
-}
-.panel-widget > .panel-heading + .panel-collapse .panel-body {
-  border-top-color: #d9e1e8;
-}
-.panel-widget > .panel-footer + .panel-collapse .panel-body {
-  border-bottom-color: #d9e1e8;
 }
 /* context help  */
 a.help {
@@ -10834,6 +10825,20 @@ a.help {
   background-color: #d9e1e8;
   color: #d4d4d4;
   border-color: #b9c8d5;
+}
+.panel-widget {
+  border-color: #d9e1e8;
+}
+.panel-widget > .panel-heading {
+  color: #d4d4d4;
+  background-color: #d9e1e8;
+  border-color: #d9e1e8;
+}
+.panel-widget > .panel-heading + .panel-collapse .panel-body {
+  border-top-color: #d9e1e8;
+}
+.panel-widget > .panel-footer + .panel-collapse .panel-body {
+  border-bottom-color: #d9e1e8;
 }
 .btn-action {
   color: #ffffff;

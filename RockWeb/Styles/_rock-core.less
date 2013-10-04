@@ -14,17 +14,15 @@
 // HTML Overrides
 //--------------------------------
 
+/* global classes */
+.clickable {
+    cursor: pointer;
+}
 
 /* bootstrap overrides */
 
 .control-label {
     font-weight: @font-weight-semibold;
-}
-
-/* global classes */
-.clickable
-{
-    cursor: pointer;
 }
 
 /* add badge colors back to BS3 */
@@ -42,10 +40,6 @@
 
 .badge-info {
     background-color: @label-info-bg;
-}
-
-.panel-widget {
-    .panel-variant(@accent-color ; @accent-text-color; @accent-color; @accent-color;);
 }
 
 /* context help  */
@@ -81,6 +75,10 @@ a.help {
     }
 }
 
+.panel-widget {
+    .panel-variant(@accent-color ; @accent-text-color; @accent-color; @accent-color;);
+}
+
 // extensions for buttons
 
 .btn-action {
@@ -110,14 +108,10 @@ a.help {
     margin-left: 21px;
 }
 
-
 /* error page */
 #splash.error  #content {
     width: 750px;
 }
-
-
-
 
 /* security window */
 .security-inherited {
