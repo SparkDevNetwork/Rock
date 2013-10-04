@@ -432,7 +432,7 @@ $(document).ready(function() {
         {
             SetEditMode( false );
             hfDataViewId.SetValue( dataView.Id );
-            lReadOnlyTitle.Text = dataView.Name;
+            lReadOnlyTitle.Text = dataView.Name.FormatAsHtmlTitle();
 
             lDescription.Text = dataView.Description;
 
