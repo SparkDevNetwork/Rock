@@ -16,7 +16,7 @@
             <h2>Input Sizing Rules</h2>
 
             <div class="alert alert-warning">
-                <strong>Warning!</strong> In Bootstrap 3 inputs are meant to fill the width of their parent container (<a href="http://getbootstrap.com/css/#forms-control-sizes" class="alert-link">link</a>).  If a small input is desired they should
+                <p><strong>Warning!</strong></p> In Bootstrap 3 inputs are meant to fill the width of their parent container (<a href="http://getbootstrap.com/css/#forms-control-sizes" class="alert-link">link</a>).  If a small input is desired they should
                 be wrapped in a table grid.  This provides the best responsive solution.  In some rare cases it's beneficial to be able to fix the width of
                 certain inputs to provide better context of what the input is for.  For instance a credit card CVV field makes more sense visually being
                 fixed width to 3 characters.  To provide this capability we have added the following CSS classes to fix width inputs.  <em>Please use them
@@ -24,7 +24,7 @@
             </div>
 
             <div class="alert alert-danger">
-                <strong>Alert</strong> Rock framework developers should get approval from the Core Team before using these styles.
+                <p><strong>Alert</strong></p> Rock framework developers should get approval from the Core Team before using these styles.
 
             </div>
 
@@ -43,7 +43,7 @@
             </div>
 
             <div class="alert alert-info">
-                <strong>Note</strong> In Bootstrap 3 inputs are <em>display:block;</em>. If you need these sized controls to align horizontally, consider wrapping them with the <em>form-control-group</em> class.
+                <p><strong>Note</strong></p> In Bootstrap 3 inputs are <em>display:block;</em>. If you need these sized controls to align horizontally, consider wrapping them with the <em>form-control-group</em> class.
             </div>
 
 

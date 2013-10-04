@@ -203,7 +203,7 @@ javascript:
 
             _lbAddActionType = new LinkButton();
             _lbAddActionType.ID = this.ID + "_lbAddAction";
-            _lbAddActionType.CssClass = "btn btn-xs btn-primary";
+            _lbAddActionType.CssClass = "btn btn-xs btn-action";
             _lbAddActionType.Click += lbAddActionType_Click;
             _lbAddActionType.CausesValidation = false;
             _lbAddActionType.Controls.Add( new LiteralControl { Text = "<i class='icon-plus'></i> Add Action" } );

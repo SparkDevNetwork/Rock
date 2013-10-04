@@ -66,7 +66,7 @@
                     <span class="ajax-error-message"></span>
                 </div>
                 
-               <div class="panel">
+               <div class="panel panel-default">
                     <div class="panel-body">
                         <Rock:Zone ID="Content" runat="server" />
                     </div>
