@@ -8681,6 +8681,98 @@ div.tagsinput div {
   color: #a8bac9;
   width: 100%;
 }
+.fileupload-group {
+  margin-bottom: 15px;
+}
+.fileupload-group:before,
+.fileupload-group:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.fileupload-group:after {
+  clear: both;
+}
+.fileupload-group:before,
+.fileupload-group:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.fileupload-group:after {
+  clear: both;
+}
+.fileupload-group .fileupload-thumbnail {
+  float: left;
+  border: 1px solid #99afc2;
+  border-radius: 4px;
+  padding: 2px;
+  position: relative;
+}
+.fileupload-group .fileupload-thumbnail .file-link {
+  width: 100px;
+  height: 50px;
+  border-radius: 3px;
+  font-size: 10px;
+  background-color: #e7ecf0;
+  color: #89a1b5;
+  display: block;
+  padding-top: 33px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fileupload-group .fileupload-thumbnail .file-link:after {
+  content: '\f016';
+  font-family: FontAwesome;
+  font-size: 28px;
+  color: #c8d3dc;
+  -webkit-font-smoothing: antialiased;
+  margin-left: 42px;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.fileupload-group .fileupload-thumbnail .file-link.file-exists:after {
+  content: '\f15c';
+  color: #89a1b5;
+}
+.fileupload-group .fileupload-remove {
+  float: left;
+  margin: 18px 4px 0;
+  width: 11px;
+}
+.fileupload-group .fileupload-dropzone {
+  float: left;
+  width: 100px;
+  height: 55px;
+  border: 1px dotted #a8bac9;
+  border-radius: 4px;
+  background-color: #e7ecf0;
+  text-align: center;
+  padding-top: 14px;
+  position: relative;
+  line-height: 12px;
+}
+.fileupload-group .fileupload-dropzone input {
+  opacity: 0;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.fileupload-group .fileupload-dropzone span {
+  font-size: 11px;
+  color: #a8bac9;
+  width: 100%;
+}
 /*
     Used to manage styles for specific blocks.
     
