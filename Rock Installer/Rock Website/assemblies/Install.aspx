@@ -19,7 +19,11 @@
 	const string internetCheckSite = "www.google.com";
 	const string dotNetVersionRequired = "4.5";
 	const double iisVersionRequired = 7.0;
-	const string rockInstallFile = "http://www.rockchms.com/downloads/rock-chms-latest.zip";
+    const string rockInstallFile = "http://rockchms.blob.core.windows.net/install/rock-chms-latest.zip";
+
+    const string rockLogoIco = "http://rockchms.blob.core.windows.net/install/rock-chms.ico";
+    const string rockStyles = "http://rockchms.blob.core.windows.net/install/install.css";
+    const string rockShowPass = "http://rockchms.blob.core.windows.net/install/showpassword.js";
 	
 	//
 	// page events
@@ -32,8 +36,8 @@
 	
 	void Page_Load(object sender, EventArgs e)
 	{
-		
-    	
+		// toggle the SSL warning
+        lSslWarning.Visible = !Request.IsSecureConnection;
 	}
 	
 	void WelcomeNext_Click(Object sender, EventArgs e)
@@ -44,14 +48,19 @@
 	
 	void DbConfigNext_Click(Object sender, EventArgs e)
     {
-    	// check settings
+               
+        // check settings
     	string databaseMessages = string.Empty; 
     	
-    	bool canConnect = CheckSqlServerConnection(txtServerName.Text, txtDatabaseName.Text, txtUsername.Text, txtPassword.Text, out databaseMessages);
+        bool canConnect = CheckSqlServerConnection(txtServerName.Text, txtDatabaseName.Text, txtUsername.Text, txtPassword.Text, out databaseMessages);
 
     	if (!canConnect) {
     		lDatabaseMessages.Text = databaseMessages;
-    		return;
+            
+            pWelcome.Visible = false;
+            pDatabaseConfig.Visible = true;
+    		
+            return;
     	} else {
     		
 
@@ -234,16 +243,17 @@
 <html>
 	<head>
 		<title>Rock ChMS Installer...</title>
-		<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' rel='stylesheet' type='text/css'>
-		<link href="//netdna.bootstrapcdn.com/font-awesome/2.0/css/font-awesome.css" rel="stylesheet">
-		<link href="http://www.rockchms.com/installer/css/bootstrap.min.css" rel="stylesheet">
+		<link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css'>
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/2.0/css/font-awesome.css">
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="<%=rockStyles %>">
 		
-		<script src="http://www.rockchms.com/installer/scripts/jquery-1.8.2.min.js" type="text/javascript"></script>
+        <script src="http://code.jquery.com/jquery-1.9.0.min.js"></script>
+        		
+		<link href="<%=rockLogoIco %>" rel="shortcut icon">
+		<link href="<%=rockLogoIco %>" type="image/ico" rel="icon">
 		
-		<link href="http://www.rockchms.com/assets/images/rock-chms.ico" rel="shortcut icon">
-		<link href="http://www.rockchms.com/assets/images/rock-chms.ico" type="image/ico" rel="icon">
-		
-		<style>
+		<!--<style>
 			body {
 				background-color: #3c3c3c;
 				color: #333;
@@ -377,7 +387,7 @@
 				margin-top: 12px;
 				margin-left: 60px;
 			}
-		</style>
+		</style> -->
 	</head>
 	<body>
 		<form runat="server">
@@ -403,11 +413,20 @@
 					<div id="content-box" class="group">
 						<asp:Panel id="pWelcome" Visible="true" runat="server">
 							<h1>Rock Installer</h1>
-							<img src="http://www.rockchms.com/installer/assets/images/welcome.jpg"  />
+							
+                            <img src="http://www.rockchms.com/installer/assets/images/welcome.jpg"  />
 							<asp:Label id="lTest" runat="server"></asp:Label>
 							
+                            <asp:Literal ID="lSslWarning" runat="server">
+                                <div class="alert alert-warning">
+                                    <p><strong>Just A Thought...</strong></p>
+                                    Looks like you're not running over an encrypted connection (SSL).  Since you will be providing passwords for configuring
+                                    your database and Rock install you may wish to run the install over an encrypted connection.
+                                </div>
+							</asp:Literal>
+
 							<div class="btn-list">
-								<asp:LinkButton id="btnWelcome" runat="server" Text="Get Started <i class='icon-chevron-right'></i>"  CssClass="btn btn-inverse next-step" OnClick="WelcomeNext_Click"></asp:LinkButton>
+								<asp:LinkButton id="btnWelcome" runat="server" Text="Get Started <i class='icon-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="WelcomeNext_Click"></asp:LinkButton>
 							</div>
 						</asp:Panel>
 						
@@ -418,38 +437,39 @@
 							<p>Please provide configuration information to the database below.  This information should come from your server
 							   administrator or hosting provider.</p>
 							
-							<div class="control-group">
+							<div class="form-group">
 								<label class="control-label" for="inputEmail">Database Server</label>
-								<div class="controls">
-									<asp:TextBox ID="txtServerName" runat="server" CssClass="required-field" Text=""></asp:TextBox>
-								</div>
+								<asp:TextBox ID="txtServerName" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
 							</div>
 							
-							<div class="control-group">
+							<div class="form-group">
 								<label class="control-label" for="inputEmail">Database Name</label>
-								<div class="controls">
-									<asp:TextBox ID="txtDatabaseName" runat="server" CssClass="required-field" Text=""></asp:TextBox>
-								</div>
+								<asp:TextBox ID="txtDatabaseName" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
 							</div>
 							
-							<div class="control-group">
+							<div class="form-group">
 								<label class="control-label" for="inputEmail">Database Username</label>
-								<div class="controls">
-									<asp:TextBox ID="txtUsername" runat="server" CssClass="required-field" Text=""></asp:TextBox>
-								</div>
+								<asp:TextBox ID="txtUsername" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
 							</div>
 							
-							<div class="control-group">
+							<div class="form-group">
 								<label class="control-label" for="inputEmail">Database Password</label>
-								<div class="controls">
-									<asp:TextBox ID="txtPassword" runat="server" CssClass="required-field" Text=""></asp:TextBox>
-								</div>
+								
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <asp:TextBox ID="txtPassword" TextMode="Password" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
+                                    </div>
+                                    <div class="col-md-6" style="padding-top: 6px;">
+                                        <input id="show-password" type="checkbox" />
+                                        <label for="show-password" id="show-password-label" style="font-weight:normal;">Show Password</label>
+                                    </div>
+                                </div>
 							</div>
 							
 							<asp:Literal id="lDatabaseMessages" runat="server"></asp:Literal>
 							
 							<div class="btn-list">
-								<asp:LinkButton id="btnDbConfig" runat="server" OnClientClick="return validateDbConnection();" Text="Next <i class='icon-chevron-right'></i>"  CssClass="btn btn-inverse next-step" OnClick="DbConfigNext_Click"></asp:LinkButton> 
+								<asp:LinkButton id="btnDbConfig" runat="server" OnClientClick="return validateDbConnection();" Text="Next <i class='icon-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="DbConfigNext_Click"></asp:LinkButton> 
 							</div>
 						</asp:Panel>
 						
@@ -502,10 +522,10 @@
 			    // ensure that all values were provided
 			    $("#pDatabaseConfig .required-field").each( function(index, value) {
 				    if(this.value.length == 0){
-				     	$(this).parent().parent().addClass('error');
+				        $(this).parent().addClass('has-error');
 				     	formValid = false;
 				     } else {
-					 	$(this).parent().parent().removeClass('error');
+				        $(this).parent().removeClass('has-error');
 					 }
 				});
 				
@@ -517,6 +537,22 @@
 				    return false;
 			    }
 			}
+
+          $(document).ready(function() {
+              $('body').on('click', '#show-password', function (e) {
+
+                  field = $('#txtPassword');
+                  if (field.attr('type') == "text") { new_type = "password"; } else { new_type = "text"; }
+                  new_field = field.clone();
+                  new_field.attr("id", field.attr('id'));
+                  new_field.attr("type", new_type);
+                  field.replaceWith(new_field);
+              });
+
+              
+          });
+			
+
 		</script>
 		
 	</body>
@@ -693,7 +729,7 @@
 			}
 			catch(Exception ex)
 			{
-			    checkMessages = "<div class='alert alert-error'><strong>Yikes!</strong> Could not connect to the database with the information provided. Please check the information provided.</div>" + ex.Message;
+			    checkMessages = "<div class='alert alert-danger'><p><strong>Yikes!</strong><p> Could not connect to the database with the information provided. Please check the information provided. <p><small>" + ex.Message + "</small></p></div>";
 			    canConnect = false;
 			}
 			finally {
@@ -741,7 +777,7 @@
 			}
 			catch(Exception ex)
 			{
-			    checkMessages = "<div class='alert alert-error'><strong>Yikes!</strong> Could not connect to the database with the information provided. Please check the information provided.</div>";
+			    checkMessages = "<div class='alert alert-danger'><p><strong>Yikes!</strong></p> Could not connect to the database with the information provided. Please check the information provided.</div>";
 			    versionPassed = false;
 			}
 			finally {
