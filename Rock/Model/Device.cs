@@ -19,7 +19,8 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// CheckInDevice EF Model.
+    /// Represents a device or component that interacts with and is manageable through RockChMS.  Examples of these can be check-in kiosks, giving kiosks, label printers, badge printers,
+    /// displays, etc.
     /// </summary>
     [Table("Device")]
     [DataContract]
@@ -28,10 +29,10 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the device name.
+        /// Gets or sets the device name. This property is required.
         /// </summary>
         /// <value>
-        /// File Name.
+        /// A <see cref="System.String" /> representing the Name of the device.
         /// </value>
         [Required]
         [AlternateKey]
@@ -40,65 +41,70 @@ namespace Rock.Model
         public string Name { get; set; }
         
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets a description of the device.
         /// </summary>
         /// <value>
-        /// Description.
+        /// A <see cref="System.String"/> representing the description of the device.
         /// </value>
         [DataMember]
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the device.
+        /// Gets or sets the Id of the DeviceType <see cref="Rock.Model.DefinedValue"/> that identifies
+        /// what type of device this is.
         /// </summary>
         /// <value>
-        /// The type of the device.
+        /// A <see cref="System.Int32"/> representing the Id of the Device Type <see cref="Rock.Model.DefinedValue"/>
         /// </value>
         [DataMember]
         public int DeviceTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the location id.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Location"/> where this device is located at.
         /// </summary>
         /// <value>
-        /// The location id.
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Location"/> where this device is located at.
         /// </value>
         [DataMember]
         public int? LocationId { get; set; }
 
         /// <summary>
-        /// Gets or sets the IP address.
+        /// Gets or sets the IP address of the device.
         /// </summary>
         /// <value>
-        /// The IP address.
+        /// A <see cref="System.String"/> representing the IP address of the device.
         /// </value>
         [MaxLength(45)]
         [DataMember]
         public string IPAddress { get; set; }
 
         /// <summary>
-        /// Gets or sets the printer id.
+        /// Gets or sets the DeviceId of the printer that is associated with this device. This is mostly used if this device is a kiosk.
         /// </summary>
         /// <value>
-        /// The printer id.
+        /// A <see cref="System.Int32"/> representing the DeviceId of the printer that is associated with this device. If there is not a printer 
+        /// associated with this Device, this value will be null.
         /// </value>
         [DataMember]
         public int? PrinterDeviceId { get; set; }
 
         /// <summary>
-        /// Gets or sets the print from.
+        /// Gets or sets where print jobs for this device originates from.
         /// </summary>
         /// <value>
-        /// The print from.
+        /// A <see cref="Rock.Model.PrintFrom"/> to indicate how print jobs should be handled from this device. If <c>PrintFrom.Client</c> the print job will
+        /// be handled from the client, otherwise <c>PrintFrom.Server</c> and the print job will be handled from the server.
         /// </value>
         [DataMember]
         public PrintFrom PrintFrom { get; set; }
 
         /// <summary>
-        /// Gets or sets the print to override.
+        /// Gets or sets a flag that overrides which printer the print job is set to.
         /// </summary>
         /// <value>
-        /// The print to override.
+        /// A <see cref="Rock.Model.PrintTo"/> that indicates overrides where the print job is set to.  If <c>PrintTo.Default</c> the print job will be sent to the default
+        /// printer, if <c>PrintTo.Kiosk</c> the print job will be sent to the printer associated with the kiosk, if <c>PrintTo.Location</c> the print job will be sent to the 
+        /// printer at the check in location.
         /// </value>
         [DataMember]
         public PrintTo PrintToOverride { get; set; }
@@ -108,19 +114,23 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the physical location of the device, or the geographic fence 
-        /// that this device is active for
+        /// Gets or sets the physical location or geographic fence for the device.
         /// </summary>
         /// <value>
-        /// The location.
+        /// A <see cref="Rock.Model.Location"/> entity that represents the physical location of or the geographic fence for the device.
         /// </value>
+        /// <remarks>
+        /// A physical location would signify where the device is at. A situation where a geographic fence could be used would be for mobile check in, 
+        /// where if the device is within the fence, a user would be able to check in from their mobile device.
+        /// </remarks>
         public virtual Location Location { get; set; }
 
+
         /// <summary>
-        /// Gets or sets the locations that this device is used for
+        /// Gets or sets a collection containing the <see cref="Rock.Model.Locaton">Locations</see> that use this device.
         /// </summary>
         /// <value>
-        /// The locations using this device.
+        /// A collection of <see cref="Rock.Model.Location">Locations</see> that use this device.
         /// </value>
         [DataMember]
         public virtual ICollection<Location> Locations
@@ -131,18 +141,18 @@ namespace Rock.Model
         private ICollection<Location> _locations;
 
         /// <summary>
-        /// Gets or sets the printer.
+        /// Gets or sets the printer that is associated with this device. 
         /// </summary>
         /// <value>
-        /// The printer.
+        /// The printer that is associated with the device.
         /// </value>
         public virtual Device PrinterDevice { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the device.
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> that represents the type of the device.
         /// </summary>
         /// <value>
-        /// The type of the device.
+        /// A <see cref="Rock.Model.DefinedValue"/> that represents the type of the device.
         /// </value>
         [DataMember]
         public virtual DefinedValue DeviceType { get; set; }
@@ -152,10 +162,10 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
-        /// Gets the group types that are configured for the locations that this device is
-        /// configured for.
+        /// Returns an enumerable collection of <see cref="Rock.Model.GroupType">GroupTypes</see> that use the <see cref="Rock.Model.Location">Locations</see> that this
+        /// device is configured for.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A enumerable collection of <see cref="Rock.Model.GroupType"/> entities that use the <see cref="Rock.Model.Location">Locations that this device is configured for.</returns>
         public virtual IEnumerable<GroupType> GetLocationGroupTypes()
         {
             var groupTypes = new Dictionary<int, GroupType>();
@@ -239,12 +249,12 @@ namespace Rock.Model
     public enum PrintFrom
     {
         /// <summary>
-        /// The kiosk will print the label
+        /// The label will be printed by the kiosk
         /// </summary>
         Client = 0,
 
         /// <summary>
-        /// The server 
+        /// The label will be printed by the server.
         /// </summary>
         Server = 1
     }

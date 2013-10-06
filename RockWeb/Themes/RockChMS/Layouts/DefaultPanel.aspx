@@ -1,9 +1,9 @@
-﻿<%@ Page ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/RockChMS/Layouts/Site.Master"
+﻿<%@ Page ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/RockChMS/Layouts/Site.Master" 
     AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
-
-        <!-- Page Header -->
+    
+    <!-- Page Header -->
     <header>
         
         <!-- Brand Bar -->
@@ -55,54 +55,33 @@
 	    </div>
 
     </header>
-
-    <div class="body-content container">
-        <div class="row">
-            <div class="col-md-12">
+		
+	<div class="body-content container">
+            
                 <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
-                
 
-                <%-- Content Area --%>
-                    
                 <!-- display any ajax error messages here (use with ajax-client-error-handler.js) -->
                 <div class="alert alert-danger ajax-error" style="display:none">
                     <strong>Ooops!</strong>
-                    <span class="ajax-error-message" / ></span>
+                    <span class="ajax-error-message"></span>
                 </div>
-
-                <div class="row">
-                    
-                    <div id="left-column" class="col-md-3">
-
-                        <div id="left-column-content">
-                            <Rock:Zone ID="LeftContent" runat="server" />
-                        </div>
-                    </div>
-                    <div id="right-column" class="col-md-9">
-                        <div class="panel panel-default">
-                            <div class="panel-body">
-                                <Rock:Zone ID="RightContent" runat="server" />
-                            </div>
-                        </div>
+                
+               <div class="panel panel-default">
+                    <div class="panel-body">
+                        <Rock:Zone ID="Content" runat="server" />
                     </div>
                 </div>
-
-                <%-- End Content Area --%>
-            </div>
-        </div>
-    </div>
-
-    <footer class="page-footer">
-        <div class="container">
-            <div class="row">
-                <div class="col-md-12">
-                    <Rock:Zone ID="Footer" runat="server" />
-                </div>
-            </div>
-        </div>
-    </footer>
-
+	</div>
+		
+	<footer class="page-footer">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-12">
+					<Rock:Zone ID="Footer" runat="server" />
+				</div>
+			</div>
+		</div>
+	</footer>
+        
 </asp:Content>
-
-
 

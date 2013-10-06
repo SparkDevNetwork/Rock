@@ -15,7 +15,7 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Binary File Type POCO Entity.
+    /// Represents a type or category of binary files in RockChMS, and configures how binary files of this type are stored and accessed.
     /// </summary>
     [Table( "BinaryFileType" )]
     [DataContract]
@@ -25,20 +25,20 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the System.
+        /// Gets or sets a flag indicating if this BinaryFileType is part of the RockChMS core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// System.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if this is part of the core system/framework; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the Name.
+        /// Gets or sets the given Name of the BinaryFileType. This value is an alternate key and is required.
         /// </summary>
         /// <value>
-        /// Given Name.
+        /// A <see cref="System.String"/> representing the given Name of the BinaryFileType. 
         /// </value>
         [Required]
         [MaxLength( 100 )]
@@ -47,55 +47,55 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets a description of the BinaryFileType.
         /// </summary>
         /// <value>
-        /// Description.
+        /// A <see cref="System.String"/> representing the description of the BinaryFileType.
         /// </value>
         [DataMember]
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the small icon.
+        /// Gets or sets the Id of the <see cref="Rock.Model.BinaryFile"/> that is used as the small icon representing this BinaryFileType.
         /// </summary>
         /// <value>
-        /// The small icon.
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.BinaryFile"/> that is used as the small icon. If a file based icon is not used, or a small icon isn't used this value will be null.
         /// </value>
         [DataMember]
         public int? IconSmallFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the large icon.
+        /// Gets or sets the Id of the <see cref="Rock.Model.BinaryFile"/> that is as used as the large icon representing this BinaryFileType.
         /// </summary>
         /// <value>
-        /// The large icon.
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.BinaryFile"/> that is used as the large icon. If a file based icon is not used, or a large icon is not used, this value will be null.
         /// </value>
         [DataMember]
         public int? IconLargeFileId { get; set; }
 
         /// <summary>
-        /// Gets or sets the icon CSS class.
+        /// Gets or sets the CSS class that is used for a vector/CSS icon.
         /// </summary>
         /// <value>
-        /// The icon CSS class.
+        /// A <see cref="System.String"/> representing the CSS class that is used for a vector/CSS based icon.
         /// </value>
         [DataMember]
         public string IconCssClass { get; set; }
 
         /// <summary>
-        /// Gets or sets the storage mode entity type id.
+        /// Gets or sets the Id of the storage service <see cref="Rock.Model.EntityType"/> that is used to store files of this type.
         /// </summary>
         /// <value>
-        /// The storage mode entity type id.
+        /// An <see cref="System.Int32" /> representing the Id of the storage service <see cref="Rock.Model.EntityType"/>.
         /// </value>
         [DataMember]
         public int? StorageEntityTypeId { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether to allow caching on any BinaryFile child models.
+        /// Gets or sets a flag indicating whether to allow caching on any <see cref="Rock.Model.BinaryFile"/> child entities.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if caching is allowed; otherwise, <c>false</c>.
+        ///  A <see cref="System.Boolean"/> value that is <c>true</c> if caching is allowed; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
         public bool AllowCaching { get; set; }
@@ -105,26 +105,26 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the small icon.
+        /// Gets or sets the <see cref="Rock.Model.BinaryFile"/> that represents the small icon.
         /// </summary>
         /// <value>
-        /// The small icon.
+        /// The <see cref="Rock.Model.BinaryFile"/> that represents the small icon.
         /// </value>
         public virtual BinaryFile IconSmallFile { get; set; }
 
         /// <summary>
-        /// Gets or sets the large icon.
+        /// Gets or sets the <see cref="Rock.Model.BinaryFile"/> that represents the large icon.
         /// </summary>
         /// <value>
-        /// The large icon.
+        /// The <see cref="Rock.Model.BinaryFile"/> that represents the large icon
         /// </value>
         public virtual BinaryFile IconLargeFile { get; set; }
 
         /// <summary>
-        /// Gets the file count.
+        /// Gets the count of <see cref="Rock.Model.BinaryFile" /> entities that are children of this <see cref="Rock.Model.BinaryFileType"/>.
         /// </summary>
         /// <value>
-        /// The file count.
+        /// A <see cref="System.Int32"/> representing the count of <see cref="Rock.Model.BinaryFile"/> entities that are children of this <see cref="Rock.Model.BinaryFileType"/>.
         /// </value>
         public virtual int FileCount
         {
@@ -135,10 +135,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the file query.
+        /// Gets a queryable collection of <see cref="Rock.Model.BinaryFile" /> entities that are children of this <see cref="Rock.Model.BinaryFileType"/>.
         /// </summary>
         /// <value>
-        /// The file query.
+        /// A queryable collection of <see cref="Rock.Model.BinaryFile"/> entities that are children of this<see cref="Rock.Model.BinaryFileType"/>.
         /// </value>
         public virtual IQueryable<BinaryFile> FileQuery
         {
@@ -152,10 +152,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the type of the storage mode entity.
+        /// Gets or sets the storage mode <see cref="Rock.Model.EntityType"/>.
         /// </summary>
         /// <value>
-        /// The type of the storage mode entity.
+        /// The storage mode <see cref="Rock.Model.EntityType"/>.
         /// </value>
         [DataMember]
         public virtual EntityType StorageEntityType { get; set; }

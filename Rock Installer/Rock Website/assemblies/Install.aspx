@@ -19,7 +19,10 @@
 	const string internetCheckSite = "www.google.com";
 	const string dotNetVersionRequired = "4.5";
 	const double iisVersionRequired = 7.0;
-	const string rockInstallFile = "http://www.rockchms.com/downloads/rock-chms-latest.zip";
+    const string rockInstallFile = "http://rockchms.blob.core.windows.net/install/rock-chms-latest.zip";
+
+    const string rockLogoIco = "http://rockchms.blob.core.windows.net/install/rock-chms.ico";
+    const string rockStyles = "http://rockchms.blob.core.windows.net/install/install.css";
 	
 	//
 	// page events
@@ -32,8 +35,8 @@
 	
 	void Page_Load(object sender, EventArgs e)
 	{
-		
-    	
+		// toggle the SSL warning
+        lSslWarning.Visible = !Request.IsSecureConnection;
 	}
 	
 	void WelcomeNext_Click(Object sender, EventArgs e)
@@ -44,14 +47,19 @@
 	
 	void DbConfigNext_Click(Object sender, EventArgs e)
     {
-    	// check settings
+               
+        // check settings
     	string databaseMessages = string.Empty; 
     	
-    	bool canConnect = CheckSqlServerConnection(txtServerName.Text, txtDatabaseName.Text, txtUsername.Text, txtPassword.Text, out databaseMessages);
+        bool canConnect = CheckSqlServerConnection(txtServerName.Text, txtDatabaseName.Text, txtUsername.Text, txtPassword.Text, out databaseMessages);
 
     	if (!canConnect) {
     		lDatabaseMessages.Text = databaseMessages;
-    		return;
+            
+            pWelcome.Visible = false;
+            pDatabaseConfig.Visible = true;
+    		
+            return;
     	} else {
     		
 
@@ -64,7 +72,7 @@
 		    if (CheckDotNetVersion(out checkResults)) {
     			outputMessages += "<li><i class='icon-ok-sign pass'></i>" + checkResults + "</li>";
     		} else {
-    			outputMessages += "<li><i class='icon-warning-sign fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/dotnet-version.html' class='fix'>Let's Fix It Together</a></li>";
+                outputMessages += "<li><i class='icon-warning-sign fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/dotnet-version.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
     			environmentClean = false;
     		}
 		    
@@ -72,7 +80,7 @@
 		    if (CheckFileSystemPermissions(out checkResults)) {
     			outputMessages += "<li><i class='icon-ok-sign pass'></i>" + checkResults + "</li>";
     		} else {
-    			outputMessages += "<li><i class='icon-warning-sign fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/filesystem-permissions.html' class='fix'>Let's Fix It Together</a></li>";
+                outputMessages += "<li><i class='icon-warning-sign fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/filesystem-permissions.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
     			environmentClean = false;
     		}
     		
@@ -80,7 +88,7 @@
     		if (CheckIisVersion(out checkResults)) {
     			outputMessages += "<li><i class='icon-ok-sign pass'></i>" + checkResults + "</li>";
     		} else {
-    			outputMessages += "<li><i class='icon-warning-sign fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/iis-version.html' class='fix'>Let's Fix It Together</a></li>";
+                outputMessages += "<li><i class='icon-warning-sign fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/iis-version.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
     			environmentClean = false;
     		}
 		    
@@ -88,7 +96,7 @@
     		if (CheckSqlServerVersion(txtServerName.Text, txtDatabaseName.Text, txtUsername.Text, txtPassword.Text, out checkResults)) {
     			outputMessages += "<li><i class='icon-ok-sign pass'></i>" + checkResults + "</li>";
     		} else {
-    			outputMessages += "<li><i class='icon-warning-sign fail'></i>" + checkResults + "</li> <a href='http://www.rockchms.com/installer/help/sqlserver-version.html' class='fix'>Let's Fix It Together</a>";
+                outputMessages += "<li><i class='icon-warning-sign fail'></i>" + checkResults + "</li> <a href='http://www.rockchms.com/installer/help/sqlserver-version.html' class='btn btn-info btn-xs'>Let's Fix It Together</a>";
     			environmentClean = false;
     		}
     		
@@ -96,7 +104,7 @@
     		if (CheckSqlServerPermissions(txtServerName.Text, txtDatabaseName.Text, txtUsername.Text, txtPassword.Text, out checkResults)) {
     			outputMessages += "<li><i class='icon-ok-sign pass'></i>" + checkResults + "</li>";
     		} else {
-    			outputMessages += "<li><i class='icon-warning-sign fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/sqlserver-permissions.html' class='fix'>Let's Fix It Together</a></li>";
+                outputMessages += "<li><i class='icon-warning-sign fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/sqlserver-permissions.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
     			environmentClean = false;
     		}
     		
@@ -104,7 +112,7 @@
     		if (CheckSqlServerEmpty(txtServerName.Text, txtDatabaseName.Text, txtUsername.Text, txtPassword.Text, out checkResults)) {
     			outputMessages += "<li><i class='icon-ok-sign pass'></i>" + checkResults + "</li>";
     		} else {
-    			outputMessages += "<li><i class='icon-warning-sign fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/sqlserver-empty.html' class='fix'>Let's Fix It Together</a></li>";
+                outputMessages += "<li><i class='icon-warning-sign fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/sqlserver-empty.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
     			environmentClean = false;
     		}
     		
@@ -112,7 +120,7 @@
     		if (CheckRockNotInstalled( out checkResults)) {
     			
     		} else {
-    			outputMessages += "<li><i class='icon-warning-sign fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/rock-installed.html' class='fix'>Let's Fix It Together</a></li>";
+                outputMessages += "<li><i class='icon-warning-sign fail'></i>" + checkResults + " <a href='http://www.rockchms.com/installer/help/rock-installed.html' class='btn btn-info btn-xs'>Let's Fix It Together</a></li>";
     			environmentClean = false;
     		}
 
@@ -211,7 +219,8 @@
     
     void EnvBack_Click(Object sender, EventArgs e)
     {
-    	pTestEnv.Visible = false;
+        pWelcome.Visible = false;
+        pTestEnv.Visible = false;
 		pDatabaseConfig.Visible = true;
     }
     
@@ -234,150 +243,16 @@
 <html>
 	<head>
 		<title>Rock ChMS Installer...</title>
-		<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' rel='stylesheet' type='text/css'>
-		<link href="//netdna.bootstrapcdn.com/font-awesome/2.0/css/font-awesome.css" rel="stylesheet">
-		<link href="http://www.rockchms.com/installer/css/bootstrap.min.css" rel="stylesheet">
+		<link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css'>
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/2.0/css/font-awesome.css">
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="<%=rockStyles %>">
 		
-		<script src="http://www.rockchms.com/installer/scripts/jquery-1.8.2.min.js" type="text/javascript"></script>
+        <script src="http://code.jquery.com/jquery-1.9.0.min.js"></script>
+        		
+		<link href="<%=rockLogoIco %>" rel="shortcut icon">
+		<link href="<%=rockLogoIco %>" type="image/ico" rel="icon">
 		
-		<link href="http://www.rockchms.com/assets/images/rock-chms.ico" rel="shortcut icon">
-		<link href="http://www.rockchms.com/assets/images/rock-chms.ico" type="image/ico" rel="icon">
-		
-		<style>
-			body {
-				background-color: #3c3c3c;
-				color: #333;
-				font-family: 'Open Sans', sans-serif;
-				background-image: url("http://www.rockchms.com/installer/assets/images/header-texture.png");
-			}
-			
-			div#content {
-				width: 600px;
-				margin: 0 auto;
-			}
-			
-			i {
-				font-family: FontAwesome;
-				font-size: 22px;
-			}
-			
-			i.pass {
-				color: #218921;
-			}
-			
-			i.fail {
-				color: #e43030;
-			}
-			
-			.btn i {
-				font-size: 12px;
-				margin-top: 6px;
-			}
-			
-			ul {
-				list-style-type: none;
-				margin-top: 22px;
-				margin-left: 90px;
-			}
-			
-			ul li {
-				margin-bottom: 12px;
-			}
-			
-			ul li i[class^="icon-"] {
-				height: 30px;
-				float: left;
-				margin-right: 12px;
-				line-height: 18px;
-			} 
-			
-			a.fix {
-				font-size: 12px;
-			}
-			
-			div#content > h1 {
-				background: url("http://www.rockchms.com/installer/assets/images/header-logo.png") no-repeat scroll 0 0 transparent;
-			    color: #E7E7E7;
-			    display: block;
-			    float: left;
-			    height: 50px;
-			    margin-bottom: 6px;
-			    margin-top: 65px;
-			    text-indent: -9999px;
-			    width: 123px;
-    		}
-    		
-    		div#content #content-box {
-	    		background-color: #E7E7E7;
-			    border-radius: 5px 5px 5px 5px;
-			    box-shadow: 0 0 20px #000000;
-			    clear: both;
-			    min-height: 254px;
-			    padding: 16px;
-			    width: 584px;
-			    color: #;
-    		}
-    		
-    		div#content #content-box h1 {
-    			margin-top: 0;
-    		}
-    		
-    		    		
-    		a.btn {
-    			text-decoration: none;
-    		}
-    		
-    		p.wait {
-    			width: 48px;
-    			margin: 0 auto;
-    			margin-top: 24px;
-    		}
-    		
-    		.btn.start-install, .btn.next-step {
-    			margin: 24px auto 24px auto;
-    			text-align: center;
-    			width: 120px;
-    		}
-    		
-    		.btn-list {
-    			width: 100%;
-    			text-align: center;
-    		}
-
-    		.group:after {
-			    clear: both;
-			    content: ".";
-			    display: block;
-			    height: 0;
-			    visibility: hidden;
-			}
-			
-			select, 
-			textarea, 
-			input[type="text"], 
-			input[type="password"], 
-			input[type="datetime"], 
-			input[type="datetime-local"], 
-			input[type="date"], 
-			input[type="month"], 
-			input[type="time"], 
-			input[type="week"], 
-			input[type="number"], 
-			input[type="email"], 
-			input[type="url"], 
-			input[type="search"], 
-			input[type="tel"], 
-			input[type="color"], 
-			uneditable-input {
-				height: 30px;
-			
-			}
-			
-			#config-info {
-				margin-top: 12px;
-				margin-left: 60px;
-			}
-		</style>
 	</head>
 	<body>
 		<form runat="server">
@@ -400,14 +275,23 @@
 				<div id="content">
 					<h1>Rock ChMS</h1>
 					
-					<div id="content-box" class="group">
+					<div id="content-box">
 						<asp:Panel id="pWelcome" Visible="true" runat="server">
 							<h1>Rock Installer</h1>
-							<img src="http://www.rockchms.com/installer/assets/images/welcome.jpg"  />
+							
+                            <img src="http://www.rockchms.com/installer/assets/images/welcome.jpg"  />
 							<asp:Label id="lTest" runat="server"></asp:Label>
 							
+                            <asp:Literal ID="lSslWarning" runat="server">
+                                <div class="alert alert-warning">
+                                    <p><strong>Just A Thought...</strong></p>
+                                    Looks like you're not running over an encrypted connection (SSL).  Since you will be providing passwords for configuring
+                                    your database and Rock install you may wish to run the install over an encrypted connection.
+                                </div>
+							</asp:Literal>
+
 							<div class="btn-list">
-								<asp:LinkButton id="btnWelcome" runat="server" Text="Get Started <i class='icon-chevron-right'></i>"  CssClass="btn btn-inverse next-step" OnClick="WelcomeNext_Click"></asp:LinkButton>
+								<asp:LinkButton id="btnWelcome" runat="server" Text="Get Started <i class='icon-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="WelcomeNext_Click"></asp:LinkButton>
 							</div>
 						</asp:Panel>
 						
@@ -418,38 +302,39 @@
 							<p>Please provide configuration information to the database below.  This information should come from your server
 							   administrator or hosting provider.</p>
 							
-							<div class="control-group">
+							<div class="form-group">
 								<label class="control-label" for="inputEmail">Database Server</label>
-								<div class="controls">
-									<asp:TextBox ID="txtServerName" runat="server" CssClass="required-field" Text=""></asp:TextBox>
-								</div>
+								<asp:TextBox ID="txtServerName" Text="vserver01.cytanium.com" runat="server" CssClass="required-field form-control"></asp:TextBox>
 							</div>
 							
-							<div class="control-group">
+							<div class="form-group">
 								<label class="control-label" for="inputEmail">Database Name</label>
-								<div class="controls">
-									<asp:TextBox ID="txtDatabaseName" runat="server" CssClass="required-field" Text=""></asp:TextBox>
-								</div>
+								<asp:TextBox ID="txtDatabaseName" Text="sparkdevcms" runat="server" CssClass="required-field form-control"></asp:TextBox>
 							</div>
 							
-							<div class="control-group">
+							<div class="form-group">
 								<label class="control-label" for="inputEmail">Database Username</label>
-								<div class="controls">
-									<asp:TextBox ID="txtUsername" runat="server" CssClass="required-field" Text=""></asp:TextBox>
-								</div>
+								<asp:TextBox ID="txtUsername" Text="RockDevUser" runat="server" CssClass="required-field form-control"></asp:TextBox>
 							</div>
 							
-							<div class="control-group">
+							<div class="form-group">
 								<label class="control-label" for="inputEmail">Database Password</label>
-								<div class="controls">
-									<asp:TextBox ID="txtPassword" runat="server" CssClass="required-field" Text=""></asp:TextBox>
-								</div>
+								
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <asp:TextBox ID="txtPassword" Text="DM1w3tPH5nOorQO" TextMode="Password" runat="server" CssClass="required-field form-control"></asp:TextBox>
+                                    </div>
+                                    <div class="col-md-4" style="padding-top: 6px;">
+                                        <input id="show-password" type="checkbox" />
+                                        <label for="show-password" id="show-password-label" style="font-weight:normal;">Show Password</label>
+                                    </div>
+                                </div>
 							</div>
 							
 							<asp:Literal id="lDatabaseMessages" runat="server"></asp:Literal>
 							
 							<div class="btn-list">
-								<asp:LinkButton id="btnDbConfig" runat="server" OnClientClick="return validateDbConnection();" Text="Next <i class='icon-chevron-right'></i>"  CssClass="btn btn-inverse next-step" OnClick="DbConfigNext_Click"></asp:LinkButton> 
+								<asp:LinkButton id="btnDbConfig" runat="server" OnClientClick="return validateDbConnection();" Text="Next <i class='icon-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="DbConfigNext_Click"></asp:LinkButton> 
 							</div>
 						</asp:Panel>
 						
@@ -462,9 +347,9 @@
 							
 							<div class="btn-list">
 							
-								<asp:LinkButton id="btnEnvBack" runat="server"  Text="<i class='icon-chevron-left'></i> Back"  CssClass="btn next-step" OnClick="EnvBack_Click"></asp:LinkButton>  
-								<asp:LinkButton id="btnTryAgain" runat="server"  Text="Try Again <i class='icon-refresh'></i>"  CssClass="btn btn-inverse next-step" OnClick="DbConfigNext_Click"></asp:LinkButton> 
-								<asp:LinkButton id="btnEnvNext" runat="server"  Text="Next <i class='icon-chevron-right'></i>"  CssClass="btn btn-inverse next-step" OnClick="EnvNext_Click"></asp:LinkButton> 
+								<asp:LinkButton id="btnEnvBack" runat="server"  Text="<i class='icon-chevron-left'></i> Back"  CssClass="btn btn-default" OnClick="EnvBack_Click"></asp:LinkButton>  
+								<asp:LinkButton id="btnTryAgain" runat="server"  Text="Try Again <i class='icon-refresh'></i>"  CssClass="btn btn-primary" OnClick="DbConfigNext_Click"></asp:LinkButton> 
+								<asp:LinkButton id="btnEnvNext" runat="server"  Text="Next <i class='icon-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="EnvNext_Click"></asp:LinkButton> 
 							</div>
 						</asp:Panel>
 						
@@ -474,7 +359,7 @@
 							<asp:Label id="lDownloadDetails" runat="server"></asp:Label>
 							
 							<div class="btn-list">		
-								<asp:LinkButton id="btnDownloadNext" runat="server" Text="Next <i class='icon-chevron-right'></i>"  CssClass="btn btn-inverse next-step" OnClick="DownloadNext_Click"></asp:LinkButton> 
+								<asp:LinkButton id="btnDownloadNext" runat="server" Text="Next <i class='icon-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="DownloadNext_Click"></asp:LinkButton> 
 							</div>
 						</asp:Panel>
 						
@@ -502,10 +387,10 @@
 			    // ensure that all values were provided
 			    $("#pDatabaseConfig .required-field").each( function(index, value) {
 				    if(this.value.length == 0){
-				     	$(this).parent().parent().addClass('error');
+				        $(this).closest('.form-group').addClass('has-error');
 				     	formValid = false;
 				     } else {
-					 	$(this).parent().parent().removeClass('error');
+				        $(this).closest('.form-group').removeClass('has-error');
 					 }
 				});
 				
@@ -517,6 +402,20 @@
 				    return false;
 			    }
 			}
+
+          $(document).ready(function() {
+              $('body').on('click', '#show-password', function (e) {
+
+                  field = $('#txtPassword');
+                  if (field.attr('type') == "text") { new_type = "password"; } else { new_type = "text"; }
+                  new_field = field.clone();
+                  new_field.attr("id", field.attr('id'));
+                  new_field.attr("type", new_type);
+                  field.replaceWith(new_field);
+              });
+          });
+			
+
 		</script>
 		
 	</body>
@@ -693,7 +592,7 @@
 			}
 			catch(Exception ex)
 			{
-			    checkMessages = "<div class='alert alert-error'><strong>Yikes!</strong> Could not connect to the database with the information provided. Please check the information provided.</div>" + ex.Message;
+			    checkMessages = "<div class='alert alert-danger'><p><strong>Yikes!</strong><p> Could not connect to the database with the information provided. Please check the information provided. <p><small>" + ex.Message + "</small></p></div>";
 			    canConnect = false;
 			}
 			finally {
@@ -741,7 +640,7 @@
 			}
 			catch(Exception ex)
 			{
-			    checkMessages = "<div class='alert alert-error'><strong>Yikes!</strong> Could not connect to the database with the information provided. Please check the information provided.</div>";
+			    checkMessages = "<div class='alert alert-danger'><p><strong>Yikes!</strong></p> Could not connect to the database with the information provided. Please check the information provided.</div>";
 			    versionPassed = false;
 			}
 			finally {

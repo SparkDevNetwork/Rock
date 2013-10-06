@@ -68,8 +68,10 @@ namespace Rock.Web.UI.Controls
 
                     if ( !string.IsNullOrWhiteSpace( Title ) )
                     {
+                        writer.RenderBeginTag(HtmlTextWriterTag.P);
                         writer.RenderBeginTag( HtmlTextWriterTag.Strong );
                         writer.Write( Title + " ");
+                        writer.RenderEndTag();
                         writer.RenderEndTag();
                     }
 

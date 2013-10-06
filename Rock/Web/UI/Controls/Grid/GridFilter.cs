@@ -81,7 +81,7 @@ Sys.Application.add_load(function () {
             _lbFilter = new LinkButton();
             Controls.Add( _lbFilter );
             _lbFilter.ID = "lbFilter";
-            _lbFilter.CssClass = "filter btn btn-primary btn-xs";
+            _lbFilter.CssClass = "filter btn btn-action btn-xs";
             _lbFilter.ToolTip = "Apply Filter";
             _lbFilter.Text = "Apply Filter";
             _lbFilter.CausesValidation = false;

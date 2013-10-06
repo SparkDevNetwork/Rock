@@ -14,6 +14,9 @@
 
 <script language="CS" runat="server">
 
+
+    const string rockLogoIco = "http://rockchms.blob.core.windows.net/install/rock-chms.ico";
+    const string rockStyles = "http://rockchms.blob.core.windows.net/install/install.css";
 		
 	void Page_Load(object sender, EventArgs e)
 	{
@@ -90,143 +93,16 @@
 	<head>
 		<title>Rock ChMS Installer...</title>
 
-		<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' rel='stylesheet' type='text/css'>
-		<link href="http://www.rockchms.com/installer/css/bootstrap.min.css" rel="stylesheet">
-		<link href="//netdna.bootstrapcdn.com/font-awesome/2.0/css/font-awesome.css" rel="stylesheet">
+		<link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css'>
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/2.0/css/font-awesome.css">
+		<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="<%=rockStyles %>">
 		
-		<script src="http://www.rockchms.com/installer/scripts/jquery-1.8.2.min.js" type="text/javascript"></script>
+        <script src="http://code.jquery.com/jquery-1.9.0.min.js"></script>
 		
-		<link href="http://www.rockchms.com/assets/images/rock-chms.ico" rel="shortcut icon">
-		<link href="http://www.rockchms.com/assets/images/rock-chms.ico" type="image/ico" rel="icon">
-		
-		<style>
-			body {
-				background-color: #3c3c3c;
-				color: #333;
-				font-family: 'Open Sans', sans-serif;
-				background-image: url("http://www.rockchms.com/installer/assets/images/header-texture.png");
-			}
-			
-			div#content {
-				width: 600px;
-				margin: 0 auto;
-			}
-			
-			i {
-				font-family: FontAwesome;
-				font-size: 22px;
-			}
-			
-			i.pass {
-				color: #218921;
-			}
-			
-			i.fail {
-				color: #e43030;
-			}
-			
-			.btn i {
-				font-size: 12px;
-				margin-top: 6px;
-			}
-			
-			ul {
-				list-style-type: none;
-				margin-top: 22px;
-				margin-left: 90px;
-			}
-			
-			ul li {
-				margin-bottom: 12px;
-			}
-			
-			ul li i[class^="icon-"] {
-				height: 30px;
-				float: left;
-				margin-right: 12px;
-				line-height: 18px;
-			} 
-			
-			div#content > h1 {
-				background: url("http://www.rockchms.com/installer/assets/images/header-logo.png") no-repeat scroll 0 0 transparent;
-			    color: #E7E7E7;
-			    display: block;
-			    float: left;
-			    height: 50px;
-			    margin-bottom: 6px;
-			    margin-top: 115px;
-			    text-indent: -9999px;
-			    width: 123px;
-    		}
-    		
-    		div#content #content-box {
-	    		background-color: #E7E7E7;
-			    border-radius: 5px 5px 5px 5px;
-			    box-shadow: 0 0 20px #000000;
-			    clear: both;
-			    min-height: 254px;
-			    padding: 16px;
-			    width: 584px;
-			    color: #;
-    		}
-    		
-    		div#content #content-box h1 {
-    			margin-top: 0;
-    		}
-    		
-    		    		
-    		a.btn {
-    			text-decoration: none;
-    		}
-    		
-    		p.wait {
-    			width: 48px;
-    			margin: 0 auto;
-    			margin-top: 24px;
-    		}
-    		
-    		.btn.start-install, .btn.next-step {
-    			display: block;
-    			margin: 24px auto 24px auto;
-    			text-align: center;
-    			width: 180px;
-    		}
+		<link href="<%=rockLogoIco %>" rel="shortcut icon">
+		<link href="<%=rockLogoIco %>" type="image/ico" rel="icon">
 
-    		.group:after {
-			    clear: both;
-			    content: ".";
-			    display: block;
-			    height: 0;
-			    visibility: hidden;
-			}
-			
-			select, 
-			textarea, 
-			input[type="text"], 
-			input[type="password"], 
-			input[type="datetime"], 
-			input[type="datetime-local"], 
-			input[type="date"], 
-			input[type="month"], 
-			input[type="time"], 
-			input[type="week"], 
-			input[type="number"], 
-			input[type="email"], 
-			input[type="url"], 
-			input[type="search"], 
-			input[type="tel"], 
-			input[type="color"], 
-			uneditable-input {
-				height: 30px;
-			
-			}
-			
-			#config-info {
-				margin-top: 12px;
-				margin-left: 60px;
-			}
-			
-		</style>
 	</head>
 	<body>
 		<form runat="server">
@@ -247,22 +123,27 @@
 						
 							<h4>Administrator's Account</h4>
 							<p>Please provide a username and password for the administrator's account</p>
-							<div class="control-group">
+							<div class="form-group">
 								<label class="control-label" for="inputEmail">Administrator Username</label>
-								<div class="controls">
-									<asp:TextBox ID="txtAdminUsername" runat="server" CssClass="required-field" Text=""></asp:TextBox>
-								</div>
+								<asp:TextBox ID="txtAdminUsername" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
 							</div>
 							
-							<div class="control-group">
+							<div class="form-group">
 								<label class="control-label" for="inputEmail">Administrator Password</label>
-								<div class="controls">
-									<asp:TextBox ID="txtAdminPassword" runat="server" CssClass="required-field" Text=""></asp:TextBox>
+								<div class="row">
+                                    <div class="col-md-8"><asp:TextBox ID="txtAdminPassword" TextMode="Password" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox></div>
+                                    <div class="col-md-4" style="padding-top: 6px;">
+                                        <input id="show-password-admin" type="checkbox" />
+                                        <label for="show-password-admin" id="show-password-admin-label" style="font-weight:normal;">Show Password</label>
+                                    </div>
 								</div>
+                                
 							</div>
 						
-							<asp:LinkButton id="btnAdminNext" runat="server" OnClientClick="return validateAdminAccount();" Text="Next <i class='icon-chevron-right'></i>"  CssClass="btn btn-inverse next-step" OnClick="AdminNext_Click"></asp:LinkButton>
-						</asp:Panel>
+                            <div class="btn-list">
+							    <asp:LinkButton id="btnAdminNext" runat="server" OnClientClick="return validateAdminAccount();" Text="Next <i class='icon-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="AdminNext_Click"></asp:LinkButton>
+						    </div>
+                        </asp:Panel>
 						
 						<asp:Panel id="pOrganization" Visible="false" runat="server">
 							<h1>Organization Information</h1>
@@ -271,36 +152,30 @@
 								is in no way shared with us or anyone else.
 							</p>
 
-							<div class="control-group">
+							<div class="form-group">
 								<label class="control-label" for="inputEmail">Organization Name</label>
-								<div class="controls">
-									<asp:TextBox ID="txtOrgName" runat="server" placeholder="Your Church" CssClass="required-field" Text=""></asp:TextBox>
-								</div>
+								<asp:TextBox ID="txtOrgName" runat="server" placeholder="Your Church" CssClass="required-field form-control" Text=""></asp:TextBox>
 							</div>
 							
-							<div class="control-group">
+							<div class="form-group">
 								<label class="control-label" for="inputEmail">Organization Default Email Address</label>
-								<div class="controls">
-									<asp:TextBox ID="txtOrgEmail" runat="server" placeholder="info@yourchurch.com" CssClass="required-field" Text=""></asp:TextBox>
-								</div>
+								<asp:TextBox ID="txtOrgEmail" runat="server" placeholder="info@yourchurch.com" CssClass="required-field form-control" Text=""></asp:TextBox>
 							</div>
 							
-							<div class="control-group">
+							<div class="form-group">
 								<label class="control-label" for="inputEmail">Organization Phone Number</label>
-								<div class="controls">
-									<asp:TextBox ID="txtOrgPhone" placeholder="(555) 555-5555" runat="server" CssClass="required-field" Text=""></asp:TextBox>
-								</div>
+								<asp:TextBox ID="txtOrgPhone" placeholder="(555) 555-5555" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
 							</div>
 							
-							<div class="control-group">
+							<div class="form-group">
 								<label class="control-label" for="inputEmail">Organization Website</label>
-								<div class="controls">
-									<asp:TextBox ID="txtOrgWebsite" placeholder="www.yourchurch.com" runat="server" CssClass="required-field" Text=""></asp:TextBox>
-								</div>
+								<asp:TextBox ID="txtOrgWebsite" placeholder="www.yourchurch.com" runat="server" CssClass="required-field form-control" Text=""></asp:TextBox>
 							</div>
 						
-							<asp:LinkButton id="btnOrgNext" runat="server" OnClientClick="return validateOrgSettings();" Text="Next <i class='icon-chevron-right'></i>"  CssClass="btn btn-inverse next-step" OnClick="OrgNext_Click"></asp:LinkButton>
-						</asp:Panel>
+                            <div class="btn-list">
+							    <asp:LinkButton id="btnOrgNext" runat="server" OnClientClick="return validateOrgSettings();" Text="Next <i class='icon-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="OrgNext_Click"></asp:LinkButton>
+						    </div>
+                       </asp:Panel>
 						
 						<asp:Panel id="pEmailSettings" Visible="false" runat="server">
 							<h1>Email Server Settings</h1>
@@ -309,61 +184,59 @@
 							these values at an time inside the app. 
 							</p>
 
-							<div class="control-group">
+							<div class="form-group">
 								<label class="control-label" for="inputEmail">Email Server</label>
-								<div class="controls">
-									<asp:TextBox ID="txtEmailServer" runat="server" placeholder="mail.yourchurch.com" CssClass="required-field" Text=""></asp:TextBox>
-								</div>
+								<asp:TextBox ID="txtEmailServer" runat="server" placeholder="mail.yourchurch.com" CssClass="required-field form-control" Text=""></asp:TextBox>
 							</div>
 							
-							<div class="control-group">
+							<div class="form-group">
 								<label class="control-label" for="inputEmail">Email Server SMTP Port (default is 25)</label>
-								<div class="controls">
-									<asp:TextBox ID="txtEmailServerPort" runat="server" placeholder="mail.yourchurch.com" CssClass="required-field" Text="25"></asp:TextBox>
-								</div>
+								<asp:TextBox ID="txtEmailServerPort" runat="server" placeholder="mail.yourchurch.com" CssClass="required-field form-control" Text="25"></asp:TextBox>
 							</div>
 							
-							<div class="control-group">
+							<div class="form-group">
 								<label class="control-label" for="inputEmail">Use SSL For SMTP (default no)</label>
-								<div class="controls">
-									<asp:CheckBox ID="cbEmailUseSsl" runat="server" />
-								</div>
+								<asp:CheckBox ID="cbEmailUseSsl" runat="server" />
 							</div>
 							
-							<div class="control-group">
+							<div class="form-group">
 								<label class="control-label" for="inputEmail">Email Username (optional)</label>
-								<div class="controls">
-									<asp:TextBox ID="txtEmailUsername" runat="server" Text=""></asp:TextBox>
-								</div>
+								<asp:TextBox ID="txtEmailUsername" runat="server" Text="" CssClass="form-control"></asp:TextBox>
 							</div>
 							
-							<div class="control-group">
+							<div class="form-group">
 								<label class="control-label" for="inputEmail">Email Password (optional)</label>
-								<div class="controls">
-									<asp:TextBox ID="txtEmailPassword" runat="server" Text=""></asp:TextBox>
-								</div>
+								<div class="row">
+                                    <div class="col-md-8"><asp:TextBox ID="txtEmailPassword" TextMode="Password" runat="server" Text="" CssClass="form-control"></asp:TextBox></div>
+								    <div class="col-md-4" style="padding-top: 6px;">
+                                        <input id="show-password-email" type="checkbox" />
+                                        <label for="show-password-email" id="show-password-email-label" style="font-weight:normal;">Show Password</label>
+                                    </div>
+                                </div>
 							</div>
 							
-							<div class="control-group">
+							<div class="form-group">
 								<label class="control-label" for="inputEmail">Email Address to Send Error Reports To (optional)</label>
-								<div class="controls">
-									<asp:TextBox ID="txtEmailExceptions" placeholder="administrator@yourchurch.com" runat="server" Text=""></asp:TextBox>
-								</div>
+								<asp:TextBox ID="txtEmailExceptions" placeholder="administrator@yourchurch.com" CssClass="form-control" runat="server" Text=""></asp:TextBox>
 							</div>
 						
-							<asp:LinkButton id="btnEmailNext" runat="server" OnClientClick="return validateEmailSettings();" Text="Next <i class='icon-chevron-right'></i>"  CssClass="btn btn-inverse next-step" OnClick="EmailNext_Click"></asp:LinkButton>
-						</asp:Panel>
+							<div class="btn-list">
+                                <asp:LinkButton id="btnEmailNext" runat="server" OnClientClick="return validateEmailSettings();" Text="Next <i class='icon-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="EmailNext_Click"></asp:LinkButton>
+						    </div>
+                        </asp:Panel>
 						
 						<asp:Panel id="pFinished" Visible="false" runat="server">
 							<h1>Congratulations!!!</h1>
 						
 							<p>
-								You have finished the install and initial configuration of the Rock ChMS! All that's left to do is to get started.
+								You have finished the install and initial configuration of the Rock ChMS! All that's left to do is login and get started.
 							</p>
 							
 							<p></p>
 
-							<asp:LinkButton id="btnDone" runat="server" OnClientClick="return redirectHome();" Text="Let's Get Started <i class='icon-bolt'></i>"  CssClass="btn btn-inverse next-step" ></asp:LinkButton>
+                            <div class="btn-list">
+							    <asp:LinkButton id="btnDone" runat="server" OnClientClick="return redirectHome();" Text="<i class='icon-road'></i> Let's Get This Show On The Road"  CssClass="btn btn-primary" ></asp:LinkButton>
+                            </div>
 						</asp:Panel>
 						
 					</div>
@@ -380,10 +253,10 @@
 			    // ensure that all values were provided
 			    $("#pAdminAccount .required-field").each( function(index, value) {
 				    if(this.value.length == 0){
-				     	$(this).parent().parent().addClass('error');
+				     	$(this).closest('.form-group').addClass('has-error');
 				     	formValid = false;
 				     } else {
-					 	$(this).parent().parent().removeClass('error');
+				        $(this).closest('.form-group').removeClass('has-error');
 					 }
 				});
 				
@@ -403,10 +276,10 @@
 			    // ensure that all values were provided
 			    $("#pOrganization .required-field").each( function(index, value) {
 				    if(this.value.length == 0){
-				     	$(this).parent().parent().addClass('error');
+				        $(this).closest('.form-group').addClass('has-error');
 				     	formValid = false;
 				     } else {
-					 	$(this).parent().parent().removeClass('error');
+				        $(this).closest('.form-group').removeClass('has-error');
 					 }
 				});
 				
@@ -426,10 +299,10 @@
 			    // ensure that all values were provided
 			    $("#pEmailSettings .required-field").each( function(index, value) {
 				    if(this.value.length == 0){
-				     	$(this).parent().parent().addClass('error');
+				        $(this).closest('.form-group').addClass('has-error');
 				     	formValid = false;
 				     } else {
-					 	$(this).parent().parent().removeClass('error');
+				        $(this).closest('.form-group').removeClass('has-error');
 					 }
 				});
 				
@@ -446,6 +319,29 @@
 			{
 				window.location = "/"
 			}
+
+			$(document).ready(function () {
+			    $('body').on('click', '#show-password-admin', function (e) {
+
+			        field = $('#txtAdminPassword');
+			        if (field.attr('type') == "text") { new_type = "password"; } else { new_type = "text"; }
+			        new_field = field.clone();
+			        new_field.attr("id", field.attr('id'));
+			        new_field.attr("type", new_type);
+			        field.replaceWith(new_field);
+			    });
+
+			    $('body').on('click', '#show-password-email', function (e) {
+
+			        field = $('#txtEmailPassword');
+			        if (field.attr('type') == "text") { new_type = "password"; } else { new_type = "text"; }
+			        new_field = field.clone();
+			        new_field.attr("id", field.attr('id'));
+			        new_field.attr("type", new_type);
+			        field.replaceWith(new_field);
+			    });
+
+			});
 		</script>
 		
 	</body>
