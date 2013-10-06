@@ -96,6 +96,9 @@ namespace Rock.CyberSource
         {
             errorMessage = string.Empty;
 
+            string merchantID = GetAttributeValue( "MerchantID" );
+            string transactionkey = GetAttributeValue( "TransactionKey" );
+
             RequestMessage request = GetMerchantInfo();
             request.billTo = GetBillTo( paymentInfo );
 
@@ -110,75 +113,51 @@ namespace Rock.CyberSource
 
                 request.ccAuthService = new CCAuthService();
                 request.ccAuthService.run = "true";
+                request.ccAuthService.commerceIndicator = "internet";
                 request.ccCaptureService = new CCCaptureService();
-                request.ccCaptureService.run = "true";                
+                request.ccCaptureService.run = "true";                         
             }            
             else if ( paymentInfo is ACHPaymentInfo )
             {
                 var ach = paymentInfo as ACHPaymentInfo;
+                request.check = GetCheck( ach );
+
                 request.ecAuthenticateService = new ECAuthenticateService();
                 request.ecAuthenticateService.run = "true";
                 request.ecDebitService = new ECDebitService();
                 request.ecDebitService.run = "true";
-
-                Check check = new Check();
-                check.accountNumber = ach.BankAccountNumber.AsNumeric();
-                check.accountType = ach.AccountType == BankAccountType.Checking ? "C" : "S";
-                check.bankTransitNumber = ach.BankRoutingNumber.AsNumeric();
-                request.check = check;                
+                request.ecDebitService.commerceIndicator = "internet";
+            }
+            
+            else if ( paymentInfo is ReferencePaymentInfo )
+            {
+                var reference = paymentInfo as ReferencePaymentInfo;
+                if ( reference.CurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) )
+                {
+                    var cc = paymentInfo as CreditCardPaymentInfo;
+                    request.card = GetCard( cc );
+                }
+                else if ( reference.CurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) ) )
+                {
+                    var ach = paymentInfo as ACHPaymentInfo;
+                    request.check = GetCheck( ach );
+                }                
             }
             else if ( paymentInfo is SwipePaymentInfo )
             {
-                var swipe = paymentInfo as SwipePaymentInfo;
-                //var ppSwipeCard = new SwipeCard( swipe.SwipeInfo );
-                //create swipe
-                //return new CardTender( ppSwipeCard );
-            }
-
-            /*
-            if ( paymentInfo is ReferencePaymentInfo )
-            {
-                var reference = paymentInfo as ReferencePaymentInfo;
-                if ( reference.CurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) ) )
-                {
-                    // ACH
-                    //return new ACHTender( (BankAcct)null );
-                }
-                else
-                {
-                    // card
-                    //return new CardTender( (CreditCard)null );
-                }
-            } */
+                throw new NotImplementedException( "Point of Sale transactions not implemented." );
+            }            
                         
             request.item = new Item[1];
             request.item[0] = GetItems( paymentInfo );
             request.purchaseTotals = GetTotals( paymentInfo );
 
-            // start setting up WCF consumption
-            string transactionkey = GetAttributeValue( "TransactionKey" );
-
-            EndpointAddress address = new EndpointAddress( new Uri( GatewayUrl ) );
-            BasicHttpBinding binding = new BasicHttpBinding();
-            binding.Name = "ITransactionProcessor";
-            binding.Security.Mode = BasicHttpSecurityMode.TransportWithMessageCredential;
-            binding.MaxBufferSize = 2147483647;
-            binding.MaxBufferPoolSize = 2147483647;
-            binding.MaxReceivedMessageSize = 2147483647;
-            binding.ReaderQuotas.MaxDepth = 2147483647;
-            binding.ReaderQuotas.MaxArrayLength = 2147483647;
-            binding.ReaderQuotas.MaxBytesPerRead = 2147483647;            
-            binding.ReaderQuotas.MaxStringContentLength = 2147483647;
+            TransactionProcessorClient proxy = GetConnection();
+            proxy.ClientCredentials.UserName.UserName = merchantID;
+            proxy.ClientCredentials.UserName.Password = transactionkey;             
        
             try            
-            {
-                TransactionProcessorClient proxy = new TransactionProcessorClient( binding, address );
-                proxy.Endpoint.Address = address;
-                proxy.Endpoint.Binding = binding;
-                
-                proxy.ClientCredentials.UserName.UserName = request.merchantID;
-                proxy.ClientCredentials.UserName.Password = transactionkey;                
-
+            {                
                 ReplyMessage reply = proxy.runTransaction( request );
                 
                 //SaveOrderState();  ????
@@ -387,10 +366,10 @@ namespace Rock.CyberSource
             if ( paymentInfo is CreditCardPaymentInfo )
             {
                 var cc = paymentInfo as CreditCardPaymentInfo;
-                billingInfo.street1 = cc.BillingStreet;
-                billingInfo.city = cc.BillingCity;
-                billingInfo.state = cc.BillingState;
-                billingInfo.postalCode = cc.BillingZip;
+                billingInfo.street1 = cc.BillingStreet.Left( 50 );
+                billingInfo.city = cc.BillingCity.Left( 50 );
+                billingInfo.state = cc.BillingState.Left( 2 );
+                billingInfo.postalCode = cc.BillingZip.Left( 10 );
             }
 
             return billingInfo;
@@ -436,7 +415,7 @@ namespace Rock.CyberSource
             card.accountNumber = cc.AccountNumber.AsNumeric();
             card.expirationMonth = cc.ExpirationDate.Month.ToString("D2");
             card.expirationYear = cc.ExpirationDate.Year.ToString("D4");
-            card.cvNumber = cc.Code.Left( 4 );
+            card.cvNumber = cc.Code.AsNumeric();
 
             switch(cc.CreditCardTypeValue.Name)
             {
@@ -468,15 +447,41 @@ namespace Rock.CyberSource
         /// </summary>
         /// <param name="paymentInfo">The payment information.</param>
         /// <returns></returns>
-        private Check GetCheck( PaymentInfo paymentInfo )
+        private Check GetCheck( ACHPaymentInfo ach )
         {
             var check = new Check();
-
+            check.accountNumber = ach.BankAccountNumber.AsNumeric();
+            check.accountType = ach.AccountType == BankAccountType.Checking ? "C" : "S";
+            check.bankTransitNumber = ach.BankRoutingNumber.AsNumeric();
 
             return check;
         }
-
         
+        /// <summary>
+        /// Gets the connection.
+        /// </summary>
+        /// <returns></returns>
+        private TransactionProcessorClient GetConnection()
+        {
+            EndpointAddress address = new EndpointAddress( new Uri( GatewayUrl ) );
+            BasicHttpBinding binding = new BasicHttpBinding();
+            binding.Name = "ITransactionProcessor";
+            binding.MaxBufferSize = 2147483647;
+            binding.MaxBufferPoolSize = 2147483647;
+            binding.MaxReceivedMessageSize = 2147483647;
+            binding.ReaderQuotas.MaxDepth = 2147483647;
+            binding.ReaderQuotas.MaxArrayLength = 2147483647;
+            binding.ReaderQuotas.MaxBytesPerRead = 2147483647;
+            binding.ReaderQuotas.MaxStringContentLength = 2147483647;
+            binding.Security.Mode = BasicHttpSecurityMode.TransportWithMessageCredential;
+
+            var client = new TransactionProcessorClient( binding, address );
+            client.Endpoint.Address = address;
+            client.Endpoint.Binding = binding;
+                         
+            return client;
+        }
+
         /// <summary>
         /// Gets the merchant information.
         /// </summary>
