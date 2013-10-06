@@ -19,22 +19,24 @@ namespace Rock.Model
     public partial class EntityTypeService
     {
         /// <summary>
-        /// Gets EntityTypes by EntityName
+        /// Gets an <see cref="Rock.Model.EntityType"/> by it's name / type name.
         /// </summary>
-        /// <param name="entityName">Entity.</param>
-        /// <returns>An enumerable list of EntityType objects.</returns>
+        /// <param name="entityName">A <see cref="System.String"/> representing the name of the EntityType to search for.</param>
+        /// <returns>The first <see cref="Rock.Model.EntityType"/> with a name that matches the provided value.</returns>
         public EntityType Get( string entityName )
         {
             return Repository.FirstOrDefault( t => t.Name == entityName );
         }
 
         /// <summary>
-        /// Gets the specified type, and optionally creates new type if not found.
+        /// Gets the specified <see cref="Rock.Model.EntityType"/> by the object type. If a match is not found, it can optionally create a new <see cref="Rock.Model.EntityType"/> for the object.
         /// </summary>
-        /// <param name="type">The type.</param>
-        /// <param name="createIfNotFound">if set to <c>true</c> [create if not found].</param>
-        /// <param name="personId">The person id.</param>
-        /// <returns></returns>
+        /// <param name="type">The <see cref="System.Type"/> to search for.</param>
+        /// <param name="createIfNotFound">A <see cref="System.Boolean"/> value that indicates if a new <see cref="Rock.Model.EntityType"/> should be created if a match is not found. This value
+        /// will be <c>true</c> if a new <see cref="Rock.Model.EntityType"/> should be created if there is not a match; otherwise <c>false</c>/</param>
+        /// <param name="personId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who is searching for and possibly creating a new EntityType.  This value can be
+        /// null if the logged in person is not known (i.e. an anonymous user).</param>
+        /// <returns>A <see cref="Rock.Model.EntityType"/> matching the provided type. If a match is not found and createIfNotFound is false this value will be null.</returns>
         public EntityType Get( Type type, bool createIfNotFound, int? personId )
         {
             var entityType = Get( type.FullName );
@@ -58,11 +60,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the specified name.
+        /// Gets an <see cref="Rock.Model.EntityType" /> by it's name. If a match is not found, a new <see cref="Rock.Model.EntityType" /> can optionally be created.
         /// </summary>
-        /// <param name="name">The name.</param>
-        /// <param name="createIfNotFound">if set to <c>true</c> [create if not found].</param>
-        /// <param name="personId">The person id.</param>
+        /// <param name="name">A <see cref="System.String" /> representing the name of the object/entity type to search for.</param>
+        /// <param name="createIfNotFound">A <see cref="System.Boolean"/> value that indicates if a new <see cref="Rock.Model.EntityType"/> should be created if a match is not found. This value
+        /// will be <c>true</c> if a new <see cref="Rock.Model.EntityType"/> should be created if there is not a match; otherwise <c>false</c>/</param>
+        /// <param name="personId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who is searching for and possibly creating a new EntityType.  This value can be
+        /// null if the logged in person is not known (i.e. an anonymous user).</param>
         /// <returns></returns>
         public EntityType Get( string name, bool createIfNotFound, int? personId )
         {
@@ -85,9 +89,9 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the entities that have the IsEntity flag set to true
+        /// Gets an enumerable collection of <see cref="Rock.Model.EntityType">EntityTypes</see> where the IsEntity flag is set to true.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.EntityTypes"/> where the IsEntity flag is set tot true.</returns>
         public IEnumerable<EntityType> GetEntities()
         {
             return Repository.AsQueryable()
@@ -95,10 +99,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns the entities as a grouped collection of listitems with the 
-        /// "CommonGets the entity list items.
+        /// Returns the <see cref="Rock.Model.EntityType">EntityTypes</see> as a grouped collection of <see cref="System.Web.UI.WebControl.ListItem">ListItems</see> with the 
+        /// "Common" flag set to true.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A list of <see cref="Rock.Model.EntityType"/> <see cref="System.Web.UI.WebControl.ListItem">ListItems</see> ordered by their "Common" flag and FriendlyName</returns>
         public List<System.Web.UI.WebControls.ListItem> GetEntityListItems()
         {
             var items = new List<System.Web.UI.WebControls.ListItem>();
@@ -123,10 +127,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a list of ISecured entities (all models) that have not yet been registered and adds them
-        /// as an entity type.
+        /// Gets a list of ISecured and IEntity entities (all models) that have not yet been registered and adds them
+        /// as an <see cref="Rock.Model.EntityType"/>.
         /// </summary>
-        /// <param name="physWebAppPath">the physical path of the web application</param>
+        /// <param name="physWebAppPath">A <see cref="System.String"/> that represents the physical path of the web application</param>
         public void RegisterEntityTypes( string physWebAppPath )
         {
             var entityTypes = new Dictionary<string, EntityType>();

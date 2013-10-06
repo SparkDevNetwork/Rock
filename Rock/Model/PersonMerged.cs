@@ -14,7 +14,11 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Person Merged POCO Entity.
+    /// Represents the merge history for people in RockChMS. When a person is found to have a duplicate <see cref="Rock.Model.Person"/> entity in the database
+    /// the duplicate entities need to be merged together into one record to avoid confusion and to ensure that we have accurate contact, involvement, and 
+    /// contribution data. It also helps to avoid situations where an individual is counted or contacted multiple times.
+    /// 
+    /// The PersonMerged entity is a log containing the merge history (previous Person identifiers) and a pointer to the Person's current Id.
     /// </summary>
     [Table( "PersonMerged" )]
     [DataContract]
@@ -23,10 +27,10 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the previous person id.
+        /// Gets or sets the previous (merged) Id of the <see cref="Rock.Model.Person"/>. This property is required.
         /// </summary>
         /// <value>
-        /// The previous person id.
+        /// An <see cref="System.Int32"/> representing the previous (merged) Id of the <see cref="Rock.Model.Person"/>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
@@ -34,30 +38,30 @@ namespace Rock.Model
         public int PreviousPersonId { get; set; }
 
         /// <summary>
-        /// Gets or sets the previous person GUID.
+        /// Gets or sets the previous (merged) <see cref="System.Guid"/> for the <see cref="Rock.Model.Person"/>. This property is required.
         /// </summary>
         /// <value>
-        /// The previous person GUID.
+        /// A <see cref="System.Guid"/> representing the previous <see cref="System.Guid"/> identifier for the <see cref="Rock.Model.Person"/>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public Guid PreviousPersonGuid { get; set; }
 
         /// <summary>
-        /// Gets or sets the new person id.
+        /// Gets or sets the new/current Id of the <see cref="Rock.Model.Person"/>. This property is required.
         /// </summary>
         /// <value>
-        /// The new person id.
+        /// A <see cref="System.Int32"/> representing the new/current Id of the <see cref="Rock.Model.Person"/>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int NewPersonId { get; set; }
 
         /// <summary>
-        /// Gets or sets the new person GUID.
+        /// Gets or sets the new <see cref="System.Guid"/> identifier of the <see cref="Rock.Model.Person"/>. This property is required.
         /// </summary>
         /// <value>
-        /// The new person GUID.
+        /// A <see cref="System.Guid"/> representing the new/current Guid identifier of the <see cref="Rock.Model.Person"/>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
@@ -68,10 +72,10 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets the previous encrypted key.
+        /// Gets the previous encrypted key for the <see cref="Rock.Model.Person"/>.
         /// </summary>
         /// <value>
-        /// The previous encrypted key.
+        /// A <see cref="System.String"/> representing the previous encrypted key for the <see cref="Rock.Model.Person"/>.
         /// </value>
         [NotMapped]
         public virtual string PreviousEncryptedKey
@@ -83,10 +87,10 @@ namespace Rock.Model
             }
         }
         /// <summary>
-        /// Gets the new encrypted key.
+        /// Gets the new encrypted key for the <see cref="Rock.Model.Person"/>
         /// </summary>
         /// <value>
-        /// The new encrypted key.
+        /// A <see cref="System.String"/> containing the new encrypted key for the <see cref="Rock.Model.Person"/>
         /// </value>
         [NotMapped]
         public virtual string NewEncryptedKey

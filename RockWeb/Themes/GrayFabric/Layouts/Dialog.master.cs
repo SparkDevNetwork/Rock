@@ -6,6 +6,8 @@
 using System;
 using System.Web.UI;
 
+using Rock;
+
 namespace RockWeb.Themes.GrayFabric.Layouts
 {
     public partial class Dialog : Rock.Web.UI.DialogMasterPage
@@ -13,12 +15,6 @@ namespace RockWeb.Themes.GrayFabric.Layouts
         protected void btnSave_Click( object sender, EventArgs e )
         {
             base.FireSave( sender, e );
-        }
-
-        protected void btnCancel_Click( object sender, EventArgs e )
-        {
-            string script = @"window.parent.Rock.controls.modal.close();";
-            ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "close-modal", script, true );
         }
 
         /// <summary>
@@ -39,6 +35,10 @@ namespace RockWeb.Themes.GrayFabric.Layouts
 
             btnCancel.Text = Request.QueryString["sb"] ?? "Cancel";
             btnCancel.Visible = btnCancel.Text.Trim() != string.Empty;
+            if (!btnSave.Visible)
+            {
+                btnCancel.AddCssClass( "btn-primary" );
+            }
         }
 
     }

@@ -14,7 +14,8 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Entity Change POCO Entity.
+    /// Represents an Audit Log entry that is created when an add/update/delete is performed against an <see cref="Rock.Data.Entity"/> of an
+    /// auditable <see cref="Rock.Model.EntityType"/>.
     /// </summary>
     [NotAudited]
     [Table( "Audit" )]
@@ -22,87 +23,101 @@ namespace Rock.Model
     public partial class Audit : Entity<Audit>
     {
         /// <summary>
-        /// Gets or sets the Entity Type Id.
+        /// Gets or sets the EntityTypeId for the <see cref="Rock.Model.EntityType"/> of entity that was modified. This property is required.
         /// </summary>
         /// <value>
-        /// Entity Type Id.
+        /// A <see cref="System.Int32"/> representing the EntityTypeId for the <see cref="Rock.Model.EntityType"/> of the entity that was modified.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int EntityTypeId { get; set; }
         
         /// <summary>
-        /// Gets or sets the Entity Id.
+        /// Gets or sets the Id of the specific entity that was modified. This property is required.
         /// </summary>
         /// <value>
-        /// Entity Id.
+        /// A <see cref="System.Int32"/> representing the Id of the entity that was modified.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int EntityId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Entity Name.
+        /// Gets or sets the Name/Title of the specific entity that was updated. This is usually the value that is return when the entity's ToString() function is called. This property is required.
         /// </summary>
         /// <value>
-        /// Entity Name.
+        /// A <see cref="System.String"/> that represents the Entity's Name.
         /// </value>
         [Required]
         [MaxLength( 200 )]
         [DataMember( IsRequired = true )]
         public string Title { get; set; }
         
+        ///// <summary>
+        ///// Type of change: 0:Add, 1:Modify, 2:Delete
+        ///// Gets or sets the
+        ///// </summary>
+        ///// <value>
+        ///// Original Value.
+        ///// </value>
+
+
         /// <summary>
-        /// Type of change: 0:Add, 1:Modify, 2:Delete
+        /// Gets or sets the type of change that was made to the entity. This property is required.
         /// </summary>
         /// <value>
-        /// Original Value.
+        /// The type of the audit.
+        /// A <see cref="Rock.Model.AuditType"/> enumeration that indicates the type of change that was made. 
+        ///     <c>AuditType.Add</c> (0) indicates that a new entity was added; 
+        ///     <c>AuditType.Modify</c> (1) indicates that the entity was modified; 
+        ///     <c>AuditType.Delete</c> (2) indicates that the entity was deleted.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public AuditType AuditType { get; set; }
         
         /// <summary>
-        /// Gets or sets the properties modified.
+        /// Gets or sets a comma delimited list of the properties that were modified. 
         /// </summary>
         /// <value>
-        /// Properties.
+        /// A <see cref="System.String"/> representing the properties that were modified.
         /// </value>
         [DataMember]
         public string Properties { get; set; }
 
+
         /// <summary>
-        /// Gets or sets the Date Time.
+        /// Gets or sets the date and time that the entity was modified and the audit entry was created.
         /// </summary>
         /// <value>
-        /// Date Time.
+        /// A <see cref="System.DateTime"/> that represents the date and time that the entity was modified.
         /// </value>
         [DataMember]
         public DateTime? DateTime { get; set; }
         
         /// <summary>
-        /// Gets or sets the Person Id.
+        /// Gets or sets the PersonId of the <see cref="Rock.Model.Person"/> who modified the entity and created the audit entry.
         /// </summary>
         /// <value>
-        /// Person Id.
+        /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who modified the entity and crated the audit entity.
         /// </value>
         [DataMember]
         public int? PersonId { get; set; }
 
         /// <summary>
-        /// Gets or sets the type of the entity.
+        /// Gets or sets the <see cref="Rock.Model.EntityType"/> of the entity that was modified.
         /// </summary>
         /// <value>
-        /// The type of the entity.
+        /// The <see cref="Rock.Model.EntityType"/> of the entity that was modified.
         /// </value>
         [DataMember]
         public virtual Model.EntityType EntityType { get; set; }
 
         /// <summary>
-        /// Gets or sets the Person.
+        /// Gets or sets the <see cref="Rock.Model.Person"/> who modified the entity and created the audit entity.
         /// </summary>
         /// <value>
-        /// A <see cref="Person"/> object.
+        /// The <see cref="Rock.Model.Person"/> who modified the entity and created the audit entry.
         /// </value>
         [DataMember]
         public virtual Rock.Model.Person Person { get; set; }

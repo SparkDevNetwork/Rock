@@ -9,19 +9,19 @@ using System.Linq;
 namespace Rock.Model
 {
     /// <summary>
-    /// Attendance POCO Service class
+    /// Data Access/Service class for <see cref="Rock.Model.Attendance"/> entity objects
     /// </summary>
     public partial class AttendanceService
     {
         /// <summary>
-        /// Gets the specified attendance record.
+        /// Returns a specific <see cref="Rock.Model.Attendance"/> record.
         /// </summary>
-        /// <param name="date">The date.</param>
-        /// <param name="locationId">The location id.</param>
-        /// <param name="scheduleId">The schedule id.</param>
-        /// <param name="groupId">The group id.</param>
-        /// <param name="personId">The person id.</param>
-        /// <returns></returns>
+        /// <param name="date">A <see cref="System.DateTime"/> representing the the date attended.</param>
+        /// <param name="locationId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Location"/> </param>
+        /// <param name="scheduleId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Schedule"/></param>
+        /// <param name="groupId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Group"/>.</param>
+        /// <param name="personId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/></param>
+        /// <returns>The first <see cref="Rock.Model.Attendance"/> entity that matches the provided values.</returns>
         public Attendance Get( DateTime date, int locationId, int scheduleId, int groupId, int personId )
         {
             DateTime beginDate = date.Date;
@@ -39,11 +39,11 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the by date and location.
+        /// Returns a queryable collection of <see cref="Rock.Model.Attendance"/> for a <see cref="Rock.Model.Location"/> on a specified date.
         /// </summary>
-        /// <param name="locationId">The location id.</param>
-        /// <param name="date">The date.</param>
-        /// <returns></returns>
+        /// <param name="locationId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Location"/></param>
+        /// <param name="date">A <see cref="System.DateTime"/> representing the date attended.</param>
+        /// <returns>A queryable collection of <see cref="Rock.Model.Attendance"/> entities for a specific date and location.</returns>
         public IQueryable<Attendance> GetByDateAndLocation( DateTime date, int locationId )
         {
             DateTime beginDate = date.Date;
