@@ -483,6 +483,7 @@ namespace Rock.Web.UI.Controls
                 _defaultValueControl = field.EditControl( Qualifiers, string.Format( "defaultValue_{0}_{1}", FieldTypeId.Value, this.ID ) );
                 if ( _defaultValueControl != null )
                 {
+                    field.SetEditValue(_defaultValueControl, Qualifiers, DefaultValue );
                     if ( _defaultValueControl is IRockControl )
                     {
                         ( (IRockControl)_defaultValueControl ).Required = false;
@@ -590,7 +591,7 @@ namespace Rock.Web.UI.Controls
                     if ( rockControl != null )
                     {
                         rockControl.Label = "Default Value";
-                        RockControlHelper.RenderControl( rockControl, writer );
+                        _defaultValueControl.RenderControl( writer );
                     }
                     else
                     {
