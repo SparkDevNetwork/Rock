@@ -182,14 +182,14 @@ namespace RockWeb.Blocks.Administration
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 site = new SiteService().Get( itemKeyValue );
-                lActionTitle.Text = ActionTitle.Edit( Rock.Model.Site.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Edit( Rock.Model.Site.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
                 site = new Site { Id = 0 };
                 site.SiteDomains = new List<SiteDomain>();
                 site.Theme = CurrentPage.Layout.Site.Theme;
-                lActionTitle.Text = ActionTitle.Add( Rock.Model.Site.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Add( Rock.Model.Site.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
             LoadDropDowns();
