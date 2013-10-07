@@ -407,7 +407,6 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            RegisterJavaScript();
             var sm = ScriptManager.GetCurrent( this.Page );
 
             if ( sm != null )
@@ -416,6 +415,20 @@ namespace Rock.Web.UI.Controls
                 sm.RegisterAsyncPostBackControl( _btnSelectNone );
                 var googleAPIKey = GlobalAttributesCache.Read().GetValue( "GoogleAPIKey" );
                 sm.Scripts.Add( new ScriptReference( string.Format( "https://maps.googleapis.com/maps/api/js?key={0}&sensor=false&libraries=drawing", googleAPIKey )  ) );
+            }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+            if ( this.Visible )
+            {
+                // register the Javascript in OnLoad instead of OnInit because the LocationPicker in 'GeoPoint mode' might change the .Visible 
+                RegisterJavaScript();
             }
         }
 
@@ -536,13 +549,13 @@ namespace Rock.Web.UI.Controls
                 writer.Write( @"
                     <h4>Geography Picker</h4>
                     <!-- Our custom delete button that we add to the map for deleting polygons. -->
-                    <div style='{1} z-index: 10; position: absolute; left: 105px; top: 0px; line-height:0;' id='gmnoprint-delete-button_{0}'>
+                    <div style='display:none; z-index: 10; position: absolute; left: 105px; top: 0px; line-height:0;' id='gmnoprint-delete-button_{0}'>
                         <div style='direction: ltr; overflow: hidden; text-align: left; position: relative; color: rgb(51, 51, 51); font-family: Arial, sans-serif; font-size: 13px; background-color: rgb(255, 255, 255); padding: 4px; border-width: 1px 1px 1px 1px; border-style: solid; border-color: rgb(113, 123, 135); -webkit-box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px; box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px; font-weight: normal; background-position: initial initial; background-repeat: initial initial;' title='Delete selected shape'>
                             <span style='display: inline-block;'><div style='width: 16px; height: 16px; overflow: hidden; position: relative;'><i class='icon-remove' style='font-size: 16px; padding-left: 2px; color: #aaa;'></i></div></span>
                         </div>
                     </div>
                     <!-- This is where the Google Map (with Drawing Tools) will go. -->
-                    <div id='geoPicker_{0}' style='height: 300px; width: 500px' /></div>", this.ClientID, ShowDropDown ? "display:block;" : "display:none;" );
+                    <div id='geoPicker_{0}' style='height: 300px; width: 500px' /></div>", this.ClientID );
                 writer.WriteLine();
 
                 writer.Write("<div class='picker-actions'>");

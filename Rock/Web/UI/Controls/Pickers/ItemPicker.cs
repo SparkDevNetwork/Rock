@@ -387,6 +387,14 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public Panel ModePanel { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether [show drop down].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show drop down]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowDropDown { get; set; }
+
         #endregion
 
         #region Constructors
@@ -539,6 +547,11 @@ namespace Rock.Web.UI.Controls
 
                 // picker menu
                 writer.AddAttribute( "class", "picker-menu dropdown-menu" );
+                if ( ShowDropDown )
+                {
+                    writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "block" );
+                }
+                
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 // mode panel

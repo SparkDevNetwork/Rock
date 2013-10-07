@@ -62,6 +62,7 @@ namespace Rock.Web.UI.Controls
         public LocationPicker()
             : base()
         {
+            this.ViewStateMode = ViewStateMode.Disabled;
         }
 
         #endregion
@@ -160,6 +161,7 @@ namespace Rock.Web.UI.Controls
             _locationAddressPicker.Visible = _radAddress.Checked;
             _locationGeoPicker.Visible = _radLatLong.Checked;
 
+            _locationItemPicker.ShowDropDown = _radNamedLocation.Checked;
             _locationGeoPicker.ShowDropDown = _radLatLong.Checked;
         }
 
