@@ -635,7 +635,7 @@ achieve our mission.  We are so grateful for your commitment.
                         savedAccount.PersonId = transaction.AuthorizedPersonId.Value;
                         savedAccount.FinancialTransactionId = transaction.Id;
                         savedAccount.Name = txtSaveAccount.Text;
-                        savedAccount.MaskedAccountNumber = paymentInfo.AccountNumber;
+                        savedAccount.MaskedAccountNumber = paymentInfo.MaskedNumber;
 
                         var savedAccountService = new FinancialPersonSavedAccountService();
                         savedAccountService.Add( savedAccount, CurrentPersonId );
@@ -1010,7 +1010,7 @@ achieve our mission.  We are so grateful for your commitment.
             tdTotal.Description = paymentInfo.Amount.ToString( "C" );
 
             tdPaymentMethod.Description = paymentInfo.CurrencyTypeValue.Description;
-            tdAccountNumber.Description = paymentInfo.AccountNumber;
+            tdAccountNumber.Description = paymentInfo.MaskedNumber;
             tdWhen.Description = schedule != null ? schedule.ToString() : "Today";
 
             return true;
