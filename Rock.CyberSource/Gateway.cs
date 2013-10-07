@@ -136,6 +136,10 @@ namespace Rock.CyberSource
                 {
                     var cc = paymentInfo as CreditCardPaymentInfo;
                     request.card = GetCard( cc );
+
+                    request.ccAuthService = new CCAuthService();
+                    request.ccAuthService.run = "true";
+
                 }
                 else if ( reference.CurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) ) )
                 {
@@ -431,9 +435,6 @@ namespace Rock.CyberSource
                 case "Discover":
                     card.cardType = "004";
                     break;                
-                case "Diners Club":
-                    card.cardType = "005";
-                    break;
                 default:
                     card.cardType = null;
                     break;
