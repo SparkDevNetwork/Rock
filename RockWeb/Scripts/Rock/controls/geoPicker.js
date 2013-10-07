@@ -405,10 +405,15 @@
                 restUrl = this.restUrl;
             var self = this;
 
+            debugger
+
             /**
             * Toggle the picker on and off when the control's link is clicked.
             */
             $('#' + controlId + ' a.picker-label').click(function (e) {
+
+                debugger
+
                 e.preventDefault();
                 $('#' + controlId).find('.picker-menu').first().toggle();
                 if ($('#' + controlId).find('.picker-menu').first().is(":visible")) {

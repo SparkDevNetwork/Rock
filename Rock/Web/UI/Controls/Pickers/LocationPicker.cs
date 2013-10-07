@@ -103,7 +103,7 @@ namespace Rock.Web.UI.Controls
             // Mode Selection Panel and Controls
             _pnlModeSelection = new Panel { ID = "pnlModeSelection" };
             _pnlModeSelection.CssClass = "picker-mode-options";
-            Controls.Add( _pnlModeSelection );
+            
             _pnlModeSelection.Visible = !this.LimitToNamedLocations;
 
             _radNamedLocation = new RadioButton { ID = "radNamedLocation" };
@@ -137,6 +137,9 @@ namespace Rock.Web.UI.Controls
             _locationGeoPicker.ID = this.ID + "_locationGeoPicker";
             _locationGeoPicker.Visible = false;
 
+            _locationItemPicker.ModePanel = _pnlModeSelection;
+            _locationGeoPicker.ModePanel = _pnlModeSelection;
+
             Controls.Add( _locationItemPicker );
             Controls.Add( _locationAddressPicker );
             Controls.Add( _locationGeoPicker );
@@ -156,6 +159,8 @@ namespace Rock.Web.UI.Controls
             _locationItemPicker.Visible = _radNamedLocation.Checked;
             _locationAddressPicker.Visible = _radAddress.Checked;
             _locationGeoPicker.Visible = _radLatLong.Checked;
+
+            _locationGeoPicker.ShowDropDown = _radLatLong.Checked;
         }
 
         #endregion

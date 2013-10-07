@@ -379,6 +379,14 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string DefaultText { get; set; }
 
+        /// <summary>
+        /// Gets or sets the mode panel.
+        /// </summary>
+        /// <value>
+        /// The mode panel.
+        /// </value>
+        public Panel ModePanel { get; set; }
+
         #endregion
 
         #region Constructors
@@ -446,6 +454,11 @@ namespace Rock.Web.UI.Controls
             _hfItemRestUrlExtraParams = new HiddenField();
             _hfItemRestUrlExtraParams.ClientIDMode = ClientIDMode.Static;
             _hfItemRestUrlExtraParams.ID = string.Format( "hfItemRestUrlExtraParams_{0}", this.ID );
+
+            if ( ModePanel != null )
+            {
+                this.Controls.Add( ModePanel );
+            }
 
             _btnSelect = new LinkButton();
             _btnSelect.ClientIDMode = ClientIDMode.Static;
@@ -527,6 +540,12 @@ namespace Rock.Web.UI.Controls
                 // picker menu
                 writer.AddAttribute( "class", "picker-menu dropdown-menu" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                // mode panel
+                if ( ModePanel != null )
+                {
+                    ModePanel.RenderControl( writer );
+                }
 
                 // treeview
                 writer.Write( @"
