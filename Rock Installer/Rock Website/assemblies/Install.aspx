@@ -304,17 +304,17 @@
 							
 							<div class="form-group">
 								<label class="control-label" for="inputEmail">Database Server</label>
-								<asp:TextBox ID="txtServerName" Text="vserver01.cytanium.com" runat="server" CssClass="required-field form-control"></asp:TextBox>
+								<asp:TextBox ID="txtServerName" Text="" runat="server" CssClass="required-field form-control"></asp:TextBox>
 							</div>
 							
 							<div class="form-group">
 								<label class="control-label" for="inputEmail">Database Name</label>
-								<asp:TextBox ID="txtDatabaseName" Text="sparkdevcms" runat="server" CssClass="required-field form-control"></asp:TextBox>
+								<asp:TextBox ID="txtDatabaseName" Text="" runat="server" CssClass="required-field form-control"></asp:TextBox>
 							</div>
 							
 							<div class="form-group">
 								<label class="control-label" for="inputEmail">Database Username</label>
-								<asp:TextBox ID="txtUsername" Text="RockDevUser" runat="server" CssClass="required-field form-control"></asp:TextBox>
+								<asp:TextBox ID="txtUsername" Text="" runat="server" CssClass="required-field form-control"></asp:TextBox>
 							</div>
 							
 							<div class="form-group">
@@ -322,7 +322,7 @@
 								
                                 <div class="row">
                                     <div class="col-md-8">
-                                        <asp:TextBox ID="txtPassword" Text="DM1w3tPH5nOorQO" TextMode="Password" runat="server" CssClass="required-field form-control"></asp:TextBox>
+                                        <asp:TextBox ID="txtPassword" Text="" TextMode="Password" runat="server" CssClass="required-field form-control"></asp:TextBox>
                                     </div>
                                     <div class="col-md-4" style="padding-top: 6px;">
                                         <input id="show-password" type="checkbox" />
