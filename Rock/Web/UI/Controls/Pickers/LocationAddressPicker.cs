@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using Rock;
 
 namespace Rock.Web.UI.Controls
 {
@@ -17,8 +12,7 @@ namespace Rock.Web.UI.Controls
     {
         #region Controls
 
-        HtmlAnchor _btnPickerLabel;
-
+        private HtmlAnchor _btnPickerLabel;
         private Panel _pnlPickerMenu;
         private Panel _pnlAddressEntry;
         private RockTextBox _tbAddress1;
@@ -37,6 +31,8 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
+        #region Properties
+
         /// <summary>
         /// Gets the address summary text.
         /// </summary>
@@ -49,6 +45,52 @@ namespace Rock.Web.UI.Controls
             {
                 return "TODO!";
             }
+        }
+
+        /// <summary>
+        /// Gets or sets the mode panel.
+        /// </summary>
+        /// <value>
+        /// The mode panel.
+        /// </value>
+        public Panel ModePanel { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show drop down].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show drop down]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowDropDown { get; set; }
+
+        #endregion
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+            if ( ShowDropDown )
+            {
+                EnsureChildControls();
+                _pnlPickerMenu.Style[HtmlTextWriterStyle.Display] = "block";
+            }
+        }
+
+        /// <summary>
+        /// Renders the control to the specified HTML writer.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        protected override void Render( HtmlTextWriter writer )
+        {
+            if ( ModePanel != null )
+            {
+                _pnlPickerMenu.Controls.AddAt( 0, ModePanel );
+            }
+
+            base.Render( writer );
         }
 
         /// <summary>
@@ -66,7 +108,7 @@ namespace Rock.Web.UI.Controls
             _btnPickerLabel.InnerHtml = string.Format( "<i class='icon-user'></i>{0}<b class='caret pull-right'></b>", this.AddressSummaryText );
             _btnPickerLabel.HRef = "#";
             this.Controls.Add( _btnPickerLabel );
-            
+
             // PickerMenu (DropDown menu)
             _pnlPickerMenu = new Panel { ID = "pnlPickerMenu" };
             _pnlPickerMenu.CssClass = "picker-menu dropdown-menu";
@@ -121,7 +163,6 @@ namespace Rock.Web.UI.Controls
             _btnCancel = new LinkButton { ID = "btnCancel", CssClass = "btn btn-xs", Text = "Cancel" };
             _btnCancel.OnClientClick = string.Format( "$('#{0}').hide();", _pnlPickerMenu.ClientID );
             _pnlPickerActions.Controls.Add( _btnCancel );
-
         }
 
         /// <summary>
@@ -129,7 +170,7 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void _btnPickerLabel_Click( object sender, EventArgs e )
+        protected void _btnPickerLabel_Click( object sender, EventArgs e )
         {
             string currentVal = _pnlPickerMenu.Style[HtmlTextWriterStyle.Display];
 
@@ -142,11 +183,9 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        void _btnSelect_Click( object sender, EventArgs e )
+        protected void _btnSelect_Click( object sender, EventArgs e )
         {
             // TODO
         }
-
-        
     }
 }
