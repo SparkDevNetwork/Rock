@@ -10969,6 +10969,80 @@ fieldset[disabled] .btn-action.active {
   background-color: #a4b4c4;
   border-color: #859bb0;
 }
+.btn-security {
+  color: #ffffff;
+  background-color: #a4b4c4;
+  border-color: #859bb0;
+}
+.btn-security:hover,
+.btn-security:focus,
+.btn-security:active,
+.btn-security.active,
+.open .dropdown-toggle.btn-security {
+  color: #ffffff;
+  background-color: #8ba0b4;
+  border-color: #617c96;
+}
+.btn-security:active,
+.btn-security.active,
+.open .dropdown-toggle.btn-security {
+  background-image: none;
+}
+.btn-security.disabled,
+.btn-security[disabled],
+fieldset[disabled] .btn-security,
+.btn-security.disabled:hover,
+.btn-security[disabled]:hover,
+fieldset[disabled] .btn-security:hover,
+.btn-security.disabled:focus,
+.btn-security[disabled]:focus,
+fieldset[disabled] .btn-security:focus,
+.btn-security.disabled:active,
+.btn-security[disabled]:active,
+fieldset[disabled] .btn-security:active,
+.btn-security.disabled.active,
+.btn-security[disabled].active,
+fieldset[disabled] .btn-security.active {
+  background-color: #a4b4c4;
+  border-color: #859bb0;
+}
+.btn-edit {
+  color: #222222;
+  background-color: #ffffff;
+  border-color: #e6e6e6;
+}
+.btn-edit:hover,
+.btn-edit:focus,
+.btn-edit:active,
+.btn-edit.active,
+.open .dropdown-toggle.btn-edit {
+  color: #222222;
+  background-color: #ebebeb;
+  border-color: #c7c7c7;
+}
+.btn-edit:active,
+.btn-edit.active,
+.open .dropdown-toggle.btn-edit {
+  background-image: none;
+}
+.btn-edit.disabled,
+.btn-edit[disabled],
+fieldset[disabled] .btn-edit,
+.btn-edit.disabled:hover,
+.btn-edit[disabled]:hover,
+fieldset[disabled] .btn-edit:hover,
+.btn-edit.disabled:focus,
+.btn-edit[disabled]:focus,
+fieldset[disabled] .btn-edit:focus,
+.btn-edit.disabled:active,
+.btn-edit[disabled]:active,
+fieldset[disabled] .btn-edit:active,
+.btn-edit.disabled.active,
+.btn-edit[disabled].active,
+fieldset[disabled] .btn-edit.active {
+  background-color: #ffffff;
+  border-color: #e6e6e6;
+}
 .k-treeview .k-in.k-state-hover,
 .k-treeview .k-in.k-state-selected,
 .k-treeview .k-in.k-state-focused,
