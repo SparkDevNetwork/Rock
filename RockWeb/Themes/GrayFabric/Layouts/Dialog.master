@@ -1,7 +1,44 @@
-﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Dialog.master.cs" Inherits="RockWeb.Themes.GrayFabric.Layouts.Dialog" %>
-
+﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.DialogMasterPage" %>
 <%@ Import Namespace="System.Web.Optimization" %>
+<%@ Import Namespace="Rock" %>
+
 <!DOCTYPE html>
+
+<script runat="server">
+    
+    /// <summary>
+    /// Handles the Click event of the btnSave control.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+    protected void btnSave_Click( object sender, EventArgs e )
+    {
+        base.FireSave( sender, e );
+    }
+
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+    protected override void OnInit( EventArgs e )
+    {
+        base.OnInit( e );
+
+        lTitle.Text = Request.QueryString["t"] ?? "Title";
+
+        btnSave.Text = Request.QueryString["pb"] ?? "Save";
+        btnSave.Visible = btnSave.Text.Trim() != string.Empty;
+
+        btnCancel.Text = Request.QueryString["sb"] ?? "Cancel";
+        btnCancel.Visible = btnCancel.Text.Trim() != string.Empty;
+        if ( !btnSave.Visible )
+        {
+            btnCancel.AddCssClass( "btn-primary" );
+        }
+    }    
+    
+</script>
+
 <html>
 <head runat="server">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
