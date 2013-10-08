@@ -494,8 +494,6 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            
-
             if ( this.Visible )
             {
                 RockControlHelper.RenderControl( this, writer );
