@@ -274,10 +274,12 @@ achieve our mission.  We are so grateful for your commitment.
                 
                 bool.TryParse( GetAttributeValue( "DisplayEmail" ), out display );
                 txtEmail.Visible = display;
+                txtEmail.Required = display;
                 tdEmail.Visible = display;
 
                 bool.TryParse( GetAttributeValue( "DisplayPhone" ), out display );
                 txtPhone.Visible = display;
+                txtPhone.Required = display;
                 tdPhone.Visible = display;
 
                 FluidLayout = GetAttributeValue( "LayoutStyle" ) == "Fluid";
