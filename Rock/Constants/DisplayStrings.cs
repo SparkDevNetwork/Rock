@@ -178,6 +178,16 @@ namespace Rock.Constants
         }
 
         /// <summary>
+        /// Returns a message in the format: "INFO: This is a system {0}."
+        /// </summary>
+        /// <param name="itemFriendlyName">Name of the item friendly.</param>
+        /// <returns></returns>
+        public static string System( string itemFriendlyName )
+        {
+            return string.Format( "<p><strong>Information</strong></p> This is a system {0}.", itemFriendlyName.ToLower() );
+        }
+
+        /// <summary>
         /// Returns a message in the format: "INFO: You do not have access to edit this {0}."
         /// </summary>
         /// <param name="itemFriendlyName">Name of the item field.</param>
