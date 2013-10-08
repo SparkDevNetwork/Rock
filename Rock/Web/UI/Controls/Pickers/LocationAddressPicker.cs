@@ -2,6 +2,7 @@
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
+using Rock.Model;
 
 namespace Rock.Web.UI.Controls
 {
@@ -12,6 +13,7 @@ namespace Rock.Web.UI.Controls
     {
         #region Controls
 
+        private HiddenField _hfLocationId;
         private HtmlAnchor _btnPickerLabel;
         private Panel _pnlPickerMenu;
         private Panel _pnlAddressEntry;
@@ -43,8 +45,49 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return "TODO!";
+                if ( this.Location != null )
+                {
+                    return this.Location.ToString();
+                }
+                else
+                {
+                    return Rock.Constants.None.Text;
+                }
             }
+        }
+
+        /// <summary>
+        /// Gets the location.
+        /// </summary>
+        /// <value>
+        /// The location.
+        /// </value>
+        public Location Location {
+            get
+            {
+                EnsureChildControls();
+                return new LocationService().Get( _hfLocationId.ValueAsInt() );
+            }
+
+            private set
+            {
+                EnsureChildControls();
+                _hfLocationId.Value = value.Id.ToString();
+                _tbAddress1.Text = value.Street1;
+                _tbAddress2.Text = value.Street2;
+                _tbCity.Text = value.City;
+                _ddlState.SelectedValue = value.State;
+                _tbZip.Text = value.Zip;
+            }
+        }
+
+        /// <summary>
+        /// Sets the value.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        public void SetValue( Location value )
+        {
+            Location = value;
         }
 
         /// <summary>
@@ -77,6 +120,9 @@ namespace Rock.Web.UI.Controls
                 EnsureChildControls();
                 _pnlPickerMenu.Style[HtmlTextWriterStyle.Display] = "block";
             }
+
+            EnsureChildControls();
+            ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( _btnSelect );
         }
 
         /// <summary>
@@ -102,6 +148,9 @@ namespace Rock.Web.UI.Controls
             Controls.Clear();
 
             this.CssClass = "picker picker-select";
+
+            _hfLocationId = new HiddenField { ID = "hfLocationId" };
+            this.Controls.Add( _hfLocationId );
 
             _btnPickerLabel = new HtmlAnchor { ID = "btnPickerLabel" };
             _btnPickerLabel.Attributes["class"] = "picker-label";
@@ -185,7 +234,10 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void _btnSelect_Click( object sender, EventArgs e )
         {
-            // TODO
+            LocationService locationService = new LocationService();
+            var location = locationService.Get( _tbAddress1.Text, _tbAddress2.Text, _tbCity.Text, _ddlState.SelectedItem.Text, _tbZip.Text );
+            Location = location;
+            _btnPickerLabel.InnerHtml = string.Format( "<i class='icon-user'></i>{0}<b class='caret pull-right'></b>", this.AddressSummaryText );
         }
     }
 }

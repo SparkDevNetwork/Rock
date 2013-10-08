@@ -29,9 +29,12 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
-        #region internal enums
+        #region class enums
 
-        private enum PickerMode
+        /// <summary>
+        /// 
+        /// </summary>
+        public enum LocationPickerMode
         {
             NamedLocation,
             Address,
@@ -67,16 +70,60 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The current picker mode.
         /// </value>
-        private PickerMode CurrentPickerMode
+        public LocationPickerMode PickerMode
         {
             get
             {
-                return ViewState["CurrentPickerMode"] as PickerMode? ?? PickerMode.NamedLocation;
+                if ( LimitToNamedLocations )
+                {
+                    return LocationPickerMode.NamedLocation;
+                }
+                else
+                {
+                    return ViewState["CurrentPickerMode"] as LocationPickerMode? ?? LocationPickerMode.NamedLocation;
+                }
             }
 
             set
             {
                 ViewState["CurrentPickerMode"] = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the location.
+        /// </summary>
+        /// <value>
+        /// The location.
+        /// </value>
+        public Location Location
+        {
+            get
+            {
+                EnsureChildControls();
+                switch ( PickerMode )
+                {
+                    case LocationPickerMode.Address:
+                        {
+                            return _locationAddressPicker.Location;
+                        }
+                    case LocationPickerMode.LatLong:
+                        {
+                            return new LocationService().GetByGeoLocation( _locationGeoPicker.SelectedValue );
+                        }
+                    default:
+                        {
+                            return new LocationService().Get( _locationItemPicker.SelectedValueAsId() ?? 0 );
+                        }
+                }
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _locationAddressPicker.SetValue( value );
+                _locationItemPicker.SetValue( value );
+                _locationGeoPicker.SetValue( value.GeoPoint ?? value.GeoFence );
             }
         }
 
@@ -122,19 +169,19 @@ namespace Rock.Web.UI.Controls
 
             _radNamedLocation = new RadioButton { ID = "radNamedLocation" };
             _radNamedLocation.Text = "Named Location";
-            _radNamedLocation.Checked = CurrentPickerMode == PickerMode.NamedLocation;
+            _radNamedLocation.Checked = this.PickerMode == LocationPickerMode.NamedLocation;
             _radNamedLocation.GroupName = "radiogroup-location-mode_" + this.ClientID;
             _pnlModeSelection.Controls.Add( _radNamedLocation );
 
             _radAddress = new RadioButton { ID = "radAddress" };
             _radAddress.Text = "Address";
-            _radAddress.Checked = CurrentPickerMode == PickerMode.Address;
+            _radAddress.Checked = this.PickerMode == LocationPickerMode.Address;
             _radAddress.GroupName = "radiogroup-location-mode_" + this.ClientID;
             _pnlModeSelection.Controls.Add( _radAddress );
 
             _radLatLong = new RadioButton { ID = "radLatLong" };
             _radLatLong.Text = "Lat/Long";
-            _radLatLong.Checked = CurrentPickerMode == PickerMode.LatLong;
+            _radLatLong.Checked = this.PickerMode == LocationPickerMode.LatLong;
             _radLatLong.GroupName = "radiogroup-location-mode_" + this.ClientID;
             _pnlModeSelection.Controls.Add( _radLatLong );
 
@@ -144,13 +191,13 @@ namespace Rock.Web.UI.Controls
 
             _locationItemPicker = new LocationItemPicker();
             _locationItemPicker.ID = this.ID + "_locationItemPicker";
-            _locationItemPicker.Visible = CurrentPickerMode == PickerMode.NamedLocation;
+            _locationItemPicker.Visible = this.PickerMode == LocationPickerMode.NamedLocation;
             _locationAddressPicker = new LocationAddressPicker();
             _locationAddressPicker.ID = this.ID + "_locationAddressPicker";
-            _locationAddressPicker.Visible = CurrentPickerMode == PickerMode.Address;
+            _locationAddressPicker.Visible = this.PickerMode == LocationPickerMode.Address;
             _locationGeoPicker = new GeoPicker();
             _locationGeoPicker.ID = this.ID + "_locationGeoPicker";
-            _locationGeoPicker.Visible = CurrentPickerMode == PickerMode.LatLong;
+            _locationGeoPicker.Visible = this.PickerMode == LocationPickerMode.LatLong;
 
             _locationItemPicker.ModePanel = _pnlModeSelection;
             _locationGeoPicker.ModePanel = _pnlModeSelection;
@@ -191,20 +238,22 @@ namespace Rock.Web.UI.Controls
             _locationAddressPicker.ShowDropDown = _radAddress.Checked;
             _locationGeoPicker.ShowDropDown = _radLatLong.Checked;
 
-            if ( _radNamedLocation.Checked )
+            if ( _radAddress.Checked )
             {
-                CurrentPickerMode = PickerMode.Address;
+                this.PickerMode = LocationPickerMode.Address;
             }
             else if ( _radLatLong.Checked )
             {
-                CurrentPickerMode = PickerMode.LatLong;
+                this.PickerMode = LocationPickerMode.LatLong;
             }
             else
             {
-                CurrentPickerMode = PickerMode.NamedLocation;
+                this.PickerMode = LocationPickerMode.NamedLocation;
             }
         }
 
         #endregion
     }
+
+
 }
