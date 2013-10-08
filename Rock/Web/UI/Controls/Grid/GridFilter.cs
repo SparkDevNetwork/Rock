@@ -154,7 +154,7 @@ Sys.Application.add_load(function () {
                     if ( !string.IsNullOrWhiteSpace( args.Value ) )
                     {
                         writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                        writer.Write( string.Format( "{0}: {1}", args.Key, args.Value ) );
+                        writer.Write( string.Format( "<label>{0}:</label> {1}", args.Key, args.Value ) );
                         writer.RenderEndTag();
                     }
                 }
