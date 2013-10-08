@@ -430,7 +430,7 @@ namespace Rock.Web.UI.Controls
             _tbName.SourceTypeName = "Rock.Model.Attribute, Rock";
             _tbName.PropertyName = "Name";
             _tbName.Required = true;
-            Controls.Add( _tbName );
+            Controls.Add(_tbName);
 
             _tbKey.ID = string.Format( "tbKey_{0}", this.ID );
             _tbKey.SourceTypeName = "Rock.Model.Attribute, Rock";
@@ -447,19 +447,19 @@ namespace Rock.Web.UI.Controls
             _cvKey.ErrorMessage = "There is already an existing property with the key value you entered.  Please select a different key value";
             Controls.Add( _cvKey );
 
+            _tbDescription.ID = string.Format("tbDescription_{0}", this.ID);
+            _tbDescription.TextMode = TextBoxMode.MultiLine;
+            _tbDescription.Rows = 3;
+            _tbDescription.SourceTypeName = "Rock.Model.Attribute, Rock";
+            _tbDescription.PropertyName = "Description";
+            Controls.Add(_tbDescription);
+
             _cpCategories.Label = "Categories";
             _cpCategories.ID = string.Format( "cpCategories_{0}", this.ID );
             _cpCategories.AllowMultiSelect = true;
             _cpCategories.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Attribute ) ).Id;
             _cpCategories.EntityTypeQualifierColumn = "EntityTypeId";
             Controls.Add( _cpCategories );
-
-            _tbDescription.ID = string.Format( "tbDescription_{0}", this.ID );
-            _tbDescription.TextMode = TextBoxMode.MultiLine;
-            _tbDescription.Rows = 3;
-            _tbDescription.SourceTypeName = "Rock.Model.Attribute, Rock";
-            _tbDescription.PropertyName = "Description";
-            Controls.Add( _tbDescription );
 
             _ddlFieldType.ID = string.Format( "ddlFieldType_{0}", this.ID );
             _ddlFieldType.Label = "Field Type";
@@ -535,26 +535,56 @@ namespace Rock.Web.UI.Controls
             _lAttributeActionTitle.RenderControl( writer );
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row-fluid" );
+            // row 1
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _tbName.Attributes["onblur"] = string.Format( "populateAttributeKey('{0}','{1}')", _tbName.ClientID, _tbKey.ClientID );
             _tbName.RenderControl( writer );
-            _tbKey.RenderControl( writer );
-            _cvKey.RenderControl( writer );
 
-            if ( this.AttributeEntityTypeId.HasValue )
+            writer.RenderEndTag();
+            writer.RenderEndTag();
+
+            // row 2
+            writer.AddAttribute(HtmlTextWriterAttribute.Class, "row");
+            writer.RenderBeginTag(HtmlTextWriterTag.Div);
+
+            writer.AddAttribute(HtmlTextWriterAttribute.Class, "col-md-12");
+            writer.RenderBeginTag(HtmlTextWriterTag.Div);
+
+            _tbDescription.RenderControl(writer);
+
+            writer.RenderEndTag();
+            writer.RenderEndTag();
+
+            // row 3
+            writer.AddAttribute(HtmlTextWriterAttribute.Class, "row");
+            writer.RenderBeginTag(HtmlTextWriterTag.Div);
+
+            // row 3 col 1
+            writer.AddAttribute(HtmlTextWriterAttribute.Class, "col-md-6");
+            writer.RenderBeginTag(HtmlTextWriterTag.Div);
+
+
+            if (this.AttributeEntityTypeId.HasValue)
             {
                 _cpCategories.EntityTypeQualifierValue = this.AttributeEntityTypeId.Value.ToString();
             }
-            _cpCategories.RenderControl( writer );
+            _cpCategories.RenderControl(writer);
 
-            _tbDescription.RenderControl( writer );
+            _tbKey.RenderControl( writer );
+            _cvKey.RenderControl( writer );
+
+            _cbMultiValue.RenderControl(writer);
+            _cbRequired.RenderControl(writer);
+            _cbShowInGrid.RenderControl(writer);
+            
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
+            // row 3 col 2
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _ddlFieldType.SetValue( FieldTypeId );
             _ddlFieldType.RenderControl( writer );
@@ -600,12 +630,9 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            _cbMultiValue.RenderControl( writer );
-            _cbRequired.RenderControl( writer );
-            _cbShowInGrid.RenderControl( writer );
             writer.RenderEndTag();
             
-            // row-fluid </div>
+            // row </div>
             writer.RenderEndTag();
 
             // </fieldset>
