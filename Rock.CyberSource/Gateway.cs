@@ -7,11 +7,13 @@ using System.Net;
 using System.Net.Sockets;
 using System.ServiceModel;
 using System.ServiceModel.Description;
+using System.Text.RegularExpressions;
 
 using Rock.Attribute;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Extension;
 
 namespace Rock.CyberSource
 {
@@ -96,16 +98,13 @@ namespace Rock.CyberSource
         {
             errorMessage = string.Empty;
 
-            string merchantID = GetAttributeValue( "MerchantID" );
-            string transactionkey = GetAttributeValue( "TransactionKey" );
-
             RequestMessage request = GetMerchantInfo();
             request.billTo = GetBillTo( paymentInfo );
+            
+            request.item = new Item[1];
+            request.item[0] = GetItems( paymentInfo );
+            request.purchaseTotals = GetTotals( paymentInfo );
 
-            // put this somewhere to reference the financial transaction
-            request.merchantReferenceCode = "RockTransactionNumber";
-
-            // check payment type
             if ( paymentInfo is CreditCardPaymentInfo )
             {
                 var cc = paymentInfo as CreditCardPaymentInfo;
@@ -134,70 +133,32 @@ namespace Rock.CyberSource
                 var reference = paymentInfo as ReferencePaymentInfo;
                 if ( reference.CurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) )
                 {
-                    var cc = paymentInfo as CreditCardPaymentInfo;
-                    request.card = GetCard( cc );
+                    //get request subscription ID ( financialscheduledtransaction.transactionCode )
+                    
 
-                    request.ccAuthService = new CCAuthService();
-                    request.ccAuthService.run = "true";
 
                 }
                 else if ( reference.CurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) ) )
                 {
                     var ach = paymentInfo as ACHPaymentInfo;
-                    request.check = GetCheck( ach );
+                    //request.check = GetCheck( ach );
                 }                
             }
             else if ( paymentInfo is SwipePaymentInfo )
             {
                 throw new NotImplementedException( "Point of Sale transactions not implemented." );
-            }            
-                        
-            request.item = new Item[1];
-            request.item[0] = GetItems( paymentInfo );
-            request.purchaseTotals = GetTotals( paymentInfo );
+            }           
 
-            TransactionProcessorClient proxy = GetConnection();
-            proxy.ClientCredentials.UserName.UserName = merchantID;
-            proxy.ClientCredentials.UserName.Password = transactionkey;             
-       
-            try            
-            {                
-                ReplyMessage reply = proxy.runTransaction( request );
+            ReplyMessage reply = SubmitTransaction( request );
+
+            string template = GetTemplate( reply.decision.ToUpper() );
+            string content = GetContent( reply );
+
+            if ( "ACCEPT".Equals( reply.decision.ToUpper() ) )
+            {
+                var transaction = new FinancialTransaction();
                 
-                //SaveOrderState();  ????
-                
-                string template = GetTemplate( reply.decision.ToUpper() );
-                string content = GetContent( reply );
-
-                if ( "ACCEPT".Equals( reply.decision.ToUpper() ) )
-                {
-                    var transaction = new FinancialTransaction();
-                    transaction.TransactionCode = reply.merchantReferenceCode;
-                    return transaction;
-                }
-
-            }
-            catch ( TimeoutException e )
-            {
-                //SaveOrderState();
-                Console.WriteLine( "TimeoutException: " + e.Message + "\n" + e.StackTrace );
-            }
-            catch ( FaultException e )
-            {
-                //SaveOrderState();
-                Console.WriteLine( "FaultException: " + e.Message + "\n" + e.StackTrace );
-            }            
-            catch ( WebException we )
-            {
-                //SaveOrderState();
-                /*
-                 * Some types of WebException indicate that the transaction may have been
-                 * completed by CyberSource. The sample code shows how to identify these exceptions.
-                 * If you receive such an exception, and your request included a payment service,
-                 * you should use the CyberSource transaction search screens to determine whether
-                 * the transaction was processed.
-                 */
-                Console.WriteLine( we.ToString() );
+                return transaction;
             }
 
             errorMessage = string.Empty;
@@ -279,6 +240,65 @@ namespace Rock.CyberSource
             return ( sb.ToString() );
         }
 
+        /// <summary>
+        /// Submits the transaction.
+        /// </summary>
+        /// <param name="request">The request.</param>
+        /// <returns></returns>
+        private ReplyMessage SubmitTransaction( RequestMessage request )
+        {
+            string merchantID = GetAttributeValue( "MerchantID" );
+            string transactionkey = GetAttributeValue( "TransactionKey" );
+                        
+            BasicHttpBinding binding = new BasicHttpBinding();
+            binding.Name = "ITransactionProcessor";
+            binding.MaxBufferSize = 2147483647;
+            binding.MaxBufferPoolSize = 2147483647;
+            binding.MaxReceivedMessageSize = 2147483647;
+            binding.ReaderQuotas.MaxDepth = 2147483647;
+            binding.ReaderQuotas.MaxArrayLength = 2147483647;
+            binding.ReaderQuotas.MaxBytesPerRead = 2147483647;
+            binding.ReaderQuotas.MaxStringContentLength = 2147483647;
+            binding.Security.Mode = BasicHttpSecurityMode.TransportWithMessageCredential;
+            EndpointAddress address = new EndpointAddress( new Uri( GatewayUrl ) );
+
+            var proxy = new TransactionProcessorClient( binding, address );
+            proxy.ClientCredentials.UserName.UserName = merchantID;
+            proxy.ClientCredentials.UserName.Password = transactionkey;
+            //proxy.Endpoint.Address = address;
+            //proxy.Endpoint.Binding = binding;
+       
+            try            
+            {                
+                ReplyMessage reply = proxy.runTransaction( request );
+                return reply;
+            }
+            catch ( TimeoutException e )
+            {
+                //SaveOrderState();
+                Console.WriteLine( "TimeoutException: " + e.Message + "\n" + e.StackTrace );
+            }
+            catch ( FaultException e )
+            {
+                //SaveOrderState();
+                Console.WriteLine( "FaultException: " + e.Message + "\n" + e.StackTrace );
+            }            
+            catch ( WebException we )
+            {
+                //SaveOrderState();
+                /*
+                 * Some types of WebException indicate that the transaction may have been
+                 * completed by CyberSource. The sample code shows how to identify these exceptions.
+                 * If you receive such an exception, and your request included a payment service,
+                 * you should use the CyberSource transaction search screens to determine whether
+                 * the transaction was processed.
+                 */
+                Console.WriteLine( we.ToString() );
+            }
+
+            return null;
+        }
+
         #region Scheduled Payments
 
         /// <summary>
@@ -290,6 +310,41 @@ namespace Rock.CyberSource
         /// <returns></returns>
         public override FinancialScheduledTransaction AddScheduledPayment( PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage )
         {
+            errorMessage = string.Empty;
+
+            RequestMessage request = GetMerchantInfo();
+            request.billTo = GetBillTo( paymentInfo );
+            request.purchaseTotals = GetTotals( paymentInfo );
+            request.recurringSubscriptionInfo = GetRecurring( schedule, paymentInfo );
+
+            request.paySubscriptionCreateService = new PaySubscriptionCreateService();
+            request.paySubscriptionCreateService.run = "true";
+            
+            if ( paymentInfo is CreditCardPaymentInfo )
+            { 
+                // new credit card, make sure it's valid
+                request.ccAuthService = new CCAuthService();
+                request.ccAuthService.run = "true";
+                request.ccAuthService.commerceIndicator = "internet";                
+                request.subscription.paymentMethod = "credit card";
+                var cc = paymentInfo as CreditCardPaymentInfo;
+                request.card = GetCard( cc );
+            }
+            else if ( paymentInfo is ACHPaymentInfo )
+            {
+                var ach = paymentInfo as ACHPaymentInfo;
+                request.check = GetCheck( ach );
+                request.subscription.paymentMethod = "check";
+            }
+            else if ( paymentInfo is ReferencePaymentInfo )
+            {
+                var reference = paymentInfo as ReferencePaymentInfo;
+                request.paySubscriptionCreateService.paymentRequestID = reference.ReferenceNumber;
+                //request.paySubscriptionCreateService.paymentRequestToken = reference.ReferenceNumber;
+                
+
+            }
+
             errorMessage = string.Empty;
             return null;
         }
@@ -363,9 +418,13 @@ namespace Rock.CyberSource
             billingInfo.street1 = paymentInfo.Street.Left( 50 );            // up to 50 chars
             billingInfo.city = paymentInfo.City.Left( 50 );                 // up to 50 chars
             billingInfo.state = paymentInfo.State.Left( 2 );                // only 2 chars
+            billingInfo.postalCode = paymentInfo.Zip.Length > 5 
+                ? Regex.Replace(paymentInfo.Zip, @"^(.{5})(.{4})$", "$1-$2") 
+                : paymentInfo.Zip;
             billingInfo.postalCode = paymentInfo.Zip.Left( 10 );            // 9 chars with a separating -
             billingInfo.country = "US";                                     // only 2 chars
-            billingInfo.ipAddress = "#TODO";                                // optional
+            billingInfo.ipAddress = Dns.GetHostEntry( Dns.GetHostName() )
+                .AddressList.FirstOrDefault( ip => ip.AddressFamily == AddressFamily.InterNetwork ).ToString();
 
             if ( paymentInfo is CreditCardPaymentInfo )
             {
@@ -416,10 +475,11 @@ namespace Rock.CyberSource
         private Card GetCard( CreditCardPaymentInfo cc )
         {
             var card = new Card();            
-            card.accountNumber = cc.AccountNumber.AsNumeric();
+            card.accountNumber = cc.Number.AsNumeric();
             card.expirationMonth = cc.ExpirationDate.Month.ToString("D2");
             card.expirationYear = cc.ExpirationDate.Year.ToString("D4");
             card.cvNumber = cc.Code.AsNumeric();
+            card.cvIndicator = "1";
 
             switch(cc.CreditCardTypeValue.Name)
             {
@@ -454,33 +514,9 @@ namespace Rock.CyberSource
             check.accountNumber = ach.BankAccountNumber.AsNumeric();
             check.accountType = ach.AccountType == BankAccountType.Checking ? "C" : "S";
             check.bankTransitNumber = ach.BankRoutingNumber.AsNumeric();
-
+            check.secCode = "WEB";
+            
             return check;
-        }
-        
-        /// <summary>
-        /// Gets the connection.
-        /// </summary>
-        /// <returns></returns>
-        private TransactionProcessorClient GetConnection()
-        {
-            EndpointAddress address = new EndpointAddress( new Uri( GatewayUrl ) );
-            BasicHttpBinding binding = new BasicHttpBinding();
-            binding.Name = "ITransactionProcessor";
-            binding.MaxBufferSize = 2147483647;
-            binding.MaxBufferPoolSize = 2147483647;
-            binding.MaxReceivedMessageSize = 2147483647;
-            binding.ReaderQuotas.MaxDepth = 2147483647;
-            binding.ReaderQuotas.MaxArrayLength = 2147483647;
-            binding.ReaderQuotas.MaxBytesPerRead = 2147483647;
-            binding.ReaderQuotas.MaxStringContentLength = 2147483647;
-            binding.Security.Mode = BasicHttpSecurityMode.TransportWithMessageCredential;
-
-            var client = new TransactionProcessorClient( binding, address );
-            client.Endpoint.Address = address;
-            client.Endpoint.Binding = binding;
-                         
-            return client;
         }
 
         /// <summary>
@@ -497,8 +533,98 @@ namespace Rock.CyberSource
                 Environment.OSVersion.Platform +
                 Environment.OSVersion.Version.ToString() + "-CLR" +
                 Environment.Version.ToString();
+
+            request.merchantReferenceCode = "RockTransactionID";
             
             return request;
+        }
+
+        /// <summary>
+        /// Gets the recurring.
+        /// </summary>
+        /// <param name="schedule">The schedule.</param>
+        /// <returns></returns>
+        private RecurringSubscriptionInfo GetRecurring( PaymentSchedule schedule, PaymentInfo paymentInfo )
+        {
+            var recurringSubscriptionInfo = new RecurringSubscriptionInfo();
+            recurringSubscriptionInfo.startDate = schedule.StartDate.ToString( "YYYYMMDD" );
+            recurringSubscriptionInfo.amount = paymentInfo.Amount.ToString();
+            recurringSubscriptionInfo.automaticRenew = "true";            
+            
+            SetPayPeriod( recurringSubscriptionInfo, schedule.TransactionFrequencyValue );
+
+            return recurringSubscriptionInfo;
+        }
+
+        /// <summary>
+        /// Gets the recurring.
+        /// </summary>
+        /// <param name="schedule">The schedule.</param>
+        /// <returns></returns>
+        private RecurringSubscriptionInfo GetRecurring( FinancialScheduledTransaction schedule, PaymentInfo paymentInfo )
+        {
+            var recurringSubscriptionInfo = new RecurringSubscriptionInfo();
+            recurringSubscriptionInfo.startDate = schedule.StartDate.ToString( "YYYYMMDD" );
+            recurringSubscriptionInfo.amount = paymentInfo.Amount.ToString();
+            recurringSubscriptionInfo.subscriptionID = schedule.GatewayScheduleId;
+            recurringSubscriptionInfo.automaticRenew = "true";
+
+            if ( schedule.TransactionFrequencyValueId > 0 )
+            {
+                SetPayPeriod( recurringSubscriptionInfo, DefinedValueCache.Read( schedule.TransactionFrequencyValueId ) );
+            }
+
+            return recurringSubscriptionInfo;
+        }
+
+        /// <summary>
+        /// Sets the pay period.
+        /// </summary>
+        /// <param name="recurringSubscriptionInfo">The recurring subscription information.</param>
+        /// <param name="transactionFrequencyValue">The transaction frequency value.</param>
+        private void SetPayPeriod( RecurringSubscriptionInfo recurringSubscriptionInfo, DefinedValueCache transactionFrequencyValue )
+        {
+            var selectedFrequencyGuid = transactionFrequencyValue.Guid.ToString().ToUpper();
+            switch ( selectedFrequencyGuid )
+            {
+                case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_ONE_TIME:
+                    recurringSubscriptionInfo.frequency = "ON-DEMAND";
+                    recurringSubscriptionInfo.amount = "0";
+                    break;
+                case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_WEEKLY:
+                    recurringSubscriptionInfo.frequency = "WEEKLY";
+                    break;
+                case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_BIWEEKLY:
+                    recurringSubscriptionInfo.frequency = "BI-WEEKLY";
+                    break;
+                case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_TWICEMONTHLY:
+                    recurringSubscriptionInfo.frequency = "SEMI-MONTHLY";
+                    break;
+                case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_MONTHLY:
+                    recurringSubscriptionInfo.frequency = "MONTHLY";
+                    break;
+                case Rock.SystemGuid.DefinedValue.TRANSACTION_FREQUENCY_YEARLY:
+                    recurringSubscriptionInfo.frequency = "ANNUALLY";
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Gets the date.
+        /// </summary>
+        /// <param name="date">The date.</param>
+        /// <returns></returns>
+        private DateTime? GetDate( string date )
+        {
+            DateTime dt = DateTime.MinValue;
+            if ( DateTime.TryParseExact( date, "MMddyyyy", null, System.Globalization.DateTimeStyles.None, out dt ) )
+            {
+                return dt;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         #endregion
