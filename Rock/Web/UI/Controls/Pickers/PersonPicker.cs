@@ -418,8 +418,8 @@ namespace Rock.Web.UI.Controls
                 string controlHtmlFormatEnd = @"
             <a class='btn btn-xs' id='btnCancel_{0}'>Cancel</a>
             </div>
-        </div>
-    </div>
+         </div>
+     </div>
 ";
 
                 writer.Write( string.Format( controlHtmlFormatEnd, this.ID, this.PersonName ) );

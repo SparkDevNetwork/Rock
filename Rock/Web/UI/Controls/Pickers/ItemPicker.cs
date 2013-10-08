@@ -594,7 +594,16 @@ namespace Rock.Web.UI.Controls
             else
             {
                 // this picker is not enabled (readonly), so just render a readonly version
-                writer.Write( @"<i class='icon-file-alt'></i><span id='selectedItemLabel_{0}'>{1}</span>", this.ID, this.ItemName );
+
+                writer.AddAttribute( "class", "picker picker-select" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.Write( @"
+                    <a class='picker-label' href='#'>
+                        <i class='{1}'></i>
+                        <span>{0}</span>
+                    </a>", this.ItemName, this.IconCssClass );
+                writer.WriteLine();
+                writer.RenderEndTag();
             }
         }
         
