@@ -63,15 +63,15 @@ namespace RockWeb.Blocks.Core
 
             string script = @"
     $('a.add-note').click(function () {
-        $(this).parent().siblings('.note-entry').slideToggle(""slow"");
+        $(this).closest('.panel-note').find('.note-entry').slideToggle(""slow"");
     });
     
     $('a.add-note-cancel').click(function () {
-        $(this).parent().siblings('.panel-body').children('textarea').val('');
-        $(this).parent().parent().slideToggle(""slow"");
+        $(this).closest('.panel-body').children('textarea').val('');
+        $(this).closest('.note-entry').slideToggle(""slow"");
     });
 
-    $('.panel-notes article').on({
+    $('.panel-note article').on({
         mouseenter:
             function () {
                 var actionsDiv = $('.actions', this);

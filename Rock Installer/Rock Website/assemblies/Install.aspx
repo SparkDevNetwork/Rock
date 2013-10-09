@@ -228,10 +228,7 @@
     void DownloadNext_Click(Object sender, EventArgs e)
     {
     	try {
-    		//test line remove
-            lDownloadDetails.Text += "Pre Redirect";
             Response.Redirect("Configure.aspx");
-            lDownloadDetails.Text += "Post Redirect";
     	}
     	catch (Exception ex) {
     		ProcessPageException(ex.Message);

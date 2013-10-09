@@ -16,32 +16,38 @@
                     <a class="btn btn-sm btn-action add-note"><i class="icon-plus"></i></a>
                 </div>
 
-                <div class="note-entry" style="display:none">
-
-                    <div class="panel-body">
-                        <Rock:RockTextBox ID="tbNewNote" runat="server" label="Note" TextMode="MultiLine"></Rock:RockTextBox>
-                        <div class="settings clearfix">
-                            <div class="options pull-left">
-                                <asp:CheckBox ID="cbAlert" runat="server" Text="Alert" />
-                                <asp:CheckBox ID="cbPrivate" runat="server" Text="Private" />
-                            </div>
-                            <button class="btn btn-xs security pull-right" type="button" id="btnSecurity" runat="server"><i class="icon-lock"></i> Security</button>
-                        </div>
-                    </div>
-
-                    <div class="panel-footer">
-                        <asp:LinkButton ID="btnAddNote" runat="server" CssClass="btn btn-primary btn-xs" Text="Add Note" CausesValidation="false" />
-                        <a class="add-note-cancel btn btn-xs">Cancel</a>
-                    </div>
-
-                </div>
                 
-                <asp:Repeater ID="rptNotes" runat="server">
-                    <ItemTemplate>
-                        <Rock:NoteEditor ID="noteEditor" runat="server" Note='<%# Container.DataItem as Rock.Model.Note %>'
-                            OnSaveButtonClick="noteEditor_SaveButtonClick" OnDeleteButtonClick="noteEditor_DeleteButtonClick"></Rock:NoteEditor>
-                    </ItemTemplate>
-                </asp:Repeater>
+                
+                <div class="panel-body">
+                    <!-- note entry panel -->
+                    <div class="note-entry panel panel-noteentry" style="display:none">
+
+                        <div class="panel-body">
+                            <Rock:RockTextBox ID="tbNewNote" runat="server" label="Note" TextMode="MultiLine"></Rock:RockTextBox>
+                            <div class="settings clearfix">
+                                <div class="options pull-left">
+                                    <asp:CheckBox ID="cbAlert" runat="server" Text="Alert" />
+                                    <asp:CheckBox ID="cbPrivate" runat="server" Text="Private" />
+                                </div>
+                                <button class="btn btn-xs security pull-right" type="button" id="btnSecurity" runat="server"><i class="icon-lock"></i> Security</button>
+                            </div>
+                        </div>
+
+                        <div class="panel-footer">
+                            <asp:LinkButton ID="btnAddNote" runat="server" CssClass="btn btn-primary btn-xs" Text="Add Note" CausesValidation="false" />
+                            <a class="add-note-cancel btn btn-xs">Cancel</a>
+                        </div>
+
+                    </div>
+
+                    <!-- note list -->
+                    <asp:Repeater ID="rptNotes" runat="server">
+                        <ItemTemplate>
+                            <Rock:NoteEditor ID="noteEditor" runat="server" Note='<%# Container.DataItem as Rock.Model.Note %>'
+                                OnSaveButtonClick="noteEditor_SaveButtonClick" OnDeleteButtonClick="noteEditor_DeleteButtonClick"></Rock:NoteEditor>
+                        </ItemTemplate>
+                    </asp:Repeater>
+                </div>
 
                 <asp:LinkButton ID="lbShowMore" runat="server" OnClick="lbShowMore_Click">
                 <i class="icon-angle-down"></i>

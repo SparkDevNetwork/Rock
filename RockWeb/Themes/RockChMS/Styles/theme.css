@@ -4921,8 +4921,8 @@ textarea.input-group-sm > .input-group-btn > .btn {
 .nav-pills > li.active > a,
 .nav-pills > li.active > a:hover,
 .nav-pills > li.active > a:focus {
-  color: #ffffff;
-  background-color: #428bca;
+  color: #ecf0f3;
+  background-color: #8498ab;
 }
 .nav-stacked > li {
   float: none;
@@ -8925,6 +8925,10 @@ span.cke_skin_kama {
 }
 .panel-noteentry .settings .options input {
   margin-right: 4px;
+}
+.panel-noteentry .options .checkbox {
+  float: left;
+  margin: 0 15px 0 5px;
 }
 .panel-noteentry .panel-footer {
   background-color: #d9e1e8;
