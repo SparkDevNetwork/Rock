@@ -506,6 +506,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
+            // controls div
             writer.AddAttribute( "class", "controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
@@ -556,8 +557,6 @@ namespace Rock.Web.UI.Controls
                     <div id='geoPicker_{0}' style='height: 300px; width: 500px' ></div>", this.ClientID );
                 writer.WriteLine();
 
-                writer.Write("<div class='picker-actions'>");
-
                 // picker actions
                 writer.AddAttribute( "class", "picker-actions" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -581,6 +580,7 @@ namespace Rock.Web.UI.Controls
                 writer.Write( controlHtmlFormatDisabled, this.ClientID, this.GeoDisplayName );
             }
 
+            // controls div
             writer.RenderEndTag();
 
         }
