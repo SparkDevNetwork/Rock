@@ -114,43 +114,52 @@ namespace RockWeb.Blocks.Prayer
         /// </summary>
         private void BindFilter()
         {
-            // Set the Approval Status radio options.
-            var item = rblApprovedFilter.Items.FindByValue( rFilter.GetUserPreference( FilterSetting.ApprovalStatus ) );
+            // Set the Approval Status
+            var item = ddlApprovedFilter.Items.FindByValue( rFilter.GetUserPreference( FilterSetting.ApprovalStatus ) );
             if ( item != null )
             {
                 item.Selected = true;
             }
 
-            // Set the Public Status radio options.
-            var itemPublic = rblPublicFilter.Items.FindByValue( rFilter.GetUserPreference( FilterSetting.PublicStatus ) );
+            // Set the Public Status
+            var itemPublic = ddlPublicFilter.Items.FindByValue( rFilter.GetUserPreference( FilterSetting.PublicStatus ) );
             if ( itemPublic != null )
             {
                 itemPublic.Selected = true;
             }
 
-            // Set the Commenting Status radio options.
-            var itemAllowComments = rblAllowCommentsFilter.Items.FindByValue( rFilter.GetUserPreference( FilterSetting.CommentingStatus ) );
+            // Set the Commenting Status
+            var itemAllowComments = ddlAllowCommentsFilter.Items.FindByValue( rFilter.GetUserPreference( FilterSetting.CommentingStatus ) );
             if ( itemAllowComments != null )
             {
                 itemAllowComments.Selected = true;
             }
 
-            // Set the Active Status radio options.
-            var itemActiveStatus = rblActiveFilter.Items.FindByValue( rFilter.GetUserPreference( FilterSetting.ActiveStatus ) );
+            // Set the Active Status
+            var itemActiveStatus = ddlActiveFilter.Items.FindByValue( rFilter.GetUserPreference( FilterSetting.ActiveStatus ) );
             if ( itemActiveStatus != null )
             {
                 itemActiveStatus.Selected = true;
             }
 
-            // Set the Active Status radio options.
-            var itemUrgentStatus = rblUrgentFilter.Items.FindByValue( rFilter.GetUserPreference( FilterSetting.UrgentStatus ) );
+            // Set the Active Status
+            var itemUrgentStatus = ddlUrgentFilter.Items.FindByValue( rFilter.GetUserPreference( FilterSetting.UrgentStatus ) );
             if ( itemUrgentStatus != null )
             {
                 itemUrgentStatus.Selected = true;
             }
 
-            dtRequestEnteredDateRangeStartDate.Text = rFilter.GetUserPreference( FilterSetting.FromDate );
-            dtRequestEnteredDateRangeEndDate.Text = rFilter.GetUserPreference( FilterSetting.ToDate );
+            string fromDate = rFilter.GetUserPreference( FilterSetting.FromDate );
+            if ( !string.IsNullOrWhiteSpace( fromDate ) )
+            {
+                pDateRange.LowerValue = DateTime.Parse( fromDate );
+            }
+
+            string toDate = rFilter.GetUserPreference( FilterSetting.ToDate );
+            if ( !string.IsNullOrWhiteSpace( toDate ) )
+            {
+                pDateRange.UpperValue = DateTime.Parse( toDate );
+            }
 
             // Set the category picker's selected value
             int selectedPrayerCategoryId = -1;
@@ -169,53 +178,53 @@ namespace RockWeb.Blocks.Prayer
         protected void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             rFilter.SaveUserPreference( FilterSetting.PrayerCategory, cpPrayerCategoryFilter.SelectedValue == Rock.Constants.None.IdValue ? string.Empty :  cpPrayerCategoryFilter.SelectedValue  );
-            rFilter.SaveUserPreference( FilterSetting.FromDate, dtRequestEnteredDateRangeStartDate.Text );
-            rFilter.SaveUserPreference( FilterSetting.ToDate, dtRequestEnteredDateRangeEndDate.Text );
+            rFilter.SaveUserPreference( FilterSetting.FromDate, pDateRange.LowerValue.HasValue ? pDateRange.LowerValue.Value.ToString( "d" ) : string.Empty );
+            rFilter.SaveUserPreference( FilterSetting.ToDate, pDateRange.UpperValue.HasValue ? pDateRange.UpperValue.Value.ToString( "d" ) : string.Empty );
 
             // only save settings that are not the default "all" preference...
-            if ( rblApprovedFilter.SelectedValue == "all" )
+            if ( ddlApprovedFilter.SelectedValue == "all" )
             {
                 rFilter.SaveUserPreference( FilterSetting.ApprovalStatus, "" );
             }
             else
             {
-                rFilter.SaveUserPreference( FilterSetting.ApprovalStatus, rblApprovedFilter.SelectedValue );
+                rFilter.SaveUserPreference( FilterSetting.ApprovalStatus, ddlApprovedFilter.SelectedValue );
             }
 
-            if ( rblUrgentFilter.SelectedValue == "all" )
+            if ( ddlUrgentFilter.SelectedValue == "all" )
             {
                 rFilter.SaveUserPreference( FilterSetting.UrgentStatus, "" );
             }
             else
             {
-                rFilter.SaveUserPreference( FilterSetting.UrgentStatus, rblUrgentFilter.SelectedValue );
+                rFilter.SaveUserPreference( FilterSetting.UrgentStatus, ddlUrgentFilter.SelectedValue );
             }
 
-            if ( rblPublicFilter.SelectedValue == "all" )
+            if ( ddlPublicFilter.SelectedValue == "all" )
             {
                 rFilter.SaveUserPreference( FilterSetting.PublicStatus, "" );
             }
             else
             {
-                rFilter.SaveUserPreference( FilterSetting.PublicStatus, rblPublicFilter.SelectedValue );
+                rFilter.SaveUserPreference( FilterSetting.PublicStatus, ddlPublicFilter.SelectedValue );
             }
 
-            if ( rblActiveFilter.SelectedValue == "all" )
+            if ( ddlActiveFilter.SelectedValue == "all" )
             {
                 rFilter.SaveUserPreference( FilterSetting.ActiveStatus, "" );
             }
             else
             {
-                rFilter.SaveUserPreference( FilterSetting.ActiveStatus, rblActiveFilter.SelectedValue );
+                rFilter.SaveUserPreference( FilterSetting.ActiveStatus, ddlActiveFilter.SelectedValue );
             }
 
-            if ( rblAllowCommentsFilter.SelectedValue == "all" )
+            if ( ddlAllowCommentsFilter.SelectedValue == "all" )
             {
                 rFilter.SaveUserPreference( FilterSetting.CommentingStatus, "" );
             }
             else
             {
-                rFilter.SaveUserPreference( FilterSetting.CommentingStatus, rblAllowCommentsFilter.SelectedValue );
+                rFilter.SaveUserPreference( FilterSetting.CommentingStatus, ddlAllowCommentsFilter.SelectedValue );
             }
 
             BindGrid();
@@ -293,78 +302,82 @@ namespace RockWeb.Blocks.Prayer
             }
 
             // Filter by approved/unapproved
-            if ( rblApprovedFilter.SelectedIndex > -1 )
+            if ( ddlApprovedFilter.SelectedIndex > -1 )
             {
-                if ( rblApprovedFilter.SelectedValue == "unapproved" )
+                if ( ddlApprovedFilter.SelectedValue == "unapproved" )
                 {
                     prayerRequests = prayerRequests.Where( a => a.IsApproved == false || !a.IsApproved.HasValue );
                 }
-                else if ( rblApprovedFilter.SelectedValue == "approved" )
+                else if ( ddlApprovedFilter.SelectedValue == "approved" )
                 {
                     prayerRequests = prayerRequests.Where( a => a.IsApproved == true );
                 }
             }
 
             // Filter by urgent/non-urgent
-            if ( rblUrgentFilter.SelectedIndex > -1 )
+            if ( ddlUrgentFilter.SelectedIndex > -1 )
             {
-                if ( rblUrgentFilter.SelectedValue == "non-urgent" )
+                if ( ddlUrgentFilter.SelectedValue == "non-urgent" )
                 {
                     prayerRequests = prayerRequests.Where( a => a.IsUrgent == false || !a.IsUrgent.HasValue );
                 }
-                else if ( rblUrgentFilter.SelectedValue == "urgent" )
+                else if ( ddlUrgentFilter.SelectedValue == "urgent" )
                 {
                     prayerRequests = prayerRequests.Where( a => a.IsUrgent == true );
                 }
             }
 
             // Filter by public/non-public
-            if ( rblPublicFilter.SelectedIndex > -1 )
+            if ( ddlPublicFilter.SelectedIndex > -1 )
             {
-                if ( rblPublicFilter.SelectedValue == "non-public" )
+                if ( ddlPublicFilter.SelectedValue == "non-public" )
                 {
                     prayerRequests = prayerRequests.Where( a => a.IsPublic == false || !a.IsPublic.HasValue );
                 }
-                else if ( rblPublicFilter.SelectedValue == "public" )
+                else if ( ddlPublicFilter.SelectedValue == "public" )
                 {
                     prayerRequests = prayerRequests.Where( a => a.IsPublic == true );
                 }
             }
 
             // Filter by active/inactive
-            if ( rblActiveFilter.SelectedIndex > -1 )
+            if ( ddlActiveFilter.SelectedIndex > -1 )
             {
-                if ( rblActiveFilter.SelectedValue == "inactive" )
+                if ( ddlActiveFilter.SelectedValue == "inactive" )
                 {
                     prayerRequests = prayerRequests.Where( a => a.IsActive == false || !a.IsActive.HasValue );
                 }
-                else if ( rblActiveFilter.SelectedValue == "active" )
+                else if ( ddlActiveFilter.SelectedValue == "active" )
                 {
                     prayerRequests = prayerRequests.Where( a => a.IsActive == true );
                 }
             }
 
             // Filter by active/inactive
-            if ( rblAllowCommentsFilter.SelectedIndex > -1 )
+            if ( ddlAllowCommentsFilter.SelectedIndex > -1 )
             {
-                if ( rblAllowCommentsFilter.SelectedValue == "unallow" )
+                if ( ddlAllowCommentsFilter.SelectedValue == "unallow" )
                 {
                     prayerRequests = prayerRequests.Where( a => a.AllowComments == false || !a.AllowComments.HasValue );
                 }
-                else if ( rblAllowCommentsFilter.SelectedValue == "allow" )
+                else if ( ddlAllowCommentsFilter.SelectedValue == "allow" )
                 {
                     prayerRequests = prayerRequests.Where( a => a.AllowComments == true );
                 }
             }
 
-            // Filter by EnteredDate
-            if ( dtRequestEnteredDateRangeStartDate.SelectedDate != null )
+            // Filter by Date Range
+            if ( pDateRange.LowerValue.HasValue )
             {
-                prayerRequests = prayerRequests.Where( a => a.EnteredDate >= dtRequestEnteredDateRangeStartDate.SelectedDate );
+                DateTime startDate = pDateRange.LowerValue.Value.Date;
+                prayerRequests = prayerRequests.Where( a => a.EnteredDate >= startDate );
             }
-            if ( dtRequestEnteredDateRangeEndDate.SelectedDate != null )
+
+            if ( pDateRange.UpperValue.HasValue )
             {
-                prayerRequests = prayerRequests.Where( a => a.EnteredDate <= dtRequestEnteredDateRangeEndDate.SelectedDate );
+                // Add one day in order to include everything up to the end of the selected datetime.
+                var endDate = pDateRange.UpperValue.Value.AddDays( 1 );
+                prayerRequests = prayerRequests.Where( a => a.EnteredDate < endDate );
             }
 
             // Sort by the given property otherwise sort by the EnteredDate
