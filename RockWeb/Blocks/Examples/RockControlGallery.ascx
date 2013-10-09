@@ -251,6 +251,15 @@
                 <Rock:HighlightLabel ID="hlCustom" runat="server" LabelType="Custom" CustomClass="danger" Text="Custom" />
             </div>
 
+            
+            <h2>Rock:Toggle</h2>
+            <div runat="server" class="r-example">
+                <Rock:Toggle ID="toggleShowPreview" runat="server"
+                    LabelText="Show Preview?" OnText="Yes" OffText="No" Checked="true"
+                    Help="If set to yes, a preview will be shown immediately as you update your criteria."
+                    OnCheckedChanged="toggleShowPreview_CheckedChanged" />
+            </div>
+
             <h2>Rock:BootstrapButton</h2>
             <div runat="server" class="r-example">
                 <Rock:BootstrapButton ID="lbSave" runat="server" Text="Click Me"

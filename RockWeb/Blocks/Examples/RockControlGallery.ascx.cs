@@ -161,6 +161,16 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
+        /// Handles the CheckedChanged event of the toggleShowPreview control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void toggleShowPreview_CheckedChanged( object sender, EventArgs e )
+        {
+            toggleShowPreview.Help = "you just set it to : " + ( ( toggleShowPreview.Checked ) ? "on" : "off" );
+        }
+
+        /// <summary>
         /// Handles the SelectedIndexChanged event of the binaryFileTypePicker control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
