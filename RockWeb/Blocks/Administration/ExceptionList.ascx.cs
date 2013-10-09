@@ -56,6 +56,9 @@ namespace RockWeb.Blocks.Administraton
             gExceptionOccurrences.RowSelected += gExceptionOccurrences_RowSelected;
             gExceptionOccurrences.RowItemText = "Exception";
 
+            // set detail title with formating
+            lDetailTitle.Text = ("Exception Occurrences").FormatAsHtmlTitle();
+
         }
 
         /// <summary>
@@ -247,16 +250,7 @@ namespace RockWeb.Blocks.Administraton
             BindExceptionListGrid();
         }
 
-        /// <summary>
-        /// Handles the Click event of the btnReturnToExceptionList control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnReturnToExceptionList_Click( object sender, EventArgs e )
-        {
-            hfBaseExceptionID.Value = String.Empty;
-            SetExceptionPanelVisibility( None.Id );
-        }
+        
         #endregion
 
         #region Internal Methods
