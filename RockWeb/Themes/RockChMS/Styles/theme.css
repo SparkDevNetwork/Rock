@@ -9308,22 +9308,25 @@ td[align=center] {
 .rock-modal .modal-header .label {
   margin-top: 8px;
 }
-.rock-modal .modal-footer {
-  padding: 8px;
-  margin-top: 10px;
-  background-color: #e7ecf0;
+.rock-modal .modal-body .nav-pills {
+  margin: 6px 0 18px;
 }
-.modal-body .scroll-container {
+.rock-modal .modal-body .scroll-container {
   width: 720px;
 }
-.modal-body .scroll-container .viewport {
+.rock-modal .modal-body .scroll-container .viewport {
   width: 670px;
 }
-.modal-body.iframe {
+.rock-modal .modal-body.iframe {
   background: url("../assets/images/ajax-loading.png") center center no-repeat;
   /* http://preloaders.net/en/popular */
 
   overflow: hidden;
+}
+.rock-modal .modal-footer {
+  padding: 8px;
+  margin-top: 10px;
+  background-color: #e7ecf0;
 }
 .modal-backdrop {
   background-color: #8b8b8b;
