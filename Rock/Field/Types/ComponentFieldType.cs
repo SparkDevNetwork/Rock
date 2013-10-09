@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Rock.Constants;
 using Rock.Extension;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -143,7 +143,8 @@ namespace Rock.Field.Types
         {
             if ( control != null && control is ListControl )
             {
-                return ( (ListControl)control ).SelectedValue;
+                string value = ( (ListControl)control ).SelectedValue;
+                return value == None.IdValue ? string.Empty : value;
             }
             return null;
         }
@@ -156,7 +157,7 @@ namespace Rock.Field.Types
         /// <param name="value">The value.</param>
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
-            if ( value != null )
+            if ( !string.IsNullOrWhiteSpace( value) && value != None.IdValue )
             {
                 if ( control != null && control is ListControl )
                 {
