@@ -9396,33 +9396,6 @@ dl dt:first-child {
 dl dd {
   margin-left: 0;
 }
-/* form styles - not enough yet for it's own file */fieldset .actions {
-  margin-top: 36px;
-}
-fieldset .actions:before,
-fieldset .actions:after {
-  content: " ";
-  /* 1 */
-
-  display: table;
-  /* 2 */
-
-}
-fieldset .actions:after {
-  clear: both;
-}
-fieldset .actions:before,
-fieldset .actions:after {
-  content: " ";
-  /* 1 */
-
-  display: table;
-  /* 2 */
-
-}
-fieldset .actions:after {
-  clear: both;
-}
 .form-control.input-width-xs,
 .input-group.input-width-xs {
   width: 60px;
@@ -10941,6 +10914,33 @@ a.help {
   background-color: #d9e1e8;
   color: #515151;
   border-color: #b9c8d5;
+}
+.panel .actions {
+  margin-top: 36px;
+}
+.panel .actions:before,
+.panel .actions:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.panel .actions:after {
+  clear: both;
+}
+.panel .actions:before,
+.panel .actions:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.panel .actions:after {
+  clear: both;
 }
 .panel-widget {
   border-color: #d9e1e8;
