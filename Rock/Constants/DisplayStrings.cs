@@ -107,9 +107,9 @@ namespace Rock.Constants
         public const string IdValue = "-1";
 
         /// <summary>
-        /// returns "[All]"
+        /// returns "All"
         /// </summary>
-        public const string Text = "[All]";
+        public const string Text = "All";
 
         /// <summary>
         /// Gets the list item.

@@ -164,11 +164,11 @@ namespace RockWeb.Blocks.Finance.Administration
         {
             if ( financialBatch.Id > 0 )
             {
-                lActionTitle.Text = ActionTitle.Edit( FinancialBatch.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Edit( FinancialBatch.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( FinancialBatch.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Add( FinancialBatch.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
             SetEditMode( true );

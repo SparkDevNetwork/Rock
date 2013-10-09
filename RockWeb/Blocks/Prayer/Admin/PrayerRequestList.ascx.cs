@@ -237,7 +237,7 @@ namespace RockWeb.Blocks.Prayer
                     {
                         if ( categoryId == All.Id )
                         {
-                            e.Value = "[All]";
+                            e.Value = "All";
                         }
                         else
                         {
