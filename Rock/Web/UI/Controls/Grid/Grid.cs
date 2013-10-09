@@ -28,12 +28,13 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:Grid runat=server></{0}:Grid>" )]
     public class Grid : System.Web.UI.WebControls.GridView, IPostBackEventHandler
     {
-        const int ALL_ITEMS_SIZE = 1000000;
+        private const int ALL_ITEMS_SIZE = 1000000;
+        private const string DEFAULT_EMPTY_DATA_TEXT = "No Results Found";
+        private const string PAGE_SIZE_KEY = "grid-page-size-preference";
 
         private Table _table;
         private GridViewRow _actionRow;
         private GridActions _gridActions;
-        private const string DefaultEmptyDataText = "No Results Found";
         private Dictionary<int, string> _dataBoundColumns = new Dictionary<int, string>();
 
         #region Properties
@@ -125,7 +126,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 string result = base.EmptyDataText;
-                if ( string.IsNullOrWhiteSpace( result ) || result.Equals( DefaultEmptyDataText ) )
+                if ( string.IsNullOrWhiteSpace( result ) || result.Equals( DEFAULT_EMPTY_DATA_TEXT ) )
                 {
                     result = string.Format( "No {0} Found", RowItemText.Pluralize() );
                 }
@@ -337,13 +338,14 @@ namespace Rock.Web.UI.Controls
             base.SelectedRowStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
 
             this.ShowHeaderWhenEmpty = true;
-            this.EmptyDataText = DefaultEmptyDataText;
+            this.EmptyDataText = DEFAULT_EMPTY_DATA_TEXT;
 
             // hack to turn off style="border-collapse: collapse"
             base.GridLines = GridLines.None;
             base.CellSpacing = -1;
 
             base.AllowPaging = true;
+
             base.PageSize = 25;
             base.PageIndex = 0;
 
@@ -372,6 +374,17 @@ namespace Rock.Web.UI.Controls
 
             this.Actions.CommunicateClick += Actions_CommunicateClick;
             this.Actions.ExcelExportClick += Actions_ExcelExportClick;
+
+            var rockPage = this.Page as RockPage;
+            if ( rockPage != null )
+            {
+                int pageSize = 25;
+                if ( !int.TryParse( rockPage.GetUserPreference( PAGE_SIZE_KEY ), out pageSize ) )
+                {
+                    pageSize = 25;
+                }
+                base.PageSize = pageSize;
+            }
 
             base.OnInit( e );
         }
@@ -1046,6 +1059,12 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.NumericalEventArgs"/> instance containing the event data.</param>
         void pagerTemplate_ItemsPerPageClick( object sender, NumericalEventArgs e )
         {
+            var rockPage = this.Page as RockPage;
+            if ( rockPage != null )
+            {
+                rockPage.SetUserPreference( PAGE_SIZE_KEY, e.Number.ToString() );
+            }
+
             this.PageSize = e.Number;
             OnGridRebind( e );
         }
