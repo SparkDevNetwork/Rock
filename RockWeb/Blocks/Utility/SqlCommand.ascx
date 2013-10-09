@@ -5,7 +5,7 @@
 
         <div class="sql-comand">
 
-            <div class="panel">
+            <div class="panel panel-default">
                 <div class="panel-body">
                     <fieldset>
                         <Rock:RockTextBox ID="tbQuery" runat="server" Label="SQL Text" TextMode="MultiLine" Rows="5" 
