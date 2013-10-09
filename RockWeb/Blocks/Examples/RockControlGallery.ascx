@@ -184,7 +184,7 @@
             <div runat="server" class="r-example">
                 <Rock:ScheduleBuilder ID="scheduleBuilder" runat="server" Label="Rock:ScheduleBuilder" OnSaveSchedule="scheduleBuilder_SaveSchedule" />
             </div>
-            <%--
+            
             <div runat="server" class="r-example">
                 <Rock:GeoPicker ID="geoPicker" runat="server" Label="Rock:GeoPicker (Point mode)" DrawingMode="Point" /> 
             </div>
@@ -192,8 +192,7 @@
             <div runat="server" class="r-example">
                 <Rock:GeoPicker ID="geoPicker1" runat="server" Label="Rock:GeoPicker (Polygon mode)" DrawingMode="Polygon" /> 
             </div>
-
-            --%>
+            
 
             <%-- 
                 <Rock:MergeFieldPicker ID="LabeledCheckBox4" runat="server" Label="Rock:MergeFieldPicker" />
