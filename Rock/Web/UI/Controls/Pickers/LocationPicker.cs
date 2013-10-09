@@ -13,7 +13,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class LocationPicker : CompositeControl
+    public class LocationPicker : CompositeControl, IRockControl
     {
         #region Controls
 
@@ -146,6 +146,14 @@ namespace Rock.Web.UI.Controls
             _radAddress.Attributes["onclick"] = this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "AddressMode" ) );
             _radLatLong.Attributes["onclick"] = this.Page.ClientScript.GetPostBackEventReference( new PostBackOptions( this, "LatLongMode" ) );
 
+            _radNamedLocation.Checked = this.PickerMode == LocationPickerMode.NamedLocation;
+            _radAddress.Checked = this.PickerMode == LocationPickerMode.Address;
+            _radLatLong.Checked = this.PickerMode == LocationPickerMode.LatLong;
+            _locationItemPicker.Visible = this.PickerMode == LocationPickerMode.NamedLocation;
+            _locationAddressPicker.Visible = this.PickerMode == LocationPickerMode.Address;
+            _locationGeoPicker.Visible = this.PickerMode == LocationPickerMode.LatLong;
+            _pnlModeSelection.Visible = !this.LimitToNamedLocations;
+
             if ( Page.IsPostBack )
             {
                 HandleModePostback();
@@ -164,24 +172,20 @@ namespace Rock.Web.UI.Controls
             // Mode Selection Panel and Controls
             _pnlModeSelection = new Panel { ID = "pnlModeSelection" };
             _pnlModeSelection.CssClass = "picker-mode-options";
-            _pnlModeSelection.Visible = !this.LimitToNamedLocations;
             _pnlModeSelection.ViewStateMode = ViewStateMode.Enabled;
 
             _radNamedLocation = new RadioButton { ID = "radNamedLocation" };
             _radNamedLocation.Text = "Named Location";
-            _radNamedLocation.Checked = this.PickerMode == LocationPickerMode.NamedLocation;
             _radNamedLocation.GroupName = "radiogroup-location-mode_" + this.ClientID;
             _pnlModeSelection.Controls.Add( _radNamedLocation );
 
             _radAddress = new RadioButton { ID = "radAddress" };
             _radAddress.Text = "Address";
-            _radAddress.Checked = this.PickerMode == LocationPickerMode.Address;
             _radAddress.GroupName = "radiogroup-location-mode_" + this.ClientID;
             _pnlModeSelection.Controls.Add( _radAddress );
 
             _radLatLong = new RadioButton { ID = "radLatLong" };
             _radLatLong.Text = "Lat/Long";
-            _radLatLong.Checked = this.PickerMode == LocationPickerMode.LatLong;
             _radLatLong.GroupName = "radiogroup-location-mode_" + this.ClientID;
             _pnlModeSelection.Controls.Add( _radLatLong );
 
@@ -191,14 +195,11 @@ namespace Rock.Web.UI.Controls
 
             _locationItemPicker = new LocationItemPicker();
             _locationItemPicker.ID = this.ID + "_locationItemPicker";
-            _locationItemPicker.Visible = this.PickerMode == LocationPickerMode.NamedLocation;
             _locationAddressPicker = new LocationAddressPicker();
             _locationAddressPicker.ID = this.ID + "_locationAddressPicker";
-            _locationAddressPicker.Visible = this.PickerMode == LocationPickerMode.Address;
             _locationGeoPicker = new GeoPicker();
             _locationGeoPicker.ID = this.ID + "_locationGeoPicker";
-            _locationGeoPicker.Visible = this.PickerMode == LocationPickerMode.LatLong;
-
+            
             _locationItemPicker.ModePanel = _pnlModeSelection;
             _locationGeoPicker.ModePanel = _pnlModeSelection;
             _locationAddressPicker.ModePanel = _pnlModeSelection;
@@ -253,7 +254,173 @@ namespace Rock.Web.UI.Controls
         }
 
         #endregion
+
+        /// <summary>
+        /// Renders the <see cref="T:System.Web.UI.WebControls.TextBox" /> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter" /> object.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> that receives the rendered output.</param>
+        public void RenderBaseControl( HtmlTextWriter writer )
+        {
+           //
+        }
+
+        #region IRockControl implementation (much different than others)
+
+        /// <summary>
+        /// Gets or sets the label.
+        /// </summary>
+        /// <value>
+        /// The label text
+        /// </value>
+        public string Label
+        {
+            get
+            {
+                EnsureChildControls();
+                return _locationItemPicker.Label;
+            }
+            set
+            {
+                EnsureChildControls();
+                _locationItemPicker.Label = value;
+                _locationAddressPicker.Label = value;
+                _locationGeoPicker.Label = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the help text.
+        /// </summary>
+        /// <value>
+        /// The help text.
+        /// </value>
+        public string Help
+        {
+            get
+            {
+                EnsureChildControls();
+                return _locationItemPicker.Help;
+            }
+            set
+            {
+                EnsureChildControls();
+                _locationItemPicker.Help = value;
+                _locationAddressPicker.Help = value;
+                _locationGeoPicker.Help = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="IRockControl" /> is required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// </value>
+        public bool Required
+        {
+            get
+            {
+                EnsureChildControls();
+                return _locationItemPicker.Required;
+            }
+            set
+            {
+                EnsureChildControls();
+                _locationItemPicker.Required = value;
+                _locationAddressPicker.Required = value;
+                _locationGeoPicker.Required = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the required error message.  If blank, the LabelName name will be used
+        /// </summary>
+        /// <value>
+        /// The required error message.
+        /// </value>
+        public string RequiredErrorMessage
+        {
+            get
+            {
+                EnsureChildControls();
+                return _locationItemPicker.RequiredErrorMessage;
+            }
+            set
+            {
+                EnsureChildControls();
+                _locationItemPicker.RequiredErrorMessage = value;
+                _locationAddressPicker.RequiredErrorMessage = value;
+                _locationGeoPicker.RequiredErrorMessage = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsValid
+        {
+            get
+            {
+                EnsureChildControls();
+                switch (PickerMode)
+                {
+                    case LocationPickerMode.Address: 
+                        return _locationAddressPicker.IsValid;
+                    case LocationPickerMode.LatLong:
+                        return _locationGeoPicker.IsValid;
+                    default:
+                        return _locationItemPicker.IsValid;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the help block.
+        /// </summary>
+        /// <value>
+        /// The help block.
+        /// </value>
+        public HelpBlock HelpBlock
+        {
+            get
+            {
+                EnsureChildControls();
+                return _locationItemPicker.HelpBlock;
+            }
+            set
+            {
+                EnsureChildControls();
+                _locationItemPicker.HelpBlock = value;
+                _locationAddressPicker.HelpBlock = value;
+                _locationGeoPicker.HelpBlock = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets the required field validator.
+        /// </summary>
+        /// <value>
+        /// The required field validator.
+        /// </value>
+        public RequiredFieldValidator RequiredFieldValidator
+        {
+            get
+            {
+                EnsureChildControls();
+                return _locationItemPicker.RequiredFieldValidator;
+            }
+            set
+            {
+                EnsureChildControls();
+                _locationItemPicker.RequiredFieldValidator = value;
+                _locationAddressPicker.RequiredFieldValidator = value;
+                _locationGeoPicker.RequiredFieldValidator = value;
+            }
+        }
+
+        #endregion
     }
-
-
 }

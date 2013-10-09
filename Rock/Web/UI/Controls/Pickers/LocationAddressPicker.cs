@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
@@ -9,8 +10,143 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class LocationAddressPicker : Panel
+    public class LocationAddressPicker : Panel, IRockControl
     {
+        #region IRockControl implementation
+
+        /// <summary>
+        /// Gets or sets the label text.
+        /// </summary>
+        /// <value>
+        /// The label text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text for the label." )
+        ]
+        public string Label
+        {
+            get { return ViewState["Label"] as string ?? string.Empty; }
+            set { ViewState["Label"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the CSS Icon text.
+        /// </summary>
+        /// <value>
+        /// The CSS icon class.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text for the label." )
+        ]
+        public string IconCssClass
+        {
+            get { return ViewState["IconCssClass"] as string ?? string.Empty; }
+            set { ViewState["IconCssClass"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the help text.
+        /// </summary>
+        /// <value>
+        /// The help text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The help block." )
+        ]
+        public string Help
+        {
+            get
+            {
+                return HelpBlock != null ? HelpBlock.Text : string.Empty;
+            }
+            set
+            {
+                if ( HelpBlock != null )
+                {
+                    HelpBlock.Text = value;
+                }
+            }
+        }
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "false" ),
+        Description( "Is the value required?" )
+        ]
+        public bool Required
+        {
+            get { return ViewState["Required"] as bool? ?? false; }
+            set { ViewState["Required"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the required error message.  If blank, the LabelName name will be used
+        /// </summary>
+        /// <value>
+        /// The required error message.
+        /// </value>
+        public string RequiredErrorMessage
+        {
+            get
+            {
+                return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
+            }
+            set
+            {
+                if ( RequiredFieldValidator != null )
+                {
+                    RequiredFieldValidator.ErrorMessage = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool IsValid
+        {
+            get
+            {
+                return !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the help block.
+        /// </summary>
+        /// <value>
+        /// The help block.
+        /// </value>
+        public HelpBlock HelpBlock { get; set; }
+
+        /// <summary>
+        /// Gets or sets the required field validator.
+        /// </summary>
+        /// <value>
+        /// The required field validator.
+        /// </value>
+        public RequiredFieldValidator RequiredFieldValidator { get; set; }
+
+        #endregion
+        
         #region Controls
 
         private HiddenField _hfLocationId;
@@ -238,6 +374,27 @@ namespace Rock.Web.UI.Controls
             var location = locationService.Get( _tbAddress1.Text, _tbAddress2.Text, _tbCity.Text, _ddlState.SelectedItem.Text, _tbZip.Text );
             Location = location;
             _btnPickerLabel.InnerHtml = string.Format( "<i class='icon-user'></i>{0}<b class='caret pull-right'></b>", this.AddressSummaryText );
+        }
+
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( HtmlTextWriter writer )
+        {
+            if ( this.Visible )
+            {
+                RockControlHelper.RenderControl( this, writer );
+            }
+        }
+
+        /// <summary>
+        /// Renders the <see cref="T:System.Web.UI.WebControls.TextBox" /> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter" /> object.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> that receives the rendered output.</param>
+        public void RenderBaseControl( HtmlTextWriter writer )
+        {
+            this.Render( writer );
         }
     }
 }
