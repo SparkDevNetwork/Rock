@@ -21,7 +21,6 @@ namespace RockWeb.Blocks.Cms
     /// <summary>
     /// 
     /// </summary>
-    [GroupField( "Group", "Either pick a specific group or choose <none> to have group be determined by the siteId page parameter" )]
     [LinkedPage("Detail Page")]
     public partial class LayoutList : RockBlock, IDimmableBlock
     {
