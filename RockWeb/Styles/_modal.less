@@ -35,6 +35,27 @@
         }
     }
 
+    .modal-body {
+        
+        // styling for the top nav-pill naviagtion
+        .nav-pills {
+            margin: 6px 0 18px;
+        }
+
+        .scroll-container {
+            width: 720px;
+
+            .viewport {
+                width: 670px; 
+            }
+        }
+
+        &.iframe {
+            background: url("../assets/images/ajax-loading.png") center center no-repeat; /* http://preloaders.net/en/popular */
+            overflow: hidden;
+        }
+    }
+
     .modal-footer {
         padding: 8px;
         margin-top: 10px;
@@ -42,21 +63,7 @@
     }
 }
 
-.modal-body .scroll-container 
-{
-    width: 720px;
-}
 
-.modal-body .scroll-container .viewport 
-{
-    width: 670px; 
-}
-
-.modal-body.iframe 
-{
-    background: url("../assets/images/ajax-loading.png") center center no-repeat; /* http://preloaders.net/en/popular */
-    overflow: hidden;
-}
 
 .modal-backdrop 
 {
