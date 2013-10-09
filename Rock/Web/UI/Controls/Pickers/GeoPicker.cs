@@ -573,11 +573,16 @@ namespace Rock.Web.UI.Controls
             }
             else
             {
-                string controlHtmlFormatDisabled = @"
-        <i class='icon-file-alt'></i>
-        <span id='selectedItemLabel_{0}'>{1}</span>
-";
-                writer.Write( controlHtmlFormatDisabled, this.ClientID, this.GeoDisplayName );
+                // this picker is not enabled (readonly), so just render a readonly version
+                writer.AddAttribute( "class", "picker picker-select" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                LinkButton linkButton = new LinkButton();
+                linkButton.CssClass = "picker-label";
+                linkButton.Text = string.Format( "<i class='{1}'></i><span>{0}</span>", this.GeoDisplayName, "icon-map-marker" );
+                linkButton.Enabled = false;
+                linkButton.RenderControl( writer );
+                writer.WriteLine();
+                writer.RenderEndTag();
             }
 
             // controls div

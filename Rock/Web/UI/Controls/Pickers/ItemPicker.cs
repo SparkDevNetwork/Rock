@@ -594,14 +594,13 @@ namespace Rock.Web.UI.Controls
             else
             {
                 // this picker is not enabled (readonly), so just render a readonly version
-
                 writer.AddAttribute( "class", "picker picker-select" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                writer.Write( @"
-                    <a class='picker-label' href='#'>
-                        <i class='{1}'></i>
-                        <span>{0}</span>
-                    </a>", this.ItemName, this.IconCssClass );
+                LinkButton linkButton = new LinkButton();
+                linkButton.CssClass = "picker-label";
+                linkButton.Text = string.Format( "<i class='{1}'></i><span>{0}</span>", this.ItemName, this.IconCssClass );
+                linkButton.Enabled = false;
+                linkButton.RenderControl( writer );
                 writer.WriteLine();
                 writer.RenderEndTag();
             }
