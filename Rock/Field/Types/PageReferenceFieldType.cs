@@ -74,7 +74,7 @@ namespace Rock.Field.Types
                 if ( ppPage.IsPageRoute )
                 {
                     int? pageRouteId = ppPage.PageRouteId;
-                    var pageRoute = new PageRouteService().Get( ppPage.PageRouteId ?? 0);
+                    var pageRoute = new PageRouteService().Get( pageRouteId ?? 0 );
                     if ( pageRoute != null )
                     {
                         result = string.Format( "{0},{1}", pageRoute.Page.Guid, pageRoute.Guid );

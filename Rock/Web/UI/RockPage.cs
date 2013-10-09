@@ -430,22 +430,21 @@ namespace Rock.Web.UI
                     if ( user == null )
                     {
                         Page.Trace.Warn( "Redirecting to login page" );
-                        if (!string.IsNullOrWhiteSpace(CurrentPage.Layout.Site.LoginPageReference))
-                        {
-                            // if the QueryString already has a returnUrl, use that, otherwise redirect to RawUrl
-                            string returnUrl = Request.QueryString["returnUrl"] ?? Server.UrlEncode(Request.RawUrl);
-                            
-                            string loginPageRequestPath = ResolveUrl( CurrentPage.Layout.Site.LoginPageReference );
 
-                            if ( loginPageRequestPath.Equals( Request.Path ) )
+                        var site = CurrentPage.Layout.Site;
+                        if ( site.LoginPageId.HasValue )
+                        {
+                            var pageReference = new PageReference( site.LoginPageId.Value );
+                            if ( site.LoginPageRouteId.HasValue )
                             {
-                                // The LoginPage security isn't set to Allow All, so throw exception to prevent recursive loop
-                                throw new Exception( string.Format("Page security for Site.LoginPageReference {0} is invalid", CurrentPage.Layout.Site.LoginPageReference));
+                                pageReference.RouteId = site.LoginPageRouteId.Value;
                             }
-                            else
-                            {
-                                Response.Redirect( loginPageRequestPath + "?returnurl=" + returnUrl );
-                            }
+
+                            var parms = new Dictionary<string, string>();
+                            parms.Add( "returnurl", Request.QueryString["returnUrl"] ?? Server.UrlEncode(Request.RawUrl) );
+                            pageReference.Parameters = parms;
+
+                            Response.Redirect( pageReference.BuildUrl() );
                         }
                         else
                         {
