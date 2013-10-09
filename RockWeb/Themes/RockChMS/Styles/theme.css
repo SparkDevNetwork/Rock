@@ -8825,71 +8825,88 @@ span.cke_skin_kama {
   content: '';
   margin-right: 4px;
 }
-.panel-notes .panel-heading h3 {
+.panel-note {
+  border-color: #d9e1e8;
+}
+.panel-note > .panel-heading {
+  color: #515151;
+  background-color: #d9e1e8;
+  border-color: #d9e1e8;
+}
+.panel-note > .panel-heading + .panel-collapse .panel-body {
+  border-top-color: #d9e1e8;
+}
+.panel-note > .panel-footer + .panel-collapse .panel-body {
+  border-bottom-color: #d9e1e8;
+}
+.panel-note .panel-body {
+  background-color: #f4f4f4;
+}
+.panel-note .panel-heading h3 {
   float: left;
   margin-top: 4px;
 }
-.panel-notes .panel-heading .btn {
+.panel-note .panel-heading .btn {
   float: right;
   margin: 0;
 }
-.panel-notes article {
+.panel-note article {
   border-radius: 4px;
   border: 1px solid #c8d3dc;
   padding: 12px;
   margin-bottom: 12px;
   background-color: #e7ecf0;
 }
-.panel-notes article .date {
+.panel-note article .date {
   font-size: 13px;
   font-weight: 300;
   margin-left: 8px;
 }
-.panel-notes article > i {
+.panel-note article > i {
   float: left;
   color: #c8d3dc;
   width: 6%;
   font-size: 20px;
 }
-.panel-notes article .details {
+.panel-note article .details {
   float: left;
   width: 84%;
 }
-.panel-notes article .details h5 {
+.panel-note article .details h5 {
   margin-top: 0;
   margin-bottom: 6px;
 }
-.panel-notes article .actions {
+.panel-note article .actions {
   float: right;
   width: 10%;
 }
-.panel-notes article .actions a {
+.panel-note article .actions a {
   float: right;
   margin-left: 8px;
   font-size: 14px;
 }
-.panel-notes article.highlight {
+.panel-note article.highlight {
   background-color: #f2dede;
   border: 1px solid #eed3d7;
   color: #b94a48;
 }
-.panel-notes article.highlight i {
+.panel-note article.highlight i {
   color: #eed3d7;
 }
-.panel-notes article.personal {
+.panel-note article.personal {
   background-color: #d9edf7;
   border: 1px solid #cceef4;
   color: #3a87ad;
 }
-.panel-notes article.personal i {
+.panel-note article.personal i {
   color: #cceef4;
 }
-.panel-notes .load-more {
+.panel-note .load-more {
   margin: 0 40%;
   min-width: 120px;
   width: 20%;
 }
-.panel-notes .load-more span {
+.panel-note .load-more span {
   margin: 0 12px;
 }
 .panel-noteentry {
@@ -10931,6 +10948,23 @@ a.help {
 }
 .panel-widget > .panel-footer + .panel-collapse .panel-body {
   border-bottom-color: #d9e1e8;
+}
+.panel-persondetails {
+  border-color: #d9e1e8;
+}
+.panel-persondetails > .panel-heading {
+  color: #515151;
+  background-color: #d9e1e8;
+  border-color: #d9e1e8;
+}
+.panel-persondetails > .panel-heading + .panel-collapse .panel-body {
+  border-top-color: #d9e1e8;
+}
+.panel-persondetails > .panel-footer + .panel-collapse .panel-body {
+  border-bottom-color: #d9e1e8;
+}
+.panel-persondetails .panel-body {
+  background-color: #f4f4f4;
 }
 .btn-action {
   color: #ffffff;

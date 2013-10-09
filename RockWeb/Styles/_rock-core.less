@@ -75,9 +75,20 @@ a.help {
     }
 }
 
+//.panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
 .panel-widget {
     .panel-variant(@accent-color ; @accent-text-color; @accent-color; @accent-color;);
 }
+
+.panel-persondetails {
+    .panel-variant(@accent-color ; @accent-text-color; @accent-color; @accent-color;);
+
+    .panel-body {
+        background-color: @body-bg;
+    }
+}
+
+// .panel-note {}  see _block-specific.less
 
 // extensions for buttons
 // .button-variant(@color; @background; @border) {}

@@ -78,7 +78,7 @@
             </div> 
 		</div>
 
-        <div class="container">
+        <div class="container person-content">
             <div class="row">
                 <div class="col-md-8">
                     <Rock:Zone ID="ContentZoneLeft" runat="server" />

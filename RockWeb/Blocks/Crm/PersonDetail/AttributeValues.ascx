@@ -3,7 +3,7 @@
 <asp:UpdatePanel ID="upAttributeValues" runat="server" class="context-attribute-values">
 <ContentTemplate>
 
-    <section class="panel panel-default">
+    <section class="panel panel-persondetails">
         <div class="panel-heading">
             <h3 class="panel-title pull-left">
                 <asp:Literal ID="lCategoryName" runat="server" />

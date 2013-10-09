@@ -4,7 +4,7 @@
 <asp:UpdatePanel ID="upNotes" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlNotes" runat="server">
-            <section class="panel panel-default panel-notes">
+            <section class="panel panel-note">
 
                 <asp:ValidationSummary ID="vs1" runat="server" />
 
@@ -13,7 +13,7 @@
                         <i class="icon-calendar"></i>
                         <asp:Literal ID="lTitle" runat="server"></asp:Literal>
                     </h3>
-                    <a class="btn btn-sm btn-default add-note"><i class="icon-plus"></i></a>
+                    <a class="btn btn-sm btn-action add-note"><i class="icon-plus"></i></a>
                 </div>
 
                 <div class="note-entry" style="display:none">
