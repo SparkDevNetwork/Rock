@@ -553,7 +553,7 @@ namespace Rock.Web.UI.Controls
                         </div>
                     </div>
                     <!-- This is where the Google Map (with Drawing Tools) will go. -->
-                    <div id='geoPicker_{0}' style='height: 300px; width: 500px' /></div>", this.ClientID );
+                    <div id='geoPicker_{0}' style='height: 300px; width: 500px' ></div>", this.ClientID );
                 writer.WriteLine();
 
                 writer.Write("<div class='picker-actions'>");
