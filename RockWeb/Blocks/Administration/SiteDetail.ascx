@@ -35,8 +35,8 @@
                         <div class="col-md-6">
                             <Rock:DataDropDownList ID="ddlTheme" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="Theme" Help="The theme that should be used for the site.  Themes contain specific layouts and css styling that controls how a site and it's pages will look" />
                             <Rock:PagePicker ID="ppDefaultPage" runat="server" Label="Default Page" Required="true" PromptForPageRoute="true" Help="The page and route that will be used whenever a specific page or page route is not provided."/>
-                            <Rock:DataTextBox ID="tbLoginPageReference" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="LoginPageReference" Help="The page that user will be redirected to when they request a page that requires them to login" />
-                            <Rock:DataTextBox ID="tbRegistrationPageReference" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="RegistrationPageReference" />
+                            <Rock:PagePicker ID="ppLoginPage" runat="server" Label="Login Page" Required="true" PromptForPageRoute="true" Help="The page that user will be redirected to when they request a page that requires them to login."/>
+                            <Rock:PagePicker ID="ppRegistrationPage" runat="server" Label="Registration Page" Required="true" PromptForPageRoute="true" Help="The page that user will be redirected to when they request to register for a group."/>
                             <Rock:DataTextBox ID="tbErrorPage" runat="server" SourceTypeName="Rock.Model.Site, Rock" PropertyName="ErrorPage" Help="The url that user will be redirected to if an error occurs on site" />
                         </div>
                         <div class="col-md-6">

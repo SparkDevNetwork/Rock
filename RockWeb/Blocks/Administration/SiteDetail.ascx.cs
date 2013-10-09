@@ -175,7 +175,11 @@ namespace RockWeb.Blocks.Administration
                 site.Theme = ddlTheme.Text;
                 site.DefaultPageId = ppDefaultPage.PageId ?? 0;
                 site.DefaultPageRouteId = ppDefaultPage.PageRouteId;
-                site.LoginPageReference = tbLoginPageReference.Text;
+                site.LoginPageId = ppLoginPage.PageId;
+                site.LoginPageRouteId = ppLoginPage.PageRouteId;
+                site.RegistrationPageId = ppRegistrationPage.PageId;
+                site.RegistrationPageRouteId = ppRegistrationPage.PageRouteId;
+                site.ErrorPage = tbErrorPage.Text;
 
                 var currentDomains = tbSiteDomains.Text.SplitDelimitedValues().ToList<string>();
                 site.SiteDomains = site.SiteDomains ?? new List<SiteDomain>();
@@ -203,8 +207,6 @@ namespace RockWeb.Blocks.Administration
                 site.AppleTouchIconUrl = tbAppleTouchIconUrl.Text;
                 site.FacebookAppId = tbFacebookAppId.Text;
                 site.FacebookAppSecret = tbFacebookAppSecret.Text;
-                site.RegistrationPageReference = tbRegistrationPageReference.Text;
-                site.ErrorPage = tbErrorPage.Text;
 
                 if ( !site.IsValid )
                 {
@@ -345,6 +347,7 @@ namespace RockWeb.Blocks.Administration
 
             ddlTheme.Enabled = !site.IsSystem;
             ddlTheme.SetValue( site.Theme );
+
             if ( site.DefaultPageRoute != null )
             {
                 ppDefaultPage.SetValue( site.DefaultPageRoute );
@@ -354,15 +357,31 @@ namespace RockWeb.Blocks.Administration
                 ppDefaultPage.SetValue( site.DefaultPage );
             }
 
-            tbLoginPageReference.Text = site.LoginPageReference;
+            if ( site.LoginPageRoute != null )
+            {
+                ppLoginPage.SetValue( site.LoginPageRoute );
+            }
+            else
+            {
+                ppLoginPage.SetValue( site.LoginPage );
+            }
+
+            if ( site.RegistrationPageRoute != null )
+            {
+                ppRegistrationPage.SetValue( site.RegistrationPageRoute );
+            }
+            else
+            {
+                ppRegistrationPage.SetValue( site.RegistrationPage );
+            }
+
+            tbErrorPage.Text = site.ErrorPage;
 
             tbSiteDomains.Text = string.Join( "\n", site.SiteDomains.Select( dom => dom.Domain ).ToArray() );
             tbFaviconUrl.Text = site.FaviconUrl;
             tbAppleTouchIconUrl.Text = site.AppleTouchIconUrl;
             tbFacebookAppId.Text = site.FacebookAppId;
             tbFacebookAppSecret.Text = site.FacebookAppSecret;
-            tbRegistrationPageReference.Text = site.RegistrationPageReference;
-            tbErrorPage.Text = site.ErrorPage;
         }
 
         /// <summary>

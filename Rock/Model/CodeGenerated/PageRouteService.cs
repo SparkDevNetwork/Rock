@@ -57,12 +57,12 @@ namespace Rock.Model
         public bool CanDelete( PageRoute item, out string errorMessage )
         {
             errorMessage = string.Empty;
- 
-            if ( new Service<Site>().Queryable().Any( a => a.DefaultPageRouteId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", PageRoute.FriendlyTypeName, Site.FriendlyTypeName );
-                return false;
-            }  
+            
+            // ignoring Site,DefaultPageRouteId 
+            
+            // ignoring Site,LoginPageRouteId 
+            
+            // ignoring Site,RegistrationPageRouteId 
             return true;
         }
     }
