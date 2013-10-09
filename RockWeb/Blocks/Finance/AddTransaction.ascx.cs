@@ -193,6 +193,7 @@ achieve our mission.  We are so grateful for your commitment.
                     txtCardFirstName.Visible = _ccGateway.SplitNameOnCard;
                     txtCardLastName.Visible = _ccGateway.SplitNameOnCard;
                     txtCardName.Visible = !_ccGateway.SplitNameOnCard;
+                    mypExpiration.MinimumYear = DateTime.Now.Year;
                 }
             }
 
