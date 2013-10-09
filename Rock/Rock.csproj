@@ -261,6 +261,10 @@
     <Compile Include="Migrations\201310091510427_CreditCardTypes.Designer.cs">
       <DependentUpon>201310091510427_CreditCardTypes.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201310091945298_LayoutBlocks.cs" />
+    <Compile Include="Migrations\201310091945298_LayoutBlocks.Designer.cs">
+      <DependentUpon>201310091945298_LayoutBlocks.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -1126,6 +1130,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201310091510427_CreditCardTypes.resx">
       <DependentUpon>201310091510427_CreditCardTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310091945298_LayoutBlocks.resx">
+      <DependentUpon>201310091945298_LayoutBlocks.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
