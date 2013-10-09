@@ -155,10 +155,7 @@ namespace Rock.Web.UI.Controls
             set 
             { 
                 ViewState["GroupTypeId"] = value;
-                if ( value.HasValue )
-                {
-                    LoadGroupRoles( value.Value );
-                }
+                LoadGroupRoles( value.Value );
             }
         }
 
@@ -186,13 +183,17 @@ namespace Rock.Web.UI.Controls
                 int groupRoleId = value.HasValue ? value.Value : 0;
                 if ( _ddlGroupRole.SelectedValue != groupRoleId.ToString() )
                 {
-                    var groupRole = new Rock.Model.GroupRoleService().Get( groupRoleId );
-                    if ( groupRole != null && 
-                        groupRole.GroupTypeId.HasValue && 
-                        _ddlGroupType.SelectedValue != groupRole.GroupTypeId.ToString() )
+                    if ( !GroupTypeId.HasValue )
                     {
-                        _ddlGroupType.SelectedValue = groupRole.GroupTypeId.ToString();
-                        LoadGroupRoles( groupRole.GroupTypeId.Value );
+                        var groupRole = new Rock.Model.GroupRoleService().Get( groupRoleId );
+                        if ( groupRole != null &&
+                            groupRole.GroupTypeId.HasValue &&
+                            _ddlGroupType.SelectedValue != groupRole.GroupTypeId.ToString() )
+                        {
+                            _ddlGroupType.SelectedValue = groupRole.GroupTypeId.ToString();
+
+                            LoadGroupRoles( groupRole.GroupTypeId.Value );
+                        }
                     }
 
                     var selectedItem = _ddlGroupRole.Items.FindByValue( groupRoleId.ToString() );
@@ -281,24 +282,22 @@ namespace Rock.Web.UI.Controls
             );
         }
 
-        private void LoadGroupRoles(int groupTypeId)
+        private void LoadGroupRoles(int? groupTypeId)
         {
-            int? groupRoleId = GroupRoleId;
-
             _ddlGroupRole.Items.Clear();
-
-            if ( !Required )
+            if ( groupTypeId.HasValue )
             {
-                _ddlGroupRole.Items.Add( new ListItem( string.Empty, Rock.Constants.None.IdValue ) );
+                if ( !Required )
+                {
+                    _ddlGroupRole.Items.Add( new ListItem( string.Empty, Rock.Constants.None.IdValue ) );
+                }
+
+                var groupRoleService = new Rock.Model.GroupRoleService();
+                var groupRoles = groupRoleService.Queryable().Where( r => r.GroupTypeId == groupTypeId.Value ).OrderBy( a => a.Name ).ToList();
+                groupRoles.ForEach( r =>
+                    _ddlGroupRole.Items.Add( new ListItem( r.Name, r.Id.ToString().ToUpper() ) )
+                );
             }
-
-            var groupRoleService = new Rock.Model.GroupRoleService();
-            var groupRoles = groupRoleService.Queryable().Where( r => r.GroupTypeId == groupTypeId ).OrderBy( a => a.Name ).ToList();
-            groupRoles.ForEach( r =>
-                _ddlGroupRole.Items.Add( new ListItem( r.Name, r.Id.ToString().ToUpper() ) )
-            );
-
-            GroupRoleId = groupRoleId;
         }
 
         /// <summary>

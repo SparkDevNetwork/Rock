@@ -168,30 +168,31 @@
             <div runat="server" class="r-example">
                 <Rock:ComponentPicker ID="componentPicker" runat="server" Label="Rock:ComponentPicker" />
             </div>
-            
-            <a id="LocationPicker" ></a>
+
+            <a id="LocationPicker"></a>
             <div runat="server" class="r-example">
-                <Rock:LocationPicker ID="locationPicker" runat="server" Label="Rock:LocationPicker (Named Location Mode)" LimitToNamedLocations="true" />
+                <Rock:LocationPicker ID="locationPicker" runat="server" Label="Rock:LocationPicker (Named Location Mode)" LimitToNamedLocations="false" />
             </div>
 
             <div id="Div1" runat="server" class="r-example">
                 <Rock:GroupRolePicker ID="groupRolePicker" runat="server" Label="Rock:GroupRolePicker" />
             </div>
 
-            <a id="Other" ></a>
+            <a id="Other"></a>
             <h1>Other</h1>
 
             <div runat="server" class="r-example">
                 <Rock:ScheduleBuilder ID="scheduleBuilder" runat="server" Label="Rock:ScheduleBuilder" OnSaveSchedule="scheduleBuilder_SaveSchedule" />
             </div>
-
+            
             <div runat="server" class="r-example">
-                <Rock:GeoPicker ID="geoPicker" runat="server" Label="Rock:GeoPicker (Point mode)" DrawingMode="Point" />
+                <Rock:GeoPicker ID="geoPicker" runat="server" Label="Rock:GeoPicker (Point mode)" DrawingMode="Point" /> 
             </div>
 
             <div runat="server" class="r-example">
-                <Rock:GeoPicker ID="geoPicker1" runat="server" Label="Rock:GeoPicker (Polygon mode)" DrawingMode="Polygon" />
+                <Rock:GeoPicker ID="geoPicker1" runat="server" Label="Rock:GeoPicker (Polygon mode)" DrawingMode="Polygon" /> 
             </div>
+            
 
             <%-- 
                 <Rock:MergeFieldPicker ID="LabeledCheckBox4" runat="server" Label="Rock:MergeFieldPicker" />

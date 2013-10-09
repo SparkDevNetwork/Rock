@@ -1082,9 +1082,16 @@ namespace Rock
         /// </summary>
         /// <param name="eff">The eff.</param>
         /// <returns></returns>
-        public static String ConvertToString( this Enum eff )
+        public static String ConvertToString( this Enum eff, bool SplitCase = true )
         {
-            return Enum.GetName( eff.GetType(), eff ).SplitCase();
+            if ( SplitCase )
+            {
+                return Enum.GetName( eff.GetType(), eff ).SplitCase();
+            }
+            else
+            {
+                return Enum.GetName( eff.GetType(), eff );
+            }
         }
 
         /// <summary>
