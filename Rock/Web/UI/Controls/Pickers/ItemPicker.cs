@@ -379,6 +379,22 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string DefaultText { get; set; }
 
+        /// <summary>
+        /// Gets or sets the mode panel.
+        /// </summary>
+        /// <value>
+        /// The mode panel.
+        /// </value>
+        public Panel ModePanel { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show drop down].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show drop down]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowDropDown { get; set; }
+
         #endregion
 
         #region Constructors
@@ -446,6 +462,11 @@ namespace Rock.Web.UI.Controls
             _hfItemRestUrlExtraParams = new HiddenField();
             _hfItemRestUrlExtraParams.ClientIDMode = ClientIDMode.Static;
             _hfItemRestUrlExtraParams.ID = string.Format( "hfItemRestUrlExtraParams_{0}", this.ID );
+
+            if ( ModePanel != null )
+            {
+                this.Controls.Add( ModePanel );
+            }
 
             _btnSelect = new LinkButton();
             _btnSelect.ClientIDMode = ClientIDMode.Static;
@@ -526,7 +547,18 @@ namespace Rock.Web.UI.Controls
 
                 // picker menu
                 writer.AddAttribute( "class", "picker-menu dropdown-menu" );
+                if ( ShowDropDown )
+                {
+                    writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "block" );
+                }
+                
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                // mode panel
+                if ( ModePanel != null )
+                {
+                    ModePanel.RenderControl( writer );
+                }
 
                 // treeview
                 writer.Write( @"
@@ -562,7 +594,16 @@ namespace Rock.Web.UI.Controls
             else
             {
                 // this picker is not enabled (readonly), so just render a readonly version
-                writer.Write( @"<i class='icon-file-alt'></i><span id='selectedItemLabel_{0}'>{1}</span>", this.ID, this.ItemName );
+
+                writer.AddAttribute( "class", "picker picker-select" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                writer.Write( @"
+                    <a class='picker-label' href='#'>
+                        <i class='{1}'></i>
+                        <span>{0}</span>
+                    </a>", this.ItemName, this.IconCssClass );
+                writer.WriteLine();
+                writer.RenderEndTag();
             }
         }
         

@@ -228,10 +228,11 @@
     void DownloadNext_Click(Object sender, EventArgs e)
     {
     	try {
-    		Response.Redirect("Configure.aspx");
+            Response.Redirect("Configure.aspx");
     	}
     	catch (Exception ex) {
     		ProcessPageException(ex.Message);
+            lDownloadDetails.Text += "Exception on redirect";
     	}
     }
 	
@@ -362,8 +363,7 @@
 								<asp:LinkButton id="btnDownloadNext" runat="server" Text="Next <i class='icon-chevron-right'></i>"  CssClass="btn btn-primary" OnClick="DownloadNext_Click"></asp:LinkButton> 
 							</div>
 						</asp:Panel>
-						
-						
+
 						<asp:Panel id="pError" Visible="false" runat="server">
 							<h1>Bummer... Something Bad Happened!</h1>
 						

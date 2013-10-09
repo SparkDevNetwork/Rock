@@ -367,6 +367,22 @@ namespace Rock.Web.UI.Controls
             }
         }
 
+        /// <summary>
+        /// Gets or sets the mode panel.
+        /// </summary>
+        /// <value>
+        /// The mode panel.
+        /// </value>
+        public Panel ModePanel { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show drop down].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show drop down]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowDropDown { get; set; }
+
         #endregion
 
         #region Constructor
@@ -403,6 +419,20 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+            if ( this.Visible )
+            {
+                // register the Javascript in OnLoad instead of OnInit because the LocationPicker in 'GeoPoint mode' might change the .Visible 
+                RegisterJavaScript();
+            }
+        }
+
+        /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
@@ -419,12 +449,22 @@ namespace Rock.Web.UI.Controls
             _hfGeoPath.ClientIDMode = System.Web.UI.ClientIDMode.Static;
             _hfGeoPath.ID = string.Format( "hfGeoPath_{0}", this.ClientID );
 
+            if ( ModePanel != null )
+            {
+                this.Controls.Add( ModePanel );
+            }
+
             _btnSelect.ClientIDMode = System.Web.UI.ClientIDMode.Static;
             _btnSelect.CssClass = "btn btn-xs btn-primary";
             _btnSelect.ID = string.Format( "btnSelect_{0}", this.ClientID );
             _btnSelect.Text = "Done";
             _btnSelect.CausesValidation = false;
-            _btnSelect.Click += btnSelect_Click;
+
+            // we only need the postback on Select if SelectItem is assigned
+            if ( SelectGeography != null )
+            {
+                _btnSelect.Click += btnSelect_Click;
+            }
 
             _btnSelectNone.ClientIDMode = ClientIDMode.Static;
             _btnSelectNone.CssClass = "picker-select-none";
@@ -432,7 +472,12 @@ namespace Rock.Web.UI.Controls
             _btnSelectNone.Text = "<i class='icon-remove'></i>";
             _btnSelectNone.CausesValidation = false;
             _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
-            _btnSelectNone.Click += btnSelect_Click;
+
+            // we only need the postback on SelectNone if SelectItem is assigned
+            if ( SelectGeography != null )
+            {
+                _btnSelectNone.Click += btnSelect_Click;
+            }
 
             Controls.Add( _hfGeoDisplayName );
             Controls.Add( _hfGeoPath );
@@ -449,8 +494,6 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            RegisterJavaScript();
-
             if ( this.Visible )
             {
                 RockControlHelper.RenderControl( this, writer );
@@ -471,62 +514,63 @@ namespace Rock.Web.UI.Controls
 
             if ( this.Enabled )
             {
-                string controlHtmlFormatStart = @"
-        <div class='picker picker-geography' id='{0}'> 
-            <a class='picker-label' href='#'>
-                <i class='icon-map-marker'></i>
-                <span id='selectedGeographyLabel_{0}'>{1}</span>
-                <b class='caret pull-right'></b>
-            </a>
-";
+                writer.AddAttribute( "id", this.ClientID.ToString() );
+                writer.AddAttribute( "class", "picker picker-geography" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                writer.Write( string.Format( controlHtmlFormatStart, this.ClientID, this.GeoDisplayName ) );
+                writer.Write( string.Format( @"
+                    <a class='picker-label' href='#'>
+                        <i class='icon-map-marker'></i>
+                        <span id='selectedGeographyLabel_{0}'>{1}</span>
+                        <b class='caret pull-right'></b>
+                    </a>", this.ClientID, this.GeoDisplayName ) );
+                writer.WriteLine();
+                
+                _btnSelectNone.RenderControl( writer );
 
-                // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
-                if ( SelectGeography != null )
+                // picker menu
+                writer.AddAttribute( "class", "picker-menu dropdown-menu" );
+                if ( ShowDropDown )
                 {
-                    _btnSelectNone.RenderControl( writer );
-                }
-                else
-                {
-                    writer.Write( "<a class='picker-select-none' id='btnSelectNone_{0}' href='#' style='display:none'><i class='icon-remove'></i></a>", this.ClientID );
+                    writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "block" );
                 }
 
-                string controlHtmlFormatMiddle = @"
-            <div class='picker-menu dropdown-menu'>
-                <h4>Geography Picker</h4>
-                <!-- Our custom delete button that we add to the map for deleting polygons. -->
-                <div style='display: none; z-index: 10; position: absolute; left: 105px; top: 0px; line-height:0;' id='gmnoprint-delete-button_{0}'>
-                    <div style='direction: ltr; overflow: hidden; text-align: left; position: relative; color: rgb(51, 51, 51); font-family: Arial, sans-serif; font-size: 13px; background-color: rgb(255, 255, 255); padding: 4px; border-width: 1px 1px 1px 1px; border-style: solid; border-color: rgb(113, 123, 135); -webkit-box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px; box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px; font-weight: normal; background-position: initial initial; background-repeat: initial initial;' title='Delete selected shape'>
-                        <span style='display: inline-block;'><div style='width: 16px; height: 16px; overflow: hidden; position: relative;'><i class='icon-remove' style='font-size: 16px; padding-left: 2px; color: #aaa;'></i></div></span>
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                // mode panel
+                if ( ModePanel != null )
+                {
+                    ModePanel.RenderControl( writer );
+                }
+
+                // map
+                writer.Write( @"
+                    <h4>Geography Picker</h4>
+                    <!-- Our custom delete button that we add to the map for deleting polygons. -->
+                    <div style='display:none; z-index: 10; position: absolute; left: 105px; top: 0px; line-height:0;' id='gmnoprint-delete-button_{0}'>
+                        <div style='direction: ltr; overflow: hidden; text-align: left; position: relative; color: rgb(51, 51, 51); font-family: Arial, sans-serif; font-size: 13px; background-color: rgb(255, 255, 255); padding: 4px; border-width: 1px 1px 1px 1px; border-style: solid; border-color: rgb(113, 123, 135); -webkit-box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px; box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px; font-weight: normal; background-position: initial initial; background-repeat: initial initial;' title='Delete selected shape'>
+                            <span style='display: inline-block;'><div style='width: 16px; height: 16px; overflow: hidden; position: relative;'><i class='icon-remove' style='font-size: 16px; padding-left: 2px; color: #aaa;'></i></div></span>
+                        </div>
                     </div>
-                </div>
-                <!-- This is where the Google Map (with Drawing Tools) will go. -->
-                <div id='geoPicker_{0}' style='height: 300px; width: 500px' /></div>
-";
-
-                writer.Write( controlHtmlFormatMiddle, this.ClientID, this.GeoDisplayName );
+                    <!-- This is where the Google Map (with Drawing Tools) will go. -->
+                    <div id='geoPicker_{0}' style='height: 300px; width: 500px' /></div>", this.ClientID );
+                writer.WriteLine();
 
                 writer.Write("<div class='picker-actions'>");
 
-                // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
-                if ( SelectGeography != null )
-                {
-                    _btnSelect.RenderControl( writer );
-                }
-                else
-                {
-                    writer.Write( string.Format( "<a class='btn btn-xs btn-primary' id='btnSelect_{0}'>Done</a>", this.ClientID ) );
-                }
+                // picker actions
+                writer.AddAttribute( "class", "picker-actions" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _btnSelect.RenderControl( writer );
+                writer.Write( "<a class='btn btn-xs' id='btnCancel_{0}'>Cancel</a>", this.ClientID );
+                writer.WriteLine();
+                writer.RenderEndTag();
 
-                string controlHtmlFormatEnd = @"
-              <a class='btn btn-xs' id='btnCancel_{0}'>Cancel</a>
-          </div>
-      </div> 
-    </div>
-";
+                // closing div of picker-menu
+                writer.RenderEndTag();
 
-                writer.Write( string.Format( controlHtmlFormatEnd, this.ClientID, this.GeoDisplayName ) );
+                // closing div of picker
+                writer.RenderEndTag();
             }
             else
             {

@@ -1,4 +1,4 @@
-﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Site.Master.cs" Inherits="RockWeb.Themes.CheckinGeneric.Layouts.Site" %>
+﻿<%@ Master Language="C#" AutoEventWireup="true" %>
 <%@ Import Namespace="System.Web.Optimization" %>
 <!DOCTYPE html>
 

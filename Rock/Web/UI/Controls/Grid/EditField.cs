@@ -98,7 +98,7 @@ namespace Rock.Web.UI.Controls
                 EditField editField = cell.ContainingField as EditField;
                 ParentGrid = editField.ParentGrid;
                 LinkButton lbEdit = new LinkButton();
-                lbEdit.CssClass = "btn btn-default btn-sm";
+                lbEdit.CssClass = "btn btn-edit btn-sm";
                 lbEdit.ToolTip = "Edit";
                 
                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );

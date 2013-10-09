@@ -36,7 +36,7 @@
                             <p>An error has occurred while processing your request.  The Rock ChMS administrators have 
                             been notified of this problem.</p>
 
-                            <p><a onclick="history.go(-1);" class="btn small">Go Back</a></p>
+                            <p><a onclick="history.go(-1);" class="btn btn-sm btn-primary">Go Back</a></p>
 
                             <asp:Literal ID="lErrorInfo" runat="server"></asp:Literal>
                         </div>
