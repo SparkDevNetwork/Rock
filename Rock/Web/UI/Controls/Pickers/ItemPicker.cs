@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
@@ -162,8 +163,8 @@ namespace Rock.Web.UI.Controls
         private HiddenField _hfInitialItemParentIds;
         private HiddenField _hfItemName;
         private HiddenField _hfItemRestUrlExtraParams;
-        private LinkButton _btnSelect;
-        private LinkButton _btnSelectNone;
+        private HtmlAnchor _btnSelect;
+        private HtmlAnchor _btnSelectNone;
 
         #endregion
 
@@ -468,31 +469,31 @@ namespace Rock.Web.UI.Controls
                 this.Controls.Add( ModePanel );
             }
 
-            _btnSelect = new LinkButton();
+            _btnSelect = new HtmlAnchor();
             _btnSelect.ClientIDMode = ClientIDMode.Static;
-            _btnSelect.CssClass = "btn btn-xs btn-primary";
+            _btnSelect.Attributes["class"] = "btn btn-xs btn-primary";
             _btnSelect.ID = string.Format( "btnSelect_{0}", this.ID );
-            _btnSelect.Text = "Select";
+            _btnSelect.InnerText = "Select";
             _btnSelect.CausesValidation = false;
 
             // we only need the postback on Select if SelectItem is assigned or if this is PagePicker
             if ( SelectItem != null || (this is PagePicker) )
             {
-                _btnSelect.Click += btnSelect_Click;
+                _btnSelect.ServerClick += btnSelect_Click;
             }
 
-            _btnSelectNone = new LinkButton();
+            _btnSelectNone = new HtmlAnchor();
             _btnSelectNone.ClientIDMode = ClientIDMode.Static;
-            _btnSelectNone.CssClass = "picker-select-none";
+            _btnSelectNone.Attributes["class"] = "picker-select-none";
             _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ID );
-            _btnSelectNone.Text = "<i class='icon-remove'></i>";
+            _btnSelectNone.InnerHtml = "<i class='icon-remove'></i>";
             _btnSelectNone.CausesValidation = false;
             _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
 
             // we only need the postback on SelectNone if SelectItem is assigned or if this is PagePicker
             if ( SelectItem != null || ( this is PagePicker ) )
             {
-                _btnSelectNone.Click += btnSelect_Click;
+                _btnSelectNone.ServerClick += btnSelect_Click;
             }
 
             Controls.Add( _hfItemId );
