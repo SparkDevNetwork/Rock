@@ -70,8 +70,9 @@ namespace RockWeb.Blocks.Finance.Administration
             pledge.PersonId = ppPerson.PersonId;
             pledge.AccountId = int.Parse( fpFund.SelectedValue );
             pledge.TotalAmount = decimal.Parse( tbAmount.Text );
-            pledge.StartDate = DateTime.Parse( dtpStartDate.Text );
-            pledge.EndDate = DateTime.Parse( dtpEndDate.Text );
+
+            pledge.StartDate = dpDateRange.LowerValue.Value;
+            pledge.EndDate = dpDateRange.UpperValue.Value;
             pledge.PledgeFrequencyValueId = int.Parse( ddlFrequencyType.SelectedValue );
 
             if ( !pledge.IsValid )
@@ -127,10 +128,11 @@ namespace RockWeb.Blocks.Finance.Administration
             fpFund.Enabled = !isReadOnly;
             tbAmount.Text = !isNewPledge ? pledge.TotalAmount.ToString() : string.Empty;
             tbAmount.ReadOnly = isReadOnly;
-            dtpStartDate.Text = !isNewPledge ? pledge.StartDate.ToShortDateString() : string.Empty;
-            dtpStartDate.ReadOnly = isReadOnly;
-            dtpEndDate.Text = !isNewPledge ? pledge.EndDate.ToShortDateString() : string.Empty;
-            dtpEndDate.ReadOnly = isReadOnly;
+
+            dpDateRange.LowerValue = pledge.StartDate;
+            dpDateRange.UpperValue = pledge.EndDate;
+            dpDateRange.ReadOnly = isReadOnly;
+
             ddlFrequencyType.SelectedValue = !isNewPledge ? pledge.PledgeFrequencyValueId.ToString() : string.Empty;
             ddlFrequencyType.Enabled = !isReadOnly;
 

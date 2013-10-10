@@ -32,7 +32,7 @@ namespace Rock.Web
         /// <summary>
         /// Gets the route id.
         /// </summary>
-        public int RouteId { get; private set; }
+        public int RouteId { get; set; }
 
         /// <summary>
         /// Gets the route parameters.
@@ -40,7 +40,7 @@ namespace Rock.Web
         /// <value>
         /// The route parameters.
         /// </value>
-        public Dictionary<string, string> Parameters { get; private set; }
+        public Dictionary<string, string> Parameters { get; set; }
 
         /// <summary>
         /// Gets the query string.
@@ -48,7 +48,7 @@ namespace Rock.Web
         /// <value>
         /// The query string.
         /// </value>
-        public NameValueCollection QueryString { get; private set; }
+        public NameValueCollection QueryString { get; set; }
 
         /// <summary>
         /// Gets or sets the bread crumbs.

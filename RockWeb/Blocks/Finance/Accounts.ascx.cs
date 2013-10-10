@@ -34,6 +34,8 @@ namespace RockWeb.Blocks.Finance
         {
             base.OnInit( e );
 
+            
+
             rGridAccount.DataKeyNames = new string[] { "id" };
             rAccountFilter.ApplyFilterClick += rAccountFilter_ApplyFilterClick;
             rGridAccount.Actions.AddClick += rGridAccount_Add;
@@ -85,6 +87,9 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void rGridAccount_Add( object sender, EventArgs e )
         {
+            // set block title
+            lAction.Text = ("Add Account").FormatAsHtmlTitle();
+            
             BindAccountType();
             ShowEdit( 0 );
         }
@@ -96,6 +101,9 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="RowEventArgs"/> instance containing the event data.</param>
         protected void rGridAccount_Edit( object sender, RowEventArgs e )
         {
+            // set block title
+            lAction.Text = ("Edit Account").FormatAsHtmlTitle();
+
             ShowEdit( (int)e.RowKeyValue );
         }
 

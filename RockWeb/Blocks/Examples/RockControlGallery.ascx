@@ -7,8 +7,10 @@
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" runat="server">
-            <asp:LinkButton runat="server" ID="btnToggleLabels" Text="Toggle Labels" CausesValidation="false" OnClick="btnToggleLabels_Click"
-                OnClientClick="javascript: $(':header').toggle()" />
+            <div class="pull-right">
+                <asp:LinkButton runat="server" ID="btnToggleLabels" Text="Toggle Labels" CssClass="btn btn-xs btn-primary " CausesValidation="false" OnClick="btnToggleLabels_Click" />
+                <asp:LinkButton runat="server" ID="btnToggleEnabled" Text="Toggle Enabled" CssClass="btn btn-xs btn-primary " CausesValidation="false" OnClick="btnToggleEnabled_Click" />
+            </div>
             <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" />
 
             <h1>General Information</h1>
@@ -16,7 +18,7 @@
             <h2>Input Sizing Rules</h2>
 
             <div class="alert alert-warning">
-                <strong>Warning!</strong> In Bootstrap 3 inputs are meant to fill the width of their parent container (<a href="http://getbootstrap.com/css/#forms-control-sizes" class="alert-link">link</a>).  If a small input is desired they should
+                <p><strong>Warning!</strong></p> In Bootstrap 3 inputs are meant to fill the width of their parent container (<a href="http://getbootstrap.com/css/#forms-control-sizes" class="alert-link">link</a>).  If a small input is desired they should
                 be wrapped in a table grid.  This provides the best responsive solution.  In some rare cases it's beneficial to be able to fix the width of
                 certain inputs to provide better context of what the input is for.  For instance a credit card CVV field makes more sense visually being
                 fixed width to 3 characters.  To provide this capability we have added the following CSS classes to fix width inputs.  <em>Please use them
@@ -24,11 +26,11 @@
             </div>
 
             <div class="alert alert-danger">
-                <strong>Alert</strong> Rock framework developers should get approval from the Core Team before using these styles.
+                <p><strong>Alert</strong></p> Rock framework developers should get approval from the Core Team before using these styles.
 
             </div>
 
-            <div id="Div1" runat="server" class="r-example">
+            <div runat="server" class="r-example">
                 <Rock:DataTextBox ID="DataTextBoxXs" runat="server" CssClass="input-width-xs" Label=".input-width-xs" LabelTextFromPropertyName="false" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
 
                 <Rock:DataTextBox ID="DataTextBox1" runat="server" CssClass="input-width-sm" Label=".input-width-sm" LabelTextFromPropertyName="false" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
@@ -43,12 +45,12 @@
             </div>
 
             <div class="alert alert-info">
-                <strong>Note</strong> In Bootstrap 3 inputs are <em>display:block;</em>. If you need these sized controls to align horizontally, consider wrapping them with the <em>form-control-group</em> class.
+                <p><strong>Note</strong></p> In Bootstrap 3 inputs are <em>display:block;</em>. If you need these sized controls to align horizontally, consider wrapping them with the <em>form-control-group</em> class.
             </div>
 
 
 
-            <h2 id="H1" runat="server">Rock:Grid</h2>
+            <h2>Rock:Grid</h2>
             <div runat="server" class="r-example">
                 <Rock:Grid ID="gExample" runat="server" AllowSorting="true">
                     <Columns>
@@ -64,7 +66,7 @@
                 </Rock:Grid>
             </div>
 
-
+            <a id="DropDowns"></a>
             <h1>DropDowns</h1>
 
             <div runat="server" class="r-example">
@@ -79,11 +81,15 @@
                 <Rock:ButtonDropDownList ID="bddlExample" runat="server" Label="Rock:ButtonDropDownList" />
             </div>
 
-
+            <a id="Input"></a>
             <h1>Input</h1>
 
             <div runat="server" class="r-example">
                 <Rock:DataTextBox ID="dt" runat="server" Label="Rock:DataTextBox" LabelTextFromPropertyName="false" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
+            </div>
+
+            <div runat="server" class="r-example">
+                <Rock:NumberBox ID="numberBox" runat="server" Label="Rock:NumberBox" />
             </div>
 
             <div runat="server" class="r-example">
@@ -110,7 +116,7 @@
                 <Rock:NumberRangeEditor ID="NumberRangeEditor" runat="server" Label="Rock:NumberRangeEditor" LowerValue="10" UpperValue="25" />
             </div>
 
-
+            <a id="Pickers"></a>
             <h1>Pickers</h1>
 
             <div runat="server" class="r-example">
@@ -153,11 +159,6 @@
                 <Rock:PersonPicker ID="personPicker" runat="server" Label="Rock:PersonPicker" />
             </div>
 
-            <label>Rock:Schedule Builder</label>
-            <div runat="server" class="r-example">
-                <Rock:ScheduleBuilder ID="scheduleBuilder" runat="server" Label="Rock:ScheduleBuilder" />
-            </div>
-
             <div runat="server" class="r-example">
                 <Rock:AccountPicker ID="accountPicker" runat="server" Label="Rock:AccountPicker" />
             </div>
@@ -170,6 +171,26 @@
                 <Rock:ComponentPicker ID="componentPicker" runat="server" Label="Rock:ComponentPicker" />
             </div>
 
+            <a id="LocationPicker"></a>
+            <div id="Div2" runat="server" class="r-example">
+                <Rock:LocationPicker ID="locationPicker1" runat="server" Label="Rock:LocationPicker" />
+            </div>
+
+            <div runat="server" class="r-example">
+                <Rock:LocationPicker ID="locationPicker" runat="server" Label="Rock:LocationPicker (Address Mode, Mode Selection disabled)" PickerMode="Address" AllowModeSelection="false" />
+            </div>
+
+            <div id="Div1" runat="server" class="r-example">
+                <Rock:GroupRolePicker ID="groupRolePicker" runat="server" Label="Rock:GroupRolePicker" />
+            </div>
+
+            <a id="Other"></a>
+            <h1>Other</h1>
+
+            <div runat="server" class="r-example">
+                <Rock:ScheduleBuilder ID="scheduleBuilder" runat="server" Label="Rock:ScheduleBuilder" OnSaveSchedule="scheduleBuilder_SaveSchedule" />
+            </div>
+
             <div runat="server" class="r-example">
                 <Rock:GeoPicker ID="geoPicker" runat="server" Label="Rock:GeoPicker (Point mode)" DrawingMode="Point" />
             </div>
@@ -178,6 +199,7 @@
                 <Rock:GeoPicker ID="geoPicker1" runat="server" Label="Rock:GeoPicker (Polygon mode)" DrawingMode="Polygon" />
             </div>
 
+
             <%-- 
                 <Rock:MergeFieldPicker ID="LabeledCheckBox4" runat="server" Label="Rock:MergeFieldPicker" />
             --%>
@@ -185,11 +207,14 @@
             <h2>BinaryFilePicker, BinaryFileTypePicker</h2>
 
             <div runat="server" class="r-example">
-                <Rock:BinaryFileTypePicker ID="binaryFileTypePicker" runat="server" OnSelectedIndexChanged="binaryFileTypePicker_SelectedIndexChanged" />
-                <Rock:BinaryFilePicker ID="binaryFilePicker" runat="server" />
+                <Rock:BinaryFileTypePicker ID="binaryFileTypePicker" runat="server" Label="Rock:BinaryFileTypePicker" OnSelectedIndexChanged="binaryFileTypePicker_SelectedIndexChanged" />
             </div>
 
+            <div runat="server" class="r-example">
+                <Rock:BinaryFilePicker ID="binaryFilePicker" runat="server" Label="Rock:BinaryFilePicker" />
+            </div>
 
+            <a id="Misc"></a>
             <h1>Misc</h1>
 
             <div runat="server" class="r-example">
@@ -209,7 +234,7 @@
             </div>
 
             <h2>Rock:Badge</h2>
-            <div id="Div18" runat="server" class="r-example">
+            <div runat="server" class="r-example">
                 <Rock:Badge ID="badge" runat="server" ToolTip="you have new messages waiting">99</Rock:Badge>
             </div>
 
@@ -226,10 +251,19 @@
                 <Rock:HighlightLabel ID="hlCustom" runat="server" LabelType="Custom" CustomClass="danger" Text="Custom" />
             </div>
 
+            
+            <h2>Rock:Toggle</h2>
+            <div runat="server" class="r-example">
+                <Rock:Toggle ID="toggleShowPreview" runat="server"
+                    LabelText="Show Preview?" OnText="Yes" OffText="No" Checked="true"
+                    Help="If set to yes, a preview will be shown immediately as you update your criteria."
+                    OnCheckedChanged="toggleShowPreview_CheckedChanged" />
+            </div>
+
             <h2>Rock:BootstrapButton</h2>
             <div runat="server" class="r-example">
                 <Rock:BootstrapButton ID="lbSave" runat="server" Text="Click Me"
-                    DataLoadingText="Disabled and Loading..." CssClass="btn btn-primary" />
+                    DataLoadingText="<i class='icon-spinner icon-spin icon-large'></i> Saving" CssClass="btn btn-primary" />
             </div>
 
             <h2>Rock:AttributeEditor</h2>

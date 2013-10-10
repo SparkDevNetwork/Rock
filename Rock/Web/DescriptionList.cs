@@ -23,30 +23,15 @@ namespace Rock.Web
         /// </summary>
         /// <param name="term">The term.</param>
         /// <param name="description">The description.</param>
+        /// <param name="showIfBlank">if set to <c>true</c> [show if blank].</param>
         /// <returns></returns>
-        public DescriptionList Add( string term, string description )
+        public DescriptionList Add( string term, object description, bool showIfBlank = false )
         {
-            _termDescriptionList.Add( term, description );
-            return this;
-        }
-
-        /// <summary>
-        /// Adds the specified term.
-        /// </summary>
-        /// <param name="term">The term.</param>
-        /// <param name="person">The person.</param>
-        /// <returns></returns>
-        public DescriptionList Add( string term, Rock.Model.Person person )
-        {
-            if ( person != null )
+            string value = description != null ? description.ToString() : string.Empty;
+            if ( !string.IsNullOrWhiteSpace( value ) || showIfBlank )
             {
-                _termDescriptionList.Add( term, person.FullName );
+                _termDescriptionList.Add( term, value );
             }
-            else
-            {
-                _termDescriptionList.Add( term, null );
-            }
-            
             return this;
         }
 
@@ -57,38 +42,16 @@ namespace Rock.Web
         /// <param name="dateTime">The date time.</param>
         /// <param name="format">The format.</param>
         /// <returns></returns>
-        public DescriptionList Add( string term, DateTime? dateTime, string format = "g" )
+        public DescriptionList Add( string term, DateTime? dateTime, string format = "g", bool showIfBlank = false )
         {
             if ( dateTime != null )
             {
-                _termDescriptionList.Add( term, dateTime.Value.ToString(format) );
+                return Add(term, dateTime.Value.ToString(format), showIfBlank);
             }
             else
             {
-                _termDescriptionList.Add( term, null );
+                return Add( term, null, showIfBlank );
             }
-
-            return this;
-        }
-
-        /// <summary>
-        /// Adds the specified term.
-        /// </summary>
-        /// <param name="term">The term.</param>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public DescriptionList Add( string term, int? value )
-        {
-            if ( value != null )
-            {
-                _termDescriptionList.Add( term, value.ToString() );
-            }
-            else
-            {
-                _termDescriptionList.Add( term, null );
-            }
-
-            return this;
         }
 
         /// <summary>

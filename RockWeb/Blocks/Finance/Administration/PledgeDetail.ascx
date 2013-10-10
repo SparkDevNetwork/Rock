@@ -25,8 +25,7 @@
                     </div>
 
                     <div class="col-md-6">
-                        <Rock:DatePicker ID="dtpStartDate" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="StartDate" Label="Start Date" Required="True"/>
-                        <Rock:DatePicker ID="dtpEndDate" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="EndDate" Label="End Date" Required="True"/>
+                        <Rock:DateRangePicker ID="dpDateRange" runat="server" Label="Date Range" Required="True"/>
                         <Rock:DataDropDownList ID="ddlFrequencyType" runat="server" SourceTypeName="Rock.Model.FinancialPledge, Rock" PropertyName="PledgeFrequencyValue" Label="Payment Schedule" Required="True"/>
                     </div>
                 </div>

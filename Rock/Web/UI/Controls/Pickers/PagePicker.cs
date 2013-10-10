@@ -9,6 +9,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Constants;
 using Rock.Model;
 
 namespace Rock.Web.UI.Controls
@@ -116,7 +117,14 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                return this.ItemId.AsInteger();
+                if ( this.ItemId == None.IdValue )
+                {
+                    return null;
+                }
+                else
+                {
+                    return this.ItemId.AsInteger( false );
+                }
             }
         }
         
@@ -131,7 +139,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                return _hfPageRouteId.Value.AsInteger();
+                return _hfPageRouteId.Value.AsInteger(false);
             }
             
             set

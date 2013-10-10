@@ -187,7 +187,7 @@ namespace Rock.Migrations
             Sql( string.Format( @"
 
                 DECLARE @SiteId int
-                SET @LayoutId = (SELECT [Id] FROM [Site] WHERE [SiteID] = '{0}')
+                SET @SiteId = (SELECT [Id] FROM [Site] WHERE [Guid] = '{0}')
                         
                 INSERT INTO [Layout] (
                     [IsSystem],[SiteId],[FileName],[Name],[Description],[Guid])
@@ -346,9 +346,9 @@ namespace Rock.Migrations
         /// Adds the block.
         /// </summary>
         /// <param name="pageGuid">The page GUID.</param>
+        /// <param name="layoutGuid">The layout GUID.</param>
         /// <param name="blockTypeGuid">The block type GUID.</param>
         /// <param name="name">The name.</param>
-        /// <param name="layout">The layout.</param>
         /// <param name="zone">The zone.</param>
         /// <param name="order">The order.</param>
         /// <param name="guid">The GUID.</param>

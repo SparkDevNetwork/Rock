@@ -56,7 +56,7 @@ namespace Rock.Web.UI.Controls
             string script = @"
 // activity animation
 $('.filter-item > header').click(function () {
-    $(this).siblings('.widget-content').slideToggle();
+    $(this).siblings('.panel-body').slideToggle();
     $(this).children('div.pull-left').children('div').slideToggle();
 
     $expanded = $(this).children('input.filter-expanded');
@@ -314,10 +314,10 @@ $('.filter-item-select').click(function (event) {
                 hfExpanded.Value = "True";
             }
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget filter-item" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget filter-item" );
             writer.RenderBeginTag( "article" );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "clearfix" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix" );
             writer.RenderBeginTag( "header" );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-expanded" );
@@ -341,7 +341,11 @@ $('.filter-item-select').click(function (event) {
                 writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
             }
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.RenderBeginTag(HtmlTextWriterTag.Span);
             writer.Write( "Filter Type " );
+            writer.RenderEndTag();
+
             ddlFilterType.RenderControl( writer );
             writer.RenderEndTag();
 
@@ -366,7 +370,7 @@ $('.filter-item-select').click(function (event) {
 
             writer.RenderEndTag();
 
-            writer.AddAttribute( "class", "widget-content" );
+            writer.AddAttribute( "class", "panel-body" );
             if ( !Expanded )
             {
                 writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );

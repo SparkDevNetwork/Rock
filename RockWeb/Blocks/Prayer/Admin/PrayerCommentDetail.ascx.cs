@@ -110,7 +110,7 @@ namespace RockWeb.Blocks.Prayer
         $(this).parent().parent().slideToggle(""slow"");
     });
 
-    $('.persontimeline article').live({
+    $('.persontimeline article').on({
         mouseenter:
             function () {
                 var actionsDiv = $('.actions', this);

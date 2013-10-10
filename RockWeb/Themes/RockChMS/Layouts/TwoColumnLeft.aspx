@@ -1,4 +1,4 @@
-﻿<%@ Page ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/RockChMS/Layouts/Site.Master"
+﻿<%@ Page ValidateRequest="false" Language="C#" MasterPageFile="Site.Master"
     AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
@@ -79,7 +79,7 @@
                         </div>
                     </div>
                     <div id="right-column" class="col-md-9">
-                        <div class="panel">
+                        <div class="panel panel-default">
                             <div class="panel-body">
                                 <Rock:Zone ID="RightContent" runat="server" />
                             </div>

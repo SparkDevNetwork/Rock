@@ -1,4 +1,4 @@
-﻿<%@ Page ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/RockChMS/Layouts/Site.Master" Trace="false"
+﻿<%@ Page ValidateRequest="false" Language="C#" MasterPageFile="Site.Master" Trace="false"
     AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
@@ -78,7 +78,7 @@
             </div> 
 		</div>
 
-        <div class="container">
+        <div class="container person-content">
             <div class="row">
                 <div class="col-md-8">
                     <Rock:Zone ID="ContentZoneLeft" runat="server" />
@@ -103,7 +103,7 @@
 
     <script>
 
-        $('.persondetails-familybar .address').live({
+        $('.persondetails-familybar .address').on({
             mouseenter:
                 function () {
                     var actionsDiv = $('div.actions', this);
@@ -120,7 +120,7 @@
                 }
         });
 
-        $('.panel .panel-heading').live({
+        $('.panel .panel-heading').on({
             mouseenter:
                 function () {
                     var actionsDiv = $('.actions', this);
@@ -137,7 +137,7 @@
                 }
         });
 
-        $('.panel-notes .panel-heading').live({
+        $('.panel-notes .panel-heading').on({
             mouseenter:
                 function () {
                     var actionsDiv = $('.actions', this);
@@ -154,7 +154,7 @@
                 }
         });
 
-        $('.persondetails-familybar').live({
+        $('.persondetails-familybar').on({
             mouseenter:
                 function () {
                     var actionsDiv = $('.container .actions', this);
@@ -171,7 +171,7 @@
                 }
         });
 
-        $('.persondetails-header').live({
+        $('.persondetails-header').on({
             mouseenter:
                 function () {
                     var actionsDiv = $('.actions', this);

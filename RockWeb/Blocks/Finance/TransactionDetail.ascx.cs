@@ -70,7 +70,7 @@ namespace RockWeb.Blocks.Finance.Administration
 
             if ( transaction != null )
             {
-                lValue.Text = "Edit";
+                lTitle.Text = ("Edit Transaction").FormatAsHtmlTitle();
 
                 hfIdTransValue.Value = transaction.Id.ToString();
                 tbAmount.Text = transaction.Amount.ToString();
@@ -93,7 +93,7 @@ namespace RockWeb.Blocks.Finance.Administration
             }
             else
             {
-                lValue.Text = "Add";
+                lTitle.Text = ("Add Transaction").FormatAsHtmlTitle();
             }
         }
 

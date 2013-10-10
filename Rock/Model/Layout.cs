@@ -96,9 +96,11 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="Rock.Model.Site"/> that this Layout Block is associated with.
+        /// Gets or sets the <see cref="Rock.Model.Site" /> that this Layout Block is associated with.
         /// </summary>
-        /// <value>The <see cref="Rock.Model.Site"/> that this Layout Block is associated with.
+        /// <value>
+        /// The <see cref="Rock.Model.Site" /> that this Layout Block is associated with.
+        /// </value>
         [DataMember]
         public virtual Site Site { get; set; }
 

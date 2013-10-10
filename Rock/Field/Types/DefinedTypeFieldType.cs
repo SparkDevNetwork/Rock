@@ -10,6 +10,8 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Web.UI.Controls;
+
 namespace Rock.Field.Types
 {
     /// <summary>
@@ -28,7 +30,7 @@ namespace Rock.Field.Types
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            ListControl editControl = new DropDownList { ID = id }; 
+            var editControl = new RockDropDownList { ID = id }; 
 
             Rock.Model.DefinedTypeService definedTypeService = new Model.DefinedTypeService();
             foreach ( var definedType in definedTypeService.Queryable().OrderBy( d => d.Order ) )

@@ -567,26 +567,10 @@ namespace RockWeb.Blocks.Administration
 
             // set a hidden field value for the Group Guid so we know which Group to add the location to
             hfAddLocationGroupGuid.Value = checkinGroupEditor.GroupGuid.ToString();
-
-            var locationService = new LocationService();
-
-            ddlLocation.Items.Clear();
-            var list = locationService.Queryable().Where( a => a.IsLocation ).OrderBy( a => a.Name );
-
-            foreach ( var item in list )
-            {
-                // add locations to dropdownlist if they aren't already a location for this group
-                if ( !checkinGroupEditor.Locations.Select( a => a.LocationId ).Contains( item.Id ) )
-                {
-                    ddlLocation.Items.Add( new ListItem( item.Name, item.Id.ToString() ) );
-                }
-            }
-
-            // only enable the Add button if there are labels that can be added
-            btnAddLocation.Enabled = ddlLocation.Items.Count > 0;
-
-            pnlLocationPicker.Visible = true;
-            pnlDetails.Visible = false;
+            checkinGroupEditor.ForceContentVisible = true;
+            ( checkinGroupEditor.Parent as CheckinGroupTypeEditor ).ForceContentVisible = true;
+            
+            mdLocationPicker.Show();
         }
 
         /// <summary>
@@ -612,32 +596,23 @@ namespace RockWeb.Blocks.Administration
         protected void btnAddLocation_Click( object sender, EventArgs e )
         {
             CheckinGroupEditor checkinGroupEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupEditor>().FirstOrDefault( a => a.GroupGuid == new Guid( hfAddLocationGroupGuid.Value ) );
+
+            // Add the location (ignore if they didn't pick one, or they picked one that already is selected)
+            if ( locationPicker.Location != null )
+            {
+                if ( !checkinGroupEditor.Locations.Any( a => a.LocationId == locationPicker.Location.Id ) )
+                {
+                    CheckinGroupEditor.LocationGridItem gridItem = new CheckinGroupEditor.LocationGridItem();
+                    gridItem.LocationId = locationPicker.Location.Id;
+                    gridItem.Name = locationPicker.Location.Name;
+                    checkinGroupEditor.Locations.Add( gridItem );
+                }
+            }
+
             checkinGroupEditor.ForceContentVisible = true;
             ( checkinGroupEditor.Parent as CheckinGroupTypeEditor ).ForceContentVisible = true;
 
-            CheckinGroupEditor.LocationGridItem gridItem = new CheckinGroupEditor.LocationGridItem();
-            gridItem.LocationId = ddlLocation.SelectedValueAsId() ?? 0;
-            gridItem.Name = ddlLocation.SelectedItem.Text;
-
-            checkinGroupEditor.Locations.Add( gridItem );
-
-            pnlLocationPicker.Visible = false;
-            pnlDetails.Visible = true;
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnCancelAddLocation control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnCancelAddLocation_Click( object sender, EventArgs e )
-        {
-            CheckinGroupEditor checkinGroupEditor = phCheckinGroupTypes.ControlsOfTypeRecursive<CheckinGroupEditor>().FirstOrDefault( a => a.GroupGuid == new Guid( hfAddLocationGroupGuid.Value ) );
-            checkinGroupEditor.ForceContentVisible = true;
-            ( checkinGroupEditor.Parent as CheckinGroupTypeEditor ).ForceContentVisible = true;
-
-            pnlLocationPicker.Visible = false;
-            pnlDetails.Visible = true;
+            mdLocationPicker.Hide();
         }
 
         #endregion

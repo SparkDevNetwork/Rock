@@ -81,7 +81,7 @@ Sys.Application.add_load(function () {
             _lbFilter = new LinkButton();
             Controls.Add( _lbFilter );
             _lbFilter.ID = "lbFilter";
-            _lbFilter.CssClass = "filter btn btn-primary btn-xs";
+            _lbFilter.CssClass = "filter btn btn-action btn-xs";
             _lbFilter.ToolTip = "Apply Filter";
             _lbFilter.Text = "Apply Filter";
             _lbFilter.CausesValidation = false;
@@ -154,7 +154,7 @@ Sys.Application.add_load(function () {
                     if ( !string.IsNullOrWhiteSpace( args.Value ) )
                     {
                         writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                        writer.Write( string.Format( "{0}: {1}", args.Key, args.Value ) );
+                        writer.Write( string.Format( "<label>{0}:</label> {1}", args.Key, args.Value ) );
                         writer.RenderEndTag();
                     }
                 }
