@@ -10,7 +10,7 @@
 
             <div id="pnlEditDetails" runat="server">
 
-                    <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error alert" />
+                <asp:ValidationSummary ID="valSummaryBatch" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger" />
 
                 <div class="row">
                     <div class="col-md-6">
@@ -21,7 +21,6 @@
                 
                 <div class="row">
                     <div class="col-md-6">
-                        
                         <Rock:DataTextBox ID="tbControlAmount" runat="server" PrependText="$" CssClass="input-width-md" Label="Control Amount" TabIndex="2" 
                             SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="ControlAmount" />
                         <Rock:RockDropDownList ID="ddlStatus" TabIndex="3" runat="server" Label="Status"></Rock:RockDropDownList>
@@ -37,11 +36,8 @@
                     <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-sm" CausesValidation="false" OnClick="btnCancelFinancialBatch_Click" />
                 </div>
             </div>
-        </div>
-
 
             <fieldset id="fieldsetViewDetails" runat="server">
-
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />                            
@@ -51,7 +47,6 @@
                 <div class="actions">
                     <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-sm" CausesValidation="false" OnClick="btnEdit_Click" />
                 </div>
-
             </fieldset>                   
         </asp:Panel>
   
