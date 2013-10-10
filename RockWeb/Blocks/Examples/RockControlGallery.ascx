@@ -7,8 +7,10 @@
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" runat="server">
-            <asp:LinkButton runat="server" ID="btnToggleLabels" Text="Toggle Labels" CausesValidation="false" OnClick="btnToggleLabels_Click"
-                OnClientClick="javascript: $(':header').toggle()" />
+            <div class="pull-right">
+                <asp:LinkButton runat="server" ID="btnToggleLabels" Text="Toggle Labels" CssClass="btn btn-xs btn-primary " CausesValidation="false" OnClick="btnToggleLabels_Click" />
+                <asp:LinkButton runat="server" ID="btnToggleEnabled" Text="Toggle Enabled" CssClass="btn btn-xs btn-primary " CausesValidation="false" OnClick="btnToggleEnabled_Click" />
+            </div>
             <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" />
 
             <h1>General Information</h1>
@@ -170,8 +172,12 @@
             </div>
 
             <a id="LocationPicker"></a>
+            <div id="Div2" runat="server" class="r-example">
+                <Rock:LocationPicker ID="locationPicker1" runat="server" Label="Rock:LocationPicker" />
+            </div>
+
             <div runat="server" class="r-example">
-                <Rock:LocationPicker ID="locationPicker" runat="server" Label="Rock:LocationPicker (Named Location Mode)" LimitToNamedLocations="false" />
+                <Rock:LocationPicker ID="locationPicker" runat="server" Label="Rock:LocationPicker (Address Mode, Mode Selection disabled)" PickerMode="Address" AllowModeSelection="false" />
             </div>
 
             <div id="Div1" runat="server" class="r-example">
@@ -184,15 +190,15 @@
             <div runat="server" class="r-example">
                 <Rock:ScheduleBuilder ID="scheduleBuilder" runat="server" Label="Rock:ScheduleBuilder" OnSaveSchedule="scheduleBuilder_SaveSchedule" />
             </div>
-            
+
             <div runat="server" class="r-example">
-                <Rock:GeoPicker ID="geoPicker" runat="server" Label="Rock:GeoPicker (Point mode)" DrawingMode="Point" /> 
+                <Rock:GeoPicker ID="geoPicker" runat="server" Label="Rock:GeoPicker (Point mode)" DrawingMode="Point" />
             </div>
 
             <div runat="server" class="r-example">
-                <Rock:GeoPicker ID="geoPicker1" runat="server" Label="Rock:GeoPicker (Polygon mode)" DrawingMode="Polygon" /> 
+                <Rock:GeoPicker ID="geoPicker1" runat="server" Label="Rock:GeoPicker (Polygon mode)" DrawingMode="Polygon" />
             </div>
-            
+
 
             <%-- 
                 <Rock:MergeFieldPicker ID="LabeledCheckBox4" runat="server" Label="Rock:MergeFieldPicker" />
@@ -243,6 +249,15 @@
                 <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" Text="Campus" />
                 <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" Text="Type" />
                 <Rock:HighlightLabel ID="hlCustom" runat="server" LabelType="Custom" CustomClass="danger" Text="Custom" />
+            </div>
+
+            
+            <h2>Rock:Toggle</h2>
+            <div runat="server" class="r-example">
+                <Rock:Toggle ID="toggleShowPreview" runat="server"
+                    LabelText="Show Preview?" OnText="Yes" OffText="No" Checked="true"
+                    Help="If set to yes, a preview will be shown immediately as you update your criteria."
+                    OnCheckedChanged="toggleShowPreview_CheckedChanged" />
             </div>
 
             <h2>Rock:BootstrapButton</h2>

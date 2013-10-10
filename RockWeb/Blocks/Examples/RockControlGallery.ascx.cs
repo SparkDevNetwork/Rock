@@ -161,6 +161,16 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
+        /// Handles the CheckedChanged event of the toggleShowPreview control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void toggleShowPreview_CheckedChanged( object sender, EventArgs e )
+        {
+            toggleShowPreview.Help = "you just set it to : " + ( ( toggleShowPreview.Checked ) ? "on" : "off" );
+        }
+
+        /// <summary>
         /// Handles the SelectedIndexChanged event of the binaryFileTypePicker control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -177,7 +187,7 @@ namespace RockWeb.Blocks.Examples
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void btnToggleLabels_Click( object sender, EventArgs e )
         {
-            foreach ( var control in pnlDetails.Controls )
+            foreach ( var control in pnlDetails.ControlsOfTypeRecursive<WebControl>() )
             {
                 if ( control is IRockControl )
                 {
@@ -191,13 +201,21 @@ namespace RockWeb.Blocks.Examples
                         rockControl.Label = string.Empty;
                     }
                 }
-                else if ( control is HtmlGenericControl )
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnToggleEnabled control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnToggleEnabled_Click( object sender, EventArgs e )
+        {
+            foreach ( var control in pnlDetails.ControlsOfTypeRecursive<WebControl>() )
+            {
+                if ( control is IRockControl )
                 {
-                    HtmlGenericControl hg = ( control as HtmlGenericControl );
-                    if ( hg.TagName.Equals( "h4", StringComparison.OrdinalIgnoreCase ) )
-                    {
-                        hg.Visible = !hg.Visible;
-                    }
+                    control.Enabled = !control.Enabled;
                 }
             }
         }
@@ -296,10 +314,15 @@ namespace RockWeb.Blocks.Examples
         {
             var dateTime = monthDayPicker.SelectedDate;
         }
-        
+
+        /// <summary>
+        /// Handles the SaveSchedule event of the scheduleBuilder control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void scheduleBuilder_SaveSchedule( object sender, EventArgs e )
         {
             string debug = scheduleBuilder.iCalendarContent;
         }
-}
+    }
 }

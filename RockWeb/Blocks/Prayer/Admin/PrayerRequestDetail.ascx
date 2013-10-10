@@ -15,11 +15,11 @@
                     </div>
 
                      <div class="pull-right">
-                            <asp:Literal ID="litFlaggedMessageRO" runat="server"></asp:Literal>
-                            <asp:Literal ID="litStatus" runat="server"></asp:Literal>
-                            <asp:Literal ID="litUrgent" runat="server"></asp:Literal>
-                            <a href="#" data-toggle="tooltip" data-placement="top" data-trigger="hover focus" title="current prayer count" >
-                                <asp:Literal ID="litPrayerCountRO" runat="server">0</asp:Literal></a>
+                        <asp:Literal ID="litFlaggedMessageRO" runat="server"></asp:Literal>
+                        <Rock:HighlightLabel ID="hlStatus" runat="server" LabelType="Warning" Text="Unapproved"  Visible="false" />
+                        <Rock:HighlightLabel ID="hlUrgent" LabelType="Danger" runat="server" Visible="false" Text="<i class='icon-exclamation-sign'></i> Urgent" />
+                        <a href="#" data-toggle="tooltip" data-placement="top" data-trigger="hover focus" title="current prayer count" >
+                            <asp:Literal ID="litPrayerCountRO" runat="server">0</asp:Literal></a>
                     </div>
 
                     <div class="row-fluid">
@@ -48,16 +48,14 @@
                     <asp:Literal ID="lActionTitle" runat="server" />
                 </legend>
 
-                <div class="well pull-right">
-                    <dl>
+                <div class="row">
                         <asp:Literal ID="lFlaggedMessage" runat="server"></asp:Literal>
-                        <dt class="muted"><asp:Label ID="lblApprovedByPerson" runat="server" Visible="false" /></dt>
-                        <dt><asp:CheckBox ID="cbIsActive" Text="Active " runat="server" /></dt>
-                        <dt><asp:CheckBox ID="cbApproved" Text="Approved " runat="server" /></dt>
-                        <dt><asp:CheckBox ID="cbIsPublic" Text="Public " runat="server" /></dt>
-                        <dt><asp:CheckBox ID="cbIsUrgent" Text="Urgent " runat="server" /></dt>
-                        <dt><asp:CheckBox ID="cbAllowComments" Text="Allow Comments " runat="server" /></dt>
-                    </dl>
+                        <asp:Label ID="lblApprovedByPerson" runat="server" Visible="false" />
+                        <Rock:RockCheckBox ID="cbIsActive" Text="Active " CssClass="checkbox-inline" runat="server" />
+                        <Rock:RockCheckBox ID="cbApproved" Text="Approved " CssClass="checkbox-inline" runat="server" />
+                        <Rock:RockCheckBox ID="cbIsPublic" Text="Public " CssClass="checkbox-inline" runat="server" />
+                        <Rock:RockCheckBox ID="cbIsUrgent" Text="Urgent " CssClass="checkbox-inline" runat="server" />
+                        <Rock:RockCheckBox ID="cbAllowComments" Text="Allow Comments " CssClass="checkbox-inline" runat="server" />
                 </div>
 
                 <div class="row-fluid">

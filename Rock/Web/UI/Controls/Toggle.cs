@@ -87,8 +87,8 @@ $(document).ready(function() {
             writer.AddAttribute( "class", "controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( "class", "switch");
-            if (!string.IsNullOrWhiteSpace(OnText))
+            writer.AddAttribute( "class", "switch " + this.CssClass );
+            if (!string.IsNullOrWhiteSpace( OnText ) )
             {
                 writer.AddAttribute( "data-on-label", OnText );
             }

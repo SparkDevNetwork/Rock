@@ -39,6 +39,9 @@ namespace RockWeb.Blocks.Administration
             {
                 int exceptionId = 0;
 
+                // set page title
+                lPageTitle.Text = ("Exception Overview").FormatAsHtmlTitle();
+
                 //sets icon and text for cookies and server variables checkboxes
                 cbShowCookies.Text = "<i class=\"icon-laptop\"> </i> Show Cookies";
                 cbShowServerVariables.Text = "<i class=\"icon-hdd\"></i> Show Server Variables";

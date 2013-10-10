@@ -242,6 +242,23 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public bool ShowDropDown { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the Web server control is enabled.
+        /// </summary>
+        /// <returns>true if control is enabled; otherwise, false. The default is true.</returns>
+        public override bool Enabled
+        {
+            get
+            {
+                return base.Enabled;
+            }
+            set
+            {
+                base.Enabled = value;
+                SetPickerOnClick();
+            }
+        }
+
         #endregion
 
         /// <summary>
@@ -251,13 +268,13 @@ namespace Rock.Web.UI.Controls
         protected override void OnLoad( EventArgs e )
         {
             base.OnLoad( e );
+
+            EnsureChildControls();
             if ( ShowDropDown )
             {
-                EnsureChildControls();
                 _pnlPickerMenu.Style[HtmlTextWriterStyle.Display] = "block";
             }
 
-            EnsureChildControls();
             ScriptManager.GetCurrent( this.Page ).RegisterAsyncPostBackControl( _btnSelect );
         }
 
@@ -291,7 +308,6 @@ namespace Rock.Web.UI.Controls
             _btnPickerLabel = new HtmlAnchor { ID = "btnPickerLabel" };
             _btnPickerLabel.Attributes["class"] = "picker-label";
             _btnPickerLabel.InnerHtml = string.Format( "<i class='icon-user'></i>{0}<b class='caret pull-right'></b>", this.AddressSummaryText );
-            _btnPickerLabel.HRef = "#";
             this.Controls.Add( _btnPickerLabel );
 
             // PickerMenu (DropDown menu)
@@ -299,7 +315,7 @@ namespace Rock.Web.UI.Controls
             _pnlPickerMenu.CssClass = "picker-menu dropdown-menu";
             _pnlPickerMenu.Style[HtmlTextWriterStyle.Display] = "none";
             this.Controls.Add( _pnlPickerMenu );
-            _btnPickerLabel.Attributes["onclick"] = string.Format( "$('#{0}').toggle(); return false;", _pnlPickerMenu.ClientID );
+            SetPickerOnClick();
 
             // Address Entry
             _pnlAddressEntry = new Panel { ID = "pnlAddressEntry" };
@@ -348,6 +364,23 @@ namespace Rock.Web.UI.Controls
             _btnCancel = new LinkButton { ID = "btnCancel", CssClass = "btn btn-xs", Text = "Cancel" };
             _btnCancel.OnClientClick = string.Format( "$('#{0}').hide();", _pnlPickerMenu.ClientID );
             _pnlPickerActions.Controls.Add( _btnCancel );
+        }
+
+        /// <summary>
+        /// Sets onclick script for the PickerLabel btn depending on Enabled
+        /// </summary>
+        private void SetPickerOnClick()
+        {
+            if ( this.Enabled )
+            {
+                _btnPickerLabel.Attributes["onclick"] = string.Format( "$('#{0}').toggle(); return false;", _pnlPickerMenu.ClientID );
+                _btnPickerLabel.HRef = "#";
+            }
+            else
+            {
+                _btnPickerLabel.Attributes["onclick"] = string.Empty;
+                _btnPickerLabel.HRef = string.Empty;
+            }
         }
 
         /// <summary>

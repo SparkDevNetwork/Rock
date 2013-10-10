@@ -7617,6 +7617,9 @@ td.visible-print {
 .picker.picker-geography .picker-menu {
   width: 520px;
 }
+.picker.picker-person .picker-select-item-details img {
+  width: 65px;
+}
 #dialog .scroll-container-picker {
   width: 360px;
 }
@@ -9308,22 +9311,25 @@ td[align=center] {
 .rock-modal .modal-header .label {
   margin-top: 8px;
 }
-.rock-modal .modal-footer {
-  padding: 8px;
-  margin-top: 10px;
-  background-color: #e7ecf0;
+.rock-modal .modal-body .nav-pills {
+  margin: 6px 0 18px;
 }
-.modal-body .scroll-container {
+.rock-modal .modal-body .scroll-container {
   width: 720px;
 }
-.modal-body .scroll-container .viewport {
+.rock-modal .modal-body .scroll-container .viewport {
   width: 670px;
 }
-.modal-body.iframe {
+.rock-modal .modal-body.iframe {
   background: url("../assets/images/ajax-loading.png") center center no-repeat;
   /* http://preloaders.net/en/popular */
 
   overflow: hidden;
+}
+.rock-modal .modal-footer {
+  padding: 8px;
+  margin-top: 10px;
+  background-color: #e7ecf0;
 }
 .modal-backdrop {
   background-color: #8b8b8b;
@@ -9392,33 +9398,6 @@ dl dt:first-child {
 }
 dl dd {
   margin-left: 0;
-}
-/* form styles - not enough yet for it's own file */fieldset .actions {
-  margin-top: 36px;
-}
-fieldset .actions:before,
-fieldset .actions:after {
-  content: " ";
-  /* 1 */
-
-  display: table;
-  /* 2 */
-
-}
-fieldset .actions:after {
-  clear: both;
-}
-fieldset .actions:before,
-fieldset .actions:after {
-  content: " ";
-  /* 1 */
-
-  display: table;
-  /* 2 */
-
-}
-fieldset .actions:after {
-  clear: both;
 }
 .form-control.input-width-xs,
 .input-group.input-width-xs {
@@ -10938,6 +10917,33 @@ a.help {
   background-color: #d9e1e8;
   color: #d4d4d4;
   border-color: #b9c8d5;
+}
+.panel .actions {
+  margin-top: 36px;
+}
+.panel .actions:before,
+.panel .actions:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.panel .actions:after {
+  clear: both;
+}
+.panel .actions:before,
+.panel .actions:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.panel .actions:after {
+  clear: both;
 }
 .panel-widget {
   border-color: #d9e1e8;

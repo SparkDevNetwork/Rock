@@ -3,6 +3,8 @@
 <asp:UpdatePanel ID="upTransactions" runat="server">
     <ContentTemplate>
 
+        <h4>Transactions</h4>
+
         <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error alert" />
         <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 

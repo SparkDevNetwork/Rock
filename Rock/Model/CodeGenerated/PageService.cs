@@ -63,12 +63,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Page.FriendlyTypeName );
                 return false;
             }  
- 
-            if ( new Service<Site>().Queryable().Any( a => a.DefaultPageId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Site.FriendlyTypeName );
-                return false;
-            }  
+            
+            // ignoring Site,DefaultPageId 
+            
+            // ignoring Site,LoginPageId 
+            
+            // ignoring Site,RegistrationPageId 
             return true;
         }
     }
