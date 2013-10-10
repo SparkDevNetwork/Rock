@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -30,11 +31,114 @@ namespace Rock.Field.Types
         {
             if ( string.IsNullOrEmpty( value ) ? false : System.Boolean.Parse( value ) )
             {
-                return condensed ? "Y" : "Yes";
+                if ( condensed )
+                {
+                    return "Y";
+                }
+                else
+                {
+                    if ( configurationValues.ContainsKey( "truetext" ) )
+                    {
+                        return configurationValues["truetext"].Value;
+                    }
+                    else
+                    {
+                        return "Yes";
+                    }
+                }
             }
             else
             {
-                return condensed ? "N" : "No";
+                if ( condensed )
+                {
+                    return "N";
+                }
+                else
+                {
+                    if ( configurationValues.ContainsKey( "falsetext" ) )
+                    {
+                        return configurationValues["falsetext"].Value;
+                    }
+                    else
+                    {
+                        return "No";
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns a list of the configuration keys
+        /// </summary>
+        /// <returns></returns>
+        public override List<string> ConfigurationKeys()
+        {
+            List<string> configKeys = new List<string>();
+            configKeys.Add( "truetext" );
+            configKeys.Add( "falsetext" );
+            return configKeys;
+        }
+
+        /// <summary>
+        /// Creates the HTML controls required to configure this type of field
+        /// </summary>
+        /// <returns></returns>
+        public override List<Control> ConfigurationControls()
+        {
+            List<Control> controls = new List<Control>();
+
+            RockTextBox tbTrue = new RockTextBox();
+            controls.Add( tbTrue );
+            tbTrue.AutoPostBack = true;
+            tbTrue.TextChanged += OnQualifierUpdated;
+
+            RockTextBox tbFalse = new RockTextBox();
+            controls.Add( tbFalse );
+            tbFalse.AutoPostBack = true;
+            tbFalse.TextChanged += OnQualifierUpdated;
+
+            return controls;
+        }
+
+        /// <summary>
+        /// Gets the configuration value.
+        /// </summary>
+        /// <param name="controls">The controls.</param>
+        /// <returns></returns>
+        public override Dictionary<string, ConfigurationValue> ConfigurationValues( List<Control> controls )
+        {
+            Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
+            configurationValues.Add( "truetext", new ConfigurationValue( "True Text",
+                "The text to display when value is true (default is 'Yes').", "Yes" ) );
+            configurationValues.Add( "falsetext", new ConfigurationValue( "False Text",
+                "The text to display when value is false (default is 'No').", "No" ) );
+
+            if ( controls != null && controls.Count == 2 )
+            {
+                if ( controls[0] != null && controls[0] is TextBox )
+                    configurationValues["truetext"].Value = ( (TextBox)controls[0] ).Text;
+
+                if ( controls[1] != null && controls[1] is TextBox )
+                    configurationValues["falsetext"].Value = ( (TextBox)controls[1] ).Text;
+            }
+
+            return configurationValues;
+        }
+
+        /// <summary>
+        /// Sets the configuration value.
+        /// </summary>
+        /// <param name="controls"></param>
+        /// <param name="configurationValues"></param>
+        public override void SetConfigurationValues( List<Control> controls, Dictionary<string, ConfigurationValue> configurationValues )
+        {
+            if ( controls != null && controls.Count == 2 && configurationValues != null )
+            {
+                if ( controls[0] != null && controls[0] is TextBox && configurationValues.ContainsKey( "truetext" ) )
+                    ( (TextBox)controls[0] ).Text = configurationValues["truetext"].Value;
+
+                if ( controls[1] != null && controls[1] is TextBox && configurationValues.ContainsKey( "falsetext" ) )
+                    ( (TextBox)controls[1] ).Text = configurationValues["falsetext"].Value;
             }
         }
 
@@ -63,12 +167,27 @@ namespace Rock.Field.Types
         /// Renders the controls neccessary for prompting user for a new value and adds them to the parentControl
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
         /// <returns>
         /// The control
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new CheckBox { ID = id }; 
+            var editControl = new RockCheckBox { ID = id };
+
+            if ( configurationValues != null )
+            {
+                if ( configurationValues.ContainsKey( "truetext" ) )
+                {
+                    editControl.Text = configurationValues["truetext"].Value;
+                }
+                else
+                {
+                    editControl.Text = "Yes";
+                }
+            }
+
+            return editControl;
         }
 
         /// <summary>

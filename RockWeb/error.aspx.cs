@@ -40,7 +40,7 @@ public partial class error : System.Web.UI.Page
             if ( userLogin != null && adminGroup.Members.Where( m => m.PersonId == userLogin.PersonId ).Count() > 0 )
             {
                 // is an admin
-                lErrorInfo.Text = "<h4>Exception Log:</h4>";
+                lErrorInfo.Text = "<h3>Exception Log:</h3>";
 
                 // get exception from Session
                 if ( Session["Exception"] != null )
@@ -61,9 +61,11 @@ public partial class error : System.Web.UI.Page
     /// <param name="exLevel">The ex level.</param>
     private void ProcessException( Exception ex, string exLevel )
     {
-        lErrorInfo.Text += "<a href=\"#\" class=\"exception-type label\">" + exLevel + ex.GetType().Name + " in " + ex.Source + "</a>";
-        lErrorInfo.Text += "<div class=\"exception-message\"><strong>Message</strong><br>" + ex.Message + "</div>";
-        lErrorInfo.Text += "<div class=\"stack-trace\"><strong>Stack Trace</strong><br>" + ex.StackTrace + "</div>";
+        lErrorInfo.Text += "<div class=\"alert alert-danger\">";
+        lErrorInfo.Text += "<h4>" + exLevel + ex.GetType().Name + " in " + ex.Source + "</h3>";
+        lErrorInfo.Text += "<p><strong>Message</strong><br>" + ex.Message + "</p>";
+        lErrorInfo.Text += "<p><strong>Stack Trace</strong><br><pre>" + ex.StackTrace + "</pre></p>";
+        lErrorInfo.Text += "</div>";
 
         // check for inner exception
         if ( ex.InnerException != null )

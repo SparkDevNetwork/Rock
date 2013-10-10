@@ -18,19 +18,25 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:WorkflowActivityTypeEditor runat=server></{0}:WorkflowActivityTypeEditor>" )]
     public class WorkflowActivityTypeEditor : CompositeControl
     {
-        private HiddenField hfActivityTypeGuid;
-        private Label lblActivityTypeName;
-        private Label lblActivityTypeDescription;
-        private Label lblInactive;
-        private LinkButton lbDeleteActivityType;
+        private HiddenField _hfActivityTypeGuid;
+        private Label _lblActivityTypeName;
+        private Label _lblActivityTypeDescription;
+        private Label _lblInactive;
+        private LinkButton _lbDeleteActivityType;
 
-        private LabeledCheckBox cbActivityTypeIsActive;
-        private DataTextBox tbActivityTypeName;
-        private DataTextBox tbActivityTypeDescription;
-        private LabeledCheckBox cbActivityTypeIsActivatedWithWorkflow;
+        private RockCheckBox _cbActivityTypeIsActive;
+        private DataTextBox _tbActivityTypeName;
+        private DataTextBox _tbActivityTypeDescription;
+        private RockCheckBox _cbActivityTypeIsActivatedWithWorkflow;
 
-        private LinkButton lbAddActionType;
+        private LinkButton _lbAddActionType;
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to force content visible.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [force content visible]; otherwise, <c>false</c>.
+        /// </value>
         public bool ForceContentVisible { private get; set; }
 
         /// <summary>
@@ -44,7 +50,7 @@ namespace Rock.Web.UI.Controls
             string script = @"
 // activity animation
 $('.workflow-activity > header').click(function () {
-    $(this).siblings('.widget-content').slideToggle();
+    $(this).siblings('.panel-body').slideToggle();
 
     $('i.workflow-activity-state', this).toggleClass('icon-chevron-down');
     $('i.workflow-activity-state', this).toggleClass('icon-chevron-up');
@@ -95,11 +101,11 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
         {
             EnsureChildControls();
             WorkflowActivityType result = new WorkflowActivityType();
-            result.Guid = new Guid( hfActivityTypeGuid.Value );
-            result.Name = tbActivityTypeName.Text;
-            result.Description = tbActivityTypeDescription.Text;
-            result.IsActive = cbActivityTypeIsActive.Checked;
-            result.IsActivatedWithWorkflow = cbActivityTypeIsActivatedWithWorkflow.Checked;
+            result.Guid = new Guid( _hfActivityTypeGuid.Value );
+            result.Name = _tbActivityTypeName.Text;
+            result.Description = _tbActivityTypeDescription.Text;
+            result.IsActive = _cbActivityTypeIsActive.Checked;
+            result.IsActivatedWithWorkflow = _cbActivityTypeIsActivatedWithWorkflow.Checked;
             result.ActionTypes = new List<WorkflowActionType>();
             int order = 0;
             foreach ( WorkflowActionTypeEditor workflowActionTypeEditor in this.Controls.OfType<WorkflowActionTypeEditor>() )
@@ -119,11 +125,11 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
         public void SetWorkflowActivityType( WorkflowActivityType value )
         {
             EnsureChildControls();
-            hfActivityTypeGuid.Value = value.Guid.ToString();
-            tbActivityTypeName.Text = value.Name;
-            tbActivityTypeDescription.Text = value.Description;
-            cbActivityTypeIsActive.Checked = value.IsActive ?? false;
-            cbActivityTypeIsActivatedWithWorkflow.Checked = value.IsActivatedWithWorkflow;
+            _hfActivityTypeGuid.Value = value.Guid.ToString();
+            _tbActivityTypeName.Text = value.Name;
+            _tbActivityTypeDescription.Text = value.Description;
+            _cbActivityTypeIsActive.Checked = value.IsActive ?? false;
+            _cbActivityTypeIsActivatedWithWorkflow.Checked = value.IsActivatedWithWorkflow;
         }
 
         /// <summary>
@@ -133,31 +139,31 @@ $('.workflow-activity a.workflow-activity-reorder').click(function (event) {
         {
             Controls.Clear();
 
-            hfActivityTypeGuid = new HiddenField();
-            hfActivityTypeGuid.ID = this.ID + "_hfActivityTypeGuid";
+            _hfActivityTypeGuid = new HiddenField();
+            _hfActivityTypeGuid.ID = this.ID + "_hfActivityTypeGuid";
 
-            lblActivityTypeName = new Label();
-            lblActivityTypeName.ClientIDMode = ClientIDMode.Static;
-            lblActivityTypeName.ID = this.ID + "_lblActivityTypeName";
-            lblActivityTypeDescription = new Label();
-            lblActivityTypeDescription.ClientIDMode = ClientIDMode.Static;
-            lblActivityTypeDescription.ID = this.ID + "_lblActivityTypeDescription";
+            _lblActivityTypeName = new Label();
+            _lblActivityTypeName.ClientIDMode = ClientIDMode.Static;
+            _lblActivityTypeName.ID = this.ID + "_lblActivityTypeName";
+            _lblActivityTypeDescription = new Label();
+            _lblActivityTypeDescription.ClientIDMode = ClientIDMode.Static;
+            _lblActivityTypeDescription.ID = this.ID + "_lblActivityTypeDescription";
 
-            lblInactive = new Label();
-            lblInactive.ClientIDMode = ClientIDMode.Static;
-            lblInactive.ID = this.ID + "_lblInactive";
-            lblInactive.CssClass = "label label-important pull-right";
-            lblInactive.Text = "Inactive";
+            _lblInactive = new Label();
+            _lblInactive.ClientIDMode = ClientIDMode.Static;
+            _lblInactive.ID = this.ID + "_lblInactive";
+            _lblInactive.CssClass = "label label-important pull-right";
+            _lblInactive.Text = "Inactive";
 
-            lbDeleteActivityType = new LinkButton();
-            lbDeleteActivityType.CausesValidation = false;
-            lbDeleteActivityType.ID = this.ID + "_lbDeleteActivityType";
-            lbDeleteActivityType.CssClass = "btn btn-mini btn-danger";
-            lbDeleteActivityType.Click += lbDeleteActivityType_Click;
-            lbDeleteActivityType.Controls.Add( new LiteralControl { Text = "<i class='icon-remove'></i>" } );
+            _lbDeleteActivityType = new LinkButton();
+            _lbDeleteActivityType.CausesValidation = false;
+            _lbDeleteActivityType.ID = this.ID + "_lbDeleteActivityType";
+            _lbDeleteActivityType.CssClass = "btn btn-xs btn-danger";
+            _lbDeleteActivityType.Click += lbDeleteActivityType_Click;
+            _lbDeleteActivityType.Controls.Add( new LiteralControl { Text = "<i class='icon-remove'></i>" } );
 
-            cbActivityTypeIsActive = new LabeledCheckBox { LabelText = "Active" };
-            cbActivityTypeIsActive.ID = this.ID + "_cbActivityTypeIsActive";
+            _cbActivityTypeIsActive = new RockCheckBox { Label = "Active" };
+            _cbActivityTypeIsActive.ID = this.ID + "_cbActivityTypeIsActive";
             string checkboxScriptFormat = @"
 javascript: 
     if ($(this).is(':checked')) {{ 
@@ -170,48 +176,48 @@ javascript:
     }}
 ";
 
-            cbActivityTypeIsActive.InputAttributes.Add( "onclick", string.Format( checkboxScriptFormat, lblInactive.ID, this.ID + "_section" ) );
+            _cbActivityTypeIsActive.InputAttributes.Add( "onclick", string.Format( checkboxScriptFormat, _lblInactive.ID, this.ID + "_section" ) );
 
-            tbActivityTypeName = new DataTextBox();
-            tbActivityTypeName.ID = this.ID + "_tbActivityTypeName";
-            tbActivityTypeName.LabelText = "Name";
-
-            // set label when they exit the edit field
-            tbActivityTypeName.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", lblActivityTypeName.ID );
-            tbActivityTypeName.SourceTypeName = "Rock.Model.WorkflowActivityType, Rock";
-            tbActivityTypeName.PropertyName = "Name";
-
-            tbActivityTypeDescription = new DataTextBox();
-            tbActivityTypeDescription.ID = this.ID + "_tbActivityTypeDescription";
-            tbActivityTypeDescription.LabelText = "Description";
-            tbActivityTypeDescription.TextMode = TextBoxMode.MultiLine;
-            tbActivityTypeDescription.Rows = 4;
+            _tbActivityTypeName = new DataTextBox();
+            _tbActivityTypeName.ID = this.ID + "_tbActivityTypeName";
+            _tbActivityTypeName.Label = "Name";
 
             // set label when they exit the edit field
-            tbActivityTypeDescription.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", lblActivityTypeDescription.ID );
-            tbActivityTypeDescription.SourceTypeName = "Rock.Model.WorkflowActivityType, Rock";
-            tbActivityTypeDescription.PropertyName = "Description";
+            _tbActivityTypeName.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", _lblActivityTypeName.ID );
+            _tbActivityTypeName.SourceTypeName = "Rock.Model.WorkflowActivityType, Rock";
+            _tbActivityTypeName.PropertyName = "Name";
 
-            cbActivityTypeIsActivatedWithWorkflow = new LabeledCheckBox { LabelText = "Activated with Workflow" };
-            cbActivityTypeIsActivatedWithWorkflow.ID = this.ID + "_cbActivityTypeIsActivatedWithWorkflow";
+            _tbActivityTypeDescription = new DataTextBox();
+            _tbActivityTypeDescription.ID = this.ID + "_tbActivityTypeDescription";
+            _tbActivityTypeDescription.Label = "Description";
+            _tbActivityTypeDescription.TextMode = TextBoxMode.MultiLine;
+            _tbActivityTypeDescription.Rows = 4;
 
-            lbAddActionType = new LinkButton();
-            lbAddActionType.ID = this.ID + "_lbAddAction";
-            lbAddActionType.CssClass = "btn btn-mini";
-            lbAddActionType.Click += lbAddActionType_Click;
-            lbAddActionType.CausesValidation = false;
-            lbAddActionType.Controls.Add( new LiteralControl { Text = "<i class='icon-plus'></i> Add Action" } );
+            // set label when they exit the edit field
+            _tbActivityTypeDescription.Attributes["onblur"] = string.Format( "javascript: $('#{0}').text($(this).val());", _lblActivityTypeDescription.ID );
+            _tbActivityTypeDescription.SourceTypeName = "Rock.Model.WorkflowActivityType, Rock";
+            _tbActivityTypeDescription.PropertyName = "Description";
 
-            Controls.Add( hfActivityTypeGuid );
-            Controls.Add( lblActivityTypeName );
-            Controls.Add( lblActivityTypeDescription );
-            Controls.Add( lblInactive );
-            Controls.Add( tbActivityTypeName );
-            Controls.Add( tbActivityTypeDescription );
-            Controls.Add( cbActivityTypeIsActive );
-            Controls.Add( cbActivityTypeIsActivatedWithWorkflow );
-            Controls.Add( lbDeleteActivityType );
-            Controls.Add( lbAddActionType );
+            _cbActivityTypeIsActivatedWithWorkflow = new RockCheckBox { Label = "Activated with Workflow" };
+            _cbActivityTypeIsActivatedWithWorkflow.ID = this.ID + "_cbActivityTypeIsActivatedWithWorkflow";
+
+            _lbAddActionType = new LinkButton();
+            _lbAddActionType.ID = this.ID + "_lbAddAction";
+            _lbAddActionType.CssClass = "btn btn-xs btn-action";
+            _lbAddActionType.Click += lbAddActionType_Click;
+            _lbAddActionType.CausesValidation = false;
+            _lbAddActionType.Controls.Add( new LiteralControl { Text = "<i class='icon-plus'></i> Add Action" } );
+
+            Controls.Add( _hfActivityTypeGuid );
+            Controls.Add( _lblActivityTypeName );
+            Controls.Add( _lblActivityTypeDescription );
+            Controls.Add( _lblInactive );
+            Controls.Add( _tbActivityTypeName );
+            Controls.Add( _tbActivityTypeDescription );
+            Controls.Add( _cbActivityTypeIsActive );
+            Controls.Add( _cbActivityTypeIsActivatedWithWorkflow );
+            Controls.Add( _lbDeleteActivityType );
+            Controls.Add( _lbAddActionType );
         }
 
         /// <summary>
@@ -220,32 +226,34 @@ javascript:
         /// <param name="writer">An <see cref="T:System.Web.UI.HtmlTextWriter" /> that represents the output stream to render HTML content on the client.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            if ( cbActivityTypeIsActive.Checked )
+            if ( _cbActivityTypeIsActive.Checked )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget widget-dark workflow-activity" );
+                writer.AddAttribute(HtmlTextWriterAttribute.Class, "panel panel-widget workflow-activity");
             }
             else
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget widget-dark workflow-activity workflow-activity-inactive" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel workflow-activity workflow-activity-inactive" );
             }
 
-            writer.AddAttribute( "data-key", hfActivityTypeGuid.Value );
+            writer.AddAttribute( "data-key", _hfActivityTypeGuid.Value );
             writer.AddAttribute( HtmlTextWriterAttribute.Id, this.ID + "_section" );
             writer.RenderBeginTag( "section" );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "clearfix clickable" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix clickable" );
             writer.RenderBeginTag( "header" );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-toogle pull-left" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute("class", "panel-title");
             writer.RenderBeginTag( HtmlTextWriterTag.H3 );
-            lblActivityTypeName.Text = tbActivityTypeName.Text;
-            lblActivityTypeName.RenderControl( writer );
+            _lblActivityTypeName.Text = _tbActivityTypeName.Text;
+            _lblActivityTypeName.RenderControl( writer );
 
             // H3 tag
             writer.RenderEndTag();
-            lblActivityTypeDescription.Text = tbActivityTypeDescription.Text;
-            lblActivityTypeDescription.RenderControl( writer );
+            _lblActivityTypeDescription.Text = _tbActivityTypeDescription.Text;
+            _lblActivityTypeDescription.RenderControl( writer );
 
             // Name/Description div
             writer.RenderEndTag();
@@ -253,24 +261,24 @@ javascript:
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.WriteLine( "<a class='btn btn-mini workflow-activity-reorder'><i class='icon-reorder'></i></a>" );
-            writer.WriteLine( "<a class='btn btn-mini'><i class='workflow-activity-state icon-chevron-down'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-xs workflow-activity-reorder'><i class='icon-reorder'></i></a>" );
+            writer.WriteLine( "<a class='btn btn-xs'><i class='workflow-activity-state icon-chevron-down'></i></a>" );
 
             if ( IsDeleteEnabled )
             {
-                lbDeleteActivityType.Visible = true;
-                lbDeleteActivityType.RenderControl( writer );
+                _lbDeleteActivityType.Visible = true;
+                _lbDeleteActivityType.RenderControl( writer );
             }
             else
             {
-                lbDeleteActivityType.Visible = false;
+                _lbDeleteActivityType.Visible = false;
             }
 
             // Add/ChevronUpDown/Delete div
             writer.RenderEndTag();
 
-            lblInactive.Style[HtmlTextWriterStyle.Display] = cbActivityTypeIsActive.Checked ? "none" : string.Empty;
-            lblInactive.RenderControl( writer );
+            _lblInactive.Style[HtmlTextWriterStyle.Display] = _cbActivityTypeIsActive.Checked ? "none" : string.Empty;
+            _lblInactive.RenderControl( writer );
 
             // header div
             writer.RenderEndTag();
@@ -289,7 +297,7 @@ javascript:
                 }
             }
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget-content" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-body" );
 
             if ( !forceContentVisible )
             {
@@ -300,20 +308,20 @@ javascript:
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // activity edit fields
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row-fluid" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            tbActivityTypeName.RenderControl( writer );
-            tbActivityTypeDescription.RenderControl( writer );
+            _tbActivityTypeName.RenderControl( writer );
+            _tbActivityTypeDescription.RenderControl( writer );
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            cbActivityTypeIsActive.RenderControl( writer );
-            cbActivityTypeIsActivatedWithWorkflow.RenderControl( writer );
+            _cbActivityTypeIsActive.RenderControl( writer );
+            _cbActivityTypeIsActivatedWithWorkflow.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();
@@ -325,7 +333,7 @@ javascript:
             writer.WriteLine( "Actions" );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "pull-right" );
             writer.RenderBeginTag( HtmlTextWriterTag.Span );
-            lbAddActionType.RenderControl( writer );
+            _lbAddActionType.RenderControl( writer );
             writer.RenderEndTag();
             writer.RenderEndTag();
 

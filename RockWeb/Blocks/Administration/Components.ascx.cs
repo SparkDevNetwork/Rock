@@ -44,7 +44,6 @@ namespace RockWeb.Blocks.Administration
 
             // wire up page naviagte
             RockPage page = Page as RockPage;
-
             if (page != null)
             {
                 page.PageNavigate += page_PageNavigate;
@@ -312,7 +311,7 @@ namespace RockWeb.Blocks.Administration
             phProperties.Controls.Clear();
             LoadEditControls();
 
-            lProperties.Text = _container.Dictionary[serviceId].Key + " Properties";
+            lProperties.Text = (_container.Dictionary[serviceId].Key + " Properties").FormatAsHtmlTitle();
 
             SetEditMode( true );
         }

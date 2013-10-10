@@ -15,7 +15,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class GroupTypePicker : LabeledDropDownList
+    public class GroupTypePicker : RockDropDownList
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="GroupTypePicker" /> class.
@@ -23,41 +23,9 @@ namespace Rock.Web.UI.Controls
         public GroupTypePicker()
             : base()
         {
-            LabelText = "Group Type";
+            Label = "Group Type";
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="LabeledTextBox" /> is required.
-        /// </summary>
-        /// <value><c>true</c> if required; otherwise, <c>false</c>.</value>
-        public override bool Required
-        {
-            get
-            {
-                return base.Required;
-            }
-            set
-            {
-                var li = this.Items.FindByValue( None.IdValue );
-
-                if ( value )
-                {
-                    if ( li != null )
-                    {
-                        this.Items.Remove( li );
-                    }
-                }
-                else
-                {
-                    if ( li == null )
-                    {
-                        this.Items.Insert( 0, new ListItem( string.Empty, None.IdValue ) );
-                    }
-                }
-
-                base.Required = value;
-            }
-        }
         /// <summary>
         /// Gets or sets the group types.
         /// </summary>

@@ -5,7 +5,8 @@
 //
 using System.Collections.Generic;
 using System.Web.UI;
-using CKEditor.NET;
+
+using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
@@ -18,12 +19,13 @@ namespace Rock.Field.Types
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
         /// <returns>
         /// The control
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            CKEditorControl editor = new CKEditorControl { ID = id }; 
+            var editor = new HtmlEditor { ID = id }; 
             editor.Toolbar = "RockCustomConfigLight";
             return editor;
         }

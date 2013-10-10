@@ -15,53 +15,147 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class GroupRolePicker : CompositeControl, ILabeledControl, IRequiredControl
+    public class GroupRolePicker : CompositeControl, IRockControl
     {
-        private Literal _label;
-        protected HelpBlock _helpBlock;
-        private DropDownList _ddlGroupType;
-        private DropDownList _ddlGroupRole;
+        #region IRockControl implementation (Custom implementation)
 
-        public GroupRolePicker()
-            : base()
+        /// <summary>
+        /// Gets or sets the label text.
+        /// </summary>
+        /// <value>
+        /// The label text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text for the label." )
+        ]
+        public string Label
         {
-            _label = new Literal();
-            _helpBlock = new HelpBlock();
-            
-            _ddlGroupType = new DropDownList();
-            LoadGroupTypes();
-
-            _ddlGroupRole = new DropDownList();
+            get { return ViewState["Label"] as string ?? string.Empty; }
+            set { ViewState["Label"] = value; }
         }
 
-        public string LabelText
-        {
-            get { return _label.Text; }
-            set { _label.Text = value; }
-        }
-
+        /// <summary>
+        /// Gets or sets the help text.
+        /// </summary>
+        /// <value>
+        /// The help text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The help block." )
+        ]
         public string Help
         {
             get
             {
-                return _helpBlock.Text;
+                return HelpBlock != null ? HelpBlock.Text : string.Empty;
             }
             set
             {
-                _helpBlock.Text = value;
+                if ( HelpBlock != null )
+                {
+                    HelpBlock.Text = value;
+                }
+            }
+        }
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "false" ),
+        Description( "Is the value required?" )
+        ]
+        public bool Required
+        {
+            get { return _ddlGroupRole.Required; }
+            set { _ddlGroupRole.Required = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the required error message.  If blank, the LabelName name will be used
+        /// </summary>
+        /// <value>
+        /// The required error message.
+        /// </value>
+        public string RequiredErrorMessage
+        {
+            get
+            {
+                return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
+            }
+            set
+            {
+                if ( RequiredFieldValidator != null )
+                {
+                    RequiredFieldValidator.ErrorMessage = value;
+                }
             }
         }
 
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool IsValid
+        {
+            get
+            {
+                return !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the help block.
+        /// </summary>
+        /// <value>
+        /// The help block.
+        /// </value>
+        public HelpBlock HelpBlock { get; set; }
+
+        /// <summary>
+        /// Gets or sets the required field validator.
+        /// </summary>
+        /// <value>
+        /// The required field validator.
+        /// </value>
+        public RequiredFieldValidator RequiredFieldValidator { get; set; }
+
+        #endregion
+
+        #region Controls
+
+        private RockDropDownList _ddlGroupType;
+        private RockDropDownList _ddlGroupRole;
+
+        #endregion
+
+        #region Properties
+        
+        /// <summary>
+        /// Gets or sets the group type id.
+        /// </summary>
+        /// <value>
+        /// The group type id.
+        /// </value>
         public int? GroupTypeId
         {
             get { return ViewState["GroupTypeId"] as int?; }
             set 
             { 
                 ViewState["GroupTypeId"] = value;
-                if ( value.HasValue )
-                {
-                    LoadGroupRoles( value.Value );
-                }
+                LoadGroupRoles( value.Value );
             }
         }
 
@@ -89,13 +183,17 @@ namespace Rock.Web.UI.Controls
                 int groupRoleId = value.HasValue ? value.Value : 0;
                 if ( _ddlGroupRole.SelectedValue != groupRoleId.ToString() )
                 {
-                    var groupRole = new Rock.Model.GroupRoleService().Get( groupRoleId );
-                    if ( groupRole != null && 
-                        groupRole.GroupTypeId.HasValue && 
-                        _ddlGroupType.SelectedValue != groupRole.GroupTypeId.ToString() )
+                    if ( !GroupTypeId.HasValue )
                     {
-                        _ddlGroupType.SelectedValue = groupRole.GroupTypeId.ToString();
-                        LoadGroupRoles( groupRole.GroupTypeId.Value );
+                        var groupRole = new Rock.Model.GroupRoleService().Get( groupRoleId );
+                        if ( groupRole != null &&
+                            groupRole.GroupTypeId.HasValue &&
+                            _ddlGroupType.SelectedValue != groupRole.GroupTypeId.ToString() )
+                        {
+                            _ddlGroupType.SelectedValue = groupRole.GroupTypeId.ToString();
+
+                            LoadGroupRoles( groupRole.GroupTypeId.Value );
+                        }
                     }
 
                     var selectedItem = _ddlGroupRole.Items.FindByValue( groupRoleId.ToString() );
@@ -107,57 +205,19 @@ namespace Rock.Web.UI.Controls
             }
         }
 
-        /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="IRequiredControl" /> is required.
-        /// </summary>
-        /// <value><c>true</c> if required; otherwise, <c>false</c>.</value>
-        public bool Required
-        {
-            get { return ViewState["Required"] as bool? ?? false; }
-            set 
-            { 
-                ViewState["Required"] = value;
-                if ( GroupTypeId.HasValue )
-                {
-                    LoadGroupRoles( GroupTypeId.Value );
-                }
-            }
-        }
+        #endregion
 
         /// <summary>
-        /// Gets or sets the required error message.  If blank, the LabelName name will be used
+        /// Initializes a new instance of the <see cref="GroupRolePicker"/> class.
         /// </summary>
-        /// <value>The required error message.</value>
-        public string RequiredErrorMessage
+        public GroupRolePicker()
+            : base()
         {
-            get { return ViewState["RequiredErrorMessage"] as string ?? "Group Role is Required"; }
-            set { ViewState["RequiredErrorMessage"] = value; }
+            _ddlGroupType = new RockDropDownList();
+            LoadGroupTypes();
+
+            _ddlGroupRole = new RockDropDownList();
         }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether this instance is valid.
-        /// </summary>
-        /// <value><c>true</c> if this instance is valid; otherwise, <c>false</c>.</value>
-        public bool IsValid
-        {
-            get { return true; }
-        }
-
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
-        {
-            base.OnInit( e );
-        //    var sm = ScriptManager.GetCurrent( this.Page );
-
-        //    if ( sm != null )
-        //    {
-        //        sm.RegisterAsyncPostBackControl( _ddlGroupType );
-        //    }
-        }
-
 
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
@@ -165,69 +225,50 @@ namespace Rock.Web.UI.Controls
         protected override void CreateChildControls()
         {
             base.CreateChildControls();
-
             Controls.Clear();
-
-            _label.ID = this.ID + "_label";
-            Controls.Add( _label );
-
-            _helpBlock.ID = this.ID + "_helpblock";
-            Controls.Add( _helpBlock );
+            RockControlHelper.CreateChildControls( this, Controls );
 
             _ddlGroupType.ID = this.ID + "_ddlGroupType";
             _ddlGroupType.AutoPostBack = true;
             _ddlGroupType.SelectedIndexChanged += _ddlGroupType_SelectedIndexChanged;
             Controls.Add( _ddlGroupType );
 
-            _ddlGroupRole.ID = this.ID + "_ddlGroupRole";
+            _ddlGroupRole.ID = this.ID;
             Controls.Add( _ddlGroupRole );
         }
 
-        void _ddlGroupType_SelectedIndexChanged( object sender, EventArgs e )
-        {
-            int groupTypeId = int.MinValue;
-            if ( int.TryParse( _ddlGroupType.SelectedValue, out groupTypeId ) && groupTypeId > 0 )
-            {
-                LoadGroupRoles( groupTypeId );
-            }
-        }
-
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
             if ( this.Visible )
             {
-                bool renderControlGroupDiv = ( !string.IsNullOrWhiteSpace( LabelText ) || !string.IsNullOrWhiteSpace( Help ) );
-
-                if ( renderControlGroupDiv )
-                {
-                    writer.AddAttribute( "class", "control-group" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                    writer.AddAttribute( "class", "control-label" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                    _label.RenderControl( writer );
-                    _helpBlock.RenderControl( writer );
-                    writer.RenderEndTag();
-
-                    writer.AddAttribute( "class", "controls" );
-                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                }
-
                 if ( !GroupTypeId.HasValue )
                 {
-                    writer.Write( "Group Type " );
+                    _ddlGroupType.Label = this.Label;
+                    _ddlGroupType.Help = this.Help;
                     _ddlGroupType.RenderControl( writer );
-                    writer.Write( " Role " );
+
+                    _ddlGroupRole.Label = (_ddlGroupType.SelectedItem != null ? _ddlGroupType.SelectedItem.Text : this.Label) + " Role";
                 }
-
-                _ddlGroupRole.RenderControl(writer);
-
-                if ( renderControlGroupDiv )
+                else
                 {
-                    writer.RenderEndTag();  // controls
-                    writer.RenderEndTag();  // control-group
+                    _ddlGroupRole.Label = this.Label;
+                    _ddlGroupRole.Help = this.Help;
                 }
+
+                _ddlGroupRole.RenderControl( writer );
             }
+        }
+
+        /// <summary>
+        /// Renders the base control.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public void RenderBaseControl( HtmlTextWriter writer )
+        {
         }
 
         private void LoadGroupTypes()
@@ -241,25 +282,36 @@ namespace Rock.Web.UI.Controls
             );
         }
 
-        private void LoadGroupRoles(int groupTypeId)
+        private void LoadGroupRoles(int? groupTypeId)
         {
-            int? groupRoleId = GroupRoleId;
-
             _ddlGroupRole.Items.Clear();
-
-            if ( !Required )
+            if ( groupTypeId.HasValue )
             {
-                _ddlGroupRole.Items.Add( new ListItem( string.Empty, Rock.Constants.None.IdValue ) );
+                if ( !Required )
+                {
+                    _ddlGroupRole.Items.Add( new ListItem( string.Empty, Rock.Constants.None.IdValue ) );
+                }
+
+                var groupRoleService = new Rock.Model.GroupRoleService();
+                var groupRoles = groupRoleService.Queryable().Where( r => r.GroupTypeId == groupTypeId.Value ).OrderBy( a => a.Name ).ToList();
+                groupRoles.ForEach( r =>
+                    _ddlGroupRole.Items.Add( new ListItem( r.Name, r.Id.ToString().ToUpper() ) )
+                );
             }
-
-            var groupRoleService = new Rock.Model.GroupRoleService();
-            var groupRoles = groupRoleService.Queryable().Where( r => r.GroupTypeId == groupTypeId ).OrderBy( a => a.Name ).ToList();
-            groupRoles.ForEach( r =>
-                _ddlGroupRole.Items.Add( new ListItem( r.Name, r.Id.ToString().ToUpper() ) )
-            );
-
-            GroupRoleId = groupRoleId;
         }
 
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the _ddlGroupType control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void _ddlGroupType_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            int groupTypeId = int.MinValue;
+            if ( int.TryParse( _ddlGroupType.SelectedValue, out groupTypeId ) && groupTypeId > 0 )
+            {
+                LoadGroupRoles( groupTypeId );
+            }
+        }
     }
 }

@@ -8,21 +8,23 @@
 
 <asp:UpdatePanel ID="upExceptionList" runat="server">
     <ContentTemplate>
-        <asp:Panel ID="pnlExceptionGroups" runat="server" CssClass="well" Visible="true">
-            <div class="row-fluid">
+        <asp:Panel ID="pnlExceptionGroups" runat="server" Visible="true">
+            
+            <div class="row">
                 <div class="span12 clearExceptionsLink">
-                    <asp:LinkButton ID="btnClearExceptions" runat="server" CssClass="btn" OnClientClick="return confirmExceptionListClear();" OnClick="btnClearExceptions_Click" CausesValidation="false">
+                    <asp:LinkButton ID="btnClearExceptions" runat="server" CssClass="btn btn-action btn-sm" OnClientClick="return confirmExceptionListClear();" OnClick="btnClearExceptions_Click" CausesValidation="false">
                         <i class="icon-repeat"></i> Clear All Exceptions
                     </asp:LinkButton>
                 </div>
             </div>
+
             <Rock:GridFilter ID="fExceptionList" runat="server">
-                <Rock:LabeledDropDownList ID="ddlSite" runat="server" LabelText="Site" />
-                <Rock:PagePicker ID="ppPage" runat="server" LabelText="Page" />
-                <Rock:PersonPicker ID="ppUser" runat="server" LabelText="User" />
-                <Rock:LabeledTextBox ID="txtStatusCode" runat="server" LabelText="Status Code" />
-                <Rock:DatePicker ID="dpStartDate" runat="server"   LabelText="Start Date" />
-                <Rock:DatePicker ID="dpEndDate" runat="server" LabelText="End Date" />
+                <Rock:RockDropDownList ID="ddlSite" runat="server" Label="Site" />
+                <Rock:PagePicker ID="ppPage" runat="server" Label="Page" />
+                <Rock:PersonPicker ID="ppUser" runat="server" Label="User" />
+                <Rock:RockTextBox ID="txtStatusCode" runat="server" Label="Status Code" />
+                <Rock:DatePicker ID="dpStartDate" runat="server"   Label="Start Date" />
+                <Rock:DatePicker ID="dpEndDate" runat="server" Label="End Date" />
             </Rock:GridFilter>
             <Rock:Grid ID="gExceptionList" runat="server" AllowSorting="true" OnRowSelected="gExceptionList_RowSelected" EmptyDataText="No Exceptions Found">
                 <Columns>
@@ -35,13 +37,19 @@
                 </Columns>
             </Rock:Grid>
         </asp:Panel>
-        <asp:Panel ID="pnlExceptionOccurrences" runat="server" CssClass="well" Visible="false">
+
+        <asp:Panel ID="pnlExceptionOccurrences" runat="server" Visible="false">
             <asp:HiddenField ID="hfBaseExceptionID" runat="server" />
             <div class="banner">
-                <h1><span class='first-word'>Exception </span> Occurrences</h1>
+                <h1><asp:Literal ID="lDetailTitle" runat="server"></asp:Literal></h1>
             </div>
-            <asp:LinkButton ID="btnReturnToExceptionList" runat="server" CssClass="btn exceptionReturnToListButton" OnClick="btnReturnToExceptionList_Click"><i class="icon-angle-left"></i>&nbsp; Return to List</asp:LinkButton>
-            <asp:Literal ID="lblMainDetails" runat="server" />
+            
+            <div class="row">
+                <asp:Literal ID="lblMainDetails" runat="server" />
+            </div>
+
+            <h4>Exception List</h4>
+
             <Rock:Grid ID="gExceptionOccurrences" runat="server" AllowSorting="true">
                 <Columns>
                     <Rock:DateTimeField DataField="ExceptionDateTime" HeaderText="Date" SortExpression="ExceptionDateTime" />

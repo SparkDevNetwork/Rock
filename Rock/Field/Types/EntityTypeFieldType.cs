@@ -12,6 +12,7 @@ using System.Web.UI.WebControls;
 using Rock.Constants;
 using Rock.Model;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
 {
@@ -44,12 +45,13 @@ namespace Rock.Field.Types
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
         /// <returns>
         /// The control
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            DropDownList dropDownList = new DropDownList { ID = id }; 
+            var dropDownList = new RockDropDownList { ID = id }; 
             dropDownList.Items.Add( new ListItem( "None (Global)", "") );
             new EntityTypeService().GetEntityListItems().ForEach( l => dropDownList.Items.Add( l ) );
             return dropDownList;

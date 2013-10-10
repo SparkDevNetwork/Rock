@@ -12,45 +12,49 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Person POCO Service class
+    /// Data Access/Service class for <see cref="Rock.Model.Person"/> entity objects.
     /// </summary>
     public partial class PersonService 
     {
         /// <summary>
-        /// Gets a queryable list of people
+        /// Returns a queryable collection of <see cref="Rock.Model.Person"/> entities.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A queryable collection of <see cref="Rock.Model.Person"/> entities.</returns>
         public override IQueryable<Person> Queryable()
         {
             return Queryable( false );
         }
 
         /// <summary>
-        /// Gets a queryable list of people
+        /// Returns a queryable collection of <see cref="Rock.Model.Person"/> entities. If includeDeceased is <c>false</c>, deceased individuals will be excluded.
         /// </summary>
-        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
-        /// <returns></returns>
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> value indicating if deceased <see cref="Rock.Model.Person"/> should be included. If <c>true</c>
+        /// deceased individuals will be included, otherwise <c>false</c> and they will be excluded.
+        /// </param>
+        /// <returns>A queryable collection of <see cref="Rock.Model.Person"/> entities, with deceased individuals either included or excluded based on the provided value.</returns>
         public IQueryable<Person> Queryable( bool includeDeceased )
         {
             return base.Repository.AsQueryable().Where( p => includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value );
         }
 
         /// <summary>
-        /// Gets a list of all people with eager loading of properties specfied in includes
+        /// Returns a queryable collection of all <see cref="Rock.Model.Person"/> entities with eager loading of the properties that are included in the includes parameter.
         /// </summary>
-        /// <param name="includes">The includes.</param>
-        /// <returns></returns>
+        /// <param name="includes">A <see cref="System.String"/> containing a comma delimited list of properties that should support eager loading.</param>
+        /// <returns>A queryable collection of <see cref="Rock.Model.Person"/> entities with properties that support eager loading.</returns>
         public override IQueryable<Person> Queryable( string includes )
         {
             return Queryable( includes, false );
         }
 
         /// <summary>
-        /// Gets a list of all people with eager loading of properties specfied in includes
+        /// Returns a queryable collection of <see cref="Rock.Model.Person"/> entities with eager loading of properties that are included in the includes parameter.
+        /// If includeDeceased is <c>false</c>, deceased individuals will be excluded
         /// </summary>
         /// <param name="includes">The includes.</param>
-        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
-        /// <returns></returns>
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> value indicating if deceased <see cref="Rock.Model.Person"/> should be included. If <c>true</c>
+        /// deceased individuals will be included, otherwise <c>false</c> and they will be excluded.
+        /// <returns>A queryable collection of <see cref="Rock.Model.Person"/> entities with properties that support eager loading, with deceased individuals either included or excluded based on the provided value. </returns>
         public IQueryable<Person> Queryable( string includes, bool includeDeceased )
         {
             return base.Repository.AsQueryable( includes ).Where( p => includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value );
@@ -59,12 +63,13 @@ namespace Rock.Model
         #region Get People
 
         /// <summary>
-        /// Gets People by Email
+        /// Gets an enumerable collection of <see cref="Rock.Model.Person"/> entities by email address.
         /// </summary>
-        /// <param name="email">Email.</param>
-        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <param name="email">A <see cref="System.String"/> representing the email address to search by.</param>
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in the search results, if
+        /// <c>true</c> then they will be included, otherwise <c>false</c>. Default value is false.</param>
         /// <returns>
-        /// An enumerable list of Person objects.
+        /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
         public IEnumerable<Person> GetByEmail( string email, bool includeDeceased = false )
         {
@@ -75,12 +80,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets People by Marital Status Id
+        /// Gets an enumerable collection of <see cref="Rock.Model.Person"/> entities by martial status <see cref="Rock.Model.DefinedValue"/>
         /// </summary>
-        /// <param name="maritalStatusId">Marital Status Id.</param>
-        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <param name="maritalStatusId">An <see cref="System.Int32"/> representing the Id of the Marital Status <see cref="Rock.Model.DefinedValue"/> to search by.</param>
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be 
+        /// included, otherwise <c>false</c>.</param>
         /// <returns>
-        /// An enumerable list of Person objects.
+        /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
         public IEnumerable<Person> GetByMaritalStatusId( int? maritalStatusId, bool includeDeceased = false )
         {
@@ -91,12 +97,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets People by Person Status Id
+        /// Returns an enumerable collection of <see cref="Rock.Model.Person"/> entities by the the Person's Person Status <see cref="Rock.Model.DefinedValue"/>.
         /// </summary>
-        /// <param name="personStatusId">Person Status Id.</param>
-        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <param name="personStatusId">A <see cref="System.Int32"/> representing the Id of the Person Status <see cref="Rock.Model.DefinedValue"/> to search by.</param>
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be
+        /// included, otherwise <c>false</c>.</param>
         /// <returns>
-        /// An enumerable list of Person objects.
+        /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
         public IEnumerable<Person> GetByPersonStatusId( int? personStatusId, bool includeDeceased = false )
         {
@@ -107,12 +114,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets People by Record Status Id
+        /// Returns an enumerable collection of <see cref="Rock.Model.Person"/> entities by their Record Status <see cref="Rock.Model.DefinedValue"/>
         /// </summary>
-        /// <param name="recordStatusId">Record Status Id.</param>
-        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <param name="recordStatusId">A <see cref="System.Int32"/> representing the Id of the Record Status <see cref="Rock.Model.DefinedValue"/> to search by.</param>
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be 
+        /// included, otherwise <c>false</c>.</param>
         /// <returns>
-        /// An enumerable list of Person objects.
+        /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
         public IEnumerable<Person> GetByRecordStatusId( int? recordStatusId, bool includeDeceased = false )
         {
@@ -123,12 +131,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets People by Record Status Reason Id
+        /// Returns an enumerable collection of <see cref="Rock.Model.Person"/> entities by the RecordStatusReason <see cref="Rock.Model.DefinedValue"/>.
         /// </summary>
-        /// <param name="recordStatusReasonId">Record Status Reason Id.</param>
-        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <param name="recordStatusReasonId">A <see cref="System.Int32"/> representing the Id of the RecordStatusReason <see cref="Rock.Model.DefinedValue"/> to search by.</param>
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be 
+        /// included, otherwise <c>false</c>.</param>
         /// <returns>
-        /// An enumerable list of Person objects.
+        /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
         public IEnumerable<Person> GetByRecordStatusReasonId( int? recordStatusReasonId, bool includeDeceased = false )
         {
@@ -139,12 +148,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets People by Record Type Id
+        /// Returns an enumerable collection of <see cref="Rock.Model.Person"/> entities by their RecordType <see cref="Rock.Model.DefinedValue"/>.
         /// </summary>
-        /// <param name="recordTypeId">Record Type Id.</param>
-        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <param name="recordTypeId">A <see cref="System.Int32"/> representing the Id of the RecordType <see cref="Rock.Model.DefinedValue"/> to search by.</param>
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be 
+        /// included, otherwise <c>false</c>.</param>
         /// <returns>
-        /// An enumerable list of Person objects.
+        /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
         public IEnumerable<Person> GetByRecordTypeId( int? recordTypeId, bool includeDeceased = false )
         {
@@ -155,12 +165,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets People by Suffix Id
+        /// Returns an enumerable collection of <see cref="Rock.Model.Person"/> entities by their Suffix <see cref="Rock.Model.DefinedValue"/>
         /// </summary>
-        /// <param name="suffixId">Suffix Id.</param>
-        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <param name="suffixId">An <see cref="System.Int32"/> representing the Id of Suffix <see cref="Rock.Model.DefinedValue"/> to search by.</param>
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be 
+        /// included, otherwise <c>false</c>.</param>
         /// <returns>
-        /// An enumerable list of Person objects.
+        /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
         public IEnumerable<Person> GetBySuffixId( int? suffixId, bool includeDeceased = false )
         {
@@ -171,12 +182,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets People by Title Id
+        /// Returns a collection of <see cref="Rock.Model.Person"/> entities by their Title <see cref="Rock.Model.DefinedValue"/>.
         /// </summary>
-        /// <param name="titleId">Title Id.</param>
-        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
+        /// <param name="titleId">A <see cref="System.Int32"/> representing the Id of the Title <see cref="Rock.Model.DefinedValue"/>.</param>
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be 
+        /// included, otherwise <c>false</c>.</param>
         /// <returns>
-        /// An enumerable list of Person objects.
+        /// An enumerable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.
         /// </returns>
         public IEnumerable<Person> GetByTitleId( int? titleId, bool includeDeceased = false )
         {
@@ -187,11 +199,12 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a list of people with a matching full name
+        /// Returns a queryable collection of <see cref="Rock.Model.Person"/> entities by the person's full name.
         /// </summary>
-        /// <param name="fullName">The full name.</param>
-        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
-        /// <returns></returns>
+        /// <param name="fullName">A <see cref="System.String"/> representing the full name to search by.</param>
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be 
+        /// included, otherwise <c>false</c>.</param>
+        /// <returns>A queryable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.</returns>
         public IQueryable<Person> GetByFullName( string fullName, bool includeDeceased = false )
         {
             var names = fullName.SplitDelimitedValues();
@@ -228,27 +241,44 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a list of people with a phone number that contains the specified partial number.
+        /// Gets an queryable collection of <see cref="Rock.Model.Person"/> entities where their phone number partially matches the provided value.
         /// </summary>
-        /// <param name="partialPhoneNumber">The partial phone number.</param>
-        /// <param name="includeDeceased">if set to <c>true</c> [include deceased].</param>
-        /// <returns></returns>
-        public IEnumerable<Person> GetByPhonePartial( string partialPhoneNumber, bool includeDeceased = false )
+        /// <param name="partialPhoneNumber">A <see cref="System.String"/> containing a partial phone number to match.</param>
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be 
+        /// included, otherwise <c>false</c>.</param>
+        /// <returns>An queryable collection of <see cref="Rock.Model.Person"/> entities that match the search criteria.</returns>
+        public IQueryable<Person> GetByPhonePartial( string partialPhoneNumber, bool includeDeceased = false )
         {
             string numericPhone = partialPhoneNumber.AsNumeric();
 
-            return Repository.Find( p =>
+            return Repository.AsQueryable().Where( p =>
                 ( includeDeceased || !p.IsDeceased.HasValue || !p.IsDeceased.Value ) &&
                 p.PhoneNumbers.Any( n => n.Number.Contains( numericPhone ) )
             );
         }
 
         /// <summary>
-        /// Gets the family members.
+        /// Gets the families.
         /// </summary>
         /// <param name="person">The person.</param>
-        /// <param name="includeSelf">if set to <c>true</c> [include self].</param>
         /// <returns></returns>
+        public IQueryable<Group> GetFamilies( Person person )
+        {
+            Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+
+            return new GroupMemberService().Queryable()
+                .Where( m => m.PersonId == person.Id && m.Group.GroupType.Guid == familyGuid )
+                .Select( m => m.Group )
+                .Distinct();
+        }
+
+        /// <summary>
+		/// Returns a collection of <see cref="Rock.Model.Person"/> entities containing the family members of the provided person.
+        /// </summary>
+        /// <param name="person">A <see cref="Rock.Model.Person"/> representing the person to get the family members for.</param>
+        /// <param name="includeDeceased">A <see cref="System.Boolean"/> flag indicating if deceased individuals should be included in search results, if <c>true</c> then they will be 
+        /// included, otherwise <c>false</c>.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.Person"/> entities containing the family members of the provided person.</returns>
         public IQueryable<GroupMember> GetFamilyMembers( Person person, bool includeSelf = false )
         {
             Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
@@ -260,18 +290,47 @@ namespace Rock.Model
                 .Distinct();
         }
 
+        /// <summary>
+        /// Gets the first location.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="locationTypeValueId">The location type value id.</param>
+        /// <returns></returns>
+        public Location GetFirstLocation( Person person, int locationTypeValueId )
+        {
+            return GetFamilies( person )
+                .SelectMany( g => g.GroupLocations )
+                .Where( gl => gl.GroupLocationTypeValueId == locationTypeValueId )
+                .Select( gl => gl.Location )
+                .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets a phone number
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <param name="phoneType">Type of the phone.</param>
+        /// <returns></returns>
+        public PhoneNumber GetPhoneNumber(Person person, Rock.Web.Cache.DefinedValueCache phoneType)
+        {
+            return new PhoneNumberService().Queryable()
+                .Where( n => n.PersonId == person.Id && n.NumberTypeValueId == phoneType.Id)
+                .FirstOrDefault();
+        }
+
         #endregion
 
         #region Get Person
 
+
+
         /// <summary>
-        /// Gets Person by Id
+        /// Returns a <see cref="Rock.Model.Person"/> by their PersonId
         /// </summary>
-        /// <param name="id">The id.</param>
-        /// <param name="followMerges">if set to <c>true</c> follow the merge trail.</param>
-        /// <returns>
-        /// Person object.
-        /// </returns>
+        /// <param name="id">The <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> to search for.</param>
+        /// <param name="followMerges">A <see cref="System.Boolean"/> flag indicating that the provided PersonId should be checked against the <see cref="Rock.Model.PersonMerged"/> list.
+        /// When <c>true</c> the <see cref="Rock.Model.PersonsMerged"/> log will be checked for the PersonId, otherwise <c>false</c>.</param>
+        /// <returns>The <see cref="Rock.Model.Person"/> associated with the provided Id, otherwise null.</returns>
         public Person Get( int id, bool followMerges )
         {
             if ( followMerges )
@@ -282,11 +341,12 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the specified GUID.
+        /// Returns a <see cref="Rock.Model.Person"/> by their Guid.
         /// </summary>
-        /// <param name="guid">The GUID.</param>
-        /// <param name="followMerges">if set to <c>true</c> follow the merge trail.</param>
-        /// <returns></returns>
+        /// <param name="guid">A <see cref="System.Guid"/> representing the <see cref="Rock.Model.Person">Person's</see> Guid identifier.</param>
+        /// <param name="followMerges">A <see cref="System.Boolean"/> flag indicating that the provided Guid should be checked against the <see cref="Rock.Model.PersonMerged"/> list.
+        /// When <c>true</c> the <see cref="Rock.Model.PersonsMerged"/> log will be checked for the Guid, otherwise <c>false</c>.</param>
+        /// <returns>The <see cref="Rock.Model.Person"/> associated with the provided Guid, otherwise null.</returns>
         public Person Get( Guid guid, bool followMerges )
         {
             if ( followMerges )
@@ -297,12 +357,13 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets Person by Guid
+        /// Returns a <see cref="Rock.Model.Person"/> by their encrypted key value.
         /// </summary>
-        /// <param name="encryptedKey">The encrypted key.</param>
-        /// <param name="followMergeTrail">if set to <c>true</c> follow the merge trail</param>
+        /// <param name="encryptedKey">A <see cref="System.String"/> containing an encrypted key value.</param>
+        /// <param name="followMergeTrail">A <see cref="System.Boolean"/> flag indicating that the provided Guid should be checked against the <see cref="Rock.Model.PersonMerged"/> list.
+        /// When <c>true</c> the <see cref="Rock.Model.PersonsMerged"/> log will be checked for the Guid, otherwise <c>false</c>.</param>
         /// <returns>
-        /// Person object.
+        /// The <see cref="Rock.Model.Person"/> associated with the provided Key, otherwise null.
         /// </returns>
         public Person GetByEncryptedKey( string encryptedKey, bool followMergeTrail )
         {
@@ -313,10 +374,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the spouse.
+        /// Gets the <see cref="Rock.Model.Person"/> entity of the provided Person's spouse.
         /// </summary>
-        /// <param name="person">The person.</param>
-        /// <returns></returns>
+        /// <param name="person">The <see cref="Rock.Model.Person"/> entity of the Person to retrieve the spouse of.</param>
+        /// <returns>The <see cref="Rock.Model.Person"/> entity containing the provided Person's spouse. If the provided Person's spouse is not found, this value will be null.</returns>
         public Person GetSpouse( Person person )
         {
             // Spouse is determined if all these conditions are met
@@ -346,12 +407,12 @@ namespace Rock.Model
         #region User Preferences
 
         /// <summary>
-        /// Saves preference for a given person, and key
+        /// Saves a <see cref="Rock.Model.Person">Person's</see> user preference setting by key.
         /// </summary>
-        /// <param name="person"></param>
-        /// <param name="key"></param>
-        /// <param name="values"></param>
-        /// <param name="personId"></param>
+        /// <param name="person">The <see cref="Rock.Model.Person"/> who the preference value belongs to.</param>
+        /// <param name="key">A <see cref="System.String"/> representing the key (name) of the preference setting. </param>
+        /// <param name="values">A list of <see cref="System.String"/> values representing the value of the preference setting.</param>
+        /// <param name="personId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> saving the setting.</param>
         public void SaveUserPreference(Person person, string key, List<string> values, int? personId)
         {
             int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
@@ -405,11 +466,11 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets preference for a given person, and key
+        /// Returns a <see cref="Rock.Model.Person"/> user preference value by preference setting's key.
         /// </summary>
-        /// <param name="person"></param>
-        /// <param name="key"></param>
-        /// <returns></returns>
+        /// <param name="person">The <see cref="Rock.Model.Person"/> to retrieve the preference value for.</param>
+        /// <param name="key">A <see cref="System.String"/> representing the key name of the preference setting.</param>
+        /// <returns>A list of <see cref="System.String"/> containing the values associated with the user's preference setting.</returns>
         public List<string> GetUserPreference( Person person, string key )
         {
             int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;
@@ -429,10 +490,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets all preferences for a given person
+        /// Returns all of the user preference settings for a <see cref="Rock.Model.Person"/>.
         /// </summary>
-        /// <param name="person"></param>
-        /// <returns></returns>
+        /// <param name="person">The <see cref="Rock.Model.Person"/> to retrieve the user preference settings for.</param>
+        /// <returns>A dictionary containing all of the <see cref="Rock.Model.Person">Person's</see> user preference settings.</returns>
         public Dictionary<string, List<string>> GetUserPreferences( Person person )
         {
             int? PersonEntityTypeId = Rock.Web.Cache.EntityTypeCache.Read( Person.USER_VALUE_ENTITY ).Id;

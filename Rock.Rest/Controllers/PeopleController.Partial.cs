@@ -73,11 +73,11 @@ namespace Rock.Rest.Controllers
 
             var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
             string imageUrlFormat = string.Format( "<image src='{0}' />", Path.Combine( appPath, "GetImage.ashx?id={0}&width=25&height=25" ) );
-            string imageNoPhoto = string.Format("<image src='{0}' />", Path.Combine( appPath, "/Assets/images/person-no-photo.jpg" ));
+            string imageNoPhoto = string.Format("<image src='{0}' />", Path.Combine(appPath, "/Assets/images/person-no-photo.svg"));
             string itemDetailFormat = @"
-<div class='rock-picker-select-item-details clearfix' style='display: none;'>
+<div class='picker-select-item-details clearfix' style='display: none;'>
 	{0}
-	<div class='rock-picker-select-person-details'>
+	<div class='contents'>
         {1}
 	</div>
 </div>
@@ -127,7 +127,10 @@ namespace Rock.Rest.Controllers
                     var groupMemberQry = groupMemberService.Queryable().Where( a => a.PersonId.Equals( person.Id ) );
                     List<GroupMember> personGroupMember = groupMemberQry.ToList();
 
-                    GroupMember familyGroupMember = personGroupMember.Where( a => a.Group.GroupType.Guid.Equals( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).FirstOrDefault();
+                    Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+                    Guid adultGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT );
+
+                    GroupMember familyGroupMember = personGroupMember.Where( a => a.Group.GroupType.Guid.Equals( familyGuid ) ).FirstOrDefault();
                     if ( familyGroupMember != null )
                     {
                         personInfo += familyGroupMember.GroupRole.Name;
@@ -137,21 +140,25 @@ namespace Rock.Rest.Controllers
                         }
 
                         // Figure out spouse (Implied by "the other GROUPROLE_FAMILY_MEMBER_ADULT that is of the opposite gender")
-                        if ( familyGroupMember.GroupRole.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) )
+                        if ( familyGroupMember.GroupRole.Guid.Equals( adultGuid ) )
                         {
-                            GroupMember spouseMember = familyGroupMember.Group.Members.Where( a => !a.PersonId.Equals( person.Id ) && a.GroupRole.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT ) ).FirstOrDefault();
+                            person.GetSpouse();
+                            GroupMember spouseMember = familyGroupMember.Group.Members.Where( a => !a.PersonId.Equals( person.Id ) && a.GroupRole.Guid.Equals( adultGuid ) ).FirstOrDefault();
                             if ( spouseMember != null )
                             {
                                 if ( !familyGroupMember.Person.Gender.Equals( spouseMember.Person.Gender ) )
                                 {
-                                    personInfo += "<h5>Spouse</h5>" + spouseMember.Person.FullName;
+                                    personInfo += "<p><strong>Spouse:</strong> " + spouseMember.Person.FullName + "</p>";
                                 }
                             }
                         }
                     }
                     else
                     {
-                        personInfo += person.Age.ToString() + " yrs old";
+                        if ( person.Age != null )
+                        {
+                            personInfo += person.Age.ToString() + " yrs old";
+                        }
                     }
 
                     if ( familyGroupMember != null )
@@ -222,7 +229,7 @@ namespace Rock.Rest.Controllers
             {
                 var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
                 string imageUrlFormat = Path.Combine( appPath, "GetImage.ashx?id={0}&width=37&height=37" );
-                string imageNoPhoto = Path.Combine( appPath, "Assets/images/person-no-photo.jpg" );
+                string imageNoPhoto = Path.Combine(appPath, "Assets/images/person-no-photo.svg");
                 html.AppendFormat( "<header><img src='{0}'/> <div>{1}<small>{2}</small></div></header>",
                     person.PhotoId.HasValue ? string.Format( imageUrlFormat, person.PhotoId.Value ) : imageNoPhoto,
                     person.FullName,

@@ -14,7 +14,7 @@ namespace Rock.Web.UI.Controls
     /// A composite control that renders a label, dropdownlist, and datavalidation control for a specific field of a data model
     /// </summary>
     [ToolboxData( "<{0}:DataDropDownList runat=server></{0}:DataDropDownList>" )]
-    public class DataDropDownList : LabeledDropDownList
+    public class DataDropDownList : RockDropDownList
     {
         private Validation.DataAnnotationValidator dataValidator;
 
@@ -67,8 +67,8 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 dataValidator.PropertyName = value;
-                if ( this.LabelText == string.Empty )
-                    this.LabelText = value.SplitCase();
+                if ( this.Label == string.Empty )
+                    this.Label = value.SplitCase();
             }
         }
 

@@ -39,11 +39,6 @@ namespace Rock.Web.UI.Controls
                                 writer.RenderBeginTag( HtmlTextWriterTag.A );
                                 writer.Write( crumb.Name );
                                 writer.RenderEndTag();
-                                writer.Write( " " );
-                                writer.AddAttribute( HtmlTextWriterAttribute.Class, "divider" );
-                                writer.RenderBeginTag( HtmlTextWriterTag.Span );
-                                writer.Write( "/" );
-                                writer.RenderEndTag();
                                 writer.RenderEndTag();
                             }
                             else

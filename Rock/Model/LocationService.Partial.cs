@@ -5,8 +5,8 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Data.Entity.Spatial;
 using System.Linq;
-
 using Rock.Data;
 
 namespace Rock.Model
@@ -40,16 +40,26 @@ namespace Rock.Model
         /// <returns>The first <see cref="Rock.Model.Location"/> where an address match is found, if no match is found a new <see cref="Rock.Model.Location"/> is created and returned.</returns>
         public Location Get( string street1, string street2, string city, string state, string zip )
         {
+            // Make sure it's not an empty address
+            if ( string.IsNullOrWhiteSpace( street1 ) &&
+                string.IsNullOrWhiteSpace( street2 ) &&
+                string.IsNullOrWhiteSpace( city ) &&
+                string.IsNullOrWhiteSpace( state ) &&
+                string.IsNullOrWhiteSpace( zip ) )
+            {
+                return null;
+            }
+
             // First check if a location exists with the entered values
-            Location existingLoction = Repository.FirstOrDefault( t =>
+            Location existingLocation = Repository.FirstOrDefault( t =>
                 ( t.Street1 == street1 || ( street1 == null && t.Street1 == null ) ) &&
                 ( t.Street2 == street2 || ( street2 == null && t.Street2 == null ) ) &&
                 ( t.City == city || ( city == null && t.City == null ) ) &&
                 ( t.State == state || ( state == null && t.State == null ) ) &&
                 ( t.Zip == zip || ( zip == null && t.Zip == null ) ) );
-            if ( existingLoction != null )
+            if ( existingLocation != null )
             {
-                return existingLoction;
+                return existingLocation;
             }
 
             // If existing location wasn't found with entered values, try standardizing the values, and 
@@ -65,24 +75,39 @@ namespace Rock.Model
 
             Standardize( newLocation, null );
 
-            existingLoction = Repository.FirstOrDefault( t =>
+            existingLocation = Repository.FirstOrDefault( t =>
                 ( t.Street1 == newLocation.Street1 || ( newLocation.Street1 == null && t.Street1 == null ) ) &&
                 ( t.Street2 == newLocation.Street2 || ( newLocation.Street2 == null && t.Street2 == null ) ) &&
                 ( t.City == newLocation.City || ( newLocation.City == null && t.City == null ) ) &&
                 ( t.State == newLocation.State || ( newLocation.State == null && t.State == null ) ) &&
                 ( t.Zip == newLocation.Zip || ( newLocation.Zip == null && t.Zip == null ) ) );
 
-            if ( existingLoction != null )
+            if ( existingLocation != null )
             {
-                return existingLoction;
+                return existingLocation;
             }
+
+            // Open Question on if we Add/Save the location if Standardize failed
 
             // If still no existing location, geocode the new location and save it.
             Geocode( newLocation, null );
 
+            Add( newLocation, null );
             Save( newLocation, null );
 
-            return newLocation;
+            // refetch it from the database to make sure we get a valid .Id
+            return Get(newLocation.Guid);
+        }
+
+        /// <summary>
+        /// Gets the by geo location.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <returns></returns>
+        public Location GetByGeoLocation( DbGeography value )
+        {
+            // get the first address that has a GeoPoint or GeoFence that matches the value
+            return Queryable().Where( a => a.GeoPoint == value || a.GeoFence == value ).FirstOrDefault();
         }
 
         /// <summary>
@@ -171,7 +196,7 @@ namespace Rock.Model
         /// <summary>
         /// Returns an enumerable collection of <see cref="Rock.Model.Location">Locations</see> that are descendants of a <see cref="Rock.Model.Location"/>
         /// </summary>
-        /// <param name="parentLocationId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.mO"/></param>
+        /// <param name="parentLocationId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Location"/></param>
         /// <returns>A collection of <see cref="Rock.Model.Location"/> entities that are descendants of the provided parent <see cref="Rock.Model.Location"/>.</returns>
         public IEnumerable<Location> GetAllDescendents( int parentLocationId )
         {

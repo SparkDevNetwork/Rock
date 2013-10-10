@@ -87,12 +87,12 @@ namespace RockWeb.Blocks.Administration
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 Device = new DeviceService().Get( itemKeyValue );
-                lActionTitle.Text = ActionTitle.Edit( Device.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Edit( Device.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
                 Device = new Device { Id = 0 };
-                lActionTitle.Text = ActionTitle.Add( Device.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Add( Device.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
             LoadDropDowns();

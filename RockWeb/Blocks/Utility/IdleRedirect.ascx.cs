@@ -29,17 +29,17 @@ namespace RockWeb.Blocks.Utility
             int idleSeconds;
 
             if ( !int.TryParse( GetAttributeValue( "IdleSeconds" ), out idleSeconds ) )
-                idleSeconds = 20;
+                idleSeconds = 30;
 
             int ms = idleSeconds * 1000;
             string script = string.Format( @"
-$(function () {{
-    $.idleTimer({0});
-    $(document).bind('idle.idleTimer', function() {{
-        window.location = '{1}';
-    }});
-}});
-", ms, GetAttributeValue( "NewLocation" ) );
+            $(function () {{
+                $.idleTimer({0});
+                $(document).bind('idle.idleTimer', function() {{
+                    window.location = '{1}';
+                }});
+            }});
+            ", ms, GetAttributeValue( "NewLocation" ) );
             ScriptManager.RegisterStartupScript( Page, this.GetType(), "idle-timeout", script, true );
         }
    }

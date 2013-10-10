@@ -34,14 +34,15 @@ namespace Rock.Model
         [DataMember]
         public int PersonId { get; set; }
 
+
         /// <summary>
-        /// Gets or sets the gateway id.
+        /// Gets or sets the financial transaction id that the saved account was originated from
         /// </summary>
         /// <value>
-        /// The gateway id.
+        /// The financial transaction id.
         /// </value>
         [DataMember]
-        public int? GatewayId { get; set; }
+        public int FinancialTransactionId { get; set; }
 
         /// <summary>
         /// Gets or sets the name.
@@ -55,15 +56,6 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// Gets or sets the payment method.
-        /// </summary>
-        /// <value>
-        /// The payment method.
-        /// </value>
-        [DataMember]
-        public PaymentMethod PaymentMethod { get; set; }
-
-        /// <summary>
         /// Gets or sets the masked account number.
         /// </summary>
         /// <value>
@@ -72,17 +64,6 @@ namespace Rock.Model
         [MaxLength( 100 )]
         [DataMember]
         public string MaskedAccountNumber { get; set; }
-
-        /// <summary>
-        /// Gets or sets the transaction code.
-        /// </summary>
-        /// <value>
-        /// The transaction code.
-        /// </value>
-        [Required]
-        [MaxLength( 50 )]
-        [DataMember( IsRequired = true )]
-        public string TransactionCode { get; set; }
 
         #endregion
 
@@ -97,13 +78,13 @@ namespace Rock.Model
         public virtual Person Person { get; set; }
 
         /// <summary>
-        /// Gets or sets the gateway.
+        /// Gets or sets the financial transaction.
         /// </summary>
         /// <value>
-        /// The gateway.
+        /// The financial transaction.
         /// </value>
         [DataMember]
-        public virtual FinancialGateway Gateway { get; set; }
+        public virtual FinancialTransaction FinancialTransaction { get; set; }
 
         #endregion
 
@@ -138,29 +119,10 @@ namespace Rock.Model
         public FinancialPersonSavedAccountConfiguration()
         {
             this.HasRequired( t => t.Person ).WithMany().HasForeignKey( t => t.PersonId ).WillCascadeOnDelete( true );
-            this.HasOptional( t => t.Gateway ).WithMany().HasForeignKey( t => t.GatewayId ).WillCascadeOnDelete( false );
+            this.HasRequired( t => t.FinancialTransaction ).WithMany().HasForeignKey( t => t.FinancialTransactionId ).WillCascadeOnDelete( true );
         }
     }
 
     #endregion
 
-    #region Enumerations
-
-    /// <summary>
-    /// The type of payment (Credit card or ACH)
-    /// </summary>
-    public enum PaymentMethod
-    {
-        /// <summary>
-        /// Credit Card
-        /// </summary>
-        CreditCard = 0,
-
-        /// <summary>
-        /// ACH
-        /// </summary>
-        ACH = 1,
-    }
-
-    #endregion
 }

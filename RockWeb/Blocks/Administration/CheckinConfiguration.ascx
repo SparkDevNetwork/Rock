@@ -10,7 +10,7 @@
         <asp:Panel ID="pnlDetails" runat="server">
 
             <asp:HiddenField ID="hfParentGroupTypeId" runat="server" />
-            <asp:ValidationSummary ID="vsDetails" runat="server" CssClass="alert alert-error" />
+            <asp:ValidationSummary ID="vsDetails" runat="server" CssClass="alert alert-danger" />
 
             <fieldset>
                 <legend>
@@ -35,7 +35,7 @@
 
         <asp:Panel ID="pnlCheckinLabelPicker" runat="server" Visible="false">
             <asp:HiddenField ID="hfAddCheckinLabelGroupTypeGuid" runat="server" />
-            <Rock:LabeledDropDownList ID="ddlCheckinLabel" runat="server" LabelText="Select Check-in Label" />
+            <Rock:RockDropDownList ID="ddlCheckinLabel" runat="server" Label="Select Check-in Label" />
 
             <div class="actions">
                 <asp:LinkButton ID="btnAddCheckinLabel" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddCheckinLabel_Click"></asp:LinkButton>
@@ -43,15 +43,12 @@
             </div>
         </asp:Panel>
 
-        <asp:Panel ID="pnlLocationPicker" runat="server" Visible="false">
-            <asp:HiddenField ID="hfAddLocationGroupGuid" runat="server" />
-            <Rock:LabeledDropDownList ID="ddlLocation" runat="server" LabelText="Select Check-in Location" />
-
-            <div class="actions">
-                <asp:LinkButton ID="btnAddLocation" runat="server" Text="Add" CssClass="btn btn-primary" OnClick="btnAddLocation_Click"></asp:LinkButton>
-                <asp:LinkButton ID="btnCancelAddLocation" runat="server" Text="Cancel" CssClass="btn" OnClick="btnCancelAddLocation_Click"></asp:LinkButton>
-            </div>
-        </asp:Panel>
+        <Rock:ModalDialog ID="mdLocationPicker" runat="server" SaveButtonText="Save" OnSaveClick="btnAddLocation_Click" Title="Select Check-in Location">
+            <Content ID="mdLocationPickerContent">
+                <asp:HiddenField ID="hfAddLocationGroupGuid" runat="server" />
+                <Rock:LocationPicker ID="locationPicker" runat="server" PickerMode="NamedLocation" AllowModeSelection="false" Label="Check-in Location" />
+            </Content>
+        </Rock:ModalDialog>
 
         <script>
 

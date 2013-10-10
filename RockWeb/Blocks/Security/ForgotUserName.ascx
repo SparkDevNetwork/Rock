@@ -9,7 +9,7 @@
 
         <fieldset>
             <legend>Enter Your Email</legend>
-            <Rock:LabeledTextBox ID="tbEmail" runat="server" LabelText="Email" Required="true" ></Rock:LabeledTextBox>
+            <Rock:RockTextBox ID="tbEmail" runat="server" Label="Email" Required="true" ></Rock:RockTextBox>
         </fieldset>
 
         <asp:Panel ID="pnlWarning" runat="server" Visible="false" CssClass="alert warning">

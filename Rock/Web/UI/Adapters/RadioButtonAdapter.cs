@@ -41,7 +41,7 @@ namespace Rock.Web.UI.Adapters
             if ( rb != null )
             {
                 writer.WriteLine();
-                writer.AddAttribute( "class", "radio inline" );
+                writer.AddAttribute( "class", "radio-inline" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Label );
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Id, rb.ClientID );
@@ -54,7 +54,7 @@ namespace Rock.Web.UI.Adapters
 
                 if ( !string.IsNullOrWhiteSpace( rb.CssClass ) )
                 {
-                    writer.AddAttribute( "class", rb.CssClass );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, rb.CssClass );
                 }
                 
                 if ( rb.Checked )
@@ -74,12 +74,27 @@ namespace Rock.Web.UI.Adapters
                     writer.AddAttribute( key, rb.InputAttributes[key] );
                 }
 
+                if ( rb.AutoPostBack )
+                {
+                    PostBackOptions postBackOption = new PostBackOptions( rb, string.Empty );
+                    if ( rb.CausesValidation && this.Page.GetValidators( rb.ValidationGroup ).Count > 0 )
+                    {
+                        postBackOption.PerformValidation = true;
+                        postBackOption.ValidationGroup = rb.ValidationGroup;
+                    }
+                    if ( this.Page.Form != null )
+                    {
+                        postBackOption.AutoPostBack = true;
+                    }
+                    writer.AddAttribute( HtmlTextWriterAttribute.Onclick, Page.ClientScript.GetPostBackEventReference( postBackOption, true ) );
+                }
+
                 writer.RenderBeginTag( HtmlTextWriterTag.Input );
                 writer.RenderEndTag();
 
                 writer.Write( rb.Text );
 
-                writer.RenderEndTag();
+                writer.RenderEndTag();      // Label
 
                 if ( Page != null && Page.ClientScript != null )
                 {

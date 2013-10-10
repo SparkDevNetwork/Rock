@@ -26,11 +26,11 @@ namespace Rock.Data
 
         /// <summary>
         /// Gets or sets the value of the identifier.  This value is the primary field/key for the entity object.  This value is system and database
-        /// dependent, and is not guaranteed to be unique. This id should only be used to identify an object internally to a single implementation 
-        /// of RockChMS since this value has a very high probability of not being consistent in an external implementation of RockChMS.  
+        /// dependent, and is not guaranteed to be unique. This id should only be used to identify an object internally to a single implementation
+        /// of RockChMS since this value has a very high probability of not being consistent in an external implementation of RockChMS.
         /// </summary>
         /// <value>
-        /// Primary and system dependent <see cref="String.Int32"/> based identity/key of an entity object in RockChMS.  
+        /// Primary and system dependent <see cref="System.Int32" /> based identity/key of an entity object in RockChMS.
         /// </value>
         [Key]
         [DataMember]
@@ -43,7 +43,7 @@ namespace Rock.Data
         /// </summary>
         /// <remarks>
         /// A good place for a Guid to be used is when comparing or syncing data across two implementations of RockChMS. For example, if you 
-        /// were creating a <see cref="Block"/> with a data migration that adds/remove a new defined value object to the database. You would want to 
+        /// were creating a <see cref="Rock.Web.UI.RockBlock"/> with a data migration that adds/remove a new defined value object to the database. You would want to 
         /// search based on the Guid because it would be guaranteed to be unique across all implementations of RockChMS. 
         /// </remarks>
         /// <value>
@@ -63,11 +63,11 @@ namespace Rock.Data
         #region Virtual Properties
 
         /// <summary>
-        /// Gets the <see cref="EntityType"/> Id for the Entity object type in RockChMS. If an <see cref="EntityType"/> is not found
+        /// Gets the <see cref="Rock.Model.EntityType"/> Id for the Entity object type in RockChMS. If an <see cref="Rock.Model.EntityType"/> is not found
         /// for the object type it will be created
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int"/> that represents the identifier for the current Entity object type. 
+        /// An <see cref="System.Int32"/> that represents the identifier for the current Entity object type. 
         /// </value>
         public virtual int TypeId
         {
@@ -211,7 +211,7 @@ namespace Rock.Data
         /// Creates a dictionary containing the majority of the entity object's properties. The only properties that are excluded
         /// are the Id, Guid and Order.  
         /// </summary>
-        /// <returns>A <see cref="System.Collections.Generic.Dictionary"/> that represents the current entity object. Each <see cref="System.Collections.Generic.KeyValuePair"/> includes the property
+        /// <returns>A <see cref="Dictionary{String, Object}"/> that represents the current entity object. Each <see cref="KeyValuePair{String, Object}"/> includes the property
         /// name as the key and the property value as the value.</returns>
         public virtual Dictionary<string, object> ToDictionary()
         {
@@ -229,11 +229,10 @@ namespace Rock.Data
         }
 
         /// <summary>
-        /// Populates the current entity object with the contents of the current entity object. 
+        /// Populates the current entity object with the contents of the current entity object.
         /// </summary>
-        /// <param name="properties">A <see cref="System.Collections.Generic.Dictionary"/> that contains <see cref="System.Collections.Generic.KeyValuePair">KeyValuePairs</see> 
-        /// of representing properties.
-        /// </param>
+        /// <param name="properties">A <see cref="System.Collections.Generic.Dictionary{String, Object}" /> that contains <see cref="System.Collections.Generic.KeyValuePair{String, Object}">KeyValuePairs</see>
+        /// of representing properties.</param>
         public virtual void FromDictionary( Dictionary<string, object> properties )
         {
             Type type = this.GetType();

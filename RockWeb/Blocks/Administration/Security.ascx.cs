@@ -85,7 +85,7 @@ namespace RockWeb.Blocks.Administration
                 {
                     // If the entity is a block, get the cachedblock's supported action, as the RockPage may have
                     // added additional actions when the cache was created.
-                    foreach ( var action in BlockCache.Read( block.Id, CurrentPage.SiteId ).SupportedActions )
+                    foreach ( var action in BlockCache.Read( block.Id ).SupportedActions )
                     {
                         if ( !block.SupportedActions.Contains( action ) )
                         {

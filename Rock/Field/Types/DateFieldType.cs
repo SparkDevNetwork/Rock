@@ -87,15 +87,11 @@ namespace Rock.Field.Types
         {
             var controls = base.ConfigurationControls();
 
-            TextBox textbox = new TextBox();
+            var textbox = new RockTextBox();
             controls.Add( textbox );
 
-            HtmlGenericControl lbl = new HtmlGenericControl( "label" );
-            controls.Add( lbl );
-            lbl.AddCssClass( "checkbox" );
-
-            CheckBox cbDisplayDiff = new CheckBox();
-            lbl.Controls.Add( cbDisplayDiff );
+            var cbDisplayDiff = new RockCheckBox();
+            controls.Add( cbDisplayDiff );
 
             return controls;
         }
@@ -114,17 +110,19 @@ namespace Rock.Field.Types
                 int i = controls.Count - 2;
                 if ( controls[i] != null && controls[i] is TextBox &&
                     configurationValues.ContainsKey( "format" ) )
+                {
                     ( (TextBox)controls[i] ).Text = configurationValues["format"].Value ?? string.Empty;
+                }
+
                 i++;
-                if ( controls[i] != null && controls[i] is HtmlGenericControl &&
-                    controls[i].Controls.Count > 0 && controls[i].Controls[0] is CheckBox &&
+                if ( controls[i] != null && controls[i] is CheckBox &&
                     configurationValues.ContainsKey( "displayDiff" ) )
                 {
                     bool displayDiff = false;
                     if ( !bool.TryParse( configurationValues["displayDiff"].Value ?? "False", out displayDiff ) )
                         displayDiff = false;
 
-                    ( (CheckBox)controls[i].Controls[0] ).Checked = displayDiff;
+                    ( (CheckBox)controls[i] ).Checked = displayDiff;
                 }
             }
         }
@@ -144,11 +142,14 @@ namespace Rock.Field.Types
             {
                 int i = controls.Count - 2;
                 if ( controls[i] != null && controls[i] is TextBox )
+                {
                     values["format"].Value = ( (TextBox)controls[i] ).Text;
+                }
                 i++;
-                if ( controls[i] != null && controls[i] is HtmlGenericControl &&
-                    controls[i].Controls.Count > 0 && controls[i].Controls[0] is CheckBox )
-                    values["displayDiff"].Value = ( (CheckBox)controls[i].Controls[0] ).Checked.ToString();
+                if ( controls[i] != null && controls[i] is CheckBox )
+                {
+                    values["displayDiff"].Value = ( (CheckBox)controls[i] ).Checked.ToString();
+                }
             }
 
             return values;
@@ -158,6 +159,7 @@ namespace Rock.Field.Types
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
         /// <returns>
         /// The control
         /// </returns>

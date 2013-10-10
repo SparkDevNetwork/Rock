@@ -464,7 +464,7 @@ namespace Rock.Web.UI
         /// If the attribute doesn't exist an empty list is returned.
         /// </summary>
         /// <param name="key">the block attribute key</param>
-        /// <returns>a list of strings or an empty list if none exists</string></returns>
+        /// <returns>a list of strings or an empty list if none exists</returns>
         public List<string> GetAttributeValues( string key )
         {
             if ( CurrentBlock != null )
@@ -552,25 +552,10 @@ namespace Rock.Web.UI
         /// <param name="queryParams">The query params.</param>
         public void NavigateToLinkedPage( string attributeKey, Dictionary<string, string> queryParams = null )
         {
-            Guid pageGuid = Guid.Empty;
-            Guid pageRouteGuid = Guid.Empty;
-            string[] valuePair = GetAttributeValue( attributeKey ).Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-
-            //// Value is in format "Page.Guid,PageRoute.Guid"
-            //// If only the Page.Guid is specified this is just a reference to a page without a special route
-            //// In case the PageRoute record can't be found from PageRoute.Guid (maybe the pageroute was deleted), fall back to the Page without a PageRoute
-
-            if ( valuePair.Length > 0 )
-            {
-                Guid.TryParse( valuePair[0], out pageGuid );
-            }
-
-            if ( valuePair.Length == 2 )
-            {
-                Guid.TryParse( valuePair[1], out pageRouteGuid );
-            }
-
-            NavigateToPage( pageGuid, pageRouteGuid, queryParams );
+            var pageReference = new PageReference( GetAttributeValue( attributeKey ), queryParams );
+            string pageUrl = pageReference.BuildUrl();
+            Response.Redirect( pageUrl, false );
+            Context.ApplicationInstance.CompleteRequest();
         }
 
         /// <summary>
@@ -802,7 +787,7 @@ namespace Rock.Web.UI
         /// <param name="ex">The System.Exception to log.</param>
         public void LogException( Exception ex )
         {
-            ExceptionLogService.LogException( ex, Context, CurrentPage.Id, CurrentPage.SiteId, CurrentPersonId );
+            ExceptionLogService.LogException( ex, Context, CurrentPage.Id, CurrentPage.Layout.SiteId, CurrentPersonId );
         }
 
         /// <summary>

@@ -70,7 +70,7 @@ namespace Rock.Field.Types
         {
             var controls = base.ConfigurationControls();
 
-            TextBox tb = new TextBox();
+            var tb = new RockTextBox();
             controls.Add( tb );
 
             return controls;
@@ -112,7 +112,8 @@ namespace Rock.Field.Types
         /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
-        /// <param name="configurationValues"></param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
         /// <returns>
         /// The control
         /// </returns>

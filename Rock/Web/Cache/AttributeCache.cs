@@ -10,10 +10,13 @@ using System.Linq;
 using System.Runtime.Caching;
 using System.Runtime.Serialization;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
+using System.Web.UI.WebControls;
 
 using Rock.Field;
 using Rock.Model;
 using Rock.Security;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Web.Cache
 {
@@ -286,35 +289,102 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Creates the control.
+        /// Adds the control.
         /// </summary>
-        /// <returns></returns>
-        public Control CreateControl()
+        /// <param name="controls">The controls.</param>
+        public void AddControl( ControlCollection controls )
         {
-            return CreateControl( string.Empty, false, false );
+            AddControl( controls, string.Empty, false, false );
         }
 
         /// <summary>
-        /// Creates a <see cref="System.Web.UI.Control"/> based on the attribute's field type.
+        /// Adds the control.
         /// </summary>
+        /// <param name="controls">The controls.</param>
         /// <param name="value">The value.</param>
-        /// <param name="setValue">if set to <c>true</c> set the control's value</param>
+        /// <param name="setValue">if set to <c>true</c> [set value].</param>
         /// <param name="setId">if set to <c>true</c> [set id].</param>
-        /// <returns></returns>
-        public Control CreateControl( string value, bool setValue, bool setId)
+        public void AddControl( ControlCollection controls, string value, bool setValue, bool setId)
         {
-            Control editControl = this.FieldType.Field.EditControl( QualifierValues, setId ? string.Format( "attribute_field_{0}", this.Id ) : string.Empty );
+            Control attributeControl = this.FieldType.Field.EditControl( QualifierValues, setId ? string.Format( "attribute_field_{0}", this.Id ) : string.Empty );
             if ( setId )
             {
-                editControl.ClientIDMode = ClientIDMode.AutoID;
+                attributeControl.ClientIDMode = ClientIDMode.AutoID;
+            }
+
+            // If the control is a RockControl
+            var rockControl = attributeControl as IRockControl;
+            if ( rockControl != null )
+            {
+                controls.Add( attributeControl );
+
+                rockControl.Label = this.Name;
+                rockControl.Help = this.Description;
+                rockControl.Required = this.IsRequired;
+            }
+            else
+            {
+                bool renderLabel = ( !string.IsNullOrEmpty( Name ) );
+                bool renderHelp = ( !string.IsNullOrWhiteSpace(Description));
+
+                if ( renderLabel || renderHelp )
+                {
+                    HtmlGenericControl div = new HtmlGenericControl( "div" );
+                    controls.Add( div );
+
+                    div.Controls.Clear();
+                    div.AddCssClass( "form-group" );
+                    if ( this.IsRequired )
+                    {
+                        div.AddCssClass( "required" );
+                    }
+                    div.ClientIDMode = ClientIDMode.AutoID;
+
+                    if ( renderLabel )
+                    {
+                        Label label = new Label();
+                        div.Controls.Add( label );
+                        label.ClientIDMode = ClientIDMode.AutoID;
+                        label.Text = this.Name;
+                        label.AssociatedControlID = attributeControl.ID;
+                    }
+                    if ( renderHelp )
+                    {
+                        var HelpBlock = new Rock.Web.UI.Controls.HelpBlock();
+                        div.Controls.Add( HelpBlock );
+                        HelpBlock.ClientIDMode = ClientIDMode.AutoID;
+                        HelpBlock.Text = this.Description;
+                    }
+                    div.Controls.Add( attributeControl );
+                }
+                else
+                {
+                    controls.Add( attributeControl );
+                }
             }
 
             if ( setValue )
             {
-                this.FieldType.Field.SetEditValue( editControl, QualifierValues, value );
+                this.FieldType.Field.SetEditValue( attributeControl, QualifierValues, value );
             }
+        }
 
-            return editControl;
+        /// <summary>
+        /// Gets the field control from the control that was added using the CreateControl method
+        /// </summary>
+        /// <param name="attributeControl">The attribute control.</param>
+        /// <returns></returns>
+        public Control GetControl( Control attributeControl )
+        {
+            string id = string.Format( "attribute_field_{0}", this.Id );
+
+            if ( attributeControl.ID == id )
+            {
+                return attributeControl;
+            }
+            {
+                return attributeControl.FindControl( id );
+            }
         }
 
         /// <summary>

@@ -23,8 +23,8 @@ namespace Rock.Web.UI.Controls.Communication
     {
         #region UI Controls
 
-        private LabeledTextBox tbFromPhone;
-        private LabeledTextBox tbTextMessage;
+        private RockTextBox tbFromPhone;
+        private RockTextBox tbTextMessage;
 
         #endregion
 
@@ -35,14 +35,20 @@ namespace Rock.Web.UI.Controls.Communication
         /// </summary>
         public Sms()
         {
-            tbFromPhone = new LabeledTextBox();
-            tbTextMessage = new LabeledTextBox();
+            tbFromPhone = new RockTextBox();
+            tbTextMessage = new RockTextBox();
         }
 
         #endregion
 
         #region Properties
 
+        /// <summary>
+        /// Gets or sets the channel data.
+        /// </summary>
+        /// <value>
+        /// The channel data.
+        /// </value>
         public override Dictionary<string, string> ChannelData
         {
             get
@@ -73,11 +79,11 @@ namespace Rock.Web.UI.Controls.Communication
             Controls.Clear();
 
             tbFromPhone.ID = string.Format( "tbFromName_{0}", this.ID );
-            tbFromPhone.LabelText = "From Phone Number";
+            tbFromPhone.Label = "From Phone Number";
             Controls.Add( tbFromPhone );
 
             tbTextMessage.ID = string.Format( "tbTextMessage_{0}", this.ID );
-            tbTextMessage.LabelText = "Message";
+            tbTextMessage.Label = "Message";
             tbTextMessage.TextMode = TextBoxMode.MultiLine;
             tbTextMessage.Rows = 3;
             Controls.Add( tbTextMessage );

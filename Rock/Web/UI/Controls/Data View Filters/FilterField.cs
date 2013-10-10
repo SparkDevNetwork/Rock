@@ -25,11 +25,30 @@ namespace Rock.Web.UI.Controls
     {
         Dictionary<string, Dictionary<string, string>> AuthorizedComponents;
 
+        /// <summary>
+        /// The filter type dropdown
+        /// </summary>
         protected RockDropDownList ddlFilterType;
+
+        /// <summary>
+        /// The delte button
+        /// </summary>
         protected LinkButton lbDelete;
+
+        /// <summary>
+        /// The hidden field for tracking expanded
+        /// </summary>
         protected HiddenField hfExpanded;
+
+        /// <summary>
+        /// The filter controls
+        /// </summary>
         protected Control[] filterControls;
 
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
@@ -37,7 +56,7 @@ namespace Rock.Web.UI.Controls
             string script = @"
 // activity animation
 $('.filter-item > header').click(function () {
-    $(this).siblings('.widget-content').slideToggle();
+    $(this).siblings('.panel-body').slideToggle();
     $(this).children('div.pull-left').children('div').slideToggle();
 
     $expanded = $(this).children('input.filter-expanded');
@@ -263,7 +282,7 @@ $('.filter-item-select').click(function (event) {
             lbDelete = new LinkButton();
             Controls.Add( lbDelete );
             lbDelete.ID = this.ID + "_lbDelete";
-            lbDelete.CssClass = "btn btn-mini btn-danger ";
+            lbDelete.CssClass = "btn btn-xs btn-danger ";
             lbDelete.Click += lbDelete_Click;
             lbDelete.CausesValidation = false;
 
@@ -295,10 +314,10 @@ $('.filter-item-select').click(function (event) {
                 hfExpanded.Value = "True";
             }
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "widget filter-item" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel panel-widget filter-item" );
             writer.RenderBeginTag( "article" );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "clearfix" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "panel-heading clearfix" );
             writer.RenderBeginTag( "header" );
 
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "filter-expanded" );
@@ -322,7 +341,11 @@ $('.filter-item-select').click(function (event) {
                 writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
             }
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.RenderBeginTag(HtmlTextWriterTag.Span);
             writer.Write( "Filter Type " );
+            writer.RenderEndTag();
+
             ddlFilterType.RenderControl( writer );
             writer.RenderEndTag();
 
@@ -335,7 +358,7 @@ $('.filter-item-select').click(function (event) {
             {
                 writer.AddAttribute( HtmlTextWriterAttribute.Onclick, clientFormatString);
             }
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-mini filter-view-state" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-xs filter-view-state" );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
             writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "icon-chevron-up" : "icon-chevron-down" );
             writer.RenderBeginTag( HtmlTextWriterTag.I );
@@ -347,7 +370,7 @@ $('.filter-item-select').click(function (event) {
 
             writer.RenderEndTag();
 
-            writer.AddAttribute( "class", "widget-content" );
+            writer.AddAttribute( "class", "panel-body" );
             if ( !Expanded )
             {
                 writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
@@ -386,6 +409,9 @@ $('.filter-item-select').click(function (event) {
         /// </summary>
         public event EventHandler DeleteClick;
 
+        /// <summary>
+        /// Occurs when [selection changed].
+        /// </summary>
         public event EventHandler SelectionChanged;
 
 

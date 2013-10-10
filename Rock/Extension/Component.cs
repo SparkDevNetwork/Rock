@@ -94,7 +94,7 @@ namespace Rock.Extension
         /// Gets the first value of an attribute key - splitting that delimited value into a list of strings.
         /// </summary>
         /// <param name="key">The key.</param>
-        /// <returns>A list of values or an empty list if none exists.</string></returns>
+        /// <returns>A list of values or an empty list if none exists.</returns>
         public virtual List<string> GetAttributeValues( string key )
         {
             if ( this.AttributeValues != null &&
@@ -225,8 +225,8 @@ namespace Rock.Extension
         }
 
         /// <summary>
-        /// The auth entity. Classes that implement the <see cref="ISecured" /> interface should return
-        /// a value that is unique across all <see cref="ISecured" /> classes.  Typically this is the
+        /// The auth entity. Classes that implement the <see cref="Rock.Security.ISecured" /> interface should return
+        /// a value that is unique across all <see cref="Rock.Security.ISecured" /> classes.  Typically this is the
         /// qualified name of the class.
         /// </summary>
         public string TypeName

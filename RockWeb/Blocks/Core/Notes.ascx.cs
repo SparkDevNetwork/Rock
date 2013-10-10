@@ -63,15 +63,15 @@ namespace RockWeb.Blocks.Core
 
             string script = @"
     $('a.add-note').click(function () {
-        $(this).parent().siblings('.widget-content').children('.note-entry').slideToggle(""slow"");
+        $(this).closest('.panel-note').find('.note-entry').slideToggle(""slow"");
     });
     
     $('a.add-note-cancel').click(function () {
-        $(this).parent().siblings('.note').children('textarea').val('');
-        $(this).parent().parent().slideToggle(""slow"");
+        $(this).closest('.panel-body').children('textarea').val('');
+        $(this).closest('.note-entry').slideToggle(""slow"");
     });
 
-    $('.persontimeline article').live({
+    $('.panel-note article').on({
         mouseenter:
             function () {
                 var actionsDiv = $('.actions', this);
@@ -99,32 +99,35 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         void btnAddNote_Click( object sender, EventArgs e )
         {
-            var service = new NoteService();
-
-            var note = new Note();
-            note.IsSystem = false;
-            note.NoteTypeId = noteType.Id;
-            note.EntityId = contextEntity.Id;
-            note.CreationDateTime = DateTime.Now;
-            note.Caption = cbPrivate.Checked ? "You - Personal Note" : CurrentPerson.FullName;
-            note.IsAlert = cbAlert.Checked;
-            note.Text = tbNewNote.Text;
-
-            if ( noteType.Sources != null )
+            if ( !string.IsNullOrWhiteSpace( tbNewNote.Text ) )
             {
-                var source = noteType.Sources.DefinedValues.FirstOrDefault();
-                if ( source != null )
+                var service = new NoteService();
+
+                var note = new Note();
+                note.IsSystem = false;
+                note.NoteTypeId = noteType.Id;
+                note.EntityId = contextEntity.Id;
+                note.CreationDateTime = DateTime.Now;
+                note.Caption = cbPrivate.Checked ? "You - Personal Note" : CurrentPerson.FullName;
+                note.IsAlert = cbAlert.Checked;
+                note.Text = tbNewNote.Text;
+
+                if ( noteType.Sources != null )
                 {
-                    note.SourceTypeValueId = source.Id;
+                    var source = noteType.Sources.DefinedValues.FirstOrDefault();
+                    if ( source != null )
+                    {
+                        note.SourceTypeValueId = source.Id;
+                    }
                 }
-            }
 
-            service.Add( note, CurrentPersonId );
-            service.Save( note, CurrentPersonId );
+                service.Add( note, CurrentPersonId );
+                service.Save( note, CurrentPersonId );
 
-            if ( cbPrivate.Checked )
-            {
-                note.MakePrivate( "View", CurrentPerson, CurrentPersonId );
+                if ( cbPrivate.Checked )
+                {
+                    note.MakePrivate( "View", CurrentPerson, CurrentPersonId );
+                }
             }
 
             ShowNotes();

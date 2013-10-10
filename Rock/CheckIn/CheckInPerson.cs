@@ -32,6 +32,7 @@ namespace Rock.CheckIn
         /// <value>
         ///   <c>true</c> if family member; otherwise, <c>false</c>.
         /// </value>
+        [DataMember]
         public bool FamilyMember { get; set; }
 
         /// <summary>

@@ -34,6 +34,10 @@ namespace Rock.Web.UI.Controls
             set { ViewState["DefinedTypeId"] = value; }
         }
 
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "key-value-list" );
@@ -138,7 +142,7 @@ namespace Rock.Web.UI.Controls
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        /// <param name="values">The values.</param>
         private void RegisterClientScript( List<DefinedValue> values )
         {
             StringBuilder script = new StringBuilder();
@@ -175,7 +179,7 @@ namespace Rock.Web.UI.Controls
             $(this).prev().append(newKeyValue);
         }});
 
-        $('a.key-value-remove').live('click', function (e) {{
+        $('a.key-value-remove').on('click', function (e) {{
             e.preventDefault();
             var $rows = $(this).closest('span.key-value-rows');
             $(this).closest('div.controls-row').remove();
@@ -186,7 +190,7 @@ namespace Rock.Web.UI.Controls
             if ( values != null )
             {
                 script.Append( @"
-        $('span.key-value-rows > div.controls-row > select').live('click', function (e) {{
+        $('span.key-value-rows > div.controls-row > select').on('click', function (e) {{
             updateKeyValues($(this));            
         }});
 " );
@@ -194,7 +198,7 @@ namespace Rock.Web.UI.Controls
             else
             {
                 script.Append( @"
-        $('span.key-value-rows > div.controls-row > input').live('blur', function (e) {{
+        $('span.key-value-rows > div.controls-row > input').on('blur', function (e) {{
             updateKeyValues($(this));            
         }});
 " );

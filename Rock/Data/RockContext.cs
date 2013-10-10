@@ -237,14 +237,6 @@ namespace Rock.Data
         public DbSet<FinancialBatch> FinancialBatches { get; set; }
 
         /// <summary>
-        /// Gets or sets the financial gateways.
-        /// </summary>
-        /// <value>
-        /// The financial gateways.
-        /// </value>
-        public DbSet<FinancialGateway> FinancialGateways { get; set; }
-
-        /// <summary>
         /// Gets or sets the pledges.
         /// </summary>
         /// <value>
@@ -719,7 +711,6 @@ namespace Rock.Data
             modelBuilder.Configurations.Add( new FieldTypeConfiguration() );
             modelBuilder.Configurations.Add( new FinancialAccountConfiguration() );
             modelBuilder.Configurations.Add( new FinancialBatchConfiguration() );
-            modelBuilder.Configurations.Add( new FinancialGatewayConfiguration() );
             modelBuilder.Configurations.Add( new FinancialPledgeConfiguration() );
             modelBuilder.Configurations.Add( new FinancialPersonBankAccountConfiguration() );
             modelBuilder.Configurations.Add( new FinancialPersonSavedAccountConfiguration() );

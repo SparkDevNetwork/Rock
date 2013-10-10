@@ -55,6 +55,12 @@ namespace Rock.Web.UI.Controls
     /// </summary>
     public class CheckBoxFieldTemplate : ITemplate
     {
+        /// <summary>
+        /// Gets the data field.
+        /// </summary>
+        /// <value>
+        /// The data field.
+        /// </value>
         public string DataField { get; private set; }
 
         /// <summary>

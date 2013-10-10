@@ -10,7 +10,7 @@
     </ul>
 
     <script>
-        $('ul.phone-numbers li a').live({
+        $('ul.phone-numbers li a').on({
             mouseenter:
                 function () {
                     var spanItem = $('span.phone-unlisted', this);

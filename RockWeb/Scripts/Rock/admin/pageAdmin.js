@@ -24,14 +24,12 @@
                         getData.Zone = zoneName;
 
                         // Set the appropriate parent value (layout or page)
-                        if ($('#block-move-Location_0').attr('checked') == 'checked') {
-                            getData.SiteId = null;
-                            getData.Layout = null;
+                        if ($('#block-move-Location_0').prop('checked')) {
+                            getData.LayoutId = null;
                             getData.PageId = Rock.settings.get('pageId');
                         }
                         else {
-                            getData.SiteId = Rock.settings.get('siteId');
-                            getData.Layout = Rock.settings.get('layout');
+                            getData.LayoutId = Rock.settings.get('layoutId');
                             getData.PageId = null;
                         }
 
@@ -56,7 +54,7 @@
                                 // If the block instance's parent is the page, move it to the new zone as the last
                                 // block in that zone.  If the parent is the layout, insert it as the last layout
                                 // block (prior to any page block's
-                                if ($('#block-move-Location_0').attr('checked') == true) {
+                                if ($('#block-move-Location_0').prop('checked')) {
                                     $target.append($source);
                                     $moveLink.attr('zoneloc', 'Page');
                                     $source.attr('zoneLoc', 'Page');
@@ -92,9 +90,9 @@
                 // Bind the block configure icon so that edit icons are displayed on hover
                 $(".block-configuration").hover(function (e) {
                     var barWidth = $('.block-configuration-bar', this).outerWidth() + 45 + 'px';
-                    $(this).stop(true, true).animate({ width: barWidth }, 200).css({ 'z-index': '10' });
+                    $(this).stop(true, true).animate({ width: barWidth }, 200).css({ 'z-index': '11001' });
                 }, function () {
-                    $(this).stop(true, true).delay(500).animate({ width: '26px' }, 500).css({ 'z-index': '1' });
+                    $(this).stop(true, true).delay(500).animate({ width: '26px' }, 500).css({ 'z-index': '11000' });
                 });
 
                 // Bind the block instance delete anchor
@@ -138,14 +136,9 @@
                     $('#block-move-zone').val($(this).attr('zone'));
 
                     // Set the dialog's parent option to the current zone's parent (either the page or the layout)
-                    if ($(this).attr('zoneloc') == 'Page') {
-                        $('#block-move-Location_1').removeAttr('checked');
-                        $('#block-move-Location_0').attr('checked', 'checked');
-                    }
-                    else {
-                        $('#block-move-Location_0').removeAttr('checked');
-                        $('#block-move-Location_1').attr('checked', 'checked');
-                    }
+                    var pageBlock = $(this).attr('zoneloc') == 'Page';
+                    $('#block-move-Location_0').prop('checked', pageBlock);
+                    $('#block-move-Location_1').prop('checked', !pageBlock);
 
                     // Show the popup block move dialog
                     $find('modal-block-move').show();

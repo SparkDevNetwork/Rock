@@ -11,6 +11,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
 using System.Web.Security;
+using Rock.Web;
 
 namespace RockWeb.Blocks.Security
 {
@@ -47,16 +48,29 @@ namespace RockWeb.Blocks.Security
         protected void lbLoginLogout_Click( object sender, EventArgs e )
         {
             if ( action == "Login" )
-                if ( !string.IsNullOrWhiteSpace( CurrentPage.Site.LoginPageReference ) )
+            {
+                var site = CurrentPage.Layout.Site;
+                if ( site.LoginPageId.HasValue )
                 {
+                    var pageReference = new PageReference( site.LoginPageId.Value );
+                    if ( site.LoginPageRouteId.HasValue )
+                    {
+                        pageReference.RouteId = site.LoginPageRouteId.Value;
+                    }
+
+                    var parms = new Dictionary<string, string>();
+
                     // if the QueryString already has a returnUrl, use that, otherwise redirect to RawUrl
-                    string returnUrl = Request.QueryString["returnUrl"] ?? Server.UrlEncode( Request.RawUrl );
-                    Response.Redirect( CurrentPage.Site.LoginPageReference + "?returnurl=" + returnUrl );
+                    parms.Add( "returnurl", Request.QueryString["returnUrl"] ?? Server.UrlEncode( Request.RawUrl ) );
+                    pageReference.Parameters = parms;
+
+                    Response.Redirect( pageReference.BuildUrl() );
                 }
                 else
                 {
                     FormsAuthentication.RedirectToLoginPage();
                 }
+            }
             else
             {
                 FormsAuthentication.SignOut();

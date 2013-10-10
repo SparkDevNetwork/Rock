@@ -67,14 +67,14 @@ namespace Rock.Constants
         public const string IdValue = "0";
 
         /// <summary>
-        /// "<none>"
+        /// <!--<none>-->
         /// </summary>
-        public const string Text = "<none>";
+        public const string Text = "";
 
         /// <summary>
-        /// 
+        /// &lt;none&gt;
         /// </summary>
-        public const string TextHtml = "&lt;none&gt;";
+        public const string TextHtml = "";
 
         /// <summary>
         /// Return a ListItem with Text: "None", Value: 0
@@ -107,9 +107,9 @@ namespace Rock.Constants
         public const string IdValue = "-1";
 
         /// <summary>
-        /// returns "[All]"
+        /// returns "All"
         /// </summary>
-        public const string Text = "[All]";
+        public const string Text = "All";
 
         /// <summary>
         /// Gets the list item.
@@ -174,7 +174,17 @@ namespace Rock.Constants
         /// <returns></returns>
         public static string ReadOnlySystem( string itemFriendlyName )
         {
-            return string.Format( "This is a read-only system {0}.", itemFriendlyName.ToLower() );
+            return string.Format( "<p><strong>Information</strong></p> This is a read-only system {0}.", itemFriendlyName.ToLower() );
+        }
+
+        /// <summary>
+        /// Returns a message in the format: "INFO: This is a system {0}."
+        /// </summary>
+        /// <param name="itemFriendlyName">Name of the item friendly.</param>
+        /// <returns></returns>
+        public static string System( string itemFriendlyName )
+        {
+            return string.Format( "<p><strong>Information</strong></p> This is a system {0}.", itemFriendlyName.ToLower() );
         }
 
         /// <summary>
@@ -184,7 +194,7 @@ namespace Rock.Constants
         /// <returns></returns>
         public static string ReadOnlyEditActionNotAllowed( string itemFriendlyName )
         {
-            return string.Format( "You do not have access to edit this {0}.", itemFriendlyName.ToLower() );
+            return string.Format("<p><strong>Information</strong></p> You do not have access to edit this {0}.", itemFriendlyName.ToLower());
         }
     }
 }

@@ -1,0 +1,143 @@
+@import "_components.less";
+@import "_block-specific.less";
+@import "_page-admin.less";
+@import "_grid.less";
+@import "_modal.less";
+@import "_forms.less";
+@import "_persondetails.less";
+@import "_scroll.less";
+@import "_global-variables.less";
+
+@import "./Bootstrap/mixins.less";
+@import "./Kendo/kendo.flat.less";
+
+// HTML Overrides
+//--------------------------------
+
+/* global classes */
+.clickable {
+    cursor: pointer;
+}
+
+/* bootstrap overrides */
+
+.control-label {
+    font-weight: @font-weight-semibold;
+}
+
+/* add badge colors back to BS3 */
+.badge-danger {
+    background-color: @label-danger-bg;
+}
+
+.badge-warning {
+    background-color: @label-warning-bg;
+}
+
+.badge-success {
+    background-color: @label-success-bg;
+}
+
+.badge-info {
+    background-color: @label-info-bg;
+}
+
+/* context help  */
+a.help {
+    margin-left: 6px;
+    outline: 0;
+    color: @header-text-color;
+}
+
+/* extension of Bootstrap 3 panel */
+.panel {
+    legend {
+        border-color: @accent-color;
+    }
+
+    // add an action container to the .panel heading
+    .panel-heading {
+        .actions {
+            display: none;
+            height: 14px;
+
+            a {
+                padding-left: 4px;
+            }
+        }
+    }
+
+    // adjust the background color of pickers on a panel
+    .picker .picker-label {
+        background-color: @accent-color;
+        color: @accent-text-color;
+        border-color: darken(@accent-color, 10%)
+    }
+
+    .actions {
+        margin-top: 36px;
+        .clearfix();
+    }
+}
+
+//.panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
+.panel-widget {
+    .panel-variant(@accent-color ; @accent-text-color; @accent-color; @accent-color;);
+}
+
+.panel-persondetails {
+    .panel-variant(@accent-color ; @accent-text-color; @accent-color; @accent-color;);
+
+    .panel-body {
+        background-color: @body-bg;
+    }
+}
+
+// .panel-note {}  see _block-specific.less
+
+// extensions for buttons
+// .button-variant(@color; @background; @border) {}
+.btn-action {
+    .button-variant(@accent-semibold-text-color; @accent-semibold-color; darken(@accent-semibold-color, 10%))
+}
+
+.btn-security {
+    .button-variant(@accent-semibold-text-color; @accent-semibold-color; darken(@accent-semibold-color, 10%))
+}
+
+.btn-edit {
+    .button-variant(#222; white; darken(white, 10%))
+}
+
+
+// Kendo Overrides
+//--------------------------------
+
+.k-treeview .k-in.k-state-hover, 
+.k-treeview .k-in.k-state-selected, 
+.k-treeview .k-in.k-state-focused,
+.k-treeview .k-in
+{
+    padding: 2px 12px;
+    border: 1px solid transparent;
+}
+
+.k-treeview .k-item {
+    padding: 0;
+}
+
+/* user registration styles */
+.not-me 
+{
+    margin-left: 21px;
+}
+
+/* error page */
+#splash.error  #content {
+    width: 750px;
+}
+
+/* security window */
+.security-inherited {
+	margin-top: 12px;
+}

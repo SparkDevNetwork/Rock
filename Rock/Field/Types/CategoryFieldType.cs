@@ -22,8 +22,19 @@ namespace Rock.Field.Types
     /// </summary>
     public class CategoryFieldType : FieldType
     {
+        /// <summary>
+        /// Entity Type Name Key
+        /// </summary>
         protected const string ENTITY_TYPE_NAME_KEY = "entityTypeName";
+
+        /// <summary>
+        /// Qualifier Column Key
+        /// </summary>
         protected const string QUALIFIER_COLUMN_KEY = "qualifierColumn";
+
+        /// <summary>
+        /// Qualifier Value Key
+        /// </summary>
         protected const string QUALIFIER_VALUE_KEY = "qualifierValue";
 
         /// <summary>
@@ -47,7 +58,7 @@ namespace Rock.Field.Types
         {
             List<Control> controls = new List<Control>();
 
-            DropDownList ddl = new DropDownList();
+            var ddl = new RockDropDownList();
             controls.Add( ddl );
             ddl.Items.Add( new ListItem( None.Text, None.IdValue ) );
             foreach ( var entityType in new EntityTypeService().GetEntities().OrderBy( e => e.FriendlyName ).ThenBy( e => e.Name ) )
@@ -58,12 +69,12 @@ namespace Rock.Field.Types
             ddl.AutoPostBack = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
 
-            TextBox tbColumn = new TextBox();
+            var tbColumn = new RockTextBox();
             controls.Add( tbColumn );
             tbColumn.AutoPostBack = true;
             tbColumn.TextChanged += OnQualifierUpdated;
 
-            TextBox tbValue = new TextBox();
+            var tbValue = new RockTextBox();
             controls.Add( tbValue );
             tbValue.AutoPostBack = true;
             tbValue.TextChanged += OnQualifierUpdated;
@@ -145,6 +156,7 @@ namespace Rock.Field.Types
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
         /// <returns>
         /// The control
         /// </returns>

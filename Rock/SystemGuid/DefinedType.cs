@@ -33,11 +33,6 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string FINANCIAL_ACCOUNT_TYPE = "752DA126-471F-4221-8503-5297593C99FF";
 		
-		/// <summary>
-        /// Guid for the types of Batches (ACH, Visa, MasterCard, Discover, Amex, and PayPal)
-        /// </summary>
-       // public const string FINANCIAL_BATCH_TYPE = "9e358fbe-2321-4c54-895f-c888e29298ae";
-		
         /// <summary>
         /// Guid for Financial Currency Type
         /// </summary>
@@ -49,24 +44,14 @@ namespace Rock.SystemGuid
         public const string FINANCIAL_CREDIT_CARD_TYPE =  "2BD4FFB0-6C7F-4890-8D08-00F0BB7B43E9";
 
         /// <summary>
-        /// Guid for Financial Payment Type
+        /// Guid for Financial Frequency 
         /// </summary>
-        public const string FINANCIAL_PAYMENT_TYPE = "23E80D98-017E-47B9-BAF3-AC442A1EC3EE";
-
-        /// <summary>
-        /// Guid for the Financial Pledge Frequency 
-        /// </summary>
-        public const string FINANCIAL_PLEDGE_FREQUENCY = "059F69C0-BF9B-4D53-B7CD-2D3B7C647C5F";
+        public const string FINANCIAL_FREQUENCY = "1F645CFB-5BBD-4465-B9CA-0D2104A1479B";
 
         /// <summary>
         /// Guid for Financial Source Type
         /// </summary>
         public const string FINANCIAL_SOURCE_TYPE =  "4F02B41E-AB7D-4345-8A97-3904DDD89B01";
-
-        /// <summary>
-        /// Guid for Financial Frequency 
-        /// </summary>
-        public const string FINANCIAL_TRANSACTION_FREQUENCY = "1F645CFB-5BBD-4465-B9CA-0D2104A1479B";
 
         /// <summary>
         /// Guid for Financial Transaction Type
@@ -149,8 +134,9 @@ namespace Rock.SystemGuid
         public const string PERSON_PHONE_TYPE =  "8345DD45-73C6-4F5E-BEBD-B77FC83F18FD";
 
         /// <summary>
-        /// Guid for the types of Batches (ACH, Visa, MasterCard, Discover, Amex, and PayPal)
+        /// Guid for the types of possible check-in system ability levels (such as Infant, Crawler, etc.)
         /// </summary>
-        public static Guid FINANCIAL_BATCH_TYPE { get { return new Guid( "9e358fbe-2321-4c54-895f-c888e29298ae" ); } }
+        public const string PERSON_ABILITY_LEVEL_TYPE = "7BEEF4D4-0860-4913-9A3D-857634D1BF7C";
+
     }
 }

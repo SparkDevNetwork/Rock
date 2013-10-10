@@ -73,7 +73,7 @@ namespace Rock.Communication
         /// Resolves the config value.
         /// </summary>
         /// <param name="value">The value.</param>
-        /// <param name="globalAttributes">The global attributes.</param>
+        /// <param name="configValues">The config values.</param>
         /// <returns></returns>
         private string ResolveConfigValue( string value, Dictionary<string, object> configValues )
         {

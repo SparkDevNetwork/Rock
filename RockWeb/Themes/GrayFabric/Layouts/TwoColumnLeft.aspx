@@ -1,4 +1,4 @@
-﻿<%@ Page ValidateRequest="false" Language="C#" MasterPageFile="~/Themes/RockChMS/Layouts/Site.Master"
+﻿<%@ Page ValidateRequest="false" Language="C#" MasterPageFile="Site.Master"
     AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
 
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
@@ -80,7 +80,7 @@
                 <%-- Content Area --%>
                     
                 <!-- display any ajax error messages here (use with ajax-client-error-handler.js) -->
-                <div class="alert alert-error ajax-error" style="display:none">
+                <div class="alert alert-danger ajax-error" style="display:none">
                     <strong>Ooops!</strong>
                     <span class="ajax-error-message" / ></span>
                 </div>

@@ -1,0 +1,124 @@
+/*
+     
+     Rock ChMS Advenure Kids Check-in Theme
+     Crafted by: Spark Development Network
+
+ */
+
+//
+// Imports
+// --------------------------------------------------
+
+@import "../../../Styles/FontAwesome/font-awesome.less";
+@import "../../../Styles/Bootstrap/bootstrap.less"; 
+@import "../../../Styles/_checkin-core.less";
+
+
+//
+// Variables
+// --------------------------------------------------
+
+// Font Variables
+@font-family-base:     'OpenSans', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+@font-weight-light:     300;
+@font-weight-bold:      700;
+@font-weight-semibold:  600;
+
+@text-color:    #92724C;
+
+@header-text-color:     #54412b;
+@header-font-weight:    @font-weight-bold;
+
+@subheader-text-color:      #54412b;
+@subheader-font-weight:     @font-weight-light;
+
+// Button Styles
+@btn-default-bg: #ecdebf;
+@btn-default-color:     #92724c;
+@btn-default-border:   #91876f;
+@checkin-button-text-weight:    @font-weight-bold;
+@checkin-button-alttext-weight: @font-weight-light;
+
+@btn-primary-color:    #fff;
+@btn-primary-border:   #361c1b;
+@btn-primary-bg:    #4e2727;
+
+@btn-disabled-color: @btn-primary-border;
+@btn-disabled-bg: darken(@btn-primary-bg, 20%);
+
+
+// Fonts
+// -------------------------
+
+// regular (weight 'normal' aka 400)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot');
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.woff') format('woff'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.ttf') format('truetype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Regular-webfont.svg#OpenSansRegular') format('svg');
+    font-weight: 400;
+    font-style: normal;
+}
+
+// light (weight 300)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot');
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.woff') format('woff'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.ttf') format('truetype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Light-webfont.svg#OpenSansLight') format('svg');
+    font-weight: 300;
+    font-style: normal;
+}
+
+// semi-bold (weight 600)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot');
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.woff') format('woff'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.ttf') format('truetype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Semibold-webfont.svg#OpenSansSemibold') format('svg');
+    font-weight: 600;
+    font-style: normal;
+}
+
+// bold (weight 700)
+@font-face {
+    font-family: 'OpenSans';
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot');
+    src: url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.woff') format('woff'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.ttf') format('truetype'),
+         url('../../../../../../Assets/Fonts/OpenSans/OpenSans-Bold-webfont.svg#OpenSansBold') format('svg');
+    font-weight: 700;
+    font-style: normal;
+}
+
+
+//
+// Mix-ins
+// --------------------------------------------------
+.checkinBackground () {
+  	background: #dbc189 url('../Assets/Images/background.jpg') top right no-repeat fixed;
+}
+
+.checkinBackgroundRetina()
+{
+    background-image: url('../Assets/Images/background@2x.jpg');
+    background-size: 1348px 1024px; // should be 1/2 of the actual size
+}
+
+
+//
+// Custom Overrides
+// --------------------------------------------------
+
+.checkin-body-container // keep items from going into the bamboo
+{
+    width: 80%;
+}
+
