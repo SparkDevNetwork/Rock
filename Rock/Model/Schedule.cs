@@ -343,7 +343,7 @@ namespace Rock.Model
             string result = this.Name;
 
             DDay.iCal.Event calendarEvent = this.GetCalenderEvent();
-            if ( calendarEvent != null )
+            if ( calendarEvent != null && calendarEvent.DTStart != null)
             {
                 string startTimeText = calendarEvent.DTStart.Value.TimeOfDay.ToTimeString();
                 if ( calendarEvent.RecurrenceRules.Any() )
