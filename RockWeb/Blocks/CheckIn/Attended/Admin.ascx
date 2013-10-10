@@ -55,7 +55,7 @@
                     </ItemTemplate>
                 </asp:Repeater>
             </div>
-            <div class="col-md-4"><asp:Label ID="lblBlah" runat="server"></asp:Label></div>
+            <div class="col-md-4"></div>
         </div>
 
         <div class="row checkin-footer">
