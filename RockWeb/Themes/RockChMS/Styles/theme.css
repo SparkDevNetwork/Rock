@@ -7617,6 +7617,9 @@ td.visible-print {
 .picker.picker-geography .picker-menu {
   width: 520px;
 }
+.picker.picker-person .picker-select-item-details img {
+  width: 65px;
+}
 #dialog .scroll-container-picker {
   width: 360px;
 }
