@@ -51,16 +51,16 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// <c>true</c> if [limit automatic named locations]; otherwise, <c>false</c>.
         /// </value>
-        public bool LimitToNamedLocations
+        public bool AllowModeSelection
         {
             get
             {
-                return ( ViewState["LimitToNamedLocations"] as bool? ) ?? true;
+                return ( ViewState["AllowModeSelection"] as bool? ) ?? true;
             }
 
             set
             {
-                ViewState["LimitToNamedLocations"] = value;
+                ViewState["AllowModeSelection"] = value;
             }
         }
 
@@ -74,14 +74,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
-                if ( LimitToNamedLocations )
-                {
-                    return LocationPickerMode.NamedLocation;
-                }
-                else
-                {
-                    return ViewState["CurrentPickerMode"] as LocationPickerMode? ?? LocationPickerMode.NamedLocation;
-                }
+                return ViewState["CurrentPickerMode"] as LocationPickerMode? ?? LocationPickerMode.NamedLocation;
             }
 
             set
@@ -152,7 +145,7 @@ namespace Rock.Web.UI.Controls
             _locationItemPicker.Visible = this.PickerMode == LocationPickerMode.NamedLocation;
             _locationAddressPicker.Visible = this.PickerMode == LocationPickerMode.Address;
             _locationGeoPicker.Visible = this.PickerMode == LocationPickerMode.LatLong;
-            _pnlModeSelection.Visible = !this.LimitToNamedLocations;
+            _pnlModeSelection.Visible = this.AllowModeSelection;
 
             if ( Page.IsPostBack )
             {
@@ -199,7 +192,7 @@ namespace Rock.Web.UI.Controls
             _locationAddressPicker.ID = this.ID + "_locationAddressPicker";
             _locationGeoPicker = new GeoPicker();
             _locationGeoPicker.ID = this.ID + "_locationGeoPicker";
-            
+
             _locationItemPicker.ModePanel = _pnlModeSelection;
             _locationGeoPicker.ModePanel = _pnlModeSelection;
             _locationAddressPicker.ModePanel = _pnlModeSelection;
@@ -261,7 +254,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> that receives the rendered output.</param>
         public void RenderBaseControl( HtmlTextWriter writer )
         {
-           //
+            //
         }
 
         #region IRockControl implementation (much different than others)
@@ -365,9 +358,9 @@ namespace Rock.Web.UI.Controls
             get
             {
                 EnsureChildControls();
-                switch (PickerMode)
+                switch ( PickerMode )
                 {
-                    case LocationPickerMode.Address: 
+                    case LocationPickerMode.Address:
                         return _locationAddressPicker.IsValid;
                     case LocationPickerMode.LatLong:
                         return _locationGeoPicker.IsValid;

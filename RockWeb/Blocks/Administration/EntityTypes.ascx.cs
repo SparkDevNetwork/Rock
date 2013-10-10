@@ -230,7 +230,7 @@ public partial class EntityTypes : RockBlock
 
         if ( entityType != null )
         {
-            lActionTitle.Text = ActionTitle.Edit( EntityType.FriendlyTypeName );
+            lActionTitle.Text = ActionTitle.Edit( EntityType.FriendlyTypeName ).FormatAsHtmlTitle();
             hfEntityTypeId.Value = entityType.Id.ToString();
             tbName.Text = entityType.Name;
             tbFriendlyName.Text = entityType.FriendlyName;
@@ -238,7 +238,7 @@ public partial class EntityTypes : RockBlock
         }
         else
         {
-            lActionTitle.Text = ActionTitle.Add( EntityType.FriendlyTypeName );
+            lActionTitle.Text = ActionTitle.Add( EntityType.FriendlyTypeName ).FormatAsHtmlTitle();
             hfEntityTypeId.Value = 0.ToString();
             tbName.Text = string.Empty;
             tbFriendlyName.Text = string.Empty;

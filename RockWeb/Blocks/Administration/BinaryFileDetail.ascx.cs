@@ -125,7 +125,7 @@ namespace RockWeb.Blocks.Administration
 
             if (BinaryFile != null)
             {
-                lActionTitle.Text = ActionTitle.Edit( BinaryFile.BinaryFileType.Name );
+                lActionTitle.Text = ActionTitle.Edit( BinaryFile.BinaryFileType.Name ).FormatAsHtmlTitle();
             }
             else
             {
@@ -141,7 +141,7 @@ namespace RockWeb.Blocks.Administration
                     }
                 }
 
-                lActionTitle.Text = ActionTitle.Add( friendlyName );
+                lActionTitle.Text = ActionTitle.Add( friendlyName ).FormatAsHtmlTitle();
             }
 
             ShowDetail( BinaryFile );
