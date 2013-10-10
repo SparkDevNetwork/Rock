@@ -58,6 +58,10 @@
     <Compile Include="ITransactionProcessor.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Rock.Version\Rock.Version.csproj">
+      <Project>{381a2fc8-6f4f-4b66-a9b4-14932d43b76a}</Project>
+      <Name>Rock.Version</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rock\Rock.csproj">
       <Project>{8f8c2a79-24f4-4157-8b99-45f75fa85799}</Project>
       <Name>Rock</Name>

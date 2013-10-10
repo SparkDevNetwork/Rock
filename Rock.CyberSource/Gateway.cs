@@ -14,6 +14,7 @@ using Rock.Financial;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Extension;
+using Rock.VersionInfo;
 
 namespace Rock.CyberSource
 {
@@ -265,8 +266,8 @@ namespace Rock.CyberSource
             var proxy = new TransactionProcessorClient( binding, address );
             proxy.ClientCredentials.UserName.UserName = merchantID;
             proxy.ClientCredentials.UserName.Password = transactionkey;
-            //proxy.Endpoint.Address = address;
-            //proxy.Endpoint.Binding = binding;
+            proxy.Endpoint.Address = address;
+            proxy.Endpoint.Binding = binding;
        
             try            
             {                
@@ -494,9 +495,18 @@ namespace Rock.CyberSource
                     break;
                 case "Discover":
                     card.cardType = "004";
-                    break;                
+                    break;
+                case "Diners":
+                    card.cardType = "005";
+                    break;
+                case "Carte Blanche":
+                    card.cardType = "006";
+                    break;
+                case "JCB":
+                    card.cardType = "007";
+                    break;
                 default:
-                    card.cardType = null;
+                    card.cardType = string.Empty;
                     break;
             }
 
@@ -529,6 +539,11 @@ namespace Rock.CyberSource
             
             request.merchantID = GetAttributeValue( "MerchantID" );
             request.clientLibraryVersion = Environment.Version.ToString();
+            request.clientApplication = "Rock ChMS";
+            request.clientApplication = System.AppDomain.CurrentDomain.FriendlyName;
+            request.clientApplicationVersion = Rock.Version.Current.ToString();
+            //request.clientApplicationVersion = Rock.VersionInfo.VersionInfo.GetRockProductVersion();
+            request.clientApplicationUser = GetAttributeValue( "OrganizationName" );            
             request.clientEnvironment =
                 Environment.OSVersion.Platform +
                 Environment.OSVersion.Version.ToString() + "-CLR" +
