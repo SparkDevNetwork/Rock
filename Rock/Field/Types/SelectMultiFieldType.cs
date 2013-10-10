@@ -10,6 +10,8 @@ using System.Data;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Web.UI.Controls;
+
 namespace Rock.Field.Types
 {
     /// <summary>
@@ -37,7 +39,7 @@ namespace Rock.Field.Types
         {
             List<Control> controls = new List<Control>();
 
-            TextBox tb = new TextBox();
+            var tb = new RockTextBox();
             controls.Add( tb );
             tb.TextMode = TextBoxMode.MultiLine;
             tb.Rows = 3;
@@ -82,13 +84,15 @@ namespace Rock.Field.Types
         /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
-        /// <param name="configurationValues"></param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
         /// <returns>
         /// The control
         /// </returns>
         public override Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            CheckBoxList editControl = new CheckBoxList { ID = id }; 
+            var editControl = new RockCheckBoxList { ID = id }; 
+
             editControl.RepeatDirection = RepeatDirection.Horizontal;
 
             if ( configurationValues != null && configurationValues.ContainsKey( "values" ) )

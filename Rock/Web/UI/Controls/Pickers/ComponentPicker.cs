@@ -18,22 +18,8 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class ComponentPicker : DropDownList, ILabeledControl
+    public class ComponentPicker : RockDropDownList
     {
-        private Label label;
-
-        /// <summary>
-        /// Gets or sets the label text.
-        /// </summary>
-        /// <value>
-        /// The label text.
-        /// </value>
-        public string LabelText
-        {
-            get { return label.Text; }
-            set { label.Text = value; }
-        }
-
         /// <summary>
         /// Gets or sets the type of the container.
         /// </summary>
@@ -51,6 +37,11 @@ namespace Rock.Web.UI.Controls
                 ViewState["ContainerType"] = value;
 
                 this.Items.Clear();
+
+                if ( !Required )
+                {
+                    this.Items.Add( new ListItem( string.Empty, Rock.Constants.None.IdValue ) );
+                }
 
                 if ( !string.IsNullOrWhiteSpace( value ) )
                 {
@@ -70,7 +61,7 @@ namespace Rock.Web.UI.Controls
                                         var entityType = EntityTypeCache.Read( component.Value.Value.GetType() );
                                         if ( entityType != null )
                                         {
-                                            this.Items.Add( new ListItem( entityType.FriendlyName, entityType.Guid.ToString() ) );
+                                            this.Items.Add( new ListItem( component.Value.Key, entityType.Guid.ToString() ) );
                                         }
                                     }
                                 }
@@ -78,42 +69,6 @@ namespace Rock.Web.UI.Controls
                         }
                     }
                 }
-            }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ComponentPicker" /> class.
-        /// </summary>
-        public ComponentPicker()
-            : base()
-        {
-            label = new Label();
-        }
-
-        public override void RenderControl( System.Web.UI.HtmlTextWriter writer )
-        {
-            if ( string.IsNullOrWhiteSpace( LabelText ) )
-            {
-                base.RenderControl( writer );
-            }
-            else
-            {
-                writer.AddAttribute( "class", "control-group" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                label.AddCssClass( "control-label" );
-
-                label.RenderControl( writer );
-
-                writer.AddAttribute( "class", "controls" );
-
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                base.Render( writer );
-
-                writer.RenderEndTag();
-
-                writer.RenderEndTag();
             }
         }
     }

@@ -57,6 +57,12 @@ namespace Rock.Model
         public bool CanDelete( PageRoute item, out string errorMessage )
         {
             errorMessage = string.Empty;
+            
+            // ignoring Site,DefaultPageRouteId 
+            
+            // ignoring Site,LoginPageRouteId 
+            
+            // ignoring Site,RegistrationPageRouteId 
             return true;
         }
     }

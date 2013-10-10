@@ -18,27 +18,32 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// User POCO Entity.
+    /// Represents a user's RockChMS login and authentication credentials.
     /// </summary>
     [Table( "UserLogin" )]
     [DataContract]
     public partial class UserLogin : Model<UserLogin>
     {
         /// <summary>
-        /// Gets or sets the type of the service.
+        /// Gets or sets the type of authentication service used by this UserLogin. This property is required.
         /// </summary>
         /// <value>
-        /// The type of the service.
+        /// A <see cref="Rock.Model.AuthenticationServiceType"/> enum value representing the type of authentication service used by this UserLogin. 
         /// </value>
+        /// <remarks>
+        /// Options include: 
+        /// <c>AuthenticationServiceType.Internal</c> which includes database and Active Directory
+        /// <c>AuthenticationServiceType.External</c> which includes Facebook, Google, oAuth, etc.
+        /// </remarks>
         [Required]
         [DataMember( IsRequired = true )]
         public AuthenticationServiceType ServiceType { get; set; }
 
         /// <summary>
-        /// Gets or sets the name of the service.
+        /// Gets or sets the service class/type name of the authentication service that this UserLogin uses. This property is required.
         /// </summary>
         /// <value>
-        /// The service.
+        /// A <see cref="System.String"/> representing the service class/type name.
         /// </value>
         [Required]
         [MaxLength( 200 )]
@@ -46,10 +51,10 @@ namespace Rock.Model
         public string ServiceName { get; set; }
 
         /// <summary>
-        /// Gets or sets the User Name.
+        /// Gets or sets the UserName that is associated with this UserLogin. This property is required.
         /// </summary>
         /// <value>
-        /// User Name.
+        /// A <see cref="System.String"/> representing the UserName that is associated with this UserLogin.
         /// </value>
         [Required]
         [MaxLength( 255 )]
@@ -61,25 +66,25 @@ namespace Rock.Model
         /// Gets or sets the Password.  Stored as a SHA1 hash for Rock Database Auth, but possibly a different hashtype for other ServiceTypes
         /// </summary>
         /// <value>
-        /// Password.
+        /// A <see cref="System.String"/> representing the password. 
         /// </value>
         [MaxLength( 128 )]
         public string Password { get; set; }
         
         /// <summary>
-        /// Gets or sets the is confirmed.
+        /// Gets or sets a flag indicating if the UserLogin has been confirmed.
         /// </summary>
         /// <value>
-        /// Is confirmed.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the UserLogin has been confirmed; otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool? IsConfirmed { get; set; }
 
         /// <summary>
-        /// Gets or sets the last activity date time.
+        /// Gets or sets the date and time of the last activity (login, password change, etc.) performed with this UserLogin.
         /// </summary>
         /// <value>
-        /// The last activity date time.
+        /// A <see cref="System.DateTime"/> representing the date and time of the last activity associated with this UserLogin.
         /// </value>
         [NotAudited]
         [DataMember]
@@ -87,66 +92,66 @@ namespace Rock.Model
         public DateTime? LastActivityDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the last login date time.
+        /// Gets or sets the most recent date and time that a user successfully logged in using this UserLogin.
         /// </summary>
         /// <value>
-        /// The last login date time.
+        /// A <see cref="System.DateTime"/> representing the most recent date and time that a user successfully logged in with this UserLogin.
         /// </value>
         [DataMember]
         [MergeField]
         public DateTime? LastLoginDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the last password changed date time.
+        /// Gets or sets the date and time that the password was successfully changed.
         /// </summary>
         /// <value>
-        /// The last password changed date time.
+        /// A <see cref="System.DateTime"/> representing when the password was last changed.
         /// </value>
         [DataMember]
         [MergeField]
         public DateTime? LastPasswordChangedDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the creation date time.
+        /// Gets or sets the date and time that the UserLogin was created.
         /// </summary>
         /// <value>
-        /// The creation date time.
+        /// A <see cref="System.DateTime"/> representing when the UserLogin was created.
         /// </value>
         [DataMember]
         public DateTime? CreationDateTime { get; set; }
         
         /// <summary>
-        /// Gets or sets the Is On Line.
+        /// Gets or sets a flag indicating if the user is currently online and logged in to the system.
         /// </summary>
         /// <value>
-        /// Is On Line.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the user is currently online and logged in with this UserLogin; otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool? IsOnLine { get; set; }
         
         /// <summary>
-        /// Gets or sets the Is Locked Out.
+        /// Gets or sets a flag indicating if the UserLogin is currently locked out.
         /// </summary>
         /// <value>
-        /// Is Locked Out.
+        /// A <see cref="System.Boolean"/> that is <c>true</c> if the UserLogin is currently locked out; otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool? IsLockedOut { get; set; }
 
         /// <summary>
-        /// Gets or sets the last locked out date time.
+        /// Gets or sets date and time that the UserLogin was last locked out.
         /// </summary>
         /// <value>
-        /// The last locked out date time.
+        /// A <see cref="System.DateTime"/> representing the date and time that the user login was last locked out.
         /// </value>
         [DataMember]
         public DateTime? LastLockedOutDateTime { get; set; }
         
         /// <summary>
-        /// Gets or sets the Failed Password Attempt Count.
+        /// Gets or sets the number of failed password attempts within the failed password attempt window.
         /// </summary>
         /// <value>
-        /// Failed Password Attempt Count.
+        /// An <see cref="System.Int32"/> representing the failed password attempts during the attempt window.
         /// </value>
         [DataMember]
         public int? FailedPasswordAttemptCount { get; set; }
@@ -159,29 +164,42 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public DateTime? FailedPasswordAttemptWindowStartDateTime { get; set; }
-        
+
         /// <summary>
-        /// Gets or sets the Api Key.
+        /// Gets or sets the last time that user was notified about their password expiring.
         /// </summary>
         /// <value>
-        /// Api Key.
+        /// The last password expiration warning date time.
+        /// </value>
+        [DataMember]
+        [MergeField]
+        public DateTime? LastPasswordExpirationWarningDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the API key associated with the UserLogin
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the API key that is associated with the UserLogin
         /// </value>
         [MaxLength( 50 )]
         [DataMember]
         public string ApiKey { get; set; }
         
         /// <summary>
-        /// Gets or sets the Person Id.
+        /// Gets or sets the Id of the <see cref="Rock.Model.Person"/> who this UserLogin belongs to.
         /// </summary>
         /// <value>
-        /// Person Id.
+        /// A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> that this UserLogin belongs to.
         /// </value>
         [DataMember]
         public int? PersonId { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether the user has authenticated (vs. used an inpersonation link)
+        /// Gets a flag indicating if the User authenticated with their last interaction with RockChMS (versus using an impersonation link).
         /// </summary>
+        /// <value>
+        ///   A <see cref="System.Boolean"/> value that is <c>true</c> if the user actually authenticated; otherwise <c>false</c>.
+        /// </value>
         [NotMapped]
         public virtual bool IsAuthenticated
         {
@@ -200,28 +218,31 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets or sets the person.
+        /// Gets or sets the <see cref="Rock.Model.Person"/> that this UserLogin is associated with.
         /// </summary>
         /// <value>
-        /// The person.
+        /// The <see cref="Rock.Model.Person"/> that this UserLogin is associated with.
         /// </value>
         [DataMember]
         [MergeField]
         public virtual Model.Person Person { get; set; }
-        
+
         /// <summary>
-        /// The default authorization for the selected action.
+        /// Returns a boolean flag indicating if the provided action is allowed by default
         /// </summary>
-        /// <param name="action">The action.</param>
-        /// <returns></returns>
+        /// <param name="action">A <see cref="System.String"/> representing the action.</param>
+        /// <returns>A <see cref="System.Boolean"/> flag indicating if the provided action is allowed by default.</returns>
         public override bool IsAllowedByDefault( string action )
         {
             return false;
         }
 
         /// <summary>
-        /// Gets the encrypted confirmation code.
+        /// Gets an encrypted confirmation code for the UserLogin.
         /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the encrypted confirmation code.
+        /// </value>
         [MergeField]
         public virtual string ConfirmationCode
         {
@@ -234,8 +255,11 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets a urlencoded and encrypted confirmation code.
+        /// Gets a URL encoded  and encrypted confirmation code.
         /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing a URL encoded and encrypted confirmation code.
+        /// </value>
         [MergeField]
         public virtual string ConfirmationCodeEncoded
         {
@@ -246,6 +270,12 @@ namespace Rock.Model
             }
         }
 
+        /// <summary>
+        /// Creates a <see cref="System.Collections.Generic.Dictionary"/> of this UserLogin object.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.Collections.Generic.Dictionary"/> of this UserLogin object.
+        /// </returns>
         public override System.Collections.Generic.Dictionary<string, object> ToDictionary()
         {
             var dictionary = base.ToDictionary();
@@ -256,10 +286,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Returns a <see cref="System.String" /> containing the UserName that represents this instance.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
+        /// A <see cref="System.String" /> containing the UserName that represents this instance.
         /// </returns>
         public override string ToString()
         {
@@ -269,9 +299,9 @@ namespace Rock.Model
         #region Static Methods
 
         /// <summary>
-        /// Gets the name of the current user.
+        /// Returns the UserName of the user that is currently logged in.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A <see cref="System.String"/> representing the UserName of the user that is currently logged in.</returns>
         internal static string GetCurrentUserName()
         {
             if ( HostingEnvironment.IsHosted )

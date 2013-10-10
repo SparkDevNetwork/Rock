@@ -16,37 +16,22 @@ namespace Rock.Web
         /// <summary>
         /// The term description list
         /// </summary>
-        private Dictionary<string, string> termDescriptionList = new Dictionary<string, string>();
+        private Dictionary<string, string> _termDescriptionList = new Dictionary<string, string>();
 
         /// <summary>
         /// Adds the specified term.
         /// </summary>
         /// <param name="term">The term.</param>
         /// <param name="description">The description.</param>
+        /// <param name="showIfBlank">if set to <c>true</c> [show if blank].</param>
         /// <returns></returns>
-        public DescriptionList Add( string term, string description )
+        public DescriptionList Add( string term, object description, bool showIfBlank = false )
         {
-            termDescriptionList.Add( term, description );
-            return this;
-        }
-
-        /// <summary>
-        /// Adds the specified term.
-        /// </summary>
-        /// <param name="term">The term.</param>
-        /// <param name="person">The person.</param>
-        /// <returns></returns>
-        public DescriptionList Add( string term, Rock.Model.Person person )
-        {
-            if ( person != null )
+            string value = description != null ? description.ToString() : string.Empty;
+            if ( !string.IsNullOrWhiteSpace( value ) || showIfBlank )
             {
-                termDescriptionList.Add( term, person.FullName );
+                _termDescriptionList.Add( term, value );
             }
-            else
-            {
-                termDescriptionList.Add( term, null );
-            }
-            
             return this;
         }
 
@@ -57,38 +42,16 @@ namespace Rock.Web
         /// <param name="dateTime">The date time.</param>
         /// <param name="format">The format.</param>
         /// <returns></returns>
-        public DescriptionList Add( string term, DateTime? dateTime, string format = "g" )
+        public DescriptionList Add( string term, DateTime? dateTime, string format = "g", bool showIfBlank = false )
         {
             if ( dateTime != null )
             {
-                termDescriptionList.Add( term, dateTime.Value.ToString(format) );
+                return Add(term, dateTime.Value.ToString(format), showIfBlank);
             }
             else
             {
-                termDescriptionList.Add( term, null );
+                return Add( term, null, showIfBlank );
             }
-
-            return this;
-        }
-
-        /// <summary>
-        /// Adds the specified term.
-        /// </summary>
-        /// <param name="term">The term.</param>
-        /// <param name="value">The value.</param>
-        /// <returns></returns>
-        public DescriptionList Add( string term, int? value )
-        {
-            if ( value != null )
-            {
-                termDescriptionList.Add( term, value.ToString() );
-            }
-            else
-            {
-                termDescriptionList.Add( term, null );
-            }
-
-            return this;
         }
 
         /// <summary>
@@ -97,7 +60,7 @@ namespace Rock.Web
         /// <returns></returns>
         public DescriptionList StartSecondColumn()
         {
-            termDescriptionList.Add( ColumnBreak, string.Empty );
+            _termDescriptionList.Add( ColumnBreak, string.Empty );
             return this;
         }
 
@@ -113,9 +76,9 @@ namespace Rock.Web
             {
                 string descriptionFormat = "<dt>{0}</dt><dd>{1}</dd>";
 
-                string result = @"<div class='span6'><dl>";
+                string result = @"<div class='col-md-6'><dl>";
 
-                foreach ( var pair in termDescriptionList )
+                foreach ( var pair in _termDescriptionList )
                 {
                     string displayValue = pair.Value;
                     if ( string.IsNullOrWhiteSpace( displayValue ) )
@@ -126,7 +89,7 @@ namespace Rock.Web
 
                     if ( pair.Key == ColumnBreak )
                     {
-                        result += @"</dl></div><div class='span6'><dl>";
+                        result += @"</dl></div><div class='col-md-6'><dl>";
                     }
                     else
                     {

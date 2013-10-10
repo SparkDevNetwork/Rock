@@ -75,6 +75,15 @@ namespace RockWeb.Blocks.Administration
 
                 if ( _page.IsAuthorized( "Administrate", CurrentPerson ) )
                 {
+                    ddlLayout.Items.Clear();
+                    var layoutService = new LayoutService();
+                    layoutService.RegisterLayouts( Request.MapPath( "~" ), _page.Layout.Site, CurrentPersonId );
+                    foreach(var layout in layoutService.GetBySiteId(_page.Layout.SiteId))
+                    {
+                        ddlLayout.Items.Add( new ListItem( layout.Name, layout.Id.ToString() ) );
+                    }
+                    ddlMenuWhen.BindToEnum( typeof( DisplayInNavWhen ) );
+
                     phAttributes.Controls.Clear();
                     Rock.Attribute.Helper.AddEditControls( _page, phAttributes, !Page.IsPostBack );
 
@@ -101,10 +110,10 @@ namespace RockWeb.Blocks.Administration
                     int i = 0;
                     foreach ( string context in blockContexts )
                     {
-                        var tbContext = new LabeledTextBox();
+                        var tbContext = new RockTextBox();
                         tbContext.ID = string.Format( "context_{0}", i++ );
                         tbContext.Required = true;
-                        tbContext.LabelText = context;
+                        tbContext.Label = context;
 
                         if ( _page.PageContexts.ContainsKey( context ) )
                         {
@@ -152,7 +161,7 @@ namespace RockWeb.Blocks.Administration
                 tbPageName.Text = _page.Name;
                 tbPageTitle.Text = _page.Title;
                 ppParentPage.SetValue( pageService.Get( page.ParentPageId ?? 0 ) );
-                ddlLayout.Text = _page.Layout;
+                ddlLayout.SelectedValue = _page.LayoutId.ToString();
                 imgIcon.BinaryFileId = page.IconFileId;
                 tbIconCssClass.Text = _page.IconCssClass;
 
@@ -249,7 +258,7 @@ namespace RockWeb.Blocks.Administration
                         page.ParentPageId = null;
                     }
 
-                    page.Layout = ddlLayout.Text;
+                    page.LayoutId = ddlLayout.SelectedValueAsInt().Value;
                     page.IconFileId = imgIcon.BinaryFileId;
                     page.IconCssClass = tbIconCssClass.Text;
 
@@ -305,11 +314,11 @@ namespace RockWeb.Blocks.Administration
                     {
                         foreach ( var control in phContext.Controls )
                         {
-                            if ( control is LabeledTextBox )
+                            if ( control is RockTextBox )
                             {
-                                var tbContext = control as LabeledTextBox;
+                                var tbContext = control as RockTextBox;
                                 var pageContext = new PageContext();
-                                pageContext.Entity = tbContext.LabelText;
+                                pageContext.Entity = tbContext.Label;
                                 pageContext.IdParameter = tbContext.Text;
                                 page.PageContexts.Add( pageContext );
                             }
@@ -372,7 +381,7 @@ namespace RockWeb.Blocks.Administration
 
             using ( new UnitOfWorkScope() )
             {
-                importResult = packageService.ImportPage( fuImport.FileBytes, fuImport.FileName, CurrentPerson.Id, _page.Id, _page.SiteId );
+                importResult = packageService.ImportPage( fuImport.FileBytes, fuImport.FileName, CurrentPerson.Id, _page.Id, _page.Layout.SiteId );
             }
 
             if ( !importResult )
@@ -406,14 +415,6 @@ namespace RockWeb.Blocks.Administration
         /// </summary>
         private void LoadDropdowns()
         {
-            ddlLayout.Items.Clear();
-            DirectoryInfo di = new DirectoryInfo( Path.Combine( this.Page.Request.MapPath( this.CurrentTheme ), "Layouts" ) );
-            foreach ( FileInfo fi in di.GetFiles( "*.aspx" ) )
-            {
-                ddlLayout.Items.Add( new ListItem( fi.Name.Remove( fi.Name.IndexOf( ".aspx" ) ) ) );
-            }
-
-            ddlMenuWhen.BindToEnum( typeof( DisplayInNavWhen ) );
         }
 
         /// <summary>

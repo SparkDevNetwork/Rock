@@ -126,6 +126,38 @@ namespace Rock.Web.Cache
         public int? DefaultPageRouteId { get; set; }
 
         /// <summary>
+        /// Gets or sets the login page id.
+        /// </summary>
+        /// <value>
+        /// The login page id.
+        /// </value>
+        public int? LoginPageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the login page route id.
+        /// </summary>
+        /// <value>
+        /// The login page route id.
+        /// </value>
+        public int? LoginPageRouteId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration page id.
+        /// </summary>
+        /// <value>
+        /// The registration page id.
+        /// </value>
+        public int? RegistrationPageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the registration page route id.
+        /// </summary>
+        /// <value>
+        /// The registration page route id.
+        /// </value>
+        public int? RegistrationPageRouteId { get; set; }
+
+        /// <summary>
         /// Gets or sets the favicon URL.
         /// </summary>
         /// <value>
@@ -156,22 +188,6 @@ namespace Rock.Web.Cache
         /// The facebook app secret.
         /// </value>
         public string FacebookAppSecret { get; set; }
-
-        /// <summary>
-        /// Gets or sets the login page reference.
-        /// </summary>
-        /// <value>
-        /// The login page reference.
-        /// </value>
-        public string LoginPageReference { get; set; }
-
-        /// <summary>
-        /// Gets or sets the registration page reference.
-        /// </summary>
-        /// <value>
-        /// The registration page reference.
-        /// </value>
-        public string RegistrationPageReference { get; set; }
 
         /// <summary>
         /// Gets or sets the error page.
@@ -216,13 +232,15 @@ namespace Rock.Web.Cache
                 this.Theme = site.Theme;
                 this.DefaultPageId = site.DefaultPageId;
                 this.DefaultPageRouteId = site.DefaultPageRouteId;
+                this.LoginPageId = site.LoginPageId;
+                this.LoginPageRouteId = site.LoginPageRouteId;
+                this.RegistrationPageId = site.RegistrationPageId;
+                this.RegistrationPageRouteId = site.RegistrationPageRouteId;
+                this.ErrorPage = site.ErrorPage;
                 this.FaviconUrl = site.FaviconUrl;
                 this.AppleTouchIconUrl = site.AppleTouchIconUrl;
                 this.FacebookAppId = site.FacebookAppId;
                 this.FacebookAppSecret = site.FacebookAppSecret;
-                this.LoginPageReference = site.LoginPageReference;
-                this.RegistrationPageReference = site.RegistrationPageReference;
-                this.ErrorPage = site.ErrorPage;
             }
         }
 

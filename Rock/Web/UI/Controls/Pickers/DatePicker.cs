@@ -20,6 +20,8 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
+            this.CssClass = "input-width-md";
+            this.AppendText = "<i class='icon-calendar'></i>";
 
             if ( string.IsNullOrWhiteSpace( this.SourceTypeName ) )
             {
@@ -60,15 +62,18 @@ namespace Rock.Web.UI.Controls
 
             set
             {
-                if ( value != null )
+                if ( (value ?? DateTime.MinValue) != DateTime.MinValue )
                 {
                     this.Text = value.Value.ToShortDateString();
+                    this.Attributes["value"] = this.Text;
                 }
                 else
                 {
                     this.Text = string.Empty;
+                    this.Attributes["value"] = this.Text;
                 }
             }
         }
+
     }
 }

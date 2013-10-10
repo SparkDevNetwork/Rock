@@ -14,7 +14,8 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// File POCO Entity.
+    /// Represents the data/content of a <see cref="Rock.Model.BinaryFile"/> this entity can either be used to temporary store the 
+    /// file content in memory or can be persisted to the database. 
     /// </summary>
     [Table( "BinaryFileData" )]
     [DataContract]
@@ -23,10 +24,10 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the content
+        /// Gets or sets the data/content of a <see cref="Rock.Model.BinaryFile"/>
         /// </summary>
         /// <value>
-        /// content.
+        /// A <see cref="System.byte"/> array that contains the data/content of a <see cref="Rock.Model.BinaryFile"/>
         /// </value>
         [DataMember]
         public byte[] Content { get; set; }
@@ -43,7 +44,7 @@ namespace Rock.Model
     public partial class BinaryFileDataConfiguration : EntityTypeConfiguration<BinaryFileData>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="BinaryFileDatConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="BinaryFileDataConfiguration"/> class.
         /// </summary>
         public BinaryFileDataConfiguration()
         {

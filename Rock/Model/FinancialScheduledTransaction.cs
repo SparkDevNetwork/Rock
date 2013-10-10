@@ -41,7 +41,7 @@ namespace Rock.Model
         /// The transaction frequency value id.
         /// </value>
         [DataMember]
-        [DefinedValue( SystemGuid.DefinedType.FINANCIAL_TRANSACTION_FREQUENCY )]
+        [DefinedValue( SystemGuid.DefinedType.FINANCIAL_FREQUENCY )]
         public int TransactionFrequencyValueId { get; set; }
 
         /// <summary>
@@ -73,6 +73,32 @@ namespace Rock.Model
         [DataMember]
         public int? NumberOfPayments { get; set; }
 
+        /// <summary>
+        /// Gets or sets the end date.
+        /// </summary>
+        /// <value>
+        /// The end date.
+        /// </value>
+        [DataMember]
+        [Column( TypeName = "Date" )]
+        public DateTime? NextPaymentDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the last status update date time.
+        /// </summary>
+        /// <value>
+        /// The last status update date time.
+        /// </value>
+        [DataMember]
+        [Column( TypeName = "Date" )]
+        public DateTime? LastStatusUpdateDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance is active.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is active; otherwise, <c>false</c>.
+        /// </value>
         [DataMember]
         public bool IsActive
         {
@@ -88,7 +114,7 @@ namespace Rock.Model
         /// The gateway id.
         /// </value>
         [DataMember]
-        public int? GatewayId { get; set; }
+        public int? GatewayEntityTypeId { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction code.
@@ -99,6 +125,15 @@ namespace Rock.Model
         [MaxLength( 50 )]
         [DataMember]
         public string TransactionCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the gateway scheduled id.  This is the id returned by the financial gateway to uniquely identify a payment schedule
+        /// </summary>
+        /// <value>
+        /// The scheduled transaction key.
+        /// </value>
+        [DataMember]
+        public string GatewayScheduleId { get; set; }
 
         /// <summary>
         /// Gets or sets the date to remind user to update scheduled transaction.
@@ -139,7 +174,7 @@ namespace Rock.Model
         /// The gateway.
         /// </value>
         [DataMember]
-        public virtual FinancialGateway Gateway { get; set; }
+        public virtual EntityType GatewayEntityType { get; set; }
 
         /// <summary>
         /// Gets or sets the transaction frequency value.
@@ -164,6 +199,20 @@ namespace Rock.Model
         }
         private ICollection<FinancialScheduledTransactionDetail> _scheduledTransactionDetails;
 
+        /// <summary>
+        /// Gets or sets the transactions.  The transactions that have cleared for this scheduled transaction profile
+        /// </summary>
+        /// <value>
+        /// The transactions.
+        /// </value>
+        [DataMember]
+        public virtual ICollection<FinancialTransaction> Transactions
+        {
+            get { return _transactions ?? ( _transactions = new Collection<FinancialTransaction>() ); }
+            set { _transactions = value; }
+        }
+        private ICollection<FinancialTransaction> _transactions;
+
         #endregion
 
         #region Public Methods
@@ -186,7 +235,7 @@ namespace Rock.Model
         public FinancialScheduledTransactionConfiguration()
         {
             this.HasRequired( t => t.AuthorizedPerson ).WithMany().HasForeignKey( t => t.AuthorizedPersonId ).WillCascadeOnDelete( false );
-            this.HasOptional( t => t.Gateway ).WithMany().HasForeignKey( t => t.GatewayId ).WillCascadeOnDelete( false );
+            this.HasOptional( t => t.GatewayEntityType ).WithMany().HasForeignKey( t => t.GatewayEntityTypeId ).WillCascadeOnDelete( false );
             this.HasRequired( t => t.TransactionFrequencyValue ).WithMany().HasForeignKey( t => t.TransactionFrequencyValueId ).WillCascadeOnDelete( false );
         }
     }

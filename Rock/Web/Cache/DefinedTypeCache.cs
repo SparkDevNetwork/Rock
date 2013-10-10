@@ -283,6 +283,7 @@ namespace Rock.Web.Cache
             }
             else
             {
+                definedTypeModel.LoadAttributes();
                 definedType = new DefinedTypeCache( definedTypeModel );
 
                 var cachePolicy = new CacheItemPolicy();

@@ -20,18 +20,25 @@
 	// some constants
 	//
 	const string internetCheckSite = "www.google.com";
-	const string rockZipAssemblyFile = "http://www.rockchms.com/installer/assemblies/Ionic.Zip.dll";
-	const string rockInstallFile = "http://www.rockchms.com/installer/assemblies/Install.aspx";
-	const string rockConfigureFile = "http://www.rockchms.com/installer/assemblies/Configure.aspx";
-	const string rockWaitingImage = "http://www.rockchms.com/installer/assets/images/waiting.gif";
-	
+    const string rockZipAssemblyFile = "http://rockchms.blob.core.windows.net/install/Ionic.Zip.dll";
+    const string rockInstallFile = "http://rockchms.blob.core.windows.net/install/Install.aspx";
+    const string rockConfigureFile = "http://rockchms.blob.core.windows.net/install/Configure.aspx";
+    
+    const string rockWaitingImage = "http://rockchms.blob.core.windows.net/install/waiting.gif";
+    const string rockLogoIco = "http://rockchms.blob.core.windows.net/install/rock-chms.ico";
+    const string rockStyles = "http://rockchms.blob.core.windows.net/install/install.css";
+        
+        
 	//
 	// page events
 	//
 	
 	void Page_Load(object sender, EventArgs e)
 	{
-		// set location of the bin directory
+		// first disable the no ASP.Net message
+        lNoScripting.Visible = false;
+        
+        // set location of the bin directory
 		string binDirectoryLocation = Server.MapPath(".") + @"\bin";
 		
 		// first make some checks to determine if we can write to the file system and have access to the internet
@@ -112,110 +119,14 @@
 <html>
 	<head>
 		<title>Rock ChMS Installer...</title>
-		<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' rel='stylesheet' type='text/css'>
-
+		<link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Open+Sans:400,600,700' type='text/css'>
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/font-awesome/2.0/css/font-awesome.css">
+        <link rel="stylesheet" href="<%=rockStyles %>">
 		
-		<style>
-			body {
-				background-color: #3c3c3c;
-				color: #333;
-				font-family: 'Open Sans', sans-serif;
-				background-image: url("http://www.rockchms.com/installer/assets/images/header-texture.png");
-			}
-			
-			div#content {
-				width: 600px;
-				margin: 0 auto;
-			}
-			
-			i {
-				font-family: FontAwesome;
-				font-size: 22px;
-			}
-			
-			i.pass {
-				color: #218921;
-			}
-			
-			i.fail {
-				color: #e43030;
-			}
-			
-			.btn i {
-				font-size: 12px;
-				margin-top: 6px;
-			}
-			
-			ul {
-				list-style-type: none;
-				margin-top: 22px;
-				margin-left: 90px;
-			}
-			
-			ul li {
-				margin-bottom: 12px;
-			}
-			
-			ul li i[class^="icon-"] {
-				height: 30px;
-				float: left;
-				margin-right: 12px;
-				line-height: 18px;
-			} 
-			
-			div#content > h1 {
-				background: url("http://www.rockchms.com/installer/assets/images/header-logo.png") no-repeat scroll 0 0 transparent;
-			    color: #E7E7E7;
-			    display: block;
-			    float: left;
-			    height: 50px;
-			    margin-bottom: 6px;
-			    margin-top: 65px;
-			    text-indent: -9999px;
-			    width: 123px;
-    		}
-    		
-    		div#content #content-box {
-	    		background-color: #E7E7E7;
-			    border-radius: 5px 5px 5px 5px;
-			    box-shadow: 0 0 20px #000000;
-			    clear: both;
-			    min-height: 254px;
-			    padding: 16px;
-			    width: 584px;
-			    color: #;
-    		}
-    		
-    		div#content #content-box h1 {
-    			margin-top: 0;
-    		}
-    		
-    		    		
-    		a.btn {
-    			text-decoration: none;
-    		}
-    		
-    		p.wait {
-    			width: 48px;
-    			margin: 0 auto;
-    			margin-top: 24px;
-    		}
-    		
-    		.btn.start-install, .btn.next-step {
-    			display: block;
-    			margin: 24px auto 24px auto;
-    			text-align: center;
-    			width: 180px;
-    		}
+        <link href="<%=rockLogoIco %>" rel="shortcut icon">
+		<link href="<%=rockLogoIco %>" type="image/ico" rel="icon">
 
-    		.group:after {
-			    clear: both;
-			    content: ".";
-			    display: block;
-			    height: 0;
-			    visibility: hidden;
-			}
-		</style>
 	</head>
 	<body>
 		<form runat="server">
@@ -226,9 +137,21 @@
 					<h1>Rock ChMS</h1>
 					
 					<div id="content-box" class="group">
-						<h1><asp:Label ID="lTitle" runat="server" /></h1>
+						<h1><asp:Literal ID="lTitle" Text="Server Check" runat="server" /></h1>
 						
 						<asp:Label ID="lOutput" runat="server" />
+
+                        <!-- message to show if asp.net is not installed -->
+                        <asp:Literal runat="server" ID="lNoScripting">
+
+                            <div class="alert alert-warning">
+                                <p><strong>Configuration Alert</strong></p>
+
+                                It appears that this website is not configured to run ASP.Net.  The Rock ChMS
+                                requires that you run on a Windows Hosting Platform running IIS/ASP.Net.
+                            </div>
+
+                        </asp:Literal>
 
 					</div>
 				</div>
@@ -293,8 +216,6 @@
 			if (!tcpClient.Connected) {
 				checksFailed = true;
 				errorDetails += "<li><i class='icon-warning-sign fail'></i> You don't seem to be connected to the internet. The Rock installer requires an Internet connection.</li>";
-			} else {
-				//errorDetails += "<li><i class='icon-ok-sign pass'></i> You are connected to the internet.</li>";
 			}
 		}
 		catch(Exception ex) {
@@ -331,9 +252,7 @@
         
         if (!canWrite) {
         	checksFailed = true;
-        	errorDetails += "<li><i class='icon-warning-sign fail'></i> The username " + userName + " does not have write access to the server's file system.</li>";
-        } else {
-        	//errorDetails += "<li><i class='icon-ok-sign pass'></i> Your server's file permissions look correct.</li>";
+            errorDetails += "<li><i class='icon-warning-sign fail'></i> The username " + userName + " does not have write access to the server's file system. <a class='btn btn-info btn-xs' href='TODO'>Let's Fix It Together</a> </li>";
         }
 
 		return checksFailed;

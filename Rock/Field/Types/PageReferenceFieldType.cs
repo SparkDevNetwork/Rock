@@ -41,11 +41,12 @@ namespace Rock.Field.Types
 
             return string.Empty;
         }
-        
+
         /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
         /// <returns>
         /// The control
         /// </returns>
@@ -73,7 +74,7 @@ namespace Rock.Field.Types
                 if ( ppPage.IsPageRoute )
                 {
                     int? pageRouteId = ppPage.PageRouteId;
-                    var pageRoute = new PageRouteService().Get( ppPage.PageRouteId ?? 0);
+                    var pageRoute = new PageRouteService().Get( pageRouteId ?? 0 );
                     if ( pageRoute != null )
                     {
                         result = string.Format( "{0},{1}", pageRoute.Page.Guid, pageRoute.Guid );

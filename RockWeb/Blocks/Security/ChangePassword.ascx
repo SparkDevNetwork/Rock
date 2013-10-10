@@ -5,16 +5,16 @@
 
         <asp:Panel ID="pnlEntry" runat="server">
 
-            <asp:Panel ID="pnlInvalid" runat="server" CssClass="alert alert-error error" Visible="false">
+            <asp:Panel ID="pnlInvalid" runat="server" CssClass="alert alert-danger error" Visible="false">
                 <asp:Literal ID="lInvalid" runat="server"></asp:Literal>
             </asp:Panel>
 
             <fieldset>
                 <legend>Change Password</legend>
-                <Rock:LabeledTextBox ID="tbUserName" runat="server" LabelText="Username" Required="true"></Rock:LabeledTextBox>
-                <Rock:LabeledTextBox ID="tbOldPassword" runat="server" LabelText="Old Password" Required="true" TextMode="Password"></Rock:LabeledTextBox>
-                <Rock:LabeledTextBox ID="tbPassword" runat="server" LabelText="New Password" Required="true" TextMode="Password"></Rock:LabeledTextBox>
-                <Rock:LabeledTextBox ID="tbPasswordConfirm" runat="server" LabelText="Confirm Password" Required="true" TextMode="Password"></Rock:LabeledTextBox>
+                <Rock:RockTextBox ID="tbUserName" runat="server" Label="Username" Required="true"></Rock:RockTextBox>
+                <Rock:RockTextBox ID="tbOldPassword" runat="server" Label="Old Password" Required="true" TextMode="Password"></Rock:RockTextBox>
+                <Rock:RockTextBox ID="tbPassword" runat="server" Label="New Password" Required="true" TextMode="Password"></Rock:RockTextBox>
+                <Rock:RockTextBox ID="tbPasswordConfirm" runat="server" Label="Confirm Password" Required="true" TextMode="Password"></Rock:RockTextBox>
                 <asp:CompareValidator ID="cvPassword" runat="server" ControlToCompare="tbPassword" ControlToValidate="tbPasswordConfirm" ErrorMessage="New Password and Confirm Password do not match" Display="Dynamic" CssClass="validation-error"></asp:CompareValidator>
             </fieldset>
 

@@ -18,7 +18,7 @@ namespace Rock.Model
 {
     /// <summary>
     /// Represents a a configurable and functional component or module that extends the base functionality of the RockChMS system/framework. A
-    /// BlockType can be implemented one or more <see cref="Page">Pages</see> or <see cref="Site"/> Layouts.
+    /// BlockType can be implemented one or more <see cref="Page">Pages</see> or <see cref="Layout">Layouts</see>.
     /// </summary>
     [Table( "BlockType" )]
     [DataContract]

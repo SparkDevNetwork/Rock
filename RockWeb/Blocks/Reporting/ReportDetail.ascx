@@ -5,7 +5,7 @@
         <asp:Panel ID="pnlDetails" runat="server" Visible="false">
             <asp:HiddenField ID="hfReportId" runat="server" />
 
-            <asp:ValidationSummary ID="vsDetails" runat="server" CssClass="alert alert-error" />
+            <asp:ValidationSummary ID="vsDetails" runat="server" CssClass="alert alert-danger" />
 
             <div id="pnlEditDetails" runat="server" class="well">
 
@@ -16,9 +16,9 @@
 
                     <div class="row-fluid">
                         <div class="span6">
-                            <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" EntityTypeName="Rock.Model.Report" LabelText="Category" />
-                            <Rock:DataDropDownList ID="ddlEntityType" runat="server" SourceTypeName="Rock.Model.Report, Rock" PropertyName="EntityTypeId" DataTextField="FriendlyName" LabelText="Applies To" DataValueField="Id" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
-                            <Rock:DataDropDownList ID="ddlDataView" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Name" LabelText="Data View" />
+                            <Rock:CategoryPicker ID="cpCategory" runat="server" Required="true" EntityTypeName="Rock.Model.Report" Label="Category" />
+                            <Rock:DataDropDownList ID="ddlEntityType" runat="server" SourceTypeName="Rock.Model.Report, Rock" PropertyName="EntityTypeId" DataTextField="FriendlyName" Label="Applies To" DataValueField="Id" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
+                            <Rock:DataDropDownList ID="ddlDataView" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.DataView, Rock" PropertyName="Name" Label="Data View" />
                         </div>
                         <div class="span6">
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Report, Rock" PropertyName="Name" CssClass="" />

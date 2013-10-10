@@ -70,8 +70,9 @@ namespace RockWeb.Blocks.Finance.Administration
             pledge.PersonId = ppPerson.PersonId;
             pledge.AccountId = int.Parse( fpFund.SelectedValue );
             pledge.TotalAmount = decimal.Parse( tbAmount.Text );
-            pledge.StartDate = DateTime.Parse( dtpStartDate.Text );
-            pledge.EndDate = DateTime.Parse( dtpEndDate.Text );
+
+            pledge.StartDate = dpDateRange.LowerValue.Value;
+            pledge.EndDate = dpDateRange.UpperValue.Value;
             pledge.PledgeFrequencyValueId = int.Parse( ddlFrequencyType.SelectedValue );
 
             if ( !pledge.IsValid )
@@ -102,19 +103,19 @@ namespace RockWeb.Blocks.Finance.Administration
         public void ShowDetail( string itemKey, int itemKeyValue )
         {
             pnlDetails.Visible = true;
-            var frequencyTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_PLEDGE_FREQUENCY );
+            var frequencyTypeGuid = new Guid( Rock.SystemGuid.DefinedType.FINANCIAL_FREQUENCY );
             ddlFrequencyType.BindToDefinedType( DefinedTypeCache.Read( frequencyTypeGuid ) );
             FinancialPledge pledge;
 
             if ( itemKeyValue > 0 )
             {
                 pledge = new FinancialPledgeService().Get( itemKeyValue );
-                lActionTitle.Text = ActionTitle.Edit( FinancialPledge.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Edit(FinancialPledge.FriendlyTypeName).FormatAsHtmlTitle();
             }
             else
             {
                 pledge = new FinancialPledge();
-                lActionTitle.Text = ActionTitle.Add( FinancialPledge.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Add(FinancialPledge.FriendlyTypeName).FormatAsHtmlTitle();
             }
 
             var isReadOnly = !IsUserAuthorized( "Edit" );
@@ -127,10 +128,11 @@ namespace RockWeb.Blocks.Finance.Administration
             fpFund.Enabled = !isReadOnly;
             tbAmount.Text = !isNewPledge ? pledge.TotalAmount.ToString() : string.Empty;
             tbAmount.ReadOnly = isReadOnly;
-            dtpStartDate.Text = !isNewPledge ? pledge.StartDate.ToShortDateString() : string.Empty;
-            dtpStartDate.ReadOnly = isReadOnly;
-            dtpEndDate.Text = !isNewPledge ? pledge.EndDate.ToShortDateString() : string.Empty;
-            dtpEndDate.ReadOnly = isReadOnly;
+
+            dpDateRange.LowerValue = pledge.StartDate;
+            dpDateRange.UpperValue = pledge.EndDate;
+            dpDateRange.ReadOnly = isReadOnly;
+
             ddlFrequencyType.SelectedValue = !isNewPledge ? pledge.PledgeFrequencyValueId.ToString() : string.Empty;
             ddlFrequencyType.Enabled = !isReadOnly;
 

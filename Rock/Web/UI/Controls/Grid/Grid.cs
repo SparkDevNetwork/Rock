@@ -28,13 +28,14 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:Grid runat=server></{0}:Grid>" )]
     public class Grid : System.Web.UI.WebControls.GridView, IPostBackEventHandler
     {
-        const int ALL_ITEMS_SIZE = 1000000;
+        private const int ALL_ITEMS_SIZE = 1000000;
+        private const string DEFAULT_EMPTY_DATA_TEXT = "No Results Found";
+        private const string PAGE_SIZE_KEY = "grid-page-size-preference";
 
         private Table _table;
         private GridViewRow _actionRow;
         private GridActions _gridActions;
-        private const string DefaultEmptyDataText = "No Results Found";
-        private Dictionary<int, string> DataBoundColumns = new Dictionary<int, string>();
+        private Dictionary<int, string> _dataBoundColumns = new Dictionary<int, string>();
 
         #region Properties
 
@@ -125,7 +126,7 @@ namespace Rock.Web.UI.Controls
             get
             {
                 string result = base.EmptyDataText;
-                if ( string.IsNullOrWhiteSpace( result ) || result.Equals( DefaultEmptyDataText ) )
+                if ( string.IsNullOrWhiteSpace( result ) || result.Equals( DEFAULT_EMPTY_DATA_TEXT ) )
                 {
                     result = string.Format( "No {0} Found", RowItemText.Pluralize() );
                 }
@@ -198,7 +199,6 @@ namespace Rock.Web.UI.Controls
                     this.RemoveCssClass( "table-bordered" );
                     this.RemoveCssClass( "table-striped" );
                     this.RemoveCssClass( "table-hover" );
-                    this.RemoveCssClass( "table-full" );
                     this.AddCssClass( "table-condensed" );
                     this.AddCssClass( "table-light" );
                 }
@@ -209,7 +209,6 @@ namespace Rock.Web.UI.Controls
                     this.AddCssClass( "table-bordered" );
                     this.AddCssClass( "table-striped" );
                     this.AddCssClass( "table-hover" );
-                    this.AddCssClass( "table-full" );
                 }
             }
         }
@@ -339,13 +338,14 @@ namespace Rock.Web.UI.Controls
             base.SelectedRowStyle.HorizontalAlign = System.Web.UI.WebControls.HorizontalAlign.Left;
 
             this.ShowHeaderWhenEmpty = true;
-            this.EmptyDataText = DefaultEmptyDataText;
+            this.EmptyDataText = DEFAULT_EMPTY_DATA_TEXT;
 
             // hack to turn off style="border-collapse: collapse"
             base.GridLines = GridLines.None;
             base.CellSpacing = -1;
 
             base.AllowPaging = true;
+
             base.PageSize = 25;
             base.PageIndex = 0;
 
@@ -374,6 +374,17 @@ namespace Rock.Web.UI.Controls
 
             this.Actions.CommunicateClick += Actions_CommunicateClick;
             this.Actions.ExcelExportClick += Actions_ExcelExportClick;
+
+            var rockPage = this.Page as RockPage;
+            if ( rockPage != null )
+            {
+                int pageSize = 25;
+                if ( !int.TryParse( rockPage.GetUserPreference( PAGE_SIZE_KEY ), out pageSize ) )
+                {
+                    pageSize = 25;
+                }
+                base.PageSize = pageSize;
+            }
 
             base.OnInit( e );
         }
@@ -839,10 +850,10 @@ namespace Rock.Web.UI.Controls
 
                 for ( int i = 0; i < e.Row.Cells.Count; i++ )
                 {
-                    if ( DataBoundColumns.ContainsKey( i ) )
+                    if ( _dataBoundColumns.ContainsKey( i ) )
                     {
                         var cell = e.Row.Cells[i];
-                        cell.AddCssClass( DataBoundColumns[i] );
+                        cell.AddCssClass( _dataBoundColumns[i] );
                         cell.AddCssClass( "grid-select-cell" );
                         cell.Attributes["onclick"] = clickUrl;
                     }
@@ -860,13 +871,13 @@ namespace Rock.Web.UI.Controls
         {
             _table = base.CreateChildTable();
 
-            DataBoundColumns = new Dictionary<int, string>();
+            _dataBoundColumns = new Dictionary<int, string>();
             for ( int i = 0; i < this.Columns.Count; i++ )
             {
                 BoundField column = this.Columns[i] as BoundField;
                 if ( column != null && !( column is INotRowSelectedField ) )
                 {
-                    DataBoundColumns.Add( i, column.ItemStyle.CssClass );
+                    _dataBoundColumns.Add( i, column.ItemStyle.CssClass );
                 }
             }
 
@@ -892,6 +903,12 @@ namespace Rock.Web.UI.Controls
                 if ( this.AllowPaging && this.BottomPagerRow != null )
                 {
                     this.BottomPagerRow.Visible = true;
+                    
+                    // add paging style
+                    if (this.BottomPagerRow.Cells.Count > 0)
+                    {
+                        this.BottomPagerRow.Cells[0].CssClass = "grid-paging";
+                    }
                 }
 
                 _actionRow = base.CreateRow( -1, -1, DataControlRowType.Footer, DataControlRowState.Normal );
@@ -899,7 +916,7 @@ namespace Rock.Web.UI.Controls
 
                 TableCell cell = new TableCell();
                 cell.ColumnSpan = this.Columns.Count;
-                cell.CssClass = "grid-footer";
+                cell.CssClass = "grid-actions";
                 _actionRow.Cells.Add( cell );
 
                 cell.Controls.Add( _gridActions );
@@ -1042,6 +1059,12 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.NumericalEventArgs"/> instance containing the event data.</param>
         void pagerTemplate_ItemsPerPageClick( object sender, NumericalEventArgs e )
         {
+            var rockPage = this.Page as RockPage;
+            if ( rockPage != null )
+            {
+                rockPage.SetUserPreference( PAGE_SIZE_KEY, e.Number.ToString() );
+            }
+
             this.PageSize = e.Number;
             OnGridRebind( e );
         }
@@ -1397,21 +1420,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="container">The <see cref="T:System.Web.UI.Control"/> object to contain the instances of controls from the inline template.</param>
         public void InstantiateIn( Control container )
         {
-            HtmlGenericControl divPagination = new HtmlGenericControl( "div" );
-            divPagination.Attributes.Add( "class", "pagination" );
-            container.Controls.Add( divPagination );
-
-            // Items Per RockPage
-            HtmlGenericControl divSize = new HtmlGenericControl( "div" );
-            divSize.Attributes.Add( "class", "page-size" );
-            divPagination.Controls.Add( divSize );
-
-            HtmlGenericControl divSizeOptions = new HtmlGenericControl( "div" );
-            divSizeOptions.Attributes.Add( "class", "page-size-options" );
-            divSize.Controls.Add( divSizeOptions );
-
             HtmlGenericControl ulSizeOptions = new HtmlGenericControl( "ul" );
-            divSizeOptions.Controls.Add( ulSizeOptions );
+            ulSizeOptions.AddCssClass("grid-pagesize pagination pagination-sm");
+            container.Controls.Add(ulSizeOptions);
 
             for ( int i = 0; i < ItemLinkListItem.Length; i++ )
             {
@@ -1430,32 +1441,29 @@ namespace Rock.Web.UI.Controls
 
             // itemCount
             HtmlGenericControl divItemCount = new HtmlGenericControl("div");
-            divItemCount.Attributes.Add("class", "item-count");
-            divPagination.Controls.Add(divItemCount);
+            divItemCount.Attributes.Add("class", "grid-itemcount");
+            container.Controls.Add(divItemCount);
 
             itemCountDisplay = new Literal();
             divItemCount.Controls.Add(itemCountDisplay);
 
             // Pagination
-            NavigationPanel = new HtmlGenericControl("div");
-            NavigationPanel.Attributes.Add("class", "page-navigation");
-            divPagination.Controls.Add(NavigationPanel);
-
-            HtmlGenericControl ulNavigation = new HtmlGenericControl("ul");
-            NavigationPanel.Controls.Add(ulNavigation);
+            NavigationPanel = new HtmlGenericControl("ul");
+            NavigationPanel.AddCssClass("grid-pager pagination pagination-sm");
+            container.Controls.Add(NavigationPanel);
 
             for (var i = 0; i < PageLinkListItem.Length; i++)
             {
                 PageLinkListItem[i] = new HtmlGenericContainer("li");
-                ulNavigation.Controls.Add(PageLinkListItem[i]);
+                NavigationPanel.Controls.Add(PageLinkListItem[i]);
 
                 PageLink[i] = new LinkButton();
                 PageLinkListItem[i].Controls.Add(PageLink[i]);
                 PageLink[i].Click += new EventHandler(lbPage_Click);
             }
 
-            PageLink[0].Text = "&larr; Previous";
-            PageLink[PageLinkListItem.Length - 1].Text = "Next &rarr;";
+            PageLink[0].Text = "&laquo;";
+            PageLink[PageLinkListItem.Length - 1].Text = "&raquo;";
         }
 
         /// <summary>
@@ -1465,6 +1473,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="pageIndex">The current page index</param>
         /// <param name="pageSize">The number of items on each page</param>
         /// <param name="itemCount">The item count.</param>
+        /// <param name="rowItemText">The row item text.</param>
         public void SetNavigation( int pageCount, int pageIndex, int pageSize, int itemCount, string rowItemText  )
         {
             // Set navigation controls

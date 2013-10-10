@@ -485,7 +485,7 @@ namespace RockWeb.Blocks.Administration
                     attributeId = 0;
                 }
 
-                if ( attributeId != 0 && phEditControl.Controls.Count > 0 )
+                if ( attributeId != 0 && fsEditControl.Controls.Count > 0 )
                 {
                     var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
 
@@ -500,7 +500,7 @@ namespace RockWeb.Blocks.Administration
                     }
 
                     var fieldType = Rock.Web.Cache.FieldTypeCache.Read( attribute.FieldType.Id );
-                    attributeValue.Value = fieldType.Field.GetEditValue( phEditControl.Controls[0], attribute.QualifierValues );
+                    attributeValue.Value = fieldType.Field.GetEditValue( attribute.GetControl( fsEditControl.Controls[0] ), attribute.QualifierValues );
 
                     attributeValueService.Save( attributeValue, CurrentPersonId );
 
@@ -608,6 +608,8 @@ namespace RockWeb.Blocks.Administration
 
             if ( attributeModel == null )
             {
+                lAttributeTitle.Text = ("Add Attribute").FormatAsHtmlTitle();
+
                 attributeModel = new Rock.Model.Attribute();
 
                 if ( !_configuredType )
@@ -627,6 +629,7 @@ namespace RockWeb.Blocks.Administration
             else
             {
                 edtAttribute.ActionTitle = Rock.Constants.ActionTitle.Edit( Rock.Model.Attribute.FriendlyTypeName );
+                lAttributeTitle.Text = ("Edit " + attributeModel.Name).FormatAsHtmlTitle();
             }
 
             Type type = null;
@@ -666,26 +669,13 @@ namespace RockWeb.Blocks.Administration
         {
             if ( _displayValueEdit )
             {
+                fsEditControl.Controls.Clear();
+
                 var attribute = Rock.Web.Cache.AttributeCache.Read( attributeId );
+                var attributeValue = new AttributeValueService().GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
+                attribute.AddControl( fsEditControl.Controls, attributeValue.Value, setValues, true );
 
                 hfIdValues.Value = attribute.Id.ToString();
-                lCaption.Text = attribute.Name;
-
-                AttributeValueService attributeValueService = new AttributeValueService();
-                var attributeValue = attributeValueService.GetByAttributeIdAndEntityId( attributeId, _entityId ).FirstOrDefault();
-
-                var fieldType = Rock.Web.Cache.FieldTypeCache.Read( attribute.FieldType.Id );
-
-                Control editControl = fieldType.Field.EditControl( attribute.QualifierValues, string.Format( "attribute_field_{0}", attribute.Id ) );
-                editControl.ClientIDMode = ClientIDMode.AutoID;
-
-                if ( setValues && attributeValue != null )
-                {
-                    fieldType.Field.SetEditValue( editControl, attribute.QualifierValues, attributeValue.Value );
-                }
-
-                phEditControl.Controls.Clear();
-                phEditControl.Controls.Add( editControl );
 
                 modalDetails.Show();
             }

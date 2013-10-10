@@ -58,8 +58,9 @@ namespace Rock.Web.UI
             set
             {
                 _currentPage = value;
-                HttpContext.Current.Items.Add( "Rock:SiteId", _currentPage.Site.Id );
                 HttpContext.Current.Items.Add( "Rock:PageId", _currentPage.Id );
+                HttpContext.Current.Items.Add( "Rock:LayoutId", _currentPage.LayoutId );
+                HttpContext.Current.Items.Add( "Rock:SiteId", _currentPage.Layout.SiteId );
             }
         }
         private PageCache _currentPage = null;
@@ -93,6 +94,10 @@ namespace Rock.Web.UI
                 }
             }
         }
+
+        /// <summary>
+        /// The _current page reference
+        /// </summary>
         public PageReference _currentPageReference = null;
 
         /// <summary>
@@ -224,7 +229,7 @@ namespace Rock.Web.UI
         {
             get
             {
-                return ResolveUrl( string.Format( "~/Themes/{0}", CurrentPage.Site.Theme ) );
+                return ResolveUrl( string.Format( "~/Themes/{0}", CurrentPage.Layout.Site.Theme ) );
             }
         }
 
@@ -309,13 +314,16 @@ namespace Rock.Web.UI
             
             if ( _scriptManager == null )
             {
-                _scriptManager = new ScriptManager { ID = "sManager" };
+                _scriptManager = new AjaxControlToolkit.ToolkitScriptManager { ID = "sManager" };
                 Page.Trace.Warn( "Adding script manager" );
                 Page.Form.Controls.AddAt( 0, _scriptManager );
             }
 
             // enable history on the ScriptManager
             _scriptManager.EnableHistory = true;
+
+            // TODO: Delete this line, only used for testing
+            _scriptManager.AsyncPostBackTimeout = 180;
 
             // wire up navigation event
             _scriptManager.Navigate += new EventHandler<HistoryEventArgs>(scriptManager_Navigate);
@@ -422,22 +430,21 @@ namespace Rock.Web.UI
                     if ( user == null )
                     {
                         Page.Trace.Warn( "Redirecting to login page" );
-                        if (!string.IsNullOrWhiteSpace(CurrentPage.Site.LoginPageReference))
-                        {
-                            // if the QueryString already has a returnUrl, use that, otherwise redirect to RawUrl
-                            string returnUrl = Request.QueryString["returnUrl"] ?? Server.UrlEncode(Request.RawUrl);
-                            
-                            string loginPageRequestPath = ResolveUrl( CurrentPage.Site.LoginPageReference );
 
-                            if ( loginPageRequestPath.Equals( Request.Path ) )
+                        var site = CurrentPage.Layout.Site;
+                        if ( site.LoginPageId.HasValue )
+                        {
+                            var pageReference = new PageReference( site.LoginPageId.Value );
+                            if ( site.LoginPageRouteId.HasValue )
                             {
-                                // The LoginPage security isn't set to Allow All, so throw exception to prevent recursive loop
-                                throw new Exception( string.Format("Page security for Site.LoginPageReference {0} is invalid", CurrentPage.Site.LoginPageReference));
+                                pageReference.RouteId = site.LoginPageRouteId.Value;
                             }
-                            else
-                            {
-                                Response.Redirect( loginPageRequestPath + "?returnurl=" + returnUrl );
-                            }
+
+                            var parms = new Dictionary<string, string>();
+                            parms.Add( "returnurl", Request.QueryString["returnUrl"] ?? Server.UrlEncode(Request.RawUrl) );
+                            pageReference.Parameters = parms;
+
+                            Response.Redirect( pageReference.BuildUrl() );
                         }
                         else
                         {
@@ -497,11 +504,12 @@ namespace Rock.Web.UI
                     string script = string.Format( @"
     Rock.settings.initialize({{ 
         siteId: {0},
-        pageId: {1}, 
-        layout: '{2}',
-        baseUrl: '{3}' 
+        layoutId: {1},
+        pageId: {2}, 
+        layout: '{3}',
+        baseUrl: '{4}' 
     }});",
-                        CurrentPage.SiteId.Value, CurrentPage.Id, CurrentPage.Layout, AppPath );
+                        CurrentPage.Layout.SiteId, CurrentPage.LayoutId, CurrentPage.Id, CurrentPage.Layout.FileName, AppPath );
                     ScriptManager.RegisterStartupScript( this.Page, this.GetType(), "rock-js-object", script, true );
 
                     // Add config elements
@@ -683,22 +691,22 @@ namespace Rock.Web.UI
 
                     // Add favicon and apple touch icons to page
                     Page.Trace.Warn( "Adding favicons and appletouch links" );
-                    if ( CurrentPage.Site.FaviconUrl != null )
+                    if ( CurrentPage.Layout.Site.FaviconUrl != null )
                     {
                         System.Web.UI.HtmlControls.HtmlLink faviconLink = new System.Web.UI.HtmlControls.HtmlLink();
 
                         faviconLink.Attributes.Add( "rel", "shortcut icon" );
-                        faviconLink.Attributes.Add( "href", ResolveUrl( "~/" + CurrentPage.Site.FaviconUrl ) );
+                        faviconLink.Attributes.Add( "href", ResolveUrl( "~/" + CurrentPage.Layout.Site.FaviconUrl ) );
 
                         CurrentPage.AddHtmlLink( this.Page, faviconLink );
                     }
 
-                    if ( CurrentPage.Site.AppleTouchIconUrl != null )
+                    if ( CurrentPage.Layout.Site.AppleTouchIconUrl != null )
                     {
                         System.Web.UI.HtmlControls.HtmlLink touchLink = new System.Web.UI.HtmlControls.HtmlLink();
 
                         touchLink.Attributes.Add( "rel", "apple-touch-icon" );
-                        touchLink.Attributes.Add( "href", ResolveUrl( "~/" + CurrentPage.Site.AppleTouchIconUrl ) );
+                        touchLink.Attributes.Add( "href", ResolveUrl( "~/" + CurrentPage.Layout.Site.AppleTouchIconUrl ) );
 
                         CurrentPage.AddHtmlLink( this.Page, touchLink );
                     }
@@ -823,7 +831,7 @@ namespace Rock.Web.UI
                 PageViewTransaction transaction = new PageViewTransaction();
                 transaction.DateViewed = DateTime.Now;
                 transaction.PageId = CurrentPage.Id;
-                transaction.SiteId = CurrentPage.Site.Id;
+                transaction.SiteId = CurrentPage.Layout.Site.Id;
                 if ( CurrentPersonId != null )
                     transaction.PersonId = (int)CurrentPersonId;
                 transaction.IPAddress = Request.UserHostAddress;
@@ -872,7 +880,7 @@ namespace Rock.Web.UI
         /// If the attribute doesn't exist an empty list is returned.
         /// </summary>
         /// <param name="key">the block attribute key</param>
-        /// <returns>a list of strings or an empty list if none exists</string></returns>
+        /// <returns>a list of strings or an empty list if none exists</returns>
         public List<string> GetAttributeValues( string key )
         {
             if ( CurrentPage != null )
@@ -916,7 +924,7 @@ namespace Rock.Web.UI
         /// <param name="ex">The System.Exception to log.</param>
         public void LogException( Exception ex )
         {
-            ExceptionLogService.LogException( ex, Context, CurrentPage.Id, CurrentPage.SiteId, CurrentPersonId );
+            ExceptionLogService.LogException( ex, Context, CurrentPage.Id, CurrentPage.Layout.SiteId, CurrentPersonId );
         }
 
         /// <summary>
@@ -1089,22 +1097,22 @@ namespace Rock.Web.UI
             legend.InnerText = "New Location";
             fsZoneSelect.Controls.Add( legend );
 
-            LabeledDropDownList ddlZones = new LabeledDropDownList();
+            RockDropDownList ddlZones = new RockDropDownList();
             ddlZones.ClientIDMode = ClientIDMode.Static;
             ddlZones.ID = "block-move-zone";
-            ddlZones.LabelText = "Zone";
+            ddlZones.Label = "Zone";
             foreach ( var zone in Zones )
                 ddlZones.Items.Add( new ListItem( zone.Value.Key, zone.Value.Value.ID ) );
             fsZoneSelect.Controls.Add( ddlZones );
 
-            LabeledRadioButtonList rblLocation = new LabeledRadioButtonList();
+            RockRadioButtonList rblLocation = new RockRadioButtonList();
             rblLocation.RepeatDirection = RepeatDirection.Horizontal;
             rblLocation.ClientIDMode = ClientIDMode.Static;
             rblLocation.ID = "block-move-Location";
             rblLocation.CssClass = "inputs-list";
             rblLocation.Items.Add( new ListItem( "Current Page" ) );
-            rblLocation.Items.Add( new ListItem( string.Format( "All Pages Using the '{0}' Layout", CurrentPage.Layout ) ) );
-            rblLocation.LabelText = "Parent";
+            rblLocation.Items.Add( new ListItem( string.Format( "All Pages Using the '{0}' Layout", CurrentPage.Layout.Name ) ) );
+            rblLocation.Label = "Parent";
             fsZoneSelect.Controls.Add( rblLocation );
         }
 
@@ -1276,6 +1284,7 @@ namespace Rock.Web.UI
         /// </summary>
         /// <param name="page">The page.</param>
         /// <param name="htmlLink">The HTML link.</param>
+        /// <param name="contentPlaceHolderId">The content place holder id.</param>
         public static void AddHtmlLink( Page page, HtmlLink htmlLink, string contentPlaceHolderId = "" )
         {
             if ( page != null && page.Header != null )
@@ -1317,7 +1326,7 @@ namespace Rock.Web.UI
         /// <summary>
         /// HTMLs the link exists.
         /// </summary>
-        /// <param name="header">The header.</param>
+        /// <param name="parentControl">The parent control.</param>
         /// <param name="newLink">The new link.</param>
         /// <returns></returns>
         private static bool HtmlLinkExists( Control parentControl, HtmlLink newLink )
@@ -1495,6 +1504,11 @@ namespace Rock.Web.UI
         //    }
         //}
 
+        /// <summary>
+        /// Handles the Navigate event of the scriptManager control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="HistoryEventArgs"/> instance containing the event data.</param>
         protected void scriptManager_Navigate(object sender, HistoryEventArgs e)
         {
             if (PageNavigate != null)

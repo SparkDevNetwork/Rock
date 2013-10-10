@@ -5,8 +5,8 @@
         <asp:Panel ID="pnlList" runat="server">
 
             <Rock:GridFilter ID="rFilter" runat="server" OnDisplayFilterValue="rFilter_DisplayFilterValue">
-                <Rock:LabeledDropDownList ID="ddlEntityType" runat="server" LabelText="Entity Type" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
-                <Rock:CategoryPicker ID="cpCategoriesFilter" runat="server" LabelText="Categories" AllowMultiSelect="true" />
+                <Rock:RockDropDownList ID="ddlEntityType" runat="server" Label="Entity Type" AutoPostBack="true" OnSelectedIndexChanged="ddlEntityType_SelectedIndexChanged" />
+                <Rock:CategoryPicker ID="cpCategoriesFilter" runat="server" Label="Categories" AllowMultiSelect="true" />
             </Rock:GridFilter>
             <Rock:Grid ID="rGrid" runat="server" AllowSorting="true" RowItemText="setting" OnRowSelected="rGrid_Edit">
                 <Columns>
@@ -57,36 +57,31 @@
 
         </asp:Panel>
 
-        <asp:Panel ID="pnlDetails" runat="server" Visible="false">
+        <asp:Panel ID="pnlDetails" runat="server" Visible="false" CssClass="panel panel-default">
+            <div class="panel-body">
 
-            <asp:ValidationSummary ID="valSummaryTop" runat="server"  
-                HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
+                <div class="banner"><h1><asp:Literal ID="lAttributeTitle" runat="server"></asp:Literal></h1></div>
 
-            <Rock:LabeledDropDownList ID="ddlAttrEntityType" runat="server" LabelText="Entity Type" />
-            <Rock:LabeledTextBox ID="tbAttrQualifierField" runat="server" LabelText="Qualifier Field" />
-            <Rock:LabeledTextBox ID="tbAttrQualifierValue" runat="server" LabelText="Qualifier Value" />
+                <asp:ValidationSummary ID="valSummaryTop" runat="server"  
+                    HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
 
-            <Rock:AttributeEditor ID="edtAttribute" runat="server" OnSaveClick="btnSave_Click" OnCancelClick="btnCancel_Click" />
+                <Rock:RockDropDownList ID="ddlAttrEntityType" runat="server" Label="Entity Type" />
+                <Rock:RockTextBox ID="tbAttrQualifierField" runat="server" Label="Qualifier Field" />
+                <Rock:RockTextBox ID="tbAttrQualifierValue" runat="server" Label="Qualifier Value" />
 
+                <Rock:AttributeEditor ID="edtAttribute" runat="server" OnSaveClick="btnSave_Click" OnCancelClick="btnCancel_Click" />
+            </div>
         </asp:Panel>
 
         <Rock:ModalDialog ID="modalDetails" runat="server" Title="Attribute">
             <Content>
                 <asp:HiddenField ID="hfIdValues" runat="server" />
-                <asp:ValidationSummary ID="ValidationSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-error block-message error" />
-                <fieldset>
-                    <div class="control-group">
-                        <label class="control-label">
-                            <asp:Literal ID="lCaption" runat="server"></asp:Literal></label>
-                        <div class="controls">
-                            <asp:PlaceHolder ID="phEditControl" runat="server"></asp:PlaceHolder>
-                        </div>
-                    </div>
-                </fieldset>
+                <asp:ValidationSummary ID="ValidationSummaryValue" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
+                <fieldset id="fsEditControl" runat="server"/>
             </Content>
         </Rock:ModalDialog>
 
-        <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Error" Visible="false" />
+        <Rock:NotificationBox ID="nbMessage" runat="server" Title="Error" NotificationBoxType="Danger" Visible="false" />
 
     </ContentTemplate>
 </asp:UpdatePanel>

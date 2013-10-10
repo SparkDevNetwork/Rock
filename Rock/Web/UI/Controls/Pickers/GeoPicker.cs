@@ -11,6 +11,7 @@ using System.Drawing;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 using Rock.Web.Cache;
 
@@ -24,7 +25,7 @@ namespace Rock.Web.UI.Controls
     /// To use on a page or usercontrol:
     /// <example>
     /// <code>
-    ///     <Rock:GeoPicker ID="gpGeoPoint" runat="server" Required="false" LabelText="Geo Point" DrawingMode="Point" />
+    ///     <![CDATA[<Rock:GeoPicker ID="gpGeoPoint" runat="server" Required="false" Label="Geo Point" DrawingMode="Point" />]]>
     /// </code>
     /// </example>
     /// To set an initial value:
@@ -42,25 +43,9 @@ namespace Rock.Web.UI.Controls
     /// 
     /// If you wish to set an appropriate, initial center point you can use the <see cref="CenterPoint"/> property.
     /// </summary>
-    public class GeoPicker : CompositeControl, ILabeledControl
+    public class GeoPicker : CompositeControl, IRockControl
     {
-        private Label _label;
-        private HiddenField _hfGeoDisplayName;
-        private HiddenField _hfGeoPath;
-        private LinkButton _btnSelect;
-        private LinkButton _btnSelectNone;
-        private DbGeography _geoFence;
-        private DbGeography _geoPoint;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GeoPicker" /> class.
-        /// </summary>
-        public GeoPicker()
-        {
-            _label = new Label();
-            _btnSelect = new LinkButton();
-            _btnSelectNone = new LinkButton();
-        }
+        #region IRockControl implementation
 
         /// <summary>
         /// Gets or sets the label text.
@@ -68,29 +53,127 @@ namespace Rock.Web.UI.Controls
         /// <value>
         /// The label text.
         /// </value>
-        public string LabelText
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text for the label." )
+        ]
+        public string Label
         {
-            get { return _label.Text; }
-            set { _label.Text = value; }
+            get { return ViewState["Label"] as string ?? string.Empty; }
+            set { ViewState["Label"] = value; }
         }
 
         /// <summary>
-        /// Gets or sets the name of the field to display in validation messages
-        /// when a LabelText is not entered
+        /// Gets or sets the help text.
         /// </summary>
         /// <value>
-        /// The name of the field.
+        /// The help text.
         /// </value>
-        public string FieldName
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The help block." )
+        ]
+        public string Help
         {
-            get { return _label.Text; }
-            set { _label.Text = value; }
+            get
+            {
+                return HelpBlock != null ? HelpBlock.Text : string.Empty;
+            }
+            set
+            {
+                if ( HelpBlock != null )
+                {
+                    HelpBlock.Text = value;
+                }
+            }
+        }
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "false" ),
+        Description( "Is the value required?" )
+        ]
+        public bool Required
+        {
+            get { return ViewState["Required"] as bool? ?? false; }
+            set { ViewState["Required"] = value; }
         }
 
         /// <summary>
-        /// The required validator
+        /// Gets or sets the required error message.  If blank, the LabelName name will be used
         /// </summary>
-        protected HiddenFieldValidator RequiredValidator;
+        /// <value>
+        /// The required error message.
+        /// </value>
+        public string RequiredErrorMessage
+        {
+            get
+            {
+                return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
+            }
+            set
+            {
+                if ( RequiredFieldValidator != null )
+                {
+                    RequiredFieldValidator.ErrorMessage = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool IsValid
+        {
+            get
+            {
+                return !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the help block.
+        /// </summary>
+        /// <value>
+        /// The help block.
+        /// </value>
+        public HelpBlock HelpBlock { get; set; }
+
+        /// <summary>
+        /// Gets or sets the required field validator.
+        /// </summary>
+        /// <value>
+        /// The required field validator.
+        /// </value>
+        public RequiredFieldValidator RequiredFieldValidator { get; set; }
+
+        #endregion
+
+        #region Controls
+
+        private HiddenField _hfGeoDisplayName;
+        private HiddenField _hfGeoPath;
+        private HtmlAnchor _btnSelect;
+        private HtmlAnchor _btnSelectNone;
+        private DbGeography _geoFence;
+        private DbGeography _geoPoint;
+
+        #endregion
+
+        #region Properties
 
         /// <summary>
         /// Gets or sets the point that map should initially be centered on
@@ -157,22 +240,6 @@ namespace Rock.Web.UI.Controls
                 {
                     GeoFence = value;
                 }
-            }
-        }
-
-        /// <summary>
-        /// Sets the value. Necessary to preload the geo fence or geo point.
-        /// </summary>
-        /// <param name="person">The dbGeography to plot/edit.</param>
-        public void SetValue( DbGeography dbGeography )
-        {
-            if ( dbGeography != null )
-            {
-                SelectedValue = dbGeography;
-            }
-            else
-            {
-                GeoDisplayName = Rock.Constants.None.TextHtml;
             }
         }
 
@@ -302,39 +369,37 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether this <see cref="GeoPicker"/> is required.
+        /// Gets or sets the mode panel.
         /// </summary>
         /// <value>
-        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// The mode panel.
         /// </value>
-        [
-        Bindable( true ),
-        Category( "Behavior" ),
-        DefaultValue( "false" ),
-        Description( "Is the value required?" )
-        ]
-        public bool Required
-        {
-            get
-            {
-                if ( ViewState["Required"] != null )
-                    return (bool)ViewState["Required"];
-                else
-                    return false;
-            }
-            set
-            {
-                ViewState["Required"] = value;
-            }
-        }
+        public Panel ModePanel { get; set; }
 
         /// <summary>
-        /// Gets or sets the select dbGeography.
+        /// Gets or sets a value indicating whether [show drop down].
         /// </summary>
         /// <value>
-        /// The select dbGeography.
+        ///   <c>true</c> if [show drop down]; otherwise, <c>false</c>.
         /// </value>
-        public event EventHandler SelectGeography;
+        public bool ShowDropDown { get; set; }
+
+        #endregion
+
+        #region Constructor
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GeoPicker" /> class.
+        /// </summary>
+        public GeoPicker()
+        {
+            RequiredFieldValidator = new HiddenFieldValidator();
+            HelpBlock = new HelpBlock();
+            _btnSelect = new HtmlAnchor();
+            _btnSelectNone = new HtmlAnchor();
+        }
+
+        #endregion
 
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
@@ -355,6 +420,194 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            base.OnLoad( e );
+            if ( this.Visible )
+            {
+                // register the Javascript in OnLoad instead of OnInit because the LocationPicker in 'GeoPoint mode' might change the .Visible 
+                RegisterJavaScript();
+            }
+        }
+
+        /// <summary>
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+        /// </summary>
+        protected override void CreateChildControls()
+        {
+            base.CreateChildControls();
+            Controls.Clear();
+            RockControlHelper.CreateChildControls( this, Controls );
+
+            // TBD TODO -- do I need this hfGeoDisplayName_???
+            _hfGeoDisplayName = new HiddenField();
+            _hfGeoDisplayName.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+            _hfGeoDisplayName.ID = string.Format( "hfGeoDisplayName_{0}", this.ClientID );
+            _hfGeoPath = new HiddenField();
+            _hfGeoPath.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+            _hfGeoPath.ID = string.Format( "hfGeoPath_{0}", this.ClientID );
+
+            if ( ModePanel != null )
+            {
+                this.Controls.Add( ModePanel );
+            }
+
+            _btnSelect.ClientIDMode = System.Web.UI.ClientIDMode.Static;
+            _btnSelect.Attributes["class"] = "btn btn-xs btn-primary";
+            _btnSelect.ID = string.Format( "btnSelect_{0}", this.ClientID );
+            _btnSelect.InnerText = "Done";
+            _btnSelect.CausesValidation = false;
+
+            // we only need the postback on Select if SelectItem is assigned
+            if ( SelectGeography != null )
+            {
+                _btnSelect.ServerClick += btnSelect_Click;
+            }
+
+            _btnSelectNone.ClientIDMode = ClientIDMode.Static;
+            _btnSelectNone.Attributes["class"] = "picker-select-none";
+            _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ClientID );
+            _btnSelectNone.InnerHtml = "<i class='icon-remove'></i>";
+            _btnSelectNone.CausesValidation = false;
+            _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
+
+            // we only need the postback on SelectNone if SelectItem is assigned
+            if ( SelectGeography != null )
+            {
+                _btnSelectNone.ServerClick += btnSelect_Click;
+            }
+
+            Controls.Add( _hfGeoDisplayName );
+            Controls.Add( _hfGeoPath );
+            Controls.Add( _btnSelect );
+            Controls.Add( _btnSelectNone );
+
+            RequiredFieldValidator.InitialValue = "0";
+            RequiredFieldValidator.ControlToValidate = _hfGeoPath.ID;
+        }
+
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( HtmlTextWriter writer )
+        {
+            if ( this.Visible )
+            {
+                RockControlHelper.RenderControl( this, writer );
+            }
+        }
+
+        /// <summary>
+        /// Renders the base control.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public void RenderBaseControl( HtmlTextWriter writer )
+        {
+            // controls div
+            writer.AddAttribute( "class", "controls" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            _hfGeoDisplayName.RenderControl( writer );
+            _hfGeoPath.RenderControl( writer );
+
+            if ( this.Enabled )
+            {
+                writer.AddAttribute( "id", this.ClientID.ToString() );
+                writer.AddAttribute( "class", "picker picker-geography" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                writer.Write( string.Format( @"
+                    <a class='picker-label' href='#'>
+                        <i class='icon-map-marker'></i>
+                        <span id='selectedGeographyLabel_{0}'>{1}</span>
+                        <b class='caret pull-right'></b>
+                    </a>", this.ClientID, this.GeoDisplayName ) );
+                writer.WriteLine();
+                
+                _btnSelectNone.RenderControl( writer );
+
+                // picker menu
+                writer.AddAttribute( "class", "picker-menu dropdown-menu" );
+                if ( ShowDropDown )
+                {
+                    writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "block" );
+                }
+
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                // mode panel
+                if ( ModePanel != null )
+                {
+                    ModePanel.RenderControl( writer );
+                }
+
+                // map
+                writer.Write( @"
+                    <h4>Geography Picker</h4>
+                    <!-- Our custom delete button that we add to the map for deleting polygons. -->
+                    <div style='display:none; z-index: 10; position: absolute; left: 105px; top: 0px; line-height:0;' id='gmnoprint-delete-button_{0}'>
+                        <div style='direction: ltr; overflow: hidden; text-align: left; position: relative; color: rgb(51, 51, 51); font-family: Arial, sans-serif; font-size: 13px; background-color: rgb(255, 255, 255); padding: 4px; border-width: 1px 1px 1px 1px; border-style: solid; border-color: rgb(113, 123, 135); -webkit-box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px; box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px; font-weight: normal; background-position: initial initial; background-repeat: initial initial;' title='Delete selected shape'>
+                            <span style='display: inline-block;'><div style='width: 16px; height: 16px; overflow: hidden; position: relative;'><i class='icon-remove' style='font-size: 16px; padding-left: 2px; color: #aaa;'></i></div></span>
+                        </div>
+                    </div>
+                    <!-- This is where the Google Map (with Drawing Tools) will go. -->
+                    <div id='geoPicker_{0}' style='height: 300px; width: 500px' ></div>", this.ClientID );
+                writer.WriteLine();
+
+                // picker actions
+                writer.AddAttribute( "class", "picker-actions" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _btnSelect.RenderControl( writer );
+                writer.Write( "<a class='btn btn-xs' id='btnCancel_{0}'>Cancel</a>", this.ClientID );
+                writer.WriteLine();
+                writer.RenderEndTag();
+
+                // closing div of picker-menu
+                writer.RenderEndTag();
+
+                // closing div of picker
+                writer.RenderEndTag();
+            }
+            else
+            {
+                // this picker is not enabled (readonly), so just render a readonly version
+                writer.AddAttribute( "class", "picker picker-select" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                LinkButton linkButton = new LinkButton();
+                linkButton.CssClass = "picker-label";
+                linkButton.Text = string.Format( "<i class='{1}'></i><span>{0}</span>", this.GeoDisplayName, "icon-map-marker" );
+                linkButton.Enabled = false;
+                linkButton.RenderControl( writer );
+                writer.WriteLine();
+                writer.RenderEndTag();
+            }
+
+            // controls div
+            writer.RenderEndTag();
+
+        }
+
+        /// <summary>
+        /// Sets the value. Necessary to preload the geo fence or geo point.
+        /// </summary>
+        /// <param name="dbGeography">The db geography.</param>
+        public void SetValue( DbGeography dbGeography )
+        {
+            if ( dbGeography != null )
+            {
+                SelectedValue = dbGeography;
+            }
+            else
+            {
+                GeoDisplayName = Rock.Constants.None.TextHtml;
+            }
+        }
+        
+        /// <summary>
         /// Registers the java script.
         /// </summary>
         protected virtual void RegisterJavaScript()
@@ -368,195 +621,8 @@ namespace Rock.Web.UI.Controls
             }
 
             string script = string.Format( "Rock.controls.geoPicker.initialize({{ {0} }});", options );
-            
+
             ScriptManager.RegisterStartupScript( this, this.GetType(), "geo_picker-" + this.ClientID, script, true );
-        }
-
-        /// <summary>
-        /// Gets a value indicating whether this instance is valid.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
-        /// </value>
-        public virtual bool IsValid
-        {
-            get
-            {
-                return !Required || RequiredValidator.IsValid;
-            }
-        }
-
-        /// <summary>
-        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
-        /// </summary>
-        protected override void CreateChildControls()
-        {
-            base.CreateChildControls();
-
-            Controls.Clear();
-
-            // TBD TODO -- do I need this hfGeoDisplayName_???
-            _hfGeoDisplayName = new HiddenField();
-            _hfGeoDisplayName.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-            _hfGeoDisplayName.ID = string.Format( "hfGeoDisplayName_{0}", this.ClientID );
-            _hfGeoPath = new HiddenField();
-            _hfGeoPath.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-            _hfGeoPath.ID = string.Format( "hfGeoPath_{0}", this.ClientID );
-
-            _btnSelect.ClientIDMode = System.Web.UI.ClientIDMode.Static;
-            _btnSelect.CssClass = "btn btn-mini btn-primary";
-            _btnSelect.ID = string.Format( "btnSelect_{0}", this.ClientID );
-            _btnSelect.Text = "Done";
-            _btnSelect.CausesValidation = false;
-            _btnSelect.Click += btnSelect_Click;
-
-            _btnSelectNone.ClientIDMode = ClientIDMode.Static;
-            _btnSelectNone.CssClass = "rock-picker-select-none";
-            _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ClientID );
-            _btnSelectNone.Text = "<i class='icon-remove'></i>";
-            _btnSelectNone.CausesValidation = false;
-            _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
-            _btnSelectNone.Click += btnSelect_Click;
-
-            Controls.Add( _label );
-            Controls.Add( _hfGeoDisplayName );
-            Controls.Add( _hfGeoPath );
-            Controls.Add( _btnSelect );
-            Controls.Add( _btnSelectNone );
-
-            RequiredValidator = new HiddenFieldValidator();
-            RequiredValidator.ID = this.ClientID + "_rfv";
-            RequiredValidator.InitialValue = "0";
-            RequiredValidator.ControlToValidate = _hfGeoPath.ID;
-            RequiredValidator.Display = ValidatorDisplay.Dynamic;
-            RequiredValidator.CssClass = "validation-error help-inline";
-            RequiredValidator.Enabled = false;
-
-            Controls.Add( RequiredValidator );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnSelect control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
-        /// <exception cref="System.NotImplementedException"></exception>
-        protected void btnSelect_Click( object sender, EventArgs e )
-        {
-            if ( SelectGeography != null )
-            {
-                SelectGeography( sender, e );
-            }
-        }
-
-        /// <summary>
-        /// Renders the <see cref="T:System.Web.UI.WebControls.TextBox" /> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter" /> object.
-        /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> that receives the rendered output.</param>
-        protected override void Render( HtmlTextWriter writer )
-        {
-            RegisterJavaScript();
-
-            bool renderLabel = !string.IsNullOrEmpty( LabelText );
-
-            if ( renderLabel )
-            {
-                writer.AddAttribute( "class", "control-group" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
-                _label.AddCssClass( "control-label" );
-
-                _label.RenderControl( writer );
-
-                writer.AddAttribute( "class", "controls" );
-
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            }
-
-            if ( Required )
-            {
-                RequiredValidator.Enabled = true;
-                RequiredValidator.ErrorMessage = LabelText + " is Required.";
-                RequiredValidator.RenderControl( writer );
-            }
-
-            _hfGeoDisplayName.RenderControl( writer );
-            _hfGeoPath.RenderControl( writer );
-
-            if ( this.Enabled )
-            {
-                string controlHtmlFormatStart = @"
-    <span id='{0}'>
-        <span class='rock-picker rock-picker-select' id='{0}'> 
-            <a class='rock-picker' href='#'>
-                <i class='icon-map-marker'></i>
-                <span id='selectedGeographyLabel_{0}'>{1}</span>
-                <b class='caret'></b>
-            </a>
-";
-
-                writer.Write( string.Format( controlHtmlFormatStart, this.ClientID, this.GeoDisplayName ) );
-
-                // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
-                if ( SelectGeography != null )
-                {
-                    _btnSelectNone.RenderControl( writer );
-                }
-                else
-                {
-                    writer.Write( "<a class='rock-picker-select-none' id='btnSelectNone_{0}' href='#' style='display:none'><i class='icon-remove'></i></a>", this.ClientID );
-                }
-
-                string controlHtmlFormatMiddle = @"
-        </span>
-        <div class='dropdown-menu rock-picker rock-picker-geography' style='Width: 500px;'>
-            <h4>Geography Picker</h4>
-            <!-- Our custom delete button that we add to the map for deleting polygons. -->
-            <div style='display: none; z-index: 10; position: absolute; left: 105px; top: 0px; line-height:0;' id='gmnoprint-delete-button_{0}'>
-                <div style='direction: ltr; overflow: hidden; text-align: left; position: relative; color: rgb(51, 51, 51); font-family: Arial, sans-serif; font-size: 13px; background-color: rgb(255, 255, 255); padding: 4px; border-width: 1px 1px 1px 1px; border-style: solid; border-color: rgb(113, 123, 135); -webkit-box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px; box-shadow: rgba(0, 0, 0, 0.4) 0px 2px 4px; font-weight: normal; background-position: initial initial; background-repeat: initial initial;' title='Delete selected shape'>
-                    <span style='display: inline-block;'><div style='width: 16px; height: 16px; overflow: hidden; position: relative;'><i class='icon-remove' style='font-size: 16px; padding-left: 2px; color: #aaa;'></i></div></span>
-                </div>
-            </div>
-            <!-- This is where the Google Map (with Drawing Tools) will go. -->
-            <div id='geoPicker_{0}' style='height: 300px; width: 500px' /></div>
-            <hr />
-";
-
-                writer.Write( controlHtmlFormatMiddle, this.ClientID, this.GeoDisplayName );
-
-                // if there is a PostBack registered, create a real LinkButton, otherwise just spit out HTML (to prevent the autopostback)
-                if ( SelectGeography != null )
-                {
-                    _btnSelect.RenderControl( writer );
-                }
-                else
-                {
-                    writer.Write( string.Format( "<a class='btn btn-mini btn-primary' id='btnSelect_{0}'>Done</a>", this.ClientID ) );
-                }
-
-                string controlHtmlFormatEnd = @"
-            <a class='btn btn-mini' id='btnCancel_{0}'>Cancel</a>
-        </div>
-    </span>
-";
-
-                writer.Write( string.Format( controlHtmlFormatEnd, this.ClientID, this.GeoDisplayName ) );
-            }
-            else
-            {
-                string controlHtmlFormatDisabled = @"
-        <i class='icon-file-alt'></i>
-        <span id='selectedItemLabel_{0}'>{1}</span>
-";
-                writer.Write( controlHtmlFormatDisabled, this.ClientID, this.GeoDisplayName );
-            }
-
-            if ( renderLabel )
-            {
-                writer.RenderEndTag();
-
-                writer.RenderEndTag();
-            }
         }
 
         #region utility methods
@@ -681,10 +747,50 @@ namespace Rock.Web.UI.Controls
 
         #endregion
 
+        #region Events
+
+        /// <summary>
+        /// Handles the Click event of the btnSelect control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        /// <exception cref="System.NotImplementedException"></exception>
+        protected void btnSelect_Click( object sender, EventArgs e )
+        {
+            if ( SelectGeography != null )
+            {
+                SelectGeography( sender, e );
+            }
+        }
+        
+        /// <summary>
+        /// Gets or sets the select dbGeography.
+        /// </summary>
+        /// <value>
+        /// The select dbGeography.
+        /// </value>
+        public event EventHandler SelectGeography;
+
+        #endregion
+
+        #region Enums
+
+        /// <summary>
+        /// Which type of selection to enable
+        /// </summary>
         public enum ManagerDrawingMode
         {
+            /// <summary>
+            /// point
+            /// </summary>
             Point = 0,
+
+            /// <summary>
+            /// polygon
+            /// </summary>
             Polygon = 1
         };
+
+        #endregion
     }
 }

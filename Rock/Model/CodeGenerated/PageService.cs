@@ -63,12 +63,12 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Page.FriendlyTypeName );
                 return false;
             }  
- 
-            if ( new Service<Site>().Queryable().Any( a => a.DefaultPageId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Page.FriendlyTypeName, Site.FriendlyTypeName );
-                return false;
-            }  
+            
+            // ignoring Site,DefaultPageId 
+            
+            // ignoring Site,LoginPageId 
+            
+            // ignoring Site,RegistrationPageId 
             return true;
         }
     }
@@ -97,8 +97,7 @@ namespace Rock.Model
                 target.ParentPageId = source.ParentPageId;
                 target.Title = source.Title;
                 target.IsSystem = source.IsSystem;
-                target.SiteId = source.SiteId;
-                target.Layout = source.Layout;
+                target.LayoutId = source.LayoutId;
                 target.RequiresEncryption = source.RequiresEncryption;
                 target.EnableViewState = source.EnableViewState;
                 target.PageDisplayTitle = source.PageDisplayTitle;

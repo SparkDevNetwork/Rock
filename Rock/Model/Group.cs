@@ -23,7 +23,7 @@ namespace Rock.Model
     /// </remarks>
     [Table( "Group" )]
     [DataContract]
-    public partial class Group : Model<Group>
+    public partial class Group : Model<Group>, IOrdered
     {
 
         #region Entity Properties
@@ -51,7 +51,7 @@ namespace Rock.Model
         /// Gets or sets the Id of the <see cref="Rock.Model.GroupType"/> that this Group is a member belongs to. This property is required.
         /// </summary>
         /// <value>
-        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.ModelGroupType"/> that this group is a member of.
+        /// An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupType"/> that this group is a member of.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
@@ -105,7 +105,13 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
-        public bool IsActive { get; set; }
+        public bool IsActive
+        {
+            get { return _isActive; }
+            set { _isActive = value; }
+        }
+        private bool _isActive = true;
+        
 
         /// <summary>
         /// Gets or sets the display order of the group in the group list and group hierarchy. The lower the number the higher the 
@@ -256,6 +262,7 @@ namespace Rock.Model
 
     /// <summary>
     /// Represents a circular reference exception. This occurs when a group is set as a parent of a group that is higher in the group hierarchy. 
+    /// </summary>
     /// <remarks>
     ///  An example of this is when a child group is set as the parent of it's parent group.
     /// </remarks>

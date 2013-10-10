@@ -12,12 +12,13 @@
                     <asp:Literal ID="lReadOnlyTitle" runat="server" />
                 </h1>
 
-                <asp:Literal ID="lblActiveHtml" runat="server" />
-                <div class="label label-type"><asp:Literal ID="lGroupType" runat="server"></asp:Literal></div>
-                <div class="label label-campus"><asp:Literal ID="lCampus" runat="server"></asp:Literal></div>
+                <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
+                <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
+                <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
+
             </div>
 
-            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-error" />
+            <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" />
 
 
 
@@ -25,33 +26,30 @@
 
                 <fieldset>
 
-                    <div class="row-fluid">
-                        <div class="span6">
+                    <div class="row">
+                        <div class="col-md-6">
                             <Rock:DataTextBox ID="tbName" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Name" />
                         </div>
-                        <div class="span6">
-                            <Rock:LabeledCheckBox ID="cbIsActive" runat="server" Text="Active" />
+                        <div class="col-md-6">
+                            <Rock:RockCheckBox ID="cbIsActive" runat="server" Text="Active" />
                         </div>
                     </div>
 
-                    <div class="row-fluid">
-                        <div class="span12">
+                    <div class="row">
+                        <div class="col-md-12">
                             <Rock:DataTextBox ID="tbDescription" runat="server" SourceTypeName="Rock.Model.Group, Rock" PropertyName="Description" TextMode="MultiLine" Rows="4" />
                         </div>
                     </div>
 
-                    <div class="row-fluid">
-                        <div class="span6">
-                            <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" LabelText="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged"/>
-                            
-                            <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" LabelText="Group Type" />
-                        
-                            <Rock:DataDropDownList ID="ddlCampus" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" LabelText="Campus" />
-                            
-                            <Rock:LabeledCheckBox ID="cbIsSecurityRole" runat="server" Text="Security Role" />
+                    <div class="row">
+                        <div class="col-md-6">
+                            <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" Label="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged" />
+                            <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" Label="Group Type" />
+                            <Rock:DataDropDownList ID="ddlCampus" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" Label="Campus" />
+                            <Rock:RockCheckBox ID="cbIsSecurityRole" runat="server" Text="Security Role" />
                         </div>
-                        <div class="span6">
-                             <div class="control-label">Group Member Attributes</div>
+                        <div class="col-md-6">
+                            <div class="control-label">Group Member Attributes</div>
                             <p>
                                 Group member attributes allow for providing different values for each group member.
                             </p>
@@ -73,26 +71,24 @@
                     </div>
 
                     <div class="actions">
-                        <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
-                        <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
+                        <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary btn-sm" OnClick="btnSave_Click" />
+                        <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn  btn-sm" CausesValidation="false" OnClick="btnCancel_Click" />
                     </div>
 
                 </fieldset>
 
-                
+
 
             </div>
 
             <fieldset id="fieldsetViewDetails" runat="server">
 
-
-                
-                
-                <p class="description"><asp:Literal ID="lGroupDescription" runat="server"></asp:Literal></p>
+                <p class="description">
+                    <asp:Literal ID="lGroupDescription" runat="server"></asp:Literal></p>
 
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
-                <div class="row-fluid">
+                <div class="row">
                     <asp:Literal ID="lblMainDetails" runat="server" />
                 </div>
                 <div class="attributes">
@@ -102,9 +98,9 @@
                     <asp:PlaceHolder ID="phGroupAttributesReadOnly" runat="server" EnableViewState="false"></asp:PlaceHolder>
                 </div>
                 <div class="actions">
-                    <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary" OnClick="btnEdit_Click" />
+                    <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-sm" OnClick="btnEdit_Click" />
                     <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
-                    <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn" OnClick="btnDelete_Click" />
+                    <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-action btn-sm" OnClick="btnDelete_Click" />
                 </div>
 
             </fieldset>

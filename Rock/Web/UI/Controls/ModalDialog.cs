@@ -10,7 +10,7 @@ using System.ComponentModel;
 using System.Security.Permissions;
 using System.Web;
 using System.Web.UI;
-using System.Web.UI.WebControls;  
+using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
 
 namespace Rock.Web.UI.Controls
@@ -30,8 +30,9 @@ namespace Rock.Web.UI.Controls
         private LiteralControl _title;
 
         private Panel _contentPanel;
-        
+
         private Panel _footerPanel;
+        private HtmlAnchor _serverSaveLink;
         private HtmlAnchor _saveLink;
         private HtmlAnchor _cancelLink;
 
@@ -81,33 +82,11 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Gets or sets a value indicating whether the default save behavior should be enabled.
-        /// </summary>
-        [
-        Category( "Behavior" ),
-        DefaultValue( false ),
-        Description( "Disable Default Save Behavior" )
-        ]
-        public bool IsDefaultSaveDisabled
-        {
-            get
-            {
-                bool? b = ViewState["IsDefaultSaveDisabled"] as bool?;
-                return ( b == null ) ? false : b.Value;
-            }
-            set
-            {
-                ViewState["IsDefaultSaveDisabled"] = value;
-            }
-        }
-
-
-        /// <summary>
         /// The content of the popup.
         /// </summary>
         [
-            DesignerSerializationVisibility( DesignerSerializationVisibility.Content ), 
-            NotifyParentProperty( true ), 
+            DesignerSerializationVisibility( DesignerSerializationVisibility.Content ),
+            NotifyParentProperty( true ),
             PersistenceMode( PersistenceMode.InnerProperty ),
             Category( "Data" ),
             DefaultValue( typeof( Panel ), "" ),
@@ -115,12 +94,12 @@ namespace Rock.Web.UI.Controls
         ]
         public Panel Content
         {
-            get 
+            get
             {
                 EnsureChildControls();
-                return _contentPanel; 
+                return _contentPanel;
             }
-        
+
         }
 
         /// <summary>
@@ -132,15 +111,15 @@ namespace Rock.Web.UI.Controls
             base.Controls.Clear();
 
             _dfltShowButton = new Button();
-            base.Controls.Add(_dfltShowButton);
+            base.Controls.Add( _dfltShowButton );
             _dfltShowButton.ID = "default";
-            _dfltShowButton.Attributes.Add("style","display:none");
+            _dfltShowButton.Attributes.Add( "style", "display:none" );
 
             _dialogPanel = new Panel();
             base.Controls.Add( _dialogPanel );
             _dialogPanel.ID = "panel";
-            _dialogPanel.CssClass = "modal";
-            _dialogPanel.Attributes.Add("style","display:none");
+            _dialogPanel.CssClass = "rock-modal rock-modal-frame";
+            _dialogPanel.Attributes.Add( "style", "display:none" );
 
             _headerPanel = new Panel();
             _dialogPanel.Controls.Add( _headerPanel );
@@ -165,6 +144,7 @@ namespace Rock.Web.UI.Controls
             _closeLink.InnerHtml = "&times;";
 
             _titleH3 = new HtmlGenericControl( "h3" );
+            _titleH3.AddCssClass( "modal-title" );
             _headerPanel.Controls.Add( _titleH3 );
 
             _title = new LiteralControl();
@@ -176,12 +156,18 @@ namespace Rock.Web.UI.Controls
             _cancelLink.Attributes.Add( "class", "btn" );
             _cancelLink.InnerText = "Cancel";
 
+            _serverSaveLink = new HtmlAnchor();
+            _footerPanel.Controls.Add( _serverSaveLink );
+            _serverSaveLink.ID = "serverSaveLink";
+            _serverSaveLink.Attributes.Add( "class", "btn btn-primary" );
+            _serverSaveLink.ValidationGroup = this.ID + "ValidationGroup";
+            _serverSaveLink.ServerClick += SaveLink_ServerClick;
+
             _saveLink = new HtmlAnchor();
             _footerPanel.Controls.Add( _saveLink );
             _saveLink.ID = "saveLink";
-            _saveLink.Attributes.Add( "class", "btn btn-primary" );
+            _saveLink.Attributes.Add( "class", "btn btn-primary modaldialog-save-button" );
             _saveLink.ValidationGroup = this.ID + "ValidationGroup";
-            _saveLink.ServerClick += SaveLink_ServerClick;
 
             this.PopupControlID = _dialogPanel.ID;
             this.CancelControlID = _cancelLink.ID;
@@ -196,21 +182,23 @@ namespace Rock.Web.UI.Controls
             _closeLink.Attributes["onclick"] = string.Format(
                 "{0} $find('{1}').hide();return false;", this.OnCancelScript, this.BehaviorID );
 
-            if ( SaveClick == null )
-            {
-                _saveLink.Visible = false;
-                _cancelLink.InnerText = "Ok";
+            _serverSaveLink.Visible = SaveClick != null;
+            _serverSaveLink.InnerText = SaveButtonText;
 
-                if ( !IsDefaultSaveDisabled )
+            _saveLink.Visible = SaveClick == null && !( string.IsNullOrWhiteSpace( OnOkScript ) );
+            _saveLink.InnerText = SaveButtonText;
+
+            if ( !_serverSaveLink.Visible )
+            {
+                if ( _saveLink.Visible )
                 {
-                    this.OkControlID = _cancelLink.ID;
+                    this.OkControlID = _saveLink.ID;
+                }
+                else
+                {
+                    _cancelLink.InnerText = "Ok";
                 }
             }
-            else
-            {
-                _saveLink.InnerText = SaveButtonText;
-            }
-
 
             // If no target control has been defined, use a hidden default button.
             if ( this.TargetControlID == string.Empty )

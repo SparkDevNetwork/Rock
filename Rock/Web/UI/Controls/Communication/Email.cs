@@ -21,12 +21,12 @@ namespace Rock.Web.UI.Controls.Communication
 
         #region UI Controls
 
-        private LabeledTextBox tbFromName;
-        private LabeledTextBox tbFromAddress;
-        private LabeledTextBox tbReplyToAddress;
-        private LabeledTextBox tbSubject;
+        private RockTextBox tbFromName;
+        private RockTextBox tbFromAddress;
+        private RockTextBox tbReplyToAddress;
+        private RockTextBox tbSubject;
         private HtmlEditor htmlMessage;
-        private LabeledTextBox tbTextMessage;
+        private RockTextBox tbTextMessage;
         private HiddenField hfAttachments;
         private FileUploader fuAttachments;
         private Dictionary<int, LinkButton> removeButtons;
@@ -40,12 +40,12 @@ namespace Rock.Web.UI.Controls.Communication
         /// </summary>
         public Email()
         {
-            tbFromName = new LabeledTextBox();
-            tbFromAddress = new LabeledTextBox();
-            tbReplyToAddress = new LabeledTextBox();
-            tbSubject = new LabeledTextBox();
+            tbFromName = new RockTextBox();
+            tbFromAddress = new RockTextBox();
+            tbReplyToAddress = new RockTextBox();
+            tbSubject = new RockTextBox();
             htmlMessage = new HtmlEditor();
-            tbTextMessage = new LabeledTextBox();
+            tbTextMessage = new RockTextBox();
             hfAttachments = new HiddenField();
             fuAttachments = new FileUploader();
         }
@@ -122,20 +122,20 @@ namespace Rock.Web.UI.Controls.Communication
             Controls.Clear();
 
             tbFromName.ID = string.Format( "tbFromName_{0}", this.ID );
-            tbFromName.LabelText = "From Name";
+            tbFromName.Label = "From Name";
             Controls.Add( tbFromName );
 
             tbFromAddress.ID = string.Format( "tbFromAddress_{0}", this.ID );
-            tbFromAddress.LabelText = "From Address";
+            tbFromAddress.Label = "From Address";
             tbFromAddress.Required = true;
             Controls.Add( tbFromAddress );
 
             tbReplyToAddress.ID = string.Format( "tbReplyToAddress_{0}", this.ID );
-            tbReplyToAddress.LabelText = "Reply To Address";
+            tbReplyToAddress.Label = "Reply To Address";
             Controls.Add( tbReplyToAddress );
 
             tbSubject.ID = string.Format( "tbSubject_{0}", this.ID );
-            tbSubject.LabelText = "Subject";
+            tbSubject.Label = "Subject";
             Controls.Add( tbSubject );
 
             htmlMessage.ID = string.Format( "htmlMessage_{0}", this.ID );
@@ -143,11 +143,11 @@ namespace Rock.Web.UI.Controls.Communication
             htmlMessage.MergeFields.Add( "GlobalAttribute" );
             htmlMessage.MergeFields.Add( "Rock.Model.Person" );
             this.AdditionalMergeFields.ForEach( m => htmlMessage.MergeFields.Add( m ) );
-            htmlMessage.LabelText = "Message";
+            htmlMessage.Label = "Message";
             Controls.Add( htmlMessage );
 
             tbTextMessage.ID = string.Format( "tbTextMessage_{0}", this.ID );
-            tbTextMessage.LabelText = "Message (Text Version)";
+            tbTextMessage.Label = "Message (Text Version)";
             tbTextMessage.TextMode = TextBoxMode.MultiLine;
             tbTextMessage.Rows = 5;
             tbTextMessage.CssClass = "span12";
@@ -157,7 +157,7 @@ namespace Rock.Web.UI.Controls.Communication
             Controls.Add( hfAttachments );
 
             fuAttachments.ID = string.Format( "fuAttachments_{0}", this.ID );
-            fuAttachments.LabelText = "Attachments";
+            fuAttachments.Label = "Attachments";
             fuAttachments.FileUploaded += fuAttachments_FileUploaded;
             Controls.Add( fuAttachments );
 
@@ -196,10 +196,10 @@ namespace Rock.Web.UI.Controls.Communication
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row-fluid" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             tbFromName.RenderControl( writer );
             tbFromAddress.RenderControl( writer );
@@ -207,7 +207,7 @@ namespace Rock.Web.UI.Controls.Communication
             tbSubject.RenderControl( writer );
             writer.RenderEndTag();
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span6" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             fuAttachments.RenderControl( writer );
             hfAttachments.RenderControl( writer );
@@ -247,10 +247,10 @@ namespace Rock.Web.UI.Controls.Communication
 
             writer.RenderEndTag();  // row-fluid div
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row-fluid" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "span12" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-12" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             htmlMessage.RenderControl( writer );
             tbTextMessage.RenderControl( writer );

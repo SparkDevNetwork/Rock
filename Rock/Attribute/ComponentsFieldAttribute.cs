@@ -19,7 +19,7 @@ namespace Rock.Attribute
         /// <summary>
         /// Initializes a new instance of the <see cref="ComponentFieldAttribute" /> class.
         /// </summary>
-        /// <param name="MEF">The MEF container assembly name.</param>
+        /// <param name="mefContainerAssemblyName">Name of the mef container assembly.</param>
         /// <param name="name">The name.</param>
         /// <param name="description">The description.</param>
         /// <param name="required">if set to <c>true</c> [required].</param>

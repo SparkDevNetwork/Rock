@@ -74,20 +74,12 @@ namespace Rock.Web.Cache
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets the site id.
+        /// Gets or sets the layout id.
         /// </summary>
         /// <value>
-        /// The site id.
+        /// The layout id.
         /// </value>
-        public int? SiteId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the layout.
-        /// </summary>
-        /// <value>
-        /// The layout.
-        /// </value>
-        public string Layout { get; set; }
+        public int LayoutId { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [requires encryption].
@@ -257,18 +249,11 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Gets the <see cref="Site"/> object for the page.
         /// </summary>
-        public SiteCache Site
+        public LayoutCache Layout
         {
             get
             {
-                if ( SiteId != null && SiteId.Value != 0 )
-                {
-                    return SiteCache.Read( SiteId.Value );
-                }
-                else
-                {
-                    return null;
-                }
+                return LayoutCache.Read( LayoutId );
             }
         }
 
@@ -319,7 +304,7 @@ namespace Rock.Web.Cache
                 {
                     foreach ( int id in blockIds.ToList() )
                     {
-                        BlockCache block = BlockCache.Read( id, SiteId );
+                        BlockCache block = BlockCache.Read( id );
                         if ( block != null )
                         {
                             blocks.Add( block );
@@ -332,11 +317,11 @@ namespace Rock.Web.Cache
 
                     // Load Layout Blocks
                     BlockService blockService = new BlockService();
-                    foreach ( Block block in blockService.GetByLayout( this.SiteId.Value, this.Layout ) )
+                    foreach ( Block block in blockService.GetByLayout( this.LayoutId ) )
                     {
                         blockIds.Add( block.Id );
                         block.LoadAttributes();
-                        blocks.Add( BlockCache.Read( block, SiteId ) );
+                        blocks.Add( BlockCache.Read( block ) );
                     }
 
                     // Load Page Blocks
@@ -344,7 +329,7 @@ namespace Rock.Web.Cache
                     {
                         blockIds.Add( block.Id );
                         block.LoadAttributes();
-                        blocks.Add( BlockCache.Read( block, SiteId ) );
+                        blocks.Add( BlockCache.Read( block ) );
                     }
 
                 }
@@ -371,13 +356,33 @@ namespace Rock.Web.Cache
         }
         private Dictionary<string, Data.KeyEntity> _context;
 
+        /// <summary>
+        /// Helper class for PageRoute information
+        /// </summary>
         public class PageRouteInfo
         {
+            /// <summary>
+            /// The id
+            /// </summary>
             public int Id;
+
+            /// <summary>
+            /// The GUID
+            /// </summary>
             public Guid Guid;
+
+            /// <summary>
+            /// The route
+            /// </summary>
             public string Route;
         }
 
+        /// <summary>
+        /// Gets or sets the page routes.
+        /// </summary>
+        /// <value>
+        /// The page routes.
+        /// </value>
         public List<PageRouteInfo> PageRoutes { get; set; }
 
         /// <summary>
@@ -396,7 +401,7 @@ namespace Rock.Web.Cache
                 }
                 else
                 {
-                    return this.Site;
+                    return this.Layout.Site;
                 }
             }
         }
@@ -415,7 +420,7 @@ namespace Rock.Web.Cache
 
                 if ( BreadCrumbDisplayIcon && !string.IsNullOrWhiteSpace( IconCssClass ) )
                 {
-                    bcName = string.Format( "<i class='{0}'></i>", IconCssClass );
+                    bcName = string.Format( "<i class='{0}'></i> ", IconCssClass );
                 }
                 if ( BreadCrumbDisplayName )
                 {
@@ -443,10 +448,9 @@ namespace Rock.Web.Cache
                 var page = (Page)model;
                 this.Name = page.Name;
                 this.ParentPageId = page.ParentPageId;
+                this.LayoutId = page.LayoutId;
                 this.Title = page.Title;
                 this.IsSystem = page.IsSystem;
-                this.SiteId = page.SiteId;
-                this.Layout = page.Layout;
                 this.RequiresEncryption = page.RequiresEncryption;
                 this.EnableViewState = page.EnableViewState;
                 this.PageDisplayTitle = page.PageDisplayTitle;
@@ -518,7 +522,7 @@ namespace Rock.Web.Cache
                     if ( modelType == null )
                     {
                         // if the Type isn't found in the Rock.dll (it might be from a Plugin), lookup which assessmbly it is in and look in there
-                        EntityTypeCache entityTypeInfo = EntityTypeCache.Read( entity );
+                        EntityTypeCache entityTypeInfo = EntityTypeCache.Read( entity, false );
                         if ( entityTypeInfo != null )
                         {
                             string[] assemblyNameParts = entityTypeInfo.AssemblyName.Split( new char[] { ',' } );
@@ -529,45 +533,48 @@ namespace Rock.Web.Cache
                         }
                     }
 
-                    /// In the case of core Rock.dll Types, we'll just use Rock.Data.Service<> and Rock.Data.RockContext<>
-                    /// otherwise find the first (and hopefully only) Service<> and dbContext we can find in the Assembly.  
-                    Type serviceType = typeof( Rock.Data.Service<> );
-                    Type contextType = typeof( Rock.Data.RockContext );
-                    if ( modelType.Assembly != serviceType.Assembly )
+                    if ( modelType != null )
                     {
-                        var serviceTypeLookup = Reflection.SearchAssembly( modelType.Assembly, serviceType );
-                        if ( serviceTypeLookup.Any() )
+                        // In the case of core Rock.dll Types, we'll just use Rock.Data.Service<> and Rock.Data.RockContext<>
+                        // otherwise find the first (and hopefully only) Service<> and dbContext we can find in the Assembly.  
+                        Type serviceType = typeof( Rock.Data.Service<> );
+                        Type contextType = typeof( Rock.Data.RockContext );
+                        if ( modelType.Assembly != serviceType.Assembly )
                         {
-                            serviceType = serviceTypeLookup.First().Value;
+                            var serviceTypeLookup = Reflection.SearchAssembly( modelType.Assembly, serviceType );
+                            if ( serviceTypeLookup.Any() )
+                            {
+                                serviceType = serviceTypeLookup.First().Value;
+                            }
+
+                            var contextTypeLookup = Reflection.SearchAssembly( modelType.Assembly, typeof( System.Data.Entity.DbContext ) );
+
+                            if ( contextTypeLookup.Any() )
+                            {
+                                contextType = contextTypeLookup.First().Value;
+                            }
                         }
 
-                        var contextTypeLookup = Reflection.SearchAssembly( modelType.Assembly, typeof( System.Data.Entity.DbContext ) );
+                        System.Data.Entity.DbContext dbContext = Activator.CreateInstance( contextType ) as System.Data.Entity.DbContext;
 
-                        if ( contextTypeLookup.Any() )
+                        Type service = serviceType.MakeGenericType( new Type[] { modelType } );
+                        var serviceInstance = Activator.CreateInstance( service, dbContext );
+
+                        if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
                         {
-                            contextType = contextTypeLookup.First().Value;
+                            MethodInfo getMethod = service.GetMethod( "Get", new Type[] { typeof( int ) } );
+                            keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Id } ) as Rock.Data.IEntity;
                         }
-                    }
+                        else
+                        {
+                            MethodInfo getMethod = service.GetMethod( "GetByPublicKey" );
+                            keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Key } ) as Rock.Data.IEntity;
+                        }
 
-                    System.Data.Entity.DbContext dbContext = Activator.CreateInstance( contextType ) as System.Data.Entity.DbContext;
-
-                    Type service = serviceType.MakeGenericType( new Type[] { modelType } );
-                    var serviceInstance = Activator.CreateInstance( service, dbContext );
-
-                    if ( string.IsNullOrWhiteSpace( keyModel.Key ) )
-                    {
-                        MethodInfo getMethod = service.GetMethod( "Get", new Type[] { typeof( int ) } );
-                        keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Id } ) as Rock.Data.IEntity;
-                    }
-                    else
-                    {
-                        MethodInfo getMethod = service.GetMethod( "GetByPublicKey" );
-                        keyModel.Entity = getMethod.Invoke( serviceInstance, new object[] { keyModel.Key } ) as Rock.Data.IEntity;
-                    }
-
-                    if ( keyModel.Entity is Rock.Attribute.IHasAttributes )
-                    {
-                        Rock.Attribute.Helper.LoadAttributes( keyModel.Entity as Rock.Attribute.IHasAttributes );
+                        if ( keyModel.Entity is Rock.Attribute.IHasAttributes )
+                        {
+                            Rock.Attribute.Helper.LoadAttributes( keyModel.Entity as Rock.Attribute.IHasAttributes );
+                        }
                     }
                 }
 
@@ -740,6 +747,9 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="levelsDeep">The page levels deep.</param>
         /// <param name="person">The person.</param>
+        /// <param name="currentPage">The current page.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <param name="queryString">The query string.</param>
         /// <returns></returns>
         public XDocument MenuXml( int levelsDeep, Person person, PageCache currentPage = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
         {
@@ -804,6 +814,84 @@ namespace Rock.Web.Cache
         }
 
         #endregion
+
+        #region Menu Property Methods
+
+        /// <summary>
+        /// Gets the menu properties.
+        /// </summary>
+        /// <param name="person">The person.</param>
+        /// <returns></returns>
+        public Dictionary<string, object> GetMenuProperties( Person person )
+        {
+            return GetMenuProperties( 1, person );
+        }
+
+        /// <summary>
+        /// Gets the menu properties.
+        /// </summary>
+        /// <param name="levelsDeep">The levels deep.</param>
+        /// <param name="person">The person.</param>
+        /// <param name="currentPage">The current page.</param>
+        /// <param name="parameters">The parameters.</param>
+        /// <param name="queryString">The query string.</param>
+        /// <returns></returns>
+        public Dictionary<string, object> GetMenuProperties( int levelsDeep, Person person, PageCache currentPage = null, Dictionary<string, string> parameters = null, NameValueCollection queryString = null )
+        {
+            if ( levelsDeep >= 0 && this.DisplayInNav( person ) )
+            {
+                string iconUrl = string.Empty;
+                if ( this.IconFileId.HasValue )
+                {
+                    iconUrl = string.Format( "{0}/GetImage.ashx?{1}",
+                        HttpContext.Current.Request.ApplicationPath,
+                        this.IconFileId.Value );
+                }
+
+                bool isCurrentPage = currentPage != null && currentPage.Id == this.Id;
+
+                var properties = new Dictionary<string, object>();
+                properties.Add( "id", this.Id );
+                properties.Add( "title", this.Title ?? this.Name );
+                properties.Add( "current", isCurrentPage.ToString() );
+                properties.Add( "url", new PageReference( this.Id, 0, parameters, queryString ).BuildUrl() );
+                properties.Add( "display-description", this.MenuDisplayDescription.ToString().ToLower() );
+                properties.Add( "display-icon", this.MenuDisplayIcon.ToString().ToLower() );
+                properties.Add( "display-child-pages", this.MenuDisplayChildPages.ToString().ToLower() );
+                properties.Add( "icon-css-class", this.IconCssClass ?? string.Empty );
+                properties.Add( "description", this.Description ?? "" );
+                properties.Add( "icon-url", iconUrl );
+
+                if ( levelsDeep > 0 && this.MenuDisplayChildPages )
+                {
+                    var childPages = new List<Dictionary<string, object>>();
+
+                    foreach ( PageCache page in Pages )
+                    {
+                        if ( page != null )
+                        {
+                            var childPageElement = page.GetMenuProperties( levelsDeep - 1, person, currentPage, parameters, queryString );
+                            if ( childPageElement != null )
+                                childPages.Add( childPageElement );
+                        }
+                    }
+
+                    if ( childPages.Any() )
+                    {
+                        properties.Add( "pages", childPages );
+                    }
+                }
+
+                return properties;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        #endregion
+
 
         #endregion
 
@@ -950,14 +1038,14 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Flushes all the pages that use a specific layout.
         /// </summary>
-        public static void FlushLayout( string layout )
+        public static void FlushLayout( int layoutId )
         {
             ObjectCache cache = MemoryCache.Default;
             foreach ( var item in cache )
                 if ( item.Key.StartsWith( "Rock:Page:" ) )
                 {
                     PageCache page = cache[item.Key] as PageCache;
-                    if ( page != null && page.Layout == layout )
+                    if ( page != null && page.LayoutId == layoutId )
                         cache.Remove( item.Key );
                 }
         }
@@ -965,14 +1053,14 @@ namespace Rock.Web.Cache
         /// <summary>
         /// Flushes the block instances for all the pages that use a specific layout.
         /// </summary>
-        public static void FlushLayoutBlocks( string layout )
+        public static void FlushLayoutBlocks( int layoutId )
         {
             ObjectCache cache = MemoryCache.Default;
             foreach ( var item in cache )
                 if ( item.Key.StartsWith( "Rock:Page:" ) )
                 {
                     PageCache page = cache[item.Key] as PageCache;
-                    if ( page != null && page.Layout == layout )
+                    if ( page != null && page.LayoutId == layoutId )
                         page.FlushBlocks();
                 }
         }

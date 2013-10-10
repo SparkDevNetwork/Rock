@@ -4,9 +4,9 @@
     <ContentTemplate>
         <Rock:ModalAlert ID="mdGridWarning" runat="server" />
         <Rock:GridFilter ID="rFilter" runat="server">
-            <Rock:DataTextBox ID="tbNameFilter" runat="server" SourceTypeName="Rock.Model.BlockType, Rock" PropertyName="Name" Required="false" CausesValidation="false" LabelText="Name contains" />
-            <Rock:DataTextBox ID="tbPathFilter" runat="server" SourceTypeName="Rock.Model.BlockType, Rock" PropertyName="Path" Required="false" CausesValidation="false" LabelText="Path contains" />
-            <Rock:LabeledCheckBox ID="cbExcludeSystem" runat="server" LabelText="Exclude 'System' types?" />
+            <Rock:DataTextBox ID="tbNameFilter" runat="server" SourceTypeName="Rock.Model.BlockType, Rock" PropertyName="Name" Required="false" CausesValidation="false" Label="Name contains" />
+            <Rock:DataTextBox ID="tbPathFilter" runat="server" SourceTypeName="Rock.Model.BlockType, Rock" PropertyName="Path" Required="false" CausesValidation="false" Label="Path contains" />
+            <Rock:RockCheckBox ID="cbExcludeSystem" runat="server" Label="Exclude 'System' types?" />
         </Rock:GridFilter>
         <Rock:Grid ID="gBlockTypes" runat="server" AllowSorting="true" OnRowDataBound="gBlockTypes_RowDataBound" OnRowSelected="gBlockTypes_Edit">
             <Columns>

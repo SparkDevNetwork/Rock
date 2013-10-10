@@ -13,7 +13,7 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class WorkflowTypePicker : DropDownList
+    public class WorkflowTypePicker : RockDropDownList
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="WorkflowTypePicker" /> class.

@@ -21,30 +21,30 @@ namespace Rock.Model
     public partial class PhoneNumber : Model<PhoneNumber>
     {
         /// <summary>
-        /// Gets or sets the System.
+        /// Gets or sets a flag indicating if the PhoneNumber is part of the RockChMS core system/framework. This property is required.
         /// </summary>
         /// <value>
-        /// System.
+        /// A <see cref="System.Boolean" /> value that is <c>true</c> if the PhoneNumber is part of the RockChMS core system/framework; otherwise <c>false</c>.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
         
         /// <summary>
-        /// Gets or sets the Person Id.
+        /// Gets or sets the PersonId of the <see cref="Rock.Model.Person" /> that the PhoneNumber belongs to. This property is required.
         /// </summary>
         /// <value>
-        /// Person Id.
+        /// A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> that the PhoneNumber belongs to.
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public int PersonId { get; set; }
         
         /// <summary>
-        /// Gets or sets the Number.
+        /// Gets or sets the phone number. The number is stored without any string formatting. (i.e. (502) 555-1212 will be stored as 5025551212). This property is required.
         /// </summary>
         /// <value>
-        /// Number.
+        /// A <see cref="System.String"/> representing the phone number without string formatting.
         /// </value>
         [Required]
         [MaxLength( 20 )]
@@ -52,63 +52,75 @@ namespace Rock.Model
         public string Number { get; set; }
 
         /// <summary>
-        /// Gets or sets the extension
+        /// Gets or sets the extension (if any) that would need to be dialed to contact the owner. 
         /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> representing the extensions that would need to be dialed to contact the owner. If no extension is required, this property will be null. 
+        /// </value>
         [MaxLength( 20 )]
         [DataMember]
         public string Extension { get; set; }
 
         /// <summary>
-        /// Type of phone number
+        /// Gets the Phone Number's Number Type <see cref="Rock.Model.DefinedValue"/> Id.
         /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Number Type <see cref="Rock.Model.DefinedValue"/> Id. If unknown, this value will be null.
+        /// </value>
         [DataMember]
         public int? NumberTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets whether the number has been opted in for SMS
+        /// Gets or sets a flag indicating whether the number has been opted in for SMS
         /// </summary>
+        /// <value>
+        ///   A <see cref="System.Boolean"/> value that is <c>true</c> if the phone number has opted in for SMS messaging; otherwise <c>false</c>.
+        /// </value>
         [Required]
         [DataMember( IsRequired = true )]
         public bool IsMessagingEnabled { get; set; }
 
         /// <summary>
-        /// The phone number type
+        /// Gets or sets the Phone Number's NumberType <see cref="Rock.Model.DefinedValue"/>
         /// </summary>
+        /// <value>
+        /// The Number Type <see cref="Rock.Model.DefinedValue"/> of the phone number.
+        /// </value>
         [DataMember]
         public virtual Model.DefinedValue NumberTypeValue { get; set; }
 
         /// <summary>
-        /// Gets or sets the whether the number is unlisted or not.
+        /// Gets or sets a flag indicating whether the PhoneNumber is unlisted or not.
         /// </summary>
         /// <value>
-        /// IsUnlisted.
+        /// A <see cref="System.Boolean"/> value that is <c>true</c> if the PhoneNumber is unlisted; otherwise <c>false</c>.
         /// </value>
         [DataMember]
         public bool IsUnlisted { get; set; }
 
         /// <summary>
-        /// Gets or sets the Description.
+        /// Gets or sets an optional description of the PhoneNumber.
         /// </summary>
         /// <value>
-        /// Description.
+        /// A <see cref="System.String"/> representing an optional description of the PhoneNumber.
         /// </value>
         [DataMember]
         public string Description { get; set; }
         
         /// <summary>
-        /// Gets or sets the Person.
+        /// Gets or sets the <see cref="Rock.Model.Person"/> who the PhoneNumber belongs to.
         /// </summary>
         /// <value>
-        /// A <see cref="Person"/> object.
+        /// The <see cref="Rock.Model.Person"/> that the phone number belongs to.
         /// </value>
         [DataMember]
         public virtual Person Person { get; set; }
 
         /// <summary>
-        /// Formats a phone number
+        /// Formats a provided string of numbers as a US phone number in (###) ###-#### format. 
         /// </summary>
-        /// <param name="number"></param>
-        /// <returns></returns>
+        /// <param name="number">A <see cref="System.String"/> containing the number to format.</param>
+        /// <returns>A <see cref="System.String"/> containing the number in ###-#### or (###) ###-#### format. If more than 10 digits are provided all digits after the 10th position will be formatted as an extension. </returns>
         public static string FormattedNumber( string number )
         {
             if ( string.IsNullOrWhiteSpace( number ) )
@@ -129,10 +141,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Removes non-numeric characters from number
+        /// Removes non-numeric characters from a provided number
         /// </summary>
-        /// <param name="number">The number.</param>
-        /// <returns></returns>
+        /// <param name="number">A <see cref="System.String"/> containing the phone number to clean.</param>
+        /// <returns>A <see cref="System.String"/> containing the phone number with all non numeric characters removed. </returns>
         public static string CleanNumber( string number )
         {
             return digitsOnly.Replace(number, "");
@@ -140,10 +152,10 @@ namespace Rock.Model
         private static Regex digitsOnly = new Regex( @"[^\d]" );
 
         /// <summary>
-        /// Gets the formatted number.
+        /// Returns a formatted version of the Number.
         /// </summary>
         /// <value>
-        /// The formatted number.
+        /// A <see cref="System.String"/> containing the formatted number.
         /// </value>
         public virtual string NumberFormatted
         {
@@ -151,10 +163,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Returns a <see cref="System.String" /> containing the Number and represents this instance.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
+        /// A <see cref="System.String" /> containing the Number and represents this instance.
         /// </returns>
         public override string ToString()
         {

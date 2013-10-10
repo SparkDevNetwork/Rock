@@ -67,7 +67,7 @@ namespace Rock.Field.Types
 
             // build a drop down list of defined types (the one that gets selected is
             // used to build a list of defined values) 
-            DropDownList ddl = new DropDownList();
+            var ddl = new RockDropDownList();
             controls.Add( ddl );
             ddl.AutoPostBack = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
@@ -118,12 +118,13 @@ namespace Rock.Field.Types
                     ( (DropDownList)controls[0] ).SelectedValue = configurationValues[GROUP_TYPE_KEY].Value;
                 }
             }
-        }        
-        
+        }
+
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
         /// <returns>
         /// The control
         /// </returns>

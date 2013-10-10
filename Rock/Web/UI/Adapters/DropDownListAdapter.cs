@@ -11,8 +11,15 @@ using System.Web.UI.WebControls.Adapters;
 
 namespace Rock.Web.UI.Adapters
 {
+    /// <summary>
+    /// Custom control adapter for rendering a dropdown list
+    /// </summary>
     public class DropDownListAdapter : WebControlAdapter
     {
+        /// <summary>
+        /// Generates the target-specific inner markup for the Web control to which the control adapter is attached.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> containing methods to render the target-specific output.</param>
         protected override void RenderContents( HtmlTextWriter writer )
         {
             DropDownList list = Control as DropDownList;

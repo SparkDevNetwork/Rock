@@ -3,32 +3,32 @@
 <asp:UpdatePanel ID="upEditPerson" runat="server">
     <ContentTemplate>
 
-        <div class="row-fluid">
+        <div class="row">
 
-            <div class="span3">
-                <Rock:ImageUploader ID="imgPhoto" runat="server" LabelText="Photo" />
+            <div class="col-md-3">
+                <Rock:ImageUploader ID="imgPhoto" runat="server" Label="Photo" />
             </div>
 
-            <div class="span6">
+            <div class="col-md-6">
 
                 <fieldset>
-                    <Rock:LabeledDropDownList ID="ddlTitle" runat="server" LabelText="Title"/>
+                    <Rock:RockDropDownList ID="ddlTitle" runat="server" CssClass="input-width-md" Label="Title"/>
                     <Rock:DataTextBox ID="tbGivenName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="GivenName" />
                     <Rock:DataTextBox ID="tbNickName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="NickName" />
                     <Rock:DataTextBox ID="tbMiddleName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="MiddleName" />
                     <Rock:DataTextBox ID="tbLastName" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="LastName" />
-                    <Rock:LabeledDropDownList ID="ddlSuffix" runat="server" LabelText="Suffix"/>
+                    <Rock:RockDropDownList ID="ddlSuffix" CssClass="input-width-md" runat="server" Label="Suffix"/>
                     <Rock:DatePicker ID="dpBirthDate" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="BirthDate" />
                     <Rock:DatePicker ID="dpAnniversaryDate" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="AnniversaryDate" />
 
-                    <Rock:LabeledRadioButtonList ID="rblGender" runat="server" RepeatDirection="Horizontal" LabelText="Gender">
+                    <Rock:RockRadioButtonList ID="rblGender" runat="server" RepeatDirection="Horizontal" Label="Gender">
                         <asp:ListItem Text="Male" Value="Male" />
                         <asp:ListItem Text="Female" Value="Female" />
                         <asp:ListItem Text="Unknown" Value="Unknown" />
-                    </Rock:LabeledRadioButtonList>
+                    </Rock:RockRadioButtonList>
 
-                    <Rock:LabeledRadioButtonList ID="rblMaritalStatus" runat="server" RepeatDirection="Horizontal" LabelText="Marital Status" />
-                    <Rock:LabeledRadioButtonList ID="rblStatus" runat="server" LabelText="Person Status" />
+                    <Rock:RockRadioButtonList ID="rblMaritalStatus" runat="server" RepeatDirection="Horizontal" Label="Marital Status" />
+                    <Rock:RockRadioButtonList ID="rblStatus" runat="server" Label="Person Status" />
 
                 </fieldset>
 
@@ -38,19 +38,26 @@
                     <div class="form-horizontal">
                         <asp:Repeater ID="rContactInfo" runat="server">
                             <ItemTemplate>
-                                <div class="control-group">
-                                    <div class="control-label"><%# Eval("NumberTypeValue.Name")  %></div>
-                                    <div class="controls">
-                                        <asp:HiddenField ID="hfPhoneType" runat="server" Value='<%# Eval("NumberTypeValueId")  %>' />
-                                        <asp:TextBox ID="tbPhone" runat="server" Text='<%# Eval("NumberFormatted")  %>' />
-                                        <asp:CheckBox ID="cbUnlisted" runat="server" Text="unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' />
+                                <div class="form-group">
+                                    <div class="control-label col-md-2"><%# Eval("NumberTypeValue.Name")  %></div>
+                                    <div class="controls col-md-10">
+                                        <div class="row">
+                                            <div class="col-sm-9">
+                                                <asp:HiddenField ID="hfPhoneType" runat="server" Value='<%# Eval("NumberTypeValueId")  %>' />
+                                                <Rock:DataTextBox ID="tbPhone" PrependText="<i class='icon-phone-sign'></i>" runat="server" Text='<%# Eval("NumberFormatted")  %>' />
+                                            </div>    
+                                            <div class="col-sm-3">
+                                                <asp:CheckBox ID="cbUnlisted" runat="server" Text="unlisted" Checked='<%# (bool)Eval("IsUnlisted") %>' />
+                                            </div>
+
+                                        </div>
                                     </div>
                                 </div>
                             </ItemTemplate>
                         </asp:Repeater>
                     </div>
 
-                    <Rock:DataTextBox ID="tbEmail" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" />
+                    <Rock:DataTextBox ID="tbEmail" PrependText="<i class=' icon-envelope'></i>" runat="server" SourceTypeName="Rock.Model.Person, Rock" PropertyName="Email" />
 
                 </fieldset>
 
@@ -61,11 +68,11 @@
 
             </div>
 
-            <div class="span3">
+            <div class="col-md-3">
 
                 <fieldset>
-                    <Rock:LabeledDropDownList ID="ddlRecordStatus" runat="server" LabelText="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" /><br />
-                    <Rock:LabeledDropDownList ID="ddlReason" runat="server" LabelText="Reason" Visible="false"></Rock:LabeledDropDownList>
+                    <Rock:RockDropDownList ID="ddlRecordStatus" runat="server" Label="Record Status" AutoPostBack="true" OnSelectedIndexChanged="ddlRecordStatus_SelectedIndexChanged" /><br />
+                    <Rock:RockDropDownList ID="ddlReason" runat="server" Label="Reason" Visible="false"></Rock:RockDropDownList>
                 </fieldset>
 
             </div>

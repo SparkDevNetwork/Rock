@@ -10,6 +10,8 @@ using System.Data;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
+using Rock.Web.UI.Controls;
+
 namespace Rock.Field.Types
 {
     /// <summary>
@@ -38,14 +40,14 @@ namespace Rock.Field.Types
         {
             List<Control> controls = new List<Control>();
 
-            TextBox tb = new TextBox();
+            var tb = new RockTextBox();
             controls.Add( tb );
             tb.TextMode = TextBoxMode.MultiLine;
             tb.Rows = 3;
             tb.AutoPostBack = true;
             tb.TextChanged += OnQualifierUpdated;
 
-            DropDownList ddl = new DropDownList();
+            var ddl = new RockDropDownList();
             controls.Add( ddl );
             ddl.Items.Add( new ListItem( "Drop Down List", "ddl" ) );
             ddl.Items.Add( new ListItem( "Radio Buttons", "rb" ) );
@@ -100,7 +102,8 @@ namespace Rock.Field.Types
         /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
-        /// <param name="configurationValues"></param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
         /// <returns>
         /// The control
         /// </returns>
@@ -112,12 +115,12 @@ namespace Rock.Field.Types
             {
                 if ( configurationValues.ContainsKey( "fieldtype" ) && configurationValues["fieldtype"].Value == "rb" )
                 {
-                    editControl = new RadioButtonList { ID = id }; 
+                    editControl = new RockRadioButtonList { ID = id }; 
                     ( (RadioButtonList)editControl ).RepeatDirection = RepeatDirection.Horizontal;
                 }
                 else
                 {
-                    editControl = new DropDownList { ID = id }; 
+                    editControl = new RockDropDownList { ID = id }; 
                 }
 
                 if ( configurationValues.ContainsKey( "values" ) )

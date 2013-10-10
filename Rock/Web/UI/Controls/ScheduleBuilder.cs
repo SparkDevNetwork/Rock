@@ -19,11 +19,296 @@ namespace Rock.Web.UI.Controls
     /// <summary>
     /// 
     /// </summary>
-    public class ScheduleBuilder : CompositeControl, ILabeledControl
+    public class ScheduleBuilder : CompositeControl, IRockControl
     {
-        private Label _label;
-        private LinkButton _btnDialogCancelX;
+        #region IRockControl implementation
 
+        /// <summary>
+        /// Gets or sets the label text.
+        /// </summary>
+        /// <value>
+        /// The label text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text for the label." )
+        ]
+        public string Label
+        {
+            get { return ViewState["Label"] as string ?? string.Empty; }
+            set { ViewState["Label"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the CSS Icon text.
+        /// </summary>
+        /// <value>
+        /// The CSS icon class.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The text for the label." )
+        ]
+        public string IconCssClass
+        {
+            get { return ViewState["IconCssClass"] as string ?? string.Empty; }
+            set { ViewState["IconCssClass"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the help text.
+        /// </summary>
+        /// <value>
+        /// The help text.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Appearance" ),
+        DefaultValue( "" ),
+        Description( "The help block." )
+        ]
+        public string Help
+        {
+            get
+            {
+                return HelpBlock != null ? HelpBlock.Text : string.Empty;
+            }
+            set
+            {
+                if ( HelpBlock != null )
+                {
+                    HelpBlock.Text = value;
+                }
+            }
+        }
+        /// <summary>
+        /// Gets or sets a value indicating whether this <see cref="RockTextBox"/> is required.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if required; otherwise, <c>false</c>.
+        /// </value>
+        [
+        Bindable( true ),
+        Category( "Behavior" ),
+        DefaultValue( "false" ),
+        Description( "Is the value required?" )
+        ]
+        public bool Required
+        {
+            get { return ViewState["Required"] as bool? ?? false; }
+            set { ViewState["Required"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the required error message.  If blank, the LabelName name will be used
+        /// </summary>
+        /// <value>
+        /// The required error message.
+        /// </value>
+        public string RequiredErrorMessage
+        {
+            get
+            {
+                return RequiredFieldValidator != null ? RequiredFieldValidator.ErrorMessage : string.Empty;
+            }
+            set
+            {
+                if ( RequiredFieldValidator != null )
+                {
+                    RequiredFieldValidator.ErrorMessage = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this instance is valid.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance is valid; otherwise, <c>false</c>.
+        /// </value>
+        public virtual bool IsValid
+        {
+            get
+            {
+                return !Required || RequiredFieldValidator == null || RequiredFieldValidator.IsValid;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the help block.
+        /// </summary>
+        /// <value>
+        /// The help block.
+        /// </value>
+        public HelpBlock HelpBlock { get; set; }
+
+        /// <summary>
+        /// Gets or sets the required field validator.
+        /// </summary>
+        /// <value>
+        /// The required field validator.
+        /// </value>
+        public RequiredFieldValidator RequiredFieldValidator { get; set; }
+
+        #endregion
+
+        private Panel _scheduleBuilderPanel;
+        private LinkButton _btnShowPopup;
+        private ModalDialog _modalDialog;
+        private ScheduleBuilderPopupContents _scheduleBuilderPopupContents;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ScheduleBuilder"/> class.
+        /// </summary>
+        public ScheduleBuilder()
+        {
+            RequiredFieldValidator = null;
+            HelpBlock = new HelpBlock();
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+        /// </summary>
+        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnInit( EventArgs e )
+        {
+            base.OnInit( e );
+
+            RegisterJavaScript();
+        }
+
+        /// <summary>
+        /// Registers the java script.
+        /// </summary>
+        protected virtual void RegisterJavaScript()
+        {
+            EnsureChildControls();
+            var script = string.Format( @"Rock.controls.scheduleBuilder.initialize({{ id: '{0}' }});", this._scheduleBuilderPopupContents.ClientID );
+            ScriptManager.RegisterStartupScript( this, this.GetType(), "schedule_builder-init_" + this._scheduleBuilderPopupContents.ClientID, script, true );
+        }
+
+        /// <summary>
+        /// Occurs when [save schedule].
+        /// </summary>
+        public event EventHandler SaveSchedule;
+
+        /// <summary>
+        /// Gets or sets the content of the attribute calendar.
+        /// </summary>
+        /// <value>
+        /// The content of the attribute calendar.
+        /// </value>
+        public string iCalendarContent
+        {
+            get
+            {
+                EnsureChildControls();
+                return _scheduleBuilderPopupContents.iCalendarContent;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                _scheduleBuilderPopupContents.iCalendarContent = value;
+            }
+        }
+
+        /// <summary>
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
+        /// </summary>
+        protected override void CreateChildControls()
+        {
+            base.CreateChildControls();
+            this.Controls.Clear();
+
+            _scheduleBuilderPanel = new Panel();
+            _scheduleBuilderPanel.ID = "scheduleBuilderPanel_" + this.ClientID;
+            _scheduleBuilderPanel.CssClass = "controls";
+            _scheduleBuilderPanel.ClientIDMode = ClientIDMode.Static;
+
+            _btnShowPopup = new LinkButton();
+            _btnShowPopup.CausesValidation = false;
+            _btnShowPopup.ID = "btnShowPopup_" + this.ClientID;
+            _btnShowPopup.CssClass = "btn btn-sm";
+            _btnShowPopup.Text = "<i class='icon-calendar'></i> Edit Schedule";
+            _btnShowPopup.ClientIDMode = ClientIDMode.Static;
+            _btnShowPopup.Click += _btnShowPopup_Click;
+
+            _modalDialog = new ModalDialog();
+            _modalDialog.ID = "modalDialog_" + this.ClientID;
+            _modalDialog.ClientIDMode = ClientIDMode.Static;
+            _modalDialog.Title = "Schedule Builder";
+            _modalDialog.SaveButtonText = "OK";
+            _modalDialog.SaveClick += btnSaveSchedule_Click;
+
+            _scheduleBuilderPopupContents = new ScheduleBuilderPopupContents();
+            _scheduleBuilderPopupContents.ID = "scheduleBuilderPopupContents_" + this.ClientID;
+            _scheduleBuilderPopupContents.ClientIDMode = ClientIDMode.Static;
+
+            this.Controls.Add( _scheduleBuilderPanel );
+            _scheduleBuilderPanel.Controls.Add( _btnShowPopup );
+            _scheduleBuilderPanel.Controls.Add( _modalDialog );
+            _modalDialog.Content.Controls.Add( _scheduleBuilderPopupContents );
+
+            RockControlHelper.CreateChildControls( this, Controls );
+        }
+
+        /// <summary>
+        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        public override void RenderControl( HtmlTextWriter writer )
+        {
+            if ( this.Visible )
+            {
+                RockControlHelper.RenderControl( this, writer );
+            }
+        }
+
+        /// <summary>
+        /// This is where you implment the simple aspects of rendering your control.  The rest
+        /// will be handled by calling RenderControlHelper's RenderControl() method.
+        /// </summary>
+        /// <param name="writer">The writer.</param>
+        public void RenderBaseControl( HtmlTextWriter writer )
+        {
+            _scheduleBuilderPanel.RenderControl( writer );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnSaveSchedule control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void btnSaveSchedule_Click( object sender, EventArgs e )
+        {
+            iCalendarContent = _scheduleBuilderPopupContents.GetCalendarContentFromControls();
+            if ( SaveSchedule != null )
+            {
+                SaveSchedule( sender, e );
+            }
+        }
+
+        /// <summary>
+        /// Handles the Click event of the _btnShowPopup control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void _btnShowPopup_Click( object sender, EventArgs e )
+        {
+            _modalDialog.Show();
+        }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    public class ScheduleBuilderPopupContents : CompositeControl
+    {
         private DateTimePicker _dpStartDateTime;
         private NumberBox _tbDurationHours;
         private NumberBox _tbDurationMinutes;
@@ -74,12 +359,8 @@ namespace Rock.Web.UI.Controls
 
         // exclusions
         private HiddenField _hfExclusionDateRangeListValues;
-        private DatePicker _dpExclusionDateStart;
-        private DatePicker _dpExclusionDateEnd;
+        private DateRangePicker _dpExclusionDateRange;
 
-        // action buttons
-        private LinkButton _btnSaveSchedule;
-        private LinkButton _btnCancelSchedule;
 
         private const string iCalendarContentEmptyEvent = @"
 BEGIN:VCALENDAR
@@ -92,15 +373,9 @@ END:VCALENDAR
         /// <summary>
         /// Initializes a new instance of the <see cref="ScheduleBuilder"/> class.
         /// </summary>
-        public ScheduleBuilder()
+        public ScheduleBuilderPopupContents()
         {
-            // control
-            _label = new Label();
-
-            // modal header
-            _btnDialogCancelX = new LinkButton();
-
-            // modal body
+            // common
             _dpStartDateTime = new DateTimePicker();
 
             _tbDurationHours = new NumberBox();
@@ -152,39 +427,7 @@ END:VCALENDAR
 
             // exclusions
             _hfExclusionDateRangeListValues = new HiddenField();
-            _dpExclusionDateStart = new DatePicker();
-            _dpExclusionDateEnd = new DatePicker();
-
-            // modal footer
-            _btnSaveSchedule = new LinkButton();
-            _btnCancelSchedule = new LinkButton();
-        }
-
-        /// <summary>
-        /// Gets or sets the label text.
-        /// </summary>
-        /// <value>
-        /// The label text.
-        /// </value>
-        [
-        Bindable( true ),
-        Category( "Appearance" ),
-        DefaultValue( "" ),
-        Description( "The text for the label." )
-        ]
-        public string LabelText
-        {
-            get
-            {
-                EnsureChildControls();
-                return _label.Text;
-            }
-
-            set
-            {
-                EnsureChildControls();
-                _label.Text = value;
-            }
+            _dpExclusionDateRange = new DateRangePicker();
         }
 
         /// <summary>
@@ -225,7 +468,7 @@ END:VCALENDAR
         /// Gets the calendar content from controls.
         /// </summary>
         /// <returns></returns>
-        private string GetCalendarContentFromControls()
+        internal string GetCalendarContentFromControls()
         {
             EnsureChildControls();
 
@@ -657,75 +900,34 @@ END:VCALENDAR
             }
         }
 
-        /// <summary>
-        /// Occurs when [save schedule].
-        /// </summary>
-        public event EventHandler SaveSchedule;
 
         /// <summary>
-        /// Occurs when [cancel schedule].
-        /// </summary>
-        public event EventHandler CancelSchedule;
-
-        /// <summary>
-        /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
-        /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
-        protected override void OnInit( EventArgs e )
-        {
-            base.OnInit( e );
-            RegisterJavaScript();
-            var sm = ScriptManager.GetCurrent( this.Page );
-
-            if ( sm != null )
-            {
-                sm.RegisterAsyncPostBackControl( _btnSaveSchedule );
-                sm.RegisterAsyncPostBackControl( _btnCancelSchedule );
-                sm.RegisterAsyncPostBackControl( _btnDialogCancelX );
-            }
-        }
-
-        /// <summary>
-        /// Registers the java script.
-        /// </summary>
-        protected virtual void RegisterJavaScript()
-        {
-            var script = string.Format( @"Rock.controls.scheduleBuilder.initialize({{ id: '{0}' }});", this.ClientID );
-            ScriptManager.RegisterStartupScript( this, this.GetType(), "schedule_builder-init_" + this.ClientID, script, true );
-        }
-
+        /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
         {
             base.CreateChildControls();
-                
+
             Controls.Clear();
 
             string validationGroup = "validationgroup_" + this.ClientID;
 
-            _btnDialogCancelX.ClientIDMode = ClientIDMode.Static;
-            _btnDialogCancelX.CssClass = "close modal-control-cancel";
-            _btnDialogCancelX.ID = "btnDialogCancelX_" + this.ClientID;
-            _btnDialogCancelX.Click += btnCancelSchedule_Click;
-            _btnDialogCancelX.Text = "&times;";
-            _btnDialogCancelX.CausesValidation = false;
-
             _dpStartDateTime.ClientIDMode = ClientIDMode.Static;
             _dpStartDateTime.ID = "dpStartDateTime_" + this.ClientID;
-            _dpStartDateTime.LabelText = "Start Date / Time";
+            _dpStartDateTime.Label = "Start Date / Time";
             _dpStartDateTime.Required = false;
             _dpStartDateTime.ValidationGroup = validationGroup;
 
             _tbDurationHours.ClientIDMode = ClientIDMode.Static;
             _tbDurationHours.ID = "tbDurationHours_" + this.ClientID;
-            _tbDurationHours.CssClass = "input-mini";
+            _tbDurationHours.CssClass = "input-width-sm";
             _tbDurationHours.MinimumValue = "0";
             _tbDurationHours.MaximumValue = "24";
             _tbDurationHours.ValidationGroup = validationGroup;
 
             _tbDurationMinutes.ClientIDMode = ClientIDMode.Static;
             _tbDurationMinutes.ID = "tbDurationMinutes_" + this.ClientID;
-            _tbDurationMinutes.CssClass = "input-mini";
+            _tbDurationMinutes.CssClass = "input-width-sm";
             _tbDurationMinutes.MinimumValue = "0";
             _tbDurationMinutes.MaximumValue = "59";
             _tbDurationMinutes.ValidationGroup = validationGroup;
@@ -787,7 +989,7 @@ END:VCALENDAR
 
             _tbDailyEveryXDays.ClientIDMode = ClientIDMode.Static;
             _tbDailyEveryXDays.ID = "tbDailyEveryXDays_" + this.ClientID;
-            _tbDailyEveryXDays.CssClass = "input-mini";
+            _tbDailyEveryXDays.CssClass = "input-width-sm";
             _tbDailyEveryXDays.ValidationGroup = validationGroup;
 
             _radDailyEveryWeekday.ClientIDMode = ClientIDMode.Static;
@@ -801,7 +1003,7 @@ END:VCALENDAR
             // weekly recurrence
             _tbWeeklyEveryX.ClientIDMode = ClientIDMode.Static;
             _tbWeeklyEveryX.ID = "tbWeeklyEveryX_" + this.ClientID;
-            _tbWeeklyEveryX.CssClass = "input-mini";
+            _tbWeeklyEveryX.CssClass = "input-width-sm";
             _tbWeeklyEveryX.MinimumValue = "1";
             _tbWeeklyEveryX.MaximumValue = "52";
             _tbWeeklyEveryX.ValidationGroup = validationGroup;
@@ -835,14 +1037,14 @@ END:VCALENDAR
 
             _tbMonthlyDayX.ClientIDMode = ClientIDMode.Static;
             _tbMonthlyDayX.ID = "tbMonthlyDayX_" + this.ClientID;
-            _tbMonthlyDayX.CssClass = "input-mini";
+            _tbMonthlyDayX.CssClass = "input-width-sm";
             _tbMonthlyDayX.MinimumValue = "1";
             _tbMonthlyDayX.MaximumValue = "31";
             _tbMonthlyDayX.ValidationGroup = validationGroup;
 
             _tbMonthlyXMonths.ClientIDMode = ClientIDMode.Static;
             _tbMonthlyXMonths.ID = "tbMonthlyXMonths_" + this.ClientID;
-            _tbMonthlyXMonths.CssClass = "input-mini";
+            _tbMonthlyXMonths.CssClass = "input-width-sm";
             _tbMonthlyXMonths.MinimumValue = "1";
             _tbMonthlyXMonths.MaximumValue = "12";
             _tbMonthlyXMonths.ValidationGroup = validationGroup;
@@ -853,7 +1055,7 @@ END:VCALENDAR
 
             _ddlMonthlyNth.ClientIDMode = ClientIDMode.Static;
             _ddlMonthlyNth.ID = "ddlMonthlyNth_" + this.ClientID;
-            _ddlMonthlyNth.CssClass = "input-small";
+            _ddlMonthlyNth.CssClass = "input-width-sm";
 
             _ddlMonthlyNth.Items.Add( string.Empty );
             foreach ( var nth in Rock.Model.Schedule.NthNames )
@@ -863,7 +1065,7 @@ END:VCALENDAR
 
             _ddlMonthlyDayName.ClientIDMode = ClientIDMode.Static;
             _ddlMonthlyDayName.ID = "ddlMonthlyDayName_" + this.ClientID;
-            _ddlMonthlyDayName.CssClass = "input-medium";
+            _ddlMonthlyDayName.CssClass = "input-width-md";
 
             DateTimeFormatInfo dateTimeFormatInfo = new DateTimeFormatInfo();
             _ddlMonthlyDayName.Items.Add( string.Empty );
@@ -891,7 +1093,7 @@ END:VCALENDAR
 
             _tbEndByOccurrenceCount.ClientIDMode = ClientIDMode.Static;
             _tbEndByOccurrenceCount.ID = "tbEndByOccurrenceCount_" + this.ClientID;
-            _tbEndByOccurrenceCount.CssClass = "input-mini";
+            _tbEndByOccurrenceCount.CssClass = "input-width-sm";
             _tbEndByOccurrenceCount.MinimumValue = "1";
             _tbEndByOccurrenceCount.MaximumValue = "999";
             _tbEndByOccurrenceCount.ValidationGroup = validationGroup;
@@ -900,31 +1102,10 @@ END:VCALENDAR
             _hfExclusionDateRangeListValues.ClientIDMode = ClientIDMode.Static;
             _hfExclusionDateRangeListValues.ID = "hfExclusionDateRangeListValues_" + this.ClientID;
 
-            _dpExclusionDateStart.ClientIDMode = ClientIDMode.Static;
-            _dpExclusionDateStart.ID = "dpExclusionDateStart_" + this.ClientID;
-            _dpExclusionDateStart.ValidationGroup = validationGroup;
+            _dpExclusionDateRange.ClientIDMode = ClientIDMode.Static;
+            _dpExclusionDateRange.ID = "dpExclusionDateRange_" + this.ClientID;
+            _dpExclusionDateRange.ValidationGroup = validationGroup;
 
-            _dpExclusionDateEnd.ClientIDMode = ClientIDMode.Static;
-            _dpExclusionDateEnd.ID = "dpExclusionDateEnd_" + this.ClientID;
-            _dpExclusionDateEnd.ValidationGroup = validationGroup;
-
-            // action buttons
-            _btnCancelSchedule.ClientIDMode = ClientIDMode.Static;
-            _btnCancelSchedule.ID = "btnCancelSchedule_" + this.ClientID;
-            _btnCancelSchedule.CssClass = "btn modal-control-cancel";
-            _btnCancelSchedule.Click += btnCancelSchedule_Click;
-            _btnCancelSchedule.Text = "Cancel";
-            _btnCancelSchedule.CausesValidation = false;
-
-            _btnSaveSchedule.ClientIDMode = ClientIDMode.Static;
-            _btnSaveSchedule.ID = "btnSaveSchedule_" + this.ClientID;
-            _btnSaveSchedule.CssClass = "btn btn-primary modal-control-ok";
-            _btnSaveSchedule.Click += btnSaveSchedule_Click;
-            _btnSaveSchedule.Text = "Save Schedule";
-            _btnSaveSchedule.ValidationGroup = validationGroup;
-
-            Controls.Add( _label );
-            Controls.Add( _btnDialogCancelX );
             Controls.Add( _dpStartDateTime );
             Controls.Add( _tbDurationHours );
             Controls.Add( _tbDurationMinutes );
@@ -972,39 +1153,10 @@ END:VCALENDAR
 
             // exclusions
             Controls.Add( _hfExclusionDateRangeListValues );
-            Controls.Add( _dpExclusionDateStart );
-            Controls.Add( _dpExclusionDateEnd );
-
-            Controls.Add( _btnSaveSchedule );
-            Controls.Add( _btnCancelSchedule );
+            Controls.Add( _dpExclusionDateRange );
         }
 
-        /// <summary>
-        /// Handles the Click event of the btnSaveSchedule control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnSaveSchedule_Click( object sender, EventArgs e )
-        {
-            _iCalendarContent = GetCalendarContentFromControls();
-            if ( SaveSchedule != null )
-            {
-                SaveSchedule( sender, e );
-            }
-        }
 
-        /// <summary>
-        /// Handles the Click event of the btnCancelSchedule control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnCancelSchedule_Click( object sender, EventArgs e )
-        {
-            if ( CancelSchedule != null )
-            {
-                CancelSchedule( sender, e );
-            }
-        }
 
         /// <summary>
         /// Writes the <see cref="T:System.Web.UI.WebControls.CompositeControl" /> content to the specified <see cref="T:System.Web.UI.HtmlTextWriter" /> object, for display on the client.
@@ -1017,30 +1169,10 @@ END:VCALENDAR
                 iCalendarContent = iCalendarContentEmptyEvent;
             }
 
-            string controlHtmlFormatString = @"
-    <a id='schedule-builder-button_{0}' role='button' class='btn btn-small'>
-        <i class='icon-calendar'></i> ";
+            writer.AddAttribute( "id", this.ClientID );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            string controlHtmlFragment = string.Format( controlHtmlFormatString, this.ClientID );
-            writer.Write( controlHtmlFragment );
-
-            _label.RenderControl( writer );
-
-            controlHtmlFormatString = @"
-    </a>
-
-    <div id='schedule-builder-modal_{0}' class='modal hide fade schedule-builder'>
-        <div class='modal-header'>";
-            controlHtmlFragment = string.Format( controlHtmlFormatString, this.ClientID );
-
-            writer.Write( controlHtmlFragment );
-
-            _btnDialogCancelX.RenderControl( writer );
-
-            controlHtmlFragment = @"
-            <h3>Schedule Builder</h3>
-        </div>
-        <div class='modal-body'>
+            writer.Write( @"
             <div class='scroll-container'>
                 <div class='scrollbar'>
                     <div class='track'>
@@ -1053,10 +1185,10 @@ END:VCALENDAR
                     <div class='overview'>
 
                         <!-- modal body -->
-                        <div class='form-horizontal'>";
+                        <div class=''>
+" );
 
             // Start DateTime
-            writer.Write( controlHtmlFragment );
             _dpStartDateTime.RenderControl( writer );
 
             // Duration
@@ -1131,9 +1263,10 @@ END:VCALENDAR
 
             writer.Write( @"
                 </ul>
-                <a class='btn btn-small add-specific-date'><i class='icon-plus'></i>
+                <a class='btn btn-sm add-specific-date'><i class='icon-plus'></i>
                     <span> Add Date</span>
-                </a>" );
+                </a>
+" );
 
             writer.AddAttribute( "id", "add-specific-date-group_" + this.ClientID );
 
@@ -1142,12 +1275,13 @@ END:VCALENDAR
             _dpSpecificDate.AddCssClass( "specific-date" );
             _dpSpecificDate.RenderControl( writer );
             writer.Write( @"
-                <a class='btn btn-primary btn-mini add-specific-date-ok'></i>
+                <a class='btn btn-primary btn-xs add-specific-date-ok'>
                     <span>OK</span>
                 </a>
-                <a class='btn btn-mini add-specific-date-cancel'></i>
+                <a class='btn btn-xs add-specific-date-cancel'>
                     <span>Cancel</span>
-                </a>" );
+                </a>
+" );
 
             writer.RenderEndTag();
             writer.RenderEndTag();
@@ -1200,7 +1334,7 @@ END:VCALENDAR
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.Write( "<span>Every </span>" );
             _tbWeeklyEveryX.RenderControl( writer );
-            writer.Write( "<span> weeks on</span></br>" );
+            writer.Write( "<span> weeks on</span><br/>" );
             writer.RenderEndTag();
 
             writer.AddAttribute( "class", "control-group controls" );
@@ -1250,7 +1384,9 @@ END:VCALENDAR
             writer.RenderEndTag();
 
             // end date
-            writer.Write( @"<div class='controls'><hr /></div>" );
+            writer.Write( @"
+<div class='controls'><hr /></div>
+" );
             writer.AddAttribute( "class", "control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.Write( "<label class='control-label'>Continue Until</label>" );
@@ -1297,21 +1433,19 @@ END:VCALENDAR
 
             writer.Write( @"
                 </ul>
-                <a class='btn btn-small add-exclusion-daterange'><i class='icon-plus'></i>
+                <a class='btn btn-sm add-exclusion-daterange'><i class='icon-plus'></i>
                     <span> Add Date Range</span>
                 </a>" );
 
             writer.AddAttribute( "id", "add-exclusion-daterange-group_" + this.ClientID );
             writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            _dpExclusionDateStart.RenderControl( writer );
-            writer.Write( "<span> to </span>" );
-            _dpExclusionDateEnd.RenderControl( writer );
+            _dpExclusionDateRange.RenderControl( writer );
             writer.Write( @"
-                <a class='btn btn-primary btn-mini add-exclusion-daterange-ok'></i>
+                <a class='btn btn-primary btn-xs add-exclusion-daterange-ok'>
                     <span>OK</span>
                 </a>
-                <a class='btn btn-mini add-exclusion-daterange-cancel'></i>
+                <a class='btn btn-xs add-exclusion-daterange-cancel'>
                     <span>Cancel</span>
                 </a>" );
 
@@ -1324,21 +1458,12 @@ END:VCALENDAR
 
             // write out the closing divs that go after the recurrence panel
             writer.Write( @"
-                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 " );
-
-            writer.AddAttribute( "class", "modal-footer" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            _btnCancelSchedule.RenderControl( writer );
-            _btnSaveSchedule.RenderControl( writer );
             writer.RenderEndTag();
-
-            // write out the closing divs that go after the modal footer
-            writer.Write( "</div>" );
         }
     }
 }

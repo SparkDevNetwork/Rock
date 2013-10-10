@@ -77,9 +77,9 @@ namespace Rock.Web.UI.Validation
             Control control = FindControl( ControlToValidate );
             if ( control != null )
             {
-                if ( control is ILabeledControl )
+                if ( control is IRockControl )
                 {
-                    propertyLabelText = ( control as ILabeledControl ).LabelText;
+                    propertyLabelText = ( control as IRockControl ).Label;
                 }
             }
 

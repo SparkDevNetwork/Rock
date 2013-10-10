@@ -1,0 +1,18 @@
+﻿<section class="promo-slider">
+    <div class="flexslider">
+        <ul class="slides">
+        {% for Ad in Ads %}
+            <li>
+                <a href="{{ Ad.DetailPageUrl }}">
+                {% for Attribute in Ad.Attributes %}
+                    {% if Attribute.Key == 'PromotionImage' %}
+                        {{ Attribute.Value }}
+                    {% endif %}
+                {% endfor %}
+                </a>
+            </li>
+        {% endfor %}
+        </ul>
+    </div>
+    <img class="slider-shadow" src="{{ ApplicationPath }}Themes/GrayFabric/Assets/Images/slider-shadow.png"/>
+</section>

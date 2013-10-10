@@ -102,12 +102,13 @@ namespace Rock.Field
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
         /// <returns>
         /// The control
         /// </returns>
         public virtual Control EditControl( Dictionary<string, ConfigurationValue> configurationValues, string id )
         {
-            return new Rock.Web.UI.Controls.LabeledTextBox { ID = id };
+            return new Rock.Web.UI.Controls.RockTextBox { ID = id };
         }
 
         /// <summary>

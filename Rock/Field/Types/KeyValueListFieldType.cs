@@ -60,7 +60,7 @@ namespace Rock.Field.Types
         {
             var controls = base.ConfigurationControls();
 
-            DropDownList ddl = new DropDownList();
+            var ddl = new RockDropDownList();
             controls.Add( ddl );
             ddl.AutoPostBack = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
@@ -109,7 +109,8 @@ namespace Rock.Field.Types
         /// <summary>
         /// Creates the control(s) neccessary for prompting user for a new value
         /// </summary>
-        /// <param name="configurationValues"></param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="id"></param>
         /// <returns>
         /// The control
         /// </returns>

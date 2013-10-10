@@ -121,7 +121,7 @@ namespace RockWeb.Blocks.Crm
         {
             if ( hfGroupId.Value.Equals( "0" ) )
             {
-                if ( this.CurrentPage.Layout.Equals( "TwoColumnLeft" ) )
+                if ( this.CurrentPage.Layout.FileName.Equals( "TwoColumnLeft" ) )
                 {
                     // Cancelling on Add.  Return to tree view with parent category selected
                     var qryParams = new Dictionary<string, string>();
@@ -589,6 +589,7 @@ namespace RockWeb.Blocks.Crm
             if (group.Id == 0)
             {
                 lReadOnlyTitle.Text = ActionTitle.Add(Group.FriendlyTypeName).FormatAsHtmlTitle();
+                hlInactive.Visible = false;
             }
             else
             {
@@ -610,7 +611,7 @@ namespace RockWeb.Blocks.Crm
 
             // GroupType depends on Selected ParentGroup
             ddlParentGroup_SelectedIndexChanged( null, null );
-            gpParentGroup.LabelText = "Parent Group";
+            gpParentGroup.Label = "Parent Group";
 
             if ( group.Id == 0 && ddlGroupType.Items.Count > 1 )
             {
@@ -700,17 +701,10 @@ namespace RockWeb.Blocks.Crm
             hfGroupId.SetValue( group.Id );
             lGroupIconHtml.Text = groupIconHtml;
             lReadOnlyTitle.Text = group.Name.FormatAsHtmlTitle();
-            string activeHtmlFormat = "<span class='label {0} pull-right' >{1}</span>";
-            if ( group.IsActive )
-            {
-                lblActiveHtml.Text = string.Empty;
-            }
-            else
-            {
-                lblActiveHtml.Text = string.Format( activeHtmlFormat, "label-important", "Inactive" );
-            }
+            
+            hlInactive.Visible = !group.IsActive;
+            hlType.Text = group.GroupType.Name;
 
-            lGroupType.Text = group.GroupType.Name;
             lGroupDescription.Text = group.Description;
             
             DescriptionList descriptionList = new DescriptionList();
@@ -722,12 +716,12 @@ namespace RockWeb.Blocks.Crm
 
             if (group.Campus != null)
             {
-                lCampus.Visible = true;
-                lCampus.Text = group.Campus.Name;
+                hlCampus.Visible = true;
+                hlCampus.Text = group.Campus.Name;
             }
             else
             {
-                lCampus.Visible = false;
+                hlCampus.Visible = false;
             }
 
             lblMainDetails.Text = descriptionList.Html;
