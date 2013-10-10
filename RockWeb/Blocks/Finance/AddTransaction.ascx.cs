@@ -64,7 +64,7 @@ update the transaction information at any time by returning to this website. Ple
 
     [MemoField( "Success Header", "The text (HTML) to display at the top of the success section.", true, @"
 <p>
-Thank-you for your generous contribution.  Your support is helping {{ OrganizationName }} actively 
+Thank you for your generous contribution.  Your support is helping {{ OrganizationName }} actively 
 achieve our mission.  We are so grateful for your commitment. 
 </p>
 ", "Text Options", 15 )]
