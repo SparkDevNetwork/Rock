@@ -6,15 +6,13 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.ServiceModel;
-using System.ServiceModel.Description;
 using System.Text.RegularExpressions;
 
+using Rock;
 using Rock.Attribute;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Extension;
-using Rock.VersionInfo;
 
 namespace Rock.CyberSource
 {
@@ -335,6 +333,8 @@ namespace Rock.CyberSource
             {
                 var ach = paymentInfo as ACHPaymentInfo;
                 request.check = GetCheck( ach );
+                request.ecAuthenticateService = new ECAuthenticateService();
+                request.ecAuthenticateService.run = "true";
                 request.subscription.paymentMethod = "check";
             }
             else if ( paymentInfo is ReferencePaymentInfo )
@@ -419,10 +419,10 @@ namespace Rock.CyberSource
             billingInfo.street1 = paymentInfo.Street.Left( 50 );            // up to 50 chars
             billingInfo.city = paymentInfo.City.Left( 50 );                 // up to 50 chars
             billingInfo.state = paymentInfo.State.Left( 2 );                // only 2 chars
-            billingInfo.postalCode = paymentInfo.Zip.Length > 5 
-                ? Regex.Replace(paymentInfo.Zip, @"^(.{5})(.{4})$", "$1-$2") 
-                : paymentInfo.Zip;
-            billingInfo.postalCode = paymentInfo.Zip.Left( 10 );            // 9 chars with a separating -
+            billingInfo.postalCode = paymentInfo.Zip.Length > 5             
+                ? Regex.Replace(paymentInfo.Zip, @"^(.{5})(.{4})$", "$1-$2")
+                : paymentInfo.Zip;                                          // 9 chars with a separating -
+            
             billingInfo.country = "US";                                     // only 2 chars
             billingInfo.ipAddress = Dns.GetHostEntry( Dns.GetHostName() )
                 .AddressList.FirstOrDefault( ip => ip.AddressFamily == AddressFamily.InterNetwork ).ToString();
@@ -540,9 +540,7 @@ namespace Rock.CyberSource
             request.merchantID = GetAttributeValue( "MerchantID" );
             request.clientLibraryVersion = Environment.Version.ToString();
             request.clientApplication = "Rock ChMS";
-            request.clientApplication = System.AppDomain.CurrentDomain.FriendlyName;
-            request.clientApplicationVersion = Rock.Version.Current.ToString();
-            //request.clientApplicationVersion = Rock.VersionInfo.VersionInfo.GetRockProductVersion();
+            request.clientApplicationVersion = Version.Current.ToString();
             request.clientApplicationUser = GetAttributeValue( "OrganizationName" );            
             request.clientEnvironment =
                 Environment.OSVersion.Platform +
