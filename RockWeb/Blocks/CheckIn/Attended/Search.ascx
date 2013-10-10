@@ -46,7 +46,7 @@
         <div class="row checkin-body">
             <div class="col-md-3"></div>
             <div class="col-md-6">
-            <Rock:RockTextBox ID="tbSearchBox" MaxLength="50" CssClass="input" runat="server" Label="" TabIndex="0" />
+            <Rock:RockTextBox ID="tbSearchBox" MaxLength="50" CssClass="checkin-phone-entry" runat="server" Label="" TabIndex="0" />
             </div>
             <div class="col-md-3"></div>
         </div>
