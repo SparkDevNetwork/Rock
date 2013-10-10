@@ -370,7 +370,7 @@ namespace Rock.Web.UI.Controls
 
             if ( ShowSecurityButton )
             {
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-xs security pull-right" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-security btn-xs security pull-right" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Type, "button" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Button );
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "icon-lock" );
@@ -427,6 +427,9 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "actions" );
                 writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                _lbDeleteNote.RenderControl(writer);
+
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "edit-note" );
                 writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
@@ -434,7 +437,8 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.RenderEndTag();  // A
-                _lbDeleteNote.RenderControl( writer );
+
+                
                 writer.RenderEndTag();  // actions
             }
 

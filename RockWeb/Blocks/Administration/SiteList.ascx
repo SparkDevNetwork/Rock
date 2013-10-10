@@ -7,7 +7,12 @@
             <Columns>
                 <asp:BoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                 <asp:BoundField HeaderText="Description" DataField="Description" SortExpression="Description" />
+                <asp:TemplateField HeaderText="Domain(s)">
+                    <ItemTemplate><%# GetDomains( (int)Eval("Id") ) %></ItemTemplate>
+                </asp:TemplateField>
                 <asp:BoundField HeaderText="Theme" DataField="Theme" SortExpression="Theme" />
+                <asp:BoundField HeaderText="Default Page" DataField="DefaultPageRoute" SortExpression="DefaultPageRoute" />
+                <Rock:BoolField DataField="IsSystem" HeaderText="System" SortExpression="IsSystem" />
                 <Rock:SecurityField TitleField="Name" />
                 <Rock:DeleteField OnClick="gSites_Delete" />
             </Columns>

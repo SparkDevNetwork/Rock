@@ -43,16 +43,13 @@
 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" Label="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged"/>
-                            
+                            <Rock:GroupPicker ID="gpParentGroup" runat="server" Required="false" Label="Parent Group" OnSelectItem="ddlParentGroup_SelectedIndexChanged" />
                             <Rock:DataDropDownList ID="ddlGroupType" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" Label="Group Type" />
-                        
                             <Rock:DataDropDownList ID="ddlCampus" runat="server" DataTextField="Name" DataValueField="Id" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" Label="Campus" />
-                            
                             <Rock:RockCheckBox ID="cbIsSecurityRole" runat="server" Text="Security Role" />
                         </div>
                         <div class="col-md-6">
-                             <div class="control-label">Group Member Attributes</div>
+                            <div class="control-label">Group Member Attributes</div>
                             <p>
                                 Group member attributes allow for providing different values for each group member.
                             </p>
@@ -80,17 +77,18 @@
 
                 </fieldset>
 
-                
+
 
             </div>
 
             <fieldset id="fieldsetViewDetails" runat="server">
 
-                <p class="description"><asp:Literal ID="lGroupDescription" runat="server"></asp:Literal></p>
+                <p class="description">
+                    <asp:Literal ID="lGroupDescription" runat="server"></asp:Literal></p>
 
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
-                <div class="row-fluid">
+                <div class="row">
                     <asp:Literal ID="lblMainDetails" runat="server" />
                 </div>
                 <div class="attributes">
@@ -102,7 +100,7 @@
                 <div class="actions">
                     <asp:LinkButton ID="btnEdit" runat="server" Text="Edit" CssClass="btn btn-primary btn-sm" OnClick="btnEdit_Click" />
                     <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
-                    <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-default btn-sm" OnClick="btnDelete_Click" />
+                    <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-action btn-sm" OnClick="btnDelete_Click" />
                 </div>
 
             </fieldset>

@@ -14,6 +14,7 @@ using System.Web.UI;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -53,6 +54,8 @@ namespace RockWeb.Blocks.Administration
 
             if ( !Page.IsPostBack )
             {
+                lTaggedTitle.Text = "Tagged Entity";
+                
                 BindGrid();
             }
         }
@@ -104,6 +107,9 @@ namespace RockWeb.Blocks.Administration
                                 EntityTypeName = entityTypeCache.FriendlyName.Replace( " ", "" );
 
                                 Type entityType = entityTypeCache.GetEntityType();
+
+                                lTaggedTitle.Text = "Tagged " + entityType.Name.Pluralize();
+
                                 if ( entityType != null )
                                 {
                                     gReport.CreatePreviewColumns( entityType );

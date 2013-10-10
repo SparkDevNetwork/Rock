@@ -9,26 +9,29 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Group Type POCO Service class
+    /// Data access/service class for <see cref="Rock.Model.GroupType"/> entity objects. This class extends <see cref="Rock.Data.Service"/>.
     /// </summary>
     public partial class GroupTypeService 
     {
+
         /// <summary>
-        /// Gets Group Types by Default Group Role Id
+        /// Returns an enumerable collection of <see cref="Rock.Model.GroupType"/> entities by the Id of their <see cref="Rock.Model.GroupRole."/>.
         /// </summary>
-        /// <param name="defaultGroupRoleId">Default Group Role Id.</param>
-        /// <returns>An enumerable list of GroupType objects.</returns>
+        /// <param name="defaultGroupRoleId">An <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.GroupRole"/> to search by.</param>
+        /// <returns>An enumerable collection of <see cref="Rock.Model.GroupType">GroupTypes</see> that use the provided <see cref="Rock.Model.GroupRole"/> as the 
+        /// default GroupRole for their member Groups.</returns>
         public IEnumerable<GroupType> GetByDefaultGroupRoleId( int? defaultGroupRoleId )
         {
             return Repository.Find( t => ( t.DefaultGroupRoleId == defaultGroupRoleId || ( defaultGroupRoleId == null && t.DefaultGroupRoleId == null ) ) );
         }
 
         /// <summary>
-        /// Deletes the specified item.
+        /// Verifies if the specified <see cref="Rock.MOdel.GroupType"/> can be deleted, and if so deletes it.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="personId">The person id.</param>
-        /// <returns></returns>
+        /// <param name="item">The <see cref="Rock.Model.GroupType"/> to delete.</param>
+        /// <param name="personId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Person"/> who is attempting to delete the
+        /// <see cref="Rock.Model.GroupType"/>.</param>
+        /// <returns>A <see cref="System.Boolean"/> value that is <c>true</c> if the <see cref="Rock.Model.GroupType"/> was able to be successfully deleted, otherwise <c>false</c>.</returns>
         public override bool Delete( GroupType item, int? personId )
         {
             string message;

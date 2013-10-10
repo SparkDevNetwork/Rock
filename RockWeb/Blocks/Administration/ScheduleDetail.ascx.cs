@@ -336,11 +336,11 @@ namespace RockWeb.Blocks.Administration
         {
             if ( schedule.Id > 0 )
             {
-                lActionTitle.Text = ActionTitle.Edit( Schedule.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Edit( Schedule.FriendlyTypeName ).FormatAsHtmlTitle();
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( Schedule.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Add( Schedule.FriendlyTypeName ).FormatAsHtmlTitle();
             }
 
             SetEditMode( true );
@@ -365,7 +365,7 @@ namespace RockWeb.Blocks.Administration
         {
             SetEditMode( false );
             hfScheduleId.SetValue( schedule.Id );
-            lReadOnlyTitle.Text = schedule.Name;
+            lReadOnlyTitle.Text = schedule.Name.FormatAsHtmlTitle();
 
             var calendarEvent = schedule.GetCalenderEvent();
             string occurrenceText = string.Empty;

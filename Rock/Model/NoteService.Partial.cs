@@ -10,16 +10,16 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Note POCO Service class
+    /// Data access/service class for <see cref="Rock.Model.Note"/> entity objects.
     /// </summary>
     public partial class NoteService : Service<Note>
     {
         /// <summary>
-        /// Gets the notes for the specified note type and entity.
+        /// Returns a queryable collection of <see cref="Rock.Model.Note">Notes</see> for the specified <see cref="Rock.Model.NoteType"/> and entity.
         /// </summary>
-        /// <param name="noteTypeId">The note type id.</param>
-        /// <param name="entityId">The entity id.</param>
-        /// <returns></returns>
+        /// <param name="noteTypeId">A <see cref="System.Int32" /> representing the Id of the <see cref="Rock.Model.NoteType"/>.</param>
+        /// <param name="entityId">TA <see cref="Sytem.Int32"/> representing the Id of the entity that the note belongs to.</param>
+        /// <returns>A queryable collection of <see cref="Rock.Model.Note">Notes</see> for the specified <see cref="System.Mode.NoteType"/> and entity. </returns>
         public IQueryable<Note> Get( int noteTypeId, int entityId )
         {
             return Repository.AsQueryable()
@@ -31,10 +31,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the all notes for the specified note type.
+        /// Returns all of the <see cref="Rock.Model.Note">Notes</see> for the specified note type.
         /// </summary>
-        /// <param name="noteTypeId">The note type id.</param>
-        /// <returns></returns>
+        /// <param name="noteTypeId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.NoteType"/>.</param>
+        /// <returns>A queryable collection of <see cref="Rock.Model.Note">Notes</see> by <see cref="Rock.Model.NoteType"/>.</returns>
         public IQueryable<Note> GetByNoteTypeId( int noteTypeId )
         {
             return Repository.AsQueryable()

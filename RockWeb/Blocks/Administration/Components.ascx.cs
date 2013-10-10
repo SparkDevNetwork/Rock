@@ -311,7 +311,7 @@ namespace RockWeb.Blocks.Administration
             phProperties.Controls.Clear();
             LoadEditControls();
 
-            lProperties.Text = _container.Dictionary[serviceId].Key + " Properties";
+            lProperties.Text = (_container.Dictionary[serviceId].Key + " Properties").FormatAsHtmlTitle();
 
             SetEditMode( true );
         }

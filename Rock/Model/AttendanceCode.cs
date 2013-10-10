@@ -16,7 +16,8 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// CheckInAttendanceCodenEF Model.
+    /// Represents the security code that is issued for an individual when they check in to an group occurrence/event. An AttendanceCode can cover
+    /// multiple <see cref="Rock.Model.Attendance"/> incidents for an individual.
     /// </summary>
     [Table( "AttendanceCode" )]
     [DataContract]
@@ -25,19 +26,19 @@ namespace Rock.Model
         #region Entity Properties
 
         /// <summary>
-        /// Gets or sets the issue date time.
+        /// Gets or sets the date and time that the Attendance Code was issued.
         /// </summary>
         /// <value>
-        /// The issue date time.
+        /// A <see cref="System.DateTime"/> representing the date and time that the Attendance Code was issued.
         /// </value>
         [DataMember]
         public DateTime IssueDateTime { get; set; }
 
         /// <summary>
-        /// Gets or sets the code.
+        /// Gets or sets the attendance/security code.
         /// </summary>
         /// <value>
-        /// The security code.
+        /// A <see cref="System.String"/> representing the attendance/security code.
         /// </value>
         [MaxLength(10)]
         [AlternateKey]
@@ -49,10 +50,10 @@ namespace Rock.Model
         #region Virtual Properties
 
         /// <summary>
-        /// Gets or sets the attendances.
+        /// Gets or sets a collection of <see cref="Rock.Model.Attendance"/> entities that are associated with this AttendanceCode.
         /// </summary>
         /// <value>
-        /// The attendances.
+        /// The set of <see cref="Rock.Model.Attendance"/> entities that are associated with this AttendanceCode.
         /// </value>
         [DataMember]
         public virtual ICollection<Attendance> Attendances
@@ -67,10 +68,10 @@ namespace Rock.Model
         #region Public Methods
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> that represents this instance.
+        /// Returns a <see cref="System.String" /> containing the Code that represents this instance.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this instance.
+        /// A <see cref="System.String" /> containing the Code that represents this instance.
         /// </returns>
         public override string ToString()
         {

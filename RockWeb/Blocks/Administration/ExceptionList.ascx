@@ -8,14 +8,16 @@
 
 <asp:UpdatePanel ID="upExceptionList" runat="server">
     <ContentTemplate>
-        <asp:Panel ID="pnlExceptionGroups" runat="server" CssClass="well" Visible="true">
-            <div class="row-fluid">
+        <asp:Panel ID="pnlExceptionGroups" runat="server" Visible="true">
+            
+            <div class="row">
                 <div class="span12 clearExceptionsLink">
-                    <asp:LinkButton ID="btnClearExceptions" runat="server" CssClass="btn" OnClientClick="return confirmExceptionListClear();" OnClick="btnClearExceptions_Click" CausesValidation="false">
+                    <asp:LinkButton ID="btnClearExceptions" runat="server" CssClass="btn btn-action btn-sm" OnClientClick="return confirmExceptionListClear();" OnClick="btnClearExceptions_Click" CausesValidation="false">
                         <i class="icon-repeat"></i> Clear All Exceptions
                     </asp:LinkButton>
                 </div>
             </div>
+
             <Rock:GridFilter ID="fExceptionList" runat="server">
                 <Rock:RockDropDownList ID="ddlSite" runat="server" Label="Site" />
                 <Rock:PagePicker ID="ppPage" runat="server" Label="Page" />
@@ -35,13 +37,19 @@
                 </Columns>
             </Rock:Grid>
         </asp:Panel>
-        <asp:Panel ID="pnlExceptionOccurrences" runat="server" CssClass="well" Visible="false">
+
+        <asp:Panel ID="pnlExceptionOccurrences" runat="server" Visible="false">
             <asp:HiddenField ID="hfBaseExceptionID" runat="server" />
             <div class="banner">
-                <h1><span class='first-word'>Exception </span> Occurrences</h1>
+                <h1><asp:Literal ID="lDetailTitle" runat="server"></asp:Literal></h1>
             </div>
-            <asp:LinkButton ID="btnReturnToExceptionList" runat="server" CssClass="btn exceptionReturnToListButton" OnClick="btnReturnToExceptionList_Click"><i class="icon-angle-left"></i>&nbsp; Return to List</asp:LinkButton>
-            <asp:Literal ID="lblMainDetails" runat="server" />
+            
+            <div class="row">
+                <asp:Literal ID="lblMainDetails" runat="server" />
+            </div>
+
+            <h4>Exception List</h4>
+
             <Rock:Grid ID="gExceptionOccurrences" runat="server" AllowSorting="true">
                 <Columns>
                     <Rock:DateTimeField DataField="ExceptionDateTime" HeaderText="Date" SortExpression="ExceptionDateTime" />
