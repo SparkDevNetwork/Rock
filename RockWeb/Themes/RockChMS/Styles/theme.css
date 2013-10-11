@@ -8786,6 +8786,7 @@ div.tagsinput div {
     5. Add Family - block to add families to the database
     6. Contributions - block add a contribution transaction
     7. Data Views - block for creating data views
+    8. Schedule Builder - block for building schedules
 
 */
 .sql-comand .panel {
@@ -8960,6 +8961,90 @@ span.cke_skin_kama {
 .filter-item-select select {
   float: left;
   width: 250px;
+}
+.recurrence-pattern-type {
+  margin-top: 12px;
+  padding-left: 30px;
+}
+.recurrence-pattern-specific-date:before,
+.recurrence-pattern-specific-date:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.recurrence-pattern-specific-date:after {
+  clear: both;
+}
+.recurrence-pattern-specific-date:before,
+.recurrence-pattern-specific-date:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.recurrence-pattern-specific-date:after {
+  clear: both;
+}
+.recurrence-pattern-specific-date .input-group {
+  float: left;
+}
+.recurrence-pattern-specific-date .actions {
+  float: left;
+  margin-left: 12px;
+  padding-top: 5px;
+}
+.recurrence-pattern-daily .form-control-group {
+  min-height: 30px;
+}
+.recurrence-pattern-weekly .week-days {
+  margin-top: 12px;
+}
+.recurrence-pattern-weekly .week-days:before,
+.recurrence-pattern-weekly .week-days:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.recurrence-pattern-weekly .week-days:after {
+  clear: both;
+}
+.recurrence-pattern-weekly .week-days:before,
+.recurrence-pattern-weekly .week-days:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.recurrence-pattern-weekly .week-days:after {
+  clear: both;
+}
+.recurrence-pattern-weekly .week-days .checkbox {
+  float: left;
+  margin: 0 12px;
+}
+.recurrence-pattern-monthly .form-control-group {
+  min-height: 40px;
+  display: block;
+}
+.continue-until .form-control-group {
+  min-height: 40px;
+}
+.exclusions .add-exclusion .form-control-group {
+  float: left;
+}
+.exclusions .add-exclusion .actions {
+  float: left;
+  margin-top: 5px;
 }
 /*
     Used to manage styles related to the CMS admin UI for on page editing
@@ -9371,6 +9456,7 @@ td[align=center] {
     2. Data Lists
     3. Input Sizing
     4. Control Specific Styles
+    5. Validation
 
 */
 .form-actions {
@@ -9452,6 +9538,14 @@ dl dd {
   margin-right: 12px;
   float: left;
 }
+.form-control-group > span {
+  float: left;
+  margin: 8px 12px 0 0;
+}
+.form-control-group > label {
+  float: left;
+  margin-top: 12px;
+}
 .month-year-picker .separator,
 .month-day-picker .separator {
   float: left;
@@ -9459,10 +9553,17 @@ dl dd {
   margin: 4px 8px 0 -2px;
   color: #aaaaaa;
 }
-.date-range-picker span.to,
-.number-range-editor span.to {
+/*.date-range-picker,
+.number-range-editor {
+    span.to {
+        float: left;
+        margin: 8px 12px 0 0;
+    }
+}*/
+.validation-error {
+  color: #d9534f;
+  font-weight: 300;
   float: left;
-  margin: 8px 12px 0 0;
 }
 /*
     Used to manage styles related to the person details page
