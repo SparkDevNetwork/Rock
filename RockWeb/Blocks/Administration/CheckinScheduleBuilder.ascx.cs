@@ -99,7 +99,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( !scheduleList.Any() )
             {
-                nbNotification.Text = nbNotification.Text = String.Format("<p><strong>Warning</strong></p>No schedules found. Consider <a class='alert-link' href='{0}'>adding a schedule</a> or a different schedule category.", ResolveUrl("~/Schedules"));.";
+                nbNotification.Text = String.Format("<p><strong>Warning</strong></p>No schedules found. Consider <a class='alert-link' href='{0}'>adding a schedule</a> or a different schedule category.", ResolveUrl("~/Schedules"));
                 nbNotification.Visible = true;
             }
             else
