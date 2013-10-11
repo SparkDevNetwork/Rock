@@ -29,11 +29,11 @@
                 
                     <div class="row">
                         <div class="col-md-6">
-                            <Rock:NumberBox ID="nbStartOffset" Label="Enable Check-in" AppendText="Mins Before" runat="server" NumberType="Integer" CssClass="input-width-lg" />
+                            <Rock:NumberBox ID="nbStartOffset" Label="Enable Check-in" AppendText="Mins Before Start" runat="server" NumberType="Integer" CssClass="input-width-lg" />
                             <Rock:CategoryPicker ID="cpCategory" runat="server" EntityTypeName="Rock.Model.Schedule" Label="Category" Required="true" />
                         </div>
                         <div class="col-md-6">
-                            <Rock:NumberBox ID="nbEndOffset" Label="Close Check-in" AppendText="Mins After&nbsp;&nbsp;" runat="server" NumberType="Integer" CssClass="input-width-lg" />
+                            <Rock:NumberBox ID="nbEndOffset" Label="Close Check-in" AppendText="Mins After Start&nbsp;&nbsp;" runat="server" NumberType="Integer" CssClass="input-width-lg" />
                         </div>
                     </div>
 
