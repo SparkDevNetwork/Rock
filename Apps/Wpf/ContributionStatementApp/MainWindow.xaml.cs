@@ -64,16 +64,16 @@ namespace ContributionStatementApp
         /// <param name="e">The <see cref="DoWorkEventArgs"/> instance containing the event data.</param>
         void bw_DoWork( object sender, DoWorkEventArgs e )
         {
-            ContributionReport contributionReport = new ContributionReport();
+            ReportOptions reportOptions = new ReportOptions
+            {
+                // TODO - Get actual options from UI
+                StartDate = new DateTime( 2012, 10, 1 ),
+                EndDate = new DateTime( 2013, 10, 1 ),
+                LayoutFile = new DplxFile( "rock-report.dplx" )
+            };
+
+            ContributionReport contributionReport = new ContributionReport( reportOptions );
             contributionReport.OnProgress += contributionReport_OnProgress;
-
-            // default Initializer is CreateDatabaseIfNotExists, but we don't want that to happen if automigrate is false, so set it to NULL so that nothing happens
-            Database.SetInitializer<Rock.Data.RockContext>( null );
-
-            // TODO - Get actual date range
-            contributionReport.Options.StartDate = new DateTime( 2012, 10, 1 );
-            contributionReport.Options.EndDate = new DateTime( 2013, 10, 1 );
-            contributionReport.Options.LayoutFile = new DplxFile( "rock-report.dplx" );
 
             var doc = contributionReport.RunReport();
 

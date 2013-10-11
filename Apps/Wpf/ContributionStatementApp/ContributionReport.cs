@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Entity;
 using System.Linq;
 using ceTe.DynamicPDF;
 using ceTe.DynamicPDF.ReportWriter;
@@ -15,7 +16,7 @@ namespace ContributionStatementApp
     /// <summary>
     /// 
     /// </summary>
-    public class Options
+    public class ReportOptions
     {
         /// <summary>
         /// Gets or sets the start date.
@@ -64,9 +65,9 @@ namespace ContributionStatementApp
         /// <summary>
         /// Initializes a new instance of the <see cref="ContributionReport"/> class.
         /// </summary>
-        public ContributionReport()
+        public ContributionReport( ReportOptions options )
         {
-            this.Options = new Options();
+            this.Options = options;
         }
 
         /// <summary>
@@ -75,7 +76,7 @@ namespace ContributionStatementApp
         /// <value>
         /// The filter.
         /// </value>
-        public Options Options { get; set; }
+        public ReportOptions Options { get; set; }
 
         /// <summary>
         /// Creates the document.
@@ -89,17 +90,56 @@ namespace ContributionStatementApp
             Query query = report.GetQueryById( "OuterQuery" );
             query.OpeningRecordSet += mainQuery_OpeningRecordSet;
 
-            FormattedRecordArea formattedRecordArea = report.GetReportElementById( "FormattedRecordArea1" ) as FormattedRecordArea;
-            formattedRecordArea.LaidOut += formattedRecordArea_LaidOut;
+            FormattedRecordArea formattedRecordAreaToAddress = report.GetReportElementById( "lblToAddress" ) as FormattedRecordArea;
+            formattedRecordAreaToAddress.LaidOut += formattedRecordAreaToAddress_LaidOut;
+
+            Label lblTotalAmount = report.GetReportElementById( "lblTotalAmount" ) as Label;
+            lblTotalAmount.LaidOut += lblTotalAmount_LaidOut;
 
             Document doc = report.Run();
             return doc;
         }
 
-        void formattedRecordArea_LaidOut( object sender, FormattedRecordAreaLaidOutEventArgs e )
+        /// <summary>
+        /// Handles the LaidOut event of the lblTotalAmount control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="LabelLaidOutEventArgs"/> instance containing the event data.</param>
+        protected void lblTotalAmount_LaidOut( object sender, LabelLaidOutEventArgs e )
         {
-            e.FormattedTextArea.Text = e.LayoutWriter.RecordSets.Current[0].ToString();
-            //TODO~!!
+            List<TransactionRecord> transactions = e.LayoutWriter.RecordSets.Current[1] as List<TransactionRecord>;
+            e.Label.Text = transactions.Sum( a => a.Amount ).ToString();
+        }
+
+        /// <summary>
+        /// Handles the LaidOut event of the formattedRecordAreaToAddress control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="ceTe.DynamicPDF.ReportWriter.ReportElements.FormattedRecordAreaLaidOutEventArgs"/> instance containing the event data.</param>
+        protected void formattedRecordAreaToAddress_LaidOut( object sender, FormattedRecordAreaLaidOutEventArgs e )
+        {
+            Person person = e.LayoutWriter.RecordSets.Current[0] as Person;
+
+            PersonService personService = new PersonService();
+            Group family = personService.GetFamilies( person ).FirstOrDefault();
+            if ( family != null )
+            {
+                GroupLocation homeAddress = family.GroupLocations.Where( a => a.LocationTypeValue.Guid == new Guid( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_HOME ) ).FirstOrDefault();
+                if ( homeAddress != null )
+                {
+                    e.FormattedTextArea.Text = string.Format(
+@"
+<p>{0}</p>
+<p>{1}</p>
+<p>{2}</p>
+<p>{3}, {4} {5}</p>
+", family.Name, homeAddress.Location.Street1, homeAddress.Location.Street2, homeAddress.Location.City, homeAddress.Location.State, homeAddress.Location.Zip );
+                }
+            }
+            else
+            {
+                e.FormattedTextArea.Text = string.Format( "<p>{0}</p>", person.FullName );
+            }
         }
 
         /// <summary>
@@ -131,7 +171,7 @@ namespace ContributionStatementApp
             // get data from Rock database
             FinancialTransactionService financialTransactionService = new FinancialTransactionService();
 
-            var qry = financialTransactionService.Queryable();
+            var qry = financialTransactionService.Queryable().AsNoTracking();
 
             qry = qry
                 .Where( a => a.TransactionDateTime >= this.Options.StartDate )
@@ -148,7 +188,6 @@ namespace ContributionStatementApp
                 Amount = a.Amount
             } );
 
-            UpdateProgress( "Executing Query...." );
             var personTransactionGroupBy = selectQry.GroupBy( a => a.AuthorizedPerson );
 
             UpdateProgress( "Getting Data..." );
