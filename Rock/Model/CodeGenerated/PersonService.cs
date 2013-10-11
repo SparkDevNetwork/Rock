@@ -167,6 +167,7 @@ namespace Rock.Model
                 target.MaritalStatusValueId = source.MaritalStatusValueId;
                 target.AnniversaryDate = source.AnniversaryDate;
                 target.GraduationDate = source.GraduationDate;
+                target.GivingGroupId = source.GivingGroupId;
                 target.Email = source.Email;
                 target.IsEmailActive = source.IsEmailActive;
                 target.EmailNote = source.EmailNote;

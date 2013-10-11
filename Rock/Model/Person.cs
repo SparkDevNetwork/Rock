@@ -356,6 +356,18 @@ namespace Rock.Model
         [Column( TypeName = "Date" )]
         public DateTime? GraduationDate { get; set; }
 
+
+        /// <summary>
+        /// Gets or sets the giving group id.  If an individual would like their giving to be grouped with the rest of their family,
+        /// this will be the id of their family group.  If they elect to contribute on their own, this value will be null.
+        /// </summary>
+        /// <value>
+        /// The giving group id.
+        /// </value>
+        [DataMember]
+        [MergeField]
+        public int? GivingGroupId { get; set; }
+
         /// <summary>
         /// Gets or sets the Person's email address.
         /// </summary>
@@ -577,6 +589,15 @@ namespace Rock.Model
         [DataMember]
         [MergeField]
         public virtual BinaryFile Photo { get; set; }
+
+        /// <summary>
+        /// Gets or sets the giving group.  The 
+        /// </summary>
+        /// <value>
+        /// The giving group.
+        /// </value>
+        [DataMember]
+        public virtual Group GivingGroup { get; set; }
 
         /// <summary>
         /// Gets or sets the Person's birth date.
@@ -900,6 +921,7 @@ namespace Rock.Model
             this.HasOptional( p => p.SuffixValue ).WithMany().HasForeignKey( p => p.SuffixValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.TitleValue ).WithMany().HasForeignKey( p => p.TitleValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.Photo ).WithMany().HasForeignKey( p => p.PhotoId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.GivingGroup ).WithMany().HasForeignKey( p => p.GivingGroupId ).WillCascadeOnDelete( false );
         }
     }
 
