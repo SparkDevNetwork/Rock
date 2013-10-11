@@ -227,13 +227,13 @@ namespace Rock.Web.UI.Controls
 
             _scheduleBuilderPanel = new Panel();
             _scheduleBuilderPanel.ID = "scheduleBuilderPanel_" + this.ClientID;
-            _scheduleBuilderPanel.CssClass = "controls";
+            _scheduleBuilderPanel.CssClass = "picker";
             _scheduleBuilderPanel.ClientIDMode = ClientIDMode.Static;
 
             _btnShowPopup = new LinkButton();
             _btnShowPopup.CausesValidation = false;
             _btnShowPopup.ID = "btnShowPopup_" + this.ClientID;
-            _btnShowPopup.CssClass = "btn btn-sm";
+            _btnShowPopup.CssClass = "picker-label";
             _btnShowPopup.Text = "<i class='icon-calendar'></i> Edit Schedule";
             _btnShowPopup.ClientIDMode = ClientIDMode.Static;
             _btnShowPopup.Click += _btnShowPopup_Click;
@@ -334,21 +334,21 @@ namespace Rock.Web.UI.Controls
 
         // weekly recurrence
         private NumberBox _tbWeeklyEveryX;
-        private CheckBox _cbWeeklySunday;
-        private CheckBox _cbWeeklyMonday;
-        private CheckBox _cbWeeklyTuesday;
-        private CheckBox _cbWeeklyWednesday;
-        private CheckBox _cbWeeklyThursday;
-        private CheckBox _cbWeeklyFriday;
-        private CheckBox _cbWeeklySaturday;
+        private RockCheckBox _cbWeeklySunday;
+        private RockCheckBox _cbWeeklyMonday;
+        private RockCheckBox _cbWeeklyTuesday;
+        private RockCheckBox _cbWeeklyWednesday;
+        private RockCheckBox _cbWeeklyThursday;
+        private RockCheckBox _cbWeeklyFriday;
+        private RockCheckBox _cbWeeklySaturday;
 
         // monthly
         private RadioButton _radMonthlyDayX;
         private NumberBox _tbMonthlyDayX;
         private NumberBox _tbMonthlyXMonths;
         private RadioButton _radMonthlyNth;
-        private DropDownList _ddlMonthlyNth;
-        private DropDownList _ddlMonthlyDayName;
+        private RockDropDownList _ddlMonthlyNth;
+        private RockDropDownList _ddlMonthlyDayName;
 
         // end date
         private RadioButton _radEndByNone;
@@ -402,21 +402,21 @@ END:VCALENDAR
 
             // weekly
             _tbWeeklyEveryX = new NumberBox();
-            _cbWeeklySunday = new CheckBox();
-            _cbWeeklyMonday = new CheckBox();
-            _cbWeeklyTuesday = new CheckBox();
-            _cbWeeklyWednesday = new CheckBox();
-            _cbWeeklyThursday = new CheckBox();
-            _cbWeeklyFriday = new CheckBox();
-            _cbWeeklySaturday = new CheckBox();
+            _cbWeeklySunday = new RockCheckBox();
+            _cbWeeklyMonday = new RockCheckBox();
+            _cbWeeklyTuesday = new RockCheckBox();
+            _cbWeeklyWednesday = new RockCheckBox();
+            _cbWeeklyThursday = new RockCheckBox();
+            _cbWeeklyFriday = new RockCheckBox();
+            _cbWeeklySaturday = new RockCheckBox();
 
             // monthly
             _radMonthlyDayX = new RadioButton();
             _tbMonthlyDayX = new NumberBox();
             _tbMonthlyXMonths = new NumberBox();
             _radMonthlyNth = new RadioButton();
-            _ddlMonthlyNth = new DropDownList();
-            _ddlMonthlyDayName = new DropDownList();
+            _ddlMonthlyNth = new RockDropDownList();
+            _ddlMonthlyDayName = new RockDropDownList();
 
             // end date
             _radEndByNone = new RadioButton();
@@ -920,16 +920,18 @@ END:VCALENDAR
 
             _tbDurationHours.ClientIDMode = ClientIDMode.Static;
             _tbDurationHours.ID = "tbDurationHours_" + this.ClientID;
-            _tbDurationHours.CssClass = "input-width-sm";
+            _tbDurationHours.CssClass = "input-width-md";
+            _tbDurationHours.AppendText = "hrs&nbsp;";
             _tbDurationHours.MinimumValue = "0";
             _tbDurationHours.MaximumValue = "24";
             _tbDurationHours.ValidationGroup = validationGroup;
 
             _tbDurationMinutes.ClientIDMode = ClientIDMode.Static;
             _tbDurationMinutes.ID = "tbDurationMinutes_" + this.ClientID;
-            _tbDurationMinutes.CssClass = "input-width-sm";
+            _tbDurationMinutes.CssClass = "input-width-md";
             _tbDurationMinutes.MinimumValue = "0";
             _tbDurationMinutes.MaximumValue = "59";
+            _tbDurationMinutes.AppendText = "mins";
             _tbDurationMinutes.ValidationGroup = validationGroup;
 
             _radOneTime.ClientIDMode = ClientIDMode.Static;
@@ -989,7 +991,8 @@ END:VCALENDAR
 
             _tbDailyEveryXDays.ClientIDMode = ClientIDMode.Static;
             _tbDailyEveryXDays.ID = "tbDailyEveryXDays_" + this.ClientID;
-            _tbDailyEveryXDays.CssClass = "input-width-sm";
+            _tbDailyEveryXDays.CssClass = "input-width-md";
+            _tbDailyEveryXDays.AppendText = "days";
             _tbDailyEveryXDays.ValidationGroup = validationGroup;
 
             _radDailyEveryWeekday.ClientIDMode = ClientIDMode.Static;
@@ -1003,9 +1006,10 @@ END:VCALENDAR
             // weekly recurrence
             _tbWeeklyEveryX.ClientIDMode = ClientIDMode.Static;
             _tbWeeklyEveryX.ID = "tbWeeklyEveryX_" + this.ClientID;
-            _tbWeeklyEveryX.CssClass = "input-width-sm";
+            _tbWeeklyEveryX.CssClass = "input-width-md";
             _tbWeeklyEveryX.MinimumValue = "1";
             _tbWeeklyEveryX.MaximumValue = "52";
+            _tbWeeklyEveryX.AppendText = "week(s)";
             _tbWeeklyEveryX.ValidationGroup = validationGroup;
 
             _cbWeeklySunday.ClientIDMode = ClientIDMode.Static;
@@ -1014,21 +1018,27 @@ END:VCALENDAR
             _cbWeeklyMonday.ClientIDMode = ClientIDMode.Static;
             _cbWeeklyMonday.ID = "cbWeeklyMonday_" + this.ClientID;
             _cbWeeklyMonday.Text = "Mon";
+            _cbWeeklyMonday.CssClass = "checkbox-inline";
             _cbWeeklyTuesday.ClientIDMode = ClientIDMode.Static;
             _cbWeeklyTuesday.ID = "cbWeeklyTuesday_" + this.ClientID;
             _cbWeeklyTuesday.Text = "Tue";
+            _cbWeeklyTuesday.CssClass = "checkbox-inline";
             _cbWeeklyWednesday.ClientIDMode = ClientIDMode.Static;
             _cbWeeklyWednesday.ID = "cbWeeklyWednesday_" + this.ClientID;
             _cbWeeklyWednesday.Text = "Wed";
+            _cbWeeklyWednesday.CssClass = "checkbox-inline";
             _cbWeeklyThursday.ClientIDMode = ClientIDMode.Static;
             _cbWeeklyThursday.ID = "cbWeeklyThursday_" + this.ClientID;
             _cbWeeklyThursday.Text = "Thu";
+            _cbWeeklyThursday.CssClass = "checkbox-inline";
             _cbWeeklyFriday.ClientIDMode = ClientIDMode.Static;
             _cbWeeklyFriday.ID = "cbWeeklyFriday_" + this.ClientID;
             _cbWeeklyFriday.Text = "Fri";
+            _cbWeeklyFriday.CssClass = "checkbox-inline";
             _cbWeeklySaturday.ClientIDMode = ClientIDMode.Static;
             _cbWeeklySaturday.ID = "cbWeeklySaturday_" + this.ClientID;
             _cbWeeklySaturday.Text = "Sat";
+            _cbWeeklySaturday.CssClass = "checkbox-inline";
 
             // monthly
             _radMonthlyDayX.ClientIDMode = ClientIDMode.Static;
@@ -1192,20 +1202,19 @@ END:VCALENDAR
             _dpStartDateTime.RenderControl( writer );
 
             // Duration
-            writer.AddAttribute( "class", "control-group" );
+            writer.AddAttribute( "class", "form-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.Write( "<span class='control-label'>Duration</span>" );
-            writer.AddAttribute( "class", "controls" );
+            writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _tbDurationHours.RenderControl( writer );
-            writer.Write( " hrs " );
+
             _tbDurationMinutes.RenderControl( writer );
-            writer.Write( " mins " );
             writer.RenderEndTag();
             writer.RenderEndTag();
 
             // One-time/Recurring Radiobuttons
-            writer.AddAttribute( "class", "control-group" );
+            writer.AddAttribute( "class", "form-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.AddAttribute( "class", "controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
@@ -1227,9 +1236,10 @@ END:VCALENDAR
             writer.RenderBeginTag( HtmlTextWriterTag.Legend );
             writer.Write( "Recurrence" );
             writer.RenderEndTag();
+            
 
             // OccurrencePattern Radiobuttons
-            writer.AddAttribute( "class", "control-group" );
+            writer.AddAttribute( "class", "form-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.Write( "<span class='control-label'>Occurrence Pattern</span>" );
             writer.AddAttribute( "class", "controls" );
@@ -1263,7 +1273,7 @@ END:VCALENDAR
 
             writer.Write( @"
                 </ul>
-                <a class='btn btn-sm add-specific-date'><i class='icon-plus'></i>
+                <a class='btn btn-action btn-sm add-specific-date'><i class='icon-plus'></i>
                     <span> Add Date</span>
                 </a>
 " );
@@ -1275,12 +1285,14 @@ END:VCALENDAR
             _dpSpecificDate.AddCssClass( "specific-date" );
             _dpSpecificDate.RenderControl( writer );
             writer.Write( @"
-                <a class='btn btn-primary btn-xs add-specific-date-ok'>
-                    <span>OK</span>
-                </a>
-                <a class='btn btn-xs add-specific-date-cancel'>
-                    <span>Cancel</span>
-                </a>
+                <div class='actions'>
+                    <a class='btn btn-primary btn-xs add-specific-date-ok'>
+                        <span>OK</span>
+                    </a>
+                    <a class='btn btn-xs add-specific-date-cancel'>
+                        <span>Cancel</span>
+                    </a>
+                </div>
 " );
 
             writer.RenderEndTag();
@@ -1296,21 +1308,23 @@ END:VCALENDAR
             }
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.AddAttribute( "class", "control-group controls" );
+            //writer.AddAttribute( "class", "form-group controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+            writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _radDailyEveryXDays.RenderControl( writer );
             writer.Write( "<span>Every </span>" );
             _tbDailyEveryXDays.RenderControl( writer );
-            writer.Write( "<span> days</span>" );
             writer.RenderEndTag();
 
+            writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _radDailyEveryWeekday.RenderControl( writer );
             writer.Write( "<span>Every weekday</span>" );
             writer.RenderEndTag();
 
+            writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _radDailyEveryWeekendDay.RenderControl( writer );
             writer.Write( "<span>Every weekend day</span>" );
@@ -1328,16 +1342,17 @@ END:VCALENDAR
                 writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
             }
 
+            writer.AddAttribute("class", "weekly-x-weeks");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( "class", "control-group controls" );
+            writer.AddAttribute( "class", "form-control-group" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.Write( "<span>Every </span>" );
             _tbWeeklyEveryX.RenderControl( writer );
-            writer.Write( "<span> weeks on</span><br/>" );
+            writer.Write( "<span> on</span>" );
             writer.RenderEndTag();
 
-            writer.AddAttribute( "class", "control-group controls" );
+            writer.AddAttribute("class", "week-days");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _cbWeeklySunday.RenderControl( writer );
             _cbWeeklyMonday.RenderControl( writer );
@@ -1360,9 +1375,11 @@ END:VCALENDAR
             }
 
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
-            writer.AddAttribute( "class", "control-group controls" );
+            writer.AddAttribute( "class", "form-group controls" );
+            
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+            writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _radMonthlyDayX.RenderControl( writer );
             writer.Write( "<span>Day </span>" );
@@ -1372,6 +1389,7 @@ END:VCALENDAR
             writer.Write( "<span> months</span>" );
             writer.RenderEndTag();
 
+            writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _radMonthlyNth.RenderControl( writer );
             writer.Write( "<span>The </span>" );
@@ -1387,23 +1405,26 @@ END:VCALENDAR
             writer.Write( @"
 <div class='controls'><hr /></div>
 " );
-            writer.AddAttribute( "class", "control-group" );
+            writer.AddAttribute( "class", "continue-until" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.Write( "<label class='control-label'>Continue Until</label>" );
             writer.AddAttribute( "class", "controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+            writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _radEndByNone.RenderControl( writer );
             writer.Write( "<span>No End</span>" );
             writer.RenderEndTag();
 
+            writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _radEndByDate.RenderControl( writer );
             writer.Write( "<span>End by </span>" );
             _dpEndBy.RenderControl( writer );
             writer.RenderEndTag();
 
+            writer.AddAttribute("class", "form-control-group");
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _radEndByOccurrenceCount.RenderControl( writer );
             writer.Write( "<span>End after </span>" );
@@ -1416,10 +1437,10 @@ END:VCALENDAR
             writer.RenderEndTag();
 
             // exclusions
-            writer.Write( @"<div class='controls'><hr /></div>" );
-            writer.Write( @"<label class='control-label'>Exclusions</label>" );
+            writer.Write( @"<hr />" );
+            writer.Write(@"<div class='exclusions'><label class='control-label'>Exclusions</label>");
             writer.AddAttribute( "id", "recurrence-pattern-exclusions_" + this.ClientID );
-            writer.AddAttribute( "class", "control-group controls" );
+            writer.AddAttribute( "class", "form-group controls" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _hfExclusionDateRangeListValues.RenderControl( writer );
 
@@ -1428,26 +1449,29 @@ END:VCALENDAR
 
             foreach ( var dateRangeValue in _hfExclusionDateRangeListValues.Value.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ) )
             {
-                writer.Write( "<li><span>" + dateRangeValue + "</span><a href='#' style='display: none'><i class='icon-remove'></i></a></li>" );
+                writer.Write( "<li><span>" + dateRangeValue + "</span> <a href='#' style='display: none'><i class='icon-remove'></i></a></li>" );
             }
 
             writer.Write( @"
                 </ul>
-                <a class='btn btn-sm add-exclusion-daterange'><i class='icon-plus'></i>
+                <a class='btn btn-action btn-sm add-exclusion-daterange'><i class='icon-plus'></i>
                     <span> Add Date Range</span>
                 </a>" );
 
             writer.AddAttribute( "id", "add-exclusion-daterange-group_" + this.ClientID );
+            writer.AddAttribute("class", "add-exclusion");
             writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             _dpExclusionDateRange.RenderControl( writer );
-            writer.Write( @"
-                <a class='btn btn-primary btn-xs add-exclusion-daterange-ok'>
-                    <span>OK</span>
-                </a>
-                <a class='btn btn-xs add-exclusion-daterange-cancel'>
-                    <span>Cancel</span>
-                </a>" );
+            writer.Write(@"
+                <div class='actions'>
+                    <a class='btn btn-primary btn-xs add-exclusion-daterange-ok'>
+                        <span>OK</span>
+                    </a>
+                    <a class='btn btn-xs add-exclusion-daterange-cancel'>
+                        <span>Cancel</span>
+                    </a>
+                </div>");
 
             writer.RenderEndTag();
 
@@ -1458,6 +1482,7 @@ END:VCALENDAR
 
             // write out the closing divs that go after the recurrence panel
             writer.Write( @"
+                            </div>
                         </div>
                     </div>
                 </div>
