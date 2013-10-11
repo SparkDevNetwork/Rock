@@ -5,30 +5,51 @@
 			<eventDriven connectionString=""></eventDriven>
 		</query>
 		<template id="Template1"/>
-		<header id="Header1" height="1"/>
-		<detail id="Detail1" height="682" autoSplit="true">
-			<subReport id="InnerReport" width="501" x="0" y="180">
+		<header id="ReportHeader"/>
+		<detail autoSplit="true" id="PersonDetail" height="683">
+			<subReport id="InnerReport" width="501" x="0" y="270">
 				<query id="InnerQuery">
 					<eventDriven connectionString=""></eventDriven>
 				</query>
-				<header id="Header2" height="27">
-					<label text="Date" width="54.1" height="13.1" id="lblDate" x="9" y="9"/>
-					<label height="14" id="lblSummary" text="Summary" width="144.1" x="90" y="9"/>
-					<label text="Account" id="lblAccountName" width="104.1" height="17" x="261" y="9"/>
-					<label id="Label5" height="14" width="100" text="Amount" x="397" y="9"/>
+				<header id="TranListHeader" height="26">
+					<label text="Date" font="HelveticaBold" width="72" id="lblDate" height="14" x="6" y="6"/>
+					<label font="HelveticaBold" width="72" x="90" id="lblSummary" text="Summary" height="14" y="6"/>
+					<label font="HelveticaBold" width="72" id="lblAccount" text="Account" height="14" x="264" y="6"/>
+					<label font="HelveticaBold" x="396" id="lblAmount" text="Amount" height="14" y="6" align="right" width="102"/>
+					<line id="HeaderLine" x2="498" x1="0" y2="22" y1="22"/>
 				</header>
-				<detail id="Detail2" autoSplit="true" height="21.6">
-					<recordBox dataFormat="" height="14" width="100" field="Amount" id="rbAmount" x="396" y="0"/>
-					<recordBox height="14" width="59" field="TransactionDateTime" id="rbTransactionDateTime" dataFormat="d" x="9" y="0"/>
-					<recordBox dataFormat="" field="Summary" id="rbSummary" width="167" height="17.1" x="90" y="0"/>
-					<recordBox dataFormat="" height="14" width="71.1" field="AccountName" id="rbAccountName" x="261" y="0"/>
+				<detail autoSplit="true" height="21.6" id="TranListDetail">
+					<recordBox dataFormat="" height="14" width="100" field="Amount" id="rbAmount" x="396" align="right" y="6"/>
+					<recordBox height="14" field="TransactionDateTime" id="rbTransactionDateTime" dataFormat="MM/dd/yyyy" width="72" x="6" y="6"/>
+					<recordBox dataFormat="" field="Summary" id="rbSummary" width="167" x="90" y="6" height="14"/>
+					<recordBox dataFormat="" height="14" field="AccountName" id="rbAccountName" width="126" x="264" y="6"/>
 				</detail>
-				<footer id="Footer2" height="3"/>
+				<footer id="TranListFooter" height="10">
+					<line id="FooterLine" x2="498" x1="0" y1="2" y2="2"/>
+				</footer>
 			</subReport>
-			<label id="Label6" width="141" height="45.1" x="10" y="591" text="Rock Solid Church&#xA;123 E Elm&#xA;Peoria, AZ 85383"/>
-			<pageBreak id="PageBreak1" y="670"/>
-			<image x="3" y="3" height="51" path="rock-logo.jpg" width="137" id="imgLogo"/>
-			<rectangle fillColor="lightGrey" height="48" width="499.1" id="rectPeriodSummary" x="0" y="117"/><formattedRecordArea id="FormattedRecordArea1" height="54" width="153" x="0" y="63"><initialStyle><font/><line/><paragraph/></initialStyle><text><![CDATA[<P>Mr. Firstname LastName 101 Some Street Sometown, AZ 12345</P>]]></text></formattedRecordArea></detail>
-		<footer id="Footer1" height="1"/>
+			<image height="51" path="rock-logo.jpg" width="137" id="imgLogo" x="369" y="0"/>
+			<rectangle fillColor="lightGrey" height="48" width="499.1" id="rectPeriodSummary" x="0" y="207"/>
+			<formattedRecordArea x="0" y="144" height="63" width="234" id="lblToAddress">
+				<initialStyle>
+					<font/>
+					<line/>
+					<paragraph/>
+				</initialStyle>
+				<text><![CDATA[<P>Mr. Firstname LastName</P><P>101 Some Street</P><P>Sometown, AZ 12345</P>]]></text>
+			</formattedRecordArea>
+			<formattedRecordArea x="0" height="63" width="234" y="0" id="lblReturnAddress">
+				<initialStyle>
+					<font/>
+					<line/>
+					<paragraph/>
+				</initialStyle>
+				<text><![CDATA[<P>Rock Solid Church</P><P>100 Electric Ave</P><P>Sometown, AZ 85027</P>]]></text>
+			</formattedRecordArea>
+			<pageBreak id="PageBreak1" y="513"/>
+			<label height="14" width="100" text="Total" font="HelveticaBold" x="6" y="330" id="lblTotal"/>
+			<label height="14" y="330" text="" align="right" x="390" width="108" font="HelveticaBold" id="lblTotalAmount"/>
+		</detail>
+		<footer id="ReportFooter"/>
 	</report>
 </document>
