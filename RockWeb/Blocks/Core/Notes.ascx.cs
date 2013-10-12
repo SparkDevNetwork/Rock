@@ -71,22 +71,6 @@ namespace RockWeb.Blocks.Core
         $(this).closest('.note-entry').slideToggle(""slow"");
     });
 
-    $('.panel-note article').on({
-        mouseenter:
-            function () {
-                var actionsDiv = $('.actions', this);
-                if (actionsDiv.length > 0) {
-                    $(actionsDiv).stop(true, true).fadeIn(""slow"");
-                }
-            },
-        mouseleave:
-            function () {
-                var actionsDiv = $('.actions', this);
-                if (actionsDiv.length > 0) {
-                    $(actionsDiv).stop(true, true).fadeOut(""slow"");
-                }
-            }
-    });
 ";
             ScriptManager.RegisterStartupScript( Page, Page.GetType(), "add-note", script, true );
 

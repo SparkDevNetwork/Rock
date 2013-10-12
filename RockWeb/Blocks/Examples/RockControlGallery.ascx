@@ -293,6 +293,13 @@
                     DataLoadingText="&lt;i class='icon-spinner icon-spin icon-large'&gt;&lt;/i&gt; Saving" />
             </div>
 
+            <h2>Rock:NoteEditor</h2>
+            <div id="Div3" runat="server" class="r-example">
+                <section class="panel-note">
+                    <Rock:NoteEditor ID="noteExample" runat="server" IsAlert="false" IsPrivate="false" Text="Here is some example note text." CanEdit="true" />
+                </section>
+            </div>
+
             <h2>Rock:AttributeEditor</h2>
             <div runat="server" class="r-example">
                 <asp:LinkButton ID="btnShowAttributeEditor" runat="server" CssClass="btn" Text="Attribute Editor..." OnClick="btnShowAttributeEditor_Click" CausesValidation="false" />

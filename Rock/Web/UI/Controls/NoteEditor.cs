@@ -238,6 +238,23 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             string script = @"
+    $('.note-editor').on({
+        mouseenter:
+            function () {
+                var actionsDiv = $('.actions', this);
+                if (actionsDiv.length > 0) {
+                    $(actionsDiv).stop(true, true).fadeIn(""slow"");
+                }
+            },
+        mouseleave:
+            function () {
+                var actionsDiv = $('.actions', this);
+                if (actionsDiv.length > 0) {
+                    $(actionsDiv).stop(true, true).fadeOut(""slow"");
+                }
+            }
+    });
+
     $('a.edit-note').click(function (e) {
         e.preventDefault();
         $(this).parent().parent().parent().children().slideToggle('slow');
@@ -334,6 +351,7 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "note-editor" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             // Edit Mode HTML...
