@@ -38,14 +38,14 @@ INSERT INTO [AttributeValue] ([IsSystem], [AttributeId], [EntityId], [Order], [V
 SELECT 0, [Id], 0, 0, '587', NEWID() FROM [Attribute] WHERE [Guid] = 'C6B13F15-9D6F-45B2-BDB9-E77D29A32EBF'
 
 -- Legacy Global Attributes (still used by email templates)
-INSERT INTO [AttributeValue] ([IsSystem], [AttributeId], [EntityId], [Order], [Value], [Guid]) 
-SELECT 0, [Id], 0, 0, 'smtp.gmail.com', NEWID() FROM [Attribute] WHERE [Guid] = '1C4E71DD-ED38-4586-93CF-A847003EC594'
-INSERT INTO [AttributeValue] ([IsSystem], [AttributeId], [EntityId], [Order], [Value], [Guid]) 
-SELECT 0, [Id], 0, 0, @GmailPassword, NEWID() FROM [Attribute] WHERE [Guid] = '996B04C9-45E5-4DC1-A84B-27D14B53DCC6'
-INSERT INTO [AttributeValue] ([IsSystem], [AttributeId], [EntityId], [Order], [Value], [Guid]) 
-SELECT 0, [Id], 0, 0, 'True', NEWID() FROM [Attribute] WHERE [Guid] = '10DD8248-DC68-4206-ABFD-DA4E8BB849E3'
-INSERT INTO [AttributeValue] ([IsSystem], [AttributeId], [EntityId], [Order], [Value], [Guid]) 
-SELECT 0, [Id], 0, 0, @GmailUserId, NEWID() FROM [Attribute] WHERE [Guid] = '40690F08-1433-4046-8F22-B4B16075F1CF'
-INSERT INTO [AttributeValue] ([IsSystem], [AttributeId], [EntityId], [Order], [Value], [Guid]) 
-SELECT 0, [Id], 0, 0, '587', NEWID() FROM [Attribute] WHERE [Guid] = '3C5F2BF8-8D8A-46D4-9182-2A25D32851EA'
+INSERT INTO [AttributeValue] ([IsSystem], [AttributeId], [Value], [Guid]) 
+SELECT 0, [Id], 'smtp.gmail.com', NEWID() FROM [Attribute] WHERE [Guid] = '1C4E71DD-ED38-4586-93CF-A847003EC594'
+INSERT INTO [AttributeValue] ([IsSystem], [AttributeId], [Value], [Guid]) 
+SELECT 0, [Id], @GmailPassword, NEWID() FROM [Attribute] WHERE [Guid] = '996B04C9-45E5-4DC1-A84B-27D14B53DCC6'
+INSERT INTO [AttributeValue] ([IsSystem], [AttributeId], [Value], [Guid]) 
+SELECT 0, [Id], 'True', NEWID() FROM [Attribute] WHERE [Guid] = '10DD8248-DC68-4206-ABFD-DA4E8BB849E3'
+INSERT INTO [AttributeValue] ([IsSystem], [AttributeId], [Value], [Guid]) 
+SELECT 0, [Id], @GmailUserId, NEWID() FROM [Attribute] WHERE [Guid] = '40690F08-1433-4046-8F22-B4B16075F1CF'
+INSERT INTO [AttributeValue] ([IsSystem], [AttributeId], [Value], [Guid]) 
+SELECT 0, [Id], '587', NEWID() FROM [Attribute] WHERE [Guid] = '3C5F2BF8-8D8A-46D4-9182-2A25D32851EA'
 
