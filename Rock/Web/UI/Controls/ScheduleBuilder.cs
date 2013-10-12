@@ -240,6 +240,7 @@ namespace Rock.Web.UI.Controls
 
             _modalDialog = new ModalDialog();
             _modalDialog.ID = "modalDialog_" + this.ClientID;
+            _modalDialog.ValidationGroup = _modalDialog.ID + "_validationgroup";
             _modalDialog.ClientIDMode = ClientIDMode.Static;
             _modalDialog.Title = "Schedule Builder";
             _modalDialog.SaveButtonText = "OK";
@@ -247,6 +248,7 @@ namespace Rock.Web.UI.Controls
 
             _scheduleBuilderPopupContents = new ScheduleBuilderPopupContents();
             _scheduleBuilderPopupContents.ID = "scheduleBuilderPopupContents_" + this.ClientID;
+            _scheduleBuilderPopupContents.ValidationGroup = _modalDialog.ValidationGroup;
             _scheduleBuilderPopupContents.ClientIDMode = ClientIDMode.Static;
 
             this.Controls.Add( _scheduleBuilderPanel );
@@ -900,6 +902,13 @@ END:VCALENDAR
             }
         }
 
+        /// <summary>
+        /// Gets or sets the validation group.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup { get; set; }
 
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
@@ -910,7 +919,7 @@ END:VCALENDAR
 
             Controls.Clear();
 
-            string validationGroup = "validationgroup_" + this.ClientID;
+            string validationGroup = this.ValidationGroup;
 
             _dpStartDateTime.ClientIDMode = ClientIDMode.Static;
             _dpStartDateTime.ID = "dpStartDateTime_" + this.ClientID;
