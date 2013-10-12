@@ -13,7 +13,7 @@
             </div>
         </asp:Panel>
         <asp:Panel ID="pnlDetails" runat="server">
-            
+
             <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" />
 
             <h1>General Information</h1>
@@ -21,7 +21,8 @@
             <h2>Input Sizing Rules</h2>
 
             <div class="alert alert-warning">
-                <p><strong>Warning!</strong></p> In Bootstrap 3 inputs are meant to fill the width of their parent container (<a href="http://getbootstrap.com/css/#forms-control-sizes" class="alert-link">link</a>).  If a small input is desired they should
+                <p><strong>Warning!</strong></p>
+                In Bootstrap 3 inputs are meant to fill the width of their parent container (<a href="http://getbootstrap.com/css/#forms-control-sizes" class="alert-link">link</a>).  If a small input is desired they should
                 be wrapped in a table grid.  This provides the best responsive solution.  In some rare cases it's beneficial to be able to fix the width of
                 certain inputs to provide better context of what the input is for.  For instance a credit card CVV field makes more sense visually being
                 fixed width to 3 characters.  To provide this capability we have added the following CSS classes to fix width inputs.  <em>Please use them
@@ -29,26 +30,28 @@
             </div>
 
             <div class="alert alert-danger">
-                <p><strong>Alert</strong></p> Rock framework developers should get approval from the Core Team before using these styles.
+                <p><strong>Alert</strong></p>
+                Rock framework developers should get approval from the Core Team before using these styles.
 
             </div>
 
             <div runat="server" class="r-example">
-                <Rock:DataTextBox ID="DataTextBoxXs" runat="server" CssClass="input-width-xs" Label=".input-width-xs" LabelTextFromPropertyName="false" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
+                <Rock:RockTextBox ID="tbInput1" runat="server" CssClass="input-width-xs" Label=".input-width-xs" />
 
-                <Rock:DataTextBox ID="DataTextBox1" runat="server" CssClass="input-width-sm" Label=".input-width-sm" LabelTextFromPropertyName="false" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
+                <Rock:RockTextBox ID="tbInput2" runat="server" CssClass="input-width-sm" Label=".input-width-sm" />
 
-                <Rock:DataTextBox ID="DataTextBox2" runat="server" CssClass="input-width-md" Label=".input-width-md" LabelTextFromPropertyName="false" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
+                <Rock:RockTextBox ID="tbInput3" runat="server" CssClass="input-width-md" Label=".input-width-md" />
 
-                <Rock:DataTextBox ID="DataTextBox3" runat="server" CssClass="input-width-lg" Label=".input-width-lg" LabelTextFromPropertyName="false" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
+                <Rock:RockTextBox ID="tbInput4" runat="server" CssClass="input-width-lg" Label=".input-width-lg" />
 
-                <Rock:DataTextBox ID="DataTextBox4" runat="server" CssClass="input-width-xl" Label=".input-width-xl" LabelTextFromPropertyName="false" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
+                <Rock:RockTextBox ID="tbInput5" runat="server" CssClass="input-width-xl" Label=".input-width-xl" />
 
-                <Rock:DataTextBox ID="DataTextBox5" runat="server" CssClass="input-width-xxl" Label=".input-width-xxl" LabelTextFromPropertyName="false" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
+                <Rock:RockTextBox ID="tbInput6" runat="server" CssClass="input-width-xxl" Label=".input-width-xxl" />
             </div>
 
             <div class="alert alert-info">
-                <p><strong>Note</strong></p> In Bootstrap 3 inputs are <em>display:block;</em>. If you need these sized controls to align horizontally, consider wrapping them with the <em>form-control-group</em> class.
+                <p><strong>Note</strong></p>
+                In Bootstrap 3 inputs are <em>display:block;</em>. If you need these sized controls to align horizontally, consider wrapping them with the <em>form-control-group</em> class.
             </div>
 
 
@@ -77,7 +80,7 @@
             </div>
 
             <div runat="server" class="r-example">
-                <Rock:StateDropDownList ID="NotificationBox3" runat="server" Label="Rock:StateDropDownList" />
+                <Rock:StateDropDownList ID="ddlState" runat="server" Label="Rock:StateDropDownList" />
             </div>
 
             <div runat="server" class="r-example">
@@ -88,7 +91,7 @@
             <h1>Input</h1>
 
             <div runat="server" class="r-example">
-                <Rock:DataTextBox ID="dt" runat="server" Label="Rock:DataTextBox" LabelTextFromPropertyName="false" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Name" />
+                <Rock:DataTextBox ID="dt" runat="server" Label="Rock:DataTextBox" LabelTextFromPropertyName="false" SourceTypeName="Rock.Model.GroupType, Rock" PropertyName="Description" />
             </div>
 
             <div runat="server" class="r-example">
@@ -237,9 +240,11 @@
             </div>
 
             <h2>Rock:Badge</h2>
-            <p>This is a mostly standard Bootstrap badge. We say "mostly" because we added the ability to
+            <p>
+                This is a mostly standard Bootstrap badge. We say "mostly" because we added the ability to
                 control the color of the badge via the BadgeType property (danger, warning, success, info) similar
-                to the old <a href="http://getbootstrap.com/2.3.2/components.html#labels-badges">Bootstrap 2.3 Labels and Badges</a>.</p>
+                to the old <a href="http://getbootstrap.com/2.3.2/components.html#labels-badges">Bootstrap 2.3 Labels and Badges</a>.
+            </p>
             <div runat="server" class="r-example">
                 <Rock:Badge ID="badge" runat="server" ToolTip="you have new messages waiting">1</Rock:Badge>
                 <Rock:Badge ID="badge1" runat="server" BadgeType="success">0</Rock:Badge>
@@ -250,8 +255,10 @@
             </div>
 
             <h2>Rock:HighlightLabel</h2>
-            <p>This creates a <a href="http://getbootstrap.com/components/#labels">Bootstrap Label</a>
-                but we've added a few additional custom <code>LabelType</code> options to control the color.</p>
+            <p>
+                This creates a <a href="http://getbootstrap.com/components/#labels">Bootstrap Label</a>
+                but we've added a few additional custom <code>LabelType</code> options to control the color.
+            </p>
             <div runat="server" class="r-example">
                 <Rock:HighlightLabel ID="hlDefault" runat="server" LabelType="Default" Text="Default" />
                 <Rock:HighlightLabel ID="hlPrimary" runat="server" LabelType="Primary" Text="Primary" />
@@ -263,7 +270,7 @@
                 <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" Text="Type" />
                 <Rock:HighlightLabel ID="hlCustom" runat="server" LabelType="Custom" CustomClass="danger" Text="Custom" />
             </div>
-            
+
             <h2>Rock:Toggle</h2>
             <p>A toggle switch for those cases when a simple checkbox just won't do.</p>
             <div runat="server" class="r-example">
@@ -275,9 +282,9 @@
 
             <p>Need larger or smaller switches? Add class modifiers <code>.switch-large</code>, <code>.switch-small</code> or <code>.switch-mini</code></p>
             <div runat="server" class="r-example">
-               <Rock:Toggle ID="toggle1" runat="server" CssClass="switch-large"  />
-               <Rock:Toggle ID="toggle2" runat="server" CssClass="switch-small" />
-               <Rock:Toggle ID="toggle3" runat="server" CssClass="switch-mini" />
+                <Rock:Toggle ID="toggle1" runat="server" CssClass="switch-large" />
+                <Rock:Toggle ID="toggle2" runat="server" CssClass="switch-small" />
+                <Rock:Toggle ID="toggle3" runat="server" CssClass="switch-mini" />
             </div>
 
             <h2>Rock:BootstrapButton</h2>
