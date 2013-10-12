@@ -6,11 +6,14 @@
 </script>
 <asp:UpdatePanel ID="upDetail" runat="server">
     <ContentTemplate>
-        <asp:Panel ID="pnlDetails" runat="server">
+        <asp:Panel ID="pnlActions" runat="server">
             <div class="pull-right">
-                <asp:LinkButton runat="server" ID="btnToggleLabels" Text="Toggle Labels" CssClass="btn btn-xs btn-primary " CausesValidation="false" OnClick="btnToggleLabels_Click" />
-                <asp:LinkButton runat="server" ID="btnToggleEnabled" Text="Toggle Enabled" CssClass="btn btn-xs btn-primary " CausesValidation="false" OnClick="btnToggleEnabled_Click" />
+                <Rock:Toggle runat="server" ID="tglLabels" OnText="Yes" OffText="No" Checked="true" Label="Show Labels" CssClass="switch-mini" OnCheckedChanged="tglLabels_CheckedChanged" />
+                <Rock:Toggle runat="server" ID="tglEnabled" OnText="Yes" OffText="No" Checked="true" Label="Controls Enabled" CssClass="switch-mini" OnCheckedChanged="tglEnabled_CheckedChanged" />
             </div>
+        </asp:Panel>
+        <asp:Panel ID="pnlDetails" runat="server">
+            
             <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" />
 
             <h1>General Information</h1>
