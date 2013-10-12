@@ -14,11 +14,12 @@
                 <fieldset>
                     <legend>Settings</legend>
                     <Rock:DataTextBox ID="tbBlockName" runat="server" SourceTypeName="Rock.Model.Block, Rock" PropertyName="Name" Required="true" />
-                    <Rock:RockLiteral ID="tbBlockType" runat="server" Label="Block Type" />
-                    <Rock:DataTextBox ID="tbCacheDuration" runat="server" SourceTypeName="Rock.Model.Block, Rock" PropertyName="OutputCacheDuration" Label="Cache Duration" />
+                    <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
+                    <fieldset>
+                        <legend>Advanced Settings</legend>
+                        <Rock:DataTextBox ID="tbCacheDuration" runat="server" SourceTypeName="Rock.Model.Block, Rock" PropertyName="OutputCacheDuration" Label="Output Cache Duration" />
+                    </fieldset>
                 </fieldset>
-
-                <asp:PlaceHolder ID="phAttributes" runat="server"></asp:PlaceHolder>
 
                 <asp:ValidationSummary ID="valSummaryBottom" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
 
