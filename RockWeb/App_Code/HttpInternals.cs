@@ -119,8 +119,8 @@ internal static class HttpInternals
     {
         FileInfo fileInfo = new FileInfo( e.FullPath );
 
-        string[] extensionIgnoreFilter = new string[] { ".csv", ".nupkg" };
-        string[] dirIgnoreFilter = new string[] { "Cache", "Logs", "App_Data" };
+        string[] extensionIgnoreFilter = new string[] { ".csv", ".nupkg", ".css", ".less" };
+        string[] dirIgnoreFilter = new string[] { "Cache", "Logs", "App_Data", "Styles", "Assets" };
 
         if ( fileInfo.Attributes.HasFlag( FileAttributes.Directory ) )
         {
