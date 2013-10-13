@@ -38,10 +38,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets all descendents.
+        /// Returns an enumerable collection of <see cref="Rock.Model.Page">Pages</see> that are descendants of a <see cref="Rock.Model.Page"/>
         /// </summary>
-        /// <param name="parentPageId">The parent page id.</param>
-        /// <returns></returns>
+        /// <param name="parentPageId">A <see cref="System.Int32"/> representing the Id of the <see cref="Rock.Model.Page"/></param>
+        /// <returns>A collection of <see cref="Rock.Model.Page"/> entities that are descendants of the provided parent <see cref="Rock.Model.Page"/>.</returns>
         public IEnumerable<Page> GetAllDescendents( int parentPageId )
         {
             return Repository.ExecuteQuery(
