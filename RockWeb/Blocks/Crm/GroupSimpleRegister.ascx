@@ -3,13 +3,13 @@
 <asp:UpdatePanel ID="upPayment" runat="server">
     <ContentTemplate>
 
-        <asp:Panel ID="pnlInputInfo" runat="server" CssClass="panel panel-default">
-            <div class="panel-body">
+        <asp:Panel ID="pnlInputInfo" runat="server">
+
 
                 <fieldset>
-                    <Rock:RockTextBox ID="txtFirstName" runat="server" Label="First" Required="true" ValidationGroup="GroupSimpleRegister" ></Rock:RockTextBox>
-                    <Rock:RockTextBox ID="txtLastName" runat="server" Label="Last" Required="true" ValidationGroup="GroupSimpleRegister" ></Rock:RockTextBox>
-                    <Rock:RockTextBox ID="txtEmail" runat="server" Label="Email" Required="true" ValidationGroup="GroupSimpleRegister" ></Rock:RockTextBox>
+                    <Rock:RockTextBox ID="txtFirstName" runat="server" Placeholder="First Name" Required="true" ValidationGroup="GroupSimpleRegister" ></Rock:RockTextBox>
+                    <Rock:RockTextBox ID="txtLastName" runat="server" Placeholder="Last Name" Required="true" ValidationGroup="GroupSimpleRegister" ></Rock:RockTextBox>
+                    <Rock:RockTextBox ID="txtEmail" runat="server" Placeholder="Email" Required="true" ValidationGroup="GroupSimpleRegister" ></Rock:RockTextBox>
                 </fieldset>
 
                 <asp:ValidationSummary ID="valSummary" runat="server" ValidationGroup="GroupSimpleRegister" />
@@ -19,15 +19,12 @@
                     <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click" />
                 </div>
 
-            </div>
         </asp:Panel>
 
-        <asp:Panel ID="pnlSuccess" runat="server" CssClass="panel panel-default" Visible="false">
-            <div class="panel-body">
+        <asp:Panel ID="pnlSuccess" runat="server"  Visible="false">
 
                 <Rock:NotificationBox ID="nbSuccess" runat="server" Title="Thank-you" NotificationBoxType="Success"></Rock:NotificationBox>
 
-            </div>
         </asp:Panel>
 
     </ContentTemplate>
