@@ -36,5 +36,24 @@ namespace Rock.Model
         {
             return Repository.Find( t => ( t.LayoutId == layoutId || ( layoutId == null && t.LayoutId == null ) ) ).OrderBy( t => t.Order );
         }
+
+        /// <summary>
+        /// Gets all descendents.
+        /// </summary>
+        /// <param name="parentPageId">The parent page id.</param>
+        /// <returns></returns>
+        public IEnumerable<Page> GetAllDescendents( int parentPageId )
+        {
+            return Repository.ExecuteQuery(
+                @"
+                with CTE as (
+                select * from [Page] where [ParentPageId]={0}
+                union all
+                select [a].* from [Page] [a]
+                inner join CTE pcte on pcte.Id = [a].[ParentPageId]
+                )
+                select * from CTE
+                ", parentPageId );
+        }
     }
 }
