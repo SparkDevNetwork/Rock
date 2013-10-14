@@ -1,6 +1,44 @@
-﻿<%@ Master Language="C#" AutoEventWireup="true" CodeFile="Dialog.master.cs" Inherits="RockWeb.Themes.GrayFabric.Layouts.Dialog" %>
+﻿<%@ Master Language="C#" AutoEventWireup="true" Inherits="Rock.Web.UI.DialogMasterPage" %>
 <%@ Import Namespace="System.Web.Optimization" %>
+<%@ Import Namespace="Rock" %>
+
 <!DOCTYPE html>
+
+<script runat="server">
+    
+    /// <summary>
+    /// Handles the Click event of the btnSave control.
+    /// </summary>
+    /// <param name="sender">The source of the event.</param>
+    /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+    protected void btnSave_Click( object sender, EventArgs e )
+    {
+        base.FireSave( sender, e );
+    }
+
+    /// <summary>
+    /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
+    /// </summary>
+    /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+    protected override void OnInit( EventArgs e )
+    {
+        base.OnInit( e );
+
+        lTitle.Text = Request.QueryString["t"] ?? "Title";
+
+        btnSave.Text = Request.QueryString["pb"] ?? "Save";
+        btnSave.Visible = btnSave.Text.Trim() != string.Empty;
+
+        btnCancel.Text = Request.QueryString["sb"] ?? "Cancel";
+        btnCancel.Visible = btnCancel.Text.Trim() != string.Empty;
+        if ( !btnSave.Visible )
+        {
+            btnCancel.AddCssClass( "btn-primary" );
+        }
+    }    
+    
+</script>
+
 <html>
 <head runat="server">
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -12,61 +50,70 @@
 
     <asp:ContentPlaceHolder ID="css" runat="server" />
 
-	<link rel="stylesheet" href="<%# ResolveUrl("~/Styles/Kendo/kendo.common.min.css") %>"/>
-	<link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Styles/theme.css") %>"/>
-	<link rel="stylesheet" href="<%# ResolveUrl("~/Styles/developer.css") %>"/>
+    <link rel="stylesheet" href="<%# ResolveUrl("~/CSS/Kendo/kendo.common.min.css") %>" />
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Themes/RockChMS/Styles/theme.css") %>" />
+    <link rel="stylesheet" href="<%# ResolveUrl("~/Styles/developer.css") %>" />
 
     <style>
-        html, body 
-        {
+        html, body {
             height: 100%;
             min-height: 100%;
             width: 100%;
             min-width: 100%;
-            background-color: #ffffff;  
+            background-color: #ffffff;
             margin: 0 0 0 0;
             padding: 0 0 0 0;
             vertical-align: top;
         }
     </style>
 
-    <asp:ContentPlaceHolder id="head" runat="server"></asp:ContentPlaceHolder>
+    <asp:ContentPlaceHolder ID="head" runat="server"></asp:ContentPlaceHolder>
 
 </head>
 
-<body id="dialog">
+<body id="dialog" class="rock-modal">
     <form id="form1" runat="server">
-        <div id="headerPanel" class="modal-header">
-            <a id="closeLink" href="#" class="close" onclick="window.parent.Rock.controls.modal.close();">&times;</a>
-            <h3><asp:Literal ID="lTitle" runat="server"></asp:Literal></h3>
-        </div>
+        <ajaxToolkit:ToolkitScriptManager ID="sManager" runat="server" />
+        <asp:UpdatePanel ID="updatePanelDialog" runat="server">
+            <ContentTemplate>
+                <div id="headerPanel" class="modal-header">
+                    <a id="closeLink" href="#" class="close" onclick="window.parent.Rock.controls.modal.close();">&times;</a>
+                    <h3 class="modal-title">
+                        <asp:Literal ID="lTitle" runat="server"></asp:Literal></h3>
+                </div>
 
-        <div id="mdlbody">
-        <div class="modal-body">
-            <div id="modal-scroll-container" class="scroll-container">
-	            <div class="scrollbar"><div class="track"><div class="thumb"><div class="end"></div></div></div></div>
-	            <div class="viewport">
-		            <div class="overview">
-                        <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
-			        </div>
-	            </div>
-            </div>		
-        </div>
-        </div>
-        <div id="pnl1"></div>
+                <div class="modal-body">
+                    <div id="modal-scroll-container" class="scroll-container">
+                        <div class="scrollbar">
+                            <div class="track">
+                                <div class="thumb">
+                                    <div class="end"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="viewport">
+                            <div class="overview">
+                                <asp:ContentPlaceHolder ID="main" runat="server"></asp:ContentPlaceHolder>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-        <div id="footerPanel" class="modal-footer">
-            <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" OnClick="btnCancel_Click " CausesValidation="false" />
-            <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click " />
-        </div>
-
-        <div id="pnl2"></div>
-        <ajaxToolkit:ToolkitScriptManager ID="sManager" runat="server"/>
+                <div id="footerPanel" class="modal-footer">
+                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn" OnClientClick="window.parent.Rock.controls.modal.close();" CausesValidation="false" />
+                    <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSave_Click " />
+                </div>
+            </ContentTemplate>
+        </asp:UpdatePanel>
     </form>
 
     <script type="text/javascript">
         Sys.Application.add_load(function () {
             $('#modal-scroll-container').tinyscrollbar({ size: 150 });
+
+            $('.scroll-container').on('mouseenter', function () {
+                $('.scroll-container').tinyscrollbar_update('relative');
+            });
         });
     </script>
 </body>

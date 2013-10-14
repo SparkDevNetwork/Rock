@@ -259,7 +259,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( emailTemplate != null )
             {
-                lActionTitle.Text = ActionTitle.Edit( EmailTemplate.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Edit( EmailTemplate.FriendlyTypeName ).FormatAsHtmlTitle();
                 hfEmailTemplateId.Value = emailTemplate.Id.ToString();
 
                 tbCategory.Text = emailTemplate.Category;
@@ -273,7 +273,7 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Add( EmailTemplate.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Add( EmailTemplate.FriendlyTypeName ).FormatAsHtmlTitle();
                 hfEmailTemplateId.Value = 0.ToString();
 
                 tbCategory.Text = string.Empty;

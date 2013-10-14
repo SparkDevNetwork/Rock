@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
+using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 namespace Rock.Web.UI.Controls
@@ -162,8 +163,8 @@ namespace Rock.Web.UI.Controls
         private HiddenField _hfInitialItemParentIds;
         private HiddenField _hfItemName;
         private HiddenField _hfItemRestUrlExtraParams;
-        private LinkButton _btnSelect;
-        private LinkButton _btnSelectNone;
+        private HtmlAnchor _btnSelect;
+        private HtmlAnchor _btnSelectNone;
 
         #endregion
 
@@ -379,6 +380,22 @@ namespace Rock.Web.UI.Controls
         /// </value>
         public string DefaultText { get; set; }
 
+        /// <summary>
+        /// Gets or sets the mode panel.
+        /// </summary>
+        /// <value>
+        /// The mode panel.
+        /// </value>
+        public Panel ModePanel { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [show drop down].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [show drop down]; otherwise, <c>false</c>.
+        /// </value>
+        public bool ShowDropDown { get; set; }
+
         #endregion
 
         #region Constructors
@@ -447,31 +464,36 @@ namespace Rock.Web.UI.Controls
             _hfItemRestUrlExtraParams.ClientIDMode = ClientIDMode.Static;
             _hfItemRestUrlExtraParams.ID = string.Format( "hfItemRestUrlExtraParams_{0}", this.ID );
 
-            _btnSelect = new LinkButton();
+            if ( ModePanel != null )
+            {
+                this.Controls.Add( ModePanel );
+            }
+
+            _btnSelect = new HtmlAnchor();
             _btnSelect.ClientIDMode = ClientIDMode.Static;
-            _btnSelect.CssClass = "btn btn-xs btn-primary picker-select";
+            _btnSelect.Attributes["class"] = "btn btn-xs btn-primary picker-select";
             _btnSelect.ID = string.Format( "btnSelect_{0}", this.ID );
-            _btnSelect.Text = "Select";
+            _btnSelect.InnerText = "Select";
             _btnSelect.CausesValidation = false;
 
             // we only need the postback on Select if SelectItem is assigned or if this is PagePicker
             if ( SelectItem != null || (this is PagePicker) )
             {
-                _btnSelect.Click += btnSelect_Click;
+                _btnSelect.ServerClick += btnSelect_Click;
             }
 
-            _btnSelectNone = new LinkButton();
+            _btnSelectNone = new HtmlAnchor();
             _btnSelectNone.ClientIDMode = ClientIDMode.Static;
-            _btnSelectNone.CssClass = "picker-select-none";
+            _btnSelectNone.Attributes["class"] = "picker-select-none";
             _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ID );
-            _btnSelectNone.Text = "<i class='icon-remove'></i>";
+            _btnSelectNone.InnerHtml = "<i class='icon-remove'></i>";
             _btnSelectNone.CausesValidation = false;
             _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
 
             // we only need the postback on SelectNone if SelectItem is assigned or if this is PagePicker
             if ( SelectItem != null || ( this is PagePicker ) )
             {
-                _btnSelectNone.Click += btnSelect_Click;
+                _btnSelectNone.ServerClick += btnSelect_Click;
             }
 
             Controls.Add( _hfItemId );
@@ -526,7 +548,18 @@ namespace Rock.Web.UI.Controls
 
                 // picker menu
                 writer.AddAttribute( "class", "picker-menu dropdown-menu" );
+                if ( ShowDropDown )
+                {
+                    writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "block" );
+                }
+                
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+                // mode panel
+                if ( ModePanel != null )
+                {
+                    ModePanel.RenderControl( writer );
+                }
 
                 // treeview
                 writer.Write( @"
@@ -562,7 +595,15 @@ namespace Rock.Web.UI.Controls
             else
             {
                 // this picker is not enabled (readonly), so just render a readonly version
-                writer.Write( @"<i class='icon-file-alt'></i><span id='selectedItemLabel_{0}'>{1}</span>", this.ID, this.ItemName );
+                writer.AddAttribute( "class", "picker picker-select" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                LinkButton linkButton = new LinkButton();
+                linkButton.CssClass = "picker-label";
+                linkButton.Text = string.Format( "<i class='{1}'></i><span>{0}</span>", this.ItemName, this.IconCssClass );
+                linkButton.Enabled = false;
+                linkButton.RenderControl( writer );
+                writer.WriteLine();
+                writer.RenderEndTag();
             }
         }
         

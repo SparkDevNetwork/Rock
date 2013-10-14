@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -79,7 +80,7 @@ Sys.Application.add_load(function () {
             _lbFilter = new LinkButton();
             Controls.Add( _lbFilter );
             _lbFilter.ID = "lbFilter";
-            _lbFilter.CssClass = "filter btn btn-primary btn-xs";
+            _lbFilter.CssClass = "filter btn btn-action btn-xs";
             _lbFilter.ToolTip = "Apply Filter";
             _lbFilter.Text = "Apply Filter";
             _lbFilter.CausesValidation = false;
@@ -135,12 +136,9 @@ Sys.Application.add_load(function () {
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
             var nonEmptyValues = _userPreferences.Where( v => !string.IsNullOrEmpty( v.Value ) ).ToList();
+            StringBuilder filtersHtml = new StringBuilder();
             if ( nonEmptyValues.Count > 0 )
             {
-                writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
-
-                writer.Write( "<h4>Enabled Filters</h4>" );
-
                 foreach ( var userPreference in nonEmptyValues )
                 {
                     DisplayFilterValueArgs args = new DisplayFilterValueArgs( userPreference.Key, userPreference.Value );
@@ -151,12 +149,19 @@ Sys.Application.add_load(function () {
 
                     if ( !string.IsNullOrWhiteSpace( args.Value ) )
                     {
-                        writer.RenderBeginTag( HtmlTextWriterTag.Div );
-                        writer.Write( "{0}: {1}", args.Key, args.Value );
-                        writer.RenderEndTag();
+
+                        filtersHtml.AppendLine( "<div>" );
+                        filtersHtml.AppendLine( string.Format( "<label>{0}:</label> {1}", args.Key, args.Value ) );
+                        filtersHtml.AppendLine( "</div>" );
                     }
                 }
+            }
 
+            if ( filtersHtml.Length > 0 )
+            {
+                writer.RenderBeginTag( HtmlTextWriterTag.Fieldset );
+                writer.Write( "<h4>Enabled Filters</h4>" );
+                writer.Write( filtersHtml.ToString() );
                 writer.RenderEndTag();
             }
 

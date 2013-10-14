@@ -6,18 +6,26 @@
             
             <asp:HiddenField ID="hfCampusId" runat="server" />
 
+            <div class="banner">
+                <h1><asp:Literal ID="lActionTitle" runat="server" /></h1>
+            </div>
+
             <asp:ValidationSummary ID="ValidationSummary1" runat="server" CssClass="alert alert-danger" />
             <Rock:NotificationBox ID="nbWarningMessage" runat="server" NotificationBoxType="Warning" />
 
             <fieldset>
-                <legend>
-                    <asp:Literal ID="lActionTitle" runat="server" />
-                </legend>
 
                 <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
-                <Rock:DataTextBox ID="tbCampusName" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" />
-                <Rock:DataTextBox ID="tbCampusCode" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="ShortCode" />
+                <div class="row">
+                    <div class="col-md-6"><Rock:DataTextBox ID="tbCampusName" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="Name" /></div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:DataTextBox ID="tbCampusCode" runat="server" SourceTypeName="Rock.Model.Campus, Rock" PropertyName="ShortCode" />
+                    </div>
+                </div>
 
             </fieldset>
 

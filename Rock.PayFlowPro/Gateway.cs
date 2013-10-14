@@ -147,7 +147,7 @@ namespace Rock.PayFlowPro
         {
             errorMessage = string.Empty;
 
-            var recurring = GetReccurring( schedule );
+            var recurring = GetRecurring( schedule );
 
             if ( paymentInfo is CreditCardPaymentInfo )
             {
@@ -221,11 +221,11 @@ namespace Rock.PayFlowPro
 
             if ( paymentInfo != null )
             {
-                ppTransaction = new RecurringModifyTransaction( GetUserInfo(), GetConnection(), GetReccurring( transaction ), GetInvoice( paymentInfo ), GetTender( paymentInfo ), PayflowUtility.RequestId );
+                ppTransaction = new RecurringModifyTransaction( GetUserInfo(), GetConnection(), GetRecurring( transaction ), GetInvoice( paymentInfo ), GetTender( paymentInfo ), PayflowUtility.RequestId );
             }
             else
             {
-                ppTransaction = new RecurringModifyTransaction( GetUserInfo(), GetConnection(), GetReccurring( transaction ), PayflowUtility.RequestId );
+                ppTransaction = new RecurringModifyTransaction( GetUserInfo(), GetConnection(), GetRecurring( transaction ), PayflowUtility.RequestId );
             }
 
             var ppResponse = ppTransaction.SubmitTransaction();
@@ -275,7 +275,7 @@ namespace Rock.PayFlowPro
         {
             errorMessage = string.Empty;
 
-            var ppTransaction = new RecurringCancelTransaction( GetUserInfo(), GetConnection(), GetReccurring(transaction), PayflowUtility.RequestId );
+            var ppTransaction = new RecurringCancelTransaction( GetUserInfo(), GetConnection(), GetRecurring(transaction), PayflowUtility.RequestId );
             var ppResponse = ppTransaction.SubmitTransaction();
 
             if ( ppResponse != null )
@@ -319,7 +319,7 @@ namespace Rock.PayFlowPro
         {
             errorMessage = string.Empty;
 
-            var ppTransaction = new RecurringInquiryTransaction( GetUserInfo(), GetConnection(), GetReccurring( transaction ), PayflowUtility.RequestId );
+            var ppTransaction = new RecurringInquiryTransaction( GetUserInfo(), GetConnection(), GetRecurring( transaction ), PayflowUtility.RequestId );
             var ppResponse = ppTransaction.SubmitTransaction();
 
             if ( ppResponse != null )
@@ -526,7 +526,7 @@ namespace Rock.PayFlowPro
             return null;
         }
 
-        private RecurringInfo GetReccurring( PaymentSchedule schedule )
+        private RecurringInfo GetRecurring( PaymentSchedule schedule )
         {
             var ppRecurringInfo = new RecurringInfo();
 
@@ -537,7 +537,7 @@ namespace Rock.PayFlowPro
             return ppRecurringInfo;
         }
 
-        private RecurringInfo GetReccurring( FinancialScheduledTransaction schedule )
+        private RecurringInfo GetRecurring( FinancialScheduledTransaction schedule )
         {
             var ppRecurringInfo = new RecurringInfo();
             

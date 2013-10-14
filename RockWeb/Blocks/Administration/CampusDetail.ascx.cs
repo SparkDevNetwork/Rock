@@ -10,6 +10,7 @@ using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.UI;
+using Rock;
 
 namespace RockWeb.Blocks.Administration
 {
@@ -115,12 +116,12 @@ namespace RockWeb.Blocks.Administration
             if ( !itemKeyValue.Equals( 0 ) )
             {
                 campus = new CampusService().Get( itemKeyValue );
-                lActionTitle.Text = ActionTitle.Edit( Campus.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Edit(Campus.FriendlyTypeName).FormatAsHtmlTitle();
             }
             else
             {
                 campus = new Campus { Id = 0 };
-                lActionTitle.Text = ActionTitle.Add( Campus.FriendlyTypeName );
+                lActionTitle.Text = ActionTitle.Add(Campus.FriendlyTypeName).FormatAsHtmlTitle();
             }
 
             hfCampusId.Value = campus.Id.ToString();

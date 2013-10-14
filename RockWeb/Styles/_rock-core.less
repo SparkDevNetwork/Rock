@@ -14,17 +14,15 @@
 // HTML Overrides
 //--------------------------------
 
+/* global classes */
+.clickable {
+    cursor: pointer;
+}
 
 /* bootstrap overrides */
 
 .control-label {
     font-weight: @font-weight-semibold;
-}
-
-/* global classes */
-.clickable
-{
-    cursor: pointer;
 }
 
 /* add badge colors back to BS3 */
@@ -43,7 +41,6 @@
 .badge-info {
     background-color: @label-info-bg;
 }
-
 
 /* context help  */
 a.help {
@@ -69,6 +66,47 @@ a.help {
             }
         }
     }
+
+    // adjust the background color of pickers on a panel
+    .picker .picker-label {
+        background-color: @accent-color;
+        color: @accent-text-color;
+        border-color: darken(@accent-color, 10%)
+    }
+
+    .actions {
+        margin-top: 36px;
+        .clearfix();
+    }
+}
+
+//.panel-variant(@border; @heading-text-color; @heading-bg-color; @heading-border;) {}
+.panel-widget {
+    .panel-variant(@accent-color ; @accent-text-color; @accent-color; @accent-color;);
+}
+
+.panel-persondetails {
+    .panel-variant(@accent-color ; @accent-text-color; @accent-color; @accent-color;);
+
+    .panel-body {
+        background-color: @body-bg;
+    }
+}
+
+// .panel-note {}  see _block-specific.less
+
+// extensions for buttons
+// .button-variant(@color; @background; @border) {}
+.btn-action {
+    .button-variant(@accent-semibold-text-color; @accent-semibold-color; darken(@accent-semibold-color, 10%))
+}
+
+.btn-security {
+    .button-variant(@accent-semibold-text-color; @accent-semibold-color; darken(@accent-semibold-color, 10%))
+}
+
+.btn-edit {
+    .button-variant(#222; white; darken(white, 10%))
 }
 
 
@@ -94,16 +132,9 @@ a.help {
     margin-left: 21px;
 }
 
-
 /* error page */
 #splash.error  #content {
     width: 750px;
-}
-
-
-/* data views */
-.filter-toogle .switch {
-	margin: 0 6px;
 }
 
 /* security window */

@@ -14,7 +14,7 @@ using Rock.Web.UI;
 namespace RockWeb.Blocks.Administration
 {
     /// <summary>
-    /// 
+    /// Handles displaying and editing a block's properties.
     /// </summary>
     public partial class BlockProperties : RockBlock
     {
@@ -65,7 +65,6 @@ namespace RockWeb.Blocks.Administration
             if ( !Page.IsPostBack && _block.IsAuthorized( "Administrate", CurrentPerson ) )
             {
                 tbBlockName.Text = _block.Name;
-                tbBlockType.Text = _block.BlockType.Name;
                 tbCacheDuration.Text = _block.OutputCacheDuration.ToString();
             }
 

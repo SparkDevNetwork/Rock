@@ -133,7 +133,14 @@ namespace Rock.Web.UI.Controls
             base.OnInit( e );
 
             EnsureChildControls();
-            ScriptManager.GetCurrent( Page ).RegisterPostBackControl( _lbExcelExport );
+
+            var sm = ScriptManager.GetCurrent( Page );
+
+            // Excel Export requires a Full Page postback
+            sm.RegisterPostBackControl( _lbExcelExport );
+
+            // make sure delete button is registered for async postback (needed just in case the grid was created at runtime)
+            sm.RegisterAsyncPostBackControl( _lbAdd );
         }
 
         /// <summary>

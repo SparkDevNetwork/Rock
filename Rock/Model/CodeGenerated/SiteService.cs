@@ -87,12 +87,14 @@ namespace Rock.Model
                 target.Theme = source.Theme;
                 target.DefaultPageId = source.DefaultPageId;
                 target.DefaultPageRouteId = source.DefaultPageRouteId;
+                target.LoginPageId = source.LoginPageId;
+                target.LoginPageRouteId = source.LoginPageRouteId;
+                target.RegistrationPageId = source.RegistrationPageId;
+                target.RegistrationPageRouteId = source.RegistrationPageRouteId;
                 target.FaviconUrl = source.FaviconUrl;
                 target.AppleTouchIconUrl = source.AppleTouchIconUrl;
                 target.FacebookAppId = source.FacebookAppId;
                 target.FacebookAppSecret = source.FacebookAppSecret;
-                target.LoginPageReference = source.LoginPageReference;
-                target.RegistrationPageReference = source.RegistrationPageReference;
                 target.ErrorPage = source.ErrorPage;
                 target.Id = source.Id;
                 target.Guid = source.Guid;

@@ -98,7 +98,6 @@ namespace Rock.Field.Types
             controls.Add( cb );
             cb.AutoPostBack = true;
             cb.CheckedChanged += OnQualifierUpdated;
-            cb.Label = "Allow Multiple Values";
             cb.Text = "Yes";
             return controls;
         }
@@ -112,7 +111,7 @@ namespace Rock.Field.Types
         {
             Dictionary<string, ConfigurationValue> configurationValues = new Dictionary<string, ConfigurationValue>();
             configurationValues.Add( DEFINED_TYPE_KEY, new ConfigurationValue( "Defined Type", "The Defined Type to select values from", "" ) );
-            configurationValues.Add( ALLOW_MULTIPLE_KEY, new ConfigurationValue( "", "When set, allows multiple defined type values to be selected.", "" ) );
+            configurationValues.Add( ALLOW_MULTIPLE_KEY, new ConfigurationValue( "Allow Multiple Values", "When set, allows multiple defined type values to be selected.", "" ) );
 
             if ( controls != null && controls.Count == 2 )
             {

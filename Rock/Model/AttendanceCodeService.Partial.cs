@@ -11,21 +11,27 @@ using System.Text;
 namespace Rock.Model
 {
     /// <summary>
-    /// Attendance Code POCO Service class
+    /// Data Access/Service class for <see cref="Rock.Model.AttendanceCode"/> entity types
     /// </summary>
     public partial class AttendanceCodeService
     {
         private static readonly Object obj = new object();
 
+        /// <summary>
+        /// An array of characters that can be used as a part of  <see cref="Rock.Model.AttendanceCode">AttendanceCodes</see>
+        /// </summary>
         private char[] codeCharacters = new char[] { 'B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'R', 'S', 'T', 'X', 'Z', '2', '4', '5', '6', '7', '8', '9' };
+        /// <summary>
+        /// A list of <see cref="Rock.Model.String"/> values that are not allowable as attendance codes.
+        /// </summary>
         private List<string> noGood = new List<string> { "666", "KKK", "FCK", "SHT", "5HT", "DCK" };
 
         /// <summary>
-        /// Gets the specified day.
+        /// Returns a queryable collection of <see cref="Rock.Model.AttendanceCode"/> entities that used a specified code on a specified date.
         /// </summary>
-        /// <param name="day">The day.</param>
-        /// <param name="code">The code.</param>
-        /// <returns></returns>
+        /// <param name="day">A <see cref="System.DateTime" /> representing the date to search by.</param>
+        /// <param name="code">A <see cref="System.String"/> representing the code to search for.</param>
+        /// <returns>A queryable collection of <see cref="Rock.Model.AttendanceCode"/> entities that contain a specific code on a specified day. </returns>
         public IQueryable<AttendanceCode> Get( DateTime day, string code )
         {
             DateTime today = day.Date;
@@ -34,10 +40,10 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the new.
+        /// Returns a new <see cref="Rock.Model.Code"/>
         /// </summary>
-        /// <param name="codeLength">Length of the code.</param>
-        /// <returns></returns>
+        /// <param name="codeLength">A <see cref="System.Int32"/> representing the length of the (security) code.</param>
+        /// <returns>A new <see cref="Rock.Model.AttendanceCode"/></returns>
         public AttendanceCode GetNew(int codeLength = 3)
         {
             string code = string.Empty;
@@ -64,6 +70,11 @@ namespace Rock.Model
             return attendanceCode;
         }
 
+        /// <summary>
+        /// Generates a random (security) code.
+        /// </summary>
+        /// <param name="length">A <see cref="System.Int32"/> representing the length that the code needs to be.</param>
+        /// <returns>A <see cref="System.String"/> representing the (security) code.</returns>
         private string GenerateRandomCode( int length )
         {
             StringBuilder sb = new StringBuilder();

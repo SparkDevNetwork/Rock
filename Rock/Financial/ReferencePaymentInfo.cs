@@ -55,7 +55,7 @@ namespace Rock.Financial
         /// <summary>
         /// Gets the account number.
         /// </summary>
-        public override string AccountNumber
+        public override string MaskedNumber
         {
             get { return MaskedAccountNumber; }
         }

@@ -12,15 +12,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// File POCO Service class
+    /// Data Access Service class for <see cref="Rock.Model.BinaryFile"/> objects.
     /// </summary>
     public partial class BinaryFileService 
     {
         /// <summary>
-        /// Saves the specified item.
+        /// Saves the specified <see cref="Rock.Model.BinaryFile"/>.
         /// </summary>
-        /// <param name="item">The item.</param>
-        /// <param name="personId">The person id.</param>
+        /// <param name="item">A <see cref="Rock.Model.BinaryFile"/> to save.</param>
+        /// <param name="personId">A <see cref="System.Int32"/> representing the PersonId of the <see cref="Rock.Model.Person"/> who is saving the BinaryFile..</param>
         /// <returns></returns>
         public override bool Save( BinaryFile item, int? personId )
         {

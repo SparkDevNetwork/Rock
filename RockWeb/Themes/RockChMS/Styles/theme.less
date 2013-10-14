@@ -146,11 +146,10 @@ a:hover i[class^="icon-"]
     font-weight: @font-weight-light;
 }
 
-// todo - needed in bs3?
-.btn-primary.disabled, .btn-primary[disabled] {
-    color: @btn-disabled-color;
-    background-color: @btn-disabled-bg;
-    cursor: not-allowed;
+.control-label {
+    .alert { // set the font weight of the help text in the control label
+        font-weight: normal;
+    }
 }
 
 

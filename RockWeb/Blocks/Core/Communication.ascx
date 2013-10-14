@@ -2,7 +2,7 @@
 
 <asp:UpdatePanel ID="upPanel" runat="server">
     <ContentTemplate>
-
+ 
         <asp:Panel ID="pnlEdit" runat="server">
 
         <asp:HiddenField ID="hfCommunicationId" runat="server" />
@@ -26,7 +26,7 @@
         
         <asp:ValidationSummary ID="ValidationSummary" runat="server" CssClass="alert alert-danger" />
 
-        <div class="control-group">
+        <div class="form-group">
             <div class="control-label">
                 To: <asp:Literal ID="lNumRecipients" runat="server" /> <Rock:PersonPicker ID="ppAddPerson" runat="server" PersonName="Add Person" OnSelectPerson="ppAddPerson_SelectPerson" />
                 <asp:CustomValidator ID="valRecipients" runat="server" OnServerValidate="valRecipients_ServerValidate" Display="None" ErrorMessage="At least one recipient is required." />
