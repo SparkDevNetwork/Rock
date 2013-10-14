@@ -141,7 +141,7 @@
 
         <Rock:ConfirmPageUnload ID="confirmExit" runat="server" ConfirmationMessage="Changes have been made to this family that have not yet been saved." Enabled="false" />
 
-        <Rock:ModalDialog ID="modalAddPerson" runat="server" Title="Add Person" Content-Height="380">
+        <Rock:ModalDialog ID="modalAddPerson" runat="server" Title="Add Person" Content-Height="380" ValidationGroup="modalAddPersonValidationGroup">
             <Content>
 
                 <asp:HiddenField ID="hfActiveTab" runat="server" Value="Existing" />
