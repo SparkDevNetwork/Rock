@@ -105,12 +105,15 @@ namespace Rock.Reporting.DataTransform.Person
         /// <returns></returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            CheckBox cb = new CheckBox();
-            cb.ID = filterControl.ID + "_0";
-            filterControl.Controls.Add( cb );
-            cb.Checked = true;
+            var rbl = new RockRadioButtonList();
+            rbl.ID = filterControl.ID + "_0";
+            rbl.RepeatDirection = RepeatDirection.Horizontal;
+            rbl.Items.Add( new ListItem( "Yes", "1" ) );
+            rbl.Items.Add( new ListItem( "No", "0" ) );
+            filterControl.Controls.Add( rbl );
+            rbl.SelectedValue = "1";
 
-            return new Control[1] { cb };
+            return new Control[1] { rbl };
         }
 
         /// <summary>
@@ -122,7 +125,6 @@ namespace Rock.Reporting.DataTransform.Person
         /// <param name="controls">The controls.</param>
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
-            writer.Write( this.GetTitle(entityType) + " " );
             controls[0].RenderControl( writer );
         }
 
@@ -134,7 +136,7 @@ namespace Rock.Reporting.DataTransform.Person
         /// <returns></returns>
         public override string GetSelection( Type entityType, Control[] controls )
         {
-            return ( (CheckBox)controls[0] ).Checked.ToString();
+            return ( (RadioButtonList)controls[0] ).SelectedValue;
         }
 
         /// <summary>
@@ -145,11 +147,7 @@ namespace Rock.Reporting.DataTransform.Person
         /// <param name="selection">The selection.</param>
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
-            bool hasPicture = true;
-            if ( !Boolean.TryParse( selection, out hasPicture ) )
-                hasPicture = true;
-
-            ( (CheckBox)controls[0] ).Checked = hasPicture;
+            ( (RadioButtonList)controls[0] ).SelectedValue = selection;
         }
 
         /// <summary>
@@ -162,17 +160,15 @@ namespace Rock.Reporting.DataTransform.Person
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, object serviceInstance, Expression parameterExpression, string selection )
         {
-            bool hasPicture = true;
-            if ( Boolean.TryParse( selection, out hasPicture ) )
-            {
-                MemberExpression property = Expression.Property( parameterExpression, "PhotoId" );
-                Expression hasValue = Expression.Property( property, "HasValue");
-                Expression value = Expression.Constant( hasPicture );
-                return Expression.Equal( hasValue, value);
-            }
+            MemberExpression property = Expression.Property( parameterExpression, "PhotoId" );
+            Expression hasValue = Expression.Property( property, "HasValue");
+            Expression value = Expression.Constant( selection == "1" );
+            return Expression.Equal( hasValue, value);
+
             return null;
         }
 
         #endregion
+
     }
 }

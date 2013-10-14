@@ -180,7 +180,7 @@ namespace Rock.Reporting.DataFilter
             var controls = new List<Control>();
 
             // Create the field selection dropdown
-            DropDownList ddlProperty = new DropDownList();
+            var ddlProperty = new RockDropDownList();
             ddlProperty.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
             filterControl.Controls.Add( ddlProperty );
             controls.Add( ddlProperty );
@@ -224,7 +224,7 @@ namespace Rock.Reporting.DataFilter
 
                     case SystemGuid.FieldType.MULTI_SELECT:
 
-                        var cblMultiSelect = new CheckBoxList();
+                        var cblMultiSelect = new RockCheckBoxList();
                         cblMultiSelect.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
                         filterControl.Controls.Add( cblMultiSelect );
                         cblMultiSelect.RepeatDirection = RepeatDirection.Horizontal;
@@ -273,7 +273,7 @@ namespace Rock.Reporting.DataFilter
 
                     case SystemGuid.FieldType.SINGLE_SELECT:
 
-                        var ddlSingleSelect = new DropDownList();
+                        var ddlSingleSelect = new RockDropDownList();
                         ddlSingleSelect.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
                         filterControl.Controls.Add( ddlSingleSelect );
                         controls.Add( ddlSingleSelect );
@@ -310,7 +310,7 @@ namespace Rock.Reporting.DataFilter
                         filterControl.Controls.Add( ddl );
                         controls.Add( ddl );
 
-                        var tb = new TextBox();
+                        var tb = new RockTextBox();
                         tb.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
                         filterControl.Controls.Add( tb );
                         controls.Add( tb );
@@ -337,41 +337,59 @@ namespace Rock.Reporting.DataFilter
         {
             string selectedEntityField = ( (DropDownList)controls[0] ).SelectedValue;
 
-            writer.AddAttribute( "class", "entity-property-selection" );
+            writer.AddAttribute( "class", "row" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( "class", "col-md-3" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            ( (WebControl)controls[0] ).AddCssClass( "entity-property-selection" );
             controls[0].RenderControl( writer );
-            writer.WriteBreak();
+            writer.RenderEndTag(); 
 
             var groupedControls = GroupControls( entityType, controls );
 
             StringBuilder sb = new StringBuilder();
             int i = 0;
 
-            foreach ( var entityField in GetEntityFields(entityType) )
-            {
-                var propertyControls = groupedControls[entityField.Name];
+            writer.AddAttribute( "class", "col-md-9" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
+            foreach ( var entityField in GetEntityFields( entityType ) )
+            {
                 if ( entityField.Name != selectedEntityField )
                 {
                     writer.AddStyleAttribute( HtmlTextWriterStyle.Display, "none" );
                 }
-                writer.AddAttribute( "class", "control-group" );
+                writer.AddAttribute( "class", "row field-criteria" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-                // Controls
-                writer.AddAttribute( "class", "controls" );
-                writer.RenderBeginTag( HtmlTextWriterTag.Div );
-
+                var propertyControls = groupedControls[entityField.Name];
                 if ( propertyControls.Count == 1 )
                 {
-                    writer.Write( "is " );
+                    writer.AddAttribute( "class", "col-md-1" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                    writer.Write( "<span class='data-view-filter-label'>is</span>" );
+                    writer.RenderEndTag(); 
+
+                    writer.AddAttribute( "class", "col-md-11" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     propertyControls[0].RenderControl( writer );
+                    writer.RenderEndTag();
                 }
                 else if (propertyControls.Count == 2)
                 {
+                    writer.AddAttribute( "class", "col-md-4" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     propertyControls[0].RenderControl( writer );
-                    writer.Write( " " );
+                    writer.RenderEndTag(); 
+
+                    writer.AddAttribute( "class", "col-md-8" );
+                    writer.RenderBeginTag( HtmlTextWriterTag.Div );
                     propertyControls[1].RenderControl( writer );
+                    writer.RenderEndTag();
                 }
+
+                writer.RenderEndTag();  // row
 
                 string clientFormatSelection = string.Empty;
                 switch ( entityField.FilterFieldType )
@@ -402,15 +420,16 @@ namespace Rock.Reporting.DataFilter
                 }
                 i++;
 
-                writer.RenderEndTag();
-
-                writer.RenderEndTag();
             }
+
+            writer.RenderEndTag();  // col-md-9
+            
+            writer.RenderEndTag();  // row
 
             string script = string.Format( @"
     function {0}PropertySelection($content){{
         var sIndex = $('select.entity-property-selection', $content).find(':selected').index();
-        var $selectedContent = $content.children('div.control-group').eq(sIndex);
+        var $selectedContent = $('div.field-criteria', $content).eq(sIndex);
         var result = '';
         switch(sIndex) {{
             {1}
@@ -422,8 +441,9 @@ namespace Rock.Reporting.DataFilter
 
             script = @"
     $('select.entity-property-selection').change(function(){
-        $(this).siblings('div.control-group').hide();
-        $(this).siblings('div.control-group').eq($(this).find(':selected').index()).show();
+        var $parentRow = $(this).parent().parent();
+        $parentRow.find('div.field-criteria').hide();
+        $parentRow.find('div.field-criteria').eq($(this).find(':selected').index()).show();
     });
 ";
             ScriptManager.RegisterStartupScript( filterControl, typeof( FilterField ), "property-filter-script", script, true );
