@@ -46,27 +46,53 @@ namespace RockWeb.Blocks.Crm
         {
             base.OnInit( e );
 
-            string groupMemberKey = PageParameter( "gm" );
-            var groupMemberService = new GroupMemberService();
-            var groupMember = groupMemberService.GetByUrlEncodedKey( PageParameter( "gm" ) );
-            if ( groupMember != null )
+            try
             {
-                groupMember.GroupMemberStatus = GroupMemberStatus.Active;
-                groupMemberService.Save( groupMember, CurrentPersonId );
+                string groupMemberKey = PageParameter( "gm" );
+                if ( string.IsNullOrWhiteSpace( groupMemberKey ) )
+                {
+                    ShowError( "Missing Parameter Value" );
+                }
+                else
+                {
+                    var groupMemberService = new GroupMemberService();
+                    var groupMember = groupMemberService.GetByUrlEncodedKey( PageParameter( "gm" ) );
+                    if ( groupMember == null )
+                    {
+                        ShowError();
+                    }
+                    else
+                    {
+                        groupMember.GroupMemberStatus = GroupMemberStatus.Active;
+                        groupMemberService.Save( groupMember, CurrentPersonId );
 
-                nbMessage.NotificationBoxType = NotificationBoxType.Success;
-                nbMessage.Title = "Success";
-                nbMessage.Text = GetAttributeValue( "SuccessMessage" );
+                        nbMessage.NotificationBoxType = NotificationBoxType.Success;
+                        nbMessage.Title = "Success";
+                        nbMessage.Text = GetAttributeValue( "SuccessMessage" );
+                    }
+                }
             }
-            else
+            catch (SystemException ex)
             {
-                nbMessage.NotificationBoxType = NotificationBoxType.Danger;
-                nbMessage.Title = "Sorry";
-                nbMessage.Text = GetAttributeValue( "ErrorMessage" );
+                ShowError( ex.Message );
             }
         }
 
         #endregion
+
+        private void ShowError( string errorDetail = "")
+        {
+            nbMessage.NotificationBoxType = NotificationBoxType.Danger;
+            nbMessage.Title = "Sorry";
+            if ( string.IsNullOrWhiteSpace( errorDetail ) )
+            {
+                nbMessage.Text = GetAttributeValue( "ErrorMessage" );
+            }
+            else
+            {
+                nbMessage.Text = string.Format( "{0} [{1}]", GetAttributeValue( "ErrorMessage" ), errorDetail );
+            }
+        }
 
     }
       

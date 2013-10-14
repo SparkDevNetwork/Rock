@@ -64,7 +64,13 @@ namespace RockWeb.Blocks.Crm
 
         protected void btnSave_Click( object sender, EventArgs e )
         {
-            if ( Page.IsValid )
+            if ( string.IsNullOrWhiteSpace( txtFirstName.Text ) ||
+                string.IsNullOrWhiteSpace( txtLastName.Text ) ||
+                string.IsNullOrWhiteSpace( txtEmail.Text ) )
+            {
+                ShowError( "Missing Information", "Please enter a value for First Name, Last Name, and Email" );
+            }
+            else
             {
                 var person = GetPerson();
                 if ( person != null )
