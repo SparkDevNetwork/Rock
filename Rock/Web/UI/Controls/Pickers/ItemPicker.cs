@@ -437,8 +437,16 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         protected virtual void RegisterJavaScript()
         {
-            const string treeViewScriptFormat = "Rock.controls.itemPicker.initialize({{ controlId: '{0}', restUrl: '{1}', allowMultiSelect: {2}, defaultText: '{3}' }});";
-            string treeViewScript = string.Format( treeViewScriptFormat, this.ID, this.ResolveUrl( ItemRestUrl ), this.AllowMultiSelect.ToString().ToLower(), this.DefaultText );
+            const string treeViewScriptFormat = 
+@"Rock.controls.itemPicker.initialize({{ 
+    controlId: '{0}',
+    restUrl: '{1}',
+    allowMultiSelect: {2},
+    defaultText: '{3}',
+    restParams: '{4}',
+    expandedIds: [{5}]
+}});";
+            string treeViewScript = string.Format( treeViewScriptFormat, this.ID, this.ResolveUrl( ItemRestUrl ), this.AllowMultiSelect.ToString().ToLower(), this.DefaultText, this.ItemRestUrlExtraParams, this.InitialItemParentIds );
             ScriptManager.RegisterStartupScript( this, this.GetType(), "item_picker-treeviewscript_" + this.ID, treeViewScript, true );
         }
 
@@ -471,7 +479,7 @@ namespace Rock.Web.UI.Controls
 
             _btnSelect = new HtmlAnchor();
             _btnSelect.ClientIDMode = ClientIDMode.Static;
-            _btnSelect.Attributes["class"] = "btn btn-xs btn-primary picker-select";
+            _btnSelect.Attributes["class"] = "btn btn-xs btn-primary picker-btn";
             _btnSelect.ID = string.Format( "btnSelect_{0}", this.ID );
             _btnSelect.InnerText = "Select";
             _btnSelect.CausesValidation = false;
@@ -582,7 +590,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "picker-actions" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _btnSelect.RenderControl( writer );
-                writer.Write( "<a class='btn btn-xs' id='btnCancel_{0}'>Cancel</a>", this.ID );
+                writer.Write( "<a class='btn btn-xs picker-cancel' id='btnCancel_{0}'>Cancel</a>", this.ID );
                 writer.WriteLine();
                 writer.RenderEndTag();
                 
