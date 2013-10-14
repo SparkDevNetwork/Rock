@@ -189,7 +189,7 @@
 				        leafCssClass = node.iconCssClass || self.options.iconClasses.leaf;
 
 				    $li.addClass('rock-tree-item')
-						.addClass(node.hasChildren ? 'rock-tree-folder' : '')
+						.addClass(node.hasChildren ? 'rock-tree-folder' : 'rock-tree-leaf')
 						.attr('data-id', node.id)
 						.attr('data-parent-id', node.parentId);
 
@@ -211,7 +211,9 @@
 				            $li.find('.rock-tree-name').prepend('<i class="' + node.iconCssClass + '"></i>');
 				        }
 				    } else {
-				        $li.prepend('<i class="rock-tree-icon ' + leafCssClass + '"></i>');
+				        if (leafCssClass) {
+				            $li.find('.rock-tree-name').prepend('<i class="' + leafCssClass + '"></i>');
+				        }
 				    }
 
 				    $list.append($li);
@@ -381,7 +383,7 @@
         iconClasses: {
             branchOpen: 'icon-folder-open',
             branchClosed: 'icon-folder-close',
-            leaf: 'icon-file-alt'
+            leaf: ''
         },
         mapping: {
             include: [],
