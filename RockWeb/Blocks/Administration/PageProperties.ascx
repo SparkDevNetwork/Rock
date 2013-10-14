@@ -139,7 +139,7 @@
                                 </FooterTemplate>
                             </asp:Repeater>
                             <asp:FileUpload runat="server" ID="fuImport" CssClass="input-small" />
-                            <asp:LinkButton runat="server" ID="lbImport" CssClass="btn btn-small" OnClick="lbImport_Click">
+                            <asp:LinkButton runat="server" ID="lbImport" CssClass="btn btn-default btn-sm" OnClick="lbImport_Click">
                                 <i class="icon-arrow-up"></i> Import
                             </asp:LinkButton>
                         </fieldset>
@@ -151,7 +151,7 @@
                                 <asp:CheckBox runat="server" ID="cbExportChildren" />
                                 Export child pages?
                             </label>
-                            <asp:LinkButton runat="server" ID="lbExport" OnClick="lbExport_Click" CssClass="btn btn-small">
+                            <asp:LinkButton runat="server" ID="lbExport" OnClick="lbExport_Click" CssClass="btn btn-default btn-sm">
                                 <i class="icon-download-alt"></i> Export
                             </asp:LinkButton>
                         </fieldset>
