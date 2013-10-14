@@ -8,7 +8,7 @@
                         <i class="icon-comment"></i>
                         <asp:Literal ID="lTitle" runat="server"></asp:Literal>
                     </h4>
-                    <a class="btn btn-small add-note"><i class="icon-plus"></i></a>
+                    <a class="btn btn-default btn-sm add-note"><i class="icon-plus"></i></a>
                 </header>
 
                 <div class="widget-content">
@@ -19,8 +19,8 @@
                         </div>
 
                         <div class="actions">
-                            <asp:LinkButton ID="btnAddNote" runat="server" CssClass="btn btn-primary btn-small" Text="Add Note" />
-                            <a class="add-note-cancel btn btn-small">Cancel</a>
+                            <asp:LinkButton ID="btnAddNote" runat="server" CssClass="btn btn-primary btn-sm" Text="Add Note" />
+                            <a class="add-note-cancel btn btn-default btn-sm">Cancel</a>
                         </div>
 
                     </div>
@@ -45,8 +45,8 @@
                                     </div>
                                 </div>
                                 <div class="actions">
-                                    <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary btn-small" OnClick="btnSave_Click" />
-                                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-small" CausesValidation="false" OnClick="btnCancel_Click" />
+                                    <asp:LinkButton ID="btnSave" runat="server" Text="Save" CssClass="btn btn-primary btn-sm" OnClick="btnSave_Click" />
+                                    <asp:LinkButton ID="btnCancel" runat="server" Text="Cancel" CssClass="btn btn-default btn-sm" CausesValidation="false" OnClick="btnCancel_Click" />
                                 </div>
                         </div>
 
