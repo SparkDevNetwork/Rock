@@ -421,7 +421,7 @@ ul.rock-tree ul {
 }
 
 .rock-tree .rock-tree-name {
-	padding: 5px 7px;
+	padding: 2px 6px;
 	border-radius: 3px;
 	cursor: pointer;
 }
@@ -434,4 +434,8 @@ ul.rock-tree ul {
 
 .rock-tree .rock-tree-loading i {
   margin-right: 5px;
+}
+
+.rock-tree-leaf {
+    padding-left: 12px;
 }
