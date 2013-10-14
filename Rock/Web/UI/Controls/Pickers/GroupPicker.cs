@@ -24,10 +24,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="e">An <see cref="T:System.EventArgs" /> object that contains the event data.</param>
         protected override void OnInit( EventArgs e )
         {
-            base.OnInit( e );
             ItemRestUrlExtraParams = "/0/false/0";
-
             this.IconCssClass = "icon-group";
+            base.OnInit( e );
         }
         
         /// <summary>
