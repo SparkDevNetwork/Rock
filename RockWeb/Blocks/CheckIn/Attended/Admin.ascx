@@ -41,7 +41,7 @@
                 <h1>Admin</h1>
             </div>
             <div class="col-md-3 checkin-actions">
-                <asp:LinkButton ID="lbOk" runat="server" CssClass="btn btn-large btn-primary" OnClick="lbOk_Click" Text="Ok"></asp:LinkButton>
+                <asp:LinkButton ID="lbOk" runat="server" CssClass="btn btn-lg btn-primary" OnClick="lbOk_Click" Text="Ok"></asp:LinkButton>
             </div>
         </div>
 
@@ -51,7 +51,7 @@
                 <h3>Checkin Type(s)</h3>
                 <asp:Repeater ID="repMinistry" runat="server" OnItemDataBound="repMinistry_ItemDataBound">
                     <ItemTemplate>
-                        <asp:Button ID="lbMinistry" runat="server" data-id='<%# Eval("Id") %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-large btn-block btn-checkin-select" Text='<%# Eval("Name") %>' />
+                        <asp:Button ID="lbMinistry" runat="server" data-id='<%# Eval("Id") %>' CommandArgument='<%# Eval("Id") %>' CssClass="btn btn-primary btn-lg btn-block btn-checkin-select" Text='<%# Eval("Name") %>' />
                     </ItemTemplate>
                 </asp:Repeater>
             </div>

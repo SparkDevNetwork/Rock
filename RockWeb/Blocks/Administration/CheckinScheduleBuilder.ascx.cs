@@ -99,7 +99,7 @@ namespace RockWeb.Blocks.Administration
 
             if ( !scheduleList.Any() )
             {
-                nbNotification.Text = "No schedules found for the selected schedule category. Try choosing a different schedule category in the filter options.";
+                nbNotification.Text = nbNotification.Text = String.Format("<p><strong>Warning</strong></p>No schedules found. Consider <a class='alert-link' href='{0}'>adding a schedule</a> or a different schedule category.", ResolveUrl("~/Schedules"));
                 nbNotification.Visible = true;
             }
             else
@@ -145,17 +145,7 @@ namespace RockWeb.Blocks.Administration
             var filterCategory = new CategoryService().Get( rFilter.GetUserPreference( "Category" ).AsInteger() ?? 0 );
             pCategory.SetValue( filterCategory );
 
-            // TODO: Replace with Location Picker
-            ddlParentLocation.Items.Clear();
-            ddlParentLocation.Items.Add( Rock.Constants.All.ListItem );
-            LocationService locationService = new LocationService();
-            var locationList = locationService.Queryable().OrderBy( a => a.Name ).ToList();
-            foreach ( var location in locationList )
-            {
-                ddlParentLocation.Items.Add( new ListItem( location.Name, location.Id.ToString() ) );
-            }
-
-            ddlParentLocation.SetValue( rFilter.GetUserPreference( "Parent Location" ) );
+            pkrParentLocation.SetValue(rFilter.GetUserPreference( "Parent Location" ).AsInteger(false));
         }
 
         #endregion
@@ -170,8 +160,8 @@ namespace RockWeb.Blocks.Administration
         private void rFilter_ApplyFilterClick( object sender, EventArgs e )
         {
             rFilter.SaveUserPreference( "Group Type", ddlGroupType.SelectedValueAsId().ToString() );
-            rFilter.SaveUserPreference( "Category", pCategory.SelectedValueAsId().ToString() );
-            rFilter.SaveUserPreference( "Parent Location", ddlParentLocation.SelectedValueAsId().ToString() );
+            
+            rFilter.SaveUserPreference( "Parent Location", pkrParentLocation.SelectedValueAsId().ToString() );
 
             BindGrid();
         }
@@ -211,15 +201,8 @@ namespace RockWeb.Blocks.Administration
 
                 case "Category":
 
-                    var category = new CategoryService().Get( itemId );
-                    if ( category != null )
-                    {
-                        e.Value = category.Name;
-                    }
-                    else
-                    {
-                        e.Value = Rock.Constants.All.Text;
-                    }
+                    // even though it is technically a filter, don't show it as a filter since we don't show category in the filter UI
+                    e.Value = null;
 
                     break;
 
@@ -288,7 +271,7 @@ namespace RockWeb.Blocks.Administration
                     a.LocationId
                 } ).ToList();
 
-            int parentLocationId = ddlParentLocation.SelectedValueAsInt() ?? Rock.Constants.All.Id;
+            int parentLocationId = pkrParentLocation.SelectedValueAsInt() ?? Rock.Constants.All.Id;
             if ( parentLocationId != Rock.Constants.All.Id )
             {
                 var descendantLocationIds = new LocationService().GetAllDescendents( parentLocationId ).Select( a => a.Id );
@@ -400,5 +383,16 @@ namespace RockWeb.Blocks.Administration
         }
 
         #endregion
-    }
+
+        /// <summary>
+        /// Handles the SelectItem event of the pCategory control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void pCategory_SelectItem( object sender, EventArgs e )
+        {
+            rFilter.SaveUserPreference( "Category", pCategory.SelectedValueAsId().ToString() );
+            BindGrid();
+        }
+}
 }

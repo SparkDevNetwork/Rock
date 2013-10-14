@@ -79,6 +79,10 @@
       <HintPath>..\packages\HtmlAgilityPack.1.4.6\lib\Net45\HtmlAgilityPack.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.SqlServer.Types, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <Private>True</Private>
+      <HintPath>..\packages\Microsoft.SqlServer.Types.10.50.1600.1\lib\Net20\Microsoft.SqlServer.Types.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <Private>True</Private>
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
@@ -95,7 +99,9 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
-    <Reference Include="System.Data" />
+    <Reference Include="System.Data">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data.Entity.Design" />
     <Reference Include="System.Data.Services" />
@@ -250,6 +256,22 @@
     <Compile Include="Migrations\201310021237541_FixSystemData.cs" />
     <Compile Include="Migrations\201310021237541_FixSystemData.Designer.cs">
       <DependentUpon>201310021237541_FixSystemData.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201310091510427_CreditCardTypes.cs" />
+    <Compile Include="Migrations\201310091510427_CreditCardTypes.Designer.cs">
+      <DependentUpon>201310091510427_CreditCardTypes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201310091945298_LayoutBlocks.cs" />
+    <Compile Include="Migrations\201310091945298_LayoutBlocks.Designer.cs">
+      <DependentUpon>201310091945298_LayoutBlocks.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201310092101235_SitePageReferences.cs" />
+    <Compile Include="Migrations\201310092101235_SitePageReferences.Designer.cs">
+      <DependentUpon>201310092101235_SitePageReferences.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201310112336543_GivingGroup.cs" />
+    <Compile Include="Migrations\201310112336543_GivingGroup.Designer.cs">
+      <DependentUpon>201310112336543_GivingGroup.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
@@ -501,6 +523,8 @@
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
     <Compile Include="Web\UI\Controls\HighlightLabel.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\LocationItemPicker.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\LocationAddressPicker.cs" />
     <Compile Include="Web\UI\Controls\RockControlHelper.cs" />
     <Compile Include="Web\UI\Controls\TermDescription.cs" />
     <Compile Include="Web\UI\Controls\Grid\DefinedValueField.cs" />
@@ -1111,6 +1135,18 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201310021237541_FixSystemData.resx">
       <DependentUpon>201310021237541_FixSystemData.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310091510427_CreditCardTypes.resx">
+      <DependentUpon>201310091510427_CreditCardTypes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310091945298_LayoutBlocks.resx">
+      <DependentUpon>201310091945298_LayoutBlocks.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310092101235_SitePageReferences.resx">
+      <DependentUpon>201310092101235_SitePageReferences.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310112336543_GivingGroup.resx">
+      <DependentUpon>201310112336543_GivingGroup.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

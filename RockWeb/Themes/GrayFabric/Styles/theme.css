@@ -7614,6 +7614,9 @@ td.visible-print {
 .picker.picker-geography .picker-menu {
   width: 520px;
 }
+.picker.picker-person .picker-select-item-details img {
+  width: 65px;
+}
 #dialog .scroll-container-picker {
   width: 360px;
 }
@@ -7718,33 +7721,43 @@ td.visible-print {
 }
 
     */
+/*
 .widget {
-  background-color: #f4f4f4;
-  border: 1px solid #c8d3dc;
-  border-radius: 4px;
-  margin-bottom: 2em;
+    background-color: @body-bg;
+    border: 1px solid darken(@accent-light-color, @const-border-darken-amt);
+    border-radius: @border-radius-base;
+    margin-bottom: 2em;
+
+    h3 {
+        font-size: 15px;  
+        line-height: 15px;
+        margin: 0 0 6px 0;
+    }
+
+    header {
+        background-color: @widget-header-bg;
+        color: @widget-header-text-color;
+        padding: 6px 15px;
+        border-radius: @border-radius-base @border-radius-base 0 0 ;
+    }
 }
-.widget h3 {
-  font-size: 15px;
-  line-height: 15px;
-  margin: 0 0 6px 0;
-}
-.widget header {
-  background-color: #e7ecf0;
-  color: #d4d4d4;
-  padding: 6px 15px;
-  border-radius: 4px 4px 0 0;
-}
+
 .filter-toogle > span {
-  vertical-align: 20%;
+    vertical-align: 20%;
 }
-.widget.widget-dark > header {
-  background-color: #779cb1;
-  color: #ecf0f3;
+
+.widget.widget-dark > header
+{
+	background-color: @widget-header-bg-dark;
+    color: @widget-header-text-color-dark;
 }
-.widget-content {
-  padding: 20px 15px 15px;
+
+
+.widget-content
+{
+    padding: 20px 15px 15px;
 }
+*/
 .tooltipster-default {
   border-radius: 5px;
   border: 2px solid #000;
@@ -8292,11 +8305,7 @@ div.tagsinput div {
   width: 34%;
   border-left: 1px solid #e6e6e6;
   border-right: 1px solid #e6e6e6;
-  background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(0%, #ffffff), color-stop(100%, #e6e6e6));
-  background-image: -webkit-linear-gradient(top, #ffffff, #e6e6e6);
-  background-image: -moz-linear-gradient(top, #ffffff, #e6e6e6);
-  background-image: -o-linear-gradient(top, #ffffff, #e6e6e6);
-  background-image: linear-gradient(top, #ffffff, #e6e6e6);
+  background-image: none;
 }
 .switch span {
   color: white;
@@ -8320,57 +8329,63 @@ div.tagsinput div {
   -moz-border-radius-bottomright: 4px;
   -webkit-border-bottom-right-radius: 4px;
   border-bottom-right-radius: 4px;
-  background-image: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, #ffffff), color-stop(100%, #e6e6e6));
+  /*background-image: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, #ffffff), color-stop(100%, #e6e6e6));
   background-image: -webkit-linear-gradient(bottom, #ffffff, #e6e6e6);
   background-image: -moz-linear-gradient(bottom, #ffffff, #e6e6e6);
   background-image: -o-linear-gradient(bottom, #ffffff, #e6e6e6);
-  background-image: linear-gradient(bottom, #ffffff, #e6e6e6);
+  background-image: linear-gradient(bottom, #ffffff, #e6e6e6);*/
+
 }
 .switch span.switch-primary,
 .switch span.switch-left {
-  color: white;
-  background: #0088cc;
-  background-image: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, #0088cc), color-stop(100%, #0055cc));
-  background-image: -webkit-linear-gradient(bottom, #0088cc, #0055cc);
-  background-image: -moz-linear-gradient(bottom, #0088cc, #0055cc);
-  background-image: -o-linear-gradient(bottom, #0088cc, #0055cc);
-  background-image: linear-gradient(bottom, #0088cc, #0055cc);
+  color: #ecf0f3;
+  background: #779cb1;
+  /*background-image: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, #0088cc), color-stop(100%, #0055cc));
+    background-image: -webkit-linear-gradient(bottom, #0088cc, #0055cc);
+    background-image: -moz-linear-gradient(bottom, #0088cc, #0055cc);
+    background-image: -o-linear-gradient(bottom, #0088cc, #0055cc);
+    background-image: linear-gradient(bottom, #0088cc, #0055cc);*/
+
 }
 .switch span.switch-info {
   color: white;
   background: #5bc0de;
-  background-image: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, #5bc0de), color-stop(100%, #2f96b4));
+  /*background-image: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, #5bc0de), color-stop(100%, #2f96b4));
   background-image: -webkit-linear-gradient(bottom, #5bc0de, #2f96b4);
   background-image: -moz-linear-gradient(bottom, #5bc0de, #2f96b4);
   background-image: -o-linear-gradient(bottom, #5bc0de, #2f96b4);
-  background-image: linear-gradient(bottom, #5bc0de, #2f96b4);
+  background-image: linear-gradient(bottom, #5bc0de, #2f96b4);*/
+
 }
 .switch span.switch-success {
   color: white;
-  background: #62c462;
-  background-image: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, #62c462), color-stop(100%, #51a351));
+  background: #5cb85c;
+  /*background-image: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, #62c462), color-stop(100%, #51a351));
   background-image: -webkit-linear-gradient(bottom, #62c462, #51a351);
   background-image: -moz-linear-gradient(bottom, #62c462, #51a351);
   background-image: -o-linear-gradient(bottom, #62c462, #51a351);
-  background-image: linear-gradient(bottom, #62c462, #51a351);
+  background-image: linear-gradient(bottom, #62c462, #51a351);*/
+
 }
 .switch span.switch-warning {
   color: white;
-  background: #dbb450;
-  background-image: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, #dbb450), color-stop(100%, #f89406));
+  background: #f0ad4e;
+  /*background-image: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, #dbb450), color-stop(100%, #f89406));
   background-image: -webkit-linear-gradient(bottom, #dbb450, #f89406);
   background-image: -moz-linear-gradient(bottom, #dbb450, #f89406);
   background-image: -o-linear-gradient(bottom, #dbb450, #f89406);
-  background-image: linear-gradient(bottom, #dbb450, #f89406);
+  background-image: linear-gradient(bottom, #dbb450, #f89406);*/
+
 }
 .switch span.switch-danger {
   color: white;
-  background: #ee5f5b;
-  background-image: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, #ee5f5b), color-stop(100%, #bd362f));
+  background: #d9534f;
+  /*background-image: -webkit-gradient(linear, 50% 100%, 50% 0%, color-stop(0%, #ee5f5b), color-stop(100%, #bd362f));
   background-image: -webkit-linear-gradient(bottom, #ee5f5b, #bd362f);
   background-image: -moz-linear-gradient(bottom, #ee5f5b, #bd362f);
   background-image: -o-linear-gradient(bottom, #ee5f5b, #bd362f);
-  background-image: linear-gradient(bottom, #ee5f5b, #bd362f);
+  background-image: linear-gradient(bottom, #ee5f5b, #bd362f);*/
+
 }
 .smartsearch {
   width: 290px;
@@ -8598,6 +8613,9 @@ div.tagsinput div {
     width: 100%;
   }
 }
+.imageupload-group {
+  margin-bottom: 15px;
+}
 .imageupload-group:before,
 .imageupload-group:after {
   content: " ";
@@ -8663,6 +8681,98 @@ div.tagsinput div {
   color: #a8bac9;
   width: 100%;
 }
+.fileupload-group {
+  margin-bottom: 15px;
+}
+.fileupload-group:before,
+.fileupload-group:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.fileupload-group:after {
+  clear: both;
+}
+.fileupload-group:before,
+.fileupload-group:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.fileupload-group:after {
+  clear: both;
+}
+.fileupload-group .fileupload-thumbnail {
+  float: left;
+  border: 1px solid #99afc2;
+  border-radius: 4px;
+  padding: 2px;
+  position: relative;
+}
+.fileupload-group .fileupload-thumbnail .file-link {
+  width: 100px;
+  height: 50px;
+  border-radius: 3px;
+  font-size: 10px;
+  background-color: #e7ecf0;
+  color: #89a1b5;
+  display: block;
+  padding-top: 33px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fileupload-group .fileupload-thumbnail .file-link:after {
+  content: '\f016';
+  font-family: FontAwesome;
+  font-size: 28px;
+  color: #c8d3dc;
+  -webkit-font-smoothing: antialiased;
+  margin-left: 42px;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+.fileupload-group .fileupload-thumbnail .file-link.file-exists:after {
+  content: '\f15c';
+  color: #89a1b5;
+}
+.fileupload-group .fileupload-remove {
+  float: left;
+  margin: 18px 4px 0;
+  width: 11px;
+}
+.fileupload-group .fileupload-dropzone {
+  float: left;
+  width: 100px;
+  height: 55px;
+  border: 1px dotted #a8bac9;
+  border-radius: 4px;
+  background-color: #e7ecf0;
+  text-align: center;
+  padding-top: 14px;
+  position: relative;
+  line-height: 12px;
+}
+.fileupload-group .fileupload-dropzone input {
+  opacity: 0;
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.fileupload-group .fileupload-dropzone span {
+  font-size: 11px;
+  color: #a8bac9;
+  width: 100%;
+}
 /*
     Used to manage styles for specific blocks.
     
@@ -8672,32 +8782,17 @@ div.tagsinput div {
     4. Notes - block to display, add, edit, delete notes
     5. Add Family - block to add families to the database
     6. Contributions - block add a contribution transaction
+    7. Data Views - block for creating data views
+    8. Schedule Builder - block for building schedules
 
 */
 .sql-comand .panel {
   margin-bottom: 24px;
 }
-.html-content-editor-panel .editor-buttons {
-  float: right;
-  margin-top: 6px;
-}
-.html-content-version-label {
-  background-color: #6d6d6d;
-  padding: 2px 8px;
-  float: left;
-  margin: 6px 0 0 16px;
-  -moz-border-radius: 4px;
-  -webkit-border-radius: 4px;
-  border-radius: 4px;
-  color: #bbbbbb;
-}
-.html-content-version-label:hover {
-  color: inherit;
-}
-.html-content-edit-header {
+.htmlcontent-edit-header {
   padding: 6px 16px 0 16px;
 }
-.html-content-approve {
+.htmlcontent-edit-header .html-content-approve {
   float: right;
   margin-top: 4px;
 }
@@ -8731,71 +8826,88 @@ span.cke_skin_kama {
   content: '';
   margin-right: 4px;
 }
-.panel-notes .panel-heading h3 {
+.panel-note {
+  border-color: #d9e1e8;
+}
+.panel-note > .panel-heading {
+  color: #d4d4d4;
+  background-color: #d9e1e8;
+  border-color: #d9e1e8;
+}
+.panel-note > .panel-heading + .panel-collapse .panel-body {
+  border-top-color: #d9e1e8;
+}
+.panel-note > .panel-footer + .panel-collapse .panel-body {
+  border-bottom-color: #d9e1e8;
+}
+.panel-note .panel-body {
+  background-color: #f4f4f4;
+}
+.panel-note .panel-heading h3 {
   float: left;
   margin-top: 4px;
 }
-.panel-notes .panel-heading .btn {
+.panel-note .panel-heading .btn {
   float: right;
   margin: 0;
 }
-.panel-notes article {
+.panel-note article {
   border-radius: 4px;
   border: 1px solid #c8d3dc;
   padding: 12px;
   margin-bottom: 12px;
   background-color: #e7ecf0;
 }
-.panel-notes article .date {
+.panel-note article .date {
   font-size: 13px;
   font-weight: 300;
   margin-left: 8px;
 }
-.panel-notes article > i {
+.panel-note article > i {
   float: left;
   color: #c8d3dc;
   width: 6%;
   font-size: 20px;
 }
-.panel-notes article .details {
+.panel-note article .details {
   float: left;
   width: 84%;
 }
-.panel-notes article .details h5 {
+.panel-note article .details h5 {
   margin-top: 0;
   margin-bottom: 6px;
 }
-.panel-notes article .actions {
+.panel-note article .actions {
   float: right;
   width: 10%;
 }
-.panel-notes article .actions a {
+.panel-note article .actions a {
   float: right;
   margin-left: 8px;
   font-size: 14px;
 }
-.panel-notes article.highlight {
+.panel-note article.highlight {
   background-color: #f2dede;
   border: 1px solid #eed3d7;
   color: #b94a48;
 }
-.panel-notes article.highlight i {
+.panel-note article.highlight i {
   color: #eed3d7;
 }
-.panel-notes article.personal {
+.panel-note article.personal {
   background-color: #e7ecf0;
   border: 1px solid #dee7ea;
   color: #d4d4d4;
 }
-.panel-notes article.personal i {
+.panel-note article.personal i {
   color: #dee7ea;
 }
-.panel-notes .load-more {
+.panel-note .load-more {
   margin: 0 40%;
   min-width: 120px;
   width: 20%;
 }
-.panel-notes .load-more span {
+.panel-note .load-more span {
   margin: 0 12px;
 }
 .panel-noteentry {
@@ -8815,6 +8927,10 @@ span.cke_skin_kama {
 .panel-noteentry .settings .options input {
   margin-right: 4px;
 }
+.panel-noteentry .options .checkbox {
+  float: left;
+  margin: 0 15px 0 5px;
+}
 .panel-noteentry .panel-footer {
   background-color: #d9e1e8;
 }
@@ -8823,6 +8939,109 @@ span.cke_skin_kama {
 }
 .contribution-payment .tab-content {
   margin-top: 12px;
+}
+/* data views */
+.filter-toogle > span {
+  float: left;
+  padding-top: 6px;
+}
+.filter-toogle .controls {
+  float: left;
+}
+.filter-toogle .controls .switch {
+  margin: 0 6px;
+}
+.filter-item-select span {
+  float: left;
+  padding: 8px 6px 0 0;
+}
+.filter-item-select select {
+  float: left;
+  width: 250px;
+}
+.recurrence-pattern-type {
+  margin-top: 12px;
+  padding-left: 30px;
+}
+.recurrence-pattern-specific-date:before,
+.recurrence-pattern-specific-date:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.recurrence-pattern-specific-date:after {
+  clear: both;
+}
+.recurrence-pattern-specific-date:before,
+.recurrence-pattern-specific-date:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.recurrence-pattern-specific-date:after {
+  clear: both;
+}
+.recurrence-pattern-specific-date .input-group {
+  float: left;
+}
+.recurrence-pattern-specific-date .actions {
+  float: left;
+  margin-left: 12px;
+  padding-top: 5px;
+}
+.recurrence-pattern-daily .form-control-group {
+  min-height: 30px;
+}
+.recurrence-pattern-weekly .week-days {
+  margin-top: 12px;
+}
+.recurrence-pattern-weekly .week-days:before,
+.recurrence-pattern-weekly .week-days:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.recurrence-pattern-weekly .week-days:after {
+  clear: both;
+}
+.recurrence-pattern-weekly .week-days:before,
+.recurrence-pattern-weekly .week-days:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.recurrence-pattern-weekly .week-days:after {
+  clear: both;
+}
+.recurrence-pattern-weekly .week-days .checkbox {
+  float: left;
+  margin: 0 12px;
+}
+.recurrence-pattern-monthly .form-control-group {
+  min-height: 40px;
+  display: block;
+}
+.continue-until .form-control-group {
+  min-height: 40px;
+}
+.exclusions .add-exclusion .form-control-group {
+  float: left;
+}
+.exclusions .add-exclusion .actions {
+  float: left;
+  margin-top: 5px;
 }
 /*
     Used to manage styles related to the CMS admin UI for on page editing
@@ -9045,6 +9264,11 @@ td[align=center] {
   width: 350px;
   float: left;
 }
+.grid-filter .picker .picker-label {
+  background-color: #e7ecf0;
+  color: #d4d4d4;
+  border-color: #c8d3dc;
+}
 .grid-filter + div .grid-table {
   margin-top: -12px;
 }
@@ -9121,40 +9345,73 @@ td[align=center] {
     Used to manage styles related to modal dialog.
 
 */
-.rock-modal {
+.rock-modal-frame {
   width: 750px;
 }
-#dialog .modal-header {
+.rock-modal {
+  background-color: #f4f4f4;
+}
+.rock-modal .modal-header {
   background-color: #3a3a3a;
   color: #bbbbbb;
   padding: 5px 15px;
   min-height: 34px;
 }
-#dialog .modal-header h3 {
+.rock-modal .modal-header:before,
+.rock-modal .modal-header:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.rock-modal .modal-header:after {
+  clear: both;
+}
+.rock-modal .modal-header:before,
+.rock-modal .modal-header:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.rock-modal .modal-header:after {
+  clear: both;
+}
+.rock-modal .modal-header h3 {
   float: left;
 }
-#dialog .modal-header .close {
+.rock-modal .modal-header .close {
   margin: 0;
   padding: 6px;
   color: #bbbbbb;
   text-shadow: none;
 }
-#dialog .modal-footer {
-  padding: 8px;
-  margin-top: 10px;
-  background-color: #e7ecf0;
+.rock-modal .modal-header .label {
+  margin-top: 8px;
 }
-.modal-body .scroll-container {
+.rock-modal .modal-body .nav-pills {
+  margin: 6px 0 18px;
+}
+.rock-modal .modal-body .scroll-container {
   width: 720px;
 }
-.modal-body .scroll-container .viewport {
+.rock-modal .modal-body .scroll-container .viewport {
   width: 670px;
 }
-.modal-body.iframe {
+.rock-modal .modal-body.iframe {
   background: url("../assets/images/ajax-loading.png") center center no-repeat;
   /* http://preloaders.net/en/popular */
 
   overflow: hidden;
+}
+.rock-modal .modal-footer {
+  padding: 8px;
+  margin-top: 10px;
+  background-color: #e7ecf0;
 }
 .modal-backdrop {
   background-color: #8b8b8b;
@@ -9196,6 +9453,7 @@ td[align=center] {
     2. Data Lists
     3. Input Sizing
     4. Control Specific Styles
+    5. Validation
 
 */
 .form-actions {
@@ -9223,33 +9481,6 @@ dl dt:first-child {
 }
 dl dd {
   margin-left: 0;
-}
-/* form styles - not enough yet for it's own file */fieldset .actions {
-  margin-top: 36px;
-}
-fieldset .actions:before,
-fieldset .actions:after {
-  content: " ";
-  /* 1 */
-
-  display: table;
-  /* 2 */
-
-}
-fieldset .actions:after {
-  clear: both;
-}
-fieldset .actions:before,
-fieldset .actions:after {
-  content: " ";
-  /* 1 */
-
-  display: table;
-  /* 2 */
-
-}
-fieldset .actions:after {
-  clear: both;
 }
 .form-control.input-width-xs,
 .input-group.input-width-xs {
@@ -9304,6 +9535,14 @@ fieldset .actions:after {
   margin-right: 12px;
   float: left;
 }
+.form-control-group > span {
+  float: left;
+  margin: 8px 12px 0 0;
+}
+.form-control-group > label {
+  float: left;
+  margin-top: 12px;
+}
 .month-year-picker .separator,
 .month-day-picker .separator {
   float: left;
@@ -9311,10 +9550,17 @@ fieldset .actions:after {
   margin: 4px 8px 0 -2px;
   color: #ffffff;
 }
-.date-range-picker span.to,
-.number-range-editor span.to {
+/*.date-range-picker,
+.number-range-editor {
+    span.to {
+        float: left;
+        margin: 8px 12px 0 0;
+    }
+}*/
+.validation-error {
+  color: #d9534f;
+  font-weight: 300;
   float: left;
-  margin: 8px 12px 0 0;
 }
 /*
     Used to manage styles related to the person details page
@@ -10727,23 +10973,26 @@ div.k-imagebrowser-dropzone em {
     border-radius: 1.8px 0 0 1.8px;
   }
 }
-/* bootstrap overrides */
-.control-label {
-  font-weight: 600;
-}
 /* global classes */
 .clickable {
   cursor: pointer;
 }
-/* TODO Do we still need these */
-.light {
-  font-weight: 300;
-}
-.bold {
-  font-weight: 300;
-}
-.semibold {
+/* bootstrap overrides */
+.control-label {
   font-weight: 600;
+}
+/* add badge colors back to BS3 */
+.badge-danger {
+  background-color: #d9534f;
+}
+.badge-warning {
+  background-color: #f0ad4e;
+}
+.badge-success {
+  background-color: #5cb85c;
+}
+.badge-info {
+  background-color: #5bc0de;
 }
 /* context help  */
 a.help {
@@ -10762,6 +11011,180 @@ a.help {
 .panel .panel-heading .actions a {
   padding-left: 4px;
 }
+.panel .picker .picker-label {
+  background-color: #d9e1e8;
+  color: #d4d4d4;
+  border-color: #b9c8d5;
+}
+.panel .actions {
+  margin-top: 36px;
+}
+.panel .actions:before,
+.panel .actions:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.panel .actions:after {
+  clear: both;
+}
+.panel .actions:before,
+.panel .actions:after {
+  content: " ";
+  /* 1 */
+
+  display: table;
+  /* 2 */
+
+}
+.panel .actions:after {
+  clear: both;
+}
+.panel-widget {
+  border-color: #d9e1e8;
+}
+.panel-widget > .panel-heading {
+  color: #d4d4d4;
+  background-color: #d9e1e8;
+  border-color: #d9e1e8;
+}
+.panel-widget > .panel-heading + .panel-collapse .panel-body {
+  border-top-color: #d9e1e8;
+}
+.panel-widget > .panel-footer + .panel-collapse .panel-body {
+  border-bottom-color: #d9e1e8;
+}
+.panel-persondetails {
+  border-color: #d9e1e8;
+}
+.panel-persondetails > .panel-heading {
+  color: #d4d4d4;
+  background-color: #d9e1e8;
+  border-color: #d9e1e8;
+}
+.panel-persondetails > .panel-heading + .panel-collapse .panel-body {
+  border-top-color: #d9e1e8;
+}
+.panel-persondetails > .panel-footer + .panel-collapse .panel-body {
+  border-bottom-color: #d9e1e8;
+}
+.panel-persondetails .panel-body {
+  background-color: #f4f4f4;
+}
+.btn-action {
+  color: #ffffff;
+  background-color: #a4b4c4;
+  border-color: #859bb0;
+}
+.btn-action:hover,
+.btn-action:focus,
+.btn-action:active,
+.btn-action.active,
+.open .dropdown-toggle.btn-action {
+  color: #ffffff;
+  background-color: #8ba0b4;
+  border-color: #617c96;
+}
+.btn-action:active,
+.btn-action.active,
+.open .dropdown-toggle.btn-action {
+  background-image: none;
+}
+.btn-action.disabled,
+.btn-action[disabled],
+fieldset[disabled] .btn-action,
+.btn-action.disabled:hover,
+.btn-action[disabled]:hover,
+fieldset[disabled] .btn-action:hover,
+.btn-action.disabled:focus,
+.btn-action[disabled]:focus,
+fieldset[disabled] .btn-action:focus,
+.btn-action.disabled:active,
+.btn-action[disabled]:active,
+fieldset[disabled] .btn-action:active,
+.btn-action.disabled.active,
+.btn-action[disabled].active,
+fieldset[disabled] .btn-action.active {
+  background-color: #a4b4c4;
+  border-color: #859bb0;
+}
+.btn-security {
+  color: #ffffff;
+  background-color: #a4b4c4;
+  border-color: #859bb0;
+}
+.btn-security:hover,
+.btn-security:focus,
+.btn-security:active,
+.btn-security.active,
+.open .dropdown-toggle.btn-security {
+  color: #ffffff;
+  background-color: #8ba0b4;
+  border-color: #617c96;
+}
+.btn-security:active,
+.btn-security.active,
+.open .dropdown-toggle.btn-security {
+  background-image: none;
+}
+.btn-security.disabled,
+.btn-security[disabled],
+fieldset[disabled] .btn-security,
+.btn-security.disabled:hover,
+.btn-security[disabled]:hover,
+fieldset[disabled] .btn-security:hover,
+.btn-security.disabled:focus,
+.btn-security[disabled]:focus,
+fieldset[disabled] .btn-security:focus,
+.btn-security.disabled:active,
+.btn-security[disabled]:active,
+fieldset[disabled] .btn-security:active,
+.btn-security.disabled.active,
+.btn-security[disabled].active,
+fieldset[disabled] .btn-security.active {
+  background-color: #a4b4c4;
+  border-color: #859bb0;
+}
+.btn-edit {
+  color: #222222;
+  background-color: #ffffff;
+  border-color: #e6e6e6;
+}
+.btn-edit:hover,
+.btn-edit:focus,
+.btn-edit:active,
+.btn-edit.active,
+.open .dropdown-toggle.btn-edit {
+  color: #222222;
+  background-color: #ebebeb;
+  border-color: #c7c7c7;
+}
+.btn-edit:active,
+.btn-edit.active,
+.open .dropdown-toggle.btn-edit {
+  background-image: none;
+}
+.btn-edit.disabled,
+.btn-edit[disabled],
+fieldset[disabled] .btn-edit,
+.btn-edit.disabled:hover,
+.btn-edit[disabled]:hover,
+fieldset[disabled] .btn-edit:hover,
+.btn-edit.disabled:focus,
+.btn-edit[disabled]:focus,
+fieldset[disabled] .btn-edit:focus,
+.btn-edit.disabled:active,
+.btn-edit[disabled]:active,
+fieldset[disabled] .btn-edit:active,
+.btn-edit.disabled.active,
+.btn-edit[disabled].active,
+fieldset[disabled] .btn-edit.active {
+  background-color: #ffffff;
+  border-color: #e6e6e6;
+}
 .k-treeview .k-in.k-state-hover,
 .k-treeview .k-in.k-state-selected,
 .k-treeview .k-in.k-state-focused,
@@ -10779,10 +11202,6 @@ a.help {
 /* error page */
 #splash.error #content {
   width: 750px;
-}
-/* data views */
-.filter-toogle .switch {
-  margin: 0 6px;
 }
 /* security window */
 .security-inherited {

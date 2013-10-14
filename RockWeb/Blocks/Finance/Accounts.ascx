@@ -35,45 +35,59 @@
         </Rock:Grid>
     </asp:Panel>
 
-    <asp:Panel ID="pnlAccountDetails" runat="server" Visible="false">
+    <asp:Panel ID="pnlAccountDetails" runat="server" Visible="false" CssClass="panel panel-default">
 
         <asp:HiddenField ID="hfAccountId" runat="server" />
-        <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
-        <fieldset>
-            <legend>
-                <asp:Literal ID="lAction" runat="server">Account</asp:Literal>
-            </legend>
+        <div class="panel-body">
 
-            <div class="row">
+            <div class="banner"><h1><asp:Literal ID="lAction" runat="server"></asp:Literal></h1></div>
 
-                <div class="col-md-6">
-                    <Rock:DataTextBox ID="tbName" runat="server"
-                        SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="Name" />
-                    <Rock:DataTextBox ID="tbPublicName" runat="server"
-                        SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="PublicName" />
-                    <Rock:DataTextBox ID="tbDescription" runat="server"
-                        SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
-                    <Rock:DataTextBox ID="tbOrder" runat="server"
-                        SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="Order" />
-                    <Rock:DataTextBox ID="tbGLCode" runat="server"
-                        SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="GlCode" />
+            <asp:ValidationSummary ID="valSummaryTop" runat="server" HeaderText="Please Correct the Following" CssClass="alert alert-danger block-message error" />
+            <fieldset>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <Rock:DataTextBox ID="tbName" runat="server"
+                            SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="Name" />
+                    </div>
+                    <div class="col-md-6">
+                        <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
+                    </div>
                 </div>
 
-                <div class="col-md-6">                
-                    <Rock:DatePicker ID="dtpStartDate" runat="server" SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="StartDate" Label="Start Date" />
-                    <Rock:DatePicker ID="dtpEndDate" runat="server" SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="EndDate" Label="End Date" />
-                    <Rock:RockCheckBox ID="cbIsActive" runat="server" Label="Active" />
-                    <Rock:RockCheckBox ID="cbIsTaxDeductible" runat="server" Label="Tax Deductible" />
-                    <Rock:RockDropDownList ID="ddlAccountType" runat="server" Label="Account Type" />
-                    <Rock:AccountPicker ID="apParentAccount" runat="server" Label="Parent Account" />                
+                <div class="row">
+                    <div class="col-md-12">
+                        <Rock:DataTextBox ID="tbDescription" runat="server"
+                            SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="Description" TextMode="MultiLine" Rows="3" />
+                    </div>
                 </div>
-        </div>
 
-        <div class="actions">
-            <asp:LinkButton ID="btnSaveAccount" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveAccount_Click" />
-            <asp:LinkButton ID="btnCancelAccount" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
-        </div>
+                <div class="row">
 
+                    <div class="col-md-6"> 
+                        <Rock:AccountPicker ID="apParentAccount" runat="server" Label="Parent Account" />
+                        <Rock:RockDropDownList ID="ddlAccountType" runat="server" Label="Account Type" />
+                        <Rock:DataTextBox ID="tbPublicName" runat="server"
+                            SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="PublicName" />
+                        <Rock:DataTextBox ID="tbOrder" runat="server"
+                            SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="Order" />
+                    </div>
+
+                    <div class="col-md-6">                
+                        <Rock:DataTextBox ID="tbGLCode" runat="server"
+                            SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="GlCode" />
+                        <Rock:DatePicker ID="dtpStartDate" runat="server" SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="StartDate" Label="Start Date" />
+                        <Rock:DatePicker ID="dtpEndDate" runat="server" SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="EndDate" Label="End Date" />
+                        <Rock:RockCheckBox ID="cbIsTaxDeductible" runat="server" Label="Tax Deductible" />           
+                    </div>
+            </div>
+
+            <div class="actions">
+                <asp:LinkButton ID="btnSaveAccount" runat="server" Text="Save" CssClass="btn btn-primary" OnClick="btnSaveAccount_Click" />
+                <asp:LinkButton ID="btnCancelAccount" runat="server" Text="Cancel" CssClass="btn" CausesValidation="false" OnClick="btnCancel_Click" />
+            </div>
+
+        </div>
     </asp:Panel>
 
 </ContentTemplate>

@@ -41,7 +41,7 @@ namespace RockWeb.Blocks.Administration
             gSites.Actions.ShowAdd = canAddEditDelete;
             gSites.IsDeleteEnabled = canAddEditDelete;
 
-            SecurityField securityField = gSites.Columns[3] as SecurityField;
+            SecurityField securityField = gSites.Columns[6] as SecurityField;
             securityField.EntityTypeId = EntityTypeCache.Read( typeof( Rock.Model.Site ) ).Id;
         }
 
@@ -147,6 +147,16 @@ namespace RockWeb.Blocks.Administration
             
             
             gSites.DataBind();
+        }
+
+        protected string GetDomains( int siteID )
+        {
+            return new SiteDomainService().Queryable()
+                .Where( d => d.SiteId == siteID )
+                .OrderBy( d => d.Domain )
+                .Select( d => d.Domain )
+                .ToList()
+                .AsDelimited( ", " );
         }
 
         #endregion

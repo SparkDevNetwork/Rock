@@ -608,6 +608,8 @@ namespace RockWeb.Blocks.Administration
 
             if ( attributeModel == null )
             {
+                lAttributeTitle.Text = ("Add Attribute").FormatAsHtmlTitle();
+
                 attributeModel = new Rock.Model.Attribute();
 
                 if ( !_configuredType )
@@ -627,6 +629,7 @@ namespace RockWeb.Blocks.Administration
             else
             {
                 edtAttribute.ActionTitle = Rock.Constants.ActionTitle.Edit( Rock.Model.Attribute.FriendlyTypeName );
+                lAttributeTitle.Text = ("Edit " + attributeModel.Name).FormatAsHtmlTitle();
             }
 
             Type type = null;

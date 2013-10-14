@@ -15,15 +15,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// Device POCO Service class
+    /// Data access/service class for the <see cref="Rock.Model.Device"/> entity objects
     /// </summary>
     public partial class DeviceService 
     {
         /// <summary>
-        /// Gets the by device type GUID.
+        /// Returns a queryable collection of <see cref="Rock.Model.Device">Devices</see> by the Guid of their Device Type <see cref="Rock.Model.DefinedValue"/>.
         /// </summary>
-        /// <param name="guid">The GUID.</param>
-        /// <returns></returns>
+        /// <param name="guid">A <see cref="System.Guid"/> representing the unique identifier of the <see cref="Rock.Model.Device">Device's</see> Device Type <see cref="Rock.Model.DefinedValue"/></param>
+        /// <returns>A queryable co</returns>
         public IQueryable<Device> GetByDeviceTypeGuid( Guid guid )
         {
             return Repository.AsQueryable().Where( d => d.DeviceType.Guid == guid );
@@ -56,10 +56,13 @@ namespace Rock.Model
         /// <summary>
         /// Gets the device by IP address.
         /// </summary>
-        /// <param name="ipAddress">The ip address.</param>
-        /// <param name="deviceTypeValueId">The device type value id.</param>
-        /// <param name="skipReverseLookup">if set to <c>true</c> [skip reverse lookup].</param>
-        /// <returns></returns>
+        /// <param name="ipAddress">A <see cref="System.String" /> representing the ip address.</param>
+        /// <param name="deviceTypeValueId">A <see cref="System.Int32"/> representing the DeviceType <see cref="Rock.Model.DefinedValue"/> of the device that you are searching for.</param>
+        /// <param name="skipReverseLookup">A <see cref="Rock.Model.Boolean"/> indicating if a reverse lookup will be skipped. If <c>true</c> a DNS reverse lookup for the name of the system
+        /// that belongs to the provided IP address will not be performed, otherwise <c>false</c> and a DNS reverse lookup will be performed.</param>
+        /// <returns>
+        /// A <see cref="Rock.Model.Device"/> that is associated with the provided IP address.
+        /// </returns>
         public Device GetByIPAddress( string ipAddress, int deviceTypeValueId, bool skipReverseLookup = true )
         {
             string hostValue = ipAddress;

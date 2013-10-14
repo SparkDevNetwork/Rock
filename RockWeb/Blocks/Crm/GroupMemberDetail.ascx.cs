@@ -266,11 +266,11 @@ namespace RockWeb.Blocks.Crm
         {
             if ( groupMember.Id.Equals( 0 ) )
             {
-                lActionTitle.Text = ActionTitle.Add( "Group Member to " + groupMember.Group.Name );
+                lActionTitle.Text = ActionTitle.Add( "Group Member to " + groupMember.Group.Name ).FormatAsHtmlTitle();
             }
             else
             {
-                lActionTitle.Text = ActionTitle.Edit( "Group Member for " + groupMember.Group.Name );
+                lActionTitle.Text = ActionTitle.Edit( "Group Member for " + groupMember.Group.Name ).FormatAsHtmlTitle();
             }
 
             SetEditMode( true );
@@ -320,7 +320,7 @@ namespace RockWeb.Blocks.Crm
             hfGroupMemberId.SetValue( groupMember.Id );
 
             lGroupIconHtml.Text = groupIconHtml;
-            lReadOnlyTitle.Text = groupMember.Person.FullName;
+            lReadOnlyTitle.Text = groupMember.Person.FullName.FormatAsHtmlTitle();
 
             lblMainDetails.Text = new DescriptionList()
                 .Add("Group Member", groupMember.Person)

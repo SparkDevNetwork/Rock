@@ -150,8 +150,19 @@ namespace RockWeb.Blocks.Prayer
             ShowStatus( prayerRequest, this.CurrentPerson, litFlaggedMessageRO );
             ShowPrayerCount( prayerRequest, litPrayerCountRO );
 
-            litStatus.Text = ( ! prayerRequest.IsApproved ?? false ) ? "<span class='label label-important'>unapproved</span>" : "";
-            litUrgent.Text = ( prayerRequest.IsUrgent ?? false ) ? "<span class='label label-info'><i class='icon-exclamation-sign'></i> urgent</span>" : "";
+            if ( ! prayerRequest.IsApproved.HasValue )
+            {
+                hlStatus.Visible = true;
+                hlStatus.Text = "Pending Approval";
+            }
+            else if ( prayerRequest.IsApproved.HasValue && ( !prayerRequest.IsApproved ?? false ) )
+            {
+                hlStatus.Visible = true;
+                hlStatus.Text = "Unapproved";
+            }
+
+            hlUrgent.Visible = ( prayerRequest.IsUrgent ?? false );
+            
         }
 
         /// <summary>
