@@ -145,6 +145,10 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }
             else
             {
+                foreach ( RepeaterItem item in repMinistry.Items )
+                {
+                    ( (Button)item.FindControl( "lbMinistry" ) ).RemoveCssClass( "active" );
+                }
                 maWarning.Show( "At least one ministry must be selected!", ModalAlertType.Warning );
                 return;
             }
