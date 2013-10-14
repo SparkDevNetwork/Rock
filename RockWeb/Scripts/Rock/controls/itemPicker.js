@@ -5,8 +5,8 @@
 
     Rock.controls.itemPicker = (function () {
         var ItemPicker = function (options) {
-            this.options = options;
-        },
+                this.options = options;
+            },
             exports;
 
         ItemPicker.prototype = {
@@ -16,7 +16,9 @@
                     $tree = $control.find('.treeview'),
                     treeOptions = {
                         multiselect: this.options.allowMultiSelect,
-                        restUrl: this.options.restUrl
+                        restUrl: this.options.restUrl,
+                        restParams: this.options.restParams,
+                        expandedIds: this.options.expandedIds
                     },
                     $hfItemIds = $('#hfItemId_' + this.options.controlId);
 
@@ -35,6 +37,7 @@
                 }
 
                 $tree.rockTree(treeOptions);
+                this.updateScrollbar();
             },
             initializeEventHandlers: function () {
                 var self = this,
@@ -60,7 +63,7 @@
                         $hfItemNames.val(selectedNames.join(','));
                         $spanNames.text(selectedNames.join(', '));
                     })
-                    .on('open close', function () {
+                    .on('rockTree:open rockTree:close', function () {
                         self.updateScrollbar();
                     });
 
@@ -80,7 +83,7 @@
                         $control.find('.rock-picker-select-none').fadeOut(500);
                     });
 
-                $control.find('.cancel, .picker-select').click(function () {
+                $control.find('.picker-cancel, .picker-btn').click(function () {
                     $(this).closest('.picker-menu').slideUp();
                 });
 
@@ -122,8 +125,11 @@
                 id: 0,
                 controlId: null,
                 restUrl: null,
+                restParams: null,
                 allowMultiSelect: false,
-                defaultText: '<none>'
+                defaultText: '<none>',
+                selectedIds: null,
+                expandedIds: null
             },
             controls: {},
             initialize: function (options) {
@@ -133,7 +139,6 @@
                 if (!options.controlId) throw 'controlId must be set';
                 if (!options.restUrl) throw 'restUrl must be set';
 
-                // TODO: Build REST URL based on parent ids, extra params, etc...
                 settings = $.extend({}, exports.defaults, options);
 
                 if (!settings.defaultText) {
