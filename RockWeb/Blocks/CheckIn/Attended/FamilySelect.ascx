@@ -1,7 +1,5 @@
 ﻿<%@ Control Language="C#" AutoEventWireup="true" CodeFile="FamilySelect.ascx.cs" Inherits="RockWeb.Blocks.CheckIn.Attended.FamilySelect" %>
 <%@ Register Assembly="AjaxControlToolkit" Namespace="AjaxControlToolkit" TagPrefix="asp" %>
-<link rel="stylesheet" type="text/css"  href="../../Styles/Kendo/kendo.common.min.css" />
-<%--<link rel="stylesheet" type="text/css"  href="../../Styles/Kendo/kendo.flat.less" />--%>
 <script type="text/javascript">
 
     function setControlEvents() {
@@ -264,7 +262,7 @@
             </div>
 
             <div class="col-md-3 checkin-actions">
-                <asp:LinkButton ID="lbAddFamilySave" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbAddFamilySave_Click" Text="Save" />
+                <asp:LinkButton ID="lbAddFamilySave" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbAddFamilySave_Click" Text="Save" CausesValidation="false"></asp:LinkButton>
             </div>
         </div>        
     
@@ -306,7 +304,7 @@
                     </div>
                     <div class="col-md-3">
                         <Rock:DataDropDownList ID="ddlAbilityGrade" runat="server" CssClass="col-md-12" />
-                    </div>                
+                    </div>
                 </div>
             </ItemTemplate>        
             </asp:ListView>        
