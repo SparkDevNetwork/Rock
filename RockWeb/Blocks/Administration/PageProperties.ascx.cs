@@ -455,6 +455,7 @@ namespace RockWeb.Blocks.Administration
                 pnlBasicProperty.Visible = true;
                 pnlDisplaySettings.Visible = false;
                 pnlAdvancedSettings.Visible = false;
+                pnlImportExport.Visible = false;
                 pnlBasicProperty.DataBind();
             }
             else if ( CurrentProperty.Equals( "Display Settings" ) )
@@ -462,6 +463,7 @@ namespace RockWeb.Blocks.Administration
                 pnlBasicProperty.Visible = false;
                 pnlDisplaySettings.Visible = true;
                 pnlAdvancedSettings.Visible = false;
+                pnlImportExport.Visible = false;
                 pnlDisplaySettings.DataBind();
             }
             else if ( CurrentProperty.Equals( "Advanced Settings" ) )
@@ -469,6 +471,7 @@ namespace RockWeb.Blocks.Administration
                 pnlBasicProperty.Visible = false;
                 pnlDisplaySettings.Visible = false;
                 pnlAdvancedSettings.Visible = true;
+                pnlImportExport.Visible = false;
                 pnlAdvancedSettings.DataBind();
             }
             else if ( CurrentProperty.Equals( "Import/Export" ) )
