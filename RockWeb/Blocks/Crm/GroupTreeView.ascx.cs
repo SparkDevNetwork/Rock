@@ -35,7 +35,7 @@ namespace RockWeb.Blocks.Crm
             hfRootGroupId.Value = GetAttributeValue( "Group" );
 
             // limit GroupType selection to what Block Attributes allow
-            List<Guid> groupTypeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( a => Guid.Parse( a ) ).ToList();
+            List<Guid> groupTypeGuids = GetAttributeValue( "GroupTypes" ).SplitDelimitedValues().Select( Guid.Parse ).ToList();
 
             string groupTypeIds = "0";
             if ( groupTypeGuids.Any() )
@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.Crm
             if ( !string.IsNullOrWhiteSpace( groupId ) )
             {
                 hfInitialGroupId.Value = groupId;
-                hfSelectedGroupId.Value = groupId.ToString();
+                hfSelectedGroupId.Value = groupId;
                 Group group = ( new GroupService() ).Get( int.Parse( groupId ) );
 
                 if ( group != null )
