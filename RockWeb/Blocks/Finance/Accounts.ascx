@@ -65,20 +65,20 @@
                 <div class="row">
 
                     <div class="col-md-6"> 
+                        <Rock:AccountPicker ID="apParentAccount" runat="server" Label="Parent Account" />
+                        <Rock:RockDropDownList ID="ddlAccountType" runat="server" Label="Account Type" />
                         <Rock:DataTextBox ID="tbPublicName" runat="server"
                             SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="PublicName" />
                         <Rock:DataTextBox ID="tbOrder" runat="server"
                             SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="Order" />
-                        <Rock:DataTextBox ID="tbGLCode" runat="server"
-                            SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="GlCode" />
                     </div>
 
                     <div class="col-md-6">                
+                        <Rock:DataTextBox ID="tbGLCode" runat="server"
+                            SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="GlCode" />
                         <Rock:DatePicker ID="dtpStartDate" runat="server" SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="StartDate" Label="Start Date" />
                         <Rock:DatePicker ID="dtpEndDate" runat="server" SourceTypeName="Rock.Model.FinancialAccount, Rock" PropertyName="EndDate" Label="End Date" />
-                        <Rock:RockCheckBox ID="cbIsTaxDeductible" runat="server" Label="Tax Deductible" />
-                        <Rock:RockDropDownList ID="ddlAccountType" runat="server" Label="Account Type" />
-                        <Rock:AccountPicker ID="apParentAccount" runat="server" Label="Parent Account" />                
+                        <Rock:RockCheckBox ID="cbIsTaxDeductible" runat="server" Label="Tax Deductible" />           
                     </div>
             </div>
 

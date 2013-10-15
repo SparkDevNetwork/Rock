@@ -94,10 +94,15 @@ namespace Rock.Workflow.Action.CheckIn
                                             GradeRange = g.Group.GetAttributeValue( "GradeRange" ).Split( delimiter, StringSplitOptions.None )
                                                 .Select( av => av.AsType<int?>() )
                                         } ).ToList();
-                                    
-                                    var groupMatchGrade = gradeGroups.Aggregate( ( x, y ) => Math.Abs( Convert.ToDouble( x.GradeRange.First() - person.Person.Grade ) )
-                                            < Math.Abs( Convert.ToDouble( y.GradeRange.First() - person.Person.Grade ) ) ? x : y )
-                                                .Group;
+
+                                    var groupMatchGrade = new CheckInGroup();
+                                    groupMatchGrade = null;
+                                    if ( gradeGroups.Count > 0 )
+                                    {
+                                        groupMatchGrade = gradeGroups.Aggregate( ( x, y ) => Math.Abs( Convert.ToDouble( x.GradeRange.First() - person.Person.Grade ) )
+                                                < Math.Abs( Convert.ToDouble( y.GradeRange.First() - person.Person.Grade ) ) ? x : y )
+                                                    .Group;
+                                    }
 
                                     // check groups by age
                                     var ageGroups = groupType.Groups.Where( g => g.Group.Attributes.ContainsKey( "AgeRange" ) ).Select( g => 
@@ -106,10 +111,15 @@ namespace Rock.Workflow.Action.CheckIn
                                             AgeRange = g.Group.GetAttributeValue( "AgeRange" ).Split( delimiter, StringSplitOptions.None )
                                                 .Select( av => av.AsType<double?>() )
                                         } ).ToList();
-                                                                                                                                                
-                                    var groupMatchAge = ageGroups.Aggregate( ( x, y ) => Math.Abs( Convert.ToDouble( x.AgeRange.First() - person.Person.Age ) )
-                                            < Math.Abs( Convert.ToDouble( y.AgeRange.First() - person.Person.Age ) ) ? x : y )
-                                                .Group;
+
+                                    var groupMatchAge = new CheckInGroup();
+                                    groupMatchAge = null;
+                                    if ( ageGroups.Count > 0 )
+                                    {
+                                        groupMatchAge = ageGroups.Aggregate( ( x, y ) => Math.Abs( Convert.ToDouble( x.AgeRange.First() - person.Person.Age ) )
+                                                < Math.Abs( Convert.ToDouble( y.AgeRange.First() - person.Person.Age ) ) ? x : y )
+                                                    .Group;
+                                    }
 
                                     group = groupMatchGrade ?? groupMatchAge;
                                 }                                

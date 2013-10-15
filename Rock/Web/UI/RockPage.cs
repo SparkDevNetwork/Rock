@@ -223,17 +223,6 @@ namespace Rock.Web.UI
         }
 
         /// <summary>
-        /// Gets the full url path to the current theme folder
-        /// </summary>
-        public string CurrentTheme
-        {
-            get
-            {
-                return ResolveUrl( string.Format( "~/Themes/{0}", CurrentPage.Layout.Site.Theme ) );
-            }
-        }
-
-        /// <summary>
         /// Gets the root url path
         /// </summary>
         public string AppPath
@@ -856,6 +845,7 @@ namespace Rock.Web.UI
             }
         }
 
+        
         #endregion
 
         #region Public Methods
@@ -941,6 +931,23 @@ namespace Rock.Web.UI
                 ScriptManager sManager = ScriptManager.GetCurrent(Page);
                 sManager.AddHistoryPoint(key, state, title);
             }
+        }
+
+        /// <summary>
+        /// Resolves a rock URL.  Similiar to the System.Web.Control.ResolveUrl method except that you can prefix 
+        /// a url with '~~' to indicate a virtual path to Rock's current theme root folder
+        /// </summary>
+        /// <param name="url">The URL.</param>
+        /// <returns></returns>
+        public string ResolveRockUrl( string url )
+        {
+            string themeUrl = url;
+            if ( url.StartsWith( "~~" ) )
+            {
+                themeUrl = "~/Themes/" + CurrentPage.Layout.Site.Theme + ( url.Length > 2 ? url.Substring( 2 ) : string.Empty );
+            }
+
+            return ResolveUrl( themeUrl );
         }
 
         #endregion

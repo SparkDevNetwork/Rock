@@ -268,7 +268,7 @@ namespace Rock.Reporting
         /// <returns></returns>
         protected DropDownList ComparisonControl( ComparisonType supportedComparisonTypes )
         {
-            var ddl = new DropDownList();
+            var ddl = new RockDropDownList();
             foreach ( ComparisonType comparisonType in Enum.GetValues( typeof( ComparisonType ) ) )
             {
                 if ( ( supportedComparisonTypes & comparisonType ) == comparisonType )

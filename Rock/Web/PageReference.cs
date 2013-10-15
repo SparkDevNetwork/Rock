@@ -94,33 +94,36 @@ namespace Rock.Web
         /// <param name="queryString">The query string.</param>
         public PageReference( string linkedPageValue, Dictionary<string, string> parameters = null, NameValueCollection queryString = null  )
         {
-            string[] items = linkedPageValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
-
-            //// linkedPageValue is in format "Page.Guid,PageRoute.Guid"
-            //// If only the Page.Guid is specified this is just a reference to a page without a special route
-            //// In case the PageRoute record can't be found from PageRoute.Guid (maybe the pageroute was deleted), fall back to the Page without a PageRoute
-
-            Guid pageGuid = Guid.Empty;
-            if ( items.Length > 0 )
+            if ( !string.IsNullOrWhiteSpace( linkedPageValue ) )
             {
-                if (Guid.TryParse( items[0], out pageGuid ))
-                {
-                    var pageCache = PageCache.Read( pageGuid );
-                    if ( pageCache != null )
-                    {
-                        // Set the page
-                        PageId = pageCache.Id;
+                string[] items = linkedPageValue.Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
 
-                        Guid pageRouteGuid = Guid.Empty;
-                        if ( items.Length == 2 )
+                //// linkedPageValue is in format "Page.Guid,PageRoute.Guid"
+                //// If only the Page.Guid is specified this is just a reference to a page without a special route
+                //// In case the PageRoute record can't be found from PageRoute.Guid (maybe the pageroute was deleted), fall back to the Page without a PageRoute
+
+                Guid pageGuid = Guid.Empty;
+                if ( items.Length > 0 )
+                {
+                    if ( Guid.TryParse( items[0], out pageGuid ) )
+                    {
+                        var pageCache = PageCache.Read( pageGuid );
+                        if ( pageCache != null )
                         {
-                            if ( Guid.TryParse( items[1], out pageRouteGuid ) )
+                            // Set the page
+                            PageId = pageCache.Id;
+
+                            Guid pageRouteGuid = Guid.Empty;
+                            if ( items.Length == 2 )
                             {
-                                var pageRouteInfo = pageCache.PageRoutes.FirstOrDefault( a => a.Guid == pageRouteGuid );
-                                if ( pageRouteInfo != null )
+                                if ( Guid.TryParse( items[1], out pageRouteGuid ) )
                                 {
-                                    // Set the route
-                                    RouteId = pageRouteInfo.Id;
+                                    var pageRouteInfo = pageCache.PageRoutes.FirstOrDefault( a => a.Guid == pageRouteGuid );
+                                    if ( pageRouteInfo != null )
+                                    {
+                                        // Set the route
+                                        RouteId = pageRouteInfo.Id;
+                                    }
                                 }
                             }
                         }

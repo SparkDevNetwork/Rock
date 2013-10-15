@@ -117,7 +117,7 @@ namespace Rock.Reporting.DataTransform.Person
         /// <returns></returns>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            DropDownList ddlGroupType = new DropDownList();
+            var ddlGroupType = new RockDropDownList();
             ddlGroupType.ID = filterControl.ID + "_0";
             filterControl.Controls.Add( ddlGroupType );
 
@@ -130,11 +130,11 @@ namespace Rock.Reporting.DataTransform.Person
             ddl.ID = filterControl.ID + "_1";
             filterControl.Controls.Add( ddl );
 
-            var tb = new TextBox();
+            var tb = new RockTextBox();
             tb.ID = filterControl.ID + "_2";
             filterControl.Controls.Add( tb );
 
-            var tb2 = new TextBox();
+            var tb2 = new RockTextBox();
             tb2.ID = filterControl.ID + "_3";
             filterControl.Controls.Add( tb );
 
@@ -156,15 +156,53 @@ namespace Rock.Reporting.DataTransform.Person
         /// <param name="controls">The controls.</param>
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( "class", "col-md-2" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.Write( "<span class='data-view-filter-label'>Attended</span>" );
+            writer.RenderEndTag();
+
+            writer.AddAttribute( "class", "col-md-5" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             controls[0].RenderControl( writer );
-            writer.WriteBreak();
-            writer.Write( "Attended " );
+            writer.RenderEndTag();
+
+            writer.AddAttribute( "class", "col-md-5" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             controls[1].RenderControl( writer );
-            writer.Write( " " );
+            writer.RenderEndTag();
+
+            writer.RenderEndTag();
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+
+            writer.AddAttribute( "class", "col-md-2" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.RenderEndTag();
+
+            writer.AddAttribute( "class", "col-md-2" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             controls[2].RenderControl( writer );
-            writer.Write( " Times in the Last " );
+            writer.RenderEndTag();
+
+            writer.AddAttribute( "class", "col-md-3" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.Write( "<span class='data-view-filter-label'>Times in the Last</span>" );
+            writer.RenderEndTag();
+
+            writer.AddAttribute( "class", "col-md-2" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             controls[3].RenderControl( writer );
-            writer.Write( " Week(s)." );
+            writer.RenderEndTag();
+
+            writer.AddAttribute( "class", "col-md-3" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.Write( "<span class='data-view-filter-label'>Week(s)</span>" );
+            writer.RenderEndTag(); 
+
+            writer.RenderEndTag();
         }
 
         /// <summary>

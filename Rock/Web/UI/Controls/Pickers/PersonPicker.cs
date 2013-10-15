@@ -329,12 +329,7 @@ namespace Rock.Web.UI.Controls
             _btnSelect.ID = string.Format( "btnSelect_{0}", this.ID );
             _btnSelect.InnerText = "Select";
             _btnSelect.CausesValidation = false;
-
-            // we only need the postback on Select if SelectPerson is assigned
-            if ( SelectPerson != null )
-            {
-                _btnSelect.ServerClick += btnSelect_Click;
-            }
+            _btnSelect.ServerClick += btnSelect_Click;
 
             _btnSelectNone = new HtmlAnchor();
             _btnSelectNone.ClientIDMode = ClientIDMode.Static;
@@ -343,12 +338,7 @@ namespace Rock.Web.UI.Controls
             _btnSelectNone.InnerHtml = "<i class='icon-remove'></i>";
             _btnSelectNone.CausesValidation = false;
             _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
-
-            // we only need the postback on SelectNone if SelectPerson is assigned
-            if ( SelectPerson != null )
-            {
-                _btnSelectNone.ServerClick += btnSelect_Click;
-            }
+            _btnSelectNone.ServerClick += btnSelect_Click;
 
             Controls.Add( _hfPersonId );
             Controls.Add( _hfPersonName );
