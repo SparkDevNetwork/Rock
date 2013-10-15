@@ -19,7 +19,8 @@
                     <asp:BoundField DataField="Name" HeaderText="Name" />
                     <asp:TemplateField HeaderText="Type" >
                         <ItemTemplate>
-                            <%# DataBinder.Eval(Container, "DataItem.BlockType.Name") %>
+                            <%# Eval("BlockType.Name") %><br />
+                            <small><%# Eval("BlockType.Path") %></small>
                         </ItemTemplate>
                     </asp:TemplateField>
                     <Rock:DeleteField OnClick="gPageBlocks_Delete" />
@@ -34,7 +35,8 @@
                     <asp:BoundField DataField="Name" HeaderText="Name" />
                     <asp:TemplateField HeaderText="Type" >
                         <ItemTemplate>
-                            <%# DataBinder.Eval(Container, "DataItem.BlockType.Name") %>
+                            <%# Eval("BlockType.Name") %><br />
+                            <small><%# Eval("BlockType.Path") %></small>
                         </ItemTemplate>
                     </asp:TemplateField>
                     <Rock:DeleteField OnClick="gLayoutBlocks_Delete" />
