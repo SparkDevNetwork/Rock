@@ -97,11 +97,10 @@ namespace Rock.CyberSource
             errorMessage = string.Empty;
 
             RequestMessage request = GetMerchantInfo();
-            request.billTo = GetBillTo( paymentInfo );
-            
-            request.item = new Item[1];
-            request.item[0] = GetItems( paymentInfo );
+            request.billTo = GetBillTo( paymentInfo );            
+            request.item = GetItems( paymentInfo );            
             request.purchaseTotals = GetTotals( paymentInfo );
+            request.merchantReferenceCode = new Guid().ToString();
 
             if ( paymentInfo is CreditCardPaymentInfo )
             {
@@ -124,23 +123,13 @@ namespace Rock.CyberSource
                 request.ecDebitService = new ECDebitService();
                 request.ecDebitService.run = "true";
                 request.ecDebitService.commerceIndicator = "internet";
-            }
-            
+            }            
             else if ( paymentInfo is ReferencePaymentInfo )
             {
                 var reference = paymentInfo as ReferencePaymentInfo;
-                if ( reference.CurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD ) ) )
-                {
-                    //get request subscription ID ( financialscheduledtransaction.transactionCode )
-                    
-
-
-                }
-                else if ( reference.CurrencyTypeValue.Guid.Equals( new Guid( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH ) ) )
-                {
-                    var ach = paymentInfo as ACHPaymentInfo;
-                    //request.check = GetCheck( ach );
-                }                
+                request.paySubscriptionCreateService = new PaySubscriptionCreateService();
+                request.paySubscriptionCreateService.run = "true";                
+                request.paySubscriptionCreateService.paymentRequestID = reference.ReferenceNumber;                
             }
             else if ( paymentInfo is SwipePaymentInfo )
             {
@@ -148,94 +137,33 @@ namespace Rock.CyberSource
             }           
 
             ReplyMessage reply = SubmitTransaction( request );
-
-            string template = GetTemplate( reply.decision.ToUpper() );
-            string content = GetContent( reply );
-
-            if ( "ACCEPT".Equals( reply.decision.ToUpper() ) )
+            if ( reply != null )
             {
-                var transaction = new FinancialTransaction();
-                
-                return transaction;
+                int? reasonCode = reply.reasonCode.AsInteger();
+                if ( reasonCode != null )
+                {
+                    if ( reasonCode == 100 )
+                    {
+                        var transaction = new FinancialTransaction();
+                        transaction.TransactionCode = reply.requestID;
+                        return transaction;
+                    }
+                    else
+                    {
+                        errorMessage = string.Format( "Your order was not approved.{0}", ProcessError( reply ) );
+                    }
+                }
+                else
+                {
+                    errorMessage = "Invalid transaction response from the financial gateway";
+                }                
             }
-
-            errorMessage = string.Empty;
+            else
+            {
+                errorMessage = "Invalid response from the financial gateway.";
+            }
+            
             return null;
-        }
-
-        /// <summary>
-        /// Gets the template.
-        /// </summary>
-        /// <param name="decision">The decision.</param>
-        /// <returns></returns>
-        private static string GetTemplate( string decision )
-        {
-            // Retrieves the text that corresponds to the decision.
-            if ( "ACCEPT".Equals( decision ) )
-            {
-                return ( "The order succeeded.{0}" );
-            }
-            if ( "REJECT".Equals( decision ) )
-            {
-                return ( "Your order was not approved.{0}" );
-            }
-
-            // ERROR, or an unknown decision
-            return ( "Your order could not be completed at this time.{0}" +
-                    "\nPlease try again later." );
-        }
-
-        /// <summary>
-        /// Gets the content.
-        /// </summary>
-        /// <param name="reply">The reply.</param>
-        /// <returns></returns>
-        private static string GetContent( ReplyMessage reply )
-        {
-            /*
-             * Uses the reason code to retrieve more details to add to the template.
-             * The messages returned in this example are meant to demonstrate how to retrieve
-             * the reply fields. Your application should display user-friendly messages.
-             */
-            int reasonCode = int.Parse( reply.reasonCode );
-            switch ( reasonCode )
-            {
-                // Success
-                case 100:
-                    return ( "\nRequest ID: " + reply.requestID );
-                // Missing field or fields
-                case 101:
-                    return ( "\nThe following required fields are missing: " +
-                            EnumerateValues( reply.missingField ) );
-                // Invalid field or fields
-                case 102:
-                    return ( "\nThe following fields are invalid: " +
-                            EnumerateValues( reply.invalidField ) );
-                // Insufficient funds
-                case 204:
-                    return ( "\nInsufficient funds in the account. Please use a " +
-                            "different card or select another form of payment." );
-                // Add additional reason codes here that you must handle more specifically.
-                default:
-                    // For all other reason codes, such as unrecognized reason codes or codes
-                    // that do not require special handling, return an empty string.
-                    return ( String.Empty );
-            }
-        }
-
-        /// <summary>
-        /// Enumerates the values.
-        /// </summary>
-        /// <param name="array">The array.</param>
-        /// <returns></returns>
-        private static string EnumerateValues( string[] array )
-        {
-            System.Text.StringBuilder sb = new System.Text.StringBuilder();
-            foreach ( string val in array )
-            {
-                sb.Append( val + "\n" );
-            }
-            return ( sb.ToString() );
         }
 
         /// <summary>
@@ -297,6 +225,34 @@ namespace Rock.CyberSource
             return null;
         }
 
+        /// <summary>
+        /// Processes the error message.
+        /// </summary>
+        /// <param name="reply">The reply.</param>
+        /// <returns></returns>
+        private string ProcessError( ReplyMessage reply )
+        {
+            int reasonCode = int.Parse( reply.reasonCode );
+            switch ( reasonCode )
+            {
+                // Missing field or fields
+                case 101:
+                    return "\nThe following required fields are missing: " + string.Join( "\n", reply.missingField );
+                // Invalid field or fields
+                case 102:
+                    return "\nThe following fields are invalid: " + string.Join("\n", reply.invalidField);
+                        
+                // Insufficient funds
+                case 204:
+                    return "\nInsufficient funds in the account. Please use a different card or select another form of payment.";
+                // Add additional reason codes here that you must handle more specifically.
+                default:
+                    // For all other reason codes, such as unrecognized reason codes or codes
+                    // that do not require special handling, return an empty string.
+                    return "\nPlease double check your payment details.";
+            }
+        }
+
         #region Scheduled Payments
 
         /// <summary>
@@ -317,17 +273,15 @@ namespace Rock.CyberSource
             request.paySubscriptionCreateService = new PaySubscriptionCreateService();
             request.paySubscriptionCreateService.run = "true";
 
-            request.merchantReferenceCode = "RockTransactionCode";
+            request.merchantReferenceCode = new Guid().ToString();
 
-            if ( paymentInfo is CreditCardPaymentInfo )
-            { 
-                // new credit card, make sure it's valid
-                request.ccAuthService = new CCAuthService();
-                request.ccAuthService.run = "true";
-                request.ccAuthService.commerceIndicator = "internet";                
-                request.subscription.paymentMethod = "credit card";
+            if ( paymentInfo is CreditCardPaymentInfo ) 
+            {
                 var cc = paymentInfo as CreditCardPaymentInfo;
                 request.card = GetCard( cc );
+                request.ccAuthService = new CCAuthService();
+                request.ccAuthService.run = "true";                         
+                request.subscription.paymentMethod = "credit card";                
             }
             else if ( paymentInfo is ACHPaymentInfo )
             {
@@ -340,21 +294,38 @@ namespace Rock.CyberSource
             else if ( paymentInfo is ReferencePaymentInfo )
             {
                 var reference = paymentInfo as ReferencePaymentInfo;
-                
-                //request.paySubscriptionCreateService.paymentRequestID = schedule.;
-                request.paySubscriptionCreateService.paymentRequestToken = reference.ReferenceNumber;
+                request.paySubscriptionCreateService.paymentRequestID = reference.ReferenceNumber;                
             }
 
             ReplyMessage reply = SubmitTransaction( request );
             if ( reply != null )
             {
-
+                int? reasonCode = reply.reasonCode.AsInteger();
+                if ( reasonCode != null )
+                {
+                    if ( reasonCode == 100 )
+                    {
+                        var scheduledTransaction = new FinancialScheduledTransaction();
+                        scheduledTransaction.TransactionCode = reply.requestID;
+                        scheduledTransaction.GatewayScheduleId = reply.paySubscriptionCreateReply.subscriptionID;
+                        GetScheduledPaymentStatus( scheduledTransaction, out errorMessage );
+                        return scheduledTransaction;
+                    }
+                    else
+                    {
+                        errorMessage = string.Format( "Your order was not approved.{0}", ProcessError( reply ) );
+                    }
+                }
+                else
+                {
+                    errorMessage = "Invalid transaction response from the financial gateway";
+                }
             }
             else
             {
                 errorMessage = "Invalid response from the financial gateway.";
             }
-            
+
             return null;
         }
 
@@ -452,16 +423,17 @@ namespace Rock.CyberSource
         /// </summary>
         /// <param name="paymentInfo">The payment information.</param>
         /// <returns></returns>
-        private Item GetItems( PaymentInfo paymentInfo )
+        private Item[] GetItems( PaymentInfo paymentInfo )
         {
             // #TODO this should really have a itemized list of charges
-            // List<Item> itemList = new List<Item>();
-
+            List<Item> itemList = new List<Item>();
+            
             Item item = new Item();
             item.id = "0";
             item.unitPrice = paymentInfo.Amount.ToString();
             item.totalAmount = paymentInfo.Amount.ToString();
-            return item;
+            itemList.Add( item );
+            return itemList.ToArray();
         }
 
         /// <summary>
@@ -645,7 +617,7 @@ namespace Rock.CyberSource
                 return null;
             }
         }
-
+        
         #endregion
     }
 }
