@@ -18,7 +18,7 @@ namespace Rock.Web.UI.Controls
     {
         /// <summary>
         /// Gets or sets the custom label suffix to use when generating the css class name.
-        /// the value specified here will be be added to 'label-' when the lable type is Custom.
+        /// The value specified here will be be added to 'label-' when the lable type is Custom.
         /// </summary>
         /// <value>
         /// The text CSS class.
@@ -27,6 +27,19 @@ namespace Rock.Web.UI.Controls
         {
             get { return ViewState["CustomClass"] as string ?? string.Empty; }
             set { ViewState["CustomClass"] = value; }
+        }
+
+        /// <summary>
+        /// Gets or sets the icon class name to use on the label.
+        /// If set, a standard <i class="blah"></i> will be placed in front of the label text.
+        /// </summary>
+        /// <value>
+        /// The icon CSS class name (such as icon-flag, icon-ok, etc.)
+        /// </value>
+        public string IconCssClass
+        {
+            get { return ViewState["IconCssClass"] as string ?? string.Empty; }
+            set { ViewState["IconCssClass"] = value; }
         }
 
         /// <summary>
@@ -77,12 +90,27 @@ namespace Rock.Web.UI.Controls
             if ( this.Visible )
             {
                 string cssClass = LabelType != LabelType.Custom ? LabelType.ConvertToString().ToLower() : CustomClass;
-                if (this.CssClass != string.Empty)
+                if ( !string.IsNullOrEmpty( this.CssClass ) )
                 {
                     cssClass += " " + this.CssClass;
                 }
                 writer.AddAttribute(HtmlTextWriterAttribute.Class, "label label-" + cssClass );
+
+                if ( !string.IsNullOrWhiteSpace( this.ToolTip ) )
+                {
+                    writer.AddAttribute( "title", this.ToolTip );
+                    writer.AddAttribute( "data-toggle", "tooltip" );
+                }
                 writer.RenderBeginTag( HtmlTextWriterTag.Span );
+
+                if ( !string.IsNullOrWhiteSpace( this.IconCssClass ) )
+                {
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, this.IconCssClass );
+                    writer.RenderBeginTag( HtmlTextWriterTag.I );
+                    writer.RenderEndTag();
+                    // add the obligatory space after the <i></i> tag.
+                    writer.Write( " " );
+                }
                 writer.Write( Text );
                 writer.RenderEndTag();
             }

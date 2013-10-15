@@ -16,6 +16,7 @@ using Rock.Model;
 using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Core
 {
@@ -148,10 +149,21 @@ namespace RockWeb.Blocks.Core
                 var communicationItem = e.Row.DataItem as CommunicationItem;
                 if ( communicationItem != null )
                 {
-                    e.Row.FindControl( "bPending" ).Visible = communicationItem.PendingRecipients > 0;
-                    e.Row.FindControl( "bSuccess" ).Visible = communicationItem.SuccessRecipients > 0;
-                    e.Row.FindControl( "bWarning" ).Visible = communicationItem.CancelledRecipients > 0;
-                    e.Row.FindControl( "bFailed" ).Visible = communicationItem.FailedRecipients > 0;
+                    var bPending = e.Row.FindControl( "bPending" ) as Badge;
+                    bPending.Visible = communicationItem.PendingRecipients > 0;
+                    bPending.Text = communicationItem.PendingRecipients.ToString( "N0" );
+
+                    var bSuccess = e.Row.FindControl( "bSuccess" ) as Badge;
+                    bSuccess.Visible = communicationItem.SuccessRecipients > 0;
+                    bSuccess.Text = communicationItem.SuccessRecipients.ToString( "N0" );
+
+                    var bWarning = e.Row.FindControl( "bWarning" ) as Badge;
+                    bWarning.Visible = communicationItem.CancelledRecipients > 0;
+                    bWarning.Text = communicationItem.CancelledRecipients.ToString( "N0" );
+
+                    var bFailed = e.Row.FindControl( "bFailed" ) as Badge;
+                    bFailed.Visible = communicationItem.FailedRecipients > 0;
+                    bFailed.Text = communicationItem.FailedRecipients.ToString( "N0" );
 
                     // Hide delete button if there are any successful recipients
                     e.Row.Cells[7].Controls[0].Visible = communicationItem.SuccessRecipients <= 0;
