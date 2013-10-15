@@ -58,6 +58,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         ProcessFamily();
                         lvFamily.DataSource = familyList;
                         lvFamily.DataBind();
+                        rGridPersonResults.PageSize = 3;
                     }
                     else
                     {
@@ -108,6 +109,21 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 lvVisitor.DataSource = null;
                 lvVisitor.DataBind();  
             }
+
+            dpPersonPager.Visible = true;
+            dpPersonPager.SetPageProperties( 0, dpPersonPager.MaximumRows, false );
+            if ( lvPerson.DataSource == null )
+            {
+                dpPersonPager.Visible = false;
+            }
+            lvPerson.DataBind();
+            dpVisitorPager.Visible = true;
+            dpVisitorPager.SetPageProperties( 0, dpVisitorPager.MaximumRows, false );
+            if ( lvVisitor.DataSource == null )
+            {
+                dpVisitorPager.Visible = false;
+            }
+            lvVisitor.DataBind();
 
             pnlSelectPerson.Update();
             pnlSelectVisitor.Update();
@@ -319,48 +335,46 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbAddNewPerson_Click( object sender, EventArgs e )
         {
-            var test = dpDOBSearch.SelectedDate;
-
             if ( string.IsNullOrEmpty( tbFirstNameSearch.Text ) || string.IsNullOrEmpty( tbLastNameSearch.Text ) || string.IsNullOrEmpty( dpDOBSearch.Text ) || ddlGenderSearch.SelectedValueAsInt() == 0 )
             {
                 mpeAddPerson.Show();
             }
             else
             {
-                var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
-                if ( family != null )
+                var checkInFamily = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
+                if ( checkInFamily == null )
                 {
-                    var person = CreatePerson( tbFirstNameSearch.Text, tbLastNameSearch.Text, dpDOBSearch.SelectedDate, (int)ddlGenderSearch.SelectedValueAsEnum<Gender>(),
-                        ddlAbilitySearch.SelectedValue, ddlAbilitySearch.SelectedItem.Attributes["optiongroup"] );
+                    checkInFamily = new CheckInFamily();
+                    var familyGroup = CreateFamily( tbLastNameSearch.Text );
 
-                    var checkInPerson = new CheckInPerson();
-                    checkInPerson.Person = person.Clone( false );
-                    LoadGroupTypes( checkInPerson );
-                    checkInPerson.Selected = true;
-
-                    if ( personVisitorType.Value == "Person" )
-                    {   // Family Member
-                        var groupMember = AddGroupMember( family.Group, person );
-                        checkInPerson.FamilyMember = true;                        
-                        hfSelectedPerson.Value += person.Id + ",";
-                    }
-                    else
-                    {   // Visitor
-                        AddVisitorGroupMemberRoles( family, person.Id );
-                        checkInPerson.FamilyMember = false;
-                        hfSelectedVisitor.Value += person.Id + ",";
-                    }
-
-                    checkInPerson.Selected = true;
-                    family.People.Add( checkInPerson );
-                    lvPerson.DataSource = family.People.Where( p => p.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
-                    lvPerson.DataBind();
-                    pnlSelectPerson.Update();
-
-                    lvVisitor.DataSource = family.People.Where( p => !p.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
-                    lvVisitor.DataBind();
-                    pnlSelectVisitor.Update();                    
+                    checkInFamily.Group = familyGroup;
+                    checkInFamily.Caption = familyGroup.Name;
                 }
+                var checkInPerson = new CheckInPerson();
+                checkInPerson.Person = CreatePerson( tbFirstNameSearch.Text, tbLastNameSearch.Text, dpDOBSearch.SelectedDate, (int)ddlGenderSearch.SelectedValueAsEnum<Gender>(),
+                    ddlAbilitySearch.SelectedValue, ddlAbilitySearch.SelectedItem.Attributes["optiongroup"] );
+
+                if ( personVisitorType.Value == "Person" )
+                {   // Family Member
+                    var groupMember = AddGroupMember( checkInFamily.Group.Id, checkInPerson.Person );
+                    checkInPerson.FamilyMember = true;                        
+                    hfSelectedPerson.Value += checkInPerson.Person.Id + ",";
+                }
+                else
+                {   // Visitor
+                    AddVisitorGroupMemberRoles( checkInFamily, checkInPerson.Person.Id );
+                    checkInPerson.FamilyMember = false;
+                    hfSelectedVisitor.Value += checkInPerson.Person.Id + ",";
+                }
+
+                checkInPerson.Selected = true;
+                checkInFamily.People.Add( checkInPerson );
+                checkInFamily.SubCaption = string.Join( ",", checkInFamily.People.Select( p => p.Person.FirstName ) );
+                checkInFamily.Selected = true;
+                CurrentCheckInState.CheckIn.Families.Add( checkInFamily );
+
+                ProcessFamily();
+                RefreshFamily();
             }
         }
      
@@ -420,25 +434,14 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 newFamilyList.Add( newPerson );
             }
 
-            // create family group
-            var familyGroup = new Group();
-            familyGroup.Name = newFamilyList.Where( p => p.BirthDate.HasValue ).OrderBy( p => p.BirthDate ).Select( p => p.LastName ).FirstOrDefault() + " Family";
-            familyGroup.GroupTypeId = new GroupTypeService().Get( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Id;
-            familyGroup.IsSecurityRole = false;
-            familyGroup.IsSystem = false;
-            familyGroup.IsActive = true;
-            Rock.Data.RockTransactionScope.WrapTransaction( () =>
-            {
-                var gs = new GroupService();
-                gs.Add( familyGroup, CurrentPersonId );
-                gs.Save( familyGroup, CurrentPersonId );
-            } );
+            var lastName = newFamilyList.Where( p => p.BirthDate.HasValue ).OrderBy( p => p.BirthDate ).Select( p => p.LastName ).FirstOrDefault();
+            var familyGroup = CreateFamily( lastName );
 
             // create people and add to checkin
             foreach ( NewPerson np in newFamilyList.Where( np => np.IsValid() ) )
             {
                 var person = CreatePerson( np.FirstName, np.LastName, np.BirthDate, (int)np.Gender, np.Ability, np.AbilityGroup );
-                var groupMember = AddGroupMember( familyGroup, person );
+                var groupMember = AddGroupMember( familyGroup.Id, person );
                 familyGroup.Members.Add( groupMember );
                 checkInPerson = new CheckInPerson();
                 checkInPerson.Person = person;
@@ -456,22 +459,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
             CurrentCheckInState.CheckIn.Families.Add( checkInFamily );
 
             ProcessFamily();
-
-            lvFamily.DataSource = CurrentCheckInState.CheckIn.Families.OrderBy( f => f.Caption ).ToList();
-            lvFamily.DataBind();
-            pnlSelectFamily.Update();
-
-            if ( divNothingFound.Visible )
-            {
-                lblFamilyTitle.InnerText = "Search Results";
-                lbNext.Enabled = true;
-                lbNext.Visible = true;
-                pnlSelectFamily.Visible = true;
-                pnlSelectPerson.Visible = true;
-                pnlSelectVisitor.Visible = true;
-                actions.Visible = true;
-                divNothingFound.Visible = false;
-            }
+            RefreshFamily();
         }
 
         /// <summary>
@@ -505,31 +493,24 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 var family = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).FirstOrDefault();
                 if ( family != null )
                 {
-                    var selectedPeopleList = ( hfSelectedPerson.Value + hfSelectedVisitor.Value ).SplitDelimitedValues().Select( int.Parse ).ToList();
-                    var alreadyInList = selectedPeopleList.Contains( personId );
-                    if ( !alreadyInList )
+                    var checkInPerson = new CheckInPerson();
+                    checkInPerson.Person = new PersonService().Get( personId ).Clone( false );
+                    var isPersonInFamily = family.People.Any( p => p.Person.Id == checkInPerson.Person.Id );
+                    if ( !isPersonInFamily )
                     {
-                        var checkInPerson = new CheckInPerson();
-                        checkInPerson.Person = new PersonService().Get( personId ).Clone( false );
-                        LoadGroupTypes( checkInPerson );
-                        checkInPerson.Selected = true;
                         if ( personVisitorType.Value == "Person" )
                         {
                             // this came from Add Person
-                            var isPersonInFamily = family.People.Any( p => p.Person.Id == checkInPerson.Person.Id );
-                            if ( !isPersonInFamily )
+                            // because this person is being added to this family, we should make sure his/her groupmember record reflects that.                            
+                            var groupMember = groupMemberService.GetByPersonId( personId ).FirstOrDefault();
+                            groupMember.GroupId = family.Group.Id;
+                            Rock.Data.RockTransactionScope.WrapTransaction( () =>
                             {
-                                // because this person is being added to this family, we should make sure his/her groupmember record reflects that.                            
-                                var groupMember = groupMemberService.GetByPersonId( personId ).FirstOrDefault();
-                                groupMember.GroupId = family.Group.Id;
-                                Rock.Data.RockTransactionScope.WrapTransaction( () =>
-                                {
-                                    groupMemberService.Save( groupMember, CurrentPersonId );
-                                } );
+                                groupMemberService.Save( groupMember, CurrentPersonId );
+                            } );
 
-                                checkInPerson.FamilyMember = true;
-                                hfSelectedPerson.Value += personId + ",";
-                            }
+                            checkInPerson.FamilyMember = true;
+                            hfSelectedPerson.Value += personId + ",";
                         }
                         else
                         {
@@ -543,13 +524,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
                         checkInPerson.Selected = true;
                         family.People.Add( checkInPerson );
-                        lvPerson.DataSource = family.People.Where( p => p.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
-                        lvPerson.DataBind();
-                        pnlSelectPerson.Update();
-
-                        lvVisitor.DataSource = family.People.Where( p => !p.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
-                        lvVisitor.DataBind();
-                        pnlSelectVisitor.Update();                        
+                        ProcessFamily();
                     }
                 }
                 else
@@ -743,12 +718,12 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="familyGroup">The family group.</param>
         /// <param name="person">The person.</param>
         /// <returns></returns>
-        protected GroupMember AddGroupMember( Group familyGroup, Person person )
+        protected GroupMember AddGroupMember( int familyGroupId, Person person )
         {
             GroupMember groupMember = new GroupMember().Clone( false );
             GroupMemberService groupMemberService = new GroupMemberService();
             groupMember.IsSystem = false;
-            groupMember.GroupId = familyGroup.Id;
+            groupMember.GroupId = familyGroupId;
             groupMember.PersonId = person.Id;
             if ( person.Age >= 18 )
             {
@@ -914,65 +889,44 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         /// <summary>
-        /// Loads the group types.
+        /// Creates the family.
         /// </summary>
-        /// <param name="checkInPerson">The check in person.</param>
-        protected void LoadGroupTypes( CheckInPerson checkInPerson )
+        /// <param name="FamilyName">Name of the family.</param>
+        /// <returns></returns>
+        protected Group CreateFamily( string FamilyName )
         {
-            // Load the GroupTypes for this person like the LoadGroupTypes activity would do when this page is first loaded.
-            foreach ( var kioskGroupType in CurrentCheckInState.Kiosk.FilteredGroupTypes( CurrentCheckInState.ConfiguredGroupTypes ) )
+            var familyGroup = new Group();
+            familyGroup.Name = FamilyName + " Family";
+            familyGroup.GroupTypeId = new GroupTypeService().Get( new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ) ).Id;
+            familyGroup.IsSecurityRole = false;
+            familyGroup.IsSystem = false;
+            familyGroup.IsActive = true;
+            Rock.Data.RockTransactionScope.WrapTransaction( () =>
             {
-                if ( kioskGroupType.KioskGroups.SelectMany( g => g.KioskLocations ).Any( l => l.Location.IsActive ) )
-                {
-                    if ( !checkInPerson.GroupTypes.Any( g => g.GroupType.Id == kioskGroupType.GroupType.Id ) )
-                    {
-                        var checkinGroupType = new CheckInGroupType();
-                        checkinGroupType.GroupType = kioskGroupType.GroupType.Clone( false );
-                        checkinGroupType.GroupType.CopyAttributesFrom( kioskGroupType.GroupType );
-                        checkInPerson.GroupTypes.Add( checkinGroupType );
-                    }
-                }
-            }
+                var gs = new GroupService();
+                gs.Add( familyGroup, CurrentPersonId );
+                gs.Save( familyGroup, CurrentPersonId );
+            } );
 
-            double? age = checkInPerson.Person.AgePrecise;
+            return familyGroup;
+        }
 
-            foreach ( var groupType in checkInPerson.GroupTypes.ToList() )
+        protected void RefreshFamily()
+        {
+            lvFamily.DataSource = CurrentCheckInState.CheckIn.Families.OrderBy( f => f.Caption ).ToList();
+            lvFamily.DataBind();
+            pnlSelectFamily.Update();
+
+            if ( divNothingFound.Visible )
             {
-                string ageRange = groupType.GroupType.GetAttributeValue( "AgeRange" ) ?? string.Empty;
-                string[] ageRangePair = ageRange.Split( new char[] { ',' }, StringSplitOptions.None );
-                string minAgeValue = null;
-                string maxAgeValue = null;
-                if ( ageRangePair.Length == 2 )
-                {
-                    minAgeValue = ageRangePair[0];
-                    maxAgeValue = ageRangePair[1];
-                }
-
-                if ( minAgeValue != null )
-                {
-                    double minAge = 0;
-                    if ( double.TryParse( minAgeValue, out minAge ) )
-                    {
-                        if ( !age.HasValue || age < minAge )
-                        {
-                            checkInPerson.GroupTypes.Remove( groupType );
-                            continue;
-                        }
-                    }
-                }
-
-                if ( maxAgeValue != null )
-                {
-                    double maxAge = 0;
-                    if ( double.TryParse( maxAgeValue, out maxAge ) )
-                    {
-                        if ( !age.HasValue || age > maxAge )
-                        {
-                            checkInPerson.GroupTypes.Remove( groupType );
-                            continue;
-                        }
-                    }
-                }
+                lblFamilyTitle.InnerText = "Search Results";
+                lbNext.Enabled = true;
+                lbNext.Visible = true;
+                pnlSelectFamily.Visible = true;
+                pnlSelectPerson.Visible = true;
+                pnlSelectVisitor.Visible = true;
+                actions.Visible = true;
+                divNothingFound.Visible = false;
             }
         }
 

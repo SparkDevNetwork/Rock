@@ -35,14 +35,30 @@ INSERT INTO [dbo].[GroupType]
            ,[Name]
            ,[Description]
            ,[DefaultGroupRoleId]
+           ,[AllowMultipleLocations]
+           ,[ShowInGroupList]
+           ,[ShowInNavigation]
            ,[IconCssClass]
+           ,[TakesAttendance]
+           ,[AttendanceRule]
+           ,[AttendancePrintTo]
+           ,[Order]
+           ,[LocationSelectionMode]
            ,[Guid])
      VALUES
            (0
            ,'Neighborhood Group Region'
            ,'The Neighborhood Group Regions'
            ,null
+           ,0
+           ,1
+           ,0
            ,'icon-globe'
+           ,0
+           ,0
+           ,0
+           ,0
+           ,0
            ,@groupTypeNHRegionGuid)
 
 select @regionGroupTypeId = @@IDENTITY
@@ -52,14 +68,30 @@ INSERT INTO [dbo].[GroupType]
            ,[Name]
            ,[Description]
            ,[DefaultGroupRoleId]
+           ,[AllowMultipleLocations]
+           ,[ShowInGroupList]
+           ,[ShowInNavigation]
            ,[IconCssClass]
+           ,[TakesAttendance]
+           ,[AttendanceRule]
+           ,[AttendancePrintTo]
+           ,[Order]
+           ,[LocationSelectionMode]
            ,[Guid])
      VALUES
            (0
            ,'Neighborhood Group Area'
            ,'The Neighborhood Group Areas'
            ,null
+           ,0
+           ,1
+           ,0
            ,'icon-group'
+           ,0
+           ,0
+           ,0
+           ,0
+           ,0
            ,@groupTypeNHAreaGuid)
 
 select @areaGroupTypeId = @@IDENTITY
@@ -69,14 +101,30 @@ INSERT INTO [dbo].[GroupType]
            ,[Name]
            ,[Description]
            ,[DefaultGroupRoleId]
+           ,[AllowMultipleLocations]
+           ,[ShowInGroupList]
+           ,[ShowInNavigation]
            ,[IconCssClass]
+           ,[TakesAttendance]
+           ,[AttendanceRule]
+           ,[AttendancePrintTo]
+           ,[Order]
+           ,[LocationSelectionMode]
            ,[Guid])
      VALUES
            (0
            ,'Neighborhood Group'
            ,'The Neighborhood Groups'
            ,null
+           ,0
+           ,1
+           ,0
            ,'icon-home'
+           ,0
+           ,0
+           ,0
+           ,0
+           ,0
            ,@groupTypeNHGroupGuid)
 
 select @groupTypeId = @@IDENTITY
@@ -111,8 +159,8 @@ while @regionCounter < @maxRegions
 
         select @groupDescription = 'Description of ' + @groupName;
         
-        INSERT INTO [dbo].[Group] ([IsSystem],[ParentGroupId],[GroupTypeId],[CampusId],[Name],[Description],[IsSecurityRole],[IsActive],[Guid])
-                            VALUES (0,null,@regionGroupTypeId,@campusId,@groupName,@groupDescription,0,1,@groupGuid);
+        INSERT INTO [dbo].[Group] ([IsSystem],[ParentGroupId],[GroupTypeId],[CampusId],[Name],[Description],[IsSecurityRole],[IsActive],[Order],[Guid])
+                            VALUES (0,null,@regionGroupTypeId,@campusId,@groupName,@groupDescription,0,1,0,@groupGuid);
 
         select @regionGroupId = @@IDENTITY;
         select @areaCounter = 0
@@ -131,8 +179,8 @@ while @regionCounter < @maxRegions
 					set @areaCounter = 999; 
 				end;
 
-                INSERT INTO [dbo].[Group] ([IsSystem],[ParentGroupId],[GroupTypeId],[CampusId],[Name],[Description],[IsSecurityRole],[IsActive],[Guid])
-                                    VALUES (0,@regionGroupId,@areaGroupTypeId,@campusId,@groupName,@groupDescription,0,1,@groupGuid);
+                INSERT INTO [dbo].[Group] ([IsSystem],[ParentGroupId],[GroupTypeId],[CampusId],[Name],[Description],[IsSecurityRole],[IsActive],[Order],[Guid])
+                                    VALUES (0,@regionGroupId,@areaGroupTypeId,@campusId,@groupName,@groupDescription,0,1,0,@groupGuid);
 
                 select @areaGroupId = @@IDENTITY;
 
@@ -153,8 +201,8 @@ while @regionCounter < @maxRegions
 							set @groupCounter = 999; 
 						end;
         
-                        INSERT INTO [dbo].[Group] ([IsSystem],[ParentGroupId],[GroupTypeId],[CampusId],[Name],[Description],[IsSecurityRole],[IsActive],[Guid])
-                                            VALUES (0,@areaGroupId,@groupTypeId,@campusId,@groupName,@groupDescription,0,1,@groupGuid);
+                        INSERT INTO [dbo].[Group] ([IsSystem],[ParentGroupId],[GroupTypeId],[CampusId],[Name],[Description],[IsSecurityRole],[IsActive],[Order],[Guid])
+                                            VALUES (0,@areaGroupId,@groupTypeId,@campusId,@groupName,@groupDescription,0,1,0,@groupGuid);
        
                         set @groupCounter += 1;
                     end;

@@ -77,7 +77,6 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     ", CurrentKioskId, CurrentGroupTypeIds.AsDelimited( "," ) );
                     phScript.Controls.Add( new LiteralControl( script ) );
 
-                    CurrentWorkflow = null;
                     tbSearchBox.Focus();
                     SaveState();
                 }
@@ -164,7 +163,17 @@ namespace RockWeb.Blocks.CheckIn.Attended
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void lbBack_Click( object sender, EventArgs e )
         {
-            NavigateToPreviousPage();
+            bool selectedFamilyExists = CurrentCheckInState.CheckIn.Families.Where( f => f.Selected ).Any();
+
+            if ( !selectedFamilyExists )
+            {
+                maWarning.Show( "There is not a selected family to go back to.", ModalAlertType.Warning );
+                return;
+            }
+            else
+            {
+                NavigateToPreviousPage();
+            }
         }
 
         #endregion

@@ -17,123 +17,52 @@
             </div>
             <div id="treeview-content">
             </div>
-            <script>
-                function onSelect(e) {
-                    var dataItem = this.dataItem(e.node);
-                    showItemDetails(dataItem);
-                }
+            <script type="text/javascript">
+                $(function () {
+                    var $selectedId = $('#hfSelectedCategoryId'),
+                        $expandedIds = $('#hfInitialCategoryParentIds'),
+                        _mapCategories = function (arr) {
+                            return $.map(arr, function (item) {
+                                var node = {
+                                    id: item.Guid || item.Id,
+                                    name: item.Name || item.Title,
+                                    iconCssClass: item.IconCssClass,
+                                    parentId: item.ParentId,
+                                    hasChildren: item.HasChildren,
+                                    isCategory: item.IsCategory
+                                };
 
-                function showItemDetails(dataItem) {
-                    var itemSearch = '?' + (dataItem.IsCategory ? 'CategoryId' : '<%=PageParameterName%>') + '=' + dataItem.Id
-
-                    if (dataItem.IsCategory) {
-                        $('#hfSelectedCategoryId').val(dataItem.Id);
-                    }
-                    else {
-                        $('#hfSelectedCategoryId').val('');
-                    }
-
-                    if (window.location.search != itemSearch) {
-                        window.location.search = itemSearch;
-                    }
-                }
-
-                function findItemInData(data, isCategory, itemId) {
-                    for (var i = 0; i < data.length; i++) {
-                        dataItem = data[i];
-                        if (dataItem.id == itemId && (dataItem.IsCategory == isCategory)) {
-                            return dataItem;
-                        }
-                        if (dataItem.hasChildren) {
-                            var childrenData = dataItem.children.data();
-                            var childItemData = findItemInData(childrenData, isCategory, itemId);
-                            if (childItemData) {
-                                return childItemData;
-                            }
-                        }
-                    }
-                }
-
-                function findChildItemInTree(treeViewData, isCategory, itemId, itemParentIds) {
-
-                    if (itemParentIds != '') {
-                        var itemParentList = itemParentIds.split(",");
-                        for (var i = 0; i < itemParentList.length; i++) {
-                            var parentItemId = itemParentList[i];
-                            var parentItem = findItemInData(treeViewData.dataSource.data(), true, parentItemId);
-                            var parentNodeItem = treeViewData.findByUid(parentItem.uid);
-                            if (!parentItem.expanded && parentItem.hasChildren) {
-                                // if not yet expand, expand and return null (which will fetch more data and fire the databound event)
-                                treeViewData.expand(parentNodeItem);
-                                return null;
-                            }
-                        }
-                    }
-
-                    var data = treeViewData.dataSource.data();
-                    var dataItem = findItemInData(data, isCategory, itemId);
-                    return dataItem;
-
-                    return null;
-                }
-
-
-                function onDataBound(e) {
-                    // select the item specified in the page param in the treeview if there isn't one currently selected
-                    var treeViewData = $('#treeview-content').data("kendoTreeView");
-                    var selectedNode = treeViewData.select();
-                    var nodeData = this.dataItem(selectedNode);
-                    if (!nodeData) {
-                        var initialEntityIsCategory = ($('#hfInitialEntityIsCategory').val() === 'True');
-                        var initialItemId = $('#hfInitialItemId').val();
-                        var initialCategoryParentIds = $('#hfInitialCategoryParentIds').val();
-                        var initialItem = findChildItemInTree(treeViewData, initialEntityIsCategory, initialItemId, initialCategoryParentIds);
-                        if (initialItemId) {
-                            if (initialItem) {
-                                var firstItem = treeViewData.findByUid(initialItem.uid);
-                                var firstDataItem = this.dataItem(firstItem);
-                                if (firstDataItem) {
-                                    treeViewData.select(firstItem);
-                                    showItemDetails(firstDataItem);
+                                if (item.Children && typeof item.Children.length === 'number') {
+                                    node.children = _mapCategories(item.Children);
                                 }
+
+                                return node;
+                            });
+                        };
+                    
+                    $('#treeview-content')
+                        .on('rockTree:selected', function (e, id) {
+                            var $node = $('[data-id="' + id + '"]'),
+                                isCategory = $node.attr('data-iscategory') === 'true',
+                                itemSearch = '?' + (isCategory ? 'CategoryId' : '<%= PageParameterName %>') + '=' + id;
+
+                            $selectedId.val(id);
+                            
+                            if (window.location.search !== itemSearch) {
+                                window.location.search = itemSearch;
                             }
-                        }
-                    }
-                }
-
-                var restUrl = "<%=ResolveUrl( "~/api/categories/getchildren/" ) %>";
-
-                var dataList = new kendo.data.HierarchicalDataSource({
-                    transport: {
-                        read: {
-                            url: function (options) {
-                                var requestUrl = restUrl + (options.id || 0) + '<%=RestParms%>';
-                                return requestUrl;
+                        })
+                        .rockTree({
+                            restUrl: '<%= ResolveUrl( "~/api/categories/getchildren/" ) %>',
+                            restParams: '<%= RestParms %>',
+                            mapping: {
+                                include: ['isCategory'],
+                                mapData: _mapCategories
                             },
-                            error: function (xhr, status, error) {
-                                {
-                                    alert(status + ' [' + error + ']: ' + xhr.responseText);
-                                }
-                            }
-                        }
-                    },
-                    schema: {
-                        model: {
-                            id: 'Id',
-                            hasChildren: 'HasChildren',
-                            isCategory: 'IsCategory'
-                        }
-                    }
+                            selectedIds: $selectedId.val() ? $selectedId.val().split(',') : null,
+                            expandedIds: $expandedIds.val() ? $expandedIds.val().split(',') : null
+                        });
                 });
-
-                    $('#treeview-content').kendoTreeView({
-                        template: "<i class='#= item.IconCssClass #'></i> #= item.Name #",
-                        dataSource: dataList,
-                        dataTextField: 'Name',
-                        dataImageUrlField: 'IconSmallUrl',
-                        select: onSelect,
-                        dataBound: onDataBound
-                    });
             </script>
         </div>
     </ContentTemplate>
