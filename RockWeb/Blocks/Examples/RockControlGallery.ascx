@@ -275,7 +275,7 @@
                 a little easier just by setting the <code>IconCssClass</code> property.</p>
 
             <div runat="server" class="r-example">
-                <Rock:HighlightLabel ID="HighlightLabel2" runat="server" LabelType="Danger" IconClass="icon-flag" Text="errors" />
+                <Rock:HighlightLabel ID="HighlightLabel2" runat="server" LabelType="Danger" IconCssClass="icon-flag" Text="errors" />
             </div>
 
             <h2>Rock:Toggle</h2>
