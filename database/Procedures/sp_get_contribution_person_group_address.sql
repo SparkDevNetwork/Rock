@@ -35,39 +35,60 @@ begin
             )
     )
 
-    select * from (
-    select distinct
-        null [PersonId], 
-        [g].[Id] [GroupId] 
-    from 
-        [Person] [p]
-    inner join 
-        [Group] [g]
-    on 
-        [p].[GivingGroupId] = [g].[Id]
-    where [p].[Id] in (select * from tranListCTE)
-    
-    union
-
-    select  
-        [p].[Id] [PersonId],
-        [g].[Id] [GroupId]
-    from
-        [Person] [p]
+    select 
+        [pg].[PersonId],
+        [pg].[GroupId],
+        'TODO: Address Person Names' [AddressPersonNames],
+        [l].[Street1],
+        [l].[Street2],
+        [l].[City],
+        [l].[State],
+        [l].[Zip]
+    from (
+        select distinct
+            null [PersonId], 
+            [g].[Id] [GroupId]
+        from 
+            [Person] [p]
+        inner join 
+            [Group] [g]
+        on 
+            [p].[GivingGroupId] = [g].[Id]
+        where [p].[Id] in (select * from tranListCTE)
+        union
+        select  
+            [p].[Id] [PersonId],
+            [g].[Id] [GroupId]
+        from
+            [Person] [p]
+        join 
+            [GroupMember] [gm]
+        on 
+            [gm].[PersonId] = [p].[Id]
+        join 
+            [Group] [g]
+        on 
+            [gm].[GroupId] = [g].[Id]
+        where
+            [p].[GivingGroupId] is null
+        and
+            [g].[GroupTypeId] = (select Id from GroupType where Guid = '790E3215-3B10-442B-AF69-616C0DCB998E' /* GROUPTYPE_FAMILY */)
+    ) [pg]
     join 
-        [GroupMember] [gm]
+        [GroupLocation] [gl] 
     on 
-        [gm].[PersonId] = [p].[Id]
-    join 
-        [Group] [g]
+        [gl].[GroupId] = [pg].[GroupId]
+    join
+        [Location] [l]
     on 
-        [gm].[GroupId] = [g].[Id]
-    where
-        [p].[GivingGroupId] is null
+        [l].[Id] = [gl].[LocationId]
+    where 
+        [gl].IsMailing = 1
     and
-        [g].[GroupTypeId] = (select Id from GroupType where Guid = '790E3215-3B10-442B-AF69-616C0DCB998E')
-    ) [i]
-    order by [i].[PersonId], [i].[GroupId]
+        [gl].[GroupLocationTypeValueId] = (select Id from DefinedValue where Guid = '8C52E53C-2A66-435A-AE6E-5EE307D9A0DC' /* LOCATION_TYPE_HOME */)
+    
+
+    
 
 end
 go
