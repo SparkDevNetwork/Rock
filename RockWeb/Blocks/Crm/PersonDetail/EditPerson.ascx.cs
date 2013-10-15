@@ -10,6 +10,7 @@ using System.Linq;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Constants;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -34,6 +35,17 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             rblStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_STATUS ) ) );
             ddlRecordStatus.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS ) ) );
             ddlReason.BindToDefinedType( DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS_REASON ) ), true );
+
+            ddlGivingGroup.Items.Clear();
+            ddlGivingGroup.Items.Add(new ListItem(None.Text, None.IdValue));
+            if ( Person != null )
+            {
+                var personService = new PersonService();
+                foreach ( var family in personService.GetFamilies( Person ) )
+                {
+                    ddlGivingGroup.Items.Add( new ListItem( family.Name, family.Id.ToString() ) );
+                }
+            }
         }
 
         /// <summary>
@@ -123,7 +135,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 .ForEach( n => person.PhoneNumbers.Remove( n ) );
 
             person.Email = tbEmail.Text;
-            
+
+            person.GivingGroupId = ddlGivingGroup.SelectedValueAsId();
+
             person.RecordStatusValueId = ddlRecordStatus.SelectedValueAsInt();
             person.RecordStatusReasonValueId = ddlReason.SelectedValueAsInt();
 
@@ -160,17 +174,18 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             rblMaritalStatus.SelectedValue = Person.MaritalStatusValueId.HasValue ? Person.MaritalStatusValueId.Value.ToString() : string.Empty;
             rblStatus.SelectedValue = Person.PersonStatusValueId.HasValue ? Person.PersonStatusValueId.Value.ToString() : string.Empty;
             tbEmail.Text = Person.Email;
+
             ddlRecordStatus.SelectedValue = Person.RecordStatusValueId.HasValue ? Person.RecordStatusValueId.Value.ToString() : string.Empty;
             ddlReason.SelectedValue = Person.RecordStatusReasonValueId.HasValue ? Person.RecordStatusReasonValueId.Value.ToString() : string.Empty;
 
             var phoneNumbers = new List<PhoneNumber>();
             var phoneNumberTypes = DefinedTypeCache.Read( new Guid( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE ) );
-            if (phoneNumberTypes.DefinedValues.Any())
+            if ( phoneNumberTypes.DefinedValues.Any() )
             {
-                foreach(var phoneNumberType in phoneNumberTypes.DefinedValues)
+                foreach ( var phoneNumberType in phoneNumberTypes.DefinedValues )
                 {
                     var phoneNumber = Person.PhoneNumbers.FirstOrDefault( n => n.NumberTypeValueId == phoneNumberType.Id );
-                    if (phoneNumber == null)
+                    if ( phoneNumber == null )
                     {
                         var numberType = new DefinedValue();
                         numberType.Id = phoneNumberType.Id;
@@ -186,7 +201,8 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 rContactInfo.DataBind();
             }
 
-        }
+            ddlGivingGroup.SetValue( Person.GivingGroupId );
 
+        }
     }
 }
