@@ -3,6 +3,7 @@
     var RockTree = function (element, options) {
             this.$el = $(element);
             this.options = options;
+            this.selectedNodes = [];
             this.events = $({});
         },
 		_findNodeById = function (id, array) {
