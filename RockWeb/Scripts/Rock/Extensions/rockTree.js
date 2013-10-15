@@ -126,6 +126,9 @@
                 onProgressNotification = function () {
                     var numberInQueue = Object.keys(inProgress).length;
 
+                    // If we've drained the queue of all items to prefetch...
+                    // And there are no requests in queue currentling being fetched...
+                    // And we have not already resolved the deferred...
                     if (toExpand.length === 0 && numberInQueue === 0 && dfd.state() !== 'resolved') {
                         dfd.resolve();
                     }
@@ -134,7 +137,7 @@
                     var restUrl = self.options.restUrl + parentId;
 
                     if (self.options.restParams) {
-                        restUrl += '/' + self.options.restParams;
+                        restUrl += self.options.restParams;
                     }
                     
                     return $.ajax({
