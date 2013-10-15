@@ -310,7 +310,6 @@ namespace Rock.CyberSource
         public override FinancialScheduledTransaction AddScheduledPayment( PaymentSchedule schedule, PaymentInfo paymentInfo, out string errorMessage )
         {
             errorMessage = string.Empty;
-
             RequestMessage request = GetMerchantInfo();
             request.billTo = GetBillTo( paymentInfo );
             request.purchaseTotals = GetTotals( paymentInfo );
@@ -318,7 +317,9 @@ namespace Rock.CyberSource
 
             request.paySubscriptionCreateService = new PaySubscriptionCreateService();
             request.paySubscriptionCreateService.run = "true";
-            
+
+            request.merchantReferenceCode = "RockTransactionCode";
+
             if ( paymentInfo is CreditCardPaymentInfo )
             { 
                 // new credit card, make sure it's valid
@@ -340,13 +341,21 @@ namespace Rock.CyberSource
             else if ( paymentInfo is ReferencePaymentInfo )
             {
                 var reference = paymentInfo as ReferencePaymentInfo;
-                request.paySubscriptionCreateService.paymentRequestID = reference.ReferenceNumber;
-                //request.paySubscriptionCreateService.paymentRequestToken = reference.ReferenceNumber;
                 
-
+                //request.paySubscriptionCreateService.paymentRequestID = schedule.;
+                request.paySubscriptionCreateService.paymentRequestToken = reference.ReferenceNumber;
             }
 
-            errorMessage = string.Empty;
+            ReplyMessage reply = SubmitTransaction( request );
+            if ( reply != null )
+            {
+
+            }
+            else
+            {
+                errorMessage = "Invalid response from the financial gateway.";
+            }
+            
             return null;
         }
 
@@ -547,8 +556,6 @@ namespace Rock.CyberSource
                 Environment.OSVersion.Version.ToString() + "-CLR" +
                 Environment.Version.ToString();
 
-            request.merchantReferenceCode = "RockTransactionID";
-            
             return request;
         }
 
