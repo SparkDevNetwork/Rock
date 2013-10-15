@@ -43,7 +43,7 @@ namespace Rock.Workflow.Action.CheckIn
                 foreach ( var person in family.People.Where( p => p.Selected ) )
                 {
                     person.Person.LoadAttributes();
-                    string personAbilityLevel = person.Person.GetAttributeValue( "AbilityLevel" );
+                    string personAbilityLevel = person.Person.GetAttributeValue( "AbilityLevel" ).ToUpper();
                     if ( string.IsNullOrWhiteSpace( personAbilityLevel ) )
                     {
                         continue;

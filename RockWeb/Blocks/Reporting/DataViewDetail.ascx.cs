@@ -725,7 +725,13 @@ $(document).ready(function() {
         {
             var dataViewFilter = new DataViewFilter();
             dataViewFilter.ExpressionType = FilterExpressionType.GroupAll;
+
             BindDataTransformations();
+
+            var emptyFilter = new DataViewFilter();
+            emptyFilter.ExpressionType = FilterExpressionType.Filter;
+            dataViewFilter.ChildFilters.Add( emptyFilter );
+
             CreateFilterControl( ddlEntityType.SelectedValueAsInt(), dataViewFilter, false );
         }
 

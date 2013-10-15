@@ -7725,11 +7725,10 @@ body {
 .attended .btn-primary:active[disabled] {
   background: #1b0e0e;
 }
-.attended .input {
+.attended .checkin-phone-entry {
   font-weight: 600;
-  font-size: 2em;
-  height: 1.5em;
   margin-top: 25%;
+  width: 100%;
 }
 .attended .nothing-eligible {
   background: rgba(0, 0, 0, 0.25);
@@ -7786,7 +7785,7 @@ body {
   top: 0;
 }
 .attended.modal-foreground {
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.9);
   width: 80%;
   height: 80%;
   -moz-border-radius: 10px;

@@ -326,12 +326,11 @@ body {
     background: darken(@btn-primary-bg, 15%); 
 }
 
-.attended .input 
+.attended .checkin-phone-entry 
 {
     font-weight: @font-weight-semibold;
-    font-size: 2em;
-    height: 1.5em;
     margin-top: 25%;
+    width: 100%;
 }
 
 .attended .nothing-eligible
@@ -402,7 +401,7 @@ body {
 
 .attended.modal-foreground
 {
-    background: rgba(255,255,255,.8);
+    background: rgba(255,255,255,.9);
     width: 80%;
     height: 80%;
     -moz-border-radius: 10px;
@@ -464,4 +463,9 @@ body {
 {
     width: 75%;
     margin: 0 auto;
+}
+
+.attended.modal-foreground .checkin-body .row
+{
+    margin-bottom: 10px;
 }
