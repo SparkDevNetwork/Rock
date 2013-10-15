@@ -9,7 +9,6 @@ using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using Rock;
 
 namespace Rock.Web.UI.Controls
 {
@@ -45,8 +44,8 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            string scriptKey = "grid-filter-script";
-            string script = @"
+            const string scriptKey = "grid-filter-script";
+            const string script = @"
 Sys.Application.add_load(function () {
 
     $('div.grid-filter header').click(function () {
@@ -93,7 +92,7 @@ Sys.Application.add_load(function () {
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="System.EventArgs" /> instance containing the event data.</param>
-        protected void lbFilter_Click( object sender, System.EventArgs e )
+        protected void lbFilter_Click( object sender, EventArgs e )
         {
             _hfVisible.Value = "false";
 
@@ -150,6 +149,7 @@ Sys.Application.add_load(function () {
 
                     if ( !string.IsNullOrWhiteSpace( args.Value ) )
                     {
+
                         filtersHtml.AppendLine( "<div>" );
                         filtersHtml.AppendLine( string.Format( "<label>{0}:</label> {1}", args.Key, args.Value ) );
                         filtersHtml.AppendLine( "</div>" );
@@ -202,7 +202,7 @@ Sys.Application.add_load(function () {
             {
                 // wrap filter items in bootstrap responsive grid
                 int cellCount = 0;
-                int cellsPerRow = 3;
+                const int cellsPerRow = 3;
 
                 // write first row
                 writer.AddAttribute("class", "row");
@@ -211,7 +211,7 @@ Sys.Application.add_load(function () {
                 foreach ( Control child in Controls )
                 {
                     // write new row
-                    if (cellCount >= cellsPerRow)
+                    if ( cellCount >= cellsPerRow )
                     {
                         writer.RenderEndTag();
                         writer.AddAttribute("class", "row");

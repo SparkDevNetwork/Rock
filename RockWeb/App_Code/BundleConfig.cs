@@ -41,28 +41,29 @@ public class BundleConfig
         //    "~/Scripts/WebForms/MsAjax/MicrosoftAjaxTimer.js",
         //    "~/Scripts/WebForms/MsAjax/MicrosoftAjaxWebForms.js" ) );
 
-        bundles.Add( new ScriptBundle( "~/bundles/RockLibs" ).Include(
+        bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockLibs" ).Include(
             "~/Scripts/jquery.js",
             "~/Scripts/jquery-ui-1.10.0.custom.min.js",
             "~/Scripts/Kendo/kendo.web.min.js",
-            "~/Scripts/bootstrap-datepicker/bootstrap-datepicker.js",
-            "~/Scripts/bootstrap-timepicker/bootstrap-timepicker.js",
             "~/Scripts/bootstrap.min.js",
+            "~/Scripts/bootstrap-timepicker.js",
+            "~/Scripts/bootstrap-datepicker.js",
             "~/Scripts/bootbox.min.js",
             "~/Scripts/jquery.fileupload.js",
-            "~/Scripts/jquery.tinyscrollbar.js" ) );
+            "~/Scripts/jquery.tinyscrollbar.js",
+            "~/Scripts/Rock/Extensions/*.js" ) );
 
-        bundles.Add( new ScriptBundle( "~/bundles/RockUi" ).Include( 
+        bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockUi" ).Include( 
             "~/Scripts/Rock/settings.js",
-            "~/Scripts/Rock/controls/*.js" ) );
+            "~/Scripts/Rock/Controls/*.js" ) );
 
-        bundles.Add( new ScriptBundle( "~/bundles/RockValidation" ).Include(
-            "~/Scripts/Rock/validate/*.js" ) );
+        bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockValidation" ).Include(
+            "~/Scripts/Rock/Validate/*.js" ) );
 
         // Creating a separate "Admin" bundle specifically for JS functionality that needs
         // to be included for administrative users
-        bundles.Add( new ScriptBundle( "~/bundles/RockAdmin" ).Include( 
-            "~/Scripts/Rock/admin/*.js" ) );
+        bundles.Add( new ScriptBundle( "~/Scripts/Bundles/RockAdmin" ).Include( 
+            "~/Scripts/Rock/Admin/*.js" ) );
 
 
         // make sure the ConcatenationToken is what we want.  This is supposed to be the default, but it occassionally was an empty string.
