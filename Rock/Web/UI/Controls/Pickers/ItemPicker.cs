@@ -421,7 +421,6 @@ namespace Rock.Web.UI.Controls
         protected override void OnInit( EventArgs e )
         {
             base.OnInit( e );
-            RegisterJavaScript();
             var sm = ScriptManager.GetCurrent( this.Page );
             EnsureChildControls();
 
@@ -430,6 +429,16 @@ namespace Rock.Web.UI.Controls
                 sm.RegisterAsyncPostBackControl( _btnSelect );
                 sm.RegisterAsyncPostBackControl( _btnSelectNone );
             }
+        }
+
+        /// <summary>
+        /// Raises the <see cref="E:System.Web.UI.Control.Load" /> event.
+        /// </summary>
+        /// <param name="e">The <see cref="T:System.EventArgs" /> object that contains the event data.</param>
+        protected override void OnLoad( EventArgs e )
+        {
+            RegisterJavaScript();
+            base.OnLoad( e );
         }
 
         /// <summary>

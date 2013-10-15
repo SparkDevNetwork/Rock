@@ -20,7 +20,8 @@
                         restParams: this.options.restParams,
                         expandedIds: this.options.expandedIds
                     },
-                    $hfItemIds = $('#hfItemId_' + this.options.controlId);
+                    $hfItemIds = $('#hfItemId_' + this.options.controlId),
+                    $hfExpandedIds = $('#hfInitialItemParentIds_' + this.options.controlId);
 
                 if (typeof this.options.mapItems === 'function') {
                     treeOptions.mapping = {
@@ -34,6 +35,10 @@
 
                 if ($hfItemIds.val() && $hfItemIds !== '0') {
                     treeOptions.selectedIds = $hfItemIds.val().split(',');
+                }
+                
+                if ($hfExpandedIds.val()) {
+                    treeOptions.expandedIds = $hfExpandedIds.val().split(',');
                 }
 
                 $tree.rockTree(treeOptions);
