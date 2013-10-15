@@ -141,7 +141,7 @@ VALUES ('6515 W Lariat Ln', '', 'Phoenix', 'AZ', '85083', @LocationTypeValueHome
 SET @LocationId = SCOPE_IDENTITY()
 
 INSERT INTO [GroupLocation] (GroupId, LocationId, GroupLocationTypeValueId, Guid, IsMailing, IsLocation)
-VALUES (@GroupId, @LocationId, @LocationTypeValueHome, NEWID(), 0, 0)
+VALUES (@GroupId, @LocationId, @LocationTypeValueHome, NEWID(), 1, 0)
 
 INSERT INTO [Person] ([IsSystem],[GivenName],[LastName],[BirthDay],[BirthMonth],[BirthYear],[Gender],[Email],[IsEmailActive],[DoNotEmail],[Guid],[RecordTypeValueId],[RecordStatusValueId], [MaritalStatusValueId],[GivingGroupId])
 VALUES (0, 'Mike', 'Peterson', 5, 11, 1971, 1, 'mikepeterson@ccvonline.com', 1, 0, NEWID(), @PersonRecordType, @ActiveRecordStatus, @MaritalStatus, @GroupId)
