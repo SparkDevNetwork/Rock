@@ -126,7 +126,7 @@ namespace Rock.Reporting.DataFilter
         {
             int entityTypeId = EntityTypeCache.Read( entityType ).Id;
 
-            DropDownList ddlDataViews = new DropDownList();
+            var ddlDataViews = new RockDropDownList();
             ddlDataViews.ID = filterControl.ID + "_0";
             filterControl.Controls.Add( ddlDataViews );
 
@@ -155,19 +155,21 @@ namespace Rock.Reporting.DataFilter
         /// <param name="controls">The controls.</param>
         public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
-            writer.AddAttribute( "class", "control-group" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "row" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            // Label
-            writer.AddAttribute( "class", "control-label" );
-            writer.RenderBeginTag( HtmlTextWriterTag.Label );
-            writer.Write( "Data View" );
+            writer.AddAttribute( "class", "col-md-3" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.Write( "<span class='data-view-filter-label'>Data View</span>" );
             writer.RenderEndTag();
 
-            // Controls
-            writer.AddAttribute( "class", "controls" );
+            writer.AddAttribute( "class", "col-md-4" );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
             controls[0].RenderControl( writer );
+            writer.RenderEndTag();
+
+            writer.AddAttribute( "class", "col-md-5" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
             writer.RenderEndTag();
 
             writer.RenderEndTag();

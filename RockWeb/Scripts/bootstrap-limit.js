@@ -43,9 +43,11 @@
           .on('keypress', $.proxy(this.keypress, this))
           .on('keyup', $.proxy(this.keyup, this))
 
-        if ($.browser.webkit || $.browser.msie) {
-            this.$element.on('keydown', $.proxy(this.keypress, this))
-        }
+        // TODO: Figure out if this was actually necessary...
+        // Nick Airdo's hack fix is to just comment-out because THIS NO LONGER SUPPORTED as of jQuery 1.9
+        //if ($.browser.webkit || $.browser.msie) {
+        //    this.$element.on('keydown', $.proxy(this.keypress, this))
+        //}
     }
 
     , check: function () {

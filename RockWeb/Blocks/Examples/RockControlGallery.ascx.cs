@@ -181,18 +181,18 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
-        /// Handles the Click event of the btnToggleLabels control.
+        /// Handles the CheckedChanged event of the tglLabels control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnToggleLabels_Click( object sender, EventArgs e )
+        protected void tglLabels_CheckedChanged( object sender, EventArgs e )
         {
             foreach ( var control in pnlDetails.ControlsOfTypeRecursive<WebControl>() )
             {
                 if ( control is IRockControl )
                 {
                     IRockControl rockControl = control as IRockControl;
-                    if ( string.IsNullOrWhiteSpace( rockControl.Label ) )
+                    if ( tglLabels.Checked )
                     {
                         rockControl.Label = string.Format( "Rock:{0}", rockControl.GetType().Name );
                     }
@@ -205,17 +205,17 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
-        /// Handles the Click event of the btnToggleEnabled control.
+        /// Handles the CheckedChanged event of the tglEnabled control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnToggleEnabled_Click( object sender, EventArgs e )
+        protected void tglEnabled_CheckedChanged( object sender, EventArgs e )
         {
             foreach ( var control in pnlDetails.ControlsOfTypeRecursive<WebControl>() )
             {
                 if ( control is IRockControl )
                 {
-                    control.Enabled = !control.Enabled;
+                    control.Enabled = tglEnabled.Checked;
                 }
             }
         }
@@ -324,5 +324,7 @@ namespace RockWeb.Blocks.Examples
         {
             string debug = scheduleBuilder.iCalendarContent;
         }
-    }
+        
+ 
+}
 }

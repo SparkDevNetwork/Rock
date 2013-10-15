@@ -763,25 +763,6 @@ namespace Rock
         }
 
         /// <summary>
-        /// Rocks the page.
-        /// </summary>
-        /// <param name="control">The control.</param>
-        /// <returns></returns>
-        public static Rock.Web.UI.RockPage RockPage( this System.Web.UI.Control control )
-        {
-            System.Web.UI.Control parentControl = control.Parent;
-            while ( parentControl != null )
-            {
-                if ( parentControl is Rock.Web.UI.RockPage )
-                {
-                    return (Rock.Web.UI.RockPage)parentControl;
-                }
-                parentControl = parentControl.Parent;
-            }
-            return null;
-        }
-
-        /// <summary>
         /// Parents the update panel.
         /// </summary>
         /// <param name="control">The control.</param>

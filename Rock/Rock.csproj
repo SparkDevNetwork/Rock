@@ -269,6 +269,10 @@
     <Compile Include="Migrations\201310092101235_SitePageReferences.Designer.cs">
       <DependentUpon>201310092101235_SitePageReferences.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201310112336543_GivingGroup.cs" />
+    <Compile Include="Migrations\201310112336543_GivingGroup.Designer.cs">
+      <DependentUpon>201310112336543_GivingGroup.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\RockMigration.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -277,6 +281,10 @@
     <Compile Include="Model\LayoutService.Partial.cs" />
     <Compile Include="Model\Layout.cs" />
     <Compile Include="Model\FinancialPersonSavedAccountService.Partial.cs" />
+    <Compile Include="PersonProfile\Badge\Baptized.cs" />
+    <Compile Include="PersonProfile\Badge\NextSteps.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Services\NuGet\NuGetExtensionsMethods.cs" />
     <Compile Include="Storage\ProviderComponent.cs" />
     <Compile Include="Storage\ProviderContainer.cs" />
@@ -300,7 +308,6 @@
     </Compile>
     <Compile Include="PersonProfile\BadgeComponent.cs" />
     <Compile Include="PersonProfile\BadgeContainer.cs" />
-    <Compile Include="PersonProfile\Badge\NextSteps.cs" />
     <Compile Include="PersonProfile\Badge\FamilyAttendance.cs" />
     <Compile Include="PersonProfile\Badge\eraAttendance.cs" />
     <Compile Include="PersonProfile\Badge\DiscScore.cs">
@@ -1140,6 +1147,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201310092101235_SitePageReferences.resx">
       <DependentUpon>201310092101235_SitePageReferences.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201310112336543_GivingGroup.resx">
+      <DependentUpon>201310112336543_GivingGroup.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

@@ -45,6 +45,33 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             set { ViewState["FamilyAddresses"] = value; }
         }
 
+        private string DefaultState
+        {
+            get
+            {
+                string state = ViewState["DefaultState"] as string;
+                if ( state == null )
+                {
+                    string orgLocGuid = GlobalAttributesCache.Read().GetValue( "OrganizationAddress" );
+                    if ( !string.IsNullOrWhiteSpace( orgLocGuid ) )
+                    {
+                        Guid locGuid = Guid.Empty;
+                        if ( Guid.TryParse( orgLocGuid, out locGuid ) )
+                        {
+                            var location = new Rock.Model.LocationService().Get( locGuid );
+                            if ( location != null )
+                            {
+                                state = location.State;
+                                ViewState["DefaultState"] = state;
+                            }
+                        }
+                    }
+                }
+
+                return state;
+            }
+        }
+
         /// <summary>
         /// Raises the <see cref="E:System.Web.UI.Control.Init" /> event.
         /// </summary>
@@ -397,7 +424,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                     }
                 }
 
-                FamilyAddresses.Add( new FamilyAddress { LocationTypeId = homeLocType.Id, LocationTypeName = homeLocType.Name, LocationIsDirty=true } );
+                FamilyAddresses.Add( new FamilyAddress { LocationTypeId = homeLocType.Id, LocationTypeName = homeLocType.Name, LocationIsDirty=true, State = DefaultState } );
 
                 gLocations.EditIndex = FamilyAddresses.Count - 1;
 
@@ -419,11 +446,20 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 if ( ( e.Row.RowState & DataControlRowState.Edit ) == DataControlRowState.Edit )
                 {
                     FamilyAddress familyAddress = e.Row.DataItem as FamilyAddress;
-                    var ddlLocType = e.Row.FindControl( "ddlLocType" ) as DropDownList;
-                    if ( familyAddress != null && ddlLocType != null )
+                    if ( familyAddress != null )
                     {
-                        ddlLocType.BindToDefinedType( addressTypes );
-                        ddlLocType.SelectedValue = familyAddress.LocationTypeId.ToString();
+                        var ddlLocType = e.Row.FindControl( "ddlLocType" ) as DropDownList;
+                        if ( ddlLocType != null )
+                        {
+                            ddlLocType.BindToDefinedType( addressTypes );
+                            ddlLocType.SelectedValue = familyAddress.LocationTypeId.ToString();
+                        }
+
+                        var ddlState = e.Row.FindControl( "ddlState" ) as StateDropDownList;
+                        if ( ddlState != null )
+                        {
+                            ddlState.SelectedValue = familyAddress.State;
+                        }
                     }
                 }
             }
@@ -447,7 +483,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void gLocations_Add( object sender, EventArgs e )
         {
-            FamilyAddresses.Add( new FamilyAddress() );
+            FamilyAddresses.Add( new FamilyAddress { State = DefaultState } );
             gLocations.EditIndex = FamilyAddresses.Count - 1;
 
             BindLocations();
@@ -978,6 +1014,9 @@ namespace RockWeb.Blocks.Crm.PersonDetail
         {
             Id = -1; // Adding
             LocationIsDirty = true;
+
+            string orgLocGuid = GlobalAttributesCache.Read().GetValue( "OrganizationAddress" );
+
         }
     }
 }

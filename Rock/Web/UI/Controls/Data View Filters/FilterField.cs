@@ -305,7 +305,7 @@ $('.filter-item-select').click(function (event) {
                 if ( component != null )
                 {
                     clientFormatString =
-                       string.Format( "if ($(this).children('i').attr('class') == 'icon-chevron-up') {{ var $article = $(this).parents('article:first'); var $content = $article.children('div.widget-content'); $article.find('div.filter-item-description:first').html({0}); }}", component.GetClientFormatSelection( FilteredEntityType ) );
+                       string.Format( "if ($(this).children('i').attr('class') == 'icon-chevron-up') {{ var $article = $(this).parents('article:first'); var $content = $article.children('div.panel-body'); $article.find('div.filter-item-description:first').html({0}); }}", component.GetClientFormatSelection( FilteredEntityType ) );
                 }
             }
 

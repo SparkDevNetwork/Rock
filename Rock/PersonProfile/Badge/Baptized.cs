@@ -3,6 +3,7 @@
 // SHAREALIKE 3.0 UNPORTED LICENSE:
 // http://creativecommons.org/licenses/by-nc-sa/3.0/
 //
+using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.IO;
@@ -11,15 +12,13 @@ using Rock.Model;
 
 namespace Rock.PersonProfile.Badge
 {
-    // TODO: Update to return actual data
-
     /// <summary>
-    /// NextSteps Badge
+    /// Baptized Badge
     /// </summary>
-    [Description( "Next Steps Badge" )]
+    [Description( "Baptized Badge" )]
     [Export( typeof( BadgeComponent ) )]
-    [ExportMetadata( "ComponentName", "Next Steps" )]
-    public class NextSteps : IconBadge
+    [ExportMetadata( "ComponentName", "Baptized" )]
+    public class Baptized : IconBadge
     {
         /// <summary>
         /// Gets the attribute value defaults.
@@ -32,7 +31,7 @@ namespace Rock.PersonProfile.Badge
             get
             {
                 var defaults = base.AttributeValueDefaults;
-                defaults["Order"] = "9";
+                defaults["Order"] = "8";
                 return defaults;
             }
         }
@@ -44,7 +43,17 @@ namespace Rock.PersonProfile.Badge
         /// <returns></returns>
         public override string GetToolTipText( Person person )
         {
-            return "all of the next steps smashed together for mockup";
+            var attributeValue = person.GetAttributeValue("BaptismDate");
+            if (!string.IsNullOrWhiteSpace(attributeValue))
+            {
+                var date = DateTime.MinValue;
+                if (DateTime.TryParse(attributeValue, out date) && date > DateTime.MinValue)
+                {
+                    return "Baptized on " + date.ToShortDateString();
+                }
+            }
+
+            return "No Baptism Date";
         }
 
         /// <summary>
@@ -54,7 +63,17 @@ namespace Rock.PersonProfile.Badge
         /// <returns></returns>
         public override string GetIconPath( Person person )
         {
-            return Path.Combine( System.Web.VirtualPathUtility.ToAbsolute( "~" ), "Assets/Mockup/next-steps.jpg" );
+            var attributeValue = person.GetAttributeValue( "BaptismDate" );
+            if ( !string.IsNullOrWhiteSpace( attributeValue ) )
+            {
+                var date = DateTime.MinValue;
+                if ( DateTime.TryParse( attributeValue, out date ) && date > DateTime.MinValue )
+                {
+                    return Path.Combine( System.Web.VirtualPathUtility.ToAbsolute( "~" ), "Assets/Images/bap-e.png" );
+                }
+            }
+
+            return Path.Combine( System.Web.VirtualPathUtility.ToAbsolute( "~" ), "Assets/Images/bap-d.png" );
         }
     }
 }
