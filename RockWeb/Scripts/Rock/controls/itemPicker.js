@@ -1,319 +1,157 @@
-(function ($) {
+﻿(function ($) {
     'use strict';
     window.Rock = window.Rock || {};
     Rock.controls = Rock.controls || {};
 
     Rock.controls.itemPicker = (function () {
-        // Kendo Treeview does not participate in ViewState, so if checkboxes are enabled
-        // need to re-select the checkboxes for each checked node.
-        var _registerPostBackHandler = function (itemPicker) {
-                var controlId = itemPicker.controlId,
-                    $treeview = $('#treeviewItems_' + controlId),
-                    onPostBack = function () {
-                        // itempicker might not exist if it was on an updatepanel and Visible set to false after postback
-                        if (!$('#' + itemPicker.controlId).length) return;
-
-                        if (!itemPicker.isMultiSelect) return;
-
-                        var val = $('#hfItemId_' + controlId).val(),
-                            ids = val.split(','),
-                            $checkbox,
-                            i;
-
-                        // Find each selected node by its model's Id and attempt to check it
-                        for (i = 0; i < ids.length; i++) {
-                            $checkbox = $treeview.find('input[data-id="' + ids[i] + '"]');
-                            $checkbox.prop('checked', true);
-                        }
-                    };
-            
-                Sys.WebForms.PageRequestManager.getInstance().add_endRequest(onPostBack);
+        var ItemPicker = function (options) {
+                this.options = options;
             },
-            ItemPicker = function (options) {
-                this.controlId = options.controlId;
-                this.restUrl = options.restUrl;
-                this.allowMultiSelect = options.allowMultiSelect;
-                this.defaultText = options.defaultText || '';
-            };
+            exports;
 
-        ItemPicker.prototype.updateScrollbar = function (e) {
-            var findControl = Rock.controls.itemPicker.findControl,
-                controlId = typeof e === 'string' ? e : e.sender.element[0].id,
-                control = findControl(controlId),
-                $container = $('#treeview-scroll-container_' + control.controlId),
-                $dialog = $('#modal-scroll-container');
+        ItemPicker.prototype = {
+            constructor: ItemPicker,
+            initialize: function () {
+                var $control = $('#' + this.options.controlId),
+                    $tree = $control.find('.treeview'),
+                    treeOptions = {
+                        multiselect: this.options.allowMultiSelect,
+                        restUrl: this.options.restUrl,
+                        restParams: this.options.restParams,
+                        expandedIds: this.options.expandedIds
+                    },
+                    $hfItemIds = $('#hfItemId_' + this.options.controlId),
+                    $hfExpandedIds = $('#hfInitialItemParentIds_' + this.options.controlId);
 
-            if ($container.is(':visible')) {
-                $container.tinyscrollbar_update('relative');
-
-                if ($dialog && $dialog.is(':visible')) {
-                    var dialogTop = $dialog.offset().top;
-                    var pickerTop = $container.offset().top;
-                    var amount = pickerTop - dialogTop;
-                    if (amount > 160) {
-                        $dialog.tinyscrollbar_update('bottom');
-                    }
+                if (typeof this.options.mapItems === 'function') {
+                    treeOptions.mapping = {
+                        mapData: this.options.mapItems
+                    };
                 }
-            }
-        };
 
-        ItemPicker.prototype.findChildItemInTree = function (treeViewData, itemId, itemParentIds) {
-            var itemParentList,
-                parentItemId,
-                parentItem,
-                parentNodeItem,
-                initialItem;
+                $control.find('.scroll-container').tinyscrollbar({ size: 120 });
+                // Since some hanlers are "live" events, they need to be bound before tree is initialized
+                this.initializeEventHandlers();
 
-            if (itemParentIds) {
-                itemParentList = itemParentIds.split(',');
-
-                for (var i = 0; i < itemParentList.length; i++) {
-                    parentItemId = itemParentList[i];
-                    parentItem = treeViewData.dataSource.get(parentItemId);
-                    parentNodeItem = treeViewData.findByUid(parentItem.uid);
-
-                    if (!parentItem.expanded && parentItem.hasChildren) {
-                        treeViewData.expand(parentNodeItem);
-                        return null;
-                    }
+                if ($hfItemIds.val() && $hfItemIds !== '0') {
+                    treeOptions.selectedIds = $hfItemIds.val().split(',');
                 }
-            }
-
-            initialItem = treeViewData.dataSource.get(itemId);
-            return initialItem;
-        };
-
-        ItemPicker.prototype.initializeCheckBoxes = function () {
-            var controlId = this.controlId,
-                defaultText = this.defaultText,
-                $treeView = $('#treeviewItems_' + controlId),
-                findCheckedNodes = function (nodes, nodeList) {
-                    for (var i = 0; i < nodes.length; i++) {
-                        if (nodes[i].checked) {
-                            nodeList.push({
-                                id: nodes[i].Id,        // The model's actual `Id` in the database
-                                name: nodes[i].Name,    // The model's name
-                                uid: nodes[i].uid       // The guid that Kendo assigns to the node on each postback
-                            });
-                        }
-
-                        if (nodes[i].hasChildren) {
-                            findCheckedNodes(nodes[i].children.view(), nodeList);
-                        }
-                    }
-                },
-                selectedNodes = [];
-
-            $treeView.data('kendoTreeView').dataSource.bind('change', function () {
-                var nodes = $treeView.data('kendoTreeView').dataSource.view(),
-                    $selectedItemLabel = $('#selectedItemLabel_' + controlId),
-                    $hiddenItemId = $('#hfItemId_' + controlId),
-                    $hiddenItemName = $('#hfItemName_' + controlId),
-                    ids,
-                    names,
-                    selectedValues = '0',
-                    selectedNames = defaultText;
                 
-                selectedNodes = [];
-                findCheckedNodes(nodes, selectedNodes);
-
-                if (selectedNodes.length) {
-                    ids = [];
-                    names = [];
-
-                    for (var i = 0; i < selectedNodes.length; i++) {
-                        ids.push(selectedNodes[i].id);
-                        names.push(selectedNodes[i].name);
-                    }
-
-                    selectedValues = ids.join(',');
-                    selectedNames = names.join(', ');
+                if ($hfExpandedIds.val()) {
+                    treeOptions.expandedIds = $hfExpandedIds.val().split(',');
                 }
 
-                $hiddenItemId.val(selectedValues);
-                $hiddenItemName.val(selectedNames);
-                $selectedItemLabel.val(selectedValues);
-                $selectedItemLabel.text(selectedNames);
-            });
-        };
+                $tree.rockTree(treeOptions);
+                this.updateScrollbar();
+            },
+            initializeEventHandlers: function () {
+                var self = this,
+                    $control = $('#' + this.options.controlId),
+                    $spanNames = $control.find('.selected-names'),
+                    $hfItemIds = $('#hfItemId_' + this.options.controlId),
+                    $hfItemNames = $('#hfItemName_' + this.options.controlId);
 
-        ItemPicker.prototype.onDataBound = function (options) {
-            var control = Rock.controls.itemPicker.findControl(options.sender.element[0].id),
-                treeViewData = $('#treeviewItems_' + control.controlId).data('kendoTreeView'),
-                selectedNode = treeViewData.select(),
-                nodeData = this.dataItem(selectedNode),
-                initialItemId,
-                initialItemParentIds,
-                initialItem,
-                firstItem,
-                firstDataItem;
+                // Bind tree events
+                $control.find('.treeview')
+                    .on('rockTree:selected', function () {
+                        var rockTree = $(this).data('rockTree'),
+                            selectedNodes = rockTree.selectedNodes,
+                            selectedIds = [],
+                            selectedNames = [];
 
-            if (!nodeData) {
-                initialItemId = $('#hfItemId_' + control.controlId).val();
-                initialItemParentIds = $('#hfInitialItemParentIds_' + control.controlId).val();
-                initialItem = control.findChildItemInTree(treeViewData, initialItemId, initialItemParentIds);
+                        $.each(selectedNodes, function (index, node) {
+                            selectedIds.push(node.id);
+                            selectedNames.push(node.name);
+                        });
 
-                if (initialItemId && initialItem) {
-                    firstItem = treeViewData.findByUid(initialItem.uid);
-                    firstDataItem = this.dataItem(firstItem);
+                        $hfItemIds.val(selectedIds.join(','));
+                        $hfItemNames.val(selectedNames.join(','));
+                        $spanNames.text(selectedNames.join(', '));
+                    })
+                    .on('rockTree:open rockTree:close', function () {
+                        self.updateScrollbar();
+                    });
 
-                    if (firstDataItem) {
-                        treeViewData.select(firstItem);
-                    }
-                }
-            }
-
-            control.updateScrollbar(control.controlId);
-
-            if (control.isMultiSelect) {
-                control.initializeCheckBoxes();
-            }
-        };
-
-        ItemPicker.prototype.initializeEventHandlers = function () {
-            var controlId = this.controlId,
-                defaultText = this.defaultText,
-                isMultiSelect = this.isMultiSelect,
-                updateScrollbar = this.updateScrollbar;
-
-            $('#' + controlId + ' a.picker-label').click(function (e) {
-                e.preventDefault();
-                $('#' + controlId).find('.picker-menu').first().toggle();
-                updateScrollbar(controlId);
-            });
-
-            $('#' + controlId).hover(
-                function () {
-
-                    // only show the X if there there is something picked
-                    if ($('#hfItemId_' + controlId).val() || '0' !== '0') {
-                        $('#btnSelectNone_' + controlId).stop().show();
-                    }
-                },
-                function () {
-                    $('#btnSelectNone_' + controlId).fadeOut(500);
+                $control.find('a.picker-label').click(function (e) {
+                    e.preventDefault();
+                    $control.find('.picker-menu').first().toggle();
+                    self.updateScrollbar();
                 });
 
-            $('#btnCancel_' + controlId).click(function () {
-                $(this).closest('.picker-menu').slideUp();
-            });
+                $control.hover(
+                    function () {
+                        if ($hfItemIds.val() && $hfItemIds.val() !== '0') {
+                            $control.find('.picker-select-none').show();
+                        }
+                    },
+                    function () {
+                        $control.find('.rock-picker-select-none').fadeOut(500);
+                    });
 
-            $('#btnSelectNone_' + controlId).click(function (e) {
-                var selectedValue = '0',
-                    selectedText = defaultText,
-                    $selectedItemLabel = $('#selectedItemLabel_' + controlId),
-                    $hiddenItemId = $('#hfItemId_' + controlId),
-                    $hiddenItemName = $('#hfItemName_' + controlId);
+                $control.find('.picker-cancel, .picker-btn').click(function () {
+                    $(this).closest('.picker-menu').slideUp();
+                });
 
-                $hiddenItemId.val(selectedValue);
-                $hiddenItemName.val(selectedText);
-                $selectedItemLabel.val(selectedValue);
-                $selectedItemLabel.text(selectedText);
-            });
+                $control.find('.picker-select-none').click(function (e) {
+                    e.stopImmediatePropagation();
+                    var rockTree = $control.find('.treeview').data('rockTree');
+                    rockTree.clear();
+                    $hfItemIds.val('');
+                    $hfItemNames.val('');
+                    $spanNames.text(self.options.defaultText);
+                    return false;
+                });
+            },
+            updateScrollbar: function () {
+                var $container = $('#' + this.controlId).find('.scroll-container'),
+                    $dialog = $('#modal-scroll-container'),
+                    dialogTop,
+                    pickerTop,
+                    amount;
 
-            $('#btnSelect_' + controlId).click(function () {
-                var treeViewData = $('#treeviewItems_' + controlId).data('kendoTreeView'),
-                    selectedNode = treeViewData.select(),
-                    nodeData = treeViewData.dataItem(selectedNode),
-                    selectedValue = '0',
-                    selectedText = defaultText,
-                    $selectedItemLabel = $('#selectedItemLabel_' + controlId),
-                    $hiddenItemId = $('#hfItemId_' + controlId),
-                    $hiddenItemName = $('#hfItemName_' + controlId);
+                if ($container.is(':visible')) {
+                    $container.tinyscrollbar_update('relative');
 
-                if (!isMultiSelect) {
-                    if (nodeData) {
-                        selectedValue = nodeData.Id;
-                        selectedText = nodeData.Name;
-                    }
+                    if ($dialog.length > 0 && $dialog.is(':visible')) {
+                        dialogTop = $dialog.offset().top;
+                        pickerTop = $container.offset().top;
+                        amount = pickerTop - dialogTop;
 
-                    $hiddenItemId.val(selectedValue);
-                    $hiddenItemName.val(selectedText);
-                    $selectedItemLabel.val(selectedValue);
-                    $selectedItemLabel.text(selectedText);
-                }
-
-                $(this).closest('.picker-menu').slideUp();
-            });
-        };
-
-        ItemPicker.prototype.initialize = function () {
-            var itemList,
-                showCheckboxes,
-                controlId = this.controlId,
-                restUrl = this.restUrl;
-
-            itemList = new kendo.data.HierarchicalDataSource({
-                transport: {
-                    read: {
-                        url: function (options) {
-                            var extraParams = $('#hfItemRestUrlExtraParams_' + controlId).val(),
-                                requestUrl = restUrl + (options.Id || 0) + (extraParams || '');
-                            return requestUrl;
-                        },
-                        error: function (xhr, status, error) {
-                            console.log(status + ' [' + error + ']: ' + xhr.responseText);
+                        if (amount > 160) {
+                            $dialog.tinyscrollbar_update('bottom');
                         }
                     }
-                },
-                schema: {
-                    model: {
-                        id: 'Id',
-                        hasChildren: 'HasChildren'
-                    }
                 }
-            });
-
-            if (this.allowMultiSelect) {
-                showCheckboxes = {
-                    checkChildren: true,
-                    template: '<input type="checkbox" name="account[#= item.Id #]" data-id="#= item.Id #" />'
-                };
-                this.isMultiSelect = true;
-            } else {
-                showCheckboxes = false;
-                this.isMultiSelect = false;
             }
-
-            $('#treeviewItems_' + controlId).kendoTreeView({
-                template: '<i class="#= item.IconCssClass #"></i> #= item.Name #',
-                dataSource: itemList,
-                dataTextField: 'Name',
-                dataImageUrlField: 'IconSmallUrl',
-                checkboxes: showCheckboxes,
-                dataBound: this.onDataBound,
-                select: this.updateScrollbar
-            });
-
-            $('#treeview-scroll-container_' + controlId).tinyscrollbar({ size: 120 });
-            this.initializeEventHandlers();
         };
 
-        var exports = {
-            itemPickers: {},
-            findControl: function (controlId) {
-                var index = controlId.indexOf('treeviewItems_'),
-                    id = index === -1 ? controlId : controlId.substring(controlId.indexOf('_') + 1);
-                return exports.itemPickers[id];
+        exports = {
+            defaults: {
+                id: 0,
+                controlId: null,
+                restUrl: null,
+                restParams: null,
+                allowMultiSelect: false,
+                defaultText: '<none>',
+                selectedIds: null,
+                expandedIds: null
             },
+            controls: {},
             initialize: function (options) {
-                var itemPicker;
+                var settings,
+                    itemPicker;
 
-                if (!options.controlId) throw '`controlId` is required';
-                if (!options.restUrl) throw '`resturl` is required';
+                if (!options.controlId) throw 'controlId must be set';
+                if (!options.restUrl) throw 'restUrl must be set';
 
-                // Check to see if the item picker is already in the cache.
-                // If so, this is a postback.
-                if (exports.itemPickers[options.controlId]) {
-                    itemPicker = exports.itemPickers[options.controlId];
-                } else {
-                    // If not in a postback, create a new instance of itempicker,
-                    // cache it, and register postback handler.
-                    itemPicker = new ItemPicker(options);
-                    exports.itemPickers[options.controlId] = itemPicker;
-                    _registerPostBackHandler(itemPicker);
+                settings = $.extend({}, exports.defaults, options);
+
+                if (!settings.defaultText) {
+                    settings.defaultText = exports.defaults.defaultText;
                 }
-                
+
+                itemPicker = new ItemPicker(settings);
+                exports.controls[settings.controlId] = itemPicker;
                 itemPicker.initialize();
             }
         };
