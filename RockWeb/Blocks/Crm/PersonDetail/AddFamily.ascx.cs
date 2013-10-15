@@ -274,6 +274,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
                 {
                     groupMember.GroupRoleId = row.RoleId.Value;
                 }
+
                 groupMember.Person.TitleValueId = row.TitleValueId;
                 groupMember.Person.GivenName = row.FirstName;
                 if ( nfmMembers.ShowNickName )
@@ -411,10 +412,21 @@ namespace RockWeb.Blocks.Crm.PersonDetail
 
                                     groupService.Add( familyGroup, CurrentPersonId );
                                     groupService.Save( familyGroup, CurrentPersonId );
+                                    
+                                    var personService = new PersonService();
 
-                                    var groupMemberService = new GroupMemberService();
-                                    foreach ( var person in familyMembers.Select( m => m.Person ) )
+                                    foreach ( var groupMember in familyMembers )
                                     {
+                                        var person = personService.Get( groupMember.PersonId );
+                                        if ( person != null )
+                                        {
+                                            if ( groupMember.GroupRoleId != _childRoleId )
+                                            {
+                                                person.GivingGroupId = familyGroup.Id;
+                                                personService.Save( person, CurrentPersonId );
+                                            }
+                                        }
+
                                         foreach ( var attributeControl in attributeControls )
                                         {
                                             foreach ( var attribute in attributeControl.AttributeList )

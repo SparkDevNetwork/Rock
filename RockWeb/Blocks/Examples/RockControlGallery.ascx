@@ -246,11 +246,11 @@
                 to the old <a href="http://getbootstrap.com/2.3.2/components.html#labels-badges">Bootstrap 2.3 Labels and Badges</a>.
             </p>
             <div runat="server" class="r-example">
-                <Rock:Badge ID="badge" runat="server" ToolTip="you have new messages waiting">1</Rock:Badge>
-                <Rock:Badge ID="badge1" runat="server" BadgeType="success">0</Rock:Badge>
-                <Rock:Badge ID="badge2" runat="server" BadgeType="info">5</Rock:Badge>
-                <Rock:Badge ID="badge3" runat="server" BadgeType="warning">15</Rock:Badge>
-                <Rock:Badge ID="badge4" runat="server" BadgeType="danger">99</Rock:Badge>
+                <Rock:Badge ID="badge" runat="server" ToolTip="you have new messages waiting" Text="1" />
+                <Rock:Badge ID="badge1" runat="server" BadgeType="success" Text="0" />
+                <Rock:Badge ID="badge2" runat="server" BadgeType="info" Text="5" />
+                <Rock:Badge ID="badge3" runat="server" BadgeType="warning" Text="15" />
+                <Rock:Badge ID="badge4" runat="server" BadgeType="danger" Text="99" />
 
             </div>
 
@@ -269,6 +269,13 @@
                 <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" Text="Campus" />
                 <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" Text="Type" />
                 <Rock:HighlightLabel ID="hlCustom" runat="server" LabelType="Custom" CustomClass="danger" Text="Custom" />
+            </div>
+
+            <p>While you can set the <code>Text</code> to include HTML (such as font icons), you can also do this 
+                a little easier just by setting the <code>IconCssClass</code> property.</p>
+
+            <div runat="server" class="r-example">
+                <Rock:HighlightLabel ID="HighlightLabel2" runat="server" LabelType="Danger" IconCssClass="icon-flag" Text="errors" />
             </div>
 
             <h2>Rock:Toggle</h2>
