@@ -8,7 +8,6 @@ using System.Net.Sockets;
 using System.ServiceModel;
 using System.Text.RegularExpressions;
 
-using Rock;
 using Rock.Attribute;
 using Rock.Financial;
 using Rock.Model;
@@ -548,8 +547,8 @@ namespace Rock.CyberSource
             
             request.merchantID = GetAttributeValue( "MerchantID" );
             request.clientLibraryVersion = Environment.Version.ToString();
-            request.clientApplication = "Rock ChMS";
-            request.clientApplicationVersion = Version.Current.ToString();
+            request.clientApplication = VersionInfo.VersionInfo.GetRockProductName();
+            request.clientApplicationVersion = VersionInfo.VersionInfo.GetRockProductVersion();
             request.clientApplicationUser = GetAttributeValue( "OrganizationName" );            
             request.clientEnvironment =
                 Environment.OSVersion.Platform +

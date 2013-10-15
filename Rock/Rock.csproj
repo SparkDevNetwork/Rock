@@ -829,7 +829,6 @@
     <Compile Include="Model\WorkflowType.cs" />
     <Compile Include="Model\ServiceJob.cs" />
     <Compile Include="Model\ServiceJobService.Partial.cs" />
-    <Compile Include="Version.cs" />
     <Compile Include="Web\Cache\AttributeCache.cs" />
     <Compile Include="Web\Cache\BlockTypeCache.cs" />
     <Compile Include="Web\Cache\BlockCache.cs" />

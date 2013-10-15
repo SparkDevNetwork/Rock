@@ -9,13 +9,29 @@ using System.Reflection;
 
 namespace Rock.VersionInfo
 {
+    /// <summary>
+    /// Returns current information about Rock
+    /// </summary>
     public static class VersionInfo
     {
+        /// <summary>
+        /// Gets the rock product version.
+        /// </summary>
+        /// <returns></returns>
         public static string GetRockProductVersion()
         {
             Assembly rockVersionDLL = Assembly.GetExecutingAssembly();
             FileVersionInfo rockDLLfvi = FileVersionInfo.GetVersionInfo( rockVersionDLL.Location );
             return rockDLLfvi.ProductVersion;
+        }
+
+        /// <summary>
+        /// Gets the rock product name.
+        /// </summary>
+        /// <returns></returns>
+        public static string GetRockProductName()
+        {
+            return "Rock ChMS";
         }
     }
 }
