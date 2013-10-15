@@ -206,7 +206,7 @@
                             enableRequiredField('<%=tbNewPersonLastName.ClientID%>_rfv', false);
                         });
 
-                        $('a[data-toggle="pill"]').on('shown', function (e) {
+                        $('a[data-toggle="pill"]').on('shown.bs.tab', function (e) {
                             var tabHref = $(e.target).attr("href");
                             if (tabHref == '#<%=divExistingPerson.ClientID%>') {
                                 $('#<%=hfActiveTab.ClientID%>').val('Existing');
