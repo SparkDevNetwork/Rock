@@ -3,6 +3,7 @@
     var RockTree = function (element, options) {
             this.$el = $(element);
             this.options = options;
+            this.events = $({});
         },
 		_findNodeById = function (id, array) {
 		    var currentNode,
@@ -117,37 +118,81 @@
         },
         fetch: function (id) {
             var self = this,
-                parentNode = _findNodeById(id, this.nodes),
+                startingNode = _findNodeById(id, this.nodes),
                 dfd = $.Deferred(),
-                request,
-                nodes;
+                toExpand = [],
+                inProgress = {},
+                onProgressNotification = function () {
+                    var numberInQueue = Object.keys(inProgress).length;
+
+                    if (toExpand.length === 0 && numberInQueue === 0 && dfd.state() !== 'resolved') {
+                        dfd.resolve();
+                    }
+                },
+                getNodes = function (parentId, parentNode) {
+                    var restUrl = self.options.restUrl + parentId;
+
+                    if (self.options.restParams) {
+                        restUrl += '/' + self.options.restParams;
+                    }
+                    
+                    return $.ajax({
+                            url: restUrl,
+                            dataType: 'json',
+                            contentType: 'application/json'
+                        })
+                        .done(function (data) {
+                            try {
+                                self.dataBind(data, parentNode);
+                            } catch (e) {
+                                dfd.reject(e);
+                            }
+                        });
+                };
 
             if (this.options.restUrl) {
-                request = $.ajax({
-                    url: this.options.restUrl + id,
-                    dataType: 'json',
-                    contentType: 'application/json'
-                });
+                if (this.options.expandedIds && typeof this.options.expandedIds.length === 'number') {
+                    toExpand = this.options.expandedIds;
 
-                request.done(function (data) {
-                    try {
-                        nodes = self.dataBind(data, parentNode);
-                        dfd.resolve(nodes);
-                    } catch (e) {
-                        dfd.reject(e);
-                    }
-                });
+                    dfd.progress(onProgressNotification);
+
+                    this.events.on('nodes:dataBound', function () {
+                        // Pop the top item off the "stack" to de-queue it...
+                        var currentId = toExpand.shift(),
+                            currentNode;
+
+                        if (!currentId) {
+                            return;
+                        }
+
+                        currentNode = _findNodeById(currentId, self.nodes);
+
+                        if (!currentNode) {
+                            return;
+                        }
+
+                        currentNode.isOpen = true;
+                        inProgress[currentId] = currentId;
+                        getNodes(currentId, currentNode).done(function () {
+                            delete inProgress[currentId];
+                            dfd.notify();
+                        });
+                    });
+                }
+
+                this.events.on('nodes:dataBound', onProgressNotification);
+
+                getNodes(id, startingNode);
             } else if (this.options.local) {
                 try {
-                    nodes = this.dataBind(this.options.local);
-                    dfd.resolve(nodes);
+                    this.dataBind(this.options.local);
+                    dfd.resolve();
                 } catch (e) {
                     dfd.reject(e);
                 }
             } else {
-                nodes = _mapFromHtml(this.$el, this.options.mapping.include);
-                this.nodes = nodes;
-                dfd.resolve(nodes);
+                this.nodes = _mapFromHtml(this.$el, this.options.mapping.include);;
+                dfd.resolve();
             }
 
             return dfd.promise();
@@ -170,11 +215,12 @@
             // If a parent node is supplied, append the result set to the parent node.
             if (parentNode) {
                 parentNode.children = nodeArray;
-                // Otherwise the result set would be the root array.
+            // Otherwise the result set would be the root array.
             } else {
                 this.nodes = nodeArray;
             }
 
+            this.events.trigger('nodes:dataBound');
             this.$el.trigger('rockTree:dataBound');
             return nodeArray;
         },
@@ -278,6 +324,7 @@
         initTreeEvents: function () {
             var self = this;
 
+            // Expanding or collapsing a node...
             this.$el.on('click', '.rock-tree-folder > .rock-tree-icon', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -311,6 +358,7 @@
                 }
             });
 
+            // Selecting a node...
             this.$el.on('click', '.rock-tree-item > span', function (e) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -330,7 +378,7 @@
 
                 node.isSelected = true;
                 $item.toggleClass('selected');
-                $rockTree.find('.selected').parent('li').each(function (i, li) {
+                $rockTree.find('.selected').parent('li').each(function (idx, li) {
                     var $li = $(li);
                     selectedNodes.push({
                         id: $li.attr('data-id'),
@@ -376,6 +424,8 @@
 
     $.fn.rockTree.defaults = {
         id: 0,
+        selectedIds: null,
+        expandedIds: null,
         restUrl: null,
         local: null,
         multiselect: false,
