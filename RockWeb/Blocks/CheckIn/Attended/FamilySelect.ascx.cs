@@ -52,7 +52,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                         var familyList = CurrentCheckInState.CheckIn.Families.OrderBy( f => f.Caption ).ToList();
                         if ( !UserBackedUp )
                         {
-                            familyList.FirstOrDefault().Selected = true;                            
+                            familyList.FirstOrDefault().Selected = true;
                         }
 
                         ProcessFamily();
@@ -98,7 +98,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                 CurrentCheckInState.CheckIn.Families.ForEach( f => f.Selected = false );
                 ( (LinkButton)e.Item.FindControl( "lbSelectFamily" ) ).AddCssClass( "active" );
                 family.Selected = true;
-                ProcessFamily();                                
+                ProcessFamily();
             }
             else
             {
@@ -303,7 +303,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
         {
             tbFirstNameSearch.Text = string.Empty;
             tbLastNameSearch.Text = string.Empty;
-            dpDOBSearch.Text = string.Empty;
+            dpDOBSearch.SelectedDate = null;
             ddlGenderSearch.BindToEnum( typeof( Gender ) );
             ddlGenderSearch.SelectedIndex = 0;
             BindAbilityGrade( ddlAbilitySearch );
@@ -335,6 +335,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
                     var checkInPerson = new CheckInPerson();
                     checkInPerson.Person = person.Clone( false );
+                    LoadGroupTypes( checkInPerson );
                     checkInPerson.Selected = true;
 
                     if ( personVisitorType.Value == "Person" )
@@ -510,6 +511,7 @@ namespace RockWeb.Blocks.CheckIn.Attended
                     {
                         var checkInPerson = new CheckInPerson();
                         checkInPerson.Person = new PersonService().Get( personId ).Clone( false );
+                        LoadGroupTypes( checkInPerson );
                         checkInPerson.Selected = true;
                         if ( personVisitorType.Value == "Person" )
                         {
@@ -665,6 +667,11 @@ namespace RockWeb.Blocks.CheckIn.Attended
 
                     if ( family.People.Where( f => !f.FamilyMember ).Count() > 0 )
                     {
+                        var selectedVisitors = family.People.Where( f => !f.FamilyMember ).Where( p => p.Selected ).ToList();
+                        foreach ( var visitor in selectedVisitors )
+                        {
+                            hfSelectedVisitor.Value = string.Join( ",", selectedVisitors.Select( p => p.Person.Id ) ) + ",";
+                        }
                         visitorDataSource = family.People.Where( f => !f.FamilyMember ).OrderBy( p => p.Person.FullNameLastFirst ).ToList();
                     }
 
@@ -906,6 +913,69 @@ namespace RockWeb.Blocks.CheckIn.Attended
             }
         }
 
+        /// <summary>
+        /// Loads the group types.
+        /// </summary>
+        /// <param name="checkInPerson">The check in person.</param>
+        protected void LoadGroupTypes( CheckInPerson checkInPerson )
+        {
+            // Load the GroupTypes for this person like the LoadGroupTypes activity would do when this page is first loaded.
+            foreach ( var kioskGroupType in CurrentCheckInState.Kiosk.FilteredGroupTypes( CurrentCheckInState.ConfiguredGroupTypes ) )
+            {
+                if ( kioskGroupType.KioskGroups.SelectMany( g => g.KioskLocations ).Any( l => l.Location.IsActive ) )
+                {
+                    if ( !checkInPerson.GroupTypes.Any( g => g.GroupType.Id == kioskGroupType.GroupType.Id ) )
+                    {
+                        var checkinGroupType = new CheckInGroupType();
+                        checkinGroupType.GroupType = kioskGroupType.GroupType.Clone( false );
+                        checkinGroupType.GroupType.CopyAttributesFrom( kioskGroupType.GroupType );
+                        checkInPerson.GroupTypes.Add( checkinGroupType );
+                    }
+                }
+            }
+
+            double? age = checkInPerson.Person.AgePrecise;
+
+            foreach ( var groupType in checkInPerson.GroupTypes.ToList() )
+            {
+                string ageRange = groupType.GroupType.GetAttributeValue( "AgeRange" ) ?? string.Empty;
+                string[] ageRangePair = ageRange.Split( new char[] { ',' }, StringSplitOptions.None );
+                string minAgeValue = null;
+                string maxAgeValue = null;
+                if ( ageRangePair.Length == 2 )
+                {
+                    minAgeValue = ageRangePair[0];
+                    maxAgeValue = ageRangePair[1];
+                }
+
+                if ( minAgeValue != null )
+                {
+                    double minAge = 0;
+                    if ( double.TryParse( minAgeValue, out minAge ) )
+                    {
+                        if ( !age.HasValue || age < minAge )
+                        {
+                            checkInPerson.GroupTypes.Remove( groupType );
+                            continue;
+                        }
+                    }
+                }
+
+                if ( maxAgeValue != null )
+                {
+                    double maxAge = 0;
+                    if ( double.TryParse( maxAgeValue, out maxAge ) )
+                    {
+                        if ( !age.HasValue || age > maxAge )
+                        {
+                            checkInPerson.GroupTypes.Remove( groupType );
+                            continue;
+                        }
+                    }
+                }
+            }
+        }
+
         #endregion
 
         #region NewPerson Class
@@ -940,5 +1010,5 @@ namespace RockWeb.Blocks.CheckIn.Attended
         }
 
         #endregion
-    }
+}
 }

@@ -308,11 +308,8 @@ namespace RockWeb.Blocks.CheckIn.Attended
             var selectedSchedule = selectedLocation.Schedules.Where( s => s.Selected && s.Schedule.Id == scheduleId ).FirstOrDefault();
 
             selectedGroup.Selected = false;
-            selectedGroup.PreSelected = false;
             selectedLocation.Selected = false;
-            selectedLocation.PreSelected = false;
             selectedSchedule.Selected = false;
-            selectedSchedule.PreSelected = false;
 
             BindLocations( person );
             BindSchedules( person );
