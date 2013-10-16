@@ -26,15 +26,15 @@
 
     <asp:Panel ID="pnlActivitySelect" runat="server" CssClass="attended" >
         <div class="row checkin-header">
-            <div class="col-md-3 checkin-actions">
+            <div class="col-sm-3 checkin-actions">
                 <asp:LinkButton ID="lbBack" CssClass="btn btn-primary btn-lg" runat="server" OnClick="lbBack_Click" Text="Back"/>
             </div>
 
-            <div class="col-md-6">
+            <div class="col-sm-6">
                 <h1><asp:Label ID="lblPersonName" runat="server"></asp:Label></h1>
             </div>
 
-            <div class="col-md-3 checkin-actions">
+            <div class="col-sm-3 checkin-actions">
                 <asp:LinkButton ID="lbNext" CssClass="btn btn-primary btn-lg" runat="server" OnClick="lbNext_Click" Text="Next"/>
             </div>
         </div>
@@ -109,13 +109,13 @@
     <!-- Add Note Panel -->
     <asp:Panel ID="pnlAddNote" runat="server" CssClass="attended modal-foreground small" DefaultButton="lbAddNoteSave">
         <div class="checkin-header row">
-            <div class="col-md-3 checkin-actions">
+            <div class="col-sm-3 checkin-actions">
                 <asp:LinkButton ID="lbAddNoteCancel" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbAddNoteCancel_Click" Text="Cancel" CausesValidation="false"/>
             </div>
-            <div class="col-md-6">
+            <div class="col-sm-6">
                 <h3>Add Note</h3>
             </div>
-            <div class="col-md-3 checkin-actions">
+            <div class="col-sm-3 checkin-actions">
                 <asp:LinkButton ID="lbAddNoteSave" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbAddNoteSave_Click" Text="Save" />
             </div>
         </div>
