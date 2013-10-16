@@ -89,7 +89,26 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             person.MiddleName = tbMiddleName.Text;
             person.LastName = tbLastName.Text;
             person.SuffixValueId = ddlSuffix.SelectedValueAsInt();
-            person.BirthDate = dpBirthDate.SelectedDate;
+
+            var birthday = bpBirthDay.SelectedDate;
+            if ( birthday.HasValue )
+            {
+                person.BirthMonth = birthday.Value.Month;
+                person.BirthDay = birthday.Value.Day;
+                if ( birthday.Value.Year != DateTime.MinValue.Year )
+                {
+                    person.BirthYear = birthday.Value.Year;
+                }
+                else
+                {
+                    person.BirthYear = null;
+                }
+            }
+            else
+            {
+                person.BirthDate = null;
+            }
+
             person.AnniversaryDate = dpAnniversaryDate.SelectedDate;
             person.Gender = rblGender.SelectedValue.ConvertToEnum<Gender>();
             person.MaritalStatusValueId = rblMaritalStatus.SelectedValueAsInt();
@@ -168,7 +187,7 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             tbMiddleName.Text = Person.MiddleName;
             tbLastName.Text = Person.LastName;
             ddlSuffix.SelectedValue = Person.SuffixValueId.HasValue ? Person.SuffixValueId.Value.ToString() : string.Empty;
-            dpBirthDate.SelectedDate = Person.BirthDate;
+            bpBirthDay.SelectedDate = Person.BirthDate;
             dpAnniversaryDate.SelectedDate = Person.AnniversaryDate;
             rblGender.SelectedValue = Person.Gender.ConvertToString();
             rblMaritalStatus.SelectedValue = Person.MaritalStatusValueId.HasValue ? Person.MaritalStatusValueId.Value.ToString() : string.Empty;

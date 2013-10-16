@@ -149,6 +149,10 @@
                 <Rock:DateRangePicker ID="dateRangerPicker" runat="server" Label="Rock:DateRangePicker" LowerValue="1/1/2012" UpperValue="12/31/2014" />
             </div>
 
+            <div id="Div4" runat="server" class="r-example">
+                <Rock:BirthdayPicker ID="birthdayPicker" runat="server" Label="Rock:BirthdayPicker" OnSelectedBirthdayChanged="birthdayPicker_SelectedBirthdayChanged" />
+            </div>
+
             <div runat="server" class="r-example">
                 <Rock:GroupPicker ID="groupPicker" runat="server" Label="Rock:GroupPicker" />
             </div>
