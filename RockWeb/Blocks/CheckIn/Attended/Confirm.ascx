@@ -6,15 +6,15 @@
     <Rock:ModalAlert ID="maWarning" runat="server" />
     <asp:Panel ID="pnlConfirm" runat="server" CssClass="attended">
         <div class="row checkin-header">
-            <div class="col-md-3 checkin-actions">
+            <div class="col-sm-3 checkin-actions">
                 <asp:LinkButton ID="lbBack" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbBack_Click" Text="Back"/>
             </div>
 
-            <div class="col-md-6">
+            <div class="col-sm-6">
                 <h1>Confirm</h1>
             </div>
 
-            <div class="col-md-3 checkin-actions">
+            <div class="col-sm-3 checkin-actions">
                 <asp:LinkButton ID="lbDone" CssClass="btn btn-lg btn-primary" runat="server" OnClick="lbDone_Click" Text="Done"/>
             </div>
         </div>
