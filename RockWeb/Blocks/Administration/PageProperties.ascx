@@ -13,7 +13,7 @@
             <asp:Repeater ID="rptProperties" runat="server" >
                 <ItemTemplate >
                     <li class='<%# GetTabClass(Container.DataItem) %>'>
-                        <asp:LinkButton ID="lbProperty" runat="server" Text='<%# Container.DataItem %>' OnClick="lbProperty_Click">
+                        <asp:LinkButton ID="lbProperty" runat="server" Text='<%# Container.DataItem %>' OnClick="lbProperty_Click" CausesValidation="false">
                         </asp:LinkButton> 
                     </li>
                 </ItemTemplate>
