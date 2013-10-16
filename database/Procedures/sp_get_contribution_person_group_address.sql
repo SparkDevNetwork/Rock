@@ -38,7 +38,7 @@ begin
     select 
         [pg].[PersonId],
         [pg].[GroupId],
-        'TODO: Address Person Names' [AddressPersonNames],
+        [pn].[PersonNames] [AddressPersonNames],
         [l].[Street1],
         [l].[Street2],
         [l].[City],
@@ -74,6 +74,7 @@ begin
         and
             [g].[GroupTypeId] = (select Id from GroupType where Guid = '790E3215-3B10-442B-AF69-616C0DCB998E' /* GROUPTYPE_FAMILY */)
     ) [pg]
+    cross apply [ufn_person_group_to_person_names]([pg].[PersonId], [pg].[GroupId]) [pn]
     join 
         [GroupLocation] [gl] 
     on 
@@ -86,10 +87,6 @@ begin
         [gl].IsMailing = 1
     and
         [gl].[GroupLocationTypeValueId] = (select Id from DefinedValue where Guid = '8C52E53C-2A66-435A-AE6E-5EE307D9A0DC' /* LOCATION_TYPE_HOME */)
-    
-
-    
-
 end
 go
 
