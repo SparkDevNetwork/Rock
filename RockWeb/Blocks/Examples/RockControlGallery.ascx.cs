@@ -316,6 +316,16 @@ namespace RockWeb.Blocks.Examples
         }
 
         /// <summary>
+        /// Handles the SelectedBirthdayChanged event of the birthdayPicker control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void birthdayPicker_SelectedBirthdayChanged( object sender, EventArgs e )
+        {
+            var dateTime = birthdayPicker.SelectedDate;
+        }
+
+        /// <summary>
         /// Handles the SaveSchedule event of the scheduleBuilder control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -324,7 +334,5 @@ namespace RockWeb.Blocks.Examples
         {
             string debug = scheduleBuilder.iCalendarContent;
         }
-        
- 
-}
+    }
 }

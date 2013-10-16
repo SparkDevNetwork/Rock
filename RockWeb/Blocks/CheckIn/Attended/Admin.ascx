@@ -36,11 +36,11 @@
 
     <asp:Panel ID="pnlAdmin" runat="server" DefaultButton="lbOk" CssClass="attended">
         <div class="row checkin-header">
-            <div class="col-md-3"></div>
-            <div class="col-md-6">
+            <div class="col-sm-3"></div>
+            <div class="col-sm-6">
                 <h1>Admin</h1>
             </div>
-            <div class="col-md-3 checkin-actions">
+            <div class="col-sm-3 checkin-actions">
                 <asp:LinkButton ID="lbOk" runat="server" CssClass="btn btn-lg btn-primary" OnClick="lbOk_Click" Text="Ok"></asp:LinkButton>
             </div>
         </div>

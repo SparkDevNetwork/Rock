@@ -610,9 +610,6 @@ namespace Rock.Model
         [MergeField]
         public virtual DateTime? BirthDate
         {
-            // notes
-            // if no birthday is available then DateTime.MinValue is returned
-            // if no birth year is given then the birth year will be DateTime.MinValue.Year
             get
             {
                 if ( BirthDay == null || BirthMonth == null )
@@ -621,8 +618,7 @@ namespace Rock.Model
                 }
                 else
                 {
-                    string birthYear = ( BirthYear ?? DateTime.MinValue.Year ).ToString();
-                    return Convert.ToDateTime( BirthMonth.ToString() + "/" + BirthDay.ToString() + "/" + birthYear );
+                    return new DateTime( BirthYear ?? DateTime.MinValue.Year, BirthMonth.Value, BirthDay.Value );
                 }
             }
 
@@ -632,7 +628,14 @@ namespace Rock.Model
                 {
                     BirthMonth = value.Value.Month;
                     BirthDay = value.Value.Day;
-                    BirthYear = value.Value.Year;
+                    if ( value.Value.Year != DateTime.MinValue.Year )
+                    {
+                        BirthYear = value.Value.Year;
+                    }
+                    else
+                    {
+                        BirthYear = null;
+                    }
                 }
                 else
                 {
