@@ -10,6 +10,7 @@ using System.Linq;
 using System.Web.Security;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using Rock.Constants;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Model;
@@ -84,18 +85,6 @@ namespace RockWeb.Blocks.Security
 
             if ( !Page.IsPostBack )
             {
-
-                //tbPassword.TextBox.TextMode = TextBoxMode.Password;
-                //tbPasswordConfirm.TextBox.TextMode = TextBoxMode.Password;
-                LoadBirthDays();
-
-                int year = DateTime.Now.Year;
-                for ( int i = 0; i <= 110; i++ )
-                {
-                    string yearStr = ( year - i ).ToString();
-                    ddlBirthYear.Items.Add( new ListItem( yearStr, yearStr ) );
-                }
-
                 DisplayUserInfo( Direction.Forward );
             }
         }
@@ -115,11 +104,6 @@ namespace RockWeb.Blocks.Security
         #region Events
 
         #region User Info Panel
-
-        protected void ddlBirthMonth_IndexChanged( object sender, EventArgs e )
-        {
-            LoadBirthDays();
-        }
 
         protected void btnUserInfoNext_Click( object sender, EventArgs e )
         {
@@ -371,27 +355,6 @@ namespace RockWeb.Blocks.Security
                 ShowErrorMessage( "Invalid User" );
         }
 
-        private void LoadBirthDays()
-        {
-            int currentMonth = 0;
-            if ( ddlBirthMonth.SelectedIndex >= 0 )
-                currentMonth = Int32.Parse( ddlBirthMonth.SelectedValue);
-
-            int currentDay = 0;
-            if ( ddlBirthDay.SelectedIndex >= 0 )
-                currentDay = Int32.Parse( ddlBirthDay.SelectedValue );
-
-            int[] days = new int[13] { 31, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-
-            ddlBirthDay.Items.Clear();
-            ddlBirthDay.Items.Add( new ListItem( "Day", "0" ) );
-            for ( int i = 1; i <= days[currentMonth]; i++ )
-                ddlBirthDay.Items.Add( new ListItem( i.ToString(), i.ToString() ) );
-
-            if ( currentDay <= days[currentMonth] )
-                ddlBirthDay.SelectedValue = currentDay.ToString();
-        }
-
         private void ShowPanel( int panel )
         {
             for ( int i = 0; i < PagePanels.Length; i++ )
@@ -419,14 +382,16 @@ namespace RockWeb.Blocks.Security
                     break;
             }
 
-            if (ddlBirthMonth.SelectedValue != "0")
-                person.BirthMonth = Int32.Parse(ddlBirthMonth.SelectedValue);
-
-            if (ddlBirthDay.SelectedValue != "0")
-                person.BirthDay = Int32.Parse(ddlBirthDay.SelectedValue);
-
-            if (ddlBirthYear.SelectedValue != "0")
-                person.BirthYear = Int32.Parse(ddlBirthYear.SelectedValue);
+            var birthday = bdpBirthDay.SelectedDate;
+            if ( birthday.HasValue )
+            {
+                person.BirthMonth = birthday.Value.Month;
+                person.BirthDay = birthday.Value.Day;
+                if ( birthday.Value.Year != DateTime.MinValue.Year )
+                {
+                    person.BirthYear = birthday.Value.Year;
+                }
+            }
 
             personService.Add(person, CurrentPersonId);
             personService.Save(person, CurrentPersonId);

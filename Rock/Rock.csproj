@@ -526,6 +526,7 @@
     <Compile Include="Web\UI\Controls\Badge.cs" />
     <Compile Include="Web\UI\Controls\ConfirmPageUnload.cs" />
     <Compile Include="Web\UI\Controls\HighlightLabel.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\BirthdayPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LocationItemPicker.cs" />
     <Compile Include="Web\UI\Controls\Pickers\LocationAddressPicker.cs" />
     <Compile Include="Web\UI\Controls\RockControlHelper.cs" />

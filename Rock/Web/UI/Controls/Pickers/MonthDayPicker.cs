@@ -160,6 +160,7 @@ namespace Rock.Web.UI.Controls
             monthDropDownList.CssClass = "form-control input-width-sm";
             monthDropDownList.ID = "monthDropDownList_" + this.ID;
             monthDropDownList.SelectedIndexChanged += monthDayDropDownList_SelectedIndexChanged;
+
             dayDropDownList = new DropDownList();
             dayDropDownList.CssClass = "form-control input-width-sm";
             dayDropDownList.ID = "dayDropDownList_" + this.ID;
@@ -197,9 +198,10 @@ namespace Rock.Web.UI.Controls
             EnsureChildControls();
             monthDropDownList.Items.Clear();
             monthDropDownList.Items.Add( new ListItem( string.Empty, string.Empty ) );
-            for ( int month = 1; month <= 12; month++ )
+            DateTime date = new DateTime( 2000, 1, 1 );
+            for ( int i = 0; i <= 11; i++ )
             {
-                monthDropDownList.Items.Add( new ListItem( month.ToString(), month.ToString() ) );
+                monthDropDownList.Items.Add( new ListItem( date.AddMonths( i ).ToString( "MMM" ), ( i + 1 ).ToString() ) );
             }
 
             dayDropDownList.Items.Clear();
@@ -258,6 +260,7 @@ namespace Rock.Web.UI.Controls
         {
             get
             {
+                EnsureChildControls();
                 int? selectedMonth = monthDropDownList.SelectedValueAsInt( true );
                 int? selectedDay = dayDropDownList.SelectedValueAsInt( true );
                 if ( selectedMonth.HasValue && selectedDay.HasValue )
@@ -273,6 +276,7 @@ namespace Rock.Web.UI.Controls
 
             set
             {
+                EnsureChildControls();
                 if ( value != null )
                 {
                     monthDropDownList.SelectedValue = value.Value.Month.ToString();
