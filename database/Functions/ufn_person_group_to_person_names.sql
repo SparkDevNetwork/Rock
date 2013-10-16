@@ -19,70 +19,93 @@ BEGIN
     declare @groupLastName varchar(max);
     declare @groupAdultFullNames varchar(max) = '';
     declare @groupNonAdultFullNames varchar(max) = '';
+    declare @groupMemberTable table (LastName varchar(max), FirstName varchar(max), FullName varchar(max), GroupRoleGuid uniqueidentifier );
+    declare @GROUPROLE_FAMILY_MEMBER_ADULT uniqueidentifier = '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42';
 
     if (@personId is not null) 
     begin
         -- just getting the Person Names portion of the address for an individual person
-        select @personNames = FullName from Person where Id = @personId;
+        select @personNames = [FullName] from [Person] where [Id] = @personId;
     end
     else
     begin
-        -- determine if we can use the same lastname for everybody, or if there some of the persons have different lastnames, and get the firstnames and lastname, and adult fullnames while we are at it
+        -- populate a table variable with the data we'll need for the different cases
+        insert into @groupMemberTable 
         select 
-            @adultLastNameCount = count(distinct [p].[LastName]),
-            @groupFirstNames = @groupFirstNames + [p].[FirstName] + ' & ',
-            @groupLastName = max([p].[LastName]),
-            @groupAdultFullNames = @groupAdultFullNames + [p].[FullName] + ' & '
+            [p].[LastName], [p].[FirstName], [p].[FullName], [gr].[Guid]
         from 
             [GroupMember] [gm] 
         join 
             [Person] [p] 
         on 
             [p].[Id] = [gm].[PersonId] 
+        join
+            [GroupRole] [gr]
+        on 
+            [gm].[GroupRoleId] = [gr].[Id]
         where 
-            [GroupId] = @groupId
-        and
-            [GroupRoleId] = (select [Id] from [GroupRole] where [Guid] =  '2639F9A5-2AAE-4E48-A8C3-4FFE86681E42' /* GROUPROLE_FAMILY_MEMBER_ADULT */)
-        group by p.FirstName, p.FullName, p.Gender
-        order by p.Gender
+            [GroupId] = @groupId;
+        
+        -- determine adultCount and if we can use the same lastname for all adults, and get lastname while we are at it
+        select 
+            @adultLastNameCount = count(distinct [LastName])
+            ,@groupLastName = max([LastName])
+        from 
+            @groupMemberTable
+        where
+            [GroupRoleGuid] = @GROUPROLE_FAMILY_MEMBER_ADULT;  
 
-        if (@adultLastNameCount = 1)
+        if @adultLastNameCount > 0 
         begin
-            -- just one lastname and at least one adult. Get the Person Names portion of the address in the format "<MaleAdult> & <FemaleAdult> <LastName>"
+            -- get the FirstNames and Adult FullNames for use in the cases of families with Adults
+            select 
+                @groupFirstNames = @groupFirstNames + [FirstName] + ' & '
+                ,@groupAdultFullNames = @groupAdultFullNames + [FullName] + ' & '
+            from      
+                @groupMemberTable
+            where
+                [GroupRoleGuid] = @GROUPROLE_FAMILY_MEMBER_ADULT;
+
+            -- cleanup the trailing ' &'s
             if len(@groupFirstNames) > 2 begin
                 -- trim the extra ' &' off the end 
                 set @groupFirstNames = SUBSTRING(@groupFirstNames, 0, len(@groupFirstNames) - 1)
             end 
-            set @personNames = @groupFirstNames + ' ' + @groupLastName;
-        end
-        else if (@adultLastNameCount = 0)
+
+            if len(@groupAdultFullNames) > 2 begin
+                -- trim the extra ' &' off the end 
+                set @groupAdultFullNames = SUBSTRING(@groupAdultFullNames, 0, len(@groupAdultFullNames) - 1)  
+            end
+        end             
+
+        if @adultLastNameCount = 0        
         begin
-             -- no adults in family, list all members of the family in "Fullname & FullName & ..." format, order by oldest kid first
+            -- get the NonAdultFullNames for use in the case of families without adults 
             select 
-                @groupNonAdultFullNames = @groupNonAdultFullNames + [p].[FullName] + ' & '
+                @groupNonAdultFullNames = @groupNonAdultFullNames + [FullName] + ' & '
             from 
-                [GroupMember] [gm] 
-            join 
-                [Person] [p] 
-            on 
-                [p].[Id] = [gm].[PersonId] 
-            where 
-                [GroupId] = @groupId
-            order by p.BirthYear, p.BirthMonth, p.BirthDay
+                @groupMemberTable
+            order by [FullName]
 
             if len(@groupNonAdultFullNames) > 2 begin
                 -- trim the extra ' &' off the end 
                 set @groupNonAdultFullNames = SUBSTRING(@groupNonAdultFullNames, 0, len(@groupNonAdultFullNames) - 1)  
             end
+        end
+
+        if (@adultLastNameCount = 1)
+        begin
+            -- just one lastname and at least one adult. Get the Person Names portion of the address in the format "<MaleAdult> & <FemaleAdult> <LastName>"
+            set @personNames = @groupFirstNames + ' ' + @groupLastName;
+        end
+        else if (@adultLastNameCount = 0)
+        begin
+             -- no adults in family, list all members of the family in "Fullname & FullName & ..." format
             set @personNames = @groupNonAdultFullNames;
         end
         else
         begin
             -- multiple adult lastnames
-            if len(@groupAdultFullNames) > 2 begin
-              -- trim the extra ' &' off the end 
-              set @groupAdultFullNames = SUBSTRING(@groupAdultFullNames, 0, len(@groupAdultFullNames) - 1)  
-            end
             set @personNames = @groupAdultFullNames;
         end 
     end
