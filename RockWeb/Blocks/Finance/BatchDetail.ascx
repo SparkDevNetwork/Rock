@@ -15,7 +15,7 @@
                 <div class="row">
                     <div class="col-md-6">
                         <Rock:DataTextBox ID="tbName" runat="server" Label="Title" TabIndex="1" 
-                            SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="Name" />
+                            SourceTypeName="Rock.Model.FinancialBatch, Rock" PropertyName="Name" ValidationGroup="batchDetail" />
                     </div>
                 </div>    
                 
