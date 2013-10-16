@@ -45,6 +45,8 @@ begin
         [l].[State],
         [l].[Zip]
     from (
+        -- Get distinct Giving Groups for Persons that have a specific GivingGroupId and have transactions that match the filter
+        -- These are Persons that give as part of a Group.  For example, Husband and Wife
         select distinct
             null [PersonId], 
             [g].[Id] [GroupId]
@@ -56,6 +58,9 @@ begin
             [p].[GivingGroupId] = [g].[Id]
         where [p].[Id] in (select * from tranListCTE)
         union
+        -- Get Persons and their GroupId(s) that do not have GivingGroupId and have transactions that match the filter.        
+        -- These are the persons that give as individuals vs as part of a group. We need the Groups (families they belong to) in order 
+        -- to determine which address(es) the statements need to be mailed to 
         select  
             [p].[Id] [PersonId],
             [g].[Id] [GroupId]
@@ -73,6 +78,7 @@ begin
             [p].[GivingGroupId] is null
         and
             [g].[GroupTypeId] = (select Id from GroupType where Guid = '790E3215-3B10-442B-AF69-616C0DCB998E' /* GROUPTYPE_FAMILY */)
+        and [p].[Id] in (select * from tranListCTE)
     ) [pg]
     cross apply [ufn_person_group_to_person_names]([pg].[PersonId], [pg].[GroupId]) [pn]
     join 
@@ -87,6 +93,9 @@ begin
         [gl].IsMailing = 1
     and
         [gl].[GroupLocationTypeValueId] = (select Id from DefinedValue where Guid = '8C52E53C-2A66-435A-AE6E-5EE307D9A0DC' /* LOCATION_TYPE_HOME */)
+    order by
+    case when @orderByZipCode = 1 then Zip end
+    
 end
 go
 
