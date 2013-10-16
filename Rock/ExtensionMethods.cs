@@ -262,8 +262,18 @@ namespace Rock
         /// <returns></returns>
         public static string Pluralize( this string str )
         {
-            var pluralizationService = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService( new System.Globalization.CultureInfo( "en-US" ) );
-            return pluralizationService.Pluralize( str );
+            // Pluralization services handles most words, but there are some exceptions (i.e. campus)
+            switch ( str )
+            {
+                case "Campus":
+                case "campus":
+                    return str + "es";
+                case "CAMPUS":
+                    return str + "ES";
+                default:
+                    var pluralizationService = System.Data.Entity.Design.PluralizationServices.PluralizationService.CreateService( new System.Globalization.CultureInfo( "en-US" ) );
+                    return pluralizationService.Pluralize( str );
+            }
         }
 
         /// <summary>
