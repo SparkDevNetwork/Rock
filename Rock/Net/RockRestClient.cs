@@ -163,6 +163,8 @@ namespace Rock.Net
             HttpError httpError = null;
             T result = default( T );
 
+            
+
             httpClient.GetAsync( requestUri ).ContinueWith( ( postTask ) =>
                 {
                     resultContent = postTask.Result.Content;
@@ -273,6 +275,46 @@ namespace Rock.Net
             {
                 httpMessage.EnsureSuccessStatusCode();
             }
+        }
+
+        public object PostDataWithResult<T>( string postPath, T data )
+        {
+            Uri requestUri = new Uri( rockBaseUri, postPath );
+
+            HttpClient httpClient = new HttpClient( new HttpClientHandler { CookieContainer = this.CookieContainer } );
+            HttpError httpError = null;
+            HttpResponseMessage httpMessage = null;
+
+            Action<Task<HttpResponseMessage>> handleContinue = new Action<Task<HttpResponseMessage>>( p =>
+            {
+                p.Result.Content.ReadAsAsync<HttpError>().ContinueWith( c =>
+                {
+                    httpError = c.Result;
+                } ).Wait();
+
+                p.Result.Content.ReadAsStringAsync().ContinueWith( c =>
+                {
+                    var contentResult = c.Result;
+                } ).Wait();
+
+                httpMessage = p.Result;
+            } );
+
+            
+            // POST is for INSERTs
+            httpClient.PostAsJsonAsync<T>( requestUri.ToString(), data ).ContinueWith( handleContinue ).Wait();
+
+            if ( httpError != null )
+            {
+                throw new HttpErrorException( httpError );
+            }
+
+            if ( httpMessage != null )
+            {
+                httpMessage.EnsureSuccessStatusCode();
+            }
+
+            return null;
         }
     }
 
