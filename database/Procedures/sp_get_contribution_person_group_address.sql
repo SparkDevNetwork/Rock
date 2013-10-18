@@ -43,7 +43,11 @@ begin
         [l].[Street2],
         [l].[City],
         [l].[State],
-        [l].[Zip]
+        [l].[Zip],
+        @startDate [StartDate],
+        @endDate [EndDate],
+        null [CustomMessage1],
+        null [CustomMessage2]
     from (
         -- Get distinct Giving Groups for Persons that have a specific GivingGroupId and have transactions that match the filter
         -- These are Persons that give as part of a Group.  For example, Husband and Wife
