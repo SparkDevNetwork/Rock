@@ -6,8 +6,6 @@ using ceTe.DynamicPDF;
 using ceTe.DynamicPDF.ReportWriter;
 using ceTe.DynamicPDF.ReportWriter.Data;
 using ceTe.DynamicPDF.ReportWriter.ReportElements;
-using Rock;
-using Rock.Web.Cache;
 using Rock.Net;
 
 namespace Rock.Apps.StatementGenerator
@@ -70,7 +68,6 @@ namespace Rock.Apps.StatementGenerator
         public MissingReportElementException( string message )
             : base( message )
         {
-
         }
     }
 
@@ -106,6 +103,11 @@ namespace Rock.Apps.StatementGenerator
         private Rock.Model.Location _organizationAddressLocation = null;
 
         /// <summary>
+        /// The _account summary query
+        /// </summary>
+        private Query _accountSummaryQuery = null;
+
+        /// <summary>
         /// The _contribution statement options rest
         /// </summary>
         private Rock.Net.RestParameters.ContributionStatementOptions _contributionStatementOptionsREST = null;
@@ -118,6 +120,7 @@ namespace Rock.Apps.StatementGenerator
         public Document RunReport()
         {
             UpdateProgress( "Connecting..." );
+            
             // Login and setup options for REST calls
             RockConfig rockConfig = RockConfig.Load();
 
@@ -163,6 +166,8 @@ namespace Rock.Apps.StatementGenerator
             }
 
             orgInfoQuery.OpeningRecordSet += orgInfoQuery_OpeningRecordSet;
+
+            _accountSummaryQuery = report.GetQueryById( "AccountSummaryQuery" );
 
             Document doc = report.Run();
             return doc;
@@ -214,17 +219,14 @@ namespace Rock.Apps.StatementGenerator
             RecordCount = personGroupAddressDataTable.Rows.Count;
             e.RecordSet = new DataTableRecordSet( personGroupAddressDataTable );
 
-            SubReport subReport = e.LayoutWriter.DocumentLayout.GetReportElementById( "InnerReport" ) as SubReport;
+            SubReport innerReport = e.LayoutWriter.DocumentLayout.GetReportElementById( "InnerReport" ) as SubReport;
 
-            if ( subReport == null )
+            if ( innerReport == null )
             {
                 throw new MissingReportElementException( "Report requires a QueryElement named 'InnerReport'" );
             }
 
-            subReport.Query.OpeningRecordSet += subQuery_OpeningRecordSet;
-
-            SubReportFooter tranListFooter = e.LayoutWriter.DocumentLayout.GetElementById( "TranListFooter" ) as SubReportFooter;
-
+            innerReport.Query.OpeningRecordSet += innerReport_OpeningRecordSet;
         }
 
         /// <summary>
@@ -240,11 +242,11 @@ namespace Rock.Apps.StatementGenerator
         }
 
         /// <summary>
-        /// Handles the OpeningRecordSet event of the subQuery control.
+        /// Handles the OpeningRecordSet event of the innerReport control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="ceTe.DynamicPDF.ReportWriter.Data.OpeningRecordSetEventArgs"/> instance containing the event data.</param>
-        protected void subQuery_OpeningRecordSet( object sender, OpeningRecordSetEventArgs e )
+        /// <param name="e">The <see cref="OpeningRecordSetEventArgs"/> instance containing the event data.</param>
+        protected void innerReport_OpeningRecordSet( object sender, OpeningRecordSetEventArgs e )
         {
             RecordIndex++;
             UpdateProgress( "Processing..." );
@@ -266,6 +268,25 @@ namespace Rock.Apps.StatementGenerator
             DataTable transactionsDataTable = transactionsDataSet.Tables[0];
 
             e.RecordSet = new DataTableRecordSet( transactionsDataTable );
+            
+            if ( _accountSummaryQuery == null )
+            {
+                // not required.  Just don't do anything if it isn't there
+            }
+            else
+            {
+                _accountSummaryQuery.OpeningRecordSet += delegate(object s, OpeningRecordSetEventArgs ee)
+                {
+                    // create a recordset for the _accountSummaryQuery which is the GroupBy summary of AccountName, Amount
+                    var summaryTable = transactionsDataTable.AsEnumerable().GroupBy( g => g["AccountName"] ).Select( a => new
+                        {
+                            AccountName = a.Key.ToString(),
+                            Amount = a.Sum( x => decimal.Parse( x["Amount"].ToString() ) )
+                        } ).OrderBy( o => o.AccountName );
+                    
+                    ee.RecordSet = new EnumerableRecordSet( summaryTable );
+                };
+            }
         }
 
         /// <summary>

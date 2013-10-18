@@ -1,19 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using ceTe.DynamicPDF.ReportWriter;
 
 namespace Rock.Apps.StatementGenerator
@@ -52,8 +41,13 @@ namespace Rock.Apps.StatementGenerator
         /// <exception cref="System.NotImplementedException"></exception>
         protected void bw_RunWorkerCompleted( object sender, RunWorkerCompletedEventArgs e )
         {
+            if ( e.Error != null )
+            {
+                lblReportProgress.Content = "Error: " + e.Error.Message;
+                throw e.Error;
+            }
+            
             lblReportProgress.Content = "Done";
-            //WpfHelper.FadeOut( lblReportProgress );
         }
 
         /// <summary>
