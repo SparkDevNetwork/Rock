@@ -11,44 +11,62 @@
 				<query id="InnerQuery">
 					<eventDriven connectionString=""></eventDriven>
 				</query>
-				<header id="TranListHeader" height="26">
-					<label text="Date" font="HelveticaBold" width="72" id="lblDate" height="14" x="6" y="6"/>
-					<label font="HelveticaBold" width="72" x="90" id="lblSummary" text="Summary" height="14" y="6"/>
-					<label font="HelveticaBold" width="72" id="lblAccount" text="Account" height="14" x="264" y="6"/>
-					<label font="HelveticaBold" x="396" id="lblAmount" text="Amount" height="14" y="6" align="right" width="102"/>
-					<line id="HeaderLine" x2="498" x1="0" y2="22" y1="22"/>
+				<header id="TranListHeader" height="60">
+					<label text="Date" font="HelveticaBold" width="72" id="lblDate" height="14" x="6" y="36"/>
+					<label font="HelveticaBold" width="72" x="90" id="lblSummary" text="Summary" height="14" y="36"/>
+					<label font="HelveticaBold" width="72" id="lblAccount" text="Account" height="14" x="264" y="36"/>
+					<label font="HelveticaBold" x="396" id="lblAmount" text="Amount" height="14" align="right" width="102" y="36"/>
+					<line id="HeaderLine" x2="498" x1="0" y1="54" y2="54"/>
+					<rectangle fillColor="lightGrey" height="30" id="rectTopTotal" x="0" width="501" y="-2"/>
+					<recordArea x="12" width="288" height="18" font="HelveticaBold" y="6" id="raTopTotalText">
+						<text>Total Cash Gifts This Period</text>
+					</recordArea>
+					<recordBox dataFormat="" x="390" y="6" height="18" width="108" id="rbTopTotalAmount" field="Sum(Amount, CurrentPage, InnerQuery )" font="HelveticaBold" align="right"/>
 				</header>
-				<detail autoSplit="true" height="21.6" id="TranListDetail">
-					<recordBox dataFormat="" height="14" width="100" field="Amount" id="rbAmount" x="396" align="right" y="6"/>
-					<recordBox height="14" field="TransactionDateTime" id="rbTransactionDateTime" dataFormat="MM/dd/yyyy" width="72" x="6" y="6"/>
-					<recordBox dataFormat="" field="Summary" id="rbSummary" width="167" x="90" y="6" height="14"/>
-					<recordBox dataFormat="" height="14" field="AccountName" id="rbAccountName" width="126" x="264" y="6"/>
+				<detail autoSplit="true" id="TranListDetail" height="15">
+					<recordBox dataFormat="" height="14" width="100" field="Amount" id="rbAmount" x="396" align="right" y="2" fontSize="10"/>
+					<recordBox height="14" field="TransactionDateTime" id="rbTransactionDateTime" dataFormat="MM/dd/yyyy" width="72" x="6" y="2" fontSize="10"/>
+					<recordBox dataFormat="" field="Summary" id="rbSummary" width="167" x="90" height="14" y="2" fontSize="10"/>
+					<recordBox dataFormat="" height="14" field="AccountName" id="rbAccountName" width="126" x="264" y="2" fontSize="10"/>
 				</detail>
-				<footer id="TranListFooter" height="10">
+				<footer id="TranListFooter" height="25">
 					<line id="FooterLine" x2="498" x1="0" y1="2" y2="2"/>
+					<label width="100" text="Total" font="HelveticaBold" x="6" height="18" y="6" id="lblSumAmount"/>
+					<recordBox dataFormat="" x="390" y="6" height="18" width="108" id="rbTotalAmount" field="Sum(Amount, CurrentPage, InnerQuery )" font="HelveticaBold" align="right"/>
 				</footer>
 			</subReport>
-			<image height="51" path="rock-logo.jpg" width="137" id="imgLogo" x="369" y="0"/>
-			<rectangle fillColor="lightGrey" height="48" width="499.1" id="rectPeriodSummary" x="0" y="207"/>
-			<formattedRecordArea x="0" y="144" height="63" width="234" id="lblToAddress">
-				<initialStyle>
-					<font/>
-					<line/>
-					<paragraph/>
-				</initialStyle>
-				<text><![CDATA[<P>Mr. Firstname LastName</P><P>101 Some Street</P><P>Sometown, AZ 12345</P>]]></text>
-			</formattedRecordArea>
-			<formattedRecordArea x="0" height="63" width="234" y="0" id="lblReturnAddress">
-				<initialStyle>
-					<font/>
-					<line/>
-					<paragraph/>
-				</initialStyle>
-				<text><![CDATA[<P>Rock Solid Church</P><P>100 Electric Ave</P><P>Sometown, AZ 85027</P>]]></text>
-			</formattedRecordArea>
 			<pageBreak id="PageBreak1" y="513"/>
-			<label height="14" width="100" text="Total" font="HelveticaBold" x="6" y="330" id="lblTotal"/>
-			<label height="14" y="330" text="" align="right" x="390" width="108" font="HelveticaBold" id="lblTotalAmount"/>
+			<recordArea x="0" width="252" id="raToAddress" y="144" height="60">
+				<text>#AddressPersonNames#
+#Street1##IIF(len(Street2),"
+")##Street2#
+#City#, #State# #Zip#</text>
+			</recordArea>
+			<subReport id="OrganizationInfoReport" x="0" y="0" width="250">
+				<query id="OrgInfoQuery">
+					<eventDriven connectionString=""></eventDriven>
+				</query>
+				<header id="Header1"/>
+				<detail id="OrgDetail" height="100">
+					<image height="51" path="rock-logo.jpg" width="137" x="0" y="0" id="imgLogo"/>
+					<recordArea x="0" width="252" id="raOrganizationAddress" height="42" y="54">
+						<text>#Street1#, #City# #State# #Zip#
+</text>
+					</recordArea>
+				</detail>
+				<footer id="Footer1"/>
+			</subReport>
+			<recordArea y="0" align="right" id="raRightTop" x="144" width="366" height="78">
+				<text>Contribution Summary for #AddressPersonNames#
+#Format(StartDate, "MM/dd/yyyy")# - #Format(EndDate, "MM/dd/yyyy")#
+        </text>
+			</recordArea>
+			<recordArea height="150" width="246" id="raCustomArea1" x="258" y="108">
+				<text>#CustomMessage1#</text>
+			</recordArea>
+			<recordArea x="0" width="510" y="444" height="60" id="raCustomArea2">
+				<text>#CustomMessage2#</text>
+			</recordArea>
 		</detail>
 		<footer id="ReportFooter"/>
 	</report>

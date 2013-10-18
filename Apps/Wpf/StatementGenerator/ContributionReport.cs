@@ -6,7 +6,6 @@ using ceTe.DynamicPDF;
 using ceTe.DynamicPDF.ReportWriter;
 using ceTe.DynamicPDF.ReportWriter.Data;
 using ceTe.DynamicPDF.ReportWriter.ReportElements;
-using Rock.Model;
 using Rock;
 using Rock.Web.Cache;
 using Rock.Net;
@@ -35,6 +34,22 @@ namespace Rock.Apps.StatementGenerator
         public DateTime EndDate { get; set; }
 
         /// <summary>
+        /// Gets or sets the account ids.
+        /// </summary>
+        /// <value>
+        /// The account ids.
+        /// </value>
+        public List<int> AccountIds { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person unique identifier.
+        /// </summary>
+        /// <value>
+        /// The person unique identifier.
+        /// </value>
+        public int? PersonId { get; set; }
+
+        /// <summary>
         /// Gets or sets the layout file.
         /// </summary>
         /// <value>
@@ -46,15 +61,17 @@ namespace Rock.Apps.StatementGenerator
     /// <summary>
     /// 
     /// </summary>
-    public class TransactionRecord
+    public class MissingReportElementException : Exception
     {
-        public Person AuthorizedPerson { get; set; }
-        public DateTime? TransactionDateTime { get; set; }
-        public int? CurrencyTypeValueId { get; set; }
-        public string Summary { get; set; }
-        public int AccountId { get; set; }
-        public string AccountName { get; set; }
-        public decimal Amount { get; set; }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MissingReportElementException"/> class.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
+        public MissingReportElementException( string message )
+            : base( message )
+        {
+
+        }
     }
 
     /// <summary>
@@ -79,67 +96,89 @@ namespace Rock.Apps.StatementGenerator
         public ReportOptions Options { get; set; }
 
         /// <summary>
+        /// The _rock rest client
+        /// </summary>
+        private RockRestClient _rockRestClient = null;
+
+        /// <summary>
+        /// The Organization Address location
+        /// </summary>
+        private Rock.Model.Location _organizationAddressLocation = null;
+
+        /// <summary>
+        /// The _contribution statement options rest
+        /// </summary>
+        private Rock.Net.RestParameters.ContributionStatementOptions _contributionStatementOptionsREST = null;
+
+        /// <summary>
         /// Creates the document.
         /// </summary>
         /// <param name="financialTransactionQry">The financial transaction qry.</param>
         /// <returns></returns>
         public Document RunReport()
         {
+            UpdateProgress( "Connecting..." );
+            // Login and setup options for REST calls
+            RockConfig rockConfig = RockConfig.Load();
+
+            _rockRestClient = new RockRestClient( rockConfig.RockBaseUrl );
+            _rockRestClient.Login( rockConfig.Username, rockConfig.Password );
+
+            _contributionStatementOptionsREST = new Rock.Net.RestParameters.ContributionStatementOptions
+            {
+                StartDate = Options.StartDate,
+                EndDate = Options.EndDate,
+                AccountIds = null,
+                PersonId = null,
+                OrderByZipCode = true
+            };
+
+            var organizationAddressAttribute = _rockRestClient.GetData<List<Rock.Model.Attribute>>( "api/attributes", "Key eq 'OrganizationAddress'" ).FirstOrDefault();
+            if ( organizationAddressAttribute != null )
+            {
+                Guid locationGuid = Guid.Empty;
+                if ( Guid.TryParse( organizationAddressAttribute.DefaultValue, out locationGuid ) )
+                {
+                    _organizationAddressLocation = _rockRestClient.GetDataByGuid<Rock.Model.Location>( "api/locations", locationGuid );
+                }
+            }
+
+            // If we don't have a _organizationAddressLocation, just create an empty location
+            _organizationAddressLocation = _organizationAddressLocation ?? new Rock.Model.Location();
+
             // setup report layout and events
             DocumentLayout report = new DocumentLayout( this.Options.LayoutFile );
             Query query = report.GetQueryById( "OuterQuery" );
+            if ( query == null )
+            {
+                throw new MissingReportElementException( "Report requires a QueryElement named 'OuterQuery'" );
+            }
+
             query.OpeningRecordSet += mainQuery_OpeningRecordSet;
 
-            FormattedRecordArea formattedRecordAreaToAddress = report.GetReportElementById( "lblToAddress" ) as FormattedRecordArea;
-            formattedRecordAreaToAddress.LaidOut += formattedRecordAreaToAddress_LaidOut;
+            Query orgInfoQuery = report.GetQueryById( "OrgInfoQuery" );
+            if ( orgInfoQuery == null )
+            {
+                throw new MissingReportElementException( "Report requires a QueryElement named 'OrgInfoQuery'" );
+            }
 
-            Label lblTotalAmount = report.GetReportElementById( "lblTotalAmount" ) as Label;
-            lblTotalAmount.LaidOut += lblTotalAmount_LaidOut;
+            orgInfoQuery.OpeningRecordSet += orgInfoQuery_OpeningRecordSet;
 
             Document doc = report.Run();
             return doc;
         }
 
         /// <summary>
-        /// Handles the LaidOut event of the lblTotalAmount control.
+        /// Handles the OpeningRecordSet event of the orgInfoQuery control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="LabelLaidOutEventArgs"/> instance containing the event data.</param>
-        protected void lblTotalAmount_LaidOut( object sender, LabelLaidOutEventArgs e )
+        /// <param name="e">The <see cref="OpeningRecordSetEventArgs"/> instance containing the event data.</param>
+        protected void orgInfoQuery_OpeningRecordSet( object sender, OpeningRecordSetEventArgs e )
         {
-            List<TransactionRecord> transactions = e.LayoutWriter.RecordSets.Current[1] as List<TransactionRecord>;
-            e.Label.Text = transactions.Sum( a => a.Amount ).ToString();
-        }
-
-        /// <summary>
-        /// Handles the LaidOut event of the formattedRecordAreaToAddress control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="ceTe.DynamicPDF.ReportWriter.ReportElements.FormattedRecordAreaLaidOutEventArgs"/> instance containing the event data.</param>
-        protected void formattedRecordAreaToAddress_LaidOut( object sender, FormattedRecordAreaLaidOutEventArgs e )
-        {
-            Person person = e.LayoutWriter.RecordSets.Current[0] as Person;
-
-            PersonService personService = new PersonService();
-            Group family = personService.GetFamilies( person ).FirstOrDefault();
-            if ( family != null )
-            {
-                GroupLocation homeAddress = family.GroupLocations.Where( a => a.LocationTypeValue.Guid == new Guid( Rock.SystemGuid.DefinedValue.LOCATION_TYPE_HOME ) ).FirstOrDefault();
-                if ( homeAddress != null )
-                {
-                    e.FormattedTextArea.Text = string.Format(
-@"
-<p>{0}</p>
-<p>{1}</p>
-<p>{2}</p>
-<p>{3}, {4} {5}</p>
-", family.Name, homeAddress.Location.Street1, homeAddress.Location.Street2, homeAddress.Location.City, homeAddress.Location.State, homeAddress.Location.Zip );
-                }
-            }
-            else
-            {
-                e.FormattedTextArea.Text = string.Format( "<p>{0}</p>", person.FullName );
-            }
+            // everytime the OrgInfoSubReport is called, just give it a one row dataset with a Location object
+            List<Rock.Model.Location> orgInfoList = new List<Rock.Model.Location>();
+            orgInfoList.Add( _organizationAddressLocation );
+            e.RecordSet = new EnumerableRecordSet( orgInfoList );
         }
 
         /// <summary>
@@ -166,59 +205,26 @@ namespace Rock.Apps.StatementGenerator
         /// <exception cref="System.NotImplementedException"></exception>
         protected void mainQuery_OpeningRecordSet( object sender, OpeningRecordSetEventArgs e )
         {
-            UpdateProgress( "Executing Query..." );
-
-            RockConfig rockConfig = RockConfig.Load();
-
-            RockRestClient rockRestClient = new RockRestClient( rockConfig.RockBaseUrl );
-            rockRestClient.Login( rockConfig.Username, rockConfig.Password );
-
-            var param = new Rock.Net.RestParameters.ContributionStatementOptions
-            {
-                StartDate = Options.StartDate,
-                EndDate = Options.EndDate,
-                AccountIds = null,
-                PersonId = null,
-                OrderByZipCode = true
-            };
-            var result = rockRestClient.PostDataWithResult<Rock.Net.RestParameters.ContributionStatementOptions>( "api/FinancialTransactions/GetContributionPersonGroupAddress", param );
-
-
-            /*
-
-            // get data from Rock database
-            FinancialTransactionService financialTransactionService = new FinancialTransactionService();
-
-            var qry = financialTransactionService.Queryable().AsNoTracking();
-
-            qry = qry
-                .Where( a => a.TransactionDateTime >= this.Options.StartDate )
-                .Where( a => a.TransactionDateTime < this.Options.EndDate );
-
-            var selectQry = qry.Select( a => new TransactionRecord
-            {
-                AuthorizedPerson = a.AuthorizedPerson,
-                TransactionDateTime = a.TransactionDateTime,
-                CurrencyTypeValueId = a.CurrencyTypeValueId,
-                Summary = a.Summary,
-                AccountId = a.TransactionDetails.FirstOrDefault().Account.Id,
-                AccountName = a.TransactionDetails.FirstOrDefault().Account.Name,
-                Amount = a.Amount
-            } );
-
-            var personTransactionGroupBy = selectQry.GroupBy( a => a.AuthorizedPerson );
-
             UpdateProgress( "Getting Data..." );
-            var outerQuery = personTransactionGroupBy.OrderBy( a => a.Key.FullNameLastFirst ).ToList();
 
-            RecordCount = outerQuery.Count();
+            // get outer query data from Rock database via REST
+            DataSet personGroupAddressDataSet = _rockRestClient.PostDataWithResult<Rock.Net.RestParameters.ContributionStatementOptions, DataSet>( "api/FinancialTransactions/GetContributionPersonGroupAddress", _contributionStatementOptionsREST );
 
-            e.RecordSet = new EnumerableRecordSet( outerQuery );
+            DataTable personGroupAddressDataTable = personGroupAddressDataSet.Tables[0];
+            RecordCount = personGroupAddressDataTable.Rows.Count;
+            e.RecordSet = new DataTableRecordSet( personGroupAddressDataTable );
 
             SubReport subReport = e.LayoutWriter.DocumentLayout.GetReportElementById( "InnerReport" ) as SubReport;
+
+            if ( subReport == null )
+            {
+                throw new MissingReportElementException( "Report requires a QueryElement named 'InnerReport'" );
+            }
+
             subReport.Query.OpeningRecordSet += subQuery_OpeningRecordSet;
-             * 
-             */ 
+
+            SubReportFooter tranListFooter = e.LayoutWriter.DocumentLayout.GetElementById( "TranListFooter" ) as SubReportFooter;
+
         }
 
         /// <summary>
@@ -242,8 +248,24 @@ namespace Rock.Apps.StatementGenerator
         {
             RecordIndex++;
             UpdateProgress( "Processing..." );
-            List<TransactionRecord> transactions = e.LayoutWriter.RecordSets.Current[1] as List<TransactionRecord>;
-            e.RecordSet = new EnumerableRecordSet( transactions );
+
+            int? personId = e.LayoutWriter.RecordSets.Current["PersonId"].ToString().AsInteger( false );
+            int groupId = e.LayoutWriter.RecordSets.Current["GroupId"].ToString().AsInteger() ?? 0;
+            string uriParam;
+
+            if ( personId.HasValue )
+            {
+                uriParam = string.Format( "api/FinancialTransactions/GetContributionTransactions/{0}/{1}", groupId, personId );
+            }
+            else
+            {
+                uriParam = string.Format( "api/FinancialTransactions/GetContributionTransactions/{0}", groupId );
+            }
+
+            DataSet transactionsDataSet = _rockRestClient.PostDataWithResult<Rock.Net.RestParameters.ContributionStatementOptions, DataSet>( uriParam, _contributionStatementOptionsREST );
+            DataTable transactionsDataTable = transactionsDataSet.Tables[0];
+
+            e.RecordSet = new DataTableRecordSet( transactionsDataTable );
         }
 
         /// <summary>
@@ -251,8 +273,28 @@ namespace Rock.Apps.StatementGenerator
         /// </summary>
         public class ProgressEventArgs : EventArgs
         {
+            /// <summary>
+            /// Gets or sets the position.
+            /// </summary>
+            /// <value>
+            /// The position.
+            /// </value>
             public int Position { get; set; }
+
+            /// <summary>
+            /// Gets or sets the maximum.
+            /// </summary>
+            /// <value>
+            /// The maximum.
+            /// </value>
             public int Max { get; set; }
+
+            /// <summary>
+            /// Gets or sets the progress message.
+            /// </summary>
+            /// <value>
+            /// The progress message.
+            /// </value>
             public string ProgressMessage { get; set; }
         }
 
