@@ -10,7 +10,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
-
+using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Security;
 
@@ -273,6 +273,44 @@ namespace Rock.Net
             {
                 httpMessage.EnsureSuccessStatusCode();
             }
+        }
+
+        /// <summary>
+        /// Posts the data with result.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="postPath">The post path.</param>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
+        /// <exception cref="Rock.Net.HttpErrorException"></exception>
+        public R PostDataWithResult<T, R>( string postPath, T data ) where R : new()
+        {
+            Uri requestUri = new Uri( rockBaseUri, postPath );
+
+            HttpClient httpClient = new HttpClient( new HttpClientHandler { CookieContainer = this.CookieContainer } );
+            HttpResponseMessage httpMessage = null;
+            string contentResult = null;
+
+            Action<Task<HttpResponseMessage>> handleContinue = new Action<Task<HttpResponseMessage>>( p =>
+            {
+                p.Result.Content.ReadAsStringAsync().ContinueWith( c =>
+                {
+                    contentResult = c.Result;
+                } ).Wait();
+
+                httpMessage = p.Result;
+            } );
+
+            httpClient.PostAsJsonAsync<T>( requestUri.ToString(), data ).ContinueWith( handleContinue ).Wait();
+
+            if ( httpMessage != null )
+            {
+                httpMessage.EnsureSuccessStatusCode();
+            }
+
+            R result = JsonConvert.DeserializeObject<R>( contentResult );
+
+            return result;
         }
     }
 

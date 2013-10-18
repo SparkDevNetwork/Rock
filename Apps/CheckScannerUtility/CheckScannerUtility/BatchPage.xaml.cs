@@ -491,7 +491,6 @@ namespace Rock.Apps.CheckScannerUtility
                 financialTransactionScannedCheck.CreditCardTypeValueId = null;
                 financialTransactionScannedCheck.SourceTypeValueId = null;
                 financialTransactionScannedCheck.AuthorizedPersonId = null;
-                financialTransactionScannedCheck.GatewayId = null;
                 financialTransactionScannedCheck.TransactionTypeValueId = transactionTypeValueContribution.Id;
 
                 // Rock server will encrypt CheckMicrPlainText to this since we can't have the DataEncryptionKey in a RestClient
@@ -581,7 +580,7 @@ namespace Rock.Apps.CheckScannerUtility
             client.Login( config.Username, config.Password );
             List<FinancialBatch> pendingBatches = client.GetDataByEnum<List<FinancialBatch>>( "api/FinancialBatches", "Status", BatchStatus.Pending );
 
-            grdBatches.DataContext = pendingBatches.OrderByDescending( a => a.BatchDate ).ThenBy( a => a.Name);
+            grdBatches.DataContext = pendingBatches.OrderByDescending( a => a.BatchStartDateTime ).ThenBy( a => a.Name );
             if ( pendingBatches.Count > 0 )
             {
                 if ( SelectedFinancialBatchId > 0 )
@@ -847,7 +846,7 @@ namespace Rock.Apps.CheckScannerUtility
                     financialBatch.CampusId = null;
                 }
 
-                financialBatch.BatchDate = dpBatchDate.SelectedDate;
+                financialBatch.BatchStartDateTime = dpBatchDate.SelectedDate;
 
                 if ( !string.IsNullOrWhiteSpace( txtControlAmount.Text ) )
                 {
@@ -924,7 +923,7 @@ namespace Rock.Apps.CheckScannerUtility
             lblBatchNameReadOnly.Content = selectedBatch.Name;
 
             lblBatchCampusReadOnly.Content = selectedBatch.CampusId.HasValue ? client.GetData<Campus>( string.Format( "api/Campus/{0}", selectedBatch.CampusId ) ).Name : None.Text;
-            lblBatchDateReadOnly.Content = selectedBatch.BatchDate.Value.ToString("d");
+            lblBatchDateReadOnly.Content = selectedBatch.BatchStartDateTime.Value.ToString( "d" );
             lblBatchCreatedByReadOnly.Content = client.GetData<Person>( string.Format( "api/People/{0}", selectedBatch.CreatedByPersonId ) ).FullName;
             lblBatchControlAmountReadOnly.Content = selectedBatch.ControlAmount.ToString( "F" );
 
@@ -938,7 +937,7 @@ namespace Rock.Apps.CheckScannerUtility
                 cbCampus.SelectedValue = 0;
             }
 
-            dpBatchDate.SelectedDate = selectedBatch.BatchDate;
+            dpBatchDate.SelectedDate = selectedBatch.BatchStartDateTime;
             lblCreatedBy.Content = lblBatchCreatedByReadOnly.Content as string;
             txtControlAmount.Text = selectedBatch.ControlAmount.ToString( "F" );
 
@@ -953,7 +952,7 @@ namespace Rock.Apps.CheckScannerUtility
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void btnAddBatch_Click( object sender, RoutedEventArgs e )
         {
-            UpdateBatchUI( new FinancialBatch { Id = 0, BatchDate = DateTime.Now.Date, CreatedByPersonId = LoggedInPerson.Id } );
+            UpdateBatchUI( new FinancialBatch { Id = 0, BatchStartDateTime = DateTime.Now.Date, CreatedByPersonId = LoggedInPerson.Id } );
             ShowBatch( true );
         }
 
