@@ -10,7 +10,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
-
+using Newtonsoft.Json;
 using Rock.Data;
 using Rock.Security;
 
@@ -163,8 +163,6 @@ namespace Rock.Net
             HttpError httpError = null;
             T result = default( T );
 
-            
-
             httpClient.GetAsync( requestUri ).ContinueWith( ( postTask ) =>
                 {
                     resultContent = postTask.Result.Content;
@@ -277,44 +275,42 @@ namespace Rock.Net
             }
         }
 
-        public object PostDataWithResult<T>( string postPath, T data )
+        /// <summary>
+        /// Posts the data with result.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="postPath">The post path.</param>
+        /// <param name="data">The data.</param>
+        /// <returns></returns>
+        /// <exception cref="Rock.Net.HttpErrorException"></exception>
+        public R PostDataWithResult<T, R>( string postPath, T data ) where R : new()
         {
             Uri requestUri = new Uri( rockBaseUri, postPath );
 
             HttpClient httpClient = new HttpClient( new HttpClientHandler { CookieContainer = this.CookieContainer } );
-            HttpError httpError = null;
             HttpResponseMessage httpMessage = null;
+            string contentResult = null;
 
             Action<Task<HttpResponseMessage>> handleContinue = new Action<Task<HttpResponseMessage>>( p =>
             {
-                p.Result.Content.ReadAsAsync<HttpError>().ContinueWith( c =>
-                {
-                    httpError = c.Result;
-                } ).Wait();
-
                 p.Result.Content.ReadAsStringAsync().ContinueWith( c =>
                 {
-                    var contentResult = c.Result;
+                    contentResult = c.Result;
                 } ).Wait();
 
                 httpMessage = p.Result;
             } );
 
-            
-            // POST is for INSERTs
             httpClient.PostAsJsonAsync<T>( requestUri.ToString(), data ).ContinueWith( handleContinue ).Wait();
-
-            if ( httpError != null )
-            {
-                throw new HttpErrorException( httpError );
-            }
 
             if ( httpMessage != null )
             {
                 httpMessage.EnsureSuccessStatusCode();
             }
 
-            return null;
+            R result = JsonConvert.DeserializeObject<R>( contentResult );
+
+            return result;
         }
     }
 
