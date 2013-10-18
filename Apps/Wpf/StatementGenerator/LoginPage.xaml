@@ -128,9 +128,6 @@
                            Content="Invalid Login">
                     </Label>
                 </StackPanel>
-                <Button Name="btnRunReport"
-                        Style="{StaticResource buttonStylePrimary}"
-                        Click="btnRunReport_Click">DEBUG: Run Report</Button>
                 <Border Grid.Row="2"
                         Grid.Column="0"
                         BorderThickness="0,1,0,0"
