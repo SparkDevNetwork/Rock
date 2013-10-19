@@ -11,10 +11,10 @@ using System.Web.UI.WebControls;
 namespace Rock.Web.UI.Controls
 {
     /// <summary>
-    /// A <see cref="T:System.Web.UI.WebControls.TextBox"/> control with an associated label.
+    /// A <see cref="T:System.Web.UI.WebControls.PlaceHolder"/> control with an associated label.
     /// </summary>
-    [ToolboxData( "<{0}:RockCheckBox runat=server></{0}:RockTextBox>" )]
-    public class RockCheckBox : CheckBox, IRockControl
+    [ToolboxData( "<{0}:RockControlWrapper runat=server></{0}:RockControlWrapper>" )]
+    public class RockControlWrapper : PlaceHolder, IRockControl
     {
         #region IRockControl implementation
 
@@ -102,6 +102,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets an optional validation group to use.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get { return ViewState["ValidationGroup"] as string; }
+            set { ViewState["ValidationGroup"] = value; }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
@@ -134,37 +146,26 @@ namespace Rock.Web.UI.Controls
         #endregion
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RockCheckBox"/> class.
+        /// Initializes a new instance of the <see cref="RockControlWrapper" /> class.
         /// </summary>
-        public RockCheckBox()
+        public RockControlWrapper()
             : base()
         {
             HelpBlock = new HelpBlock();
         }
-
         /// <summary>
         /// Called by the ASP.NET page framework to notify server controls that use composition-based implementation to create any child controls they contain in preparation for posting back or rendering.
         /// </summary>
         protected override void CreateChildControls()
         {
             base.CreateChildControls();
-            Controls.Clear();
             RockControlHelper.CreateChildControls( this, Controls );
         }
 
         /// <summary>
-        /// Registers client script for generating postback prior to rendering on the client if <see cref="P:System.Web.UI.WebControls.CheckBox.AutoPostBack" /> is true.
+        /// Renders a label and <see cref="T:System.Web.UI.WebControls.TextBox"/> control to the specified <see cref="T:System.Web.UI.HtmlTextWriter"/> object.
         /// </summary>
-        /// <param name="e">An <see cref="T:System.EventArgs" /> that contains the event data.</param>
-        protected override void OnPreRender( System.EventArgs e )
-        {
-            base.OnPreRender( e );
-        }
-
-        /// <summary>
-        /// Outputs server control content to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object and stores tracing information about the control if tracing is enabled.
-        /// </summary>
-        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the control content.</param>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter"/> that receives the rendered output.</param>
         public override void RenderControl( HtmlTextWriter writer )
         {
             if ( this.Visible )
@@ -177,16 +178,28 @@ namespace Rock.Web.UI.Controls
         /// Renders the base control.
         /// </summary>
         /// <param name="writer">The writer.</param>
-        public virtual void RenderBaseControl( HtmlTextWriter writer )
+        public void RenderBaseControl(HtmlTextWriter writer)
         {
-            if (Enabled)
+            base.RenderControl( writer );
+        }
+
+        /// <summary>
+        /// Outputs the content of a server control's children to a provided <see cref="T:System.Web.UI.HtmlTextWriter" /> object, which writes the content to be rendered on the client.
+        /// </summary>
+        /// <param name="writer">The <see cref="T:System.Web.UI.HtmlTextWriter" /> object that receives the rendered content.</param>
+        protected override void RenderChildren( HtmlTextWriter writer )
+        {
+            if ( this.Controls != null )
             {
-                base.RenderControl(writer);
-            }
-            else
-            {
-                writer.WriteLine( string.Format( "<div><i class=\"{0}\"></i> {1}</div>", this.Checked ? "icon-check" : "icon-check-empty", this.Text ) );
+                foreach ( Control child in this.Controls )
+                {
+                    if ( !( child is HelpBlock ) )
+                    {
+                        child.RenderControl( writer );
+                    }
+                }
             }
         }
+
     }
 }

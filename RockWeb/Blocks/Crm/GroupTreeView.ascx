@@ -33,7 +33,7 @@
                         })
                         .rockTree({
                             restUrl: '<%=ResolveUrl( "~/api/groups/getchildren/" ) %>',
-                            restParams: ($('#hfRootGroupId').val() || 0) + '/' + ($('#hfLimitToSecurityRoleGroups').val() || false) + '/' + ($('#hfGroupTypes').val() || 0),
+                            restParams: '/' + ($('#hfRootGroupId').val() || 0) + '/' + ($('#hfLimitToSecurityRoleGroups').val() || false) + '/' + ($('#hfGroupTypes').val() || 0),
                             multiSelect: false,
                             selectedIds: $selectedId.val() ? $selectedId.val().split(',') : null,
                             expandedIds: $expandedIds.val() ? $expandedIds.val().split(',') : null

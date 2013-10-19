@@ -261,15 +261,20 @@ namespace Rock.Attribute
             if ( entityType.Namespace == "System.Data.Entity.DynamicProxies" )
                 entityType = entityType.BaseType;
 
-            // Check for inherited group type attributes
-            var inheritedGroupTypeIds = new List<int>();
-            if ( entity is Group || entity is GroupType )
+            // Check for group type attributes
+            var groupTypeIds = new List<int>();
+            if ( entity is GroupMember || entity is Group || entity is GroupType )
             {
-                //int? groupTypeId = null;
-                GroupType groupType = null;
+                var groupService = new GroupService();
                 var groupTypeService = new GroupTypeService();
 
-                if ( entity is Group )
+                GroupType groupType = null;
+                if ( entity is GroupMember )
+                {
+                    var group = ( (GroupMember)entity ).Group ?? groupService.Get( ( (GroupMember)entity ).GroupId );
+                    groupType = group.GroupType ?? groupTypeService.Get( group.GroupTypeId );
+                }
+                else if ( entity is Group )
                 {
                     groupType = ( (Group)entity ).GroupType ?? groupTypeService.Get( ( (Group)entity ).GroupTypeId );
                 }
@@ -278,12 +283,11 @@ namespace Rock.Attribute
                     groupType = ( (GroupType)entity );
                 }
 
-
-
                 while ( groupType != null )
                 {
-                    inheritedGroupTypeIds.Add( groupType.Id );
+                    groupTypeIds.Add( groupType.Id );
 
+                    // Check for inherited group type id's
                     groupType = groupType.InheritedGroupType ?? groupTypeService.Get( groupType.InheritedGroupTypeId ?? 0 );
                 }
 
@@ -299,16 +303,19 @@ namespace Rock.Attribute
             int? entityTypeId = Rock.Web.Cache.EntityTypeCache.Read( entityType ).Id;
             foreach ( Rock.Model.Attribute attribute in attributeService.GetByEntityTypeId( entityTypeId ) )
             {
-                if ( inheritedGroupTypeIds.Any() && (
+                // group type ids exist (entity is either GroupMember, Group, or GroupType) and qualifier is for a group type id
+                if ( groupTypeIds.Any() && (
+                        ( entity is GroupMember && string.Compare( attribute.EntityTypeQualifierColumn, "GroupTypeId", true ) == 0 ) ||
                         ( entity is Group && string.Compare( attribute.EntityTypeQualifierColumn, "GroupTypeId", true ) == 0 ) ||
                         ( entity is GroupType && string.Compare( attribute.EntityTypeQualifierColumn, "Id", true ) == 0 ) ) )
                 {
                     int groupTypeIdValue = int.MinValue;
-                    if ( int.TryParse( attribute.EntityTypeQualifierValue, out groupTypeIdValue ) && inheritedGroupTypeIds.Contains( groupTypeIdValue ) )
+                    if ( int.TryParse( attribute.EntityTypeQualifierValue, out groupTypeIdValue ) && groupTypeIds.Contains( groupTypeIdValue ) )
                     {
                         attributes.Add( Rock.Web.Cache.AttributeCache.Read( attribute ) );
                     }
                 }
+                    
                 else if ( string.IsNullOrEmpty( attribute.EntityTypeQualifierColumn ) ||
                     ( properties.ContainsKey( attribute.EntityTypeQualifierColumn.ToLower() ) &&
                     ( string.IsNullOrEmpty( attribute.EntityTypeQualifierValue ) ||
