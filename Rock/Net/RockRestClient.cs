@@ -312,6 +312,61 @@ namespace Rock.Net
 
             return result;
         }
+
+        /// <summary>
+        /// Gets the XML.
+        /// </summary>
+        /// <param name="getPath">The get path.</param>
+        /// <param name="maxWaitMilliseconds">The maximum wait milliseconds.</param>
+        /// <param name="odataFilter">The odata filter.</param>
+        /// <returns></returns>
+        public string GetXml( string getPath, int maxWaitMilliseconds = -1, string odataFilter = null )
+        {
+            HttpClient httpClient = new HttpClient( new HttpClientHandler { CookieContainer = this.CookieContainer } );
+            httpClient.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/xml"));
+            
+            Uri requestUri;
+
+            if ( !string.IsNullOrWhiteSpace( odataFilter ) )
+            {
+                string queryParam = "?$filter=" + odataFilter;
+                requestUri = new Uri( rockBaseUri, getPath + queryParam );
+            }
+            else
+            {
+                requestUri = new Uri( rockBaseUri, getPath );
+            }
+
+            HttpContent resultContent;
+            string result = null;
+
+            try
+            {
+
+                httpClient.GetAsync( requestUri ).ContinueWith( ( postTask ) =>
+                {
+                    if ( postTask.Result.IsSuccessStatusCode )
+                    {
+                        resultContent = postTask.Result.Content;
+                        resultContent.ReadAsStringAsync().ContinueWith( s =>
+                        {
+                            result = s.Result;
+                        } ).Wait( maxWaitMilliseconds );
+                    }
+                    else
+                    {
+                        throw new HttpErrorException( new HttpError( postTask.Result.ReasonPhrase ) );
+                    }
+
+               } ).Wait();
+            }
+            catch ( AggregateException ex )
+            {
+                throw ex.Flatten();
+            }
+
+            return result;
+        }
     }
 
     /// <summary>
