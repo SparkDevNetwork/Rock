@@ -16,22 +16,16 @@ using System.Windows.Shapes;
 namespace Rock.Apps.StatementGenerator
 {
     /// <summary>
-    /// Interaction logic for StartPage.xaml
+    /// Interaction logic for SelectDateRangePage.xaml
     /// </summary>
-    public partial class StartPage : Page
+    public partial class SelectDateRangePage : Page
     {
-        public StartPage()
+        public SelectDateRangePage()
         {
             InitializeComponent();
         }
 
-        private void btnStart_Click( object sender, RoutedEventArgs e )
-        {
-            SelectPersonsPage nextPage = new SelectPersonsPage();
-            this.NavigationService.Navigate( nextPage );
-        }
-
-        private void mnuOptions_Click( object sender, RoutedEventArgs e )
+        private void btnNext_Click( object sender, RoutedEventArgs e )
         {
 
         }
