@@ -14,7 +14,7 @@ namespace Rock.Web.UI.Controls
     /// A <see cref="T:System.Web.UI.WebControls.Literal"/> control with an associated label.
     /// </summary>
     [ToolboxData( "<{0}:RockLiteral runat=server></{0}:RockLiteral>" )]
-    public class RockLiteral : CompositeControl, IRockControl
+    public class RockLiteral : LiteralControl, IRockControl
     {
         #region IRockControl implementation
 
@@ -102,6 +102,18 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets an optional validation group to use.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get { return ViewState["ValidationGroup"] as string; }
+            set { ViewState["ValidationGroup"] = value; }
+        }
+
+        /// <summary>
         /// Gets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
@@ -134,33 +146,24 @@ namespace Rock.Web.UI.Controls
         #endregion
 
         /// <summary>
-        /// Gets or sets the text CSS class.
+        /// Gets or sets the CSS class.
         /// </summary>
         /// <value>
-        /// The text CSS class.
+        /// The CSS class.
         /// </value>
-        public string TextCssClass
+        public string CssClass
         {
-            get { return ViewState["TextCssClass"] as string ?? string.Empty; }
-            set { ViewState["TextCssClass"] = value; }
+            get { return ViewState["CssClass"] as string ?? string.Empty; }
+            set { ViewState["CssClass"] = value; }
         }
 
         /// <summary>
-        /// Gets or sets the label text.
+        /// Initializes a new instance of the <see cref="RockLiteral" /> class.
         /// </summary>
-        /// <value>
-        /// The label text.
-        /// </value>
-        [
-        Bindable( true ),
-        Category( "Appearance" ),
-        DefaultValue( "" ),
-        Description( "The text." )
-        ]
-        public string Text
+        public RockLiteral()
+            : base()
         {
-            get { return ViewState["Text"] as string ?? string.Empty; }
-            set { ViewState["Text"] = value; }
+            HelpBlock = new HelpBlock();
         }
 
         /// <summary>
@@ -191,9 +194,9 @@ namespace Rock.Web.UI.Controls
         /// <param name="writer">The writer.</param>
         public void RenderBaseControl(HtmlTextWriter writer)
         {
-            writer.AddAttribute("class", "form-control-static " + TextCssClass);
+            writer.AddAttribute("class", "form-control-static " + CssClass);
             writer.RenderBeginTag( HtmlTextWriterTag.P );
-            writer.Write(Text);
+            base.RenderControl( writer );
             writer.RenderEndTag();
         }
 

@@ -98,6 +98,7 @@ namespace Rock.Web.UI.Controls
                 EditField editField = cell.ContainingField as EditField;
                 ParentGrid = editField.ParentGrid;
                 LinkButton lbEdit = new LinkButton();
+                lbEdit.CausesValidation = false;
                 lbEdit.CssClass = "btn btn-edit btn-sm";
                 lbEdit.ToolTip = "Edit";
                 

@@ -348,6 +348,28 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Gets or sets an optional validation group to use.
+        /// </summary>
+        /// <value>
+        /// The validation group.
+        /// </value>
+        public string ValidationGroup
+        {
+            get
+            {
+                EnsureChildControls();
+                return _locationItemPicker.ValidationGroup;
+            }
+            set
+            {
+                EnsureChildControls();
+                _locationItemPicker.ValidationGroup = value;
+                _locationAddressPicker.ValidationGroup = value;
+                _locationGeoPicker.ValidationGroup = value;
+            }
+        }
+
+        /// <summary>
         /// Gets or sets a value indicating whether this instance is valid.
         /// </summary>
         /// <value>
