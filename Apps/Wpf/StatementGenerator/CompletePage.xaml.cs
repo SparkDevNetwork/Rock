@@ -16,24 +16,13 @@ using System.Windows.Shapes;
 namespace Rock.Apps.StatementGenerator
 {
     /// <summary>
-    /// Interaction logic for StartPage.xaml
+    /// Interaction logic for CompletePage.xaml
     /// </summary>
-    public partial class StartPage : Page
+    public partial class CompletePage : Page
     {
-        public StartPage()
+        public CompletePage()
         {
             InitializeComponent();
-        }
-
-        private void btnStart_Click( object sender, RoutedEventArgs e )
-        {
-            SelectPersonsPage nextPage = new SelectPersonsPage();
-            this.NavigationService.Navigate( nextPage );
-        }
-
-        private void mnuOptions_Click( object sender, RoutedEventArgs e )
-        {
-
         }
     }
 }
