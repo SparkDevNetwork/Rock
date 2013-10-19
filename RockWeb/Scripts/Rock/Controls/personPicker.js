@@ -20,7 +20,7 @@
             $('#personPicker_' + controlId).autocomplete({
                 source: function (request, response) {
                     var promise = $.ajax({
-                        url: restUrl + request.term,
+                        url: restUrl + request.term + "/true",
                         dataType: 'json'
                     });
 
